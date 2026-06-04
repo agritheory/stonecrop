@@ -87,22 +87,22 @@ const elements = computed<FlowElements>({
 		// TODO: emit('update:modelValue', modelValue)
 	},
 })
-const onElementsChange = (elements: FlowElements) => {
+const onElementsChange = (nextElements: FlowElements) => {
 	const edges: Record<string, Record<string, any>> = {}
 	const idToLabel: Record<string, string> = {}
-	const states: EditorStates = {}
+	const nextStates: EditorStates = {}
 
-	for (const el of elements) {
+	for (const el of nextElements) {
 		const label = el.label as string
 
 		if (el.type === 'input') {
 			// it's an input node
-			states[label] = {
+			nextStates[label] = {
 				on: {},
 			}
 		} else if (el.type === 'output') {
 			// it's an output node
-			states[label] = {
+			nextStates[label] = {
 				type: 'final',
 			}
 		} else if (el.source && el.target) {
@@ -113,7 +113,7 @@ const onElementsChange = (elements: FlowElements) => {
 			}
 		} else {
 			// it's a state
-			states[label] = {
+			nextStates[label] = {
 				on: {},
 			}
 		}
@@ -124,13 +124,13 @@ const onElementsChange = (elements: FlowElements) => {
 		// add edges to states
 		const label = idToLabel[edgeKey]
 		for (const [key, value] of Object.entries(edgeValue)) {
-			if (!states[label]) {
-				states[label] = { on: {} }
+			if (!nextStates[label]) {
+				nextStates[label] = { on: {} }
 			}
-			states[label].on[key] = value
+			nextStates[label].on[key] = value
 		}
 	}
 
-	emit('update:modelValue', states)
+	emit('update:modelValue', nextStates)
 }
 </script>

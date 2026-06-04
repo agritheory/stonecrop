@@ -5,10 +5,17 @@ import {
 	createJWT,
 	createHTTPJWTMiddleware,
 	refreshTokenUtils,
-	type JWTConfig,
 	type JWTPayload,
 } from '../src/middleware/jwt'
 import type { Context, User } from '../src/types'
+
+const customExtractorWithFields = (payload: any) => ({
+	id: payload.user_id,
+	roles: payload.user_roles,
+	email: payload.email,
+})
+
+const customExtractorReturningUndefined = () => undefined
 
 describe('JWT Middleware', { tags: ['unit', 'graphql'] }, () => {
 	const TEST_SECRET = 'test-secret-key-for-testing'
@@ -254,7 +261,7 @@ describe('JWT Middleware', { tags: ['unit', 'graphql'] }, () => {
 			await middleware(mockContext, mockNext)
 
 			expect(mockContext.jwtPayload).toBeDefined()
-			expect((mockContext.jwtPayload as any).extra).toBe('data')
+			expect(mockContext.jwtPayload.extra).toBe('data')
 		})
 	})
 
@@ -708,7 +715,7 @@ describe('JWT Middleware - Advanced Tests', { tags: ['unit', 'graphql'] }, () =>
 			}
 
 			const next = vi.fn()
-			await expect(middleware(context, next)).rejects.toThrow()
+			await expect(middleware(context, next)).rejects.toThrow('Invalid token')
 		})
 
 		it('should verify token with audience', async () => {
@@ -765,13 +772,7 @@ describe('JWT Middleware - Advanced Tests', { tags: ['unit', 'graphql'] }, () =>
 
 	describe('Custom user extractor', () => {
 		it('should use custom extractUser function', async () => {
-			const customExtractor = (payload: any) => ({
-				id: payload.user_id,
-				roles: payload.user_roles,
-				email: payload.email,
-			})
-
-			const middleware = createJWTMiddleware({ secret: SECRET, extractUser: customExtractor })
+			const middleware = createJWTMiddleware({ secret: SECRET, extractUser: customExtractorWithFields })
 			const token = jwt.sign({ user_id: '123', user_roles: ['admin'], email: 'test@example.com' }, SECRET)
 
 			const context: any = {
@@ -792,9 +793,7 @@ describe('JWT Middleware - Advanced Tests', { tags: ['unit', 'graphql'] }, () =>
 		})
 
 		it('should handle extractUser returning undefined', async () => {
-			const customExtractor = () => undefined
-
-			const middleware = createJWTMiddleware({ secret: SECRET, extractUser: customExtractor })
+			const middleware = createJWTMiddleware({ secret: SECRET, extractUser: customExtractorReturningUndefined })
 			const token = jwt.sign({ sub: '123' }, SECRET)
 
 			const context: any = {
@@ -863,7 +862,7 @@ describe('JWT Middleware - Advanced Tests', { tags: ['unit', 'graphql'] }, () =>
 			}
 
 			const next = vi.fn()
-			await expect(middleware(context, next)).rejects.toThrow()
+			await expect(middleware(context, next)).rejects.toThrow('Invalid token')
 		})
 	})
 

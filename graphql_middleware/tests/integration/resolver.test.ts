@@ -69,6 +69,52 @@ beforeAll(async () => {
 				{ fieldname: 'item_id', fieldtype: 'Data', label: 'Item ID' },
 			],
 		},
+		ScWidget: {
+			name: 'ScWidget',
+			fields: [
+				{ fieldname: 'id', fieldtype: 'PrimaryKey', label: 'ID' },
+				{
+					fieldname: 'basicInfo_fieldset',
+					fieldtype: 'Fieldset',
+					component: 'AFieldset',
+					schema: [
+						{ fieldname: 'itemName', fieldtype: 'Data', label: 'Name' },
+						{ fieldname: 'itemColor', fieldtype: 'Data', label: 'Color' },
+					],
+				},
+			],
+		},
+		ScPart: {
+			name: 'ScPart',
+			fields: [
+				{ fieldname: 'id', fieldtype: 'PrimaryKey', label: 'ID' },
+				{ fieldname: 'gadget_id', fieldtype: 'Data', label: 'Gadget ID' },
+				{ fieldname: 'partName', fieldtype: 'Data', label: 'Part Name' },
+			],
+		},
+		ScGadget: {
+			name: 'ScGadget',
+			fields: [
+				{ fieldname: 'id', fieldtype: 'PrimaryKey', label: 'ID' },
+				{
+					fieldname: 'info_fieldset',
+					fieldtype: 'Fieldset',
+					component: 'AFieldset',
+					schema: [
+						{ fieldname: 'gadgetName', fieldtype: 'Data', label: 'Name' },
+						{ fieldname: 'parts', fieldtype: 'Link', options: 'ScPart' },
+					],
+				},
+			],
+			links: {
+				parts: {
+					target: 'ScPart',
+					cardinality: 'noneOrMany' as const,
+					backlink: 'gadget_id',
+					fetch: { method: 'sync' as const },
+				},
+			},
+		},
 	})
 
 	pool = new Pool({ connectionString: databaseUrl, max: 1 })
@@ -113,7 +159,6 @@ async function runQuery(query: string, variables?: Record<string, unknown>): Pro
 		// SQL runs inside one rollback-able transaction.
 		args.contextValue.withPgClient = withPgClient
 		queryResult = (await execute(args)) as Record<string, unknown>
-		return queryResult
 	} finally {
 		try {
 			await client.query('ROLLBACK')
@@ -121,10 +166,10 @@ async function runQuery(query: string, variables?: Record<string, unknown>): Pro
 			// If ROLLBACK itself fails the connection is in an unknown state; discard it.
 			// Return the already-fetched result rather than losing it.
 			client.release(new Error('rollback failed'))
-			return queryResult
 		}
 		client.release()
 	}
+	return queryResult
 }
 
 // ===========================================================================
@@ -136,7 +181,7 @@ describe('stonecropRecord', { tags: ['integration', 'graphql'] }, () => {
 		const result = await runQuery(`query { stonecropRecord(doctype: "ScItem", id: "1") { doctype data } }`)
 		const record = (result as any).data?.stonecropRecord
 		expect(record?.doctype).toBe('ScItem')
-		expect((record?.data as any)?.name).toBe('Alpha')
+		expect(record?.data?.name).toBe('Alpha')
 	})
 
 	it('returns null data for a missing id', async () => {
@@ -218,7 +263,7 @@ describe('lazy link retrieval via stonecropRecords', { tags: ['integration', 'gr
 		const records = (result as any).data?.stonecropRecords
 		expect(records?.count).toBe(2)
 		expect(records?.data.length).toBe(2)
-		expect(records?.data.map((n: any) => n.body).sort()).toEqual(['First note', 'Second note'])
+		expect(records?.data.map((n: any) => n.body).toSorted()).toEqual(['First note', 'Second note'])
 	})
 
 	it('lazy link data matches what sync-fetch would have merged', async () => {
@@ -235,7 +280,7 @@ describe('lazy link retrieval via stonecropRecords', { tags: ['integration', 'gr
 		const lazyData = (lazyResult as any).data?.stonecropRecords?.data
 
 		// The data contents should match
-		expect(syncData?.notes?.map((n: any) => n.body).sort()).toEqual(lazyData?.map((n: any) => n.body).sort())
+		expect(syncData?.notes?.map((n: any) => n.body).toSorted()).toEqual(lazyData?.map((n: any) => n.body).toSorted())
 	})
 })
 
@@ -252,7 +297,7 @@ describe('stonecropAction', { tags: ['integration', 'graphql'] }, () => {
 		)
 		const action = (result as any).data?.stonecropAction
 		expect(action?.success).toBe(true)
-		expect((action?.data as any)?.submitted).toBe(true)
+		expect(action?.data?.submitted).toBe(true)
 	})
 
 	it('returns error for an unregistered handler', async () => {
@@ -279,5 +324,57 @@ describe('stonecropMeta', { tags: ['integration', 'graphql'] }, () => {
 	it('returns null for unknown doctype', async () => {
 		const result = await runQuery(`query { stonecropMeta(doctype: "DoesNotExist") { name } }`)
 		expect((result as any).data?.stonecropMeta).toBeNull()
+	})
+})
+
+// ===========================================================================
+// Fieldset container fields
+// ===========================================================================
+
+describe('Fieldset container fields', { tags: ['integration', 'graphql'] }, () => {
+	it('fetches records and returns fieldset child data', async () => {
+		const result = await runQuery(`query { stonecropRecords(doctype: "ScWidget") { data } }`)
+		const records = (result as any).data?.stonecropRecords
+		expect((result as any).errors).toBeUndefined()
+		expect(records?.data).toHaveLength(2)
+		expect(records?.data[0].itemName).toBe('Widget A')
+		expect(records?.data[0].itemColor).toBe('blue')
+	})
+
+	it('fetches a single record with fieldset children via stonecropRecord', async () => {
+		const result = await runQuery(`query { stonecropRecord(doctype: "ScWidget", id: "1") { data } }`)
+		expect((result as any).errors).toBeUndefined()
+		const data = (result as any).data?.stonecropRecord?.data
+		expect(data?.itemName).toBe('Widget A')
+		expect(data?.itemColor).toBe('blue')
+	})
+
+	it('filters records by a fieldset child field', async () => {
+		const result = await runQuery(
+			`query { stonecropRecords(doctype: "ScWidget", filters: { itemColor: "blue" }) { data } }`
+		)
+		expect((result as any).errors).toBeUndefined()
+		const records = (result as any).data?.stonecropRecords
+		expect(records?.data).toHaveLength(1)
+		expect(records?.data[0].itemName).toBe('Widget A')
+	})
+
+	it('orders records by a fieldset child field', async () => {
+		const result = await runQuery(`query { stonecropRecords(doctype: "ScWidget", orderBy: "itemName_DESC") { data } }`)
+		expect((result as any).errors).toBeUndefined()
+		const data = (result as any).data?.stonecropRecords?.data
+		expect(data[0].itemName).toBe('Widget B')
+		expect(data[1].itemName).toBe('Widget A')
+	})
+
+	it('excludes Link fields inside a fieldset from the SELECT column list', async () => {
+		// ScGadget has a `parts` Link field nested inside a Fieldset.
+		// If collectColumns incorrectly includes it, this query throws
+		// "column parts does not exist" — it should return cleanly instead.
+		const result = await runQuery(`query { stonecropRecords(doctype: "ScGadget") { data } }`)
+		expect((result as any).errors).toBeUndefined()
+		const records = (result as any).data?.stonecropRecords
+		expect(records?.data[0].gadgetName).toBe('Gadget One')
+		expect(records?.data[0].parts).toBeUndefined()
 	})
 })

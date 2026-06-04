@@ -45,6 +45,7 @@ export async function setup(project: TestProject) {
 		for (const { server, db } of [resolver, camel, inflection]) {
 			server.unref()
 			server.close()
+			// oxlint-disable-next-line eslint/no-await-in-loop -- sequential teardown intentional; parallel close risks race conditions on shared DB state
 			await db.close()
 		}
 	}

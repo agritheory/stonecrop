@@ -67,6 +67,7 @@ export default class Registry {
 		Registry._root = this
 		this.router = router
 		this.getMeta = getMeta
+		return this
 	}
 
 	/**
@@ -161,11 +162,12 @@ export default class Registry {
 			if ('fieldtype' in field && field.fieldtype === 'Link') {
 				const link = linksByFieldname.get(field.fieldname)
 				if (!link) {
-					const doctype =
+					// oxlint-disable typescript/no-unsafe-type-assertion -- SchemaTypes union narrowed to FieldMeta by fieldtype === 'Link' check; options may not exist on all members
+					const linkDoctype =
 						typeof (field as FieldMeta).options === 'string' ? ((field as FieldMeta).options as string) : undefined
+					// oxlint-enable typescript/no-unsafe-type-assertion
 
-					if (doctype === undefined) {
-						// eslint-disable-next-line no-console
+					if (linkDoctype === undefined) {
 						console.warn(
 							`[Stonecrop] Link field "${field.fieldname}" has no \`options\` or corresponding \`links\` declaration. ` +
 								`AFormLink will be created without a \`doctype\` prop, so navigation will not work. ` +
@@ -182,7 +184,7 @@ export default class Registry {
 					resolvedFields.push({
 						...fieldRest,
 						component: fieldRest.component || 'AFormLink',
-						...(doctype !== undefined ? { doctype } : {}),
+						...(linkDoctype !== undefined ? { doctype: linkDoctype } : {}),
 					})
 
 					continue
@@ -425,10 +427,11 @@ export default class Registry {
 		const doctype = this.registry[doctypeSlug]
 		if (!doctype?.links) return []
 
-		return Object.entries(doctype.links).map(([fieldname, link]) => ({
-			...link,
-			fieldname,
-		}))
+		return Object.entries(doctype.links).map(([fieldname, link]) =>
+			Object.assign({}, link, {
+				fieldname,
+			})
+		)
 	}
 
 	/**

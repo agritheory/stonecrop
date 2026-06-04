@@ -21,6 +21,38 @@ const createDoctypeWithLinks = (name: string, links?: Record<string, any>) => {
 	return new Doctype(name, mockSchema, mockWorkflow, Map(), undefined, links)
 }
 
+function createMockDoctype(name: string) {
+	const mockSchema = List([
+		{
+			fieldname: 'title',
+			component: 'ATextInput',
+			label: 'Title',
+		},
+	] as SchemaTypes[])
+
+	const mockWorkflow: UnknownMachineConfig = {
+		id: name.toLowerCase(),
+		initial: 'draft',
+		states: {
+			draft: { on: { load: { target: 'pending' } } },
+			pending: {
+				on: {
+					approve: { target: 'completed' },
+					reject: { target: 'draft' },
+				},
+			},
+			completed: { type: 'final' },
+		},
+	}
+
+	const mockActions = Map({
+		load: ['loadData'],
+		save: ['validateData', 'saveData'],
+	})
+
+	return new Doctype(name, mockSchema, mockWorkflow, mockActions)
+}
+
 describe('Registry class', { tags: ['unit'] }, () => {
 	let registry: Registry
 	let mockRouter: any
@@ -35,38 +67,6 @@ describe('Registry class', { tags: ['unit'] }, () => {
 			routes: [],
 		})
 	})
-
-	const createMockDoctype = (name: string) => {
-		const mockSchema = List([
-			{
-				fieldname: 'title',
-				component: 'ATextInput',
-				label: 'Title',
-			},
-		] as SchemaTypes[])
-
-		const mockWorkflow: UnknownMachineConfig = {
-			id: name.toLowerCase(),
-			initial: 'draft',
-			states: {
-				draft: { on: { load: { target: 'pending' } } },
-				pending: {
-					on: {
-						approve: { target: 'completed' },
-						reject: { target: 'draft' },
-					},
-				},
-				completed: { type: 'final' },
-			},
-		}
-
-		const mockActions = Map({
-			load: ['loadData'],
-			save: ['validateData', 'saveData'],
-		})
-
-		return new Doctype(name, mockSchema, mockWorkflow, mockActions)
-	}
 
 	it('creates a Registry instance with default properties', () => {
 		registry = new Registry()
@@ -314,11 +314,11 @@ describe('Registry class', { tags: ['unit'] }, () => {
 
 			const descendant = registry.getDescendantLinks('location')
 			expect(descendant).toHaveLength(2)
-			expect(descendant.map(l => l.fieldname).sort()).toEqual(['childLocations', 'parentLocation'])
+			expect(descendant.map(l => l.fieldname).toSorted()).toEqual(['childLocations', 'parentLocation'])
 
 			const ancestor = registry.getAncestorLinks('location')
 			expect(ancestor).toHaveLength(2)
-			expect(ancestor.map(l => l.fieldname).sort()).toEqual(['childLocations', 'parentLocation'])
+			expect(ancestor.map(l => l.fieldname).toSorted()).toEqual(['childLocations', 'parentLocation'])
 		})
 
 		it('returns entries from multiple doctypes when both target the same doctype', () => {
@@ -340,7 +340,7 @@ describe('Registry class', { tags: ['unit'] }, () => {
 			const ancestors = registry.getAncestorLinks('recipe-task')
 			expect(ancestors).toHaveLength(2)
 
-			const slugs = ancestors.map(a => a.doctype).sort()
+			const slugs = ancestors.map(a => a.doctype).toSorted()
 			expect(slugs).toEqual(['recipe', 'recipe-variant'])
 		})
 
@@ -392,7 +392,7 @@ describe('Registry class', { tags: ['unit'] }, () => {
 
 			const ancestors = registry.getAncestorLinks('recipe-task')
 			expect(ancestors).toHaveLength(2)
-			expect(ancestors.map(a => a.doctype).sort()).toEqual(['recipe', 'recipe-variant'])
+			expect(ancestors.map(a => a.doctype).toSorted()).toEqual(['recipe', 'recipe-variant'])
 		})
 
 		it('rebuilds ancestor index after a new doctype is added', () => {
@@ -419,7 +419,7 @@ describe('Registry class', { tags: ['unit'] }, () => {
 			// Dirty flag is set — next call should rebuild and include the new entry
 			const after = registry.getAncestorLinks('recipe-task')
 			expect(after).toHaveLength(2)
-			expect(after.map(a => a.doctype).sort()).toEqual(['recipe', 'recipe-variant'])
+			expect(after.map(a => a.doctype).toSorted()).toEqual(['recipe', 'recipe-variant'])
 		})
 	})
 

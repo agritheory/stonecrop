@@ -6,9 +6,9 @@ import type { KeyboardNavigationOptions, KeypressHandlers } from '../types'
 
 // helper functions
 const isVisible = (element: HTMLElement) => {
-	let isVisible = useElementVisibility(element).value
-	isVisible = isVisible && element.offsetHeight > 0
-	return isVisible
+	let visible = useElementVisibility(element).value
+	visible = visible && element.offsetHeight > 0
+	return visible
 }
 
 const isFocusable = (element: HTMLElement) => {
@@ -17,177 +17,189 @@ const isFocusable = (element: HTMLElement) => {
 
 // navigation functions
 const getUpCell = (event: KeyboardEvent) => {
-	const $target = event.target as HTMLElement
-	return _getUpCell($target)
+	if (!(event.target instanceof HTMLElement)) return undefined
+	return getUpCellEl(event.target)
 }
 
-const _getUpCell = (element: HTMLElement): HTMLElement | undefined => {
+const getUpCellEl = (element: HTMLElement): HTMLElement | undefined => {
 	let $upCell: HTMLElement | undefined
 	if (element instanceof HTMLTableCellElement) {
-		const $prevRow = element.parentElement?.previousElementSibling as HTMLTableRowElement
-		if ($prevRow) {
-			const $prevRowCells = Array.from($prevRow.children)
-			const $prevCell = $prevRowCells[element.cellIndex] as HTMLElement
-			if ($prevCell) {
-				$upCell = $prevCell
+		const $prevSibling = element.parentElement?.previousElementSibling
+		if ($prevSibling instanceof HTMLTableRowElement) {
+			const $prevRowCells = Array.from($prevSibling.children)
+			const $cellEl = $prevRowCells[element.cellIndex]
+			if ($cellEl instanceof HTMLElement) {
+				$upCell = $cellEl
 			}
 		}
 	} else if (element instanceof HTMLTableRowElement) {
-		const $prevRow = element.previousElementSibling as HTMLTableRowElement
-		if ($prevRow) {
-			$upCell = $prevRow
+		const $prevSibling = element.previousElementSibling
+		if ($prevSibling instanceof HTMLTableRowElement) {
+			$upCell = $prevSibling
 		}
 	} else {
 		// handle other contexts
 	}
 	if ($upCell && (!isFocusable($upCell) || !isVisible($upCell))) {
-		return _getUpCell($upCell)
+		return getUpCellEl($upCell)
 	}
 	return $upCell
 }
 
 const getTopCell = (event: KeyboardEvent) => {
-	const $target = event.target as HTMLElement
+	if (!(event.target instanceof HTMLElement)) return undefined
+	const $target = event.target
 	let $topCell: HTMLElement | undefined
 	if ($target instanceof HTMLTableCellElement) {
 		const $table = $target.parentElement?.parentElement
 		if ($table) {
 			const $firstRow = $table.firstElementChild
-			const $navCell = $firstRow?.children[$target.cellIndex] as HTMLElement
-			if ($navCell) {
-				$topCell = $navCell
+			const $navEl = $firstRow?.children[$target.cellIndex]
+			if ($navEl instanceof HTMLElement) {
+				$topCell = $navEl
 			}
 		}
 	} else if ($target instanceof HTMLTableRowElement) {
-		const $table = $target.parentElement as HTMLTableElement
-		if ($table) {
-			const $firstRow = $table.firstElementChild as HTMLTableRowElement
-			if ($firstRow) {
-				$topCell = $firstRow
+		const $parent = $target.parentElement
+		if ($parent) {
+			const $firstEl = $parent.firstElementChild
+			if ($firstEl instanceof HTMLTableRowElement) {
+				$topCell = $firstEl
 			}
 		}
 	} else {
 		// handle other contexts
 	}
 	if ($topCell && (!isFocusable($topCell) || !isVisible($topCell))) {
-		return _getDownCell($topCell)
+		return getDownCellEl($topCell)
 	}
 	return $topCell
 }
 
 const getDownCell = (event: KeyboardEvent) => {
-	const $target = event.target as HTMLElement
-	return _getDownCell($target)
+	if (!(event.target instanceof HTMLElement)) return undefined
+	return getDownCellEl(event.target)
 }
 
-const _getDownCell = (element: HTMLElement): HTMLElement | undefined => {
+const getDownCellEl = (element: HTMLElement): HTMLElement | undefined => {
 	let $downCell: HTMLElement | undefined
 	if (element instanceof HTMLTableCellElement) {
-		const $nextRow = element.parentElement?.nextElementSibling
-		if ($nextRow) {
-			const $nextRowCells = Array.from($nextRow.children)
-			const $nextCell = $nextRowCells[element.cellIndex] as HTMLElement
-			if ($nextCell) {
-				$downCell = $nextCell
+		const $nextSibling = element.parentElement?.nextElementSibling
+		if ($nextSibling) {
+			const $nextRowCells = Array.from($nextSibling.children)
+			const $cellEl = $nextRowCells[element.cellIndex]
+			if ($cellEl instanceof HTMLElement) {
+				$downCell = $cellEl
 			}
 		}
 	} else if (element instanceof HTMLTableRowElement) {
-		const $nextRow = element.nextElementSibling as HTMLTableRowElement
-		if ($nextRow) {
-			$downCell = $nextRow
+		const $nextSibling = element.nextElementSibling
+		if ($nextSibling instanceof HTMLTableRowElement) {
+			$downCell = $nextSibling
 		}
 	} else {
 		// handle other contexts
 	}
 	if ($downCell && (!isFocusable($downCell) || !isVisible($downCell))) {
-		return _getDownCell($downCell)
+		return getDownCellEl($downCell)
 	}
 	return $downCell
 }
 
 const getBottomCell = (event: KeyboardEvent) => {
-	const $target = event.target as HTMLElement
+	if (!(event.target instanceof HTMLElement)) return undefined
+	const $target = event.target
 	let $bottomCell: HTMLElement | undefined
 	if ($target instanceof HTMLTableCellElement) {
 		const $table = $target.parentElement?.parentElement
 		if ($table) {
 			const $lastRow = $table.lastElementChild
-			const $navCell = $lastRow?.children[$target.cellIndex] as HTMLElement
-			if ($navCell) {
-				$bottomCell = $navCell
+			const $navEl = $lastRow?.children[$target.cellIndex]
+			if ($navEl instanceof HTMLElement) {
+				$bottomCell = $navEl
 			}
 		}
 	} else if ($target instanceof HTMLTableRowElement) {
-		const $table = $target.parentElement as HTMLTableElement
-		if ($table) {
-			const $lastRow = $table.lastElementChild as HTMLTableRowElement
-			if ($lastRow) {
-				$bottomCell = $lastRow
+		const $parent = $target.parentElement
+		if ($parent) {
+			const $lastEl = $parent.lastElementChild
+			if ($lastEl instanceof HTMLTableRowElement) {
+				$bottomCell = $lastEl
 			}
 		}
 	} else {
 		// handle other contexts
 	}
 	if ($bottomCell && (!isFocusable($bottomCell) || !isVisible($bottomCell))) {
-		return _getUpCell($bottomCell)
+		return getUpCellEl($bottomCell)
 	}
 	return $bottomCell
 }
 
 const getPrevCell = (event: KeyboardEvent) => {
-	const $target = event.target as HTMLElement
-	return _getPrevCell($target)
+	if (!(event.target instanceof HTMLElement)) return undefined
+	return getPrevCellEl(event.target)
 }
 
-const _getPrevCell = (element: HTMLElement): HTMLElement | undefined => {
+const getPrevCellEl = (element: HTMLElement): HTMLElement | undefined => {
 	let $prevCell: HTMLElement | undefined
-	if (element.previousElementSibling) {
-		$prevCell = element.previousElementSibling as HTMLElement
+	const $prevSibling = element.previousElementSibling
+	if ($prevSibling instanceof HTMLElement) {
+		$prevCell = $prevSibling
 	} else {
 		const $prevRow = element.parentElement?.previousElementSibling
-		$prevCell = $prevRow?.lastElementChild as HTMLElement
+		const $lastEl = $prevRow?.lastElementChild
+		if ($lastEl instanceof HTMLElement) {
+			$prevCell = $lastEl
+		}
 	}
 	if ($prevCell && (!isFocusable($prevCell) || !isVisible($prevCell))) {
-		return _getPrevCell($prevCell)
+		return getPrevCellEl($prevCell)
 	}
 	return $prevCell
 }
 
 const getNextCell = (event: KeyboardEvent) => {
-	const $target = event.target as HTMLElement
-	return _getNextCell($target)
+	if (!(event.target instanceof HTMLElement)) return undefined
+	return getNextCellEl(event.target)
 }
 
-const _getNextCell = (element: HTMLElement): HTMLElement | undefined => {
+const getNextCellEl = (element: HTMLElement): HTMLElement | undefined => {
 	let $nextCell: HTMLElement | undefined
-	if (element.nextElementSibling) {
-		$nextCell = element.nextElementSibling as HTMLElement
+	const $nextSibling = element.nextElementSibling
+	if ($nextSibling instanceof HTMLElement) {
+		$nextCell = $nextSibling
 	} else {
 		const $nextRow = element.parentElement?.nextElementSibling
-		$nextCell = $nextRow?.firstElementChild as HTMLElement
+		const $firstEl = $nextRow?.firstElementChild
+		if ($firstEl instanceof HTMLElement) {
+			$nextCell = $firstEl
+		}
 	}
 	if ($nextCell && (!isFocusable($nextCell) || !isVisible($nextCell))) {
-		return _getNextCell($nextCell)
+		return getNextCellEl($nextCell)
 	}
 	return $nextCell
 }
 
 const getFirstCell = (event: KeyboardEvent) => {
-	const $target = event.target as HTMLElement
-	const $parent = $target.parentElement
-	const $firstCell = $parent?.firstElementChild as HTMLElement | null
+	if (!(event.target instanceof HTMLElement)) return undefined
+	const $parent = event.target.parentElement
+	const $firstEl = $parent?.firstElementChild
+	const $firstCell = $firstEl instanceof HTMLElement ? $firstEl : null
 	if ($firstCell && (!isFocusable($firstCell) || !isVisible($firstCell))) {
-		return _getNextCell($firstCell)
+		return getNextCellEl($firstCell)
 	}
 	return $firstCell
 }
 
 const getLastCell = (event: KeyboardEvent) => {
-	const $target = event.target as HTMLElement
-	const $parent = $target.parentElement
-	const $lastCell = $parent?.lastElementChild as HTMLElement | null
+	if (!(event.target instanceof HTMLElement)) return undefined
+	const $parent = event.target.parentElement
+	const $lastEl = $parent?.lastElementChild
+	const $lastCell = $lastEl instanceof HTMLElement ? $lastEl : null
 	if ($lastCell && (!isFocusable($lastCell) || !isVisible($lastCell))) {
-		return _getPrevCell($lastCell)
+		return getPrevCellEl($lastCell)
 	}
 	return $lastCell
 }
@@ -281,7 +293,8 @@ export const defaultKeypressHandlers: KeypressHandlers = {
 		}
 	},
 	'keydown.enter': (event: KeyboardEvent) => {
-		const $target = event.target as HTMLElement
+		if (!(event.target instanceof HTMLElement)) return
+		const $target = event.target
 		if ($target instanceof HTMLTableCellElement) {
 			event.preventDefault()
 			event.stopPropagation()
@@ -294,7 +307,8 @@ export const defaultKeypressHandlers: KeypressHandlers = {
 		}
 	},
 	'keydown.shift.enter': (event: KeyboardEvent) => {
-		const $target = event.target as HTMLElement
+		if (!(event.target instanceof HTMLElement)) return
+		const $target = event.target
 		if ($target instanceof HTMLTableCellElement) {
 			event.preventDefault()
 			event.stopPropagation()
@@ -333,25 +347,29 @@ export const defaultKeypressHandlers: KeypressHandlers = {
 }
 
 /**
+ * Gets the parent element from a keyboard navigation option.
+ * @internal
+ */
+function getParentElement(option: KeyboardNavigationOptions): HTMLElement | null {
+	let $parent: HTMLElement | null = null
+	if (option.parent) {
+		if (typeof option.parent === 'string') {
+			$parent = document.querySelector(option.parent)
+		} else if (option.parent instanceof HTMLElement) {
+			$parent = option.parent
+		} else {
+			$parent = option.parent.value
+		}
+	}
+	return $parent
+}
+
+/**
  * Keyboard navigation composable
  * @param options - Keyboard navigation options
  * @public
  */
 export function useKeyboardNav(options: KeyboardNavigationOptions[]) {
-	const getParentElement = (option: KeyboardNavigationOptions) => {
-		let $parent: HTMLElement | null = null
-		if (option.parent) {
-			if (typeof option.parent === 'string') {
-				$parent = document.querySelector(option.parent)
-			} else if (option.parent instanceof HTMLElement) {
-				$parent = option.parent
-			} else {
-				$parent = option.parent.value
-			}
-		}
-		return $parent
-	}
-
 	const getSelectorsFromOption = (option: KeyboardNavigationOptions) => {
 		// assumes that option.selectors is provided
 		const $parent = getParentElement(option)
@@ -365,6 +383,7 @@ export function useKeyboardNav(options: KeyboardNavigationOptions[]) {
 				if (element instanceof HTMLElement) {
 					selectors.push(element)
 				} else {
+					// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Vue component $el is typed as any; shape guaranteed by VNode contract
 					selectors.push(element.$el as HTMLElement)
 				}
 			}
@@ -376,6 +395,7 @@ export function useKeyboardNav(options: KeyboardNavigationOptions[]) {
 					if (element instanceof HTMLElement) {
 						selectors.push(element)
 					} else {
+						// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Vue component $el is typed as any; shape guaranteed by VNode contract
 						selectors.push(element.$el as HTMLElement)
 					}
 				}
@@ -393,7 +413,7 @@ export function useKeyboardNav(options: KeyboardNavigationOptions[]) {
 			selectors = getSelectorsFromOption(option)
 		} else if ($parent) {
 			// TODO: what should happen if no parent or selectors are provided?
-			const $children = Array.from($parent.children) as HTMLElement[]
+			const $children = Array.from($parent.children).filter((el): el is HTMLElement => el instanceof HTMLElement)
 			selectors = $children.filter(selector => {
 				// ignore elements not in the tab order or are not visible
 				return isFocusable(selector) && isVisible(selector)
@@ -419,9 +439,9 @@ export function useKeyboardNav(options: KeyboardNavigationOptions[]) {
 
 					// check if the handler has modifiers, and if the modifier is active;
 					// this is to ensure exact key-press matches
-					const hasModifier = keys.filter(key => modifierKeys.includes(key))
-					const isModifierActive = modifierKeys.some(key => {
-						const modifierKey = key.charAt(0).toUpperCase() + key.slice(1)
+					const hasModifier = keys.filter(k => modifierKeys.includes(k))
+					const isModifierActive = modifierKeys.some(mk => {
+						const modifierKey = mk.charAt(0).toUpperCase() + mk.slice(1)
 						return event.getModifierState(modifierKey)
 					})
 

@@ -36,6 +36,8 @@ import { onClickOutside } from '@vueuse/core'
 import ADateSelection from './ADateSelection.vue'
 import type { ComponentProps } from '../../types'
 
+const fmt = (d: string) => new Date(d).toLocaleDateString()
+
 const { label = 'Date Range', mode, uuid, validation = { errorMessage: '&nbsp;' } } = defineProps<ComponentProps>()
 
 export interface DateRangeValue {
@@ -75,7 +77,6 @@ const displayValue = computed(() => {
 	const s = modelValue.value.start_date
 	const e = modelValue.value.end_date
 	if (!s && !e) return ''
-	const fmt = (d: string) => new Date(d).toLocaleDateString()
 	if (s && e) return `${fmt(s)} — ${fmt(e)}`
 	if (s) return `From ${fmt(s)}`
 	return `Until ${fmt(e!)}`

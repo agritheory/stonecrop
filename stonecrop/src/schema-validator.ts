@@ -80,6 +80,7 @@ export class SchemaValidator {
 		// Validate action registration
 		if (this.options.validateActions && actions) {
 			const actionsMap = actions instanceof Map ? actions : actions.toObject()
+			// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- toObject() returns plain object; runtime-safe cast for Map<string, string[]>
 			issues.push(...this.validateActionRegistration(doctype, actionsMap as Record<string, string[]>))
 		}
 
@@ -130,10 +131,13 @@ export class SchemaValidator {
 
 			// Validate nested schemas (recursively)
 			if ('schema' in field) {
+				// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- 'schema' in field guard confirms property exists; SchemaTypes union narrowed at runtime
 				const nestedSchema = (field as { schema: unknown }).schema
+				// oxlint-disable typescript/no-unsafe-type-assertion -- Immutable List or plain array; toArray() returns SchemaTypes elements
 				const nestedArray = (
 					Array.isArray(nestedSchema) ? nestedSchema : (nestedSchema as { toArray?: () => unknown[] }).toArray?.() || []
 				) as SchemaTypes[]
+				// oxlint-enable typescript/no-unsafe-type-assertion
 				issues.push(...this.validateRequiredProperties(doctype, nestedArray))
 			}
 		}
@@ -149,6 +153,7 @@ export class SchemaValidator {
 		const issues: ValidationIssue[] = []
 
 		for (const field of schema) {
+			// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- 'fieldtype' in field guard confirms property exists; accessing unknown-typed fieldtype safely
 			const fieldtype = 'fieldtype' in field ? (field as { fieldtype: unknown }).fieldtype : undefined
 
 			// Check Link fields
@@ -194,10 +199,13 @@ export class SchemaValidator {
 
 			// Recursively check nested schemas
 			if ('schema' in field) {
+				// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- 'schema' in field guard confirms property exists; SchemaTypes union narrowed at runtime
 				const nestedSchema = (field as { schema: unknown }).schema
+				// oxlint-disable typescript/no-unsafe-type-assertion -- Immutable List or plain array; toArray() returns SchemaTypes elements
 				const nestedArray = (
 					Array.isArray(nestedSchema) ? nestedSchema : (nestedSchema as { toArray?: () => unknown[] }).toArray?.() || []
 				) as SchemaTypes[]
+				// oxlint-enable typescript/no-unsafe-type-assertion
 				issues.push(...this.validateLinkFields(doctype, nestedArray, registry))
 			}
 		}
@@ -371,6 +379,7 @@ export class SchemaValidator {
 					if (typeof transition === 'string') {
 						reachableStates.add(transition)
 					} else if (transition && typeof transition === 'object') {
+						// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- 'target' in transition guard confirms property; accessing unknown-typed target safely
 						const target = 'target' in transition ? (transition as { target: unknown }).target : undefined
 						if (typeof target === 'string') {
 							reachableStates.add(target)
@@ -425,6 +434,7 @@ export class SchemaValidator {
 			// Check each action name
 			for (const actionName of actionNames) {
 				// Check if action is registered globally
+				// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- introspecting FieldTriggerEngine private fields for validation; no public API for this check
 				const engine = triggerEngine as unknown as {
 					globalActions?: Map<string, unknown>
 					globalTransitionActions?: Map<string, unknown>

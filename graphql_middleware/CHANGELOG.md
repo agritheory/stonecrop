@@ -1,6 +1,20 @@
 # Change Log - @stonecrop/graphql-middleware
 
-This log was last generated on Tue, 02 Jun 2026 07:09:16 GMT and should not be manually modified.
+This log was last generated on Thu, 04 Jun 2026 09:33:09 GMT and should not be manually modified.
+
+## 0.13.6
+Thu, 04 Jun 2026 09:33:09 GMT
+
+### Patches
+
+- update SQL column building logic
+
+## 0.13.5
+Tue, 02 Jun 2026 11:07:21 GMT
+
+### Patches
+
+- migrate linter from eslint to oxlint
 
 ## 0.13.4
 Tue, 02 Jun 2026 07:09:16 GMT

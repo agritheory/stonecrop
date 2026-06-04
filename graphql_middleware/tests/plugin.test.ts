@@ -76,13 +76,13 @@ describe('stonecrop field plans', { tags: ['unit', 'graphql'] }, () => {
 	})
 
 	it('stonecropRecord has a Grafast plan function', () => {
-		const field = schema.getQueryType()!.getFields()!['stonecropRecord']
+		const field = schema.getQueryType()!.getFields()['stonecropRecord']
 		const planFn = (field.extensions as any)?.grafast?.plan
 		expect(typeof planFn).toBe('function')
 	})
 
 	it('stonecropRecord plan function exists and schema builds without executor option', () => {
-		const field = schema.getQueryType()!.getFields()!['stonecropRecord']
+		const field = schema.getQueryType()!.getFields()['stonecropRecord']
 		const planFn = (field.extensions as any)?.grafast?.plan
 		expect(typeof planFn).toBe('function')
 		// NOTE: Calling the plan function directly outside the Grafast planning
@@ -91,7 +91,7 @@ describe('stonecrop field plans', { tags: ['unit', 'graphql'] }, () => {
 	})
 
 	it('stonecropRecords plan function exists and schema builds without executor option', () => {
-		const field = schema.getQueryType()!.getFields()!['stonecropRecords']
+		const field = schema.getQueryType()!.getFields()['stonecropRecords']
 		const planFn = (field.extensions as any)?.grafast?.plan
 		expect(typeof planFn).toBe('function')
 		// NOTE: Same as above — step type is verified via integration tests.

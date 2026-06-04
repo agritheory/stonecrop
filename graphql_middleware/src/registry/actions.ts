@@ -47,6 +47,7 @@ export function clearHandlers(): void {
  * Validate that all required fields are present in a record
  */
 const validateRequiredFields: ActionHandler = async (args, context) => {
+	// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- ActionHandler args are runtime-typed by GraphQL; first arg is always the record
 	const [record] = args as [Record<string, unknown>]
 	const { doctype } = context
 
@@ -68,6 +69,7 @@ const validateRequiredFields: ActionHandler = async (args, context) => {
  * Validate field types match expected types
  */
 const validateFieldTypes: ActionHandler = async (args, context) => {
+	// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- ActionHandler args are runtime-typed by GraphQL; first arg is always the record
 	const [record] = args as [Record<string, unknown>]
 	const { doctype } = context
 

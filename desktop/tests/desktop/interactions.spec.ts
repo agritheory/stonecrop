@@ -481,11 +481,10 @@ describe('Desktop – handleDelete edge cases', { tags: ['component'] }, () => {
 		await nextTick()
 
 		const methods = (wrapper.vm as any).$.provides?.desktopMethods
-		if (methods?.handleDelete) {
-			await methods.handleDelete()
-			await nextTick()
-			expect(wrapper.emitted('action')).toBeFalsy()
-		}
+		expect(methods?.handleDelete).toBeDefined()
+		await methods.handleDelete()
+		await nextTick()
+		expect(wrapper.emitted('action')).toBeFalsy()
 	})
 
 	it('uses native confirm when no confirmFn is provided', async () => {
@@ -520,12 +519,11 @@ describe('Desktop – handleDelete edge cases', { tags: ['component'] }, () => {
 		await nextTick()
 
 		const methods = (wrapper.vm as any).$.provides?.desktopMethods
-		if (methods?.handleDelete) {
-			await methods.handleDelete('rec-1')
-			await nextTick()
-			expect(confirmSpy).toHaveBeenCalled()
-			expect(wrapper.emitted('action')).toBeFalsy()
-		}
+		expect(methods?.handleDelete).toBeDefined()
+		await methods.handleDelete('rec-1')
+		await nextTick()
+		expect(confirmSpy).toHaveBeenCalled()
+		expect(wrapper.emitted('action')).toBeFalsy()
 
 		confirmSpy.mockRestore()
 	})

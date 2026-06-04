@@ -1099,7 +1099,7 @@ export type LazyLink = {
     loaded: Ref<boolean>;
     error: Ref<Error | null>;
     reload: () => Promise<void>;
-    data: ComputedRef<any>;
+    data: ComputedRef;
 };
 ```
 

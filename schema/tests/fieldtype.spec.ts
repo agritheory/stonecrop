@@ -110,4 +110,34 @@ describe('fieldtype', { tags: ['unit'] }, () => {
 			expect(resolveComponent('LongText')).toBe('ATextboxInput') // known → specific component
 		})
 	})
+
+	describe('Fieldset fieldtype', () => {
+		it('is in BUILTIN_FIELD_TYPES', () => {
+			expect(BUILTIN_FIELD_TYPES).toContain('Fieldset')
+			expect(isBuiltinFieldType('Fieldset')).toBe(true)
+		})
+
+		it('maps to AFieldset component', () => {
+			expect(getDefaultComponent('Fieldset')).toBe('AFieldset')
+			expect(resolveComponent('Fieldset')).toBe('AFieldset')
+		})
+
+		it('has a TYPE_MAP entry that maps to itself', () => {
+			expect(TYPE_MAP['Fieldset']).toBeDefined()
+			expect(TYPE_MAP['Fieldset'].fieldtype).toBe('Fieldset')
+			expect(TYPE_MAP['Fieldset'].component).toBe('AFieldset')
+		})
+	})
+
+	describe('Display fieldtype', () => {
+		it('is in BUILTIN_FIELD_TYPES', () => {
+			expect(BUILTIN_FIELD_TYPES).toContain('Display')
+			expect(isBuiltinFieldType('Display')).toBe(true)
+		})
+
+		it('has a TYPE_MAP entry that maps to itself', () => {
+			expect(TYPE_MAP['Display']).toBeDefined()
+			expect(TYPE_MAP['Display'].fieldtype).toBe('Display')
+		})
+	})
 })

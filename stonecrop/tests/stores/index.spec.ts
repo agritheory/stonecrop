@@ -9,7 +9,7 @@ import { HST, HSTProxy, createHST } from '../../src/stores/hst.js'
 
 describe('Stonecrop Stores', { tags: ['unit'] }, () => {
 	let registry: Registry
-	let stonecrop: Stonecrop
+	let _stonecrop: Stonecrop
 
 	beforeEach(() => {
 		// Reset the singletons
@@ -17,7 +17,7 @@ describe('Stonecrop Stores', { tags: ['unit'] }, () => {
 		;(Stonecrop as any)._root = undefined
 
 		registry = new Registry()
-		stonecrop = new Stonecrop(registry)
+		_stonecrop = new Stonecrop(registry)
 	})
 
 	describe('stores/index exports', () => {

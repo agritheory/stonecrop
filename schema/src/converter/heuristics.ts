@@ -16,6 +16,7 @@ import {
 	isObjectType,
 	isListType,
 	isNonNullType,
+	isNamedType,
 	type GraphQLObjectType,
 	type GraphQLField,
 	type GraphQLOutputType,
@@ -158,8 +159,11 @@ function unwrapType(type: GraphQLOutputType): {
 		}
 	}
 
-	// At this point, current should be a named type
-	return { namedType: current as GraphQLNamedType, required, isList }
+	// At this point, current should be a named type (scalar, enum, or object)
+	if (!isNamedType(current)) {
+		throw new Error(`Expected a named GraphQL type, got: ${String(current)}`)
+	}
+	return { namedType: current, required, isList }
 }
 
 /**
@@ -292,7 +296,7 @@ export function classifyFieldType(
 			base._isLink = true
 			base.options = toSlug(connectionNodeTypeName)
 			base.cardinality = 'noneOrMany'
-			delete (base as any).fieldtype
+			delete base.fieldtype
 			return base
 		}
 
@@ -302,7 +306,7 @@ export function classifyFieldType(
 			base._isLink = true
 			base.options = toSlug(namedType.name)
 			base.cardinality = 'noneOrMany'
-			delete (base as any).fieldtype
+			delete base.fieldtype
 			return base
 		}
 

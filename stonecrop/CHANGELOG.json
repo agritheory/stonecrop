@@ -2,6 +2,30 @@
   "name": "@stonecrop/stonecrop",
   "entries": [
     {
+      "version": "0.13.6",
+      "tag": "@stonecrop/stonecrop_v0.13.6",
+      "date": "Thu, 04 Jun 2026 09:33:09 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "update tests to include fieldset fieldtype"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.13.5",
+      "tag": "@stonecrop/stonecrop_v0.13.5",
+      "date": "Tue, 02 Jun 2026 11:07:21 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "migrate linter from eslint to oxlint"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.13.4",
       "tag": "@stonecrop/stonecrop_v0.13.4",
       "date": "Tue, 02 Jun 2026 07:09:16 GMT",

@@ -36,7 +36,7 @@ export const createDebugPlugin = (options: DebugPluginOptions = {}): GraphileCon
 	const wrapField = (typeName: string, fieldName: string) => ({
 		plan: (plan: () => any) => {
 			if (logPlans) {
-				// eslint-disable-next-line no-console
+				// oxlint-disable-next-line no-console
 				console.log(`[@stonecrop/graphql-middleware] Building plan for ${typeName}.${fieldName}`)
 			}
 
@@ -44,7 +44,7 @@ export const createDebugPlugin = (options: DebugPluginOptions = {}): GraphileCon
 			const $result = plan()
 
 			if (logTiming) {
-				// eslint-disable-next-line no-console
+				// oxlint-disable-next-line no-console
 				console.log(
 					`[@stonecrop/graphql-middleware] Plan built for ${typeName}.${fieldName} in ${Date.now() - start}ms`
 				)

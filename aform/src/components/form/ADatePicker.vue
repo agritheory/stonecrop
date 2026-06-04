@@ -130,9 +130,9 @@ const getEndDate = computed(() => {
 Functions
 *******************/
 
-const parseDateToString = (date: Date | null) => {
-	if (!validateDate(date)) return ''
-	return date.getMonth() + 1 + '/' + date.getDate() + '/' + date.getFullYear()
+const parseDateToString = (dateValue: Date | null) => {
+	if (!validateDate(dateValue)) return ''
+	return dateValue.getMonth() + 1 + '/' + dateValue.getDate() + '/' + dateValue.getFullYear()
 }
 
 const isTodaysDate = (day: string | number | Date): boolean => {
@@ -264,8 +264,8 @@ const testDateOrder = () => {
 		[start_date.value, end_date.value] = [end, start]
 }
 
-const validateDate = (date: unknown): date is Date => {
-	return date instanceof Date && !isNaN(date.getTime())
+const validateDate = (dateValue: unknown): dateValue is Date => {
+	return dateValue instanceof Date && !isNaN(dateValue.getTime())
 }
 
 const enterInputDate = () => {
@@ -325,16 +325,14 @@ onMounted(async () => {
 // 		selectors: 'td',
 // 		handlers: {
 // 			...defaultKeypressHandlers,
-// 			...{
-// 				'keydown.pageup': previousMonth,
-// 				'keydown.shift.pageup': previousYear,
-// 				'keydown.pagedown': nextMonth,
-// 				'keydown.shift.pagedown': nextYear,
-// 				// TODO: this is a hack to override the stonecrop enter handler;
-// 				// store context inside the component so that handlers can be setup consistently
+// 			'keydown.pageup': previousMonth,
+// 			'keydown.shift.pageup': previousYear,
+// 			'keydown.pagedown': nextMonth,
+// 			'keydown.shift.pagedown': nextYear,
+// 			// TODO: this is a hack to override the stonecrop enter handler;
+// 			// store context inside the component so that handlers can be setup consistently
 
-// 				'keydown.enter': () => {}, // select this date
-// 			},
+// 			'keydown.enter': () => {}, // select this date
 // 		},
 // 	},
 // ])

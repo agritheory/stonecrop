@@ -6,21 +6,21 @@ import ACodeEditor from '../src/components/ACodeEditor.vue'
 // vi.mock is hoisted above module-level declarations — vi.hoisted() ensures
 // mockEditorInstance and mockMonaco are defined before the factory runs.
 const { mockEditorInstance, mockMonaco } = vi.hoisted(() => {
-	const mockEditorInstance = {
+	const hoistedEditorInstance = {
 		getValue: vi.fn(() => ''),
 		setValue: vi.fn(),
 		updateOptions: vi.fn(),
 		onDidChangeModelContent: vi.fn(_cb => ({ dispose: vi.fn() })),
 		dispose: vi.fn(),
 	}
-	const mockMonaco = {
+	const hoistedMonaco = {
 		editor: {
-			create: vi.fn(() => mockEditorInstance),
+			create: vi.fn(() => hoistedEditorInstance),
 			defineTheme: vi.fn(),
 			setTheme: vi.fn(),
 		},
 	}
-	return { mockEditorInstance, mockMonaco }
+	return { mockEditorInstance: hoistedEditorInstance, mockMonaco: hoistedMonaco }
 })
 
 vi.mock('@monaco-editor/loader', () => ({

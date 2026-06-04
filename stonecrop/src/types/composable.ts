@@ -284,5 +284,5 @@ export type LazyLink = {
 	/** Explicitly trigger a fetch for this link */
 	reload: () => Promise<void>
 	/** The loaded data from HST, or undefined if not loaded */
-	data: ComputedRef<any>
+	data: ComputedRef
 }

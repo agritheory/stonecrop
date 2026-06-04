@@ -3,9 +3,6 @@
 </template>
 
 <script setup lang="ts">
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-
 import onScan from 'onscan.js'
 import { onMounted, onUnmounted } from 'vue'
 
