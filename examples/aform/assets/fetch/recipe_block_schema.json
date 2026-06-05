@@ -3,21 +3,18 @@
 	"slug": "recipe-block",
 	"fields": [
 		{
-			"kind": "field",
 			"fieldname": "name",
 			"fieldtype": "Data",
 			"component": "ATextInput",
 			"label": "Recipe Name"
 		},
 		{
-			"kind": "field",
 			"fieldname": "description",
 			"fieldtype": "Data",
 			"component": "ATextInput",
 			"label": "Description"
 		},
 		{
-			"kind": "field",
 			"fieldname": "tasks",
 			"fieldtype": "Link",
 			"component": "ATable",
@@ -25,7 +22,6 @@
 			"options": "task"
 		},
 		{
-			"kind": "field",
 			"fieldname": "notes",
 			"fieldtype": "Link",
 			"component": "ATable",

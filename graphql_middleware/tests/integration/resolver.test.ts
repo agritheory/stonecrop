@@ -72,68 +72,6 @@ beforeAll(async () => {
 		ScWidget: {
 			name: 'ScWidget',
 			fields: [
-				{ kind: 'field', fieldname: 'id', fieldtype: 'PrimaryKey', label: 'ID' },
-				{
-					kind: 'fieldset',
-					fieldname: 'basicInfo_fieldset',
-					component: 'AFieldset',
-					schema: [
-						{ kind: 'field', fieldname: 'itemName', fieldtype: 'Data', label: 'Name' },
-						{ kind: 'field', fieldname: 'itemColor', fieldtype: 'Data', label: 'Color' },
-					],
-				},
-			],
-		},
-		ScPart: {
-			name: 'ScPart',
-			fields: [
-				{ kind: 'field', fieldname: 'id', fieldtype: 'PrimaryKey', label: 'ID' },
-				{ kind: 'field', fieldname: 'gadget_id', fieldtype: 'Data', label: 'Gadget ID' },
-				{ kind: 'field', fieldname: 'partName', fieldtype: 'Data', label: 'Part Name' },
-			],
-		},
-		ScGadget: {
-			name: 'ScGadget',
-			fields: [
-				{ kind: 'field', fieldname: 'id', fieldtype: 'PrimaryKey', label: 'ID' },
-				{
-					kind: 'fieldset',
-					fieldname: 'info_fieldset',
-					component: 'AFieldset',
-					schema: [
-						{ kind: 'field', fieldname: 'gadgetName', fieldtype: 'Data', label: 'Name' },
-						{ kind: 'field', fieldname: 'parts', fieldtype: 'Link', options: 'ScPart' },
-					],
-				},
-			],
-			links: {
-				parts: {
-					target: 'ScPart',
-					cardinality: 'noneOrMany' as const,
-					backlink: 'gadget_id',
-					fetch: { method: 'sync' as const },
-				},
-			},
-		},
-		ScProduct: {
-			name: 'ScProduct',
-			fields: [
-				{ kind: 'field', fieldname: 'id', fieldtype: 'PrimaryKey', label: 'ID' },
-				{
-					kind: 'fieldset',
-					fieldname: 'info_fieldset',
-					component: 'AFieldset',
-					schema: [
-						{ kind: 'field', fieldname: 'productName', fieldtype: 'Data', label: 'Name' },
-						{ kind: 'field', fieldname: 'price', fieldtype: 'Int', label: 'Price' },
-						{ kind: 'field', fieldname: 'priceDisplay', fieldtype: 'Data', mode: 'display', label: 'Formatted Price' },
-					],
-				},
-			],
-		},
-		ScWidget: {
-			name: 'ScWidget',
-			fields: [
 				{ fieldname: 'id', fieldtype: 'PrimaryKey', label: 'ID' },
 				{
 					fieldname: 'basicInfo_fieldset',

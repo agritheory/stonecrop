@@ -3,7 +3,6 @@
 	"slug": "order-item",
 	"fields": [
 		{
-			"kind": "field",
 			"fieldname": "id",
 			"fieldtype": "Data",
 			"label": "ID",
@@ -12,7 +11,6 @@
 			"hidden": true
 		},
 		{
-			"kind": "field",
 			"fieldname": "productId",
 			"fieldtype": "Data",
 			"label": "Product ID",
@@ -21,7 +19,6 @@
 			"width": "12ch"
 		},
 		{
-			"kind": "field",
 			"fieldname": "productName",
 			"fieldtype": "Data",
 			"label": "Product",
@@ -30,7 +27,6 @@
 			"width": "25ch"
 		},
 		{
-			"kind": "field",
 			"fieldname": "quantity",
 			"fieldtype": "Int",
 			"label": "Qty",
@@ -41,7 +37,6 @@
 			"align": "right"
 		},
 		{
-			"kind": "field",
 			"fieldname": "unitPrice",
 			"fieldtype": "Currency",
 			"label": "Unit Price",
@@ -51,7 +46,6 @@
 			"align": "right"
 		},
 		{
-			"kind": "field",
 			"fieldname": "total",
 			"fieldtype": "Currency",
 			"label": "Total",

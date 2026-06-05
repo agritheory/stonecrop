@@ -2,14 +2,12 @@
 	"schema": [
 		{
 			"label": "Username",
-			"kind": "field",
 			"fieldname": "username",
 			"fieldtype": "Data",
 			"required": true
 		},
 		{
 			"label": "Disabled",
-			"kind": "field",
 			"fieldname": "disabled",
 			"fieldtype": "Check",
 			"default": false

@@ -2,14 +2,12 @@
 	"name": "Order",
 	"fields": [
 		{
-			"kind": "field",
 			"fieldname": "id",
 			"fieldtype": "Data",
 			"label": "ID",
 			"required": true
 		},
 		{
-			"kind": "field",
 			"fieldname": "userId",
 			"fieldtype": "Link",
 			"label": "User",
@@ -19,7 +17,6 @@
 			}
 		},
 		{
-			"kind": "field",
 			"fieldname": "status",
 			"fieldtype": "Select",
 			"label": "Status",
@@ -29,20 +26,17 @@
 			}
 		},
 		{
-			"kind": "field",
 			"fieldname": "total",
 			"fieldtype": "Currency",
 			"label": "Total",
 			"required": true
 		},
 		{
-			"kind": "field",
 			"fieldname": "items",
 			"fieldtype": "JSON",
 			"label": "Items"
 		},
 		{
-			"kind": "field",
 			"fieldname": "createdAt",
 			"fieldtype": "Datetime",
 			"label": "Created At"

@@ -3,7 +3,6 @@
 	"slug": "customer_with_addresses",
 	"fields": [
 		{
-			"kind": "field",
 			"fieldname": "customer_name",
 			"fieldtype": "Data",
 			"component": "ATextInput",
@@ -11,14 +10,12 @@
 			"required": true
 		},
 		{
-			"kind": "field",
 			"fieldname": "email",
 			"fieldtype": "Data",
 			"component": "ATextInput",
 			"label": "Email"
 		},
 		{
-			"kind": "field",
 			"fieldname": "phone",
 			"fieldtype": "Data",
 			"component": "ATextInput",

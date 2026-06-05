@@ -20,7 +20,7 @@ scalar JSON
 """
 Field metadata from doctype schema
 """
-type FieldMeta {
+type StonecropField {
 	fieldname: String!
 	fieldtype: String!
 	label: String
@@ -58,7 +58,7 @@ Complete doctype metadata
 type DoctypeMeta {
 	name: String!
 	slug: String
-	fields: [FieldMeta!]!
+	fields: [StonecropField!]!
 	workflow: WorkflowMeta
 	inherits: String
 }

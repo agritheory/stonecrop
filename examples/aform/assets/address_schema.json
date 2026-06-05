@@ -3,28 +3,24 @@
 	"slug": "address",
 	"fields": [
 		{
-			"kind": "field",
 			"fieldname": "street",
 			"fieldtype": "Data",
 			"component": "ATextInput",
 			"label": "Street"
 		},
 		{
-			"kind": "field",
 			"fieldname": "city",
 			"fieldtype": "Data",
 			"component": "ATextInput",
 			"label": "City"
 		},
 		{
-			"kind": "field",
 			"fieldname": "state",
 			"fieldtype": "Data",
 			"component": "ATextInput",
 			"label": "State"
 		},
 		{
-			"kind": "field",
 			"fieldname": "zip_code",
 			"fieldtype": "Data",
 			"component": "ATextInput",

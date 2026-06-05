@@ -872,9 +872,18 @@ describe('DoctypeField — discriminated union boundaries', { tags: ['unit'] }, 
 		expect(result.success).toBe(false)
 	})
 
-	it('should reject a field object with no kind', () => {
-		const field = { fieldname: 'email', fieldtype: 'Data' }
-		const result = validateField(field)
-		expect(result.success).toBe(false)
+	it('should infer kind: field when fieldtype is present and schema/columns are absent', () => {
+		const parsed = parseField({ fieldname: 'email', fieldtype: 'Data' })
+		expect(parsed.kind).toBe('field')
+	})
+
+	it('should infer kind: fieldset when schema property is present', () => {
+		const parsed = parseField({ fieldname: 'details', schema: [] })
+		expect(parsed.kind).toBe('fieldset')
+	})
+
+	it('should infer kind: table when columns property is present', () => {
+		const parsed = parseField({ fieldname: 'line_items', columns: [{ fieldname: 'qty', fieldtype: 'Int' }] })
+		expect(parsed.kind).toBe('table')
 	})
 })

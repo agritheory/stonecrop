@@ -2,21 +2,18 @@
 	"name": "User",
 	"fields": [
 		{
-			"kind": "field",
 			"fieldname": "id",
 			"fieldtype": "Data",
 			"label": "ID",
 			"required": true
 		},
 		{
-			"kind": "field",
 			"fieldname": "name",
 			"fieldtype": "Data",
 			"label": "Name",
 			"required": true
 		},
 		{
-			"kind": "field",
 			"fieldname": "email",
 			"fieldtype": "Data",
 			"label": "Email",
@@ -26,7 +23,6 @@
 			}
 		},
 		{
-			"kind": "field",
 			"fieldname": "role",
 			"fieldtype": "Select",
 			"label": "Role",
@@ -36,13 +32,11 @@
 			}
 		},
 		{
-			"kind": "field",
 			"fieldname": "createdAt",
 			"fieldtype": "Datetime",
 			"label": "Created At"
 		},
 		{
-			"kind": "field",
 			"fieldname": "updatedAt",
 			"fieldtype": "Datetime",
 			"label": "Updated At"

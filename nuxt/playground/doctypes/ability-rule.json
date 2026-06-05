@@ -1,7 +1,6 @@
 {
 	"schema": [
 		{
-			"kind": "field",
 			"fieldname": "role_id",
 			"label": "Role",
 			"fieldtype": "Link",
@@ -9,7 +8,6 @@
 			"required": true
 		},
 		{
-			"kind": "field",
 			"fieldname": "doctype",
 			"label": "DocType",
 			"fieldtype": "Link",
@@ -17,7 +15,6 @@
 			"required": true
 		},
 		{
-			"kind": "field",
 			"fieldname": "action",
 			"label": "Action",
 			"fieldtype": "Select",
@@ -25,7 +22,6 @@
 			"required": true
 		},
 		{
-			"kind": "field",
 			"fieldname": "subject",
 			"label": "Subject",
 			"fieldtype": "Select",
@@ -34,21 +30,18 @@
 			"default": "all"
 		},
 		{
-			"kind": "field",
 			"fieldname": "conditions",
 			"label": "Conditions (JSON)",
 			"fieldtype": "Code",
 			"options": "JSON"
 		},
 		{
-			"kind": "field",
 			"fieldname": "inverted",
 			"label": "Inverted (Deny)",
 			"fieldtype": "Check",
 			"default": false
 		},
 		{
-			"kind": "field",
 			"fieldname": "active",
 			"label": "Active",
 			"fieldtype": "Check",

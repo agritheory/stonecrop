@@ -3,7 +3,6 @@
 	"slug": "recipe-task",
 	"fields": [
 		{
-			"kind": "field",
 			"fieldname": "name",
 			"fieldtype": "Data",
 			"component": "ATextInput",
@@ -11,14 +10,12 @@
 			"required": true
 		},
 		{
-			"kind": "field",
 			"fieldname": "description",
 			"fieldtype": "Data",
 			"component": "ATextInput",
 			"label": "Description"
 		},
 		{
-			"kind": "field",
 			"fieldname": "recipe",
 			"fieldtype": "Link",
 			"component": "AForm",

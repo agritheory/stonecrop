@@ -1,20 +1,17 @@
 {
 	"schema": [
 		{
-			"kind": "field",
 			"fieldname": "profile_name",
 			"label": "Profile Name",
 			"fieldtype": "Data",
 			"required": true
 		},
 		{
-			"kind": "field",
 			"fieldname": "description",
 			"label": "Description",
 			"fieldtype": "Text"
 		},
 		{
-			"kind": "field",
 			"fieldname": "active",
 			"label": "Active",
 			"fieldtype": "Check",

@@ -3,14 +3,12 @@
 	"slug": "task",
 	"fields": [
 		{
-			"kind": "field",
 			"fieldname": "name",
 			"fieldtype": "Data",
 			"component": "ATextInput",
 			"label": "Task Name"
 		},
 		{
-			"kind": "field",
 			"fieldname": "status",
 			"fieldtype": "Data",
 			"component": "ATextInput",

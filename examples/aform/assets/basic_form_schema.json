@@ -1,48 +1,41 @@
 [
 	{
-		"kind": "field",
 		"fieldname": "first_name",
 		"fieldtype": "Data",
 		"component": "ATextInput",
 		"label": "First Name"
 	},
 	{
-		"kind": "field",
 		"fieldname": "last_name",
 		"fieldtype": "Data",
 		"component": "ATextInput",
 		"label": "Last Name"
 	},
 	{
-		"kind": "field",
 		"fieldname": "enabled",
 		"fieldtype": "Check",
 		"component": "ACheckbox",
 		"label": "Enabled"
 	},
 	{
-		"kind": "field",
 		"fieldname": "age",
 		"fieldtype": "Int",
 		"component": "ANumericInput",
 		"label": "Age"
 	},
 	{
-		"kind": "field",
 		"fieldname": "date",
 		"fieldtype": "Date",
 		"component": "ATextInput",
 		"label": "Date"
 	},
 	{
-		"kind": "field",
 		"fieldname": "card",
 		"fieldtype": "Data",
 		"component": "ATextInput",
 		"label": "Card"
 	},
 	{
-		"kind": "field",
 		"fieldname": "phone",
 		"fieldtype": "Data",
 		"component": "ATextInput",
@@ -50,7 +43,6 @@
 		"mask": "(locale) => { if (locale === 'en-US') { return '(###) ###-####' } else if (locale === 'en-IN') { return '####-######'} }"
 	},
 	{
-		"kind": "field",
 		"fieldname": "attach_file",
 		"fieldtype": "Attach",
 		"component": "AFileAttach",

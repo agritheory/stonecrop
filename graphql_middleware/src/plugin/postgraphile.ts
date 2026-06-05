@@ -411,14 +411,15 @@ function flattenFields(fields: DoctypeField[]): (ValueField | TableField)[] {
 
 /**
  * Derive quoted SQL column entries from a flat field array.
- * Skips non-scalar fields (kind !== 'field'), display-mode fields, and
- * Link fields with an explicit links declaration.
+ * Skips non-scalar fields (kind !== 'field'), display-mode fields (both
+ * `mode: 'display'` and `fieldtype: 'Display'` have no backing DB column),
+ * and Link fields with an explicit links declaration.
  */
 function collectColumns(fields: DoctypeField[], linkedFieldnames: Set<string>): string[] {
 	const columns: string[] = []
 	for (const f of flattenFields(fields)) {
 		if (f.kind !== 'field') continue
-		if (f.mode === 'display') continue
+		if (f.mode === 'display' || f.fieldtype === 'Display') continue
 		if (f.fieldtype === 'Link' && linkedFieldnames.has(f.fieldname)) continue
 		const col = camelToSnake(f.fieldname)
 		columns.push(col !== f.fieldname ? `"${col}" AS "${f.fieldname}"` : `"${f.fieldname}"`)

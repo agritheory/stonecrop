@@ -153,6 +153,28 @@ export type DoctypeField = ValueField | FieldsetField | TableField
 // Zod runtime validation schemas
 // ---------------------------------------------------------------------------
 
+/**
+ * Infers the `kind` discriminant from the structural properties of a raw field
+ * object, then injects it if absent. This allows authored JSON to omit `kind`
+ * entirely — authors write only `fieldtype`, `schema`, or `columns`.
+ *
+ * Rules (applied in order):
+ *   has `schema`  → fieldset
+ *   has `columns` → table
+ *   otherwise     → field (value-holding scalar or link)
+ *
+ * Objects that already carry `kind` pass through unchanged (backward-compatible).
+ */
+function injectKind(data: unknown): unknown {
+	if (typeof data !== 'object' || data === null || Array.isArray(data)) return data
+	// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- safe: non-null, non-array object verified by guards above
+	const obj = data as Record<string, unknown>
+	if ('kind' in obj) return data
+	if ('schema' in obj) return { kind: 'fieldset', ...obj }
+	if ('columns' in obj) return { kind: 'table', ...obj }
+	return { kind: 'field', ...obj }
+}
+
 function createDoctypeFieldSchemas() {
 	const ValueFieldSchema = z
 		.object({
@@ -210,7 +232,13 @@ function createDoctypeFieldSchemas() {
 		})
 		.meta({ title: 'FieldsetField' })
 
-	DoctypeFieldSchema = z.discriminatedUnion('kind', [ValueFieldSchema, FieldsetFieldSchema, TableFieldSchema])
+	const rawUnion = z.discriminatedUnion('kind', [ValueFieldSchema, FieldsetFieldSchema, TableFieldSchema])
+
+	// Overwrite the placeholder with the preprocessed schema. Because z.lazy captures
+	// DoctypeFieldSchema by closure reference, the lazy callback in FieldsetFieldSchema
+	// will resolve to this preprocessed version — so nested fieldsets also inject `kind`.
+	// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- ZodPipe output is DoctypeField; same pattern as the z.never() placeholder above
+	DoctypeFieldSchema = z.preprocess(injectKind, rawUnion) as unknown as z.ZodType<DoctypeField>
 
 	return { ValueFieldSchema, TableFieldSchema, FieldsetFieldSchema, DoctypeFieldSchema }
 }

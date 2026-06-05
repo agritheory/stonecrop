@@ -3,14 +3,12 @@
 	"slug": "cardinality-demo",
 	"fields": [
 		{
-			"kind": "field",
 			"fieldname": "name",
 			"fieldtype": "Data",
 			"component": "ATextInput",
 			"label": "Name"
 		},
 		{
-			"kind": "field",
 			"fieldname": "required_task",
 			"fieldtype": "Link",
 			"component": "AForm",
@@ -18,7 +16,6 @@
 			"options": "recipe-task"
 		},
 		{
-			"kind": "field",
 			"fieldname": "optional_task",
 			"fieldtype": "Link",
 			"component": "AForm",
@@ -26,7 +23,6 @@
 			"options": "recipe-task"
 		},
 		{
-			"kind": "field",
 			"fieldname": "optional_tasks",
 			"fieldtype": "Link",
 			"component": "ATable",
@@ -34,7 +30,6 @@
 			"options": "recipe-task"
 		},
 		{
-			"kind": "field",
 			"fieldname": "required_tasks",
 			"fieldtype": "Link",
 			"component": "ATable",

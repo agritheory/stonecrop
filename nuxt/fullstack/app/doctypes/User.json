@@ -3,7 +3,6 @@
 	"slug": "user",
 	"fields": [
 		{
-			"kind": "field",
 			"fieldname": "id",
 			"label": "ID",
 			"component": "ATextInput",
@@ -11,7 +10,6 @@
 			"mode": "display"
 		},
 		{
-			"kind": "field",
 			"fieldname": "email",
 			"label": "Email",
 			"component": "ATextInput",
@@ -19,7 +17,6 @@
 			"required": true
 		},
 		{
-			"kind": "field",
 			"fieldname": "name",
 			"label": "Name",
 			"component": "ATextInput",
@@ -27,7 +24,6 @@
 			"required": true
 		},
 		{
-			"kind": "field",
 			"fieldname": "role",
 			"label": "Role",
 			"component": "ADropdown",
@@ -36,7 +32,6 @@
 			"default": "USER"
 		},
 		{
-			"kind": "field",
 			"fieldname": "status",
 			"label": "Status",
 			"component": "ADropdown",
@@ -45,7 +40,6 @@
 			"default": "PENDING"
 		},
 		{
-			"kind": "field",
 			"fieldname": "createdAt",
 			"label": "Created At",
 			"component": "ATextInput",
@@ -53,7 +47,6 @@
 			"mode": "display"
 		},
 		{
-			"kind": "field",
 			"fieldname": "updatedAt",
 			"label": "Updated At",
 			"component": "ATextInput",
@@ -61,7 +54,6 @@
 			"mode": "display"
 		},
 		{
-			"kind": "field",
 			"fieldname": "lastLogin",
 			"label": "Last Login",
 			"component": "ATextInput",
@@ -69,14 +61,12 @@
 			"mode": "display"
 		},
 		{
-			"kind": "field",
 			"fieldname": "bio",
 			"label": "Bio",
 			"component": "ATextarea",
 			"fieldtype": "Text"
 		},
 		{
-			"kind": "field",
 			"fieldname": "phone",
 			"label": "Phone",
 			"component": "ATextInput",
