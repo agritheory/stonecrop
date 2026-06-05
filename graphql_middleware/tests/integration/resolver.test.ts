@@ -131,6 +131,68 @@ beforeAll(async () => {
 				},
 			],
 		},
+		ScWidget: {
+			name: 'ScWidget',
+			fields: [
+				{ fieldname: 'id', fieldtype: 'PrimaryKey', label: 'ID' },
+				{
+					fieldname: 'basicInfo_fieldset',
+					fieldtype: 'Fieldset',
+					component: 'AFieldset',
+					schema: [
+						{ fieldname: 'itemName', fieldtype: 'Data', label: 'Name' },
+						{ fieldname: 'itemColor', fieldtype: 'Data', label: 'Color' },
+					],
+				},
+			],
+		},
+		ScPart: {
+			name: 'ScPart',
+			fields: [
+				{ fieldname: 'id', fieldtype: 'PrimaryKey', label: 'ID' },
+				{ fieldname: 'gadget_id', fieldtype: 'Data', label: 'Gadget ID' },
+				{ fieldname: 'partName', fieldtype: 'Data', label: 'Part Name' },
+			],
+		},
+		ScGadget: {
+			name: 'ScGadget',
+			fields: [
+				{ fieldname: 'id', fieldtype: 'PrimaryKey', label: 'ID' },
+				{
+					fieldname: 'info_fieldset',
+					fieldtype: 'Fieldset',
+					component: 'AFieldset',
+					schema: [
+						{ fieldname: 'gadgetName', fieldtype: 'Data', label: 'Name' },
+						{ fieldname: 'parts', fieldtype: 'Link', options: 'ScPart' },
+					],
+				},
+			],
+			links: {
+				parts: {
+					target: 'ScPart',
+					cardinality: 'noneOrMany' as const,
+					backlink: 'gadget_id',
+					fetch: { method: 'sync' as const },
+				},
+			},
+		},
+		ScProduct: {
+			name: 'ScProduct',
+			fields: [
+				{ fieldname: 'id', fieldtype: 'PrimaryKey', label: 'ID' },
+				{
+					fieldname: 'info_fieldset',
+					fieldtype: 'Fieldset',
+					component: 'AFieldset',
+					schema: [
+						{ fieldname: 'productName', fieldtype: 'Data', label: 'Name' },
+						{ fieldname: 'price', fieldtype: 'Int', label: 'Price' },
+						{ fieldname: 'priceDisplay', fieldtype: 'Display', label: 'Formatted Price' },
+					],
+				},
+			],
+		},
 	})
 
 	pool = new Pool({ connectionString: databaseUrl, max: 1 })
