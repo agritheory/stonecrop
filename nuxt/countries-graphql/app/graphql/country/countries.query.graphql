@@ -1,5 +1,5 @@
 query Countries($filter: CountryFilterInput) {
-  countries(filter: $filter) {
-    ...CountryFields
-  }
+	countries(filter: $filter) {
+		...CountryFields
+	}
 }

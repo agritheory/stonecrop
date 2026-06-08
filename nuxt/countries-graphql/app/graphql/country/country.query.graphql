@@ -1,5 +1,5 @@
 query Country($code: ID!) {
-  country(code: $code) {
-    ...CountryFields
-  }
+	country(code: $code) {
+		...CountryFields
+	}
 }

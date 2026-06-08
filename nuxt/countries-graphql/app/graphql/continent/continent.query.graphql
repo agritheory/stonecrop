@@ -1,5 +1,5 @@
 query Continent($code: ID!) {
-  continent(code: $code) {
-    ...ContinentFields
-  }
+	continent(code: $code) {
+		...ContinentFields
+	}
 }

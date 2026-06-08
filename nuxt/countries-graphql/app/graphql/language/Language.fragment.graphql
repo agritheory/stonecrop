@@ -1,6 +1,6 @@
 fragment LanguageFields on Language {
-  code
-  name
-  native
-  rtl
+	code
+	name
+	native
+	rtl
 }
