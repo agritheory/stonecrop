@@ -301,17 +301,18 @@ AForm can also work without the Registry by manually embedding schemas:
 <script setup lang="ts">
 import { ref } from 'vue'
 import { AForm } from '@stonecrop/aform'
-import type { SchemaTypes } from '@stonecrop/aform'
+import type { ResolvedField } from '@stonecrop/aform'
 
-// Manually embed the child schema
-const addressSchema: SchemaTypes[] = [
-  { fieldname: 'street', fieldtype: 'Data', label: 'Street', component: 'ATextInput' },
-  { fieldname: 'city', fieldtype: 'Data', label: 'City', component: 'ATextInput' },
+// Manually embed the child schema (use ResolvedField[] for AForm's :schema prop)
+const addressSchema: ResolvedField[] = [
+  { kind: 'field', fieldname: 'street', fieldtype: 'Data', label: 'Street', component: 'ATextInput' },
+  { kind: 'field', fieldname: 'city', fieldtype: 'Data', label: 'City', component: 'ATextInput' },
 ]
 
-const customerSchema: SchemaTypes[] = [
-  { fieldname: 'customer_name', fieldtype: 'Data', label: 'Customer Name', component: 'ATextInput' },
+const customerSchema: ResolvedField[] = [
+  { kind: 'field', fieldname: 'customer_name', fieldtype: 'Data', label: 'Customer Name', component: 'ATextInput' },
   {
+    kind: 'link',
     fieldname: 'address',
     component: 'AForm',
     label: 'Address',

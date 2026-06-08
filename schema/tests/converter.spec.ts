@@ -700,5 +700,45 @@ describe('convertGraphQLSchema', { tags: ['unit'] }, () => {
 				expect(result.success).toBe(true)
 			}
 		})
+
+		it('should produce fields that all have kind: "field"', () => {
+			const doctypes = convertGraphQLSchema(basicSdl)
+
+			for (const doctype of doctypes) {
+				for (const field of doctype.fields) {
+					expect(field.kind).toBe('field')
+				}
+			}
+		})
+
+		it('should preserve kind: "field" when typeOverrides are applied', () => {
+			const doctypes = convertGraphQLSchema(basicSdl, {
+				typeOverrides: {
+					User: {
+						email: { component: 'AEmailInput', fieldtype: 'Data' },
+					},
+				},
+			})
+
+			const user = doctypes.find(d => d.name === 'User')!
+			const emailField = user.fields.find(f => f.fieldname === 'email')
+			expect(emailField?.kind).toBe('field')
+			expect(emailField?.component).toBe('AEmailInput')
+		})
+
+		it('should produce kind: "field" when classifyField hook is used', () => {
+			const doctypes = convertGraphQLSchema(basicSdl, {
+				classifyField: fieldName => {
+					if (fieldName === 'email') {
+						return { component: 'AEmailInput', fieldtype: 'Data' }
+					}
+					return null
+				},
+			})
+
+			const user = doctypes.find(d => d.name === 'User')!
+			const emailField = user.fields.find(f => f.fieldname === 'email')
+			expect(emailField?.kind).toBe('field')
+		})
 	})
 })

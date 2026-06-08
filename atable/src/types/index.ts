@@ -692,7 +692,9 @@ export type ConnectionEvent = {
  * @public
  */
 export interface RowAddEvent {
+	/** The index at which the row was added */
 	rowIndex: number
+	/** The row object that was added */
 	row: TableRow
 }
 
@@ -701,7 +703,9 @@ export interface RowAddEvent {
  * @public
  */
 export interface RowDeleteEvent {
+	/** The index of the row that was deleted */
 	rowIndex: number
+	/** The row object that was deleted */
 	row: TableRow
 }
 
@@ -710,8 +714,11 @@ export interface RowDeleteEvent {
  * @public
  */
 export interface RowDuplicateEvent {
+	/** The index of the original row that was duplicated */
 	sourceIndex: number
+	/** The index of the newly created duplicate row */
 	newIndex: number
+	/** The new duplicate row object */
 	row: TableRow
 }
 
@@ -720,8 +727,11 @@ export interface RowDuplicateEvent {
  * @public
  */
 export interface RowInsertEvent {
+	/** The index of the row relative to which the insertion was made */
 	targetIndex: number
+	/** The index of the newly inserted row */
 	newIndex: number
+	/** The newly inserted row object */
 	row: TableRow
 }
 
@@ -730,6 +740,8 @@ export interface RowInsertEvent {
  * @public
  */
 export interface RowMoveEvent {
+	/** The original index of the row before the move */
 	fromIndex: number
+	/** The destination index of the row after the move */
 	toIndex: number
 }

@@ -201,7 +201,9 @@ describe('Desktop props', { tags: ['component'] }, () => {
 			const schemaFields = tableSchema.schema as any[]
 			expect(schemaFields.some((f: any) => f.fieldname === 'uuid')).toBe(true)
 
-			const rows = tableSchema.rows as any[]
+			// Rows are now in formData (data prop), not in the schema
+			const data = aform.props('data') as Record<string, any>
+			const rows = data['records_table'] as any[]
 			expect(rows[0].id).toBe('uuid-abc-123')
 		})
 

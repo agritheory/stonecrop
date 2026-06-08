@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/casl-middleware",
+      "comment": "update missing import",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@stonecrop/casl-middleware"
+}

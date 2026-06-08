@@ -1,4 +1,4 @@
-import type { FieldMeta } from '@stonecrop/schema'
+import type { ValueField } from '@stonecrop/schema'
 import type { ActionHandler } from '../types'
 
 const handlerRegistry: Map<string, ActionHandler> = new Map()
@@ -53,7 +53,11 @@ const validateRequiredFields: ActionHandler = async (args, context) => {
 
 	const missing: string[] = []
 	for (const field of doctype.fields) {
-		if (field.required && (record[field.fieldname] === undefined || record[field.fieldname] === null)) {
+		if (
+			field.kind === 'field' &&
+			field.required &&
+			(record[field.fieldname] === undefined || record[field.fieldname] === null)
+		) {
 			missing.push(field.label ?? field.fieldname)
 		}
 	}
@@ -76,6 +80,7 @@ const validateFieldTypes: ActionHandler = async (args, context) => {
 	const errors: string[] = []
 
 	for (const field of doctype.fields) {
+		if (field.kind !== 'field') continue
 		const value = record[field.fieldname]
 		if (value === undefined || value === null) continue
 
@@ -112,7 +117,7 @@ const validateFieldTypes: ActionHandler = async (args, context) => {
 /**
  * Validate a single field value against its expected type
  */
-function validateFieldValue(field: FieldMeta, value: unknown): string | null {
+function validateFieldValue(field: ValueField, value: unknown): string | null {
 	const { fieldname, fieldtype } = field
 
 	switch (fieldtype) {

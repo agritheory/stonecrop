@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/schema",
+      "comment": "define new schema types",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@stonecrop/schema"
+}

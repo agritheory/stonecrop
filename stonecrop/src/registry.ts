@@ -1,5 +1,5 @@
-import type { SchemaTypes, TableSchema } from '@stonecrop/aform'
-import type { FieldMeta, LinkDeclaration } from '@stonecrop/schema'
+import type { ResolvedField, ResolvedLink, ResolvedScalar, ResolvedTable, ResolvedFieldset } from '@stonecrop/aform'
+import type { ColumnSchema, DoctypeField, LinkDeclaration, TableViewConfig, ValueField } from '@stonecrop/schema'
 import { Router } from 'vue-router'
 
 import Doctype from './doctype'
@@ -106,67 +106,70 @@ export default class Registry {
 	}
 
 	/**
-	 * Resolve nested Doctype fields in a schema by embedding child schemas inline.
+	 * Resolve a Doctype's authoring schema into a rendered schema array suitable for AForm.
 	 *
-	 * Accepts a Doctype and extracts `fields` and `links` internally.
-	 * Fields array contains both scalar fields and link fields (with fieldtype: 'Link').
-	 * Render order is determined by the order of fields in the fields array.
+	 * Transforms `DoctypeField[]` (authoring space) → `ResolvedField[]` (rendering space):
+	 * - `kind: 'field'` (not Link) → `ResolvedScalar`
+	 * - `kind: 'field'` (Link, no declaration) → `ResolvedScalar` with `component: 'AFormLink'`
+	 * - `kind: 'field'` (Link, `noneOrMany`/`atLeastOne`) → `ResolvedTable`
+	 * - `kind: 'field'` (Link, `one`/`atMostOne`) → `ResolvedLink`
+	 * - `kind: 'fieldset'` → `ResolvedFieldset` (children resolved recursively)
+	 * - `kind: 'table'` → `ResolvedTable` (columns as `ColumnSchema[]`)
 	 *
-	 * For each link field:
-	 * - Looks up the corresponding link declaration in `links` by fieldname
-	 * - `cardinality: 'noneOrMany'` or `'atLeastOne'`: auto-derives `columns` from the target's schema,
-	 *   sets `component` to `link.component ?? 'ATable'`, `config: { view: 'list' }`.
-	 * - `cardinality: 'one'` or `'atMostOne'`: embeds the target schema as the entry's
-	 *   `schema` property, sets `component` to `link.component ?? 'AForm'`.
-	 *
-	 * Recurses for deeply nested doctypes. Circular references are protected against.
-	 * Returns a new array — does not mutate the original.
+	 * Circular references are protected against via the `visited` set.
 	 *
 	 * @param doctype - The doctype to resolve
 	 * @param visited - Internal — set of already-visited doctype slugs for cycle detection
-	 * @returns A new schema array with nested links resolved
+	 * @returns A resolved schema array ready for AForm
 	 *
 	 * @public
 	 */
-	resolveSchema(doctype: Doctype, visited?: Set<string>): SchemaTypes[] {
+	resolveSchema(doctype: Doctype, visited?: Set<string>): ResolvedField[] {
 		const seen = visited ?? new Set<string>()
 		const slug = doctype.slug
 
-		// Prevent circular resolution
+		// Prevent circular resolution — return all ValueField entries as scalars (link not expanded)
 		if (seen.has(slug)) {
-			return doctype.schema ? (Array.isArray(doctype.schema) ? doctype.schema : Array.from(doctype.schema)) : []
+			const fallback: DoctypeField[] = doctype.schema ? doctype.schema.toArray() : []
+			return fallback
+				.filter((f): f is ValueField => f.kind === 'field')
+				.map(({ cardinality: _c, ...rest }): ResolvedScalar => rest)
 		}
 		seen.add(slug)
 
-		// Convert schema to array
-		const schemaArray: SchemaTypes[] = doctype.schema
-			? Array.isArray(doctype.schema)
-				? doctype.schema
-				: Array.from(doctype.schema)
-			: []
+		const schemaArray: DoctypeField[] = doctype.schema ? doctype.schema.toArray() : []
 
-		// Build a map of link declarations by fieldname for quick lookup
-		// Use the link's fieldname property if set, otherwise use the key
+		// Map link declarations by fieldname (link.fieldname ?? key)
 		const linksByFieldname = new Map<string, LinkDeclaration>()
 		if (doctype.links) {
 			for (const [key, link] of Object.entries(doctype.links)) {
-				const linkFieldname = link.fieldname ?? key
-				linksByFieldname.set(linkFieldname, link)
+				linksByFieldname.set(link.fieldname ?? key, link)
 			}
 		}
 
-		// Process fields in order: scalar fields copied as-is, link fields resolved
-		const resolvedFields: SchemaTypes[] = []
-		for (const field of schemaArray) {
-			// Check if this field is a link field (fieldtype: 'Link')
-			if ('fieldtype' in field && field.fieldtype === 'Link') {
-				const link = linksByFieldname.get(field.fieldname)
-				if (!link) {
-					// oxlint-disable typescript/no-unsafe-type-assertion -- SchemaTypes union narrowed to FieldMeta by fieldtype === 'Link' check; options may not exist on all members
-					const linkDoctype =
-						typeof (field as FieldMeta).options === 'string' ? ((field as FieldMeta).options as string) : undefined
-					// oxlint-enable typescript/no-unsafe-type-assertion
+		const result = this.resolveFields(schemaArray, linksByFieldname, seen)
+		seen.delete(slug)
+		return result
+	}
 
+	/**
+	 * Recursively resolve a `DoctypeField[]` using the provided link context.
+	 * Called by `resolveSchema` and recursively for fieldset children.
+	 * @internal
+	 */
+	private resolveFields(
+		fields: DoctypeField[],
+		links: Map<string, LinkDeclaration>,
+		visited: Set<string>
+	): ResolvedField[] {
+		const resolved: ResolvedField[] = []
+
+		for (const field of fields) {
+			if (field.kind === 'field' && field.fieldtype === 'Link') {
+				const link = links.get(field.fieldname)
+				if (!link) {
+					// Unresolved link — warn and produce a scalar with component: 'AFormLink'
+					const linkDoctype = typeof field.options === 'string' ? field.options : undefined
 					if (linkDoctype === undefined) {
 						console.warn(
 							`[Stonecrop] Link field "${field.fieldname}" has no \`options\` or corresponding \`links\` declaration. ` +
@@ -174,227 +177,144 @@ export default class Registry {
 								`Add \`"options": "<doctype-slug>"\` to the field definition.`
 						)
 					}
-
-					// Strip any raw `doctype` from the JSON; only `options` is the authoritative source.
-					const { doctype: _rawDoctype, ...fieldRest } = field as typeof field & {
-						doctype?: unknown
-						component?: string
-					}
-
-					resolvedFields.push({
-						...fieldRest,
-						component: fieldRest.component || 'AFormLink',
+					const { cardinality: _c, ...rest } = field
+					resolved.push({
+						...rest,
+						component: rest.component || 'AFormLink',
 						...(linkDoctype !== undefined ? { doctype: linkDoctype } : {}),
 					})
-
 					continue
 				}
 
 				const targetDoctype = this.registry[link.target]
 				if (!targetDoctype) {
-					// Target not found - copy as-is
-					resolvedFields.push({ ...field })
+					// Target not registered — copy as scalar
+					const { cardinality: _c, ...rest } = field
+					resolved.push({ ...rest })
 					continue
 				}
 
-				const childSchema = this.resolveSchema(targetDoctype, seen)
-
-				// Extract properties consumed by resolution; preserve everything else
-				// TODO: options and cardinality are untyped runtime properties on link fields; add them to
-				// FormSchema (or a dedicated link field type) to remove this cast
-				const {
-					fieldtype: _ft,
-					options: _opt,
-					cardinality: _card,
-					...fieldRest
-				} = field as typeof field & { options?: unknown; cardinality?: unknown }
-
-				if (link.cardinality === 'noneOrMany' || link.cardinality === 'atLeastOne') {
-					// Many relationship — build table config
-					resolvedFields.push(
-						this.buildTableConfig(
-							{ ...fieldRest, label: fieldRest.label || field.fieldname },
-							childSchema,
-							link.component
-						)
-					)
-				} else {
-					// One relationship — embed form schema
-					resolvedFields.push({
-						...fieldRest,
-						label: fieldRest.label || field.fieldname,
-						component: link.component || fieldRest.component || 'AForm',
-						schema: childSchema,
-					})
-				}
-			} else if ('schema' in field && Array.isArray(field.schema)) {
-				// Fieldset — recursively resolve nested fields
-				const resolvedChildren = this.resolveFields(field.schema, linksByFieldname, seen)
-				resolvedFields.push({ ...field, schema: resolvedChildren })
-			} else {
-				// Scalar field — copy as-is
-				resolvedFields.push({ ...field })
-			}
-		}
-
-		seen.delete(slug)
-
-		return resolvedFields
-	}
-
-	/**
-	 * Recursively resolve a flat fields array using the provided link context.
-	 * Used by resolveSchema to handle fieldset children.
-	 * @internal
-	 */
-	private resolveFields(
-		fields: SchemaTypes[],
-		links: Map<string, LinkDeclaration>,
-		visited: Set<string>
-	): SchemaTypes[] {
-		const resolved: SchemaTypes[] = []
-		for (const field of fields) {
-			if ('fieldtype' in field && field.fieldtype === 'Link') {
-				const link = links.get(field.fieldname)
-				if (!link) {
-					resolved.push({ ...field })
-					continue
-				}
-				const targetDoctype = this.registry[link.target]
-				if (!targetDoctype) {
-					resolved.push({ ...field })
-					continue
-				}
 				const childSchema = this.resolveSchema(targetDoctype, new Set(visited))
-				const {
-					fieldtype: _ft,
-					options: _opt,
-					cardinality: _card,
-					...fieldRest
-				} = field as typeof field & { options?: unknown; cardinality?: unknown }
+				const { fieldtype: _ft, options: _opt, cardinality: _card, kind: _kind, ...fieldRest } = field
+
 				if (link.cardinality === 'noneOrMany' || link.cardinality === 'atLeastOne') {
-					resolved.push(
-						this.buildTableConfig(
-							{ ...fieldRest, label: fieldRest.label || field.fieldname },
-							childSchema,
-							link.component
-						)
-					)
+					resolved.push(this.buildTableConfig(field, childSchema, link.component))
 				} else {
-					resolved.push({
+					const linkEntry: ResolvedLink = {
 						...fieldRest,
+						kind: 'link',
 						label: fieldRest.label || field.fieldname,
 						component: link.component || fieldRest.component || 'AForm',
 						schema: childSchema,
-					})
+					}
+					resolved.push(linkEntry)
 				}
-			} else if ('schema' in field && Array.isArray(field.schema)) {
-				resolved.push({ ...field, schema: this.resolveFields(field.schema, links, visited) })
+			} else if (field.kind === 'fieldset') {
+				const resolvedChildren = this.resolveFields(field.schema, links, visited)
+				const { schema: _s, ...fieldRest } = field
+				const fieldsetEntry: ResolvedFieldset = {
+					...fieldRest,
+					schema: resolvedChildren,
+				}
+				resolved.push(fieldsetEntry)
+			} else if (field.kind === 'table') {
+				// Inline table — columns become ColumnSchema[], add default config
+				const { columns, config, ...fieldRest } = field
+				const tableEntry: ResolvedTable = {
+					...fieldRest,
+					kind: 'table',
+					component: fieldRest.component || 'ATable',
+					schema: columns,
+					config: config ?? { view: 'list' },
+				}
+				resolved.push(tableEntry)
 			} else {
-				resolved.push({ ...field })
+				// Scalar field (kind: 'field', not a Link) — strip cardinality
+				const { cardinality: _c, ...rest } = field
+				resolved.push({ ...rest })
 			}
 		}
+
 		return resolved
 	}
 
 	/**
-	 * Build an ATable configuration from a field and child schema.
-	 * Data-model properties from the source field are preserved via the spread `field` argument.
+	 * Build a `ResolvedTable` from a resolved Link field with many cardinality.
+	 * Extracts scalar column definitions from the child schema.
 	 * @internal
 	 */
-	private buildTableConfig(field: Record<string, any>, childSchema: SchemaTypes[], component?: string): TableSchema {
-		const resolved: TableSchema = {
-			...field,
-			fieldname: field.fieldname,
-			component: component || field.component || 'ATable',
+	private buildTableConfig(field: ValueField, childSchema: ResolvedField[], component?: string): ResolvedTable {
+		// Only scalar fields become columns; strip kind and cardinality (runtime column spec)
+		const columns: ColumnSchema[] = childSchema
+			.filter((f): f is ResolvedScalar => f.kind === 'field')
+			.map(({ kind: _k, ...col }) => col)
+
+		const config: TableViewConfig = (field as ValueField & { config?: TableViewConfig }).config ?? { view: 'list' }
+		const { fieldtype: _ft, options: _opt, cardinality: _card, ...fieldRest } = field
+
+		return {
+			...fieldRest,
 			kind: 'table',
-			schema: childSchema,
-			config: field.config,
+			label: fieldRest.label || field.fieldname,
+			component: component || fieldRest.component || 'ATable',
+			schema: columns,
+			config,
 		}
-
-		if (!resolved.config) {
-			resolved.config = { view: 'list' }
-		}
-
-		return resolved
 	}
 
 	/**
-	 * Initialize a new record with default values based on a schema.
+	 * Initialize a new record with default values based on a resolved schema.
+	 * Narrows by `kind` discriminator for precise branch selection.
 	 *
-	 * @remarks
-	 * Creates a plain object with keys from the schema's fieldnames and default values
-	 * derived from each field's `fieldtype`:
-	 * - Data, Text → `''`
-	 * - Check → `false`
-	 * - Int, Float, Decimal, Currency, Quantity → `0`
-	 * - JSON → `{}`
-	 * - Doctype with `cardinality: 'noneOrMany'` or `'atLeastOne'` → `[]`
-	 * - Doctype without `cardinality` or `cardinality: 'one'` → recursively initializes nested record
-	 * - All others → `null`
+	 * - `kind: 'table'` or `kind: 'link'` → `[]` or `{}`
+	 * - `kind: 'fieldset'` → recursively initializes children as `{}`
+	 * - `kind: 'field'` → derives default from `fieldtype`; falls back to `null`
 	 *
-	 * For Doctype fields with a resolved `schema` array (cardinality: 'one'), recursively
-	 * initializes the nested record.
-	 *
-	 * @param schema - The schema array to derive defaults from
+	 * @param schema - The resolved schema array to derive defaults from
 	 * @returns A plain object with default values for each field
-	 *
-	 * @example
-	 * ```ts
-	 * const defaults = registry.initializeRecord(addressSchema)
-	 * // { street: '', city: '', state: '', zip_code: '' }
-	 * ```
-	 *
 	 * @public
 	 */
-	initializeRecord(schema: SchemaTypes[]): Record<string, any> {
+	initializeRecord(schema: ResolvedField[]): Record<string, any> {
 		const record: Record<string, any> = {}
 
-		schema.forEach(field => {
-			const fieldtype = 'fieldtype' in field ? field.fieldtype : 'Data'
-			const cardinality = 'cardinality' in field ? field.cardinality : undefined
-
-			// 1:many — cardinality signals an array
-			if (cardinality === 'noneOrMany' || cardinality === 'atLeastOne') {
+		for (const field of schema) {
+			if (field.kind === 'table') {
 				record[field.fieldname] = []
-				return
-			}
-
-			// Resolved 1:many table entry — kind discriminant set by buildTableConfig
-			if ('kind' in field && field.kind === 'table') {
-				record[field.fieldname] = []
-				return
-			}
-
-			// Resolved 1:1 link entry — has schema property (e.g., FieldsetSchema with nested schema)
-			if ('schema' in field && Array.isArray(field.schema)) {
+			} else if (field.kind === 'link') {
 				record[field.fieldname] = this.initializeRecord(field.schema)
-				return
+			} else if (field.kind === 'fieldset') {
+				record[field.fieldname] = this.initializeRecord(field.schema)
+			} else {
+				// kind: 'field' — derive from fieldtype
+				const fieldDefault = field.default
+				if (fieldDefault !== undefined) {
+					record[field.fieldname] = fieldDefault
+				} else {
+					switch (field.fieldtype) {
+						case 'Data':
+						case 'Text':
+						case 'Code':
+							record[field.fieldname] = ''
+							break
+						case 'Check':
+							record[field.fieldname] = false
+							break
+						case 'Int':
+						case 'Float':
+						case 'Decimal':
+						case 'Currency':
+						case 'Quantity':
+							record[field.fieldname] = 0
+							break
+						case 'JSON':
+							record[field.fieldname] = {}
+							break
+						default:
+							record[field.fieldname] = null
+					}
+				}
 			}
-
-			switch (fieldtype) {
-				case 'Data':
-				case 'Text':
-				case 'Code':
-					record[field.fieldname] = ''
-					break
-				case 'Check':
-					record[field.fieldname] = false
-					break
-				case 'Int':
-				case 'Float':
-				case 'Decimal':
-				case 'Currency':
-				case 'Quantity':
-					record[field.fieldname] = 0
-					break
-				case 'JSON':
-					record[field.fieldname] = {}
-					break
-				default:
-					record[field.fieldname] = null
-			}
-		})
+		}
 
 		return record
 	}

@@ -1,4 +1,4 @@
-import { type SchemaTypes } from '@stonecrop/aform'
+import { type ResolvedField } from '@stonecrop/aform'
 import { storeToRefs } from 'pinia'
 import { inject, onMounted, Ref, ref, watch, provide, computed } from 'vue'
 
@@ -61,7 +61,7 @@ export function useStonecrop(options?: {
 	const routerRecordId = ref<string | undefined>()
 
 	// Resolved schema with nested Doctype fields expanded
-	const resolvedSchema = ref<SchemaTypes[]>([])
+	const resolvedSchema = ref<ResolvedField[]>([])
 
 	// Loading state for lazy-loaded doctypes
 	const isLoading = ref(false)

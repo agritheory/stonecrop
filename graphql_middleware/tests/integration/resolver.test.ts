@@ -28,9 +28,9 @@ beforeAll(async () => {
 		ScItem: {
 			name: 'ScItem',
 			fields: [
-				{ fieldname: 'id', fieldtype: 'PrimaryKey', label: 'ID' },
-				{ fieldname: 'name', fieldtype: 'Data', label: 'Name' },
-				{ fieldname: 'status', fieldtype: 'Data', label: 'Status' },
+				{ kind: 'field', fieldname: 'id', fieldtype: 'PrimaryKey', label: 'ID' },
+				{ kind: 'field', fieldname: 'name', fieldtype: 'Data', label: 'Name' },
+				{ kind: 'field', fieldname: 'status', fieldtype: 'Data', label: 'Status' },
 			],
 			links: {
 				tags: {
@@ -56,17 +56,17 @@ beforeAll(async () => {
 		ScTag: {
 			name: 'ScTag',
 			fields: [
-				{ fieldname: 'id', fieldtype: 'PrimaryKey', label: 'ID' },
-				{ fieldname: 'label', fieldtype: 'Data', label: 'Label' },
-				{ fieldname: 'item_id', fieldtype: 'Data', label: 'Item ID' },
+				{ kind: 'field', fieldname: 'id', fieldtype: 'PrimaryKey', label: 'ID' },
+				{ kind: 'field', fieldname: 'label', fieldtype: 'Data', label: 'Label' },
+				{ kind: 'field', fieldname: 'item_id', fieldtype: 'Data', label: 'Item ID' },
 			],
 		},
 		ScNote: {
 			name: 'ScNote',
 			fields: [
-				{ fieldname: 'id', fieldtype: 'PrimaryKey', label: 'ID' },
-				{ fieldname: 'body', fieldtype: 'Data', label: 'Body' },
-				{ fieldname: 'item_id', fieldtype: 'Data', label: 'Item ID' },
+				{ kind: 'field', fieldname: 'id', fieldtype: 'PrimaryKey', label: 'ID' },
+				{ kind: 'field', fieldname: 'body', fieldtype: 'Data', label: 'Body' },
+				{ kind: 'field', fieldname: 'item_id', fieldtype: 'Data', label: 'Item ID' },
 			],
 		},
 		ScWidget: {

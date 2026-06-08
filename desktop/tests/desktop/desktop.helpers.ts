@@ -2,7 +2,7 @@ import { List, Map } from 'immutable'
 import { App } from 'vue'
 import { vi } from 'vitest'
 
-import type { SchemaTypes } from '@stonecrop/aform'
+import type { DoctypeField } from '@stonecrop/schema'
 import { Doctype, Registry, Stonecrop } from '@stonecrop/stonecrop'
 
 export const makeStonecropPlugin = vi.defineHelper((registry: Registry, stonecrop: Stonecrop) => {
@@ -21,12 +21,12 @@ export const makeStonecropPlugin = vi.defineHelper((registry: Registry, stonecro
 })
 
 export const buildDoctype = vi.defineHelper(
-	(name: string, initialState: string, states: Record<string, any>, extraFields?: SchemaTypes[]) => {
+	(name: string, initialState: string, states: Record<string, any>, extraFields?: DoctypeField[]) => {
 		const baseFields = [
-			{ fieldname: 'id', fieldtype: 'Data', label: 'ID', component: 'ATextInput' },
-			{ fieldname: 'title', fieldtype: 'Data', label: 'Title', component: 'ATextInput' },
-			{ fieldname: 'status', fieldtype: 'Data', label: 'Status', component: 'ATextInput' },
-		] as SchemaTypes[]
+			{ kind: 'field' as const, fieldname: 'id', fieldtype: 'Data', label: 'ID', component: 'ATextInput' },
+			{ kind: 'field' as const, fieldname: 'title', fieldtype: 'Data', label: 'Title', component: 'ATextInput' },
+			{ kind: 'field' as const, fieldname: 'status', fieldtype: 'Data', label: 'Status', component: 'ATextInput' },
+		]
 
 		const schema = extraFields ? List([...baseFields, ...extraFields]) : List(baseFields)
 

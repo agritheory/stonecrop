@@ -28,7 +28,9 @@
 			"cardinality": "noneOrMany",
 			"backlink": "recipe",
 			"fieldname": "tasks",
-			"fetch": { "method": "lazy" }
+			"fetch": {
+				"method": "lazy"
+			}
 		}
 	}
 }

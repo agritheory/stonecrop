@@ -35,7 +35,9 @@
 			"cardinality": "noneOrMany",
 			"backlink": "recipe",
 			"fieldname": "tasks",
-			"fetch": { "method": "sync" },
+			"fetch": {
+				"method": "sync"
+			},
 			"blockWorkflows": true
 		},
 		"notes": {
@@ -43,7 +45,9 @@
 			"cardinality": "noneOrMany",
 			"backlink": "recipe",
 			"fieldname": "notes",
-			"fetch": { "method": "sync" },
+			"fetch": {
+				"method": "sync"
+			},
 			"blockWorkflows": false
 		}
 	}

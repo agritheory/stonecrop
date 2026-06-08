@@ -4,7 +4,7 @@ import { mount } from '@vue/test-utils'
 
 import AForm from '../src/components/AForm.vue'
 import ATextInput from '../src/components/form/ATextInput.vue'
-import type { SchemaTypes, FormSchema } from '../src/types'
+import type { ResolvedField } from '../src/types'
 
 describe('AForm Component', { tags: ['component'] }, () => {
 	const wrapper = mount(AForm, {
@@ -16,7 +16,7 @@ describe('AForm Component', { tags: ['component'] }, () => {
 					component: 'ATextInput',
 					label: 'First Name',
 				},
-			] as SchemaTypes[],
+			] as ResolvedField[],
 			data: {},
 		},
 		components: {
@@ -52,7 +52,7 @@ describe('AForm Component', { tags: ['component'] }, () => {
 						columns: [{ name: 'id', label: 'ID', fieldtype: 'Int' }],
 						// intentionally no 'rows' key — rows should come from dataModel
 					},
-				] as SchemaTypes[],
+				] as ResolvedField[],
 				data: { items: [{ id: 1 }, { id: 2 }] },
 			},
 			global: { components: { MockTable } },
@@ -75,7 +75,7 @@ describe('AForm Component', { tags: ['component'] }, () => {
 						label: 'Items',
 						rows: [],
 					},
-				] as SchemaTypes[],
+				] as ResolvedField[],
 				data: {
 					items: [
 						{ id: 1, name: 'Item 1' },
@@ -98,7 +98,7 @@ describe('AForm Component', { tags: ['component'] }, () => {
 						label: 'Items',
 						rows: [{ id: 1, name: 'Existing' }],
 					},
-				] as SchemaTypes[],
+				] as ResolvedField[],
 				data: {
 					items: [
 						{ id: 1, name: 'Item 1' },
@@ -153,7 +153,7 @@ describe('AForm Component', { tags: ['component'] }, () => {
 						component: 'ATextInput',
 						label: 'First Name',
 					},
-				] as SchemaTypes[],
+				] as ResolvedField[],
 				data: {},
 				mode: 'read',
 			},
@@ -183,7 +183,7 @@ describe('AForm Component', { tags: ['component'] }, () => {
 							label: 'Hidden',
 							hidden: true,
 						},
-					] as SchemaTypes[],
+					] as ResolvedField[],
 					data: {},
 				},
 				components: { ATextInput },
@@ -204,7 +204,7 @@ describe('AForm Component', { tags: ['component'] }, () => {
 							label: 'Visible',
 							hidden: false,
 						},
-					] as SchemaTypes[],
+					] as ResolvedField[],
 					data: {},
 				},
 				components: { ATextInput },
@@ -217,14 +217,14 @@ describe('AForm Component', { tags: ['component'] }, () => {
 
 	describe('schema-driven mask', () => {
 		it('passes mask from schema field to ATextInput', async () => {
-			const schema: SchemaTypes[] = [
+			const schema: ResolvedField[] = [
 				{
 					fieldname: 'phone',
 					fieldtype: 'Data',
 					component: 'ATextInput',
 					label: 'Phone',
 					mask: '(###) ### - ####',
-				} as FormSchema,
+				} as ResolvedField,
 			]
 
 			const localWrapper = mount(AForm, {
@@ -238,14 +238,14 @@ describe('AForm Component', { tags: ['component'] }, () => {
 		})
 
 		it('applies mask directive to input when mask is in schema', async () => {
-			const schema: SchemaTypes[] = [
+			const schema: ResolvedField[] = [
 				{
 					fieldname: 'phone',
 					fieldtype: 'Data',
 					component: 'ATextInput',
 					label: 'Phone',
 					mask: '###-###-####',
-				} as FormSchema,
+				} as ResolvedField,
 			]
 
 			const localWrapper = mount(AForm, {
@@ -260,13 +260,13 @@ describe('AForm Component', { tags: ['component'] }, () => {
 		})
 
 		it('does not set maxlength when no mask is in schema', async () => {
-			const schema: SchemaTypes[] = [
+			const schema: ResolvedField[] = [
 				{
 					fieldname: 'first_name',
 					fieldtype: 'Data',
 					component: 'ATextInput',
 					label: 'First Name',
-				} as FormSchema,
+				} as ResolvedField,
 			]
 
 			const localWrapper = mount(AForm, {
@@ -292,13 +292,14 @@ describe('AForm Component', { tags: ['component'] }, () => {
 				props: {
 					schema: [
 						{
+							kind: 'field' as const,
 							fieldname: 'canvas',
 							component: 'MockField',
 							label: 'Canvas',
 							fieldtype: 'Display',
 							width: '100%',
 						},
-					] as SchemaTypes[],
+					] as ResolvedField[],
 					data: {},
 				},
 				global: { components: { MockField } },
@@ -326,7 +327,7 @@ describe('AForm Component', { tags: ['component'] }, () => {
 							label: 'Name',
 							fieldtype: 'Data',
 						},
-					] as SchemaTypes[],
+					] as ResolvedField[],
 					data: {},
 				},
 				global: { components: { MockField } },
@@ -337,5 +338,41 @@ describe('AForm Component', { tags: ['component'] }, () => {
 			expect(field.element.style.flexBasis).toBe('')
 			expect(field.element.style.width).toBe('')
 		})
+	})
+})
+
+describe('AForm mode forwarding', { tags: ['component'] }, () => {
+	it('passes mode prop to a component with kind: "table" in the schema', async () => {
+		const MockTable = defineComponent({
+			name: 'MockTable',
+			props: ['schema', 'rows', 'label', 'fieldname', 'data', 'mode'],
+			template: '<div class="mock-table"></div>',
+		})
+
+		const tableSchema: ResolvedField[] = [
+			{
+				kind: 'table' as const,
+				fieldname: 'line_items',
+				component: 'MockTable',
+				label: 'Line Items',
+				schema: [{ fieldname: 'qty', fieldtype: 'Int' }],
+				config: { view: 'list' as const },
+			},
+		]
+
+		const wrapper = mount(AForm, {
+			props: {
+				schema: tableSchema,
+				data: { line_items: [] },
+				mode: 'read',
+			},
+			global: { components: { MockTable } },
+		})
+
+		await wrapper.vm.$nextTick()
+
+		const table = wrapper.findComponent(MockTable)
+		expect(table.exists()).toBe(true)
+		expect(table.props('mode')).toBe('read')
 	})
 })

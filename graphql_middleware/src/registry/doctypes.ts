@@ -174,7 +174,7 @@ export function validateReferences(): ValidationError[] {
 
 		// Check Link field targets
 		for (const field of doctype.fields) {
-			if (field.fieldtype === 'Link' && typeof field.options === 'string') {
+			if (field.kind === 'field' && field.fieldtype === 'Link' && typeof field.options === 'string') {
 				if (!doctypeRegistry.has(field.options)) {
 					errors.push({
 						path: [doctype.name, 'fields', field.fieldname, 'options'],

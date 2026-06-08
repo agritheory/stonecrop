@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/aform",
+      "comment": "create new resolved field types",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@stonecrop/aform"
+}

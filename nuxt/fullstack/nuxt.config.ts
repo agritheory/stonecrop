@@ -35,7 +35,7 @@ export default defineNuxtConfig({
 
 	vite: {
 		optimizeDeps: {
-			include: ['@stonecrop/desktop', '@stonecrop/graphql-client', '@stonecrop/schema'],
+			include: ['@stonecrop/schema', 'pinia'],
 		},
 	},
 

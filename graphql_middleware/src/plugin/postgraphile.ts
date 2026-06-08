@@ -1,4 +1,4 @@
-import type { DoctypeMeta, FieldMeta, GetRecordOptions } from '@stonecrop/schema'
+import type { DoctypeField, DoctypeMeta, TableField, ValueField, GetRecordOptions } from '@stonecrop/schema'
 import { camelToSnake, pascalToSnake } from '@stonecrop/schema'
 import { loadOneWithPgClient, sideEffectWithPgClient } from '@dataplan/pg'
 import type { PgClient, PgExecutor } from '@dataplan/pg'
@@ -393,20 +393,15 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 // ===========================================================================
 
 /**
- * Recursively flatten Fieldset containers into a single-level FieldMeta array.
+ * Recursively flatten Fieldset containers into a flat array of non-container fields.
  * Fieldset entries are replaced by their children; all other fields pass through.
- * Used by both getSqlColumns (for SELECT) and knownFields (for filter/orderBy validation).
- *
- * TODO(schema-types Phase 4): add f.kind === 'field' narrowing when DoctypeField union lands
+ * Used by getSqlColumns (for SELECT) and knownFields (for filter/orderBy validation).
  */
-function flattenFields(fields: FieldMeta[]): FieldMeta[] {
-	const result: FieldMeta[] = []
+function flattenFields(fields: DoctypeField[]): (ValueField | TableField)[] {
+	const result: (ValueField | TableField)[] = []
 	for (const f of fields) {
-		if (f.fieldtype === 'Fieldset') {
-			const validChildren = (f.schema ?? []).filter(
-				(c): c is FieldMeta => typeof c['fieldname'] === 'string' && typeof c['fieldtype'] === 'string'
-			)
-			result.push(...flattenFields(validChildren))
+		if (f.kind === 'fieldset') {
+			result.push(...flattenFields(f.schema))
 		} else {
 			result.push(f)
 		}
@@ -415,13 +410,16 @@ function flattenFields(fields: FieldMeta[]): FieldMeta[] {
 }
 
 /**
- * Derive a quoted SQL column entry for a single flat field.
- * Applies camelToSnake and aliases back to the original fieldname.
+ * Derive quoted SQL column entries from a flat field array.
+ * Skips non-scalar fields (kind !== 'field'), display-mode fields (both
+ * `mode: 'display'` and `fieldtype: 'Display'` have no backing DB column),
+ * and Link fields with an explicit links declaration.
  */
-function collectColumns(fields: FieldMeta[], linkedFieldnames: Set<string>): string[] {
+function collectColumns(fields: DoctypeField[], linkedFieldnames: Set<string>): string[] {
 	const columns: string[] = []
 	for (const f of flattenFields(fields)) {
-		if (f.fieldtype === 'Display') continue
+		if (f.kind !== 'field') continue
+		if (f.mode === 'display' || f.fieldtype === 'Display') continue
 		if (f.fieldtype === 'Link' && linkedFieldnames.has(f.fieldname)) continue
 		const col = camelToSnake(f.fieldname)
 		columns.push(col !== f.fieldname ? `"${col}" AS "${f.fieldname}"` : `"${f.fieldname}"`)
@@ -433,8 +431,9 @@ function collectColumns(fields: FieldMeta[], linkedFieldnames: Set<string>): str
  * Derive a quoted SQL column list from doctype field definitions.
  * Applies camelToSnake to each fieldname to get the DB column name, then
  * aliases it back to the fieldname so result rows carry API-layer keys.
- * Excludes Display fields, Fieldset containers (recursing into their children instead),
- * and Link fields that have an explicit `links` declaration (FK references, not scalar columns).
+ * Excludes display-mode fields (no backing DB column), Fieldset containers
+ * (recursing into their children instead), and Link fields that have an
+ * explicit `links` declaration (FK references, not scalar columns).
  */
 function getSqlColumns(meta: DoctypeMeta): string {
 	const linkedFieldnames = new Set<string>()
@@ -449,11 +448,9 @@ function getSqlColumns(meta: DoctypeMeta): string {
 /**
  * Find the field declared with fieldtype 'PrimaryKey' in the doctype.
  * Returns undefined when no PrimaryKey field is declared (PK-less doctypes).
- *
- * TODO(schema-types Phase 4): add f.kind === 'field' narrowing when DoctypeField union lands
  */
-function getPkMeta(meta: DoctypeMeta): FieldMeta | undefined {
-	return meta.fields.find(f => f.fieldtype === 'PrimaryKey')
+function getPkMeta(meta: DoctypeMeta): ValueField | undefined {
+	return meta.fields.find((f): f is ValueField => f.kind === 'field' && f.fieldtype === 'PrimaryKey')
 }
 
 /**

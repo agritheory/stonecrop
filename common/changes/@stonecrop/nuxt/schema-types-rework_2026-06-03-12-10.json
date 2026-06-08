@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/nuxt",
+      "comment": "update examples to use new schema types",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@stonecrop/nuxt"
+}

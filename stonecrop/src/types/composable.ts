@@ -1,4 +1,4 @@
-import type { SchemaTypes } from '@stonecrop/aform'
+import type { ResolvedField } from '@stonecrop/aform'
 import type { Ref, ComputedRef } from 'vue'
 
 import type Doctype from '../doctype'
@@ -177,7 +177,7 @@ export type HSTStonecropReturn = BaseStonecropReturn & {
 	 * Resolved schema with nested Doctype fields expanded.
 	 * Use this to iterate over fields for rendering, excluding nested doctypes handled separately.
 	 */
-	resolvedSchema: Ref<SchemaTypes[]>
+	resolvedSchema: Ref<ResolvedField[]>
 	/**
 	 * Scaffold empty descendant records from defaults for all descendant links.
 	 * @param path - The HST path where initialized data should be stored

@@ -49,7 +49,7 @@
 </template>
 
 <script setup lang="ts">
-import type { SchemaTypes } from '@stonecrop/aform'
+import type { ResolvedField } from '@stonecrop/aform'
 import type { ActionElements } from '@stonecrop/desktop'
 import type { Layout } from '@stonecrop/node-editor'
 import { useStonecrop, type ValidationResult, validateSchema, type RouteContext } from '@stonecrop/stonecrop'
@@ -65,7 +65,8 @@ import ImportWizard from './ImportWizard.vue'
 
 interface BuilderFormData {
 	schema_fieldset?: {
-		schema: SchemaTypes[]
+		// User-authored field definitions, not AForm's resolved schema
+		schema: Record<string, unknown>[]
 	}
 	actions_fieldset?: {
 		actions: unknown
@@ -83,7 +84,7 @@ const warningsDismissed = ref(false)
 const isLoading = ref(true)
 
 // Reactive data for the components
-const doctypeSchema = ref<SchemaTypes[]>(doctypeSchemaJson as SchemaTypes[])
+const doctypeSchema = ref<ResolvedField[]>(doctypeSchemaJson)
 const formData = ref<BuilderFormData>({})
 const layout = ref<Layout>({})
 const workflowConfig = ref<AnyStateNodeConfig | undefined>()
@@ -155,7 +156,7 @@ watch(
 
 		if (schemaData) {
 			// Convert to List if needed
-			const schemaList = Array.isArray(schemaData) ? List(schemaData as SchemaTypes[]) : schemaData
+			const schemaList = Array.isArray(schemaData) ? List(schemaData) : schemaData
 
 			// Type guard for actions - ensure it's Map or undefined
 			const actions = actionsData instanceof Map ? actionsData : undefined

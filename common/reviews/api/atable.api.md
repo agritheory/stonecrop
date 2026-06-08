@@ -2175,45 +2175,33 @@ export type RowActionType = 'add' | 'delete' | 'duplicate' | 'insertAbove' | 'in
 
 // @public
 export interface RowAddEvent {
-    // (undocumented)
     row: TableRow;
-    // (undocumented)
     rowIndex: number;
 }
 
 // @public
 export interface RowDeleteEvent {
-    // (undocumented)
     row: TableRow;
-    // (undocumented)
     rowIndex: number;
 }
 
 // @public
 export interface RowDuplicateEvent {
-    // (undocumented)
     newIndex: number;
-    // (undocumented)
     row: TableRow;
-    // (undocumented)
     sourceIndex: number;
 }
 
 // @public
 export interface RowInsertEvent {
-    // (undocumented)
     newIndex: number;
-    // (undocumented)
     row: TableRow;
-    // (undocumented)
     targetIndex: number;
 }
 
 // @public
 export interface RowMoveEvent {
-    // (undocumented)
     fromIndex: number;
-    // (undocumented)
     toIndex: number;
 }
 

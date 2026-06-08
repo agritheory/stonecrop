@@ -12,6 +12,7 @@ import { buildClientSchema, buildSchema, isObjectType, type GraphQLSchema } from
 import type { LinkDeclaration } from '../doctype'
 import { toSlug } from '../naming'
 import type { IntrospectionSource, GraphQLConversionOptions, ConvertedGraphQLDoctype } from './types'
+import type { ValueField } from '../field'
 import { defaultIsEntityType, defaultIsEntityField, classifyFieldType } from './heuristics'
 
 /**
@@ -102,14 +103,16 @@ export function convertGraphQLSchema(
 		const fields = type.getFields()
 		const typeOverrides = options.typeOverrides?.[typeName]
 
-		const filteredEntries = Object.entries(fields).filter(([fieldName, field]) => isEntityField(fieldName, field, type))
-		// oxlint-disable-next-line oxc/no-map-spread -- spread required: Object.assign loses _isLink/_graphqlType metadata
-		const allClassifiedFields = filteredEntries.map(([fieldName, field]) => {
+		const entityFields = Object.entries(fields).filter(([fieldName, field]) => isEntityField(fieldName, field, type))
+
+		// oxlint-disable-next-line oxc/no-map-spread -- ...custom spread required; Object.assign cannot preserve the metadata-carrying inferred union type from classifyField
+		const allClassifiedFields = entityFields.map(([fieldName, field]) => {
 			// Check for full custom classification first
 			if (options.classifyField) {
 				const custom = options.classifyField(fieldName, field, type)
 				if (custom !== null && custom !== undefined) {
 					return {
+						kind: 'field' as const,
 						fieldname: fieldName,
 						label: custom.label ?? fieldName,
 						component: custom.component ?? 'ATextInput',
@@ -124,7 +127,7 @@ export function convertGraphQLSchema(
 
 			// Apply per-field overrides
 			if (typeOverrides?.[fieldName]) {
-				return { ...classified, ...typeOverrides[fieldName] }
+				return Object.assign(classified, typeOverrides[fieldName])
 			}
 
 			return classified
@@ -156,7 +159,8 @@ export function convertGraphQLSchema(
 		const doctype: ConvertedGraphQLDoctype = {
 			name: typeName,
 			slug: toSlug(typeName),
-			fields: convertedFields,
+			// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- safe: heuristics always set a fieldtype default ('Data'); the optional fieldtype on GraphQLConversionFieldMeta is for intermediate processing, not because output fields lack fieldtype
+			fields: convertedFields as ValueField[],
 		}
 
 		if (Object.keys(links).length > 0) {

@@ -4,7 +4,6 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { nextTick, defineComponent } from 'vue'
 import type { UnknownMachineConfig } from 'xstate'
 
-import type { SchemaTypes } from '@stonecrop/aform'
 import { useStonecrop } from '../../src/composables/stonecrop'
 import Doctype from '../../src/doctype'
 import Registry from '../../src/registry'
@@ -21,10 +20,10 @@ describe('HST Composable Functionality', { tags: ['unit'] }, () => {
 		registry = new Registry()
 
 		const mockSchema = List([
-			{ fieldname: 'name', fieldtype: 'Data', label: 'Name', component: 'ATextInput' },
-			{ fieldname: 'active', fieldtype: 'Check', label: 'Active', component: 'ACheckbox' },
-			{ fieldname: 'count', fieldtype: 'Int', label: 'Count', component: 'ANumericInput' },
-		] as SchemaTypes[])
+			{ kind: 'field', fieldname: 'name', fieldtype: 'Data', label: 'Name', component: 'ATextInput' },
+			{ kind: 'field', fieldname: 'active', fieldtype: 'Check', label: 'Active', component: 'ACheckbox' },
+			{ kind: 'field', fieldname: 'count', fieldtype: 'Int', label: 'Count', component: 'ANumericInput' },
+		])
 
 		const mockWorkflow: UnknownMachineConfig = {
 			id: 'task',
