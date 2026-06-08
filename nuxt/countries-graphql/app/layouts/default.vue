@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/multi-word-component-names -->
 <template>
 	<div>
 		<nav style="padding: 1rem; border-bottom: 1px solid #333; display: flex; gap: 1.5rem">
