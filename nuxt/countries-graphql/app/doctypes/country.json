@@ -1,0 +1,57 @@
+{
+	"name": "Country",
+	"slug": "country",
+	"fields": [
+		{
+			"fieldname": "code",
+			"fieldtype": "Data",
+			"label": "Code",
+			"component": "ATextInput",
+			"readOnly": true,
+			"hidden": false
+		},
+		{
+			"fieldname": "name",
+			"fieldtype": "Data",
+			"label": "Name",
+			"component": "ATextInput",
+			"required": true
+		},
+		{
+			"fieldname": "native",
+			"fieldtype": "Data",
+			"label": "Native Name",
+			"component": "ATextInput"
+		},
+		{
+			"fieldname": "emoji",
+			"fieldtype": "Data",
+			"label": "Flag",
+			"component": "ATextInput"
+		},
+		{
+			"fieldname": "capital",
+			"fieldtype": "Data",
+			"label": "Capital",
+			"component": "ATextInput"
+		},
+		{
+			"fieldname": "currency",
+			"fieldtype": "Data",
+			"label": "Currency",
+			"component": "ATextInput"
+		},
+		{
+			"fieldname": "phone",
+			"fieldtype": "Data",
+			"label": "Phone Code",
+			"component": "ATextInput"
+		},
+		{
+			"fieldname": "awsRegion",
+			"fieldtype": "Data",
+			"label": "AWS Region",
+			"component": "ATextInput"
+		}
+	]
+}
