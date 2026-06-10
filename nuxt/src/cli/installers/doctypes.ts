@@ -32,24 +32,24 @@ export async function installDoctypes(options: DoctypesInstallerOptions): Promis
 			consola.info('Created doctypes/ directory')
 		}
 
-		// Scaffold Example.json (form doctype)
-		const examplePath = join(doctypesDir, 'Example.json')
-		if (!existsSync(examplePath)) {
-			const exampleTemplate = await loadTemplate('Example.json')
-			await writeFile(examplePath, exampleTemplate, 'utf-8')
-			consola.info('Created doctypes/Example.json')
+		// Scaffold Project.json
+		const projectPath = join(doctypesDir, 'Project.json')
+		if (!existsSync(projectPath)) {
+			const projectTemplate = await loadTemplate('Project.json')
+			await writeFile(projectPath, projectTemplate, 'utf-8')
+			consola.info('Created doctypes/Project.json')
 		} else {
-			consola.info('doctypes/Example.json already exists, skipping')
+			consola.info('doctypes/Project.json already exists, skipping')
 		}
 
-		// Scaffold example-table.json (table doctype)
-		const tableExamplePath = join(doctypesDir, 'example-table.json')
-		if (!existsSync(tableExamplePath)) {
-			const tableTemplate = await loadTemplate('example-table.json')
-			await writeFile(tableExamplePath, tableTemplate, 'utf-8')
-			consola.info('Created doctypes/example-table.json')
+		// Scaffold Task.json
+		const taskPath = join(doctypesDir, 'Task.json')
+		if (!existsSync(taskPath)) {
+			const taskTemplate = await loadTemplate('Task.json')
+			await writeFile(taskPath, taskTemplate, 'utf-8')
+			consola.info('Created doctypes/Task.json')
 		} else {
-			consola.info('doctypes/example-table.json already exists, skipping')
+			consola.info('doctypes/Task.json already exists, skipping')
 		}
 
 		consola.success('Sample doctypes created successfully')
@@ -80,120 +80,82 @@ async function loadTemplate(filename: string): Promise<string> {
  */
 function getInlineTemplate(filename: string): string {
 	const templates: Record<string, string> = {
-		'Example.json': JSON.stringify(
+		'Project.json': JSON.stringify(
 			{
-				name: 'Example',
-				slug: 'example/:id',
+				name: 'Project',
+				slug: 'project',
 				fields: [
-					{
-						fieldname: 'id',
-						fieldtype: 'Data',
-						label: 'ID',
-						readOnly: true,
-					},
-					{
-						fieldname: 'title',
-						fieldtype: 'Data',
-						label: 'Title',
-						required: true,
-					},
-					{
-						fieldname: 'description',
-						fieldtype: 'Text',
-						label: 'Description',
-					},
+					{ fieldname: 'id', label: 'ID', component: 'ATextInput', fieldtype: 'Data', mode: 'display' },
+					{ fieldname: 'title', label: 'Title', component: 'ATextInput', fieldtype: 'Data', required: true },
+					{ fieldname: 'description', label: 'Description', component: 'ATextarea', fieldtype: 'Text' },
 					{
 						fieldname: 'status',
-						fieldtype: 'Select',
 						label: 'Status',
-						options: ['Draft', 'Active', 'Archived'],
-						default: 'Draft',
-					},
-					{
-						fieldname: 'priority',
+						component: 'ADropdown',
 						fieldtype: 'Select',
-						label: 'Priority',
-						options: ['Low', 'Medium', 'High'],
-						default: 'Medium',
+						options: ['Active', 'Archived'],
+						default: 'Active',
 					},
 					{
 						fieldname: 'createdAt',
-						fieldtype: 'Datetime',
 						label: 'Created At',
-						readOnly: true,
-					},
-					{
-						fieldname: 'updatedAt',
+						component: 'ATextInput',
 						fieldtype: 'Datetime',
-						label: 'Updated At',
-						readOnly: true,
+						mode: 'display',
 					},
 				],
 				workflow: {
-					states: ['Draft', 'Active', 'Archived'],
+					states: ['Active', 'Archived'],
 					actions: {
-						activate: {
-							label: 'Activate',
-							handler: 'activate_example',
-							allowedStates: ['Draft'],
-							confirm: true,
-						},
-						archive: {
-							label: 'Archive',
-							handler: 'archive_example',
-							allowedStates: ['Active'],
-							confirm: true,
-						},
+						save: { label: 'Save', handler: 'project:save' },
+						archive: { label: 'Archive Project', handler: 'archive_project', allowedStates: ['Active'], confirm: true },
 					},
 				},
 			},
 			null,
 			'\t'
 		),
-		'example-table.json': JSON.stringify(
+		'Task.json': JSON.stringify(
 			{
-				name: 'Example',
-				slug: 'example',
-				schema: [
+				name: 'Task',
+				slug: 'task',
+				fields: [
+					{ fieldname: 'id', label: 'ID', component: 'ATextInput', fieldtype: 'Data', mode: 'display' },
+					{ fieldname: 'title', label: 'Title', component: 'ATextInput', fieldtype: 'Data', required: true },
 					{
-						component: 'ATable',
-						columns: [
-							{
-								name: 'id',
-								label: 'ID',
-								fieldtype: 'Data',
-								width: '8ch',
-							},
-							{
-								name: 'title',
-								label: 'Title',
-								fieldtype: 'Data',
-								width: '20ch',
-							},
-							{
-								name: 'status',
-								label: 'Status',
-								fieldtype: 'Data',
-								width: '10ch',
-							},
-							{
-								name: 'priority',
-								label: 'Priority',
-								fieldtype: 'Data',
-								width: '10ch',
-							},
-							{
-								name: 'createdAt',
-								label: 'Created',
-								fieldtype: 'Datetime',
-								width: '18ch',
-							},
-						],
-						config: {
-							view: 'list',
-						},
+						fieldname: 'projectId',
+						label: 'Project',
+						component: 'ACombobox',
+						fieldtype: 'Link',
+						options: 'project',
+						required: true,
+					},
+					{
+						fieldname: 'status',
+						label: 'Status',
+						component: 'ADropdown',
+						fieldtype: 'Select',
+						options: ['Todo', 'In Progress', 'Done'],
+						default: 'Todo',
+					},
+					{ fieldname: 'description', label: 'Description', component: 'ATextarea', fieldtype: 'Text' },
+					{ fieldname: 'dueDate', label: 'Due Date', component: 'ADatepicker', fieldtype: 'Date' },
+					{
+						fieldname: 'createdAt',
+						label: 'Created At',
+						component: 'ATextInput',
+						fieldtype: 'Datetime',
+						mode: 'display',
 					},
 				],
+				workflow: {
+					states: ['Todo', 'In Progress', 'Done'],
+					actions: {
+						save: { label: 'Save', handler: 'task:save' },
+						start_task: { label: 'Start Task', handler: 'start_task', allowedStates: ['Todo'] },
+						complete_task: { label: 'Complete', handler: 'complete_task', allowedStates: ['In Progress'] },
+					},
+				},
 			},
 			null,
 			'\t'

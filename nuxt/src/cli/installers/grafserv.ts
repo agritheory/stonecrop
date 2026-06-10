@@ -52,6 +52,10 @@ export async function installGrafserv(options: GrafservInstallerOptions): Promis
 			moduleOptions: {
 				key: 'grafserv',
 				value: `{
+		// Use in-memory Grafast resolvers (no database required)
+		// Switch to 'postgraphile' when connecting a real database
+		type: 'schema',
+
 		// GraphQL schema and resolvers
 		schema: '${schemaPath}',
 		resolvers: '${resolversPath}',
@@ -125,6 +129,31 @@ async function scaffoldServerFiles(cwd: string): Promise<void> {
 		consola.info('Created server/plugins.ts')
 	} else {
 		consola.info('server/plugins.ts already exists, skipping')
+	}
+
+	// Scaffold server/data.ts (in-memory data store)
+	const dataPath = join(serverDir, 'data.ts')
+	if (!existsSync(dataPath)) {
+		const dataTemplate = await loadTemplate('data.ts')
+		await writeFile(dataPath, dataTemplate, 'utf-8')
+		consola.info('Created server/data.ts')
+	} else {
+		consola.info('server/data.ts already exists, skipping')
+	}
+
+	// Scaffold server/plugins/stonecrop.ts (Nitro server plugin for handler registration)
+	const nitroPluginsDir = join(serverDir, 'plugins')
+	if (!existsSync(nitroPluginsDir)) {
+		await mkdir(nitroPluginsDir, { recursive: true })
+		consola.info('Created server/plugins/ directory')
+	}
+	const stonecropPluginPath = join(nitroPluginsDir, 'stonecrop.ts')
+	if (!existsSync(stonecropPluginPath)) {
+		const stonecropTemplate = await loadTemplate('stonecrop.ts')
+		await writeFile(stonecropPluginPath, stonecropTemplate, 'utf-8')
+		consola.info('Created server/plugins/stonecrop.ts')
+	} else {
+		consola.info('server/plugins/stonecrop.ts already exists, skipping')
 	}
 }
 
@@ -301,6 +330,19 @@ export const plugins: GraphileConfig.Plugin[] = [
 ]
 
 export default plugins
+`,
+		'data.ts': `export interface Project { id: string; title: string; description: string; status: 'Active' | 'Archived'; createdAt: string }
+export interface Task { id: string; title: string; projectId: string; status: 'Todo' | 'In Progress' | 'Done'; description: string; dueDate: string | null; createdAt: string }
+export const projects = new Map<string, Project>()
+export const tasks = new Map<string, Task>()
+`,
+		'stonecrop.ts': `import { resolve } from 'node:path'
+import { clearRegistry, loadDoctypes, registerBuiltinHandlers } from '@stonecrop/graphql-middleware'
+export default defineNitroPlugin(async () => {
+	clearRegistry()
+	loadDoctypes(resolve(process.cwd(), 'doctypes'), { continueOnError: true })
+	registerBuiltinHandlers()
+})
 `,
 	}
 
