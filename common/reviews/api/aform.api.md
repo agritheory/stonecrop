@@ -14,9 +14,11 @@ import ADateTime from './components/form/ADateTime.vue';
 import ADropdown from './components/form/ADropdown.vue';
 import ADuration from './components/form/ADuration.vue';
 import AFieldset from './components/form/AFieldset.vue';
+import AFieldsetLoading from './components/form/AFieldsetLoading.vue';
 import AFileAttach from './components/form/AFileAttach.vue';
 import AForm from './components/AForm.vue';
 import AFormLink from './components/form/AFormLink.vue';
+import AFormLoading from './components/AFormLoading.vue';
 import ANumericInput from './components/form/ANumericInput.vue';
 import type { App } from 'vue';
 import ATextInput from './components/form/ATextInput.vue';
@@ -47,6 +49,8 @@ export { ADuration }
 
 export { AFieldset }
 
+export { AFieldsetLoading }
+
 export { AFileAttach }
 
 export { AForm }
@@ -64,6 +68,8 @@ export interface AFormLinkValue {
     displayText?: string;
     id: string | number;
 }
+
+export { AFormLoading }
 
 export { ANumericInput }
 
