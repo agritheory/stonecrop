@@ -1,6 +1,14 @@
 # Change Log - @stonecrop/nuxt
 
-This log was last generated on Mon, 08 Jun 2026 13:12:21 GMT and should not be manually modified.
+This log was last generated on Thu, 11 Jun 2026 10:23:31 GMT and should not be manually modified.
+
+## 0.13.10
+Thu, 11 Jun 2026 10:23:31 GMT
+
+### Patches
+
+- fix CLI bootstrap example
+- add Countries GraphQL playground example
 
 ## 0.13.9
 Mon, 08 Jun 2026 13:12:21 GMT
