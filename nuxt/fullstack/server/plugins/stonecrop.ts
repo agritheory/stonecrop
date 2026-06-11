@@ -12,13 +12,48 @@ import { resolve } from 'node:path'
 import { loadDoctypes, registerBuiltinHandlers, registerHandler, clearRegistry } from '@stonecrop/graphql-middleware'
 import { mockExecutor } from '../mock-executor'
 
+/**
+ * Action argument shape sent by the frontend — runDoctypeAction in
+ * app/composables/useDoctypes.ts sends a single `{ id, data? }` object,
+ * where `data` carries form values for save-type actions.
+ */
+type ActionArgs = [{ id: string; data?: Record<string, unknown> }]
+
 // Define custom action handlers for this playground
 const customHandlers = {
+	/**
+	 * Save form edits to a user
+	 */
+	'user:save': async (args: unknown[], context: { executor: typeof mockExecutor }) => {
+		const [{ id, data }] = args as ActionArgs
+		const result = await context.executor.mutate<{
+			updateUserById: { user: { id: string } } | null
+		}>(`mutation { updateUserById(id: $id, patch: $patch) { user { id } } }`, {
+			id,
+			patch: data ?? {},
+		})
+		return result.updateUserById?.user
+	},
+
+	/**
+	 * Save form edits to an order
+	 */
+	'order:save': async (args: unknown[], context: { executor: typeof mockExecutor }) => {
+		const [{ id, data }] = args as ActionArgs
+		const result = await context.executor.mutate<{
+			updateOrderById: { order: { id: string } } | null
+		}>(`mutation { updateOrderById(id: $id, patch: $patch) { order { id } } }`, {
+			id,
+			patch: data ?? {},
+		})
+		return result.updateOrderById?.order
+	},
+
 	/**
 	 * Activate a user - transitions status from PENDING/SUSPENDED to ACTIVE
 	 */
 	activate_user: async (args: unknown[], context: { executor: typeof mockExecutor }) => {
-		const [userId] = args as [string]
+		const [{ id: userId }] = args as ActionArgs
 		const result = await context.executor.mutate<{
 			updateUserById: { user: { id: string; status: string } } | null
 		}>(`mutation { updateUserById(id: $id, patch: { status: "ACTIVE" }) { user { id status } } }`, {
@@ -32,7 +67,7 @@ const customHandlers = {
 	 * Suspend a user - transitions status from ACTIVE to SUSPENDED
 	 */
 	suspend_user: async (args: unknown[], context: { executor: typeof mockExecutor }) => {
-		const [userId] = args as [string]
+		const [{ id: userId }] = args as ActionArgs
 		const result = await context.executor.mutate<{
 			updateUserById: { user: { id: string; status: string } } | null
 		}>(`mutation { updateUserById(id: $id, patch: { status: "SUSPENDED" }) { user { id status } } }`, {
@@ -46,7 +81,7 @@ const customHandlers = {
 	 * Delete a user - marks status as DELETED (soft delete)
 	 */
 	delete_user: async (args: unknown[], context: { executor: typeof mockExecutor }) => {
-		const [userId] = args as [string]
+		const [{ id: userId }] = args as ActionArgs
 		const result = await context.executor.mutate<{
 			updateUserById: { user: { id: string; status: string } } | null
 		}>(`mutation { updateUserById(id: $id, patch: { status: "DELETED" }) { user { id status } } }`, {
@@ -60,7 +95,7 @@ const customHandlers = {
 	 * Submit an order - transitions from DRAFT to PENDING
 	 */
 	submit_order: async (args: unknown[], context: { executor: typeof mockExecutor }) => {
-		const [orderId] = args as [string]
+		const [{ id: orderId }] = args as ActionArgs
 		const result = await context.executor.mutate<{
 			updateOrderById: { order: { id: string; status: string } } | null
 		}>(`mutation { updateOrderById(id: $id, patch: { status: "PENDING" }) { order { id status } } }`, {
@@ -74,7 +109,7 @@ const customHandlers = {
 	 * Process an order - transitions from PENDING to PROCESSING
 	 */
 	process_order: async (args: unknown[], context: { executor: typeof mockExecutor }) => {
-		const [orderId] = args as [string]
+		const [{ id: orderId }] = args as ActionArgs
 		const result = await context.executor.mutate<{
 			updateOrderById: { order: { id: string; status: string } } | null
 		}>(`mutation { updateOrderById(id: $id, patch: { status: "PROCESSING" }) { order { id status } } }`, {
@@ -88,7 +123,7 @@ const customHandlers = {
 	 * Ship an order - transitions from PROCESSING to SHIPPED
 	 */
 	ship_order: async (args: unknown[], context: { executor: typeof mockExecutor }) => {
-		const [orderId] = args as [string]
+		const [{ id: orderId }] = args as ActionArgs
 		const result = await context.executor.mutate<{
 			updateOrderById: { order: { id: string; status: string } } | null
 		}>(`mutation { updateOrderById(id: $id, patch: { status: "SHIPPED" }) { order { id status } } }`, {
@@ -102,7 +137,7 @@ const customHandlers = {
 	 * Complete an order - transitions from SHIPPED to COMPLETED
 	 */
 	complete_order: async (args: unknown[], context: { executor: typeof mockExecutor }) => {
-		const [orderId] = args as [string]
+		const [{ id: orderId }] = args as ActionArgs
 		const result = await context.executor.mutate<{
 			updateOrderById: { order: { id: string; status: string } } | null
 		}>(`mutation { updateOrderById(id: $id, patch: { status: "COMPLETED" }) { order { id status } } }`, {
@@ -116,7 +151,7 @@ const customHandlers = {
 	 * Cancel an order - transitions to CANCELLED from any non-COMPLETED state
 	 */
 	cancel_order: async (args: unknown[], context: { executor: typeof mockExecutor }) => {
-		const [orderId] = args as [string]
+		const [{ id: orderId }] = args as ActionArgs
 		const result = await context.executor.mutate<{
 			updateOrderById: { order: { id: string; status: string } } | null
 		}>(`mutation { updateOrderById(id: $id, patch: { status: "CANCELLED" }) { order { id status } } }`, {

@@ -232,15 +232,18 @@ export async function updateNuxtConfig(cwd: string, updates: NuxtConfigUpdate): 
 		const newEntries = updates.css.map(pkg => `'${pkg}'`)
 
 		if (cssMatch && cssMatch.index !== undefined) {
-			// css array exists — add entries that aren't present
+			// css array exists — add entries that aren't present (match regardless of quote style)
 			const startIndex = cssMatch.index + cssMatch[0].length
 			const closingIndex = findMatchingBracket(content, startIndex - 1)
 			if (closingIndex !== -1) {
-				const arrayContent = content.slice(startIndex, closingIndex).trim()
-				const toAdd = newEntries.filter(e => !arrayContent.includes(e))
+				const arrayContent = content.slice(startIndex, closingIndex)
+				const toAdd = updates.css.filter(
+					pkg => !arrayContent.includes(`'${pkg}'`) && !arrayContent.includes(`"${pkg}"`)
+				)
 				if (toAdd.length > 0) {
-					const separator = arrayContent.length > 0 ? ', ' : ''
-					content = content.slice(0, closingIndex) + separator + toAdd.join(', ') + content.slice(closingIndex)
+					const separator = arrayContent.trim().length > 0 ? ', ' : ''
+					const insertion = toAdd.map(pkg => `'${pkg}'`).join(', ')
+					content = content.slice(0, closingIndex) + separator + insertion + content.slice(closingIndex)
 					modified = true
 				}
 			}
@@ -251,11 +254,12 @@ export async function updateNuxtConfig(cwd: string, updates: NuxtConfigUpdate): 
 			if (modulesEndMatch && modulesEndMatch.index !== undefined) {
 				const insertIndex = modulesEndMatch.index + modulesEndMatch[0].length
 				content = content.slice(0, insertIndex) + `\n\n\tcss: [${newEntries.join(', ')}],` + content.slice(insertIndex)
+				modified = true
 			} else if (defineNuxtConfigMatch && defineNuxtConfigMatch.index !== undefined) {
 				const insertIndex = defineNuxtConfigMatch.index + defineNuxtConfigMatch[0].length
 				content = content.slice(0, insertIndex) + `\n\tcss: [${newEntries.join(', ')}],` + content.slice(insertIndex)
+				modified = true
 			}
-			modified = true
 		}
 	}
 

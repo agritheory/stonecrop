@@ -52,7 +52,8 @@ function formatFieldMeta(field: { kind?: string; fieldname: string; fieldtype?: 
 function formatDoctypeMeta(meta: DoctypeMeta) {
 	const actions = meta.workflow?.actions
 	const actionList = actions
-		? Object.entries(actions as Record<string, Record<string, unknown>>).map(([, action]) => ({
+		? Object.entries(actions as Record<string, Record<string, unknown>>).map(([name, action]) => ({
+				name,
 				label: action.label ?? null,
 				handler: action.handler ?? null,
 				requiredFields: (action.requiredFields as string[]) ?? [],
@@ -103,8 +104,9 @@ function getRecords(doctype: string, filters?: Record<string, unknown>): (Projec
 
 function nextId(doctype: string): string {
 	const d = doctype.toLowerCase()
-	const size = d === 'project' ? projects.size : tasks.size
-	return String(size + 1)
+	const ids = d === 'project' ? projects.keys() : tasks.keys()
+	const max = Math.max(0, ...Array.from(ids, id => Number(id) || 0))
+	return String(max + 1)
 }
 
 // ============================================================
