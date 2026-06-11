@@ -144,7 +144,8 @@ export async function runInstaller(options: InstallerOptions): Promise<void> {
 	let stepNum = 2
 
 	if (selectedFeatures.graphql) {
-		consola.info(`${stepNum}. Update your GraphQL schema and resolvers:`)
+		consola.info(`${stepNum}. Your GraphQL server works out of the box with in-memory sample data.`)
+		consola.info(`   To connect a real database later, see:`)
 		consola.info(`   - server/schema.graphql`)
 		consola.info(`   - server/resolvers.ts`)
 		console.log()
@@ -161,8 +162,8 @@ export async function runInstaller(options: InstallerOptions): Promise<void> {
 
 	if (selectedFeatures.doctypes) {
 		consola.info(`${stepNum}. Customize your doctypes:`)
-		consola.info(`   - doctypes/Example.json`)
-		consola.info(`   - doctypes/example-table.json`)
+		consola.info(`   - doctypes/Project.json`)
+		consola.info(`   - doctypes/Task.json`)
 		console.log()
 	}
 

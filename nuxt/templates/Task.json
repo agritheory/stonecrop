@@ -1,0 +1,74 @@
+{
+	"name": "Task",
+	"slug": "task",
+	"fields": [
+		{
+			"fieldname": "id",
+			"label": "ID",
+			"component": "ATextInput",
+			"fieldtype": "Data",
+			"mode": "display"
+		},
+		{
+			"fieldname": "title",
+			"label": "Title",
+			"component": "ATextInput",
+			"fieldtype": "Data",
+			"required": true
+		},
+		{
+			"fieldname": "projectId",
+			"label": "Project",
+			"component": "ACombobox",
+			"fieldtype": "Link",
+			"options": "project",
+			"required": true
+		},
+		{
+			"fieldname": "status",
+			"label": "Status",
+			"component": "ADropdown",
+			"fieldtype": "Select",
+			"options": ["Todo", "In Progress", "Done"],
+			"default": "Todo"
+		},
+		{
+			"fieldname": "description",
+			"label": "Description",
+			"component": "ATextarea",
+			"fieldtype": "Text"
+		},
+		{
+			"fieldname": "dueDate",
+			"label": "Due Date",
+			"component": "ADatepicker",
+			"fieldtype": "Date"
+		},
+		{
+			"fieldname": "createdAt",
+			"label": "Created At",
+			"component": "ATextInput",
+			"fieldtype": "Datetime",
+			"mode": "display"
+		}
+	],
+	"workflow": {
+		"states": ["Todo", "In Progress", "Done"],
+		"actions": {
+			"save": {
+				"label": "Save",
+				"handler": "task:save"
+			},
+			"start_task": {
+				"label": "Start Task",
+				"handler": "start_task",
+				"allowedStates": ["Todo"]
+			},
+			"complete_task": {
+				"label": "Complete",
+				"handler": "complete_task",
+				"allowedStates": ["In Progress"]
+			}
+		}
+	}
+}

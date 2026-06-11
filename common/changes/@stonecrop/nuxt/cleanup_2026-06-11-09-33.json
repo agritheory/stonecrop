@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@stonecrop/nuxt",
-      "comment": "add Countries GraphQL playground example",
+      "comment": "fix CLI bootstrap example",
       "type": "patch"
     }
   ],
