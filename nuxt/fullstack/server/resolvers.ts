@@ -222,6 +222,12 @@ export default {
 									}
 								}
 
+								// ActionContext deliberately has an open index signature ([key: string]: unknown)
+								// as the extension point for injecting a data access layer (see ADR 0003).
+								// `executor` here is this example's in-memory backend — application-owned
+								// plumbing, not a framework convention. In a PostGraphile setup this slot
+								// is `pgClient` (an active database connection); for any other custom
+								// backend, inject whatever your handlers need to read and write data.
 								const actionContext: ActionContext = {
 									doctype: meta,
 									executor: mockExecutor,
