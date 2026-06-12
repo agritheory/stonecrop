@@ -1,7 +1,7 @@
 <template>
 	<div>
 		<template v-if="mode === 'display'">
-			<span class="aform_display-value">{{ inputDate ? new Date(inputDate).toLocaleDateString() : '' }}</span>
+			<span class="aform_display-value">{{ modelValue ? new Date(inputDate).toLocaleDateString() : '' }}</span>
 			<label>{{ label }}</label>
 		</template>
 		<template v-else>
@@ -9,42 +9,73 @@
 				:id="uuid"
 				ref="date"
 				v-model="inputDate"
+				class="adate-input"
+				:value="inputDate"
 				type="date"
 				:disabled="mode === 'read'"
 				:required="required"
-				@click="showPicker" />
+				@click.prevent="
+					() => {
+						showPicker = !showPicker
+					}
+				" />
 			<label :for="uuid">{{ label }}</label>
 			<p v-show="validation.errorMessage" v-html="validation.errorMessage"></p>
+			<ADateSelection
+				v-if="showPicker"
+				ref="picker"
+				class="picker"
+				:select-range="false"
+				:show-time="false"
+				@get-date="handleDate" />
 		</template>
 	</div>
 </template>
 
 <script setup lang="ts">
-import { useTemplateRef } from 'vue'
+import { useTemplateRef, ref, computed, watch } from 'vue'
+import { onClickOutside } from '@vueuse/core'
 
-import { ComponentProps } from '../../types'
+import ADateSelection from './ADateSelection.vue'
+import type { ComponentProps } from '../../types'
 
 const { label = 'Date', required, mode, uuid, validation = { errorMessage: '&nbsp;' } } = defineProps<ComponentProps>()
 
-const inputDate = defineModel<string | number | Date>({
-	// format the date to be compatible with the native input datepicker
-	set: value => new Date(value).toISOString().split('T')[0],
-})
-const dateRef = useTemplateRef<HTMLInputElement>('date')
+const modelValue = defineModel<string | Date>()
 
-const showPicker = () => {
-	if (dateRef.value) {
-		if ('showPicker' in HTMLInputElement.prototype) {
-			// https://developer.mozilla.org/en-US/docs/Web/API/HTMLInputElement/showPicker
-			// TODO: re-check browser support and compatibility; figure out alternative ways
-			// to spawn the native datepicker and eventually replace with ADatepicker
-			dateRef.value.showPicker()
+const currentDate = ref(modelValue.value ? new Date(modelValue.value) : new Date())
+const inputDate = computed({
+	get: () => currentDate.value.toISOString().split('T')[0],
+	set: (value: string) => {
+		currentDate.value = new Date(value)
+		modelValue.value = value
+	},
+})
+
+const pickerRef = useTemplateRef<HTMLDivElement>('picker')
+const showPicker = ref(false)
+
+onClickOutside(pickerRef, () => (showPicker.value = false))
+
+watch(
+	() => modelValue.value,
+	newValue => {
+		if (newValue) {
+			currentDate.value = new Date(newValue)
 		}
 	}
+)
+
+const handleDate = (data: { selected: Date }) => {
+	currentDate.value = data.selected
+	modelValue.value = inputDate.value
 }
 </script>
 
 <style scoped>
+.adate-input {
+	overflow: auto;
+}
 div {
 	min-width: 40ch;
 	width: 100%;
@@ -101,5 +132,9 @@ input:focus {
 
 input:focus + label {
 	color: var(--sc-input-active-label-color);
+}
+.picker {
+	position: absolute;
+	top: 50px;
 }
 </style>

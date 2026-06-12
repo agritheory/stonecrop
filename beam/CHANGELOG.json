@@ -2,6 +2,78 @@
   "name": "@stonecrop/beam",
   "entries": [
     {
+      "version": "0.13.10",
+      "tag": "@stonecrop/beam_v0.13.10",
+      "date": "Thu, 11 Jun 2026 10:23:31 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.13.9",
+      "tag": "@stonecrop/beam_v0.13.9",
+      "date": "Mon, 08 Jun 2026 13:12:21 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.13.8",
+      "tag": "@stonecrop/beam_v0.13.8",
+      "date": "Thu, 04 Jun 2026 12:04:15 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.13.7",
+      "tag": "@stonecrop/beam_v0.13.7",
+      "date": "Thu, 04 Jun 2026 11:09:19 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.13.6",
+      "tag": "@stonecrop/beam_v0.13.6",
+      "date": "Thu, 04 Jun 2026 09:33:09 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.13.5",
+      "tag": "@stonecrop/beam_v0.13.5",
+      "date": "Tue, 02 Jun 2026 11:07:20 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "migrate linter from eslint to oxlint"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.13.4",
+      "tag": "@stonecrop/beam_v0.13.4",
+      "date": "Tue, 02 Jun 2026 07:09:16 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.13.3",
+      "tag": "@stonecrop/beam_v0.13.3",
+      "date": "Tue, 02 Jun 2026 05:55:11 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.13.2",
+      "tag": "@stonecrop/beam_v0.13.2",
+      "date": "Thu, 28 May 2026 06:18:59 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.13.1",
+      "tag": "@stonecrop/beam_v0.13.1",
+      "date": "Tue, 26 May 2026 14:15:00 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.13.0",
+      "tag": "@stonecrop/beam_v0.13.0",
+      "date": "Wed, 20 May 2026 11:08:30 GMT",
+      "comments": {}
+    },
+    {
       "version": "0.12.8",
       "tag": "@stonecrop/beam_v0.12.8",
       "date": "Mon, 18 May 2026 11:24:35 GMT",

@@ -175,7 +175,7 @@ describe('CASL GraphQL Middleware', { tags: ['unit', 'graphql'] }, () => {
 
 			// This should work because we're not passing the conditions through args
 			// The middleware should check the general permission
-			const result = await middleware(mockResolve, {}, {}, mockContext, mockInfo as GraphQLResolveInfo)
+			await middleware(mockResolve, {}, {}, mockContext, mockInfo as GraphQLResolveInfo)
 
 			expect(mockResolve).toHaveBeenCalled()
 		})

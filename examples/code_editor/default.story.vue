@@ -1,41 +1,49 @@
 <template>
 	<Story title="default">
-		<div id="code-editor">
-			<ACodeEditor :options="options" />
-		</div>
+		<Variant title="edit mode">
+			<div class="story-container">
+				<ACodeEditor v-model="code" language="typescript" :options="{ minimap: { enabled: false } }" />
+			</div>
+		</Variant>
+
+		<Variant title="read mode">
+			<ACodeEditor v-model="code" language="typescript" mode="read" :options="{ minimap: { enabled: false } }" />
+		</Variant>
 	</Story>
 </template>
 
 <script setup lang="ts">
-import { ACodeEditor } from '@stonecrop/code-editor'
-import { editor } from 'monaco-editor'
+import { ref } from 'vue'
 
-const value = `
-type Person = {
+import { ACodeEditor } from '@stonecrop/code-editor'
+
+const code = ref(`type Person = {
 	name: string
 }
 
 type Company = {
 	name: string
 	manager: Person
-}
-`
-
-const options: editor.IStandaloneEditorConstructionOptions = {
-	language: 'typescript',
-	value,
-	minimap: {
-		enabled: false,
-	},
-}
+}`)
 </script>
 
 <style scoped>
-#code-editor {
-	height: 300px;
-	resize: both;
-	overflow: auto;
-	border: 1px solid black;
+.story-container {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.live-value {
+	margin: 0;
+	padding: 8px 12px;
+	background: #f5f5f5;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+	font-size: 12px;
+	font-family: monospace;
+	white-space: pre-wrap;
+	min-height: 40px;
 }
 </style>
 

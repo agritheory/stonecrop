@@ -21,10 +21,9 @@ describe('PostGraphile CASL Plugins', { tags: ['unit', 'graphql'] }, () => {
 			expect(pglCaslPlugin).toHaveProperty('schema')
 			expect(typeof pglCaslPlugin.schema).toBe('object')
 
-			// Check for hooks if they exist
-			if (pglCaslPlugin.schema?.hooks) {
-				expect(pglCaslPlugin.schema.hooks).toHaveProperty('build')
-			}
+			// extendSchema always produces schema.hooks unconditionally
+			expect(pglCaslPlugin.schema?.hooks).toBeDefined()
+			expect(pglCaslPlugin.schema?.hooks).toHaveProperty('build')
 		})
 
 		it('should define schema extensions when executed', () => {

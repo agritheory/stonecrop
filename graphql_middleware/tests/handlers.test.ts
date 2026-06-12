@@ -10,12 +10,11 @@ import type { ActionHandler } from '../src/types'
 
 const scalarOnlyMeta: DoctypeMeta = {
 	name: 'Resource',
-	tableName: 'resources',
 	fields: [
-		{ fieldname: 'id', fieldtype: 'Data', label: 'ID' },
-		{ fieldname: 'name', fieldtype: 'Data', label: 'Name' },
-		{ fieldname: 'quantity', fieldtype: 'Int', label: 'Quantity' },
-		{ fieldname: 'is_active', fieldtype: 'Check', label: 'Active' },
+		{ kind: 'field', fieldname: 'id', fieldtype: 'PrimaryKey', label: 'ID' },
+		{ kind: 'field', fieldname: 'name', fieldtype: 'Data', label: 'Name' },
+		{ kind: 'field', fieldname: 'quantity', fieldtype: 'Int', label: 'Quantity' },
+		{ kind: 'field', fieldname: 'is_active', fieldtype: 'Check', label: 'Active' },
 	],
 }
 

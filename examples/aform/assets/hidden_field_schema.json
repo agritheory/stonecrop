@@ -8,13 +8,6 @@
 		"hidden": true
 	},
 	{
-		"fieldname": "rowId",
-		"fieldtype": "Data",
-		"component": "ATextInput",
-		"label": "Row ID",
-		"hidden": true
-	},
-	{
 		"fieldname": "first_name",
 		"fieldtype": "Data",
 		"component": "ATextInput",

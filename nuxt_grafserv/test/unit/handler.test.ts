@@ -17,44 +17,41 @@ vi.mock('#internal/grafserv/middleware', () => ({
 	default: [],
 }))
 
-describe('Handler Functions', { tags: ['unit', 'nuxt', 'graphql'] }, () => {
-	// Mock grafserv
-	vi.mock('grafserv/h3/v1', () => ({
-		grafserv: vi.fn(() => ({
-			handleGraphQLEvent: vi.fn(),
-			handleGraphiqlEvent: vi.fn(),
-			handleGraphiqlStaticEvent: vi.fn(),
-			getPreset: vi.fn(),
-		})),
-	}))
+vi.mock('grafserv/h3/v1', () => ({
+	grafserv: vi.fn(() => ({
+		handleGraphQLEvent: vi.fn(),
+		handleGraphiqlEvent: vi.fn(),
+		handleGraphiqlStaticEvent: vi.fn(),
+		getPreset: vi.fn(),
+	})),
+}))
 
-	// Mock grafast
-	vi.mock('grafast', () => ({
-		makeGrafastSchema: vi.fn(({ typeDefs, objects }) => ({
-			_typeDefs: typeDefs,
-			_objects: objects,
-			_type: 'MockSchema',
-		})),
-	}))
+vi.mock('grafast', () => ({
+	makeGrafastSchema: vi.fn(({ typeDefs, objects }) => ({
+		_typeDefs: typeDefs,
+		_objects: objects,
+		_type: 'MockSchema',
+	})),
+}))
 
-	// Mock graphql-tools
-	vi.mock('@graphql-tools/load', () => ({
-		loadTypedefs: vi.fn(() =>
-			Promise.resolve([
-				{
-					document: {
-						kind: 'Document',
-						definitions: [],
-					},
+vi.mock('@graphql-tools/load', () => ({
+	loadTypedefs: vi.fn(() =>
+		Promise.resolve([
+			{
+				document: {
+					kind: 'Document',
+					definitions: [],
 				},
-			])
-		),
-	}))
+			},
+		])
+	),
+}))
 
-	vi.mock('@graphql-tools/graphql-file-loader', () => ({
-		GraphQLFileLoader: vi.fn(),
-	}))
+vi.mock('@graphql-tools/graphql-file-loader', () => ({
+	GraphQLFileLoader: vi.fn(),
+}))
 
+describe('Handler Functions', { tags: ['unit', 'nuxt', 'graphql'] }, () => {
 	beforeEach(() => {
 		vi.clearAllMocks()
 	})

@@ -39,7 +39,6 @@ const taskRef: DoctypeRef = { name: 'Task' }
 
 const taskMeta: DoctypeMeta = {
 	name: 'Task',
-	tableName: 'tasks',
 	fields: [
 		{ fieldname: 'id', fieldtype: 'Data', label: 'ID' },
 		{ fieldname: 'title', fieldtype: 'Data', label: 'Title' },

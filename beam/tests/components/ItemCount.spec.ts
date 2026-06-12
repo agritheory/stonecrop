@@ -87,9 +87,8 @@ describe('ItemCount', { tags: ['component'] }, () => {
 				denominator: 10,
 			},
 		})
-		const span = wrapper.find('.beam_item-count span')
-		const element = span.element as HTMLElement
-		element.innerHTML = '15'
+		const span = wrapper.find<HTMLElement>('.beam_item-count span')
+		span.element.innerHTML = '15'
 		await span.trigger('click')
 		expect(wrapper.emitted('update:modelValue')?.[0]).toEqual([10])
 	})

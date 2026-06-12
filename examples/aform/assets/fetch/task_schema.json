@@ -1,7 +1,6 @@
 {
 	"name": "Task",
 	"slug": "task",
-	"tableName": "task",
 	"fields": [
 		{
 			"fieldname": "name",

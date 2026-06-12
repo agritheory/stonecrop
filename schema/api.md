@@ -184,7 +184,7 @@ Parse and validate a field, throwing on failure
 **Signature:**
 
 ```typescript
-export declare function parseField(data: unknown): FieldMeta;
+export declare function parseField(data: unknown): import('./field').DoctypeField;
 ```
 
 **Parameters:**
@@ -307,7 +307,7 @@ export declare function validateDoctype(data: unknown): ValidationResult;
 
 ### validateField
 
-Validate a field definition
+Validate a field definition against the DoctypeField discriminated union
 
 **Signature:**
 
@@ -394,7 +394,7 @@ Output of GraphQL schema conversion — one per entity type.
 ```typescript
 export interface ConvertedGraphQLDoctype {
   _graphqlTypeName?: string;
-  fields: GraphQLConversionFieldMeta[];
+  fields: ValueField[];
 }
 ```
 
@@ -403,7 +403,7 @@ export interface ConvertedGraphQLDoctype {
 | Property | Type | Description |
 |----------|------|-------------|
 | _graphqlTypeName? | `string` | Original GraphQL type name (for debugging/reference) |
-| fields | `GraphQLConversionFieldMeta[]` | Field definitions with optional GraphQL conversion metadata |
+| fields | `ValueField[]` | Field definitions — GraphQL conversion metadata stripped; same shape as DoctypeMeta.fields |
 
 ### DataClient
 
@@ -463,6 +463,36 @@ export interface DoctypeRef {
 |----------|------|-------------|
 | name | `string` | Doctype name (e.g., 'Task', 'Customer') |
 | slug? | `string` | URL-friendly slug (e.g., 'task', 'customer') |
+
+### FieldsetField
+
+A layout container that groups other fields. Resolves to a nested AForm.
+
+**Definition:**
+
+```typescript
+export interface FieldsetField {
+  collapsible?: boolean;
+  component?: string;
+  fieldname: string;
+  kind: 'fieldset';
+  label?: string;
+  mode?: InteractionMode;
+  schema: DoctypeField[];
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| collapsible? | `boolean` | Whether the fieldset can be collapsed |
+| component? | `string` | Vue component to render this fieldset. Defaults to `'AFieldset'` in resolveSchema. |
+| fieldname | `string` | Unique identifier for this fieldset within its doctype |
+| kind | `'fieldset'` | Discriminator — identifies this as a fieldset container |
+| label? | `string` | Human-readable label for the fieldset legend |
+| mode? | `InteractionMode` | Interaction mode for all children inside this fieldset |
+| schema | `DoctypeField[]` | Nested field definitions — resolved recursively by resolveSchema |
 
 ### FieldTemplate
 
@@ -557,6 +587,7 @@ export interface GraphQLConversionFieldMeta {
   _graphqlType?: string;
   _isLink?: boolean;
   _unmapped?: boolean;
+  fieldtype?: string;
 }
 ```
 
@@ -567,6 +598,7 @@ export interface GraphQLConversionFieldMeta {
 | _graphqlType? | `string` | Original GraphQL type name (for debugging/reference) |
 | _isLink? | `boolean` | Marks relationship fields that belong in `links`, not `fields` |
 | _unmapped? | `boolean` | Marks fields that couldn't be automatically mapped |
+| fieldtype? | `string` | Semantic field type - optional for link fields which don't have a fieldtype |
 
 ### GraphQLConversionOptions
 
@@ -576,15 +608,14 @@ Options for converting a GraphQL schema to Stonecrop doctype schemas. All hooks 
 
 ```typescript
 export interface GraphQLConversionOptions {
-  classifyField?: (fieldName: string, field: GraphQLField<unknown, unknown>, parentType: GraphQLObjectType) => Partial<FieldMeta> | null;
+  classifyField?: (fieldName: string, field: GraphQLField<unknown, unknown>, parentType: GraphQLObjectType) => Omit<Partial<ValueField>, 'kind'> | null;
   customScalars?: Record<string, Partial<FieldTemplate>>;
-  deriveTableName?: (typeName: string) => string | undefined;
   exclude?: string[];
   include?: string[];
   includeUnmappedMeta?: boolean;
   isEntityField?: (fieldName: string, field: GraphQLField<unknown, unknown>, parentType: GraphQLObjectType) => boolean;
   isEntityType?: (typeName: string, type: GraphQLObjectType) => boolean;
-  typeOverrides?: Record<string, Record<string, Partial<FieldMeta>>>;
+  typeOverrides?: Record<string, Record<string, Omit<Partial<ValueField>, 'kind'>>>;
 }
 ```
 
@@ -592,15 +623,44 @@ export interface GraphQLConversionOptions {
 
 | Property | Type | Description |
 |----------|------|-------------|
-| classifyField? | `(fieldName: string, field: GraphQLField<unknown, unknown>, parentType: GraphQLObjectType) => Partial<FieldMeta> \| null` | Escape hatch: fully override the classification of a specific field. When this returns a non-null value, it is used as the field definition (merged with the field name). Return `null` to fall through to default classification. |
+| classifyField? | `(fieldName: string, field: GraphQLField<unknown, unknown>, parentType: GraphQLObjectType) => Omit<Partial<ValueField>, 'kind'> \| null` | Escape hatch: fully override the classification of a specific field. When this returns a non-null value, it is used as the field definition (merged with the field name). Return `null` to fall through to default classification. |
 | customScalars? | `Record<string, Partial<FieldTemplate>>` | Map custom or non-standard GraphQL scalar types to Stonecrop field types. Merged with the built-in scalar maps (GQL_SCALAR_MAP + WELL_KNOWN_SCALARS). User-provided entries take highest precedence. |
-| deriveTableName? | `(typeName: string) => string \| undefined` | Custom function to derive the database table name from a GraphQL type name. The default converts PascalCase to snake_case (e.g., `SalesOrder` → `sales_order`). Return `undefined` to omit `tableName` from the output. |
 | exclude? | `string[]` | GraphQL type names to exclude from conversion. Applied after `isEntityType` filtering. |
 | include? | `string[]` | Whitelist of GraphQL type names to convert. When provided, only these types are considered (after `isEntityType` filtering). |
 | includeUnmappedMeta? | `boolean` | Include `_graphqlType` and `_unmapped` metadata on converted fields. Useful for debugging conversions. Defaults to `false`. |
 | isEntityField? | `(fieldName: string, field: GraphQLField<unknown, unknown>, parentType: GraphQLObjectType) => boolean` | Custom function to filter which fields on an entity type are included. When provided, replaces the default field filter. The default filter excludes `nodeId`, `__typename`, and `clientMutationId`. |
 | isEntityType? | `(typeName: string, type: GraphQLObjectType) => boolean` | Custom function to determine if a GraphQL object type represents an entity (→ doctype). When provided, replaces the default heuristic entirely. The default heuristic excludes types matching synthetic patterns: `*Connection`, `*Edge`, `*Input`, `*Patch`, `*Payload`, `*Condition`, `*Filter`, `*OrderBy`, `*Aggregate`, `Query`, `Mutation`, `Subscription`, `__*`. |
-| typeOverrides? | `Record<string, Record<string, Partial<FieldMeta>>>` | Per-type, per-field overrides for the converted field definitions. Outer key is the GraphQL type name, inner key is the field name. |
+| typeOverrides? | `Record<string, Record<string, Omit<Partial<ValueField>, 'kind'>>>` | Per-type, per-field overrides for the converted field definitions. Outer key is the GraphQL type name, inner key is the field name. |
+
+### TableField
+
+An inline table whose columns are defined directly in the schema (no linked doctype). Use when the table data does not warrant a separate doctype.
+
+**Definition:**
+
+```typescript
+export interface TableField {
+  columns: ColumnSchema[];
+  component?: string;
+  config?: TableViewConfig;
+  fieldname: string;
+  kind: 'table';
+  label?: string;
+  mode?: InteractionMode;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| columns | `ColumnSchema[]` | Column definitions — use ColumnSchema (fieldname key) from stonecrop/schema |
+| component? | `string` | Vue component to render this table. Defaults to `'ATable'` in resolveSchema. |
+| config? | `TableViewConfig` | View configuration — defaults to `{ view: 'list' }` in resolveSchema when absent |
+| fieldname | `string` | Unique identifier for this table within its doctype |
+| kind | `'table'` | Discriminator — identifies this as an inline table |
+| label? | `string` | Human-readable label |
+| mode? | `InteractionMode` | Interaction mode for all cells inside this table |
 
 ### ValidationError
 
@@ -641,6 +701,56 @@ export interface ValidationResult {
 |----------|------|-------------|
 | errors | `ValidationError[]` | List of validation errors (empty if success) |
 | success | `boolean` | Whether validation passed |
+
+### ValueField
+
+A field that holds a scalar value, a link to another record, or a select choice. The most common kind of field. `fieldtype` determines the default component and behavior.
+
+**Definition:**
+
+```typescript
+export interface ValueField {
+  align?: 'left' | 'center' | 'right' | 'start' | 'end';
+  cardinality?: 'atMostOne' | 'one' | 'noneOrMany' | 'atLeastOne';
+  component?: string;
+  default?: unknown;
+  edit?: boolean;
+  fieldname: string;
+  fieldtype: string;
+  hidden?: boolean;
+  kind: 'field';
+  label?: string;
+  mask?: string;
+  mode?: InteractionMode;
+  options?: FieldOptions;
+  readOnly?: boolean;
+  required?: boolean;
+  validation?: FieldValidation;
+  width?: string;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| align? | `'left' \| 'center' \| 'right' \| 'start' \| 'end'` | Text alignment |
+| cardinality? | `'atMostOne' \| 'one' \| 'noneOrMany' \| 'atLeastOne'` | Cardinality for Link fields — authoritative value on LinkDeclaration takes precedence |
+| component? | `string` | Vue component to render this field. Derived from `fieldtype` when absent. |
+| default? | `unknown` | Default value for new records |
+| edit? | `boolean` | Whether the field is editable in table cell context |
+| fieldname | `string` | Unique identifier for this field within its doctype |
+| fieldtype | `string` | Semantic field type — determines behavior and default rendering component |
+| hidden? | `boolean` | Whether the field is hidden from the UI |
+| kind | `'field'` | Discriminator — identifies this as a value-holding field |
+| label? | `string` | Human-readable label |
+| mask? | `string` | Input mask pattern or serialized function |
+| mode? | `InteractionMode` | Per-field interaction mode override |
+| options? | `FieldOptions` | Type-specific options: Link target slug, Select choices, Decimal precision config, etc. |
+| readOnly? | `boolean` | Whether the field is read-only |
+| required? | `boolean` | Whether the field is required |
+| validation? | `FieldValidation` | Validation configuration |
+| width? | `string` | CSS width (e.g. `"40ch"`, `"200px"`) |
 
 ## Type Aliases
 
@@ -684,6 +794,16 @@ Custom fetch strategy type
 export type CustomFetch = z.infer<typeof CustomFetch>;
 ```
 
+### DoctypeField
+
+Union of all authoring-time field variants. Use `kind` to discriminate: `'field'` | `'fieldset'` | `'table'`.
+
+**Definition:**
+
+```typescript
+export type DoctypeField = ValueField | FieldsetField | TableField;
+```
+
 ### DoctypeMeta
 
 Doctype metadata type inferred from Zod schema
@@ -704,16 +824,6 @@ Fetch strategy type
 export type FetchStrategy = z.infer<typeof FetchStrategy>;
 ```
 
-### FieldMeta
-
-Field metadata type inferred from Zod schema
-
-**Definition:**
-
-```typescript
-export type FieldMeta = z.infer<typeof FieldMeta>;
-```
-
 ### FieldOptions
 
 Field options type inferred from Zod schema
@@ -732,6 +842,20 @@ Field validation type inferred from Zod schema
 
 ```typescript
 export type FieldValidation = z.infer<typeof FieldValidation>;
+```
+
+### InteractionMode
+
+Controls the level of user interaction for a field, container, or table.
+
+- `'edit'` — field is fully interactive; user can change the value - `'read'` — field is non-interactive but displayed with form chrome (input outline, etc.) - `'display'` — field is non-interactive and displayed as plain text; no form chrome
+
+Applied at authoring time via `mode` on any `DoctypeField` variant. Propagated through `resolveSchema()` into the resolved output types. Nested `AForm` and `ATable` components inherit `mode` from their parent unless overridden at the field level.
+
+**Definition:**
+
+```typescript
+export type InteractionMode = 'edit' | 'read' | 'display';
 ```
 
 ### IntrospectionSource
@@ -788,6 +912,16 @@ Sync fetch strategy type
 export type SyncFetch = z.infer<typeof SyncFetch>;
 ```
 
+### TableViewConfig
+
+Table view configuration type inferred from Zod schema
+
+**Definition:**
+
+```typescript
+export type TableViewConfig = z.infer<typeof TableViewConfig>;
+```
+
 ### WorkflowMeta
 
 Workflow metadata type inferred from Zod schema
@@ -824,7 +958,7 @@ The complete list of field types built into Stonecrop. User apps can use any str
 **Type:**
 
 ```typescript
-export const BUILTIN_FIELD_TYPES: readonly ["Data", "Text", "Int", "Float", "Decimal", "Check", "Date", "Time", "Datetime", "Duration", "DateRange", "JSON", "Code", "Link", "Attach", "Currency", "Quantity", "Select"]
+export const BUILTIN_FIELD_TYPES: readonly ["Data", "Text", "Int", "Float", "Decimal", "Check", "Date", "Time", "Datetime", "Duration", "DateRange", "JSON", "Code", "Link", "Attach", "Currency", "Quantity", "Select", "PrimaryKey", "Fieldset", "Display"]
 ```
 
 ### Cardinality
@@ -835,8 +969,8 @@ Cardinality for relationship links.
 
 ```typescript
 export const Cardinality: z.ZodEnum<{
-    one: "one";
     atMostOne: "atMostOne";
+    one: "one";
     noneOrMany: "noneOrMany";
     atLeastOne: "atLeastOne";
 }>
@@ -855,6 +989,16 @@ export const CustomFetch: z.ZodObject<{
 }, z.core.$strip>
 ```
 
+### DoctypeFieldSchema
+
+Zod runtime validation schema for the DoctypeField discriminated union. Validates all three field variants: `'field'`, `'fieldset'`, `'table'`.
+
+**Type:**
+
+```typescript
+export const DoctypeFieldSchema: z.ZodType<DoctypeField, unknown, z.core.$ZodTypeInternals<DoctypeField, unknown>>
+```
+
 ### DoctypeMeta
 
 Doctype metadata - complete definition of a doctype
@@ -865,43 +1009,12 @@ Doctype metadata - complete definition of a doctype
 export const DoctypeMeta: z.ZodObject<{
     name: z.ZodString;
     slug: z.ZodOptional<z.ZodString>;
-    tableName: z.ZodOptional<z.ZodString>;
-    fields: z.ZodArray<z.ZodObject<{
-        fieldname: z.ZodString;
-        fieldtype: z.ZodString;
-        component: z.ZodOptional<z.ZodString>;
-        label: z.ZodOptional<z.ZodString>;
-        width: z.ZodOptional<z.ZodString>;
-        align: z.ZodOptional<z.ZodEnum<{
-            left: "left";
-            center: "center";
-            right: "right";
-            start: "start";
-            end: "end";
-        }>>;
-        required: z.ZodOptional<z.ZodBoolean>;
-        readOnly: z.ZodOptional<z.ZodBoolean>;
-        edit: z.ZodOptional<z.ZodBoolean>;
-        hidden: z.ZodOptional<z.ZodBoolean>;
-        value: z.ZodOptional<z.ZodUnknown>;
-        default: z.ZodOptional<z.ZodUnknown>;
-        options: z.ZodOptional<z.ZodUnion<readonly [z.ZodString, z.ZodArray<z.ZodString>, z.ZodRecord<z.ZodString, z.ZodUnknown>]>>;
-        cardinality: z.ZodOptional<z.ZodEnum<{
-            one: "one";
-            atMostOne: "atMostOne";
-            noneOrMany: "noneOrMany";
-            atLeastOne: "atLeastOne";
-        }>>;
-        mask: z.ZodOptional<z.ZodString>;
-        validation: z.ZodOptional<z.ZodObject<{
-            errorMessage: z.ZodString;
-        }, z.core.$loose>>;
-    }, z.core.$strip>>;
+    fields: z.ZodArray<z.ZodType<import("./field").DoctypeField, unknown, z.core.$ZodTypeInternals<import("./field").DoctypeField, unknown>>>;
     links: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodObject<{
         target: z.ZodString;
         cardinality: z.ZodEnum<{
-            one: "one";
             atMostOne: "atMostOne";
+            one: "one";
             noneOrMany: "noneOrMany";
             atLeastOne: "atLeastOne";
         }>;
@@ -952,48 +1065,6 @@ export const FetchStrategy: z.ZodDiscriminatedUnion<[z.ZodObject<{
 }, z.core.$strip>], "method">
 ```
 
-### FieldMeta
-
-Unified field metadata - the single source of truth for field definitions. Works for both forms (AForm) and tables (ATable).
-
-Core principle: "Text" is "Text" regardless of rendering context.
-
-**Type:**
-
-```typescript
-export const FieldMeta: z.ZodObject<{
-    fieldname: z.ZodString;
-    fieldtype: z.ZodString;
-    component: z.ZodOptional<z.ZodString>;
-    label: z.ZodOptional<z.ZodString>;
-    width: z.ZodOptional<z.ZodString>;
-    align: z.ZodOptional<z.ZodEnum<{
-        left: "left";
-        center: "center";
-        right: "right";
-        start: "start";
-        end: "end";
-    }>>;
-    required: z.ZodOptional<z.ZodBoolean>;
-    readOnly: z.ZodOptional<z.ZodBoolean>;
-    edit: z.ZodOptional<z.ZodBoolean>;
-    hidden: z.ZodOptional<z.ZodBoolean>;
-    value: z.ZodOptional<z.ZodUnknown>;
-    default: z.ZodOptional<z.ZodUnknown>;
-    options: z.ZodOptional<z.ZodUnion<readonly [z.ZodString, z.ZodArray<z.ZodString>, z.ZodRecord<z.ZodString, z.ZodUnknown>]>>;
-    cardinality: z.ZodOptional<z.ZodEnum<{
-        one: "one";
-        atMostOne: "atMostOne";
-        noneOrMany: "noneOrMany";
-        atLeastOne: "atLeastOne";
-    }>>;
-    mask: z.ZodOptional<z.ZodString>;
-    validation: z.ZodOptional<z.ZodObject<{
-        errorMessage: z.ZodString;
-    }, z.core.$loose>>;
-}, z.core.$strip>
-```
-
 ### FieldOptions
 
 Field options - flexible bag for type-specific configuration.
@@ -1004,6 +1075,28 @@ Usage by fieldtype: - Link/Doctype: target doctype slug as string ("customer", "
 
 ```typescript
 export const FieldOptions: z.ZodUnion<readonly [z.ZodString, z.ZodArray<z.ZodString>, z.ZodRecord<z.ZodString, z.ZodUnknown>]>
+```
+
+### FieldsetFieldSchema
+
+Zod runtime validation schema for FieldsetField. Recursive — FieldsetField.schema is validated against DoctypeFieldSchema.
+
+**Type:**
+
+```typescript
+export const FieldsetFieldSchema: z.ZodObject<{
+    kind: z.ZodLiteral<"fieldset">;
+    fieldname: z.ZodString;
+    component: z.ZodOptional<z.ZodString>;
+    label: z.ZodOptional<z.ZodString>;
+    collapsible: z.ZodOptional<z.ZodBoolean>;
+    mode: z.ZodOptional<z.ZodEnum<{
+        edit: "edit";
+        read: "read";
+        display: "display";
+    }>>;
+    schema: z.ZodLazy<z.ZodArray<z.ZodType<DoctypeField, unknown, z.core.$ZodTypeInternals<DoctypeField, unknown>>>>;
+}, z.core.$strip>
 ```
 
 ### FieldValidation
@@ -1060,8 +1153,8 @@ Link declaration - describes a relationship from one doctype to another.
 export const LinkDeclaration: z.ZodObject<{
     target: z.ZodString;
     cardinality: z.ZodEnum<{
-        one: "one";
         atMostOne: "atMostOne";
+        one: "one";
         noneOrMany: "noneOrMany";
         atLeastOne: "atLeastOne";
     }>;
@@ -1104,6 +1197,74 @@ export const SyncFetch: z.ZodObject<{
 }, z.core.$strip>
 ```
 
+### TableFieldSchema
+
+Zod runtime validation schema for TableField.
+
+**Type:**
+
+```typescript
+export const TableFieldSchema: z.ZodObject<{
+    kind: z.ZodLiteral<"table">;
+    fieldname: z.ZodString;
+    component: z.ZodOptional<z.ZodString>;
+    label: z.ZodOptional<z.ZodString>;
+    columns: z.ZodArray<z.ZodObject<{
+        fieldname: z.ZodString;
+    }, z.core.$loose>>;
+    config: z.ZodOptional<z.ZodObject<{
+        view: z.ZodOptional<z.ZodEnum<{
+            list: "list";
+            uncounted: "uncounted";
+            "list-expansion": "list-expansion";
+            tree: "tree";
+            gantt: "gantt";
+            "tree-gantt": "tree-gantt";
+        }>>;
+        fullWidth: z.ZodOptional<z.ZodBoolean>;
+        defaultTreeExpansion: z.ZodOptional<z.ZodEnum<{
+            root: "root";
+            branch: "branch";
+            leaf: "leaf";
+        }>>;
+        dependencyGraph: z.ZodOptional<z.ZodBoolean>;
+    }, z.core.$strip>>;
+    mode: z.ZodOptional<z.ZodEnum<{
+        edit: "edit";
+        read: "read";
+        display: "display";
+    }>>;
+}, z.core.$strip>
+```
+
+### TableViewConfig
+
+JSON-safe view configuration for table fields in doctype authoring.
+
+This is the authoring-time subset of `@stonecrop/atable`'s `TableConfig`. It covers the view discriminator and structural options that can be expressed in static JSON. `rowActions` (which requires function-typed handlers) stays in the runtime `TableConfig`.
+
+**Type:**
+
+```typescript
+export const TableViewConfig: z.ZodObject<{
+    view: z.ZodOptional<z.ZodEnum<{
+        list: "list";
+        uncounted: "uncounted";
+        "list-expansion": "list-expansion";
+        tree: "tree";
+        gantt: "gantt";
+        "tree-gantt": "tree-gantt";
+    }>>;
+    fullWidth: z.ZodOptional<z.ZodBoolean>;
+    defaultTreeExpansion: z.ZodOptional<z.ZodEnum<{
+        root: "root";
+        branch: "branch";
+        leaf: "leaf";
+    }>>;
+    dependencyGraph: z.ZodOptional<z.ZodBoolean>;
+}, z.core.$strip>
+```
+
 ### TYPE_MAP
 
 Mapping from builtin fieldtypes to their default Vue component. Components can be overridden in the field definition.
@@ -1112,6 +1273,51 @@ Mapping from builtin fieldtypes to their default Vue component. Components can b
 
 ```typescript
 export const TYPE_MAP: Record<BuiltinFieldType, FieldTemplate>
+```
+
+### ValueFieldSchema
+
+Zod runtime validation schema for ValueField.
+
+**Type:**
+
+```typescript
+export const ValueFieldSchema: z.ZodObject<{
+    kind: z.ZodLiteral<"field">;
+    fieldname: z.ZodString;
+    fieldtype: z.ZodString;
+    component: z.ZodOptional<z.ZodString>;
+    label: z.ZodOptional<z.ZodString>;
+    width: z.ZodOptional<z.ZodString>;
+    align: z.ZodOptional<z.ZodEnum<{
+        left: "left";
+        right: "right";
+        center: "center";
+        start: "start";
+        end: "end";
+    }>>;
+    edit: z.ZodOptional<z.ZodBoolean>;
+    mask: z.ZodOptional<z.ZodString>;
+    mode: z.ZodOptional<z.ZodEnum<{
+        edit: "edit";
+        read: "read";
+        display: "display";
+    }>>;
+    options: z.ZodOptional<z.ZodUnion<readonly [z.ZodString, z.ZodArray<z.ZodString>, z.ZodRecord<z.ZodString, z.ZodUnknown>]>>;
+    required: z.ZodOptional<z.ZodBoolean>;
+    readOnly: z.ZodOptional<z.ZodBoolean>;
+    hidden: z.ZodOptional<z.ZodBoolean>;
+    default: z.ZodOptional<z.ZodUnknown>;
+    validation: z.ZodOptional<z.ZodObject<{
+        errorMessage: z.ZodString;
+    }, z.core.$loose>>;
+    cardinality: z.ZodOptional<z.ZodEnum<{
+        atMostOne: "atMostOne";
+        one: "one";
+        noneOrMany: "noneOrMany";
+        atLeastOne: "atLeastOne";
+    }>>;
+}, z.core.$strip>
 ```
 
 ### WELL_KNOWN_SCALARS

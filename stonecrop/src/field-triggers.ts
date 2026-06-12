@@ -45,6 +45,7 @@ export class FieldTriggerEngine {
 			enableRollback: options.enableRollback ?? true,
 			errorHandler: options.errorHandler,
 		}
+		return this
 	}
 
 	/**
@@ -111,6 +112,7 @@ export class FieldTriggerEngine {
 
 		// Convert from different Map types to regular Map
 		// Check for Immutable.js Map first (has entrySeq method)
+		// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Immutable.js interop: runtime duck-type check follows
 		const immutableActions = actions as ImmutableMap<string, string[]>
 		if (typeof immutableActions.entrySeq === 'function') {
 			// Immutable Map
@@ -125,6 +127,7 @@ export class FieldTriggerEngine {
 		} else if (actions && typeof actions === 'object') {
 			// Plain object
 			Object.entries(actions).forEach(([key, value]) => {
+				// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Object.entries value type is unknown at runtime; guarded by typeof object check above
 				this.categorizeAction(key, value as string[], actionMap, transitionMap)
 			})
 		}
@@ -199,9 +202,10 @@ export class FieldTriggerEngine {
 			snapshot = this.captureSnapshot(context)
 		}
 
-		// Execute actions sequentially
+		// Execute actions sequentially — each action may depend on state set by the previous; stop-on-error semantics require sequential execution
 		for (const actionName of triggers) {
 			try {
+				// oxlint-disable-next-line eslint/no-await-in-loop -- intentionally sequential; actions are order-dependent and stop on first failure
 				const actionResult = await this.executeAction(actionName, context, options.timeout)
 				actionResults.push(actionResult)
 
@@ -229,7 +233,6 @@ export class FieldTriggerEngine {
 				this.restoreSnapshot(context, snapshot)
 				rolledBack = true
 			} catch (rollbackError) {
-				// eslint-disable-next-line no-console
 				console.error('[FieldTriggers] Rollback failed:', rollbackError)
 			}
 		}
@@ -245,7 +248,6 @@ export class FieldTriggerEngine {
 						this.options.errorHandler(failedResult.error, context, failedResult.action)
 					}
 				} catch (handlerError) {
-					// eslint-disable-next-line no-console
 					console.error('[FieldTriggers] Error in global error handler:', handlerError)
 				}
 			}
@@ -283,9 +285,10 @@ export class FieldTriggerEngine {
 
 		const results: TransitionExecutionResult[] = []
 
-		// Execute transition actions sequentially
+		// Execute transition actions sequentially — transitions are state-machine steps; order and stop-on-error are required
 		for (const actionName of transitionActions) {
 			try {
+				// oxlint-disable-next-line eslint/no-await-in-loop -- intentionally sequential; transition actions are order-dependent and stop on first failure
 				const actionResult = await this.executeTransitionAction(actionName, context, options.timeout)
 				results.push(actionResult)
 
@@ -314,10 +317,10 @@ export class FieldTriggerEngine {
 				try {
 					// Call with FieldChangeContext (base context type)
 					if (failedResult.error) {
+						// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- action result carries string name; FieldAction cast required by errorHandler signature
 						this.options.errorHandler(failedResult.error, context, failedResult.action as unknown as FieldAction)
 					}
 				} catch (handlerError) {
-					// eslint-disable-next-line no-console
 					console.error('[FieldTriggers] Error in global error handler:', handlerError)
 				}
 			}
@@ -365,6 +368,7 @@ export class FieldTriggerEngine {
 				throw new Error(`Transition action "${actionName}" not found in registry`)
 			}
 
+			// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- actionFn may be FieldActionFunction set from globalActions fallback; polymorphic function type
 			await this.executeWithTimeout(actionFn as FieldActionFunction, context, actionTimeout)
 			const executionTime = performance.now() - startTime
 
@@ -515,7 +519,7 @@ export class FieldTriggerEngine {
 			Promise.resolve(fn(context))
 				.then(result => {
 					clearTimeout(timeoutId)
-					resolve(result)
+					return resolve(result)
 				})
 				.catch(error => {
 					clearTimeout(timeoutId)
@@ -548,7 +552,6 @@ export class FieldTriggerEngine {
 			return JSON.parse(JSON.stringify(recordData))
 		} catch (error) {
 			if (this.options.debug) {
-				// eslint-disable-next-line no-console
 				console.warn('[FieldTriggers] Failed to capture snapshot:', error)
 			}
 			return undefined
@@ -572,11 +575,10 @@ export class FieldTriggerEngine {
 			context.store.set(recordPath, snapshot)
 
 			if (this.options.debug) {
-				// eslint-disable-next-line no-console
+				// oxlint-disable-next-line no-console
 				console.log(`[FieldTriggers] Rolled back ${recordPath} to previous state`)
 			}
 		} catch (error) {
-			// eslint-disable-next-line no-console
 			console.error('[FieldTriggers] Failed to restore snapshot:', error)
 			throw error
 		}

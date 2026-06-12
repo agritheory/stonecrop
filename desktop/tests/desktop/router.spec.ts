@@ -251,13 +251,12 @@ describe('Desktop – currentViewData setter', { tags: ['component'] }, () => {
 		await nextTick()
 
 		const aform = wrapper.findComponent({ name: 'AForm' })
-		if (aform.exists()) {
-			await aform.vm.$emit('update:data', { id: 'rec-1', title: 'Updated', status: 'draft' })
-			await nextTick()
+		expect(aform.exists()).toBe(true)
+		await aform.vm.$emit('update:data', { id: 'rec-1', title: 'Updated', status: 'draft' })
+		await nextTick()
 
-			const store = stonecrop.getStore()
-			expect(store.get('task.rec-1.title')).toBe('Updated')
-		}
+		const store = stonecrop.getStore()
+		expect(store.get('task.rec-1.title')).toBe('Updated')
 	})
 
 	it('setter returns early when currentDoctype or currentRecordId is empty', async () => {

@@ -23,7 +23,7 @@ export function schemaToColumns(schema: ColumnSchema[]): TableColumn[] {
 	return schema
 		.filter(f => !f.hidden && f.fieldtype)
 		.map(({ fieldname, hidden: _hidden, ...rest }) => {
-			const col: TableColumn = { name: fieldname, ...rest }
+			const col: TableColumn = Object.assign({ name: fieldname }, rest)
 
 			// Link fields: store the linked doctype for async resolution by ACell,
 			// and add a sync format that handles pre-resolved AFormLinkValue objects.
@@ -36,8 +36,7 @@ export function schemaToColumns(schema: ColumnSchema[]): TableColumn[] {
 					col.format = (v: any): string => {
 						if (v === null || v === undefined) return ''
 						if (typeof v === 'object') {
-							const rec = v as Record<string, unknown>
-							const display = rec.displayText ?? rec.id ?? ''
+							const display: unknown = v.displayText ?? v.id ?? ''
 							return typeof display === 'string' || typeof display === 'number' ? String(display) : ''
 						}
 						return String(v)

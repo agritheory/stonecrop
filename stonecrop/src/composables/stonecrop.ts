@@ -1,4 +1,4 @@
-import { type SchemaTypes } from '@stonecrop/aform'
+import { type ResolvedField } from '@stonecrop/aform'
 import { storeToRefs } from 'pinia'
 import { inject, onMounted, Ref, ref, watch, provide, computed } from 'vue'
 
@@ -61,7 +61,7 @@ export function useStonecrop(options?: {
 	const routerRecordId = ref<string | undefined>()
 
 	// Resolved schema with nested Doctype fields expanded
-	const resolvedSchema = ref<SchemaTypes[]>([])
+	const resolvedSchema = ref<ResolvedField[]>([])
 
 	// Loading state for lazy-loaded doctypes
 	const isLoading = ref(false)
@@ -116,12 +116,12 @@ export function useStonecrop(options?: {
 	)
 
 	// Operation log methods
-	const undo = (hstStore: HSTNode): boolean => {
-		return stonecrop.value?.getOperationLogStore().undo(hstStore) ?? false
+	const undo = (hstNode: HSTNode): boolean => {
+		return stonecrop.value?.getOperationLogStore().undo(hstNode) ?? false
 	}
 
-	const redo = (hstStore: HSTNode): boolean => {
-		return stonecrop.value?.getOperationLogStore().redo(hstStore) ?? false
+	const redo = (hstNode: HSTNode): boolean => {
+		return stonecrop.value?.getOperationLogStore().redo(hstNode) ?? false
 	}
 
 	const startBatch = () => {
@@ -165,9 +165,9 @@ export function useStonecrop(options?: {
 		actionName: string,
 		recordIds?: string[],
 		result: 'success' | 'failure' | 'pending' = 'success',
-		error?: string
+		errorMessage?: string
 	): string => {
-		return stonecrop.value?.getOperationLogStore().logAction(doctype, actionName, recordIds, result, error) ?? ''
+		return stonecrop.value?.getOperationLogStore().logAction(doctype, actionName, recordIds, result, errorMessage) ?? ''
 	}
 
 	const configure = (config: Partial<OperationLogConfig>) => {
@@ -462,12 +462,12 @@ export function useStonecrop(options?: {
 		path: string,
 		doctype: Doctype,
 		recordId: string,
-		options?: { includeNested?: boolean | string[] }
+		fetchOptions?: { includeNested?: boolean | string[] }
 	): Promise<void> => {
 		if (!stonecrop.value) {
 			throw new Error('Stonecrop instance not available')
 		}
-		return stonecrop.value.fetchNestedData(path, doctype, recordId, options)
+		return stonecrop.value.fetchNestedData(path, doctype, recordId, fetchOptions)
 	}
 
 	/**
@@ -613,7 +613,7 @@ function setupDeepReactivity(
  * Update nested object with dot-notation path
  */
 function updateNestedObject(obj: any, path: string[], value: any): void {
-	let current = obj as Record<string, any>
+	let current: Record<string, any> = obj
 
 	for (let i = 0; i < path.length - 1; i++) {
 		const key = path[i]
@@ -622,7 +622,7 @@ function updateNestedObject(obj: any, path: string[], value: any): void {
 			current[key] = isNaN(Number(path[i + 1])) ? {} : []
 		}
 
-		current = current[key] as Record<string, any>
+		current = current[key]
 	}
 
 	const finalKey = path[path.length - 1]

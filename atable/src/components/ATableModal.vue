@@ -16,7 +16,7 @@ const amodalRef = useTemplateRef('amodal')
 const { width: modalWidth, height: modalHeight } = useElementBounding(amodalRef)
 
 const amodalStyles = computed((): StyleValue => {
-	if (!(store.modal.height && store.modal.width && store.modal.left && store.modal.bottom)) return
+	if (!(store.modal.height && store.modal.width && store.modal.left && store.modal.bottom)) return {}
 
 	const table = store.modal.cell?.closest('table')
 	if (!table) return {}

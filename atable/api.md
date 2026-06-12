@@ -744,7 +744,7 @@ createTableStore: (initData: {
     deleteConnection: (connectionId: string) => boolean;
     deleteRow: (rowIndex: number) => TableRow | null;
     duplicateRow: (rowIndex: number) => number;
-    getCellData: <T = any>(colIndex: number, rowIndex: number) => T;
+    getCellData: (colIndex: number, rowIndex: number) => any;
     getCellDisplayValue: (colIndex: number, rowIndex: number) => any;
     getConnectionsForBar: (barId: string) => {
         id: string;
@@ -776,7 +776,7 @@ createTableStore: (initData: {
         barId: string;
     }[];
     getHeaderCellStyle: (column: TableColumn) => CSSProperties;
-    getIndent: (colIndex: number, indentLevel?: number) => string;
+    getIndent: typeof getIndent;
     getRowExpandSymbol: (rowIndex: number) => "" | "▼" | "►";
     insertRowAbove: (rowIndex: number, rowData?: Partial<TableRow>) => number;
     insertRowBelow: (rowIndex: number, rowData?: Partial<TableRow>) => number;
@@ -1391,7 +1391,7 @@ createTableStore: (initData: {
     deleteConnection: (connectionId: string) => boolean;
     deleteRow: (rowIndex: number) => TableRow | null;
     duplicateRow: (rowIndex: number) => number;
-    getCellData: <T = any>(colIndex: number, rowIndex: number) => T;
+    getCellData: (colIndex: number, rowIndex: number) => any;
     getCellDisplayValue: (colIndex: number, rowIndex: number) => any;
     getConnectionsForBar: (barId: string) => {
         id: string;
@@ -1423,7 +1423,7 @@ createTableStore: (initData: {
         barId: string;
     }[];
     getHeaderCellStyle: (column: TableColumn) => CSSProperties;
-    getIndent: (colIndex: number, indentLevel?: number) => string;
+    getIndent: typeof getIndent;
     getRowExpandSymbol: (rowIndex: number) => "" | "▼" | "►";
     insertRowAbove: (rowIndex: number, rowData?: Partial<TableRow>) => number;
     insertRowBelow: (rowIndex: number, rowData?: Partial<TableRow>) => number;
@@ -2038,7 +2038,7 @@ createTableStore: (initData: {
     deleteConnection: (connectionId: string) => boolean;
     deleteRow: (rowIndex: number) => TableRow | null;
     duplicateRow: (rowIndex: number) => number;
-    getCellData: <T = any>(colIndex: number, rowIndex: number) => T;
+    getCellData: (colIndex: number, rowIndex: number) => any;
     getCellDisplayValue: (colIndex: number, rowIndex: number) => any;
     getConnectionsForBar: (barId: string) => {
         id: string;
@@ -2070,7 +2070,7 @@ createTableStore: (initData: {
         barId: string;
     }[];
     getHeaderCellStyle: (column: TableColumn) => CSSProperties;
-    getIndent: (colIndex: number, indentLevel?: number) => string;
+    getIndent: typeof getIndent;
     getRowExpandSymbol: (rowIndex: number) => "" | "▼" | "►";
     insertRowAbove: (rowIndex: number, rowData?: Partial<TableRow>) => number;
     insertRowBelow: (rowIndex: number, rowData?: Partial<TableRow>) => number;
@@ -2443,8 +2443,8 @@ export interface RowAddEvent {
 
 | Property | Type | Description |
 |----------|------|-------------|
-| row | `TableRow` |  |
-| rowIndex | `number` |  |
+| row | `TableRow` | The row object that was added |
+| rowIndex | `number` | The index at which the row was added |
 
 ### RowDeleteEvent
 
@@ -2463,8 +2463,8 @@ export interface RowDeleteEvent {
 
 | Property | Type | Description |
 |----------|------|-------------|
-| row | `TableRow` |  |
-| rowIndex | `number` |  |
+| row | `TableRow` | The row object that was deleted |
+| rowIndex | `number` | The index of the row that was deleted |
 
 ### RowDuplicateEvent
 
@@ -2484,9 +2484,9 @@ export interface RowDuplicateEvent {
 
 | Property | Type | Description |
 |----------|------|-------------|
-| newIndex | `number` |  |
-| row | `TableRow` |  |
-| sourceIndex | `number` |  |
+| newIndex | `number` | The index of the newly created duplicate row |
+| row | `TableRow` | The new duplicate row object |
+| sourceIndex | `number` | The index of the original row that was duplicated |
 
 ### RowInsertEvent
 
@@ -2506,9 +2506,9 @@ export interface RowInsertEvent {
 
 | Property | Type | Description |
 |----------|------|-------------|
-| newIndex | `number` |  |
-| row | `TableRow` |  |
-| targetIndex | `number` |  |
+| newIndex | `number` | The index of the newly inserted row |
+| row | `TableRow` | The newly inserted row object |
+| targetIndex | `number` | The index of the row relative to which the insertion was made |
 
 ### RowMoveEvent
 
@@ -2527,8 +2527,8 @@ export interface RowMoveEvent {
 
 | Property | Type | Description |
 |----------|------|-------------|
-| fromIndex | `number` |  |
-| toIndex | `number` |  |
+| fromIndex | `number` | The original index of the row before the move |
+| toIndex | `number` | The destination index of the row after the move |
 
 ### TableColumn
 

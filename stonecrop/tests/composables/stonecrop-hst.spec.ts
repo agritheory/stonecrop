@@ -1,4 +1,4 @@
-import type { SchemaTypes } from '@stonecrop/aform'
+import type { DoctypeField } from '@stonecrop/schema'
 import { LinkDeclaration } from '@stonecrop/schema'
 import { mount, flushPromises } from '@vue/test-utils'
 import { List, Map } from 'immutable'
@@ -17,16 +17,18 @@ import { HST } from '../../src/stores/hst'
  * @vitest-environment jsdom
  */
 
-const createDoctype = (name: string, fields?: SchemaTypes[], links?: Record<string, LinkDeclaration>) => {
+const createDoctype = (name: string, fields?: DoctypeField[], links?: Record<string, LinkDeclaration>) => {
 	const schema = List(
 		fields || [
 			{
+				kind: 'field',
 				fieldname: 'title',
 				component: 'ATextInput',
 				label: 'Title',
 				fieldtype: 'Data',
 			},
 			{
+				kind: 'field',
 				fieldname: 'status',
 				component: 'ADropdown',
 				label: 'Status',
@@ -101,16 +103,16 @@ describe('useStonecrop HST mode', { tags: ['unit'] }, () => {
 
 	it('resolves schema when doctype is provided', async () => {
 		const addressDoctype = createDoctype('Address', [
-			{ fieldname: 'street', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
-			{ fieldname: 'city', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
+			{ kind: 'field', fieldname: 'street', fieldtype: 'Data', component: 'ATextInput' },
+			{ kind: 'field', fieldname: 'city', fieldtype: 'Data', component: 'ATextInput' },
 		])
 		registry.addDoctype(addressDoctype)
 
 		const customerDoctype = createDoctype(
 			'Customer',
 			[
-				{ fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
-				{ fieldname: 'address', fieldtype: 'Link', component: 'AForm', options: 'address' } as SchemaTypes,
+				{ kind: 'field', fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' },
+				{ kind: 'field', fieldname: 'address', fieldtype: 'Link', component: 'AForm', options: 'address' },
 			],
 			{ address: { target: 'address', cardinality: 'one', fieldname: 'address' } }
 		)
@@ -178,7 +180,7 @@ describe('useStonecrop HST mode', { tags: ['unit'] }, () => {
 		expect(path).toBe('task.task-override.title')
 	})
 
-	it('provideHSTPath returns empty string when no doctype', async () => {
+	it('provideHSTPath is not available in basic mode (no doctype, no router)', async () => {
 		const TestComponent = defineComponent({
 			setup() {
 				return useStonecrop()
@@ -191,10 +193,8 @@ describe('useStonecrop HST mode', { tags: ['unit'] }, () => {
 		})
 
 		const vm = wrapper.vm as any
-		// No doctype, should return empty string if provideHSTPath exists
-		if (vm.provideHSTPath) {
-			expect(vm.provideHSTPath('title')).toBe('')
-		}
+		// No doctype and no router — basic mode does not expose provideHSTPath
+		expect(vm.provideHSTPath).toBeUndefined()
 	})
 
 	it('handleHSTChange updates form data for simple fields', async () => {
@@ -323,7 +323,7 @@ describe('useStonecrop HST mode', { tags: ['unit'] }, () => {
 		registry.addDoctype(taskDoctype)
 
 		const addressDoctype = createDoctype('Address', [
-			{ fieldname: 'street', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
+			{ kind: 'field', fieldname: 'street', fieldtype: 'Data', component: 'ATextInput' },
 		])
 		registry.addDoctype(addressDoctype)
 
@@ -357,8 +357,8 @@ describe('useStonecrop HST mode', { tags: ['unit'] }, () => {
 		registry.addDoctype(taskDoctype)
 
 		const addressDoctype = createDoctype('Address', [
-			{ fieldname: 'street', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
-			{ fieldname: 'city', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
+			{ kind: 'field', fieldname: 'street', fieldtype: 'Data', component: 'ATextInput' },
+			{ kind: 'field', fieldname: 'city', fieldtype: 'Data', component: 'ATextInput' },
 		])
 		registry.addDoctype(addressDoctype)
 
@@ -403,8 +403,8 @@ describe('useStonecrop HST mode', { tags: ['unit'] }, () => {
 
 	it('fetchNestedData stores record data in HST on success', async () => {
 		const taskDoctype = createDoctype('Task', [
-			{ fieldname: 'title', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
-			{ fieldname: 'status', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
+			{ kind: 'field', fieldname: 'title', fieldtype: 'Data', component: 'ATextInput' },
+			{ kind: 'field', fieldname: 'status', fieldtype: 'Data', component: 'ATextInput' },
 		])
 		registry.addDoctype(taskDoctype)
 
@@ -540,14 +540,14 @@ describe('useStonecrop HST mode', { tags: ['unit'] }, () => {
 
 	it('collectRecordPayload collects array data for cardinality: many fields', async () => {
 		const itemDoctype = createDoctype('Item', [
-			{ fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
-			{ fieldname: 'qty', fieldtype: 'Int', component: 'ANumericInput' } as SchemaTypes,
+			{ kind: 'field', fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' },
+			{ kind: 'field', fieldname: 'qty', fieldtype: 'Int', component: 'ANumericInput' },
 		])
 		registry.addDoctype(itemDoctype)
 
 		const orderDoctype = createDoctype(
 			'Order',
-			[{ fieldname: 'order_number', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes],
+			[{ kind: 'field', fieldname: 'order_number', fieldtype: 'Data', component: 'ATextInput' }],
 			{ items: { target: 'item', cardinality: 'noneOrMany' } }
 		)
 		registry.addDoctype(orderDoctype)
@@ -590,15 +590,15 @@ describe('useStonecrop HST mode', { tags: ['unit'] }, () => {
 
 	it('collectRecordPayload handles empty array for cardinality: many fields', async () => {
 		const itemDoctype = createDoctype('Item', [
-			{ fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
+			{ kind: 'field', fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' },
 		])
 		registry.addDoctype(itemDoctype)
 
 		const orderDoctype = createDoctype(
 			'Order',
 			[
-				{ fieldname: 'order_number', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
-				{ fieldname: 'items', fieldtype: 'Link', component: 'ATable', options: 'item' } as SchemaTypes,
+				{ kind: 'field', fieldname: 'order_number', fieldtype: 'Data', component: 'ATextInput' },
+				{ kind: 'field', fieldname: 'items', fieldtype: 'Link', component: 'ATable', options: 'item' },
 			],
 			{ items: { target: 'item', cardinality: 'noneOrMany', fieldname: 'items' } }
 		)
@@ -634,14 +634,14 @@ describe('useStonecrop HST mode', { tags: ['unit'] }, () => {
 
 	it('collectRecordPayload collects nested 1:1 doctype fields', async () => {
 		const addressDoctype = createDoctype('Address', [
-			{ fieldname: 'street', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
-			{ fieldname: 'city', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
+			{ kind: 'field', fieldname: 'street', fieldtype: 'Data', component: 'ATextInput' },
+			{ kind: 'field', fieldname: 'city', fieldtype: 'Data', component: 'ATextInput' },
 		])
 		registry.addDoctype(addressDoctype)
 
 		const customerDoctype = createDoctype(
 			'Customer',
-			[{ fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes],
+			[{ kind: 'field', fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' }],
 			{ address: { target: 'address', cardinality: 'one' } }
 		)
 		registry.addDoctype(customerDoctype)
@@ -681,16 +681,16 @@ describe('useStonecrop HST mode', { tags: ['unit'] }, () => {
 
 	it('collectRecordPayload recursively collects 1:many inside nested 1:1', async () => {
 		const phoneDoctype = createDoctype('Phone', [
-			{ fieldname: 'number', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
-			{ fieldname: 'type', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
+			{ kind: 'field', fieldname: 'number', fieldtype: 'Data', component: 'ATextInput' },
+			{ kind: 'field', fieldname: 'type', fieldtype: 'Data', component: 'ATextInput' },
 		])
 		registry.addDoctype(phoneDoctype)
 
 		const addressDoctype = createDoctype(
 			'Address',
 			[
-				{ fieldname: 'street', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
-				{ fieldname: 'city', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
+				{ kind: 'field', fieldname: 'street', fieldtype: 'Data', component: 'ATextInput' },
+				{ kind: 'field', fieldname: 'city', fieldtype: 'Data', component: 'ATextInput' },
 			],
 			{ phones: { target: 'phone', cardinality: 'noneOrMany' } }
 		)
@@ -698,7 +698,7 @@ describe('useStonecrop HST mode', { tags: ['unit'] }, () => {
 
 		const customerDoctype = createDoctype(
 			'Customer',
-			[{ fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes],
+			[{ kind: 'field', fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' }],
 			{ address: { target: 'address', cardinality: 'one' } }
 		)
 		registry.addDoctype(customerDoctype)
@@ -748,16 +748,16 @@ describe('useStonecrop HST mode', { tags: ['unit'] }, () => {
 
 	it('collectRecordPayload collects deeply nested 1:1 inside 1:1', async () => {
 		const coordinatesDoctype = createDoctype('Coordinates', [
-			{ fieldname: 'lat', fieldtype: 'Float', component: 'ANumericInput' } as SchemaTypes,
-			{ fieldname: 'lng', fieldtype: 'Float', component: 'ANumericInput' } as SchemaTypes,
+			{ kind: 'field', fieldname: 'lat', fieldtype: 'Float', component: 'ANumericInput' },
+			{ kind: 'field', fieldname: 'lng', fieldtype: 'Float', component: 'ANumericInput' },
 		])
 		registry.addDoctype(coordinatesDoctype)
 
 		const addressDoctype = createDoctype(
 			'Address',
 			[
-				{ fieldname: 'street', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
-				{ fieldname: 'city', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
+				{ kind: 'field', fieldname: 'street', fieldtype: 'Data', component: 'ATextInput' },
+				{ kind: 'field', fieldname: 'city', fieldtype: 'Data', component: 'ATextInput' },
 			],
 			{ coordinates: { target: 'coordinates', cardinality: 'one' } }
 		)
@@ -765,7 +765,7 @@ describe('useStonecrop HST mode', { tags: ['unit'] }, () => {
 
 		const customerDoctype = createDoctype(
 			'Customer',
-			[{ fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes],
+			[{ kind: 'field', fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' }],
 			{ address: { target: 'address', cardinality: 'one' } }
 		)
 		registry.addDoctype(customerDoctype)
@@ -812,7 +812,7 @@ describe('useStonecrop HST mode', { tags: ['unit'] }, () => {
 
 	it('collectRecordPayload is callable outside onMounted (validates Issue 1 fix)', async () => {
 		const customerDoctype = createDoctype('Customer', [
-			{ fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
+			{ kind: 'field', fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' },
 		])
 		registry.addDoctype(customerDoctype)
 
@@ -876,13 +876,13 @@ describe('useStonecrop HST mode', { tags: ['unit'] }, () => {
 
 	it('collectRecordPayload returns identical results to class method', async () => {
 		const addressDoctype = createDoctype('Address', [
-			{ fieldname: 'city', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes,
+			{ kind: 'field', fieldname: 'city', fieldtype: 'Data', component: 'ATextInput' },
 		])
 		registry.addDoctype(addressDoctype)
 
 		const customerDoctype = createDoctype(
 			'Customer',
-			[{ fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' } as SchemaTypes],
+			[{ kind: 'field', fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' }],
 			{ address: { target: 'address', cardinality: 'one' } }
 		)
 		registry.addDoctype(customerDoctype)

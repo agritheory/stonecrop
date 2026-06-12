@@ -10,15 +10,16 @@ import { IMqttStream } from '../types'
  * @beta
  */
 export const useMqttStream = async (options: IMqttStream) => {
+	const messages = ref<Record<string, string[]>>({})
+
 	if (options.host && options.port) {
 		const portActive = await isPortActive(options.host, options.port)
 		if (!portActive) {
-			return
+			return { messages }
 		}
 	}
 
 	const client = ref<MqttClient>()
-	const messages = ref<Record<string, string[]>>({})
 
 	onMounted(() => {
 		client.value = mqtt.connect(options)

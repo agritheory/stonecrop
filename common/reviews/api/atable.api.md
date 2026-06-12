@@ -717,7 +717,7 @@ label?: string;
 deleteConnection: (connectionId: string) => boolean;
 deleteRow: (rowIndex: number) => TableRow | null;
 duplicateRow: (rowIndex: number) => number;
-getCellData: <T = any>(colIndex: number, rowIndex: number) => T;
+getCellData: (colIndex: number, rowIndex: number) => any;
 getCellDisplayValue: (colIndex: number, rowIndex: number) => any;
 getConnectionsForBar: (barId: string) => {
 id: string;
@@ -749,7 +749,7 @@ visible: boolean;
 barId: string;
 }[];
 getHeaderCellStyle: (column: TableColumn) => CSSProperties;
-getIndent: (colIndex: number, indentLevel?: number) => string;
+getIndent: typeof getIndent;
 getRowExpandSymbol: (rowIndex: number) => "" | "▼" | "►";
 insertRowAbove: (rowIndex: number, rowData?: Partial<TableRow>) => number;
 insertRowBelow: (rowIndex: number, rowData?: Partial<TableRow>) => number;
@@ -1364,7 +1364,7 @@ label?: string;
 deleteConnection: (connectionId: string) => boolean;
 deleteRow: (rowIndex: number) => TableRow | null;
 duplicateRow: (rowIndex: number) => number;
-getCellData: <T = any>(colIndex: number, rowIndex: number) => T;
+getCellData: (colIndex: number, rowIndex: number) => any;
 getCellDisplayValue: (colIndex: number, rowIndex: number) => any;
 getConnectionsForBar: (barId: string) => {
 id: string;
@@ -1396,7 +1396,7 @@ visible: boolean;
 barId: string;
 }[];
 getHeaderCellStyle: (column: TableColumn) => CSSProperties;
-getIndent: (colIndex: number, indentLevel?: number) => string;
+getIndent: typeof getIndent;
 getRowExpandSymbol: (rowIndex: number) => "" | "▼" | "►";
 insertRowAbove: (rowIndex: number, rowData?: Partial<TableRow>) => number;
 insertRowBelow: (rowIndex: number, rowData?: Partial<TableRow>) => number;
@@ -2011,7 +2011,7 @@ label?: string;
 deleteConnection: (connectionId: string) => boolean;
 deleteRow: (rowIndex: number) => TableRow | null;
 duplicateRow: (rowIndex: number) => number;
-getCellData: <T = any>(colIndex: number, rowIndex: number) => T;
+getCellData: (colIndex: number, rowIndex: number) => any;
 getCellDisplayValue: (colIndex: number, rowIndex: number) => any;
 getConnectionsForBar: (barId: string) => {
 id: string;
@@ -2043,7 +2043,7 @@ visible: boolean;
 barId: string;
 }[];
 getHeaderCellStyle: (column: TableColumn) => CSSProperties;
-getIndent: (colIndex: number, indentLevel?: number) => string;
+getIndent: typeof getIndent;
 getRowExpandSymbol: (rowIndex: number) => "" | "▼" | "►";
 insertRowAbove: (rowIndex: number, rowData?: Partial<TableRow>) => number;
 insertRowBelow: (rowIndex: number, rowData?: Partial<TableRow>) => number;
@@ -2175,45 +2175,33 @@ export type RowActionType = 'add' | 'delete' | 'duplicate' | 'insertAbove' | 'in
 
 // @public
 export interface RowAddEvent {
-    // (undocumented)
     row: TableRow;
-    // (undocumented)
     rowIndex: number;
 }
 
 // @public
 export interface RowDeleteEvent {
-    // (undocumented)
     row: TableRow;
-    // (undocumented)
     rowIndex: number;
 }
 
 // @public
 export interface RowDuplicateEvent {
-    // (undocumented)
     newIndex: number;
-    // (undocumented)
     row: TableRow;
-    // (undocumented)
     sourceIndex: number;
 }
 
 // @public
 export interface RowInsertEvent {
-    // (undocumented)
     newIndex: number;
-    // (undocumented)
     row: TableRow;
-    // (undocumented)
     targetIndex: number;
 }
 
 // @public
 export interface RowMoveEvent {
-    // (undocumented)
     fromIndex: number;
-    // (undocumented)
     toIndex: number;
 }
 
@@ -2288,6 +2276,10 @@ export interface TreeTableConfig extends BaseTableConfig {
     defaultTreeExpansion?: 'root' | 'branch' | 'leaf';
     view: 'tree';
 }
+
+// Warnings were encountered during analysis:
+//
+// src/stores/table.ts:407:8 - (ae-forgotten-export) The symbol "getIndent" needs to be exported by the entry point index.d.ts
 
 // (No @packageDocumentation comment for this package)
 

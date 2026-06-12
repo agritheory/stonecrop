@@ -357,5 +357,75 @@ export default defineNuxtConfig({
 			expect(writtenContent).toContain("'@stonecrop/nuxt'")
 			expect(writtenContent).toContain('stonecrop: { docbuilder: true }')
 		})
+
+		describe('css updates', () => {
+			beforeEach(() => {
+				vi.mocked(existsSync).mockImplementation((path: PathLike) => {
+					return path === join('/test', 'nuxt.config.ts')
+				})
+			})
+
+			it('should create css array after modules when missing', async () => {
+				vi.mocked(readFile).mockResolvedValue(`export default defineNuxtConfig({
+	modules: ['@stonecrop/nuxt'],
+})`)
+
+				await updateNuxtConfig('/test', { css: ['@stonecrop/desktop/styles'] })
+
+				const writtenContent = vi.mocked(writeFile).mock.calls[0]?.[1] as string
+				expect(writtenContent).toContain("css: ['@stonecrop/desktop/styles'],")
+			})
+
+			it('should not double-quote entries (regression)', async () => {
+				vi.mocked(readFile).mockResolvedValue(baseConfig)
+
+				await updateNuxtConfig('/test', { css: ['@stonecrop/desktop/styles'] })
+
+				const writtenContent = vi.mocked(writeFile).mock.calls[0]?.[1] as string
+				expect(writtenContent).not.toContain("''@stonecrop/desktop/styles''")
+			})
+
+			it('should append to an existing css array', async () => {
+				vi.mocked(readFile).mockResolvedValue(`export default defineNuxtConfig({
+	css: ['~/assets/main.css'],
+})`)
+
+				await updateNuxtConfig('/test', { css: ['@stonecrop/desktop/styles'] })
+
+				const writtenContent = vi.mocked(writeFile).mock.calls[0]?.[1] as string
+				expect(writtenContent).toContain("css: ['~/assets/main.css', '@stonecrop/desktop/styles']")
+			})
+
+			it('should not duplicate an entry already present in single quotes', async () => {
+				vi.mocked(readFile).mockResolvedValue(`export default defineNuxtConfig({
+	css: ['@stonecrop/desktop/styles'],
+})`)
+
+				const result = await updateNuxtConfig('/test', { css: ['@stonecrop/desktop/styles'] })
+
+				expect(result).toBe(false)
+				expect(writeFile).not.toHaveBeenCalled()
+			})
+
+			it('should not duplicate an entry already present in double quotes', async () => {
+				vi.mocked(readFile).mockResolvedValue(`export default defineNuxtConfig({
+	css: ["@stonecrop/desktop/styles"],
+})`)
+
+				const result = await updateNuxtConfig('/test', { css: ['@stonecrop/desktop/styles'] })
+
+				expect(result).toBe(false)
+				expect(writeFile).not.toHaveBeenCalled()
+			})
+
+			it('should not report modified when no insertion point exists', async () => {
+				vi.mocked(readFile).mockResolvedValue('export const notAConfig = {}')
+
+				const result = await updateNuxtConfig('/test', { css: ['@stonecrop/desktop/styles'] })
+
+				expect(result).toBe(false)
+				expect(writeFile).not.toHaveBeenCalled()
+			})
+		})
 	})
 })

@@ -1,6 +1,75 @@
 # Change Log - @stonecrop/graphql-middleware
 
-This log was last generated on Mon, 18 May 2026 11:24:35 GMT and should not be manually modified.
+This log was last generated on Thu, 11 Jun 2026 10:23:31 GMT and should not be manually modified.
+
+## 0.13.10
+Thu, 11 Jun 2026 10:23:31 GMT
+
+### Patches
+
+- document the action handler casing contract on ActionContext and ActionHandler (ADR 0007)
+
+## 0.13.9
+Mon, 08 Jun 2026 13:12:21 GMT
+
+### Minor changes
+
+- use new field discriminators for logic branching
+
+## 0.13.8
+Thu, 04 Jun 2026 12:04:15 GMT
+
+_Version update only_
+
+## 0.13.7
+Thu, 04 Jun 2026 11:09:19 GMT
+
+### Patches
+
+- add tests for fieldset schemas
+
+## 0.13.6
+Thu, 04 Jun 2026 09:33:09 GMT
+
+### Patches
+
+- update SQL column building logic
+
+## 0.13.5
+Tue, 02 Jun 2026 11:07:21 GMT
+
+### Patches
+
+- migrate linter from eslint to oxlint
+
+## 0.13.4
+Tue, 02 Jun 2026 07:09:16 GMT
+
+_Version update only_
+
+## 0.13.3
+Tue, 02 Jun 2026 05:55:11 GMT
+
+_Version update only_
+
+## 0.13.2
+Thu, 28 May 2026 06:18:59 GMT
+
+_Version update only_
+
+## 0.13.1
+Tue, 26 May 2026 14:15:00 GMT
+
+### Patches
+
+- sharpen database-related fields in schemas
+
+## 0.13.0
+Wed, 20 May 2026 11:08:30 GMT
+
+### Minor changes
+
+- use plan-step resolvers instead of HTTP queries
 
 ## 0.12.8
 Mon, 18 May 2026 11:24:35 GMT

@@ -18,14 +18,16 @@ vi.mock('@vueuse/core', () => ({
 import AFileAttach from '../src/components/form/AFileAttach.vue'
 
 function createFileList(files: File[]): FileList {
-	return {
-		...files,
-		length: files.length,
-		item: (index: number) => files[index],
-		[Symbol.iterator]: function* () {
-			for (const file of files) yield file
+	return Object.assign(
+		{
+			length: files.length,
+			item: (index: number) => files[index],
+			[Symbol.iterator]: function* () {
+				for (const file of files) yield file
+			},
 		},
-	} as FileList
+		files
+	) as FileList
 }
 
 describe('file attach component', { tags: ['component'] }, () => {

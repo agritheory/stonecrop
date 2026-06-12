@@ -6,11 +6,12 @@ import type { UnknownMachineConfig } from 'xstate'
 import Registry from '../../src/registry'
 import { Stonecrop } from '../../src/stonecrop'
 import Doctype from '../../src/doctype'
-import type { SchemaTypes } from '@stonecrop/aform'
 
 // Helper: creates a Doctype with links
 const createDoctypeWithLinks = (name: string, links?: Record<string, any>) => {
-	const mockSchema = List([{ fieldname: 'title', component: 'ATextInput', label: 'Title' }] as SchemaTypes[])
+	const mockSchema = List([
+		{ kind: 'field' as const, fieldname: 'title', fieldtype: 'Data', component: 'ATextInput', label: 'Title' },
+	])
 
 	const mockWorkflow: UnknownMachineConfig = {
 		id: name.toLowerCase(),
@@ -18,7 +19,41 @@ const createDoctypeWithLinks = (name: string, links?: Record<string, any>) => {
 		states: { draft: {} },
 	}
 
-	return new Doctype(name, mockSchema, mockWorkflow, Map(), undefined, links)
+	return new Doctype(name, mockSchema as any, mockWorkflow, Map(), undefined, links)
+}
+
+function createMockDoctype(name: string) {
+	const mockSchema = List([
+		{
+			kind: 'field' as const,
+			fieldname: 'title',
+			fieldtype: 'Data',
+			component: 'ATextInput',
+			label: 'Title',
+		},
+	])
+
+	const mockWorkflow: UnknownMachineConfig = {
+		id: name.toLowerCase(),
+		initial: 'draft',
+		states: {
+			draft: { on: { load: { target: 'pending' } } },
+			pending: {
+				on: {
+					approve: { target: 'completed' },
+					reject: { target: 'draft' },
+				},
+			},
+			completed: { type: 'final' },
+		},
+	}
+
+	const mockActions = Map({
+		load: ['loadData'],
+		save: ['validateData', 'saveData'],
+	})
+
+	return new Doctype(name, mockSchema, mockWorkflow, mockActions)
 }
 
 describe('Registry class', { tags: ['unit'] }, () => {
@@ -35,38 +70,6 @@ describe('Registry class', { tags: ['unit'] }, () => {
 			routes: [],
 		})
 	})
-
-	const createMockDoctype = (name: string) => {
-		const mockSchema = List([
-			{
-				fieldname: 'title',
-				component: 'ATextInput',
-				label: 'Title',
-			},
-		] as SchemaTypes[])
-
-		const mockWorkflow: UnknownMachineConfig = {
-			id: name.toLowerCase(),
-			initial: 'draft',
-			states: {
-				draft: { on: { load: { target: 'pending' } } },
-				pending: {
-					on: {
-						approve: { target: 'completed' },
-						reject: { target: 'draft' },
-					},
-				},
-				completed: { type: 'final' },
-			},
-		}
-
-		const mockActions = Map({
-			load: ['loadData'],
-			save: ['validateData', 'saveData'],
-		})
-
-		return new Doctype(name, mockSchema, mockWorkflow, mockActions)
-	}
 
 	it('creates a Registry instance with default properties', () => {
 		registry = new Registry()
@@ -314,11 +317,11 @@ describe('Registry class', { tags: ['unit'] }, () => {
 
 			const descendant = registry.getDescendantLinks('location')
 			expect(descendant).toHaveLength(2)
-			expect(descendant.map(l => l.fieldname).sort()).toEqual(['childLocations', 'parentLocation'])
+			expect(descendant.map(l => l.fieldname).toSorted()).toEqual(['childLocations', 'parentLocation'])
 
 			const ancestor = registry.getAncestorLinks('location')
 			expect(ancestor).toHaveLength(2)
-			expect(ancestor.map(l => l.fieldname).sort()).toEqual(['childLocations', 'parentLocation'])
+			expect(ancestor.map(l => l.fieldname).toSorted()).toEqual(['childLocations', 'parentLocation'])
 		})
 
 		it('returns entries from multiple doctypes when both target the same doctype', () => {
@@ -340,7 +343,7 @@ describe('Registry class', { tags: ['unit'] }, () => {
 			const ancestors = registry.getAncestorLinks('recipe-task')
 			expect(ancestors).toHaveLength(2)
 
-			const slugs = ancestors.map(a => a.doctype).sort()
+			const slugs = ancestors.map(a => a.doctype).toSorted()
 			expect(slugs).toEqual(['recipe', 'recipe-variant'])
 		})
 
@@ -392,7 +395,7 @@ describe('Registry class', { tags: ['unit'] }, () => {
 
 			const ancestors = registry.getAncestorLinks('recipe-task')
 			expect(ancestors).toHaveLength(2)
-			expect(ancestors.map(a => a.doctype).sort()).toEqual(['recipe', 'recipe-variant'])
+			expect(ancestors.map(a => a.doctype).toSorted()).toEqual(['recipe', 'recipe-variant'])
 		})
 
 		it('rebuilds ancestor index after a new doctype is added', () => {
@@ -419,7 +422,7 @@ describe('Registry class', { tags: ['unit'] }, () => {
 			// Dirty flag is set — next call should rebuild and include the new entry
 			const after = registry.getAncestorLinks('recipe-task')
 			expect(after).toHaveLength(2)
-			expect(after.map(a => a.doctype).sort()).toEqual(['recipe', 'recipe-variant'])
+			expect(after.map(a => a.doctype).toSorted()).toEqual(['recipe', 'recipe-variant'])
 		})
 	})
 
@@ -427,15 +430,16 @@ describe('Registry class', { tags: ['unit'] }, () => {
 		it('produces kind: "table" and schema array (not columns) for a 1:many link', () => {
 			registry = new Registry()
 			const taskSchema = List([
-				{ fieldname: 'name', fieldtype: 'Data', component: 'ATextInput', label: 'Name' },
-				{ fieldname: 'qty', fieldtype: 'Int', component: 'ATextInput', label: 'Qty' },
-			] as SchemaTypes[])
+				{ kind: 'field' as const, fieldname: 'name', fieldtype: 'Data', component: 'ATextInput', label: 'Name' },
+				{ kind: 'field' as const, fieldname: 'qty', fieldtype: 'Int', component: 'ATextInput', label: 'Qty' },
+			])
 			const taskWorkflow = { id: 'task', initial: 'draft', states: { draft: {} } }
-			const task = new Doctype('Task', taskSchema, taskWorkflow as any, Map())
+			const task = new Doctype('Task', taskSchema as any, taskWorkflow as any, Map())
 
 			const parentSchema = List([
-				{ fieldname: 'title', fieldtype: 'Data', component: 'ATextInput', label: 'Title' },
+				{ kind: 'field' as const, fieldname: 'title', fieldtype: 'Data', component: 'ATextInput', label: 'Title' },
 				{
+					kind: 'field' as const,
 					fieldname: 'tasks',
 					fieldtype: 'Link',
 					component: 'ATable',
@@ -443,9 +447,9 @@ describe('Registry class', { tags: ['unit'] }, () => {
 					options: 'task',
 					cardinality: 'noneOrMany',
 				},
-			] as SchemaTypes[])
+			])
 			const parentWorkflow = { id: 'parent', initial: 'draft', states: { draft: {} } }
-			const parent = new Doctype('Parent', parentSchema, parentWorkflow as any, Map(), undefined, {
+			const parent = new Doctype('Parent', parentSchema as any, parentWorkflow as any, Map(), undefined, {
 				tasks: { target: 'task', cardinality: 'noneOrMany', backlink: 'parent' },
 			})
 
@@ -461,26 +465,27 @@ describe('Registry class', { tags: ['unit'] }, () => {
 			expect('columns' in tasksField).toBe(false)
 		})
 
-		it('leaves a 1:1 link unchanged (no kind, has schema)', () => {
+		it('resolves a 1:1 link to a ResolvedLink with kind: "link"', () => {
 			registry = new Registry()
 			const addressSchema = List([
-				{ fieldname: 'street', fieldtype: 'Data', component: 'ATextInput', label: 'Street' },
-			] as SchemaTypes[])
+				{ kind: 'field' as const, fieldname: 'street', fieldtype: 'Data', component: 'ATextInput', label: 'Street' },
+			])
 			const addressWorkflow = { id: 'address', initial: 'draft', states: { draft: {} } }
-			const address = new Doctype('Address', addressSchema, addressWorkflow as any, Map())
+			const address = new Doctype('Address', addressSchema as any, addressWorkflow as any, Map())
 
 			const personSchema = List([
-				{ fieldname: 'name', fieldtype: 'Data', component: 'ATextInput', label: 'Name' },
+				{ kind: 'field' as const, fieldname: 'name', fieldtype: 'Data', component: 'ATextInput', label: 'Name' },
 				{
+					kind: 'field' as const,
 					fieldname: 'address',
 					fieldtype: 'Link',
 					label: 'Address',
 					options: 'address',
 					cardinality: 'one',
 				},
-			] as SchemaTypes[])
+			])
 			const personWorkflow = { id: 'person', initial: 'draft', states: { draft: {} } }
-			const person = new Doctype('Person', personSchema, personWorkflow as any, Map(), undefined, {
+			const person = new Doctype('Person', personSchema as any, personWorkflow as any, Map(), undefined, {
 				address: { target: 'address', cardinality: 'one', backlink: 'person' },
 			})
 
@@ -491,41 +496,56 @@ describe('Registry class', { tags: ['unit'] }, () => {
 			const addressField = resolved.find(f => f.fieldname === 'address') as any
 
 			expect(addressField).toBeDefined()
-			expect('kind' in addressField).toBe(false)
+			expect(addressField.kind).toBe('link')
 			expect(Array.isArray(addressField.schema)).toBe(true)
 		})
 	})
 
 	describe('initializeRecord kind detection', () => {
-		it('initializes a field with kind: "table" and no columns to []', () => {
+		it('initializes a field with kind: "table" to []', () => {
 			registry = new Registry()
-			const schema: SchemaTypes[] = [
-				{ fieldname: 'name', fieldtype: 'Data', component: 'ATextInput', label: 'Name' },
+			const schema = [
 				{
+					kind: 'table' as const,
 					fieldname: 'items',
 					component: 'ATable',
-					label: 'Items',
-					kind: 'table',
-					schema: [{ fieldname: 'qty', fieldtype: 'Int', label: 'Qty' }],
-				} as any,
+					schema: [],
+					config: { view: 'list' as const },
+				},
 			]
 			const record = registry.initializeRecord(schema)
 			expect(record.items).toEqual([])
 		})
 
-		it('initializes a field with kind: "table" and explicit columns also to []', () => {
+		it('initializes a field with kind: "link" to {}', () => {
 			registry = new Registry()
-			const schema: SchemaTypes[] = [
+			const schema = [{ kind: 'link' as const, fieldname: 'address', component: 'AForm', schema: [] }]
+			const record = registry.initializeRecord(schema)
+			expect(record.address).toEqual({})
+		})
+
+		it('initializes a field with kind: "fieldset" to {} via recursive initialization', () => {
+			registry = new Registry()
+			const schema = [
 				{
-					fieldname: 'items',
-					component: 'ATable',
-					label: 'Items',
-					kind: 'table',
-					columns: [{ name: 'qty', label: 'Qty' }],
-				} as any,
+					kind: 'fieldset' as const,
+					fieldname: 'details',
+					schema: [{ kind: 'field' as const, fieldname: 'email', fieldtype: 'Data', component: 'ATextInput' }],
+				},
 			]
 			const record = registry.initializeRecord(schema)
-			expect(record.items).toEqual([])
+			expect(record.details).toEqual({ email: '' })
+		})
+
+		it('initializes a field with kind: "field" and an explicit default to that default value', () => {
+			registry = new Registry()
+			const schema = [
+				{ kind: 'field' as const, fieldname: 'status', fieldtype: 'Select', component: 'ADropdown', default: 'Draft' },
+				{ kind: 'field' as const, fieldname: 'active', fieldtype: 'Check', component: 'ACheckbox', default: true },
+			]
+			const record = registry.initializeRecord(schema)
+			expect(record.status).toBe('Draft')
+			expect(record.active).toBe(true)
 		})
 	})
 })

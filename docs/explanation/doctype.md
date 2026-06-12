@@ -2,9 +2,6 @@
 title: Doctypes
 description: Understanding Stonecrop's document type system
 ---
-Here's the revised draft with those additions:
-
----
 
 # Doctypes
 
@@ -36,7 +33,7 @@ A doctype addresses four distinct concerns:
 
 **Workflow** models the document's lifecycle as explicit states and transitions. Rather than implicit conditionals scattered through code (`if status == 'pending' and user.can_approve`), the valid paths are declared upfront and enforced by a state machine.
 
-**Actions** connect triggers to behavior. When a field changes or a workflow transition fires, actions define what happens. This is where validation, calculations, notifications, and side effects live—visible and discoverable rather than hidden in hooks. Actions that make no changes to the state of the record in question can be thought of as side effects: print, email, etc. 
+**Actions** connect triggers to behavior. When a field changes or a workflow transition fires, actions define what happens. This is where validation, calculations, notifications, and side effects live—visible and discoverable rather than hidden in hooks. Actions that make no changes to the state of the record in question can be thought of as side effects: print, email, etc.
 
 **Permissions** control access at the doctype level. Who can read, create, modify, or transition documents? In practice, the doctype boundary often exists precisely *because* it's a permission boundary.
 
@@ -70,7 +67,7 @@ This isn't novel—it's established practice from business process management, a
 
 Stonecrop makes no opinions about the type of persistent storage behind the GraphQL layer, though it is generally designed with relational databases in mind.
 
-This is a deliberate architectural choice. The doctype defines structure and behavior for the application layer. How documents are actually stored—PostgreSQL, MongoDB, a combination, something else entirely—is a separate concern. The GraphQL schema provides the contract; the resolvers behind it can talk to whatever storage makes sense for your deployment. The use of projects like PostGraphile and Hasura can jump start the accessibility of the backend data and allow for progressive adoption of Stonecrop features. 
+This is a deliberate architectural choice. The doctype defines structure and behavior for the application layer. How documents are actually stored—PostgreSQL, MongoDB, a combination, something else entirely—is a separate concern. The GraphQL schema provides the contract; the resolvers behind it can talk to whatever storage makes sense for your deployment. The use of projects like PostGraphile and Hasura can jump start the accessibility of the backend data and allow for progressive adoption of Stonecrop features.
 
 ## Design Principles
 

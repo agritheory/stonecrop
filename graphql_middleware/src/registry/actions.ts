@@ -1,4 +1,4 @@
-import type { FieldMeta } from '@stonecrop/schema'
+import type { ValueField } from '@stonecrop/schema'
 import type { ActionHandler } from '../types'
 
 const handlerRegistry: Map<string, ActionHandler> = new Map()
@@ -47,12 +47,17 @@ export function clearHandlers(): void {
  * Validate that all required fields are present in a record
  */
 const validateRequiredFields: ActionHandler = async (args, context) => {
+	// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- ActionHandler args are runtime-typed by GraphQL; first arg is always the record
 	const [record] = args as [Record<string, unknown>]
 	const { doctype } = context
 
 	const missing: string[] = []
 	for (const field of doctype.fields) {
-		if (field.required && (record[field.fieldname] === undefined || record[field.fieldname] === null)) {
+		if (
+			field.kind === 'field' &&
+			field.required &&
+			(record[field.fieldname] === undefined || record[field.fieldname] === null)
+		) {
 			missing.push(field.label ?? field.fieldname)
 		}
 	}
@@ -68,12 +73,14 @@ const validateRequiredFields: ActionHandler = async (args, context) => {
  * Validate field types match expected types
  */
 const validateFieldTypes: ActionHandler = async (args, context) => {
+	// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- ActionHandler args are runtime-typed by GraphQL; first arg is always the record
 	const [record] = args as [Record<string, unknown>]
 	const { doctype } = context
 
 	const errors: string[] = []
 
 	for (const field of doctype.fields) {
+		if (field.kind !== 'field') continue
 		const value = record[field.fieldname]
 		if (value === undefined || value === null) continue
 
@@ -110,7 +117,7 @@ const validateFieldTypes: ActionHandler = async (args, context) => {
 /**
  * Validate a single field value against its expected type
  */
-function validateFieldValue(field: FieldMeta, value: unknown): string | null {
+function validateFieldValue(field: ValueField, value: unknown): string | null {
 	const { fieldname, fieldtype } = field
 
 	switch (fieldtype) {

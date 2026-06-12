@@ -3,9 +3,8 @@
 		<template v-for="(componentObj, key) in schema" :key="key">
 			<!-- Nested schema field (Doctype or any field with resolved schema) -->
 			<div v-if="isNestedSection(componentObj)" class="aform-nested-section">
-				<!-- Suppress h4 when collapsible is present — fieldset components render their own legend -->
-				<!-- TODO: replace 'collapsible' presence check with a type discriminant on SchemaTypes once one exists -->
-				<h4 v-if="componentObj.label && !('collapsible' in componentObj)" class="aform-nested-label">
+				<!-- Suppress h4 for fieldsets — they render their own legend inside AFieldset -->
+				<h4 v-if="componentObj.label && componentObj.kind !== 'fieldset'" class="aform-nested-label">
 					{{ componentObj.label }}
 				</h4>
 				<component
@@ -14,7 +13,7 @@
 					:mode="resolvedMode(componentObj)"
 					:schema="componentObj.schema"
 					:label="componentObj.label"
-					:collapsible="componentObj.collapsible"
+					:collapsible="componentObj.kind === 'fieldset' ? componentObj.collapsible : undefined"
 					@update:data="(val: any) => updateNestedData(componentObj.fieldname, val)" />
 			</div>
 
@@ -36,17 +35,18 @@
 <script setup lang="ts">
 import { computed, watchEffect, watch, ref } from 'vue'
 
-import type { SchemaTypes, FieldsetSchema, FormMode } from '../types'
+import type { ResolvedField, ResolvedLink, ResolvedFieldset } from '../types'
+import type { InteractionMode } from '@stonecrop/schema'
 
 const emit = defineEmits(['update:schema', 'update:data'])
 const dataModel = defineModel<Record<string, any>>('data', { required: true })
-const { schema, mode = 'edit' } = defineProps<{ schema: SchemaTypes[]; mode?: FormMode }>()
+const { schema, mode = 'edit' } = defineProps<{ schema: ResolvedField[]; mode?: InteractionMode }>()
 
-const isNestedSection = (componentObj: SchemaTypes): componentObj is FieldsetSchema =>
+const isNestedSection = (componentObj: ResolvedField): componentObj is ResolvedLink | ResolvedFieldset =>
+	(componentObj.kind === 'link' || componentObj.kind === 'fieldset') &&
 	'schema' in componentObj &&
 	Array.isArray(componentObj.schema) &&
-	componentObj.schema.length > 0 &&
-	(!('kind' in componentObj) || componentObj.kind !== 'table')
+	componentObj.schema.length > 0
 
 // Reactive nested data refs for two-way binding with nested AForm instances
 const nestedData = ref<Record<string, any>>({})
@@ -78,7 +78,7 @@ const updateNestedData = (fieldname: string, val: any) => {
 	}
 }
 
-const componentProps = (componentObj: SchemaTypes) => {
+const componentProps = (componentObj: ResolvedField) => {
 	const propsToPass: Record<string, any> = {}
 	for (const [key, value] of Object.entries(componentObj)) {
 		// 'mode' is excluded here because it is handled by resolvedMode()
@@ -88,21 +88,18 @@ const componentProps = (componentObj: SchemaTypes) => {
 		}
 	}
 
-	// Tabular components (those with 'columns' or kind: 'table') need rows from formData
-	// when no explicit rows were provided in the schema. Preserves non-empty rows that were
-	// set directly on the schema entry (e.g. Desktop records view).
-	if ('columns' in componentObj || ('kind' in componentObj && componentObj.kind === 'table')) {
-		const existingRows = componentObj.rows
-		if (!existingRows || (Array.isArray(existingRows) && existingRows.length === 0)) {
-			propsToPass['rows'] = dataModel.value[componentObj.fieldname] || []
-		}
+	// kind: 'table' is the canonical check; 'columns' in componentObj is a structural fallback
+	// for schemas passed directly to AForm without going through the registry.
+	if (componentObj.kind === 'table' || 'columns' in componentObj) {
+		propsToPass['rows'] = dataModel.value[componentObj.fieldname] || []
 	}
 
 	return propsToPass
 }
 
-const fieldStyle = (componentObj: SchemaTypes): Record<string, string> => {
-	const width = (componentObj as { width?: string }).width
+const fieldStyle = (componentObj: ResolvedField): Record<string, string> => {
+	if (componentObj.kind !== 'field') return {}
+	const width = componentObj.width
 	if (!width) return {}
 	return { flexBasis: width, width }
 }
@@ -110,7 +107,7 @@ const fieldStyle = (componentObj: SchemaTypes): Record<string, string> => {
 const effectiveFormMode = computed(() => mode ?? 'edit')
 
 // Resolve the effective mode for a schema field, allowing per-field overrides
-function resolvedMode(componentObj: SchemaTypes): FormMode {
+function resolvedMode(componentObj: ResolvedField): InteractionMode {
 	const fieldMode = componentObj.mode
 	if (fieldMode) return fieldMode
 	return effectiveFormMode.value

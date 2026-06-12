@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/code-editor",
-	"version": "0.12.8",
+	"version": "0.13.10",
 	"license": "MIT",
 	"type": "module",
 	"author": {
@@ -37,12 +37,14 @@
 		"build": "heft build && vite build && rushx docs",
 		"dev": "vite",
 		"docs": "bash ../common/scripts/run-docs.sh code_editor",
-		"lint": "eslint .",
-		"preview": "vite preview"
+		"lint": "oxlint",
+		"lint:fix": "oxlint --fix",
+		"preview": "vite preview",
+		"test": "vitest run",
+		"test:watch": "vitest",
+		"test:coverage": "vitest run --coverage"
 	},
 	"dependencies": {
-		"@stonecrop/themes": "workspace:*",
-		"@stonecrop/utilities": "workspace:*",
 		"@monaco-editor/loader": "^1.7.0",
 		"monaco-editor": "^0.55.1"
 	},
@@ -50,21 +52,24 @@
 		"vue": "^3.5.33"
 	},
 	"devDependencies": {
-		"@eslint/js": "^10.0.1",
 		"@microsoft/api-documenter": "^7.30.5",
 		"@rushstack/heft": "^1.2.17",
-		"@stonecrop/atable": "workspace:*",
 		"@vitejs/plugin-vue": "^6.0.6",
-		"eslint": "^10.3.0",
+		"@vue/test-utils": "^2.4.10",
 		"eslint-config-prettier": "^10.1.8",
 		"eslint-plugin-vue": "^10.9.0",
+		"eslint": "^10.3.0",
 		"globals": "^17.6.0",
+		"jsdom": "^29.1.1",
+		"oxlint-tsgolint": "0.23.0",
+		"oxlint": "1.67.0",
 		"stonecrop-rig": "workspace:*",
-		"typescript": "^6.0.3",
 		"typescript-eslint": "^8.59.1",
-		"vue": "^3.5.33",
+		"typescript": "^6.0.3",
 		"vite": "^7.3.2",
-		"vue-router": "^5.0.6"
+		"vitest": "^4.1.5",
+		"vue-router": "^5.0.6",
+		"vue": "^3.5.33"
 	},
 	"publishConfig": {
 		"access": "public"

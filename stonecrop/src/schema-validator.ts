@@ -4,7 +4,7 @@
  * @packageDocumentation
  */
 
-import type { SchemaTypes } from '@stonecrop/aform'
+import type { DoctypeField } from '@stonecrop/schema'
 import type { LinkDeclaration } from '@stonecrop/schema'
 import type { List, Map as ImmutableMap } from 'immutable'
 import type { AnyStateNodeConfig } from 'xstate'
@@ -47,7 +47,7 @@ export class SchemaValidator {
 	 */
 	validate(
 		doctype: string,
-		schema: List<SchemaTypes> | SchemaTypes[] | undefined,
+		schema: List<DoctypeField> | DoctypeField[] | undefined,
 		workflow?: AnyStateNodeConfig,
 		actions?: ImmutableMap<string, string[]> | Map<string, string[]>,
 		links?: Record<string, LinkDeclaration>
@@ -80,6 +80,7 @@ export class SchemaValidator {
 		// Validate action registration
 		if (this.options.validateActions && actions) {
 			const actionsMap = actions instanceof Map ? actions : actions.toObject()
+			// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- toObject() returns plain object; runtime-safe cast for Map<string, string[]>
 			issues.push(...this.validateActionRegistration(doctype, actionsMap as Record<string, string[]>))
 		}
 
@@ -101,7 +102,7 @@ export class SchemaValidator {
 	 * Validates that required schema properties are present
 	 * @internal
 	 */
-	private validateRequiredProperties(doctype: string, schema: SchemaTypes[]): ValidationIssue[] {
+	private validateRequiredProperties(doctype: string, schema: DoctypeField[]): ValidationIssue[] {
 		const issues: ValidationIssue[] = []
 
 		for (const field of schema) {
@@ -117,8 +118,8 @@ export class SchemaValidator {
 				continue
 			}
 
-			// Check for component or fieldtype
-			if (!field.component && !('fieldtype' in field)) {
+			// ValueField requires fieldtype; fieldset/table have their own structural requirements
+			if (field.kind === 'field' && !field.component && !field.fieldtype) {
 				issues.push({
 					severity: ValidationSeverity.ERROR,
 					rule: 'required-component-or-fieldtype',
@@ -128,13 +129,9 @@ export class SchemaValidator {
 				})
 			}
 
-			// Validate nested schemas (recursively)
-			if ('schema' in field) {
-				const nestedSchema = (field as { schema: unknown }).schema
-				const nestedArray = (
-					Array.isArray(nestedSchema) ? nestedSchema : (nestedSchema as { toArray?: () => unknown[] }).toArray?.() || []
-				) as SchemaTypes[]
-				issues.push(...this.validateRequiredProperties(doctype, nestedArray))
+			// Validate nested schemas recursively (fieldset only; table columns are ColumnSchema not DoctypeField)
+			if (field.kind === 'fieldset') {
+				issues.push(...this.validateRequiredProperties(doctype, field.schema))
 			}
 		}
 
@@ -145,15 +142,12 @@ export class SchemaValidator {
 	 * Validates Link field targets exist in registry
 	 * @internal
 	 */
-	private validateLinkFields(doctype: string, schema: SchemaTypes[], registry: Registry): ValidationIssue[] {
+	private validateLinkFields(doctype: string, schema: DoctypeField[], registry: Registry): ValidationIssue[] {
 		const issues: ValidationIssue[] = []
 
 		for (const field of schema) {
-			const fieldtype = 'fieldtype' in field ? (field as { fieldtype: unknown }).fieldtype : undefined
-
-			// Check Link fields
-			if (fieldtype === 'Link') {
-				const options = 'options' in field ? (field as { options: unknown }).options : undefined
+			if (field.kind === 'field' && field.fieldtype === 'Link') {
+				const options = field.options
 				if (!options) {
 					issues.push({
 						severity: ValidationSeverity.ERROR,
@@ -165,8 +159,6 @@ export class SchemaValidator {
 					continue
 				}
 
-				// Check if target doctype exists in registry
-				// Options should be a string representing the target doctype name
 				const targetDoctype = typeof options === 'string' ? options : ''
 				if (!targetDoctype) {
 					issues.push({
@@ -192,13 +184,9 @@ export class SchemaValidator {
 				}
 			}
 
-			// Recursively check nested schemas
-			if ('schema' in field) {
-				const nestedSchema = (field as { schema: unknown }).schema
-				const nestedArray = (
-					Array.isArray(nestedSchema) ? nestedSchema : (nestedSchema as { toArray?: () => unknown[] }).toArray?.() || []
-				) as SchemaTypes[]
-				issues.push(...this.validateLinkFields(doctype, nestedArray, registry))
+			// Recursively check nested fieldset schemas
+			if (field.kind === 'fieldset') {
+				issues.push(...this.validateLinkFields(doctype, field.schema, registry))
 			}
 		}
 
@@ -212,15 +200,15 @@ export class SchemaValidator {
 	private validateLinkDeclarations(
 		doctype: string,
 		links: Record<string, LinkDeclaration>,
-		schema: SchemaTypes[],
+		schema: DoctypeField[],
 		registry: Registry
 	): ValidationIssue[] {
 		const issues: ValidationIssue[] = []
 
 		// Build a map of Link fields by fieldname for quick lookup
-		const linkFieldsByFieldname = new Map<string, SchemaTypes>()
+		const linkFieldsByFieldname = new Map<string, DoctypeField>()
 		for (const field of schema) {
-			if ('fieldtype' in field && field.fieldtype === 'Link') {
+			if (field.kind === 'field' && field.fieldtype === 'Link') {
 				linkFieldsByFieldname.set(field.fieldname, field)
 			}
 		}
@@ -280,9 +268,8 @@ export class SchemaValidator {
 			// Only check if link has fieldname set (otherwise it's a standalone link without a field)
 			if (link.fieldname) {
 				const linkField = linkFieldsByFieldname.get(link.fieldname)
-				if (linkField) {
-					const linkFieldOptions = 'options' in linkField ? (linkField as { options: unknown }).options : undefined
-					const linkFieldTarget = typeof linkFieldOptions === 'string' ? linkFieldOptions : undefined
+				if (linkField && linkField.kind === 'field') {
+					const linkFieldTarget = typeof linkField.options === 'string' ? linkField.options : undefined
 					if (linkFieldTarget && linkFieldTarget !== link.target) {
 						issues.push({
 							severity: ValidationSeverity.ERROR,
@@ -371,6 +358,7 @@ export class SchemaValidator {
 					if (typeof transition === 'string') {
 						reachableStates.add(transition)
 					} else if (transition && typeof transition === 'object') {
+						// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- 'target' in transition guard confirms property; accessing unknown-typed target safely
 						const target = 'target' in transition ? (transition as { target: unknown }).target : undefined
 						if (typeof target === 'string') {
 							reachableStates.add(target)
@@ -425,6 +413,7 @@ export class SchemaValidator {
 			// Check each action name
 			for (const actionName of actionNames) {
 				// Check if action is registered globally
+				// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- introspecting FieldTriggerEngine private fields for validation; no public API for this check
 				const engine = triggerEngine as unknown as {
 					globalActions?: Map<string, unknown>
 					globalTransitionActions?: Map<string, unknown>
@@ -473,7 +462,7 @@ export function createValidator(registry: Registry, options?: Partial<ValidatorO
  */
 export function validateSchema(
 	doctype: string,
-	schema: List<SchemaTypes> | SchemaTypes[] | undefined,
+	schema: List<DoctypeField> | DoctypeField[] | undefined,
 	registry: Registry,
 	workflow?: AnyStateNodeConfig,
 	actions?: ImmutableMap<string, string[]> | Map<string, string[]>

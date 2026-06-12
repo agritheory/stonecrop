@@ -10,8 +10,9 @@
 import { buildClientSchema, buildSchema, isObjectType, type GraphQLSchema } from 'graphql'
 
 import type { LinkDeclaration } from '../doctype'
-import { toSlug, pascalToSnake } from '../naming'
+import { toSlug } from '../naming'
 import type { IntrospectionSource, GraphQLConversionOptions, ConvertedGraphQLDoctype } from './types'
+import type { ValueField } from '../field'
 import { defaultIsEntityType, defaultIsEntityField, classifyFieldType } from './heuristics'
 
 /**
@@ -92,7 +93,6 @@ export function convertGraphQLSchema(
 
 	// Phase 3: Convert each entity type to a doctype
 	const isEntityField = options.isEntityField ?? defaultIsEntityField
-	const deriveTableName = options.deriveTableName ?? ((typeName: string) => pascalToSnake(typeName))
 
 	const doctypes: ConvertedGraphQLDoctype[] = []
 
@@ -103,33 +103,35 @@ export function convertGraphQLSchema(
 		const fields = type.getFields()
 		const typeOverrides = options.typeOverrides?.[typeName]
 
-		const allClassifiedFields = Object.entries(fields)
-			.filter(([fieldName, field]) => isEntityField(fieldName, field, type))
-			.map(([fieldName, field]) => {
-				// Check for full custom classification first
-				if (options.classifyField) {
-					const custom = options.classifyField(fieldName, field, type)
-					if (custom !== null && custom !== undefined) {
-						return {
-							fieldname: fieldName,
-							label: custom.label ?? fieldName,
-							component: custom.component ?? 'ATextInput',
-							fieldtype: custom.fieldtype ?? 'Data',
-							...custom,
-						}
+		const entityFields = Object.entries(fields).filter(([fieldName, field]) => isEntityField(fieldName, field, type))
+
+		// oxlint-disable-next-line oxc/no-map-spread -- ...custom spread required; Object.assign cannot preserve the metadata-carrying inferred union type from classifyField
+		const allClassifiedFields = entityFields.map(([fieldName, field]) => {
+			// Check for full custom classification first
+			if (options.classifyField) {
+				const custom = options.classifyField(fieldName, field, type)
+				if (custom !== null && custom !== undefined) {
+					return {
+						kind: 'field' as const,
+						fieldname: fieldName,
+						label: custom.label ?? fieldName,
+						component: custom.component ?? 'ATextInput',
+						fieldtype: custom.fieldtype ?? 'Data',
+						...custom,
 					}
 				}
+			}
 
-				// Default classification
-				const classified = classifyFieldType(fieldName, field, entityTypes, options)
+			// Default classification
+			const classified = classifyFieldType(fieldName, field, entityTypes, options)
 
-				// Apply per-field overrides
-				if (typeOverrides?.[fieldName]) {
-					return { ...classified, ...typeOverrides[fieldName] }
-				}
+			// Apply per-field overrides
+			if (typeOverrides?.[fieldName]) {
+				return Object.assign(classified, typeOverrides[fieldName])
+			}
 
-				return classified
-			})
+			return classified
+		})
 
 		// Separate scalar fields from link fields
 		const links: Record<string, LinkDeclaration> = {}
@@ -138,7 +140,7 @@ export function convertGraphQLSchema(
 				if (field._isLink && typeof field.options === 'string' && field.cardinality) {
 					links[field.fieldname] = {
 						target: field.options,
-						cardinality: field.cardinality as LinkDeclaration['cardinality'],
+						cardinality: field.cardinality,
 					}
 					return false
 				}
@@ -157,16 +159,12 @@ export function convertGraphQLSchema(
 		const doctype: ConvertedGraphQLDoctype = {
 			name: typeName,
 			slug: toSlug(typeName),
-			fields: convertedFields,
+			// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- safe: heuristics always set a fieldtype default ('Data'); the optional fieldtype on GraphQLConversionFieldMeta is for intermediate processing, not because output fields lack fieldtype
+			fields: convertedFields as ValueField[],
 		}
 
 		if (Object.keys(links).length > 0) {
 			doctype.links = links
-		}
-
-		const tableName = deriveTableName(typeName)
-		if (tableName) {
-			doctype.tableName = tableName
 		}
 
 		if (options.includeUnmappedMeta) {
