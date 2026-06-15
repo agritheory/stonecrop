@@ -14,7 +14,6 @@ import ADateTime from './components/form/ADateTime.vue';
 import ADropdown from './components/form/ADropdown.vue';
 import ADuration from './components/form/ADuration.vue';
 import AFieldset from './components/form/AFieldset.vue';
-import AFieldsetLoading from './components/form/AFieldsetLoading.vue';
 import AFileAttach from './components/form/AFileAttach.vue';
 import AForm from './components/AForm.vue';
 import AFormLink from './components/form/AFormLink.vue';
@@ -48,8 +47,6 @@ export { ADropdown }
 export { ADuration }
 
 export { AFieldset }
-
-export { AFieldsetLoading }
 
 export { AFileAttach }
 

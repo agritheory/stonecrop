@@ -89,14 +89,6 @@ Vue component exported from @stonecrop/aform.
 import { AFieldset } from '@stonecrop/aform'
 ```
 
-### AFieldsetLoading
-
-Vue component exported from @stonecrop/aform.
-
-```typescript
-import { AFieldsetLoading } from '@stonecrop/aform'
-```
-
 ### AFileAttach
 
 Vue component exported from @stonecrop/aform.

@@ -1,15 +1,12 @@
 <template>
-	<fieldset :disabled="loading || undefined">
+	<fieldset>
 		<legend v-if="label || collapsible" @click="toggleCollapse" @submit="toggleCollapse">
 			{{ label }}
 			<CollapseButton v-if="collapsible" :collapsed="collapsed" />
 		</legend>
 		<slot :collapsed="collapsed">
-			<AForm v-show="!collapsed" v-model:data="formData" :schema="formSchema" :mode="mode" :loading="loading" />
+			<AForm v-show="!collapsed" v-model:data="formData" :schema="formSchema" :mode="mode" />
 		</slot>
-
-		<!-- Animated loading bar — only rendered while loading is true -->
-		<div v-if="loading" class="afieldset-loading-bar"></div>
 	</fieldset>
 </template>
 
@@ -27,14 +24,13 @@ const {
 	collapsible,
 	data = {},
 	mode = 'edit',
-	loading = false,
 } = defineProps<{
 	schema: ResolvedField[]
 	label?: string
 	collapsible?: boolean
 	data?: Record<string, any>
+	/** Rendering mode forwarded to the inner AForm */
 	mode?: InteractionMode
-	loading?: boolean
 }>()
 
 const collapsed = ref(false)
@@ -58,8 +54,6 @@ fieldset {
 	margin-right: 2ch;
 	border: 1px solid transparent;
 	border-bottom: 1px solid var(--sc-gray-50);
-	position: relative;
-	overflow: hidden;
 }
 
 legend {
@@ -74,25 +68,5 @@ legend {
 
 .collapse-button {
 	float: right;
-}
-
-.afieldset-loading-bar {
-	width: 50%;
-	height: 3px;
-	position: absolute;
-	left: -50%;
-	bottom: 0;
-	background: var(--sc-row-border-color, #999);
-	animation: bar-left 2s infinite;
-	z-index: 1;
-}
-
-@keyframes bar-left {
-	0% {
-		left: -50%;
-	}
-	100% {
-		left: 100%;
-	}
 }
 </style>
