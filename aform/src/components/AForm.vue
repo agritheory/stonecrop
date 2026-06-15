@@ -1,5 +1,5 @@
 <template>
-	<form class="aform">
+	<form class="aform" :class="{ 'aform--loading': loading }">
 		<template v-for="(componentObj, key) in schema" :key="key">
 			<!-- Nested schema field (Doctype or any field with resolved schema) -->
 			<div v-if="isNestedSection(componentObj)" class="aform-nested-section">
@@ -13,6 +13,7 @@
 					:mode="resolvedMode(componentObj)"
 					:schema="componentObj.schema"
 					:label="componentObj.label"
+					:loading="loading"
 					:collapsible="componentObj.kind === 'fieldset' ? componentObj.collapsible : undefined"
 					@update:data="(val: any) => updateNestedData(componentObj.fieldname, val)" />
 			</div>
@@ -26,9 +27,13 @@
 				:schema="componentObj"
 				:data="dataModel[componentObj.fieldname]"
 				:mode="resolvedMode(componentObj)"
+				:disabled="loading || undefined"
 				v-bind="componentProps(componentObj)">
 			</component>
 		</template>
+
+		<!-- Animated loading bar — only rendered while loading is true -->
+		<div v-if="loading" class="aform-loading-bar"></div>
 	</form>
 </template>
 
@@ -40,7 +45,15 @@ import type { InteractionMode } from '@stonecrop/schema'
 
 const emit = defineEmits(['update:schema', 'update:data'])
 const dataModel = defineModel<Record<string, any>>('data', { required: true })
-const { schema, mode = 'edit' } = defineProps<{ schema: ResolvedField[]; mode?: InteractionMode }>()
+const {
+	schema,
+	mode = 'edit',
+	loading = false,
+} = defineProps<{
+	schema: ResolvedField[]
+	mode?: InteractionMode
+	loading?: boolean
+}>()
 
 const isNestedSection = (componentObj: ResolvedField): componentObj is ResolvedLink | ResolvedFieldset =>
 	(componentObj.kind === 'link' || componentObj.kind === 'fieldset') &&
@@ -48,12 +61,8 @@ const isNestedSection = (componentObj: ResolvedField): componentObj is ResolvedL
 	Array.isArray(componentObj.schema) &&
 	componentObj.schema.length > 0
 
-// Reactive nested data refs for two-way binding with nested AForm instances
 const nestedData = ref<Record<string, any>>({})
 
-// Sync external dataModel changes into nestedData (one-way, no emit back).
-// Uses a shallow watch so only top-level object replacement (e.g. parent reset)
-// triggers a sync — property mutations from within are handled by updateNestedData.
 watch(
 	() => dataModel.value,
 	newData => {
@@ -67,9 +76,6 @@ watch(
 	{ immediate: true }
 )
 
-// Called by the nested <AForm>'s @update:data handler.
-// Updates nestedData locally and propagates upward in one step,
-// avoiding the watchEffect feedback loop that occurred with v-model.
 const updateNestedData = (fieldname: string, val: any) => {
 	nestedData.value[fieldname] = val
 	if (dataModel.value) {
@@ -81,15 +87,11 @@ const updateNestedData = (fieldname: string, val: any) => {
 const componentProps = (componentObj: ResolvedField) => {
 	const propsToPass: Record<string, any> = {}
 	for (const [key, value] of Object.entries(componentObj)) {
-		// 'mode' is excluded here because it is handled by resolvedMode()
-		// and passed explicitly via :mode to avoid conflicting with the form-level defaults.
 		if (!['component', 'fieldtype', 'hidden', 'mode', 'width'].includes(key)) {
 			propsToPass[key] = value
 		}
 	}
 
-	// kind: 'table' is the canonical check; 'columns' in componentObj is a structural fallback
-	// for schemas passed directly to AForm without going through the registry.
 	if (componentObj.kind === 'table' || 'columns' in componentObj) {
 		propsToPass['rows'] = dataModel.value[componentObj.fieldname] || []
 	}
@@ -106,21 +108,17 @@ const fieldStyle = (componentObj: ResolvedField): Record<string, string> => {
 
 const effectiveFormMode = computed(() => mode ?? 'edit')
 
-// Resolve the effective mode for a schema field, allowing per-field overrides
 function resolvedMode(componentObj: ResolvedField): InteractionMode {
 	const fieldMode = componentObj.mode
 	if (fieldMode) return fieldMode
 	return effectiveFormMode.value
 }
 
-// Create stable computed refs array to avoid recreation on every access
 const childModelsCache = ref<ReturnType<typeof computed>[]>([])
 
-// Watch for schema changes and update cache (avoiding side effects in computed)
 watchEffect(() => {
 	if (!schema) return
 
-	// Recreate cache only if length changed
 	if (childModelsCache.value.length !== schema.length) {
 		childModelsCache.value = schema.map((_val, i) => {
 			return computed({
@@ -140,12 +138,10 @@ watchEffect(() => {
 	}
 })
 
-// Computed just returns the cached models (no side effects)
 const childModels = computed(() => childModelsCache.value)
 </script>
 
 <style>
-/* global styles for aform */
 .aform_form-element {
 	padding: 0;
 	margin: 0;
@@ -249,7 +245,6 @@ p.aform_error {
 </style>
 
 <style scoped>
-/* @import url('@stonecrop/themes/default.css'); */
 .aform {
 	display: flex;
 	flex-wrap: wrap;
@@ -259,6 +254,8 @@ p.aform_error {
 	border-left: 4px solid var(--sc-form-border);
 	margin-bottom: 1rem;
 	max-width: 100%;
+	position: relative;
+	overflow: hidden;
 }
 @media screen and (max-width: 400px) {
 	.aform {
@@ -266,7 +263,6 @@ p.aform_error {
 	}
 }
 
-/* Nested form section */
 .aform-nested-section {
 	width: 100%;
 	padding: 0.5rem 0;
@@ -282,5 +278,30 @@ p.aform_error {
 .aform-nested-section .aform {
 	border-left-width: 2px;
 	margin-left: 0.5rem;
+}
+
+.aform--loading {
+	pointer-events: none;
+	user-select: none;
+}
+
+.aform-loading-bar {
+	width: 50%;
+	height: 3px;
+	position: absolute;
+	left: -50%;
+	bottom: 0;
+	background: var(--sc-row-border-color, #999);
+	animation: bar-left 2s infinite;
+	z-index: 1;
+}
+
+@keyframes bar-left {
+	0% {
+		left: -50%;
+	}
+	100% {
+		left: 100%;
+	}
 }
 </style>

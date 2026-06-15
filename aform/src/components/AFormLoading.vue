@@ -6,11 +6,6 @@
 			<div v-else class="aform-loading__legend-text"></div>
 		</div>
 		<div class="aform-loading__fields">
-			<!--
-        If a fields schema is provided, render real labels + disabled inputs.
-        Labels are derived from the schema and visible immediately, independently
-        of the data being loaded. All inputs are disabled until data arrives.
-      -->
 			<template v-if="fields && fields.length">
 				<div
 					v-for="(field, index) in fields"
@@ -21,15 +16,10 @@
 						<label class="aform-loading__label-text">
 							{{ field.label }}
 						</label>
-						<input type="text" disabled aria-label="field.label" class="aform-loading__real-input" tabindex="-1" />
+						<input type="text" disabled :aria-label="field.label" class="aform-loading__real-input" tabindex="-1" />
 					</div>
 				</div>
 			</template>
-
-			<!--
-        Fallback: no schema available — render N skeleton slots with animated
-        placeholder bars (original behaviour).
-      -->
 			<template v-else>
 				<div v-for="n in fieldCount" :key="n" class="aform-loading__field" :style="fieldStyle(n)">
 					<div class="aform-loading__input">
@@ -43,30 +33,6 @@
 </template>
 
 <script setup lang="ts">
-/**
- * AFormLoading
- *
- * A loading component for AForm and AFieldset.
- *
- * When a `fields` schema is provided, labels are rendered immediately and
- * independently of the data payload. All inputs are rendered as disabled
- * (aria-disabled, HTML disabled) until the parent swaps this component out
- * for the real form once data has loaded.
- *
- * When no `fields` schema is available, the original skeleton behaviour is
- * used: N animated placeholder slots are rendered instead.
- *
- * Props:
- *   fields     – optional array of field descriptors from the schema.
- *                Each entry must have at least a `label` string. A `fieldname`
- *                string is used as the loop key when present.
- *   fieldCount – number of skeleton slots to render when no `fields` are
- *                provided (default: 4). Ignored when `fields` is supplied.
- *   isFieldset – render as a fieldset skeleton with a legend (default: false).
- *   legend     – optional text for the fieldset legend. When omitted, a
- *                skeleton bar is shown in its place.
- */
-
 export interface FieldDescriptor {
 	label: string
 	fieldname?: string
@@ -86,11 +52,6 @@ const {
 	legend?: string
 }>()
 
-/**
- * Vary field widths slightly so the layout looks natural.
- * Fields at even positions get full width; odd ones alternate between
- * ~50 % and ~75 % to simulate typical form layouts.
- */
 function fieldStyle(index: number): Record<string, string> {
 	const widths = ['100%', '48%', '73%', '48%', '100%', '60%', '48%', '73%']
 	const w = widths[(index - 1) % widths.length]
@@ -99,9 +60,6 @@ function fieldStyle(index: number): Record<string, string> {
 </script>
 
 <style scoped>
-/* ------------------------------------------------------------------ */
-/* Container                                                           */
-/* ------------------------------------------------------------------ */
 .aform-loading {
 	display: flex;
 	flex-wrap: wrap;
@@ -116,25 +74,21 @@ function fieldStyle(index: number): Record<string, string> {
 	background: var(--sc-form-background, #fff);
 }
 
-/* Fieldset variant — matches <fieldset> styling from AFieldset */
 .aform-loading--fieldset {
 	border: 1px solid transparent;
 	border-left: none;
 	border-bottom: 1px solid var(--sc-gray-50, #e5e5e5);
-	padding-top: 1.5rem; /* room for the legend */
+	padding-top: 2rem;
 }
 
-/* ------------------------------------------------------------------ */
-/* Legend (fieldset only)                                              */
-/* ------------------------------------------------------------------ */
 .aform-loading__legend {
 	position: absolute;
-	top: 0.4rem;
-	left: 1rem;
+	top: 0.25rem;
+	left: 0;
 	width: 100%;
+	z-index: 2;
 }
 
-/* Skeleton legend bar (no legend text provided) */
 .aform-loading__legend-text {
 	width: 8rem;
 	height: 0.85rem;
@@ -143,18 +97,15 @@ function fieldStyle(index: number): Record<string, string> {
 	animation: pulse 1.6s ease-in-out infinite;
 }
 
-/* Real legend label (legend prop provided) */
 .aform-loading__legend-label {
-	font-size: 0.75rem;
+	font-size: 110%;
 	font-weight: 600;
-	color: var(--sc-label-color, #555);
-	text-transform: uppercase;
-	letter-spacing: 0.03em;
+	color: inherit;
+	text-transform: none;
+	letter-spacing: normal;
+	padding-bottom: 0.5rem;
 }
 
-/* ------------------------------------------------------------------ */
-/* Field slots                                                         */
-/* ------------------------------------------------------------------ */
 .aform-loading__fields {
 	display: flex;
 	flex-wrap: wrap;
@@ -163,7 +114,6 @@ function fieldStyle(index: number): Record<string, string> {
 }
 
 .aform-loading__field {
-	/* mirrors .aform_form-element */
 	position: relative;
 	box-sizing: border-box;
 	flex-grow: 1;
@@ -171,9 +121,6 @@ function fieldStyle(index: number): Record<string, string> {
 	margin-bottom: 0;
 }
 
-/* ------------------------------------------------------------------ */
-/* Input placeholder — skeleton variant                                */
-/* ------------------------------------------------------------------ */
 .aform-loading__input {
 	outline: 1px solid var(--sc-input-border-color, #ccc);
 	outline-offset: -1px;
@@ -184,7 +131,6 @@ function fieldStyle(index: number): Record<string, string> {
 	position: relative;
 }
 
-/* Skeleton label bar (no schema) */
 .aform-loading__label {
 	position: absolute;
 	top: 0;
@@ -197,54 +143,49 @@ function fieldStyle(index: number): Record<string, string> {
 	animation: pulse 1.6s ease-in-out infinite;
 }
 
-/* ------------------------------------------------------------------ */
-/* Disabled input variant (schema-driven)                              */
-/* ------------------------------------------------------------------ */
 .aform-loading__input--disabled {
-	/* Slightly muted background signals "not yet interactive" */
-	background: var(--sc-input-disabled-background, #f5f5f5);
+	background: var(--sc-input-field-disabled-background, #f5f5f5);
 	outline-color: var(--sc-input-border-color, #ccc);
-	display: flex;
-	flex-direction: column;
-	justify-content: center;
-	padding: 0 0.5rem;
-	height: auto;
-	min-height: 2.25rem;
-	padding-top: 1.1rem; /* room for the floating label */
+	position: relative;
+	height: 2.25rem;
+	width: 100%;
+	box-sizing: border-box;
 }
 
-/* Real label text shown above the disabled input */
 .aform-loading__label-text {
 	position: absolute;
 	top: 0;
 	left: 10px;
 	transform: translateY(-50%);
 	font-size: 0.7rem;
-	font-weight: 500;
-	color: var(--sc-label-color, #555);
-	background: var(--sc-input-disabled-background, #f5f5f5);
-	padding: 0 2px;
+	font-weight: 300;
+	letter-spacing: 0.05rem;
+	color: var(--sc-input-label-color, #555);
+	background: white;
+	padding: 0 0.25rem;
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	max-width: calc(100% - 1rem);
-	/* Not animated — labels are independent of data, visible immediately */
+	line-height: normal;
+	z-index: 1;
 }
 
-/* The actual disabled <input> rendered inside the slot */
 .aform-loading__real-input {
+	position: absolute;
+	inset: 0;
 	width: 100%;
+	height: 100%;
 	border: none;
 	outline: none;
 	background: transparent;
 	cursor: not-allowed;
 	color: var(--sc-input-disabled-color, #aaa);
-	font-size: 0.875rem;
-	padding: 0;
-	height: 1.5rem;
+	font-size: 1rem;
+	padding: 0.5rem;
+	box-sizing: border-box;
 }
 
-/* Stagger the pulse slightly per skeleton field */
 .aform-loading__field:nth-child(2) .aform-loading__label {
 	animation-delay: 0.15s;
 }
@@ -261,10 +202,6 @@ function fieldStyle(index: number): Record<string, string> {
 	animation-delay: 0.75s;
 }
 
-/* ------------------------------------------------------------------ */
-/* Animated loading bar — sweeps across the bottom border             */
-/* Mirrors ATableLoadingBar exactly (bottom, 3 px, bar-left keyframe) */
-/* ------------------------------------------------------------------ */
 .aform-loading__bar {
 	width: 50%;
 	height: 3px;
@@ -276,9 +213,6 @@ function fieldStyle(index: number): Record<string, string> {
 	z-index: 0;
 }
 
-/* ------------------------------------------------------------------ */
-/* Keyframes                                                           */
-/* ------------------------------------------------------------------ */
 @keyframes bar-left {
 	0% {
 		left: -50%;
@@ -298,9 +232,6 @@ function fieldStyle(index: number): Record<string, string> {
 	}
 }
 
-/* ------------------------------------------------------------------ */
-/* Responsive                                                          */
-/* ------------------------------------------------------------------ */
 @media screen and (max-width: 400px) {
 	.aform-loading__fields {
 		flex-direction: column;
