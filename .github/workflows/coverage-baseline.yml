@@ -36,6 +36,7 @@ jobs:
           - desktop
           - graphql_client
           - graphql_middleware
+          - node_editor
           - rockfoil
           - schema
           - stonecrop
