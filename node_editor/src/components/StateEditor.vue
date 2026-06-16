@@ -5,132 +5,35 @@
 </template>
 
 <script setup lang="ts">
-import { type Node, Position } from '@vue-flow/core'
-import { type HTMLAttributes, computed } from 'vue'
+import { type HTMLAttributes, computed, onMounted } from 'vue'
 
 import NodeEditor from './NodeEditor.vue'
-import type { EditorStates, FlowElement, FlowElements, Layout } from '../types'
+import type { EditorStates, FlowElements, Layout } from '../types'
+import { statesToFlowElements, flowElementsToStates } from '../utils/stateTransforms'
 
-const emit = defineEmits(['update:modelValue'])
 const states = defineModel<EditorStates>()
-const { layout, nodeContainerClass = '' } = defineProps<{
-	layout: Layout
+const layout = defineModel<Layout>('layout')
+const { nodeContainerClass = '' } = defineProps<{
 	nodeContainerClass?: HTMLAttributes['class']
 }>()
 
+onMounted(() => {
+	if (layout.value === undefined) {
+		console.warn('[StateEditor] v-model:layout is not bound. Node position changes will not be persisted.')
+	}
+})
+
 const elements = computed<FlowElements>({
 	get: () => {
-		const hasInputs = {}
-		const stateElements: FlowElements = []
-		const stateHash: Record<string, FlowElement> = {}
-
-		if (!states.value) {
-			return stateElements
-		}
-
-		let index = 0
-		for (const [key, value] of Object.entries(states.value)) {
-			const el: Node = {
-				id: key,
-				label: key,
-				position: layout[key]?.position || { x: 200 * index, y: 100 },
-				targetPosition: layout[key]?.targetPosition || Position.Left,
-				sourcePosition: layout[key]?.sourcePosition || Position.Right,
-			}
-
-			if (value?.type === 'final') {
-				el.type = 'output'
-				el.class = 'default-output-node'
-			}
-
-			stateHash[key] = el
-		}
-
-		for (const [key, value] of Object.entries(states.value)) {
-			if (value?.on) {
-				for (const [edgeKey, edgeValue] of Object.entries(value.on)) {
-					// NOTE: If the proxy array 'value.on' has more than one edge, 'edgeValue' will contain a proxy object
-					// where 'target' can be accessed. Otherwise, 'edgeValue' will be available directly.
-
-					// TODO: resolve type issues with xstate
-					const target = edgeValue.target || edgeValue
-					stateElements.push({
-						id: `${key}-${target}`,
-						source: key,
-						target: target,
-						label: edgeKey,
-						animated: true,
-						type: 'smoothstep', // Use smoothstep for better separation of bidirectional edges
-					})
-
-					hasInputs[target] = true
-				}
-			}
-			index++
-		}
-
-		for (const [key, value] of Object.entries(stateHash)) {
-			if (!hasInputs[key]) {
-				value['type'] = 'input'
-				value['class'] = 'default-input-node'
-			}
-			stateElements.push(value)
-		}
-
-		return stateElements
+		if (!states.value) return []
+		return statesToFlowElements(states.value, layout.value)
 	},
-
 	set: newValue => {
-		// update modelValue when elements change
-		onElementsChange(newValue)
-
-		// TODO: emit('update:modelValue', modelValue)
+		const { states: nextStates, layout: nextLayout } = flowElementsToStates(newValue)
+		states.value = nextStates
+		if (layout.value !== undefined) {
+			layout.value = nextLayout
+		}
 	},
 })
-const onElementsChange = (nextElements: FlowElements) => {
-	const edges: Record<string, Record<string, any>> = {}
-	const idToLabel: Record<string, string> = {}
-	const nextStates: EditorStates = {}
-
-	for (const el of nextElements) {
-		const label = el.label as string
-
-		if (el.type === 'input') {
-			// it's an input node
-			nextStates[label] = {
-				on: {},
-			}
-		} else if (el.type === 'output') {
-			// it's an output node
-			nextStates[label] = {
-				type: 'final',
-			}
-		} else if (el.source && el.target) {
-			// it's an edge
-			edges[el.source] = edges[el.source] || {}
-			edges[el.source][label] = {
-				target: el.target,
-			}
-		} else {
-			// it's a state
-			nextStates[label] = {
-				on: {},
-			}
-		}
-		idToLabel[el.id] = label
-	}
-
-	for (const [edgeKey, edgeValue] of Object.entries(edges)) {
-		// add edges to states
-		const label = idToLabel[edgeKey]
-		for (const [key, value] of Object.entries(edgeValue)) {
-			if (!nextStates[label]) {
-				nextStates[label] = { on: {} }
-			}
-			nextStates[label].on[key] = value
-		}
-	}
-
-	emit('update:modelValue', nextStates)
-}
 </script>

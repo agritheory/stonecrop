@@ -1,4 +1,6 @@
 <template>
+	<!-- transparent ghost path gives a ~20px click zone around the 2px visible stroke -->
+	<path :d="path[0]" fill="none" stroke="transparent" stroke-width="20" class="vue-flow__edge-interaction" />
 	<path :id="id" :style="style" class="vue-flow__edge-path" :d="path[0]" :marker-end="markerEnd" />
 
 	<EdgeLabelRenderer>
@@ -9,7 +11,8 @@
 				transform: `translate(-50%, -50%) translate(${path[1]}px,${path[2]}px)`,
 			}"
 			class="nodrag nopan editable-edge-label"
-			@click="labelOnClick()">
+			@click="labelOnClick()"
+			@contextmenu.prevent="$emit('remove', id)">
 			<div class="vue-flow__edge-label">{{ label }}</div>
 			<div v-if="showInput" class="label-input-wrapper">
 				<input
@@ -28,10 +31,7 @@ import { type EdgeProps, EdgeLabelRenderer, getBezierPath /* useVueFlow */ } fro
 import { computed, ref, nextTick, useTemplateRef } from 'vue'
 
 const props = defineProps<EdgeProps>()
-const emit = defineEmits(['change'])
-
-// TODO: Implement edge removal
-// const { removeEdges } = useVueFlow()
+const emit = defineEmits(['change', 'remove'])
 
 const inputRef = useTemplateRef<HTMLInputElement>('labelInput')
 const newLabel = ref<EdgeProps['label']>('')
