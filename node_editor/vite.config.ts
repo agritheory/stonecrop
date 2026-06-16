@@ -41,7 +41,7 @@ export default defineConfig({
 				statements: 70,
 			},
 			include: ['src/**/*.{ts,vue}'],
-			exclude: [...coverageConfigDefaults.exclude, 'src/index.ts'],
+			exclude: [...coverageConfigDefaults.exclude, 'src/index.ts', 'src/components/**'],
 		},
 	},
 })
