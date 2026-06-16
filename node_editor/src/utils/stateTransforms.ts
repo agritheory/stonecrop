@@ -1,8 +1,6 @@
-import { Position, type Edge, type Node } from '@vue-flow/core'
+import { Position, type Node } from '@vue-flow/core'
 
 import type { EditorStates, FlowElements, Layout } from '../types'
-
-const isEdge = (el: Node | Edge): el is Edge => 'source' in el && 'target' in el
 
 export function statesToFlowElements(states: EditorStates, layout?: Layout): FlowElements {
 	const hasInputs: Record<string, boolean> = {}
@@ -19,7 +17,7 @@ export function statesToFlowElements(states: EditorStates, layout?: Layout): Flo
 			sourcePosition: layout?.[key]?.sourcePosition ?? Position.Right,
 		}
 
-		if ((value as any)?.type === 'final') {
+		if (value.type === 'final') {
 			el.type = 'output'
 			el.class = 'default-output-node'
 		}
@@ -29,19 +27,27 @@ export function statesToFlowElements(states: EditorStates, layout?: Layout): Flo
 	}
 
 	for (const [key, value] of Object.entries(states)) {
-		if ((value as any)?.on) {
-			for (const [edgeKey, edgeValue] of Object.entries((value as any).on)) {
-				const target = (edgeValue as any)?.target ?? edgeValue
+		if (value.on) {
+			for (const [edgeKey, edgeValue] of Object.entries(value.on)) {
+				const target =
+					typeof edgeValue === 'string'
+						? edgeValue
+						: edgeValue != null &&
+							  typeof edgeValue === 'object' &&
+							  'target' in edgeValue &&
+							  typeof edgeValue.target === 'string'
+							? edgeValue.target
+							: ''
 				stateElements.push({
 					id: `${key}-${target}`,
 					source: key,
-					target: target as string,
+					target,
 					label: edgeKey,
 					animated: true,
 					type: 'smoothstep',
 					interactionWidth: 40,
-				} as Edge)
-				hasInputs[target as string] = true
+				})
+				hasInputs[target] = true
 			}
 		}
 	}
@@ -58,55 +64,52 @@ export function statesToFlowElements(states: EditorStates, layout?: Layout): Flo
 }
 
 export function flowElementsToStates(nextElements: FlowElements): { states: EditorStates; layout: Layout } {
-	const edges: Record<string, Record<string, any>> = {}
+	const transitionsBySource: Record<string, Record<string, { target: string }>> = {}
 	const idToLabel: Record<string, string> = {}
-	const nextStates: EditorStates = {}
+	const nodeTypeByLabel: Record<string, string | undefined> = {}
 	const nextLayout: Layout = {}
 
 	// First pass: build id→label map from nodes so edge targets resolve correctly
 	for (const el of nextElements) {
-		if (!isEdge(el as Node | Edge)) {
-			idToLabel[el.id] = el.label as string
+		if (!('source' in el)) {
+			idToLabel[el.id] = typeof el.label === 'string' ? el.label : el.id
 		}
 	}
 
-	// Second pass: process all elements
+	// Second pass: collect node types, layout positions, and edge transitions
 	for (const el of nextElements) {
-		const label = el.label as string
-
-		if (el.type === 'input') {
-			nextStates[label] = { on: {} }
-		} else if (el.type === 'output') {
-			nextStates[label] = { type: 'final' } as any
-		} else if (isEdge(el as Node | Edge)) {
-			const edge = el as unknown as Edge
-			const targetLabel = idToLabel[edge.target] || edge.target
-			edges[edge.source] = edges[edge.source] || {}
-			edges[edge.source][label] = { target: targetLabel }
+		if ('source' in el && 'target' in el) {
+			const edgeLabel = typeof el.label === 'string' ? el.label : el.id
+			const sourceLabel = idToLabel[el.source] || el.source
+			const targetLabel = idToLabel[el.target] || el.target
+			transitionsBySource[sourceLabel] = transitionsBySource[sourceLabel] ?? {}
+			transitionsBySource[sourceLabel][edgeLabel] = { target: targetLabel }
 		} else {
-			nextStates[label] = { on: {} }
-		}
-
-		if (!isEdge(el as Node | Edge)) {
-			const node = el as unknown as Node
-			if (node.position) {
-				const nodeLabel = idToLabel[el.id] || el.id
+			const nodeLabel = typeof el.label === 'string' ? el.label : el.id
+			nodeTypeByLabel[nodeLabel] = el.type
+			if (el.position) {
 				nextLayout[nodeLabel] = {
-					position: node.position,
-					...(node.targetPosition !== undefined && { targetPosition: node.targetPosition }),
-					...(node.sourcePosition !== undefined && { sourcePosition: node.sourcePosition }),
+					position: el.position,
+					...(el.targetPosition !== undefined && { targetPosition: el.targetPosition }),
+					...(el.sourcePosition !== undefined && { sourcePosition: el.sourcePosition }),
 				}
 			}
 		}
 	}
 
-	for (const [edgeKey, edgeValue] of Object.entries(edges)) {
-		const label = idToLabel[edgeKey] || edgeKey
-		for (const [key, value] of Object.entries(edgeValue)) {
-			if (!nextStates[label]) {
-				nextStates[label] = { on: {} }
-			}
-			;(nextStates[label] as any).on[key] = value
+	// Build states from node types and collected transitions
+	const nextStates: EditorStates = {}
+	for (const [label, nodeType] of Object.entries(nodeTypeByLabel)) {
+		if (nodeType === 'output') {
+			nextStates[label] = { type: 'final' }
+		} else {
+			nextStates[label] = { on: transitionsBySource[label] ?? {} }
+		}
+	}
+	// Capture any transition sources that had no corresponding node entry
+	for (const [sourceLabel, on] of Object.entries(transitionsBySource)) {
+		if (!nextStates[sourceLabel]) {
+			nextStates[sourceLabel] = { on }
 		}
 	}
 

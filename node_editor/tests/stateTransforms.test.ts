@@ -107,7 +107,7 @@ describe('flowElementsToStates', { tags: ['unit'] }, () => {
 	it('round-trips all state names', () => {
 		const elements = statesToFlowElements(issueStates)
 		const { states } = flowElementsToStates(elements)
-		expect(Object.keys(states).sort()).toEqual(Object.keys(issueStates).sort())
+		expect(Object.keys(states).toSorted()).toEqual(Object.keys(issueStates).toSorted())
 	})
 
 	it('round-trips transition targets correctly', () => {
