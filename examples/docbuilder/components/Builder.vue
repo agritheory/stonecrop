@@ -35,15 +35,12 @@
 					<StateEditor
 						v-if="workflowConfig && workflowConfig.states && Object.keys(workflowConfig.states).length > 0"
 						v-model="workflowConfig.states"
-						node-container-class="node-editor"
-						:layout="layout" />
+						v-model:layout="layout"
+						node-container-class="node-editor" />
 				</div>
 			</AFieldset>
 			<AForm class="aform-main" v-model="doctypeSchema" :data="formData" :key="formKey" />
 			<ActionSet :elements="actionElements" />
-
-			<!-- Import Wizard Modal -->
-			<ImportWizard v-if="showImportWizard" @close="showImportWizard = false" @import="handleImport" />
 		</div>
 	</div>
 </template>
@@ -53,15 +50,12 @@ import type { ResolvedField } from '@stonecrop/aform'
 import type { ActionElements } from '@stonecrop/desktop'
 import type { Layout } from '@stonecrop/node-editor'
 import { useStonecrop, type ValidationResult, validateSchema, type RouteContext } from '@stonecrop/stonecrop'
-import type { ConversionResult } from '@stonecrop/utilities/sql-introspection'
-import { scaffoldWorkflowFromTable, generateWorkflowLayout } from '@stonecrop/utilities/workflow-scaffolder'
 import { List } from 'immutable'
 import { onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { type AnyStateNodeConfig, createMachine } from 'xstate'
 
 import doctypeSchemaJson from '../assets/doctype_schema.json'
-import ImportWizard from './ImportWizard.vue'
 
 interface BuilderFormData {
 	schema_fieldset?: {
@@ -78,7 +72,6 @@ const formKey = ref(0)
 
 const { stonecrop } = useStonecrop()
 
-const showImportWizard = ref(false)
 const validationResult = ref<ValidationResult | null>(null)
 const warningsDismissed = ref(false)
 const isLoading = ref(true)
@@ -179,32 +172,44 @@ watch(
 	{ deep: true }
 )
 
+let machineSaveTimer: ReturnType<typeof setTimeout> | null = null
+watch(
+	workflowConfig,
+	newConfig => {
+		if (isLoading.value || !newConfig) return
+		if (machineSaveTimer) clearTimeout(machineSaveTimer)
+		machineSaveTimer = setTimeout(async () => {
+			const doctype = route.params.id.toString()
+			await fetch('/api/save_machine', {
+				method: 'PATCH',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ doctype, machine: newConfig }),
+			})
+		}, 500)
+	},
+	{ deep: true }
+)
+
+let layoutSaveTimer: ReturnType<typeof setTimeout> | null = null
+watch(
+	layout,
+	newLayout => {
+		if (!newLayout || Object.keys(newLayout).length === 0) return
+		if (layoutSaveTimer) clearTimeout(layoutSaveTimer)
+		layoutSaveTimer = setTimeout(async () => {
+			const doctype = route.params.id.toString()
+			await fetch('/api/save_layout', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ doctype, layout: newLayout }),
+			})
+		}, 500)
+	},
+	{ deep: true }
+)
+
 function dismissWarnings() {
 	warningsDismissed.value = true
-}
-
-// Handle SQL import
-function handleImport(results: ConversionResult[]) {
-	if (!stonecrop.value || results.length === 0) return
-
-	// For now, import the first table
-	// In a full implementation, you'd handle multiple tables
-	const result = results[0]
-
-	// Update schema
-	formData.value = {
-		...formData.value,
-		schema_fieldset: {
-			schema: result.schema,
-		},
-	}
-
-	// Try to scaffold workflow if available
-	// Note: We need the original SQLTable for this, so we'll need to enhance the flow
-	// For now, this is a placeholder for future enhancement
-
-	showImportWizard.value = false
-	formKey.value++
 }
 
 // Setup page actions
@@ -223,13 +228,6 @@ const actionElements = [
 		},
 		// Disable if there are validation errors
 		disabled: () => (validationResult.value?.errorCount ?? 0) > 0,
-	},
-	{
-		type: 'button',
-		label: 'Import SQL',
-		action: function () {
-			showImportWizard.value = true
-		},
 	},
 	{
 		type: 'dropdown',

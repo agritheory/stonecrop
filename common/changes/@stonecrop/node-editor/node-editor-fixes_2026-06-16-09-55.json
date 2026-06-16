@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/node-editor",
+      "comment": "cleanup pending issues with node-editor",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/node-editor"
+}

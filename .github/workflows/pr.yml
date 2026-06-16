@@ -37,6 +37,7 @@ jobs:
             desktop: desktop/**
             graphql_client: graphql_client/**
             graphql_middleware: graphql_middleware/**
+            node_editor: node_editor/**
             rockfoil: rockfoil/**
             schema: schema/**
             stonecrop: stonecrop/**

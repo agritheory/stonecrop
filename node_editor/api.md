@@ -47,9 +47,7 @@ Editor states
 **Definition:**
 
 ```typescript
-export type EditorStates = {
-    [key: string]: AnyStateNodeDefinition | AnyStateNodeConfig['states'];
-};
+export type EditorStates = Record<string, AnyStateNodeConfig>;
 ```
 
 ### FlowElement

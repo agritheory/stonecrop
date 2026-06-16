@@ -39,7 +39,10 @@
 		"docs": "bash ../common/scripts/run-docs.sh node_editor",
 		"lint": "oxlint",
 		"lint:fix": "oxlint --fix",
-		"preview": "vite preview"
+		"preview": "vite preview",
+		"test": "vitest run --coverage.enabled false",
+		"test:watch": "vitest watch",
+		"test:coverage": "vitest run --coverage"
 	},
 	"dependencies": {
 		"@vue-flow/core": "^1.48.1",
@@ -53,11 +56,13 @@
 		"@microsoft/api-documenter": "^7.30.5",
 		"@rushstack/heft": "^1.2.17",
 		"@vitejs/plugin-vue": "^6.0.6",
+		"@vitest/coverage-istanbul": "^4.1.5",
 		"oxlint": "1.67.0",
 		"oxlint-tsgolint": "0.23.0",
 		"stonecrop-rig": "workspace:*",
 		"typescript": "^6.0.3",
 		"vite": "^7.3.2",
+		"vitest": "^4.1.5",
 		"vue": "^3.5.33",
 		"vue-router": "^5.0.6"
 	},
