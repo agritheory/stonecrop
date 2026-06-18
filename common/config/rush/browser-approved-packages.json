@@ -363,6 +363,10 @@
       "allowedCategories": [ "production", "prototype" ]
     },
     {
+      "name": "nuxt-graphql-middleware",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
       "name": "ofetch",
       "allowedCategories": [ "production", "prototype" ]
     },
