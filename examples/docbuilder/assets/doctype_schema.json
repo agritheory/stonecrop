@@ -63,43 +63,5 @@
 				"rows": []
 			}
 		]
-	},
-	{
-		"fieldtype": "Fieldset",
-		"component": "AFieldset",
-		"collapsible": true,
-		"label": "Events",
-		"fieldname": "actions_fieldset",
-		"schema": [
-			{
-				"component": "ATable",
-				"fieldname": "actions",
-				"columns": [
-					{
-						"label": "Event Name",
-						"name": "event_name",
-						"fieldtype": "Data",
-						"align": "left",
-						"edit": false,
-						"width": "35ch"
-					},
-					{
-						"label": "Callback",
-						"name": "callback",
-						"fieldtype": "Data",
-						"align": "left",
-						"edit": true,
-						"width": "50ch",
-						"cellComponent": "textarea",
-						"cellComponentProps": {
-							"rows": 8,
-							"cols": 50
-						}
-					}
-				],
-				"config": { "view": "list", "fullWidth": true },
-				"rows": []
-			}
-		]
 	}
 ]

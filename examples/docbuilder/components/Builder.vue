@@ -39,6 +39,9 @@
 						node-container-class="node-editor" />
 				</div>
 			</AFieldset>
+			<AFieldset label="Actions" :collapsible="true">
+				<ActionsPanel v-model="workflowConfig" />
+			</AFieldset>
 			<AForm class="aform-main" :schema="doctypeSchema" v-model:data="formData" :key="formKey" />
 			<ActionSet :elements="actionElements" />
 		</div>
@@ -49,21 +52,26 @@
 import type { ResolvedField } from '@stonecrop/aform'
 import type { ActionElements } from '@stonecrop/desktop'
 import type { Layout } from '@stonecrop/node-editor'
-import { useStonecrop, type ValidationResult, validateSchema, type RouteContext } from '@stonecrop/stonecrop'
+import {
+	useStonecrop,
+	ValidationSeverity,
+	type ValidationResult,
+	type ValidationIssue,
+	validateSchema,
+	type RouteContext,
+} from '@stonecrop/stonecrop'
 import { List } from 'immutable'
 import { onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import type { WorkflowMeta } from '@stonecrop/schema'
+import { WorkflowMeta } from '@stonecrop/schema'
 
+import ActionsPanel from './ActionsPanel.vue'
 import doctypeSchemaJson from '../assets/doctype_schema.json'
 
 interface BuilderFormData {
 	schema_fieldset?: {
 		// User-authored field definitions, not AForm's resolved schema
 		schema: Record<string, unknown>[]
-	}
-	actions_fieldset?: {
-		actions: unknown
 	}
 }
 
@@ -120,9 +128,6 @@ onMounted(async () => {
 			schema_fieldset: {
 				schema: doctypeMeta.schema?.toArray() || [],
 			},
-			actions_fieldset: {
-				actions: doctypeMeta.actions?.get('default') || [],
-			},
 		}
 
 		if (doctypeMeta.workflow) {
@@ -136,40 +141,46 @@ onMounted(async () => {
 	}
 })
 
-// Watch for schema changes and validate
-watch(
-	() => formData.value,
-	() => {
-		if (!stonecrop.value || !stonecrop.value.registry) return
+function revalidate() {
+	if (!stonecrop.value?.registry) return
 
-		const doctype = route.params.id.toString()
-		const schemaData = formData.value.schema_fieldset?.schema
-		const actionsData = formData.value.actions_fieldset?.actions
+	const doctype = route.params.id.toString()
+	const schemaData = formData.value.schema_fieldset?.schema
 
-		if (schemaData) {
-			// Convert to List if needed
-			const schemaList = Array.isArray(schemaData) ? List(schemaData) : schemaData
+	if (!schemaData) return
 
-			// Type guard for actions - ensure it's Map or undefined
-			const actions = actionsData instanceof Map ? actionsData : undefined
+	const schemaList = Array.isArray(schemaData) ? List(schemaData) : schemaData
+	const schemaResult = validateSchema(doctype, schemaList, stonecrop.value.registry, undefined, undefined)
 
-			// Validate
-			validationResult.value = validateSchema(
-				doctype,
-				schemaList,
-				stonecrop.value.registry,
-				undefined, // workflow validation replaced with WorkflowMeta.safeParse() in Step 3
-				actions
-			)
-
-			// Reset warnings dismissed when new validation occurs
-			if (validationResult.value.issues.length > 0) {
-				warningsDismissed.value = false
+	const workflowIssues: ValidationIssue[] = []
+	if (workflowConfig.value) {
+		const workflowResult = WorkflowMeta.safeParse(workflowConfig.value)
+		if (!workflowResult.success) {
+			for (const issue of workflowResult.error.issues) {
+				workflowIssues.push({
+					severity: ValidationSeverity.ERROR,
+					rule: `workflow.${issue.code}`,
+					message: issue.message,
+					doctype,
+					fieldname: issue.path.length > 0 ? issue.path.join('.') : undefined,
+				})
 			}
 		}
-	},
-	{ deep: true }
-)
+	}
+
+	validationResult.value = {
+		...schemaResult,
+		issues: [...schemaResult.issues, ...workflowIssues],
+		errorCount: schemaResult.errorCount + workflowIssues.length,
+	}
+
+	if (validationResult.value.issues.length > 0) {
+		warningsDismissed.value = false
+	}
+}
+
+watch(() => formData.value, revalidate, { deep: true })
+watch(workflowConfig, revalidate, { deep: true })
 
 let machineSaveTimer: ReturnType<typeof setTimeout> | null = null
 watch(
