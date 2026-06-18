@@ -45,16 +45,6 @@ declare function install(app: App): void;
 
 ## Type Aliases
 
-### EditorStates
-
-Editor states
-
-**Definition:**
-
-```typescript
-export type EditorStates = Record<string, AnyStateNodeConfig>;
-```
-
 ### FlowElement
 
 Flow element

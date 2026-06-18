@@ -1,6 +1,6 @@
 // src/server.js
 import { createServer, Model, Response } from 'miragejs'
-import type { AnyStateNodeConfig } from 'xstate'
+import type { WorkflowMeta } from '@stonecrop/schema'
 
 export function makeServer({ environment = 'development' } = {}) {
 	let server = createServer({
@@ -23,50 +23,15 @@ export function makeServer({ environment = 'development' } = {}) {
 					{
 						name: 'issue',
 						machine: {
-							id: 'Issue',
-							initial: 'New',
-							context: {
-								retries: 0,
+							states: ['New', 'Draft', 'Assigned', 'Resolved', 'Closed'],
+							actions: {
+								Save: { label: 'Save', handler: '', allowedStates: ['New'], nextState: 'Draft' },
+								Assign: { label: 'Assign', handler: '', allowedStates: ['Draft'], nextState: 'Assigned' },
+								Resolve: { label: 'Resolve', handler: '', allowedStates: ['Draft', 'Assigned'], nextState: 'Resolved' },
+								Close: { label: 'Close', handler: '', allowedStates: ['Resolved'], nextState: 'Closed' },
+								Reopen: { label: 'Reopen', handler: '', allowedStates: ['Closed'], nextState: 'Draft' },
 							},
-							states: {
-								New: {
-									on: {
-										Save: 'Draft',
-									},
-								},
-								Draft: {
-									on: {
-										Assign: {
-											target: 'Assigned',
-										},
-										Resolve: {
-											target: 'Resolved',
-										},
-									},
-								},
-								Assigned: {
-									on: {
-										Resolve: {
-											target: 'Resolved',
-										},
-									},
-								},
-								Resolved: {
-									on: {
-										Close: {
-											target: 'Closed',
-										},
-									},
-								},
-								Closed: {
-									on: {
-										Reopen: {
-											target: 'Draft',
-										},
-									},
-								},
-							},
-						} as AnyStateNodeConfig,
+						} as WorkflowMeta,
 						layout: {
 							New: {
 								position: { x: 50, y: 0 },
@@ -90,32 +55,13 @@ export function makeServer({ environment = 'development' } = {}) {
 					{
 						name: 'assignment',
 						machine: {
-							id: 'Assignment',
-							initial: 'New',
-							context: {
-								retries: 0,
+							states: ['New', 'Draft', 'Completed', 'Cancelled'],
+							actions: {
+								SAVE: { label: 'SAVE', handler: '', allowedStates: ['New'], nextState: 'Draft' },
+								COMPLETE: { label: 'COMPLETE', handler: '', allowedStates: ['Draft'], nextState: 'Completed' },
+								CANCEL: { label: 'CANCEL', handler: '', allowedStates: ['Completed'], nextState: 'Cancelled' },
 							},
-							states: {
-								New: {
-									on: {
-										SAVE: 'Draft',
-									},
-								},
-								Draft: {
-									on: {
-										COMPLETE: 'Completed',
-									},
-								},
-								Completed: {
-									on: {
-										CANCEL: 'Cancelled',
-									},
-								},
-								Cancelled: {
-									type: 'final',
-								},
-							},
-						} as AnyStateNodeConfig,
+						} as WorkflowMeta,
 						layout: {
 							New: {
 								position: { x: 50, y: 50 },
@@ -134,25 +80,12 @@ export function makeServer({ environment = 'development' } = {}) {
 					{
 						name: 'user',
 						machine: {
-							id: 'User',
-							initial: 'Active',
-							states: {
-								Active: {
-									on: {
-										Deactivate: {
-											target: 'Inactive',
-										},
-									},
-								},
-								Inactive: {
-									on: {
-										'Re-Activate': {
-											target: 'Active',
-										},
-									},
-								},
+							states: ['Active', 'Inactive'],
+							actions: {
+								Deactivate: { label: 'Deactivate', handler: '', allowedStates: ['Active'], nextState: 'Inactive' },
+								'Re-Activate': { label: 'Re-Activate', handler: '', allowedStates: ['Inactive'], nextState: 'Active' },
 							},
-						} as AnyStateNodeConfig,
+						} as WorkflowMeta,
 						layout: {
 							Active: {
 								position: { x: 50, y: 0 },

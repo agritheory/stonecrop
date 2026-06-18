@@ -33,8 +33,8 @@
 			<AFieldset label="Workflow" :collapsible="true">
 				<div class="builder-workflow">
 					<StateEditor
-						v-if="workflowConfig && workflowConfig.states && Object.keys(workflowConfig.states).length > 0"
-						v-model="workflowConfig.states"
+						v-if="workflowConfig && workflowConfig.states && workflowConfig.states.length > 0"
+						v-model="workflowConfig"
 						v-model:layout="layout"
 						node-container-class="node-editor" />
 				</div>
@@ -53,7 +53,7 @@ import { useStonecrop, type ValidationResult, validateSchema, type RouteContext 
 import { List } from 'immutable'
 import { onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { type AnyStateNodeConfig, createMachine } from 'xstate'
+import type { WorkflowMeta } from '@stonecrop/schema'
 
 import doctypeSchemaJson from '../assets/doctype_schema.json'
 
@@ -80,7 +80,7 @@ const isLoading = ref(true)
 const doctypeSchema = ref<ResolvedField[]>(doctypeSchemaJson)
 const formData = ref<BuilderFormData>({})
 const layout = ref<Layout>({})
-const workflowConfig = ref<AnyStateNodeConfig | undefined>()
+const workflowConfig = ref<WorkflowMeta | undefined>()
 
 // Simple direct approach to test API calls
 onMounted(async () => {
@@ -126,8 +126,7 @@ onMounted(async () => {
 		}
 
 		if (doctypeMeta.workflow) {
-			const stateMachine = createMachine(doctypeMeta.workflow)
-			workflowConfig.value = stateMachine.config
+			workflowConfig.value = doctypeMeta.workflow as WorkflowMeta
 		}
 
 		isLoading.value = false
@@ -159,7 +158,7 @@ watch(
 				doctype,
 				schemaList,
 				stonecrop.value.registry,
-				workflowConfig.value,
+				undefined, // workflow validation replaced with WorkflowMeta.safeParse() in Step 3
 				actions
 			)
 

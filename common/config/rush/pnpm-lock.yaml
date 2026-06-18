@@ -492,9 +492,6 @@ importers:
       vue-router:
         specifier: ^5.0.6
         version: 5.0.6(@vue/compiler-sfc@3.5.33)(pinia@3.0.4(typescript@6.0.3)(vue@3.5.33(typescript@6.0.3)))(vue@3.5.33(typescript@6.0.3))
-      xstate:
-        specifier: ^5.25.0
-        version: 5.25.0
     devDependencies:
       '@eslint/js':
         specifier: ^10.0.1
@@ -672,12 +669,12 @@ importers:
 
   ../../node_editor:
     dependencies:
+      '@stonecrop/schema':
+        specifier: workspace:*
+        version: link:../schema
       '@vue-flow/core':
         specifier: ^1.48.1
         version: 1.48.1(vue@3.5.33(typescript@6.0.3))
-      xstate:
-        specifier: ^5.25.0
-        version: 5.25.0
     devDependencies:
       '@microsoft/api-documenter':
         specifier: ^7.30.5

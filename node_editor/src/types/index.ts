@@ -1,11 +1,4 @@
 import { type Elements, type Element, type XYPosition, Position } from '@vue-flow/core'
-import type { AnyStateNodeConfig } from 'xstate'
-
-/**
- * Editor states
- * @public
- */
-export type EditorStates = Record<string, AnyStateNodeConfig>
 
 /**
  * Flow elements

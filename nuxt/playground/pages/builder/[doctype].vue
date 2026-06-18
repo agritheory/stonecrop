@@ -145,7 +145,7 @@
 <script setup lang="ts">
 import type { TableConfig } from '@stonecrop/atable'
 import type { Layout } from '@stonecrop/node-editor'
-import type { ValidationResult } from '@stonecrop/schema'
+import type { WorkflowMeta, ValidationResult } from '@stonecrop/schema'
 import { ref, computed, onMounted, nextTick } from 'vue'
 import '@vue-flow/core/dist/style.css'
 import '@vue-flow/core/dist/theme-default.css'
@@ -169,39 +169,28 @@ const config: TableConfig = {
 	view: 'uncounted',
 }
 
-// Convert our state machine format to XState config format
-function convertToXStateConfig(machine: any) {
-	if (!machine || !machine.states) {
-		return {}
-	}
+// Convert database state machine format to WorkflowMeta for StateEditor
+function convertToWorkflowMeta(machine: any): WorkflowMeta {
+	if (!machine || !machine.states) return { states: [], actions: {} }
 
-	const states: any = {}
+	const states: string[] = machine.states.map((s: any) => s.state_key as string)
+	const actions: WorkflowMeta['actions'] = {}
 
-	// Build states object
-	for (const state of machine.states) {
-		states[state.state_key] = {
-			type: state.state_type,
-			meta: {
-				displayName: state.display_name,
-			},
-			on: {}, // Transitions will be added next
-		}
-	}
-
-	// Add transitions
-	if (machine.transitions) {
-		for (const transition of machine.transitions) {
-			const sourceState = states[transition.source_state_key]
-			if (sourceState && sourceState.on) {
-				sourceState.on[transition.event_type] = {
-					target: transition.target_state_key,
-					...(transition.guard_name && { cond: transition.guard_name }),
-				}
+	for (const transition of machine.transitions || []) {
+		const key = transition.event_type as string
+		if (!actions![key]) {
+			actions![key] = {
+				label: transition.event_type,
+				handler: '',
+				allowedStates: [transition.source_state_key],
+				nextState: transition.target_state_key,
 			}
+		} else {
+			actions![key].allowedStates = [...(actions![key].allowedStates || []), transition.source_state_key]
 		}
 	}
 
-	return states
+	return { states, actions }
 }
 
 // Generate layout positions for state machine nodes
@@ -234,9 +223,8 @@ onMounted(async () => {
 		abilityRules.value = rulesData as any[]
 		stateMachine.value = machineData
 
-		// Convert state machine to XState format for StateEditor
 		if (stateMachine.value) {
-			workflowConfig.value = convertToXStateConfig(stateMachine.value)
+			workflowConfig.value = convertToWorkflowMeta(stateMachine.value)
 			layout.value = generateLayout(stateMachine.value)
 		}
 

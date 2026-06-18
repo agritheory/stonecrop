@@ -1,117 +1,112 @@
 import { Position, type Node } from '@vue-flow/core'
+import type { ActionDefinition, WorkflowMeta } from '@stonecrop/schema'
 
-import type { EditorStates, FlowElements, Layout } from '../types'
+import type { FlowElements, Layout } from '../types'
 
-export function statesToFlowElements(states: EditorStates, layout?: Layout): FlowElements {
-	const hasInputs: Record<string, boolean> = {}
-	const stateElements: FlowElements = []
-	const stateHash: Record<string, Node> = {}
+export function statesToFlowElements(workflow: WorkflowMeta, layout?: Layout): FlowElements {
+	const { states = [], actions = {} } = workflow
+	const hasIncoming = new Set<string>()
+	const edges: FlowElements = []
+	const nodes: Node[] = []
 
-	let index = 0
-	for (const [key, value] of Object.entries(states)) {
-		const el: Node = {
-			id: key,
-			label: key,
-			position: layout?.[key]?.position ?? { x: 200 * index, y: 100 },
-			targetPosition: layout?.[key]?.targetPosition ?? Position.Left,
-			sourcePosition: layout?.[key]?.sourcePosition ?? Position.Right,
-		}
-
-		if (value.type === 'final') {
-			el.type = 'output'
-			el.class = 'default-output-node'
-		}
-
-		stateHash[key] = el
-		index++
-	}
-
-	for (const [key, value] of Object.entries(states)) {
-		if (value.on) {
-			for (const [edgeKey, edgeValue] of Object.entries(value.on)) {
-				const target =
-					typeof edgeValue === 'string'
-						? edgeValue
-						: edgeValue != null &&
-							  typeof edgeValue === 'object' &&
-							  'target' in edgeValue &&
-							  typeof edgeValue.target === 'string'
-							? edgeValue.target
-							: ''
-				stateElements.push({
-					id: `${key}-${target}`,
-					source: key,
-					target,
-					label: edgeKey,
-					animated: true,
-					type: 'smoothstep',
-					interactionWidth: 40,
-				})
-				hasInputs[target] = true
-			}
+	for (const [actionKey, actionDef] of Object.entries(actions)) {
+		if (actionDef.stateless || !actionDef.nextState || !actionDef.allowedStates?.length) continue
+		for (const source of actionDef.allowedStates) {
+			edges.push({
+				id: `${actionKey}-${source}`,
+				source,
+				target: actionDef.nextState,
+				label: actionKey,
+				animated: true,
+				type: 'smoothstep',
+				interactionWidth: 40,
+			})
+			hasIncoming.add(actionDef.nextState)
 		}
 	}
 
-	for (const [key] of Object.entries(stateHash)) {
-		if (!hasInputs[key]) {
-			stateHash[key].type = 'input'
-			stateHash[key].class = 'default-input-node'
+	for (let index = 0; index < states.length; index++) {
+		const state = states[index]
+		const node: Node = {
+			id: state,
+			label: state,
+			position: layout?.[state]?.position ?? { x: 200 * index, y: 100 },
+			targetPosition: layout?.[state]?.targetPosition ?? Position.Left,
+			sourcePosition: layout?.[state]?.sourcePosition ?? Position.Right,
 		}
-		stateElements.push(stateHash[key])
+		if (!hasIncoming.has(state)) {
+			node.type = 'input'
+			node.class = 'default-input-node'
+		}
+		nodes.push(node)
 	}
 
-	return stateElements
+	return [...edges, ...nodes]
 }
 
-export function flowElementsToStates(nextElements: FlowElements): { states: EditorStates; layout: Layout } {
-	const transitionsBySource: Record<string, Record<string, { target: string }>> = {}
+export function flowElementsToStates(
+	nextElements: FlowElements,
+	existingWorkflow?: WorkflowMeta
+): { workflow: WorkflowMeta; layout: Layout } {
 	const idToLabel: Record<string, string> = {}
-	const nodeTypeByLabel: Record<string, string | undefined> = {}
 	const nextLayout: Layout = {}
+	const stateNames: string[] = []
 
-	// First pass: build id→label map from nodes so edge targets resolve correctly
 	for (const el of nextElements) {
-		if (!('source' in el)) {
-			idToLabel[el.id] = typeof el.label === 'string' ? el.label : el.id
-		}
-	}
-
-	// Second pass: collect node types, layout positions, and edge transitions
-	for (const el of nextElements) {
-		if ('source' in el && 'target' in el) {
-			const edgeLabel = typeof el.label === 'string' ? el.label : el.id
-			const sourceLabel = idToLabel[el.source] || el.source
-			const targetLabel = idToLabel[el.target] || el.target
-			transitionsBySource[sourceLabel] = transitionsBySource[sourceLabel] ?? {}
-			transitionsBySource[sourceLabel][edgeLabel] = { target: targetLabel }
-		} else {
-			const nodeLabel = typeof el.label === 'string' ? el.label : el.id
-			nodeTypeByLabel[nodeLabel] = el.type
-			if (el.position) {
-				nextLayout[nodeLabel] = {
-					position: el.position,
-					...(el.targetPosition !== undefined && { targetPosition: el.targetPosition }),
-					...(el.sourcePosition !== undefined && { sourcePosition: el.sourcePosition }),
-				}
+		if ('source' in el) continue
+		const label = typeof el.label === 'string' ? el.label : el.id
+		idToLabel[el.id] = label
+		stateNames.push(label)
+		if (el.position) {
+			nextLayout[label] = {
+				position: el.position,
+				...(el.targetPosition !== undefined && { targetPosition: el.targetPosition }),
+				...(el.sourcePosition !== undefined && { sourcePosition: el.sourcePosition }),
 			}
 		}
 	}
 
-	// Build states from node types and collected transitions
-	const nextStates: EditorStates = {}
-	for (const [label, nodeType] of Object.entries(nodeTypeByLabel)) {
-		if (nodeType === 'output') {
-			nextStates[label] = { type: 'final' }
+	// Group directed edges by action key
+	const transitionGroups: Record<string, { nextState: string; allowedStates: string[] }> = {}
+	for (const el of nextElements) {
+		if (!('source' in el)) continue
+		const actionKey = typeof el.label === 'string' ? el.label : el.id
+		const sourceLabel = idToLabel[el.source] || el.source
+		const targetLabel = idToLabel[el.target] || el.target
+		if (!transitionGroups[actionKey]) {
+			transitionGroups[actionKey] = { nextState: targetLabel, allowedStates: [sourceLabel] }
 		} else {
-			nextStates[label] = { on: transitionsBySource[label] ?? {} }
-		}
-	}
-	// Capture any transition sources that had no corresponding node entry
-	for (const [sourceLabel, on] of Object.entries(transitionsBySource)) {
-		if (!nextStates[sourceLabel]) {
-			nextStates[sourceLabel] = { on }
+			transitionGroups[actionKey].allowedStates.push(sourceLabel)
 		}
 	}
 
-	return { states: nextStates, layout: nextLayout }
+	const nextActions: Record<string, ActionDefinition> = {}
+
+	// Transitions derived from graph edges
+	for (const [actionKey, group] of Object.entries(transitionGroups)) {
+		const existing = existingWorkflow?.actions?.[actionKey]
+		nextActions[actionKey] = {
+			label: existing?.label ?? actionKey,
+			handler: existing?.handler ?? '',
+			...(existing?.confirm !== undefined && { confirm: existing.confirm }),
+			...(existing?.requiredFields !== undefined && { requiredFields: existing.requiredFields }),
+			...(existing?.args !== undefined && { args: existing.args }),
+			allowedStates: group.allowedStates,
+			nextState: group.nextState,
+		}
+	}
+
+	// Pass through Verbs (stateless: true) and global Workflow actions (no allowedStates) verbatim
+	for (const [actionKey, actionDef] of Object.entries(existingWorkflow?.actions ?? {})) {
+		if (actionKey in transitionGroups) continue
+		if (actionDef.stateless || !actionDef.allowedStates?.length) {
+			nextActions[actionKey] = actionDef
+		}
+		// Workflow action with allowedStates not in graph = user deleted its edges → remove
+	}
+
+	return {
+		workflow: { states: stateNames, actions: nextActions },
+		layout: nextLayout,
+	}
 }

@@ -45,8 +45,8 @@
 		"test:coverage": "vitest run --coverage"
 	},
 	"dependencies": {
-		"@vue-flow/core": "^1.48.1",
-		"xstate": "^5.25.0"
+		"@stonecrop/schema": "workspace:*",
+		"@vue-flow/core": "^1.48.1"
 	},
 	"peerDependencies": {
 		"vue": "^3.5.33",

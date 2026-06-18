@@ -272,8 +272,8 @@ describe('Doctype class', { tags: ['unit'] }, () => {
 				const save = transitions.find(t => t.name === 'save')
 				expect(save?.targetState).toBe('planning')
 
-				const global_ = transitions.find(t => t.name === 'global')
-				expect(global_?.targetState).toBe('planning')
+				const globalAction = transitions.find(t => t.name === 'global')
+				expect(globalAction?.targetState).toBe('planning')
 			})
 
 			it('returns empty array for state not in states list', () => {

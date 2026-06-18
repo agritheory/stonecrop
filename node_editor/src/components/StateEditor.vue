@@ -6,12 +6,13 @@
 
 <script setup lang="ts">
 import { type HTMLAttributes, computed, onMounted } from 'vue'
+import type { WorkflowMeta } from '@stonecrop/schema'
 
 import NodeEditor from './NodeEditor.vue'
-import type { EditorStates, FlowElements, Layout } from '../types'
+import type { FlowElements, Layout } from '../types'
 import { statesToFlowElements, flowElementsToStates } from '../utils/stateTransforms'
 
-const states = defineModel<EditorStates>()
+const workflow = defineModel<WorkflowMeta>()
 const layout = defineModel<Layout>('layout')
 const { nodeContainerClass = '' } = defineProps<{
 	nodeContainerClass?: HTMLAttributes['class']
@@ -25,12 +26,12 @@ onMounted(() => {
 
 const elements = computed<FlowElements>({
 	get: () => {
-		if (!states.value) return []
-		return statesToFlowElements(states.value, layout.value)
+		if (!workflow.value) return []
+		return statesToFlowElements(workflow.value, layout.value)
 	},
 	set: newValue => {
-		const { states: nextStates, layout: nextLayout } = flowElementsToStates(newValue)
-		states.value = nextStates
+		const { workflow: nextWorkflow, layout: nextLayout } = flowElementsToStates(newValue, workflow.value)
+		workflow.value = nextWorkflow
 		if (layout.value !== undefined) {
 			layout.value = nextLayout
 		}

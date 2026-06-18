@@ -33,8 +33,7 @@
 		"pinia": "^3.0.4",
 		"vite": "^7.3.2",
 		"vue": "^3.5.33",
-		"vue-router": "^5.0.6",
-		"xstate": "^5.25.0"
+		"vue-router": "^5.0.6"
 	},
 	"devDependencies": {
 		"@eslint/js": "^10.0.1",
