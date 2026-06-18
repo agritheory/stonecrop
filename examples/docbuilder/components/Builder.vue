@@ -39,7 +39,7 @@
 						node-container-class="node-editor" />
 				</div>
 			</AFieldset>
-			<AForm class="aform-main" v-model="doctypeSchema" :data="formData" :key="formKey" />
+			<AForm class="aform-main" :schema="doctypeSchema" v-model:data="formData" :key="formKey" />
 			<ActionSet :elements="actionElements" />
 		</div>
 	</div>
