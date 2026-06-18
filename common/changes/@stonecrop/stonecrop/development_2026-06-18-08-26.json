@@ -3,7 +3,7 @@
     {
       "packageName": "@stonecrop/stonecrop",
       "comment": "change return values of getAvailableTransitions",
-      "type": "none"
+      "type": "minor"
     }
   ],
   "packageName": "@stonecrop/stonecrop"

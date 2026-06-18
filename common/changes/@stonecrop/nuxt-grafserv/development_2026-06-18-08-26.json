@@ -3,7 +3,7 @@
     {
       "packageName": "@stonecrop/nuxt-grafserv",
       "comment": "update playground doctype schemas",
-      "type": "none"
+      "type": "minor"
     }
   ],
   "packageName": "@stonecrop/nuxt-grafserv"

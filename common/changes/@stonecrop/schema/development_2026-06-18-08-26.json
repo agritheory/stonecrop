@@ -3,7 +3,7 @@
     {
       "packageName": "@stonecrop/schema",
       "comment": "add nextState to ActionDefinition",
-      "type": "none"
+      "type": "minor"
     }
   ],
   "packageName": "@stonecrop/schema"

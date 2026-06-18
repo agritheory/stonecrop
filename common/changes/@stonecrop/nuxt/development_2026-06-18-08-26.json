@@ -3,7 +3,7 @@
     {
       "packageName": "@stonecrop/nuxt",
       "comment": "update fullstack doctype schemas",
-      "type": "none"
+      "type": "minor"
     }
   ],
   "packageName": "@stonecrop/nuxt"
