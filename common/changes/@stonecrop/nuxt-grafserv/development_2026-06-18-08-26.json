@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/nuxt-grafserv",
+      "comment": "update playground doctype schemas",
+      "type": "none"
+    }
+  ],
+  "packageName": "@stonecrop/nuxt-grafserv"
+}

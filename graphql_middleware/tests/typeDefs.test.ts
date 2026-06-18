@@ -1,6 +1,7 @@
 import { parse, Kind, type DocumentNode } from 'graphql'
 import { describe, it, expect } from 'vitest'
 
+import { ActionDefinition } from '@stonecrop/schema'
 import { typeDefs } from '../src/typeDefs'
 
 function findTypeDefinition(document: DocumentNode, typeName: string) {
@@ -35,6 +36,20 @@ describe('typeDefs', { tags: ['unit', 'graphql'] }, () => {
 		expect(findFieldDefinition(workflowActionType, 'allowedStates')).toBeDefined()
 		expect(findFieldDefinition(workflowActionType, 'confirm')).toBeDefined()
 		expect(findFieldDefinition(workflowActionType, 'args')).toBeDefined()
+		expect(findFieldDefinition(workflowActionType, 'nextState')).toBeDefined()
+	})
+
+	it('StonecropWorkflowAction fields match ActionDefinition schema shape (drift check)', () => {
+		const workflowActionType = findTypeDefinition(doc, 'StonecropWorkflowAction')
+		expect(workflowActionType).toBeDefined()
+
+		const schemaFields = Object.keys(ActionDefinition.shape)
+		for (const field of schemaFields) {
+			expect(
+				findFieldDefinition(workflowActionType, field),
+				`StonecropWorkflowAction is missing field '${field}' present in ActionDefinition schema`
+			).toBeDefined()
+		}
 	})
 
 	it('defines StonecropWorkflowMeta.actions as list of non-null StonecropWorkflowAction', () => {

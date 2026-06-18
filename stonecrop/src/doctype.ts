@@ -199,10 +199,9 @@ export default class Doctype {
 					if (!allowedStates || allowedStates.length === 0) return true
 					return allowedStates.includes(currentState)
 				})
-				.map(([name]) => ({
+				.map(([name, actionDef]) => ({
 					name,
-					// WorkflowMeta doesn't define target states - transitions are handled server-side
-					targetState: currentState,
+					targetState: actionDef.nextState ?? currentState,
 				}))
 		}
 

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/schema",
+      "comment": "add nextState to ActionDefinition",
+      "type": "none"
+    }
+  ],
+  "packageName": "@stonecrop/schema"
+}

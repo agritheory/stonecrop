@@ -167,6 +167,12 @@ export const ActionDefinition = z
 
 		/** Additional arguments for the action */
 		args: z.record(z.string(), z.unknown()).optional(),
+
+		/** The state the record transitions to after this action executes */
+		nextState: z.string().optional(),
+
+		/** True for side-effect actions that do not change workflow state (save, print, email, etc.) */
+		stateless: z.boolean().optional(),
 	})
 	.meta({
 		title: 'ActionDefinition',

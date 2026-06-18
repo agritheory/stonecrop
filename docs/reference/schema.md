@@ -953,6 +953,8 @@ export const ActionDefinition: z.ZodObject<{
     allowedStates: z.ZodOptional<z.ZodArray<z.ZodString>>;
     confirm: z.ZodOptional<z.ZodBoolean>;
     args: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodUnknown>>;
+    nextState: z.ZodOptional<z.ZodString>;
+    stateless: z.ZodOptional<z.ZodBoolean>;
 }, z.core.$strip>
 ```
 
@@ -1046,6 +1048,8 @@ export const DoctypeMeta: z.ZodObject<{
             allowedStates: z.ZodOptional<z.ZodArray<z.ZodString>>;
             confirm: z.ZodOptional<z.ZodBoolean>;
             args: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodUnknown>>;
+            nextState: z.ZodOptional<z.ZodString>;
+            stateless: z.ZodOptional<z.ZodBoolean>;
         }, z.core.$strip>>>;
     }, z.core.$strip>>;
     inherits: z.ZodOptional<z.ZodString>;
@@ -1353,6 +1357,8 @@ export const WorkflowMeta: z.ZodObject<{
         allowedStates: z.ZodOptional<z.ZodArray<z.ZodString>>;
         confirm: z.ZodOptional<z.ZodBoolean>;
         args: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodUnknown>>;
+        nextState: z.ZodOptional<z.ZodString>;
+        stateless: z.ZodOptional<z.ZodBoolean>;
     }, z.core.$strip>>>;
 }, z.core.$strip>
 ```

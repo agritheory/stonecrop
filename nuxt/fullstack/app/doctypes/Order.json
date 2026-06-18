@@ -77,30 +77,35 @@
 				"label": "Submit Order",
 				"handler": "submit_order",
 				"allowedStates": ["DRAFT"],
-				"requiredFields": ["userId", "shippingAddress"]
+				"requiredFields": ["userId", "shippingAddress"],
+				"nextState": "PENDING"
 			},
 			"process": {
 				"label": "Process Order",
 				"handler": "process_order",
 				"allowedStates": ["PENDING"],
-				"confirm": true
+				"confirm": true,
+				"nextState": "PROCESSING"
 			},
 			"ship": {
 				"label": "Ship Order",
 				"handler": "ship_order",
 				"allowedStates": ["PROCESSING"],
-				"confirm": true
+				"confirm": true,
+				"nextState": "SHIPPED"
 			},
 			"complete": {
 				"label": "Complete Order",
 				"handler": "complete_order",
-				"allowedStates": ["SHIPPED"]
+				"allowedStates": ["SHIPPED"],
+				"nextState": "COMPLETED"
 			},
 			"cancel": {
 				"label": "Cancel Order",
 				"handler": "cancel_order",
 				"allowedStates": ["DRAFT", "PENDING", "PROCESSING"],
-				"confirm": true
+				"confirm": true,
+				"nextState": "CANCELLED"
 			}
 		}
 	}

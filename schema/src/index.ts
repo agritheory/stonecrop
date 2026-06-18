@@ -21,8 +21,10 @@ export type { DoctypeField, FieldOptions, FieldValidation, FieldsetField, TableF
 export { DoctypeFieldSchema, FieldsetFieldSchema, TableFieldSchema, ValueFieldSchema } from './field'
 
 // Doctype schema
+// ActionDefinition and WorkflowMeta are exported as values (Zod schemas) so consumers can use
+// .safeParse(), .shape, etc. at runtime. TypeScript types are inferred from the same exports.
+export { ActionDefinition, WorkflowMeta } from './doctype'
 export type {
-	ActionDefinition,
 	Cardinality,
 	CustomFetch,
 	DataClient,
@@ -37,7 +39,6 @@ export type {
 	LinkDeclaration,
 	SerializedFunction,
 	SyncFetch,
-	WorkflowMeta,
 } from './doctype'
 
 // Validation helpers

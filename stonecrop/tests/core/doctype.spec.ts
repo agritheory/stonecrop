@@ -199,10 +199,21 @@ describe('Doctype class', { tags: ['unit'] }, () => {
 				states: ['planning', 'review', 'approved', 'applied'],
 				actions: {
 					save: { label: 'Save', handler: 'plan:save', allowedStates: ['planning'] },
-					submit: { label: 'Submit', handler: 'plan:submit', allowedStates: ['planning'] },
-					approve: { label: 'Approve', handler: 'plan:approve', allowedStates: ['review'], confirm: true },
-					reject: { label: 'Reject', handler: 'plan:reject', allowedStates: ['review'] },
-					apply: { label: 'Apply', handler: 'plan:apply', allowedStates: ['planning', 'approved'] },
+					submit: { label: 'Submit', handler: 'plan:submit', allowedStates: ['planning'], nextState: 'review' },
+					approve: {
+						label: 'Approve',
+						handler: 'plan:approve',
+						allowedStates: ['review'],
+						confirm: true,
+						nextState: 'approved',
+					},
+					reject: { label: 'Reject', handler: 'plan:reject', allowedStates: ['review'], nextState: 'planning' },
+					apply: {
+						label: 'Apply',
+						handler: 'plan:apply',
+						allowedStates: ['planning', 'approved'],
+						nextState: 'applied',
+					},
 					global: { label: 'Global', handler: 'plan:global' },
 				},
 			}
@@ -236,13 +247,33 @@ describe('Doctype class', { tags: ['unit'] }, () => {
 				expect(reviewTransitions.some(t => t.name === 'global')).toBe(true)
 			})
 
-			it('returns current state as targetState (server-side transitions)', () => {
+			it('returns nextState as targetState for state-transitioning actions', () => {
 				const doctype = new Doctype('Plan', mockSchema, workflowMeta, mockActions)
 
 				const transitions = doctype.getAvailableTransitions('planning')
-				transitions.forEach(t => {
-					expect(t.targetState).toBe('planning')
-				})
+				const submit = transitions.find(t => t.name === 'submit')
+				expect(submit?.targetState).toBe('review')
+
+				const apply = transitions.find(t => t.name === 'apply')
+				expect(apply?.targetState).toBe('applied')
+
+				const reviewTransitions = doctype.getAvailableTransitions('review')
+				const approve = reviewTransitions.find(t => t.name === 'approve')
+				expect(approve?.targetState).toBe('approved')
+
+				const reject = reviewTransitions.find(t => t.name === 'reject')
+				expect(reject?.targetState).toBe('planning')
+			})
+
+			it('falls back to currentState as targetState when nextState is absent', () => {
+				const doctype = new Doctype('Plan', mockSchema, workflowMeta, mockActions)
+
+				const transitions = doctype.getAvailableTransitions('planning')
+				const save = transitions.find(t => t.name === 'save')
+				expect(save?.targetState).toBe('planning')
+
+				const global_ = transitions.find(t => t.name === 'global')
+				expect(global_?.targetState).toBe('planning')
 			})
 
 			it('returns empty array for state not in states list', () => {

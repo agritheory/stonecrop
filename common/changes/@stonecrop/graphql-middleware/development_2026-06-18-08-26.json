@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/graphql-middleware",
+      "comment": "change StonecropWorkflowAction SDL type",
+      "type": "none"
+    }
+  ],
+  "packageName": "@stonecrop/graphql-middleware"
+}

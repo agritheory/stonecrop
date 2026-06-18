@@ -34,6 +34,8 @@ export const typeDefs = gql`
 		allowedStates: [String!]
 		confirm: Boolean
 		args: JSON
+		nextState: String
+		stateless: Boolean
 	}
 
 	type StonecropWorkflowMeta {

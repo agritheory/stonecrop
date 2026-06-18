@@ -60,6 +60,8 @@ function formatDoctypeMeta(meta: DoctypeMeta) {
 				allowedStates: (action.allowedStates as string[]) ?? [],
 				confirm: action.confirm ?? false,
 				args: action.args ?? null,
+				nextState: action.nextState ?? null,
+				stateless: action.stateless ?? false,
 			}))
 		: []
 	return {
