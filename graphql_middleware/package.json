@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/graphql-middleware",
-	"version": "0.13.12",
+	"version": "0.13.13",
 	"type": "module",
 	"types": "./dist/graphql-middleware.d.ts",
 	"exports": {
