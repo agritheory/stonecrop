@@ -29,7 +29,7 @@ onMounted(() => {
 	setTimeout(() => {
 		loading.value = false
 		loadingMultiple.value = false
-	}, 2500)
+	}, 5000)
 })
 
 const contactSchema = [
