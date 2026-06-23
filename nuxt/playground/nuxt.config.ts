@@ -14,4 +14,9 @@ export default defineNuxtConfig({
 		doctypesDir: '../fullstack/app/doctypes',
 	},
 	css: [themePath, '~/assets/styles/common.css'],
+	vite: {
+		optimizeDeps: {
+			include: ['pinia'],
+		},
+	},
 })

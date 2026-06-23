@@ -23,12 +23,13 @@ export default defineEventHandler(async _event => {
 				const data = JSON.parse(content)
 				const name = file.replace('.json', '')
 
+				const slug = name.toLowerCase()
 				return {
 					name: name
 						.split('-')
 						.map(w => w.charAt(0).toUpperCase() + w.slice(1))
 						.join(' '),
-					slug: name,
+					slug,
 					fieldCount: (data.schema ?? data.fields)?.length || 0,
 				}
 			})

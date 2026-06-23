@@ -15,6 +15,8 @@ import { toEditorString } from '../utils/serialization'
 
 type EditorSchema = { fieldtype?: string; [key: string]: unknown }
 
+let _editorModelCounter = 0
+
 const modelValue = defineModel<string>()
 const {
 	height = '300px',
@@ -22,12 +24,18 @@ const {
 	schema = undefined,
 	language = undefined,
 	options = undefined,
+	vsPath = undefined,
+	extraLibs = undefined,
 } = defineProps<{
 	height?: string
 	mode?: 'edit' | 'read' | 'display'
 	schema?: EditorSchema
 	language?: string
 	options?: editor.IStandaloneEditorConstructionOptions
+	/** Override the Monaco AMD loader path (e.g. for offline/local serving) */
+	vsPath?: string
+	/** TypeScript declaration string added as extra libs for JS type checking */
+	extraLibs?: string
 }>()
 
 const editorRef = useTemplateRef<HTMLDivElement>('aCodeEditor')
@@ -46,11 +54,31 @@ watch(
 )
 
 onMounted(async () => {
+	if (vsPath) loader.config({ paths: { vs: vsPath } })
+
 	const monacoInstance: typeof Monaco = await loader.init()
 	const lang = detectLanguage(schema?.fieldtype, language)
 
+	if (extraLibs) {
+		monacoInstance.languages.typescript.javascriptDefaults.addExtraLib(extraLibs, 'ts:stonecrop.d.ts')
+		monacoInstance.languages.typescript.javascriptDefaults.setCompilerOptions({
+			checkJs: true,
+			noImplicitAny: false,
+		})
+	}
+
 	monacoInstance.editor.defineTheme('agritheory', theme)
 	monacoInstance.editor.setTheme('agritheory')
+
+	// Give the model a file:// URI so the TS worker recognises it as JS/TS and can
+	// run getSyntacticDiagnostics without throwing "Could not find source file".
+	const ext = lang === 'typescript' ? 'ts' : lang === 'json' ? 'json' : lang === 'python' ? 'py' : 'js'
+	const modelUri = monacoInstance.Uri.parse(`file:///stonecrop-editor-${++_editorModelCounter}.${ext}`)
+	const editorModel = monacoInstance.editor.createModel(
+		toEditorString(modelValue.value, schema?.fieldtype),
+		lang,
+		modelUri
+	)
 
 	const inst = monacoInstance.editor.create(editorRef.value!, {
 		automaticLayout: true,
@@ -58,8 +86,7 @@ onMounted(async () => {
 		lineHeight: 24,
 		scrollBeyondLastLine: false,
 		...options,
-		value: toEditorString(modelValue.value, schema?.fieldtype),
-		language: lang,
+		model: editorModel,
 		readOnly: mode !== 'edit',
 	})
 
@@ -75,6 +102,7 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
+	editorInstance.value?.getModel()?.dispose()
 	editorInstance.value?.dispose()
 	editorInstance.value = null
 })

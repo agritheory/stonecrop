@@ -36,6 +36,7 @@ export const typeDefs = gql`
 		args: JSON
 		nextState: String
 		stateless: Boolean
+		clientHandler: String
 	}
 
 	type StonecropWorkflowMeta {

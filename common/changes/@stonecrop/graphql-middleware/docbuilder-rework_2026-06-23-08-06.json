@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "add vsPath and extraLibs props to ACodeEditor for offline Monaco support and JS type checking",
+      "type": "minor",
+      "packageName": "@stonecrop/graphql-middleware"
+    }
+  ],
+  "packageName": "@stonecrop/graphql-middleware",
+  "email": "rohanbansal33@gmail.com"
+}

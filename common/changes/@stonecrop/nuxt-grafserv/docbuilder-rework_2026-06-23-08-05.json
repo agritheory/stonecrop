@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "add clientHandler field to ActionDefinition for client-side JS handler authoring",
+      "type": "minor",
+      "packageName": "@stonecrop/nuxt-grafserv"
+    }
+  ],
+  "packageName": "@stonecrop/nuxt-grafserv",
+  "email": "rohanbansal33@gmail.com"
+}

@@ -55,7 +55,7 @@ function handleCancel() {
 }
 
 function openBuilder() {
-	router.push(`/builder/${doctypeData.value.name}`)
+	router.push(`/docbuilder/${doctypeData.value.name}`)
 }
 </script>
 

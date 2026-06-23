@@ -173,6 +173,9 @@ export const ActionDefinition = z
 
 		/** True for side-effect actions that do not change workflow state (save, print, email, etc.) */
 		stateless: z.boolean().optional(),
+
+		/** JS function body stored as a string; executed client-side via AsyncFunction with injected API surface */
+		clientHandler: z.string().optional(),
 	})
 	.meta({
 		title: 'ActionDefinition',

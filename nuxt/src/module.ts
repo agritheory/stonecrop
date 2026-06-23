@@ -240,6 +240,45 @@ export default defineNuxtModule<ModuleOptions>({
 			nuxt.options.css.push('@vue-flow/core/dist/style.css')
 			nuxt.options.css.push('@vue-flow/core/dist/theme-default.css')
 
+			// node-editor ships its component styles as a separate dist file (the `./styles` export)
+			// and its JS only imports VueFlow's base CSS — so its own styles (custom nodes, edge
+			// labels, chart controls, wrapper) are never loaded unless the consumer imports them.
+			nuxt.options.css.push('@stonecrop/node-editor/styles')
+
+			// Pre-bundle the docbuilder's client dependencies so Vite optimizes them at startup
+			// rather than discovering them on the first doctype load. Late discovery forces a
+			// mid-session re-optimization with two distinct failure modes:
+			//   - code-editor: the auto-import transform re-runs over the prebuilt dist and injects
+			//     a second `import { h } from 'vue'`, colliding with the dist's own vue import —
+			//     "Identifier 'h' has already been declared" (500 at client app init).
+			//   - schema: it pulls `zod`/`graphql` transitively; discovering them late bumps the
+			//     optimize browserHash and invalidates in-flight chunk imports —
+			//     "error loading dynamically imported module: .../graphql.js?v=...".
+			// Bare `zod`/`graphql` can't be listed here (unresolvable from the app root); pre-bundling
+			// the resolvable parent package pulls them into the startup optimization instead.
+			nuxt.options.vite.optimizeDeps = nuxt.options.vite.optimizeDeps || {}
+			nuxt.options.vite.optimizeDeps.include = nuxt.options.vite.optimizeDeps.include || []
+			for (const dep of ['@stonecrop/code-editor', '@stonecrop/schema']) {
+				if (!nuxt.options.vite.optimizeDeps.include.includes(dep)) {
+					nuxt.options.vite.optimizeDeps.include.push(dep)
+				}
+			}
+
+			// Serve Monaco AMD build via Nitro publicAssets so the code editor works without CDN access.
+			// The AMD build (min/vs) has workers pre-bundled — no separate worker interception needed.
+			const { createRequire } = await import('node:module')
+			const { resolve: nodeResolve } = await import('node:path')
+			const req = createRequire(import.meta.url)
+			const monacoMinPath = nodeResolve(req.resolve('monaco-editor/package.json'), '../min')
+			nuxt.hook('nitro:config', nitroConfig => {
+				nitroConfig.publicAssets = nitroConfig.publicAssets ?? []
+				nitroConfig.publicAssets.push({
+					dir: monacoMinPath,
+					baseURL: '/stonecrop-monaco',
+					maxAge: 60 * 60 * 24 * 365,
+				})
+			})
+
 			const docBuilderIndex = resolve('runtime/app/pages/DocBuilderIndex.vue')
 			const docBuilderDetail = resolve('runtime/app/pages/DocBuilderDetail.vue')
 

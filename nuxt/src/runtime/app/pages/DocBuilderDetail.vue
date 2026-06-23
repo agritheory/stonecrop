@@ -15,7 +15,7 @@
 				</div>
 				<div v-if="warningCount > 0" class="validation-warnings">
 					<strong>⚡ {{ warningCount }} Warning(s)</strong>
-					<button @click="warningsDismissed = true" class="dismiss-button">Dismiss</button>
+					<button class="dismiss-button" @click="warningsDismissed = true">Dismiss</button>
 				</div>
 			</div>
 
@@ -35,30 +35,7 @@
 			</AFieldset>
 
 			<AFieldset label="Schema" :collapsible="true">
-				<div class="builder-schema">
-					<table class="schema-table">
-						<thead>
-							<tr>
-								<th>ID</th>
-								<th>Label</th>
-								<th>Fieldtype</th>
-								<th>Required</th>
-								<th>Read Only</th>
-							</tr>
-						</thead>
-						<tbody>
-							<tr v-for="field in fields" :key="field.fieldname">
-								<td>
-									<code>{{ field.fieldname }}</code>
-								</td>
-								<td>{{ field.label }}</td>
-								<td>{{ field.fieldtype }}</td>
-								<td class="center">{{ field.required ? '✓' : '' }}</td>
-								<td class="center">{{ field.readOnly ? '✓' : '' }}</td>
-							</tr>
-						</tbody>
-					</table>
-				</div>
+				<ATable :columns="SCHEMA_COLUMNS" :rows="fields" :config="{ view: 'uncounted' }" />
 			</AFieldset>
 
 			<div class="builder-actions">
@@ -73,6 +50,8 @@
 
 <script setup lang="ts">
 import { AFieldset } from '@stonecrop/aform'
+import { ATable } from '@stonecrop/atable'
+import type { TableColumn } from '@stonecrop/atable'
 import { StateEditor } from '@stonecrop/node-editor'
 import type { Layout } from '@stonecrop/node-editor'
 import { WorkflowMeta } from '@stonecrop/schema'
@@ -80,6 +59,14 @@ import { ref, watch, computed, onMounted } from 'vue'
 import { useRoute } from 'nuxt/app'
 
 import DocBuilderActionsPanel from '../components/DocBuilderActionsPanel.vue'
+
+const SCHEMA_COLUMNS: TableColumn[] = [
+	{ name: 'fieldname', label: 'ID' },
+	{ name: 'label', label: 'Label' },
+	{ name: 'fieldtype', label: 'Fieldtype' },
+	{ name: 'required', label: 'Required' },
+	{ name: 'readOnly', label: 'Read Only' },
+]
 
 const route = useRoute()
 const doctypeName = computed(() => route.params.doctype as string)
@@ -136,22 +123,6 @@ function revalidate() {
 
 watch(workflowConfig, revalidate, { deep: true })
 
-let workflowSaveTimer: ReturnType<typeof setTimeout> | null = null
-watch(
-	workflowConfig,
-	newConfig => {
-		if (loading.value || !newConfig) return
-		if (workflowSaveTimer) clearTimeout(workflowSaveTimer)
-		workflowSaveTimer = setTimeout(() => {
-			$fetch('/api/_stonecrop/docbuilder/save', {
-				method: 'POST',
-				body: { doctype: doctypeName.value, fields: fields.value, workflow: newConfig },
-			}).catch(err => console.error('Autosave failed:', err))
-		}, 500)
-	},
-	{ deep: true }
-)
-
 async function saveToDisk() {
 	if (errorCount.value > 0) return
 	saving.value = true
@@ -186,32 +157,6 @@ async function saveToDisk() {
 	color: #9ca3af;
 	font-style: italic;
 	padding: 1rem 0;
-}
-
-.builder-schema {
-	padding: 0.5em 1em;
-}
-
-.schema-table {
-	width: 100%;
-	border-collapse: collapse;
-	font-size: 0.875rem;
-}
-
-.schema-table th {
-	text-align: left;
-	padding: 0.5em 0.75em;
-	border-bottom: 2px solid var(--sc-gray-20, #e5e7eb);
-	font-weight: 600;
-}
-
-.schema-table td {
-	padding: 0.375em 0.75em;
-	border-bottom: 1px solid var(--sc-gray-10, #f3f4f6);
-}
-
-.center {
-	text-align: center;
 }
 
 .validation-panel {

@@ -17,21 +17,10 @@ const navigationItems = [
 		title: 'DocBuilder',
 		items: [
 			{
-				name: 'User Builder',
-				path: '/builder/user',
-				description: 'Visual builder for User doctype with workflows',
+				name: 'DocBuilder',
+				path: '/docbuilder',
+				description: 'Visual builder for doctypes — fields, workflow, and actions',
 			},
-			{
-				name: 'Role Builder',
-				path: '/builder/role',
-				description: 'Visual builder for Role doctype with workflows',
-			},
-			{
-				name: 'Profile Builder',
-				path: '/builder/role-profile',
-				description: 'Visual builder for Role Profile doctype',
-			},
-			{ name: 'Rule Builder', path: '/builder/ability-rule', description: 'Visual builder for Ability Rule doctype' },
 		],
 	},
 ]

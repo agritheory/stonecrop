@@ -62,6 +62,7 @@ function formatDoctypeMeta(meta: DoctypeMeta) {
 				args: action.args ?? null,
 				nextState: action.nextState ?? null,
 				stateless: action.stateless ?? false,
+				clientHandler: action.clientHandler ?? null,
 			}))
 		: []
 	return {

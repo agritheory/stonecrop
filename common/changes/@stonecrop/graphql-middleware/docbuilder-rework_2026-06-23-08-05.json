@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "add clientHandler field to ActionDefinition for client-side JS handler authoring",
+      "type": "minor",
+      "packageName": "@stonecrop/graphql-middleware"
+    }
+  ],
+  "packageName": "@stonecrop/graphql-middleware",
+  "email": "rohanbansal33@gmail.com"
+}

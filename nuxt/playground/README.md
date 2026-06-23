@@ -58,12 +58,10 @@ Custom Vue component that displays computed permissions based on SQL functions f
 - Implements `GET_USER_EFFECTIVE_PERMISSIONS` PostgreSQL function logic
 
 ### DocBuilder
-Visual builder at `/builder/:doctype` for doctype management:
-- DocType metadata and field definitions
-- Associated Ability Rules filtered by doctype
-- Integrated State Machine visualization with XState/Vue Flow
-- State and transition editor with visual node positioning
-- Available for: `/builder/user`, `/builder/role`, `/builder/role-profile`, `/builder/ability-rule`
+Visual builder at `/docbuilder/:doctype` for doctype management:
+- DocType fields, workflow graph (node editor), and actions panel
+- Autosaves changes to the doctype JSON on disk
+- Available at `/docbuilder` (index lists all doctypes)
 
 ### State Machines
 XState-powered FSM workflow integration using @stonecrop/node-editor:
@@ -113,8 +111,8 @@ playground/
 │   │   └── [id].vue               # Rule form
 │   ├── doctypes/
 │   │   └── index.vue              # DocTypes table (view only)
-│   └── builder/
-│       └── [doctype].vue          # DocBuilder with state machine editor
+│   └── doctypes/
+│       └── [id].vue               # DocType detail (links to /docbuilder/:doctype)
 ├── components/
 │   └── EffectivePermissions.vue   # Custom permissions component
 ├── layouts/
@@ -178,7 +176,7 @@ All DocType schemas are JSON files in `/playground/doctypes/` that match the Pos
 - `is_tree` (Check)
 - `fields` (Table) - Field definitions
 
-Note: DocTypes are managed through the DocBuilder interface at `/builder/:doctype` which provides integrated state machine editing.
+Note: DocTypes are managed through the DocBuilder interface at `/docbuilder/:doctype`.
 
 ## Server API Endpoints
 

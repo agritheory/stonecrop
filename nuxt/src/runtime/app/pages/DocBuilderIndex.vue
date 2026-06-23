@@ -31,7 +31,7 @@ const config: TableConfig = {
 
 onMounted(async () => {
 	try {
-		const data = await $fetch<TableRow[]>('/api/docbuilder/doctypes')
+		const data = await $fetch<TableRow[]>('/api/_stonecrop/docbuilder/doctypes')
 		doctypes.value = data
 	} catch (error) {
 		console.error('Error loading doctypes:', error)
