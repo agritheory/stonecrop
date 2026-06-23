@@ -85,14 +85,12 @@
 				"label": "Process Order",
 				"handler": "process_order",
 				"allowedStates": ["PENDING"],
-				"confirm": true,
 				"nextState": "PROCESSING"
 			},
 			"ship": {
 				"label": "Ship Order",
 				"handler": "ship_order",
 				"allowedStates": ["PROCESSING"],
-				"confirm": true,
 				"nextState": "SHIPPED"
 			},
 			"complete": {
@@ -105,7 +103,6 @@
 				"label": "Cancel Order",
 				"handler": "cancel_order",
 				"allowedStates": ["DRAFT", "PENDING", "PROCESSING"],
-				"confirm": true,
 				"nextState": "CANCELLED"
 			}
 		}

@@ -40,7 +40,6 @@ type ActionDefinition {
 	handler: String!
 	requiredFields: [String!]
 	allowedStates: [String!]
-	confirm: Boolean
 	args: JSON
 }
 

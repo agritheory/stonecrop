@@ -6,7 +6,6 @@
 					<th>Key</th>
 					<th>Label</th>
 					<th>Handler</th>
-					<th>Confirm</th>
 					<th>Type</th>
 					<th>Allowed States</th>
 					<th>Next State</th>
@@ -30,12 +29,6 @@
 							:class="{ 'handler-missing': !action.handler }"
 							placeholder="module:function"
 							@input="update(String(key), 'handler', ($event.target as HTMLInputElement).value)" />
-					</td>
-					<td class="center">
-						<input
-							type="checkbox"
-							:checked="action.confirm ?? false"
-							@change="update(String(key), 'confirm', ($event.target as HTMLInputElement).checked)" />
 					</td>
 					<td>
 						<span class="badge" :class="action.stateless ? 'badge-verb' : 'badge-workflow'">

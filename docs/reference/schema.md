@@ -951,7 +951,6 @@ export const ActionDefinition: z.ZodObject<{
     handler: z.ZodString;
     requiredFields: z.ZodOptional<z.ZodArray<z.ZodString>>;
     allowedStates: z.ZodOptional<z.ZodArray<z.ZodString>>;
-    confirm: z.ZodOptional<z.ZodBoolean>;
     args: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodUnknown>>;
     nextState: z.ZodOptional<z.ZodString>;
     stateless: z.ZodOptional<z.ZodBoolean>;
@@ -1047,7 +1046,6 @@ export const DoctypeMeta: z.ZodObject<{
             handler: z.ZodString;
             requiredFields: z.ZodOptional<z.ZodArray<z.ZodString>>;
             allowedStates: z.ZodOptional<z.ZodArray<z.ZodString>>;
-            confirm: z.ZodOptional<z.ZodBoolean>;
             args: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodUnknown>>;
             nextState: z.ZodOptional<z.ZodString>;
             stateless: z.ZodOptional<z.ZodBoolean>;
@@ -1357,7 +1355,6 @@ export const WorkflowMeta: z.ZodObject<{
         handler: z.ZodString;
         requiredFields: z.ZodOptional<z.ZodArray<z.ZodString>>;
         allowedStates: z.ZodOptional<z.ZodArray<z.ZodString>>;
-        confirm: z.ZodOptional<z.ZodBoolean>;
         args: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodUnknown>>;
         nextState: z.ZodOptional<z.ZodString>;
         stateless: z.ZodOptional<z.ZodBoolean>;

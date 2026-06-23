@@ -58,7 +58,6 @@ function formatDoctypeMeta(meta: DoctypeMeta) {
 				handler: action.handler ?? null,
 				requiredFields: (action.requiredFields as string[]) ?? [],
 				allowedStates: (action.allowedStates as string[]) ?? [],
-				confirm: action.confirm ?? false,
 				args: action.args ?? null,
 				nextState: action.nextState ?? null,
 				stateless: action.stateless ?? false,

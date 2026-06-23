@@ -225,7 +225,6 @@ describe('Doctype Validation', { tags: ['unit'] }, () => {
 							handler: 'submitOrder',
 							requiredFields: ['customer', 'items'],
 							allowedStates: ['Draft'],
-							confirm: true,
 						},
 					},
 				},
@@ -244,7 +243,6 @@ describe('Doctype Validation', { tags: ['unit'] }, () => {
 					actions: {
 						submit: {
 							// Missing required 'label' and 'handler'
-							confirm: true,
 						},
 					},
 				},

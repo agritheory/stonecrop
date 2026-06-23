@@ -48,8 +48,7 @@
 			"archive": {
 				"label": "Archive Project",
 				"handler": "archive_project",
-				"allowedStates": ["Active"],
-				"confirm": true
+				"allowedStates": ["Active"]
 			}
 		}
 	}

@@ -32,7 +32,6 @@ export const typeDefs = gql`
 		handler: String!
 		requiredFields: [String!]
 		allowedStates: [String!]
-		confirm: Boolean
 		args: JSON
 		nextState: String
 		stateless: Boolean

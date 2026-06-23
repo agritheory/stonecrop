@@ -67,7 +67,6 @@
 				"label": "Cancel Order",
 				"handler": "cancel_order",
 				"allowedStates": ["pending", "processing"],
-				"confirm": true,
 				"nextState": "cancelled"
 			}
 		}

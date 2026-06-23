@@ -204,7 +204,6 @@ describe('Doctype class', { tags: ['unit'] }, () => {
 						label: 'Approve',
 						handler: 'plan:approve',
 						allowedStates: ['review'],
-						confirm: true,
 						nextState: 'approved',
 					},
 					reject: { label: 'Reject', handler: 'plan:reject', allowedStates: ['review'], nextState: 'planning' },
@@ -527,7 +526,6 @@ describe('Doctype class', { tags: ['unit'] }, () => {
 						handler: 'plan:submit',
 						requiredFields: ['title', 'description'],
 						allowedStates: ['draft'],
-						confirm: true,
 						args: { notify: true },
 					},
 				},
@@ -540,7 +538,6 @@ describe('Doctype class', { tags: ['unit'] }, () => {
 				handler: 'plan:submit',
 				requiredFields: ['title', 'description'],
 				allowedStates: ['draft'],
-				confirm: true,
 				args: { notify: true },
 			})
 		})

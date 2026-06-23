@@ -237,7 +237,6 @@ export default class Doctype {
 				handler: string
 				requiredFields?: string[]
 				allowedStates?: string[]
-				confirm?: boolean
 				args?: Record<string, unknown>
 		  }
 		| undefined {

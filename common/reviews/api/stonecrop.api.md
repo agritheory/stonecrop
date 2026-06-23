@@ -83,7 +83,6 @@ export class Doctype {
         handler: string;
         requiredFields?: string[];
         allowedStates?: string[];
-        confirm?: boolean;
         args?: Record<string, unknown>;
     } | undefined;
     getActionsObject(): Record<string, string[]>;

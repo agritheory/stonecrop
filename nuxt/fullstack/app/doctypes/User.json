@@ -85,21 +85,18 @@
 				"label": "Activate User",
 				"handler": "activate_user",
 				"allowedStates": ["PENDING", "SUSPENDED"],
-				"confirm": true,
 				"nextState": "ACTIVE"
 			},
 			"suspend": {
 				"label": "Suspend User",
 				"handler": "suspend_user",
 				"allowedStates": ["ACTIVE"],
-				"confirm": true,
 				"nextState": "SUSPENDED"
 			},
 			"delete": {
 				"label": "Delete User",
 				"handler": "delete_user",
 				"allowedStates": ["ACTIVE", "SUSPENDED", "PENDING"],
-				"confirm": true,
 				"nextState": "DELETED"
 			}
 		}

@@ -26,7 +26,7 @@ export default defineEventHandler(async event => {
 	// The builder only ever sends the URL slug (e.g. 'order'), never the display name. Resolve to
 	// the doctype's actual source file (case-insensitive) so we read AND write the same file it
 	// already lives in — preserving its real filename casing, its required `name`, and any keys the
-	// builder doesn't display (mode/options/default on fields, handler/confirm on actions). A brand-
+	// builder doesn't display (mode/options/default on fields, handler on actions). A brand-
 	// new doctype has no source file, so it uses the requested name verbatim.
 	const requested = body.doctype
 	const exactPath = resolve(doctypesDir, `${requested}.json`)

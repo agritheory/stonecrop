@@ -152,14 +152,13 @@ describe('flowElementsToStates', { tags: ['unit'] }, () => {
 		expect(workflow.actions?.resolve?.nextState).toBe('Resolved')
 	})
 
-	it('preserves handler, confirm, requiredFields from existing workflow on round-trip', () => {
+	it('preserves handler, requiredFields from existing workflow on round-trip', () => {
 		const workflowWithMeta: WorkflowMeta = {
 			states: ['Open', 'Closed'],
 			actions: {
 				close: {
 					label: 'Close',
 					handler: 'close_ticket',
-					confirm: true,
 					requiredFields: ['resolution'],
 					allowedStates: ['Open'],
 					nextState: 'Closed',
@@ -169,7 +168,6 @@ describe('flowElementsToStates', { tags: ['unit'] }, () => {
 		const elements = statesToFlowElements(workflowWithMeta)
 		const { workflow } = flowElementsToStates(elements, workflowWithMeta)
 		expect(workflow.actions?.close?.handler).toBe('close_ticket')
-		expect(workflow.actions?.close?.confirm).toBe(true)
 		expect(workflow.actions?.close?.requiredFields).toEqual(['resolution'])
 	})
 

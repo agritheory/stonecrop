@@ -88,7 +88,6 @@ export function flowElementsToStates(
 		nextActions[actionKey] = {
 			label: existing?.label ?? actionKey,
 			handler: existing?.handler ?? '',
-			...(existing?.confirm !== undefined && { confirm: existing.confirm }),
 			...(existing?.requiredFields !== undefined && { requiredFields: existing.requiredFields }),
 			...(existing?.args !== undefined && { args: existing.args }),
 			allowedStates: group.allowedStates,

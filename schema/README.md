@@ -195,7 +195,6 @@ const workflow: WorkflowMeta = {
       handler: 'handleSubmit',
       requiredFields: ['title', 'description'],
       allowedStates: ['Draft'],
-      confirm: true,
     },
     approve: {
       label: 'Approve',

@@ -162,9 +162,6 @@ export const ActionDefinition = z
 		/** Workflow states where this action is available */
 		allowedStates: z.array(z.string()).optional(),
 
-		/** Whether to show a confirmation dialog */
-		confirm: z.boolean().optional(),
-
 		/** Additional arguments for the action */
 		args: z.record(z.string(), z.unknown()).optional(),
 
