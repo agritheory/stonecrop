@@ -2,6 +2,7 @@ import { existsSync } from 'node:fs'
 import { readFile, readdir } from 'node:fs/promises'
 import { extname } from 'node:path'
 import {
+	addComponent,
 	addImportsDir,
 	addLayout,
 	addPlugin,
@@ -231,9 +232,13 @@ export default defineNuxtModule<ModuleOptions>({
 			}
 		}
 
-		// Setup DocBuilder if enabled
-		if (options.docbuilder) {
+		// Setup DocBuilder if enabled — dev-only enforcement (Invariant 1)
+		if (options.docbuilder && process.env.NODE_ENV === 'development') {
 			logger.log('DocBuilder enabled, adding routes and handlers')
+
+			// VueFlow CSS must be at document level — component @import lands too late for VueFlow's init check
+			nuxt.options.css.push('@vue-flow/core/dist/style.css')
+			nuxt.options.css.push('@vue-flow/core/dist/theme-default.css')
 
 			const docBuilderIndex = resolve('runtime/app/pages/DocBuilderIndex.vue')
 			const docBuilderDetail = resolve('runtime/app/pages/DocBuilderDetail.vue')
@@ -279,6 +284,11 @@ export default defineNuxtModule<ModuleOptions>({
 			})
 
 			logger.log('Added DocBuilder API handlers at /api/_stonecrop/docbuilder/')
+
+			addComponent({
+				name: 'DocBuilderActionsPanel',
+				filePath: resolve('runtime/app/components/DocBuilderActionsPanel.vue'),
+			})
 		}
 
 		// Do not add the extension since the `.ts` will be transpiled to `.mjs` after `npm run prepack`

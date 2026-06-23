@@ -1,77 +1,114 @@
 <template>
-	<div class="docbuilder-container">
-		<div v-if="loading" class="loading">Loading...</div>
-		<div v-else class="docbuilder-wrapper">
-			<div class="docbuilder-header">
-				<h1>{{ doctypeName }}</h1>
-				<div class="docbuilder-actions">
-					<button class="btn-secondary" :disabled="validating" @click="validateSchema">
-						{{ validating ? 'Validating...' : 'Validate Schema' }}
-					</button>
-					<button class="btn-primary" :disabled="saving" @click="saveToDisk">
-						{{ saving ? 'Saving...' : 'Save to Disk' }}
-					</button>
+	<div>
+		<div v-if="loading" style="padding: 2rem; text-align: center">Loading...</div>
+
+		<div v-else>
+			<!-- Validation Panel -->
+			<div v-if="validationIssues.length > 0 && !warningsDismissed" class="validation-panel">
+				<div v-if="errorCount > 0" class="validation-errors">
+					<strong>⚠️ {{ errorCount }} Error(s) — Cannot Save</strong>
+					<ul>
+						<li v-for="(issue, idx) in validationIssues.filter(i => i.severity === 'error')" :key="`err-${idx}`">
+							<code v-if="issue.fieldname">{{ issue.fieldname }}:</code> {{ issue.message }}
+						</li>
+					</ul>
+				</div>
+				<div v-if="warningCount > 0" class="validation-warnings">
+					<strong>⚡ {{ warningCount }} Warning(s)</strong>
+					<button @click="warningsDismissed = true" class="dismiss-button">Dismiss</button>
 				</div>
 			</div>
 
-			<!-- Validation Result -->
-			<div v-if="validationResult" class="message-box" :class="validationResult.success ? 'success' : 'error'">
-				<div class="message-header">
-					<span>{{ validationResult.success ? '✓ Schema is valid!' : '✗ Validation failed' }}</span>
-					<button class="dismiss-btn" @click="validationResult = null">×</button>
+			<AFieldset label="Workflow" :collapsible="true">
+				<div class="builder-workflow">
+					<StateEditor
+						v-if="workflowConfig && workflowConfig.states && workflowConfig.states.length > 0"
+						v-model="workflowConfig"
+						v-model:layout="layout"
+						node-container-class="node-editor" />
+					<p v-else class="empty-workflow">No workflow defined. Add states to the workflow to get started.</p>
 				</div>
-				<ul v-if="!validationResult.success" class="error-list">
-					<li v-for="(error, idx) in validationResult.errors" :key="idx">
-						<code>{{ error.path.join('.') || 'root' }}</code
-						>: {{ error.message }}
-					</li>
-				</ul>
-			</div>
+			</AFieldset>
 
-			<!-- Save Message -->
-			<div v-if="saveMessage" class="message-box" :class="saveMessage.type">
-				<span>{{ saveMessage.text }}</span>
-				<button class="dismiss-btn" @click="saveMessage = null">×</button>
-			</div>
+			<AFieldset label="Actions" :collapsible="true">
+				<DocBuilderActionsPanel v-model="workflowConfig" />
+			</AFieldset>
 
-			<!-- Fields -->
-			<section class="fields-section">
-				<h2>Fields ({{ doctype?.schema?.length || 0 }})</h2>
-				<div v-for="field in doctype?.schema" :key="field.fieldname" class="field-item">
-					<div class="field-header">
-						<span class="field-name">{{ field.fieldname }}</span>
-						<span class="field-type">{{ field.fieldtype }}</span>
-					</div>
-					<div class="field-label">{{ field.label }}</div>
-					<div v-if="field.required || field.readOnly" class="field-badges">
-						<span v-if="field.required" class="badge">Required</span>
-						<span v-if="field.readOnly" class="badge">Read Only</span>
-					</div>
+			<AFieldset label="Schema" :collapsible="true">
+				<div class="builder-schema">
+					<table class="schema-table">
+						<thead>
+							<tr>
+								<th>ID</th>
+								<th>Label</th>
+								<th>Fieldtype</th>
+								<th>Required</th>
+								<th>Read Only</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr v-for="field in fields" :key="field.fieldname">
+								<td>
+									<code>{{ field.fieldname }}</code>
+								</td>
+								<td>{{ field.label }}</td>
+								<td>{{ field.fieldtype }}</td>
+								<td class="center">{{ field.required ? '✓' : '' }}</td>
+								<td class="center">{{ field.readOnly ? '✓' : '' }}</td>
+							</tr>
+						</tbody>
+					</table>
 				</div>
-			</section>
+			</AFieldset>
+
+			<div class="builder-actions">
+				<button class="btn-primary" :disabled="saving || errorCount > 0" @click="saveToDisk">
+					{{ saving ? 'Saving…' : 'Save' }}
+				</button>
+				<span v-if="saveMessage" class="save-message" :class="saveMessage.type">{{ saveMessage.text }}</span>
+			</div>
 		</div>
 	</div>
 </template>
 
 <script setup lang="ts">
-import type { ValidationResult } from '@stonecrop/schema'
-import { ref, computed, onMounted } from 'vue'
+import { AFieldset } from '@stonecrop/aform'
+import { StateEditor } from '@stonecrop/node-editor'
+import type { Layout } from '@stonecrop/node-editor'
+import { WorkflowMeta } from '@stonecrop/schema'
+import { ref, watch, computed, onMounted } from 'vue'
 import { useRoute } from 'nuxt/app'
+
+import DocBuilderActionsPanel from '../components/DocBuilderActionsPanel.vue'
 
 const route = useRoute()
 const doctypeName = computed(() => route.params.doctype as string)
 
-const doctype = ref<any>(null)
 const loading = ref(true)
-const validating = ref(false)
 const saving = ref(false)
-const validationResult = ref<ValidationResult | null>(null)
+const warningsDismissed = ref(false)
 const saveMessage = ref<{ type: 'success' | 'error'; text: string } | null>(null)
+
+const fields = ref<Record<string, unknown>[]>([])
+const workflowConfig = ref<WorkflowMeta | undefined>()
+const layout = ref<Layout>({})
+
+const validationIssues = ref<{ severity: 'error' | 'warning'; message: string; fieldname?: string }[]>([])
+const errorCount = computed(() => validationIssues.value.filter(i => i.severity === 'error').length)
+const warningCount = computed(() => validationIssues.value.filter(i => i.severity === 'warning').length)
 
 onMounted(async () => {
 	try {
-		const data = await $fetch(`/api/docbuilder/${doctypeName.value}`)
-		doctype.value = data
+		const data = await $fetch<{
+			name: string
+			slug: string
+			fields: Record<string, unknown>[]
+			workflow: WorkflowMeta | null
+		}>(`/api/_stonecrop/docbuilder/${doctypeName.value}`)
+		fields.value = data.fields ?? []
+		if (data.workflow) {
+			workflowConfig.value = data.workflow
+		}
 	} catch (error) {
 		console.error('Error loading doctype:', error)
 	} finally {
@@ -79,36 +116,54 @@ onMounted(async () => {
 	}
 })
 
-async function validateSchema() {
-	validating.value = true
-	validationResult.value = null
-	try {
-		const result = await $fetch<ValidationResult>('/api/docbuilder/validate', {
-			method: 'POST',
-			body: { fields: doctype.value?.schema || [] },
-		})
-		validationResult.value = result
-	} catch (error: any) {
-		validationResult.value = {
-			success: false,
-			errors: [{ path: [], message: error.message || 'Validation failed' }],
+function revalidate() {
+	const issues: typeof validationIssues.value = []
+	if (workflowConfig.value) {
+		const result = WorkflowMeta.safeParse(workflowConfig.value)
+		if (!result.success) {
+			for (const issue of result.error.issues) {
+				issues.push({
+					severity: 'error',
+					message: issue.message,
+					fieldname: issue.path.length > 0 ? issue.path.join('.') : undefined,
+				})
+			}
 		}
-	} finally {
-		validating.value = false
 	}
+	validationIssues.value = issues
+	if (issues.length > 0) warningsDismissed.value = false
 }
 
+watch(workflowConfig, revalidate, { deep: true })
+
+let workflowSaveTimer: ReturnType<typeof setTimeout> | null = null
+watch(
+	workflowConfig,
+	newConfig => {
+		if (loading.value || !newConfig) return
+		if (workflowSaveTimer) clearTimeout(workflowSaveTimer)
+		workflowSaveTimer = setTimeout(() => {
+			$fetch('/api/_stonecrop/docbuilder/save', {
+				method: 'POST',
+				body: { doctype: doctypeName.value, fields: fields.value, workflow: newConfig },
+			}).catch(err => console.error('Autosave failed:', err))
+		}, 500)
+	},
+	{ deep: true }
+)
+
 async function saveToDisk() {
+	if (errorCount.value > 0) return
 	saving.value = true
 	saveMessage.value = null
 	try {
-		await $fetch('/api/docbuilder/save', {
+		await $fetch('/api/_stonecrop/docbuilder/save', {
 			method: 'POST',
-			body: { doctype: doctypeName.value, schema: doctype.value?.schema || [] },
+			body: { doctype: doctypeName.value, fields: fields.value, workflow: workflowConfig.value ?? null },
 		})
-		saveMessage.value = { type: 'success', text: 'Schema saved successfully!' }
+		saveMessage.value = { type: 'success', text: 'Saved.' }
 	} catch (error: any) {
-		saveMessage.value = { type: 'error', text: error.message || 'Failed to save' }
+		saveMessage.value = { type: 'error', text: error.message || 'Save failed.' }
 	} finally {
 		saving.value = false
 	}
@@ -116,176 +171,111 @@ async function saveToDisk() {
 </script>
 
 <style scoped>
-.docbuilder-container {
-	min-height: 100vh;
+.builder-workflow {
+	padding: 0.5em 1em;
+	min-height: 8rem;
 }
 
-.docbuilder-wrapper {
-	max-width: 1200px;
-	margin: 0 auto;
-	padding: 2rem;
+:deep(.node-editor) {
+	width: 100%;
+	height: 40vh;
+	overflow: hidden;
 }
 
-.docbuilder-header {
+.empty-workflow {
+	color: #9ca3af;
+	font-style: italic;
+	padding: 1rem 0;
+}
+
+.builder-schema {
+	padding: 0.5em 1em;
+}
+
+.schema-table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 0.875rem;
+}
+
+.schema-table th {
+	text-align: left;
+	padding: 0.5em 0.75em;
+	border-bottom: 2px solid var(--sc-gray-20, #e5e7eb);
+	font-weight: 600;
+}
+
+.schema-table td {
+	padding: 0.375em 0.75em;
+	border-bottom: 1px solid var(--sc-gray-10, #f3f4f6);
+}
+
+.center {
 	text-align: center;
-	margin-bottom: 2rem;
 }
 
-.docbuilder-header h1 {
-	font-size: 2rem;
-	margin: 0 0 1rem;
-	font-weight: 700;
+.validation-panel {
+	margin-bottom: 1rem;
 }
 
-.docbuilder-actions {
-	display: flex;
-	gap: 1rem;
-	justify-content: center;
+.validation-errors {
+	padding: 1rem;
+	background: #fee2e2;
+	border: 1px solid #ef4444;
+	border-radius: 6px;
+	margin-bottom: 0.5rem;
+	color: #991b1b;
 }
 
-.btn-primary,
-.btn-secondary {
-	padding: 0.5rem 1rem;
-	border-radius: 0.5rem;
-	font-weight: 500;
+.validation-warnings {
+	padding: 1rem;
+	background: #fef9c3;
+	border: 1px solid #eab308;
+	border-radius: 6px;
+	color: #713f12;
+}
+
+.dismiss-button {
+	margin-left: 1rem;
+	background: none;
+	border: 1px solid currentColor;
+	border-radius: 3px;
+	padding: 0.125em 0.5em;
 	cursor: pointer;
-	transition: all 0.2s;
+	font-size: 0.75rem;
+}
+
+.builder-actions {
+	padding: 1rem;
+	display: flex;
+	align-items: center;
+	gap: 1rem;
 }
 
 .btn-primary {
-	background: #3b82f6;
+	padding: 0.5rem 1.5rem;
+	background: var(--sc-blue-40, #3b82f6);
 	color: white;
 	border: none;
+	border-radius: 0.5rem;
+	font-weight: 500;
+	cursor: pointer;
 }
 
-.btn-primary:hover:not(:disabled) {
-	background: #2563eb;
-}
-
-.btn-secondary {
-	background: #e5e7eb;
-	color: #374151;
-	border: 1px solid #d1d5db;
-}
-
-.btn-secondary:hover:not(:disabled) {
-	background: #d1d5db;
-}
-
-.btn-primary:disabled,
-.btn-secondary:disabled {
+.btn-primary:disabled {
 	opacity: 0.6;
 	cursor: not-allowed;
 }
 
-.message-box {
-	padding: 1rem;
-	border-radius: 0.5rem;
-	margin-bottom: 1rem;
-}
-
-.message-box.success {
-	background: #d1fae5;
-	border: 1px solid #10b981;
-	color: #065f46;
-}
-
-.message-box.error {
-	background: #fee2e2;
-	border: 1px solid #ef4444;
-	color: #991b1b;
-}
-
-.message-header {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-}
-
-.dismiss-btn {
-	background: none;
-	border: none;
-	font-size: 1.5rem;
-	cursor: pointer;
-	opacity: 0.6;
-}
-
-.dismiss-btn:hover {
-	opacity: 1;
-}
-
-.error-list {
-	margin: 0.5rem 0 0;
-	padding-left: 1.5rem;
-}
-
-.error-list code {
-	background: rgba(0, 0, 0, 0.1);
-	padding: 0.125rem 0.25rem;
-	border-radius: 0.25rem;
-}
-
-.loading {
-	text-align: center;
-	padding: 4rem;
-	color: #6b7280;
-}
-
-.fields-section {
-	background: white;
-	padding: 1.5rem;
-	border-radius: 0.75rem;
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.fields-section h2 {
-	margin: 0 0 1rem;
-	font-size: 1.25rem;
-}
-
-.field-item {
-	padding: 1rem;
-	background: #f9fafb;
-	border: 1px solid #e5e7eb;
-	border-radius: 0.5rem;
-	margin-bottom: 0.75rem;
-}
-
-.field-header {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	margin-bottom: 0.25rem;
-}
-
-.field-name {
-	font-family: monospace;
-	font-weight: 600;
-}
-
-.field-type {
-	font-size: 0.75rem;
-	padding: 0.25rem 0.5rem;
-	background: #dbeafe;
-	color: #1e40af;
-	border-radius: 0.25rem;
-}
-
-.field-label {
-	color: #6b7280;
+.save-message {
 	font-size: 0.875rem;
 }
 
-.field-badges {
-	margin-top: 0.5rem;
-	display: flex;
-	gap: 0.5rem;
+.save-message.success {
+	color: #065f46;
 }
 
-.badge {
-	font-size: 0.75rem;
-	padding: 0.125rem 0.5rem;
-	background: #e5e7eb;
-	border-radius: 0.25rem;
+.save-message.error {
+	color: #991b1b;
 }
 </style>

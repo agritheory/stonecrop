@@ -1,6 +1,4 @@
 {
-	"name": "User",
-	"slug": "user",
 	"fields": [
 		{
 			"fieldname": "id",
@@ -76,31 +74,30 @@
 	"workflow": {
 		"states": ["PENDING", "ACTIVE", "SUSPENDED", "DELETED"],
 		"actions": {
-			"save": {
-				"label": "Save",
-				"handler": "user:save",
-				"stateless": true
-			},
 			"activate": {
 				"label": "Activate User",
 				"handler": "activate_user",
-				"allowedStates": ["PENDING", "SUSPENDED"],
 				"confirm": true,
+				"allowedStates": ["PENDING", "SUSPENDED"],
 				"nextState": "ACTIVE"
 			},
 			"suspend": {
 				"label": "Suspend User",
 				"handler": "suspend_user",
-				"allowedStates": ["ACTIVE"],
 				"confirm": true,
+				"allowedStates": ["ACTIVE"],
 				"nextState": "SUSPENDED"
 			},
 			"delete": {
 				"label": "Delete User",
 				"handler": "delete_user",
-				"allowedStates": ["ACTIVE", "SUSPENDED", "PENDING"],
 				"confirm": true,
+				"allowedStates": ["ACTIVE", "SUSPENDED", "PENDING"],
 				"nextState": "DELETED"
+			},
+			"save": {
+				"label": "Save",
+				"handler": "user:save"
 			}
 		}
 	}

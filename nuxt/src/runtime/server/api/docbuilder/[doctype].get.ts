@@ -17,8 +17,8 @@ export default defineEventHandler(async event => {
 	const doctypesDir = config.stonecrop?.doctypesDir || resolve(process.cwd(), 'doctypes')
 	const filePath = resolve(doctypesDir, `${doctype}.json`)
 
-	// Security check
-	if (!filePath.startsWith(doctypesDir)) {
+	// Security check — ensure the resolved path stays inside doctypesDir
+	if (!filePath.startsWith(doctypesDir + '/')) {
 		throw createError({
 			status: 400,
 			message: 'Invalid doctype name',
@@ -42,7 +42,8 @@ export default defineEventHandler(async event => {
 				.map(w => w.charAt(0).toUpperCase() + w.slice(1))
 				.join(' '),
 			slug: doctype,
-			schema: data.schema ?? data.fields ?? [],
+			fields: data.fields ?? data.schema ?? [],
+			workflow: data.workflow ?? null,
 		}
 	} catch (error: any) {
 		throw createError({

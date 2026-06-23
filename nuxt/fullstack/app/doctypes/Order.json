@@ -71,7 +71,8 @@
 		"actions": {
 			"save": {
 				"label": "Save",
-				"handler": "order:save"
+				"handler": "order:save",
+				"stateless": true
 			},
 			"submit": {
 				"label": "Submit Order",

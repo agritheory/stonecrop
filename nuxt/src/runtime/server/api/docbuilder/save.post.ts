@@ -1,4 +1,5 @@
-import { writeFile } from 'node:fs/promises'
+import { existsSync } from 'node:fs'
+import { readFile, writeFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { createError, defineEventHandler, readBody, useRuntimeConfig } from '#imports'
 
@@ -12,10 +13,10 @@ export default defineEventHandler(async event => {
 		})
 	}
 
-	if (!body.schema || !Array.isArray(body.schema)) {
+	if (!body.fields || !Array.isArray(body.fields)) {
 		throw createError({
 			status: 400,
-			message: 'Missing or invalid schema array',
+			message: 'Missing or invalid fields array',
 		})
 	}
 
@@ -26,17 +27,36 @@ export default defineEventHandler(async event => {
 	const filename = body.doctype.toLowerCase().replace(/\s+/g, '-')
 	const filePath = resolve(doctypesDir, `${filename}.json`)
 
-	// Security check
-	if (!filePath.startsWith(doctypesDir)) {
+	// Security check — ensure the resolved path stays inside doctypesDir
+	if (!filePath.startsWith(doctypesDir + '/')) {
 		throw createError({
 			status: 400,
 			message: 'Invalid doctype name',
 		})
 	}
 
-	const doctypeData = {
-		schema: body.schema,
+	// Read existing file to deep-merge — preserves keys the builder doesn't display
+	let existing: Record<string, unknown> = {}
+	if (existsSync(filePath)) {
+		try {
+			const content = await readFile(filePath, 'utf-8')
+			existing = JSON.parse(content)
+		} catch {
+			// Unreadable existing file — start fresh rather than corrupt
+		}
 	}
+
+	const doctypeData: Record<string, unknown> = {
+		...existing,
+		fields: body.fields,
+	}
+
+	if (body.workflow !== undefined) {
+		doctypeData.workflow = body.workflow
+	}
+
+	// Remove legacy 'schema' key if present — standardise on 'fields'
+	delete doctypeData.schema
 
 	try {
 		await writeFile(filePath, JSON.stringify(doctypeData, null, '\t'), 'utf-8')
