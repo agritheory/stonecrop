@@ -1,18 +1,18 @@
 <template>
 	<Story title="AFormLoading">
 		<Variant title="Fieldset loading">
-			<AFormLoading v-show="loading">Loading billing address</AFormLoading>
+			<AFormLoading v-show="loading">Loading</AFormLoading>
 			<AFieldset v-show="!loading" :schema="addressSchema" :data="addressData" label="Billing Address" />
 		</Variant>
 
 		<Variant title="Multiple sections loading">
-			<AFormLoading v-show="loadingMultiple">Loading contact details</AFormLoading>
+			<AFormLoading v-show="loadingMultiple">Loading</AFormLoading>
 			<AForm v-show="!loadingMultiple" :schema="contactSchema" v-model:data="contactData" />
 
-			<AFormLoading v-show="loadingMultiple">Loading billing address</AFormLoading>
+			<AFormLoading v-show="loadingMultiple">Loading</AFormLoading>
 			<AFieldset v-show="!loadingMultiple" :schema="addressSchema" :data="addressData" label="Billing Address" />
 
-			<AFormLoading v-show="loadingMultiple">Loading shipping address</AFormLoading>
+			<AFormLoading v-show="loadingMultiple">Loading</AFormLoading>
 			<AFieldset v-show="!loadingMultiple" :schema="addressSchema" :data="shippingData" label="Shipping Address" />
 		</Variant>
 	</Story>
