@@ -283,17 +283,23 @@ const emitElements = () => {
 }
 
 .chart-controls {
-	padding-left: 20px;
-	padding-right: 20px;
-	height: 1.8em;
-	border-bottom: 1px solid #ccc;
+	position: absolute;
+	bottom: 0.5rem;
+	left: 0.5rem;
+	z-index: 10;
 	display: flex;
-	flex-direction: row;
-	justify-content: space-between;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 0.35rem;
+	padding: 0.4rem 0.5rem;
+	background: rgba(255, 255, 255, 0.92);
+	border: 1px solid #ccc;
+	border-radius: 4px;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
 }
 
 .chart-controls div {
-	margin-bottom: 5px;
+	margin-bottom: 0;
 }
 
 .defaultContainerClass {

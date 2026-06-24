@@ -26,7 +26,15 @@
 						v-model="workflowConfig"
 						v-model:layout="layout"
 						node-container-class="node-editor" />
-					<p v-else class="empty-workflow">No workflow defined. Add states to the workflow to get started.</p>
+					<div v-else class="empty-workflow">
+						<p class="empty-workflow-hint">No workflow yet. Name the first state to start building the workflow.</p>
+						<div class="empty-workflow-form">
+							<input v-model="newStateName" type="text" placeholder="e.g. Draft" @keyup.enter="seedWorkflow" />
+							<button class="btn-seed" type="button" :disabled="!newStateName.trim()" @click="seedWorkflow">
+								Add first state
+							</button>
+						</div>
+					</div>
 				</div>
 			</AFieldset>
 
@@ -94,6 +102,15 @@ onMounted(async () => {
 	}
 })
 
+const newStateName = ref('Draft')
+// Seed a minimal valid WorkflowMeta from the dev-typed first state. Once states.length > 0 the
+// StateEditor's v-if flips and its always-present "Add Node" toolbar takes over from here.
+function seedWorkflow() {
+	const name = newStateName.value.trim()
+	if (!name) return
+	workflowConfig.value = { states: [name], actions: {} }
+}
+
 function revalidate() {
 	const issues: typeof validationIssues.value = []
 	if (workflowConfig.value) {
@@ -145,9 +162,43 @@ async function saveToDisk() {
 }
 
 .empty-workflow {
+	padding: 1rem 0;
+}
+
+.empty-workflow-hint {
 	color: #9ca3af;
 	font-style: italic;
-	padding: 1rem 0;
+	margin: 0 0 0.75rem;
+}
+
+.empty-workflow-form {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+.empty-workflow-form input {
+	border: 1px solid var(--sc-gray-20, #d1d5db);
+	border-radius: 4px;
+	padding: 0.4em 0.6em;
+	font-size: 0.875rem;
+	font-family: inherit;
+}
+
+.btn-seed {
+	padding: 0.45em 1em;
+	background: var(--sc-blue-40, #3b82f6);
+	color: white;
+	border: none;
+	border-radius: 0.4rem;
+	font-weight: 500;
+	cursor: pointer;
+	font-size: 0.875rem;
+}
+
+.btn-seed:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
 }
 
 .validation-panel {
