@@ -11,7 +11,7 @@ export default defineNuxtConfig({
 	compatibilityDate: '2026-01-01',
 	stonecrop: {
 		docbuilder: true,
-		doctypesDir: '../fullstack/app/doctypes',
+		doctypesDir: 'doctypes',
 	},
 	css: [themePath, '~/assets/styles/common.css'],
 	vite: {

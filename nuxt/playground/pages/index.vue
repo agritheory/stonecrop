@@ -23,6 +23,21 @@ const navigationItems = [
 			},
 		],
 	},
+	{
+		title: 'Sample DocTypes',
+		items: [
+			{
+				name: 'Issue',
+				path: '/docbuilder/issue',
+				description: 'Branching workflow — Resolve merges Draft + Assigned; Reopen returns Closed → Draft',
+			},
+			{
+				name: 'Assignment',
+				path: '/docbuilder/assignment',
+				description: 'Task assignment — New → Draft → Completed → Cancelled',
+			},
+		],
+	},
 ]
 </script>
 

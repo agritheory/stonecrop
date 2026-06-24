@@ -35,7 +35,7 @@
 			</AFieldset>
 
 			<AFieldset label="Schema" :collapsible="true">
-				<ATable :columns="SCHEMA_COLUMNS" :rows="fields" :config="{ view: 'uncounted' }" />
+				<DocBuilderFieldsPanel v-model="fields" />
 			</AFieldset>
 
 			<div class="builder-actions">
@@ -50,8 +50,6 @@
 
 <script setup lang="ts">
 import { AFieldset } from '@stonecrop/aform'
-import { ATable } from '@stonecrop/atable'
-import type { TableColumn } from '@stonecrop/atable'
 import { StateEditor } from '@stonecrop/node-editor'
 import type { Layout } from '@stonecrop/node-editor'
 import { WorkflowMeta } from '@stonecrop/schema'
@@ -59,14 +57,7 @@ import { ref, watch, computed, onMounted } from 'vue'
 import { useRoute } from 'nuxt/app'
 
 import DocBuilderActionsPanel from '../components/DocBuilderActionsPanel.vue'
-
-const SCHEMA_COLUMNS: TableColumn[] = [
-	{ name: 'fieldname', label: 'ID' },
-	{ name: 'label', label: 'Label' },
-	{ name: 'fieldtype', label: 'Fieldtype' },
-	{ name: 'required', label: 'Required' },
-	{ name: 'readOnly', label: 'Read Only' },
-]
+import DocBuilderFieldsPanel from '../components/DocBuilderFieldsPanel.vue'
 
 const route = useRoute()
 const doctypeName = computed(() => route.params.doctype as string)

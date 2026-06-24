@@ -1,0 +1,54 @@
+{
+	"name": "Assignment",
+	"slug": "assignment",
+	"fields": [
+		{
+			"fieldname": "user",
+			"label": "User",
+			"fieldtype": "Link",
+			"component": "ACombobox",
+			"options": "user",
+			"required": true
+		},
+		{
+			"fieldname": "issue",
+			"label": "Issue",
+			"fieldtype": "Link",
+			"component": "ACombobox",
+			"options": "issue",
+			"required": true
+		},
+		{
+			"fieldname": "due_date",
+			"label": "Due Date",
+			"fieldtype": "Date"
+		},
+		{
+			"fieldname": "assigned_date",
+			"label": "Assigned Date",
+			"fieldtype": "Date",
+			"readOnly": true
+		},
+		{
+			"fieldname": "assigned_by",
+			"label": "Assigned By",
+			"fieldtype": "Link",
+			"component": "ACombobox",
+			"options": "user"
+		},
+		{
+			"fieldname": "completed_date",
+			"label": "Completed Date",
+			"fieldtype": "Date",
+			"readOnly": true
+		}
+	],
+	"workflow": {
+		"states": ["New", "Draft", "Completed", "Cancelled"],
+		"actions": {
+			"SAVE": { "label": "SAVE", "handler": "", "allowedStates": ["New"], "nextState": "Draft" },
+			"COMPLETE": { "label": "COMPLETE", "handler": "", "allowedStates": ["Draft"], "nextState": "Completed" },
+			"CANCEL": { "label": "CANCEL", "handler": "", "allowedStates": ["Completed"], "nextState": "Cancelled" }
+		}
+	}
+}

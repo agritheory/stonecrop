@@ -171,6 +171,24 @@ describe('flowElementsToStates', { tags: ['unit'] }, () => {
 		expect(workflow.actions?.close?.requiredFields).toEqual(['resolution'])
 	})
 
+	it('preserves clientHandler and any unknown field on round-trip (spread, not whitelist)', () => {
+		// Guards the enumerate-and-drop regression: a graph edit must preserve every field the
+		// graph doesn't own — clientHandler today, and any field added to ActionDefinition later.
+		const close = {
+			label: 'Close',
+			handler: 'close_ticket',
+			clientHandler: "router.push('/done')",
+			allowedStates: ['Open'],
+			nextState: 'Closed',
+			futureField: 42,
+		}
+		const workflowWithExtras = { states: ['Open', 'Closed'], actions: { close } } as unknown as WorkflowMeta
+		const elements = statesToFlowElements(workflowWithExtras)
+		const { workflow } = flowElementsToStates(elements, workflowWithExtras)
+		expect(workflow.actions?.close?.clientHandler).toBe("router.push('/done')")
+		expect((workflow.actions?.close as Record<string, unknown>)?.futureField).toBe(42)
+	})
+
 	it('new edge creates skeleton action with empty handler', () => {
 		const elements: FlowElements = [
 			{ id: 'Open', label: 'Open', position: { x: 0, y: 0 }, type: 'input' } as any,
