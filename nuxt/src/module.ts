@@ -154,16 +154,15 @@ export default defineNuxtModule<ModuleOptions>({
 							continue
 						}
 
-						const schemaFields = schemaData.schema || schemaData.fields
-						if (!schemaFields) {
-							logger.warn(`Schema file '${schema}' missing 'schema' or 'fields' property, skipping`)
+						if (!schemaData.fields) {
+							logger.warn(`Schema file '${schema}' missing 'fields' property, skipping`)
 							continue
 						}
 
 						doctypes.push({
 							fileName: schema.replace('.json', ''),
 							data: schemaData,
-							fields: schemaFields,
+							fields: schemaData.fields,
 						})
 					} catch (schemaError) {
 						logger.error(`Error processing schema '${schema}':`, schemaError)
@@ -245,6 +244,10 @@ export default defineNuxtModule<ModuleOptions>({
 			// labels, chart controls, wrapper) are never loaded unless the consumer imports them.
 			nuxt.options.css.push('@stonecrop/node-editor/styles')
 
+			// desktop ships its styles separately too; the docbuilder renders desktop's ActionSet and
+			// must load them, or the control renders unstyled in non-playground hosts.
+			nuxt.options.css.push('@stonecrop/desktop/styles')
+
 			// Pre-bundle the docbuilder's client dependencies so Vite optimizes them at startup
 			// rather than discovering them on the first doctype load. Late discovery forces a
 			// mid-session re-optimization with two distinct failure modes:
@@ -288,6 +291,7 @@ export default defineNuxtModule<ModuleOptions>({
 					name: 'docbuilder-index',
 					path: '/docbuilder',
 					file: docBuilderIndex,
+					meta: { layout: false },
 				})
 
 				// Add docbuilder detail page
@@ -295,6 +299,7 @@ export default defineNuxtModule<ModuleOptions>({
 					name: 'docbuilder-detail',
 					path: '/docbuilder/:doctype',
 					file: docBuilderDetail,
+					meta: { layout: false },
 				})
 
 				logger.log('Added DocBuilder pages at /docbuilder')

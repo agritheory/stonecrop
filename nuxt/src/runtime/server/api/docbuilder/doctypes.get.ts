@@ -30,7 +30,7 @@ export default defineEventHandler(async _event => {
 						.map(w => w.charAt(0).toUpperCase() + w.slice(1))
 						.join(' '),
 					slug,
-					fieldCount: (data.schema ?? data.fields)?.length || 0,
+					fieldCount: data.fields?.length || 0,
 				}
 			})
 		)

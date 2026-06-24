@@ -11,7 +11,7 @@ const ruleId = computed(() => route.params.id as string)
 // Use the imported doctype schema and hydrate it with components
 const ruleDoctype = {
 	...ruleDoctypeJson,
-	schema: hydrateSchema(ruleDoctypeJson.schema),
+	schema: hydrateSchema(ruleDoctypeJson.fields),
 }
 
 // Initialize Stonecrop with basic mode

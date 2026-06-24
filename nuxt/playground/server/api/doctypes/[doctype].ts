@@ -67,7 +67,6 @@ export default defineEventHandler(async event => {
 			.map(word => word.charAt(0).toUpperCase() + word.slice(1))
 			.join(' '),
 		...metadata,
-		fields: doctypeSchema.schema, // Map schema to fields for DocBuilder
-		schema: doctypeSchema.schema, // Keep original schema for compatibility
+		fields: doctypeSchema.fields,
 	}
 })

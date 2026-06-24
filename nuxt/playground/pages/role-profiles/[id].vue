@@ -11,7 +11,7 @@ const profileId = computed(() => route.params.id as string)
 // Use the imported doctype schema and hydrate it with components
 const profileDoctype = {
 	...profileDoctypeJson,
-	schema: hydrateSchema(profileDoctypeJson.schema),
+	schema: hydrateSchema(profileDoctypeJson.fields),
 }
 
 // Initialize Stonecrop with basic mode

@@ -11,7 +11,7 @@ const doctypeId = computed(() => route.params.id as string)
 // Use the imported doctype schema and hydrate it with components
 const doctypeSchema = {
 	...doctypeSchemaJson,
-	schema: hydrateSchema(doctypeSchemaJson.schema),
+	schema: hydrateSchema(doctypeSchemaJson.fields),
 }
 
 // Initialize Stonecrop with HST

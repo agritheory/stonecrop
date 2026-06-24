@@ -11,7 +11,7 @@ const roleId = computed(() => route.params.id as string)
 // Use the imported doctype schema and hydrate it with components
 const roleDoctype = {
 	...roleDoctypeJson,
-	schema: hydrateSchema(roleDoctypeJson.schema),
+	schema: hydrateSchema(roleDoctypeJson.fields),
 }
 
 // Initialize Stonecrop with basic mode

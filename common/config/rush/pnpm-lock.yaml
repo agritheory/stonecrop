@@ -730,6 +730,9 @@ importers:
       '@stonecrop/code-editor':
         specifier: workspace:*
         version: link:../code_editor
+      '@stonecrop/desktop':
+        specifier: workspace:*
+        version: link:../desktop
       '@stonecrop/graphql-middleware':
         specifier: workspace:*
         version: link:../graphql_middleware
@@ -785,9 +788,6 @@ importers:
       '@nuxt/test-utils':
         specifier: ^4.0.3
         version: 4.0.3(@vitest/ui@4.1.5)(@vue/test-utils@2.4.10(@vue/compiler-dom@3.5.33)(@vue/server-renderer@3.5.33(vue@3.5.33(typescript@6.0.3)))(vue@3.5.33(typescript@6.0.3)))(crossws@0.3.5)(jsdom@29.1.1)(magicast@0.5.2)(typescript@6.0.3)(vite@7.3.2(@types/node@24.12.4)(jiti@2.4.2)(sass@1.97.2)(terser@5.46.2)(yaml@2.8.4))(vitest@4.1.5)
-      '@stonecrop/desktop':
-        specifier: workspace:*
-        version: link:../desktop
       '@types/prompts':
         specifier: ^2.4.9
         version: 2.4.9

@@ -1,5 +1,5 @@
 <template>
-	<div>
+	<div class="docbuilder-page">
 		<div v-if="loading" style="padding: 2rem; text-align: center">Loading...</div>
 
 		<div v-else>
@@ -46,12 +46,11 @@
 				<DocBuilderFieldsPanel v-model="fields" />
 			</AFieldset>
 
-			<div class="builder-actions">
-				<button class="btn-primary" :disabled="saving || errorCount > 0" @click="saveToDisk">
-					{{ saving ? 'Saving…' : 'Save' }}
-				</button>
-				<span v-if="saveMessage" class="save-message" :class="saveMessage.type">{{ saveMessage.text }}</span>
+			<div v-if="saveMessage" class="builder-actions">
+				<span class="save-message" :class="saveMessage.type">{{ saveMessage.text }}</span>
 			</div>
+
+			<ActionSet :elements="docbuilderActions" @action-click="handleAction" />
 		</div>
 	</div>
 </template>
@@ -60,14 +59,17 @@
 import { AFieldset } from '@stonecrop/aform'
 import { StateEditor } from '@stonecrop/node-editor'
 import type { Layout } from '@stonecrop/node-editor'
+import { ActionSet } from '@stonecrop/desktop'
+import type { ActionElements } from '@stonecrop/desktop/types'
 import { WorkflowMeta } from '@stonecrop/schema'
 import { ref, watch, computed, onMounted } from 'vue'
-import { useRoute } from 'nuxt/app'
+import { useRoute, useRouter } from 'nuxt/app'
 
 import DocBuilderActionsPanel from '../components/DocBuilderActionsPanel.vue'
 import DocBuilderFieldsPanel from '../components/DocBuilderFieldsPanel.vue'
 
 const route = useRoute()
+const router = useRouter()
 const doctypeName = computed(() => route.params.doctype as string)
 
 const loading = ref(true)
@@ -147,9 +149,28 @@ async function saveToDisk() {
 		saving.value = false
 	}
 }
+
+// The docbuilder owns its action chrome (host layout suppressed via meta.layout=false on the route),
+// so Save lives in its own desktop ActionSet rather than the host app's. Back returns to the index.
+const docbuilderActions = computed<ActionElements[]>(() => [
+	{
+		type: 'button',
+		label: saving.value ? 'Saving…' : 'Save',
+		action: saveToDisk,
+		disabled: saving.value || errorCount.value > 0,
+	},
+	{ type: 'button', label: 'Back', action: () => void router.push('/docbuilder') },
+])
+function handleAction(_label: string, action?: () => void | Promise<void>) {
+	if (action) void action()
+}
 </script>
 
 <style scoped>
+.docbuilder-page {
+	padding: 2rem;
+}
+
 .builder-workflow {
 	padding: 0.5em 1em;
 	min-height: 8rem;

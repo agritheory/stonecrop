@@ -1,5 +1,5 @@
 {
-	"schema": [
+	"fields": [
 		{
 			"fieldname": "name",
 			"label": "DocType Name",

@@ -61,6 +61,7 @@
 		"@nuxt/kit": "^4.4.4",
 		"@stonecrop/aform": "workspace:*",
 		"@stonecrop/atable": "workspace:*",
+		"@stonecrop/desktop": "workspace:*",
 		"@stonecrop/code-editor": "workspace:*",
 		"@stonecrop/casl-middleware": "workspace:*",
 		"@stonecrop/graphql-middleware": "workspace:*",
@@ -76,7 +77,6 @@
 		"prompts": "^2.4.2"
 	},
 	"devDependencies": {
-		"@stonecrop/desktop": "workspace:*",
 		"@eslint/js": "^10.0.1",
 		"@nuxt/devtools": "^3.2.4",
 		"@nuxt/eslint-config": "^1.15.2",
