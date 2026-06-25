@@ -50,7 +50,7 @@ const router = useRouter()
 const doctypes = ref<DoctypeRow[]>([])
 const loading = ref(true)
 
-onMounted(async () => {
+async function loadDoctypes() {
 	try {
 		doctypes.value = await $fetch<DoctypeRow[]>('/api/_stonecrop/docbuilder/doctypes')
 	} catch (error) {
@@ -58,7 +58,9 @@ onMounted(async () => {
 	} finally {
 		loading.value = false
 	}
-})
+}
+
+onMounted(loadDoctypes)
 
 // ATable has no row-click event (it's a read-only grid), so the list is hand-rolled clickable rows
 // that navigate to the detail route — the index's whole job.
@@ -89,11 +91,24 @@ async function createDoctype() {
 	creating.value = true
 	try {
 		// Omit `workflow` so the write is purely additive on the fresh file (empty fields, no workflow).
-		await $fetch('/api/_stonecrop/docbuilder/save', { method: 'POST', body: { doctype: name, fields: [] } })
+		// `create: true` makes save.post reject (409) rather than overwrite if the name already exists —
+		// the server-side backstop for the stale-list / direct-POST cases the guard above misses.
+		await $fetch('/api/_stonecrop/docbuilder/save', {
+			method: 'POST',
+			body: { doctype: name, fields: [], create: true },
+		})
 		void router.push(`/docbuilder/${slug}`)
 	} catch (error) {
 		console.error('Error creating doctype:', error)
-		createError.value = 'Failed to create doctype.'
+		const err = error as { statusCode?: number; data?: { message?: string } }
+		if (err.statusCode === 409) {
+			// The in-memory list was stale (another tab / out-of-band write). Surface the real cause and
+			// refresh so the doctype that already exists shows up in the list.
+			createError.value = err.data?.message ?? `A doctype "${name}" already exists.`
+			await loadDoctypes()
+		} else {
+			createError.value = 'Failed to create doctype.'
+		}
 		creating.value = false
 	}
 }

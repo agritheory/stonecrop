@@ -72,7 +72,7 @@ import { computed, watch } from 'vue'
 
 // Type stubs for the API surface injected into a clientHandler at runtime.
 // Keep in sync with the capability map assembled in the `useClientAction` composable
-// (@stonecrop/nuxt, Phase D). Note: only read-only `graphql.query` is injected — there is
+// (@stonecrop/nuxt). Note: only read-only `graphql.query` is injected — there is
 // no `graphql.mutation` (a raw mutation would bypass the dispatch and leave HST stale).
 const INJECTED_API_STUBS = `
 declare const router: {

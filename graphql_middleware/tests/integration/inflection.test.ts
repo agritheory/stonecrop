@@ -101,7 +101,7 @@ async function runQuery(query: string, variables?: Record<string, unknown>): Pro
 }
 
 // ===========================================================================
-// Phase B deferred test: non-default inflection with includeNested
+// Non-default inflection with includeNested
 // ===========================================================================
 
 describe('stonecropRecord with pascalCase field inflection', { tags: ['integration', 'graphql'] }, () => {

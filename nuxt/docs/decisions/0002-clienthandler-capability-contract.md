@@ -9,12 +9,12 @@ deciders: ['Rohan Bansal']
 
 A `clientHandler` runs in the browser with named capabilities injected by the assembly composable (see [0001](0001-clienthandler-execution-host-delegation.md)). The session already holds a live HST store and a GraphQL data client, so the question is what authority to hand authored code: which APIs are injected, and specifically whether a handler may issue arbitrary writes.
 
-This is not a sandbox decision — `new AsyncFunction` can reach `fetch`/`window` regardless of what is injected, so withholding an API does not prevent a determined author from making a network call. The contract is about *intent and consistency*, not containment. Two consistency concerns drive it: every write must keep HST in sync, and a future transition-architecture wants the workflow-state field to have exactly one writer.
+This is not a sandbox decision — `new AsyncFunction` can reach `fetch`/`window` regardless of what is injected, so withholding an API does not prevent a determined author from making a network call. The contract is about *intent and consistency*, not containment. Two consistency concerns drive it: every write must keep HST in sync, and a planned future change wants the workflow-state field to have exactly one writer.
 
 ## Decision Drivers
 
 * HST consistency: a write that does not write the result back into HST leaves the store stale.
-* A future single-state-writer guard (the transition-architecture initiative) must not be bypassable from a clientHandler.
+* A future single-state-writer guard must not be bypassable from a clientHandler.
 * The session already queries GraphQL to fill HST, so granting *read* access adds no new authority.
 * `query` is the GraphQL transport's method, not a capability every `DataClient` implementation can honor (a REST/in-memory client cannot run `query(gqlString)`).
 
@@ -50,4 +50,4 @@ Chosen option: "Option 2". The executor injects `router`, `record`, `runAction`,
 
 ## More Information
 
-The envelope contract is verified against the server handlers (`const [{ id }] = args`, `fullstack/server/plugins/stonecrop.ts`). An earlier plan example `runAction('Assign', [record.id])` was **broken** — it sent `['r1']`, so `args[0].id` was `undefined` — and was corrected to `runAction('Assign')`; the Monaco authoring stub's phantom `graphql.mutation` was removed to match. This contract is the client-side complement of the transition-architecture's server-side "single state-writer" goal; when that lands, `runAction` is the call that rides its guard.
+The envelope contract is verified against the server handlers (`const [{ id }] = args`, `fullstack/server/plugins/stonecrop.ts`). An earlier plan example `runAction('Assign', [record.id])` was **broken** — it sent `['r1']`, so `args[0].id` was `undefined` — and was corrected to `runAction('Assign')`; the Monaco authoring stub's phantom `graphql.mutation` was removed to match. This contract is the client-side complement of the planned server-side "single state-writer" goal; when that lands, `runAction` is the call that rides its guard.

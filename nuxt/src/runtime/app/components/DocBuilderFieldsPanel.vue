@@ -281,7 +281,7 @@ function removeField(realIndex: number) {
 }
 
 // A duplicate is a brand-new manual field: drop `source` so an introspected row's copy isn't
-// frozen (only the converter ever stamps provenance — Option C), and uniquify the fieldname.
+// frozen (only the converter ever stamps provenance), and uniquify the fieldname.
 function duplicateField(realIndex: number) {
 	const { source: _source, ...rest } = props.modelValue[realIndex]
 	const existing = new Set(props.modelValue.map(f => String(f.fieldname ?? '')))

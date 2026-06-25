@@ -48,6 +48,18 @@ export default defineEventHandler(async event => {
 		}
 	}
 
+	// Create guard: a create must never overwrite an existing doctype. The new-doctype flow
+	// sends `create: true`; `filePath` above already resolves case-insensitive collisions (requesting
+	// 'user' when 'User.json' exists), so this rejects exactly the file the write below would target.
+	// Updates send no flag and keep the existing deep-merge-overwrite behaviour. The client guards the
+	// common case before POSTing, but a stale list or a direct POST can only be caught here.
+	if (body.create === true && existsSync(filePath)) {
+		throw createError({
+			status: 409,
+			message: `A doctype named "${requested}" already exists.`,
+		})
+	}
+
 	// Read existing file to deep-merge — preserves keys the builder doesn't display
 	let existing: Record<string, unknown> = {}
 	if (existsSync(filePath)) {
