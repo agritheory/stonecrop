@@ -54,6 +54,9 @@ export interface BatchOperation {
 }
 
 // @public
+export type ClientHandlerApi = Record<string, unknown>;
+
+// @public
 export function createHST(target: any, doctype: string): HSTNode;
 
 // @public
@@ -107,6 +110,9 @@ export type DoctypeConfig = {
     actions?: Record<string, string[]>;
     inherits?: string;
 };
+
+// @public
+export function executeClientHandler(code: string, api?: ClientHandlerApi): Promise<unknown>;
 
 // @public
 export type FieldAction = FieldActionFunction | FieldActionString;

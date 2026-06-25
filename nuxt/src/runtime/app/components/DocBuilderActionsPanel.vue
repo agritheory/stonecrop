@@ -70,8 +70,10 @@ import { ACodeEditor } from '@stonecrop/code-editor'
 import type { ActionDefinition, WorkflowMeta } from '@stonecrop/schema'
 import { computed, watch } from 'vue'
 
-// Type stubs for the API surface injected into clientHandler at runtime (Desktop's AsyncFunction call).
-// Keep in sync with the injected argument list in Desktop's ActionSet component (Phase D).
+// Type stubs for the API surface injected into a clientHandler at runtime.
+// Keep in sync with the capability map assembled in the `useClientAction` composable
+// (@stonecrop/nuxt, Phase D). Note: only read-only `graphql.query` is injected — there is
+// no `graphql.mutation` (a raw mutation would bypass the dispatch and leave HST stale).
 const INJECTED_API_STUBS = `
 declare const router: {
   push(to: string | object): Promise<void>
@@ -79,10 +81,9 @@ declare const router: {
   back(): void
   forward(): void
 }
-declare function runAction(action: string, args?: Record<string, unknown>): Promise<void>
+declare function runAction(action: string, args?: Record<string, unknown>): Promise<{ success: boolean; data: unknown; error: string | null }>
 declare const graphql: {
   query(query: string, variables?: Record<string, unknown>): Promise<unknown>
-  mutation(mutation: string, variables?: Record<string, unknown>): Promise<unknown>
 }
 declare const record: Record<string, unknown>
 `

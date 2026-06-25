@@ -43,6 +43,29 @@ export declare function createValidator(registry: Registry, options?: Partial<Va
 | registry | `Registry` | Registry instance |
 | options | `Partial<ValidatorOptions>` | Additional validator options |
 
+### executeClientHandler
+
+Execute a docbuilder-authored `clientHandler` body against an injected API map.
+
+`code` is a function *body* (statements), not a full function — authored in the docbuilder code editor and stored on `ActionDefinition.clientHandler`. It is compiled with the AsyncFunction constructor, so `await` works directly. Each key of `api` becomes a parameter name bound to its value, so a handler can reference `router`, `record`, `runAction`, etc. by name.
+
+This executor is deliberately concern-free: it performs no routing, dispatch, or HST writes itself — the caller assembles `api`. The injected set is an *intent* contract, not a sandbox (an AsyncFunction body can still reach `fetch`/`window`); enforcement of what a handler may actually do lives server-side, not here.
+
+Errors are propagated to the caller as a rejected promise — syntax errors at compile time and thrown errors / rejections at run time — so callers handle both uniformly.
+
+**Signature:**
+
+```typescript
+export declare function executeClientHandler(code: string, api?: ClientHandlerApi): Promise<unknown>;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| code | `string` | the clientHandler body, e.g. `"router.push('/users')"` |
+| api | `ClientHandlerApi` | named capabilities injected as parameters (default: none) |
+
 ### getGlobalTriggerEngine
 
 Get or create the global field trigger engine singleton
@@ -923,6 +946,16 @@ export type BaseStonecropReturn = {
     stonecrop: Ref<Stonecrop | undefined>;
     operationLog: OperationLogAPI;
 };
+```
+
+### ClientHandlerApi
+
+Named capabilities injected into a clientHandler body as function parameters. The caller (the assembly composable) owns what each name resolves to — typically `router`, `record`, `runAction`, and a read-only `graphql`.
+
+**Definition:**
+
+```typescript
+export type ClientHandlerApi = Record<string, unknown>;
 ```
 
 ### CrossTabMessageType

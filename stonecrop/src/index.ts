@@ -1,6 +1,7 @@
 export type * from '@stonecrop/aform/types'
 export type * from '@stonecrop/atable/types'
 
+import { executeClientHandler } from './client-handler'
 import { useLazyLink } from './composables/lazy-link'
 import { useStonecrop } from './composables/stonecrop'
 import { useOperationLog, useUndoRedoShortcuts, withBatch } from './composables/operation-log'
@@ -25,6 +26,9 @@ import { ValidationSeverity } from './types/schema-validator'
 // Export all types from ./types
 export type * from './types'
 
+// clientHandler executor types
+export type { ClientHandlerApi } from './client-handler'
+
 // Export enum as value (enums need runtime export, not just type)
 export { ValidationSeverity }
 
@@ -34,6 +38,8 @@ export {
 	Stonecrop,
 	useLazyLink,
 	useStonecrop,
+	// clientHandler executor
+	executeClientHandler,
 	// HST exports for advanced usage
 	HST,
 	createHST,
