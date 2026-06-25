@@ -951,7 +951,6 @@ export const ActionDefinition: z.ZodObject<{
     handler: z.ZodString;
     requiredFields: z.ZodOptional<z.ZodArray<z.ZodString>>;
     allowedStates: z.ZodOptional<z.ZodArray<z.ZodString>>;
-    args: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodUnknown>>;
     nextState: z.ZodOptional<z.ZodString>;
     stateless: z.ZodOptional<z.ZodBoolean>;
     clientHandler: z.ZodOptional<z.ZodString>;
@@ -1046,7 +1045,6 @@ export const DoctypeMeta: z.ZodObject<{
             handler: z.ZodString;
             requiredFields: z.ZodOptional<z.ZodArray<z.ZodString>>;
             allowedStates: z.ZodOptional<z.ZodArray<z.ZodString>>;
-            args: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodUnknown>>;
             nextState: z.ZodOptional<z.ZodString>;
             stateless: z.ZodOptional<z.ZodBoolean>;
             clientHandler: z.ZodOptional<z.ZodString>;
@@ -1355,7 +1353,6 @@ export const WorkflowMeta: z.ZodObject<{
         handler: z.ZodString;
         requiredFields: z.ZodOptional<z.ZodArray<z.ZodString>>;
         allowedStates: z.ZodOptional<z.ZodArray<z.ZodString>>;
-        args: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodUnknown>>;
         nextState: z.ZodOptional<z.ZodString>;
         stateless: z.ZodOptional<z.ZodBoolean>;
         clientHandler: z.ZodOptional<z.ZodString>;

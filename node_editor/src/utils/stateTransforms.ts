@@ -87,7 +87,7 @@ export function flowElementsToStates(
 		const existing = existingWorkflow?.actions?.[actionKey]
 		nextActions[actionKey] = {
 			// Spread existing first so every field the graph does NOT own — clientHandler,
-			// requiredFields, args, and any field added to ActionDefinition later — survives the
+			// requiredFields and any field added to ActionDefinition later — survives the
 			// round-trip. The graph owns topology only; it overrides allowedStates/nextState below.
 			// (Enumerating named fields here previously dropped clientHandler on every graph edit.)
 			...existing,

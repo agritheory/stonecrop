@@ -43,7 +43,6 @@
 		"build": "rushx dev:prepare && nuxt-module-build build",
 		"docs": "echo 'Nuxt modules use custom build system - skipping API docs generation'",
 		"dev": "rushx dev:prepare && nuxi dev playground",
-		"dev:basic": "rushx dev:prepare && nuxi dev playground",
 		"dev:countries": "rushx dev:prepare:countries && nuxi dev countries-graphql",
 		"dev:full": "rushx dev:prepare:full && nuxi dev fullstack",
 		"dev:prepare:countries": "nuxt-module-build build --stub && nuxt-module-build prepare && nuxi prepare countries-graphql",

@@ -526,7 +526,6 @@ describe('Doctype class', { tags: ['unit'] }, () => {
 						handler: 'plan:submit',
 						requiredFields: ['title', 'description'],
 						allowedStates: ['draft'],
-						args: { notify: true },
 					},
 				},
 			}
@@ -538,7 +537,6 @@ describe('Doctype class', { tags: ['unit'] }, () => {
 				handler: 'plan:submit',
 				requiredFields: ['title', 'description'],
 				allowedStates: ['draft'],
-				args: { notify: true },
 			})
 		})
 

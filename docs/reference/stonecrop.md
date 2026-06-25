@@ -1236,7 +1236,6 @@ getActionMeta(actionName: string): {
         handler: string;
         requiredFields?: string[];
         allowedStates?: string[];
-        args?: Record<string, unknown>;
     } | undefined
 ```
 

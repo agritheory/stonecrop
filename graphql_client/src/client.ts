@@ -120,7 +120,6 @@ export class StonecropClient implements DataClient {
 							handler
 							requiredFields
 							allowedStates
-							args
 						}
 					}
 					inherits
@@ -173,7 +172,6 @@ export class StonecropClient implements DataClient {
 							handler
 							requiredFields
 							allowedStates
-							args
 						}
 					}
 					inherits

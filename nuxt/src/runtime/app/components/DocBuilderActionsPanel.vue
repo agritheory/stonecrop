@@ -85,7 +85,6 @@ declare const graphql: {
   mutation(mutation: string, variables?: Record<string, unknown>): Promise<unknown>
 }
 declare const record: Record<string, unknown>
-declare const args: Record<string, unknown>
 `
 
 // Path to locally-served Monaco AMD build (served via Nitro publicAssets in module.ts).

@@ -237,7 +237,6 @@ export default class Doctype {
 				handler: string
 				requiredFields?: string[]
 				allowedStates?: string[]
-				args?: Record<string, unknown>
 		  }
 		| undefined {
 		const workflow = this.workflow
