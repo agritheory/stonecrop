@@ -69,7 +69,7 @@ function open(slug: string) {
 const newName = ref('')
 const createError = ref('')
 const creating = ref(false)
-const DOCTYPE_NAME = /^[A-Za-z][A-Za-z0-9_-]*$/
+const DOCTYPE_NAME = /^[A-Z][\w-]*$/i
 
 async function createDoctype() {
 	const name = newName.value.trim()
