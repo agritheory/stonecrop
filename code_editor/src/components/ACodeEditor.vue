@@ -15,7 +15,7 @@ import { toEditorString } from '../utils/serialization'
 
 type EditorSchema = { fieldtype?: string; [key: string]: unknown }
 
-let _editorModelCounter = 0
+let editorModelCounter = 0
 
 const modelValue = defineModel<string>()
 const {
@@ -73,7 +73,7 @@ onMounted(async () => {
 	// Give the model a file:// URI so the TS worker recognises it as JS/TS and can
 	// run getSyntacticDiagnostics without throwing "Could not find source file".
 	const ext = lang === 'typescript' ? 'ts' : lang === 'json' ? 'json' : lang === 'python' ? 'py' : 'js'
-	const modelUri = monacoInstance.Uri.parse(`file:///stonecrop-editor-${++_editorModelCounter}.${ext}`)
+	const modelUri = monacoInstance.Uri.parse(`file:///stonecrop-editor-${++editorModelCounter}.${ext}`)
 	const editorModel = monacoInstance.editor.createModel(
 		toEditorString(modelValue.value, schema?.fieldtype),
 		lang,
