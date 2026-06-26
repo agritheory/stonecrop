@@ -31,7 +31,6 @@ describe('typeDefs', { tags: ['unit', 'graphql'] }, () => {
 		expect(workflowActionType).toBeDefined()
 
 		expect(findFieldDefinition(workflowActionType, 'label')).toBeDefined()
-		expect(findFieldDefinition(workflowActionType, 'handler')).toBeDefined()
 		expect(findFieldDefinition(workflowActionType, 'requiredFields')).toBeDefined()
 		expect(findFieldDefinition(workflowActionType, 'allowedStates')).toBeDefined()
 		expect(findFieldDefinition(workflowActionType, 'nextState')).toBeDefined()

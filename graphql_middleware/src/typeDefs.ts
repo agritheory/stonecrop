@@ -29,7 +29,6 @@ export const typeDefs = gql`
 
 	type StonecropWorkflowAction {
 		label: String!
-		handler: String!
 		requiredFields: [String!]
 		allowedStates: [String!]
 		nextState: String

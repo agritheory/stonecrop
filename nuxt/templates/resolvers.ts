@@ -9,16 +9,16 @@
  * - loadOne($step, fn)        — batch-load data ASYNCHRONOUSLY (for DB queries)
  * - object({ ... })           — group multiple steps into a single step object
  *
- * Data reads go through loadOne; data writes happen in server/plugins/stonecrop.ts
- * via registered action handlers (start_task, complete_task, archive_project).
+ * Data reads go through loadOne. Workflow state transitions are applied by the
+ * stonecropAction resolver itself (server-owns-transition, guarded by allowedStates);
+ * side-effecting saves go through registered handlers (project:save, task:save).
  *
  * To connect a real database, replace the imports from ./data with your
  * PostGraphile setup. See: https://stonecrop.io/docs/guides/postgraphile
  */
 
 import { constant, lambda, loadOne, object } from 'grafast'
-import { getMeta, getAllMeta, getHandler } from '@stonecrop/graphql-middleware'
-import type { ActionContext } from '@stonecrop/graphql-middleware'
+import { getMeta, getAllMeta, applyGuardedTransition } from '@stonecrop/graphql-middleware'
 import type { DoctypeMeta } from '@stonecrop/schema'
 import { projects, tasks, type Project, type Task } from './data'
 
@@ -189,18 +189,29 @@ export const resolvers = {
 								const actionDef = meta.workflow?.actions?.[spec.action]
 								if (!actionDef) return { success: false, data: null, error: `Unknown action: ${spec.action}` }
 
-								const handler = getHandler(actionDef.handler)
-								if (!handler)
-									return { success: false, data: null, error: `Handler not registered: ${actionDef.handler}` }
-
-								// Pass doctype metadata via ActionContext. The handler in server/plugins/stonecrop.ts
-								// imports and mutates the data Maps directly — it does not need additional context here.
-								// In a PostGraphile setup, context.pgClient would provide the database connection instead.
-								const actionContext: ActionContext = { doctype: meta }
+								// Record envelope: [{ id, data }] — the transition keys off the record id.
+								const argList = Array.isArray(spec.actionArgs) ? spec.actionArgs : []
+								const recordId = argList[0]?.id != null ? String(argList[0].id) : undefined
+								const d = spec.doctype.toLowerCase()
 
 								try {
-									const result = await handler(spec.actionArgs ?? [], actionContext)
-									return { success: true, data: result, error: null }
+									// The server owns the transition: read current state, guard against allowedStates,
+									// write nextState. Reads/writes go straight to the in-memory Maps; a PostGraphile
+									// setup swaps in pgClient SQL instead.
+									return await applyGuardedTransition(actionDef, {
+										readState: async () => {
+											if (recordId == null) return undefined
+											const record = getRecord(d, recordId)
+											return record?.status == null ? undefined : String(record.status)
+										},
+										writeState: async (nextState: string) => {
+											if (recordId == null) return
+											const existing = getRecord(d, recordId)
+											if (!existing) return
+											if (d === 'project') projects.set(recordId, { ...existing, status: nextState } as Project)
+											else if (d === 'task') tasks.set(recordId, { ...existing, status: nextState } as Task)
+										},
+									})
 								} catch (err) {
 									return { success: false, data: null, error: err instanceof Error ? err.message : String(err) }
 								}

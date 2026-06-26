@@ -150,6 +150,27 @@ export declare function getDefaultComponent(fieldtype: BuiltinFieldType): string
 |-----------|------|-------------|
 | fieldtype | `BuiltinFieldType` | A builtin field type |
 
+### isActionAllowedInState
+
+Whether a workflow action may run from `currentState`.
+
+Single source of truth for the "is this action available here" rule, shared by the frontend (`getAvailableTransitions`) and the server-side dispatch guard so the two can never disagree. Empty or absent `allowedStates` means the action is available in ALL states — a plain `allowedStates.includes(currentState)` would wrongly block such actions everywhere.
+
+**Signature:**
+
+```typescript
+export declare function isActionAllowedInState(action: {
+    allowedStates?: string[] | null;
+}, currentState: string): boolean;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| action | `{ allowedStates?: string[] \| null; }` |  |
+| currentState | `string` |  |
+
 ### isBuiltinFieldType
 
 Returns `true` when `fieldtype` is one of the builtin types Stonecrop ships with.
@@ -948,7 +969,6 @@ Action definition within a workflow
 ```typescript
 export const ActionDefinition: z.ZodObject<{
     label: z.ZodString;
-    handler: z.ZodString;
     requiredFields: z.ZodOptional<z.ZodArray<z.ZodString>>;
     allowedStates: z.ZodOptional<z.ZodArray<z.ZodString>>;
     nextState: z.ZodOptional<z.ZodString>;
@@ -1042,7 +1062,6 @@ export const DoctypeMeta: z.ZodObject<{
         states: z.ZodOptional<z.ZodArray<z.ZodString>>;
         actions: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodObject<{
             label: z.ZodString;
-            handler: z.ZodString;
             requiredFields: z.ZodOptional<z.ZodArray<z.ZodString>>;
             allowedStates: z.ZodOptional<z.ZodArray<z.ZodString>>;
             nextState: z.ZodOptional<z.ZodString>;
@@ -1350,7 +1369,6 @@ export const WorkflowMeta: z.ZodObject<{
     states: z.ZodOptional<z.ZodArray<z.ZodString>>;
     actions: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodObject<{
         label: z.ZodString;
-        handler: z.ZodString;
         requiredFields: z.ZodOptional<z.ZodArray<z.ZodString>>;
         allowedStates: z.ZodOptional<z.ZodArray<z.ZodString>>;
         nextState: z.ZodOptional<z.ZodString>;

@@ -71,37 +71,31 @@
 		"actions": {
 			"save": {
 				"label": "Save",
-				"handler": "order:save",
 				"stateless": true
 			},
 			"submit": {
 				"label": "Submit Order",
-				"handler": "submit_order",
 				"allowedStates": ["DRAFT"],
 				"requiredFields": ["userId", "shippingAddress"],
 				"nextState": "PENDING"
 			},
 			"process": {
 				"label": "Process Order",
-				"handler": "process_order",
 				"allowedStates": ["PENDING"],
 				"nextState": "PROCESSING"
 			},
 			"ship": {
 				"label": "Ship Order",
-				"handler": "ship_order",
 				"allowedStates": ["PROCESSING"],
 				"nextState": "SHIPPED"
 			},
 			"complete": {
 				"label": "Complete Order",
-				"handler": "complete_order",
 				"allowedStates": ["SHIPPED"],
 				"nextState": "COMPLETED"
 			},
 			"cancel": {
 				"label": "Cancel Order",
-				"handler": "cancel_order",
 				"allowedStates": ["DRAFT", "PENDING", "PROCESSING"],
 				"nextState": "CANCELLED"
 			}

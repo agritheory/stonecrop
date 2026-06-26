@@ -23,6 +23,17 @@ export interface ActionContext {
 export type ActionHandler = (args: unknown[], context: ActionContext) => Promise<unknown>;
 
 // @public
+export function applyGuardedTransition(actionDef: {
+    label?: string;
+    allowedStates?: string[];
+    nextState?: string;
+}, io: GuardedTransitionIO): Promise<{
+    success: boolean;
+    data: unknown;
+    error: string | null;
+}>;
+
+// @public
 export const builtinHandlers: Record<string, ActionHandler>;
 
 // @public
@@ -79,6 +90,12 @@ export function getHandler(name: string): ActionHandler | undefined;
 
 // @public
 export function getMeta(name: string): DoctypeMeta | undefined;
+
+// @public
+export interface GuardedTransitionIO {
+    readState: () => Promise<string | undefined>;
+    writeState: (nextState: string) => Promise<void>;
+}
 
 // @public
 export function hasHandler(name: string): boolean;

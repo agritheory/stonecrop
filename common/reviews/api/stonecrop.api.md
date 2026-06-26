@@ -83,7 +83,6 @@ export class Doctype {
     static fromObject(config: DoctypeConfig): Doctype;
     getActionMeta(actionName: string): {
         label: string;
-        handler: string;
         requiredFields?: string[];
         allowedStates?: string[];
     } | undefined;

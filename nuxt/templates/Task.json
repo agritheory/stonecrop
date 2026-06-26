@@ -57,17 +57,17 @@
 		"actions": {
 			"save": {
 				"label": "Save",
-				"handler": "task:save"
+				"stateless": true
 			},
 			"start_task": {
 				"label": "Start Task",
-				"handler": "start_task",
-				"allowedStates": ["Todo"]
+				"allowedStates": ["Todo"],
+				"nextState": "In Progress"
 			},
 			"complete_task": {
 				"label": "Complete",
-				"handler": "complete_task",
-				"allowedStates": ["In Progress"]
+				"allowedStates": ["In Progress"],
+				"nextState": "Done"
 			}
 		}
 	}

@@ -156,7 +156,7 @@
     },
     {
       "name": "@stonecrop/graphql-middleware",
-      "allowedCategories": [ "production", "prototype" ]
+      "allowedCategories": [ "production", "prototype", "utilities" ]
     },
     {
       "name": "@stonecrop/node-editor",

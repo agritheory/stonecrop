@@ -31,6 +31,10 @@ export {
 export { registerFetchHandler, getFetchHandler, clearFetchHandlers } from './registry/fetchHandlers'
 export type { FetchHandler } from './registry/fetchHandlers'
 
+// Server-owned workflow transition (guarded by allowedStates)
+export { applyGuardedTransition } from './dispatch/transition'
+export type { GuardedTransitionIO } from './dispatch/transition'
+
 // PostGraphile plugin
 export { createStonecropPlugin } from './plugin/postgraphile'
 export type { StonecropPluginOptions } from './plugin/postgraphile'

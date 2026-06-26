@@ -1261,7 +1261,6 @@ Returns metadata for a specific action, if available. Only works with WorkflowMe
 ```typescript
 getActionMeta(actionName: string): {
         label: string;
-        handler: string;
         requiredFields?: string[];
         allowedStates?: string[];
     } | undefined

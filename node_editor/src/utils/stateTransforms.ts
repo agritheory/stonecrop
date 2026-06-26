@@ -92,7 +92,9 @@ export function flowElementsToStates(
 			// (Enumerating named fields here previously dropped clientHandler on every graph edit.)
 			...existing,
 			label: existing?.label ?? actionKey,
-			handler: existing?.handler ?? '',
+			// The graph owns topology only — allowedStates and nextState below. The server owns
+			// the transition: dispatch applies nextState, guarded by allowedStates, with no
+			// per-action handler link. A freshly-drawn edge is therefore complete as-is.
 			allowedStates: group.allowedStates,
 			nextState: group.nextState,
 		}

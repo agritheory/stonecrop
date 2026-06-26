@@ -267,6 +267,14 @@ export default defineNuxtModule<ModuleOptions>({
 				}
 			}
 
+			// Vite keys its optimize cache on dep version + lockfile, not dist *content*. Rebuilding a
+			// workspace package's dist without bumping its version therefore leaves the running dev
+			// server on the stale pre-bundle — e.g. an old @stonecrop/schema still rejecting a
+			// since-removed field. These deps can't be excluded (they eager-pull zod/graphql; see above),
+			// so force a fresh re-optimize each dev start to keep source edits reflected. Cost: a few
+			// seconds of re-bundling per restart.
+			nuxt.options.vite.optimizeDeps.force = true
+
 			// Serve Monaco AMD build via Nitro publicAssets so the code editor works without CDN access.
 			// The AMD build (min/vs) has workers pre-bundled — no separate worker interception needed.
 			const { createRequire } = await import('node:module')

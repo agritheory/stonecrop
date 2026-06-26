@@ -43,12 +43,12 @@
 		"actions": {
 			"save": {
 				"label": "Save",
-				"handler": "project:save"
+				"stateless": true
 			},
 			"archive": {
 				"label": "Archive Project",
-				"handler": "archive_project",
-				"allowedStates": ["Active"]
+				"allowedStates": ["Active"],
+				"nextState": "Archived"
 			}
 		}
 	}

@@ -563,6 +563,9 @@ importers:
       '@rushstack/heft':
         specifier: ^1.2.17
         version: 1.2.17(@types/node@24.12.4)
+      '@stonecrop/graphql-middleware':
+        specifier: workspace:*
+        version: link:../graphql_middleware
       '@types/node':
         specifier: ^24.12.4
         version: 24.12.4

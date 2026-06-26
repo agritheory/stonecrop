@@ -10,7 +10,7 @@ import { describe, it, expect, beforeAll, afterAll, inject } from 'vitest'
 
 import { createStonecropPlugin } from '../../src/plugin/postgraphile'
 import { loadDoctypesFromObject, clearRegistry } from '../../src/registry/doctypes'
-import { registerHandler, clearHandlers } from '../../src/registry/actions'
+import { clearHandlers } from '../../src/registry/actions'
 
 // ---------------------------------------------------------------------------
 // Per-suite setup
@@ -49,7 +49,7 @@ beforeAll(async () => {
 			workflow: {
 				states: ['Draft', 'Active'],
 				actions: {
-					submit: { label: 'Submit', handler: 'submit', allowedStates: ['Draft'] },
+					submit: { label: 'Submit', allowedStates: ['Draft'], nextState: 'Active' },
 				},
 			},
 		},
@@ -305,18 +305,29 @@ describe('lazy link retrieval via stonecropRecords', { tags: ['integration', 'gr
 // ===========================================================================
 
 describe('stonecropAction', { tags: ['integration', 'graphql'] }, () => {
-	it('calls a registered handler and returns success', async () => {
-		registerHandler('submit', async _args => ({ submitted: true }))
-
+	it('applies the guarded transition when the action is allowed in the current state', async () => {
+		// ScItem 1 ('Alpha') seeds in 'Draft'; submit is allowed from Draft and lands in Active.
 		const result = await runQuery(
-			`mutation { stonecropAction(doctype: "ScItem", action: "submit", args: { id: "1" }) { success data } }`
+			`mutation { stonecropAction(doctype: "ScItem", action: "submit", args: [{ id: "1" }]) { success data error } }`
 		)
 		const action = (result as any).data?.stonecropAction
 		expect(action?.success).toBe(true)
-		expect(action?.data?.submitted).toBe(true)
+		expect(action?.data?.state).toBe('Active')
+		expect(action?.error).toBeNull()
 	})
 
-	it('returns error for an unregistered handler', async () => {
+	it('rejects the action when the current state is not in allowedStates', async () => {
+		// ScItem 2 ('Beta') seeds in 'Active'; submit is only allowed from 'Draft', so the
+		// server must refuse the transition — the guard is the security boundary, not the client.
+		const result = await runQuery(
+			`mutation { stonecropAction(doctype: "ScItem", action: "submit", args: [{ id: "2" }]) { success error } }`
+		)
+		const action = (result as any).data?.stonecropAction
+		expect(action?.success).toBe(false)
+		expect(action?.error).toContain('not allowed')
+	})
+
+	it('returns error for an unknown action', async () => {
 		const result = await runQuery(
 			`mutation { stonecropAction(doctype: "ScItem", action: "nonexistent") { success error } }`
 		)

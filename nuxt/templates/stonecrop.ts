@@ -49,34 +49,4 @@ export default defineNitroPlugin(async () => {
 		tasks.set(id, updated)
 		return updated
 	})
-
-	// Transition a Task from Todo → In Progress
-	registerHandler('start_task', async (args: unknown[]) => {
-		const [{ id }] = args as ActionArgs
-		const task = tasks.get(id)
-		if (!task) throw new Error(`Task not found: ${id}`)
-		const updated = { ...task, status: 'In Progress' as const }
-		tasks.set(id, updated)
-		return updated
-	})
-
-	// Transition a Task from In Progress → Done
-	registerHandler('complete_task', async (args: unknown[]) => {
-		const [{ id }] = args as ActionArgs
-		const task = tasks.get(id)
-		if (!task) throw new Error(`Task not found: ${id}`)
-		const updated = { ...task, status: 'Done' as const }
-		tasks.set(id, updated)
-		return updated
-	})
-
-	// Transition a Project from Active → Archived
-	registerHandler('archive_project', async (args: unknown[]) => {
-		const [{ id }] = args as ActionArgs
-		const project = projects.get(id)
-		if (!project) throw new Error(`Project not found: ${id}`)
-		const updated = { ...project, status: 'Archived' as const }
-		projects.set(id, updated)
-		return updated
-	})
 })

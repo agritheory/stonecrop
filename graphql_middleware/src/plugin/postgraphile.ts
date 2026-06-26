@@ -6,11 +6,10 @@ import { constant, lambda, object } from 'postgraphile/grafast'
 import { GraphileConfig } from 'postgraphile/graphile-build'
 import { extendSchema } from 'postgraphile/utils'
 
-import { getHandler } from '../registry/actions'
 import { getFetchHandler } from '../registry/fetchHandlers'
 import { getMeta, getAllMeta } from '../registry/doctypes'
+import { applyGuardedTransition } from '../dispatch/transition'
 import { typeDefs } from '../typeDefs'
-import type { ActionContext } from '../types'
 
 /**
  * Options for creating a Stonecrop PostGraphile plugin.
@@ -357,20 +356,40 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 										}
 									}
 
-									const handler = getHandler(actionDef.handler)
-									if (!handler) {
+									const pkMeta = getPkMeta(meta)
+									if (!pkMeta) {
 										return {
 											success: false,
 											data: null,
-											error: `Handler not registered: ${actionDef.handler}`,
+											error: `No primary key for doctype: ${spec.doctype}`,
 										}
 									}
-
-									const actionContext: ActionContext = { doctype: meta, pgClient }
+									const pkColumn = camelToSnake(pkMeta.fieldname)
+									const table = resolveTableName(meta.name, options.tables)
+									// Record envelope: [{ id, data }] — the transition keys off the record id.
+									// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- spec.actionArgs is a Grafast runtime value; the record envelope shape is the dispatch contract
+									const argList = Array.isArray(spec.actionArgs)
+										? (spec.actionArgs as Array<{ id?: string | number }>)
+										: []
+									const recordId = argList[0]?.id
 
 									try {
-										const result = await handler(spec.actionArgs ?? [], actionContext)
-										return { success: true, data: result, error: null }
+										return await applyGuardedTransition(actionDef, {
+											readState: async () => {
+												if (recordId == null) return undefined
+												const { rows } = await debugSql<{ status: string | null }>(pgClient, {
+													text: `SELECT "status" FROM ${table} WHERE "${pkColumn}"::text = $1`,
+													values: [String(recordId)],
+												})
+												return rows[0]?.status == null ? undefined : rows[0].status
+											},
+											writeState: async (nextState: string) => {
+												await debugSql(pgClient, {
+													text: `UPDATE ${table} SET "status" = $1 WHERE "${pkColumn}"::text = $2`,
+													values: [nextState, String(recordId)],
+												})
+											},
+										})
 									} catch (err) {
 										return {
 											success: false,

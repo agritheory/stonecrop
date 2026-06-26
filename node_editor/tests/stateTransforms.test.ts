@@ -12,18 +12,17 @@ import { flowElementsToStates, statesToFlowElements } from '../src/utils/stateTr
 const issueWorkflow: WorkflowMeta = {
 	states: ['New', 'Draft', 'Assigned', 'Resolved', 'Closed'],
 	actions: {
-		save: { label: 'Save', handler: 'issue:save', allowedStates: ['New'], nextState: 'Draft' },
-		assign: { label: 'Assign', handler: 'issue:assign', allowedStates: ['Draft'], nextState: 'Assigned' },
+		save: { label: 'Save', allowedStates: ['New'], nextState: 'Draft' },
+		assign: { label: 'Assign', allowedStates: ['Draft'], nextState: 'Assigned' },
 		resolve: {
 			label: 'Resolve',
-			handler: 'issue:resolve',
 			allowedStates: ['Draft', 'Assigned'],
 			nextState: 'Resolved',
 		},
-		close: { label: 'Close', handler: 'issue:close', allowedStates: ['Resolved'], nextState: 'Closed' },
-		reopen: { label: 'Reopen', handler: 'issue:reopen', allowedStates: ['Closed'], nextState: 'Draft' },
-		print: { label: 'Print', handler: 'issue:print', stateless: true, allowedStates: ['Resolved', 'Closed'] },
-		email: { label: 'Email', handler: 'issue:email', stateless: true },
+		close: { label: 'Close', allowedStates: ['Resolved'], nextState: 'Closed' },
+		reopen: { label: 'Reopen', allowedStates: ['Closed'], nextState: 'Draft' },
+		print: { label: 'Print', stateless: true, allowedStates: ['Resolved', 'Closed'] },
+		email: { label: 'Email', stateless: true },
 	},
 }
 
@@ -86,7 +85,7 @@ describe('statesToFlowElements', { tags: ['unit'] }, () => {
 		const workflow: WorkflowMeta = {
 			states: ['Draft', 'Active'],
 			actions: {
-				globalAction: { label: 'Global', handler: 'g', nextState: 'Active' }, // no allowedStates
+				globalAction: { label: 'Global', nextState: 'Active' }, // no allowedStates
 			},
 		}
 		const elements = statesToFlowElements(workflow)
@@ -152,13 +151,12 @@ describe('flowElementsToStates', { tags: ['unit'] }, () => {
 		expect(workflow.actions?.resolve?.nextState).toBe('Resolved')
 	})
 
-	it('preserves handler, requiredFields from existing workflow on round-trip', () => {
+	it('preserves requiredFields from existing workflow on round-trip', () => {
 		const workflowWithMeta: WorkflowMeta = {
 			states: ['Open', 'Closed'],
 			actions: {
 				close: {
 					label: 'Close',
-					handler: 'close_ticket',
 					requiredFields: ['resolution'],
 					allowedStates: ['Open'],
 					nextState: 'Closed',
@@ -167,7 +165,6 @@ describe('flowElementsToStates', { tags: ['unit'] }, () => {
 		}
 		const elements = statesToFlowElements(workflowWithMeta)
 		const { workflow } = flowElementsToStates(elements, workflowWithMeta)
-		expect(workflow.actions?.close?.handler).toBe('close_ticket')
 		expect(workflow.actions?.close?.requiredFields).toEqual(['resolution'])
 	})
 
@@ -189,15 +186,18 @@ describe('flowElementsToStates', { tags: ['unit'] }, () => {
 		expect((workflow.actions?.close as Record<string, unknown>)?.futureField).toBe(42)
 	})
 
-	it('new edge creates skeleton action with empty handler', () => {
+	it('new edge seeds a skeleton action with nextState and no handler', () => {
 		const elements: FlowElements = [
 			{ id: 'Open', label: 'Open', position: { x: 0, y: 0 }, type: 'input' } as any,
 			{ id: 'Closed', label: 'Closed', position: { x: 200, y: 0 } } as any,
 			{ id: 'e1', source: 'Open', target: 'Closed', label: 'newAction', type: 'smoothstep' } as any,
 		]
 		const { workflow } = flowElementsToStates(elements)
-		expect(workflow.actions?.newAction?.handler).toBe('')
+		// A freshly-drawn edge carries topology only: nextState plus a label defaulting to the
+		// action key. There is no handler link — the server applies nextState, guarded by
+		// allowedStates, on dispatch.
 		expect(workflow.actions?.newAction?.nextState).toBe('Closed')
+		expect(workflow.actions?.newAction?.label).toBe('newAction')
 	})
 
 	it('removed edge deletes the Workflow action', () => {
@@ -205,7 +205,7 @@ describe('flowElementsToStates', { tags: ['unit'] }, () => {
 		const workflowWithClose: WorkflowMeta = {
 			states: ['Open', 'Closed'],
 			actions: {
-				close: { label: 'Close', handler: 'close_it', allowedStates: ['Open'], nextState: 'Closed' },
+				close: { label: 'Close', allowedStates: ['Open'], nextState: 'Closed' },
 			},
 		}
 		// Graph with no edges (user deleted the close edge)
@@ -232,7 +232,7 @@ describe('flowElementsToStates', { tags: ['unit'] }, () => {
 		const workflowWithGlobal: WorkflowMeta = {
 			states: ['Draft', 'Active'],
 			actions: {
-				globalAction: { label: 'Global', handler: 'g', nextState: 'Active' },
+				globalAction: { label: 'Global', nextState: 'Active' },
 			},
 		}
 		const elements: FlowElements = [
@@ -240,7 +240,7 @@ describe('flowElementsToStates', { tags: ['unit'] }, () => {
 			{ id: 'Active', label: 'Active', position: { x: 200, y: 0 } } as any,
 		]
 		const { workflow } = flowElementsToStates(elements, workflowWithGlobal)
-		expect(workflow.actions?.globalAction?.handler).toBe('g')
+		expect(workflow.actions?.globalAction?.label).toBe('Global')
 		expect(workflow.actions?.globalAction?.nextState).toBe('Active')
 	})
 

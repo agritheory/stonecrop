@@ -6,7 +6,7 @@
  */
 
 import { constant, lambda, loadOne, object } from 'grafast'
-import { getMeta, getAllMeta, getHandler, type ActionContext } from '@stonecrop/graphql-middleware'
+import { getMeta, getAllMeta, applyGuardedTransition } from '@stonecrop/graphql-middleware'
 import type { DoctypeMeta } from '@stonecrop/schema'
 
 import { mockExecutor } from './mock-executor'
@@ -213,33 +213,30 @@ export default {
 									}
 								}
 
-								const handler = getHandler(actionDef.handler)
-								if (!handler) {
-									return {
-										success: false,
-										data: null,
-										error: `Handler not registered: ${actionDef.handler}`,
-									}
-								}
-
-								// ActionContext deliberately has an open index signature ([key: string]: unknown)
-								// as the extension point for injecting a data access layer (see ADR 0003).
-								// `executor` here is this example's in-memory backend — application-owned
-								// plumbing, not a framework convention. In a PostGraphile setup this slot
-								// is `pgClient` (an active database connection); for any other custom
-								// backend, inject whatever your handlers need to read and write data.
-								const actionContext: ActionContext = {
-									doctype: meta,
-									executor: mockExecutor,
-								}
+								// Record envelope: [{ id, data }] — the transition keys off the record id.
+								const argList = Array.isArray(spec.actionArgs) ? spec.actionArgs : []
+								const recordId = argList[0]?.id
 
 								try {
-									const result = await handler(spec.actionArgs ?? [], actionContext)
-									return {
-										success: true,
-										data: result,
-										error: null,
-									}
+									// The server owns the transition: read current state, guard against
+									// allowedStates, write nextState. Reads/writes go through this app's
+									// mock executor; a PostGraphile setup swaps in pgClient SQL instead.
+									return await applyGuardedTransition(actionDef, {
+										readState: async () => {
+											if (recordId == null) return undefined
+											const queryName = toQueryName(meta.name)
+											const result = (await mockExecutor.query(queryName, { id: recordId })) as Record<
+												string,
+												{ status?: string | null } | undefined
+											>
+											const status = result[queryName]?.status
+											return status == null ? undefined : String(status)
+										},
+										writeState: async (nextState: string) => {
+											const mutationName = toMutationName(meta.name, 'update')
+											await mockExecutor.mutate(mutationName, { id: recordId, patch: { status: nextState } })
+										},
+									})
 								} catch (err) {
 									return {
 										success: false,

@@ -9,6 +9,17 @@ import { useRouter } from 'vue-router'
 export type ActionDispatchResult = { success: boolean; data: unknown; error: string | null }
 
 /**
+ * Surface an action failure to the user. There is no notification system yet, so this is a
+ * deliberate stopgap: a blocking alert beats a silent `console.error` for a failed action
+ * (e.g. a Save that the server refused). Swap this for a real toast when one exists.
+ */
+function notifyActionError(message: string): void {
+	// oxlint-disable-next-line no-console
+	console.error('Action failed:', message)
+	if (typeof window !== 'undefined') window.alert(message)
+}
+
+/**
  * Shared executor for doctype action clicks. A host's Desktop `@action` handler delegates
  * here so every host runs the same logic from one definition:
  *
@@ -77,7 +88,7 @@ export function useClientAction() {
 			if (!clientHandler) {
 				// No client handler — preserve the existing server-dispatch behavior.
 				const result = await dispatchAndWriteback(doctypeSlug, recordId, data, name)
-				if (!result.success) console.error('Action failed:', result.error)
+				if (!result.success) notifyActionError(result.error ?? `Action "${name}" failed`)
 				return
 			}
 
@@ -106,7 +117,7 @@ export function useClientAction() {
 
 			await executeClientHandler(clientHandler, { router, record, runAction, graphql })
 		} catch (error) {
-			console.error('Action error:', error)
+			notifyActionError(error instanceof Error ? error.message : String(error))
 		}
 	}
 

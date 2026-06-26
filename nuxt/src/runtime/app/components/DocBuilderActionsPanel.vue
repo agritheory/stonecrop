@@ -6,7 +6,6 @@
 					<th class="expand-col" />
 					<th>Key</th>
 					<th>Label</th>
-					<th>Handler</th>
 					<th>Type</th>
 					<th>Allowed States</th>
 					<th>Next State</th>
@@ -24,14 +23,6 @@
 									type="text"
 									:value="action.label"
 									@input="update(String(key), 'label', ($event.target as HTMLInputElement).value)" />
-							</td>
-							<td>
-								<input
-									type="text"
-									:value="action.handler"
-									:class="{ 'handler-missing': !action.handler }"
-									placeholder="module:function"
-									@input="update(String(key), 'handler', ($event.target as HTMLInputElement).value)" />
 							</td>
 							<td>
 								<span class="badge" :class="action.stateless ? 'badge-command' : 'badge-transition'">
@@ -95,7 +86,6 @@ const VS_PATH = '/stonecrop-monaco/vs'
 const ACTION_COLUMNS: TableColumn[] = [
 	{ name: 'key' },
 	{ name: 'label' },
-	{ name: 'handler' },
 	{ name: 'type' },
 	{ name: 'allowedStates' },
 	{ name: 'nextState' },
@@ -160,7 +150,7 @@ function update(key: string, field: string, value: unknown) {
 }
 
 .actions-table :deep(td) {
-	padding: 0.375em 0.75em;
+	padding: var(--sc-atable-row-padding, 0.125rem) 0.75em;
 	vertical-align: middle;
 }
 
@@ -171,11 +161,6 @@ function update(key: string, field: string, value: unknown) {
 	padding: 0.25em 0.5em;
 	font-size: inherit;
 	font-family: inherit;
-}
-
-.actions-table input[type='text'].handler-missing {
-	border-color: #f87171;
-	background: #fef2f2;
 }
 
 .actions-table input[type='text']:focus {

@@ -23,7 +23,7 @@ export { DoctypeFieldSchema, FieldsetFieldSchema, TableFieldSchema, ValueFieldSc
 // Doctype schema
 // ActionDefinition and WorkflowMeta are exported as values (Zod schemas) so consumers can use
 // .safeParse(), .shape, etc. at runtime. TypeScript types are inferred from the same exports.
-export { ActionDefinition, WorkflowMeta } from './doctype'
+export { ActionDefinition, WorkflowMeta, isActionAllowedInState } from './doctype'
 export type {
 	Cardinality,
 	CustomFetch,

@@ -55,16 +55,15 @@
 	"workflow": {
 		"states": ["New", "Draft", "Assigned", "Resolved", "Closed"],
 		"actions": {
-			"Save": { "label": "Save", "handler": "", "allowedStates": ["New"], "nextState": "Draft" },
-			"Assign": { "label": "Assign", "handler": "", "allowedStates": ["Draft"], "nextState": "Assigned" },
+			"Save": { "label": "Save", "allowedStates": ["New"], "nextState": "Draft" },
+			"Assign": { "label": "Assign", "allowedStates": ["Draft"], "nextState": "Assigned" },
 			"Resolve": {
 				"label": "Resolve",
-				"handler": "",
 				"allowedStates": ["Draft", "Assigned"],
 				"nextState": "Resolved"
 			},
-			"Close": { "label": "Close", "handler": "", "allowedStates": ["Resolved"], "nextState": "Closed" },
-			"Reopen": { "label": "Reopen", "handler": "", "allowedStates": ["Closed"], "nextState": "Draft" }
+			"Close": { "label": "Close", "allowedStates": ["Resolved"], "nextState": "Closed" },
+			"Reopen": { "label": "Reopen", "allowedStates": ["Closed"], "nextState": "Draft" }
 		}
 	}
 }

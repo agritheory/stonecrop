@@ -153,9 +153,6 @@ export const ActionDefinition = z
 		/** Display label for the action */
 		label: z.string().min(1),
 
-		/** Handler function name or path */
-		handler: z.string().min(1),
-
 		/** Fields that must have values before action can execute */
 		requiredFields: z.array(z.string()).optional(),
 
@@ -181,6 +178,23 @@ export const ActionDefinition = z
  * @public
  */
 export type ActionDefinition = z.infer<typeof ActionDefinition>
+
+/**
+ * Whether a workflow action may run from `currentState`.
+ *
+ * Single source of truth for the "is this action available here" rule, shared by
+ * the frontend (`getAvailableTransitions`) and the server-side dispatch guard so
+ * the two can never disagree. Empty or absent `allowedStates` means the action is
+ * available in ALL states — a plain `allowedStates.includes(currentState)` would
+ * wrongly block such actions everywhere.
+ *
+ * @public
+ */
+export function isActionAllowedInState(action: { allowedStates?: string[] | null }, currentState: string): boolean {
+	const allowedStates = action.allowedStates
+	if (!allowedStates || allowedStates.length === 0) return true
+	return allowedStates.includes(currentState)
+}
 
 /**
  * Workflow metadata - states and actions for a doctype

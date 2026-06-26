@@ -12,7 +12,6 @@ import { z } from 'zod';
 // @public
 export const ActionDefinition: z.ZodObject<{
     label: z.ZodString;
-    handler: z.ZodString;
     requiredFields: z.ZodOptional<z.ZodArray<z.ZodString>>;
     allowedStates: z.ZodOptional<z.ZodArray<z.ZodString>>;
     nextState: z.ZodOptional<z.ZodString>;
@@ -158,7 +157,6 @@ export const DoctypeMeta: z.ZodObject<{
         states: z.ZodOptional<z.ZodArray<z.ZodString>>;
         actions: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodObject<{
             label: z.ZodString;
-            handler: z.ZodString;
             requiredFields: z.ZodOptional<z.ZodArray<z.ZodString>>;
             allowedStates: z.ZodOptional<z.ZodArray<z.ZodString>>;
             nextState: z.ZodOptional<z.ZodString>;
@@ -291,6 +289,11 @@ export const INTERNAL_SCALARS: Set<string>;
 
 // @public
 export type IntrospectionSource = IntrospectionQuery | string;
+
+// @public
+export function isActionAllowedInState(action: {
+    allowedStates?: string[] | null;
+}, currentState: string): boolean;
 
 // @public
 export function isBuiltinFieldType(fieldtype: string): fieldtype is BuiltinFieldType;
@@ -523,7 +526,6 @@ export const WorkflowMeta: z.ZodObject<{
     states: z.ZodOptional<z.ZodArray<z.ZodString>>;
     actions: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodObject<{
         label: z.ZodString;
-        handler: z.ZodString;
         requiredFields: z.ZodOptional<z.ZodArray<z.ZodString>>;
         allowedStates: z.ZodOptional<z.ZodArray<z.ZodString>>;
         nextState: z.ZodOptional<z.ZodString>;

@@ -22,6 +22,35 @@ import { ValidationError } from '@stonecrop/graphql_middleware'
 
 ## Functions
 
+### applyGuardedTransition
+
+Apply a workflow action's state transition on the server, enforcing `allowedStates`.
+
+The server owns the transition: it reads the record's authoritative current state, rejects the action when `isActionAllowedInState` denies it, then writes `nextState` verbatim. Storage access is injected via `io` so this one guard serves every backend and can never disagree with the frontend's `getAvailableTransitions`, which shares the same predicate.
+
+An action with no `nextState` is a side-effect-only action (e.g. `Save`): the transition dispatch has nothing to apply for it, and the side effect must run through a wired handler that this path does not yet provide. Rather than report a false success while silently dropping the request, it fails loudly. (A `callHandler` primitive to invoke registered handlers by key is the intended home for those side effects; it is not implemented yet.)
+
+**Signature:**
+
+```typescript
+export declare function applyGuardedTransition(actionDef: {
+    label?: string;
+    allowedStates?: string[];
+    nextState?: string;
+}, io: GuardedTransitionIO): Promise<{
+    success: boolean;
+    data: unknown;
+    error: string | null;
+}>;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| actionDef | `{ label?: string; allowedStates?: string[]; nextState?: string; }` | The action's `label`, `allowedStates` (where it may run) and `nextState` (where it lands) |
+| io | `GuardedTransitionIO` | Backend read/write closures |
+
 ### clearFetchHandlers
 
 Remove all registered fetch handlers. Primarily for test isolation.
@@ -329,6 +358,26 @@ export interface DebugPluginOptions {
 |----------|------|-------------|
 | logPlans? | `boolean` | Log a message when a plan is built for a Stonecrop field. Default: `true` |
 | logTiming? | `boolean` | Log timing for plan construction. Default: `false` |
+
+### GuardedTransitionIO
+
+Backend IO the dispatch layer injects so the transition logic stays storage-agnostic. The same guard runs whether the record lives in Postgres, a mock executor, or an in-memory Map — only these two closures change per backend.
+
+**Definition:**
+
+```typescript
+export interface GuardedTransitionIO {
+  readState: () => Promise<string | undefined>;
+  writeState: (nextState: string) => Promise<void>;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| readState | `() => Promise<string \| undefined>` | Read the record's current workflow state (the value of its `status` field), or undefined if unknown. |
+| writeState | `(nextState: string) => Promise<void>` | Persist the record's new workflow state, written verbatim. |
 
 ### LoadDoctypesOptions
 

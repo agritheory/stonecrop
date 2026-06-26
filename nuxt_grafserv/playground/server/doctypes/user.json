@@ -47,19 +47,16 @@
 		"actions": {
 			"suspend": {
 				"label": "Suspend User",
-				"handler": "suspend_user",
 				"allowedStates": ["active"],
 				"nextState": "suspended"
 			},
 			"activate": {
 				"label": "Activate User",
-				"handler": "activate_user",
 				"allowedStates": ["suspended"],
 				"nextState": "active"
 			},
 			"delete": {
 				"label": "Delete User",
-				"handler": "delete_user",
 				"allowedStates": ["active", "suspended"],
 				"nextState": "deleted"
 			}

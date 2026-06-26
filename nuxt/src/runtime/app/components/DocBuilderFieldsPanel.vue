@@ -344,7 +344,7 @@ function bool(v: unknown): boolean {
 }
 
 .fields-table :deep(td) {
-	padding: 0.375em 0.75em;
+	padding: var(--sc-atable-row-padding, 0.125rem) 0.75em;
 	vertical-align: middle;
 }
 

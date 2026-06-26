@@ -1,4 +1,5 @@
 import type { DoctypeField, LinkDeclaration, WorkflowMeta } from '@stonecrop/schema'
+import { isActionAllowedInState } from '@stonecrop/schema'
 import { List, Map } from 'immutable'
 import { Component } from 'vue'
 
@@ -193,12 +194,7 @@ export default class Doctype {
 			if (!actions) return []
 
 			return Object.entries(actions)
-				.filter(([, actionDef]) => {
-					const allowedStates = actionDef.allowedStates
-					// If no allowedStates specified, action is available in all valid states
-					if (!allowedStates || allowedStates.length === 0) return true
-					return allowedStates.includes(currentState)
-				})
+				.filter(([, actionDef]) => isActionAllowedInState(actionDef, currentState))
 				.map(([name, actionDef]) => ({
 					name,
 					targetState: actionDef.nextState ?? currentState,
@@ -226,7 +222,7 @@ export default class Doctype {
 	 * @example
 	 * ```ts
 	 * const actionMeta = doctype.getActionMeta('submit')
-	 * // { label: 'Submit', handler: 'plan:submit', allowedStates: ['draft'] }
+	 * // { label: 'Submit', allowedStates: ['draft'] }
 	 * ```
 	 *
 	 * @public
@@ -234,7 +230,6 @@ export default class Doctype {
 	getActionMeta(actionName: string):
 		| {
 				label: string
-				handler: string
 				requiredFields?: string[]
 				allowedStates?: string[]
 		  }
