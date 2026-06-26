@@ -367,10 +367,10 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 									const pkColumn = camelToSnake(pkMeta.fieldname)
 									const table = resolveTableName(meta.name, options.tables)
 									// Record envelope: [{ id, data }] — the transition keys off the record id.
-									// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- spec.actionArgs is a Grafast runtime value; the record envelope shape is the dispatch contract
-									const argList = Array.isArray(spec.actionArgs)
-										? (spec.actionArgs as Array<{ id?: string | number }>)
-										: []
+									// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- spec.actionArgs is a Grafast runtime value; record envelope shape is the dispatch contract
+									const argList = (Array.isArray(spec.actionArgs) ? spec.actionArgs : []) as Array<{
+										id?: string | number
+									}>
 									const recordId = argList[0]?.id
 
 									try {
