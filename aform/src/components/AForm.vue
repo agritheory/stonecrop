@@ -149,6 +149,9 @@ const childModels = computed(() => childModelsCache.value)
 
 <style>
 /* global styles for aform */
+.aform input {
+	font-family: var(--sc-font-family);
+}
 .aform_form-element {
 	padding: 0;
 	margin: 0;
@@ -175,6 +178,7 @@ const childModels = computed(() => childModelsCache.value)
 	position: relative;
 	color: var(--sc-cell-text-color);
 	background: var(--sc-input-field-background);
+	font-family: var(--sc-font-family);
 }
 .aform_input-field:focus {
 	outline: 1px solid var(--sc-input-active-border-color);

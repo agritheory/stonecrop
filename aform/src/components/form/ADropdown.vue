@@ -170,6 +170,7 @@ input {
 	margin: calc(1.15rem / 2) 0 0 0;
 	min-height: 1.15rem;
 	border-radius: 0.25rem;
+	font-family: var(--sc-font-family);
 }
 
 input:focus {
