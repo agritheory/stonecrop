@@ -1,6 +1,6 @@
 <template>
 	<div v-if="!hidden" class="a-long-text" :class="{ 'is-read-only': isReadOnly }">
-		<label v-if="label" :for="fieldname" class="a-long-text__label">
+		<label v-if="label" :for="fieldname" class="a-long-text__label aform_field-label">
 			{{ label }}<span v-if="required" class="a-long-text__required" aria-hidden="true">*</span>
 		</label>
 		<textarea
@@ -67,12 +67,14 @@ function onInput(event: Event) {
 	display: flex;
 	flex-direction: column;
 	gap: var(--space-xs, 0.25rem);
+	width: 100%;
+	position: relative;
 }
 
-.a-long-text__label {
+/* .a-long-text__label {
 	font-size: var(--font-size-sm, 0.875rem);
 	color: var(--color-text-secondary, #666);
-}
+} */
 
 .a-long-text__required {
 	color: var(--color-danger, #c00);

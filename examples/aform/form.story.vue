@@ -46,6 +46,9 @@
 		<Variant title="TextBox">
 			<AForm class="aform-main" :schema="textbox_schema" v-model:data="data" />
 		</Variant>
+		<Variant title="Mixed Element Form">
+			<AForm class="aform-main" :schema="mixed_form_schema" v-model:data="data" />
+		</Variant>
 	</Story>
 </template>
 
@@ -58,12 +61,14 @@ import basic_table_schema from './assets/basic_table_schema.json'
 import fieldset_table_schema from './assets/fieldset_table_schema.json'
 import hidden_field_schema_json from './assets/hidden_field_schema.json'
 import basic_textbox_schema from './assets/basic_textbox_schema.json'
+import mixed_form_schema from './assets/mixed_form_schema.json'
 const form_schema = ref(basic_form_schema)
 const fieldset_schema = ref(basic_fieldset_schema)
 const table_schema = ref(basic_table_schema)
 const fieldset_table_schema_ref = ref(fieldset_table_schema)
 const hidden_field_schema = ref(hidden_field_schema_json)
 const textbox_schema = ref(basic_textbox_schema)
+const mixed_schema = ref(mixed_form_schema)
 
 const data = ref({})
 const hidden_data = ref({

@@ -160,7 +160,7 @@ const childModels = computed(() => childModelsCache.value)
 	box-sizing: border-box;
 	flex-grow: 1;
 	min-width: 20ch;
-	margin-bottom: 1rem;
+	/* margin-bottom: 1rem; */
 }
 .aform__grid--full {
 	flex-basis: 100%;

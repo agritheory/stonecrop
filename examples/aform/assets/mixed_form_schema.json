@@ -1,0 +1,57 @@
+[
+	{
+		"fieldname": "first_name",
+		"fieldtype": "Data",
+		"component": "ATextInput",
+		"label": "First Name"
+	},
+	{
+		"fieldname": "last_name",
+		"fieldtype": "Data",
+		"component": "ATextInput",
+		"label": "Last Name"
+	},
+	{
+		"fieldname": "enabled",
+		"fieldtype": "Check",
+		"component": "ACheckbox",
+		"label": "Enabled"
+	},
+	{
+		"fieldname": "age",
+		"fieldtype": "Int",
+		"component": "ANumericInput",
+		"label": "Age"
+	},
+	{
+		"fieldname": "comments",
+		"fieldtype": "Data",
+		"component": "ATextboxInput",
+		"label": "Comments"
+	},
+	{
+		"fieldname": "date",
+		"fieldtype": "Date",
+		"component": "ATextInput",
+		"label": "Date"
+	},
+	{
+		"fieldname": "card",
+		"fieldtype": "Data",
+		"component": "ATextInput",
+		"label": "Card"
+	},
+	{
+		"fieldname": "phone",
+		"fieldtype": "Data",
+		"component": "ATextInput",
+		"label": "Phone",
+		"mask": "(locale) => { if (locale === 'en-US') { return '(###) ###-####' } else if (locale === 'en-IN') { return '####-######'} }"
+	},
+	{
+		"fieldname": "attach_file",
+		"fieldtype": "Attach",
+		"component": "AFileAttach",
+		"label": "Attach Files"
+	}
+]
