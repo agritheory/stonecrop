@@ -14,8 +14,8 @@
 			</thead>
 			<tbody>
 				<template v-for="row in valueFieldRows" :key="row.realIndex">
-					<AExpansionRow :row-index="row.rowIndex" :store="fieldStore">
-						<template #row>
+					<ARow :row-index="row.rowIndex" :store="fieldStore">
+						<template #default>
 							<td>
 								<input
 									type="text"
@@ -121,7 +121,7 @@
 								</span>
 							</div>
 						</template>
-					</AExpansionRow>
+					</ARow>
 				</template>
 			</tbody>
 		</table>
@@ -133,7 +133,7 @@
 </template>
 
 <script setup lang="ts">
-import { AExpansionRow, createTableStore } from '@stonecrop/atable'
+import { ARow, createTableStore } from '@stonecrop/atable'
 import type { TableColumn } from '@stonecrop/atable'
 import { BUILTIN_FIELD_TYPES } from '@stonecrop/schema'
 import { computed, ref, watch } from 'vue'

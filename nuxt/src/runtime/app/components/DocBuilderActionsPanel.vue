@@ -13,8 +13,8 @@
 			</thead>
 			<tbody>
 				<template v-for="(action, key, index) in modelValue?.actions" :key="key">
-					<AExpansionRow :row-index="index" :store="actionStore">
-						<template #row>
+					<ARow :row-index="index" :store="actionStore">
+						<template #default>
 							<td>
 								<code>{{ key }}</code>
 							</td>
@@ -44,7 +44,7 @@
 									@update:model-value="update(String(key), 'clientHandler', $event)" />
 							</div>
 						</template>
-					</AExpansionRow>
+					</ARow>
 				</template>
 			</tbody>
 		</table>
@@ -55,7 +55,7 @@
 </template>
 
 <script setup lang="ts">
-import { AExpansionRow, createTableStore } from '@stonecrop/atable'
+import { ARow, createTableStore } from '@stonecrop/atable'
 import type { TableColumn } from '@stonecrop/atable'
 import { ACodeEditor } from '@stonecrop/code-editor'
 import type { ActionDefinition, WorkflowMeta } from '@stonecrop/schema'

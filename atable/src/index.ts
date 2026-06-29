@@ -1,7 +1,6 @@
 import { App } from 'vue'
 
 import ACell from './components/ACell.vue'
-import AExpansionRow from './components/AExpansionRow.vue'
 import AGanttCell from './components/AGanttCell.vue'
 import ARow from './components/ARow.vue'
 import ARowActions from './components/ARowActions.vue'
@@ -25,7 +24,6 @@ export { AddIcon, DeleteIcon, DuplicateIcon, InsertAboveIcon, InsertBelowIcon, M
  */
 function install(app: App /* options */) {
 	app.component('ACell', ACell)
-	app.component('AExpansionRow', AExpansionRow)
 	app.component('AGanttCell', AGanttCell)
 	app.component('ARow', ARow)
 	app.component('ARowActions', ARowActions)
@@ -38,7 +36,6 @@ function install(app: App /* options */) {
 
 export {
 	ACell,
-	AExpansionRow,
 	AGanttCell,
 	ARow,
 	ARowActions,

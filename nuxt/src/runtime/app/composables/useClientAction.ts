@@ -106,8 +106,7 @@ export function useClientAction() {
 			const graphql = {
 				query<T = unknown>(query: string, variables?: Record<string, unknown>): Promise<T> {
 					const client = sc.getClient() as unknown as
-						| { query?: <R>(q: string, v?: Record<string, unknown>) => Promise<R> }
-						| undefined
+						{ query?: <R>(q: string, v?: Record<string, unknown>) => Promise<R> } | undefined
 					if (!client?.query) {
 						return Promise.reject(new Error('The configured data client does not support graphql.query'))
 					}

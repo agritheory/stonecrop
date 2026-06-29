@@ -20,14 +20,6 @@ Vue component exported from @stonecrop/atable.
 import { AddIcon } from '@stonecrop/atable'
 ```
 
-### AExpansionRow
-
-Vue component exported from @stonecrop/atable.
-
-```typescript
-import { AExpansionRow } from '@stonecrop/atable'
-```
-
 ### AGanttCell
 
 Vue component exported from @stonecrop/atable.

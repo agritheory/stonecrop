@@ -54,7 +54,7 @@
 				v-model:columns="http_logs.columns"
 				:config="{ view: 'list-expansion' }">
 				<template #body="{ data }">
-					<AExpansionRow
+					<ARow
 						:data-id="row.id"
 						v-for="(row, rowIndex) in data.rows"
 						:key="row.id"
@@ -63,7 +63,7 @@
 						:store="data"
 						:tabIndex="0"
 						:addNavigation="rowNav">
-						<template #row>
+						<template #default>
 							<ACell
 								v-for="(col, colIndex) in data.columns"
 								:key="col.name"
@@ -86,7 +86,7 @@
 								v-model:columns="inbox.columns"
 								:config="{ view: 'list-expansion' }">
 								<template #body="{ data }">
-									<AExpansionRow
+									<ARow
 										:data-id="row.id"
 										v-for="(row, rowIndex) in data.rows"
 										:key="row.id"
@@ -95,7 +95,7 @@
 										:store="data"
 										:tabIndex="0"
 										:addNavigation="rowNav">
-										<template #row>
+										<template #default>
 											<ACell
 												v-for="(col, colIndex) in data.columns"
 												:key="col.name"
@@ -112,11 +112,11 @@
 										<template #content>
 											<AForm class="aform-main aform" :schema="basic_form_schema" v-model:data="formData" />
 										</template>
-									</AExpansionRow>
+									</ARow>
 								</template>
 							</ATable>
 						</template>
-					</AExpansionRow>
+					</ARow>
 				</template>
 			</ATable>
 		</Variant>

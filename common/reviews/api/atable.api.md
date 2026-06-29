@@ -6,7 +6,6 @@
 
 import ACell from './components/ACell.vue';
 import AddIcon from './stonecrop-ui-icon-add.svg?raw';
-import AExpansionRow from './components/AExpansionRow.vue';
 import AGanttCell from './components/AGanttCell.vue';
 import { App } from 'vue';
 import ARow from './components/ARow.vue';
@@ -36,8 +35,6 @@ export { ACell }
 export const actionIcons: Record<string, string>;
 
 export { AddIcon }
-
-export { AExpansionRow }
 
 export { AGanttCell }
 
