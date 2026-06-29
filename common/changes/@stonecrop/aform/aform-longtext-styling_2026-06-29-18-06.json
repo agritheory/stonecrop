@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/aform",
+      "comment": "updated aform to use Arimo font, fixed checkbox input styling issues, added styling to textarea component",
+      "type": "none"
+    }
+  ],
+  "packageName": "@stonecrop/aform"
+}

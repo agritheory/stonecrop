@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/schema",
+      "comment": "add schema for mixed element story, adds textarea field in middle of form",
+      "type": "none"
+    }
+  ],
+  "packageName": "@stonecrop/schema"
+}
