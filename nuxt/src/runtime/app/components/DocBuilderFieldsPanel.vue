@@ -160,14 +160,15 @@ const JSON_PROPS: PropDef[] = [
 	{ key: 'default', label: 'Default' },
 ]
 
-// `__actions` is a presentation-only column so ATable's header renders an "Actions" cell and the
-// expanded-content colspan accounts for it. `sortable: false` suppresses the click-to-sort affordance.
+// `sortable: false` suppresses the click-to-sort affordance (row order here is the field array's
+// order, not a view concern). The enumerable columns (fieldtype, source) use `filterType: 'select'`
+// so the header filter is a dropdown auto-populated from the values in use, not a free-text box.
 const FIELD_COLUMNS: TableColumn[] = [
 	{ name: 'fieldname', label: 'ID', sortable: false, filterable: true },
 	{ name: 'label', label: 'Label', sortable: false },
-	{ name: 'fieldtype', label: 'Fieldtype', sortable: false, filterable: true },
+	{ name: 'fieldtype', label: 'Fieldtype', sortable: false, filterable: true, filterType: 'select' },
 	{ name: 'required', label: 'Required', sortable: false, align: 'center' },
-	{ name: 'source', label: 'Source', sortable: false, filterable: true },
+	{ name: 'source', label: 'Source', sortable: false, filterable: true, filterType: 'select' },
 ]
 
 // Every row action lives in the start-of-row `⋮` menu (forceDropdown). ATable's per-row `disabled`
@@ -393,10 +394,12 @@ function bool(v: unknown): boolean {
 	padding: 0.5em 1em;
 }
 
-/* The body cells are our own <td>s (not ACell), so give them ATable-ish padding. */
+/* The body cells are our own <td>s (not ACell), so reproduce ATable's row separator
+   (ACell's only gridline is a top border) and its padding. */
 .fields-panel :deep(.atable-row > td) {
 	padding: var(--sc-atable-row-padding, 0.125rem) 0.75em;
 	vertical-align: middle;
+	border-top: 1px solid var(--sc-row-border-color, #e5e7eb);
 }
 
 .fields-panel :deep(input[type='text']),

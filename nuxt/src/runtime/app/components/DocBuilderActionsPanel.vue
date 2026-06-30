@@ -85,7 +85,7 @@ const VS_PATH = '/stonecrop-monaco/vs'
 const ACTION_COLUMNS: TableColumn[] = [
 	{ name: 'key', label: 'Key', sortable: false, filterable: true },
 	{ name: 'label', label: 'Label', sortable: false },
-	{ name: 'type', label: 'Type', sortable: false, filterable: true },
+	{ name: 'type', label: 'Type', sortable: false, filterable: true, filterType: 'select' },
 	{ name: 'allowedStates', label: 'Allowed States', sortable: false },
 	{ name: 'nextState', label: 'Next State', sortable: false },
 ]
@@ -134,10 +134,12 @@ function update(key: string, field: string, value: unknown) {
 	padding: 0.5em 1em;
 }
 
-/* The body cells are our own <td>s (not ACell), so give them ATable-ish padding. */
+/* The body cells are our own <td>s (not ACell), so reproduce ATable's row separator
+   (ACell's only gridline is a top border) and its padding. */
 .actions-panel :deep(.atable-row > td) {
 	padding: var(--sc-atable-row-padding, 0.25rem) 0.75em;
 	vertical-align: middle;
+	border-top: 1px solid var(--sc-row-border-color, #e5e7eb);
 }
 
 .actions-panel :deep(input[type='text']) {
