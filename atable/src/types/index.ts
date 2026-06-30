@@ -83,7 +83,8 @@ export interface CellContext {
  * Row action type identifiers.
  * @public
  */
-export type RowActionType = 'add' | 'delete' | 'duplicate' | 'insertAbove' | 'insertBelow' | 'move'
+export type RowActionType =
+	'add' | 'delete' | 'duplicate' | 'insertAbove' | 'insertBelow' | 'move' | 'moveUp' | 'moveDown'
 
 /**
  * Options for configuring individual row actions.
@@ -115,6 +116,16 @@ export interface RowActionOptions {
 	 * @returns void or false to prevent default behavior
 	 */
 	handler?: (rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean
+
+	/**
+	 * Per-row predicate to disable this action for specific rows (e.g. a lock-aware delete, or
+	 * move-up on the first row). Returns true to render the action disabled. Evaluated reactively
+	 * against the store, so it updates as rows change.
+	 *
+	 * @param rowIndex - The index of the row
+	 * @param store - The table store instance
+	 */
+	disabled?: (rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean
 }
 
 /**
@@ -162,6 +173,8 @@ export interface RowActionsConfig {
 		insertAbove?: boolean | RowActionOptions
 		insertBelow?: boolean | RowActionOptions
 		move?: boolean | RowActionOptions
+		moveUp?: boolean | RowActionOptions
+		moveDown?: boolean | RowActionOptions
 	}
 }
 

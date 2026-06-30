@@ -359,6 +359,20 @@ const handleRowAction = (actionType: RowActionType, rowIndex: number) => {
 			emit('row:move', { fromIndex: rowIndex, toIndex: -1 })
 			break
 		}
+		case 'moveUp': {
+			if (rowIndex > 0 && store.moveRow(rowIndex, rowIndex - 1)) {
+				rows.value = [...store.rows]
+				emit('row:move', { fromIndex: rowIndex, toIndex: rowIndex - 1 })
+			}
+			break
+		}
+		case 'moveDown': {
+			if (rowIndex < store.rows.length - 1 && store.moveRow(rowIndex, rowIndex + 1)) {
+				rows.value = [...store.rows]
+				emit('row:move', { fromIndex: rowIndex, toIndex: rowIndex + 1 })
+			}
+			break
+		}
 	}
 }
 

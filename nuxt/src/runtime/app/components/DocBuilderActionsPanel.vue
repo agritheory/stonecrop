@@ -1,53 +1,50 @@
 <template>
 	<div class="actions-panel">
-		<table v-if="hasActions" class="actions-table">
-			<thead>
-				<tr>
-					<th class="expand-col" />
-					<th>Key</th>
-					<th>Label</th>
-					<th>Type</th>
-					<th>Allowed States</th>
-					<th>Next State</th>
-				</tr>
-			</thead>
-			<tbody>
-				<template v-for="(action, key, index) in modelValue?.actions" :key="key">
-					<ARow :row-index="index" :store="actionStore">
-						<template #default>
-							<td>
-								<code>{{ key }}</code>
-							</td>
-							<td>
-								<input
-									type="text"
-									:value="action.label"
-									@input="update(String(key), 'label', ($event.target as HTMLInputElement).value)" />
-							</td>
-							<td>
-								<span class="badge" :class="action.stateless ? 'badge-command' : 'badge-transition'">
-									{{ action.stateless ? 'Command' : 'Transition' }}
-								</span>
-							</td>
-							<td>{{ action.allowedStates?.join(', ') ?? '(all states)' }}</td>
-							<td>{{ action.stateless ? '—' : (action.nextState ?? '') }}</td>
-						</template>
-						<template #content>
-							<div class="client-handler-editor">
-								<label class="handler-label">Client Handler (JS)</label>
-								<ACodeEditor
-									:model-value="action.clientHandler ?? ''"
-									:extra-libs="INJECTED_API_STUBS"
-									:vs-path="VS_PATH"
-									language="javascript"
-									height="200px"
-									@update:model-value="update(String(key), 'clientHandler', $event)" />
-							</div>
-						</template>
-					</ARow>
-				</template>
-			</tbody>
-		</table>
+		<ATable
+			v-if="hasActions"
+			:columns="ACTION_COLUMNS"
+			:rows="actionProjection"
+			:config="{ view: 'list-expansion', fullWidth: true }">
+			<!--
+				ATable owns the frame (header, filter row, expansion chrome). We override #body to keep
+				the per-row #content editor and to bind cells straight to the source via update() — ATable
+				never calls setCellData/handleRowAction, so it never mutates the projection it renders.
+			-->
+			<template #body="{ data: store }">
+				<ARow v-for="row in store.filteredRows" :key="String(row.__key)" :row-index="row.originalIndex" :store="store">
+					<template #default>
+						<td class="cell-key">
+							<code>{{ row.key }}</code>
+						</td>
+						<td>
+							<input
+								type="text"
+								:value="row.label"
+								@input="update(String(row.__key), 'label', ($event.target as HTMLInputElement).value)" />
+						</td>
+						<td>
+							<span class="badge" :class="row.stateless ? 'badge-command' : 'badge-transition'">
+								{{ row.type }}
+							</span>
+						</td>
+						<td>{{ row.allowedStates }}</td>
+						<td>{{ row.nextState }}</td>
+					</template>
+					<template #content>
+						<div class="client-handler-editor">
+							<label class="handler-label">Client Handler (JS)</label>
+							<ACodeEditor
+								:model-value="row.__action?.clientHandler ?? ''"
+								:extra-libs="INJECTED_API_STUBS"
+								:vs-path="VS_PATH"
+								language="javascript"
+								height="200px"
+								@update:model-value="update(String(row.__key), 'clientHandler', $event)" />
+						</div>
+					</template>
+				</ARow>
+			</template>
+		</ATable>
 		<p v-else class="actions-empty">
 			No actions defined. Draw transitions in the workflow graph above to create workflow actions.
 		</p>
@@ -55,11 +52,11 @@
 </template>
 
 <script setup lang="ts">
-import { ARow, createTableStore } from '@stonecrop/atable'
+import { ATable, ARow } from '@stonecrop/atable'
 import type { TableColumn } from '@stonecrop/atable'
 import { ACodeEditor } from '@stonecrop/code-editor'
 import type { ActionDefinition, WorkflowMeta } from '@stonecrop/schema'
-import { computed, watch } from 'vue'
+import { computed } from 'vue'
 
 // Type stubs for the API surface injected into a clientHandler at runtime.
 // Keep in sync with the capability map assembled in the `useClientAction` composable
@@ -83,12 +80,14 @@ declare const record: Record<string, unknown>
 // Falls back to CDN when running outside the docbuilder context.
 const VS_PATH = '/stonecrop-monaco/vs'
 
+// `sortable: false` suppresses ATable's click-to-sort affordance (row order here is the keyed
+// object's order, not a view concern). `filterable` opts a column into the header filter row.
 const ACTION_COLUMNS: TableColumn[] = [
-	{ name: 'key' },
-	{ name: 'label' },
-	{ name: 'type' },
-	{ name: 'allowedStates' },
-	{ name: 'nextState' },
+	{ name: 'key', label: 'Key', sortable: false, filterable: true },
+	{ name: 'label', label: 'Label', sortable: false },
+	{ name: 'type', label: 'Type', sortable: false, filterable: true },
+	{ name: 'allowedStates', label: 'Allowed States', sortable: false },
+	{ name: 'nextState', label: 'Next State', sortable: false },
 ]
 
 const props = defineProps<{
@@ -99,19 +98,23 @@ const emit = defineEmits<{
 	'update:modelValue': [value: WorkflowMeta]
 }>()
 
-const actionRows = computed(() =>
-	Object.entries(props.modelValue?.actions ?? {}).map(([key, action]) => ({ key, ...action }))
+// One-way projection of the keyed `actions` object into ATable rows. Each row carries the
+// column-named display scalars (so the header filters and the rendered cells read row[name])
+// plus `__key`/`__action` backrefs the cells and the handler editor write through.
+const actionProjection = computed(() =>
+	Object.entries(props.modelValue?.actions ?? {}).map(([key, action]) => ({
+		key,
+		label: action.label ?? '',
+		type: action.stateless ? 'Command' : 'Transition',
+		stateless: action.stateless ?? false,
+		allowedStates: action.allowedStates?.join(', ') ?? '(all states)',
+		nextState: action.stateless ? '—' : (action.nextState ?? ''),
+		__key: key,
+		__action: action,
+	}))
 )
 
-const hasActions = computed(() => actionRows.value.length > 0)
-
-const actionStore = createTableStore({
-	columns: ACTION_COLUMNS,
-	rows: actionRows.value,
-	config: { view: 'list-expansion' },
-})
-
-watch(actionRows, newRows => actionStore.updateRows(newRows))
+const hasActions = computed(() => actionProjection.value.length > 0)
 
 function update(key: string, field: string, value: unknown) {
 	if (!props.modelValue) return
@@ -131,30 +134,13 @@ function update(key: string, field: string, value: unknown) {
 	padding: 0.5em 1em;
 }
 
-.actions-table {
-	width: 100%;
-	border-collapse: collapse;
-	font-size: 0.875rem;
-}
-
-.actions-table th {
-	text-align: left;
-	padding: 0.5em 0.75em;
-	border-bottom: 2px solid var(--sc-gray-20, #e5e7eb);
-	font-weight: 600;
-	white-space: nowrap;
-}
-
-.expand-col {
-	width: 2ch;
-}
-
-.actions-table :deep(td) {
-	padding: var(--sc-atable-row-padding, 0.125rem) 0.75em;
+/* The body cells are our own <td>s (not ACell), so give them ATable-ish padding. */
+.actions-panel :deep(.atable-row > td) {
+	padding: var(--sc-atable-row-padding, 0.25rem) 0.75em;
 	vertical-align: middle;
 }
 
-.actions-table input[type='text'] {
+.actions-panel :deep(input[type='text']) {
 	width: 100%;
 	border: 1px solid var(--sc-gray-20, #d1d5db);
 	border-radius: 3px;
@@ -163,13 +149,9 @@ function update(key: string, field: string, value: unknown) {
 	font-family: inherit;
 }
 
-.actions-table input[type='text']:focus {
+.actions-panel :deep(input[type='text']:focus) {
 	outline: none;
 	border-color: var(--sc-blue-40, #3b82f6);
-}
-
-.center {
-	text-align: center;
 }
 
 .badge {
