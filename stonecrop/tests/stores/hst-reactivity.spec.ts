@@ -1,10 +1,9 @@
 import { mount, VueWrapper } from '@vue/test-utils'
 import { List, Map } from 'immutable'
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach } from 'vitest'
 import { nextTick, defineComponent, ref } from 'vue'
 import type { UnknownMachineConfig } from 'xstate'
 
-import type { SchemaTypes } from '@stonecrop/aform'
 import { useStonecrop } from '../../src/composables/stonecrop'
 import Doctype from '../../src/doctype'
 import Registry from '../../src/registry'
@@ -182,7 +181,7 @@ const MockDoctypeForm = defineComponent({
 	},
 })
 
-describe('HST Vue Reactivity', () => {
+describe('HST Vue Reactivity', { tags: ['unit'] }, () => {
 	let registry: Registry
 	let stonecrop: Stonecrop
 	let doctype: Doctype
@@ -194,9 +193,9 @@ describe('HST Vue Reactivity', () => {
 		registry = new Registry()
 
 		const mockSchema = List([
-			{ fieldname: 'name', fieldtype: 'Data', label: 'Name', component: 'MockATextInput' },
-			{ fieldname: 'active', fieldtype: 'Check', label: 'Active', component: 'MockACheckbox' },
-		] as SchemaTypes[])
+			{ kind: 'field', fieldname: 'name', fieldtype: 'Data', label: 'Name', component: 'MockATextInput' },
+			{ kind: 'field', fieldname: 'active', fieldtype: 'Check', label: 'Active', component: 'MockACheckbox' },
+		])
 
 		const mockWorkflow: UnknownMachineConfig = {
 			id: 'task',
@@ -303,9 +302,9 @@ describe('HST Vue Reactivity', () => {
 			const textInput = wrapper.find('[data-testid="text-input"]')
 			const checkbox = wrapper.find('[data-testid="checkbox-input"]')
 			const table = wrapper.find('[data-testid="table"]')
-			expect(textInput.exists())
-			expect(checkbox.exists())
-			expect(table.exists())
+			expect(textInput.exists()).toBe(true)
+			expect(checkbox.exists()).toBe(true)
+			expect(table.exists()).toBe(true)
 
 			// Paths should follow pattern: doctype.recordId.fieldname
 			expect(wrapper.find('[data-testid="hst-path"]').text()).toContain('task.task-123.name')

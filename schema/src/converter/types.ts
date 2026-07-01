@@ -7,7 +7,7 @@
 import type { IntrospectionQuery } from 'graphql'
 import type { GraphQLObjectType, GraphQLField } from 'graphql'
 
-import type { FieldMeta } from '../field'
+import type { ValueField } from '../field'
 import type { FieldTemplate } from '../fieldtype'
 
 /**
@@ -57,7 +57,7 @@ export interface GraphQLConversionOptions {
 	 * }
 	 * ```
 	 */
-	typeOverrides?: Record<string, Record<string, Partial<FieldMeta>>>
+	typeOverrides?: Record<string, Record<string, Omit<Partial<ValueField>, 'kind'>>>
 
 	/**
 	 * Map custom or non-standard GraphQL scalar types to Stonecrop field types.
@@ -115,18 +115,7 @@ export interface GraphQLConversionOptions {
 		fieldName: string,
 		field: GraphQLField<unknown, unknown>,
 		parentType: GraphQLObjectType
-	) => Partial<FieldMeta> | null
-
-	/**
-	 * Custom function to derive the database table name from a GraphQL type name.
-	 * The default converts PascalCase to snake_case (e.g., `SalesOrder` → `sales_order`).
-	 *
-	 * Return `undefined` to omit `tableName` from the output.
-	 *
-	 * @param typeName - The GraphQL type name
-	 * @returns The derived table name, or `undefined`
-	 */
-	deriveTableName?: (typeName: string) => string | undefined
+	) => Omit<Partial<ValueField>, 'kind'> | null
 
 	/**
 	 * Include `_graphqlType` and `_unmapped` metadata on converted fields.
@@ -141,7 +130,9 @@ export interface GraphQLConversionOptions {
  *
  * @public
  */
-export interface GraphQLConversionFieldMeta extends FieldMeta {
+export interface GraphQLConversionFieldMeta extends Omit<ValueField, 'fieldtype'> {
+	/** Semantic field type - optional for link fields which don't have a fieldtype */
+	fieldtype?: string
 	/** Original GraphQL type name (for debugging/reference) */
 	_graphqlType?: string
 	/** Marks fields that couldn't be automatically mapped */
@@ -156,8 +147,8 @@ export interface GraphQLConversionFieldMeta extends FieldMeta {
  * @public
  */
 export interface ConvertedGraphQLDoctype extends Omit<DoctypeMeta, 'fields'> {
-	/** Field definitions with optional GraphQL conversion metadata */
-	fields: GraphQLConversionFieldMeta[]
+	/** Field definitions — GraphQL conversion metadata stripped; same shape as DoctypeMeta.fields */
+	fields: ValueField[]
 	/** Original GraphQL type name (for debugging/reference) */
 	_graphqlTypeName?: string
 }

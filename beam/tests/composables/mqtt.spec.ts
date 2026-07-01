@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { isPortActive } from '../../src/composables/mqtt'
 
-describe('mqtt composable', () => {
+describe('mqtt composable', { tags: ['component'] }, () => {
 	beforeEach(() => {
 		vi.clearAllMocks()
 		global.fetch = vi.fn()

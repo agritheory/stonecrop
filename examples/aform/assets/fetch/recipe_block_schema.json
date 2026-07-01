@@ -1,7 +1,6 @@
 {
 	"name": "RecipeBlock",
 	"slug": "recipe-block",
-	"tableName": "recipe",
 	"fields": [
 		{
 			"fieldname": "name",
@@ -36,7 +35,9 @@
 			"cardinality": "noneOrMany",
 			"backlink": "recipe",
 			"fieldname": "tasks",
-			"fetch": { "method": "sync" },
+			"fetch": {
+				"method": "sync"
+			},
 			"blockWorkflows": true
 		},
 		"notes": {
@@ -44,7 +45,9 @@
 			"cardinality": "noneOrMany",
 			"backlink": "recipe",
 			"fieldname": "notes",
-			"fetch": { "method": "sync" },
+			"fetch": {
+				"method": "sync"
+			},
 			"blockWorkflows": false
 		}
 	}

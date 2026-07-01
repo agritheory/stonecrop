@@ -156,10 +156,10 @@ const store = createTableStore({
 	linkResolver: linkResolver ?? injectedLinkResolver,
 })
 
-store.$onAction(({ name, store, args, after }) => {
+store.$onAction(({ name, store: storeInstance, args, after }) => {
 	if (name === 'setCellData' || name === 'setCellText') {
 		const [colIndex, rowIndex, newValue] = args
-		const oldValue = store.getCellData(colIndex, rowIndex)
+		const oldValue = storeInstance.getCellData(colIndex, rowIndex)
 		after(() => {
 			// Update rows model to trigger update:rows event
 			rows.value = [...store.rows]
@@ -245,18 +245,18 @@ const assignStickyCellWidths = () => {
 	// pin cells in row that are sticky
 	for (const row of table?.rows || []) {
 		let totalWidth = 0
-		const columns: HTMLTableCellElement[] = []
+		const pinnedCells: HTMLTableCellElement[] = []
 
 		for (const column of row.cells) {
 			if (column.classList.contains('sticky-column') || column.classList.contains('sticky-index')) {
 				column.style.left = `${totalWidth}px`
 				totalWidth += column.offsetWidth
-				columns.push(column)
+				pinnedCells.push(column)
 			}
 		}
 
-		if (columns.length > 0) {
-			const lastColumn = columns[columns.length - 1]
+		if (pinnedCells.length > 0) {
+			const lastColumn = pinnedCells[pinnedCells.length - 1]
 			lastColumn.classList.add('sticky-column-edge')
 		}
 	}
@@ -272,7 +272,7 @@ window.addEventListener('keydown', (event: KeyboardEvent) => {
 			if ($parent) {
 				// wait for the modal to close before focusing
 				void nextTick().then(() => {
-					$parent.focus()
+					return $parent.focus()
 				})
 			}
 		}

@@ -120,7 +120,7 @@ const pinned_columns = [
 const coa = ref({
 	rows: data as TableRow[],
 	columns: default_columns,
-	config: { view: 'tree' } as TableConfig,
+	config: { view: 'tree', defaultTreeExpansion: 'root' } as TableConfig,
 })
 
 const rootExpansion = ref({

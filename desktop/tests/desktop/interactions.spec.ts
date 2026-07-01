@@ -14,7 +14,7 @@ afterEach(() => {
 	Stonecrop._root = undefined as any
 })
 
-describe('Desktop user interactions', () => {
+describe('Desktop user interactions', { tags: ['component'] }, () => {
 	describe('keyboard shortcuts', () => {
 		it('opens command palette on Ctrl+K', async () => {
 			const registry = new Registry()
@@ -458,7 +458,7 @@ describe('Desktop user interactions', () => {
 	})
 })
 
-describe('Desktop – handleDelete edge cases', () => {
+describe('Desktop – handleDelete edge cases', { tags: ['component'] }, () => {
 	it('returns early when no recordId is available', async () => {
 		const registry = new Registry()
 		const stonecrop = new Stonecrop(registry)
@@ -481,11 +481,10 @@ describe('Desktop – handleDelete edge cases', () => {
 		await nextTick()
 
 		const methods = (wrapper.vm as any).$.provides?.desktopMethods
-		if (methods?.handleDelete) {
-			await methods.handleDelete()
-			await nextTick()
-			expect(wrapper.emitted('action')).toBeFalsy()
-		}
+		expect(methods?.handleDelete).toBeDefined()
+		await methods.handleDelete()
+		await nextTick()
+		expect(wrapper.emitted('action')).toBeFalsy()
 	})
 
 	it('uses native confirm when no confirmFn is provided', async () => {
@@ -520,12 +519,11 @@ describe('Desktop – handleDelete edge cases', () => {
 		await nextTick()
 
 		const methods = (wrapper.vm as any).$.provides?.desktopMethods
-		if (methods?.handleDelete) {
-			await methods.handleDelete('rec-1')
-			await nextTick()
-			expect(confirmSpy).toHaveBeenCalled()
-			expect(wrapper.emitted('action')).toBeFalsy()
-		}
+		expect(methods?.handleDelete).toBeDefined()
+		await methods.handleDelete('rec-1')
+		await nextTick()
+		expect(confirmSpy).toHaveBeenCalled()
+		expect(wrapper.emitted('action')).toBeFalsy()
 
 		confirmSpy.mockRestore()
 	})

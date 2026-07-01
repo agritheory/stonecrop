@@ -6,7 +6,7 @@ import ATable from '../src/components/ATable.vue'
 import listData from './data/http_logs.json'
 import type { TableColumn } from '../src/types'
 
-describe('table row component', () => {
+describe('table row component', { tags: ['component'] }, () => {
 	const columns: TableColumn[] = [
 		{
 			label: 'Home Page',

@@ -39,7 +39,6 @@ const taskRef: DoctypeRef = { name: 'Task' }
 
 const taskMeta: DoctypeMeta = {
 	name: 'Task',
-	tableName: 'tasks',
 	fields: [
 		{ fieldname: 'id', fieldtype: 'Data', label: 'ID' },
 		{ fieldname: 'title', fieldtype: 'Data', label: 'Title' },
@@ -50,7 +49,7 @@ const taskMeta: DoctypeMeta = {
 // Constructor
 // ===========================================================================
 
-describe('StonecropClient constructor', () => {
+describe('StonecropClient constructor', { tags: ['unit', 'graphql'] }, () => {
 	it('creates a client with the given endpoint', () => {
 		const client = new StonecropClient({ endpoint: ENDPOINT })
 		expect(client).toBeInstanceOf(StonecropClient)
@@ -75,7 +74,7 @@ describe('StonecropClient constructor', () => {
 // query / mutate
 // ===========================================================================
 
-describe('StonecropClient.query', () => {
+describe('StonecropClient.query', { tags: ['unit', 'graphql'] }, () => {
 	it('sends a POST request with the query and variables', async () => {
 		const client = new StonecropClient({ endpoint: ENDPOINT })
 		mockFetch.mockReturnValue(makeFetchResponse({ result: 42 }))
@@ -109,7 +108,7 @@ describe('StonecropClient.query', () => {
 	})
 })
 
-describe('StonecropClient.mutate', () => {
+describe('StonecropClient.mutate', { tags: ['unit', 'graphql'] }, () => {
 	it('delegates to query', async () => {
 		const client = new StonecropClient({ endpoint: ENDPOINT })
 		mockFetch.mockReturnValue(makeFetchResponse({ mutateResult: true }))
@@ -124,7 +123,7 @@ describe('StonecropClient.mutate', () => {
 // getMeta
 // ===========================================================================
 
-describe('StonecropClient.getMeta', () => {
+describe('StonecropClient.getMeta', { tags: ['unit', 'graphql'] }, () => {
 	it('returns null when the server returns null', async () => {
 		const client = new StonecropClient({ endpoint: ENDPOINT })
 		mockFetch.mockReturnValue(makeFetchResponse({ stonecropMeta: null }))
@@ -174,7 +173,7 @@ describe('StonecropClient.getMeta', () => {
 // getAllMeta
 // ===========================================================================
 
-describe('StonecropClient.getAllMeta', () => {
+describe('StonecropClient.getAllMeta', { tags: ['unit', 'graphql'] }, () => {
 	it('returns all doctypes', async () => {
 		const client = new StonecropClient({ endpoint: ENDPOINT })
 		mockFetch.mockReturnValue(makeFetchResponse({ stonecropAllMeta: [taskMeta] }))
@@ -201,7 +200,7 @@ describe('StonecropClient.getAllMeta', () => {
 // getRecord
 // ===========================================================================
 
-describe('StonecropClient.getRecord', () => {
+describe('StonecropClient.getRecord', { tags: ['unit', 'graphql'] }, () => {
 	it('returns the record data via stonecropRecord', async () => {
 		const client = new StonecropClient({ endpoint: ENDPOINT })
 		const record = { id: '42', title: 'Write tests' }
@@ -269,7 +268,7 @@ describe('StonecropClient.getRecord', () => {
 // getRecords
 // ===========================================================================
 
-describe('StonecropClient.getRecords', () => {
+describe('StonecropClient.getRecords', { tags: ['unit', 'graphql'] }, () => {
 	it('returns the records array', async () => {
 		const client = new StonecropClient({ endpoint: ENDPOINT })
 		const records = [{ id: '1' }, { id: '2' }]
@@ -310,7 +309,7 @@ describe('StonecropClient.getRecords', () => {
 // runAction
 // ===========================================================================
 
-describe('StonecropClient.runAction', () => {
+describe('StonecropClient.runAction', { tags: ['unit', 'graphql'] }, () => {
 	it('returns the action result', async () => {
 		const client = new StonecropClient({ endpoint: ENDPOINT })
 		mockFetch.mockReturnValue(
@@ -356,7 +355,7 @@ describe('StonecropClient.runAction', () => {
 // clearMetaCache
 // ===========================================================================
 
-describe('StonecropClient.clearMetaCache', () => {
+describe('StonecropClient.clearMetaCache', { tags: ['unit', 'graphql'] }, () => {
 	it('clears the cache so subsequent getMeta calls re-fetch', async () => {
 		const client = new StonecropClient({ endpoint: ENDPOINT })
 		mockFetch.mockReturnValue(makeFetchResponse({ stonecropMeta: taskMeta }))

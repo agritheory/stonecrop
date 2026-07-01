@@ -122,7 +122,11 @@ export const createJWTMiddleware = (config: JWTConfig = {}) => {
 
 			// Verify and decode token
 			const secretOrPublicKey = publicKey || secret!
-			const payload = jwt.verify(token, secretOrPublicKey, verifyOptions) as JWTPayload
+			const decoded = jwt.verify(token, secretOrPublicKey, verifyOptions)
+			if (typeof decoded === 'string' || decoded == null) {
+				throw new Error('Invalid JWT payload: expected object')
+			}
+			const payload: JWTPayload = decoded
 
 			// Extract user from payload
 			const user = extractUser(payload)
@@ -166,7 +170,7 @@ export const createJWT = (
 	user: User,
 	config: {
 		secret: string
-		expiresIn?: string | number
+		expiresIn?: jwt.SignOptions['expiresIn']
 		issuer?: string
 		audience?: string
 		additionalClaims?: Record<string, any>
@@ -185,7 +189,7 @@ export const createJWT = (
 	// Add optional fields only if they exist
 	if (issuer !== undefined) signOptions.issuer = issuer
 	if (audience !== undefined) signOptions.audience = audience
-	if (expiresIn !== undefined) signOptions.expiresIn = expiresIn as any // Type cast to avoid TS issues
+	if (expiresIn !== undefined) signOptions.expiresIn = expiresIn
 
 	return jwt.sign(payload, secret, signOptions)
 }
@@ -196,11 +200,11 @@ export const createJWT = (
 export const createJWTAbilityBuilder = (_config: JWTConfig = {}) => {
 	return async (user?: User) => {
 		// If user has direct permissions in JWT, use those
-		const jwtPermissions = (user as any)?.permissions
+		const jwtPermissions: unknown = user?.permissions
 
 		if (jwtPermissions && Array.isArray(jwtPermissions)) {
 			// Build ability from JWT permissions
-			const { can, cannot, build } = new AbilityBuilder<PureAbility>(PureAbility as any)
+			const { can, cannot, build } = new AbilityBuilder<PureAbility>(PureAbility)
 
 			jwtPermissions.forEach((permission: any) => {
 				if (permission.inverted) {
@@ -304,8 +308,8 @@ export const refreshTokenUtils = {
 		config: {
 			accessSecret: string
 			refreshSecret: string
-			accessExpiresIn?: string
-			refreshExpiresIn?: string
+			accessExpiresIn?: jwt.SignOptions['expiresIn']
+			refreshExpiresIn?: jwt.SignOptions['expiresIn']
 		}
 	) => {
 		const { accessSecret, refreshSecret, accessExpiresIn = '15m', refreshExpiresIn = '7d' } = config
@@ -324,7 +328,7 @@ export const refreshTokenUtils = {
 		// Create access token with proper options
 		const accessOptions: jwt.SignOptions = {}
 		if (accessExpiresIn) {
-			accessOptions.expiresIn = accessExpiresIn as any // Type cast to avoid TS issues
+			accessOptions.expiresIn = accessExpiresIn
 		}
 
 		const accessToken = jwt.sign(accessPayload, accessSecret, accessOptions)
@@ -332,7 +336,7 @@ export const refreshTokenUtils = {
 		// Create refresh token with proper options
 		const refreshOptions: jwt.SignOptions = {}
 		if (refreshExpiresIn) {
-			refreshOptions.expiresIn = refreshExpiresIn as any // Type cast to avoid TS issues
+			refreshOptions.expiresIn = refreshExpiresIn
 		}
 
 		const refreshToken = jwt.sign(refreshPayload, refreshSecret, refreshOptions)
@@ -349,20 +353,27 @@ export const refreshTokenUtils = {
 			accessSecret: string
 			refreshSecret: string
 			getUserById: (id: string) => Promise<User | null>
-			accessExpiresIn?: string
+			accessExpiresIn?: jwt.SignOptions['expiresIn']
 		}
 	) => {
 		const { accessSecret, refreshSecret, getUserById, accessExpiresIn = '15m' } = config
 
 		try {
 			// Verify refresh token
-			const payload = jwt.verify(refreshToken, refreshSecret) as any
+			const decoded = jwt.verify(refreshToken, refreshSecret)
+			if (typeof decoded === 'string' || decoded == null) {
+				throw new Error('Invalid refresh token payload: expected object')
+			}
+			const payload = decoded as jwt.JwtPayload & { type?: string; sub?: string }
 
 			if (payload.type !== 'refresh') {
 				throw new Error('Invalid token type')
 			}
 
 			// Get fresh user data
+			if (!payload.sub) {
+				throw new Error('Invalid refresh token payload: missing subject')
+			}
 			const user = await getUserById(payload.sub)
 			if (!user) {
 				throw new Error('User not found')
@@ -378,7 +389,7 @@ export const refreshTokenUtils = {
 			// Create access token with proper options
 			const accessOptions: jwt.SignOptions = {}
 			if (accessExpiresIn) {
-				accessOptions.expiresIn = accessExpiresIn as any // Type cast to avoid TS issues
+				accessOptions.expiresIn = accessExpiresIn
 			}
 
 			const accessToken = jwt.sign(accessPayload, accessSecret, accessOptions)

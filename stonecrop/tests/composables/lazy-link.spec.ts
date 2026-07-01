@@ -15,7 +15,7 @@ const createTestDoctype = (name: string, links?: Record<string, any>): Doctype =
 	return new Doctype(name, [] as any, undefined, undefined, undefined, links)
 }
 
-describe('useLazyLink', () => {
+describe('useLazyLink', { tags: ['unit'] }, () => {
 	let registry: Registry
 	let stonecrop: Stonecrop
 
@@ -115,7 +115,7 @@ describe('useLazyLink', () => {
 		const firstReload = state.reload()
 		expect(state.loading.value).toBe(true)
 
-		const secondReload = state.reload()
+		const _secondReload = state.reload()
 		expect(state.loading.value).toBe(true)
 
 		resolvePromise!({ record: { id: '123', title: 'Test' }, unknownLinks: [] })
@@ -254,7 +254,7 @@ describe('useLazyLink', () => {
 	})
 })
 
-describe('blockWorkflows', () => {
+describe('blockWorkflows', { tags: ['unit'] }, () => {
 	let registry: Registry
 	let stonecrop: Stonecrop
 

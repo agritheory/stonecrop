@@ -26,7 +26,7 @@ const { resolve } = createResolver(import.meta.url)
 export interface ModuleOptions {
 	/** Enable the DocBuilder feature with /docbuilder routes */
 	docbuilder?: boolean
-	/** Path to doctypes folder relative to srcDir (defaults to 'doctypes', resolving to app/doctypes) */
+	/** Path to doctypes folder relative to the project root (defaults to 'doctypes') */
 	doctypesDir?: string
 	/**
 	 * Path to the page component used for default slug-based routing.
@@ -124,7 +124,7 @@ export default defineNuxtModule<ModuleOptions>({
 
 		// find doctype schemas in the nuxt application and add them as pages
 		const appDir = nuxt.options.srcDir
-		const doctypesDir = resolve(appDir, options.doctypesDir ?? 'doctypes')
+		const doctypesDir = resolve(nuxt.options.rootDir, options.doctypesDir ?? 'doctypes')
 
 		// Expose the resolved absolute doctypesDir to server-side handlers via runtimeConfig
 		// Without this, server API handlers fall back to process.cwd()/doctypes which is wrong

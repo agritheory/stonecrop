@@ -18,7 +18,7 @@ const defaultResults: SimpleResult[] = [
 // CommandPalette uses <Teleport to="body"> — rendered content lives in document.body,
 // not inside the wrapper element. We query document.body for all inner elements.
 
-describe('CommandPalette', () => {
+describe('CommandPalette', { tags: ['component'] }, () => {
 	let wrapper: ReturnType<typeof mount>
 
 	afterEach(() => {

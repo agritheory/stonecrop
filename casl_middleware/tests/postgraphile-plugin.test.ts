@@ -3,7 +3,7 @@ import { describe, it, expect } from 'vitest'
 import { pglCaslPlugin } from '../src'
 import { createConfigBasedAbilityBuilder } from '../src/middleware/ability'
 
-describe('PostGraphile CASL Plugins', () => {
+describe('PostGraphile CASL Plugins', { tags: ['unit', 'graphql'] }, () => {
 	describe('pglCaslPlugin (extendSchema)', () => {
 		it('should be a valid extendSchema plugin object', () => {
 			expect(pglCaslPlugin).toBeDefined()
@@ -21,10 +21,9 @@ describe('PostGraphile CASL Plugins', () => {
 			expect(pglCaslPlugin).toHaveProperty('schema')
 			expect(typeof pglCaslPlugin.schema).toBe('object')
 
-			// Check for hooks if they exist
-			if (pglCaslPlugin.schema?.hooks) {
-				expect(pglCaslPlugin.schema.hooks).toHaveProperty('build')
-			}
+			// extendSchema always produces schema.hooks unconditionally
+			expect(pglCaslPlugin.schema?.hooks).toBeDefined()
+			expect(pglCaslPlugin.schema?.hooks).toHaveProperty('build')
 		})
 
 		it('should define schema extensions when executed', () => {

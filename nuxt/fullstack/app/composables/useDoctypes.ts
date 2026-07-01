@@ -15,27 +15,26 @@ const modules = import.meta.glob<DoctypeConfig>('../doctypes/*.json', {
 
 const doctypeMap = new Map<string, DoctypeConfig>()
 for (const [path, doctype] of Object.entries(modules)) {
-	const slug = path.split('/').pop()!.replace('.json', '')
+	const filename = path.split('/').pop()!.replace('.json', '')
+	// Use the same slug computation as Doctype.slug so URL lookups match map keys
+	const slug = filename
+		.replace(/([a-z])([A-Z])/g, '$1-$2')
+		.replace(/[\s_]+/g, '-')
+		.toLowerCase()
 	doctypeMap.set(slug, doctype)
 }
 
 export { doctypeMap }
 
 export function useDoctypeConfig(slug: string): DoctypeConfig | undefined {
-	// Try exact match first, then lowercase
-	let config = doctypeMap.get(slug)
-	if (!config) {
-		config = doctypeMap.get(slug.toLowerCase())
-	}
-	return config
+	return doctypeMap.get(slug)
 }
 
-export function useDoctypeList(): Array<{ slug: string; name: string; tableName: string }> {
+export function useDoctypeList(): Array<{ slug: string; name: string }> {
 	return Array.from(doctypeMap.entries())
 		.map(([slug, dt]) => ({
 			slug,
 			name: dt.name,
-			tableName: dt.tableName || '',
 		}))
 		.sort((a, b) => a.name.localeCompare(b.name))
 }

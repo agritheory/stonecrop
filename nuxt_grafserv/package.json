@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/nuxt-grafserv",
-	"version": "0.12.6",
+	"version": "0.13.13",
 	"description": "Pluggable Grafserv GraphQL server as Nuxt Module",
 	"license": "MIT",
 	"type": "module",
@@ -58,7 +58,7 @@
 		"@graphql-tools/stitch": "^10.1.18",
 		"@graphql-tools/wrap": "^11.1.14",
 		"@stonecrop/graphql-middleware": "workspace:*",
-		"grafast": "^1.0.1",
+		"grafast": "^1.0.2",
 		"grafserv": "^1.0.0",
 		"graphql": "^16.14.0",
 		"postgraphile": "^5.0.3"

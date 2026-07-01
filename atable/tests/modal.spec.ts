@@ -19,7 +19,7 @@ vi.mock('@vueuse/core', () => ({
 	useDebounceFn: vi.fn(fn => fn),
 }))
 
-describe('table modal component', () => {
+describe('table modal component', { tags: ['component'] }, () => {
 	config.global.components = { ACell, ARow }
 
 	const columns: TableColumn[] = [
@@ -117,7 +117,7 @@ describe('table modal component', () => {
 	})
 })
 
-describe('ATableModal', () => {
+describe('ATableModal', { tags: ['component'] }, () => {
 	let store: ReturnType<typeof createTableStore>
 
 	beforeEach(() => {
@@ -175,14 +175,14 @@ describe('ATableModal', () => {
 		const clickEvent = new Event('click', { bubbles: true })
 		const stopPropagationSpy = vi.spyOn(clickEvent, 'stopPropagation')
 
-		await wrapper.find('.amodal').element.dispatchEvent(clickEvent)
+		wrapper.find('.amodal').element.dispatchEvent(clickEvent)
 		expect(stopPropagationSpy).toHaveBeenCalled()
 
 		// Test input event stopping
 		const inputEvent = new Event('input', { bubbles: true })
 		const inputStopSpy = vi.spyOn(inputEvent, 'stopPropagation')
 
-		await wrapper.find('.amodal').element.dispatchEvent(inputEvent)
+		wrapper.find('.amodal').element.dispatchEvent(inputEvent)
 		expect(inputStopSpy).toHaveBeenCalled()
 	})
 

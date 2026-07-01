@@ -28,7 +28,7 @@ const routerTestRoutes = [
 	{ path: '/:pathMatch(.*)*', name: 'catch-all', component: { template: '<div/>' } },
 ]
 
-describe('Desktop – internal router (no routeAdapter)', () => {
+describe('Desktop – internal router (no routeAdapter)', { tags: ['component'] }, () => {
 	it('falls back gracefully with no router and no routeAdapter', async () => {
 		const registry = new Registry()
 		const stonecrop = new Stonecrop(registry)
@@ -221,7 +221,7 @@ describe('Desktop – internal router (no routeAdapter)', () => {
 	})
 })
 
-describe('Desktop – currentViewData setter', () => {
+describe('Desktop – currentViewData setter', { tags: ['component'] }, () => {
 	it('updates HST store when AForm emits update:data', async () => {
 		const registry = new Registry()
 		const stonecrop = new Stonecrop(registry)
@@ -251,13 +251,12 @@ describe('Desktop – currentViewData setter', () => {
 		await nextTick()
 
 		const aform = wrapper.findComponent({ name: 'AForm' })
-		if (aform.exists()) {
-			await aform.vm.$emit('update:data', { id: 'rec-1', title: 'Updated', status: 'draft' })
-			await nextTick()
+		expect(aform.exists()).toBe(true)
+		await aform.vm.$emit('update:data', { id: 'rec-1', title: 'Updated', status: 'draft' })
+		await nextTick()
 
-			const store = stonecrop.getStore()
-			expect(store.get('task.rec-1.title')).toBe('Updated')
-		}
+		const store = stonecrop.getStore()
+		expect(store.get('task.rec-1.title')).toBe('Updated')
 	})
 
 	it('setter returns early when currentDoctype or currentRecordId is empty', async () => {

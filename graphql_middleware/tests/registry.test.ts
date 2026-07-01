@@ -34,13 +34,13 @@ function makeContext(doctype: DoctypeMetaType): ActionContext {
 	return { doctype, executor: mockExecutor }
 }
 
-const minimalDoctype: DoctypeMetaType = { name: 'Task', tableName: 'tasks', fields: [] }
+const minimalDoctype: DoctypeMetaType = { name: 'Task', fields: [] }
 
 // ===========================================================================
 // registry/actions.ts — handler registry
 // ===========================================================================
 
-describe('handler registry', () => {
+describe('handler registry', { tags: ['unit', 'graphql'] }, () => {
 	beforeEach(() => clearHandlers())
 
 	it('registers and retrieves a handler', () => {
@@ -79,7 +79,7 @@ describe('handler registry', () => {
 	})
 })
 
-describe('registerBuiltinHandlers', () => {
+describe('registerBuiltinHandlers', { tags: ['unit', 'graphql'] }, () => {
 	beforeEach(() => {
 		clearHandlers()
 		registerBuiltinHandlers()
@@ -108,7 +108,7 @@ describe('registerBuiltinHandlers', () => {
 // noop handler
 // ===========================================================================
 
-describe('noop handler', () => {
+describe('noop handler', { tags: ['unit', 'graphql'] }, () => {
 	it('returns { ok: true }', async () => {
 		const result = await builtinHandlers.noop([], makeContext(minimalDoctype))
 		expect(result).toEqual({ ok: true })
@@ -119,14 +119,13 @@ describe('noop handler', () => {
 // validateRequiredFields handler
 // ===========================================================================
 
-describe('validateRequiredFields handler', () => {
+describe('validateRequiredFields handler', { tags: ['unit', 'graphql'] }, () => {
 	const doctypeWithRequired: DoctypeMetaType = {
 		name: 'StrictTask',
-		tableName: 'strict_tasks',
 		fields: [
-			{ fieldname: 'title', fieldtype: 'Data', label: 'Title', required: true },
-			{ fieldname: 'status', fieldtype: 'Data', label: 'Status', required: true },
-			{ fieldname: 'notes', fieldtype: 'Text', label: 'Notes' },
+			{ kind: 'field', fieldname: 'title', fieldtype: 'Data', label: 'Title', required: true },
+			{ kind: 'field', fieldname: 'status', fieldtype: 'Data', label: 'Status', required: true },
+			{ kind: 'field', fieldname: 'notes', fieldtype: 'Text', label: 'Notes' },
 		],
 	}
 
@@ -166,8 +165,7 @@ describe('validateRequiredFields handler', () => {
 	it('uses fieldname when label is absent', async () => {
 		const doctype: DoctypeMetaType = {
 			name: 'X',
-			tableName: 'x',
-			fields: [{ fieldname: 'ref_id', fieldtype: 'Data', required: true }],
+			fields: [{ kind: 'field', fieldname: 'ref_id', fieldtype: 'Data', required: true }],
 		}
 		await expect(builtinHandlers.validateRequiredFields([{}], makeContext(doctype))).rejects.toThrow('ref_id')
 	})
@@ -177,25 +175,24 @@ describe('validateRequiredFields handler', () => {
 // validateFieldTypes handler
 // ===========================================================================
 
-describe('validateFieldTypes handler', () => {
+describe('validateFieldTypes handler', { tags: ['unit', 'graphql'] }, () => {
 	const typedDoctype: DoctypeMetaType = {
 		name: 'Typed',
-		tableName: 'typed',
 		fields: [
-			{ fieldname: 'count', fieldtype: 'Int', label: 'Count' },
-			{ fieldname: 'amount', fieldtype: 'Float', label: 'Amount' },
-			{ fieldname: 'decimal_val', fieldtype: 'Decimal', label: 'Decimal' },
-			{ fieldname: 'currency_val', fieldtype: 'Currency', label: 'Currency' },
-			{ fieldname: 'qty', fieldtype: 'Quantity', label: 'Qty' },
-			{ fieldname: 'is_active', fieldtype: 'Check', label: 'Active' },
-			{ fieldname: 'name', fieldtype: 'Data', label: 'Name' },
-			{ fieldname: 'note', fieldtype: 'Text', label: 'Note' },
-			{ fieldname: 'code_val', fieldtype: 'Code', label: 'Code' },
-			{ fieldname: 'link_val', fieldtype: 'Link', label: 'Link' },
-			{ fieldname: 'due_date', fieldtype: 'Date', label: 'Date' },
-			{ fieldname: 'meeting_time', fieldtype: 'Time', label: 'Time' },
-			{ fieldname: 'created_at', fieldtype: 'Datetime', label: 'Datetime' },
-			{ fieldname: 'meta', fieldtype: 'JSON', label: 'Meta' },
+			{ kind: 'field', fieldname: 'count', fieldtype: 'Int', label: 'Count' },
+			{ kind: 'field', fieldname: 'amount', fieldtype: 'Float', label: 'Amount' },
+			{ kind: 'field', fieldname: 'decimal_val', fieldtype: 'Decimal', label: 'Decimal' },
+			{ kind: 'field', fieldname: 'currency_val', fieldtype: 'Currency', label: 'Currency' },
+			{ kind: 'field', fieldname: 'qty', fieldtype: 'Quantity', label: 'Qty' },
+			{ kind: 'field', fieldname: 'is_active', fieldtype: 'Check', label: 'Active' },
+			{ kind: 'field', fieldname: 'name', fieldtype: 'Data', label: 'Name' },
+			{ kind: 'field', fieldname: 'note', fieldtype: 'Text', label: 'Note' },
+			{ kind: 'field', fieldname: 'code_val', fieldtype: 'Code', label: 'Code' },
+			{ kind: 'field', fieldname: 'link_val', fieldtype: 'Link', label: 'Link' },
+			{ kind: 'field', fieldname: 'due_date', fieldtype: 'Date', label: 'Date' },
+			{ kind: 'field', fieldname: 'meeting_time', fieldtype: 'Time', label: 'Time' },
+			{ kind: 'field', fieldname: 'created_at', fieldtype: 'Datetime', label: 'Datetime' },
+			{ kind: 'field', fieldname: 'meta', fieldtype: 'JSON', label: 'Meta' },
 		],
 		links: {
 			items: { target: 'item', cardinality: 'noneOrMany' },
@@ -321,8 +318,7 @@ describe('validateFieldTypes handler', () => {
 	it('unknown fieldtype passes without error', async () => {
 		const doctype: DoctypeMetaType = {
 			name: 'Unknown',
-			tableName: 'unknown',
-			fields: [{ fieldname: 'x', fieldtype: 'CustomType' as 'Data', label: 'X' }],
+			fields: [{ kind: 'field', fieldname: 'x', fieldtype: 'CustomType' as 'Data', label: 'X' }],
 		}
 		const result = await builtinHandlers.validateFieldTypes([{ x: 'anything' }], makeContext(doctype))
 		expect(result).toEqual({ valid: true })
@@ -333,7 +329,7 @@ describe('validateFieldTypes handler', () => {
 // registry/doctypes.ts — DoctypeValidationError
 // ===========================================================================
 
-describe('DoctypeValidationError', () => {
+describe('DoctypeValidationError', { tags: ['unit', 'graphql'] }, () => {
 	it('formats a multi-error message', () => {
 		const err = new DoctypeValidationError('my-file.json', [
 			{ path: ['name'], message: 'Required' },
@@ -356,7 +352,7 @@ describe('DoctypeValidationError', () => {
 // registry/doctypes.ts — loadDoctypesFromObject
 // ===========================================================================
 
-describe('loadDoctypesFromObject', () => {
+describe('loadDoctypesFromObject', { tags: ['unit', 'graphql'] }, () => {
 	beforeEach(() => clearRegistry())
 
 	it('loads a single valid doctype by key name', () => {
@@ -398,7 +394,7 @@ describe('loadDoctypesFromObject', () => {
 // registry/doctypes.ts — getMeta / getAllMeta / hasMeta / clearRegistry
 // ===========================================================================
 
-describe('getMeta / getAllMeta / hasMeta / clearRegistry', () => {
+describe('getMeta / getAllMeta / hasMeta / clearRegistry', { tags: ['unit', 'graphql'] }, () => {
 	beforeEach(() => clearRegistry())
 
 	it('getMeta returns undefined for unknown doctype', () => {
@@ -447,14 +443,14 @@ describe('getMeta / getAllMeta / hasMeta / clearRegistry', () => {
 // registry/doctypes.ts — validateReferences
 // ===========================================================================
 
-describe('validateReferences', () => {
+describe('validateReferences', { tags: ['unit', 'graphql'] }, () => {
 	beforeEach(() => clearRegistry())
 
 	it('returns empty array when all references are valid', () => {
 		loadDoctypesFromObject({
 			User: { fields: [] },
 			Task: {
-				fields: [{ fieldname: 'owner', fieldtype: 'Link', label: 'Owner', options: 'User' }],
+				fields: [{ kind: 'field', fieldname: 'owner', fieldtype: 'Link', label: 'Owner', options: 'User' }],
 			},
 		})
 		expect(validateReferences()).toHaveLength(0)
@@ -468,7 +464,7 @@ describe('validateReferences', () => {
 
 	it('reports error for Link field targeting unknown doctype', () => {
 		loadDoctypesFromObject({
-			Task: { fields: [{ fieldname: 'owner', fieldtype: 'Link', label: 'Owner', options: 'User' }] },
+			Task: { fields: [{ kind: 'field', fieldname: 'owner', fieldtype: 'Link', label: 'Owner', options: 'User' }] },
 		})
 		const errors = validateReferences()
 		expect(errors.some(e => e.message.includes('User'))).toBe(true)
@@ -479,6 +475,7 @@ describe('validateReferences', () => {
 			Task: {
 				fields: [
 					{
+						kind: 'field' as const,
 						fieldname: 'tag',
 						fieldtype: 'Link',
 						label: 'Tag',
@@ -507,7 +504,7 @@ describe('validateReferences', () => {
 // registry/doctypes.ts — loadDoctypes (filesystem)
 // ===========================================================================
 
-describe('loadDoctypes', () => {
+describe('loadDoctypes', { tags: ['unit', 'graphql'] }, () => {
 	let tmpDir: string
 
 	beforeEach(() => {

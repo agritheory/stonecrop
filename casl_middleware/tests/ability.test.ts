@@ -13,7 +13,7 @@ import {
 
 const Ability = PureAbility as AbilityClass<AppAbility>
 
-describe('Ability Creation', () => {
+describe('Ability Creation', { tags: ['unit', 'graphql'] }, () => {
 	describe('createAbility', () => {
 		// Create a test builder with proper matchers - using the same detectSubjectType as production
 		const testBuilder = (user?: any) => {

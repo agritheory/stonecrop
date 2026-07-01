@@ -327,7 +327,7 @@ Quick validation helper
 **Signature:**
 
 ```typescript
-export declare function validateSchema(doctype: string, schema: List<SchemaTypes> | SchemaTypes[] | undefined, registry: Registry, workflow?: AnyStateNodeConfig, actions?: ImmutableMap<string, string[]> | Map<string, string[]>): ValidationResult;
+export declare function validateSchema(doctype: string, schema: List<DoctypeField> | DoctypeField[] | undefined, registry: Registry, workflow?: AnyStateNodeConfig, actions?: ImmutableMap<string, string[]> | Map<string, string[]>): ValidationResult;
 ```
 
 **Parameters:**
@@ -335,7 +335,7 @@ export declare function validateSchema(doctype: string, schema: List<SchemaTypes
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | doctype | `string` | Doctype name |
-| schema | `List<SchemaTypes> \| SchemaTypes[] \| undefined` | Schema fields |
+| schema | `List<DoctypeField> \| DoctypeField[] \| undefined` | Schema fields |
 | registry | `Registry` | Registry instance |
 | workflow | `AnyStateNodeConfig` | Optional workflow configuration |
 | actions | `ImmutableMap<string, string[]> \| Map<string, string[]>` | Optional actions map |
@@ -937,7 +937,7 @@ export type CrossTabMessageType = 'operation' | 'undo' | 'redo' | 'sync-request'
 
 ### DoctypeConfig
 
-Plain object representation of doctype configuration for serialization/API responses. Compatible with the DoctypeMeta type from stonecrop/schema.
+Plain object representation of doctype configuration for serialization/API responses. Extends DoctypeMeta with Stonecrop-specific properties: actions, slug, inherits.
 
 **Definition:**
 
@@ -945,8 +945,7 @@ Plain object representation of doctype configuration for serialization/API respo
 export type DoctypeConfig = {
     name: string;
     slug?: string;
-    tableName?: string;
-    fields?: (SchemaTypes | FieldMeta)[];
+    fields?: DoctypeField[];
     links?: Record<string, LinkDeclaration>;
     workflow?: UnknownMachineConfig | WorkflowMeta;
     actions?: Record<string, string[]>;
@@ -1043,7 +1042,7 @@ export type HSTStonecropReturn = BaseStonecropReturn & {
     handleHSTChange: (changeData: HSTChangeData) => void;
     hstStore: Ref<HSTNode | undefined>;
     formData: Ref<Record<string, any>>;
-    resolvedSchema: Ref<SchemaTypes[]>;
+    resolvedSchema: Ref<ResolvedField[]>;
     initializeNestedData: (path: string, doctype: Doctype) => void;
     fetchNestedData: (path: string, doctype: Doctype, recordId: string, options?: {
         includeNested?: boolean | string[];
@@ -1063,16 +1062,15 @@ export type HSTStonecropReturn = BaseStonecropReturn & {
 
 ### ImmutableDoctype
 
-Immutable Doctype type for Stonecrop instances
+Immutable Doctype type for Stonecrop instances. App authors should use `Doctype.fromObject()` rather than constructing this shape manually.
 
 **Definition:**
 
 ```typescript
 export type ImmutableDoctype = {
-    readonly schema?: List<SchemaTypes>;
+    readonly schema?: List<DoctypeField>;
     readonly workflow?: UnknownMachineConfig | AnyStateNodeConfig | WorkflowMeta;
     readonly actions?: Map<string, string[]>;
-    readonly links?: Record<string, LinkDeclaration>;
 };
 ```
 
@@ -1105,22 +1103,7 @@ export type LazyLink = {
     loaded: Ref<boolean>;
     error: Ref<Error | null>;
     reload: () => Promise<void>;
-    data: ComputedRef<any>;
-};
-```
-
-### MutableDoctype
-
-Mutable Doctype type for Stonecrop instances
-
-**Definition:**
-
-```typescript
-export type MutableDoctype = {
-    doctype?: string;
-    schema?: SchemaTypes[];
-    workflow?: UnknownMachineConfig | AnyStateNodeConfig | WorkflowMeta;
-    actions?: Record<string, string[]>;
+    data: ComputedRef;
 };
 ```
 
@@ -1167,19 +1150,6 @@ Operation source - where the change originated
 
 ```typescript
 export type OperationSource = 'user' | 'system' | 'sync' | 'undo' | 'redo';
-```
-
-### Schema
-
-Schema type for Stonecrop instances
-
-**Definition:**
-
-```typescript
-export type Schema = {
-    doctype: string;
-    schema: List<SchemaTypes>;
-};
 ```
 
 ### TransitionAction
@@ -1304,10 +1274,10 @@ getAvailableTransitions(currentState: string): Array<{
 
 #### getSchemaArray
 
-Returns the schema as a plain array for use with components that expect plain JavaScript arrays (e.g., AForm, ATable).
+Returns the raw authoring schema as a plain array. For the resolved schema suitable for AForm, use `registry.resolveSchema(doctype)`.
 
 ```typescript
-getSchemaArray(): SchemaTypes[]
+getSchemaArray(): DoctypeField[]
 ```
 
 ### FieldTriggerEngine
@@ -1572,30 +1542,30 @@ getDoctype(slug: string): Doctype | undefined
 
 #### initializeRecord
 
-Initialize a new record with default values based on a schema.
+Initialize a new record with default values based on a resolved schema. Narrows by `kind` discriminator for precise branch selection.
+
+- `kind: 'table'` or `kind: 'link'` → `[]` or `{}` - `kind: 'fieldset'` → recursively initializes children as `{}` - `kind: 'field'` → derives default from `fieldtype`; falls back to `null`
 
 ```typescript
-initializeRecord(schema: SchemaTypes[]): Record<string, any>
+initializeRecord(schema: ResolvedField[]): Record<string, any>
 ```
 
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| schema | `SchemaTypes[]` | The schema array to derive defaults from |
+| schema | `ResolvedField[]` | The resolved schema array to derive defaults from |
 
 #### resolveSchema
 
-Resolve nested Doctype fields in a schema by embedding child schemas inline.
+Resolve a Doctype's authoring schema into a rendered schema array suitable for AForm.
 
-Accepts a Doctype and extracts `fields` and `links` internally. Fields array contains both scalar fields and link fields (with fieldtype: 'Link'). Render order is determined by the order of fields in the fields array.
+Transforms `DoctypeField[]` (authoring space) → `ResolvedField[]` (rendering space): - `kind: 'field'` (not Link) → `ResolvedScalar` - `kind: 'field'` (Link, no declaration) → `ResolvedScalar` with `component: 'AFormLink'` - `kind: 'field'` (Link, `noneOrMany`/`atLeastOne`) → `ResolvedTable` - `kind: 'field'` (Link, `one`/`atMostOne`) → `ResolvedLink` - `kind: 'fieldset'` → `ResolvedFieldset` (children resolved recursively) - `kind: 'table'` → `ResolvedTable` (columns as `ColumnSchema[]`)
 
-For each link field: - Looks up the corresponding link declaration in `links` by fieldname - `cardinality: 'noneOrMany'` or `'atLeastOne'`: auto-derives `columns` from the target's schema, sets `component` to `link.component ?? 'ATable'`, `config: { view: 'list' }`. - `cardinality: 'one'` or `'atMostOne'`: embeds the target schema as the entry's `schema` property, sets `component` to `link.component ?? 'AForm'`.
-
-Recurses for deeply nested doctypes. Circular references are protected against. Returns a new array — does not mutate the original.
+Circular references are protected against via the `visited` set.
 
 ```typescript
-resolveSchema(doctype: Doctype, visited: Set<string>): SchemaTypes[]
+resolveSchema(doctype: Doctype, visited: Set<string>): ResolvedField[]
 ```
 
 **Parameters:**
@@ -1628,7 +1598,7 @@ new SchemaValidator(options: ValidatorOptions)
 Validates a complete doctype schema
 
 ```typescript
-validate(doctype: string, schema: List<SchemaTypes> | SchemaTypes[] | undefined, workflow: AnyStateNodeConfig, actions: ImmutableMap<string, string[]> | Map<string, string[]>, links: Record<string, LinkDeclaration>): ValidationResult
+validate(doctype: string, schema: List<DoctypeField> | DoctypeField[] | undefined, workflow: AnyStateNodeConfig, actions: ImmutableMap<string, string[]> | Map<string, string[]>, links: Record<string, LinkDeclaration>): ValidationResult
 ```
 
 **Parameters:**
@@ -1636,7 +1606,7 @@ validate(doctype: string, schema: List<SchemaTypes> | SchemaTypes[] | undefined,
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | doctype | `string` | Doctype name |
-| schema | `List<SchemaTypes> \| SchemaTypes[] \| undefined` | Schema fields (List or Array) |
+| schema | `List<DoctypeField> \| DoctypeField[] \| undefined` | Schema fields (List or Array) |
 | workflow | `AnyStateNodeConfig` | Optional workflow configuration |
 | actions | `ImmutableMap<string, string[]> \| Map<string, string[]>` | Optional actions map |
 | links | `Record<string, LinkDeclaration>` | Optional links object |
@@ -2243,7 +2213,7 @@ export const useOperationLogStore: import("pinia").StoreDefinition<"hst-operatio
     getSnapshot: () => OperationLogSnapshot;
     markIrreversible: (operationId: string, reason: string) => void;
     logAction: (doctype: string, actionName: string, recordIds?: string[], result?: "success" | "failure" | "pending", error?: string) => string;
-}, "undo" | "redo" | "configure" | "addOperation" | "startBatch" | "commitBatch" | "cancelBatch" | "clear" | "getOperationsFor" | "getSnapshot" | "markIrreversible" | "logAction">>
+}, "clear" | "undo" | "redo" | "configure" | "addOperation" | "startBatch" | "commitBatch" | "cancelBatch" | "getOperationsFor" | "getSnapshot" | "markIrreversible" | "logAction">>
 ```
 
 ## Enums

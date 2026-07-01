@@ -1,7 +1,6 @@
 import type { Plugin } from 'graphql-yoga'
 
 import { createAbility } from './ability'
-import { createCaslMiddleware } from './graphql'
 import type { Context, MiddlewareOptions } from '../types'
 
 const getLoggedInUser = () => {
@@ -26,14 +25,12 @@ export const yogaCaslPlugin: Plugin<Context> = {
  * @returns Yoga plugin
  * @public
  */
-export const createYogaPlugin = (options: MiddlewareOptions = {}) => {
-	const _middleware = createCaslMiddleware(options)
-
+export const createYogaPlugin = (_options: MiddlewareOptions = {}) => {
 	return {
 		onExecute: async (_: any) => {
-			// TODO: Implement Yoga plugin
-			// This would integrate with GraphQL Yoga's plugin system
-			console.log('Yoga plugin not yet implemented')
+			// TODO: Implement Yoga plugin via createCaslMiddleware(_options).
+			// This would integrate with GraphQL Yoga's plugin system.
+			console.warn('Yoga plugin not yet implemented')
 		},
 	}
 }

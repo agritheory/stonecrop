@@ -3,7 +3,7 @@ import { mount } from '@vue/test-utils'
 
 import ATextInput from '../src/components/form/ATextInput.vue'
 
-describe('text input component', () => {
+describe('text input component', { tags: ['component'] }, () => {
 	it('skip input mask when one is not provided', async () => {
 		const textInputModel = '123-456-7890'
 		const wrapper = mount(ATextInput, {

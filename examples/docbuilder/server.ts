@@ -423,6 +423,26 @@ export function makeServer({ environment = 'development' } = {}) {
 					? machine.layout
 					: new Response(400, { some: 'Not Found' }, { errors: ['Layout for Doctype not found'] })
 			})
+
+			this.patch('/save_machine', (schema, request) => {
+				const { doctype, machine } = JSON.parse(request.requestBody)
+				const existing = schema.db.stateMachines.findBy({ name: doctype?.toString().toLowerCase() })
+				if (!existing) {
+					return new Response(400, {}, { errors: ['StateMachine for Doctype not found'] })
+				}
+				schema.db.stateMachines.update(existing.id, { machine })
+				return new Response(200)
+			})
+
+			this.post('/save_layout', (schema, request) => {
+				const { doctype, layout } = JSON.parse(request.requestBody)
+				const machine = schema.db.stateMachines.findBy({ name: doctype?.toString().toLowerCase() })
+				if (!machine) {
+					return new Response(400, {}, { errors: ['StateMachine for Doctype not found'] })
+				}
+				schema.db.stateMachines.update(machine.id, { layout })
+				return new Response(200)
+			})
 		},
 	})
 

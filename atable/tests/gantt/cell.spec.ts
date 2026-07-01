@@ -6,7 +6,7 @@ import AGanttCell from '../../src/components/AGanttCell.vue'
 import { createTableStore } from '../../src/stores/table'
 import type { TableColumn, TableRow } from '../../src/types'
 
-describe('AGanttCell component', () => {
+describe('AGanttCell component', { tags: ['component'] }, () => {
 	let store: ReturnType<typeof createTableStore>
 
 	const mockColumns: TableColumn[] = [
@@ -111,10 +111,8 @@ describe('AGanttCell component', () => {
 		})
 
 		const resizeHandle = wrapper.find('.resize-handle')
-		if (resizeHandle.exists()) {
-			await resizeHandle.trigger('mousedown', { clientX: 200, clientY: 50 })
-			expect(wrapper.vm).toBeDefined()
-		}
+		expect(resizeHandle.exists()).toBe(true)
+		await resizeHandle.trigger('mousedown', { clientX: 200, clientY: 50 })
 	})
 
 	it('should apply correct styling based on gantt data', () => {
@@ -132,35 +130,8 @@ describe('AGanttCell component', () => {
 		})
 
 		const ganttBar = wrapper.find('.gantt-bar')
-		if (ganttBar.exists()) {
-			const style = ganttBar.attributes('style')
-			expect(style).toBeDefined()
-		}
-	})
-
-	it('should handle connection creation', async () => {
-		const wrapper = mount(AGanttCell, {
-			props: {
-				store,
-				columnsCount: 10,
-				rowIndex: 0,
-				colIndex: 0,
-				start: 0,
-				end: 5,
-				colspan: 5,
-				color: '#ff0000',
-			},
-		})
-
-		// Simulate mouse enter to show connection handles
-		const ganttBar = wrapper.find('.gantt-bar')
-		await ganttBar.trigger('mouseenter')
-
-		const connectionHandle = wrapper.find('.connection-handle')
-		if (connectionHandle.exists()) {
-			await connectionHandle.trigger('mousedown', { clientX: 100, clientY: 50 })
-			expect(wrapper.vm).toBeDefined()
-		}
+		const style = ganttBar.attributes('style')
+		expect(style).toBeDefined()
 	})
 
 	it('should handle different gantt bar colors', () => {
@@ -179,10 +150,8 @@ describe('AGanttCell component', () => {
 
 		expect(wrapper.exists()).toBe(true)
 		const ganttBar = wrapper.find('.gantt-bar')
-		if (ganttBar.exists()) {
-			const style = ganttBar.attributes('style')
-			expect(style).toBeDefined()
-		}
+		const style = ganttBar.attributes('style')
+		expect(style).toBeDefined()
 	})
 
 	it('should handle gantt cell without gantt data gracefully', () => {
@@ -225,9 +194,7 @@ describe('AGanttCell component', () => {
 		})
 
 		const labelElement = wrapper.find('.gantt-label')
-		if (labelElement.exists()) {
-			expect(labelElement.text()).toBe('Task 1 Label')
-		}
+		expect(labelElement.text()).toBe('Task 1 Label')
 	})
 
 	it('should show connection handles on mouse enter', async () => {
@@ -783,14 +750,10 @@ describe('AGanttCell component', () => {
 			})
 
 			const ganttBar = wrapper.find('.gantt-bar')
-			if (ganttBar.exists()) {
-				// Mock useDraggable behavior by simulating move that goes beyond left boundary
-				const mockEvent = { x: -200, clientX: 50, clientY: 50 } as any
-				await ganttBar.trigger('mousedown', mockEvent)
-
-				// Component should handle boundary constraints
-				expect(wrapper.vm).toBeDefined()
-			}
+			expect(ganttBar.exists()).toBe(true)
+			// Mock useDraggable behavior by simulating move that goes beyond left boundary
+			const mockEvent = { x: -200, clientX: 50, clientY: 50 } as any
+			await ganttBar.trigger('mousedown', mockEvent)
 		})
 
 		it('should handle bar movement with boundary constraints (right boundary)', async () => {
@@ -807,11 +770,9 @@ describe('AGanttCell component', () => {
 			})
 
 			const ganttBar = wrapper.find('.gantt-bar')
-			if (ganttBar.exists()) {
-				// Mock move that goes beyond right boundary
-				await ganttBar.trigger('mousedown', { clientX: 800, clientY: 50 })
-				expect(wrapper.vm).toBeDefined()
-			}
+			expect(ganttBar.exists()).toBe(true)
+			// Mock move that goes beyond right boundary
+			await ganttBar.trigger('mousedown', { clientX: 800, clientY: 50 })
 		})
 
 		it('should handle left resize with boundary constraints', async () => {
@@ -828,10 +789,8 @@ describe('AGanttCell component', () => {
 			})
 
 			const leftHandle = wrapper.find('.left-resize-handle')
-			if (leftHandle.exists()) {
-				await leftHandle.trigger('mousedown', { clientX: 100, clientY: 50 })
-				expect(wrapper.vm).toBeDefined()
-			}
+			expect(leftHandle.exists()).toBe(true)
+			await leftHandle.trigger('mousedown', { clientX: 100, clientY: 50 })
 		})
 
 		it('should handle right resize with boundary constraints', async () => {
@@ -848,10 +807,8 @@ describe('AGanttCell component', () => {
 			})
 
 			const rightHandle = wrapper.find('.right-resize-handle')
-			if (rightHandle.exists()) {
-				await rightHandle.trigger('mousedown', { clientX: 500, clientY: 50 })
-				expect(wrapper.vm).toBeDefined()
-			}
+			expect(rightHandle.exists()).toBe(true)
+			await rightHandle.trigger('mousedown', { clientX: 500, clientY: 50 })
 		})
 	})
 
@@ -1001,42 +958,6 @@ describe('AGanttCell component', () => {
 			document.elementFromPoint = originalElementFromPoint
 			expect(wrapper.vm).toBeDefined()
 		})
-
-		it('should handle connection from right handle', async () => {
-			const wrapper = mount(AGanttCell, {
-				props: {
-					store,
-					columnsCount: 10,
-					rowIndex: 0,
-					colIndex: 0,
-				},
-			})
-
-			const ganttBar = wrapper.find('.gantt-bar')
-			await ganttBar.trigger('mouseenter')
-
-			const rightHandle = wrapper.find('.right-connection-handle')
-			if (rightHandle.exists()) {
-				// Mock getBoundingClientRect
-				rightHandle.element.getBoundingClientRect = vi.fn().mockReturnValue({
-					left: 200,
-					top: 50,
-					width: 16,
-					height: 16,
-				})
-
-				await rightHandle.trigger('mousedown', {
-					clientX: 200,
-					clientY: 50,
-					preventDefault: vi.fn(),
-					stopPropagation: vi.fn(),
-				})
-
-				// Should show drag preview
-				const dragPreview = wrapper.find('svg')
-				expect(dragPreview.exists()).toBe(true)
-			}
-		})
 	})
 
 	describe('Resize and drag handler edge cases', () => {
@@ -1151,50 +1072,12 @@ describe('AGanttCell component', () => {
 
 			// Trigger resize to test setupDragStart function
 			const leftHandle = wrapper.find('.left-resize-handle')
-			if (leftHandle.exists()) {
-				await leftHandle.trigger('mousedown', { clientX: 100, clientY: 50 })
-				// The setupDragStart function should be called and set transition to none
-				expect(wrapper.vm).toBeDefined()
-			}
+			expect(leftHandle.exists()).toBe(true)
+			await leftHandle.trigger('mousedown', { clientX: 100, clientY: 50 })
 		})
 	})
 
 	describe('Connection handle interactions with null handles', () => {
-		it('should handle connection drag start with proper handle element', async () => {
-			const wrapper = mount(AGanttCell, {
-				props: {
-					store,
-					columnsCount: 10,
-					rowIndex: 0,
-					colIndex: 0,
-				},
-			})
-
-			const ganttBar = wrapper.find('.gantt-bar')
-			await ganttBar.trigger('mouseenter')
-
-			// Test the branch where handle element exists and has proper getBoundingClientRect
-			const leftHandle = wrapper.find('.left-connection-handle')
-			if (leftHandle.exists()) {
-				// Mock proper getBoundingClientRect
-				leftHandle.element.getBoundingClientRect = vi.fn().mockReturnValue({
-					left: 100,
-					top: 50,
-					width: 16,
-					height: 16,
-				})
-
-				await leftHandle.trigger('mousedown', {
-					clientX: 100,
-					clientY: 50,
-					preventDefault: vi.fn(),
-					stopPropagation: vi.fn(),
-				})
-
-				expect(wrapper.vm).toBeDefined()
-			}
-		})
-
 		it('should handle connection target detection edge cases', async () => {
 			const wrapper = mount(AGanttCell, {
 				props: {

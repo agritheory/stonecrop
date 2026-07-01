@@ -3,7 +3,7 @@ import { mount } from '@vue/test-utils'
 
 import CollapseButton from '../src/components/base/CollapseButton.vue'
 
-describe('numeric input component', () => {
+describe('numeric input component', { tags: ['component'] }, () => {
 	it('apply specific class based on collapsed input', async () => {
 		const wrapper = mount(CollapseButton, {
 			props: { collapsed: true },

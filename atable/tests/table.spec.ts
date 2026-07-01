@@ -27,7 +27,14 @@ import ARow from '../src/components/ARow.vue'
 import ATable from '../src/components/ATable.vue'
 import type { GanttOptions, RowClickEvent, TableColumn, TableConfig, TableRow } from '../src/types'
 
-describe('table component', () => {
+function getBasicRows(): TableRow[] {
+	return [
+		{ id: 1, name: 'John', status: 'active' },
+		{ id: 2, name: 'Jane', status: 'inactive' },
+	]
+}
+
+describe('table component', { tags: ['component'] }, () => {
 	config.global.components = { ACell, ARow }
 
 	const columns: TableColumn[] = [
@@ -64,11 +71,6 @@ describe('table component', () => {
 		{ name: 'id', label: 'ID', width: '100px' },
 		{ name: 'name', label: 'Name', width: '200px' },
 		{ name: 'status', label: 'Status', width: '150px' },
-	]
-
-	const getBasicRows = (): TableRow[] => [
-		{ id: 1, name: 'John', status: 'active' },
-		{ id: 2, name: 'Jane', status: 'inactive' },
 	]
 
 	const defaultProps = {
@@ -121,7 +123,7 @@ describe('table component', () => {
 	})
 
 	it('verify data rows (format string)', async () => {
-		const columns: TableColumn[] = [
+		const testColumns: TableColumn[] = [
 			{
 				label: 'Home Page',
 				name: 'home_page',
@@ -154,13 +156,13 @@ describe('table component', () => {
 		const wrapper = mount(ATable, {
 			props: {
 				rows: data,
-				columns,
+				columns: testColumns,
 				config: { view: 'list' },
 			},
 		})
 
 		const dataCells = wrapper.findAllComponents(ACell)
-		expect(dataCells.length).toBe(columns.length * data.length) // +1 for the row number column
+		expect(dataCells.length).toBe(testColumns.length * data.length) // +1 for the row number column
 
 		const homePageCell = dataCells.at(0)
 		expect(homePageCell?.exists()).toBe(true)
@@ -176,7 +178,7 @@ describe('table component', () => {
 	})
 
 	it('verify data rows (no format)', async () => {
-		const columns: TableColumn[] = [
+		const testColumns: TableColumn[] = [
 			{
 				label: 'Home Page',
 				name: 'home_page',
@@ -208,13 +210,13 @@ describe('table component', () => {
 		const wrapper = mount(ATable, {
 			props: {
 				rows: data,
-				columns,
+				columns: testColumns,
 				config: { view: 'list' },
 			},
 		})
 
 		const dataCells = wrapper.findAllComponents(ACell)
-		expect(dataCells.length).toBe(columns.length * data.length)
+		expect(dataCells.length).toBe(testColumns.length * data.length)
 
 		const homePageCell = dataCells.at(0)
 		expect(homePageCell?.exists()).toBe(true)
@@ -638,9 +640,9 @@ describe('table component', () => {
 			props: {
 				rows: getBasicRows(),
 				columns: initialColumns,
-				'onUpdate:columns': (newColumns: TableColumn[] | undefined) => {
+				'onUpdate:columns': async (newColumns: TableColumn[] | undefined) => {
 					if (newColumns) {
-						wrapper.setProps({ columns: newColumns })
+						await wrapper.setProps({ columns: newColumns })
 					}
 				},
 			},
@@ -680,7 +682,7 @@ describe('table component', () => {
 	})
 })
 
-describe('Gantt View', () => {
+describe('Gantt View', { tags: ['component'] }, () => {
 	it('should handle custom gantt data', () => {
 		const ganttColumns: TableColumn[] = [
 			{ name: 'id', label: 'ID', width: '100px', pinned: true },
@@ -712,7 +714,7 @@ describe('Gantt View', () => {
 	})
 })
 
-describe('Sorting and Filtering', () => {
+describe('Sorting and Filtering', { tags: ['component'] }, () => {
 	beforeEach(() => {
 		setActivePinia(createPinia())
 	})
@@ -1160,7 +1162,7 @@ describe('Sorting and Filtering', () => {
 	})
 })
 
-describe('Schema-driven columns', () => {
+describe('Schema-driven columns', { tags: ['component'] }, () => {
 	beforeEach(() => {
 		setActivePinia(createPinia())
 	})

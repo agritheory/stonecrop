@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/nuxt",
-	"version": "0.12.6",
+	"version": "0.13.13",
 	"description": "Nuxt module for Stonecrop",
 	"license": "MIT",
 	"type": "module",
@@ -44,10 +44,12 @@
 		"docs": "echo 'Nuxt modules use custom build system - skipping API docs generation'",
 		"dev": "rushx dev:prepare && nuxi dev playground",
 		"dev:basic": "rushx dev:prepare && nuxi dev playground",
+		"dev:countries": "rushx dev:prepare:countries && nuxi dev countries-graphql",
 		"dev:full": "rushx dev:prepare:full && nuxi dev fullstack",
+		"dev:prepare:countries": "nuxt-module-build build --stub && nuxt-module-build prepare && nuxi prepare countries-graphql",
 		"dev:prepare:full": "nuxt-module-build build --stub && nuxt-module-build prepare && nuxi prepare fullstack",
 		"dev:build": "nuxi build playground",
-		"dev:prepare": "nuxt-module-build build --stub && nuxt-module-build prepare && nuxi prepare playground && nuxi prepare fullstack",
+		"dev:prepare": "nuxt-module-build build --stub && nuxt-module-build prepare && nuxi prepare playground && nuxi prepare fullstack && nuxi prepare countries-graphql",
 		"lint": "eslint .",
 		"test": "vitest run",
 		"test:ui": "vitest --ui",
@@ -73,6 +75,7 @@
 		"prompts": "^2.4.2"
 	},
 	"devDependencies": {
+		"@stonecrop/desktop": "workspace:*",
 		"@eslint/js": "^10.0.1",
 		"@nuxt/devtools": "^3.2.4",
 		"@nuxt/eslint-config": "^1.15.2",
@@ -89,6 +92,7 @@
 		"eslint": "^10.3.0",
 		"globals": "^17.6.0",
 		"nuxt": "^4.4.4",
+		"nuxt-graphql-middleware": "^5.4.0",
 		"postgraphile": "^5.0.3",
 		"typescript-eslint": "^8.59.1",
 		"typescript": "^6.0.3",

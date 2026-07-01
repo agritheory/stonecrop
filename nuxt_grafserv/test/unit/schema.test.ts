@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 
-describe('nuxt-grafserv module configuration', () => {
+describe('nuxt-grafserv module configuration', { tags: ['unit', 'nuxt', 'graphql'] }, () => {
 	it('should export a valid Nuxt module', async () => {
 		const module = await import('../../src/module')
 		const nuxtModule = module.default

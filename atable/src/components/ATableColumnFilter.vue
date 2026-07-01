@@ -103,13 +103,13 @@ const resolvedFilterType = computed(() => {
 	}
 })
 
-const getSelectOptions = (column: TableColumn): any[] => {
-	if (column.filterOptions) return column.filterOptions
+const getSelectOptions = (col: TableColumn): any[] => {
+	if (col.filterOptions) return col.filterOptions
 
 	// Auto-generate options from data
 	const uniqueValues = new Set<any>()
 	store.rows.forEach(row => {
-		const value = row[column.name]
+		const value = row[col.name]
 		if (value !== null && value !== undefined && value !== '') {
 			uniqueValues.add(value)
 		}

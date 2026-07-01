@@ -9,6 +9,9 @@ import { GraphQLResolveInfo } from 'graphql';
 import { PureAbility } from '@casl/ability';
 
 // @public
+export type AbilityBuilderFunction = (user?: Context['user']) => Promise<AppAbility> | AppAbility;
+
+// @public
 export interface AbilityResponse {
     ability: any;
     message: string;
@@ -25,8 +28,6 @@ export interface Context {
     user?: User;
 }
 
-// Warning: (ae-forgotten-export) The symbol "AbilityBuilderFunction" needs to be exported by the entry point index.d.ts
-//
 // @public
 export const createAbility: (user?: Context["user"], builderFn?: AbilityBuilderFunction) => Promise<AppAbility>;
 
@@ -51,7 +52,7 @@ export interface FieldPermission {
 }
 
 // @public
-export type MiddlewareFn = (resolve: ResolverFn, root: any, args: any, context: Context, info: GraphQLResolveInfo) => Promise<any> | any;
+export type MiddlewareFn = (resolve: ResolverFn, root: any, args: any, context: Context, info: GraphQLResolveInfo) => any;
 
 // @public
 export interface MiddlewareOptions {
@@ -75,7 +76,7 @@ export interface PluginOptions extends MiddlewareOptions {
 }
 
 // @public
-export type ResolverFn = (root: any, args: any, context: Context, info: GraphQLResolveInfo) => Promise<any> | any;
+export type ResolverFn = (root: any, args: any, context: Context, info: GraphQLResolveInfo) => any;
 
 // @public
 export interface User {

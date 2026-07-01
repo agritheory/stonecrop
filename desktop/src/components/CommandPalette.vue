@@ -71,15 +71,15 @@ const inputRef = useTemplateRef('input')
 
 const results = computed(() => {
 	if (!query.value) return []
-	const results = search(query.value)
-	return results.slice(0, maxResults)
+	const searchResults = search(query.value)
+	return searchResults.slice(0, maxResults)
 })
 
 // reset search query when modal opens
 watch(
 	() => isOpen,
-	async isOpen => {
-		if (isOpen) {
+	async open => {
+		if (open) {
 			query.value = ''
 			selectedIndex.value = 0
 			await nextTick()

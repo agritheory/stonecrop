@@ -23,7 +23,7 @@ vi.mock('../../src/runtime/handler', () => ({
 	clearGrafservCache: mockClearGrafservCache,
 }))
 
-describe('Cache Handler', () => {
+describe('Cache Handler', { tags: ['unit', 'nuxt', 'graphql'] }, () => {
 	let originalEnv: string | undefined
 	const mockEvent = {} as H3Event
 

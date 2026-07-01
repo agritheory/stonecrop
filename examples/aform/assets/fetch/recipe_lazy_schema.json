@@ -1,7 +1,6 @@
 {
 	"name": "RecipeLazy",
 	"slug": "recipe-lazy",
-	"tableName": "recipe",
 	"fields": [
 		{
 			"fieldname": "name",
@@ -29,7 +28,9 @@
 			"cardinality": "noneOrMany",
 			"backlink": "recipe",
 			"fieldname": "tasks",
-			"fetch": { "method": "lazy" }
+			"fetch": {
+				"method": "lazy"
+			}
 		}
 	}
 }

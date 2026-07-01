@@ -4,7 +4,9 @@ import { mount } from '@vue/test-utils'
 import ATableLoading from '../src/components/ATableLoading.vue'
 import ATableLoadingBar from '../src/components/ATableLoadingBar.vue'
 
-describe('ATableLoading component', () => {
+const normalizeHtml = (html: string) => html.replace(/\s?data-v-[a-z0-9]+="[^"]*"/g, '')
+
+describe('ATableLoading component', { tags: ['component'] }, () => {
 	it('should render correctly', () => {
 		const wrapper = mount(ATableLoading)
 
@@ -44,7 +46,7 @@ describe('ATableLoading component', () => {
 	})
 })
 
-describe('ATableLoadingBar component', () => {
+describe('ATableLoadingBar component', { tags: ['component'] }, () => {
 	it('should render correctly', () => {
 		const wrapper = mount(ATableLoadingBar)
 
@@ -91,8 +93,6 @@ describe('ATableLoadingBar component', () => {
 			slots: { default: 'Test' },
 		})
 
-		// Remove Vue data attributes for comparison
-		const normalizeHtml = (html: string) => html.replace(/\s?data-v-[a-z0-9]+="[^"]*"/g, '')
 		expect(normalizeHtml(loadingWrapper.html())).toBe(normalizeHtml(loadingBarWrapper.html()))
 	})
 })

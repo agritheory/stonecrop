@@ -12,7 +12,7 @@ const mockVResizeObserver = {
 	unmounted: vi.fn(),
 }
 
-describe('ATableHeader component', () => {
+describe('ATableHeader component', { tags: ['component'] }, () => {
 	const mockColumns: TableColumn[] = [
 		{ name: 'col1', label: 'Column 1', fieldtype: 'Data', align: 'left', edit: false, width: '100px' },
 		{ name: 'col2', label: 'Column 2', fieldtype: 'Data', align: 'center', edit: true, width: '150px' },
@@ -310,7 +310,7 @@ describe('ATableHeader component', () => {
 
 	it('should not resize when width has not changed', () => {
 		// Create store with numeric width
-		const numericColumns = mockColumns.map(col => ({ ...col, width: 100 }))
+		const numericColumns = mockColumns.map(col => Object.assign({}, col, { width: 100 }))
 		const numericStore = createTableStore({
 			columns: numericColumns,
 			rows: mockRows,
@@ -352,7 +352,7 @@ describe('ATableHeader component', () => {
 
 	it('should call resizeColumn when width has changed', () => {
 		// Create store with numeric width
-		const numericColumns = mockColumns.map(col => ({ ...col, width: 100 }))
+		const numericColumns = mockColumns.map(col => Object.assign({}, col, { width: 100 }))
 		const numericStore = createTableStore({
 			columns: numericColumns,
 			rows: mockRows,

@@ -7,7 +7,7 @@ import AGanttConnection from '../../src/components/AGanttConnection.vue'
 import { createTableStore } from '../../src/stores/table'
 import type { ConnectionPath, GanttBarInfo, ConnectionHandle } from '../../src/types'
 
-describe('AGanttConnection', () => {
+describe('AGanttConnection', { tags: ['component'] }, () => {
 	let store: ReturnType<typeof createTableStore>
 
 	beforeEach(() => {
@@ -340,7 +340,10 @@ describe('AGanttConnection', () => {
 	})
 
 	it('should return empty path data for missing handles', () => {
-		// Create connection without corresponding handles
+		// Register the bars so visibleConnections includes this connection
+		store.registerGanttBar({ id: 'bar1', rowIndex: 0, colIndex: 0, start: 0, end: 2 } as GanttBarInfo)
+		store.registerGanttBar({ id: 'bar2', rowIndex: 1, colIndex: 0, start: 3, end: 5 } as GanttBarInfo)
+
 		const connection: ConnectionPath = {
 			id: 'conn1',
 			from: { barId: 'bar1', side: 'right' },
@@ -348,18 +351,16 @@ describe('AGanttConnection', () => {
 		}
 
 		store.connectionPaths = [connection]
-
-		// Don't set up handles
 		store.connectionHandles = []
 
 		const wrapper = mount(AGanttConnection, {
 			props: { store },
 		})
 
+		// Connection is visible but has no handles — path should render with empty d attribute
 		const pathElement = wrapper.find('.connection-path')
-		if (pathElement.exists()) {
-			expect(pathElement.attributes('d')).toBe('')
-		}
+		expect(pathElement.exists()).toBe(true)
+		expect(pathElement.attributes('d')).toBe('')
 	})
 
 	it('should apply correct SVG styling', () => {

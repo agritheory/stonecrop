@@ -1,3 +1,9 @@
+// Interaction mode
+export type { InteractionMode } from './mode'
+
+// Table authoring types
+export { TableViewConfig } from './table'
+
 // Field types
 export {
 	StonecropFieldType,
@@ -11,7 +17,8 @@ export {
 } from './fieldtype'
 
 // Field schema
-export type { FieldMeta, FieldOptions, FieldValidation } from './field'
+export type { DoctypeField, FieldOptions, FieldValidation, FieldsetField, TableField, ValueField } from './field'
+export { DoctypeFieldSchema, FieldsetFieldSchema, TableFieldSchema, ValueFieldSchema } from './field'
 
 // Doctype schema
 export type {

@@ -1,11 +1,11 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
 
 import ListView from '../../src/components/ListView.vue'
 import ListItem from '../../src/components/ListItem.vue'
 import BeamDayDivider from '../../src/components/BeamDayDivider.vue'
 
-describe('ListView', () => {
+describe('ListView', { tags: ['component'] }, () => {
 	const mockItems = [
 		{
 			label: 'Item 1',

@@ -10,12 +10,11 @@ import type { ActionHandler } from '../src/types'
 
 const scalarOnlyMeta: DoctypeMeta = {
 	name: 'Resource',
-	tableName: 'resources',
 	fields: [
-		{ fieldname: 'id', fieldtype: 'Data', label: 'ID' },
-		{ fieldname: 'name', fieldtype: 'Data', label: 'Name' },
-		{ fieldname: 'quantity', fieldtype: 'Int', label: 'Quantity' },
-		{ fieldname: 'is_active', fieldtype: 'Check', label: 'Active' },
+		{ kind: 'field', fieldname: 'id', fieldtype: 'PrimaryKey', label: 'ID' },
+		{ kind: 'field', fieldname: 'name', fieldtype: 'Data', label: 'Name' },
+		{ kind: 'field', fieldname: 'quantity', fieldtype: 'Int', label: 'Quantity' },
+		{ kind: 'field', fieldname: 'is_active', fieldtype: 'Check', label: 'Active' },
 	],
 }
 
@@ -23,7 +22,7 @@ const scalarOnlyMeta: DoctypeMeta = {
 // handler registration
 // ===========================================================================
 
-describe('handler registration', () => {
+describe('handler registration', { tags: ['unit', 'graphql'] }, () => {
 	beforeEach(() => {
 		clearHandlers()
 	})
@@ -69,7 +68,7 @@ describe('handler registration', () => {
 // Custom handler patterns
 // ===========================================================================
 
-describe('overriding a registered handler', () => {
+describe('overriding a registered handler', { tags: ['unit', 'graphql'] }, () => {
 	beforeEach(() => {
 		clearHandlers()
 		registerHandler('submit', vi.fn().mockResolvedValue({ success: true, data: null, error: null }))
@@ -96,7 +95,7 @@ describe('overriding a registered handler', () => {
 	})
 })
 
-describe('wrapping a registered handler', () => {
+describe('wrapping a registered handler', { tags: ['unit', 'graphql'] }, () => {
 	beforeEach(() => {
 		clearHandlers()
 	})
@@ -136,7 +135,7 @@ describe('wrapping a registered handler', () => {
 	})
 })
 
-describe('workflow action definition routes to a named custom handler', () => {
+describe('workflow action definition routes to a named custom handler', { tags: ['unit', 'graphql'] }, () => {
 	beforeEach(() => {
 		clearHandlers()
 	})

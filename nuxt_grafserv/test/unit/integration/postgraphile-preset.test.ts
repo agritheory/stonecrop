@@ -46,7 +46,7 @@ vi.mock('grafserv/h3/v1', () => ({
 	})),
 }))
 
-describe('PostGraphile Preset Integration', () => {
+describe('PostGraphile Preset Integration', { tags: ['e2e', 'nuxt', 'graphql'] }, () => {
 	beforeEach(() => {
 		// Clear all mocks before each test
 		vi.clearAllMocks()

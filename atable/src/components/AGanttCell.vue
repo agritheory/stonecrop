@@ -138,17 +138,15 @@ const barStyle = computed((): StyleValue => {
 	}
 })
 
-const connectionDragStyle = computed(
-	(): StyleValue => ({
-		position: 'fixed',
-		top: 0,
-		left: 0,
-		width: '100vw',
-		height: '100vh',
-		pointerEvents: 'none',
-		zIndex: 1000,
-	})
-)
+const connectionDragStyle = computed((): StyleValue => ({
+	position: 'fixed',
+	top: 0,
+	left: 0,
+	width: '100vw',
+	height: '100vh',
+	pointerEvents: 'none',
+	zIndex: 1000,
+}))
 
 // Drag setup data
 const dragStartData = ref({ startX: 0, startPos: 0 })
@@ -397,8 +395,8 @@ function startConnectionDrag(side: 'left' | 'right', event: MouseEvent) {
 		dragPreview.value.endY = moveEvent.clientY
 	}
 
-	const handleMouseUp = (event: MouseEvent) => {
-		handleConnectionDrop(event, side)
+	const handleMouseUp = (upEvent: MouseEvent) => {
+		handleConnectionDrop(upEvent, side)
 		cleanupConnectionDrag(handleMouseMove, handleMouseUp)
 	}
 

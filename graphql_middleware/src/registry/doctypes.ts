@@ -99,7 +99,7 @@ function loadDoctypeFile(filePath: string, options: LoadDoctypesOptions): void {
  */
 export function loadDoctypesFromObject(doctypes: Record<string, unknown>, options: LoadDoctypesOptions = {}): void {
 	for (const [name, data] of Object.entries(doctypes)) {
-		const withName = { ...(data as object), name }
+		const withName = { ...(typeof data === 'object' && data !== null ? data : {}), name }
 		const result = validateDoctype(withName)
 
 		if (!result.success) {
@@ -174,7 +174,7 @@ export function validateReferences(): ValidationError[] {
 
 		// Check Link field targets
 		for (const field of doctype.fields) {
-			if (field.fieldtype === 'Link' && typeof field.options === 'string') {
+			if (field.kind === 'field' && field.fieldtype === 'Link' && typeof field.options === 'string') {
 				if (!doctypeRegistry.has(field.options)) {
 					errors.push({
 						path: [doctype.name, 'fields', field.fieldname, 'options'],

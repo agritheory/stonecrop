@@ -3,7 +3,7 @@ import { mount } from '@vue/test-utils'
 
 import BeamDayDivider from '../../src/components/BeamDayDivider.vue'
 
-describe('BeamDayDivider', () => {
+describe('BeamDayDivider', { tags: ['component'] }, () => {
 	it('renders day divider', () => {
 		const wrapper = mount(BeamDayDivider, {
 			props: {

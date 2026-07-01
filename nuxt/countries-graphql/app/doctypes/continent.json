@@ -1,0 +1,20 @@
+{
+	"name": "Continent",
+	"slug": "continent",
+	"fields": [
+		{
+			"fieldname": "code",
+			"fieldtype": "Data",
+			"label": "Code",
+			"component": "ATextInput",
+			"readOnly": true
+		},
+		{
+			"fieldname": "name",
+			"fieldtype": "Data",
+			"label": "Name",
+			"component": "ATextInput",
+			"required": true
+		}
+	]
+}

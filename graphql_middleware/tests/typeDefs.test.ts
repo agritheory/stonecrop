@@ -1,25 +1,25 @@
-import { parse, type DocumentNode } from 'graphql'
+import { parse, Kind, type DocumentNode } from 'graphql'
 import { describe, it, expect } from 'vitest'
 
 import { typeDefs } from '../src/typeDefs'
 
-describe('typeDefs', () => {
+function findTypeDefinition(document: DocumentNode, typeName: string) {
+	return document.definitions.find(d => d.kind === Kind.OBJECT_TYPE_DEFINITION && d.name.value === typeName)
+}
+
+function findFieldDefinition(typeDef: any, fieldName: string) {
+	return typeDef?.fields?.find((f: any) => f.name.value === fieldName)
+}
+
+function findQueryField(document: DocumentNode, fieldName: string) {
+	const queryType = document.definitions.find(
+		d => (d.kind === Kind.OBJECT_TYPE_DEFINITION || d.kind === Kind.OBJECT_TYPE_EXTENSION) && d.name.value === 'Query'
+	)
+	return queryType?.fields?.find((f: any) => f.name.value === fieldName)
+}
+
+describe('typeDefs', { tags: ['unit', 'graphql'] }, () => {
 	const doc = parse(typeDefs.loc?.source.body || typeDefs)
-
-	function findTypeDefinition(doc: DocumentNode, typeName: string) {
-		return doc.definitions.find(d => d.kind === 'ObjectTypeDefinition' && d.name.value === typeName)
-	}
-
-	function findFieldDefinition(typeDef: any, fieldName: string) {
-		return typeDef?.fields?.find((f: any) => f.name.value === fieldName)
-	}
-
-	function findQueryField(doc: DocumentNode, fieldName: string) {
-		const queryType = doc.definitions.find(
-			d => (d.kind === 'ObjectTypeDefinition' || d.kind === 'ObjectTypeExtension') && d.name.value === 'Query'
-		)
-		return queryType?.fields?.find((f: any) => f.name.value === fieldName)
-	}
 
 	// -----------------------------------------------------------------------
 	// StonecropWorkflowMeta

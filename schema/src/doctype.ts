@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-import { FieldMeta } from './field'
+import { DoctypeFieldSchema } from './field'
 
 /**
  * Cardinality for relationship links.
@@ -214,11 +214,8 @@ export const DoctypeMeta = z
 		/** URL-friendly slug (kebab-case) */
 		slug: z.string().min(1).optional(),
 
-		/** Database table name */
-		tableName: z.string().optional(),
-
 		/** Field definitions (including link fields with fieldtype: 'Link') */
-		fields: z.array(FieldMeta),
+		fields: z.array(DoctypeFieldSchema),
 
 		/** Relationship links to other doctypes */
 		links: z.record(z.string(), LinkDeclaration).optional(),

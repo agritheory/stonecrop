@@ -4,7 +4,7 @@ import { mount } from '@vue/test-utils'
 import BeamFilterOption from '../../src/components/BeamFilterOption.vue'
 import BeamHeading from '../../src/components/BeamHeading.vue'
 
-describe('BeamFilterOption', () => {
+describe('BeamFilterOption', { tags: ['component'] }, () => {
 	const mockChoices = [
 		{ label: 'Option 1', value: 'opt1' },
 		{ label: 'Option 2', value: 'opt2' },

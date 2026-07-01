@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach } from 'vitest'
 import { List, Map } from 'immutable'
 import {
 	getGlobalTriggerEngine,
@@ -11,7 +11,7 @@ import Doctype from '../../src/doctype'
 import Registry from '../../src/registry'
 import { createHST } from '../../src/stores/hst'
 
-describe('XState Transition Integration', () => {
+describe('XState Transition Integration', { tags: ['unit'] }, () => {
 	let registry: Registry
 
 	beforeEach(() => {

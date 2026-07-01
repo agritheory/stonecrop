@@ -123,12 +123,10 @@ function handleDesktopNavigate(target: NavigationTarget) {
 	// Example: log navigation intent — the routeAdapter (or the built-in router
 	// fallback) already performed the navigation.  This handler is for any
 	// additional host-side logic like analytics.
-	// eslint-disable-next-line no-console
 	console.debug('[example] Desktop navigate', target)
 }
 
 function handleRecordOpen(payload: RecordOpenEventPayload) {
-	// eslint-disable-next-line no-console
 	console.debug('[example] record:open', payload)
 }
 
@@ -143,7 +141,6 @@ async function handleLoadRecords(payload: LoadRecordsEventPayload) {
 		if (doctype) await stonecrop.value.getRecords(doctype)
 	} catch (error) {
 		addNotification(`Failed to load ${payload.doctype} records`, 'error')
-		// eslint-disable-next-line no-console
 		console.error('[example] load-records failed', error)
 	}
 }

@@ -17,7 +17,7 @@ function createBinding(value?: string, instance?: Record<string, any>): any {
 	}
 }
 
-describe('useStringMask', () => {
+describe('useStringMask', { tags: ['component'] }, () => {
 	describe('with explicit mask', () => {
 		it('applies a phone mask to digits', () => {
 			const el = createMockInput('5551234567')

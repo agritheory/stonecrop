@@ -32,10 +32,11 @@ function toMutationName(doctypeName: string, operation: 'create' | 'update' | 'd
 	return `${operation}${pascalName}ById`
 }
 
-function formatFieldMeta(field: { fieldname: string; fieldtype: string; [key: string]: unknown }) {
+function formatFieldMeta(field: { kind: string; fieldname: string; fieldtype?: string; [key: string]: unknown }) {
 	return {
+		kind: field.kind,
 		fieldname: field.fieldname,
-		fieldtype: field.fieldtype,
+		fieldtype: field.fieldtype ?? null,
 		label: field.label ?? null,
 		required: field.required ?? false,
 		readOnly: field.readOnly ?? false,
@@ -50,7 +51,6 @@ function formatDoctypeMeta(meta: DoctypeMeta) {
 	return {
 		name: meta.name,
 		slug: meta.slug ?? null,
-		tableName: meta.tableName ?? null,
 		fields: meta.fields.map(formatFieldMeta),
 		workflow: meta.workflow
 			? {
@@ -222,6 +222,12 @@ export default {
 									}
 								}
 
+								// ActionContext deliberately has an open index signature ([key: string]: unknown)
+								// as the extension point for injecting a data access layer (see ADR 0003).
+								// `executor` here is this example's in-memory backend — application-owned
+								// plumbing, not a framework convention. In a PostGraphile setup this slot
+								// is `pgClient` (an active database connection); for any other custom
+								// backend, inject whatever your handlers need to read and write data.
 								const actionContext: ActionContext = {
 									doctype: meta,
 									executor: mockExecutor,

@@ -3,7 +3,7 @@ import { mount } from '@vue/test-utils'
 
 import ListAnchor from '../../src/components/ListAnchor.vue'
 
-describe('ListAnchor', () => {
+describe('ListAnchor', { tags: ['component'] }, () => {
 	it('renders anchor element', () => {
 		const wrapper = mount(ListAnchor, {
 			slots: {

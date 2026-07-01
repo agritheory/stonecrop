@@ -4,13 +4,12 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { nextTick, defineComponent } from 'vue'
 import type { UnknownMachineConfig } from 'xstate'
 
-import type { SchemaTypes } from '@stonecrop/aform'
 import { useStonecrop } from '../../src/composables/stonecrop'
 import Doctype from '../../src/doctype'
 import Registry from '../../src/registry'
 import { Stonecrop } from '../../src/stonecrop'
 
-describe('HST Composable Functionality', () => {
+describe('HST Composable Functionality', { tags: ['unit'] }, () => {
 	let registry: Registry
 	let stonecrop: Stonecrop
 	let doctype: Doctype
@@ -21,10 +20,10 @@ describe('HST Composable Functionality', () => {
 		registry = new Registry()
 
 		const mockSchema = List([
-			{ fieldname: 'name', fieldtype: 'Data', label: 'Name', component: 'ATextInput' },
-			{ fieldname: 'active', fieldtype: 'Check', label: 'Active', component: 'ACheckbox' },
-			{ fieldname: 'count', fieldtype: 'Int', label: 'Count', component: 'ANumericInput' },
-		] as SchemaTypes[])
+			{ kind: 'field', fieldname: 'name', fieldtype: 'Data', label: 'Name', component: 'ATextInput' },
+			{ kind: 'field', fieldname: 'active', fieldtype: 'Check', label: 'Active', component: 'ACheckbox' },
+			{ kind: 'field', fieldname: 'count', fieldtype: 'Int', label: 'Count', component: 'ANumericInput' },
+		])
 
 		const mockWorkflow: UnknownMachineConfig = {
 			id: 'task',
@@ -50,7 +49,13 @@ describe('HST Composable Functionality', () => {
 			const TestComponent = defineComponent({
 				template: '<div>{{ hstPath }}</div>',
 				setup() {
-					const { stonecrop, provideHSTPath, handleHSTChange, hstStore, formData } = useStonecrop({
+					const {
+						stonecrop: stonecropComposable,
+						provideHSTPath,
+						handleHSTChange,
+						hstStore,
+						formData,
+					} = useStonecrop({
 						doctype,
 						recordId: 'test-123',
 					})
@@ -58,7 +63,7 @@ describe('HST Composable Functionality', () => {
 					const hstPath = provideHSTPath('name')
 
 					return {
-						stonecrop,
+						stonecrop: stonecropComposable,
 						provideHSTPath,
 						handleHSTChange,
 						hstStore,
@@ -157,9 +162,8 @@ describe('HST Composable Functionality', () => {
 			expect(vm.formData.name).toBe('Test Task')
 
 			// Check that HST store is updated
-			if (vm.hstStore) {
-				expect(vm.hstStore.get('task.test-123.name')).toBe('Test Task')
-			}
+			expect(vm.hstStore).toBeDefined()
+			expect(vm.hstStore.get('task.test-123.name')).toBe('Test Task')
 		})
 
 		it('should generate correct HST paths for nested fields', async () => {

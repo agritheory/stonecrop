@@ -1,11 +1,11 @@
-import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest'
+import { describe, it, expect, beforeEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { nextTick } from 'vue'
 import { useOperationLog, useUndoRedoShortcuts, withBatch } from '../../src/composables/operation-log'
 import { createHST } from '../../src/stores/hst'
 import type { HSTNode } from '../../src/stores/hst'
 
-describe('Operation Log Composable', () => {
+describe('Operation Log Composable', { tags: ['unit'] }, () => {
 	let hstStore: HSTNode
 
 	beforeEach(() => {
@@ -222,7 +222,7 @@ describe('Operation Log Composable', () => {
 
 	describe('useUndoRedoShortcuts', () => {
 		it('should setup keyboard shortcuts for undo/redo', async () => {
-			const { undo, redo, canUndo, canRedo } = useOperationLog()
+			const { undo, _redo, canUndo, canRedo } = useOperationLog()
 
 			hstStore.set('task.123.title', 'Shortcut Test')
 

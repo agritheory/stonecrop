@@ -1,0 +1,5 @@
+query Continents($filter: ContinentFilterInput) {
+	continents(filter: $filter) {
+		...ContinentFields
+	}
+}

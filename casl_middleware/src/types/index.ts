@@ -66,7 +66,7 @@ export interface FieldPermission {
  * GraphQL resolver function type
  * @public
  */
-export type ResolverFn = (root: any, args: any, context: Context, info: GraphQLResolveInfo) => Promise<any> | any
+export type ResolverFn = (root: any, args: any, context: Context, info: GraphQLResolveInfo) => any
 
 /**
  * Middleware function that wraps a GraphQL resolver with authorization logic
@@ -78,7 +78,7 @@ export type MiddlewareFn = (
 	args: any,
 	context: Context,
 	info: GraphQLResolveInfo
-) => Promise<any> | any
+) => any
 
 /**
  * Plugin configuration options for framework integrations

@@ -3,7 +3,7 @@ import { mount } from '@vue/test-utils'
 
 import BeamProgress from '../../src/components/BeamProgress.vue'
 
-describe('BeamProgress', () => {
+describe('BeamProgress', { tags: ['component'] }, () => {
 	it('renders with default props', () => {
 		const wrapper = mount(BeamProgress)
 		expect(wrapper.text()).toContain('Status')

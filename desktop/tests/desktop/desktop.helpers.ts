@@ -1,10 +1,11 @@
 import { List, Map } from 'immutable'
 import { App } from 'vue'
+import { vi } from 'vitest'
 
-import type { SchemaTypes } from '@stonecrop/aform'
+import type { DoctypeField } from '@stonecrop/schema'
 import { Doctype, Registry, Stonecrop } from '@stonecrop/stonecrop'
 
-export function makeStonecropPlugin(registry: Registry, stonecrop: Stonecrop) {
+export const makeStonecropPlugin = vi.defineHelper((registry: Registry, stonecrop: Stonecrop) => {
 	// Provide only the injection tokens that useStonecrop() needs.
 	// We deliberately skip app.use(StonecropPlugin) here: the real plugin would
 	// call app.provide('$registry', ...) itself, and a second provide() on the same
@@ -17,27 +18,24 @@ export function makeStonecropPlugin(registry: Registry, stonecrop: Stonecrop) {
 			app.provide('$stonecrop', stonecrop)
 		},
 	}
-}
+})
 
-export function buildDoctype(
-	name: string,
-	initialState: string,
-	states: Record<string, any>,
-	extraFields?: SchemaTypes[]
-) {
-	const baseFields = [
-		{ fieldname: 'id', fieldtype: 'Data', label: 'ID', component: 'ATextInput' },
-		{ fieldname: 'title', fieldtype: 'Data', label: 'Title', component: 'ATextInput' },
-		{ fieldname: 'status', fieldtype: 'Data', label: 'Status', component: 'ATextInput' },
-	] as SchemaTypes[]
+export const buildDoctype = vi.defineHelper(
+	(name: string, initialState: string, states: Record<string, any>, extraFields?: DoctypeField[]) => {
+		const baseFields = [
+			{ kind: 'field' as const, fieldname: 'id', fieldtype: 'Data', label: 'ID', component: 'ATextInput' },
+			{ kind: 'field' as const, fieldname: 'title', fieldtype: 'Data', label: 'Title', component: 'ATextInput' },
+			{ kind: 'field' as const, fieldname: 'status', fieldtype: 'Data', label: 'Status', component: 'ATextInput' },
+		]
 
-	const schema = extraFields ? List([...baseFields, ...extraFields]) : List(baseFields)
+		const schema = extraFields ? List([...baseFields, ...extraFields]) : List(baseFields)
 
-	const workflow = {
-		id: name,
-		initial: initialState,
-		states,
+		const workflow = {
+			id: name,
+			initial: initialState,
+			states,
+		}
+
+		return new Doctype(name, schema, workflow, Map({}))
 	}
-
-	return new Doctype(name, schema, workflow, Map({}))
-}
+)

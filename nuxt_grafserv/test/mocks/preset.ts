@@ -1,5 +1,7 @@
+import { StonecropPreset } from '@stonecrop/graphql-middleware'
+
 // Mock build-time preset for testing
 export const preset = {
-	extends: [],
+	extends: [StonecropPreset],
 	pgServices: [],
 }

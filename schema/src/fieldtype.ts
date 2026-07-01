@@ -25,6 +25,9 @@ export const BUILTIN_FIELD_TYPES = [
 	'Currency', // Currency value
 	'Quantity', // Quantity with unit
 	'Select', // Dropdown selection
+	'PrimaryKey', // Primary key field — used by the middleware to identify the record's PK column
+	'Fieldset', // UI grouping container — no DB column; children are flat columns
+	'Display', // Computed/read-only field — no DB column; excluded from SQL SELECT
 ] as const
 
 /**
@@ -107,6 +110,13 @@ export const TYPE_MAP: Record<BuiltinFieldType, FieldTemplate> = {
 	Currency: { component: 'ACurrencyInput', fieldtype: 'Currency' },
 	Quantity: { component: 'AQuantityInput', fieldtype: 'Quantity' },
 	Select: { component: 'ADropdown', fieldtype: 'Select' },
+
+	// Identity — PK fields are typically hidden; no interactive component is needed
+	PrimaryKey: { component: 'ATextInput', fieldtype: 'PrimaryKey' },
+
+	// Layout — UI grouping containers and computed fields with no backing DB column
+	Fieldset: { component: 'AFieldset', fieldtype: 'Fieldset' },
+	Display: { component: 'ATextInput', fieldtype: 'Display' },
 }
 
 /**

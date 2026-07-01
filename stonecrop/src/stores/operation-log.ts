@@ -88,6 +88,24 @@ function deserializeFromBroadcast(serialized: SerializedCrossTabMessage): CrossT
 }
 
 /**
+ * Revert an operation (apply beforeValue)
+ */
+function revertOperation(operation: HSTOperation, store: HSTNode) {
+	if ((operation.type === 'set' || operation.type === 'delete') && store && typeof store.set === 'function') {
+		store.set(operation.path, operation.beforeValue, 'undo')
+	}
+}
+
+/**
+ * Apply an operation (apply afterValue)
+ */
+function applyOperation(operation: HSTOperation, store: HSTNode) {
+	if ((operation.type === 'set' || operation.type === 'delete') && store && typeof store.set === 'function') {
+		store.set(operation.path, operation.afterValue, 'redo')
+	}
+}
+
+/**
  * Global HST Operation Log Store
  * Tracks all mutations with full metadata for undo/redo, sync, and audit
  *
@@ -138,15 +156,13 @@ export const useOperationLogStore = defineStore('hst-operation-log', () => {
 		return operations.value.length - 1 - currentIndex.value
 	})
 
-	const undoRedoState = computed(
-		(): UndoRedoState => ({
-			canUndo: canUndo.value,
-			canRedo: canRedo.value,
-			undoCount: undoCount.value,
-			redoCount: redoCount.value,
-			currentIndex: currentIndex.value,
-		})
-	)
+	const undoRedoState = computed((): UndoRedoState => ({
+		canUndo: canUndo.value,
+		canRedo: canRedo.value,
+		undoCount: undoCount.value,
+		redoCount: redoCount.value,
+		currentIndex: currentIndex.value,
+	}))
 
 	// Core Methods
 
@@ -312,7 +328,6 @@ export const useOperationLogStore = defineStore('hst-operation-log', () => {
 		if (!operation.reversible) {
 			// Warn about irreversible operation
 			if (typeof console !== 'undefined' && operation.irreversibleReason) {
-				// eslint-disable-next-line no-console
 				console.warn('Cannot undo irreversible operation:', operation.irreversibleReason)
 			}
 			return false
@@ -345,7 +360,6 @@ export const useOperationLogStore = defineStore('hst-operation-log', () => {
 		} catch (error) {
 			// Log error in development
 			if (typeof console !== 'undefined') {
-				// eslint-disable-next-line no-console
 				console.error('Undo failed:', error)
 			}
 			return false
@@ -386,35 +400,10 @@ export const useOperationLogStore = defineStore('hst-operation-log', () => {
 		} catch (error) {
 			// Log error in development
 			if (typeof console !== 'undefined') {
-				// eslint-disable-next-line no-console
 				console.error('Redo failed:', error)
 			}
 			return false
 		}
-	}
-
-	/**
-	 * Revert an operation (apply beforeValue)
-	 */
-	function revertOperation(operation: HSTOperation, store: HSTNode) {
-		// Both 'set' and 'delete' operations can be reverted by setting to beforeValue
-		if ((operation.type === 'set' || operation.type === 'delete') && store && typeof store.set === 'function') {
-			store.set(operation.path, operation.beforeValue, 'undo')
-		}
-		// Note: 'transition' operations are marked as non-reversible, so they won't reach here
-		// Note: 'batch' operations are handled separately in the undo function
-	}
-
-	/**
-	 * Apply an operation (apply afterValue)
-	 */
-	function applyOperation(operation: HSTOperation, store: HSTNode) {
-		// Both 'set' and 'delete' operations can be applied by setting to afterValue
-		if ((operation.type === 'set' || operation.type === 'delete') && store && typeof store.set === 'function') {
-			store.set(operation.path, operation.afterValue, 'redo')
-		}
-		// Note: 'transition' operations are marked as non-reversible, so they won't reach here
-		// Note: 'batch' operations are handled separately in the redo function
 	}
 
 	/**
@@ -511,7 +500,6 @@ export const useOperationLogStore = defineStore('hst-operation-log', () => {
 
 			if (!rawMessage || typeof rawMessage !== 'object') return
 
-			// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 			const message = deserializeFromBroadcast(rawMessage)
 
 			// Ignore messages from this tab
@@ -523,7 +511,9 @@ export const useOperationLogStore = defineStore('hst-operation-log', () => {
 				currentIndex.value = operations.value.length - 1
 			} else if (message.type === 'operation' && message.operations) {
 				// Add batch operations from another tab
-				operations.value.push(...message.operations.map((op): HSTOperation => ({ ...op, source: 'sync' })))
+				operations.value.push(
+					...message.operations.map((op): HSTOperation => Object.assign({}, op, { source: 'sync' as const }))
+				)
 				currentIndex.value = operations.value.length - 1
 			}
 		})
@@ -538,6 +528,7 @@ export const useOperationLogStore = defineStore('hst-operation-log', () => {
 			clientId: clientId.value,
 			timestamp: new Date(),
 		}
+		// oxlint-disable-next-line unicorn/require-post-message-target-origin -- BroadcastChannel.postMessage does not accept targetOrigin; rule only applies to window.postMessage
 		broadcastChannel.postMessage(serializeForBroadcast(message))
 	}
 
@@ -550,6 +541,7 @@ export const useOperationLogStore = defineStore('hst-operation-log', () => {
 			clientId: clientId.value,
 			timestamp: new Date(),
 		}
+		// oxlint-disable-next-line unicorn/require-post-message-target-origin -- BroadcastChannel.postMessage does not accept targetOrigin; rule only applies to window.postMessage
 		broadcastChannel.postMessage(serializeForBroadcast(message))
 	}
 
@@ -562,6 +554,7 @@ export const useOperationLogStore = defineStore('hst-operation-log', () => {
 			clientId: clientId.value,
 			timestamp: new Date(),
 		}
+		// oxlint-disable-next-line unicorn/require-post-message-target-origin -- BroadcastChannel.postMessage does not accept targetOrigin; rule only applies to window.postMessage
 		broadcastChannel.postMessage(serializeForBroadcast(message))
 	}
 
@@ -574,6 +567,7 @@ export const useOperationLogStore = defineStore('hst-operation-log', () => {
 			clientId: clientId.value,
 			timestamp: new Date(),
 		}
+		// oxlint-disable-next-line unicorn/require-post-message-target-origin -- BroadcastChannel.postMessage does not accept targetOrigin; rule only applies to window.postMessage
 		broadcastChannel.postMessage(serializeForBroadcast(message))
 	}
 
@@ -615,7 +609,6 @@ export const useOperationLogStore = defineStore('hst-operation-log', () => {
 		} catch (error) {
 			// Log error in development
 			if (typeof console !== 'undefined') {
-				// eslint-disable-next-line no-console
 				console.error('Failed to load operations from persistence:', error)
 			}
 		}
@@ -635,7 +628,6 @@ export const useOperationLogStore = defineStore('hst-operation-log', () => {
 		} catch (error) {
 			// Log error in development
 			if (typeof console !== 'undefined') {
-				// eslint-disable-next-line no-console
 				console.error('Failed to save operations to persistence:', error)
 			}
 		}

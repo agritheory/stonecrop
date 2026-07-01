@@ -9,7 +9,7 @@ import {
 	pascalToSnake,
 } from '../src/naming'
 
-describe('Naming Conventions', () => {
+describe('Naming Conventions', { tags: ['unit'] }, () => {
 	describe('snakeToCamel', () => {
 		it('should convert simple snake_case to camelCase', () => {
 			expect(snakeToCamel('hello_world')).toBe('helloWorld')

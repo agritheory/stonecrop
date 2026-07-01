@@ -1,5 +1,3 @@
-/// <reference types="vitest" />
-
 import vue from '@vitejs/plugin-vue'
 import { resolve } from 'path'
 import { libInjectCss } from 'vite-plugin-lib-inject-css'
@@ -31,6 +29,21 @@ export default defineConfig({
 	},
 	test: {
 		globals: true,
+		tags: [
+			{ name: 'unit', description: 'Pure logic test — no DOM, network, or framework runtime.' },
+			{ name: 'component', description: 'Vue component test using jsdom + @vue/test-utils.' },
+			{
+				name: 'e2e',
+				timeout: 30_000,
+				description: 'Spins up a real server or Nuxt runtime. Run in integration gate only.',
+			},
+			{
+				name: 'nuxt',
+				timeout: 30_000,
+				description: 'Involves the Nuxt module, plugin, composables, or @nuxt/test-utils.',
+			},
+			{ name: 'graphql', description: 'Involves GraphQL schema, queries, resolvers, or PostGraphile.' },
+		],
 		environment: 'jsdom',
 		coverage: {
 			enabled: true,

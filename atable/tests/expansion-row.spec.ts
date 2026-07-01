@@ -6,7 +6,7 @@ import AExpansionRow from '../src/components/AExpansionRow.vue'
 import { createTableStore } from '../src/stores/table'
 import type { TableColumn } from '../src/types'
 
-describe('AExpansionRow component', () => {
+describe('AExpansionRow component', { tags: ['component'] }, () => {
 	const mockColumns: TableColumn[] = [
 		{ name: 'col1', label: 'Column 1', fieldtype: 'Data', align: 'left', edit: false },
 		{ name: 'col2', label: 'Column 2', fieldtype: 'Data', align: 'center', edit: true },

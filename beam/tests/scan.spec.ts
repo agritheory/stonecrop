@@ -3,7 +3,11 @@ import { mount } from '@vue/test-utils'
 
 import ScanInput from '../src/components/ScanInput.vue'
 
-describe('scan input component', () => {
+type ScanInstance = { simulate: (target: Window, code: string) => unknown }
+const isScanInstance = (v: unknown): v is ScanInstance =>
+	typeof v === 'object' && v !== null && typeof (v as { simulate?: unknown }).simulate === 'function'
+
+describe('scan input component', { tags: ['component'] }, () => {
 	it('call scan handler prop function when barcode scanner is used', async () => {
 		const wrapper = mount(ScanInput, {
 			props: {
@@ -17,8 +21,11 @@ describe('scan input component', () => {
 		expect(instanceEvent).toHaveLength(1)
 
 		// simulate a barcode scanner and test that the scanHandler prop function is called
-		const instance = (instanceEvent as any)[0][0] as any
-		expect(instance.simulate(window, '1234567890')).toBe(instance)
+		const raw = instanceEvent?.[0][0]
+		if (!isScanInstance(raw)) {
+			throw new Error('Expected scanInstance event payload to be a ScanInstance')
+		}
+		expect(raw.simulate(window, '1234567890')).toBe(raw)
 		expect(wrapper.props().scanHandler).toHaveBeenCalledWith('1234567890', 1)
 	})
 })

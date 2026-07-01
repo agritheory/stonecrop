@@ -1,5 +1,10 @@
 <template>
-	<div class="node-editor-wrapper" :class="nodeContainerClass" @mouseover="hover = true" @mouseleave="hover = false">
+	<div
+		class="node-editor-wrapper"
+		:class="nodeContainerClass"
+		@contextmenu.prevent
+		@mouseover="hover = true"
+		@mouseleave="hover = false">
 		<div class="chart-controls">
 			<div class="chart-controls-left">
 				<div><b>Selected Node:</b> {{ activeElementKey ? activeElementKey : 'none' }}</div>
@@ -29,13 +34,16 @@
 			:fit-view-on-init="true"
 			@connect="handleConnect"
 			@pane-ready="setInstance"
+			@node-click="handleNodeClick"
+			@edge-click="handleEdgeClick"
 			@edge-context-menu="handleEdgeContextMenu"
+			@node-drag-stop="emitElements"
 			@wheel.prevent="onWheel">
 			<template #node-editable="props">
 				<EditableNode v-bind="props" @change="labelChanged($event, props.id)" />
 			</template>
 			<template #edge-editable="props">
-				<EditableEdge v-bind="props" @change="labelChanged($event, props.id)" />
+				<EditableEdge v-bind="props" @change="labelChanged($event, props.id)" @remove="removeEdge(props.id)" />
 			</template>
 		</VueFlow>
 	</div>
@@ -49,10 +57,11 @@ import {
 	useVueFlow,
 	Connection,
 	Node,
+	NodeMouseEvent,
 	EdgeMouseEvent,
 	DefaultEdge,
 } from '@vue-flow/core'
-import { type HTMLAttributes, ref, computed, defineEmits, onBeforeUnmount, onMounted } from 'vue'
+import { type HTMLAttributes, ref, computed, nextTick, onBeforeUnmount, onMounted } from 'vue'
 
 import EditableEdge from './EditableEdge.vue'
 import EditableNode from './EditableNode.vue'
@@ -69,47 +78,32 @@ const vueFlowElements = ref<FlowElements>([])
 const vueFlowInstance = ref<VueFlowStore>()
 
 const activeElementKey = ref('')
-const activeElementIndex = computed(() => {
-	vueFlowElements.value.forEach((element, index) => {
-		if (element.id === activeElementKey.value) {
-			return index
-		}
-	})
-
-	return -1
-})
+const activeElementIndex = computed(() =>
+	vueFlowElements.value.findIndex(element => element.id === activeElementKey.value)
+)
 
 const elements = computed({
 	get: () => {
-		const _elements = modelValue
+		const items = modelValue
 
 		// Add data to each element
-		for (const _element of _elements) {
-			_element.data = {}
-			if (_element.type === 'input') {
-				_element.data.hasInput = false
-				_element.data.hasOutput = true
-			} else if (_element.type === 'output') {
-				_element.data.hasInput = true
-				_element.data.hasOutput = false
+		for (const element of items) {
+			element.data = {}
+			if (element.type === 'input') {
+				element.data.hasInput = false
+				element.data.hasOutput = true
+			} else if (element.type === 'output') {
+				element.data.hasInput = true
+				element.data.hasOutput = false
 			} else {
-				_element.data.hasInput = true
-				_element.data.hasOutput = true
+				element.data.hasInput = true
+				element.data.hasOutput = true
 			}
-			_element.class = 'vue-flow__node-default'
-			_element.type = 'editable'
+			element.class = 'vue-flow__node-default'
+			element.type = 'editable'
 		}
 
-		// Add click event to each element
-		for (const _element of _elements) {
-			_element.events = {
-				click: () => {
-					activeElementKey.value = _element.id
-				},
-			}
-		}
-
-		return _elements
+		return items
 	},
 	set: newValue => {
 		emit('update:modelValue', JSON.parse(JSON.stringify(newValue)))
@@ -147,6 +141,7 @@ const shiftOutput = () => {
 		const activeNode = vueFlowElements.value[activeElementIndex.value] as Node
 		if (!activeNode.sourcePosition) return
 		activeNode.sourcePosition = shiftTerminal(activeNode.sourcePosition)
+		emitElements()
 	}
 }
 
@@ -155,6 +150,7 @@ const shiftInput = () => {
 		const activeNode = vueFlowElements.value[activeElementIndex.value] as Node
 		if (!activeNode.targetPosition) return
 		activeNode.targetPosition = shiftTerminal(activeNode.targetPosition)
+		emitElements()
 	}
 }
 
@@ -201,17 +197,11 @@ const addNode = () => {
 			hasInput: true,
 			hasOutput: true,
 		},
-		events: {
-			click: () => {
-				activeElementKey.value = nodeId
-			},
-		},
-		// position: { x: Math.random() * vueFlowInstance.value.dimensions.width, y: Math.random() * vueFlowInstance.value.dimensions.height }
 		position: newNodePosition,
 	})
 
 	if (makeEdge) {
-		let edgeId = `edge-${id + 1}`
+		const edgeId = `edge-${id + 1}`
 		vueFlowElements.value.push({
 			id: edgeId,
 			source: activeElementKey.value,
@@ -219,13 +209,9 @@ const addNode = () => {
 			type: 'editable',
 			label: `EDGE ${id + 1}`,
 			animated: true,
-			events: {
-				click: () => {
-					activeElementKey.value = edgeId
-				},
-			},
 		})
 	}
+	emitElements()
 }
 
 const labelChanged = (event: DefaultEdge['label'], id: DefaultEdge['id']) => {
@@ -235,9 +221,18 @@ const labelChanged = (event: DefaultEdge['label'], id: DefaultEdge['id']) => {
 			break
 		}
 	}
+	emitElements()
 }
 
-const handleConnect = (event: Connection) => {
+const handleNodeClick = ({ node }: NodeMouseEvent) => {
+	activeElementKey.value = node.id
+}
+
+const handleEdgeClick = ({ edge }: EdgeMouseEvent) => {
+	activeElementKey.value = edge.id
+}
+
+const handleConnect = async (event: Connection) => {
 	const id = vueFlowElements.value.length
 	const newEdge = {
 		id: `edge-${id}`,
@@ -247,17 +242,26 @@ const handleConnect = (event: Connection) => {
 		label: `New Edge`,
 		interactionWidth: 400,
 		animated: true,
-		events: {
-			click: () => {
-				activeElementKey.value = newEdge.id
-			},
-		},
 	}
 	addEdges([newEdge])
+	await nextTick()
+	emitElements()
 }
 
-const handleEdgeContextMenu = (event: EdgeMouseEvent) => {
-	removeEdges(event.edge.id)
+const handleEdgeContextMenu = async (event: EdgeMouseEvent) => {
+	removeEdges([event.edge.id])
+	await nextTick()
+	emitElements()
+}
+
+const removeEdge = async (id: string) => {
+	removeEdges([id])
+	await nextTick()
+	emitElements()
+}
+
+const emitElements = () => {
+	emit('update:modelValue', JSON.parse(JSON.stringify(vueFlowElements.value)))
 }
 </script>
 

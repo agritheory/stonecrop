@@ -15,7 +15,7 @@ afterEach(() => {
 	Stonecrop._root = undefined as any
 })
 
-describe('StonecropDesktop plugin', () => {
+describe('StonecropDesktop plugin', { tags: ['component'] }, () => {
 	it('registers all desktop components globally', () => {
 		const app = createApp({ template: '<div />' })
 		app.use(StonecropDesktop)
@@ -27,7 +27,7 @@ describe('StonecropDesktop plugin', () => {
 	})
 })
 
-describe('Desktop props', () => {
+describe('Desktop props', { tags: ['component'] }, () => {
 	describe('routeAdapter', () => {
 		let registry: Registry
 		let stonecrop: Stonecrop
@@ -201,7 +201,9 @@ describe('Desktop props', () => {
 			const schemaFields = tableSchema.schema as any[]
 			expect(schemaFields.some((f: any) => f.fieldname === 'uuid')).toBe(true)
 
-			const rows = tableSchema.rows as any[]
+			// Rows are now in formData (data prop), not in the schema
+			const data = aform.props('data') as Record<string, any>
+			const rows = data['records_table'] as any[]
 			expect(rows[0].id).toBe('uuid-abc-123')
 		})
 

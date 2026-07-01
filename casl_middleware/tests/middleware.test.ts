@@ -49,7 +49,7 @@ const createTestAbility = (rules: any[]): AppAbility => {
 	})
 }
 
-describe('CASL GraphQL Middleware', () => {
+describe('CASL GraphQL Middleware', { tags: ['unit', 'graphql'] }, () => {
 	let mockResolve: any
 	let mockContext: Context
 	let mockInfo: any
@@ -133,7 +133,7 @@ describe('CASL GraphQL Middleware', () => {
 			})
 
 			// Should work with original 'Query' subject since it's not mapped
-			const result = await middleware(mockResolve, {}, {}, mockContext, mockInfo as GraphQLResolveInfo)
+			await middleware(mockResolve, {}, {}, mockContext, mockInfo as GraphQLResolveInfo)
 
 			expect(mockResolve).toHaveBeenCalled()
 		})
@@ -151,7 +151,7 @@ describe('CASL GraphQL Middleware', () => {
 
 			mockContext.ability = createTestAbility([{ action: 'view', subject: 'Query' }])
 
-			const result = await middleware(mockResolve, {}, {}, mockContext, mockInfo as GraphQLResolveInfo)
+			await middleware(mockResolve, {}, {}, mockContext, mockInfo as GraphQLResolveInfo)
 
 			expect(mockResolve).toHaveBeenCalled()
 		})
@@ -175,7 +175,7 @@ describe('CASL GraphQL Middleware', () => {
 				{ action: 'read', subject: 'UserEmail' },
 			])
 
-			const result = await middleware(mockResolve, {}, {}, mockContext, mockInfo as GraphQLResolveInfo)
+			await middleware(mockResolve, {}, {}, mockContext, mockInfo as GraphQLResolveInfo)
 
 			expect(mockResolve).toHaveBeenCalled()
 		})
@@ -218,7 +218,7 @@ describe('CASL GraphQL Middleware', () => {
 
 			const args = { input: { name: 'test', role: 'admin' } }
 
-			const result = await middleware(mockResolve, {}, args, mockContext, mockInfo as GraphQLResolveInfo)
+			await middleware(mockResolve, {}, args, mockContext, mockInfo as GraphQLResolveInfo)
 
 			expect(mockResolve).toHaveBeenCalled()
 		})

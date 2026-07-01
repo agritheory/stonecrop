@@ -6,7 +6,7 @@ Schema definitions and validation for Stonecrop doctypes, fields, and workflows.
 
 `@stonecrop/schema` provides the foundational type system for Stonecrop applications. It defines strongly-typed schemas using [Zod](https://zod.dev/) for:
 
-- **Field definitions** (`FieldMeta`) - Unified field configuration for forms and tables
+- **Field definitions** (`DoctypeField`) - Discriminated union of field variants (`ValueField | FieldsetField | TableField`)
 - **Doctype definitions** (`DoctypeMeta`) - Complete document type schemas
 - **Workflows** (`WorkflowMeta`) - State machines and action definitions
 - **Validation** - Runtime schema validation with detailed error reporting
@@ -31,7 +31,7 @@ pnpm add @stonecrop/schema
 Stonecrop uses semantic field types that remain consistent whether rendered in a form or table:
 
 ```typescript
-import { StonecropFieldType, FieldMeta } from '@stonecrop/schema'
+import { StonecropFieldType } from '@stonecrop/schema'
 
 // Field types include:
 // Text: Data, Text
@@ -44,14 +44,29 @@ import { StonecropFieldType, FieldMeta } from '@stonecrop/schema'
 // Selection: Select
 ```
 
-### Field Metadata
+### Field Definitions
 
-`FieldMeta` is the single source of truth for field definitions:
+`DoctypeField` is a discriminated union of three structural variants:
+
+- **`ValueField`** — a scalar or link field; has `fieldtype`
+- **`FieldsetField`** — a layout container grouping other fields; has `schema: DoctypeField[]`
+- **`TableField`** — an inline table with column definitions; has `columns: ColumnSchema[]`
+
+**In authored JSON** (doctype files), `kind` is inferred from structure automatically — you only write the properties that define what the field is:
+
+```json
+{ "fieldname": "customer_name", "fieldtype": "Data", "label": "Customer Name", "required": true }
+{ "fieldname": "details", "label": "Details", "schema": [...] }
+{ "fieldname": "line_items", "label": "Line Items", "columns": [...] }
+```
+
+**In TypeScript code** that constructs `DoctypeField` objects directly, `kind` is required:
 
 ```typescript
-import { FieldMeta } from '@stonecrop/schema'
+import type { ValueField, FieldsetField, DoctypeField } from '@stonecrop/schema'
 
-const field: FieldMeta = {
+const field: ValueField = {
+  kind: 'field',
   fieldname: 'customer_name',
   fieldtype: 'Data',
   label: 'Customer Name',
@@ -62,21 +77,24 @@ const field: FieldMeta = {
 }
 
 // Type-specific options
-const linkField: FieldMeta = {
+const linkField: ValueField = {
+  kind: 'field',
   fieldname: 'customer',
   fieldtype: 'Link',
   label: 'Customer',
   options: 'customer', // Target doctype slug
 }
 
-const selectField: FieldMeta = {
+const selectField: ValueField = {
+  kind: 'field',
   fieldname: 'status',
   fieldtype: 'Select',
   label: 'Status',
   options: ['Draft', 'Submitted', 'Cancelled'], // Choices array
 }
 
-const decimalField: FieldMeta = {
+const decimalField: ValueField = {
+  kind: 'field',
   fieldname: 'price',
   fieldtype: 'Decimal',
   label: 'Price',
@@ -94,9 +112,9 @@ import { DoctypeMeta } from '@stonecrop/schema'
 const doctype: DoctypeMeta = {
   name: 'Sales Order',
   slug: 'sales-order',
-  tableName: 'sales_order',
   fields: [
     {
+      kind: 'field',
       fieldname: 'customer',
       fieldtype: 'Link',
       label: 'Customer',
@@ -104,6 +122,7 @@ const doctype: DoctypeMeta = {
       required: true,
     },
     {
+      kind: 'field',
       fieldname: 'items',
       fieldtype: 'Link',
       label: 'Items',
@@ -254,7 +273,7 @@ import { parseField, parseDoctype } from '@stonecrop/schema'
 
 try {
   const field = parseField(untrustedData)
-  // TypeScript knows field is FieldMeta
+  // TypeScript knows field is DoctypeField (ValueField | FieldsetField | TableField)
 } catch (error) {
   console.error('Invalid field:', error)
 }
@@ -389,7 +408,6 @@ const doctypes = convertSchema(ddl, options)
 
 doctypes.forEach(doctype => {
   console.log(`Doctype: ${doctype.name}`)
-  console.log(`Table: ${doctype.tableName}`)
   console.log(`Fields: ${doctype.fields.length}`)
 })
 ```
@@ -429,7 +447,7 @@ This package provides the type system used throughout Stonecrop:
 
 - **`@stonecrop/stonecrop`** - Registry uses `DoctypeMeta` for schema storage; `getDescendantLinks()` / `getAncestorLinks()` for relationship traversal
 - **`@stonecrop/graphql-client`** - `StonecropClient` implements `DataClient`; uses `GetRecordOptions` / `GetRecordsOptions` for fetch parameters
-- **`@stonecrop/aform`** - Renders fields based on `FieldMeta` definitions
+- **`@stonecrop/aform`** - Renders fields based on `DoctypeField` definitions
 - **`@stonecrop/atable`** - Uses `ColumnSchema` for schema-driven column derivation; `TableColumn` (ATable's runtime column type) extends `ColumnSchema`, widening `format`/`modalComponent` to accept live functions and adding `mask`/`originalIndex`
 - **Backend APIs** - Validates and stores doctypes using these schemas
 
@@ -457,10 +475,11 @@ rushx docs
 This package is written in TypeScript with strict mode enabled and provides full type definitions:
 
 ```typescript
-import type { FieldMeta, DoctypeMeta } from '@stonecrop/schema'
+import type { ValueField, DoctypeField, DoctypeMeta } from '@stonecrop/schema'
 
 // Types are inferred from Zod schemas
-const field: FieldMeta = {
+const field: ValueField = {
+  kind: 'field',
   fieldname: 'title',
   fieldtype: 'Data',
   // TypeScript will catch typos and missing required fields
@@ -468,7 +487,7 @@ const field: FieldMeta = {
 
 // Use Zod's infer utility for derived types
 import { z } from 'zod'
-import { FieldMeta as FieldMetaSchema } from '@stonecrop/schema'
+import { DoctypeFieldSchema } from '@stonecrop/schema'
 
-type FieldMetaType = z.infer<typeof FieldMetaSchema>
+type DoctypeFieldType = z.infer<typeof DoctypeFieldSchema>
 ```

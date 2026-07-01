@@ -3,7 +3,7 @@ import { describe, it, expect } from 'vitest'
 import { schemaToColumns } from '../src/schemaToColumns'
 import type { ColumnSchema } from '@stonecrop/schema'
 
-describe('schemaToColumns', () => {
+describe('schemaToColumns', { tags: ['component'] }, () => {
 	it('maps fieldname to name', () => {
 		const schema: ColumnSchema[] = [{ fieldname: 'item_name', fieldtype: 'Data', label: 'Item Name' }]
 		const columns = schemaToColumns(schema)

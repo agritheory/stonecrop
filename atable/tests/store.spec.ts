@@ -4,7 +4,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { createTableStore } from '../src/stores/table'
 import type { TableColumn, TableRow, GanttBarInfo, ConnectionHandle } from '../src/types'
 
-describe('table store', () => {
+describe('table store', { tags: ['component'] }, () => {
 	let store: ReturnType<typeof createTableStore>
 
 	const mockColumns: TableColumn[] = [
@@ -23,7 +23,7 @@ describe('table store', () => {
 		setActivePinia(createPinia())
 		store = createTableStore({
 			columns: mockColumns,
-			rows: mockRows,
+			rows: mockRows.map(row => ({ ...row })),
 		})
 	})
 
@@ -175,21 +175,13 @@ describe('table store', () => {
 		})
 
 		it('should set cell text', () => {
-			// First, check what the actual cell value is
-			const initialValue = store.getCellData(1, 0)
-
-			// Set a different value to trigger the update
+			// setCellText stages the change in updates without committing to rows.
+			// store.table reflects only committed rows, so it remains 'John' here.
 			const newValue = 'Johnny'
 			store.setCellText(1, 0, newValue)
 
-			// Only expect updates to exist if the value actually changed
-			if (store.table['1:0'] !== newValue) {
-				expect(store.updates['1:0']).toBe(newValue)
-				expect(store.display[0].rowModified).toBe(true)
-			} else {
-				// If value is the same, updates won't be created
-				expect(store.updates['1:0']).toBeUndefined()
-			}
+			expect(store.updates['1:0']).toBe(newValue)
+			expect(store.display[0].rowModified).toBe(true)
 		})
 
 		it('should get formatted value', () => {

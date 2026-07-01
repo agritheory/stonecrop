@@ -41,7 +41,7 @@ vi.mock('@graphql-tools/graphql-file-loader', () => ({
 	GraphQLFileLoader: vi.fn(),
 }))
 
-describe('Grafserv Plugins', () => {
+describe('Grafserv Plugins', { tags: ['unit', 'nuxt', 'graphql'] }, () => {
 	describe('Plugin Integration', () => {
 		it('should pass plugins to grafserv preset', async () => {
 			const { getGrafservInstance, clearGrafservCache } = await import('../../src/runtime/handler')

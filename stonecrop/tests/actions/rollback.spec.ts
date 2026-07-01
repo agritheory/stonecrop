@@ -14,7 +14,7 @@ import { Stonecrop } from '../../src/stonecrop'
 import { useOperationLogStore } from '../../src/stores/operation-log'
 import type { FieldChangeContext } from '../../src/types'
 
-describe('Field Trigger Rollback', () => {
+describe('Field Trigger Rollback', { tags: ['unit'] }, () => {
 	let registry: Registry
 	let stonecrop: Stonecrop
 	let engine: FieldTriggerEngine

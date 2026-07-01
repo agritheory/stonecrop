@@ -11,11 +11,12 @@
 </template>
 
 <script setup lang="ts">
+import type { InteractionMode } from '@stonecrop/schema'
 import { ref } from 'vue'
 
-import CollapseButton from '../base/CollapseButton.vue'
 import AForm from '../AForm.vue'
-import type { SchemaTypes, FormMode } from '../../types'
+import CollapseButton from '../base/CollapseButton.vue'
+import type { ResolvedField } from '../../types'
 
 const {
 	schema,
@@ -24,12 +25,12 @@ const {
 	data = {},
 	mode = 'edit',
 } = defineProps<{
-	schema: SchemaTypes[]
+	schema: ResolvedField[]
 	label?: string
 	collapsible?: boolean
 	data?: Record<string, any>
 	/** Rendering mode forwarded to the inner AForm */
-	mode?: FormMode
+	mode?: InteractionMode
 }>()
 
 const collapsed = ref(false)

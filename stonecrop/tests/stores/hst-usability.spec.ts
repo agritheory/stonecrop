@@ -6,13 +6,12 @@ import type { UnknownMachineConfig } from 'xstate'
 
 import ATextInput from '../../../aform/src/components/form/ATextInput.vue'
 import ANumericInput from '../../../aform/src/components/form/ANumericInput.vue'
-import type { SchemaTypes } from '../../../aform/src/types'
 import { useStonecrop } from '../../src/composables/stonecrop'
 import Doctype from '../../src/doctype'
 import Registry from '../../src/registry'
 import { Stonecrop } from '../../src/stonecrop'
 
-describe('HST Edge Cases & Performance', () => {
+describe('HST Edge Cases & Performance', { tags: ['unit'] }, () => {
 	let registry: Registry
 	let stonecrop: Stonecrop
 	let doctype: Doctype
@@ -24,11 +23,11 @@ describe('HST Edge Cases & Performance', () => {
 
 		// Complex schema with nested fields and special cases
 		const complexSchema = List([
-			{ fieldname: 'name', fieldtype: 'Data', label: 'Name', component: 'ATextInput' },
-			{ fieldname: 'metadata', fieldtype: 'JSON', label: 'Metadata', component: 'ATextInput' },
-			{ fieldname: 'config', fieldtype: 'JSON', label: 'Config', component: 'ATextInput' },
-			{ fieldname: 'nested_data', fieldtype: 'JSON', label: 'Nested Data', component: 'ATextInput' },
-		] as SchemaTypes[])
+			{ kind: 'field', fieldname: 'name', fieldtype: 'Data', label: 'Name', component: 'ATextInput' },
+			{ kind: 'field', fieldname: 'metadata', fieldtype: 'JSON', label: 'Metadata', component: 'ATextInput' },
+			{ kind: 'field', fieldname: 'config', fieldtype: 'JSON', label: 'Config', component: 'ATextInput' },
+			{ kind: 'field', fieldname: 'nested_data', fieldtype: 'JSON', label: 'Nested Data', component: 'ATextInput' },
+		])
 
 		const mockWorkflow: UnknownMachineConfig = {
 			id: 'complex',
@@ -176,10 +175,13 @@ describe('HST Edge Cases & Performance', () => {
 			const vm = wrapper.vm as any
 			const inputs = wrapper.findAll('input')
 
-			// Perform rapid updates
+			// Perform rapid updates — sequential UI simulation; each step must complete before the next
 			for (let i = 0; i < 10; i++) {
+				// oxlint-disable-next-line eslint/no-await-in-loop -- sequential UI interaction; each setValue must settle before the next
 				await inputs[0].setValue(`Name ${i}`)
+				// oxlint-disable-next-line eslint/no-await-in-loop -- sequential UI interaction
 				await inputs[1].setValue(i.toString())
+				// oxlint-disable-next-line eslint/no-await-in-loop -- nextTick must follow each setValue pair
 				await nextTick()
 			}
 
@@ -215,12 +217,12 @@ describe('HST Edge Cases & Performance', () => {
 							})
 
 							testResult.value = 'success'
-						} catch (error) {
+						} catch {
 							testResult.value = 'error'
 						}
 					}
 
-					testMalformedPaths()
+					void testMalformedPaths()
 
 					return { testResult, formData }
 				},
@@ -273,12 +275,12 @@ describe('HST Edge Cases & Performance', () => {
 							}
 
 							recoveryStatus.value = 'recovered'
-						} catch (error) {
+						} catch {
 							recoveryStatus.value = 'failed'
 						}
 					}
 
-					testRecovery()
+					void testRecovery()
 
 					return { recoveryStatus, formData }
 				},

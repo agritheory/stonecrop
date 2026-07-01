@@ -3,7 +3,7 @@ import { mount } from '@vue/test-utils'
 
 import BeamArrow from '../../src/components/BeamArrow.vue'
 
-describe('BeamArrow', () => {
+describe('BeamArrow', { tags: ['component'] }, () => {
 	it('renders arrow with default color', () => {
 		const wrapper = mount(BeamArrow)
 		expect(wrapper.find('.beam_metadata_arrow').exists()).toBe(true)

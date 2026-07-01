@@ -14,7 +14,7 @@ afterEach(() => {
 	Stonecrop._root = undefined as any
 })
 
-describe('Desktop command palette', () => {
+describe('Desktop command palette', { tags: ['component'] }, () => {
 	it('provides search commands that can be queried', async () => {
 		const registry = new Registry()
 		const stonecrop = new Stonecrop(registry)
@@ -44,16 +44,16 @@ describe('Desktop command palette', () => {
 		const commandPalette = wrapper.findComponent({ name: 'CommandPalette' })
 		const searchFn = commandPalette.props('search') as (query: string) => any[]
 
-		if (typeof searchFn === 'function') {
-			const allCommands = searchFn('')
-			expect(allCommands.length).toBeGreaterThan(0)
+		expect(typeof searchFn).toBe('function')
 
-			const homeCommands = searchFn('home')
-			expect(homeCommands.length).toBeGreaterThan(0)
+		const allCommands = searchFn('')
+		expect(allCommands.length).toBeGreaterThan(0)
 
-			const noMatch = searchFn('zzzzzyyyy')
-			expect(noMatch.length).toBe(0)
-		}
+		const homeCommands = searchFn('home')
+		expect(homeCommands.length).toBeGreaterThan(0)
+
+		const noMatch = searchFn('zzzzzyyyy')
+		expect(noMatch.length).toBe(0)
 	})
 
 	it('executes a command from the command palette', async () => {
@@ -135,14 +135,11 @@ describe('Desktop command palette', () => {
 		const searchFn = commandPalette.props('search') as (query: string) => any[]
 		const commands = searchFn('View Task')
 
-		if (commands.length > 0) {
-			const selectHandler = commandPalette.props('onSelect') as ((cmd: any) => void) | undefined
-			if (selectHandler) {
-				selectHandler(commands[0])
-				await nextTick()
-				expect(navigateFn).toHaveBeenCalled()
-			}
-		}
+		expect(commands.length).toBeGreaterThan(0)
+
+		await commands[0].action()
+		await nextTick()
+		expect(navigateFn).toHaveBeenCalled()
 	})
 
 	it('executes "Create New" command', async () => {
@@ -182,18 +179,15 @@ describe('Desktop command palette', () => {
 		const searchFn = commandPalette.props('search') as (query: string) => any[]
 		const commands = searchFn('Create New Task')
 
-		if (commands.length > 0) {
-			const selectHandler = commandPalette.props('onSelect') as ((cmd: any) => void) | undefined
-			if (selectHandler) {
-				selectHandler(commands[0])
-				await nextTick()
-				expect(navigateFn).toHaveBeenCalledWith(expect.objectContaining({ view: 'record' }))
-			}
-		}
+		expect(commands.length).toBeGreaterThan(0)
+
+		await commands[0].action()
+		await nextTick()
+		expect(navigateFn).toHaveBeenCalledWith(expect.objectContaining({ view: 'record' }))
 	})
 })
 
-describe('Desktop – command palette action closures', () => {
+describe('Desktop – command palette action closures', { tags: ['component'] }, () => {
 	it('all searchCommands action closures are callable without error', async () => {
 		const registry = new Registry()
 		const stonecrop = new Stonecrop(registry)
@@ -225,21 +219,22 @@ describe('Desktop – command palette action closures', () => {
 		const commandPalette = wrapper.findComponent({ name: 'CommandPalette' })
 		const searchFn = commandPalette.props('search') as ((query: string) => any[]) | undefined
 
-		if (typeof searchFn === 'function') {
-			const commands = searchFn('')
-			expect(commands.length).toBeGreaterThan(0)
+		expect(typeof searchFn).toBe('function')
 
-			for (const cmd of commands) {
-				await cmd.action()
-			}
+		const commands = (searchFn as (query: string) => any[])('')
+		expect(commands.length).toBeGreaterThan(0)
 
-			await nextTick()
-			expect(navigateFn).toHaveBeenCalled()
+		for (const cmd of commands) {
+			// oxlint-disable-next-line eslint/no-await-in-loop -- sequential command execution; test asserts navigation after all commands run in order
+			await cmd.action()
 		}
+
+		await nextTick()
+		expect(navigateFn).toHaveBeenCalled()
 	})
 })
 
-describe('Desktop – CommandPalette slot rendering', () => {
+describe('Desktop – CommandPalette slot rendering', { tags: ['component'] }, () => {
 	it('renders title and content slots with result data', async () => {
 		const registry = new Registry()
 		const stonecrop = new Stonecrop(registry)

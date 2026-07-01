@@ -1,7 +1,6 @@
 {
 	"name": "Order",
 	"slug": "order",
-	"tableName": "orders",
 	"fields": [
 		{
 			"fieldname": "id",

@@ -20,3 +20,9 @@ export default createConfigForNuxt({
 			],
 		},
 	})
+	.append({
+		// templates/ contains Nuxt page scaffolding — file names like index.vue are routing
+		// conventions, not registered component names, so multi-word is not applicable here.
+		files: ['templates/**/*.vue'],
+		rules: { 'vue/multi-word-component-names': 'off' },
+	})
