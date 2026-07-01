@@ -1,26 +1,28 @@
 <template>
 	<div class="docbuilder-index">
-		<div class="docbuilder-header">
-			<h1>DocType Builder</h1>
-			<p class="subtitle">Select a DocType to view and edit its schema</p>
+		<div class="docbuilder-index-inner">
+			<div class="docbuilder-header">
+				<h1>DocType Builder</h1>
+				<p class="subtitle">Select a DocType to view and edit its schema</p>
+			</div>
+			<div class="docbuilder-create">
+				<input
+					v-model="newName"
+					type="text"
+					placeholder="New doctype name (e.g. Invoice)"
+					:disabled="creating"
+					@keyup.enter="createDoctype" />
+				<button type="button" class="btn-create" :disabled="creating || !newName.trim()" @click="createDoctype">
+					{{ creating ? 'Creating…' : '+ New DocType' }}
+				</button>
+			</div>
+			<p v-if="createError" class="create-error">{{ createError }}</p>
+			<ClientOnly>
+				<div v-if="loading" class="loading">Loading doctypes...</div>
+				<p v-else-if="!doctypes.length" class="empty">No doctypes yet — create one above.</p>
+				<ATable v-else :columns="columns" :rows="doctypes" :config="config" @row:click="handleRowClick" />
+			</ClientOnly>
 		</div>
-		<div class="docbuilder-create">
-			<input
-				v-model="newName"
-				type="text"
-				placeholder="New doctype name (e.g. Invoice)"
-				:disabled="creating"
-				@keyup.enter="createDoctype" />
-			<button type="button" class="btn-create" :disabled="creating || !newName.trim()" @click="createDoctype">
-				{{ creating ? 'Creating…' : '+ New DocType' }}
-			</button>
-		</div>
-		<p v-if="createError" class="create-error">{{ createError }}</p>
-		<ClientOnly>
-			<div v-if="loading" class="loading">Loading doctypes...</div>
-			<p v-else-if="!doctypes.length" class="empty">No doctypes yet — create one above.</p>
-			<ATable v-else :columns="columns" :rows="doctypes" :config="config" @row:click="handleRowClick" />
-		</ClientOnly>
 
 		<ActionSet :elements="indexActions" @action-click="handleAction" />
 	</div>
@@ -127,7 +129,16 @@ function handleAction(_label: string, action?: () => void | Promise<void>) {
 </script>
 
 <style scoped>
+/* Own a full-viewport white surface: these pages run with `layout: false`, so nothing paints
+   over the playground layout's global grey `body` background. Without this, the page shows grey
+   (or a grey/white flicker) depending on navigation order. */
 .docbuilder-index {
+	background: var(--sc-form-background, #fff);
+	min-height: 100vh;
+	box-sizing: border-box;
+}
+
+.docbuilder-index-inner {
 	max-width: 1200px;
 	margin: 0 auto;
 	padding: 2rem;
