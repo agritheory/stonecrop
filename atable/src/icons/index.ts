@@ -10,8 +10,9 @@ import DuplicateIcon from './stonecrop-ui-icon-duplicate.svg?raw'
 import InsertAboveIcon from './stonecrop-ui-icon-insert-above.svg?raw'
 import InsertBelowIcon from './stonecrop-ui-icon-insert-below.svg?raw'
 import MoveIcon from './stonecrop-ui-icon-move.svg?raw'
+import OpenIcon from './stonecrop-ui-icon-open.svg?raw'
 
-export { AddIcon, DeleteIcon, DuplicateIcon, InsertAboveIcon, InsertBelowIcon, MoveIcon }
+export { AddIcon, DeleteIcon, DuplicateIcon, InsertAboveIcon, InsertBelowIcon, MoveIcon, OpenIcon }
 
 /**
  * Map of action types to their default icons.
@@ -25,4 +26,5 @@ export const actionIcons: Record<string, string> = {
 	insertAbove: InsertAboveIcon,
 	insertBelow: InsertBelowIcon,
 	move: MoveIcon,
+	open: OpenIcon,
 }

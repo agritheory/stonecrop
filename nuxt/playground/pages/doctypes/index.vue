@@ -5,13 +5,13 @@
 			<button class="btn-primary" @click="handleNew">New DocType</button>
 		</div>
 		<ClientOnly>
-			<ATable :columns="columns" :rows="doctypes" @row-click="handleRowClick" />
+			<ATable :columns="columns" :rows="doctypes" @row:click="handleRowClick" />
 		</ClientOnly>
 	</div>
 </template>
 
 <script setup lang="ts">
-import type { TableRow, TableColumn } from '@stonecrop/atable'
+import type { TableRow, TableColumn, RowClickEvent } from '@stonecrop/atable'
 
 const router = useRouter()
 
@@ -25,7 +25,7 @@ const columns: TableColumn[] = [
 	{ label: 'Tree', name: 'is_tree', fieldtype: 'Check', width: '10ch' },
 ]
 
-function handleRowClick(row: any) {
+function handleRowClick({ row }: RowClickEvent) {
 	router.push(`/doctypes/${row.id}`)
 }
 

@@ -6,13 +6,13 @@
 		</div>
 		<ClientOnly>
 			<div v-if="loading" class="loading">Loading doctypes...</div>
-			<ATable v-else :columns="columns" :rows="doctypes" :config="config" @row-click="handleRowClick" />
+			<ATable v-else :columns="columns" :rows="doctypes" :config="config" @row:click="handleRowClick" />
 		</ClientOnly>
 	</div>
 </template>
 
 <script setup lang="ts">
-import type { TableRow, TableColumn, TableConfig } from '@stonecrop/atable'
+import type { TableRow, TableColumn, TableConfig, RowClickEvent } from '@stonecrop/atable'
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'nuxt/app'
 
@@ -40,7 +40,7 @@ onMounted(async () => {
 	}
 })
 
-function handleRowClick(row: any) {
+function handleRowClick({ row }: RowClickEvent) {
 	router.push(`/docbuilder/${row.slug}`)
 }
 </script>
