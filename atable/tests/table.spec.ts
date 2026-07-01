@@ -562,7 +562,7 @@ describe('table component', { tags: ['component'] }, () => {
 		// Trigger open action via store directly (simulate what ARowActions does)
 		const tableStore = wrapper.vm.store
 		// Manually invoke handleRowAction through the exposed store event mechanism
-		wrapper.vm.store.$onAction(({ name }) => {
+		tableStore.$onAction(() => {
 			// no-op listener to ensure watchers fire
 		})
 
