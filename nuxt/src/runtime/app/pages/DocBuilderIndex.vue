@@ -19,15 +19,7 @@
 		<ClientOnly>
 			<div v-if="loading" class="loading">Loading doctypes...</div>
 			<p v-else-if="!doctypes.length" class="empty">No doctypes yet — create one above.</p>
-			<ul v-else class="doctype-list">
-				<li v-for="dt in doctypes" :key="dt.slug">
-					<button type="button" class="doctype-row" @click="open(dt.slug)">
-						<span class="doctype-name">{{ dt.name }}</span>
-						<span class="doctype-meta">{{ dt.fieldCount }} field{{ dt.fieldCount === 1 ? '' : 's' }}</span>
-						<span class="doctype-arrow">→</span>
-					</button>
-				</li>
-			</ul>
+			<ATable v-else :columns="columns" :rows="doctypes" :config="config" @row:click="handleRowClick" />
 		</ClientOnly>
 
 		<ActionSet :elements="indexActions" @action-click="handleAction" />
@@ -35,6 +27,7 @@
 </template>
 
 <script setup lang="ts">
+import type { TableColumn, TableConfig, RowClickEvent } from '@stonecrop/atable'
 import { ActionSet } from '@stonecrop/desktop'
 import type { ActionElements } from '@stonecrop/desktop/types'
 import { ref, computed, onMounted } from 'vue'
@@ -62,10 +55,20 @@ async function loadDoctypes() {
 
 onMounted(loadDoctypes)
 
-// ATable has no row-click event (it's a read-only grid), so the list is hand-rolled clickable rows
-// that navigate to the detail route — the index's whole job.
-function open(slug: string) {
-	void router.push(`/docbuilder/${slug}`)
+// The list renders through ATable; clicking a row navigates to that doctype's detail route —
+// the index's whole job. `clickable` gives the rows the pointer/hover affordance.
+const columns: TableColumn[] = [
+	{ label: 'Name', name: 'name', fieldtype: 'Data', width: '20ch' },
+	{ label: 'Fields', name: 'fieldCount', fieldtype: 'Int', width: '10ch' },
+]
+
+const config: TableConfig = {
+	view: 'uncounted',
+	clickable: true,
+}
+
+function handleRowClick({ row }: RowClickEvent) {
+	void router.push(`/docbuilder/${row.slug}`)
 }
 
 const newName = ref('')
@@ -188,54 +191,5 @@ function handleAction(_label: string, action?: () => void | Promise<void>) {
 	color: #b91c1c;
 	font-size: 0.875rem;
 	margin: -0.5rem 0 1rem;
-}
-
-.doctype-list {
-	list-style: none;
-	margin: 0;
-	padding: 0;
-	display: flex;
-	flex-direction: column;
-	gap: 0.5rem;
-}
-
-.doctype-row {
-	width: 100%;
-	display: flex;
-	align-items: center;
-	gap: 1rem;
-	padding: 1rem 1.25rem;
-	background: var(--sc-form-background, #fff);
-	border: 1px solid var(--sc-gray-20, #e5e7eb);
-	border-left: 4px solid var(--sc-gray-20, #e5e7eb);
-	border-radius: 0;
-	cursor: pointer;
-	font: inherit;
-	text-align: left;
-}
-
-.doctype-row:hover {
-	background: var(--sc-gray-5, #f9fafb);
-	border-left-color: var(--sc-blue-40, #3b82f6);
-}
-
-.doctype-name {
-	font-size: 1.125rem;
-	font-weight: 600;
-	flex: 1;
-}
-
-.doctype-meta {
-	color: #6b7280;
-	font-size: 0.875rem;
-}
-
-.doctype-arrow {
-	color: var(--sc-gray-50, #9ca3af);
-	font-size: 1.25rem;
-}
-
-.doctype-row:hover .doctype-arrow {
-	color: var(--sc-blue-40, #3b82f6);
 }
 </style>

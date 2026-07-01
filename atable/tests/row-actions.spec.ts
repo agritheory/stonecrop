@@ -58,9 +58,9 @@ describe('ARowActions dropdown: directional moves + per-row disable', { tags: ['
 		expect((itemByLabel(wrapper, 'Move Down')!.element as HTMLButtonElement).disabled).toBe(true)
 	})
 
-	it('emits the action type and row index for an enabled item', async () => {
+	it('emits the action type, row index, and originating event for an enabled item', async () => {
 		const wrapper = mountAt(1)
 		await itemByLabel(wrapper, 'Duplicate')!.trigger('click')
-		expect(wrapper.emitted('action')?.[0]).toEqual(['duplicate', 1])
+		expect(wrapper.emitted('action')?.[0]).toEqual(['duplicate', 1, expect.any(MouseEvent)])
 	})
 })

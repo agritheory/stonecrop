@@ -12,6 +12,8 @@ vi.mock('@vueuse/core', () => ({
 	})),
 	useDebounceFn: vi.fn(fn => fn),
 	useMutationObserver: vi.fn(),
+	useResizeObserver: vi.fn(),
+	onClickOutside: vi.fn(),
 }))
 
 vi.mock('@vueuse/components', () => ({
@@ -23,7 +25,7 @@ import data from './data/http_logs.json'
 import ACell from '../src/components/ACell.vue'
 import ARow from '../src/components/ARow.vue'
 import ATable from '../src/components/ATable.vue'
-import type { GanttOptions, TableColumn, TableConfig, TableRow } from '../src/types'
+import type { GanttOptions, RowClickEvent, TableColumn, TableConfig, TableRow } from '../src/types'
 
 function getBasicRows(): TableRow[] {
 	return [
@@ -503,6 +505,76 @@ describe('table component', { tags: ['component'] }, () => {
 			rowIndex: 0,
 			newValue: 'new text value',
 		})
+	})
+
+	it('should emit row:click when a row is clicked', async () => {
+		const rows = getBasicRows()
+		const wrapper = mount(ATable, {
+			props: {
+				rows,
+				columns: basicColumns,
+			},
+		})
+
+		await nextTick()
+
+		const tr = wrapper.find('tbody tr')
+		await tr.trigger('click')
+
+		expect(wrapper.emitted('row:click')).toBeTruthy()
+		const event = wrapper.emitted('row:click')?.[0][0] as RowClickEvent
+		expect(event.rowIndex).toBe(0)
+		expect(event.row).toEqual(rows[0])
+	})
+
+	it('should add atable-row-clickable class when config.clickable is true', async () => {
+		const wrapper = mount(ATable, {
+			props: {
+				rows: getBasicRows(),
+				columns: basicColumns,
+				config: { clickable: true },
+			},
+		})
+
+		await nextTick()
+
+		const tr = wrapper.find('tbody tr')
+		expect(tr.classes()).toContain('atable-row-clickable')
+	})
+
+	it('should emit row:open when open row action is triggered', async () => {
+		const rows = getBasicRows()
+		const wrapper = mount(ATable, {
+			props: {
+				rows,
+				columns: basicColumns,
+				config: {
+					rowActions: {
+						enabled: true,
+						actions: { open: true },
+					},
+				},
+			},
+		})
+
+		await nextTick()
+
+		// Trigger open action via store directly (simulate what ARowActions does)
+		const tableStore = wrapper.vm.store
+		// Manually invoke handleRowAction through the exposed store event mechanism
+		tableStore.$onAction(() => {
+			// no-op listener to ensure watchers fire
+		})
+
+		// Trigger via the row:action event on ARow
+		const aRow = wrapper.findComponent(ARow)
+		aRow.vm.$emit('row:action', 'open', 0, undefined)
+		await nextTick()
+
+		expect(wrapper.emitted('row:open')).toBeTruthy()
+		const event = wrapper.emitted('row:open')?.[0][0] as RowClickEvent
+		expect(event.rowIndex).toBe(0)
+		expect(event.row).toEqual(rows[0])
 	})
 
 	it('should expose store and connection methods', () => {
