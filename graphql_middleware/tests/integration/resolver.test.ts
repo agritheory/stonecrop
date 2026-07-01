@@ -10,7 +10,6 @@ import { describe, it, expect, beforeAll, afterAll, inject } from 'vitest'
 
 import { createStonecropPlugin } from '../../src/plugin/postgraphile'
 import { loadDoctypesFromObject, clearRegistry } from '../../src/registry/doctypes'
-import { clearHandlers } from '../../src/registry/actions'
 
 // ---------------------------------------------------------------------------
 // Per-suite setup
@@ -148,7 +147,6 @@ beforeAll(async () => {
 
 afterAll(async () => {
 	clearRegistry()
-	clearHandlers()
 	await pool?.end()
 	await releasePgService?.()
 })

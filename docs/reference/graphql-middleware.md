@@ -66,16 +66,6 @@ Remove all registered fetch handlers. Primarily for test isolation.
 export declare function clearFetchHandlers(): void;
 ```
 
-### clearHandlers
-
-Clear all registered handlers
-
-**Signature:**
-
-```typescript
-export declare function clearHandlers(): void;
-```
-
 ### clearRegistry
 
 Clear all registered doctypes
@@ -168,22 +158,6 @@ export declare function getFetchHandler(name: string): FetchHandler | undefined;
 |-----------|------|-------------|
 | name | `string` |  |
 
-### getHandler
-
-Get a registered handler by name
-
-**Signature:**
-
-```typescript
-export declare function getHandler(name: string): ActionHandler | undefined;
-```
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| name | `string` | Name of the action handler to retrieve |
-
 ### getMeta
 
 Get a doctype by name
@@ -199,22 +173,6 @@ export declare function getMeta(name: string): DoctypeMeta | undefined;
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | name | `string` | Name of the doctype to retrieve |
-
-### hasHandler
-
-Check if a handler is registered
-
-**Signature:**
-
-```typescript
-export declare function hasHandler(name: string): boolean;
-```
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| name | `string` | Name of the action handler to check |
 
 ### hasMeta
 
@@ -266,16 +224,6 @@ export declare function loadDoctypesFromObject(doctypes: Record<string, unknown>
 | doctypes | `Record<string, unknown>` | Object mapping doctype names to doctype definitions |
 | options | `LoadDoctypesOptions` | Options for loading doctypes (continueOnError, onError callback) |
 
-### registerBuiltinHandlers
-
-Register all built-in handlers
-
-**Signature:**
-
-```typescript
-export declare function registerBuiltinHandlers(): void;
-```
-
 ### registerFetchHandler
 
 Register a custom fetch handler by name. The name must match the `handler` field on a `CustomFetch` strategy declaration.
@@ -293,23 +241,6 @@ export declare function registerFetchHandler(name: string, handler: FetchHandler
 | name | `string` |  |
 | handler | `FetchHandler` |  |
 
-### registerHandler
-
-Register an action handler
-
-**Signature:**
-
-```typescript
-export declare function registerHandler(name: string, handler: ActionHandler): void;
-```
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| name | `string` | Unique name for the action handler |
-| handler | `ActionHandler` | Action handler function to register |
-
 ### validateReferences
 
 Validate cross-doctype references (Link fields, inherits, etc.) Call after all doctypes are loaded.
@@ -321,28 +252,6 @@ export declare function validateReferences(): ValidationError[];
 ```
 
 ## Interfaces
-
-### ActionContext
-
-Context passed to action handlers.
-
-The open index signature is the extension point for injecting an application-owned data access layer (see ADR 0003) — in a PostGraphile setup that slot is `pgClient`; custom backends inject their own (e.g. an in-memory executor).
-
-**Definition:**
-
-```typescript
-export interface ActionContext {
-  doctype: DoctypeMeta;
-  pgClient?: PgClient;
-}
-```
-
-**Properties:**
-
-| Property | Type | Description |
-|----------|------|-------------|
-| doctype | `DoctypeMeta` | Doctype metadata for the action being executed |
-| pgClient? | `PgClient` | Active database client — available when the action is dispatched via stonecropAction. Rows returned by raw `pgClient.query()` carry **snake_case column names**, not the camelCase fieldnames the client expects (see ADR 0004 — the middleware's own read paths alias columns at the SQL layer, e.g. `"display_name" AS "displayName"`). Handlers querying with `pgClient` own the same conversion for their return values — see `ActionHandler`. |
 
 ### DebugPluginOptions
 
@@ -426,20 +335,6 @@ export interface StonecropPluginOptions {
 
 ## Type Aliases
 
-### ActionHandler
-
-Action handler function signature.
-
-The resolved value is passed through verbatim as `ActionResult.data` — the middleware applies no transformation. Return **API-layer data**: plain objects keyed by camelCase fieldnames, matching what `stonecropRecord` returns (see ADR 0004).
-
-When reading from the database via `context.pgClient`, either alias columns in the SQL (`SELECT display_name AS "displayName" ...`, as the middleware's own queries do) or convert row keys with `snakeToCamel` from `@stonecrop/schema` before returning. Returning raw query rows leaks snake_case column names to the client.
-
-**Definition:**
-
-```typescript
-export type ActionHandler = (args: unknown[], context: ActionContext) => Promise<unknown>;
-```
-
 ### FetchHandler
 
 Handler for a custom fetch strategy on a link declaration. Called during `stonecropRecord` resolution when `link.fetch.method === 'custom'`.
@@ -484,16 +379,6 @@ new DoctypeValidationError(file: string, errors: ValidationError[])
 | file | `string` | File path or name where the validation error occurred |
 
 ## Variables
-
-### builtinHandlers
-
-Built-in handlers available for registration
-
-**Type:**
-
-```typescript
-export const builtinHandlers: Record<string, ActionHandler>
-```
 
 ### StonecropPreset
 

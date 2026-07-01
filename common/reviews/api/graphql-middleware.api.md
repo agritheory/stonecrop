@@ -13,16 +13,6 @@ import type { PgClient } from '@dataplan/pg';
 import { ValidationError } from '@stonecrop/schema';
 
 // @public
-export interface ActionContext {
-    [key: string]: unknown;
-    doctype: DoctypeMeta;
-    pgClient?: PgClient;
-}
-
-// @public
-export type ActionHandler = (args: unknown[], context: ActionContext) => Promise<unknown>;
-
-// @public
 export function applyGuardedTransition(actionDef: {
     label?: string;
     allowedStates?: string[];
@@ -34,13 +24,7 @@ export function applyGuardedTransition(actionDef: {
 }>;
 
 // @public
-export const builtinHandlers: Record<string, ActionHandler>;
-
-// @public
 export function clearFetchHandlers(): void;
-
-// @public
-export function clearHandlers(): void;
 
 // @public
 export function clearRegistry(): void;
@@ -86,9 +70,6 @@ export function getAllMeta(): DoctypeMeta[];
 export function getFetchHandler(name: string): FetchHandler | undefined;
 
 // @public
-export function getHandler(name: string): ActionHandler | undefined;
-
-// @public
 export function getMeta(name: string): DoctypeMeta | undefined;
 
 // @public
@@ -96,9 +77,6 @@ export interface GuardedTransitionIO {
     readState: () => Promise<string | undefined>;
     writeState: (nextState: string) => Promise<void>;
 }
-
-// @public
-export function hasHandler(name: string): boolean;
 
 // @public
 export function hasMeta(name: string): boolean;
@@ -118,13 +96,7 @@ export interface LoadDoctypesOptions {
 export { makePgService }
 
 // @public
-export function registerBuiltinHandlers(): void;
-
-// @public
 export function registerFetchHandler(name: string, handler: FetchHandler): void;
-
-// @public
-export function registerHandler(name: string, handler: ActionHandler): void;
 
 // @public
 export interface StonecropPluginOptions {

@@ -6,14 +6,12 @@ import {
 	clearFetchHandlers,
 	type FetchHandler,
 } from '../src/registry/fetchHandlers'
-import { clearHandlers } from '../src/registry/actions'
 
 const handlerStoresAndRetrieves: FetchHandler = async () => []
 const firstHandler: FetchHandler = async () => []
 const secondHandler: FetchHandler = async () => ({ id: '1' })
 const handlerA: FetchHandler = async () => []
 const handlerB: FetchHandler = async () => []
-const handlerDoesNotShare: FetchHandler = async () => []
 
 describe('fetch handler registry', { tags: ['unit', 'graphql'] }, () => {
 	beforeEach(() => {
@@ -44,13 +42,6 @@ describe('fetch handler registry', { tags: ['unit', 'graphql'] }, () => {
 		registerFetchHandler('handlerB', handlerB)
 		expect(getFetchHandler('handlerA')).toBe(handlerA)
 		expect(getFetchHandler('handlerB')).toBe(handlerB)
-	})
-
-	it('does not share entries with the action handler registry', () => {
-		registerFetchHandler('sharedName', handlerDoesNotShare)
-		// clearHandlers wipes only the action registry — fetch registry is unaffected
-		clearHandlers()
-		expect(getFetchHandler('sharedName')).toBe(handlerDoesNotShare)
 	})
 
 	it('clearFetchHandlers removes all entries', () => {
