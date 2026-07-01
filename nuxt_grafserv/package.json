@@ -40,7 +40,7 @@
 		"build": "rushx dev:prepare && rushx prepack",
 		"build:module": "rushx dev:prepare && rushx prepack",
 		"docs": "echo 'Nuxt modules use custom build system - skipping API docs generation'",
-		"dev": "nuxi dev playground",
+		"dev": "nuxi dev playground --host",
 		"dev:build": "nuxi build playground",
 		"dev:prepare": "nuxt-module-build build --stub && nuxt-module-build prepare && nuxi prepare playground",
 		"prepack": "nuxt-module-build build",

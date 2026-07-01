@@ -81,6 +81,10 @@ export interface ValueField {
 	edit?: boolean
 	/** Input mask pattern or serialized function */
 	mask?: string
+	/** Serialized `(value) => string` function for display formatting — distinct from `mask` (input).
+	 *  Spreads through `schemaToColumns` to `ColumnSchema.format`; deserialized at render time by
+	 *  ATable's `getFormattedValue`. */
+	format?: string
 	/** Per-field interaction mode override */
 	mode?: InteractionMode
 	/** Type-specific options: Link target slug, Select choices, Decimal precision config, etc. */
@@ -187,6 +191,7 @@ function createDoctypeFieldSchemas() {
 			align: z.enum(['left', 'center', 'right', 'start', 'end']).optional(),
 			edit: z.boolean().optional(),
 			mask: z.string().optional(),
+			format: z.string().optional(),
 			mode: z.enum(['edit', 'read', 'display']).optional(),
 			options: FieldOptions.optional(),
 			required: z.boolean().optional(),

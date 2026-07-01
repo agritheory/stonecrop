@@ -468,6 +468,7 @@ export interface ValueField {
     edit?: boolean;
     fieldname: string;
     fieldtype: string;
+    format?: string;
     hidden?: boolean;
     kind: 'field';
     label?: string;
@@ -497,6 +498,7 @@ export const ValueFieldSchema: z.ZodObject<{
     }>>;
     edit: z.ZodOptional<z.ZodBoolean>;
     mask: z.ZodOptional<z.ZodString>;
+    format: z.ZodOptional<z.ZodString>;
     mode: z.ZodOptional<z.ZodEnum<{
         edit: "edit";
         read: "read";

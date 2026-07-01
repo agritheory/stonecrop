@@ -32,6 +32,7 @@
 			:prevent-scrolling="true"
 			:zoom-on-scroll="false"
 			:fit-view-on-init="true"
+			:pan-activation-key-code="null"
 			@connect="handleConnect"
 			@pane-ready="setInstance"
 			@node-click="handleNodeClick"

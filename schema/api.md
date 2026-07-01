@@ -738,6 +738,7 @@ export interface ValueField {
   edit?: boolean;
   fieldname: string;
   fieldtype: string;
+  format?: string;
   hidden?: boolean;
   kind: 'field';
   label?: string;
@@ -762,6 +763,7 @@ export interface ValueField {
 | edit? | `boolean` | Whether the field is editable in table cell context |
 | fieldname | `string` | Unique identifier for this field within its doctype |
 | fieldtype | `string` | Semantic field type — determines behavior and default rendering component |
+| format? | `string` | Serialized `(value) => string` function for display formatting — distinct from `mask` (input). Spreads through `schemaToColumns` to `ColumnSchema.format`; deserialized at render time by ATable's `getFormattedValue`. |
 | hidden? | `boolean` | Whether the field is hidden from the UI |
 | kind | `'field'` | Discriminator — identifies this as a value-holding field |
 | label? | `string` | Human-readable label |
@@ -1319,6 +1321,7 @@ export const ValueFieldSchema: z.ZodObject<{
     }>>;
     edit: z.ZodOptional<z.ZodBoolean>;
     mask: z.ZodOptional<z.ZodString>;
+    format: z.ZodOptional<z.ZodString>;
     mode: z.ZodOptional<z.ZodEnum<{
         edit: "edit";
         read: "read";
