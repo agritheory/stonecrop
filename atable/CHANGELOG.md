@@ -1,6 +1,13 @@
 # Change Log - @stonecrop/atable
 
-This log was last generated on Thu, 18 Jun 2026 12:32:33 GMT and should not be manually modified.
+This log was last generated on Wed, 01 Jul 2026 08:35:25 GMT and should not be manually modified.
+
+## 0.13.14
+Wed, 01 Jul 2026 08:35:25 GMT
+
+### Patches
+
+- add row-click and row-open event emitters
 
 ## 0.13.13
 Thu, 18 Jun 2026 12:32:33 GMT
