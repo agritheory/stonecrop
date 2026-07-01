@@ -77,13 +77,13 @@ const menuPosition = ref({ top: 0, left: 0 })
 
 // Default labels for actions
 const defaultLabels: Record<RowActionType, string> = {
-	open: 'Open Row',
-	add: 'Add Row',
-	delete: 'Delete Row',
-	duplicate: 'Duplicate Row',
+	add: 'Add Record',
+	delete: 'Delete Record',
+	duplicate: 'Duplicate Record',
 	insertAbove: 'Insert Above',
 	insertBelow: 'Insert Below',
-	move: 'Move Row',
+	move: 'Move Record',
+	open: 'Open Record',
 }
 
 // Determine which actions are enabled
