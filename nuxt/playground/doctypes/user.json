@@ -1,4 +1,6 @@
 {
+	"name": "User",
+	"slug": "user",
 	"fields": [
 		{
 			"label": "Username",
@@ -12,12 +14,5 @@
 			"fieldtype": "Check",
 			"default": false
 		}
-	],
-	"links": {
-		"has_roles": {
-			"target": "UserRole",
-			"cardinality": "noneOrMany",
-			"backlink": "user"
-		}
-	}
+	]
 }

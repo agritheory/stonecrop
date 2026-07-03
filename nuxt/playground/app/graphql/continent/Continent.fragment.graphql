@@ -1,0 +1,11 @@
+fragment ContinentFields on Continent {
+	code
+	name
+	countries {
+		code
+		name
+		emoji
+		capital
+		currency
+	}
+}
