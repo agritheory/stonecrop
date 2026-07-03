@@ -146,14 +146,17 @@ export function convertGraphQLSchema(
 				}
 				return true
 			})
-			// Clean up internal metadata unless requested
+			// Clean up internal metadata unless requested, and stamp provenance.
+			// Stamped last so every classification path (default, classifyField,
+			// typeOverrides) carries the marker — the docbuilder's identity lock
+			// keys off it, and an override must not be able to unset it.
 			.map(field => {
 				if (!options.includeUnmappedMeta) {
 					const { _graphqlType, _unmapped, _isLink, ...clean } = field
-					return clean
+					return Object.assign(clean, { source: 'introspected' as const })
 				}
 				const { _isLink, ...rest } = field
-				return rest
+				return Object.assign(rest, { source: 'introspected' as const })
 			})
 
 		const doctype: ConvertedGraphQLDoctype = {

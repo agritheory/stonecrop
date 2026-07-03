@@ -101,6 +101,12 @@ export interface ValueField {
 	validation?: FieldValidation
 	/** Cardinality for Link fields — authoritative value on LinkDeclaration takes precedence */
 	cardinality?: 'atMostOne' | 'one' | 'noneOrMany' | 'atLeastOne'
+	/**
+	 * Provenance marker — stamped only by the GraphQL converter; absence means hand-authored.
+	 * When present, the docbuilder freezes the field's identity set (`fieldname`, `fieldtype`,
+	 * `required`, `options`, `cardinality`), since `fieldname` is the GraphQL/column binding.
+	 */
+	source?: 'introspected'
 }
 
 /**
@@ -200,6 +206,7 @@ function createDoctypeFieldSchemas() {
 			default: z.unknown().optional(),
 			validation: FieldValidation.optional(),
 			cardinality: z.enum(['atMostOne', 'one', 'noneOrMany', 'atLeastOne']).optional(),
+			source: z.literal('introspected').optional(),
 		})
 		.meta({ title: 'ValueField' })
 

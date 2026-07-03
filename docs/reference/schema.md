@@ -752,6 +752,7 @@ export interface ValueField {
   options?: FieldOptions;
   readOnly?: boolean;
   required?: boolean;
+  source?: 'introspected';
   validation?: FieldValidation;
   width?: string;
 }
@@ -777,6 +778,7 @@ export interface ValueField {
 | options? | `FieldOptions` | Type-specific options: Link target slug, Select choices, Decimal precision config, etc. |
 | readOnly? | `boolean` | Whether the field is read-only |
 | required? | `boolean` | Whether the field is required |
+| source? | `'introspected'` | Provenance marker — stamped only by the GraphQL converter; absence means hand-authored. When present, the docbuilder freezes the field's identity set (`fieldname`, `fieldtype`, `required`, `options`, `cardinality`), since `fieldname` is the GraphQL/column binding. |
 | validation? | `FieldValidation` | Validation configuration |
 | width? | `string` | CSS width (e.g. `"40ch"`, `"200px"`) |
 
@@ -1346,6 +1348,7 @@ export const ValueFieldSchema: z.ZodObject<{
         noneOrMany: "noneOrMany";
         atLeastOne: "atLeastOne";
     }>>;
+    source: z.ZodOptional<z.ZodLiteral<"introspected">>;
 }, z.core.$strip>
 ```
 

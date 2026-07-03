@@ -477,6 +477,7 @@ export interface ValueField {
     options?: FieldOptions;
     readOnly?: boolean;
     required?: boolean;
+    source?: 'introspected';
     validation?: FieldValidation;
     width?: string;
 }
@@ -518,6 +519,7 @@ export const ValueFieldSchema: z.ZodObject<{
         noneOrMany: "noneOrMany";
         atLeastOne: "atLeastOne";
     }>>;
+    source: z.ZodOptional<z.ZodLiteral<"introspected">>;
 }, z.core.$strip>;
 
 // @public

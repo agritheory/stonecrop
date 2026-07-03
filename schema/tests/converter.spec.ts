@@ -11,7 +11,7 @@ import {
 	defaultIsEntityField,
 	classifyFieldType,
 } from '../src/converter'
-import { validateDoctype } from '../src/validation'
+import { validateDoctype, parseDoctype } from '../src/validation'
 
 // ═══════════════════════════════════════════════════════════════
 // Helper: Build introspection from SDL for testing
@@ -740,5 +740,58 @@ describe('convertGraphQLSchema', { tags: ['unit'] }, () => {
 			const emailField = user.fields.find(f => f.fieldname === 'email')
 			expect(emailField?.kind).toBe('field')
 		})
+	})
+})
+
+describe('provenance stamping (source: "introspected")', { tags: ['unit'] }, () => {
+	it('stamps source: "introspected" on every emitted field', () => {
+		const doctypes = convertGraphQLSchema(basicSdl)
+
+		expect(doctypes.length).toBeGreaterThan(0)
+		for (const doctype of doctypes) {
+			for (const field of doctype.fields) {
+				expect(field.source, `${doctype.name}.${field.fieldname}`).toBe('introspected')
+			}
+		}
+	})
+
+	it('preserves the marker when typeOverrides are applied', () => {
+		const doctypes = convertGraphQLSchema(basicSdl, {
+			typeOverrides: {
+				User: {
+					email: { label: 'Email Address', component: 'AEmailInput' },
+				},
+			},
+		})
+
+		const user = doctypes.find(d => d.name === 'User')!
+		const emailField = user.fields.find(f => f.fieldname === 'email')
+		expect(emailField?.label).toBe('Email Address')
+		expect(emailField?.source).toBe('introspected')
+	})
+
+	it('stamps fields produced by the classifyField hook', () => {
+		const doctypes = convertGraphQLSchema(basicSdl, {
+			classifyField: fieldName => {
+				if (fieldName === 'email') {
+					return { component: 'AEmailInput', fieldtype: 'Data' }
+				}
+				return null
+			},
+		})
+
+		const user = doctypes.find(d => d.name === 'User')!
+		expect(user.fields.find(f => f.fieldname === 'email')?.source).toBe('introspected')
+	})
+
+	it('survives a Zod parse round-trip (declared on ValueFieldSchema, not stripped)', () => {
+		const doctypes = convertGraphQLSchema(basicSdl)
+
+		for (const doctype of doctypes) {
+			const parsed = parseDoctype(doctype)
+			for (const field of parsed.fields) {
+				expect(field, `${doctype.name}.${field.fieldname}`).toHaveProperty('source', 'introspected')
+			}
+		}
 	})
 })
