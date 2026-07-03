@@ -51,3 +51,38 @@
 		</section>
 	</div>
 </template>
+
+<style scoped>
+section {
+	margin-top: 2rem;
+}
+
+h2 {
+	margin: 0 0 0.5rem;
+	font-size: 1.1rem;
+	color: var(--sc-gray-80);
+}
+
+p {
+	color: var(--sc-gray-60);
+	line-height: 1.5;
+}
+
+ul {
+	margin: 0.5rem 0;
+	padding-left: 1.25rem;
+	line-height: 1.8;
+	color: var(--sc-gray-60);
+}
+
+a {
+	color: var(--sc-primary-color);
+}
+
+code {
+	padding: 0.1rem 0.35rem;
+	background: var(--sc-gray-10);
+	border-radius: 0.25rem;
+	font-size: 0.9em;
+}
+</style>

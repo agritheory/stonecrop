@@ -9,6 +9,7 @@
 		<Desktop
 			:available-doctypes="availableDoctypes"
 			:route-adapter="routeAdapter"
+			record-id-field="code"
 			@load-records="handleLoadRecords"
 			@load-record="handleLoadRecord"
 			@action="handleAction" />
