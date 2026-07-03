@@ -42,15 +42,15 @@
 		"@vitejs/plugin-vue": "^6.0.6",
 		"@vue-flow/core": "^1.48.1",
 		"concurrently": "^9.2.1",
-		"eslint": "^10.3.0",
-		"eslint-plugin-vue": "^10.9.0",
+		"eslint": "^10.6.0",
+		"eslint-plugin-vue": "^10.9.2",
 		"globals": "^17.6.0",
 		"histoire": "^1.0.0-beta.1",
 		"immutable": "^5.1.4",
 		"monaco-editor": "^0.55.1",
 		"portal-vue": "^3.0.0",
 		"typescript": "^6.0.3",
-		"typescript-eslint": "^8.59.1"
+		"typescript-eslint": "^8.62.1"
 	},
 	"engines": {
 		"node": ">=24.0.0"
