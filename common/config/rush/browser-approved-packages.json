@@ -280,7 +280,7 @@
     },
     {
       "name": "graphql",
-      "allowedCategories": [ "production", "utilities" ]
+      "allowedCategories": [ "production", "prototype", "utilities" ]
     },
     {
       "name": "graphql-middleware",

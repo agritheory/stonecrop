@@ -27,46 +27,22 @@ import { projects, tasks, type Project, type Task } from './data'
 // response type defined in server/schema.graphql)
 // ============================================================
 
-function formatFieldMeta(field: { kind?: string; fieldname: string; fieldtype?: string; [key: string]: unknown }) {
-	return {
-		fieldname: field.fieldname,
-		fieldtype: field.fieldtype ?? null,
-		label: field.label ?? null,
-		required: field.required ?? false,
-		readOnly: field.readOnly ?? false,
-		options: field.options ?? null,
-		default: field.default ?? null,
-		width: field.width ?? null,
-		validation: field.validation ?? null,
-		component: field.component ?? null,
-		align: field.align ?? null,
-		edit: field.edit ?? null,
-		hidden: field.hidden ?? null,
-		mask: field.mask ?? null,
-		precision: field.precision ?? null,
-		scale: field.scale ?? null,
-		mode: field.mode ?? null,
-	}
-}
-
-function formatDoctypeMeta(meta: DoctypeMeta) {
+export function formatDoctypeMeta(meta: DoctypeMeta) {
+	// Fields and actions pass through verbatim — the SDL alone decides what is
+	// selectable. Enumerating keys here silently drops any field the schema gains
+	// later; the only computed addition is `name` (an action's key in the
+	// WorkflowMeta.actions record, flattened into the list the SDL declares).
 	const actions = meta.workflow?.actions
 	const actionList = actions
 		? Object.entries(actions as Record<string, Record<string, unknown>>).map(([name, action]) => ({
 				name,
-				label: action.label ?? null,
-				handler: action.handler ?? null,
-				requiredFields: (action.requiredFields as string[]) ?? [],
-				allowedStates: (action.allowedStates as string[]) ?? [],
-				nextState: action.nextState ?? null,
-				stateless: action.stateless ?? false,
-				clientHandler: action.clientHandler ?? null,
+				...action,
 			}))
 		: []
 	return {
 		name: meta.name,
 		slug: meta.slug ?? null,
-		fields: meta.fields.map(formatFieldMeta),
+		fields: meta.fields,
 		workflow: meta.workflow
 			? {
 					states: meta.workflow.states ?? null,

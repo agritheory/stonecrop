@@ -14,17 +14,18 @@ export const typeDefs = gql`
 		label: String
 		width: String
 		align: String
+		edit: Boolean
+		mask: String
+		format: String
+		mode: String
+		options: JSON
 		required: Boolean
 		readOnly: Boolean
-		edit: Boolean
 		hidden: Boolean
 		default: JSON
-		options: JSON
-		mask: String
-		precision: Int
-		scale: Int
-		mode: String
 		validation: JSON
+		cardinality: String
+		source: String
 	}
 
 	type StonecropWorkflowAction {

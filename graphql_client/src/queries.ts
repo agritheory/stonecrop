@@ -15,23 +15,25 @@ export const GET_META_QUERY = `
 			name
 			slug
 			fields {
+				kind
 				fieldname
 				fieldtype
 				component
 				label
 				width
 				align
+				edit
+				mask
+				format
+				mode
+				options
 				required
 				readOnly
-				edit
 				hidden
 				default
-				options
-				mask
-				precision
-				scale
-				mode
 				validation
+				cardinality
+				source
 			}
 			workflow {
 				states
@@ -70,23 +72,25 @@ export const GET_ALL_META_QUERY = `
 			name
 			slug
 			fields {
+				kind
 				fieldname
 				fieldtype
 				component
 				label
 				width
 				align
+				edit
+				mask
+				format
+				mode
+				options
 				required
 				readOnly
-				edit
 				hidden
 				default
-				options
-				mask
-				precision
-				scale
-				mode
 				validation
+				cardinality
+				source
 			}
 			workflow {
 				states

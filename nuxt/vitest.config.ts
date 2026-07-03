@@ -1,6 +1,17 @@
+import { fileURLToPath } from 'node:url'
+
 import { defineVitestConfig } from '@nuxt/test-utils/config'
 
 export default defineVitestConfig({
+	resolve: {
+		alias: {
+			// grafast is not a dependency of this package (it belongs to consumer
+			// server contexts), but the templates/fullstack resolver modules import
+			// it at top level. The stub throws on any call — tests may exercise only
+			// the pure formatting helpers those modules export.
+			grafast: fileURLToPath(new URL('./test/stubs/grafast.ts', import.meta.url)),
+		},
+	},
 	// defineVitestConfig automatically sets up the correct environment
 	// Don't override environment here - it breaks the automatic Nuxt environment setup
 	test: {

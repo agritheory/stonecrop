@@ -32,30 +32,26 @@ function toMutationName(doctypeName: string, operation: 'create' | 'update' | 'd
 	return `${operation}${pascalName}ById`
 }
 
-function formatFieldMeta(field: { kind: string; fieldname: string; fieldtype?: string; [key: string]: unknown }) {
-	return {
-		kind: field.kind,
-		fieldname: field.fieldname,
-		fieldtype: field.fieldtype ?? null,
-		label: field.label ?? null,
-		required: field.required ?? false,
-		readOnly: field.readOnly ?? false,
-		options: field.options ?? null,
-		default: field.default ?? null,
-		width: field.width ?? null,
-		validation: field.validation ?? null,
-	}
-}
-
-function formatDoctypeMeta(meta: DoctypeMeta) {
+export function formatDoctypeMeta(meta: DoctypeMeta) {
+	// Fields and actions pass through verbatim — the SDL alone decides what is
+	// selectable. Enumerating keys here silently drops any field the schema gains
+	// later; the only computed addition is `name` (an action's key in the
+	// WorkflowMeta.actions record, flattened into the list the SDL declares).
+	const actions = meta.workflow?.actions
+	const actionList = actions
+		? Object.entries(actions as Record<string, Record<string, unknown>>).map(([name, action]) => ({
+				name,
+				...action,
+			}))
+		: []
 	return {
 		name: meta.name,
 		slug: meta.slug ?? null,
-		fields: meta.fields.map(formatFieldMeta),
+		fields: meta.fields,
 		workflow: meta.workflow
 			? {
 					states: meta.workflow.states ?? null,
-					actions: meta.workflow.actions ?? null,
+					actions: actionList,
 				}
 			: null,
 		inherits: meta.inherits ?? null,

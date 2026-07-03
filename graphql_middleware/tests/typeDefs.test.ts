@@ -1,7 +1,7 @@
 import { parse, Kind, type DocumentNode } from 'graphql'
 import { describe, it, expect } from 'vitest'
 
-import { ActionDefinition } from '@stonecrop/schema'
+import { ActionDefinition, ValueFieldSchema } from '@stonecrop/schema'
 import { typeDefs } from '../src/typeDefs'
 
 function findTypeDefinition(document: DocumentNode, typeName: string) {
@@ -47,6 +47,23 @@ describe('typeDefs', { tags: ['unit', 'graphql'] }, () => {
 				`StonecropWorkflowAction is missing field '${field}' present in ActionDefinition schema`
 			).toBeDefined()
 		}
+	})
+
+	// -----------------------------------------------------------------------
+	// StonecropFieldMeta
+	// -----------------------------------------------------------------------
+
+	it('StonecropFieldMeta fields match ValueFieldSchema shape exactly (drift check)', () => {
+		const fieldMetaType = findTypeDefinition(doc, 'StonecropFieldMeta')
+		expect(fieldMetaType).toBeDefined()
+
+		// Exact set equality, both directions: a schema field missing from the SDL
+		// is unselectable (silent data loss); an SDL field missing from the schema
+		// is a phantom (Zod strips unknown keys at the load gate, so it can never
+		// carry data).
+		const sdlFields = ((fieldMetaType as any).fields ?? []).map((f: any) => f.name.value as string).toSorted()
+		const schemaFields = Object.keys(ValueFieldSchema.shape).toSorted()
+		expect(sdlFields).toEqual(schemaFields)
 	})
 
 	it('defines StonecropWorkflowMeta.actions as list of non-null StonecropWorkflowAction', () => {

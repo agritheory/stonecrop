@@ -90,6 +90,7 @@
 		"eslint-plugin-vue": "^10.9.2",
 		"eslint": "^10.6.0",
 		"globals": "^17.6.0",
+		"graphql": "^16.14.0",
 		"nuxt": "^4.4.8",
 		"nuxt-graphql-middleware": "^5.4.0",
 		"postgraphile": "^5.0.3",

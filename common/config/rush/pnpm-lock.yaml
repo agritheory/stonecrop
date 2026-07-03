@@ -818,6 +818,9 @@ importers:
       globals:
         specifier: ^17.6.0
         version: 17.6.0
+      graphql:
+        specifier: ^16.14.0
+        version: 16.14.0
       monaco-editor:
         specifier: ^0.55.1
         version: 0.55.1

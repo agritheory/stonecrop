@@ -1,0 +1,10 @@
+{
+	"changes": [
+		{
+			"packageName": "@stonecrop/graphql-middleware",
+			"comment": "align StonecropFieldMeta with ValueFieldSchema: add format/cardinality/source, remove phantom precision/scale; add field-level SDL drift test",
+			"type": "minor"
+		}
+	],
+	"packageName": "@stonecrop/graphql-middleware"
+}
