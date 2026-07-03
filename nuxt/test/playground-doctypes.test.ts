@@ -12,10 +12,7 @@ import { validateDoctype } from '@stonecrop/schema'
 
 const doctypesDir = resolve(__dirname, '../playground/doctypes')
 
-const doctypeFiles = () =>
-	readdirSync(doctypesDir)
-		.filter(f => f.endsWith('.json'))
-		.filter(f => f !== 'overrides.json')
+const doctypeFiles = () => readdirSync(doctypesDir).filter(f => f.endsWith('.json'))
 
 const loadAll = () =>
 	doctypeFiles().map(file => ({
@@ -31,6 +28,8 @@ describe('playground doctypes', { tags: ['unit'] }, () => {
 			'country.json',
 			'issue.json',
 			'language.json',
+			'state.json',
+			'subdivision.json',
 			'user.json',
 		])
 	})

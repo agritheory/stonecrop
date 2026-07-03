@@ -1,6 +1,6 @@
 {
-	"name": "Continent",
-	"slug": "continent",
+	"name": "Subdivision",
+	"slug": "subdivision",
 	"fields": [
 		{
 			"kind": "field",
@@ -14,6 +14,14 @@
 		},
 		{
 			"kind": "field",
+			"fieldname": "emoji",
+			"label": "Emoji",
+			"component": "ATextInput",
+			"fieldtype": "Data",
+			"source": "introspected"
+		},
+		{
+			"kind": "field",
 			"fieldname": "name",
 			"label": "Name",
 			"component": "ATextInput",
@@ -21,11 +29,5 @@
 			"required": true,
 			"source": "introspected"
 		}
-	],
-	"links": {
-		"countries": {
-			"target": "country",
-			"cardinality": "noneOrMany"
-		}
-	}
+	]
 }

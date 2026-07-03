@@ -1,6 +1,6 @@
 {
-	"name": "Continent",
-	"slug": "continent",
+	"name": "State",
+	"slug": "state",
 	"fields": [
 		{
 			"kind": "field",
@@ -8,8 +8,17 @@
 			"label": "Code",
 			"component": "ATextInput",
 			"fieldtype": "Data",
-			"required": true,
 			"readOnly": true,
+			"source": "introspected"
+		},
+		{
+			"kind": "field",
+			"fieldname": "country",
+			"label": "Country",
+			"component": "ALink",
+			"fieldtype": "Link",
+			"required": true,
+			"options": "country",
 			"source": "introspected"
 		},
 		{
@@ -21,11 +30,5 @@
 			"required": true,
 			"source": "introspected"
 		}
-	],
-	"links": {
-		"countries": {
-			"target": "country",
-			"cardinality": "noneOrMany"
-		}
-	}
+	]
 }

@@ -3,30 +3,47 @@
 	"slug": "language",
 	"fields": [
 		{
+			"kind": "field",
 			"fieldname": "code",
-			"fieldtype": "Data",
 			"label": "Code",
 			"component": "ATextInput",
-			"readOnly": true
+			"fieldtype": "Data",
+			"required": true,
+			"readOnly": true,
+			"source": "introspected"
 		},
 		{
+			"kind": "field",
 			"fieldname": "name",
-			"fieldtype": "Data",
 			"label": "Name",
 			"component": "ATextInput",
-			"required": true
-		},
-		{
-			"fieldname": "native",
 			"fieldtype": "Data",
-			"label": "Native Name",
-			"component": "ATextInput"
+			"required": true,
+			"source": "introspected"
 		},
 		{
+			"kind": "field",
+			"fieldname": "native",
+			"label": "Native Name",
+			"component": "ATextInput",
+			"fieldtype": "Data",
+			"required": true,
+			"source": "introspected"
+		},
+		{
+			"kind": "field",
 			"fieldname": "rtl",
-			"fieldtype": "Check",
 			"label": "Right-to-Left",
-			"component": "ATextInput"
+			"component": "ACheckbox",
+			"fieldtype": "Check",
+			"required": true,
+			"source": "introspected"
 		}
-	]
+	],
+	"links": {
+		"countries": {
+			"target": "country",
+			"cardinality": "noneOrMany"
+		}
+	}
 }

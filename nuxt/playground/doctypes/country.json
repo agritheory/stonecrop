@@ -3,55 +3,129 @@
 	"slug": "country",
 	"fields": [
 		{
-			"fieldname": "code",
+			"kind": "field",
+			"fieldname": "awsRegion",
+			"label": "AWS Region",
+			"component": "ATextInput",
 			"fieldtype": "Data",
+			"required": true,
+			"source": "introspected"
+		},
+		{
+			"kind": "field",
+			"fieldname": "capital",
+			"label": "Capital",
+			"component": "ATextInput",
+			"fieldtype": "Data",
+			"source": "introspected"
+		},
+		{
+			"kind": "field",
+			"fieldname": "code",
 			"label": "Code",
 			"component": "ATextInput",
+			"fieldtype": "Data",
+			"required": true,
 			"readOnly": true,
-			"hidden": false
+			"source": "introspected"
 		},
 		{
-			"fieldname": "name",
+			"kind": "field",
+			"fieldname": "continent",
+			"label": "Continent",
+			"component": "ALink",
+			"fieldtype": "Link",
+			"required": true,
+			"options": "continent",
+			"source": "introspected"
+		},
+		{
+			"kind": "field",
+			"fieldname": "currencies",
+			"label": "Currencies",
+			"component": "ATextInput",
 			"fieldtype": "Data",
+			"required": true,
+			"source": "introspected",
+			"hidden": true
+		},
+		{
+			"kind": "field",
+			"fieldname": "currency",
+			"label": "Currency",
+			"component": "ATextInput",
+			"fieldtype": "Data",
+			"source": "introspected"
+		},
+		{
+			"kind": "field",
+			"fieldname": "emoji",
+			"label": "Flag",
+			"component": "ATextInput",
+			"fieldtype": "Data",
+			"required": true,
+			"source": "introspected"
+		},
+		{
+			"kind": "field",
+			"fieldname": "emojiU",
+			"label": "Emoji U",
+			"component": "ATextInput",
+			"fieldtype": "Data",
+			"required": true,
+			"source": "introspected"
+		},
+		{
+			"kind": "field",
+			"fieldname": "name",
 			"label": "Name",
 			"component": "ATextInput",
-			"required": true
+			"fieldtype": "Data",
+			"required": true,
+			"source": "introspected"
 		},
 		{
+			"kind": "field",
 			"fieldname": "native",
-			"fieldtype": "Data",
 			"label": "Native Name",
-			"component": "ATextInput"
-		},
-		{
-			"fieldname": "emoji",
+			"component": "ATextInput",
 			"fieldtype": "Data",
-			"label": "Flag",
-			"component": "ATextInput"
+			"required": true,
+			"source": "introspected"
 		},
 		{
-			"fieldname": "capital",
-			"fieldtype": "Data",
-			"label": "Capital",
-			"component": "ATextInput"
-		},
-		{
-			"fieldname": "currency",
-			"fieldtype": "Data",
-			"label": "Currency",
-			"component": "ATextInput"
-		},
-		{
+			"kind": "field",
 			"fieldname": "phone",
-			"fieldtype": "Data",
 			"label": "Phone Code",
-			"component": "ATextInput"
+			"component": "ATextInput",
+			"fieldtype": "Data",
+			"required": true,
+			"source": "introspected"
 		},
 		{
-			"fieldname": "awsRegion",
+			"kind": "field",
+			"fieldname": "phones",
+			"label": "Phones",
+			"component": "ATextInput",
 			"fieldtype": "Data",
-			"label": "AWS Region",
-			"component": "ATextInput"
+			"required": true,
+			"source": "introspected",
+			"hidden": true
 		}
-	]
+	],
+	"links": {
+		"languages": {
+			"target": "language",
+			"cardinality": "noneOrMany"
+		},
+		"states": {
+			"target": "state",
+			"cardinality": "noneOrMany"
+		},
+		"subdivisions": {
+			"target": "subdivision",
+			"cardinality": "noneOrMany"
+		}
+	},
+	"workflow": null
 }
