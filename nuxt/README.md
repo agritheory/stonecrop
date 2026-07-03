@@ -460,12 +460,8 @@ const taskMachine = createMachine({
 
 ## Examples
 
-Check out the [playground](./playground) for an example featuring:
-- Permission management system (RBAC)
-- DocType builder with visual state machine editor
-- Complex nested forms with relationships
-- Table views with inline editing
-- HST state visualization
+- **[playground](./playground)** — the default example: doctypes introspected from a live public GraphQL API with the `stonecrop-schema generate` CLI, browsed through the Desktop shell, and refined in the built-in DocBuilder (provenance-locked introspected fields, plus hand-authored workflow fixtures for the graph editor). `npm run dev` runs it.
+- **[fullstack](./fullstack)** — the middleware core on the app's own GraphQL server (grafserv + guarded workflow transitions over in-memory storage, no database). `npm run dev:full` runs it.
 
 
 ## Contribution
