@@ -1,5 +1,0 @@
-query Countries($filter: CountryFilterInput) {
-	countries(filter: $filter) {
-		...CountryFields
-	}
-}

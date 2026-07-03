@@ -1,7 +1,8 @@
 import { existsSync } from 'node:fs'
 import { readFile, readdir } from 'node:fs/promises'
 import { extname, resolve } from 'node:path'
-import { defineEventHandler, useRuntimeConfig } from '#imports'
+import { defineEventHandler } from 'h3'
+import { useRuntimeConfig } from '#imports'
 
 export default defineEventHandler(async _event => {
 	// Get doctypes directory from runtime config or default to 'doctypes'

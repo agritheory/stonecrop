@@ -1,7 +1,8 @@
 import { existsSync } from 'node:fs'
 import { readFile, readdir } from 'node:fs/promises'
 import { resolve } from 'node:path'
-import { createError, defineEventHandler, getRouterParam, useRuntimeConfig } from '#imports'
+import { createError, defineEventHandler, getRouterParam } from 'h3'
+import { useRuntimeConfig } from '#imports'
 
 export default defineEventHandler(async event => {
 	const doctype = getRouterParam(event, 'doctype')

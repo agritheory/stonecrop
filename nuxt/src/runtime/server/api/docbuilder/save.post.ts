@@ -1,7 +1,8 @@
 import { existsSync } from 'node:fs'
 import { readFile, readdir, writeFile } from 'node:fs/promises'
 import { basename, resolve } from 'node:path'
-import { createError, defineEventHandler, readBody, useRuntimeConfig } from '#imports'
+import { createError, defineEventHandler, readBody } from 'h3'
+import { useRuntimeConfig } from '#imports'
 
 export default defineEventHandler(async event => {
 	const body = await readBody(event)
@@ -76,8 +77,15 @@ export default defineEventHandler(async event => {
 		fields: body.fields,
 	}
 
-	if (body.workflow !== undefined) {
+	// A null workflow means "this doctype has no workflow" — omit the key rather
+	// than writing `"workflow": null`, which fails doctype validation (the schema
+	// expects an object) and corrupts CLI-generated files on a plain field save.
+	// An existing workflow is preserved by the spread; body.workflow only ever
+	// narrows to null when the doctype had no workflow to begin with.
+	if (body.workflow !== undefined && body.workflow !== null) {
 		doctypeData.workflow = body.workflow
+	} else if (doctypeData.workflow === null || doctypeData.workflow === undefined) {
+		delete doctypeData.workflow
 	}
 
 	// `name` is required by the doctype schema and is never sent by the builder. Preserve the

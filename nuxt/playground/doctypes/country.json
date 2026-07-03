@@ -46,8 +46,7 @@
 			"component": "ATextInput",
 			"fieldtype": "Data",
 			"required": true,
-			"source": "introspected",
-			"hidden": true
+			"source": "introspected"
 		},
 		{
 			"kind": "field",
@@ -109,8 +108,7 @@
 			"component": "ATextInput",
 			"fieldtype": "Data",
 			"required": true,
-			"source": "introspected",
-			"hidden": true
+			"source": "introspected"
 		}
 	],
 	"links": {
@@ -126,6 +124,5 @@
 			"target": "subdivision",
 			"cardinality": "noneOrMany"
 		}
-	},
-	"workflow": null
+	}
 }

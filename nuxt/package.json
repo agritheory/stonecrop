@@ -43,18 +43,16 @@
 		"build": "rushx dev:prepare && nuxt-module-build build",
 		"docs": "echo 'Nuxt modules use custom build system - skipping API docs generation'",
 		"dev": "rushx dev:prepare && nuxi dev playground --host",
-		"dev:countries": "rushx dev:prepare:countries && nuxi dev countries-graphql --host",
 		"dev:full": "rushx dev:prepare:full && nuxi dev fullstack --host",
-		"dev:prepare:countries": "nuxt-module-build build --stub && nuxt-module-build prepare && nuxi prepare countries-graphql",
 		"dev:prepare:full": "nuxt-module-build build --stub && nuxt-module-build prepare && nuxi prepare fullstack",
 		"dev:build": "nuxi build playground",
-		"dev:prepare": "nuxt-module-build build --stub && nuxt-module-build prepare && nuxi prepare playground && nuxi prepare fullstack && nuxi prepare countries-graphql",
+		"dev:prepare": "nuxt-module-build build --stub && nuxt-module-build prepare && nuxi prepare playground && nuxi prepare fullstack",
 		"lint": "eslint .",
 		"test": "vitest run",
 		"test:ui": "vitest --ui",
 		"test:coverage": "vitest run --coverage.enabled --coverage.provider=istanbul",
 		"test:watch": "vitest watch",
-		"test:types": "vue-tsc --noEmit && cd playground && vue-tsc --noEmit"
+		"test:types": "cd playground && vue-tsc --noEmit"
 	},
 	"dependencies": {
 		"@nuxt/kit": "^4.4.4",
@@ -68,10 +66,11 @@
 		"@stonecrop/nuxt-grafserv": "workspace:*",
 		"@stonecrop/schema": "workspace:*",
 		"@stonecrop/stonecrop": "workspace:*",
+		"h3": "^1.15.5",
 		"pinia": "^3.0.4",
 		"citty": "^0.2.1",
 		"consola": "^3.4.0",
-		"jiti": "^2.4.2",
+		"jiti": "^2.6.1",
 		"pathe": "^2.0.3",
 		"prompts": "^2.4.2"
 	},

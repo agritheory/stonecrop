@@ -1,5 +1,0 @@
-query Continent($code: ID!) {
-	continent(code: $code) {
-		...ContinentFields
-	}
-}

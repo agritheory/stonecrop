@@ -1,6 +1,0 @@
-fragment LanguageFields on Language {
-	code
-	name
-	native
-	rtl
-}
