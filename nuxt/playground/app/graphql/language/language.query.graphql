@@ -1,0 +1,5 @@
+query Language($code: ID!) {
+	language(code: $code) {
+		...LanguageFields
+	}
+}
