@@ -2,11 +2,11 @@
 <template>
 	<div class="app-shell">
 		<nav class="app-nav">
-			<NuxtLink to="/">Home</NuxtLink>
-			<NuxtLink to="/country">Countries</NuxtLink>
-			<NuxtLink to="/continent">Continents</NuxtLink>
-			<NuxtLink to="/language">Languages</NuxtLink>
-			<NuxtLink to="/docbuilder">DocBuilder</NuxtLink>
+			<NuxtLink to="/" exact-active-class="app-nav-active">Home</NuxtLink>
+			<NuxtLink to="/country" active-class="app-nav-active">Countries</NuxtLink>
+			<NuxtLink to="/continent" active-class="app-nav-active">Continents</NuxtLink>
+			<NuxtLink to="/language" active-class="app-nav-active">Languages</NuxtLink>
+			<NuxtLink to="/docbuilder" active-class="app-nav-active">DocBuilder</NuxtLink>
 		</nav>
 		<main class="app-main">
 			<slot />
@@ -36,7 +36,7 @@
 }
 
 .app-nav a:hover,
-.app-nav a.router-link-active {
+.app-nav a.app-nav-active {
 	color: var(--sc-primary-color);
 }
 

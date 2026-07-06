@@ -13,7 +13,7 @@ export default defineNuxtConfig({
 	modules: [NuxtStonecrop, NuxtGrafserv],
 
 	stonecrop: {
-		docbuilder: false,
+		docbuilder: true,
 		routeStrategy: () => [
 			{
 				name: 'catch-all',
