@@ -1,6 +1,8 @@
+import { componentCategory } from '@stonecrop/schema'
 import type { ColumnSchema } from '@stonecrop/schema'
 
 import type { TableColumn } from './types'
+import { formatQuantity } from './utils'
 
 /**
  * Convert an array of doctype field descriptors into ATable column definitions.
@@ -16,6 +18,10 @@ import type { TableColumn } from './types'
  * - `linkDoctype` is set from the field's `doctype` property (used by ACell's async resolver).
  * - A synchronous `format` function is added (unless the field already has one) that handles
  *   both bare ID strings and pre-resolved `{ id, displayText }` objects.
+ *
+ * For quantity fields — those whose `component` carries the `'quantity'` category — without an
+ * explicit `format`, a synchronous `format` is added that renders the `{ qty, uom }` value (see
+ * `QuantityValue` in `@stonecrop/aform`) as `"<qty> <uom>"`.
  *
  * @public
  */
@@ -40,6 +46,11 @@ export function schemaToColumns(schema: ColumnSchema[]): TableColumn[] {
 						return String(v)
 					}
 				}
+			}
+
+			// Quantity fields: render the composite { qty, uom } value as "<qty> <uom>".
+			if (componentCategory(rest.component) === 'quantity' && !rest.format) {
+				col.format = formatQuantity
 			}
 
 			return col

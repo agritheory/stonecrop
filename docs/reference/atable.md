@@ -2804,6 +2804,8 @@ Fields are excluded when: - `hidden: true` — field should not be visible in an
 
 For link fields (those carrying `doctype`) without an explicit `cellComponent`: - `linkDoctype` is set from the field's `doctype` property (used by ACell's async resolver). - A synchronous `format` function is added (unless the field already has one) that handles both bare ID strings and pre-resolved `{ id, displayText }` objects.
 
+For `fieldtype: 'Quantity'` fields without an explicit `format`, a synchronous `format` is added that renders the `{ qty, uom }` value (see `QuantityValue` in `@stonecrop/aform`) as `"<qty> <uom>"`.
+
 **Signature:**
 
 ```typescript

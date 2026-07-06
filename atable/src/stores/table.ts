@@ -14,7 +14,7 @@ import type {
 	TableModal,
 	TableRow,
 } from '../types'
-import { generateHash } from '../utils'
+import { formatQuantity, generateHash } from '../utils'
 
 /**
  * Represents the state of a single filter
@@ -34,6 +34,15 @@ export interface FilterState {
  * @public
  */
 export type FilterStateRecord = Record<number, FilterState>
+
+// Quantity columns hold a composite `{ qty, uom, ... }` value (see `QuantityValue` in
+// `@stonecrop/aform`); numeric comparisons (filtering, sorting) operate on `qty`.
+function toComparableNumber(cellValue: any): number {
+	if (cellValue !== null && typeof cellValue === 'object' && 'qty' in cellValue) {
+		return Number((cellValue as { qty: unknown }).qty)
+	}
+	return Number(cellValue)
+}
 
 function isNodeOpen(rowIndex: number, treeDisplay: TableDisplay[]): boolean {
 	const row = treeDisplay[rowIndex]
@@ -71,7 +80,7 @@ function applyFilter(cellValue: any, filter: FilterState, column: TableColumn): 
 		}
 
 		case 'number': {
-			const numValue = Number(cellValue)
+			const numValue = toComparableNumber(cellValue)
 			const filterNum = Number(value)
 			return !isNaN(numValue) && !isNaN(filterNum) && numValue === filterNum
 		}
@@ -361,8 +370,8 @@ export const createTableStore = (initData: {
 					if (aVal === null || aVal === undefined) aVal = ''
 					if (bVal === null || bVal === undefined) bVal = ''
 
-					const aNum = Number(aVal)
-					const bNum = Number(bVal)
+					const aNum = toComparableNumber(aVal)
+					const bNum = toComparableNumber(bVal)
 					const isNumeric = !isNaN(aNum) && !isNaN(bNum) && aVal !== '' && bVal !== ''
 
 					if (isNumeric) {
@@ -521,6 +530,7 @@ export const createTableStore = (initData: {
 				if (category === 'boolean') return value ? '✓' : '✗'
 				if (category === 'date') return value != null ? new Date(String(value)).toLocaleDateString() : value
 				if (category === 'datetime') return value != null ? new Date(String(value)).toLocaleString() : value
+				if (category === 'quantity') return formatQuantity(value)
 				return value
 			}
 
