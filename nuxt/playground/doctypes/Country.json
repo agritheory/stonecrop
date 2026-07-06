@@ -1,0 +1,55 @@
+{
+	"fields": [
+		{
+			"kind": "field",
+			"fieldname": "code",
+			"fieldtype": "Data",
+			"label": "Code"
+		},
+		{
+			"kind": "field",
+			"fieldname": "name",
+			"fieldtype": "Data",
+			"label": "Name",
+			"required": true
+		},
+		{
+			"kind": "field",
+			"fieldname": "native",
+			"fieldtype": "Data",
+			"label": "Native"
+		},
+		{
+			"kind": "field",
+			"fieldname": "emoji",
+			"fieldtype": "Data",
+			"label": "Emoji"
+		},
+		{
+			"kind": "field",
+			"fieldname": "capital",
+			"fieldtype": "Data",
+			"label": "Capital"
+		},
+		{
+			"kind": "field",
+			"fieldname": "currency",
+			"fieldtype": "Data",
+			"label": "Currency"
+		},
+		{
+			"kind": "field",
+			"fieldname": "phone",
+			"fieldtype": "Data",
+			"label": "Phone"
+		},
+		{
+			"kind": "field",
+			"fieldname": "awsRegion",
+			"fieldtype": "Data",
+			"label": "AWS Region"
+		}
+	],
+	"name": "Country",
+	"workflow": null
+}

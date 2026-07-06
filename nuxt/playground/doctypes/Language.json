@@ -1,0 +1,34 @@
+{
+	"fields": [
+		{
+			"kind": "field",
+			"fieldname": "code",
+			"fieldtype": "Data",
+			"label": "Code"
+		},
+		{
+			"kind": "field",
+			"fieldname": "name",
+			"fieldtype": "Data",
+			"label": "Name",
+			"required": true
+		},
+		{
+			"kind": "field",
+			"fieldname": "native",
+			"fieldtype": "Data",
+			"label": "Native Name"
+		},
+		{
+			"kind": "field",
+			"fieldname": "rtl",
+			"fieldtype": "Check",
+			"label": "Right to Left"
+		}
+	],
+	"name": "Language",
+	"workflow": {
+		"states": ["Draft"],
+		"actions": {}
+	}
+}

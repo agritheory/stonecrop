@@ -1,0 +1,20 @@
+{
+	"fields": [
+		{
+			"kind": "field",
+			"fieldname": "code",
+			"fieldtype": "Data",
+			"label": "Code",
+			"required": true
+		},
+		{
+			"kind": "field",
+			"fieldname": "name",
+			"fieldtype": "Data",
+			"label": "Name",
+			"required": true
+		}
+	],
+	"name": "Continent",
+	"workflow": null
+}
