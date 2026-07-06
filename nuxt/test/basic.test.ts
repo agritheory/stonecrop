@@ -2,11 +2,10 @@ import { resolve } from 'node:path'
 import { setup, $fetch } from '@nuxt/test-utils/e2e'
 import { describe, it, expect } from 'vitest'
 
-// Skipped: @vue/compiler-sfc@3.5.x CJS bundle does bare require('magic-string')
-// without interop helpers; vite-node resolves it via the ESM condition and returns
-// a namespace object instead of the constructor. Fixed in Vue 3.6.0+. This is a
-// test-tooling issue only — the module works correctly in normal Nuxt builds.
-describe.skip('ssr', { tags: ['e2e', 'nuxt'] }, async () => {
+// Runs in the `node` vitest project (see vitest.config.ts). It must NOT run under the
+// Nuxt-client environment: that pulls @vue/compiler-sfc into vitest's Vite instance and
+// breaks setup()'s build with "MagicString is not a constructor" (nuxt/nuxt#34645).
+describe('ssr', { tags: ['e2e', 'nuxt'] }, async () => {
 	await setup({
 		rootDir: resolve(__dirname, 'fixtures/basic'),
 	})

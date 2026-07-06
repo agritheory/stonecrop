@@ -52,7 +52,7 @@
 		"test:ui": "vitest --ui",
 		"test:coverage": "vitest run --coverage.enabled --coverage.provider=istanbul",
 		"test:watch": "vitest watch",
-		"test:types": "cd playground && vue-tsc --noEmit"
+		"test:types": "cd playground && vue-tsc --noEmit && cd ../fullstack && vue-tsc --noEmit"
 	},
 	"dependencies": {
 		"@nuxt/kit": "^4.4.4",
@@ -61,6 +61,7 @@
 		"@stonecrop/desktop": "workspace:*",
 		"@stonecrop/code-editor": "workspace:*",
 		"@stonecrop/casl-middleware": "workspace:*",
+		"@stonecrop/graphql-client": "workspace:*",
 		"@stonecrop/graphql-middleware": "workspace:*",
 		"@stonecrop/node-editor": "workspace:*",
 		"@stonecrop/nuxt-grafserv": "workspace:*",

@@ -17,9 +17,13 @@ import { describe, it, expect, vi } from 'vitest'
 
 import { ActionDefinition, ValueFieldSchema, type DoctypeMeta } from '@stonecrop/schema'
 
-// The resolver modules import the middleware at top level, which transitively
-// boots postgraphile + pg (a server-only chain that also breaks vitest's node
-// interop). The formatting helpers under test never call it.
+import { formatDoctypeMeta as templatesFormatDoctypeMeta } from '../templates/resolvers'
+import { formatDoctypeMeta as fullstackFormatDoctypeMeta } from '../fullstack/server/resolvers'
+
+// The resolver modules imported above pull in the middleware at top level, which
+// transitively boots postgraphile + pg (a server-only chain that also breaks vitest's node
+// interop). vitest hoists the vi.mock below above those imports, so the stub is registered
+// before the resolver modules load; the formatting helpers under test never call it.
 vi.mock('@stonecrop/graphql-middleware', () => {
 	const notExecutable = (name: string) => () => {
 		throw new Error(`graphql-middleware stub: ${name}() must not execute in unit tests`)
@@ -31,9 +35,6 @@ vi.mock('@stonecrop/graphql-middleware', () => {
 		loadDoctypes: notExecutable('loadDoctypes'),
 	}
 })
-
-import { formatDoctypeMeta as templatesFormatDoctypeMeta } from '../templates/resolvers'
-import { formatDoctypeMeta as fullstackFormatDoctypeMeta } from '../fullstack/server/resolvers'
 
 const HOST_SDLS = [
 	{ name: 'templates', path: '../templates/schema.graphql' },

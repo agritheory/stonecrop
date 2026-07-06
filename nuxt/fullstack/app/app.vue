@@ -15,11 +15,10 @@ const breadcrumbs = computed(() => {
 	if (parts.length === 0) return crumbs
 
 	let currentPath = ''
-	for (let i = 0; i < parts.length; i++) {
-		currentPath += `/${parts[i]}`
-		const segment = parts[i]
+	for (const segment of parts) {
+		currentPath += `/${segment}`
 
-		let title = segment
+		const title = segment
 			.split('-')
 			.map(word => word.charAt(0).toUpperCase() + word.slice(1))
 			.join(' ')
