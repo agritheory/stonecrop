@@ -7,7 +7,7 @@ export default createConfigForNuxt({
 	features: { tooling: true },
 	dirs: { src: [] },
 })
-	.prepend({ ignores: ['playground/**', 'fullstack/**'] })
+	.prepend({ ignores: ['playground/**', 'fullstack/**', 'test/fixtures/**'] })
 	.prepend(eslint.configs.recommended)
 	.append({
 		rules: {

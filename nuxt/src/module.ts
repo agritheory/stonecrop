@@ -134,13 +134,17 @@ export default defineNuxtModule<ModuleOptions>({
 			doctypesDir,
 		}
 
+		// Parse doctype definitions when the directory exists; otherwise proceed with none so route
+		// generation below still runs: a configured routeStrategy can be self-sufficient (fullstack's
+		// is a catch-all that ignores doctypes), so gating route-gen on the doctypes directory would
+		// silently drop the strategy and 404 every doctype URL (see test/route-strategy.test.ts).
+		const doctypes: ParsedDoctype[] = []
 		if (existsSync(doctypesDir)) {
 			try {
 				const dirContents = await readdir(doctypesDir)
 				const schemas = dirContents.filter(file => extname(file) === '.json')
 
 				// Parse all doctype JSON files into ParsedDoctype objects
-				const doctypes: ParsedDoctype[] = []
 				for (const schema of schemas) {
 					try {
 						const schemaPath = resolve(doctypesDir, schema)
@@ -168,57 +172,6 @@ export default defineNuxtModule<ModuleOptions>({
 						logger.error(`Error processing schema '${schema}':`, schemaError)
 					}
 				}
-
-				extendPages(pages => {
-					const pagePaths = pages.map(page => page.path)
-
-					// Only add the module's home page if there isn't already a root page
-					if (!pagePaths.includes('/')) {
-						pages.unshift({
-							name: 'stonecrop-home',
-							path: '/',
-							file: homepage,
-						})
-						logger.log('Added Stonecrop home page at /')
-					} else {
-						logger.log('Skipping Stonecrop home page: root page already exists')
-					}
-
-					// Generate routes: custom strategy takes priority, then slug-based default
-					let generatedPages: NuxtPage[] = []
-
-					if (options.routeStrategy) {
-						// User-provided strategy has full control
-						generatedPages = options.routeStrategy(doctypes)
-					} else if (options.pageComponent) {
-						// Default slug-based routing with user's page component
-						const componentPath = resolve(appDir, options.pageComponent)
-						generatedPages = doctypes.map(({ fileName, data, fields }) => {
-							const slug = (data.slug as string) || fileName.toLowerCase()
-							return {
-								name: `stonecrop-${fileName}`,
-								path: `/${slug}`,
-								file: componentPath,
-								meta: { schema: fields, doctype: data },
-							}
-						})
-					} else {
-						logger.warn(
-							'No routeStrategy or pageComponent configured — ' +
-								'doctype routes will not be registered. ' +
-								'Set pageComponent to a page path or provide a routeStrategy function.'
-						)
-					}
-
-					for (const page of generatedPages) {
-						if (!pagePaths.includes(page.path)) {
-							pages.unshift(page)
-							logger.log(`Added route: ${page.path} (${page.name})`)
-						} else {
-							logger.warn(`Route ${page.path} already exists, skipping ${page.name}`)
-						}
-					}
-				})
 			} catch (doctypeError) {
 				// Log error but don't break the build if doctypes directory exists but has issues
 				logger.error('Error setting up doctype pages:', doctypeError)
@@ -230,6 +183,57 @@ export default defineNuxtModule<ModuleOptions>({
 				}
 			}
 		}
+
+		extendPages(pages => {
+			const pagePaths = pages.map(page => page.path)
+
+			// Only add the module's home page if there isn't already a root page
+			if (!pagePaths.includes('/')) {
+				pages.unshift({
+					name: 'stonecrop-home',
+					path: '/',
+					file: homepage,
+				})
+				logger.log('Added Stonecrop home page at /')
+			} else {
+				logger.log('Skipping Stonecrop home page: root page already exists')
+			}
+
+			// Generate routes: custom strategy takes priority, then slug-based default
+			let generatedPages: NuxtPage[] = []
+
+			if (options.routeStrategy) {
+				// User-provided strategy has full control
+				generatedPages = options.routeStrategy(doctypes)
+			} else if (options.pageComponent) {
+				// Default slug-based routing with user's page component
+				const componentPath = resolve(appDir, options.pageComponent)
+				generatedPages = doctypes.map(({ fileName, data, fields }) => {
+					const slug = (data.slug as string) || fileName.toLowerCase()
+					return {
+						name: `stonecrop-${fileName}`,
+						path: `/${slug}`,
+						file: componentPath,
+						meta: { schema: fields, doctype: data },
+					}
+				})
+			} else {
+				logger.warn(
+					'No routeStrategy or pageComponent configured — ' +
+						'doctype routes will not be registered. ' +
+						'Set pageComponent to a page path or provide a routeStrategy function.'
+				)
+			}
+
+			for (const page of generatedPages) {
+				if (!pagePaths.includes(page.path)) {
+					pages.unshift(page)
+					logger.log(`Added route: ${page.path} (${page.name})`)
+				} else {
+					logger.warn(`Route ${page.path} already exists, skipping ${page.name}`)
+				}
+			}
+		})
 
 		// Setup DocBuilder if enabled — dev-only enforcement (Invariant 1)
 		if (options.docbuilder && process.env.NODE_ENV === 'development') {

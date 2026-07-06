@@ -21,10 +21,11 @@ export default defineNitroPlugin(async () => {
 		// Clear any existing registry (for hot reload in development)
 		clearRegistry()
 
-		// Load doctype definitions from the doctypes directory
-		// The plugin is at server/plugins/stonecrop.ts, doctypes are at ../../app/doctypes
+		// Load doctype definitions from the doctypes directory. It lives at the project root
+		// (a shared sibling of app/ and server/), which is also the module's default doctypesDir.
+		// The plugin is at server/plugins/stonecrop.ts, so the root is two levels up.
 		const pluginDir = resolve(new URL(import.meta.url).pathname, '..')
-		const doctypesDir = resolve(pluginDir, '../../app/doctypes')
+		const doctypesDir = resolve(pluginDir, '../../doctypes')
 
 		if (!existsSync(doctypesDir)) {
 			console.warn(`[Stonecrop] Could not find doctypes directory at ${doctypesDir}, skipping doctype loading`)

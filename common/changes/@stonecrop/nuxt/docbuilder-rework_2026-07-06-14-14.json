@@ -1,0 +1,10 @@
+{
+	"changes": [
+		{
+			"packageName": "@stonecrop/nuxt",
+			"comment": "expose the field `format` (display formatter) as an editable text property in the docbuilder fields panel, alongside `mask` (input) — the two are distinct and only `mask` was authorable",
+			"type": "patch"
+		}
+	],
+	"packageName": "@stonecrop/nuxt"
+}

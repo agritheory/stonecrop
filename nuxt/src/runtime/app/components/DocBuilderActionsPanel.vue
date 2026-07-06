@@ -37,6 +37,7 @@
 								:model-value="row.__action?.clientHandler ?? ''"
 								:extra-libs="INJECTED_API_STUBS"
 								:vs-path="VS_PATH"
+								:options="EDITOR_OPTIONS"
 								language="javascript"
 								height="200px"
 								@update:model-value="update(String(row.__key), 'clientHandler', $event)" />
@@ -79,6 +80,10 @@ declare const record: Record<string, unknown>
 // Path to locally-served Monaco AMD build (served via Nitro publicAssets in module.ts).
 // Falls back to CDN when running outside the docbuilder context.
 const VS_PATH = '/stonecrop-monaco/vs'
+
+const EDITOR_OPTIONS = {
+	placeholder: "e.g.  await runAction('Submit');  router.push(`/issue/${record.id}`)",
+}
 
 // `sortable: false` suppresses ATable's click-to-sort affordance (row order here is the keyed
 // object's order, not a view concern). `filterable` opts a column into the header filter row.

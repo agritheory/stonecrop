@@ -139,6 +139,7 @@ const TEXT_PROPS: PropDef[] = [
 	{ key: 'component', label: 'Component' },
 	{ key: 'width', label: 'Width' },
 	{ key: 'mask', label: 'Mask' },
+	{ key: 'format', label: 'Format' },
 ]
 const SELECT_PROPS: SelectPropDef[] = [
 	{ key: 'align', label: 'Align', options: ['left', 'center', 'right', 'start', 'end'] },
