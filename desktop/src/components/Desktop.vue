@@ -353,8 +353,10 @@ const getAvailableTransitions = () => {
 
 		// Each transition emits an 'action' event. The host app decides what to do
 		// (call the server, trigger an FSM actor, update HST, etc.).
-		return transitions.map(({ name, targetState }) => ({
-			label: `${name} (→ ${targetState})`,
+		return transitions.map(({ name }) => ({
+			// Prefer the workflow action's human-readable label (WorkflowMeta format);
+			// fall back to the raw transition name for XState workflows with no action meta.
+			label: doctype.getActionMeta(name)?.label ?? name,
 			action: () => {
 				emit('action', {
 					name,
