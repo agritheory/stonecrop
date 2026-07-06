@@ -2,17 +2,25 @@
 <template>
 	<div class="app-shell">
 		<nav class="app-nav">
-			<NuxtLink to="/" exact-active-class="app-nav-active">Home</NuxtLink>
-			<NuxtLink to="/country" active-class="app-nav-active">Countries</NuxtLink>
-			<NuxtLink to="/continent" active-class="app-nav-active">Continents</NuxtLink>
-			<NuxtLink to="/language" active-class="app-nav-active">Languages</NuxtLink>
-			<NuxtLink to="/docbuilder" active-class="app-nav-active">DocBuilder</NuxtLink>
+			<NuxtLink to="/" :class="{ 'app-nav-active': isSection('/') }">Home</NuxtLink>
+			<NuxtLink to="/country" :class="{ 'app-nav-active': isSection('/country') }">Countries</NuxtLink>
+			<NuxtLink to="/continent" :class="{ 'app-nav-active': isSection('/continent') }">Continents</NuxtLink>
+			<NuxtLink to="/language" :class="{ 'app-nav-active': isSection('/language') }">Languages</NuxtLink>
+			<NuxtLink to="/docbuilder" :class="{ 'app-nav-active': isSection('/docbuilder') }">DocBuilder</NuxtLink>
 		</nav>
 		<main class="app-main">
 			<slot />
 		</main>
 	</div>
 </template>
+
+<script setup lang="ts">
+// Nav section highlighting: a link stays lit while you're anywhere under its path
+// (e.g. Countries stays active on /country/US). Home ('/') matches only the exact root.
+const route = useRoute()
+const isSection = (base: string) =>
+	base === '/' ? route.path === '/' : route.path === base || route.path.startsWith(`${base}/`)
+</script>
 
 <style scoped>
 .app-shell {

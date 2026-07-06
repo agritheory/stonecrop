@@ -4,6 +4,11 @@ import SheetNav from '../../../desktop/src/components/SheetNav.vue'
 
 const route = useRoute()
 
+// Nav section highlighting: a link stays lit while you're anywhere under its path
+// (e.g. Orders stays active on /order/2). Home ('/') matches only the exact root.
+const isSection = (base: string) =>
+	base === '/' ? route.path === '/' : route.path === base || route.path.startsWith(`${base}/`)
+
 const breadcrumbs = computed(() => {
 	const path = route.path
 	const parts = path.split('/').filter(Boolean)
@@ -30,10 +35,10 @@ const breadcrumbs = computed(() => {
 <template>
 	<div class="fullstack-app">
 		<nav class="app-nav">
-			<NuxtLink to="/" exact-active-class="app-nav-active">Home</NuxtLink>
-			<NuxtLink to="/user" active-class="app-nav-active">Users</NuxtLink>
-			<NuxtLink to="/order" active-class="app-nav-active">Orders</NuxtLink>
-			<NuxtLink to="/docbuilder" active-class="app-nav-active">DocBuilder</NuxtLink>
+			<NuxtLink to="/" :class="{ 'app-nav-active': isSection('/') }">Home</NuxtLink>
+			<NuxtLink to="/user" :class="{ 'app-nav-active': isSection('/user') }">Users</NuxtLink>
+			<NuxtLink to="/order" :class="{ 'app-nav-active': isSection('/order') }">Orders</NuxtLink>
+			<NuxtLink to="/docbuilder" :class="{ 'app-nav-active': isSection('/docbuilder') }">DocBuilder</NuxtLink>
 			<a class="app-nav-external" href="/graphql/" target="_blank" rel="noopener">GraphiQL</a>
 		</nav>
 
