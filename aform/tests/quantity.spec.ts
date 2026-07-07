@@ -23,6 +23,24 @@ describe('AQuantityInput', () => {
 			expect(optionEls.map(o => o.text())).toEqual(['Nos', 'Box', 'Kg'])
 		})
 
+		it('renders a label for the quantity input and a separate label for the uom select', () => {
+			const wrapper = mount(AQuantityInput, { props: { label: 'Quantity', options } })
+			const labels = wrapper.findAll('label')
+			expect(labels.slice(0, 2).map(l => l.text())).toEqual(['Quantity', 'UOM'])
+		})
+
+		it('associates each label with its own input via for/id', () => {
+			const wrapper = mount(AQuantityInput, { props: { uuid: 'item-qty', options } })
+			const [qtyLabel, uomLabel] = wrapper.findAll('label')
+			expect(qtyLabel.attributes('for')).toBe(wrapper.find('input').attributes('id'))
+			expect(uomLabel.attributes('for')).toBe(wrapper.find('select').attributes('id'))
+		})
+
+		it('renders a custom uom label', () => {
+			const wrapper = mount(AQuantityInput, { props: { options, uomLabel: 'Unit' } })
+			expect(wrapper.findAll('label').at(1)!.text()).toBe('Unit')
+		})
+
 		it('is disabled in read mode', () => {
 			const wrapper = mount(AQuantityInput, { props: { mode: 'read', options } })
 			expect(wrapper.find('input').attributes()).toHaveProperty('disabled')
@@ -92,10 +110,43 @@ describe('AQuantityInput', () => {
 			const last = emitted[emitted.length - 1][0] as any
 			expect(last).toEqual({ qty: 4, uom: 'Kg', stockUom: 'Nos', conversionFactor: 25, stockQty: 100 })
 		})
+	})
 
-		it('never renders the conversion factor as an input', () => {
-			const wrapper = mount(AQuantityInput, { props: { options } })
-			expect(wrapper.findAll('input')).toHaveLength(1)
+	describe('read-only stock fields', () => {
+		const modelValue = { qty: 2, uom: 'Box', stockQty: 20, stockUom: 'Nos', conversionFactor: 10 }
+
+		it('displays stock uom, stock qty, and conversion factor within the same box', () => {
+			const wrapper = mount(AQuantityInput, { props: { options, modelValue } })
+			expect(wrapper.find('.aquantity__field--stock-uom input').element.value).toBe('Nos')
+			expect(wrapper.find('.aquantity__field--stock-qty input').element.value).toBe('20')
+			expect(wrapper.find('.aquantity__field--conversion input').element.value).toBe('10')
+		})
+
+		it('labels each read-only field', () => {
+			const wrapper = mount(AQuantityInput, { props: { label: 'Quantity', options, modelValue } })
+			const labels = wrapper.findAll('label').map(l => l.text())
+			expect(labels).toEqual(['Quantity', 'UOM', 'Stock UOM', 'Stock Qty', 'Conversion Factor'])
+		})
+
+		it('is always disabled, even in edit mode', () => {
+			const wrapper = mount(AQuantityInput, { props: { options, modelValue, mode: 'edit' } })
+			expect(wrapper.find('.aquantity__field--stock-uom input').attributes()).toHaveProperty('disabled')
+			expect(wrapper.find('.aquantity__field--stock-qty input').attributes()).toHaveProperty('disabled')
+			expect(wrapper.find('.aquantity__field--conversion input').attributes()).toHaveProperty('disabled')
+		})
+
+		it('updates live as qty/uom change', async () => {
+			const wrapper = mount(AQuantityInput, {
+				props: { options, modelValue: { qty: 0, uom: 'Nos', stockQty: 0, stockUom: 'Nos', conversionFactor: 1 } },
+			})
+			await wrapper.find('select').setValue('Box')
+			await wrapper.find('input[type="number"]').setValue(4)
+
+			const emitted = wrapper.emitted('update:modelValue')!
+			await wrapper.setProps({ modelValue: emitted[emitted.length - 1][0] as any })
+
+			expect(wrapper.find('.aquantity__field--stock-qty input').element.value).toBe('40')
+			expect(wrapper.find('.aquantity__field--conversion input').element.value).toBe('10')
 		})
 	})
 })

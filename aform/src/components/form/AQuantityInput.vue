@@ -6,19 +6,45 @@
 		</template>
 		<template v-else>
 			<div class="aquantity__row">
-				<input
-					:id="uuid"
-					v-model.number="qty"
-					class="aform_input-field aquantity__qty"
-					type="number"
-					:disabled="mode === 'read'"
-					:required="required" />
-				<select v-model="uom" class="aform_input-field aquantity__uom" :disabled="mode === 'read'">
-					<option v-for="option in uoms" :key="option" :value="option">{{ option }}</option>
-				</select>
+				<div class="aquantity__field aquantity__field--qty">
+					<input
+						:id="uuid"
+						v-model.number="qty"
+						class="aform_input-field aquantity__qty"
+						type="number"
+						:disabled="mode === 'read'"
+						:required="required" />
+					<label class="aform_field-label" :for="uuid">{{ label }}</label>
+				</div>
+				<div class="aquantity__field aquantity__field--uom">
+					<select
+						:id="`${uuid}-uom`"
+						v-model="uom"
+						class="aform_input-field aquantity__uom"
+						:disabled="mode === 'read'">
+						<option v-for="option in uoms" :key="option" :value="option">{{ option }}</option>
+					</select>
+					<label class="aform_field-label" :for="`${uuid}-uom`">{{ uomLabel }}</label>
+				</div>
 			</div>
-			<label class="aform_field-label" :for="uuid">{{ label }}</label>
-			<p v-if="showStock" class="aquantity__stock">Stock: {{ modelValue.stockQty }} {{ modelValue.stockUom }}</p>
+			<div class="aquantity__row aquantity__row--stock">
+				<div class="aquantity__field aquantity__field--stock-uom">
+					<input :value="modelValue.stockUom" class="aform_input-field aquantity__stock-field" type="text" disabled />
+					<label class="aform_field-label">{{ stockUomLabel }}</label>
+				</div>
+				<div class="aquantity__field aquantity__field--stock-qty">
+					<input :value="modelValue.stockQty" class="aform_input-field aquantity__stock-field" type="number" disabled />
+					<label class="aform_field-label">{{ stockQtyLabel }}</label>
+				</div>
+				<div class="aquantity__field aquantity__field--conversion">
+					<input
+						:value="modelValue.conversionFactor"
+						class="aform_input-field aquantity__stock-field"
+						type="number"
+						disabled />
+					<label class="aform_field-label">{{ conversionFactorLabel }}</label>
+				</div>
+			</div>
 			<p v-show="validation.errorMessage" class="aform_error" v-html="validation.errorMessage"></p>
 		</template>
 	</div>
@@ -36,7 +62,19 @@ const {
 	uuid,
 	validation = { errorMessage: '&nbsp;' },
 	options = {},
-} = defineProps<ComponentProps & { options?: QuantityOptions }>()
+	uomLabel = 'UOM',
+	stockUomLabel = 'Stock UOM',
+	stockQtyLabel = 'Stock Qty',
+	conversionFactorLabel = 'Conversion Factor',
+} = defineProps<
+	ComponentProps & {
+		options?: QuantityOptions
+		uomLabel?: string
+		stockUomLabel?: string
+		stockQtyLabel?: string
+		conversionFactorLabel?: string
+	}
+>()
 
 const modelValue = defineModel<QuantityValue>({
 	default: { qty: 0, uom: '', stockQty: 0, stockUom: '', conversionFactor: 1 },
@@ -87,22 +125,31 @@ const displayText = computed(() => {
 <style scoped>
 .aquantity__row {
 	display: flex;
-	gap: 0.5rem;
+	gap: 1ch;
 }
 
-.aquantity__qty {
+.aquantity__row--stock {
+	margin-top: 1.5rem;
+}
+
+.aquantity__field {
+	position: relative;
 	flex: 1;
 	min-width: 0;
 }
 
-.aquantity__uom {
+.aquantity__field--uom {
 	flex: 0 0 auto;
-	width: 10ch;
+	width: 12ch;
 }
 
-.aquantity__stock {
-	margin: 0.25rem 0 0 0;
-	font-size: 0.8em;
+.aquantity__qty,
+.aquantity__uom,
+.aquantity__stock-field {
+	width: 100%;
+}
+
+.aquantity__stock-field:disabled {
 	color: var(--sc-gray-50, #888);
 }
 </style>
