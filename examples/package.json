@@ -7,16 +7,14 @@
 	"license": "MIT",
 	"main": "index.js",
 	"files": [
-		"aform/*",
-		"docbuilder/*"
+		"aform/*"
 	],
 	"scripts": {
 		"_phase:build": "",
 		"build": "",
 		"story": "histoire dev",
 		"build:stories": "histoire build",
-		"desktop": "vite --config desktop/vite.config.ts desktop",
-		"docbuilder": "vite --config docbuilder/vite.config.ts docbuilder"
+		"desktop": "vite --config desktop/vite.config.ts desktop"
 	},
 	"dependencies": {
 		"@stonecrop/aform": "workspace:*",
