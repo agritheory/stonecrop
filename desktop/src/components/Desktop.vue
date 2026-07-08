@@ -4,7 +4,11 @@
 		<ActionSet :elements="actionElements" @action-click="handleActionClick" />
 
 		<!-- Main content using AForm -->
-		<AForm v-if="currentViewSchema.length > 0" v-model:data="currentViewData" :schema="currentViewSchema" />
+		<AForm
+			v-if="currentViewSchema.length > 0"
+			v-model:data="currentViewData"
+			:schema="currentViewSchema"
+			:errors="fieldErrors" />
 		<div v-else-if="!stonecrop" class="loading"><p>Initializing Stonecrop...</p></div>
 		<div v-else class="loading">
 			<p>Loading {{ currentView }} data...</p>
@@ -31,10 +35,10 @@
 </template>
 
 <script setup lang="ts">
-import { useStonecrop } from '@stonecrop/stonecrop'
+import { useStonecrop, useValidationStore } from '@stonecrop/stonecrop'
 import { AForm, type AFormLinkNavigator, type ResolvedField, type ResolvedTable } from '@stonecrop/aform'
 import type { ColumnSchema } from '@stonecrop/schema'
-import { computed, onMounted, onUnmounted, provide, ref, unref, watch } from 'vue'
+import { computed, getCurrentInstance, onMounted, onUnmounted, provide, ref, unref, watch } from 'vue'
 
 import ActionSet from './ActionSet.vue'
 import SheetNav from './SheetNav.vue'
@@ -104,6 +108,26 @@ const emit = defineEmits<{
 }>()
 
 const { stonecrop } = useStonecrop()
+
+// Field-validation store (advisory, client-side). Stonecrop's Pinia stores are bundled into this
+// package, so `useValidationStore()` alone would read THIS bundle's ambient Pinia (never activated
+// by the host) and throw. Pass the host app's Pinia explicitly — the same pattern the stonecrop
+// plugin uses for `useOperationLogStore(app.$pinia)`. Guarded: hosts without Pinia disable validation.
+let validationStore: ReturnType<typeof useValidationStore> | null = null
+try {
+	const appPinia = getCurrentInstance()?.appContext.config.globalProperties.$pinia as Parameters<
+		typeof useValidationStore
+	>[0]
+	validationStore = appPinia ? useValidationStore(appPinia) : useValidationStore()
+} catch {
+	validationStore = null
+}
+
+// Inline field errors handed to AForm. Only surfaced in the record form view (currentView is
+// defined below); empty elsewhere so a previous record's errors never bleed into a list view.
+const fieldErrors = computed<Record<string, string[]>>(() =>
+	currentView.value === 'record' ? (validationStore?.errorsByField ?? {}) : {}
+)
 
 // State
 const loading = ref(false)
@@ -214,19 +238,45 @@ const currentViewData = computed<Record<string, any>>({
 			// schema fields absent from the record as undefined; writing them would silently
 			// clear values that exist in HST. Explicit null is allowed (intentional clear).
 			const hstStore = stonecrop.value.getStore()
+			const changedFields: string[] = []
 			for (const [fieldname, value] of Object.entries(flatData)) {
 				if (value === undefined) continue
 				const fieldPath = `${currentDoctype.value}.${currentRecordId.value}.${fieldname}`
 				const currentValue = hstStore.has(fieldPath) ? hstStore.get(fieldPath) : undefined
 				if (currentValue !== value) {
 					hstStore.set(fieldPath, value)
+					changedFields.push(fieldname)
 				}
+			}
+
+			// Advisory field-validation runs on the fields that actually changed (honors each
+			// trigger's `on` set). Driven here, after the HST writes, so HST stays value-only.
+			if (changedFields.length > 0) {
+				driveFieldValidation(changedFields)
 			}
 		} catch (error) {
 			console.warn('HST update failed:', error)
 		}
 	},
 })
+
+// Advisory field-validation: run the doctype's triggers for the fields that changed on this edit.
+// Snapshots the post-edit record as a plain, flat object so validators read siblings read-only
+// (the core store freezes it). Fire-and-forget — the reactive error store repaints AForm on resolve.
+function driveFieldValidation(changedFields: string[]) {
+	if (!validationStore || !stonecrop.value || !currentDoctype.value || !currentRecordId.value) return
+
+	const doctype = stonecrop.value.registry.getDoctype(currentDoctype.value)
+	const triggers = doctype?.getTriggers()
+	if (!triggers || Object.keys(triggers).length === 0) return
+
+	const node = stonecrop.value.getRecordById(currentDoctype.value, currentRecordId.value)
+	const record = { ...(node?.get('') as Record<string, unknown>) }
+
+	for (const field of changedFields) {
+		void validationStore.validateField(triggers, field, record)
+	}
+}
 
 // Computed properties for current route context.
 // When a routeAdapter is provided it takes full precedence over the registry's internal router.
@@ -821,6 +871,12 @@ watch(
 	},
 	{ immediate: true }
 )
+
+// Clear advisory validation errors when the target record changes, so errors from a previously
+// edited record never bleed into a newly opened one.
+watch([currentDoctype, currentRecordId], () => {
+	validationStore?.clearAll()
+})
 
 // Stonecrop reactive computed properties update automatically when the instance
 // becomes available — no manual watcher needed.

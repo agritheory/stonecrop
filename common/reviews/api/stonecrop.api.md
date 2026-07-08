@@ -96,6 +96,7 @@ export class Doctype {
         targetState: string;
     }>;
     getSchemaArray(): DoctypeField[];
+    getTriggers(): Record<string, TriggerDefinition> | undefined;
     readonly links?: Record<string, LinkDeclaration>;
     get name(): string;
     readonly schema: ImmutableDoctype['schema'];

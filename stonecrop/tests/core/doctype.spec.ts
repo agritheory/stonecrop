@@ -373,6 +373,37 @@ describe('Doctype class', { tags: ['unit'] }, () => {
 		})
 	})
 
+	describe('getTriggers', () => {
+		it('returns the workflow triggers map', () => {
+			const workflowWithTriggers: WorkflowMeta = {
+				states: ['draft'],
+				triggers: {
+					dateOrder: {
+						on: ['start_date', 'end_date'],
+						clientHandler: "if (record.end_date < record.start_date) setError('end_date', 'End before start')",
+					},
+				},
+			}
+			const doctype = new Doctype('Booking', mockSchema, workflowWithTriggers, mockActions)
+
+			expect(doctype.getTriggers()).toEqual(workflowWithTriggers.triggers)
+		})
+
+		it('returns undefined when the workflow declares no triggers', () => {
+			const noTriggers: WorkflowMeta = { states: ['draft'], actions: {} }
+			const doctype = new Doctype('Doc', mockSchema, noTriggers, mockActions)
+
+			expect(doctype.getTriggers()).toBeUndefined()
+		})
+
+		it('returns undefined when workflow is undefined', () => {
+			// oxlint-disable-next-line typescript/no-explicit-any -- exercising the no-workflow branch
+			const doctype = new Doctype('Doc', mockSchema, undefined as any, mockActions)
+
+			expect(doctype.getTriggers()).toBeUndefined()
+		})
+	})
+
 	describe('fromObject', () => {
 		it('creates Doctype from obj object with all fields', () => {
 			const obj = {

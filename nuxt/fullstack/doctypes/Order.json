@@ -55,15 +55,13 @@
 			"fieldname": "createdAt",
 			"label": "Created At",
 			"component": "ATextInput",
-			"fieldtype": "Datetime",
-			"mode": "display"
+			"fieldtype": "Datetime"
 		},
 		{
 			"fieldname": "updatedAt",
 			"label": "Updated At",
 			"component": "ATextInput",
-			"fieldtype": "Datetime",
-			"mode": "display"
+			"fieldtype": "Datetime"
 		}
 	],
 	"workflow": {
@@ -103,6 +101,13 @@
 				"label": "View Customer",
 				"stateless": true,
 				"clientHandler": "router.push(record.userId ? `/user/${record.userId}` : '/user')"
+			}
+		},
+		"triggers": {
+			"dateOrder": {
+				"label": "Date order",
+				"on": ["createdAt", "updatedAt"],
+				"clientHandler": "if (record.createdAt && record.updatedAt && record.updatedAt < record.createdAt) setError('updatedAt', 'Updated date cannot be before created date')"
 			}
 		}
 	}

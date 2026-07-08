@@ -1,4 +1,4 @@
-import type { DoctypeField, LinkDeclaration, WorkflowMeta } from '@stonecrop/schema'
+import type { DoctypeField, LinkDeclaration, TriggerDefinition, WorkflowMeta } from '@stonecrop/schema'
 import { isActionAllowedInState } from '@stonecrop/schema'
 import { List, Map } from 'immutable'
 import { Component } from 'vue'
@@ -247,6 +247,30 @@ export default class Doctype {
 		return Object.entries(actions)
 			.filter(([, actionDef]) => actionDef.stateless === true && isActionAllowedInState(actionDef, currentState ?? ''))
 			.map(([name]) => ({ name }))
+	}
+
+	/**
+	 * Returns the field-validation **triggers** declared on this doctype's workflow (advisory,
+	 * client-side). Keyed by trigger name. Returns undefined when the workflow is absent, is an
+	 * XState machine (no triggers), or simply declares none.
+	 *
+	 * @returns The `workflow.triggers` map, or undefined
+	 *
+	 * @example
+	 * ```ts
+	 * const triggers = doctype.getTriggers()
+	 * // { dateOrder: { on: ['start_date', 'end_date'], clientHandler: '…' } }
+	 * ```
+	 *
+	 * @public
+	 */
+	getTriggers(): Record<string, TriggerDefinition> | undefined {
+		const workflow = this.workflow
+		if (!workflow) return undefined
+
+		// Only WorkflowMeta carries a `triggers` map; XState workflows have none.
+		// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- probing the workflow union for the optional WorkflowMeta triggers map
+		return (workflow as WorkflowMeta).triggers
 	}
 
 	/**

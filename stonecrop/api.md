@@ -1345,6 +1345,14 @@ Returns the raw authoring schema as a plain array. For the resolved schema suita
 getSchemaArray(): DoctypeField[]
 ```
 
+#### getTriggers
+
+Returns the field-validation **triggers** declared on this doctype's workflow (advisory, client-side). Keyed by trigger name. Returns undefined when the workflow is absent, is an XState machine (no triggers), or simply declares none.
+
+```typescript
+getTriggers(): Record<string, TriggerDefinition> | undefined
+```
+
 ### FieldTriggerEngine
 
 Field trigger execution engine integrated with Registry Singleton pattern following Registry implementation
