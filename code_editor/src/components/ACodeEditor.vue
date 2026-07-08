@@ -26,6 +26,7 @@ const {
 	options = undefined,
 	vsPath = undefined,
 	extraLibs = undefined,
+	libs = undefined,
 } = defineProps<{
 	height?: string
 	mode?: 'edit' | 'read' | 'display'
@@ -36,6 +37,12 @@ const {
 	vsPath?: string
 	/** TypeScript declaration string added as extra libs for JS type checking */
 	extraLibs?: string
+	/**
+	 * Restrict the JS/TS language service to these lib files (e.g. `['es2020']` to keep
+	 * the JS built-ins but drop the DOM/browser globals from type-checking and autocomplete).
+	 * When omitted, Monaco's default libs apply — which include `dom`.
+	 */
+	libs?: string[]
 }>()
 
 const editorRef = useTemplateRef<HTMLDivElement>('aCodeEditor')
@@ -61,9 +68,18 @@ onMounted(async () => {
 
 	if (extraLibs) {
 		monacoInstance.languages.typescript.javascriptDefaults.addExtraLib(extraLibs, 'ts:stonecrop.d.ts')
+	}
+	if (extraLibs || libs) {
 		monacoInstance.languages.typescript.javascriptDefaults.setCompilerOptions({
 			checkJs: true,
 			noImplicitAny: false,
+			// `lib` is authoritative — it replaces Monaco's default set, so passing e.g.
+			// ['es2020'] retains the JS built-ins (Promise/Array/JSON/…) while removing the
+			// DOM/browser globals. `target` is matched so ES2020 syntax isn't flagged.
+			...(libs && {
+				target: monacoInstance.languages.typescript.ScriptTarget.ES2020,
+				lib: libs,
+			}),
 		})
 	}
 

@@ -36,6 +36,7 @@
 							<ACodeEditor
 								:model-value="row.__action?.clientHandler ?? ''"
 								:extra-libs="INJECTED_API_STUBS"
+								:libs="EDITOR_LIBS"
 								:vs-path="VS_PATH"
 								:options="EDITOR_OPTIONS"
 								language="javascript"
@@ -84,6 +85,11 @@ const VS_PATH = '/stonecrop-monaco/vs'
 const EDITOR_OPTIONS = {
 	placeholder: "e.g.  await runAction('Submit');  router.push(`/issue/${record.id}`)",
 }
+
+// Restrict the handler editor's language service to the ES built-ins only — no DOM/browser
+// globals. Authors get JS essentials (Promise, Array, JSON, …) plus the injected Stonecrop
+// capability surface (INJECTED_API_STUBS) in autocomplete, and nothing else.
+const EDITOR_LIBS = ['es2020']
 
 // `sortable: false` suppresses ATable's click-to-sort affordance (row order here is the keyed
 // object's order, not a view concern). `filterable` opts a column into the header filter row.
