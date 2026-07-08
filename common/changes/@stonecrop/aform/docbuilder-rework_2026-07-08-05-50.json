@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/aform",
+      "comment": "remove explicit theming on components",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@stonecrop/aform"
+}
