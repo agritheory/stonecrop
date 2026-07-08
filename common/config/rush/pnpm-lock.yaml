@@ -754,6 +754,9 @@ importers:
       '@stonecrop/stonecrop':
         specifier: workspace:*
         version: link:../stonecrop
+      '@stonecrop/themes':
+        specifier: workspace:*
+        version: link:../themes
       citty:
         specifier: ^0.2.2
         version: 0.2.2

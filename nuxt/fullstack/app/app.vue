@@ -62,7 +62,6 @@ const breadcrumbs = computed(() => {
 
 body {
 	margin: 0;
-	font-family: var(--sc-font-family);
 	background: var(--sc-gray-5);
 }
 </style>

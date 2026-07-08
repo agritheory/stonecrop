@@ -314,8 +314,6 @@ defineExpose({
 </script>
 
 <style>
-@import url('@stonecrop/themes/default.css');
-
 .atable-cell {
 	border-radius: 0px;
 	box-sizing: border-box;

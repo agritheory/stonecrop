@@ -3,8 +3,6 @@ import { defineNuxtConfig } from 'nuxt/config'
 
 import NuxtStonecrop from '../src/module'
 
-const themePath = resolve(__dirname, '../../themes/default/default.css')
-
 export default defineNuxtConfig({
 	modules: [NuxtStonecrop, 'nuxt-graphql-middleware'],
 	devtools: { enabled: true },
@@ -30,7 +28,8 @@ export default defineNuxtConfig({
 		downloadSchema: 'dev-only',
 		autoImportPatterns: ['./app/graphql/**/*.graphql'],
 	},
-	css: [themePath, '~/assets/styles/common.css'],
+	// The @stonecrop/nuxt module supplies the base theme; only app-specific styles here.
+	css: ['~/assets/styles/common.css'],
 	vite: {
 		optimizeDeps: {
 			include: ['pinia', '@stonecrop/desktop', '@stonecrop/stonecrop'],

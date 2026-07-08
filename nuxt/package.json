@@ -67,6 +67,7 @@
 		"@stonecrop/nuxt-grafserv": "workspace:*",
 		"@stonecrop/schema": "workspace:*",
 		"@stonecrop/stonecrop": "workspace:*",
+		"@stonecrop/themes": "workspace:*",
 		"h3": "^1.15.11",
 		"pinia": "^3.0.4",
 		"citty": "^0.2.2",

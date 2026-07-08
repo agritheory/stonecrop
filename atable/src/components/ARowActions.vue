@@ -238,8 +238,6 @@ const executeAction = (actionType: RowActionType, event?: MouseEvent) => {
 </script>
 
 <style>
-@import url('@stonecrop/themes/default.css');
-
 .atable-row-actions {
 	width: 2rem;
 	min-width: 2rem;

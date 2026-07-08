@@ -25,7 +25,6 @@ const isSection = (base: string) =>
 <style scoped>
 .app-shell {
 	min-height: 100vh;
-	font-family: var(--sc-font-family);
 	color: var(--sc-gray-80);
 }
 

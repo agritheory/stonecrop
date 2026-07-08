@@ -173,8 +173,6 @@ if (addNavigation || isListExpansion) {
 </script>
 
 <style>
-@import url('@stonecrop/themes/default.css');
-
 .atable-row {
 	background-color: white;
 }

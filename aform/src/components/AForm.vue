@@ -249,7 +249,6 @@ p.aform_error {
 </style>
 
 <style scoped>
-/* @import url('@stonecrop/themes/default.css'); */
 .aform {
 	display: flex;
 	flex-wrap: wrap;

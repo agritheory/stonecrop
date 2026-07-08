@@ -2,6 +2,7 @@ import { List, Map } from 'immutable'
 import { createPinia } from 'pinia'
 import { createApp } from 'vue'
 
+import '@stonecrop/themes/default.css'
 import '@stonecrop/desktop/styles'
 import '@stonecrop/node-editor/styles'
 import { install as AFormPlugin } from '@stonecrop/aform'

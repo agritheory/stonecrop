@@ -439,7 +439,6 @@ td.sticky-index {
 </style>
 
 <style scoped>
-@import url('@stonecrop/themes/default.css');
 .atable {
 	position: relative;
 	font-family: var(--sc-atable-font-family);

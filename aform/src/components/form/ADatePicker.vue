@@ -351,7 +351,6 @@ defineExpose({ currentMonth, currentYear, selectedDate })
 </script>
 
 <style scoped>
-/* @import url('@stonecrop/themes/default.css'); */
 .adatepicker {
 	font-size: var(--sc-table-font-size);
 	display: inline-table;
