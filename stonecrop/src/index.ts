@@ -20,6 +20,7 @@ import Registry from './registry'
 import { Stonecrop, getStonecrop } from './stonecrop'
 import { HST, createHST, type HSTNode } from './stores/hst'
 import { useOperationLogStore } from './stores/operation-log'
+import { useValidationStore } from './stores/validation'
 import { SchemaValidator, createValidator, validateSchema } from './schema-validator'
 import { ValidationSeverity } from './types/schema-validator'
 
@@ -28,6 +29,9 @@ export type * from './types'
 
 // clientHandler executor types
 export type { ClientHandlerApi } from './client-handler'
+
+// Field-validation store types
+export type { ValidationError } from './stores/validation'
 
 // Export enum as value (enums need runtime export, not just type)
 export { ValidationSeverity }
@@ -61,6 +65,8 @@ export {
 	useOperationLogStore,
 	useUndoRedoShortcuts,
 	withBatch,
+	// Field-validation store
+	useValidationStore,
 	// Utility functions
 	getStonecrop,
 }

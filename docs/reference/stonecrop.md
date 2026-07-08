@@ -851,6 +851,28 @@ export interface UndoRedoState {
 | redoCount | `number` | Number of operations available for redo |
 | undoCount | `number` | Number of operations available for undo |
 
+### ValidationError
+
+A single validation error contributed by a trigger, displayed on a field.
+
+**Definition:**
+
+```typescript
+export interface ValidationError {
+  field: string;
+  message: string;
+  trigger: string;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| field | `string` | The fieldname the error displays on (the `setError` target, not necessarily a fired field) |
+| message | `string` | The message to display |
+| trigger | `string` | The trigger that produced this error — the namespace a re-run clears before repopulating |
+
 ### ValidationIssue
 
 Validation issue
@@ -2262,6 +2284,74 @@ export const useOperationLogStore: import("pinia").StoreDefinition<"hst-operatio
     markIrreversible: (operationId: string, reason: string) => void;
     logAction: (doctype: string, actionName: string, recordIds?: string[], result?: "success" | "failure" | "pending", error?: string) => string;
 }, "clear" | "undo" | "redo" | "configure" | "addOperation" | "startBatch" | "commitBatch" | "cancelBatch" | "getOperationsFor" | "getSnapshot" | "markIrreversible" | "logAction">>
+```
+
+### useValidationStore
+
+Reactive per-field validation error store + the advisory field-validation trigger engine.
+
+Holds the errors produced by field-validation triggers (see `TriggerDefinition` in `@stonecrop/schema`) and runs a trigger's `clientHandler` on demand. Errors are **namespaced by trigger**: re-running a trigger clears its own prior contributions before repopulating, so a corrected value clears its stale error without disturbing other triggers.
+
+The engine is **advisory** and does **no rollback** — an invalid value stays in the record so the user can fix it; validity is reported separately via `isValid` (read by the save gate) and the per-field messages are surfaced via `errorsByField` / `errorsFor` for display.
+
+**Type:**
+
+```typescript
+export const useValidationStore: import("pinia").StoreDefinition<"stonecrop-validation", Pick<{
+    errors: import("vue").Ref<{
+        trigger: string;
+        field: string;
+        message: string;
+    }[], ValidationError[] | {
+        trigger: string;
+        field: string;
+        message: string;
+    }[]>;
+    isValid: import("vue").ComputedRef<boolean>;
+    errorsByField: import("vue").ComputedRef<Record<string, string[]>>;
+    errorsFor: (field: string) => string[];
+    setError: (trigger: string, field: string, message: string) => void;
+    clearTrigger: (trigger: string) => void;
+    clearAll: () => void;
+    validateField: (triggers: Record<string, TriggerDefinition>, changedField: string, record: Record<string, unknown>) => Promise<void>;
+    validateRecord: (triggers: Record<string, TriggerDefinition>, record: Record<string, unknown>) => Promise<void>;
+}, "errors">, Pick<{
+    errors: import("vue").Ref<{
+        trigger: string;
+        field: string;
+        message: string;
+    }[], ValidationError[] | {
+        trigger: string;
+        field: string;
+        message: string;
+    }[]>;
+    isValid: import("vue").ComputedRef<boolean>;
+    errorsByField: import("vue").ComputedRef<Record<string, string[]>>;
+    errorsFor: (field: string) => string[];
+    setError: (trigger: string, field: string, message: string) => void;
+    clearTrigger: (trigger: string) => void;
+    clearAll: () => void;
+    validateField: (triggers: Record<string, TriggerDefinition>, changedField: string, record: Record<string, unknown>) => Promise<void>;
+    validateRecord: (triggers: Record<string, TriggerDefinition>, record: Record<string, unknown>) => Promise<void>;
+}, "isValid" | "errorsByField">, Pick<{
+    errors: import("vue").Ref<{
+        trigger: string;
+        field: string;
+        message: string;
+    }[], ValidationError[] | {
+        trigger: string;
+        field: string;
+        message: string;
+    }[]>;
+    isValid: import("vue").ComputedRef<boolean>;
+    errorsByField: import("vue").ComputedRef<Record<string, string[]>>;
+    errorsFor: (field: string) => string[];
+    setError: (trigger: string, field: string, message: string) => void;
+    clearTrigger: (trigger: string) => void;
+    clearAll: () => void;
+    validateField: (triggers: Record<string, TriggerDefinition>, changedField: string, record: Record<string, unknown>) => Promise<void>;
+    validateRecord: (triggers: Record<string, TriggerDefinition>, record: Record<string, unknown>) => Promise<void>;
+}, "errorsFor" | "setError" | "clearTrigger" | "clearAll" | "validateField" | "validateRecord">>
 ```
 
 ## Enums

@@ -18,6 +18,7 @@ import type { ResolvedField } from '@stonecrop/aform';
 import { Router } from 'vue-router';
 import { Store } from 'pinia';
 import { StoreDefinition } from 'pinia';
+import type { TriggerDefinition } from '@stonecrop/schema';
 import type { UnknownMachineConfig } from 'xstate';
 import type { WorkflowMeta } from '@stonecrop/schema';
 
@@ -1110,7 +1111,71 @@ export function useStonecrop(options: {
 export function useUndoRedoShortcuts(hstStore: HSTNode, enabled?: boolean): void;
 
 // @public
+export const useValidationStore: StoreDefinition<"stonecrop-validation", Pick<{
+errors: Ref<    {
+trigger: string;
+field: string;
+message: string;
+}[], ValidationError[] | {
+trigger: string;
+field: string;
+message: string;
+}[]>;
+isValid: ComputedRef<boolean>;
+errorsByField: ComputedRef<Record<string, string[]>>;
+errorsFor: (field: string) => string[];
+setError: (trigger: string, field: string, message: string) => void;
+clearTrigger: (trigger: string) => void;
+clearAll: () => void;
+validateField: (triggers: Record<string, TriggerDefinition>, changedField: string, record: Record<string, unknown>) => Promise<void>;
+validateRecord: (triggers: Record<string, TriggerDefinition>, record: Record<string, unknown>) => Promise<void>;
+}, "errors">, Pick<{
+errors: Ref<    {
+trigger: string;
+field: string;
+message: string;
+}[], ValidationError[] | {
+trigger: string;
+field: string;
+message: string;
+}[]>;
+isValid: ComputedRef<boolean>;
+errorsByField: ComputedRef<Record<string, string[]>>;
+errorsFor: (field: string) => string[];
+setError: (trigger: string, field: string, message: string) => void;
+clearTrigger: (trigger: string) => void;
+clearAll: () => void;
+validateField: (triggers: Record<string, TriggerDefinition>, changedField: string, record: Record<string, unknown>) => Promise<void>;
+validateRecord: (triggers: Record<string, TriggerDefinition>, record: Record<string, unknown>) => Promise<void>;
+}, "isValid" | "errorsByField">, Pick<{
+errors: Ref<    {
+trigger: string;
+field: string;
+message: string;
+}[], ValidationError[] | {
+trigger: string;
+field: string;
+message: string;
+}[]>;
+isValid: ComputedRef<boolean>;
+errorsByField: ComputedRef<Record<string, string[]>>;
+errorsFor: (field: string) => string[];
+setError: (trigger: string, field: string, message: string) => void;
+clearTrigger: (trigger: string) => void;
+clearAll: () => void;
+validateField: (triggers: Record<string, TriggerDefinition>, changedField: string, record: Record<string, unknown>) => Promise<void>;
+validateRecord: (triggers: Record<string, TriggerDefinition>, record: Record<string, unknown>) => Promise<void>;
+}, "errorsFor" | "setError" | "clearTrigger" | "clearAll" | "validateField" | "validateRecord">>;
+
+// @public
 export function validateSchema(doctype: string, schema: List<DoctypeField> | DoctypeField[] | undefined, registry: Registry, workflow?: AnyStateNodeConfig, actions?: Map_2<string, string[]> | Map<string, string[]>): ValidationResult;
+
+// @public
+export interface ValidationError {
+    field: string;
+    message: string;
+    trigger: string;
+}
 
 // @public
 export interface ValidationIssue {
