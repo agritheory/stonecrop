@@ -1285,6 +1285,24 @@ Returns the actions as a plain object for use with components that expect plain 
 getActionsObject(): Record<string, string[]>
 ```
 
+#### getAvailableCommands
+
+Returns the stateless **Commands** available in a given workflow state — side-effect actions (save/print/email…) that do not change workflow state. Unlike transitions, Commands may exist on a workflow that declares no `states` (a commands-only doctype), and a Command with no `allowedStates` is available in every state.
+
+Only meaningful for WorkflowMeta format; XState workflows have no Commands.
+
+```typescript
+getAvailableCommands(currentState: string): Array<{
+        name: string;
+    }>
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| currentState | `string` | The record's current state, used to honor a Command's `allowedStates` |
+
 #### getAvailableTransitions
 
 Returns the transitions available from a given workflow state, derived from the doctype's workflow configuration. Supports both XState format and WorkflowMeta format.

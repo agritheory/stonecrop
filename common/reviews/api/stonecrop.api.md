@@ -87,6 +87,9 @@ export class Doctype {
         allowedStates?: string[];
     } | undefined;
     getActionsObject(): Record<string, string[]>;
+    getAvailableCommands(currentState?: string): Array<{
+        name: string;
+    }>;
     getAvailableTransitions(currentState: string): Array<{
         name: string;
         targetState: string;

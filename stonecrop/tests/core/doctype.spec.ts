@@ -298,6 +298,81 @@ describe('Doctype class', { tags: ['unit'] }, () => {
 		})
 	})
 
+	describe('getAvailableCommands', () => {
+		const workflowWithCommands: WorkflowMeta = {
+			states: ['draft', 'submitted'],
+			actions: {
+				// A genuine transition — must never appear as a command.
+				submit: { label: 'Submit', allowedStates: ['draft'], nextState: 'submitted' },
+				// Global command (no allowedStates) — available in every state.
+				print: { label: 'Print', stateless: true },
+				// Scoped command — only in 'submitted'.
+				archive: { label: 'Archive', stateless: true, allowedStates: ['submitted'] },
+			},
+		}
+
+		it('returns stateless commands, honoring allowedStates', () => {
+			const doctype = new Doctype('Doc', mockSchema, workflowWithCommands, mockActions)
+
+			expect(doctype.getAvailableCommands('draft').map(c => c.name)).toEqual(['print'])
+			expect(
+				doctype
+					.getAvailableCommands('submitted')
+					.map(c => c.name)
+					.toSorted()
+			).toEqual(['archive', 'print'])
+		})
+
+		it('excludes genuine transitions', () => {
+			const doctype = new Doctype('Doc', mockSchema, workflowWithCommands, mockActions)
+
+			expect(doctype.getAvailableCommands('draft').some(c => c.name === 'submit')).toBe(false)
+		})
+
+		it('surfaces global commands even without a states list (commands-only doctype)', () => {
+			const commandsOnly: WorkflowMeta = { actions: { print: { label: 'Print', stateless: true } } }
+			const doctype = new Doctype('Report', mockSchema, commandsOnly, mockActions)
+
+			// No current state passed — a global command is still available.
+			expect(doctype.getAvailableCommands().map(c => c.name)).toEqual(['print'])
+			expect(doctype.getAvailableCommands('anything').map(c => c.name)).toEqual(['print'])
+		})
+
+		it('returns an empty array when there are no stateless actions', () => {
+			const transitionsOnly: WorkflowMeta = {
+				states: ['draft', 'submitted'],
+				actions: { submit: { label: 'Submit', allowedStates: ['draft'], nextState: 'submitted' } },
+			}
+			const doctype = new Doctype('Doc', mockSchema, transitionsOnly, mockActions)
+
+			expect(doctype.getAvailableCommands('draft')).toEqual([])
+		})
+
+		it('returns an empty array for XState workflows (no actions map)', () => {
+			const xstate = { id: 'w', initial: 'draft', states: { draft: { on: { SUBMIT: 'submitted' } }, submitted: {} } }
+			// oxlint-disable-next-line typescript/no-explicit-any -- exercising the non-WorkflowMeta workflow branch
+			const doctype = new Doctype('Doc', mockSchema, xstate as any, mockActions)
+
+			expect(doctype.getAvailableCommands('draft')).toEqual([])
+		})
+
+		it('returns an empty array when workflow is undefined', () => {
+			// oxlint-disable-next-line typescript/no-explicit-any -- exercising the no-workflow branch
+			const doctype = new Doctype('Doc', mockSchema, undefined as any, mockActions)
+
+			expect(doctype.getAvailableCommands('draft')).toEqual([])
+		})
+
+		it('getAvailableTransitions excludes stateless commands', () => {
+			const doctype = new Doctype('Doc', mockSchema, workflowWithCommands, mockActions)
+
+			const draftNames = doctype.getAvailableTransitions('draft').map(t => t.name)
+			expect(draftNames).toContain('submit')
+			expect(draftNames).not.toContain('print')
+			expect(draftNames).not.toContain('archive')
+		})
+	})
+
 	describe('fromObject', () => {
 		it('creates Doctype from obj object with all fields', () => {
 			const obj = {

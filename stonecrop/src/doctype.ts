@@ -193,12 +193,16 @@ export default class Doctype {
 			const actions = (workflow as WorkflowMeta).actions
 			if (!actions) return []
 
-			return Object.entries(actions)
-				.filter(([, actionDef]) => isActionAllowedInState(actionDef, currentState))
-				.map(([name, actionDef]) => ({
-					name,
-					targetState: actionDef.nextState ?? currentState,
-				}))
+			return (
+				Object.entries(actions)
+					// Exclude stateless Commands — they change no state and are surfaced separately
+					// via getAvailableCommands(). Genuine transitions carry a nextState.
+					.filter(([, actionDef]) => !actionDef.stateless && isActionAllowedInState(actionDef, currentState))
+					.map(([name, actionDef]) => ({
+						name,
+						targetState: actionDef.nextState ?? currentState,
+					}))
+			)
 		}
 
 		// XState format: use the on property of the state
@@ -210,6 +214,39 @@ export default class Doctype {
 			name,
 			targetState: typeof target === 'string' ? target : 'unknown',
 		}))
+	}
+
+	/**
+	 * Returns the stateless **Commands** available in a given workflow state — side-effect
+	 * actions (save/print/email…) that do not change workflow state. Unlike transitions,
+	 * Commands may exist on a workflow that declares no `states` (a commands-only doctype),
+	 * and a Command with no `allowedStates` is available in every state.
+	 *
+	 * Only meaningful for WorkflowMeta format; XState workflows have no Commands.
+	 *
+	 * @param currentState - The record's current state, used to honor a Command's `allowedStates`
+	 * @returns Array of command descriptors with `name`
+	 *
+	 * @example
+	 * ```ts
+	 * const commands = doctype.getAvailableCommands('Draft')
+	 * // [{ name: 'Print' }]
+	 * ```
+	 *
+	 * @public
+	 */
+	getAvailableCommands(currentState?: string): Array<{ name: string }> {
+		const workflow = this.workflow
+		if (!workflow) return []
+
+		// Only WorkflowMeta carries an `actions` map; XState workflows have no Commands.
+		// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- probing the workflow union for the optional WorkflowMeta actions map
+		const actions = (workflow as WorkflowMeta).actions
+		if (!actions) return []
+
+		return Object.entries(actions)
+			.filter(([, actionDef]) => actionDef.stateless === true && isActionAllowedInState(actionDef, currentState ?? ''))
+			.map(([name]) => ({ name }))
 	}
 
 	/**
@@ -235,9 +272,11 @@ export default class Doctype {
 		  }
 		| undefined {
 		const workflow = this.workflow
-		if (!workflow || !Array.isArray(workflow.states)) return undefined
+		if (!workflow) return undefined
 
-		// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Array.isArray(workflow.states) confirms WorkflowMeta format above
+		// Only WorkflowMeta carries an `actions` map (with labels); XState workflows have none.
+		// Don't require a `states` array — a commands-only doctype has labeled actions but no states.
+		// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- probing the workflow union for the optional WorkflowMeta actions map
 		const actions = (workflow as WorkflowMeta).actions
 		return actions?.[actionName]
 	}

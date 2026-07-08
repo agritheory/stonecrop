@@ -372,6 +372,39 @@ const getAvailableTransitions = () => {
 	}
 }
 
+// Helper: stateless Commands available for the current record — side-effect actions that
+// change no workflow state. Surfaced in the same Actions dropdown as transitions; each emits
+// the same 'action' event, so the host's handler runs a Command's clientHandler identically.
+const getAvailableCommands = () => {
+	if (!stonecrop.value || !currentDoctype.value || !currentRecordId.value) {
+		return []
+	}
+
+	try {
+		const doctype = stonecrop.value.registry.getDoctype(currentDoctype.value)
+		if (!doctype?.workflow) return []
+
+		const currentState = stonecrop.value.getRecordState(currentDoctype.value, currentRecordId.value)
+		const commands = doctype.getAvailableCommands(currentState)
+		const recordData = currentViewData.value || {}
+
+		return commands.map(({ name }) => ({
+			label: doctype.getActionMeta(name)?.label ?? name,
+			action: () => {
+				emit('action', {
+					name,
+					doctype: currentDoctype.value,
+					recordId: currentRecordId.value,
+					data: recordData,
+				})
+			},
+		}))
+	} catch (error) {
+		console.warn('Error getting available commands:', error)
+		return []
+	}
+}
+
 const actionElements = computed(() => {
 	const elements: ActionElements[] = []
 
@@ -384,14 +417,14 @@ const actionElements = computed(() => {
 			})
 			break
 		case 'record': {
-			// Populate the Actions dropdown with every FSM transition available in the
-			// record's current state.  Clicking a transition emits 'action'.
-			const transitionActions = getAvailableTransitions()
-			if (transitionActions.length > 0) {
+			// Populate the Actions dropdown with every FSM transition AND stateless Command
+			// available in the record's current state.  Clicking either emits 'action'.
+			const recordActions = [...getAvailableTransitions(), ...getAvailableCommands()]
+			if (recordActions.length > 0) {
 				elements.push({
 					type: 'dropdown',
 					label: 'Actions',
-					actions: transitionActions,
+					actions: recordActions,
 				})
 			}
 			break

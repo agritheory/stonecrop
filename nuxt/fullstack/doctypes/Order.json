@@ -98,6 +98,11 @@
 				"label": "Cancel Order",
 				"allowedStates": ["DRAFT", "PENDING", "PROCESSING"],
 				"nextState": "CANCELLED"
+			},
+			"viewCustomer": {
+				"label": "View Customer",
+				"stateless": true,
+				"clientHandler": "router.push(record.userId ? `/user/${record.userId}` : '/user')"
 			}
 		}
 	}
