@@ -180,6 +180,41 @@ export const ActionDefinition = z
 export type ActionDefinition = z.infer<typeof ActionDefinition>
 
 /**
+ * Reactive field-validation trigger — advisory, client-side only.
+ *
+ * A Trigger is a docbuilder-authored validator: when any field in `on` is edited, its
+ * `clientHandler` runs (client-side, no rollback) and may flag a field inline to block save
+ * in the UI. It is deliberately a **sibling** to {@link (ActionDefinition:type)}, not a member of it —
+ * a reactive validator is not a user-invoked action, so it lives in the `triggers` map on
+ * {@link (WorkflowMeta:type)} and never appears to action readers (transition/command dropdowns, the FSM graph).
+ *
+ * The two bindings are independent: `on` is the fire-set (which fields' edits run it), while the
+ * `setError(field, msg)` call inside `clientHandler` chooses which field displays the error.
+ * @public
+ */
+export const TriggerDefinition = z
+	.object({
+		/** Optional display label; the map key is the trigger's identity */
+		label: z.string().optional(),
+
+		/** Fieldnames whose edits fire this trigger (fires when any listed field changes) */
+		on: z.array(z.string()),
+
+		/** JS function body stored as a string; run client-side with `{ record, value, setError }`. Advisory. */
+		clientHandler: z.string(),
+	})
+	.meta({
+		title: 'TriggerDefinition',
+		description: 'Reactive field-validation trigger — advisory client-side',
+	})
+
+/**
+ * Trigger definition type inferred from Zod schema
+ * @public
+ */
+export type TriggerDefinition = z.infer<typeof TriggerDefinition>
+
+/**
  * Whether a workflow action may run from `currentState`.
  *
  * Single source of truth for the "is this action available here" rule, shared by
@@ -207,6 +242,9 @@ export const WorkflowMeta = z
 
 		/** Actions available in this workflow */
 		actions: z.record(z.string(), ActionDefinition).optional(),
+
+		/** Reactive field-validation triggers (advisory, client-side), keyed by trigger name */
+		triggers: z.record(z.string(), TriggerDefinition).optional(),
 	})
 	.meta({
 		title: 'WorkflowMeta',

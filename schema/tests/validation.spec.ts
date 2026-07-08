@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { validateField, validateDoctype, parseField, parseDoctype } from '../src/validation'
 import type { ValueField } from '../src/field'
+import { TriggerDefinition } from '../src/doctype'
 import { ZodError } from 'zod'
 
 describe('Field Validation', { tags: ['unit'] }, () => {
@@ -253,6 +254,66 @@ describe('Doctype Validation', { tags: ['unit'] }, () => {
 			expect(result.errors.length).toBeGreaterThan(0)
 		})
 
+		it('should validate doctype with workflow triggers', () => {
+			const doctype = {
+				name: 'Order',
+				fields: [{ kind: 'field', fieldname: 'id', fieldtype: 'Data' }],
+				workflow: {
+					states: ['Draft', 'Submitted'],
+					triggers: {
+						dateOrder: {
+							label: 'Date order',
+							on: ['start_date', 'end_date'],
+							clientHandler: "if (record.end_date < record.start_date) setError('end_date', 'End before start')",
+						},
+					},
+				},
+			}
+			const result = validateDoctype(doctype)
+
+			expect(result.success).toBe(true)
+			expect(result.errors).toEqual([])
+		})
+
+		it('should preserve workflow triggers through parseDoctype (not stripped)', () => {
+			const doctype = {
+				name: 'Order',
+				fields: [{ kind: 'field', fieldname: 'id', fieldtype: 'Data' }],
+				workflow: {
+					triggers: {
+						dateOrder: {
+							on: ['start_date', 'end_date'],
+							clientHandler: "setError('end_date', 'bad')",
+						},
+					},
+				},
+			}
+			const parsed = parseDoctype(doctype)
+
+			expect(parsed.workflow?.triggers).toBeDefined()
+			expect(parsed.workflow?.triggers?.dateOrder.on).toEqual(['start_date', 'end_date'])
+			expect(parsed.workflow?.triggers?.dateOrder.clientHandler).toBe("setError('end_date', 'bad')")
+		})
+
+		it('should reject a trigger missing clientHandler', () => {
+			const doctype = {
+				name: 'Order',
+				fields: [{ kind: 'field', fieldname: 'id', fieldtype: 'Data' }],
+				workflow: {
+					triggers: {
+						dateOrder: {
+							on: ['start_date'],
+							// clientHandler missing
+						},
+					},
+				},
+			}
+			const result = validateDoctype(doctype)
+
+			expect(result.success).toBe(false)
+			expect(result.errors.length).toBeGreaterThan(0)
+		})
+
 		it('should validate doctype with inheritance', () => {
 			const doctype = {
 				name: 'Employee',
@@ -448,6 +509,50 @@ describe('Doctype Validation', { tags: ['unit'] }, () => {
 			expect(parsed.links!.tasks.backlink).toBe('recipe')
 			expect(parsed.links!.tasks.fieldname).toBe('tasks')
 		})
+	})
+})
+
+describe('TriggerDefinition validation', { tags: ['unit'] }, () => {
+	it('should accept a valid trigger', () => {
+		const result = TriggerDefinition.safeParse({
+			on: ['start_date', 'end_date'],
+			clientHandler: "setError('end_date', 'bad')",
+		})
+		expect(result.success).toBe(true)
+	})
+
+	it('should accept an optional label', () => {
+		const result = TriggerDefinition.safeParse({
+			label: 'Date order',
+			on: ['start_date'],
+			clientHandler: 'noop()',
+		})
+		expect(result.success).toBe(true)
+	})
+
+	it('should reject a trigger missing on', () => {
+		const result = TriggerDefinition.safeParse({ clientHandler: 'noop()' })
+		expect(result.success).toBe(false)
+	})
+
+	it('should reject a trigger missing clientHandler', () => {
+		const result = TriggerDefinition.safeParse({ on: ['start_date'] })
+		expect(result.success).toBe(false)
+	})
+
+	it('should reject a non-array on', () => {
+		const result = TriggerDefinition.safeParse({ on: 'start_date', clientHandler: 'noop()' })
+		expect(result.success).toBe(false)
+	})
+
+	it('should strip unknown keys (plain object, like ActionDefinition)', () => {
+		const result = TriggerDefinition.safeParse({
+			on: ['start_date'],
+			clientHandler: 'noop()',
+			bogus: 'nope',
+		})
+		expect(result.success).toBe(true)
+		expect(result.success && 'bogus' in result.data).toBe(false)
 	})
 })
 

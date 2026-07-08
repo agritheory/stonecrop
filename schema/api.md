@@ -947,6 +947,16 @@ Table view configuration type inferred from Zod schema
 export type TableViewConfig = z.infer<typeof TableViewConfig>;
 ```
 
+### TriggerDefinition
+
+Trigger definition type inferred from Zod schema
+
+**Definition:**
+
+```typescript
+export type TriggerDefinition = z.infer<typeof TriggerDefinition>;
+```
+
 ### WorkflowMeta
 
 Workflow metadata type inferred from Zod schema
@@ -1066,6 +1076,11 @@ export const DoctypeMeta: z.ZodObject<{
             nextState: z.ZodOptional<z.ZodString>;
             stateless: z.ZodOptional<z.ZodBoolean>;
             clientHandler: z.ZodOptional<z.ZodString>;
+        }, z.core.$strip>>>;
+        triggers: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodObject<{
+            label: z.ZodOptional<z.ZodString>;
+            on: z.ZodArray<z.ZodString>;
+            clientHandler: z.ZodString;
         }, z.core.$strip>>>;
     }, z.core.$strip>>;
     inherits: z.ZodOptional<z.ZodString>;
@@ -1290,6 +1305,24 @@ export const TableViewConfig: z.ZodObject<{
 }, z.core.$strip>
 ```
 
+### TriggerDefinition
+
+Reactive field-validation trigger — advisory, client-side only.
+
+A Trigger is a docbuilder-authored validator: when any field in `on` is edited, its `clientHandler` runs (client-side, no rollback) and may flag a field inline to block save in the UI. It is deliberately a **sibling** to `ActionDefinition`, not a member of it — a reactive validator is not a user-invoked action, so it lives in the `triggers` map on `WorkflowMeta` and never appears to action readers (transition/command dropdowns, the FSM graph).
+
+The two bindings are independent: `on` is the fire-set (which fields' edits run it), while the `setError(field, msg)` call inside `clientHandler` chooses which field displays the error.
+
+**Type:**
+
+```typescript
+export const TriggerDefinition: z.ZodObject<{
+    label: z.ZodOptional<z.ZodString>;
+    on: z.ZodArray<z.ZodString>;
+    clientHandler: z.ZodString;
+}, z.core.$strip>
+```
+
 ### TYPE_MAP
 
 Mapping from builtin fieldtypes to their default Vue component. Components can be overridden in the field definition.
@@ -1375,6 +1408,11 @@ export const WorkflowMeta: z.ZodObject<{
         nextState: z.ZodOptional<z.ZodString>;
         stateless: z.ZodOptional<z.ZodBoolean>;
         clientHandler: z.ZodOptional<z.ZodString>;
+    }, z.core.$strip>>>;
+    triggers: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodObject<{
+        label: z.ZodOptional<z.ZodString>;
+        on: z.ZodArray<z.ZodString>;
+        clientHandler: z.ZodString;
     }, z.core.$strip>>>;
 }, z.core.$strip>
 ```

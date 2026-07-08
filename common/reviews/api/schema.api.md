@@ -163,6 +163,11 @@ export const DoctypeMeta: z.ZodObject<{
             stateless: z.ZodOptional<z.ZodBoolean>;
             clientHandler: z.ZodOptional<z.ZodString>;
         }, z.core.$strip>>>;
+        triggers: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodObject<{
+            label: z.ZodOptional<z.ZodString>;
+            on: z.ZodArray<z.ZodString>;
+            clientHandler: z.ZodString;
+        }, z.core.$strip>>>;
     }, z.core.$strip>>;
     inherits: z.ZodOptional<z.ZodString>;
 }, z.core.$strip>;
@@ -439,6 +444,16 @@ export function toPascalCase(tableName: string): string;
 export function toSlug(name: string): string;
 
 // @public
+export const TriggerDefinition: z.ZodObject<{
+    label: z.ZodOptional<z.ZodString>;
+    on: z.ZodArray<z.ZodString>;
+    clientHandler: z.ZodString;
+}, z.core.$strip>;
+
+// @public
+export type TriggerDefinition = z.infer<typeof TriggerDefinition>;
+
+// @public
 export const TYPE_MAP: Record<BuiltinFieldType, FieldTemplate>;
 
 // @public
@@ -535,6 +550,11 @@ export const WorkflowMeta: z.ZodObject<{
         nextState: z.ZodOptional<z.ZodString>;
         stateless: z.ZodOptional<z.ZodBoolean>;
         clientHandler: z.ZodOptional<z.ZodString>;
+    }, z.core.$strip>>>;
+    triggers: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodObject<{
+        label: z.ZodOptional<z.ZodString>;
+        on: z.ZodArray<z.ZodString>;
+        clientHandler: z.ZodString;
     }, z.core.$strip>>>;
 }, z.core.$strip>;
 
