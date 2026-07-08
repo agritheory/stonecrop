@@ -182,6 +182,14 @@ export type ComponentProps = {
 
 		[key: string]: any
 	}
+
+	/**
+	 * Inline validation error messages to display on this field. Fed by the host
+	 * (e.g. mapped from the core validation store) — the renderer stays dumb and just
+	 * shows what it is given. Takes precedence over the static `validation.errorMessage`.
+	 * @public
+	 */
+	errors?: string[]
 }
 
 /**

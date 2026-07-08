@@ -82,6 +82,7 @@ export type ComponentProps = {
         errorMessage: string;
         [key: string]: any;
     };
+    errors?: string[];
 };
 
 // @public
