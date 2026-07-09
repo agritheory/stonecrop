@@ -186,6 +186,32 @@ describe('flowElementsToStates', { tags: ['unit'] }, () => {
 		expect((workflow.actions?.close as Record<string, unknown>)?.futureField).toBe(42)
 	})
 
+	it('preserves the sibling triggers map (and any unknown top-level key) on round-trip', () => {
+		// The graph owns states + actions only. The sibling `triggers` map (a WorkflowMeta key the
+		// graph does NOT own) and any other top-level key must survive a graph edit — else authoring
+		// a field-validation trigger and then dragging a state node silently wipes it.
+		const workflowWithTriggers = {
+			states: ['Open', 'Closed'],
+			actions: {
+				close: { label: 'Close', allowedStates: ['Open'], nextState: 'Closed' },
+			},
+			triggers: {
+				dateOrder: {
+					label: 'Date order',
+					on: ['createdAt', 'updatedAt'],
+					clientHandler: "setError('updatedAt', 'bad')",
+				},
+			},
+			futureTopLevel: 7,
+		} as unknown as WorkflowMeta
+		const elements = statesToFlowElements(workflowWithTriggers)
+		const { workflow } = flowElementsToStates(elements, workflowWithTriggers)
+		const asRecord = workflow as Record<string, unknown>
+		const triggers = asRecord.triggers as Record<string, { on: string[] }> | undefined
+		expect(triggers?.dateOrder?.on).toEqual(['createdAt', 'updatedAt'])
+		expect(asRecord.futureTopLevel).toBe(7)
+	})
+
 	it('new edge seeds a skeleton action with nextState and no handler', () => {
 		const elements: FlowElements = [
 			{ id: 'Open', label: 'Open', position: { x: 0, y: 0 }, type: 'input' } as any,

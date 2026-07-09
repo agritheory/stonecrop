@@ -110,7 +110,12 @@ export function flowElementsToStates(
 	}
 
 	return {
-		workflow: { states: stateNames, actions: nextActions },
+		// Spread existingWorkflow first so every top-level key the graph does NOT own — the
+		// sibling `triggers` map (field-validation triggers), and any WorkflowMeta key added
+		// later — survives the round-trip. The graph owns topology only: states + actions,
+		// overridden below. (Same principle the per-action spread applies above; enumerating
+		// only states+actions here previously dropped `triggers` on every graph edit.)
+		workflow: { ...existingWorkflow, states: stateNames, actions: nextActions },
 		layout: nextLayout,
 	}
 }
