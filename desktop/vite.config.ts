@@ -15,10 +15,13 @@ export default defineConfig({
 			formats: ['es'],
 		},
 		rollupOptions: {
-			external: ['vue'],
+			// Pinia must stay external so this package shares the host app's single Pinia instance
+			// (bundling it gave Desktop its own never-activated Pinia — the field-validation bug).
+			external: ['vue', 'pinia'],
 			output: {
 				globals: {
 					vue: 'Vue',
+					pinia: 'Pinia',
 				},
 			},
 		},

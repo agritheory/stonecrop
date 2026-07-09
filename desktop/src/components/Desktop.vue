@@ -38,7 +38,7 @@
 import { useStonecrop, useValidationStore } from '@stonecrop/stonecrop'
 import { AForm, type AFormLinkNavigator, type ResolvedField, type ResolvedTable } from '@stonecrop/aform'
 import type { ColumnSchema } from '@stonecrop/schema'
-import { computed, getCurrentInstance, onMounted, onUnmounted, provide, ref, unref, watch } from 'vue'
+import { computed, onMounted, onUnmounted, provide, ref, unref, watch } from 'vue'
 
 import ActionSet from './ActionSet.vue'
 import SheetNav from './SheetNav.vue'
@@ -109,16 +109,14 @@ const emit = defineEmits<{
 
 const { stonecrop } = useStonecrop()
 
-// Field-validation store (advisory, client-side). Stonecrop's Pinia stores are bundled into this
-// package, so `useValidationStore()` alone would read THIS bundle's ambient Pinia (never activated
-// by the host) and throw. Pass the host app's Pinia explicitly — the same pattern the stonecrop
-// plugin uses for `useOperationLogStore(app.$pinia)`. Guarded: hosts without Pinia disable validation.
+// Field-validation store (advisory, client-side). Pinia is a declared peerDependency, kept external
+// in this package's build (rollupOptions), so `useValidationStore()` resolves the host app's single
+// active Pinia directly — the old `getCurrentInstance().$pinia` workaround for the bundled-Pinia bug
+// is no longer needed. Still guarded: validation is optional and Desktop predates it, so a host that
+// mounts Desktop without Pinia disables validation gracefully instead of crashing on mount.
 let validationStore: ReturnType<typeof useValidationStore> | null = null
 try {
-	const appPinia = getCurrentInstance()?.appContext.config.globalProperties.$pinia as Parameters<
-		typeof useValidationStore
-	>[0]
-	validationStore = appPinia ? useValidationStore(appPinia) : useValidationStore()
+	validationStore = useValidationStore()
 } catch {
 	validationStore = null
 }
