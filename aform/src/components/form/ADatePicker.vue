@@ -2,74 +2,78 @@
 	<template v-if="mode === 'display' || mode === 'read'">
 		<span class="aform_display-value">{{ date ? new Date(date).toLocaleDateString() : '' }}</span>
 		<label v-if="label">{{ label }}</label>
+		<p v-show="errorText" class="aform_error" v-html="errorText"></p>
 	</template>
-	<div v-else ref="datepicker" class="adatepicker" tabindex="0">
-		<table>
-			<tbody>
-				<tr>
-					<td id="previous-month-btn" :tabindex="-1" @click="previousMonth">&lt;</td>
-					<th colspan="5" :tabindex="-1">{{ monthAndYear }}</th>
-					<td id="next-month-btn" :tabindex="-1" @click="nextMonth">&gt;</td>
-				</tr>
-				<tr v-if="selectRange">
-					<td colspan="7">
-						<div class="date-input">
-							<input
-								ref="start-date-input"
-								:value="getStartDate"
-								class="date-input-start aform_input-field"
-								type="text"
-								placeholder="start date"
-								@blur="enterInputDate()"
-								@keydown="enterDate" />
-							<div>-</div>
-							<input
-								ref="end-date-input"
-								:value="getEndDate"
-								class="date-input-end aform_input-field"
-								type="text"
-								placeholder="end date"
-								@blur="enterInputDate()"
-								@keydown="enterDate" />
-						</div>
-						<!-- {{ formattedDateRange }} -->
-					</td>
-				</tr>
-				<tr class="days-header">
-					<td>M</td>
-					<td>T</td>
-					<td>W</td>
-					<td>T</td>
-					<td>F</td>
-					<td>S</td>
-					<td>S</td>
-				</tr>
-				<tr v-for="rowNo in numberOfRows" :key="rowNo">
-					<!-- the 'ref' key is currently only used for test references -->
-					<td
-						v-for="colNo in numberOfColumns"
-						ref="celldate"
-						:key="getCurrentCell(rowNo, colNo)"
-						class="date-cell"
-						:contenteditable="false"
-						:spellcheck="false"
-						:tabindex="0"
-						:class="{
-							todaysDate: isTodaysDate(getCurrentDate(rowNo, colNo)),
-							selectedDate: isSelectedDate(getCurrentDate(rowNo, colNo)),
-							withinRange: selectRange ? isInDateRange(getCurrentDate(rowNo, colNo)) : false,
-							startDate: selectRange ? isStartDate(getCurrentDate(rowNo, colNo)) : false,
-							endDate: selectRange ? isEndDate(getCurrentDate(rowNo, colNo)) : false,
-						}"
-						@click.prevent.stop="selectDate(getCurrentCell(rowNo, colNo))"
-						@keydown.enter="selectDate(getCurrentCell(rowNo, colNo))"
-						@mouseover="hoverDate(getCurrentCell(rowNo, colNo))">
-						{{ new Date(getCurrentDate(rowNo, colNo)).getDate() }}
-					</td>
-				</tr>
-			</tbody>
-		</table>
-	</div>
+	<template v-else>
+		<div ref="datepicker" class="adatepicker" tabindex="0">
+			<table>
+				<tbody>
+					<tr>
+						<td id="previous-month-btn" :tabindex="-1" @click="previousMonth">&lt;</td>
+						<th colspan="5" :tabindex="-1">{{ monthAndYear }}</th>
+						<td id="next-month-btn" :tabindex="-1" @click="nextMonth">&gt;</td>
+					</tr>
+					<tr v-if="selectRange">
+						<td colspan="7">
+							<div class="date-input">
+								<input
+									ref="start-date-input"
+									:value="getStartDate"
+									class="date-input-start aform_input-field"
+									type="text"
+									placeholder="start date"
+									@blur="enterInputDate()"
+									@keydown="enterDate" />
+								<div>-</div>
+								<input
+									ref="end-date-input"
+									:value="getEndDate"
+									class="date-input-end aform_input-field"
+									type="text"
+									placeholder="end date"
+									@blur="enterInputDate()"
+									@keydown="enterDate" />
+							</div>
+							<!-- {{ formattedDateRange }} -->
+						</td>
+					</tr>
+					<tr class="days-header">
+						<td>M</td>
+						<td>T</td>
+						<td>W</td>
+						<td>T</td>
+						<td>F</td>
+						<td>S</td>
+						<td>S</td>
+					</tr>
+					<tr v-for="rowNo in numberOfRows" :key="rowNo">
+						<!-- the 'ref' key is currently only used for test references -->
+						<td
+							v-for="colNo in numberOfColumns"
+							ref="celldate"
+							:key="getCurrentCell(rowNo, colNo)"
+							class="date-cell"
+							:contenteditable="false"
+							:spellcheck="false"
+							:tabindex="0"
+							:class="{
+								todaysDate: isTodaysDate(getCurrentDate(rowNo, colNo)),
+								selectedDate: isSelectedDate(getCurrentDate(rowNo, colNo)),
+								withinRange: selectRange ? isInDateRange(getCurrentDate(rowNo, colNo)) : false,
+								startDate: selectRange ? isStartDate(getCurrentDate(rowNo, colNo)) : false,
+								endDate: selectRange ? isEndDate(getCurrentDate(rowNo, colNo)) : false,
+							}"
+							@click.prevent.stop="selectDate(getCurrentCell(rowNo, colNo))"
+							@keydown.enter="selectDate(getCurrentCell(rowNo, colNo))"
+							@mouseover="hoverDate(getCurrentCell(rowNo, colNo))">
+							{{ new Date(getCurrentDate(rowNo, colNo)).getDate() }}
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+		<p v-show="errorText" class="aform_error" v-html="errorText"></p>
+	</template>
 </template>
 
 <script setup lang="ts">
@@ -82,7 +86,10 @@ import type { ComponentProps } from '../../types'
 const numberOfRows = 6
 const numberOfColumns = 7
 
-const { mode, label, selectRange = false } = defineProps<ComponentProps>()
+const { mode, label, selectRange = false, errors, validation = { errorMessage: '' } } = defineProps<ComponentProps>()
+
+// Dynamic trigger errors take precedence over a static schema errorMessage; empty means the slot hides.
+const errorText = computed(() => (errors?.length ? errors.join('; ') : (validation.errorMessage ?? '')))
 
 const date = defineModel<number | Date>({ default: new Date() })
 const selectedDate = ref(new Date(date.value))
@@ -430,5 +437,15 @@ defineExpose({ currentMonth, currentYear, selectedDate })
 .adatepicker .date-input > input {
 	width: 50%;
 	padding: 2px;
+}
+
+/* Keep the field error in-flow below the calendar. The shared .aform_error is absolutely
+   positioned against a .aform_form-element anchor, which this grid component does not use. */
+p.aform_error {
+	position: static;
+	display: block;
+	color: var(--sc-brand-danger, red);
+	font-size: 0.7rem;
+	margin: 0.25rem 0 0;
 }
 </style>
