@@ -109,6 +109,19 @@ describe('ACodeEditor', { tag: 'component' }, () => {
 		expect(mockMonaco.editor.createModel).toHaveBeenCalledWith('', 'javascript', expect.stringMatching(/\.js$/))
 	})
 
+	it('gives each concurrently-mounted editor a distinct model URI', async () => {
+		// Regression: the URI counter was declared inside <script setup>, making it per-instance
+		// (always 1). Two editors mounted at once both built `file:///stonecrop-editor-1.js`, so the
+		// second's createModel threw "Cannot add model because it already exists!" and only one loaded.
+		// The counter must be module-scoped so every instance gets a unique URI.
+		mount(ACodeEditor, { props: { language: 'javascript' } })
+		mount(ACodeEditor, { props: { language: 'javascript' } })
+		await flushPromises()
+		const uris = mockMonaco.editor.createModel.mock.calls.map(call => call[2])
+		expect(uris).toHaveLength(2)
+		expect(new Set(uris).size).toBe(2)
+	})
+
 	it('defines and applies the theme before creating the editor', async () => {
 		mount(ACodeEditor)
 		await flushPromises()

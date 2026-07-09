@@ -87,9 +87,11 @@ const elements = computed({
 	get: () => {
 		const items = modelValue
 
-		// Add data to each element
+		// Add rendering flags without clobbering caller-provided data. Edges carry `data.actionKey`
+		// (the stable action identity from stateTransforms); wiping data here would drop it before it
+		// round-trips back through emitElements, silently re-keying actions on every graph edit.
 		for (const element of items) {
-			element.data = {}
+			element.data = { ...element.data }
 			if (element.type === 'input') {
 				element.data.hasInput = false
 				element.data.hasOutput = true

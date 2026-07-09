@@ -58,6 +58,7 @@ export type FlowElement = Element<{
 }, {
     hasInput?: boolean;
     hasOutput?: boolean;
+    actionKey?: string;
 }>;
 ```
 
@@ -74,6 +75,7 @@ export type FlowElements = Elements<{
 }, {
     hasInput?: boolean;
     hasOutput?: boolean;
+    actionKey?: string;
 }>;
 ```
 

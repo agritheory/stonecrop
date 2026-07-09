@@ -9,13 +9,17 @@
 			<template #body="{ data: store }">
 				<ARow v-for="row in store.filteredRows" :key="String(row.__key)" :row-index="row.originalIndex" :store="store">
 					<template #default>
-						<td class="cell-key">
-							<code>{{ row.key }}</code>
-						</td>
 						<td>
+							<!-- A Transition is named on its edge in the graph (single source of truth), so its
+								name is read-only here; Commands and Triggers have no graph, so they're named here. -->
+							<span v-if="row.kind === 'transition'" class="cell-readonly" :title="TRANSITION_NAME_HINT">
+								{{ row.label }}
+							</span>
 							<input
+								v-else
 								type="text"
 								:value="row.label"
+								placeholder="Name"
 								@input="onFieldInput(row, 'label', ($event.target as HTMLInputElement).value)" />
 						</td>
 						<td>
@@ -23,33 +27,45 @@
 								{{ row.type }}
 							</span>
 						</td>
-						<td>
-							<!-- Triggers fire on field edits, so `on` is authored here; actions don't (— shown). -->
-							<input
-								v-if="row.kind === 'trigger'"
-								type="text"
-								:value="onDisplay(row)"
-								placeholder="fields, comma-separated"
-								@input="onOnInput(row, ($event.target as HTMLInputElement).value)" />
-							<span v-else class="cell-muted">{{ row.on }}</span>
-						</td>
-						<td>{{ row.allowedStates }}</td>
-						<td>{{ row.nextState }}</td>
 					</template>
 					<template #content>
-						<div class="client-handler-editor">
-							<label class="handler-label">Client Handler (JS)</label>
-							<ACodeEditor
-								:model-value="(row.__action ?? row.__trigger)?.clientHandler ?? ''"
-								:extra-libs="row.kind === 'trigger' ? TRIGGER_API_STUBS : INJECTED_API_STUBS"
-								:libs="EDITOR_LIBS"
-								:vs-path="VS_PATH"
-								:options="row.kind === 'trigger' ? TRIGGER_EDITOR_OPTIONS : EDITOR_OPTIONS"
-								language="javascript"
-								height="200px"
-								@update:model-value="onFieldInput(row, 'clientHandler', $event)" />
-							<button v-if="row.kind === 'trigger'" type="button" class="remove-trigger" @click="onRemoveTrigger(row)">
-								Remove trigger
+						<div class="row-detail">
+							<!-- Type-specific fields live here so the collapsed row keeps to the common columns. -->
+							<div v-if="row.kind === 'trigger'" class="detail-field">
+								<label class="detail-label">On (fields)</label>
+								<input
+									type="text"
+									:value="onDisplay(row)"
+									placeholder="fields, comma-separated"
+									@input="onOnInput(row, ($event.target as HTMLInputElement).value)" />
+							</div>
+							<template v-else>
+								<div class="detail-field">
+									<label class="detail-label">Allowed States</label>
+									<span class="detail-value">{{ row.allowedStates }}</span>
+								</div>
+								<div v-if="row.kind === 'transition'" class="detail-field">
+									<label class="detail-label">Next State</label>
+									<span class="detail-value">{{ row.nextState }}</span>
+								</div>
+							</template>
+
+							<div class="client-handler-editor">
+								<label class="handler-label">Client Handler (JS)</label>
+								<ACodeEditor
+									:model-value="(row.__action ?? row.__trigger)?.clientHandler ?? ''"
+									:extra-libs="row.kind === 'trigger' ? TRIGGER_API_STUBS : INJECTED_API_STUBS"
+									:libs="EDITOR_LIBS"
+									:vs-path="VS_PATH"
+									:options="row.kind === 'trigger' ? TRIGGER_EDITOR_OPTIONS : EDITOR_OPTIONS"
+									language="javascript"
+									height="200px"
+									@update:model-value="onFieldInput(row, 'clientHandler', $event)" />
+							</div>
+
+							<!-- Transitions are graph-owned — removed by deleting their edges, not here. -->
+							<button v-if="row.kind !== 'transition'" type="button" class="remove-row" @click="onRemoveRow(row)">
+								Remove {{ row.kind }}
 							</button>
 						</div>
 					</template>
@@ -57,10 +73,11 @@
 			</template>
 		</ATable>
 		<p v-else class="actions-empty">
-			No actions or triggers yet. Draw transitions in the workflow graph above, or add a trigger below.
+			No actions or triggers yet. Draw transitions in the workflow graph above, or add a command or trigger below.
 		</p>
 		<div class="panel-footer">
-			<button type="button" class="add-trigger" @click="onAddTrigger">+ Add Trigger</button>
+			<button type="button" class="add-row" @click="onAddCommand">+ Add Command</button>
+			<button type="button" class="add-row" @click="onAddTrigger">+ Add Trigger</button>
 		</div>
 	</div>
 </template>
@@ -73,14 +90,20 @@ import type { WorkflowMeta } from '@stonecrop/schema'
 import { computed, reactive } from 'vue'
 
 import {
+	addCommand,
 	addTrigger,
 	parseOnInput,
 	projectWorkflowRows,
+	removeAction,
 	removeTrigger,
 	writeActionField,
 	writeTriggerField,
 	type ActionRow,
 } from './docbuilderActions'
+
+// A Transition's name is edited on its edge in the graph (the single source of truth for its
+// identity), so the panel shows it read-only and points the author there.
+const TRANSITION_NAME_HINT = 'Rename this transition on its edge in the workflow graph above'
 
 // Type stubs for the API surface injected into an *action* clientHandler at runtime.
 // Keep in sync with the capability map assembled in the `useClientAction` composable
@@ -126,15 +149,13 @@ const TRIGGER_EDITOR_OPTIONS = {
 // capability surface (the stubs above) in autocomplete, and nothing else.
 const EDITOR_LIBS = ['es2020']
 
-// `sortable: false` suppresses ATable's click-to-sort affordance (row order here is the keyed
-// object's order, not a view concern). `filterable` opts a column into the header filter row.
+// The collapsed row shows only the columns common to every kind — Label and Type. The type-specific
+// columns (on / allowedStates / nextState) moved into the per-row expansion. `sortable: false`
+// suppresses click-to-sort (row order is the keyed object's order); `filterable` on Type opts it into
+// the header filter row so the table can be narrowed to just Transitions/Commands/Triggers.
 const ACTION_COLUMNS: TableColumn[] = [
-	{ name: 'key', label: 'Key', sortable: false, filterable: true },
 	{ name: 'label', label: 'Label', sortable: false },
 	{ name: 'type', label: 'Type', sortable: false, filterable: true, filterType: 'select' },
-	{ name: 'on', label: 'On (fields)', sortable: false },
-	{ name: 'allowedStates', label: 'Allowed States', sortable: false },
-	{ name: 'nextState', label: 'Next State', sortable: false },
 ]
 
 const props = defineProps<{
@@ -188,12 +209,21 @@ function onAddTrigger() {
 	emit('update:modelValue', addTrigger(props.modelValue))
 }
 
-function onRemoveTrigger(row: ActionRow) {
+/** Append a stateless Command (seeds the workflow if there is none yet). */
+function onAddCommand() {
+	emit('update:modelValue', addCommand(props.modelValue))
+}
+
+/** Remove a Command or Trigger, routed to the correct sibling map by kind. Transitions never reach
+ *  here — their Remove button is not rendered (they are deleted from the graph). */
+function onRemoveRow(row: ActionRow) {
 	if (!props.modelValue) return
-	// Clear any stale draft so a later trigger that reuses this key (keygen fills the lowest free
-	// slot) doesn't inherit it — undefined falls back to the model in onDisplay.
+	// Clear any stale draft so a later row that reuses this key (keygen fills the lowest free slot)
+	// doesn't inherit it — undefined falls back to the model in onDisplay.
 	onDrafts[row.__key] = undefined
-	emit('update:modelValue', removeTrigger(props.modelValue, row.__key))
+	const next =
+		row.kind === 'trigger' ? removeTrigger(props.modelValue, row.__key) : removeAction(props.modelValue, row.__key)
+	emit('update:modelValue', next)
 }
 </script>
 
@@ -224,8 +254,11 @@ function onRemoveTrigger(row: ActionRow) {
 	border-color: var(--sc-blue-40, #3b82f6);
 }
 
-.cell-muted {
-	color: #9ca3af;
+/* A Transition's name is read-only in the panel (edited on its graph edge); render it as static
+   text, visually distinct from the editable Command/Trigger name inputs. */
+.cell-readonly {
+	color: var(--sc-gray-60, #4b5563);
+	cursor: default;
 }
 
 .badge {
@@ -259,10 +292,12 @@ function onRemoveTrigger(row: ActionRow) {
 }
 
 .panel-footer {
+	display: flex;
+	gap: 0.5rem;
 	padding: 0.75rem 0 0.25rem;
 }
 
-.add-trigger {
+.add-row {
 	padding: 0.4em 0.9em;
 	background: var(--sc-blue-40, #3b82f6);
 	color: white;
@@ -271,6 +306,32 @@ function onRemoveTrigger(row: ActionRow) {
 	font-weight: 500;
 	cursor: pointer;
 	font-size: 0.8125rem;
+}
+
+/* Expansion detail: type-specific fields (on / states) above the handler editor. */
+.row-detail {
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+}
+
+.detail-field {
+	display: flex;
+	flex-direction: column;
+	gap: 0.25rem;
+}
+
+.detail-label {
+	font-size: 0.75rem;
+	font-weight: 600;
+	color: var(--sc-header-text-color, #374151);
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+}
+
+.detail-value {
+	font-size: 0.8125rem;
+	color: var(--sc-gray-60, #4b5563);
 }
 
 .client-handler-editor {
@@ -287,7 +348,7 @@ function onRemoveTrigger(row: ActionRow) {
 	letter-spacing: 0.05em;
 }
 
-.remove-trigger {
+.remove-row {
 	align-self: flex-start;
 	padding: 0.3em 0.75em;
 	background: none;

@@ -89,6 +89,13 @@ export function nextTriggerKey(triggers: Record<string, TriggerDefinition> | und
 	return `trigger${n}`
 }
 
+/** The lowest-numbered `commandN` key not already present in the actions map — deterministic. */
+export function nextCommandKey(actions: Record<string, ActionDefinition> | undefined): string {
+	let n = 1
+	while (actions && `command${n}` in actions) n++
+	return `command${n}`
+}
+
 /** Write one field of an existing action, preserving every other action and the whole triggers map. */
 export function writeActionField(workflow: WorkflowMeta, key: string, field: string, value: unknown): WorkflowMeta {
 	const actions = workflow.actions ?? {}
@@ -117,8 +124,33 @@ export function addTrigger(workflow: WorkflowMeta | undefined): WorkflowMeta {
 	}
 }
 
+/**
+ * Append a stateless Command under a fresh `commandN` key, seeding a workflow when there is none yet.
+ * Unlike a Trigger, a Command needs a non-empty label — `ActionDefinition.label` is `.min(1)`, so an
+ * empty seed would fail doctype validation the instant it is added. It carries no `allowedStates`, so
+ * it is available in every state; per-state scoping is not authored here (deferred to the graph).
+ */
+export function addCommand(workflow: WorkflowMeta | undefined): WorkflowMeta {
+	const actions = workflow?.actions ?? {}
+	const key = nextCommandKey(actions)
+	return {
+		...workflow,
+		actions: { ...actions, [key]: { label: 'New Command', stateless: true, clientHandler: '' } },
+	}
+}
+
 /** Remove a Trigger, preserving every other trigger and the whole actions map. */
 export function removeTrigger(workflow: WorkflowMeta, key: string): WorkflowMeta {
 	const { [key]: _removed, ...rest } = workflow.triggers ?? {}
 	return { ...workflow, triggers: rest }
+}
+
+/**
+ * Remove an action from the actions map, preserving every other action and the triggers map. Used to
+ * delete a Command from the panel — Transitions are never removed this way (they are graph-owned; you
+ * delete a Transition by removing its edges), so the caller must guard by `kind`.
+ */
+export function removeAction(workflow: WorkflowMeta, key: string): WorkflowMeta {
+	const { [key]: _removed, ...rest } = workflow.actions ?? {}
+	return { ...workflow, actions: rest }
 }

@@ -60,14 +60,23 @@ describe('statesToFlowElements', { tags: ['unit'] }, () => {
 
 	it('edge source and target match state names', () => {
 		const elements = statesToFlowElements(issueWorkflow)
-		const saveEdge = elements.find(e => isEdge(e) && (e as any).label === 'save')
+		const saveEdge = elements.find(e => isEdge(e) && (e as any).data?.actionKey === 'save')
 		expect((saveEdge as any)?.source).toBe('New')
 		expect((saveEdge as any)?.target).toBe('Draft')
 	})
 
+	it('paints the display label on the edge, carrying the action key in data', () => {
+		// The key (`save`) is the stable identity; the label (`Save`) is what the edge shows and
+		// the doctype view renders. Decoupling them lets a relabel rename without re-keying.
+		const elements = statesToFlowElements(issueWorkflow)
+		const saveEdge = elements.find(e => isEdge(e) && (e as any).data?.actionKey === 'save')
+		expect((saveEdge as any)?.label).toBe('Save')
+		expect((saveEdge as any)?.data?.actionKey).toBe('save')
+	})
+
 	it('multi-allowedStates action produces one edge per source state', () => {
 		const elements = statesToFlowElements(issueWorkflow)
-		const resolveEdges = elements.filter(e => isEdge(e) && (e as any).label === 'resolve')
+		const resolveEdges = elements.filter(e => isEdge(e) && (e as any).data?.actionKey === 'resolve')
 		expect(resolveEdges).toHaveLength(2)
 		const sources = resolveEdges.map((e: any) => e.source as string).toSorted((a, b) => a.localeCompare(b))
 		expect(sources).toEqual(['Assigned', 'Draft'])
@@ -75,8 +84,8 @@ describe('statesToFlowElements', { tags: ['unit'] }, () => {
 
 	it('Verbs (stateless: true) produce no edges', () => {
 		const elements = statesToFlowElements(issueWorkflow)
-		const printEdge = elements.find(e => isEdge(e) && (e as any).label === 'print')
-		const emailEdge = elements.find(e => isEdge(e) && (e as any).label === 'email')
+		const printEdge = elements.find(e => isEdge(e) && (e as any).data?.actionKey === 'print')
+		const emailEdge = elements.find(e => isEdge(e) && (e as any).data?.actionKey === 'email')
 		expect(printEdge).toBeUndefined()
 		expect(emailEdge).toBeUndefined()
 	})
@@ -184,6 +193,30 @@ describe('flowElementsToStates', { tags: ['unit'] }, () => {
 		const { workflow } = flowElementsToStates(elements, workflowWithExtras)
 		expect(workflow.actions?.close?.clientHandler).toBe("router.push('/done')")
 		expect((workflow.actions?.close as Record<string, unknown>)?.futureField).toBe(42)
+	})
+
+	it('relabeling an edge renames the action without re-keying it or dropping its handler', () => {
+		// The decouple invariant: the edge label is the *display* name, the action key is stable.
+		// Editing the label in the graph must update `label` while keeping the key (and everything
+		// keyed to it — clientHandler here) intact. Previously the label WAS the key, so a relabel
+		// re-keyed the action and orphaned its handler.
+		const wf: WorkflowMeta = {
+			states: ['Open', 'Closed'],
+			actions: {
+				save: { label: 'Save', clientHandler: "router.push('/x')", allowedStates: ['Open'], nextState: 'Closed' },
+			},
+		}
+		const elements = statesToFlowElements(wf)
+		// Simulate the user double-clicking the edge and renaming it. NodeEditor sets el.label and
+		// leaves data.actionKey untouched, then emits a JSON clone — mirror both here.
+		const relabeled: FlowElements = JSON.parse(JSON.stringify(elements))
+		for (const el of relabeled) if ('source' in el) el.label = 'Submit'
+		const { workflow } = flowElementsToStates(relabeled, wf)
+		expect(workflow.actions?.save?.label).toBe('Submit')
+		expect(workflow.actions?.save?.clientHandler).toBe("router.push('/x')")
+		expect(workflow.actions?.save?.nextState).toBe('Closed')
+		// NOT re-keyed under the new display name.
+		expect(workflow.actions?.Submit).toBeUndefined()
 	})
 
 	it('preserves the sibling triggers map (and any unknown top-level key) on round-trip', () => {

@@ -2,11 +2,14 @@ import type { WorkflowMeta } from '@stonecrop/schema'
 import { describe, expect, it } from 'vitest'
 
 import {
+	addCommand,
 	addTrigger,
 	formatOn,
+	nextCommandKey,
 	nextTriggerKey,
 	parseOnInput,
 	projectWorkflowRows,
+	removeAction,
 	removeTrigger,
 	writeActionField,
 	writeTriggerField,
@@ -87,6 +90,47 @@ describe('nextTriggerKey', () => {
 	it('fills the lowest free slot', () => {
 		expect(nextTriggerKey({ trigger1: {} as never })).toBe('trigger2')
 		expect(nextTriggerKey({ trigger1: {} as never, trigger3: {} as never })).toBe('trigger2')
+	})
+})
+
+describe('nextCommandKey', () => {
+	it('starts at command1 for an empty/undefined actions map', () => {
+		expect(nextCommandKey(undefined)).toBe('command1')
+		expect(nextCommandKey({})).toBe('command1')
+	})
+
+	it('fills the lowest free slot, ignoring non-command action keys', () => {
+		expect(nextCommandKey({ command1: {} as never })).toBe('command2')
+		expect(nextCommandKey({ submit: {} as never, command1: {} as never, command3: {} as never })).toBe('command2')
+	})
+})
+
+describe('addCommand / removeAction', () => {
+	it('adds a stateless command with a non-empty label under a fresh key, seeding when undefined', () => {
+		// A non-empty label is required (ActionDefinition.label is .min(1)) or the doctype fails to validate.
+		const next = addCommand(undefined)
+		expect(next.actions?.command1).toEqual({ label: 'New Command', stateless: true, clientHandler: '' })
+	})
+
+	it('appends without touching existing actions or triggers', () => {
+		const next = addCommand(workflow)
+		expect(next.actions?.submit).toBeDefined()
+		expect(next.actions?.email).toBeDefined()
+		expect(next.actions?.command1).toBeDefined()
+		expect(next.triggers?.dateOrder).toBeDefined()
+	})
+
+	it('produces a command that projects as a Command row', () => {
+		const row = projectWorkflowRows(addCommand(workflow)).find(r => r.__key === 'command1')!
+		expect(row.type).toBe('Command')
+		expect(row.kind).toBe('command')
+	})
+
+	it('removeAction removes an action, preserving other actions and the triggers map', () => {
+		const next = removeAction(workflow, 'email')
+		expect(next.actions?.email).toBeUndefined()
+		expect(next.actions?.submit).toBeDefined()
+		expect(next.triggers?.dateOrder).toBeDefined()
 	})
 })
 

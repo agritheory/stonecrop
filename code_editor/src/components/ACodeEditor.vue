@@ -2,6 +2,15 @@
 	<div ref="aCodeEditor" class="a-code-editor" :style="{ height }" />
 </template>
 
+<script lang="ts">
+// Module-scoped (shared across all instances) so each Monaco model gets a unique URI. This MUST
+// live in a plain <script>, not <script setup>: inside <script setup> it is re-created per instance
+// and always increments to 1, so two editors mounted at once both build
+// `file:///stonecrop-editor-1.js` and the second throws "ModelService: Cannot add model because it
+// already exists!" — its mounted hook aborts and only one editor loads.
+let editorModelCounter = 0
+</script>
+
 <script setup lang="ts">
 import loader from '@monaco-editor/loader'
 import type * as Monaco from 'monaco-editor'
@@ -14,8 +23,6 @@ import { detectLanguage } from '../utils/language'
 import { toEditorString } from '../utils/serialization'
 
 type EditorSchema = { fieldtype?: string; [key: string]: unknown }
-
-let editorModelCounter = 0
 
 const modelValue = defineModel<string>()
 const {
