@@ -7,24 +7,48 @@
 		<template v-else>
 			<div class="aquantity__row">
 				<div class="aquantity__field aquantity__field--qty">
-					<input
-						:id="uuid"
-						v-model.number="qty"
-						class="aform_input-field aquantity__qty"
-						type="number"
-						:disabled="mode === 'read'"
-						:required="required" />
+					<div class="aquantity__group">
+						<input
+							:id="uuid"
+							v-model.number="qty"
+							class="aquantity__qty"
+							type="number"
+							:disabled="mode === 'read'"
+							:required="required"
+							@keydown="onQtyKeydown"
+							@paste="onQtyPaste" />
+						<div v-on-click-outside="closeDropdown" class="aquantity__uom">
+							<button
+								:id="`${uuid}-uom`"
+								type="button"
+								class="aquantity__uom-toggle"
+								:disabled="mode === 'read'"
+								aria-haspopup="listbox"
+								:aria-expanded="dropdown.open"
+								@click="toggleDropdown"
+								@keydown.down.prevent="moveActive(1)"
+								@keydown.up.prevent="moveActive(-1)"
+								@keydown.enter.prevent="selectActive"
+								@keydown.esc="closeDropdown">
+								<span class="aquantity__uom-value">{{ uom || uomLabel }}</span>
+								<span class="aquantity__caret" aria-hidden="true"></span>
+							</button>
+							<ul v-show="dropdown.open" class="aquantity__uom-menu" role="listbox" :aria-label="uomLabel">
+								<li
+									v-for="(option, i) in uoms"
+									:key="option"
+									role="option"
+									:aria-selected="option === uom"
+									class="aquantity__uom-option"
+									:class="{ 'is-active': i === dropdown.activeIndex }"
+									@mouseenter="dropdown.activeIndex = i"
+									@click="selectUom(option)">
+									{{ option }}
+								</li>
+							</ul>
+						</div>
+					</div>
 					<label class="aform_field-label" :for="uuid">{{ label }}</label>
-				</div>
-				<div class="aquantity__field aquantity__field--uom">
-					<select
-						:id="`${uuid}-uom`"
-						v-model="uom"
-						class="aform_input-field aquantity__uom"
-						:disabled="mode === 'read'">
-						<option v-for="option in uoms" :key="option" :value="option">{{ option }}</option>
-					</select>
-					<label class="aform_field-label" :for="`${uuid}-uom`">{{ uomLabel }}</label>
 				</div>
 			</div>
 			<div class="aquantity__row aquantity__row--stock">
@@ -51,7 +75,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { vOnClickOutside } from '@vueuse/components'
+import { computed, reactive } from 'vue'
 
 import type { ComponentProps, QuantityOptions, QuantityValue } from '../../types'
 
@@ -109,6 +134,74 @@ const uom = computed({
 	set: (value: string) => recompute(modelValue.value?.qty ?? 0, value),
 })
 
+const qtyNavigationKeys = [
+	'Backspace',
+	'Delete',
+	'Tab',
+	'Escape',
+	'Enter',
+	'ArrowLeft',
+	'ArrowRight',
+	'ArrowUp',
+	'ArrowDown',
+	'Home',
+	'End',
+]
+
+const onQtyKeydown = (event: KeyboardEvent) => {
+	if (event.ctrlKey || event.metaKey || event.altKey) return
+	if (qtyNavigationKeys.includes(event.key)) return
+	if (/^[0-9]$/.test(event.key)) return
+	const input = event.target as HTMLInputElement
+	if (event.key === '.' && !input.value.includes('.')) return
+	event.preventDefault()
+}
+
+const onQtyPaste = (event: ClipboardEvent) => {
+	const pasted = event.clipboardData?.getData('text') ?? ''
+	if (!/^\d*\.?\d*$/.test(pasted)) event.preventDefault()
+}
+
+const dropdown = reactive({ open: false, activeIndex: -1 })
+
+const openDropdown = () => {
+	dropdown.activeIndex = Math.max(uoms.value.indexOf(uom.value), 0)
+	dropdown.open = true
+}
+
+const closeDropdown = () => {
+	dropdown.open = false
+}
+
+const toggleDropdown = () => {
+	if (dropdown.open) closeDropdown()
+	else openDropdown()
+}
+
+const selectUom = (value: string) => {
+	uom.value = value
+	closeDropdown()
+}
+
+const moveActive = (delta: number) => {
+	if (!dropdown.open) {
+		openDropdown()
+		return
+	}
+	const length = uoms.value.length
+	if (!length) return
+	dropdown.activeIndex = (dropdown.activeIndex + delta + length) % length
+}
+
+const selectActive = () => {
+	if (!dropdown.open) {
+		openDropdown()
+		return
+	}
+	const option = uoms.value[dropdown.activeIndex]
+	if (option !== undefined) selectUom(option)
+}
+
 const showStock = computed(() => {
 	const v = modelValue.value
 	return !!v?.stockUom && (v.uom !== v.stockUom || v.qty !== v.stockQty)
@@ -138,15 +231,102 @@ const displayText = computed(() => {
 	min-width: 0;
 }
 
-.aquantity__field--uom {
-	flex: 0 0 auto;
-	width: 12ch;
+.aquantity__group {
+	display: flex;
+	align-items: stretch;
+	width: 100%;
+	border: 1px solid var(--sc-input-border-color);
+	border-radius: 0.25rem;
 }
 
-.aquantity__qty,
-.aquantity__uom,
+.aquantity__group:focus-within {
+	border-color: var(--sc-input-active-border-color);
+}
+
+.aquantity__qty {
+	flex: 1;
+	min-width: 0;
+	border: none;
+	outline: none;
+	padding: 0.5ch 1ch;
+	background: transparent;
+	border-radius: 0.25rem 0 0 0.25rem;
+	appearance: textfield;
+	-moz-appearance: textfield;
+}
+
+.aquantity__qty::-webkit-outer-spin-button,
+.aquantity__qty::-webkit-inner-spin-button {
+	appearance: none;
+	-webkit-appearance: none;
+	margin: 0;
+}
+
+.aquantity__uom {
+	position: relative;
+	flex: 0 0 auto;
+	border-left: 1px solid var(--sc-input-border-color);
+}
+
+.aquantity__uom-toggle {
+	display: flex;
+	align-items: center;
+	gap: 0.75ch;
+	height: 100%;
+	padding: 0.5ch 1ch;
+	background: var(--sc-gray-5);
+	border: none;
+	border-radius: 0 0.25rem 0.25rem 0;
+	white-space: nowrap;
+	cursor: pointer;
+}
+
+.aquantity__uom-toggle:disabled {
+	cursor: not-allowed;
+	color: var(--sc-gray-50, #888);
+}
+
+.aquantity__caret {
+	display: inline-block;
+	width: 0;
+	height: 0;
+	border-left: 0.3em solid transparent;
+	border-right: 0.3em solid transparent;
+	border-top: 0.3em solid currentColor;
+}
+
+.aquantity__uom-menu {
+	position: absolute;
+	top: 100%;
+	right: 0;
+	z-index: 100;
+	min-width: 100%;
+	margin: 0.15rem 0 0 0;
+	padding: 0.25rem 0;
+	list-style: none;
+	background: #fff;
+	border: 1px solid var(--sc-input-active-border-color);
+	border-radius: 0.25rem;
+}
+
+.aquantity__uom-option {
+	padding: 0.4ch 1ch;
+	white-space: nowrap;
+	cursor: pointer;
+}
+
+.aquantity__uom-option.is-active,
+.aquantity__uom-option:hover {
+	background-color: var(--sc-row-color-zebra-light);
+}
+
 .aquantity__stock-field {
 	width: 100%;
+	font-size: 1rem;
+	padding: 0.5ch 1ch;
+	border: 1px solid var(--sc-input-border-color);
+	border-radius: 0.25rem;
+	outline: none;
 }
 
 .aquantity__stock-field:disabled {
