@@ -28,7 +28,12 @@
 			"label": "Role",
 			"component": "ADropdown",
 			"fieldtype": "Select",
-			"options": ["ADMIN", "MANAGER", "USER", "GUEST"],
+			"options": [
+				"ADMIN",
+				"MANAGER",
+				"USER",
+				"GUEST"
+			],
 			"default": "USER"
 		},
 		{
@@ -36,7 +41,12 @@
 			"label": "Status",
 			"component": "ADropdown",
 			"fieldtype": "Select",
-			"options": ["ACTIVE", "SUSPENDED", "PENDING", "DELETED"],
+			"options": [
+				"ACTIVE",
+				"SUSPENDED",
+				"PENDING",
+				"DELETED"
+			],
 			"default": "PENDING"
 		},
 		{
@@ -74,7 +84,12 @@
 		}
 	],
 	"workflow": {
-		"states": ["PENDING", "ACTIVE", "SUSPENDED", "DELETED"],
+		"states": [
+			"PENDING",
+			"ACTIVE",
+			"SUSPENDED",
+			"DELETED"
+		],
 		"actions": {
 			"save": {
 				"label": "Save",
@@ -82,17 +97,26 @@
 			},
 			"activate": {
 				"label": "Activate User",
-				"allowedStates": ["PENDING", "SUSPENDED"],
+				"allowedStates": [
+					"PENDING",
+					"SUSPENDED"
+				],
 				"nextState": "ACTIVE"
 			},
 			"suspend": {
 				"label": "Suspend User",
-				"allowedStates": ["ACTIVE"],
+				"allowedStates": [
+					"ACTIVE"
+				],
 				"nextState": "SUSPENDED"
 			},
 			"delete": {
 				"label": "Delete User",
-				"allowedStates": ["ACTIVE", "SUSPENDED", "PENDING"],
+				"allowedStates": [
+					"ACTIVE",
+					"SUSPENDED",
+					"PENDING"
+				],
 				"nextState": "DELETED"
 			}
 		}

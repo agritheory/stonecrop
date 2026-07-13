@@ -957,6 +957,16 @@ Trigger definition type inferred from Zod schema
 export type TriggerDefinition = z.infer<typeof TriggerDefinition>;
 ```
 
+### WorkflowLayout
+
+Workflow layout type inferred from Zod schema
+
+**Definition:**
+
+```typescript
+export type WorkflowLayout = z.infer<typeof WorkflowLayout>;
+```
+
 ### WorkflowMeta
 
 Workflow metadata type inferred from Zod schema
@@ -1081,6 +1091,24 @@ export const DoctypeMeta: z.ZodObject<{
             label: z.ZodOptional<z.ZodString>;
             on: z.ZodArray<z.ZodString>;
             clientHandler: z.ZodString;
+        }, z.core.$strip>>>;
+        layout: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodObject<{
+            position: z.ZodOptional<z.ZodObject<{
+                x: z.ZodNumber;
+                y: z.ZodNumber;
+            }, z.core.$strip>>;
+            targetPosition: z.ZodOptional<z.ZodEnum<{
+                left: "left";
+                right: "right";
+                top: "top";
+                bottom: "bottom";
+            }>>;
+            sourcePosition: z.ZodOptional<z.ZodEnum<{
+                left: "left";
+                right: "right";
+                top: "top";
+                bottom: "bottom";
+            }>>;
         }, z.core.$strip>>>;
     }, z.core.$strip>>;
     inherits: z.ZodOptional<z.ZodString>;
@@ -1392,6 +1420,33 @@ Entries here have lower precedence than `customScalars` from options, but higher
 export const WELL_KNOWN_SCALARS: Record<string, FieldTemplate>
 ```
 
+### WorkflowLayout
+
+DocBuilder graph layout — node positions for the workflow-state graph, keyed by state name. Pure authoring view-state: persisted in the doctype JSON so an author's manual arrangement survives reloads, but — exactly like `WorkflowMeta`'s `triggers` — it is client-only and never mirrored into the runtime GraphQL SDL (see the WorkflowMeta type in the host SDLs, which expose only `states`/`actions`). The shape mirrors VueFlow's node fields; `position` is the node's canvas coordinate and `targetPosition`/`sourcePosition` are the handle sides.
+
+**Type:**
+
+```typescript
+export const WorkflowLayout: z.ZodRecord<z.ZodString, z.ZodObject<{
+    position: z.ZodOptional<z.ZodObject<{
+        x: z.ZodNumber;
+        y: z.ZodNumber;
+    }, z.core.$strip>>;
+    targetPosition: z.ZodOptional<z.ZodEnum<{
+        left: "left";
+        right: "right";
+        top: "top";
+        bottom: "bottom";
+    }>>;
+    sourcePosition: z.ZodOptional<z.ZodEnum<{
+        left: "left";
+        right: "right";
+        top: "top";
+        bottom: "bottom";
+    }>>;
+}, z.core.$strip>>
+```
+
 ### WorkflowMeta
 
 Workflow metadata - states and actions for a doctype
@@ -1413,6 +1468,24 @@ export const WorkflowMeta: z.ZodObject<{
         label: z.ZodOptional<z.ZodString>;
         on: z.ZodArray<z.ZodString>;
         clientHandler: z.ZodString;
+    }, z.core.$strip>>>;
+    layout: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodObject<{
+        position: z.ZodOptional<z.ZodObject<{
+            x: z.ZodNumber;
+            y: z.ZodNumber;
+        }, z.core.$strip>>;
+        targetPosition: z.ZodOptional<z.ZodEnum<{
+            left: "left";
+            right: "right";
+            top: "top";
+            bottom: "bottom";
+        }>>;
+        sourcePosition: z.ZodOptional<z.ZodEnum<{
+            left: "left";
+            right: "right";
+            top: "top";
+            bottom: "bottom";
+        }>>;
     }, z.core.$strip>>>;
 }, z.core.$strip>
 ```

@@ -44,11 +44,34 @@
 		}
 	],
 	"workflow": {
-		"states": ["New", "Draft", "Completed", "Cancelled"],
+		"states": [
+			"New",
+			"Draft",
+			"Completed",
+			"Cancelled"
+		],
 		"actions": {
-			"SAVE": { "label": "SAVE", "allowedStates": ["New"], "nextState": "Draft" },
-			"COMPLETE": { "label": "COMPLETE", "allowedStates": ["Draft"], "nextState": "Completed" },
-			"CANCEL": { "label": "CANCEL", "allowedStates": ["Completed"], "nextState": "Cancelled" }
+			"SAVE": {
+				"label": "SAVE",
+				"allowedStates": [
+					"New"
+				],
+				"nextState": "Draft"
+			},
+			"COMPLETE": {
+				"label": "COMPLETE",
+				"allowedStates": [
+					"Draft"
+				],
+				"nextState": "Completed"
+			},
+			"CANCEL": {
+				"label": "CANCEL",
+				"allowedStates": [
+					"Completed"
+				],
+				"nextState": "Cancelled"
+			}
 		}
 	}
 }

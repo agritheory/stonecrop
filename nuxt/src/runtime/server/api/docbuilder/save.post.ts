@@ -4,6 +4,8 @@ import { basename, resolve } from 'node:path'
 import { createError, defineEventHandler, readBody } from 'h3'
 import { useRuntimeConfig } from '#imports'
 
+import { orderKeysByReference } from './mergeDoctype'
+
 export default defineEventHandler(async event => {
 	const body = await readBody(event)
 
@@ -83,7 +85,13 @@ export default defineEventHandler(async event => {
 	// An existing workflow is preserved by the spread; body.workflow only ever
 	// narrows to null when the doctype had no workflow to begin with.
 	if (body.workflow !== undefined && body.workflow !== null) {
-		doctypeData.workflow = body.workflow
+		// Re-impose the on-disk action order: the builder rebuilds workflow.actions on every graph edit
+		// (transitions first, then stateless), which would otherwise reshuffle the file on the first save.
+		const existingActions = (existing.workflow as { actions?: Record<string, unknown> } | undefined)?.actions
+		const workflow = body.workflow as { actions?: Record<string, unknown> }
+		doctypeData.workflow = workflow.actions
+			? { ...workflow, actions: orderKeysByReference(workflow.actions, existingActions) }
+			: workflow
 	} else if (doctypeData.workflow === null || doctypeData.workflow === undefined) {
 		delete doctypeData.workflow
 	}

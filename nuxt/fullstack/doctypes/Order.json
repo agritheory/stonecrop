@@ -29,7 +29,14 @@
 			"label": "Status",
 			"component": "ADropdown",
 			"fieldtype": "Select",
-			"options": ["DRAFT", "PENDING", "PROCESSING", "SHIPPED", "COMPLETED", "CANCELLED"],
+			"options": [
+				"DRAFT",
+				"PENDING",
+				"PROCESSING",
+				"SHIPPED",
+				"COMPLETED",
+				"CANCELLED"
+			],
 			"default": "DRAFT"
 		},
 		{
@@ -65,7 +72,14 @@
 		}
 	],
 	"workflow": {
-		"states": ["DRAFT", "PENDING", "PROCESSING", "SHIPPED", "COMPLETED", "CANCELLED"],
+		"states": [
+			"DRAFT",
+			"PENDING",
+			"PROCESSING",
+			"SHIPPED",
+			"COMPLETED",
+			"CANCELLED"
+		],
 		"actions": {
 			"save": {
 				"label": "Save",
@@ -73,28 +87,43 @@
 			},
 			"submit": {
 				"label": "Submit Order",
-				"allowedStates": ["DRAFT"],
-				"requiredFields": ["userId", "shippingAddress"],
+				"allowedStates": [
+					"DRAFT"
+				],
+				"requiredFields": [
+					"userId",
+					"shippingAddress"
+				],
 				"nextState": "PENDING"
 			},
 			"process": {
 				"label": "Process Order",
-				"allowedStates": ["PENDING"],
+				"allowedStates": [
+					"PENDING"
+				],
 				"nextState": "PROCESSING"
 			},
 			"ship": {
 				"label": "Ship Order",
-				"allowedStates": ["PROCESSING"],
+				"allowedStates": [
+					"PROCESSING"
+				],
 				"nextState": "SHIPPED"
 			},
 			"complete": {
 				"label": "Complete Order",
-				"allowedStates": ["SHIPPED"],
+				"allowedStates": [
+					"SHIPPED"
+				],
 				"nextState": "COMPLETED"
 			},
 			"cancel": {
 				"label": "Cancel Order",
-				"allowedStates": ["DRAFT", "PENDING", "PROCESSING"],
+				"allowedStates": [
+					"DRAFT",
+					"PENDING",
+					"PROCESSING"
+				],
 				"nextState": "CANCELLED"
 			},
 			"viewCustomer": {
@@ -106,7 +135,10 @@
 		"triggers": {
 			"dateOrder": {
 				"label": "Date order",
-				"on": ["createdAt", "updatedAt"],
+				"on": [
+					"createdAt",
+					"updatedAt"
+				],
 				"clientHandler": "if (record.createdAt && record.updatedAt && record.updatedAt < record.createdAt) setError('updatedAt', 'Updated date cannot be before created date')"
 			}
 		}

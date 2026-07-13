@@ -22,7 +22,13 @@
 			"label": "Status",
 			"required": true,
 			"options": {
-				"values": ["pending", "processing", "shipped", "completed", "cancelled"]
+				"values": [
+					"pending",
+					"processing",
+					"shipped",
+					"completed",
+					"cancelled"
+				]
 			}
 		},
 		{
@@ -43,26 +49,41 @@
 		}
 	],
 	"workflow": {
-		"states": ["pending", "processing", "shipped", "completed", "cancelled"],
+		"states": [
+			"pending",
+			"processing",
+			"shipped",
+			"completed",
+			"cancelled"
+		],
 		"actions": {
 			"process": {
 				"label": "Start Processing",
-				"allowedStates": ["pending"],
+				"allowedStates": [
+					"pending"
+				],
 				"nextState": "processing"
 			},
 			"ship": {
 				"label": "Ship Order",
-				"allowedStates": ["processing"],
+				"allowedStates": [
+					"processing"
+				],
 				"nextState": "shipped"
 			},
 			"complete": {
 				"label": "Mark Completed",
-				"allowedStates": ["shipped"],
+				"allowedStates": [
+					"shipped"
+				],
 				"nextState": "completed"
 			},
 			"cancel": {
 				"label": "Cancel Order",
-				"allowedStates": ["pending", "processing"],
+				"allowedStates": [
+					"pending",
+					"processing"
+				],
 				"nextState": "cancelled"
 			}
 		}

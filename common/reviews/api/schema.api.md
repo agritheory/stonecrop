@@ -168,6 +168,24 @@ export const DoctypeMeta: z.ZodObject<{
             on: z.ZodArray<z.ZodString>;
             clientHandler: z.ZodString;
         }, z.core.$strip>>>;
+        layout: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodObject<{
+            position: z.ZodOptional<z.ZodObject<{
+                x: z.ZodNumber;
+                y: z.ZodNumber;
+            }, z.core.$strip>>;
+            targetPosition: z.ZodOptional<z.ZodEnum<{
+                left: "left";
+                right: "right";
+                top: "top";
+                bottom: "bottom";
+            }>>;
+            sourcePosition: z.ZodOptional<z.ZodEnum<{
+                left: "left";
+                right: "right";
+                top: "top";
+                bottom: "bottom";
+            }>>;
+        }, z.core.$strip>>>;
     }, z.core.$strip>>;
     inherits: z.ZodOptional<z.ZodString>;
 }, z.core.$strip>;
@@ -541,6 +559,29 @@ export const ValueFieldSchema: z.ZodObject<{
 export const WELL_KNOWN_SCALARS: Record<string, FieldTemplate>;
 
 // @public
+export const WorkflowLayout: z.ZodRecord<z.ZodString, z.ZodObject<{
+    position: z.ZodOptional<z.ZodObject<{
+        x: z.ZodNumber;
+        y: z.ZodNumber;
+    }, z.core.$strip>>;
+    targetPosition: z.ZodOptional<z.ZodEnum<{
+        left: "left";
+        right: "right";
+        top: "top";
+        bottom: "bottom";
+    }>>;
+    sourcePosition: z.ZodOptional<z.ZodEnum<{
+        left: "left";
+        right: "right";
+        top: "top";
+        bottom: "bottom";
+    }>>;
+}, z.core.$strip>>;
+
+// @public
+export type WorkflowLayout = z.infer<typeof WorkflowLayout>;
+
+// @public
 export const WorkflowMeta: z.ZodObject<{
     states: z.ZodOptional<z.ZodArray<z.ZodString>>;
     actions: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodObject<{
@@ -555,6 +596,24 @@ export const WorkflowMeta: z.ZodObject<{
         label: z.ZodOptional<z.ZodString>;
         on: z.ZodArray<z.ZodString>;
         clientHandler: z.ZodString;
+    }, z.core.$strip>>>;
+    layout: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodObject<{
+        position: z.ZodOptional<z.ZodObject<{
+            x: z.ZodNumber;
+            y: z.ZodNumber;
+        }, z.core.$strip>>;
+        targetPosition: z.ZodOptional<z.ZodEnum<{
+            left: "left";
+            right: "right";
+            top: "top";
+            bottom: "bottom";
+        }>>;
+        sourcePosition: z.ZodOptional<z.ZodEnum<{
+            left: "left";
+            right: "right";
+            top: "top";
+            bottom: "bottom";
+        }>>;
     }, z.core.$strip>>>;
 }, z.core.$strip>;
 

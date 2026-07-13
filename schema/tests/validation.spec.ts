@@ -295,6 +295,56 @@ describe('Doctype Validation', { tags: ['unit'] }, () => {
 			expect(parsed.workflow?.triggers?.dateOrder.clientHandler).toBe("setError('end_date', 'bad')")
 		})
 
+		it('should validate doctype with workflow layout', () => {
+			const doctype = {
+				name: 'Order',
+				fields: [{ kind: 'field', fieldname: 'id', fieldtype: 'Data' }],
+				workflow: {
+					states: ['Draft', 'Submitted'],
+					layout: {
+						Draft: { position: { x: 0, y: 100 }, targetPosition: 'left', sourcePosition: 'right' },
+						Submitted: { position: { x: 200, y: 100 } },
+					},
+				},
+			}
+			const result = validateDoctype(doctype)
+
+			expect(result.success).toBe(true)
+			expect(result.errors).toEqual([])
+		})
+
+		it('should preserve workflow layout through parseDoctype (not stripped)', () => {
+			// The DocBuilder persists an author's node arrangement here; if the Zod object stripped it,
+			// positions would silently vanish on every save/load round-trip.
+			const doctype = {
+				name: 'Order',
+				fields: [{ kind: 'field', fieldname: 'id', fieldtype: 'Data' }],
+				workflow: {
+					states: ['Draft'],
+					layout: { Draft: { position: { x: 42, y: 7 }, sourcePosition: 'bottom' } },
+				},
+			}
+			const parsed = parseDoctype(doctype)
+
+			expect(parsed.workflow?.layout?.Draft.position).toEqual({ x: 42, y: 7 })
+			expect(parsed.workflow?.layout?.Draft.sourcePosition).toBe('bottom')
+		})
+
+		it('should reject a layout handle side outside left/top/right/bottom', () => {
+			const doctype = {
+				name: 'Order',
+				fields: [{ kind: 'field', fieldname: 'id', fieldtype: 'Data' }],
+				workflow: {
+					states: ['Draft'],
+					layout: { Draft: { targetPosition: 'diagonal' } },
+				},
+			}
+			const result = validateDoctype(doctype)
+
+			expect(result.success).toBe(false)
+			expect(result.errors.length).toBeGreaterThan(0)
+		})
+
 		it('should reject a trigger missing clientHandler', () => {
 			const doctype = {
 				name: 'Order',

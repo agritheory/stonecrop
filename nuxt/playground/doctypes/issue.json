@@ -53,17 +53,50 @@
 		}
 	],
 	"workflow": {
-		"states": ["New", "Draft", "Assigned", "Resolved", "Closed"],
+		"states": [
+			"New",
+			"Draft",
+			"Assigned",
+			"Resolved",
+			"Closed"
+		],
 		"actions": {
-			"Save": { "label": "Save", "allowedStates": ["New"], "nextState": "Draft" },
-			"Assign": { "label": "Assign", "allowedStates": ["Draft"], "nextState": "Assigned" },
+			"Save": {
+				"label": "Save",
+				"allowedStates": [
+					"New"
+				],
+				"nextState": "Draft"
+			},
+			"Assign": {
+				"label": "Assign",
+				"allowedStates": [
+					"Draft"
+				],
+				"nextState": "Assigned"
+			},
 			"Resolve": {
 				"label": "Resolve",
-				"allowedStates": ["Draft", "Assigned"],
+				"allowedStates": [
+					"Draft",
+					"Assigned"
+				],
 				"nextState": "Resolved"
 			},
-			"Close": { "label": "Close", "allowedStates": ["Resolved"], "nextState": "Closed" },
-			"Reopen": { "label": "Reopen", "allowedStates": ["Closed"], "nextState": "Draft" }
+			"Close": {
+				"label": "Close",
+				"allowedStates": [
+					"Resolved"
+				],
+				"nextState": "Closed"
+			},
+			"Reopen": {
+				"label": "Reopen",
+				"allowedStates": [
+					"Closed"
+				],
+				"nextState": "Draft"
+			}
 		}
 	}
 }

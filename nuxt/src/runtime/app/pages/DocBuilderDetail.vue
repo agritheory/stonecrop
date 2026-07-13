@@ -95,7 +95,13 @@ onMounted(async () => {
 		}>(`/api/_stonecrop/docbuilder/${doctypeName.value}`)
 		fields.value = data.fields ?? []
 		if (data.workflow) {
-			workflowConfig.value = data.workflow
+			// Node positions ride inside the persisted workflow (schema: WorkflowMeta.layout). Split them
+			// back into the separate `layout` model so `workflowConfig` stays topology-only — otherwise the
+			// StateEditor round-trip would re-spread a stale layout through existingWorkflow. The cast bridges
+			// @vue-flow/core's Position enum and the schema's structurally-identical string-literal union.
+			const { layout: savedLayout, ...topology } = data.workflow
+			workflowConfig.value = topology
+			if (savedLayout) layout.value = savedLayout as Layout
 		}
 	} catch (error) {
 		console.error('Error loading doctype:', error)
@@ -140,7 +146,17 @@ async function saveToDisk() {
 	try {
 		await $fetch('/api/_stonecrop/docbuilder/save', {
 			method: 'POST',
-			body: { doctype: doctypeName.value, fields: fields.value, workflow: workflowConfig.value ?? null },
+			body: {
+				doctype: doctypeName.value,
+				fields: fields.value,
+				// Merge the author's node arrangement back into the workflow (WorkflowMeta.layout) so it
+				// persists. The layout ref is kept separate in memory (topology-only workflowConfig) and
+				// only rejoined here at the I/O boundary; omitted when empty to avoid churn on doctypes
+				// that were never manually arranged.
+				workflow: workflowConfig.value
+					? { ...workflowConfig.value, ...(Object.keys(layout.value).length > 0 && { layout: layout.value }) }
+					: null,
+			},
 		})
 		saveMessage.value = { type: 'success', text: 'Saved.' }
 	} catch (error: any) {

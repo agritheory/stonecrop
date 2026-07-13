@@ -232,6 +232,30 @@ export function isActionAllowedInState(action: { allowedStates?: string[] | null
 }
 
 /**
+ * DocBuilder graph layout — node positions for the workflow-state graph, keyed by state name.
+ * Pure authoring view-state: persisted in the doctype JSON so an author's manual arrangement
+ * survives reloads, but — exactly like {@link (WorkflowMeta:type)}'s `triggers` — it is client-only
+ * and never mirrored into the runtime GraphQL SDL (see the WorkflowMeta type in the host SDLs, which
+ * expose only `states`/`actions`). The shape mirrors VueFlow's node fields; `position` is the node's
+ * canvas coordinate and `targetPosition`/`sourcePosition` are the handle sides.
+ * @public
+ */
+export const WorkflowLayout = z.record(
+	z.string(),
+	z.object({
+		position: z.object({ x: z.number(), y: z.number() }).optional(),
+		targetPosition: z.enum(['left', 'top', 'right', 'bottom']).optional(),
+		sourcePosition: z.enum(['left', 'top', 'right', 'bottom']).optional(),
+	})
+)
+
+/**
+ * Workflow layout type inferred from Zod schema
+ * @public
+ */
+export type WorkflowLayout = z.infer<typeof WorkflowLayout>
+
+/**
  * Workflow metadata - states and actions for a doctype
  * @public
  */
@@ -245,6 +269,13 @@ export const WorkflowMeta = z
 
 		/** Reactive field-validation triggers (advisory, client-side), keyed by trigger name */
 		triggers: z.record(z.string(), TriggerDefinition).optional(),
+
+		/**
+		 * DocBuilder node positions keyed by state name — authoring view-state. Persisted here so a
+		 * doctype author's manual graph arrangement survives reloads; like `triggers`, it is client-only
+		 * and never enters the runtime GraphQL SDL. See {@link (WorkflowLayout:variable)}.
+		 */
+		layout: WorkflowLayout.optional(),
 	})
 	.meta({
 		title: 'WorkflowMeta',

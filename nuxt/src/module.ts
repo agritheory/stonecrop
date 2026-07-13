@@ -300,6 +300,22 @@ export default defineNuxtModule<ModuleOptions>({
 			// seconds of re-bundling per restart.
 			nuxt.options.vite.optimizeDeps.force = true
 
+			// A docbuilder Save writes doctype JSON into doctypesDir. Those files are import.meta.glob'd
+			// into the client (e.g. the example apps' useDoctypes), so Vite sees the write as an HMR update
+			// to a JSON module with no accept boundary and escalates to a full page reload — which flashes
+			// the builder and discards in-progress edits (e.g. a just-dragged node layout that hasn't been
+			// reloaded yet). The builder owns the authoritative in-memory state and re-fetches on mount, so
+			// suppress HMR for its data dir: returning [] tells Vite "no modules to update" instead of
+			// reloading. Trade-off: an external edit to a doctype JSON needs a manual refresh to appear on
+			// the runtime browse pages — acceptable, and strictly better than a reload on every save.
+			nuxt.options.vite.plugins = nuxt.options.vite.plugins || []
+			nuxt.options.vite.plugins.push({
+				name: 'stonecrop:docbuilder-suppress-doctype-reload',
+				handleHotUpdate(ctx: { file: string }) {
+					if (ctx.file.startsWith(doctypesDir)) return []
+				},
+			})
+
 			// Serve Monaco AMD build via Nitro publicAssets so the code editor works without CDN access.
 			// The AMD build (min/vs) has workers pre-bundled — no separate worker interception needed.
 			const { createRequire } = await import('node:module')

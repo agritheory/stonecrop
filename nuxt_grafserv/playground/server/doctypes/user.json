@@ -28,7 +28,11 @@
 			"label": "Role",
 			"required": true,
 			"options": {
-				"values": ["admin", "user", "guest"]
+				"values": [
+					"admin",
+					"user",
+					"guest"
+				]
 			}
 		},
 		{
@@ -43,21 +47,32 @@
 		}
 	],
 	"workflow": {
-		"states": ["active", "suspended", "deleted"],
+		"states": [
+			"active",
+			"suspended",
+			"deleted"
+		],
 		"actions": {
 			"suspend": {
 				"label": "Suspend User",
-				"allowedStates": ["active"],
+				"allowedStates": [
+					"active"
+				],
 				"nextState": "suspended"
 			},
 			"activate": {
 				"label": "Activate User",
-				"allowedStates": ["suspended"],
+				"allowedStates": [
+					"suspended"
+				],
 				"nextState": "active"
 			},
 			"delete": {
 				"label": "Delete User",
-				"allowedStates": ["active", "suspended"],
+				"allowedStates": [
+					"active",
+					"suspended"
+				],
 				"nextState": "deleted"
 			}
 		}
