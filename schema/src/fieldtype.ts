@@ -79,36 +79,37 @@ export interface FieldTemplate {
 export const TYPE_MAP: Record<BuiltinFieldType, FieldTemplate> = {
 	// Text
 	Data: { component: 'ATextInput', fieldtype: 'Data' },
-	Text: { component: 'ATextInput', fieldtype: 'Text' },
+	Text: { component: 'ATextarea', fieldtype: 'Text' },
 
-	// Numeric
+	// Numeric — all numeric variants render with ANumericInput; display differences (currency,
+	// precision, unit) are carried by `format`/`mask`, not a distinct component.
 	Int: { component: 'ANumericInput', fieldtype: 'Int' },
 	Float: { component: 'ANumericInput', fieldtype: 'Float' },
-	Decimal: { component: 'ADecimalInput', fieldtype: 'Decimal' },
+	Decimal: { component: 'ANumericInput', fieldtype: 'Decimal' },
 
 	// Boolean
 	Check: { component: 'ACheckbox', fieldtype: 'Check' },
 
-	// Date/Time
+	// Date/Time — no dedicated Time SFC exists; Time falls back to a plain text input.
 	Date: { component: 'ADate', fieldtype: 'Date' },
-	Time: { component: 'ATimeInput', fieldtype: 'Time' },
-	Datetime: { component: 'ADatetimePicker', fieldtype: 'Datetime' },
-	Duration: { component: 'ADurationInput', fieldtype: 'Duration' },
-	DateRange: { component: 'ADateRangePicker', fieldtype: 'DateRange' },
+	Time: { component: 'ATextInput', fieldtype: 'Time' },
+	Datetime: { component: 'ADateTime', fieldtype: 'Datetime' },
+	Duration: { component: 'ADuration', fieldtype: 'Duration' },
+	DateRange: { component: 'ADateRange', fieldtype: 'DateRange' },
 
-	// Structured
+	// Structured — JSON vs Code is disambiguated by the field's `language`, not the component.
 	JSON: { component: 'ACodeEditor', fieldtype: 'JSON' },
 	Code: { component: 'ACodeEditor', fieldtype: 'Code' },
 
 	// Relational
-	Link: { component: 'ALink', fieldtype: 'Link' },
+	Link: { component: 'AFormLink', fieldtype: 'Link' },
 
 	// Files
 	Attach: { component: 'AFileAttach', fieldtype: 'Attach' },
 
-	// Specialized
-	Currency: { component: 'ACurrencyInput', fieldtype: 'Currency' },
-	Quantity: { component: 'AQuantityInput', fieldtype: 'Quantity' },
+	// Specialized — Currency/Quantity are numeric with a display format.
+	Currency: { component: 'ANumericInput', fieldtype: 'Currency' },
+	Quantity: { component: 'ANumericInput', fieldtype: 'Quantity' },
 	Select: { component: 'ADropdown', fieldtype: 'Select' },
 
 	// Identity — PK fields are typically hidden; no interactive component is needed

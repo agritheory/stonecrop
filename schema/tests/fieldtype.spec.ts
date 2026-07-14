@@ -24,7 +24,7 @@ describe('fieldtype', { tags: ['unit'] }, () => {
 		})
 
 		it('should return correct component for Link field', () => {
-			expect(getDefaultComponent('Link')).toBe('ALink')
+			expect(getDefaultComponent('Link')).toBe('AFormLink')
 		})
 
 		it('should fallback to ATextInput for unknown builtin fieldtype', () => {
@@ -68,6 +68,65 @@ describe('fieldtype', { tags: ['unit'] }, () => {
 			for (const [key, value] of Object.entries(TYPE_MAP)) {
 				expect(value.fieldtype).toBe(key)
 			}
+		})
+
+		// The canonical set of components that actually exist as registered SFCs
+		// (aform/src/index.ts, plus ACodeEditor in code_editor and ATable in atable).
+		// TYPE_MAP must never reference an aspirational component that has no SFC.
+		const REAL_COMPONENTS = new Set([
+			'ATextInput',
+			'ATextarea',
+			'ANumericInput',
+			'ACheckbox',
+			'ADate',
+			'ADateTime',
+			'ADuration',
+			'ADateRange',
+			'ADatePicker',
+			'ADropdown',
+			'AComboBox',
+			'AFormLink',
+			'AFileAttach',
+			'AFieldset',
+			'ACodeEditor',
+			'ATable',
+		])
+
+		it('maps every fieldtype to a real registered component (no aspirational names)', () => {
+			const offenders = Object.entries(TYPE_MAP)
+				.filter(([, value]) => !REAL_COMPONENTS.has(value.component))
+				.map(([key, value]) => `${key} → ${value.component}`)
+			expect(offenders).toEqual([])
+		})
+
+		it('maps builtin fieldtypes to their corrected canonical components', () => {
+			const expected: Record<string, string> = {
+				Data: 'ATextInput',
+				Text: 'ATextarea',
+				Int: 'ANumericInput',
+				Float: 'ANumericInput',
+				Decimal: 'ANumericInput',
+				Currency: 'ANumericInput',
+				Quantity: 'ANumericInput',
+				Check: 'ACheckbox',
+				Date: 'ADate',
+				Datetime: 'ADateTime',
+				Duration: 'ADuration',
+				DateRange: 'ADateRange',
+				JSON: 'ACodeEditor',
+				Code: 'ACodeEditor',
+				Link: 'AFormLink',
+				Attach: 'AFileAttach',
+				Select: 'ADropdown',
+				Fieldset: 'AFieldset',
+				Display: 'ATextInput',
+				PrimaryKey: 'ATextInput',
+			}
+			const actual: Record<string, string> = {}
+			for (const type of Object.keys(expected)) {
+				actual[type] = TYPE_MAP[type as BuiltinFieldType].component
+			}
+			expect(actual).toEqual(expected)
 		})
 	})
 

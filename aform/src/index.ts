@@ -18,6 +18,7 @@ import AForm from './components/AForm.vue'
 import AFormLink from './components/form/AFormLink.vue'
 import ANumericInput from './components/form/ANumericInput.vue'
 import ATextInput from './components/form/ATextInput.vue'
+import ATextarea from './components/form/ATextarea.vue'
 import Login from './components/utilities/Login.vue'
 export type * from './types'
 
@@ -43,6 +44,7 @@ function install(app: App /* options */) {
 	app.component('AFormLink', AFormLink)
 	app.component('ANumericInput', ANumericInput)
 	app.component('ATextInput', ATextInput)
+	app.component('ATextarea', ATextarea)
 	app.component('ADuration', ADuration)
 }
 
@@ -62,6 +64,7 @@ export {
 	AFormLink,
 	ANumericInput,
 	ATextInput,
+	ATextarea,
 	Login,
 	install,
 }

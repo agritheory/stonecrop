@@ -116,6 +116,14 @@ Vue component exported from @stonecrop/aform.
 import { ANumericInput } from '@stonecrop/aform'
 ```
 
+### ATextarea
+
+Vue component exported from @stonecrop/aform.
+
+```typescript
+import { ATextarea } from '@stonecrop/aform'
+```
+
 ### ATextInput
 
 Vue component exported from @stonecrop/aform.
