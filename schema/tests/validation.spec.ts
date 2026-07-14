@@ -45,16 +45,34 @@ describe('Field Validation', { tags: ['unit'] }, () => {
 			expect(result.errors[0].message).toBeTruthy()
 		})
 
-		it('should reject field missing fieldtype', () => {
+		it('should accept a field with a component and no fieldtype (component-primary shape)', () => {
+			// fieldtype is optional during the component-primary migration: a field may carry
+			// only `component`. The app-level `required-component-or-fieldtype` rule (in stonecrop)
+			// still enforces that at least one is present; the Zod gate itself is permissive.
 			const field = {
 				kind: 'field' as const,
 				fieldname: 'test',
+				component: 'ATextInput',
 			}
 			const result = validateField(field)
 
-			expect(result.success).toBe(false)
-			expect(result.errors.length).toBeGreaterThan(0)
-			expect(result.errors[0].path).toContain('fieldtype')
+			expect(result.success).toBe(true)
+			expect(result.errors).toEqual([])
+		})
+
+		it('should preserve the primaryKey/computed/language attributes through a round-trip', () => {
+			const field = {
+				kind: 'field' as const,
+				fieldname: 'total',
+				component: 'ANumericInput',
+				primaryKey: false,
+				computed: true,
+				language: 'json',
+			}
+			const parsed = parseField(field) as ValueField
+			expect(parsed.primaryKey).toBe(false)
+			expect(parsed.computed).toBe(true)
+			expect(parsed.language).toBe('json')
 		})
 
 		it('should accept custom fieldtypes not in the builtin list', () => {
@@ -134,8 +152,9 @@ describe('Field Validation', { tags: ['unit'] }, () => {
 
 		it('should throw ZodError for invalid field', () => {
 			const field = {
-				fieldname: 'test',
-				// Missing fieldtype
+				kind: 'field',
+				fieldtype: 'Data',
+				// Missing required fieldname
 			}
 			expect(() => parseField(field)).toThrow(ZodError)
 		})
@@ -205,7 +224,7 @@ describe('Doctype Validation', { tags: ['unit'] }, () => {
 				name: 'User',
 				fields: [
 					{ kind: 'field', fieldname: 'id', fieldtype: 'Data' },
-					{ kind: 'field', fieldname: 'invalid' }, // Missing fieldtype
+					{ kind: 'field', fieldtype: 'Data' }, // Missing required fieldname
 				],
 			}
 			const result = validateDoctype(doctype)
@@ -569,7 +588,7 @@ describe('Doctype Validation', { tags: ['unit'] }, () => {
 				name: 'User',
 				fields: [
 					{ kind: 'field', fieldname: 'id', fieldtype: 'Data' },
-					{ kind: 'field', fieldname: 'invalid' }, // Missing fieldtype
+					{ kind: 'field', fieldtype: 'Data' }, // Missing required fieldname
 				],
 			}
 			expect(() => parseDoctype(doctype)).toThrow(ZodError)
@@ -649,7 +668,7 @@ describe('Error Path Information', { tags: ['unit'] }, () => {
 			name: 'User',
 			fields: [
 				{ kind: 'field', fieldname: 'id', fieldtype: 'Data' },
-				{ kind: 'field', fieldname: 'email' }, // Missing fieldtype at index 1
+				{ kind: 'field', fieldtype: 'Data' }, // Missing required fieldname at index 1
 			],
 		}
 		const result = validateDoctype(doctype)
@@ -945,7 +964,7 @@ describe('DoctypeField — FieldsetField variant', { tags: ['unit'] }, () => {
 			kind: 'fieldset' as const,
 			fieldname: 'details',
 			schema: [
-				{ kind: 'field' as const, fieldname: 'email' }, // missing fieldtype
+				{ kind: 'field' as const, fieldtype: 'Data' }, // missing required fieldname
 			],
 		}
 		const result = validateField(field)

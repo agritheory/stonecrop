@@ -251,7 +251,7 @@ export function classifyFieldType(
 		if (namedType.name === 'ID') {
 			const candidateTypeName = toPascalCase(fieldName)
 			if (entityTypes.has(candidateTypeName)) {
-				base.component = 'ALink'
+				base.component = 'AFormLink'
 				base.fieldtype = 'Link'
 				base.options = toSlug(candidateTypeName)
 				return base
@@ -284,7 +284,7 @@ export function classifyFieldType(
 	if (isObjectType(namedType)) {
 		// 3. Direct reference to an entity type → Link
 		if (!isList && entityTypes.has(namedType.name)) {
-			base.component = 'ALink'
+			base.component = 'AFormLink'
 			base.fieldtype = 'Link'
 			base.options = toSlug(namedType.name)
 			return base

@@ -36,23 +36,23 @@ export const GQL_SCALAR_MAP: Record<string, FieldTemplate> = {
  * @public
  */
 export const WELL_KNOWN_SCALARS: Record<string, FieldTemplate> = {
-	// Arbitrary precision / large numbers
-	BigFloat: { component: 'ADecimalInput', fieldtype: 'Decimal' },
-	BigDecimal: { component: 'ADecimalInput', fieldtype: 'Decimal' },
-	Decimal: { component: 'ADecimalInput', fieldtype: 'Decimal' },
+	// Arbitrary precision / large numbers — all numeric variants render with ANumericInput.
+	BigFloat: { component: 'ANumericInput', fieldtype: 'Decimal' },
+	BigDecimal: { component: 'ANumericInput', fieldtype: 'Decimal' },
+	Decimal: { component: 'ANumericInput', fieldtype: 'Decimal' },
 	BigInt: { component: 'ANumericInput', fieldtype: 'Int' },
 	Long: { component: 'ANumericInput', fieldtype: 'Int' },
 
 	// Identifiers
 	UUID: { component: 'ATextInput', fieldtype: 'Data' },
 
-	// Date / Time
-	DateTime: { component: 'ADatetimePicker', fieldtype: 'Datetime' },
-	Datetime: { component: 'ADatetimePicker', fieldtype: 'Datetime' },
+	// Date / Time — no dedicated Time SFC exists; Time falls back to a plain text input.
+	DateTime: { component: 'ADateTime', fieldtype: 'Datetime' },
+	Datetime: { component: 'ADateTime', fieldtype: 'Datetime' },
 	Date: { component: 'ADate', fieldtype: 'Date' },
-	Time: { component: 'ATimeInput', fieldtype: 'Time' },
-	Interval: { component: 'ADurationInput', fieldtype: 'Duration' },
-	Duration: { component: 'ADurationInput', fieldtype: 'Duration' },
+	Time: { component: 'ATextInput', fieldtype: 'Time' },
+	Interval: { component: 'ADuration', fieldtype: 'Duration' },
+	Duration: { component: 'ADuration', fieldtype: 'Duration' },
 
 	// Structured data
 	JSON: { component: 'ACodeEditor', fieldtype: 'JSON' },

@@ -162,7 +162,6 @@ export function convertGraphQLSchema(
 		const doctype: ConvertedGraphQLDoctype = {
 			name: typeName,
 			slug: toSlug(typeName),
-			// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- safe: heuristics always set a fieldtype default ('Data'); the optional fieldtype on GraphQLConversionFieldMeta is for intermediate processing, not because output fields lack fieldtype
 			fields: convertedFields as ValueField[],
 		}
 

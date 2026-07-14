@@ -33,7 +33,7 @@
 			"kind": "field",
 			"fieldname": "continent",
 			"label": "Continent",
-			"component": "ALink",
+			"component": "AFormLink",
 			"fieldtype": "Link",
 			"required": true,
 			"options": "continent",

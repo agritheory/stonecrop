@@ -114,15 +114,15 @@ describe('GQL_SCALAR_MAP', { tags: ['unit'] }, () => {
 
 describe('WELL_KNOWN_SCALARS', { tags: ['unit'] }, () => {
 	it('should map common custom scalars', () => {
-		expect(WELL_KNOWN_SCALARS.BigFloat).toEqual({ component: 'ADecimalInput', fieldtype: 'Decimal' })
+		expect(WELL_KNOWN_SCALARS.BigFloat).toEqual({ component: 'ANumericInput', fieldtype: 'Decimal' })
 		expect(WELL_KNOWN_SCALARS.UUID).toEqual({ component: 'ATextInput', fieldtype: 'Data' })
-		expect(WELL_KNOWN_SCALARS.DateTime).toEqual({ component: 'ADatetimePicker', fieldtype: 'Datetime' })
-		expect(WELL_KNOWN_SCALARS.Datetime).toEqual({ component: 'ADatetimePicker', fieldtype: 'Datetime' })
+		expect(WELL_KNOWN_SCALARS.DateTime).toEqual({ component: 'ADateTime', fieldtype: 'Datetime' })
+		expect(WELL_KNOWN_SCALARS.Datetime).toEqual({ component: 'ADateTime', fieldtype: 'Datetime' })
 		expect(WELL_KNOWN_SCALARS.Date).toEqual({ component: 'ADate', fieldtype: 'Date' })
-		expect(WELL_KNOWN_SCALARS.Time).toEqual({ component: 'ATimeInput', fieldtype: 'Time' })
+		expect(WELL_KNOWN_SCALARS.Time).toEqual({ component: 'ATextInput', fieldtype: 'Time' })
 		expect(WELL_KNOWN_SCALARS.JSON).toEqual({ component: 'ACodeEditor', fieldtype: 'JSON' })
 		expect(WELL_KNOWN_SCALARS.BigInt).toEqual({ component: 'ANumericInput', fieldtype: 'Int' })
-		expect(WELL_KNOWN_SCALARS.Duration).toEqual({ component: 'ADurationInput', fieldtype: 'Duration' })
+		expect(WELL_KNOWN_SCALARS.Duration).toEqual({ component: 'ADuration', fieldtype: 'Duration' })
 	})
 
 	it('should include all entries with valid Stonecrop field types', () => {
@@ -334,7 +334,7 @@ describe('classifyFieldType', { tags: ['unit'] }, () => {
 	it('should classify entity reference as Link', () => {
 		const field = classifyFieldType('author', postFields.author, entityTypes)
 		expect(field.fieldtype).toBe('Link')
-		expect(field.component).toBe('ALink')
+		expect(field.component).toBe('AFormLink')
 		expect(field.options).toBe('user')
 		expect(field.required).toBe(true) // User!
 	})
@@ -412,7 +412,7 @@ describe('classifyFieldType — foreign key (ID → Link)', { tags: ['unit'] }, 
 
 		const recipeField = classifyFieldType('recipe', fields.recipe, entityTypesWithRecipe)
 		expect(recipeField.fieldtype).toBe('Link')
-		expect(recipeField.component).toBe('ALink')
+		expect(recipeField.component).toBe('AFormLink')
 		expect(recipeField.options).toBe('recipe')
 	})
 

@@ -67,10 +67,23 @@ export interface ValueField {
 	kind: 'field'
 	/** Unique identifier for this field within its doctype */
 	fieldname: string
-	/** Semantic field type — determines behavior and default rendering component */
-	fieldtype: string
-	/** Vue component to render this field. Derived from `fieldtype` when absent. */
+	/**
+	 * Semantic field type (legacy). Optional during the component-primary migration — `component`
+	 * is now the primary rendering axis. Retained so un-migrated fields keep working; removed once
+	 * every field carries `component`.
+	 */
+	fieldtype?: string
+	/** Vue component that renders this field — the primary rendering axis. */
 	component?: string
+	/** True for the field that identifies the record's primary-key column (replaces `fieldtype: 'PrimaryKey'`). */
+	primaryKey?: boolean
+	/**
+	 * True for a computed/display field with no backing DB column — excluded from SQL SELECT
+	 * (replaces `fieldtype: 'Display'`).
+	 */
+	computed?: boolean
+	/** Editor language for code fields (e.g. `'json'`, `'typescript'`) — disambiguates JSON vs Code, which share `ACodeEditor`. */
+	language?: string
 	/** Human-readable label */
 	label?: string
 	/** CSS width (e.g. `"40ch"`, `"200px"`) */
@@ -103,8 +116,9 @@ export interface ValueField {
 	cardinality?: 'atMostOne' | 'one' | 'noneOrMany' | 'atLeastOne'
 	/**
 	 * Provenance marker — stamped only by the GraphQL converter; absence means hand-authored.
-	 * When present, the docbuilder freezes the field's identity set (`fieldname`, `fieldtype`,
-	 * `required`, `options`, `cardinality`), since `fieldname` is the GraphQL/column binding.
+	 * When present, the docbuilder freezes the field's identity set (`fieldname`, `primaryKey`,
+	 * `required`, `options`, `cardinality` — and `fieldtype` while it remains), since `fieldname`
+	 * is the GraphQL/column binding. Link identity is carried by the doctype's `links` map.
 	 */
 	source?: 'introspected'
 }
@@ -190,8 +204,11 @@ function createDoctypeFieldSchemas() {
 		.object({
 			kind: z.literal('field'),
 			fieldname: z.string().min(1),
-			fieldtype: StonecropFieldType,
+			fieldtype: StonecropFieldType.optional(),
 			component: z.string().optional(),
+			primaryKey: z.boolean().optional(),
+			computed: z.boolean().optional(),
+			language: z.string().optional(),
 			label: z.string().optional(),
 			width: z.string().optional(),
 			align: z.enum(['left', 'center', 'right', 'start', 'end']).optional(),

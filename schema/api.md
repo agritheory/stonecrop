@@ -734,17 +734,20 @@ export interface ValueField {
   align?: 'left' | 'center' | 'right' | 'start' | 'end';
   cardinality?: 'atMostOne' | 'one' | 'noneOrMany' | 'atLeastOne';
   component?: string;
+  computed?: boolean;
   default?: unknown;
   edit?: boolean;
   fieldname: string;
-  fieldtype: string;
+  fieldtype?: string;
   format?: string;
   hidden?: boolean;
   kind: 'field';
   label?: string;
+  language?: string;
   mask?: string;
   mode?: InteractionMode;
   options?: FieldOptions;
+  primaryKey?: boolean;
   readOnly?: boolean;
   required?: boolean;
   source?: 'introspected';
@@ -759,21 +762,24 @@ export interface ValueField {
 |----------|------|-------------|
 | align? | `'left' \| 'center' \| 'right' \| 'start' \| 'end'` | Text alignment |
 | cardinality? | `'atMostOne' \| 'one' \| 'noneOrMany' \| 'atLeastOne'` | Cardinality for Link fields — authoritative value on LinkDeclaration takes precedence |
-| component? | `string` | Vue component to render this field. Derived from `fieldtype` when absent. |
+| component? | `string` | Vue component that renders this field — the primary rendering axis. |
+| computed? | `boolean` | True for a computed/display field with no backing DB column — excluded from SQL SELECT (replaces `fieldtype: 'Display'`). |
 | default? | `unknown` | Default value for new records |
 | edit? | `boolean` | Whether the field is editable in table cell context |
 | fieldname | `string` | Unique identifier for this field within its doctype |
-| fieldtype | `string` | Semantic field type — determines behavior and default rendering component |
+| fieldtype? | `string` | Semantic field type (legacy). Optional during the component-primary migration — `component` is now the primary rendering axis. Retained so un-migrated fields keep working; removed once every field carries `component`. |
 | format? | `string` | Serialized `(value) => string` function for display formatting — distinct from `mask` (input). Spreads through `schemaToColumns` to `ColumnSchema.format`; deserialized at render time by ATable's `getFormattedValue`. |
 | hidden? | `boolean` | Whether the field is hidden from the UI |
 | kind | `'field'` | Discriminator — identifies this as a value-holding field |
 | label? | `string` | Human-readable label |
+| language? | `string` | Editor language for code fields (e.g. `'json'`, `'typescript'`) — disambiguates JSON vs Code, which share `ACodeEditor`. |
 | mask? | `string` | Input mask pattern or serialized function |
 | mode? | `InteractionMode` | Per-field interaction mode override |
 | options? | `FieldOptions` | Type-specific options: Link target slug, Select choices, Decimal precision config, etc. |
+| primaryKey? | `boolean` | True for the field that identifies the record's primary-key column (replaces `fieldtype: 'PrimaryKey'`). |
 | readOnly? | `boolean` | Whether the field is read-only |
 | required? | `boolean` | Whether the field is required |
-| source? | `'introspected'` | Provenance marker — stamped only by the GraphQL converter; absence means hand-authored. When present, the docbuilder freezes the field's identity set (`fieldname`, `fieldtype`, `required`, `options`, `cardinality`), since `fieldname` is the GraphQL/column binding. |
+| source? | `'introspected'` | Provenance marker — stamped only by the GraphQL converter; absence means hand-authored. When present, the docbuilder freezes the field's identity set (`fieldname`, `primaryKey`, `required`, `options`, `cardinality` — and `fieldtype` while it remains), since `fieldname` is the GraphQL/column binding. Link identity is carried by the doctype's `links` map. |
 | validation? | `FieldValidation` | Validation configuration |
 | width? | `string` | CSS width (e.g. `"40ch"`, `"200px"`) |
 
@@ -1373,8 +1379,11 @@ Zod runtime validation schema for ValueField.
 export const ValueFieldSchema: z.ZodObject<{
     kind: z.ZodLiteral<"field">;
     fieldname: z.ZodString;
-    fieldtype: z.ZodString;
+    fieldtype: z.ZodOptional<z.ZodString>;
     component: z.ZodOptional<z.ZodString>;
+    primaryKey: z.ZodOptional<z.ZodBoolean>;
+    computed: z.ZodOptional<z.ZodBoolean>;
+    language: z.ZodOptional<z.ZodString>;
     label: z.ZodOptional<z.ZodString>;
     width: z.ZodOptional<z.ZodString>;
     align: z.ZodOptional<z.ZodEnum<{

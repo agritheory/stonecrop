@@ -15,7 +15,7 @@
 			"kind": "field",
 			"fieldname": "country",
 			"label": "Country",
-			"component": "ALink",
+			"component": "AFormLink",
 			"fieldtype": "Link",
 			"required": true,
 			"options": "country",

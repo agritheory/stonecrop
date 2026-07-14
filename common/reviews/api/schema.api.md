@@ -499,17 +499,20 @@ export interface ValueField {
     align?: 'left' | 'center' | 'right' | 'start' | 'end';
     cardinality?: 'atMostOne' | 'one' | 'noneOrMany' | 'atLeastOne';
     component?: string;
+    computed?: boolean;
     default?: unknown;
     edit?: boolean;
     fieldname: string;
-    fieldtype: string;
+    fieldtype?: string;
     format?: string;
     hidden?: boolean;
     kind: 'field';
     label?: string;
+    language?: string;
     mask?: string;
     mode?: InteractionMode;
     options?: FieldOptions;
+    primaryKey?: boolean;
     readOnly?: boolean;
     required?: boolean;
     source?: 'introspected';
@@ -521,8 +524,11 @@ export interface ValueField {
 export const ValueFieldSchema: z.ZodObject<{
     kind: z.ZodLiteral<"field">;
     fieldname: z.ZodString;
-    fieldtype: z.ZodString;
+    fieldtype: z.ZodOptional<z.ZodString>;
     component: z.ZodOptional<z.ZodString>;
+    primaryKey: z.ZodOptional<z.ZodBoolean>;
+    computed: z.ZodOptional<z.ZodBoolean>;
+    language: z.ZodOptional<z.ZodString>;
     label: z.ZodOptional<z.ZodString>;
     width: z.ZodOptional<z.ZodString>;
     align: z.ZodOptional<z.ZodEnum<{
