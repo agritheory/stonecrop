@@ -5,12 +5,33 @@ import type { FlowElements, Layout } from '../types'
 
 export function statesToFlowElements(workflow: WorkflowMeta, layout?: Layout): FlowElements {
 	const { states = [], actions = {} } = workflow
-	const hasIncoming = new Set<string>()
 	const edges: FlowElements = []
 	const nodes: Node[] = []
 
 	for (const [actionKey, actionDef] of Object.entries(actions)) {
-		if (actionDef.stateless || !actionDef.nextState || !actionDef.allowedStates?.length) continue
+		// Stateless commands (print/email) have no graph presence; anything graph-owned needs states.
+		if (actionDef.stateless || !actionDef.allowedStates?.length) continue
+
+		// A self-transition (mutate-in-place `save`) renders as a self-loop on each allowed state:
+		// `source === target`, tagged `selfloop` so NodeEditor routes it to the arc renderer.
+		if (actionDef.selfTransition) {
+			for (const source of actionDef.allowedStates) {
+				edges.push({
+					id: `${actionKey}-${source}`,
+					source,
+					target: source,
+					label: actionDef.label ?? actionKey,
+					data: { actionKey },
+					animated: true,
+					type: 'selfloop',
+					interactionWidth: 40,
+				})
+			}
+			continue
+		}
+
+		// A cross-state transition needs a target; a malformed action with neither is skipped.
+		if (!actionDef.nextState) continue
 		for (const source of actionDef.allowedStates) {
 			edges.push({
 				id: `${actionKey}-${source}`,
@@ -24,7 +45,6 @@ export function statesToFlowElements(workflow: WorkflowMeta, layout?: Layout): F
 				type: 'smoothstep',
 				interactionWidth: 40,
 			})
-			hasIncoming.add(actionDef.nextState)
 		}
 	}
 
@@ -37,10 +57,9 @@ export function statesToFlowElements(workflow: WorkflowMeta, layout?: Layout): F
 			targetPosition: layout?.[state]?.targetPosition ?? Position.Left,
 			sourcePosition: layout?.[state]?.sourcePosition ?? Position.Right,
 		}
-		if (!hasIncoming.has(state)) {
-			node.type = 'input'
-			node.class = 'default-input-node'
-		}
+		// Every state renders identically — both handles, no start-state styling — so any transition
+		// (including a returning `reject`/`reopen` into the initial state) is authorable and a
+		// self-loop can anchor both ends. Marking an entry state is deferred (YAGNI) until needed.
 		nodes.push(node)
 	}
 
@@ -73,15 +92,28 @@ export function flowElementsToStates(
 	// `data.actionKey`; a freshly-drawn edge (no data yet) falls back to its label as the key — the
 	// one moment label and key coincide, when the action is first born. The edge's label is captured
 	// separately as the display name, so a later relabel renames the action without re-keying it.
-	const transitionGroups: Record<string, { nextState: string; allowedStates: string[]; label: string }> = {}
+	const transitionGroups: Record<
+		string,
+		{ nextState?: string; allowedStates: string[]; label: string; selfLoop: boolean }
+	> = {}
 	for (const el of nextElements) {
 		if (!('source' in el)) continue
 		const edgeLabel = typeof el.label === 'string' ? el.label : el.id
 		const actionKey = el.data?.actionKey ?? edgeLabel
 		const sourceLabel = idToLabel[el.source] || el.source
 		const targetLabel = idToLabel[el.target] || el.target
+		// Classify by topology, not by edge `type`: a self-loop (source === target) round-trips to a
+		// self-transition regardless of how it was authored (drawn node→itself, or re-rendered from a
+		// `selfTransition` action). A group's kind is set by its first edge; a multi-state self-loop
+		// (e.g. `save` on Draft AND Pending) accumulates each source into allowedStates.
+		const isSelf = el.source === el.target
 		if (!transitionGroups[actionKey]) {
-			transitionGroups[actionKey] = { nextState: targetLabel, allowedStates: [sourceLabel], label: edgeLabel }
+			transitionGroups[actionKey] = {
+				allowedStates: [sourceLabel],
+				label: edgeLabel,
+				selfLoop: isSelf,
+				...(isSelf ? {} : { nextState: targetLabel }),
+			}
 		} else {
 			transitionGroups[actionKey].allowedStates.push(sourceLabel)
 		}
@@ -89,23 +121,25 @@ export function flowElementsToStates(
 
 	const nextActions: Record<string, ActionDefinition> = {}
 
-	// Transitions derived from graph edges
+	// Transitions (and self-transitions) derived from graph edges
 	for (const [actionKey, group] of Object.entries(transitionGroups)) {
 		const existing = existingWorkflow?.actions?.[actionKey]
 		nextActions[actionKey] = {
 			// Spread existing first so every field the graph does NOT own — clientHandler,
 			// requiredFields and any field added to ActionDefinition later — survives the
-			// round-trip. The graph owns topology (allowedStates/nextState) and the display label.
-			// (Enumerating named fields here previously dropped clientHandler on every graph edit.)
+			// round-trip. The graph owns topology (allowedStates/nextState/selfTransition) and the
+			// display label. (Enumerating named fields here previously dropped clientHandler.)
 			...existing,
 			// The edge's label is the display name (decoupled from the key). Fall back to the
 			// existing label, then the key, if an edge ever arrives label-less.
 			label: group.label || existing?.label || actionKey,
-			// The graph owns topology only — allowedStates and nextState below. The server owns
-			// the transition: dispatch applies nextState, guarded by allowedStates, with no
-			// per-action handler link. A freshly-drawn edge is therefore complete as-is.
+			// The graph owns topology only. A self-transition (self-loop) stays in place: mark
+			// `selfTransition`, carry NO `nextState`. A cross-state transition carries `nextState`
+			// and clears any stale self flag (a self-loop redrawn as a normal edge). Explicit
+			// `undefined` on the unused field is dropped by JSON.stringify, so no format churn.
 			allowedStates: group.allowedStates,
-			nextState: group.nextState,
+			nextState: group.selfLoop ? undefined : group.nextState,
+			selfTransition: group.selfLoop ? true : undefined,
 		}
 	}
 

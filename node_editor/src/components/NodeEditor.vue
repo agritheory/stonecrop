@@ -49,6 +49,9 @@
 			<template #edge-editable="props">
 				<EditableEdge v-bind="props" @change="labelChanged($event, props.id)" @remove="removeEdge(props.id)" />
 			</template>
+			<template #edge-selfloop="props">
+				<SelfLoopEdge v-bind="props" @change="labelChanged($event, props.id)" @remove="removeEdge(props.id)" />
+			</template>
 		</VueFlow>
 	</div>
 </template>
@@ -69,6 +72,7 @@ import { type HTMLAttributes, ref, computed, nextTick, onBeforeUnmount, onMounte
 
 import EditableEdge from './EditableEdge.vue'
 import EditableNode from './EditableNode.vue'
+import SelfLoopEdge from './SelfLoopEdge.vue'
 import { autoLayout } from '../utils/autoLayout'
 import type { FlowElements } from '../types'
 
@@ -107,7 +111,10 @@ const elements = computed({
 				element.data.hasOutput = true
 			}
 			element.class = 'vue-flow__node-default'
-			element.type = 'editable'
+			// A self-loop edge (source === target) routes to the SelfLoopEdge arc renderer; everything
+			// else (nodes and cross-state edges) uses the default editable slot. getBezierPath draws a
+			// useless near-straight segment for a self-loop, so it must not fall through to 'editable'.
+			element.type = 'source' in element && element.source === element.target ? 'selfloop' : 'editable'
 		}
 
 		return items
@@ -270,11 +277,13 @@ const handleEdgeClick = ({ edge }: EdgeMouseEvent) => {
 
 const handleConnect = async (event: Connection) => {
 	const id = vueFlowElements.value.length
+	// A node connected to itself is a self-transition (mutate-in-place) — render it as a loop.
+	const isSelfLoop = event.source === event.target
 	const newEdge = {
 		id: `edge-${id}`,
 		source: event.source,
 		target: event.target,
-		type: 'editable',
+		type: isSelfLoop ? 'selfloop' : 'editable',
 		label: `New Edge`,
 		interactionWidth: 400,
 		animated: true,

@@ -15,11 +15,12 @@ import {
 	writeTriggerField,
 } from '../src/runtime/app/components/docbuilderActions'
 
-// A workflow carrying every row kind: a transition, a stateless Command, and a Trigger.
+// A workflow carrying every row kind: a transition, a self-transition, a stateless Command, and a Trigger.
 const workflow: WorkflowMeta = {
 	states: ['Draft', 'Pending'],
 	actions: {
 		submit: { label: 'Submit', allowedStates: ['Draft'], nextState: 'Pending' },
+		save: { label: 'Save', selfTransition: true, allowedStates: ['Draft', 'Pending'] },
 		email: { label: 'Email', stateless: true },
 	},
 	triggers: {
@@ -41,6 +42,15 @@ describe('projectWorkflowRows', () => {
 		expect(row.nextState).toBe('Pending')
 	})
 
+	it('projects a self-transition action into a Self-transition row (no nextState)', () => {
+		const row = projectWorkflowRows(workflow).find(r => r.__key === 'save')!
+		expect(row.type).toBe('Self-transition')
+		expect(row.kind).toBe('self-transition')
+		expect(row.allowedStates).toBe('Draft, Pending')
+		// A self-transition stays in place — no target state to display.
+		expect(row.nextState).toBe('—')
+	})
+
 	it('projects a stateless action into a Command row', () => {
 		const row = projectWorkflowRows(workflow).find(r => r.__key === 'email')!
 		expect(row.type).toBe('Command')
@@ -60,7 +70,7 @@ describe('projectWorkflowRows', () => {
 
 	it('orders action rows before trigger rows', () => {
 		const kinds = projectWorkflowRows(workflow).map(r => r.kind)
-		expect(kinds).toEqual(['transition', 'command', 'trigger'])
+		expect(kinds).toEqual(['transition', 'self-transition', 'command', 'trigger'])
 	})
 
 	it('returns [] for an undefined workflow', () => {

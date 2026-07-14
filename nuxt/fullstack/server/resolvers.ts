@@ -209,30 +209,46 @@ export default {
 									}
 								}
 
-								// Record envelope: [{ id, data }] — the transition keys off the record id.
+								// Record envelope: [{ id, data }] — the transition keys off the record id, and a
+								// self-transition persists the edited field `data` in place.
 								const argList = Array.isArray(spec.actionArgs) ? spec.actionArgs : []
 								const recordId = argList[0]?.id
+								const recordData: Record<string, unknown> = argList[0]?.data ?? {}
 
 								try {
 									// The server owns the transition: read current state, guard against
 									// allowedStates, write nextState. Reads/writes go through this app's
 									// mock executor; a PostGraphile setup swaps in pgClient SQL instead.
-									return await applyGuardedTransition(actionDef, {
-										readState: async () => {
-											if (recordId == null) return undefined
-											const queryName = toQueryName(meta.name)
-											const result = (await mockExecutor.query(queryName, { id: recordId })) as Record<
-												string,
-												{ status?: string | null } | undefined
-											>
-											const status = result[queryName]?.status
-											return status == null ? undefined : String(status)
+									return await applyGuardedTransition(
+										actionDef,
+										{
+											readState: async () => {
+												if (recordId == null) return undefined
+												const queryName = toQueryName(meta.name)
+												const result = (await mockExecutor.query(queryName, { id: recordId })) as Record<
+													string,
+													{ status?: string | null } | undefined
+												>
+												const status = result[queryName]?.status
+												return status == null ? undefined : String(status)
+											},
+											writeState: async (nextState: string) => {
+												const mutationName = toMutationName(meta.name, 'update')
+												await mockExecutor.mutate(mutationName, { id: recordId, patch: { status: nextState } })
+											},
+											// Self-transition data write: patch the record's field data (status untouched)
+											// and return the full updated record for the client writeback. Verbatim patch
+											// mirrors stonecropUpdate; column-whitelisting is the (deferred) PostGraphile concern.
+											writeData: async (patch: Record<string, unknown>) => {
+												const mutationName = toMutationName(meta.name, 'update')
+												const result = await mockExecutor.mutate(mutationName, { id: recordId, patch })
+												const mutationResult = result[mutationName] as Record<string, unknown> | undefined
+												const recordKey = meta.name.charAt(0).toLowerCase() + meta.name.slice(1)
+												return (mutationResult?.[recordKey] ?? mutationResult ?? {}) as Record<string, unknown>
+											},
 										},
-										writeState: async (nextState: string) => {
-											const mutationName = toMutationName(meta.name, 'update')
-											await mockExecutor.mutate(mutationName, { id: recordId, patch: { status: nextState } })
-										},
-									})
+										recordData
+									)
 								} catch (err) {
 									return {
 										success: false,

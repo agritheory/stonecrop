@@ -11,13 +11,13 @@ import type { ActionDefinition, TriggerDefinition, WorkflowMeta } from '@stonecr
  * projected into one table; writes are routed back to the correct map, always preserving the other.
  */
 
-export type RowKind = 'transition' | 'command' | 'trigger'
+export type RowKind = 'transition' | 'self-transition' | 'command' | 'trigger'
 
 /** A single table row — column scalars ATable renders via `row[name]`, plus `__`-prefixed backrefs. */
 export interface ActionRow {
 	key: string
 	label: string
-	type: 'Transition' | 'Command' | 'Trigger'
+	type: 'Transition' | 'Self-transition' | 'Command' | 'Trigger'
 	kind: RowKind
 	/** Comma-joined fire-set for Triggers; `'—'` for actions (they don't fire on field edits). */
 	on: string
@@ -51,15 +51,19 @@ export function parseOnInput(value: string): string[] {
  */
 export function projectWorkflowRows(workflow: WorkflowMeta | undefined): ActionRow[] {
 	const actionRows: ActionRow[] = Object.entries(workflow?.actions ?? {}).map(([key, action]) => {
-		const kind: RowKind = action.stateless ? 'command' : 'transition'
+		// Three action kinds, checked most-specific first: a self-transition (mutate-in-place, graph-
+		// owned self-loop, no nextState), a stateless Command (no graph presence), else a Transition.
+		const kind: RowKind = action.selfTransition ? 'self-transition' : action.stateless ? 'command' : 'transition'
+		const type = action.selfTransition ? 'Self-transition' : action.stateless ? 'Command' : 'Transition'
 		return {
 			key,
 			label: action.label ?? '',
-			type: action.stateless ? 'Command' : 'Transition',
+			type,
 			kind,
 			on: NA,
 			allowedStates: action.allowedStates?.join(', ') ?? '(all states)',
-			nextState: action.stateless ? NA : (action.nextState ?? ''),
+			// Only a plain Transition has a target state; self-transitions stay put, Commands are stateless.
+			nextState: kind === 'transition' ? (action.nextState ?? '') : NA,
 			__key: key,
 			__kind: kind,
 			__action: action,

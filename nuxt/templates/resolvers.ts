@@ -165,29 +165,46 @@ export const resolvers = {
 								const actionDef = meta.workflow?.actions?.[spec.action]
 								if (!actionDef) return { success: false, data: null, error: `Unknown action: ${spec.action}` }
 
-								// Record envelope: [{ id, data }] — the transition keys off the record id.
+								// Record envelope: [{ id, data }] — the transition keys off the record id, and a
+								// self-transition persists the edited field `data` in place.
 								const argList = Array.isArray(spec.actionArgs) ? spec.actionArgs : []
 								const recordId = argList[0]?.id != null ? String(argList[0].id) : undefined
+								const recordData: Record<string, unknown> = argList[0]?.data ?? {}
 								const d = spec.doctype.toLowerCase()
 
 								try {
 									// The server owns the transition: read current state, guard against allowedStates,
 									// write nextState. Reads/writes go straight to the in-memory Maps; a PostGraphile
 									// setup swaps in pgClient SQL instead.
-									return await applyGuardedTransition(actionDef, {
-										readState: async () => {
-											if (recordId == null) return undefined
-											const record = getRecord(d, recordId)
-											return record?.status == null ? undefined : String(record.status)
+									return await applyGuardedTransition(
+										actionDef,
+										{
+											readState: async () => {
+												if (recordId == null) return undefined
+												const record = getRecord(d, recordId)
+												return record?.status == null ? undefined : String(record.status)
+											},
+											writeState: async (nextState: string) => {
+												if (recordId == null) return
+												const existing = getRecord(d, recordId)
+												if (!existing) return
+												if (d === 'project') projects.set(recordId, { ...existing, status: nextState } as Project)
+												else if (d === 'task') tasks.set(recordId, { ...existing, status: nextState } as Task)
+											},
+											// Self-transition data write: merge the edited fields into the record (status
+											// untouched) and return the full record for the client writeback.
+											writeData: async (patch: Record<string, unknown>) => {
+												if (recordId == null) return {}
+												const existing = getRecord(d, recordId)
+												if (!existing) return {}
+												const updated = { ...existing, ...patch }
+												if (d === 'project') projects.set(recordId, updated as Project)
+												else if (d === 'task') tasks.set(recordId, updated as Task)
+												return updated as Record<string, unknown>
+											},
 										},
-										writeState: async (nextState: string) => {
-											if (recordId == null) return
-											const existing = getRecord(d, recordId)
-											if (!existing) return
-											if (d === 'project') projects.set(recordId, { ...existing, status: nextState } as Project)
-											else if (d === 'task') tasks.set(recordId, { ...existing, status: nextState } as Task)
-										},
-									})
+										recordData
+									)
 								} catch (err) {
 									return { success: false, data: null, error: err instanceof Error ? err.message : String(err) }
 								}

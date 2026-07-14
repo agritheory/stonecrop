@@ -12,7 +12,10 @@
 						<td>
 							<!-- A Transition is named on its edge in the graph (single source of truth), so its
 								name is read-only here; Commands and Triggers have no graph, so they're named here. -->
-							<span v-if="row.kind === 'transition'" class="cell-readonly" :title="TRANSITION_NAME_HINT">
+							<span
+								v-if="row.kind === 'transition' || row.kind === 'self-transition'"
+								class="cell-readonly"
+								:title="TRANSITION_NAME_HINT">
 								{{ row.label }}
 							</span>
 							<input
@@ -63,8 +66,13 @@
 									@update:model-value="onFieldInput(row, 'clientHandler', $event)" />
 							</div>
 
-							<!-- Transitions are graph-owned — removed by deleting their edges, not here. -->
-							<button v-if="row.kind !== 'transition'" type="button" class="remove-row" @click="onRemoveRow(row)">
+							<!-- Transitions and self-transitions are graph-owned — removed by deleting their
+								edges (a self-loop is an edge too), not here. -->
+							<button
+								v-if="row.kind !== 'transition' && row.kind !== 'self-transition'"
+								type="button"
+								class="remove-row"
+								@click="onRemoveRow(row)">
 								Remove {{ row.kind }}
 							</button>
 						</div>
@@ -272,6 +280,11 @@ function onRemoveRow(row: ActionRow) {
 .badge-transition {
 	background: #dbeafe;
 	color: #1e40af;
+}
+
+.badge-self-transition {
+	background: #fef3c7;
+	color: #92400e;
 }
 
 .badge-command {

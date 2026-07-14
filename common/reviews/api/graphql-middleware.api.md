@@ -17,7 +17,8 @@ export function applyGuardedTransition(actionDef: {
     label?: string;
     allowedStates?: string[];
     nextState?: string;
-}, io: GuardedTransitionIO): Promise<{
+    selfTransition?: boolean;
+}, io: GuardedTransitionIO, data?: Record<string, unknown>): Promise<{
     success: boolean;
     data: unknown;
     error: string | null;
@@ -75,6 +76,7 @@ export function getMeta(name: string): DoctypeMeta | undefined;
 // @public
 export interface GuardedTransitionIO {
     readState: () => Promise<string | undefined>;
+    writeData?: (patch: Record<string, unknown>) => Promise<Record<string, unknown>>;
     writeState: (nextState: string) => Promise<void>;
 }
 

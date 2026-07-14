@@ -52,4 +52,49 @@ describe('applyGuardedTransition', () => {
 		expect(readState).not.toHaveBeenCalled()
 		expect(writeState).not.toHaveBeenCalled()
 	})
+
+	describe('self-transitions (mutate-in-place)', () => {
+		it('writes record data, keeps the state, and returns the full record when allowed', async () => {
+			const writeState = vi.fn(async () => {})
+			const writeData = vi.fn(async (patch: Record<string, unknown>) => ({
+				id: '1',
+				status: 'Draft',
+				...patch,
+			}))
+			const result = await applyGuardedTransition(
+				{ label: 'Save', selfTransition: true, allowedStates: ['Draft', 'Pending'] },
+				{ readState: async () => 'Draft', writeState, writeData },
+				{ title: 'edited' }
+			)
+			expect(result.success).toBe(true)
+			// Full record returned (data changed, status unchanged) — the writeback stores this verbatim.
+			expect(result.data).toEqual({ id: '1', status: 'Draft', title: 'edited' })
+			expect(writeData).toHaveBeenCalledWith({ title: 'edited' })
+			// A self-transition never writes status.
+			expect(writeState).not.toHaveBeenCalled()
+		})
+
+		it('rejects from a disallowed state without writing data', async () => {
+			const writeData = vi.fn(async () => ({}))
+			const result = await applyGuardedTransition(
+				{ label: 'Save', selfTransition: true, allowedStates: ['Draft'] },
+				{ readState: async () => 'Closed', writeState: async () => {}, writeData },
+				{ title: 'edited' }
+			)
+			expect(result.success).toBe(false)
+			expect(result.error).toContain('not allowed')
+			expect(writeData).not.toHaveBeenCalled()
+		})
+
+		it('rejects loudly when the backend has no data-write capability', async () => {
+			// PostGraphile today: writeData is absent. A self-transition must fail loudly, not silently.
+			const result = await applyGuardedTransition(
+				{ label: 'Save', selfTransition: true, allowedStates: ['Draft'] },
+				{ readState: async () => 'Draft', writeState: async () => {} },
+				{ title: 'edited' }
+			)
+			expect(result.success).toBe(false)
+			expect(result.error).toContain('does not support')
+		})
+	})
 })

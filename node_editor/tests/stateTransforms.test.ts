@@ -26,6 +26,21 @@ const issueWorkflow: WorkflowMeta = {
 	},
 }
 
+// A mutate-in-place `save`: a self-transition scoped to two mutable states, plus a normal transition
+// out of Pending, so tests can assert self-loops and cross-state edges coexist.
+const saveWorkflow: WorkflowMeta = {
+	states: ['Draft', 'Pending', 'Closed'],
+	actions: {
+		save: {
+			label: 'Save',
+			selfTransition: true,
+			allowedStates: ['Draft', 'Pending'],
+			clientHandler: 'noop()',
+		},
+		close: { label: 'Close', allowedStates: ['Pending'], nextState: 'Closed' },
+	},
+}
+
 const isNode = (el: any) => !('source' in el)
 const isEdge = (el: any) => 'source' in el
 
@@ -39,16 +54,14 @@ describe('statesToFlowElements', { tags: ['unit'] }, () => {
 		expect(elements.filter(isNode)).toHaveLength(5)
 	})
 
-	it('marks the state with no incoming edges as an input node', () => {
+	it('renders every state identically — no start-state (input) marking', () => {
+		// All nodes get both handles so a returning transition (reject/reopen into the start state)
+		// is authorable and self-loops can anchor both ends. The `New` start state is not special.
 		const elements = statesToFlowElements(issueWorkflow)
-		const newNode = elements.find(e => isNode(e) && e.id === 'New')
-		expect(newNode?.type).toBe('input')
-	})
-
-	it('leaves states with incoming edges as non-input nodes', () => {
-		const elements = statesToFlowElements(issueWorkflow)
-		const draftNode = elements.find(e => isNode(e) && e.id === 'Draft')
-		expect(draftNode?.type).not.toBe('input')
+		for (const node of elements.filter(isNode)) {
+			expect((node as any).type).toBeUndefined()
+			expect((node as any).class).toBeUndefined()
+		}
 	})
 
 	it('produces one edge per (action, allowedState) pair for Workflow actions', () => {
@@ -128,6 +141,30 @@ describe('statesToFlowElements', { tags: ['unit'] }, () => {
 
 	it('returns empty array when workflow has no states', () => {
 		expect(statesToFlowElements({ states: [], actions: {} })).toEqual([])
+	})
+
+	// --- self-transitions (mutate-in-place) ---
+
+	it('renders a self-transition as a self-loop edge per allowed state', () => {
+		const elements = statesToFlowElements(saveWorkflow)
+		const saveEdges = elements.filter(e => isEdge(e) && (e as any).data?.actionKey === 'save')
+		expect(saveEdges).toHaveLength(2)
+		for (const edge of saveEdges as any[]) {
+			expect(edge.source).toBe(edge.target) // self-loop: source === target
+			expect(edge.type).toBe('selfloop')
+			expect(edge.data.actionKey).toBe('save')
+			expect(edge.label).toBe('Save')
+		}
+		const sources = (saveEdges as any[]).map(e => e.source as string).toSorted((a, b) => a.localeCompare(b))
+		expect(sources).toEqual(['Draft', 'Pending'])
+	})
+
+	it('self-transitions and cross-state transitions coexist', () => {
+		const elements = statesToFlowElements(saveWorkflow)
+		const closeEdge = elements.find(e => isEdge(e) && (e as any).data?.actionKey === 'close') as any
+		expect(closeEdge.source).toBe('Pending')
+		expect(closeEdge.target).toBe('Closed')
+		expect(closeEdge.type).toBe('smoothstep') // a normal transition, not a self-loop
 	})
 })
 
@@ -344,5 +381,39 @@ describe('flowElementsToStates', { tags: ['unit'] }, () => {
 		const { layout } = flowElementsToStates(elements)
 		expect(layout['Review']).toBeDefined()
 		expect(layout['node-5']).toBeUndefined()
+	})
+
+	// --- self-transitions (mutate-in-place) ---
+
+	it('round-trips a self-transition to selfTransition + allowedStates with no nextState', () => {
+		const elements = statesToFlowElements(saveWorkflow)
+		const { workflow } = flowElementsToStates(elements, saveWorkflow)
+		const save = workflow.actions?.save
+		expect(save?.selfTransition).toBe(true)
+		expect(save?.allowedStates?.toSorted((a, b) => a.localeCompare(b))).toEqual(['Draft', 'Pending'])
+		// A self-transition carries no target — it stays in the current state.
+		expect(save?.nextState).toBeUndefined()
+	})
+
+	it('preserves clientHandler on a self-transition round-trip', () => {
+		const elements = statesToFlowElements(saveWorkflow)
+		const { workflow } = flowElementsToStates(elements, saveWorkflow)
+		expect(workflow.actions?.save?.clientHandler).toBe('noop()')
+		// The coexisting normal transition is unaffected.
+		expect(workflow.actions?.close?.nextState).toBe('Closed')
+		expect(workflow.actions?.close?.selfTransition).toBeUndefined()
+	})
+
+	it('recognizes a freshly-drawn self-loop edge (source === target) as a self-transition', () => {
+		// A user drawing a node→itself connection authors a self-transition even with no existing
+		// workflow — the reverse transform must classify by topology, not require a prior flag.
+		const elements: FlowElements = [
+			{ id: 'Draft', label: 'Draft', position: { x: 0, y: 0 }, type: 'input' } as any,
+			{ id: 'e1', source: 'Draft', target: 'Draft', label: 'save', type: 'selfloop' } as any,
+		]
+		const { workflow } = flowElementsToStates(elements)
+		expect(workflow.actions?.save?.selfTransition).toBe(true)
+		expect(workflow.actions?.save?.allowedStates).toEqual(['Draft'])
+		expect(workflow.actions?.save?.nextState).toBeUndefined()
 	})
 })

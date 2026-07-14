@@ -34,6 +34,7 @@ export const typeDefs = gql`
 		allowedStates: [String!]
 		nextState: String
 		stateless: Boolean
+		selfTransition: Boolean
 		clientHandler: String
 	}
 

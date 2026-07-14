@@ -17,11 +17,15 @@ export function orderKeysByReference<T>(
 ): Record<string, T> | undefined {
 	if (!next || !reference) return next
 	const result: Record<string, T> = {}
+	// Reference order first (only keys still present in next)...
 	for (const key of Object.keys(reference)) {
-		if (Object.prototype.hasOwnProperty.call(next, key)) result[key] = next[key]
+		const value = next[key]
+		if (value !== undefined) result[key] = value
 	}
-	for (const key of Object.keys(next)) {
-		if (!Object.prototype.hasOwnProperty.call(result, key)) result[key] = next[key]
+	// ...then any next-only keys, in their original next order. Object.entries yields a defined value
+	// (typed `T`, not `T | undefined`), so no index-access narrowing/cast is needed.
+	for (const [key, value] of Object.entries(next)) {
+		if (!Object.prototype.hasOwnProperty.call(result, key)) result[key] = value
 	}
 	return result
 }

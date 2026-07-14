@@ -997,6 +997,7 @@ export const ActionDefinition: z.ZodObject<{
     allowedStates: z.ZodOptional<z.ZodArray<z.ZodString>>;
     nextState: z.ZodOptional<z.ZodString>;
     stateless: z.ZodOptional<z.ZodBoolean>;
+    selfTransition: z.ZodOptional<z.ZodBoolean>;
     clientHandler: z.ZodOptional<z.ZodString>;
 }, z.core.$strip>
 ```
@@ -1090,6 +1091,7 @@ export const DoctypeMeta: z.ZodObject<{
             allowedStates: z.ZodOptional<z.ZodArray<z.ZodString>>;
             nextState: z.ZodOptional<z.ZodString>;
             stateless: z.ZodOptional<z.ZodBoolean>;
+            selfTransition: z.ZodOptional<z.ZodBoolean>;
             clientHandler: z.ZodOptional<z.ZodString>;
         }, z.core.$strip>>>;
         triggers: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodObject<{
@@ -1467,6 +1469,7 @@ export const WorkflowMeta: z.ZodObject<{
         allowedStates: z.ZodOptional<z.ZodArray<z.ZodString>>;
         nextState: z.ZodOptional<z.ZodString>;
         stateless: z.ZodOptional<z.ZodBoolean>;
+        selfTransition: z.ZodOptional<z.ZodBoolean>;
         clientHandler: z.ZodOptional<z.ZodString>;
     }, z.core.$strip>>>;
     triggers: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodObject<{

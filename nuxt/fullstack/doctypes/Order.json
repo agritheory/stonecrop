@@ -83,7 +83,11 @@
 		"actions": {
 			"save": {
 				"label": "Save",
-				"stateless": true
+				"selfTransition": true,
+				"allowedStates": [
+					"DRAFT",
+					"PENDING"
+				]
 			},
 			"submit": {
 				"label": "Submit Order",

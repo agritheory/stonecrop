@@ -33,7 +33,7 @@ Apply a workflow action's state transition on the server, enforcing `allowedStat
 
 The server owns the transition: it reads the record's authoritative current state, rejects the action when `isActionAllowedInState` denies it, then writes `nextState` verbatim. Storage access is injected via `io` so this one guard serves every backend and can never disagree with the frontend's `getAvailableTransitions`, which shares the same predicate.
 
-An action with no `nextState` is a side-effect-only action (e.g. `Save`): the transition dispatch has nothing to apply for it, and the side effect must run through a wired handler that this path does not yet provide. Rather than report a false success while silently dropping the request, it fails loudly. (A `callHandler` primitive to invoke registered handlers by key is the intended home for those side effects; it is not implemented yet.)
+There are three action shapes this guard distinguishes: - A cross-state **transition** (has `nextState`): writes the new `status`, guarded by `allowedStates`. - A **self-transition** (`selfTransition: true`, no `nextState`, e.g. `Save`): stays in the current state and persists record field `data` in place via `io.writeData`, guarded by `allowedStates`. A backend without a data-write path rejects it loudly instead of dropping it silently. - Anything else with no `nextState` and no `selfTransition` flag is a genuine authoring mistake (or a stateless side-effect command whose server handler is not wired — the intended `callHandler` primitive is still unimplemented): it fails loudly before touching the backend rather than reporting a false success.
 
 **Signature:**
 
@@ -42,7 +42,8 @@ export declare function applyGuardedTransition(actionDef: {
     label?: string;
     allowedStates?: string[];
     nextState?: string;
-}, io: GuardedTransitionIO): Promise<{
+    selfTransition?: boolean;
+}, io: GuardedTransitionIO, data?: Record<string, unknown>): Promise<{
     success: boolean;
     data: unknown;
     error: string | null;
@@ -53,8 +54,9 @@ export declare function applyGuardedTransition(actionDef: {
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| actionDef | `{ label?: string; allowedStates?: string[]; nextState?: string; }` | The action's `label`, `allowedStates` (where it may run) and `nextState` (where it lands) |
+| actionDef | `{ label?: string; allowedStates?: string[]; nextState?: string; selfTransition?: boolean; }` | The action's `label`, `allowedStates`, and either `nextState` (transition) or `selfTransition` |
 | io | `GuardedTransitionIO` | Backend read/write closures |
+| data | `Record<string, unknown>` | Record field data for a self-transition's mutate-in-place write (ignored by transitions) |
 
 ### clearFetchHandlers
 
@@ -282,6 +284,7 @@ Backend IO the dispatch layer injects so the transition logic stays storage-agno
 ```typescript
 export interface GuardedTransitionIO {
   readState: () => Promise<string | undefined>;
+  writeData?: (patch: Record<string, unknown>) => Promise<Record<string, unknown>>;
   writeState: (nextState: string) => Promise<void>;
 }
 ```
@@ -291,6 +294,7 @@ export interface GuardedTransitionIO {
 | Property | Type | Description |
 |----------|------|-------------|
 | readState | `() => Promise<string \| undefined>` | Read the record's current workflow state (the value of its `status` field), or undefined if unknown. |
+| writeData? | `(patch: Record<string, unknown>) => Promise<Record<string, unknown>>` | Persist record field data for a mutate-in-place self-transition, returning the full updated record (so the client writeback reflects the new data). Optional: a backend with no data-write path (e.g. PostGraphile today, which writes only `status`) omits it, and a self-transition is then rejected loudly rather than silently dropped. |
 | writeState | `(nextState: string) => Promise<void>` | Persist the record's new workflow state, written verbatim. |
 
 ### LoadDoctypesOptions

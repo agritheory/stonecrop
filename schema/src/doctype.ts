@@ -162,8 +162,17 @@ export const ActionDefinition = z
 		/** The state the record transitions to after this action executes */
 		nextState: z.string().optional(),
 
-		/** True for side-effect actions that do not change workflow state (save, print, email, etc.) */
+		/** True for stateless command actions with no workflow effect at all (print, email, etc.) */
 		stateless: z.boolean().optional(),
+
+		/**
+		 * True for an internal self-transition: the action runs within the current state without
+		 * advancing the workflow (e.g. `save`, which mutates record data but stays put). Scoped by
+		 * `allowedStates`, rendered as a self-loop in the graph, and has no `nextState`. Distinct from
+		 * `stateless` (which has no workflow presence at all): a self-transition is graph-owned and,
+		 * unlike a stateless command, persists record data on dispatch.
+		 */
+		selfTransition: z.boolean().optional(),
 
 		/** JS function body stored as a string; executed client-side via AsyncFunction with injected API surface */
 		clientHandler: z.string().optional(),

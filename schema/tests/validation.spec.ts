@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { validateField, validateDoctype, parseField, parseDoctype } from '../src/validation'
 import type { ValueField } from '../src/field'
-import { TriggerDefinition } from '../src/doctype'
+import { ActionDefinition, TriggerDefinition } from '../src/doctype'
 import { ZodError } from 'zod'
 
 describe('Field Validation', { tags: ['unit'] }, () => {
@@ -234,6 +234,43 @@ describe('Doctype Validation', { tags: ['unit'] }, () => {
 
 			expect(result.success).toBe(true)
 			expect(result.errors).toEqual([])
+		})
+
+		it('should validate a self-transition action and preserve the flag (round-trip)', () => {
+			// A mutate-in-place `save`: scoped to mutable states, no nextState, marked selfTransition.
+			const doctype = {
+				name: 'Issue',
+				fields: [{ kind: 'field', fieldname: 'id', fieldtype: 'Data' }],
+				workflow: {
+					states: ['Draft', 'Pending', 'Closed'],
+					actions: {
+						save: {
+							label: 'Save',
+							selfTransition: true,
+							allowedStates: ['Draft', 'Pending'],
+							clientHandler: 'noop()',
+						},
+					},
+				},
+			}
+			const result = validateDoctype(doctype)
+
+			expect(result.success).toBe(true)
+			expect(result.errors).toEqual([])
+			// The flag survives parsing (Zod strips undeclared keys — a dropped flag would silently
+			// demote the self-transition back to a malformed no-nextState action).
+			const parsed = parseDoctype(doctype)
+			expect(parsed.workflow?.actions?.save.selfTransition).toBe(true)
+			expect(parsed.workflow?.actions?.save.nextState).toBeUndefined()
+		})
+
+		it('should preserve selfTransition through a direct ActionDefinition parse', () => {
+			const action = ActionDefinition.parse({
+				label: 'Save',
+				selfTransition: true,
+				allowedStates: ['Draft'],
+			})
+			expect(action.selfTransition).toBe(true)
 		})
 
 		it('should reject doctype with invalid workflow action', () => {

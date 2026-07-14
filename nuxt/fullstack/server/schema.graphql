@@ -54,6 +54,7 @@ type WorkflowAction {
 	allowedStates: [String!]
 	nextState: String
 	stateless: Boolean
+	selfTransition: Boolean
 	clientHandler: String
 }
 

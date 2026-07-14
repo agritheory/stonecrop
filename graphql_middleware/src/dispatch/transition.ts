@@ -11,6 +11,13 @@ export interface GuardedTransitionIO {
 	readState: () => Promise<string | undefined>
 	/** Persist the record's new workflow state, written verbatim. */
 	writeState: (nextState: string) => Promise<void>
+	/**
+	 * Persist record field data for a mutate-in-place self-transition, returning the full updated
+	 * record (so the client writeback reflects the new data). Optional: a backend with no data-write
+	 * path (e.g. PostGraphile today, which writes only `status`) omits it, and a self-transition is
+	 * then rejected loudly rather than silently dropped.
+	 */
+	writeData?: (patch: Record<string, unknown>) => Promise<Record<string, unknown>>
 }
 
 /**
@@ -22,22 +29,29 @@ export interface GuardedTransitionIO {
  * and can never disagree with the frontend's `getAvailableTransitions`, which shares the
  * same predicate.
  *
- * An action with no `nextState` is a side-effect-only action (e.g. `Save`): the transition
- * dispatch has nothing to apply for it, and the side effect must run through a wired handler
- * that this path does not yet provide. Rather than report a false success while silently
- * dropping the request, it fails loudly. (A `callHandler` primitive to invoke registered
- * handlers by key is the intended home for those side effects; it is not implemented yet.)
+ * There are three action shapes this guard distinguishes:
+ *  - A cross-state **transition** (has `nextState`): writes the new `status`, guarded by `allowedStates`.
+ *  - A **self-transition** (`selfTransition: true`, no `nextState`, e.g. `Save`): stays in the current
+ *    state and persists record field `data` in place via `io.writeData`, guarded by `allowedStates`.
+ *    A backend without a data-write path rejects it loudly instead of dropping it silently.
+ *  - Anything else with no `nextState` and no `selfTransition` flag is a genuine authoring mistake (or a
+ *    stateless side-effect command whose server handler is not wired — the intended `callHandler` primitive
+ *    is still unimplemented): it fails loudly before touching the backend rather than reporting a false success.
  *
- * @param actionDef - The action's `label`, `allowedStates` (where it may run) and `nextState` (where it lands)
+ * @param actionDef - The action's `label`, `allowedStates`, and either `nextState` (transition) or `selfTransition`
  * @param io - Backend read/write closures
- * @returns Action result envelope with the resulting state in `data.state`
+ * @param data - Record field data for a self-transition's mutate-in-place write (ignored by transitions)
+ * @returns Action result envelope — the resulting `data.state` for a transition, the full record for a self-transition
  * @public
  */
 export async function applyGuardedTransition(
-	actionDef: { label?: string; allowedStates?: string[]; nextState?: string },
-	io: GuardedTransitionIO
+	actionDef: { label?: string; allowedStates?: string[]; nextState?: string; selfTransition?: boolean },
+	io: GuardedTransitionIO,
+	data?: Record<string, unknown>
 ): Promise<{ success: boolean; data: unknown; error: string | null }> {
-	if (actionDef.nextState == null) {
+	// A non-self action with no target has nothing to apply — fail loudly WITHOUT touching the backend
+	// (a stateless command's server handler is not wired; a genuine bug should not read/write anything).
+	if (!actionDef.selfTransition && actionDef.nextState == null) {
 		return {
 			success: false,
 			data: null,
@@ -55,12 +69,31 @@ export async function applyGuardedTransition(
 		}
 	}
 
+	// Self-transition: mutate record data in place, keep the current state. Requires a backend data-write
+	// capability; without it (e.g. PostGraphile today) reject loudly. The full updated record is returned
+	// so the client writeback reflects the new data.
+	if (actionDef.selfTransition) {
+		if (!io.writeData) {
+			return {
+				success: false,
+				data: null,
+				error: `Action "${actionDef.label ?? 'unknown'}" persists record data in place, which this backend does not support.`,
+			}
+		}
+		const record = await io.writeData(data ?? {})
+		return { success: true, data: record, error: null }
+	}
+
 	// NON-ATOMIC: the current state is read above and nextState written here as two
 	// separate statements. Two concurrent transitions on the same record can both pass
 	// the guard before either writes, so both "succeed" even when the workflow intended
 	// them to be mutually exclusive. Closing this requires guarding and writing in one
 	// statement — an atomic `UPDATE ... SET status = nextState WHERE status = ANY(allowedStates)`
 	// — and reporting "no rows updated" as a rejected transition. Deferred for now.
+	if (actionDef.nextState == null) {
+		// Unreachable (guarded above), but keeps `nextState` narrowed to a string below.
+		return { success: false, data: null, error: 'nothing was executed' }
+	}
 	await io.writeState(actionDef.nextState)
 
 	return {
