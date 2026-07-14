@@ -45,6 +45,7 @@
 		"test:coverage": "vitest run --coverage"
 	},
 	"dependencies": {
+		"@dagrejs/dagre": "^3.0.0",
 		"@stonecrop/schema": "workspace:*",
 		"@vue-flow/core": "^1.48.1"
 	},

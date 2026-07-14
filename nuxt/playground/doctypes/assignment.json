@@ -72,6 +72,40 @@
 				],
 				"nextState": "Cancelled"
 			}
+		},
+		"layout": {
+			"New": {
+				"position": {
+					"x": 0,
+					"y": 0
+				},
+				"targetPosition": "left",
+				"sourcePosition": "right"
+			},
+			"Draft": {
+				"position": {
+					"x": 238,
+					"y": 93.5
+				},
+				"targetPosition": "left",
+				"sourcePosition": "right"
+			},
+			"Completed": {
+				"position": {
+					"x": 431.5,
+					"y": -100.5
+				},
+				"targetPosition": "left",
+				"sourcePosition": "right"
+			},
+			"Cancelled": {
+				"position": {
+					"x": 647,
+					"y": 44
+				},
+				"targetPosition": "left",
+				"sourcePosition": "right"
+			}
 		}
 	}
 }

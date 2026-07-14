@@ -16,6 +16,9 @@
 				<div>
 					<button class="button-default" @click="fitView">Center</button>
 				</div>
+				<div>
+					<button class="button-default" @click="autoArrange">Auto-arrange</button>
+				</div>
 				<div v-if="activeElementIndex > -1">
 					<button class="button-default" @click="shiftInput">Shift Input Position</button>
 				</div>
@@ -66,6 +69,7 @@ import { type HTMLAttributes, ref, computed, nextTick, onBeforeUnmount, onMounte
 
 import EditableEdge from './EditableEdge.vue'
 import EditableNode from './EditableNode.vue'
+import { autoLayout } from '../utils/autoLayout'
 import type { FlowElements } from '../types'
 
 const { modelValue, nodeContainerClass = '' } = defineProps<{
@@ -174,6 +178,35 @@ const handleKeypress = (event: KeyboardEvent) => {
 
 const fitView = async () => {
 	await vueFlowInstance.value?.fitView()
+}
+
+const autoArrange = async () => {
+	// Read measured node sizes from the VueFlow store so the layout fits actual box widths (state
+	// labels differ in length); autoLayout falls back to default dimensions for any unmeasured node.
+	const store = vueFlowInstance.value
+	const dimensions: Record<string, { width: number; height: number }> = {}
+	for (const el of vueFlowElements.value) {
+		if ('source' in el) continue
+		const dims = store?.findNode?.(el.id)?.dimensions
+		if (dims?.width && dims?.height) dimensions[el.id] = { width: dims.width, height: dims.height }
+	}
+
+	const laid = autoLayout(vueFlowElements.value, { dimensions })
+	const positionById = new Map<string, { x: number; y: number }>()
+	for (const el of laid) {
+		if ('source' in el) continue
+		positionById.set(el.id, el.position)
+	}
+	// Apply positions onto the v-model elements — VueFlow reacts to these, same as shiftInput/Output.
+	for (const el of vueFlowElements.value) {
+		if ('source' in el) continue
+		const position = positionById.get(el.id)
+		if (position) el.position = position
+	}
+
+	emitElements()
+	await nextTick()
+	await fitView()
 }
 
 const addNode = () => {
