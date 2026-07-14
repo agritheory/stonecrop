@@ -66,8 +66,24 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed } from 'vue'
+import { componentCategory, type ComponentCategory } from '@stonecrop/schema'
+
 import { createTableStore } from '../stores/table'
 import type { TableColumn } from '../types'
+
+// Component-primary filter widget selection. Falls back to the legacy fieldtype switch below
+// while both `component` and `fieldtype` are present (dual-read during the migration).
+const CATEGORY_FILTER: Record<ComponentCategory, 'text' | 'select' | 'number' | 'date' | 'dateRange' | 'checkbox'> = {
+	text: 'text',
+	number: 'number',
+	boolean: 'checkbox',
+	date: 'date',
+	datetime: 'dateRange',
+	select: 'select',
+	code: 'text',
+	link: 'text',
+	attach: 'text',
+}
 
 const { column, colIndex, store } = defineProps<{
 	column: TableColumn
@@ -83,6 +99,8 @@ const dateFilter = reactive({
 
 const resolvedFilterType = computed(() => {
 	if (column.filterType) return column.filterType
+	const category = componentCategory(column.component)
+	if (category) return CATEGORY_FILTER[category]
 	switch (column.fieldtype) {
 		case 'Check':
 			return 'checkbox'

@@ -438,8 +438,11 @@ function collectColumns(fields: DoctypeField[], linkedFieldnames: Set<string>): 
 	const columns: string[] = []
 	for (const f of flattenFields(fields)) {
 		if (f.kind !== 'field') continue
-		if (f.fieldtype === 'Display') continue
-		if (f.fieldtype === 'Link' && linkedFieldnames.has(f.fieldname)) continue
+		// Computed/display fields have no backing DB column (dual-read: `computed` or legacy `Display`).
+		if (f.computed || f.fieldtype === 'Display') continue
+		// Fields with a link declaration are FK relations, not scalar columns — keyed off the
+		// links map alone (covers both migrated links and legacy `fieldtype:'Link'`).
+		if (linkedFieldnames.has(f.fieldname)) continue
 		const col = camelToSnake(f.fieldname)
 		columns.push(col !== f.fieldname ? `"${col}" AS "${f.fieldname}"` : `"${f.fieldname}"`)
 	}
@@ -471,7 +474,8 @@ export function getSqlColumns(meta: DoctypeMeta): string {
  * Returns undefined when no PrimaryKey field is declared (PK-less doctypes).
  */
 function getPkMeta(meta: DoctypeMeta): ValueField | undefined {
-	return meta.fields.find((f): f is ValueField => f.kind === 'field' && f.fieldtype === 'PrimaryKey')
+	// Dual-read: `primaryKey` (component-primary) or legacy `fieldtype: 'PrimaryKey'`.
+	return meta.fields.find((f): f is ValueField => f.kind === 'field' && (f.primaryKey || f.fieldtype === 'PrimaryKey'))
 }
 
 /**

@@ -129,6 +129,7 @@ mask?: ((value: any) => any) | undefined;
 linkDoctype?: string | undefined;
 readonly originalIndex?: number | undefined;
 fieldtype?: string | undefined;
+component?: string | undefined;
 label?: string | undefined;
 align?: "left" | "right" | "center" | "start" | "end" | undefined;
 edit?: boolean | undefined;
@@ -154,6 +155,7 @@ mask?: ((value: any) => any) | undefined;
 linkDoctype?: string | undefined;
 readonly originalIndex?: number | undefined;
 fieldtype?: string | undefined;
+component?: string | undefined;
 label?: string | undefined;
 align?: "left" | "right" | "center" | "start" | "end" | undefined;
 edit?: boolean | undefined;
@@ -972,7 +974,6 @@ visible: boolean;
 barId: string;
 }[];
 getHeaderCellStyle: (column: TableColumn) => CSSProperties;
-getIndent: typeof getIndent;
 getRowExpandSymbol: (rowIndex: number) => "" | "▼" | "►";
 insertRowAbove: (rowIndex: number, rowData?: Partial<TableRow>) => number;
 insertRowBelow: (rowIndex: number, rowData?: Partial<TableRow>) => number;
@@ -1000,6 +1001,7 @@ mask?: ((value: any) => any) | undefined;
 linkDoctype?: string | undefined;
 readonly originalIndex?: number | undefined;
 fieldtype?: string | undefined;
+component?: string | undefined;
 label?: string | undefined;
 align?: "left" | "right" | "center" | "start" | "end" | undefined;
 edit?: boolean | undefined;
@@ -1025,6 +1027,7 @@ mask?: ((value: any) => any) | undefined;
 linkDoctype?: string | undefined;
 readonly originalIndex?: number | undefined;
 fieldtype?: string | undefined;
+component?: string | undefined;
 label?: string | undefined;
 align?: "left" | "right" | "center" | "start" | "end" | undefined;
 edit?: boolean | undefined;
@@ -1843,7 +1846,6 @@ visible: boolean;
 barId: string;
 }[];
 getHeaderCellStyle: (column: TableColumn) => CSSProperties;
-getIndent: typeof getIndent;
 getRowExpandSymbol: (rowIndex: number) => "" | "▼" | "►";
 insertRowAbove: (rowIndex: number, rowData?: Partial<TableRow>) => number;
 insertRowBelow: (rowIndex: number, rowData?: Partial<TableRow>) => number;
@@ -1871,6 +1873,7 @@ mask?: ((value: any) => any) | undefined;
 linkDoctype?: string | undefined;
 readonly originalIndex?: number | undefined;
 fieldtype?: string | undefined;
+component?: string | undefined;
 label?: string | undefined;
 align?: "left" | "right" | "center" | "start" | "end" | undefined;
 edit?: boolean | undefined;
@@ -1896,6 +1899,7 @@ mask?: ((value: any) => any) | undefined;
 linkDoctype?: string | undefined;
 readonly originalIndex?: number | undefined;
 fieldtype?: string | undefined;
+component?: string | undefined;
 label?: string | undefined;
 align?: "left" | "right" | "center" | "start" | "end" | undefined;
 edit?: boolean | undefined;
@@ -2714,7 +2718,6 @@ visible: boolean;
 barId: string;
 }[];
 getHeaderCellStyle: (column: TableColumn) => CSSProperties;
-getIndent: typeof getIndent;
 getRowExpandSymbol: (rowIndex: number) => "" | "▼" | "►";
 insertRowAbove: (rowIndex: number, rowData?: Partial<TableRow>) => number;
 insertRowBelow: (rowIndex: number, rowData?: Partial<TableRow>) => number;
@@ -2733,7 +2736,7 @@ unregisterConnectionHandle: (handleId: string) => void;
 unregisterGanttBar: (barId: string) => void;
 updateGanttBar: (event: GanttDragEvent) => void;
 updateRows: (newRows: TableRow[]) => void;
-}, "addRow" | "clearFilter" | "closeModal" | "createConnection" | "deleteConnection" | "deleteRow" | "duplicateRow" | "getCellData" | "getCellDisplayValue" | "getConnectionsForBar" | "getFormattedValue" | "getHandlesForBar" | "getHeaderCellStyle" | "getIndent" | "getRowExpandSymbol" | "insertRowAbove" | "insertRowBelow" | "isRowGantt" | "isRowVisible" | "moveRow" | "registerConnectionHandle" | "registerGanttBar" | "resizeColumn" | "setCellData" | "setCellText" | "setFilter" | "sortByColumn" | "toggleRowExpand" | "unregisterConnectionHandle" | "unregisterGanttBar" | "updateGanttBar" | "updateRows">>;
+}, "addRow" | "clearFilter" | "closeModal" | "createConnection" | "deleteConnection" | "deleteRow" | "duplicateRow" | "getCellData" | "getCellDisplayValue" | "getConnectionsForBar" | "getFormattedValue" | "getHandlesForBar" | "getHeaderCellStyle" | "getRowExpandSymbol" | "insertRowAbove" | "insertRowBelow" | "isRowGantt" | "isRowVisible" | "moveRow" | "registerConnectionHandle" | "registerGanttBar" | "resizeColumn" | "setCellData" | "setCellText" | "setFilter" | "sortByColumn" | "toggleRowExpand" | "unregisterConnectionHandle" | "unregisterGanttBar" | "updateGanttBar" | "updateRows">>;
 
 export { DeleteIcon }
 
@@ -2960,10 +2963,6 @@ export interface TreeTableConfig extends BaseTableConfig {
     defaultTreeExpansion?: 'root' | 'branch' | 'leaf';
     view: 'tree';
 }
-
-// Warnings were encountered during analysis:
-//
-// src/stores/table.ts:407:8 - (ae-forgotten-export) The symbol "getIndent" needs to be exported by the entry point index.d.ts
 
 // (No @packageDocumentation comment for this package)
 

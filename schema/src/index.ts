@@ -16,6 +16,9 @@ export {
 	type FieldTemplate,
 } from './fieldtype'
 
+// Component → semantic category (the component-primary replacement for fieldtype-based behaviour)
+export { COMPONENT_CATEGORY, componentCategory, type ComponentCategory } from './component-meta'
+
 // Field schema
 export type { DoctypeField, FieldOptions, FieldValidation, FieldsetField, TableField, ValueField } from './field'
 export { DoctypeFieldSchema, FieldsetFieldSchema, TableFieldSchema, ValueFieldSchema } from './field'

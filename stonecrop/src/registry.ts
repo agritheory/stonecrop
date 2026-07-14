@@ -1,5 +1,6 @@
 import type { ResolvedField, ResolvedLink, ResolvedScalar, ResolvedTable, ResolvedFieldset } from '@stonecrop/aform'
 import type { ColumnSchema, DoctypeField, LinkDeclaration, TableViewConfig, ValueField } from '@stonecrop/schema'
+import { componentCategory } from '@stonecrop/schema'
 import { Router } from 'vue-router'
 
 import Doctype from './doctype'
@@ -165,8 +166,11 @@ export default class Registry {
 		const resolved: ResolvedField[] = []
 
 		for (const field of fields) {
-			if (field.kind === 'field' && field.fieldtype === 'Link') {
-				const link = links.get(field.fieldname)
+			// Dual-read link detection: a field is a link when it has a LinkDeclaration (the
+			// component-primary source of truth) OR carries the legacy `fieldtype: 'Link'`.
+			const linkDecl = field.kind === 'field' ? links.get(field.fieldname) : undefined
+			if (field.kind === 'field' && (linkDecl || field.fieldtype === 'Link')) {
+				const link = linkDecl
 				if (!link) {
 					// Unresolved link — warn and produce a scalar with component: 'AFormLink'
 					const linkDoctype = typeof field.options === 'string' ? field.options : undefined
@@ -285,32 +289,48 @@ export default class Registry {
 			} else if (field.kind === 'fieldset') {
 				record[field.fieldname] = this.initializeRecord(field.schema)
 			} else {
-				// kind: 'field' — derive from fieldtype
+				// kind: 'field' — derive the empty default from the component category, falling
+				// back to the legacy fieldtype switch while both are present (dual-read).
 				const fieldDefault = field.default
 				if (fieldDefault !== undefined) {
 					record[field.fieldname] = fieldDefault
 				} else {
-					switch (field.fieldtype) {
-						case 'Data':
-						case 'Text':
-						case 'Code':
-							record[field.fieldname] = ''
-							break
-						case 'Check':
-							record[field.fieldname] = false
-							break
-						case 'Int':
-						case 'Float':
-						case 'Decimal':
-						case 'Currency':
-						case 'Quantity':
-							record[field.fieldname] = 0
-							break
-						case 'JSON':
-							record[field.fieldname] = {}
-							break
-						default:
-							record[field.fieldname] = null
+					const category = componentCategory(field.component)
+					if (category === 'text') {
+						record[field.fieldname] = ''
+					} else if (category === 'number') {
+						record[field.fieldname] = 0
+					} else if (category === 'boolean') {
+						record[field.fieldname] = false
+					} else if (category === 'code' && field.language) {
+						// JSON vs Code is only distinguishable from `language`; without it, defer to fieldtype.
+						record[field.fieldname] = field.language === 'json' ? {} : ''
+					} else if (category && category !== 'code') {
+						// date / datetime / select / link / attach
+						record[field.fieldname] = null
+					} else {
+						switch (field.fieldtype) {
+							case 'Data':
+							case 'Text':
+							case 'Code':
+								record[field.fieldname] = ''
+								break
+							case 'Check':
+								record[field.fieldname] = false
+								break
+							case 'Int':
+							case 'Float':
+							case 'Decimal':
+							case 'Currency':
+							case 'Quantity':
+								record[field.fieldname] = 0
+								break
+							case 'JSON':
+								record[field.fieldname] = {}
+								break
+							default:
+								record[field.fieldname] = null
+						}
 					}
 				}
 			}

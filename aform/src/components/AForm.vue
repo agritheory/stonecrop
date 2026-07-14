@@ -94,7 +94,7 @@ const componentProps = (componentObj: ResolvedField) => {
 	for (const [key, value] of Object.entries(componentObj)) {
 		// 'mode' is excluded here because it is handled by resolvedMode()
 		// and passed explicitly via :mode to avoid conflicting with the form-level defaults.
-		if (!['component', 'fieldtype', 'hidden', 'mode', 'width'].includes(key)) {
+		if (!['component', 'fieldtype', 'primaryKey', 'computed', 'language', 'hidden', 'mode', 'width'].includes(key)) {
 			propsToPass[key] = value
 		}
 	}

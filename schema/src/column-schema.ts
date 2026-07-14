@@ -21,11 +21,18 @@ export interface ColumnSchema {
 	fieldname: string
 
 	/**
-	 * Semantic field type (e.g. `'Data'`, `'Int'`, `'Date'`, `'Check'`). Fields without a
-	 * `fieldtype` are treated as non-scalar (nested table or fieldset) and excluded by
-	 * `schemaToColumns`.
+	 * Semantic field type (e.g. `'Data'`, `'Int'`, `'Date'`, `'Check'`). Legacy — being replaced
+	 * by `component`. Fields without a `fieldtype` *and* without a `component` are treated as
+	 * non-scalar (nested table or fieldset) and excluded by `schemaToColumns`.
 	 */
 	fieldtype?: string
+
+	/**
+	 * Rendering component (e.g. `'ATextInput'`, `'ANumericInput'`, `'ADate'`). The component-primary
+	 * replacement for `fieldtype`: default cell formatting and filter widgets derive from its
+	 * {@link ComponentCategory}, falling back to `fieldtype` while both are present.
+	 */
+	component?: string
 
 	/**
 	 * Human-readable column header. When absent, ATable assigns labels alphabetically

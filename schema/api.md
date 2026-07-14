@@ -73,6 +73,22 @@ export declare function classifyFieldType(fieldName: string, field: GraphQLField
 | entityTypes | `Set<string>` | Set of type names classified as entities |
 | options | `GraphQLConversionOptions` | Conversion options (for custom scalars, unmapped meta, etc.) |
 
+### componentCategory
+
+Resolve a component's semantic category, or `undefined` for an absent/unknown component (so callers can fall back to a legacy `fieldtype`-based path during the migration).
+
+**Signature:**
+
+```typescript
+export declare function componentCategory(component?: string): ComponentCategory | undefined;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| component | `string` |  |
+
 ### convertGraphQLSchema
 
 Convert a GraphQL schema to Stonecrop doctype schemas.
@@ -358,6 +374,7 @@ export interface ColumnSchema {
   cellComponent?: string;
   cellComponentProps?: Record<string, any>;
   colspan?: number;
+  component?: string;
   edit?: boolean;
   fieldname: string;
   fieldtype?: string;
@@ -387,9 +404,10 @@ export interface ColumnSchema {
 | cellComponent? | `string` | Registered component name rendered inside the table cell instead of the default display. When absent, the table renders the value as plain text in a `<td>`. |
 | cellComponentProps? | `Record<string, any>` | Additional props passed to `cellComponent`. Only applicable when `cellComponent` is set. |
 | colspan? | `number` | Number of columns this Gantt bar spans across. When absent, the bar stretches to cover all non-pinned columns in the table. Only applicable for Gantt tables. |
+| component? | `string` | Rendering component (e.g. `'ATextInput'`, `'ANumericInput'`, `'ADate'`). The component-primary replacement for `fieldtype`: default cell formatting and filter widgets derive from its `ComponentCategory`, falling back to `fieldtype` while both are present. |
 | edit? | `boolean` | Whether the column cell is editable in the table. |
 | fieldname | `string` | Unique identifier for the field within its doctype. Maps to `name` on `TableColumn`. |
-| fieldtype? | `string` | Semantic field type (e.g. `'Data'`, `'Int'`, `'Date'`, `'Check'`). Fields without a `fieldtype` are treated as non-scalar (nested table or fieldset) and excluded by `schemaToColumns`. |
+| fieldtype? | `string` | Semantic field type (e.g. `'Data'`, `'Int'`, `'Date'`, `'Check'`). Legacy — being replaced by `component`. Fields without a `fieldtype` *and* without a `component` are treated as non-scalar (nested table or fieldset) and excluded by `schemaToColumns`. |
 | filterable? | `boolean` | When `true`, a filter control is rendered in the column header. |
 | filterComponent? | `string` | Registered component name used when `filterType` is `'component'`. |
 | filterOptions? | `any[]` | Static option list for `filterType: 'select'`. When absent, options are derived from the unique values present in the column's rows. |
@@ -815,6 +833,18 @@ Cardinality type inferred from Zod schema
 export type Cardinality = z.infer<typeof Cardinality>;
 ```
 
+### ComponentCategory
+
+Semantic category for a rendering component.
+
+As `component` replaces `fieldtype` as the primary field axis, the runtime consumers that used to branch on `fieldtype` (atable cell formatting / filter widgets, record-default init) instead derive their behaviour from the component's category. This is the single source of "what kind of value does this component render", keyed by the canonical registered component names — each consumer maps the category to its own concern (filter widget, default value, …).
+
+**Definition:**
+
+```typescript
+export type ComponentCategory = 'text' | 'number' | 'boolean' | 'date' | 'datetime' | 'select' | 'code' | 'link' | 'attach';
+```
+
 ### CustomFetch
 
 Custom fetch strategy type
@@ -1026,6 +1056,16 @@ export const Cardinality: z.ZodEnum<{
     noneOrMany: "noneOrMany";
     atLeastOne: "atLeastOne";
 }>
+```
+
+### COMPONENT_CATEGORY
+
+Canonical component → semantic category. Only the components Stonecrop ships with appear here; custom/unknown component names have no category and consumers fall back to their default.
+
+**Type:**
+
+```typescript
+export const COMPONENT_CATEGORY: Record<string, ComponentCategory>
 ```
 
 ### CustomFetch

@@ -157,6 +157,7 @@ createTableStore: (initData: {
         linkDoctype?: string | undefined;
         readonly originalIndex?: number | undefined;
         fieldtype?: string | undefined;
+        component?: string | undefined;
         label?: string | undefined;
         align?: "left" | "right" | "center" | "start" | "end" | undefined;
         edit?: boolean | undefined;
@@ -182,6 +183,7 @@ createTableStore: (initData: {
         linkDoctype?: string | undefined;
         readonly originalIndex?: number | undefined;
         fieldtype?: string | undefined;
+        component?: string | undefined;
         label?: string | undefined;
         align?: "left" | "right" | "center" | "start" | "end" | undefined;
         edit?: boolean | undefined;
@@ -1000,7 +1002,6 @@ createTableStore: (initData: {
         barId: string;
     }[];
     getHeaderCellStyle: (column: TableColumn) => CSSProperties;
-    getIndent: typeof getIndent;
     getRowExpandSymbol: (rowIndex: number) => "" | "▼" | "►";
     insertRowAbove: (rowIndex: number, rowData?: Partial<TableRow>) => number;
     insertRowBelow: (rowIndex: number, rowData?: Partial<TableRow>) => number;
@@ -1028,6 +1029,7 @@ createTableStore: (initData: {
         linkDoctype?: string | undefined;
         readonly originalIndex?: number | undefined;
         fieldtype?: string | undefined;
+        component?: string | undefined;
         label?: string | undefined;
         align?: "left" | "right" | "center" | "start" | "end" | undefined;
         edit?: boolean | undefined;
@@ -1053,6 +1055,7 @@ createTableStore: (initData: {
         linkDoctype?: string | undefined;
         readonly originalIndex?: number | undefined;
         fieldtype?: string | undefined;
+        component?: string | undefined;
         label?: string | undefined;
         align?: "left" | "right" | "center" | "start" | "end" | undefined;
         edit?: boolean | undefined;
@@ -1871,7 +1874,6 @@ createTableStore: (initData: {
         barId: string;
     }[];
     getHeaderCellStyle: (column: TableColumn) => CSSProperties;
-    getIndent: typeof getIndent;
     getRowExpandSymbol: (rowIndex: number) => "" | "▼" | "►";
     insertRowAbove: (rowIndex: number, rowData?: Partial<TableRow>) => number;
     insertRowBelow: (rowIndex: number, rowData?: Partial<TableRow>) => number;
@@ -1899,6 +1901,7 @@ createTableStore: (initData: {
         linkDoctype?: string | undefined;
         readonly originalIndex?: number | undefined;
         fieldtype?: string | undefined;
+        component?: string | undefined;
         label?: string | undefined;
         align?: "left" | "right" | "center" | "start" | "end" | undefined;
         edit?: boolean | undefined;
@@ -1924,6 +1927,7 @@ createTableStore: (initData: {
         linkDoctype?: string | undefined;
         readonly originalIndex?: number | undefined;
         fieldtype?: string | undefined;
+        component?: string | undefined;
         label?: string | undefined;
         align?: "left" | "right" | "center" | "start" | "end" | undefined;
         edit?: boolean | undefined;
@@ -2742,7 +2746,6 @@ createTableStore: (initData: {
         barId: string;
     }[];
     getHeaderCellStyle: (column: TableColumn) => CSSProperties;
-    getIndent: typeof getIndent;
     getRowExpandSymbol: (rowIndex: number) => "" | "▼" | "►";
     insertRowAbove: (rowIndex: number, rowData?: Partial<TableRow>) => number;
     insertRowBelow: (rowIndex: number, rowData?: Partial<TableRow>) => number;
@@ -2761,7 +2764,7 @@ createTableStore: (initData: {
     unregisterGanttBar: (barId: string) => void;
     updateGanttBar: (event: GanttDragEvent) => void;
     updateRows: (newRows: TableRow[]) => void;
-}, "addRow" | "clearFilter" | "closeModal" | "createConnection" | "deleteConnection" | "deleteRow" | "duplicateRow" | "getCellData" | "getCellDisplayValue" | "getConnectionsForBar" | "getFormattedValue" | "getHandlesForBar" | "getHeaderCellStyle" | "getIndent" | "getRowExpandSymbol" | "insertRowAbove" | "insertRowBelow" | "isRowGantt" | "isRowVisible" | "moveRow" | "registerConnectionHandle" | "registerGanttBar" | "resizeColumn" | "setCellData" | "setCellText" | "setFilter" | "sortByColumn" | "toggleRowExpand" | "unregisterConnectionHandle" | "unregisterGanttBar" | "updateGanttBar" | "updateRows">>
+}, "addRow" | "clearFilter" | "closeModal" | "createConnection" | "deleteConnection" | "deleteRow" | "duplicateRow" | "getCellData" | "getCellDisplayValue" | "getConnectionsForBar" | "getFormattedValue" | "getHandlesForBar" | "getHeaderCellStyle" | "getRowExpandSymbol" | "insertRowAbove" | "insertRowBelow" | "isRowGantt" | "isRowVisible" | "moveRow" | "registerConnectionHandle" | "registerGanttBar" | "resizeColumn" | "setCellData" | "setCellText" | "setFilter" | "sortByColumn" | "toggleRowExpand" | "unregisterConnectionHandle" | "unregisterGanttBar" | "updateGanttBar" | "updateRows">>
 ```
 
 **Parameters:**
@@ -2790,7 +2793,7 @@ declare function install(app: App): void;
 
 Convert an array of doctype field descriptors into ATable column definitions.
 
-Fields are excluded when: - `hidden: true` — field should not be visible in any view - no `fieldtype` — non-scalar entry (nested table or fieldset), has no column equivalent
+Fields are excluded when: - `hidden: true` — field should not be visible in any view - no `component` and no `fieldtype` — non-scalar entry (nested table or fieldset), no column equivalent
 
 `fieldname` is renamed to `name`; `hidden` is stripped. All other `ColumnSchema` properties spread through automatically.
 

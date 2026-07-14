@@ -605,5 +605,19 @@ describe('Column Filter Component', { tags: ['component'] }, () => {
 			})
 			expect(wrapper.find('input[type="text"]').exists()).toBe(true)
 		})
+
+		it('derives the number filter from ANumericInput when fieldtype is absent', () => {
+			const wrapper = mount(ATableColumnFilter, {
+				props: { column: { name: 'count', label: 'Count', component: 'ANumericInput' }, colIndex: 0, store: mockStore },
+			})
+			expect(wrapper.find('input[type="number"]').exists()).toBe(true)
+		})
+
+		it('derives the checkbox filter from ACheckbox when fieldtype is absent', () => {
+			const wrapper = mount(ATableColumnFilter, {
+				props: { column: { name: 'active', label: 'Active', component: 'ACheckbox' }, colIndex: 0, store: mockStore },
+			})
+			expect(wrapper.find('input[type="checkbox"]').exists()).toBe(true)
+		})
 	})
 })

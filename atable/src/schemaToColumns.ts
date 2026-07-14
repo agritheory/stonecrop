@@ -7,7 +7,7 @@ import type { TableColumn } from './types'
  *
  * Fields are excluded when:
  * - `hidden: true` — field should not be visible in any view
- * - no `fieldtype` — non-scalar entry (nested table or fieldset), has no column equivalent
+ * - no `component` and no `fieldtype` — non-scalar entry (nested table or fieldset), no column equivalent
  *
  * `fieldname` is renamed to `name`; `hidden` is stripped. All other `ColumnSchema` properties
  * spread through automatically.
@@ -21,7 +21,7 @@ import type { TableColumn } from './types'
  */
 export function schemaToColumns(schema: ColumnSchema[]): TableColumn[] {
 	return schema
-		.filter(f => !f.hidden && f.fieldtype)
+		.filter(f => !f.hidden && (f.component || f.fieldtype))
 		.map(({ fieldname, hidden: _hidden, ...rest }) => {
 			const col: TableColumn = Object.assign({ name: fieldname }, rest)
 

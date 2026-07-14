@@ -350,14 +350,12 @@ describe('Doctype class', { tags: ['unit'] }, () => {
 
 		it('returns an empty array for XState workflows (no actions map)', () => {
 			const xstate = { id: 'w', initial: 'draft', states: { draft: { on: { SUBMIT: 'submitted' } }, submitted: {} } }
-			// oxlint-disable-next-line typescript/no-explicit-any -- exercising the non-WorkflowMeta workflow branch
 			const doctype = new Doctype('Doc', mockSchema, xstate as any, mockActions)
 
 			expect(doctype.getAvailableCommands('draft')).toEqual([])
 		})
 
 		it('returns an empty array when workflow is undefined', () => {
-			// oxlint-disable-next-line typescript/no-explicit-any -- exercising the no-workflow branch
 			const doctype = new Doctype('Doc', mockSchema, undefined as any, mockActions)
 
 			expect(doctype.getAvailableCommands('draft')).toEqual([])
@@ -397,7 +395,6 @@ describe('Doctype class', { tags: ['unit'] }, () => {
 		})
 
 		it('returns undefined when workflow is undefined', () => {
-			// oxlint-disable-next-line typescript/no-explicit-any -- exercising the no-workflow branch
 			const doctype = new Doctype('Doc', mockSchema, undefined as any, mockActions)
 
 			expect(doctype.getTriggers()).toBeUndefined()

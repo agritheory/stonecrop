@@ -48,6 +48,26 @@ describe('getSqlColumns', { tags: ['unit', 'graphql'] }, () => {
 		expect(columns).not.toContain('computedTotal')
 	})
 
+	it('excludes computed:true fields and selects the primaryKey column (component-primary)', () => {
+		loadDoctypesFromObject({
+			ComputedSample: {
+				name: 'ComputedSample',
+				fields: [
+					{ kind: 'field', fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
+					{ kind: 'field', fieldname: 'name', component: 'ATextInput', label: 'Name' },
+					// computed, no backing column — MUST be excluded (was fieldtype:'Display')
+					{ kind: 'field', fieldname: 'total', component: 'ANumericInput', computed: true, label: 'Total' },
+				],
+			},
+		})
+
+		const columns = getSqlColumns(getMeta('ComputedSample')!)
+
+		expect(columns).toContain('"id"')
+		expect(columns).toContain('"name"')
+		expect(columns).not.toContain('total')
+	})
+
 	it('flattens Fieldset children into columns and omits the container', () => {
 		loadDoctypesFromObject({
 			FieldsetSample: {

@@ -1,7 +1,7 @@
 import { createPinia, setActivePinia } from 'pinia'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 
-import { createTableStore } from '../src/stores/table'
+import { createTableStore, getIndent } from '../src/stores/table'
 import type { TableColumn, TableRow, GanttBarInfo, ConnectionHandle } from '../src/types'
 
 describe('table store', { tags: ['component'] }, () => {
@@ -292,10 +292,10 @@ describe('table store', { tags: ['component'] }, () => {
 		})
 
 		it('should get indent for tree columns', () => {
-			const indent = store.getIndent(0, 2)
+			const indent = getIndent(0, 2)
 			expect(indent).toBe('2ch')
 
-			const noIndent = store.getIndent(1, 2)
+			const noIndent = getIndent(1, 2)
 			expect(noIndent).toBe('inherit')
 		})
 	})

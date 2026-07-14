@@ -885,6 +885,25 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 			expect(record.birthday).toBe(null)
 		})
 
+		it('initializes default values from component when fieldtype is absent (component-primary)', () => {
+			const schema = [
+				{ kind: 'field' as const, fieldname: 'name', component: 'ATextInput' },
+				{ kind: 'field' as const, fieldname: 'active', component: 'ACheckbox' },
+				{ kind: 'field' as const, fieldname: 'count', component: 'ANumericInput' },
+				{ kind: 'field' as const, fieldname: 'birthday', component: 'ADate' },
+				{ kind: 'field' as const, fieldname: 'config', component: 'ACodeEditor', language: 'json' },
+				{ kind: 'field' as const, fieldname: 'code', component: 'ACodeEditor', language: 'typescript' },
+			]
+			const record = registry.initializeRecord(schema)
+
+			expect(record.name).toBe('')
+			expect(record.active).toBe(false)
+			expect(record.count).toBe(0)
+			expect(record.birthday).toBe(null)
+			expect(record.config).toEqual({})
+			expect(record.code).toBe('')
+		})
+
 		it('recursively initializes nested Doctype fields with resolved schemas', () => {
 			const resolved = registry.resolveSchema(customerDoctype)
 			const record = registry.initializeRecord(resolved)

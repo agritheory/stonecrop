@@ -29,7 +29,7 @@ import { KeypressHandlers, defaultKeypressHandlers, useKeyboardNav } from '@ston
 import { useDebounceFn, useElementBounding } from '@vueuse/core'
 import { computed, type CSSProperties, onMounted, ref, useTemplateRef, nextTick } from 'vue'
 
-import { createTableStore } from '../stores/table'
+import { createTableStore, getIndent } from '../stores/table'
 import { isHtmlString } from '../utils'
 
 const {
@@ -104,7 +104,7 @@ const cellStyle = computed((): CSSProperties => {
 		textAlign,
 		width: cellWidth,
 		fontWeight: !cellModified.value ? 'inherit' : 'bold',
-		paddingLeft: store.getIndent(colIndex, store.display[rowIndex]?.indent),
+		paddingLeft: getIndent(colIndex, store.display[rowIndex]?.indent),
 	}
 })
 

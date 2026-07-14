@@ -6,6 +6,10 @@ import ARowActions from '../src/components/ARowActions.vue'
 import { createTableStore } from '../src/stores/table'
 import type { RowActionsConfig, TableColumn } from '../src/types'
 
+// Hoisted to module scope (captures nothing from the describe): finds a menu item by its label.
+const itemByLabel = (wrapper: { findAll(selector: string): Array<{ text(): string }> }, label: string) =>
+	wrapper.findAll('.row-action-menu-item').find(b => b.text().includes(label))
+
 // Covers the two ATable additions behind the docbuilder "all actions in the menu" work: the
 // directional moveUp/moveDown action types, and a per-row `disabled` predicate that greys an
 // individual item (move-at-the-ends, lock-aware delete) which the global config alone can't.
@@ -35,9 +39,6 @@ describe('ARowActions dropdown: directional moves + per-row disable', { tags: ['
 				position: 'end',
 			},
 		})
-
-	const itemByLabel = (wrapper: ReturnType<typeof mountAt>, label: string) =>
-		wrapper.findAll('.row-action-menu-item').find(b => b.text().includes(label))
 
 	it('renders moveUp/moveDown as labelled menu items', () => {
 		const wrapper = mountAt(1)

@@ -172,13 +172,25 @@ export function validateReferences(): ValidationError[] {
 			})
 		}
 
-		// Check Link field targets
+		// Check Link field targets (legacy flat links: `fieldtype:'Link'` + string `options`)
 		for (const field of doctype.fields) {
 			if (field.kind === 'field' && field.fieldtype === 'Link' && typeof field.options === 'string') {
 				if (!doctypeRegistry.has(field.options)) {
 					errors.push({
 						path: [doctype.name, 'fields', field.fieldname, 'options'],
 						message: `Link references unknown doctype: ${field.options}`,
+					})
+				}
+			}
+		}
+
+		// Check link-declaration targets (component-primary links live in the `links` map)
+		if (doctype.links) {
+			for (const [key, link] of Object.entries(doctype.links)) {
+				if (!doctypeRegistry.has(link.target)) {
+					errors.push({
+						path: [doctype.name, 'links', key, 'target'],
+						message: `Link references unknown doctype: ${link.target}`,
 					})
 				}
 			}

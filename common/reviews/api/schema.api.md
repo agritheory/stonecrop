@@ -58,6 +58,7 @@ export interface ColumnSchema {
     cellComponent?: string;
     cellComponentProps?: Record<string, any>;
     colspan?: number;
+    component?: string;
     edit?: boolean;
     fieldname: string;
     fieldtype?: string;
@@ -77,6 +78,15 @@ export interface ColumnSchema {
     sortable?: boolean;
     width?: string;
 }
+
+// @public
+export const COMPONENT_CATEGORY: Record<string, ComponentCategory>;
+
+// @public
+export type ComponentCategory = 'text' | 'number' | 'boolean' | 'date' | 'datetime' | 'select' | 'code' | 'link' | 'attach';
+
+// @public
+export function componentCategory(component?: string): ComponentCategory | undefined;
 
 // @public
 export interface ConvertedGraphQLDoctype extends Omit<DoctypeMeta, 'fields'> {

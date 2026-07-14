@@ -146,4 +146,12 @@ describe('schemaToColumns', { tags: ['component'] }, () => {
 		]
 		expect(schemaToColumns(schema).map(c => c.name)).toEqual(['z', 'a', 'm'])
 	})
+
+	it('includes component-only fields and excludes fields with neither component nor fieldtype', () => {
+		const schema: ColumnSchema[] = [
+			{ fieldname: 'title', component: 'ATextInput', label: 'Title' },
+			{ fieldname: 'nested', label: 'Nested' }, // no component, no fieldtype → non-scalar, excluded
+		]
+		expect(schemaToColumns(schema).map(c => c.name)).toEqual(['title'])
+	})
 })

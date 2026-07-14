@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import { componentCategory } from '@stonecrop/schema'
 import { type CSSProperties, computed, ref } from 'vue'
 
 import type {
@@ -127,7 +128,12 @@ function applyFilter(cellValue: any, filter: FilterState, column: TableColumn): 
 	}
 }
 
-function getIndent(colIndex: number, indentLevel?: number): string {
+/**
+ * Compute the CSS indentation for a tree-table cell. Pure helper (captures no store state);
+ * imported directly by cell components rather than exposed on the store's public return.
+ * @internal
+ */
+export function getIndent(colIndex: number, indentLevel?: number): string {
 	if (indentLevel && colIndex === 0 && indentLevel > 0) {
 		return `${indentLevel}ch`
 	} else {
@@ -509,6 +515,13 @@ export const createTableStore = (initData: {
 			const format = column.format
 
 			if (!format) {
+				// Component-primary cell formatting; falls back to the legacy fieldtype switch
+				// while both are present (dual-read during the migration).
+				const category = componentCategory(column.component)
+				if (category === 'boolean') return value ? '✓' : '✗'
+				if (category === 'date') return value != null ? new Date(String(value)).toLocaleDateString() : value
+				if (category === 'datetime') return value != null ? new Date(String(value)).toLocaleString() : value
+				if (category) return value
 				switch (column.fieldtype) {
 					case 'Check':
 						return value ? '✓' : '✗'
@@ -922,7 +935,6 @@ export const createTableStore = (initData: {
 			getFormattedValue,
 			getHandlesForBar,
 			getHeaderCellStyle,
-			getIndent,
 			getRowExpandSymbol,
 			insertRowAbove,
 			insertRowBelow,

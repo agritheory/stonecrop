@@ -71,7 +71,9 @@ onMounted(async () => {
 	if (vsPath) loader.config({ paths: { vs: vsPath } })
 
 	const monacoInstance: typeof Monaco = await loader.init()
-	const lang = detectLanguage(schema?.fieldtype, language)
+	// Dual-read: the field's `language` attribute (component-primary) takes precedence over the
+	// `language` prop, then falls back to the legacy `fieldtype` (JSON/Code) inside detectLanguage.
+	const lang = detectLanguage(schema?.fieldtype, schema?.language ?? language)
 
 	if (extraLibs) {
 		monacoInstance.languages.typescript.javascriptDefaults.addExtraLib(extraLibs, 'ts:stonecrop.d.ts')
