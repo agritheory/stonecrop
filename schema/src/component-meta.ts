@@ -112,3 +112,21 @@ export function resolveLinkRenderMode(
 	if (componentLinkExpansion(link.component ?? fieldComponent) === 'inline') return 'inline'
 	return link.cardinality === 'noneOrMany' || link.cardinality === 'atLeastOne' ? 'table' : 'record'
 }
+
+/**
+ * Every component Stonecrop ships with that can render a value field, sorted by name.
+ *
+ * The union of the two maps above is the definition, not a copy of it: a shipped component either
+ * categorises a value ({@link COMPONENT_CATEGORY}) or is one of the link containers that has no
+ * value of its own ({@link COMPONENT_LINK_EXPANSION}'s `AForm`/`ATable`). `AFieldset` is absent by
+ * the same rule — it is a `kind: 'fieldset'` container, so it is never a value field's component.
+ *
+ * `component` is an **open** axis: any string is valid, and naming a custom component is how an app
+ * renders a field Stonecrop ships no widget for. This list is therefore the set to *suggest* to an
+ * author, and to check first-party data against — never a set to validate arbitrary input against.
+ *
+ * @public
+ */
+export const CANONICAL_COMPONENTS: readonly string[] = [
+	...new Set([...Object.keys(COMPONENT_CATEGORY), ...Object.keys(COMPONENT_LINK_EXPANSION)]),
+].toSorted()

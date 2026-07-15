@@ -639,7 +639,7 @@ const getDoctypesSchema = (): ResolvedField[] => {
 				{
 					fieldname: 'doctype',
 					label: 'Doctype',
-					fieldtype: 'Data',
+					component: 'ATextInput',
 					align: 'left' as const,
 					edit: false,
 					width: '20ch',
@@ -647,7 +647,7 @@ const getDoctypesSchema = (): ResolvedField[] => {
 				{
 					fieldname: 'display_name',
 					label: 'Name',
-					fieldtype: 'Data',
+					component: 'ATextInput',
 					align: 'left' as const,
 					edit: false,
 					width: '30ch',
@@ -655,7 +655,7 @@ const getDoctypesSchema = (): ResolvedField[] => {
 				{
 					fieldname: 'record_count',
 					label: 'Records',
-					fieldtype: 'Int',
+					component: 'ANumericInput',
 					align: 'center' as const,
 					edit: false,
 					width: '15ch',
@@ -663,7 +663,7 @@ const getDoctypesSchema = (): ResolvedField[] => {
 				{
 					fieldname: 'actions',
 					label: 'Actions',
-					fieldtype: 'Data',
+					component: 'ATextInput',
 					align: 'center' as const,
 					edit: false,
 					width: '20ch',
@@ -695,7 +695,7 @@ const getRecordsSchema = (): ResolvedField[] => {
 			component: 'ATable',
 			schema: [
 				...(flattenFieldsets(schema) as ColumnSchema[]),
-				{ fieldname: 'actions', label: 'Actions', fieldtype: 'Data' },
+				{ fieldname: 'actions', label: 'Actions', component: 'ATextInput' },
 			],
 			config: { view: 'list' as const, fullWidth: true },
 		} satisfies ResolvedTable,

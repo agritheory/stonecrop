@@ -1,7 +1,9 @@
 import { describe, it, expect } from 'vitest'
 import {
+	CANONICAL_COMPONENTS,
 	componentCategory,
 	COMPONENT_CATEGORY,
+	COMPONENT_LINK_EXPANSION,
 	componentLinkExpansion,
 	resolveLinkRenderMode,
 } from '../src/component-meta'
@@ -85,5 +87,27 @@ describe('resolveLinkRenderMode', { tags: ['unit'] }, () => {
 		expect(resolveLinkRenderMode({ cardinality: 'atMostOne' })).toBe('record')
 		// an unmapped custom component must never silently collapse a link to a picker
 		expect(resolveLinkRenderMode({ component: 'MyCustomTable', cardinality: 'noneOrMany' })).toBe('table')
+	})
+})
+
+describe('CANONICAL_COMPONENTS', { tags: ['unit'] }, () => {
+	it('is the union of both maps, deduplicated and sorted', () => {
+		const expected = [...new Set([...Object.keys(COMPONENT_CATEGORY), ...Object.keys(COMPONENT_LINK_EXPANSION)])]
+		expect(CANONICAL_COMPONENTS.toSorted()).toEqual(expected.toSorted())
+		expect([...CANONICAL_COMPONENTS]).toEqual(CANONICAL_COMPONENTS.toSorted())
+		expect(new Set(CANONICAL_COMPONENTS).size).toBe(CANONICAL_COMPONENTS.length)
+	})
+
+	it('covers every link render mode an author can pick', () => {
+		// The docbuilder suggests this list, and the component is what decides whether a link
+		// expands (see resolveLinkRenderMode). If the expanding pair fell out, a link could only
+		// ever be authored as an inline picker.
+		expect(CANONICAL_COMPONENTS).toContain('AFormLink')
+		expect(CANONICAL_COMPONENTS).toContain('AForm')
+		expect(CANONICAL_COMPONENTS).toContain('ATable')
+	})
+
+	it('omits AFieldset, which is a container rather than a value field component', () => {
+		expect(CANONICAL_COMPONENTS).not.toContain('AFieldset')
 	})
 })

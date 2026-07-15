@@ -18,6 +18,7 @@ export {
 
 // Component → semantic category (the component-primary replacement for fieldtype-based behaviour)
 export {
+	CANONICAL_COMPONENTS,
 	COMPONENT_CATEGORY,
 	COMPONENT_LINK_EXPANSION,
 	componentCategory,

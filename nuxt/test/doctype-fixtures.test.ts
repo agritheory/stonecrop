@@ -1,12 +1,7 @@
 import { readdirSync, readFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { describe, it, expect } from 'vitest'
-import {
-	COMPONENT_CATEGORY,
-	COMPONENT_LINK_EXPANSION,
-	componentLinkExpansion,
-	validateDoctype,
-} from '@stonecrop/schema'
+import { CANONICAL_COMPONENTS, componentLinkExpansion, validateDoctype } from '@stonecrop/schema'
 
 /**
  * Content-integrity gate for every doctype fixture folder this package ships.
@@ -23,8 +18,8 @@ const FIXTURE_DIRS = [
 	{ name: 'playground', dir: resolve(__dirname, '../playground/doctypes') },
 ]
 
-/** Component names Stonecrop knows — the canonical set, derived from schema's own maps. */
-const CANONICAL_COMPONENTS = new Set([...Object.keys(COMPONENT_CATEGORY), ...Object.keys(COMPONENT_LINK_EXPANSION)])
+/** Component names Stonecrop knows — schema owns the list; the docbuilder suggests the same one. */
+const KNOWN_COMPONENTS = new Set(CANONICAL_COMPONENTS)
 
 type Field = Record<string, unknown>
 
@@ -77,7 +72,7 @@ describe('doctype fixtures', { tags: ['unit'] }, () => {
 		const unknown: string[] = []
 		for (const { file, doctype } of loadAll()) {
 			for (const f of valueFields(doctype)) {
-				if (typeof f.component === 'string' && !CANONICAL_COMPONENTS.has(f.component)) {
+				if (typeof f.component === 'string' && !KNOWN_COMPONENTS.has(f.component)) {
 					unknown.push(`${file} :: ${String(f.fieldname)} → ${f.component}`)
 				}
 			}

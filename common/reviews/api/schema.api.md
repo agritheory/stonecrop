@@ -39,6 +39,9 @@ export function camelToLabel(camelCase: string): string;
 export function camelToSnake(camelCase: string): string;
 
 // @public
+export const CANONICAL_COMPONENTS: readonly string[];
+
+// @public
 export const Cardinality: z.ZodEnum<{
     atMostOne: "atMostOne";
     one: "one";

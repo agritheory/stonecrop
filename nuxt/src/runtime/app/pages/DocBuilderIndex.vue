@@ -60,8 +60,8 @@ onMounted(loadDoctypes)
 // The list renders through ATable; clicking a row navigates to that doctype's detail route —
 // the index's whole job. `clickable` gives the rows the pointer/hover affordance.
 const columns: TableColumn[] = [
-	{ label: 'Name', name: 'name', fieldtype: 'Data', width: '20ch' },
-	{ label: 'Fields', name: 'fieldCount', fieldtype: 'Int', width: '10ch' },
+	{ label: 'Name', name: 'name', component: 'ATextInput', width: '20ch' },
+	{ label: 'Fields', name: 'fieldCount', component: 'ANumericInput', width: '10ch' },
 ]
 
 const config: TableConfig = {

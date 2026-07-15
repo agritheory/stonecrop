@@ -846,7 +846,7 @@ export interface ValueField {
 | primaryKey? | `boolean` | True for the field that identifies the record's primary-key column (replaces `fieldtype: 'PrimaryKey'`). |
 | readOnly? | `boolean` | Whether the field is read-only |
 | required? | `boolean` | Whether the field is required |
-| source? | `'introspected'` | Provenance marker — stamped only by the GraphQL converter; absence means hand-authored. When present, the docbuilder freezes the field's identity set (`fieldname`, `primaryKey`, `required`, `options`, `cardinality`, `doctype` — and `fieldtype` while it remains), since `fieldname` is the GraphQL/column binding and `doctype` is the FK's target. |
+| source? | `'introspected'` | Provenance marker — stamped only by the GraphQL converter; absence means hand-authored. When present, the docbuilder freezes the field's identity set (`fieldname`, `primaryKey`, `required`, `options`, `cardinality`, `doctype`), since `fieldname` is the GraphQL/column binding and `doctype` is the FK's target. `component` is deliberately **not** frozen: it chooses the widget, which is an authoring decision the database has no opinion about. |
 | validation? | `FieldValidation` | Validation configuration |
 | width? | `string` | CSS width (e.g. `"40ch"`, `"200px"`) |
 
@@ -1114,6 +1114,20 @@ The complete list of field types built into Stonecrop. User apps can use any str
 
 ```typescript
 export const BUILTIN_FIELD_TYPES: readonly ["Data", "Text", "Int", "Float", "Decimal", "Check", "Date", "Time", "Datetime", "Duration", "DateRange", "JSON", "Code", "Link", "Attach", "Currency", "Quantity", "Select", "PrimaryKey", "Fieldset", "Display"]
+```
+
+### CANONICAL_COMPONENTS
+
+Every component Stonecrop ships with that can render a value field, sorted by name.
+
+The union of the two maps above is the definition, not a copy of it: a shipped component either categorises a value (`COMPONENT_CATEGORY`) or is one of the link containers that has no value of its own (`COMPONENT_LINK_EXPANSION`'s `AForm`/`ATable`). `AFieldset` is absent by the same rule — it is a `kind: 'fieldset'` container, so it is never a value field's component.
+
+`component` is an **open** axis: any string is valid, and naming a custom component is how an app renders a field Stonecrop ships no widget for. This list is therefore the set to *suggest* to an author, and to check first-party data against — never a set to validate arbitrary input against.
+
+**Type:**
+
+```typescript
+export const CANONICAL_COMPONENTS: readonly string[]
 ```
 
 ### Cardinality

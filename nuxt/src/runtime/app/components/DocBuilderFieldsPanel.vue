@@ -1,5 +1,10 @@
 <template>
 	<div class="fields-panel">
+		<!-- Shared by every row's component input; the id is instance-scoped so two mounted panels
+			 cannot collide. -->
+		<datalist :id="componentListId">
+			<option v-for="c in CANONICAL_COMPONENTS" :key="c" :value="c" />
+		</datalist>
 		<!--
 			ATable owns the frame (header, filter row, list-expansion chrome). We override #body to
 			keep the per-row #content property form and to bind every cell straight to the source via
@@ -32,13 +37,18 @@
 								@input="update(row.__realIndex, 'label', value($event) || undefined)" />
 						</td>
 						<td>
-							<select
-								:value="row.fieldtype"
-								:disabled="isLocked(row.__field)"
-								:class="{ locked: isLocked(row.__field) }"
-								@change="update(row.__realIndex, 'fieldtype', value($event))">
-								<option v-for="t in FIELD_TYPES" :key="t" :value="t">{{ t }}</option>
-							</select>
+							<!--
+								`component` is an open axis — naming a custom component is how an app renders a
+								field Stonecrop ships no widget for — so this suggests the canonical set rather
+								than restricting to it. A <select> would show a blank box for any custom
+								component and make new ones unauthorable. Not frozen for introspected fields:
+								the widget is an authoring choice, not a database fact (see ValueField.source).
+							-->
+							<input
+								type="text"
+								:value="row.component"
+								:list="componentListId"
+								@input="update(row.__realIndex, 'component', value($event) || undefined)" />
 						</td>
 						<td class="center">
 							<input
@@ -77,6 +87,7 @@
 								<input
 									type="checkbox"
 									:checked="bool(row.__field[p.key])"
+									:disabled="!!p.identity && isLocked(row.__field)"
 									@change="update(row.__realIndex, p.key, checked($event) || undefined)" />
 								<span>{{ p.label }}</span>
 							</label>
@@ -99,7 +110,8 @@
 						</div>
 						<div v-if="isLocked(row.__field)" class="field-detail-actions">
 							<span class="locked-note">
-								Identity (id, type, required, options, cardinality) is read-only — this field mirrors a database column.
+								Identity (id, primary key, required, options, cardinality, link target) is read-only — this field
+								mirrors a database column. Component is yours to choose.
 							</span>
 						</div>
 					</template>
@@ -116,8 +128,8 @@
 <script setup lang="ts">
 import { ATable, ARow } from '@stonecrop/atable'
 import type { TableColumn, TableConfig } from '@stonecrop/atable'
-import { BUILTIN_FIELD_TYPES } from '@stonecrop/schema'
-import { computed, nextTick, ref } from 'vue'
+import { CANONICAL_COMPONENTS } from '@stonecrop/schema'
+import { computed, nextTick, ref, useId } from 'vue'
 
 // Fields are edited as loose objects: the doctype JSON carries keys the builder doesn't display
 // (and may carry future ones), so the editor must spread-preserve every field rather than rebuild it.
@@ -133,13 +145,17 @@ interface SelectPropDef extends PropDef {
 	options: string[]
 }
 
-const FIELD_TYPES = BUILTIN_FIELD_TYPES
+const componentListId = useId()
 
+// `doctype` is what makes a field a link, and it names the target — so it is a plain text input,
+// not a JSON one. As `options` (the legacy carrier) a link target had to be typed *with quotes*
+// or the JSON parse failed and the value was silently dropped.
 const TEXT_PROPS: PropDef[] = [
-	{ key: 'component', label: 'Component' },
+	{ key: 'doctype', label: 'Link target', identity: true },
 	{ key: 'width', label: 'Width' },
 	{ key: 'mask', label: 'Mask' },
 	{ key: 'format', label: 'Format' },
+	{ key: 'language', label: 'Code language' },
 ]
 const SELECT_PROPS: SelectPropDef[] = [
 	{ key: 'align', label: 'Align', options: ['left', 'center', 'right', 'start', 'end'] },
@@ -155,6 +171,8 @@ const BOOL_PROPS: PropDef[] = [
 	{ key: 'readOnly', label: 'Read only' },
 	{ key: 'hidden', label: 'Hidden' },
 	{ key: 'edit', label: 'Editable in table' },
+	{ key: 'primaryKey', label: 'Primary key', identity: true },
+	{ key: 'computed', label: 'Computed (no DB column)' },
 ]
 const JSON_PROPS: PropDef[] = [
 	{ key: 'options', label: 'Options', identity: true },
@@ -162,12 +180,12 @@ const JSON_PROPS: PropDef[] = [
 ]
 
 // `sortable: false` suppresses the click-to-sort affordance (row order here is the field array's
-// order, not a view concern). The enumerable columns (fieldtype, source) use `filterType: 'select'`
+// order, not a view concern). The enumerable columns (component, source) use `filterType: 'select'`
 // so the header filter is a dropdown auto-populated from the values in use, not a free-text box.
 const FIELD_COLUMNS: TableColumn[] = [
 	{ name: 'fieldname', label: 'ID', sortable: false, filterable: true },
 	{ name: 'label', label: 'Label', sortable: false },
-	{ name: 'fieldtype', label: 'Fieldtype', sortable: false, filterable: true, filterType: 'select' },
+	{ name: 'component', label: 'Component', sortable: false, filterable: true, filterType: 'select' },
 	{ name: 'required', label: 'Required', sortable: false, align: 'center' },
 	{ name: 'source', label: 'Source', sortable: false, filterable: true, filterType: 'select' },
 ]
@@ -231,7 +249,7 @@ const fieldProjection = computed(() =>
 	valueFieldRows.value.map(r => ({
 		fieldname: str(r.field.fieldname),
 		label: str(r.field.label),
-		fieldtype: str(r.field.fieldtype),
+		component: str(r.field.component),
 		required: r.field.required === true,
 		source: isLocked(r.field) ? 'introspected' : 'manual',
 		__realIndex: r.realIndex,
@@ -302,14 +320,14 @@ function updateValidation(realIndex: number, message: string) {
 }
 
 function addField() {
-	const base: Field = { kind: 'field', fieldname: uniqueName(), fieldtype: 'Data', label: 'New Field' }
+	const base: Field = { kind: 'field', fieldname: uniqueName(), component: 'ATextInput', label: 'New Field' }
 	emit('update:modelValue', [...props.modelValue, base])
 	void nextTick(collapseAllRows)
 }
 // Insert a blank field at a real-array position (menu insert-above/below). Splices, so nested
 // fieldsets at other indices are untouched.
 function insertField(at: number) {
-	const base: Field = { kind: 'field', fieldname: uniqueName(), fieldtype: 'Data', label: 'New Field' }
+	const base: Field = { kind: 'field', fieldname: uniqueName(), component: 'ATextInput', label: 'New Field' }
 	const next = props.modelValue.slice()
 	next.splice(at, 0, base)
 	emit('update:modelValue', next)

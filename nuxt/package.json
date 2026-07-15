@@ -52,7 +52,7 @@
 		"test:ui": "vitest --ui",
 		"test:coverage": "vitest run --coverage.enabled --coverage.provider=istanbul",
 		"test:watch": "vitest watch",
-		"test:types": "cd playground && vue-tsc --noEmit && cd ../fullstack && vue-tsc --noEmit"
+		"test:types": "vue-tsc --noEmit -p tsconfig.runtime.json && cd playground && vue-tsc --noEmit && cd ../fullstack && vue-tsc --noEmit"
 	},
 	"dependencies": {
 		"@nuxt/kit": "^4.4.4",

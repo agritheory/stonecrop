@@ -130,8 +130,9 @@ export interface ValueField {
 	/**
 	 * Provenance marker — stamped only by the GraphQL converter; absence means hand-authored.
 	 * When present, the docbuilder freezes the field's identity set (`fieldname`, `primaryKey`,
-	 * `required`, `options`, `cardinality`, `doctype` — and `fieldtype` while it remains), since
-	 * `fieldname` is the GraphQL/column binding and `doctype` is the FK's target.
+	 * `required`, `options`, `cardinality`, `doctype`), since `fieldname` is the GraphQL/column
+	 * binding and `doctype` is the FK's target. `component` is deliberately **not** frozen: it
+	 * chooses the widget, which is an authoring decision the database has no opinion about.
 	 */
 	source?: 'introspected'
 }
