@@ -19,7 +19,7 @@
 		{
 			"fieldname": "userId",
 			"label": "Customer",
-			"component": "ACombobox",
+			"component": "AFormLink",
 			"fieldtype": "Link",
 			"options": "user",
 			"required": true
@@ -42,7 +42,7 @@
 		{
 			"fieldname": "total",
 			"label": "Total",
-			"component": "ATextInput",
+			"component": "ANumericInput",
 			"fieldtype": "Currency",
 			"mode": "display"
 		},
@@ -61,13 +61,13 @@
 		{
 			"fieldname": "createdAt",
 			"label": "Created At",
-			"component": "ATextInput",
+			"component": "ADateTime",
 			"fieldtype": "Datetime"
 		},
 		{
 			"fieldname": "updatedAt",
 			"label": "Updated At",
-			"component": "ATextInput",
+			"component": "ADateTime",
 			"fieldtype": "Datetime"
 		}
 	],

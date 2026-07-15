@@ -19,7 +19,7 @@
 		{
 			"fieldname": "projectId",
 			"label": "Project",
-			"component": "ACombobox",
+			"component": "AFormLink",
 			"fieldtype": "Link",
 			"options": "project",
 			"required": true
@@ -41,13 +41,13 @@
 		{
 			"fieldname": "dueDate",
 			"label": "Due Date",
-			"component": "ADatepicker",
+			"component": "ADatePicker",
 			"fieldtype": "Date"
 		},
 		{
 			"fieldname": "createdAt",
 			"label": "Created At",
-			"component": "ATextInput",
+			"component": "ADateTime",
 			"fieldtype": "Datetime",
 			"mode": "display"
 		}

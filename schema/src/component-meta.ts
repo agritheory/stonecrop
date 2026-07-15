@@ -29,7 +29,6 @@ export const COMPONENT_CATEGORY: Record<string, ComponentCategory> = {
 	ADuration: 'text',
 	ADateRange: 'date',
 	ADropdown: 'select',
-	AComboBox: 'select',
 	ACodeEditor: 'code',
 	AFormLink: 'link',
 	AFileAttach: 'attach',
@@ -66,7 +65,6 @@ export type LinkExpansion = 'inline' | 'expand'
  */
 export const COMPONENT_LINK_EXPANSION: Record<string, LinkExpansion> = {
 	AFormLink: 'inline',
-	AComboBox: 'inline',
 	AForm: 'expand',
 	ATable: 'expand',
 }

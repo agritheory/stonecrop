@@ -12,14 +12,6 @@ Vue component exported from @stonecrop/aform.
 import { ACheckbox } from '@stonecrop/aform'
 ```
 
-### AComboBox
-
-Vue component exported from @stonecrop/aform.
-
-```typescript
-import { AComboBox } from '@stonecrop/aform'
-```
-
 ### ADate
 
 Vue component exported from @stonecrop/aform.

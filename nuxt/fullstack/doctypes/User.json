@@ -52,21 +52,21 @@
 		{
 			"fieldname": "createdAt",
 			"label": "Created At",
-			"component": "ATextInput",
+			"component": "ADateTime",
 			"fieldtype": "Datetime",
 			"mode": "display"
 		},
 		{
 			"fieldname": "updatedAt",
 			"label": "Updated At",
-			"component": "ATextInput",
+			"component": "ADateTime",
 			"fieldtype": "Datetime",
 			"mode": "display"
 		},
 		{
 			"fieldname": "lastLogin",
 			"label": "Last Login",
-			"component": "ATextInput",
+			"component": "ADateTime",
 			"fieldtype": "Datetime",
 			"mode": "display"
 		},

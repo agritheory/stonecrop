@@ -33,7 +33,7 @@
 		{
 			"fieldname": "createdAt",
 			"label": "Created At",
-			"component": "ATextInput",
+			"component": "ADateTime",
 			"fieldtype": "Datetime",
 			"mode": "display"
 		}

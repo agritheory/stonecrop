@@ -9,7 +9,6 @@ import ATextInput from '../../../aform/src/components/form/ATextInput.vue'
 import ANumericInput from '../../../aform/src/components/form/ANumericInput.vue'
 import ACheckbox from '../../../aform/src/components/form/ACheckbox.vue'
 import ADate from '../../../aform/src/components/form/ADate.vue'
-import AComboBox from '../../../aform/src/components/form/AComboBox.vue'
 import ADropdown from '../../../aform/src/components/form/ADropdown.vue'
 import { useStonecrop } from '../../src/composables/stonecrop'
 import Doctype from '../../src/doctype'
@@ -81,7 +80,7 @@ describe('HST Real Component Integration', { tags: ['unit'] }, () => {
 				fieldname: 'category',
 				fieldtype: 'Select',
 				label: 'Category',
-				component: 'AComboBox',
+				component: 'ADropdown',
 				options: ['Development', 'Testing', 'Documentation', 'Support'],
 			},
 
@@ -127,7 +126,6 @@ describe('HST Real Component Integration', { tags: ['unit'] }, () => {
 					ANumericInput,
 					ACheckbox,
 					ADate,
-					AComboBox,
 					ADropdown,
 				},
 				template: `

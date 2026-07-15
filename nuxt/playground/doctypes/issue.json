@@ -30,7 +30,7 @@
 			"fieldname": "assigned_to",
 			"label": "Assigned To",
 			"fieldtype": "Link",
-			"component": "ACombobox",
+			"component": "AFormLink",
 			"options": "user",
 			"cardinality": "noneOrMany"
 		},

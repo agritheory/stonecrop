@@ -8,7 +8,6 @@ Schema-driven form components for the Stonecrop framework. Renders a `ResolvedFi
 |---|---|
 | `AForm` | Root form renderer — iterates schema, renders child components, handles nested forms |
 | `ACheckbox` | Boolean toggle |
-| `AComboBox` | Editable combo box with option list |
 | `ADate` | Date text input |
 | `ADatePicker` | Date picker with calendar UI |
 | `ADropdown` | Single-select dropdown for string enum fields |

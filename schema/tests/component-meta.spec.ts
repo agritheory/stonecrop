@@ -15,7 +15,6 @@ describe('component-meta', { tags: ['unit'] }, () => {
 		expect(componentCategory('ADate')).toBe('date')
 		expect(componentCategory('ADateTime')).toBe('datetime')
 		expect(componentCategory('ADropdown')).toBe('select')
-		expect(componentCategory('AComboBox')).toBe('select')
 		expect(componentCategory('ACodeEditor')).toBe('code')
 		expect(componentCategory('AFormLink')).toBe('link')
 	})
@@ -43,7 +42,6 @@ describe('component-meta', { tags: ['unit'] }, () => {
 describe('componentLinkExpansion', { tags: ['unit'] }, () => {
 	it('maps the inline pair and the expanding pair', () => {
 		expect(componentLinkExpansion('AFormLink')).toBe('inline')
-		expect(componentLinkExpansion('AComboBox')).toBe('inline')
 		expect(componentLinkExpansion('AForm')).toBe('expand')
 		expect(componentLinkExpansion('ATable')).toBe('expand')
 	})
@@ -58,7 +56,6 @@ describe('componentLinkExpansion', { tags: ['unit'] }, () => {
 describe('resolveLinkRenderMode', { tags: ['unit'] }, () => {
 	it('lets the component decide inline vs expand', () => {
 		expect(resolveLinkRenderMode({ component: 'AFormLink', cardinality: 'one' })).toBe('inline')
-		expect(resolveLinkRenderMode({ component: 'AComboBox', cardinality: 'noneOrMany' })).toBe('inline')
 		expect(resolveLinkRenderMode({ component: 'AForm', cardinality: 'one' })).toBe('record')
 		expect(resolveLinkRenderMode({ component: 'ATable', cardinality: 'noneOrMany' })).toBe('table')
 	})

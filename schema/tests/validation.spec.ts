@@ -95,7 +95,7 @@ describe('Field Validation', { tags: ['unit'] }, () => {
 			const result = validateField({
 				kind: 'field' as const,
 				fieldname: 'assignee',
-				component: 'AComboBox',
+				component: 'AFormLink',
 				doctype: 'user',
 			})
 			expect(!result.success && result.errors).toBe(false)

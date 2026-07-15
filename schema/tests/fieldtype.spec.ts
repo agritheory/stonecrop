@@ -84,7 +84,6 @@ describe('fieldtype', { tags: ['unit'] }, () => {
 			'ADateRange',
 			'ADatePicker',
 			'ADropdown',
-			'AComboBox',
 			'AFormLink',
 			'AFileAttach',
 			'AFieldset',

@@ -6,7 +6,7 @@
 			"fieldname": "user",
 			"label": "User",
 			"fieldtype": "Link",
-			"component": "ACombobox",
+			"component": "AFormLink",
 			"options": "user",
 			"required": true
 		},
@@ -14,7 +14,7 @@
 			"fieldname": "issue",
 			"label": "Issue",
 			"fieldtype": "Link",
-			"component": "ACombobox",
+			"component": "AFormLink",
 			"options": "issue",
 			"required": true
 		},
@@ -33,7 +33,7 @@
 			"fieldname": "assigned_by",
 			"label": "Assigned By",
 			"fieldtype": "Link",
-			"component": "ACombobox",
+			"component": "AFormLink",
 			"options": "user"
 		},
 		{

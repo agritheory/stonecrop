@@ -5,7 +5,6 @@
 ```ts
 
 import ACheckbox from './components/form/ACheckbox.vue';
-import AComboBox from './components/form/AComboBox.vue';
 import ADate from './components/form/ADate.vue';
 import ADatePicker from './components/form/ADatePicker.vue';
 import ADateRange from './components/form/ADateRange.vue';
@@ -29,8 +28,6 @@ import type { TableViewConfig } from '@stonecrop/schema';
 import type { ValueField } from '@stonecrop/schema';
 
 export { ACheckbox }
-
-export { AComboBox }
 
 export { ADate }
 

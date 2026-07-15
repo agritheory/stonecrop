@@ -286,7 +286,7 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 					undefined,
 					undefined,
 					undefined,
-					{ address: { target: 'address', cardinality: 'one', component: 'AComboBox', fieldname: 'address' } }
+					{ address: { target: 'address', cardinality: 'one', component: 'AFormLink', fieldname: 'address' } }
 				)
 				const resolved = registry.resolveSchema(testDoctype)
 
@@ -782,14 +782,14 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 		it('treats a field carrying only doctype as a link — no fieldtype, no options', () => {
 			const testDoctype = new Doctype(
 				'test',
-				List([{ kind: 'field' as const, fieldname: 'territory', component: 'AComboBox', doctype: 'territory' }]) as any,
+				List([{ kind: 'field' as const, fieldname: 'territory', component: 'AFormLink', doctype: 'territory' }]) as any,
 				undefined,
 				undefined
 			)
 			const resolved = registry.resolveSchema(testDoctype)
 
 			expect((resolved[0] as any).doctype).toBe('territory')
-			expect((resolved[0] as any).component).toBe('AComboBox')
+			expect((resolved[0] as any).component).toBe('AFormLink')
 			expect(resolved[0].kind).toBe('field')
 		})
 

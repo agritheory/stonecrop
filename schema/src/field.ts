@@ -90,7 +90,7 @@ export interface ValueField {
 	 * Target doctype slug — this field is a link to that doctype (replaces `fieldtype: 'Link'` and
 	 * the legacy convention of a string-valued `options`). Presence is what makes a field a link.
 	 *
-	 * How it renders is decided by `component`, not by this: `AFormLink`/`AComboBox` render an
+	 * How it renders is decided by `component`, not by this: `AFormLink` renders an
 	 * inline id-picker, while `AForm`/`ATable` expand the target (see `linkRenderMode`). Expansion
 	 * metadata — backlink, fetch strategy, authoritative cardinality — lives in the doctype's
 	 * `links` map, which is additive and never required for a plain foreign key.
