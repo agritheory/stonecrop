@@ -5,41 +5,38 @@
 		{
 			"fieldname": "user",
 			"label": "User",
-			"fieldtype": "Link",
 			"component": "AFormLink",
-			"options": "user",
+			"doctype": "user",
 			"required": true
 		},
 		{
 			"fieldname": "issue",
 			"label": "Issue",
-			"fieldtype": "Link",
 			"component": "AFormLink",
-			"options": "issue",
+			"doctype": "issue",
 			"required": true
 		},
 		{
 			"fieldname": "due_date",
 			"label": "Due Date",
-			"fieldtype": "Date"
+			"component": "ADate"
 		},
 		{
 			"fieldname": "assigned_date",
 			"label": "Assigned Date",
-			"fieldtype": "Date",
+			"component": "ADate",
 			"readOnly": true
 		},
 		{
 			"fieldname": "assigned_by",
 			"label": "Assigned By",
-			"fieldtype": "Link",
 			"component": "AFormLink",
-			"options": "user"
+			"doctype": "user"
 		},
 		{
 			"fieldname": "completed_date",
 			"label": "Completed Date",
-			"fieldtype": "Date",
+			"component": "ADate",
 			"readOnly": true
 		}
 	],

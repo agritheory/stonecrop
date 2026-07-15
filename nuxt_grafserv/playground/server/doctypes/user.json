@@ -3,19 +3,19 @@
 	"fields": [
 		{
 			"fieldname": "id",
-			"fieldtype": "Data",
+			"component": "ATextInput",
 			"label": "ID",
 			"required": true
 		},
 		{
 			"fieldname": "name",
-			"fieldtype": "Data",
+			"component": "ATextInput",
 			"label": "Name",
 			"required": true
 		},
 		{
 			"fieldname": "email",
-			"fieldtype": "Data",
+			"component": "ATextInput",
 			"label": "Email",
 			"required": true,
 			"options": {
@@ -24,25 +24,23 @@
 		},
 		{
 			"fieldname": "role",
-			"fieldtype": "Select",
+			"component": "ADropdown",
 			"label": "Role",
 			"required": true,
-			"options": {
-				"values": [
-					"admin",
-					"user",
-					"guest"
-				]
-			}
+			"options": [
+				"admin",
+				"user",
+				"guest"
+			]
 		},
 		{
 			"fieldname": "createdAt",
-			"fieldtype": "Datetime",
+			"component": "ADateTime",
 			"label": "Created At"
 		},
 		{
 			"fieldname": "updatedAt",
-			"fieldtype": "Datetime",
+			"component": "ADateTime",
 			"label": "Updated At"
 		}
 	],

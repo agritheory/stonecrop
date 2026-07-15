@@ -4,8 +4,6 @@ import { describe, it, expect } from 'vitest'
 import {
 	COMPONENT_CATEGORY,
 	COMPONENT_LINK_EXPANSION,
-	TYPE_MAP,
-	componentCategory,
 	componentLinkExpansion,
 	validateDoctype,
 } from '@stonecrop/schema'
@@ -13,11 +11,10 @@ import {
 /**
  * Content-integrity gate for every doctype fixture folder this package ships.
  *
- * `playground/doctypes` already has its own generation + dangling-link oracle
- * (`playground-doctypes.test.ts`); the fullstack and templates fixtures had **none** — nothing
- * read them, nothing validated them, and the fullstack server plugin loads them with
- * `continueOnError: true`, so a broken fixture degrades silently at runtime. These checks are
- * the missing oracle: they are what would have caught `component` and `fieldtype` disagreeing.
+ * `playground/doctypes` has its own generation + dangling-link oracle (`playground-doctypes.test.ts`);
+ * the fullstack and templates fixtures had none — nothing read them, nothing validated them, and the
+ * fullstack server plugin loads them with `continueOnError: true`, so a broken fixture degrades
+ * silently at runtime with nothing failing.
  */
 
 const FIXTURE_DIRS = [
@@ -26,7 +23,7 @@ const FIXTURE_DIRS = [
 	{ name: 'playground', dir: resolve(__dirname, '../playground/doctypes') },
 ]
 
-/** Component names Stonecrop knows — the canonical set, keyed off schema's own maps. */
+/** Component names Stonecrop knows — the canonical set, derived from schema's own maps. */
 const CANONICAL_COMPONENTS = new Set([...Object.keys(COMPONENT_CATEGORY), ...Object.keys(COMPONENT_LINK_EXPANSION)])
 
 type Field = Record<string, unknown>
@@ -41,13 +38,21 @@ const loadAll = () =>
 			}))
 	)
 
-/** Every `kind: 'field'` entry, flattened through fieldset/table containers. */
+/**
+ * Mirrors the loader's structural kind inference (`schema/src/field.ts`): authored JSON may omit
+ * `kind`, in which case a `schema` key means fieldset and `columns` means table. Treating a
+ * kind-less container as a value field would flag its `AFieldset`/`ATable` component as unknown.
+ */
+const kindOf = (f: Field): string =>
+	(f.kind as string) ?? ('schema' in f ? 'fieldset' : 'columns' in f ? 'table' : 'field')
+
+/** Every value field, flattened through fieldset/table containers. */
 const valueFields = (doctype: Record<string, unknown>): Field[] => {
 	const out: Field[] = []
 	const walk = (fields: unknown) => {
 		if (!Array.isArray(fields)) return
 		for (const f of fields as Field[]) {
-			if (f.kind === undefined || f.kind === 'field') out.push(f)
+			if (kindOf(f) === 'field') out.push(f)
 			walk(f.schema)
 			walk(f.columns)
 		}
@@ -80,38 +85,51 @@ describe('doctype fixtures', { tags: ['unit'] }, () => {
 		expect(unknown).toEqual([])
 	})
 
-	// Migration-period invariant — delete with `fieldtype` in Phase 5.
-	//
-	// While both axes exist, every consumer prefers `component` and falls back to `fieldtype`. That
-	// is only safe when the two agree: where they disagree, the component silently wins and the
-	// fieldtype's behaviour (cell format, filter widget, record default) is lost with nothing
-	// failing. These fixtures predate `component` mattering to atable, so several carried a lazy
-	// `ATextInput` while `fieldtype` did the real work.
-	it('every component agrees with its fieldtype', () => {
-		const disagreements: string[] = []
+	it('every field carries a component', () => {
+		// `component` is the primary axis — a field without one has nothing to render it once the
+		// legacy `fieldtype` derivation is gone.
+		const missing: string[] = []
 		for (const { file, doctype } of loadAll()) {
 			for (const f of valueFields(doctype)) {
-				if (typeof f.component !== 'string' || typeof f.fieldtype !== 'string') continue
-				const where = `${file} :: ${String(f.fieldname)}`
+				if (typeof f.component !== 'string') missing.push(`${file} :: ${String(f.fieldname)}`)
+			}
+		}
+		expect(missing).toEqual([])
+	})
 
-				if (isLink(f)) {
-					// Link-ness is carried by `doctype`, not the component (D1b); what the component
-					// must be is link-capable, since it decides expand-vs-inline (D1c).
-					if (!componentLinkExpansion(f.component)) {
-						disagreements.push(`${where} → ${f.component} is not a link component`)
-					}
-					continue
+	it('no fixture carries the legacy fieldtype axis', () => {
+		// `component` is the only field axis. Once `fieldtype` leaves the Zod shape it is silently
+		// stripped rather than rejected, so the guard against it creeping back has to live on the data.
+		const stragglers: string[] = []
+		for (const { file, doctype } of loadAll()) {
+			for (const f of valueFields(doctype)) {
+				if (f.fieldtype !== undefined) stragglers.push(`${file} :: ${String(f.fieldname)} → ${String(f.fieldtype)}`)
+			}
+		}
+		expect(stragglers).toEqual([])
+	})
+
+	it('every link field uses a link-capable component', () => {
+		// Link-ness is carried by `doctype`; the component decides whether the target is expanded, so an
+		// unmapped component on a link silently falls through to the cardinality default.
+		const bad: string[] = []
+		for (const { file, doctype } of loadAll()) {
+			const declaredLinks = Object.values((doctype.links ?? {}) as Record<string, { fieldname?: string }>)
+			for (const f of valueFields(doctype)) {
+				if (!isLink(f)) continue
+				if (typeof f.component === 'string' && !componentLinkExpansion(f.component)) {
+					bad.push(`${file} :: ${String(f.fieldname)} → ${f.component}`)
 				}
-
-				const canonical = TYPE_MAP[f.fieldtype as keyof typeof TYPE_MAP]?.component
-				if (!canonical) continue
-				const got = componentCategory(f.component)
-				const want = componentCategory(canonical)
-				if (got !== want) {
-					disagreements.push(`${where} → ${f.component} (${got}) but fieldtype ${f.fieldtype} implies ${want}`)
+			}
+			// A declared link that names a field must name one that exists: the resolver iterates
+			// fields, so a declaration pointing at a missing field is inert and never resolves.
+			for (const link of declaredLinks) {
+				if (!link.fieldname) continue
+				if (!valueFields(doctype).some(f => f.fieldname === link.fieldname)) {
+					bad.push(`${file} :: links → "${link.fieldname}" has no matching field`)
 				}
 			}
 		}
-		expect(disagreements).toEqual([])
+		expect(bad).toEqual([])
 	})
 })

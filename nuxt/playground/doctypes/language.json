@@ -7,7 +7,6 @@
 			"fieldname": "code",
 			"label": "Code",
 			"component": "ATextInput",
-			"fieldtype": "Data",
 			"required": true,
 			"readOnly": true,
 			"source": "introspected"
@@ -17,7 +16,6 @@
 			"fieldname": "name",
 			"label": "Name",
 			"component": "ATextInput",
-			"fieldtype": "Data",
 			"required": true,
 			"source": "introspected"
 		},
@@ -26,7 +24,6 @@
 			"fieldname": "native",
 			"label": "Native Name",
 			"component": "ATextInput",
-			"fieldtype": "Data",
 			"required": true,
 			"source": "introspected"
 		},
@@ -35,7 +32,6 @@
 			"fieldname": "rtl",
 			"label": "Right-to-Left",
 			"component": "ACheckbox",
-			"fieldtype": "Check",
 			"required": true,
 			"source": "introspected"
 		}

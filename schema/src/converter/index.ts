@@ -116,7 +116,6 @@ export function convertGraphQLSchema(
 						fieldname: fieldName,
 						label: custom.label ?? fieldName,
 						component: custom.component ?? 'ATextInput',
-						fieldtype: custom.fieldtype ?? 'Data',
 						...custom,
 					}
 				}
@@ -137,9 +136,9 @@ export function convertGraphQLSchema(
 		const links: Record<string, LinkDeclaration> = {}
 		const convertedFields = allClassifiedFields
 			.filter(field => {
-				if (field._isLink && typeof field.options === 'string' && field.cardinality) {
+				if (field._isLink && field.doctype && field.cardinality) {
 					links[field.fieldname] = {
-						target: field.options,
+						target: field.doctype,
 						cardinality: field.cardinality,
 					}
 					return false

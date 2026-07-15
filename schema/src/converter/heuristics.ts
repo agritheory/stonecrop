@@ -229,7 +229,6 @@ export function classifyFieldType(
 		fieldname: fieldName,
 		label: camelToLabel(fieldName),
 		component: 'ATextInput',
-		fieldtype: 'Data',
 	}
 
 	if (required) {
@@ -252,8 +251,7 @@ export function classifyFieldType(
 			const candidateTypeName = toPascalCase(fieldName)
 			if (entityTypes.has(candidateTypeName)) {
 				base.component = 'AFormLink'
-				base.fieldtype = 'Link'
-				base.options = toSlug(candidateTypeName)
+				base.doctype = toSlug(candidateTypeName)
 				return base
 			}
 		}
@@ -261,7 +259,6 @@ export function classifyFieldType(
 		const template: FieldTemplate | undefined = scalarMap[namedType.name]
 		if (template) {
 			base.component = template.component
-			base.fieldtype = template.fieldtype
 		} else {
 			// Unknown scalar — default to Data with unmapped marker
 			base._unmapped = true
@@ -275,7 +272,6 @@ export function classifyFieldType(
 	// 2. Enum types → Select
 	if (isEnumType(namedType)) {
 		base.component = 'ADropdown'
-		base.fieldtype = 'Select'
 		base.options = namedType.getValues().map(v => v.name)
 		return base
 	}
@@ -285,8 +281,7 @@ export function classifyFieldType(
 		// 3. Direct reference to an entity type → Link
 		if (!isList && entityTypes.has(namedType.name)) {
 			base.component = 'AFormLink'
-			base.fieldtype = 'Link'
-			base.options = toSlug(namedType.name)
+			base.doctype = toSlug(namedType.name)
 			return base
 		}
 
@@ -295,9 +290,8 @@ export function classifyFieldType(
 		if (connectionNodeTypeName && entityTypes.has(connectionNodeTypeName)) {
 			base.component = 'ATable'
 			base._isLink = true
-			base.options = toSlug(connectionNodeTypeName)
+			base.doctype = toSlug(connectionNodeTypeName)
 			base.cardinality = 'noneOrMany'
-			delete base.fieldtype
 			return base
 		}
 
@@ -305,9 +299,8 @@ export function classifyFieldType(
 		if (isList && entityTypes.has(namedType.name)) {
 			base.component = 'ATable'
 			base._isLink = true
-			base.options = toSlug(namedType.name)
+			base.doctype = toSlug(namedType.name)
 			base.cardinality = 'noneOrMany'
-			delete base.fieldtype
 			return base
 		}
 

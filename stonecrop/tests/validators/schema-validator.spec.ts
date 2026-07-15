@@ -420,10 +420,9 @@ describe('SchemaValidator — link declarations', { tags: ['unit'] }, () => {
 	})
 
 	it('accepts a link field with no corresponding link declaration — a plain FK', () => {
-		// D1b: the `links` map is additive (it carries expansion metadata), not required. A link with
-		// no declaration is a plain foreign key, which `Registry.resolveFields` resolves to an inline
-		// picker. The old `link-field-without-declaration` error contradicted that, and flagged any
-		// doctype mixing an expanded relation with a plain FK (e.g. `country`).
+		// The `links` map is additive — it carries expansion metadata — and is not required. A link
+		// with no declaration is a plain foreign key, which `Registry.resolveFields` resolves to an
+		// inline picker.
 		const validator = new SchemaValidator({ registry: mockRegistry })
 		const schemaWithLinkField = [
 			{ kind: 'field' as const, fieldname: 'name', fieldtype: 'Data' } as any,

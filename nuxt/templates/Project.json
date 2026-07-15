@@ -6,27 +6,23 @@
 			"fieldname": "id",
 			"label": "ID",
 			"component": "ATextInput",
-			"fieldtype": "Data",
 			"mode": "display"
 		},
 		{
 			"fieldname": "title",
 			"label": "Title",
 			"component": "ATextInput",
-			"fieldtype": "Data",
 			"required": true
 		},
 		{
 			"fieldname": "description",
 			"label": "Description",
-			"component": "ATextarea",
-			"fieldtype": "Text"
+			"component": "ATextarea"
 		},
 		{
 			"fieldname": "status",
 			"label": "Status",
 			"component": "ADropdown",
-			"fieldtype": "Select",
 			"options": ["Active", "Archived"],
 			"default": "Active"
 		},
@@ -34,7 +30,6 @@
 			"fieldname": "createdAt",
 			"label": "Created At",
 			"component": "ADateTime",
-			"fieldtype": "Datetime",
 			"mode": "display"
 		}
 	],

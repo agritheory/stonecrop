@@ -6,29 +6,25 @@
 			"fieldname": "id",
 			"label": "ID",
 			"component": "ATextInput",
-			"fieldtype": "Data",
 			"mode": "display"
 		},
 		{
 			"fieldname": "orderNumber",
 			"label": "Order Number",
 			"component": "ATextInput",
-			"fieldtype": "Data",
 			"mode": "display"
 		},
 		{
 			"fieldname": "userId",
 			"label": "Customer",
 			"component": "AFormLink",
-			"fieldtype": "Link",
-			"options": "user",
+			"doctype": "user",
 			"required": true
 		},
 		{
 			"fieldname": "status",
 			"label": "Status",
 			"component": "ADropdown",
-			"fieldtype": "Select",
 			"options": [
 				"DRAFT",
 				"PENDING",
@@ -43,32 +39,27 @@
 			"fieldname": "total",
 			"label": "Total",
 			"component": "ANumericInput",
-			"fieldtype": "Currency",
 			"mode": "display"
 		},
 		{
 			"fieldname": "shippingAddress",
 			"label": "Shipping Address",
-			"component": "ATextarea",
-			"fieldtype": "Text"
+			"component": "ATextarea"
 		},
 		{
 			"fieldname": "billingAddress",
 			"label": "Billing Address",
-			"component": "ATextarea",
-			"fieldtype": "Text"
+			"component": "ATextarea"
 		},
 		{
 			"fieldname": "createdAt",
 			"label": "Created At",
-			"component": "ADateTime",
-			"fieldtype": "Datetime"
+			"component": "ADateTime"
 		},
 		{
 			"fieldname": "updatedAt",
 			"label": "Updated At",
-			"component": "ADateTime",
-			"fieldtype": "Datetime"
+			"component": "ADateTime"
 		}
 	],
 	"workflow": {

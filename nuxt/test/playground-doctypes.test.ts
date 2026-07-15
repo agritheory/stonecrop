@@ -59,8 +59,9 @@ describe('playground doctypes', { tags: ['unit'] }, () => {
 
 			const fields = (doctype.fields ?? []) as Array<Record<string, unknown>>
 			for (const field of fields) {
-				if (field.fieldtype === 'Link' && typeof field.options === 'string') {
-					targets.push([`fields.${String(field.fieldname)}`, field.options])
+				// A field is a link iff it carries `doctype`, which is also its target.
+				if (typeof field.doctype === 'string') {
+					targets.push([`fields.${String(field.fieldname)}`, field.doctype])
 				}
 			}
 

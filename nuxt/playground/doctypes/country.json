@@ -7,7 +7,6 @@
 			"fieldname": "awsRegion",
 			"label": "AWS Region",
 			"component": "ATextInput",
-			"fieldtype": "Data",
 			"required": true,
 			"source": "introspected"
 		},
@@ -16,7 +15,6 @@
 			"fieldname": "capital",
 			"label": "Capital",
 			"component": "ATextInput",
-			"fieldtype": "Data",
 			"source": "introspected"
 		},
 		{
@@ -24,7 +22,6 @@
 			"fieldname": "code",
 			"label": "Code",
 			"component": "ATextInput",
-			"fieldtype": "Data",
 			"required": true,
 			"readOnly": true,
 			"source": "introspected"
@@ -34,9 +31,8 @@
 			"fieldname": "continent",
 			"label": "Continent",
 			"component": "AFormLink",
-			"fieldtype": "Link",
 			"required": true,
-			"options": "continent",
+			"doctype": "continent",
 			"source": "introspected"
 		},
 		{
@@ -44,7 +40,6 @@
 			"fieldname": "currencies",
 			"label": "Currencies",
 			"component": "ATextInput",
-			"fieldtype": "Data",
 			"required": true,
 			"source": "introspected"
 		},
@@ -53,7 +48,6 @@
 			"fieldname": "currency",
 			"label": "Currency",
 			"component": "ATextInput",
-			"fieldtype": "Data",
 			"source": "introspected"
 		},
 		{
@@ -61,7 +55,6 @@
 			"fieldname": "emoji",
 			"label": "Flag",
 			"component": "ATextInput",
-			"fieldtype": "Data",
 			"required": true,
 			"source": "introspected"
 		},
@@ -70,7 +63,6 @@
 			"fieldname": "emojiU",
 			"label": "Emoji U",
 			"component": "ATextInput",
-			"fieldtype": "Data",
 			"required": true,
 			"source": "introspected"
 		},
@@ -79,7 +71,6 @@
 			"fieldname": "name",
 			"label": "Name",
 			"component": "ATextInput",
-			"fieldtype": "Data",
 			"required": true,
 			"source": "introspected"
 		},
@@ -88,7 +79,6 @@
 			"fieldname": "native",
 			"label": "Native Name",
 			"component": "ATextInput",
-			"fieldtype": "Data",
 			"required": true,
 			"source": "introspected"
 		},
@@ -97,7 +87,6 @@
 			"fieldname": "phone",
 			"label": "Phone Code",
 			"component": "ATextInput",
-			"fieldtype": "Data",
 			"required": true,
 			"source": "introspected"
 		},
@@ -106,7 +95,6 @@
 			"fieldname": "phones",
 			"label": "Phones",
 			"component": "ATextInput",
-			"fieldtype": "Data",
 			"required": true,
 			"source": "introspected"
 		}

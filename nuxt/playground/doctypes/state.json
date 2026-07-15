@@ -7,7 +7,6 @@
 			"fieldname": "code",
 			"label": "Code",
 			"component": "ATextInput",
-			"fieldtype": "Data",
 			"readOnly": true,
 			"source": "introspected"
 		},
@@ -16,9 +15,8 @@
 			"fieldname": "country",
 			"label": "Country",
 			"component": "AFormLink",
-			"fieldtype": "Link",
 			"required": true,
-			"options": "country",
+			"doctype": "country",
 			"source": "introspected"
 		},
 		{
@@ -26,7 +24,6 @@
 			"fieldname": "name",
 			"label": "Name",
 			"component": "ATextInput",
-			"fieldtype": "Data",
 			"required": true,
 			"source": "introspected"
 		}

@@ -259,7 +259,7 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 			expect(tableField.component).toBe('MyCustomTable')
 		})
 
-		describe('D1c — component decides the render mode', () => {
+		describe('link render mode', () => {
 			it('renders a declared link as an inline picker when the component is AFormLink', () => {
 				// The link declaration supplies the target (and could supply backlink/fetch), but an
 				// inline component means the target is NOT expanded — it stays a scalar id-picker.
@@ -758,7 +758,7 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 		})
 
 		it('prefers the authored doctype over the legacy string options', () => {
-			// D1b: `doctype` is the link marker and target. It used to be ignored here (the target
+			// `doctype` is both the link marker and its target. It used to be ignored here (the target
 			// was derived from `options` only); it is now the source, and `options` is the fallback.
 			const testDoctype = new Doctype(
 				'test',

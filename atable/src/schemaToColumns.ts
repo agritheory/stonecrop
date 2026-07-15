@@ -26,9 +26,9 @@ export function schemaToColumns(schema: ColumnSchema[]): TableColumn[] {
 			const col: TableColumn = Object.assign({ name: fieldname }, rest)
 
 			// Link fields: store the linked doctype for async resolution by ACell, and add a sync
-			// format that handles pre-resolved AFormLinkValue objects. `doctype` is the marker
-			// (D1b) — the legacy `fieldtype: 'Link'` arm only matters for un-migrated fields, whose
-			// target the resolver has already copied onto `doctype`.
+			// format that handles pre-resolved AFormLinkValue objects. `doctype` is the marker; the
+			// legacy `fieldtype: 'Link'` arm only matters for un-migrated fields, whose target the
+			// resolver has already copied onto `doctype`.
 			if ((rest.doctype || rest.fieldtype === 'Link') && !rest.cellComponent) {
 				const linkedDoctype = rest.doctype
 				if (linkedDoctype) col.linkDoctype = linkedDoctype

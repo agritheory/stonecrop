@@ -99,9 +99,8 @@ describe('getSqlColumns', { tags: ['unit', 'graphql'] }, () => {
 	})
 
 	it('still selects an inline link FK column even though it has a links declaration', () => {
-		// D1c: an inline component means the link is NOT expanded — `userId` is a real FK column on
-		// this table and must be SELECTed. Excluding it (the pre-D1c rule, which dropped every
-		// declared link) would silently strip the field from every query.
+		// An inline component means the link is not expanded, so `userId` is a real FK column on this
+		// table and must be SELECTed. Excluding every declared link would silently strip it from queries.
 		loadDoctypesFromObject({
 			InlineLinkSample: {
 				name: 'InlineLinkSample',

@@ -147,8 +147,8 @@ export class SchemaValidator {
 
 		for (const field of schema) {
 			if (field.kind === 'field' && (field.doctype || field.fieldtype === 'Link')) {
-				// Dual-read: `doctype` is the marker and the target (D1b); a legacy `fieldtype: 'Link'`
-				// carries its target in a string-valued `options`.
+				// `doctype` is both the link marker and its target; a legacy `fieldtype: 'Link'` carries its
+				// target in a string-valued `options`.
 				const options = field.doctype ?? field.options
 				if (!options) {
 					issues.push({
@@ -288,11 +288,11 @@ export class SchemaValidator {
 		}
 
 		// NOTE: there is deliberately no "every link field needs a declaration" rule. A plain foreign
-		// key is a link with no `links` entry (D1b) — the `links` map is additive, carrying expansion
-		// metadata (backlink/fetch/cardinality), and is not required. Such a rule also contradicted
+		// key is a link with no `links` entry — the map is additive, carrying expansion metadata
+		// (backlink/fetch/cardinality), and is not required. Such a rule would contradict
 		// `Registry.resolveFields`, which resolves undeclared links to inline pickers, and would flag
 		// every doctype that mixes an expanded relation with a plain FK (e.g. `country`: a `links`
-		// map for states/languages/subdivisions plus a flat `continent` picker).
+		// map for states/languages/subdivisions plus a plain `continent` picker).
 
 		return issues
 	}

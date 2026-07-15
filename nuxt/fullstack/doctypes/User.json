@@ -6,28 +6,24 @@
 			"fieldname": "id",
 			"label": "ID",
 			"component": "ATextInput",
-			"fieldtype": "Data",
 			"mode": "display"
 		},
 		{
 			"fieldname": "email",
 			"label": "Email",
 			"component": "ATextInput",
-			"fieldtype": "Data",
 			"required": true
 		},
 		{
 			"fieldname": "name",
 			"label": "Name",
 			"component": "ATextInput",
-			"fieldtype": "Data",
 			"required": true
 		},
 		{
 			"fieldname": "role",
 			"label": "Role",
 			"component": "ADropdown",
-			"fieldtype": "Select",
 			"options": [
 				"ADMIN",
 				"MANAGER",
@@ -40,7 +36,6 @@
 			"fieldname": "status",
 			"label": "Status",
 			"component": "ADropdown",
-			"fieldtype": "Select",
 			"options": [
 				"ACTIVE",
 				"SUSPENDED",
@@ -53,34 +48,29 @@
 			"fieldname": "createdAt",
 			"label": "Created At",
 			"component": "ADateTime",
-			"fieldtype": "Datetime",
 			"mode": "display"
 		},
 		{
 			"fieldname": "updatedAt",
 			"label": "Updated At",
 			"component": "ADateTime",
-			"fieldtype": "Datetime",
 			"mode": "display"
 		},
 		{
 			"fieldname": "lastLogin",
 			"label": "Last Login",
 			"component": "ADateTime",
-			"fieldtype": "Datetime",
 			"mode": "display"
 		},
 		{
 			"fieldname": "bio",
 			"label": "Bio",
-			"component": "ATextarea",
-			"fieldtype": "Text"
+			"component": "ATextarea"
 		},
 		{
 			"fieldname": "phone",
 			"label": "Phone",
-			"component": "ATextInput",
-			"fieldtype": "Data"
+			"component": "ATextInput"
 		}
 	],
 	"workflow": {

@@ -76,8 +76,8 @@ describe('Field Validation', { tags: ['unit'] }, () => {
 		})
 
 		it('should preserve the doctype attribute through a round-trip', () => {
-			// `doctype` is the link marker AND target (D1b) — it replaces `fieldtype: 'Link'`
-			// plus the string-`options` convention.
+			// `doctype` is both the link marker and its target — it replaces `fieldtype: 'Link'` plus the
+			// string-`options` convention.
 			const field = {
 				kind: 'field' as const,
 				fieldname: 'userId',

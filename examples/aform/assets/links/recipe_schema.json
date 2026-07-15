@@ -4,21 +4,18 @@
 	"fields": [
 		{
 			"fieldname": "name",
-			"fieldtype": "Data",
 			"component": "ATextInput",
 			"label": "Recipe Name",
 			"required": true
 		},
 		{
 			"fieldname": "tasks",
-			"fieldtype": "Link",
 			"component": "ATable",
 			"label": "Tasks",
-			"options": "recipe-task"
+			"doctype": "recipe-task"
 		},
 		{
 			"fieldname": "status",
-			"fieldtype": "Data",
 			"component": "ATextInput",
 			"label": "Status",
 			"required": true,
@@ -26,16 +23,14 @@
 		},
 		{
 			"fieldname": "description",
-			"fieldtype": "Data",
 			"component": "ATextInput",
 			"label": "Description"
 		},
 		{
 			"fieldname": "supersededBy",
-			"fieldtype": "Link",
 			"component": "AForm",
 			"label": "Superseded By",
-			"options": "recipe"
+			"doctype": "recipe"
 		}
 	],
 	"links": {

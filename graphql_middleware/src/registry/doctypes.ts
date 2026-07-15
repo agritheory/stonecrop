@@ -172,8 +172,8 @@ export function validateReferences(): ValidationError[] {
 			})
 		}
 
-		// Check link field targets. Dual-read: `doctype` is the marker and the target (D1b); a
-		// legacy flat link is `fieldtype:'Link'` with a string-valued `options`.
+		// Check link field targets. `doctype` is both the link marker and its target; a legacy link is
+		// `fieldtype: 'Link'` with a string-valued `options`, still read until that axis is removed.
 		for (const field of doctype.fields) {
 			if (field.kind !== 'field') continue
 			const target =

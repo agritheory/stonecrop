@@ -5,13 +5,13 @@
 		{
 			"label": "Username",
 			"fieldname": "username",
-			"fieldtype": "Data",
+			"component": "ATextInput",
 			"required": true
 		},
 		{
 			"label": "Disabled",
 			"fieldname": "disabled",
-			"fieldtype": "Check",
+			"component": "ACheckbox",
 			"default": false
 		}
 	]

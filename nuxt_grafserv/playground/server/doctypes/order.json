@@ -3,48 +3,45 @@
 	"fields": [
 		{
 			"fieldname": "id",
-			"fieldtype": "Data",
+			"component": "ATextInput",
 			"label": "ID",
 			"required": true
 		},
 		{
 			"fieldname": "userId",
-			"fieldtype": "Link",
+			"component": "AFormLink",
 			"label": "User",
 			"required": true,
-			"options": {
-				"doctype": "User"
-			}
+			"doctype": "User"
 		},
 		{
 			"fieldname": "status",
-			"fieldtype": "Select",
+			"component": "ADropdown",
 			"label": "Status",
 			"required": true,
-			"options": {
-				"values": [
-					"pending",
-					"processing",
-					"shipped",
-					"completed",
-					"cancelled"
-				]
-			}
+			"options": [
+				"pending",
+				"processing",
+				"shipped",
+				"completed",
+				"cancelled"
+			]
 		},
 		{
 			"fieldname": "total",
-			"fieldtype": "Currency",
+			"component": "ANumericInput",
 			"label": "Total",
 			"required": true
 		},
 		{
 			"fieldname": "items",
-			"fieldtype": "JSON",
+			"component": "ACodeEditor",
+			"language": "json",
 			"label": "Items"
 		},
 		{
 			"fieldname": "createdAt",
-			"fieldtype": "Datetime",
+			"component": "ADateTime",
 			"label": "Created At"
 		}
 	],

@@ -286,46 +286,42 @@ describe('classifyFieldType', { tags: ['unit'] }, () => {
 
 	it('should classify String as Data', () => {
 		const field = classifyFieldType('name', userFields.name, entityTypes)
-		expect(field.fieldtype).toBe('Data')
 		expect(field.component).toBe('ATextInput')
+		expect(field.fieldtype).toBeUndefined()
 		expect(field.required).toBe(true) // String!
 	})
 
 	it('should classify ID as Data', () => {
 		const field = classifyFieldType('id', userFields.id, entityTypes)
-		expect(field.fieldtype).toBe('Data')
+		expect(field.component).toBe('ATextInput')
 		expect(field.required).toBe(true) // ID!
 	})
 
 	it('should classify Boolean as Check', () => {
 		const field = classifyFieldType('active', userFields.active, entityTypes)
-		expect(field.fieldtype).toBe('Check')
 		expect(field.component).toBe('ACheckbox')
 		expect(field.required).toBe(true) // Boolean!
 	})
 
 	it('should classify Int as Int', () => {
 		const field = classifyFieldType('age', userFields.age, entityTypes)
-		expect(field.fieldtype).toBe('Int')
 		expect(field.component).toBe('ANumericInput')
 		expect(field.required).toBeUndefined() // nullable Int
 	})
 
 	it('should classify Float as Float', () => {
 		const field = classifyFieldType('score', userFields.score, entityTypes)
-		expect(field.fieldtype).toBe('Float')
 		expect(field.component).toBe('ANumericInput')
 	})
 
 	it('should classify optional String without required', () => {
 		const field = classifyFieldType('email', userFields.email, entityTypes)
-		expect(field.fieldtype).toBe('Data')
+		expect(field.component).toBe('ATextInput')
 		expect(field.required).toBeUndefined()
 	})
 
 	it('should classify enum as Select', () => {
 		const field = classifyFieldType('status', postFields.status, entityTypes)
-		expect(field.fieldtype).toBe('Select')
 		expect(field.component).toBe('ADropdown')
 		expect(field.options).toEqual(['DRAFT', 'PUBLISHED', 'ARCHIVED'])
 		expect(field.required).toBe(true) // PostStatus!
@@ -333,18 +329,17 @@ describe('classifyFieldType', { tags: ['unit'] }, () => {
 
 	it('should classify entity reference as Link', () => {
 		const field = classifyFieldType('author', postFields.author, entityTypes)
-		expect(field.fieldtype).toBe('Link')
 		expect(field.component).toBe('AFormLink')
-		expect(field.options).toBe('user')
+		expect(field.doctype).toBe('user')
+		expect(field.options).toBeUndefined()
 		expect(field.required).toBe(true) // User!
 	})
 
 	it('should classify Connection field as a link (_isLink marker)', () => {
 		const field = classifyFieldType('comments', postFields.comments, entityTypes)
 		expect((field as any)._isLink).toBe(true)
-		expect(field.fieldtype).toBeUndefined()
 		expect(field.component).toBe('ATable')
-		expect(field.options).toBe('comment')
+		expect(field.doctype).toBe('comment')
 		expect(field.cardinality).toBe('noneOrMany')
 	})
 
@@ -381,8 +376,8 @@ describe('classifyFieldType', { tags: ['unit'] }, () => {
 				Money: { component: 'ACurrencyInput', fieldtype: 'Currency' },
 			},
 		})
-		expect(field.fieldtype).toBe('Currency')
 		expect(field.component).toBe('ACurrencyInput')
+		expect(field.fieldtype).toBeUndefined()
 	})
 
 	it('should generate a label from the field name', () => {
@@ -411,12 +406,11 @@ describe('classifyFieldType — foreign key (ID → Link)', { tags: ['unit'] }, 
 		const entityTypesWithRecipe = new Set(['RecipeTask', 'Recipe'])
 
 		const recipeField = classifyFieldType('recipe', fields.recipe, entityTypesWithRecipe)
-		expect(recipeField.fieldtype).toBe('Link')
 		expect(recipeField.component).toBe('AFormLink')
-		expect(recipeField.options).toBe('recipe')
+		expect(recipeField.doctype).toBe('recipe')
 	})
 
-	it('should leave ID field as Data when no matching entity type exists', () => {
+	it('should leave a plain ID field as a scalar when no matching entity type exists', () => {
 		const schema = buildSchema(`
 			type Query { user: User }
 			type User { id: ID! name: String! }
@@ -425,7 +419,8 @@ describe('classifyFieldType — foreign key (ID → Link)', { tags: ['unit'] }, 
 		const fields = userType.getFields()
 
 		const idField = classifyFieldType('id', fields.id, new Set(['User']))
-		expect(idField.fieldtype).toBe('Data')
+		expect(idField.component).toBe('ATextInput')
+		expect(idField.doctype).toBeUndefined()
 	})
 
 	it('should work end-to-end via convertGraphQLSchema', () => {
@@ -445,8 +440,8 @@ describe('classifyFieldType — foreign key (ID → Link)', { tags: ['unit'] }, 
 		const recipeTask = doctypes.find(d => d.name === 'RecipeTask')!
 		const recipeField = recipeTask.fields.find(f => f.fieldname === 'recipe')!
 
-		expect(recipeField.fieldtype).toBe('Link')
-		expect(recipeField.options).toBe('recipe')
+		expect(recipeField.component).toBe('AFormLink')
+		expect(recipeField.doctype).toBe('recipe')
 	})
 })
 
@@ -492,26 +487,26 @@ describe('convertGraphQLSchema', { tags: ['unit'] }, () => {
 			const user = doctypes.find(d => d.name === 'User')!
 
 			const idField = user.fields.find(f => f.fieldname === 'id')!
-			expect(idField.fieldtype).toBe('Data')
+			expect(idField.component).toBe('ATextInput')
 			expect(idField.required).toBe(true)
 
 			const nameField = user.fields.find(f => f.fieldname === 'name')!
-			expect(nameField.fieldtype).toBe('Data')
+			expect(nameField.component).toBe('ATextInput')
 			expect(nameField.required).toBe(true)
 
 			const emailField = user.fields.find(f => f.fieldname === 'email')!
-			expect(emailField.fieldtype).toBe('Data')
+			expect(emailField.component).toBe('ATextInput')
 			expect(emailField.required).toBeUndefined()
 
 			const activeField = user.fields.find(f => f.fieldname === 'active')!
-			expect(activeField.fieldtype).toBe('Check')
+			expect(activeField.component).toBe('ACheckbox')
 			expect(activeField.required).toBe(true)
 
 			const ageField = user.fields.find(f => f.fieldname === 'age')!
-			expect(ageField.fieldtype).toBe('Int')
+			expect(ageField.component).toBe('ANumericInput')
 
 			const scoreField = user.fields.find(f => f.fieldname === 'score')!
-			expect(scoreField.fieldtype).toBe('Float')
+			expect(scoreField.component).toBe('ANumericInput')
 		})
 
 		it('should correctly classify fields on Post', () => {
@@ -519,11 +514,11 @@ describe('convertGraphQLSchema', { tags: ['unit'] }, () => {
 			const post = doctypes.find(d => d.name === 'Post')!
 
 			const authorField = post.fields.find(f => f.fieldname === 'author')!
-			expect(authorField.fieldtype).toBe('Link')
-			expect(authorField.options).toBe('user')
+			expect(authorField.component).toBe('AFormLink')
+			expect(authorField.doctype).toBe('user')
 
 			const statusField = post.fields.find(f => f.fieldname === 'status')!
-			expect(statusField.fieldtype).toBe('Select')
+			expect(statusField.component).toBe('ADropdown')
 			expect(statusField.options).toEqual(['DRAFT', 'PUBLISHED', 'ARCHIVED'])
 
 			// Connection fields are placed in doctype.links, not doctype.fields
@@ -647,7 +642,7 @@ describe('convertGraphQLSchema', { tags: ['unit'] }, () => {
 			expect(doctypes.length).toBe(1)
 			const product = doctypes[0]
 			const priceField = product.fields.find(f => f.fieldname === 'price')!
-			expect(priceField.fieldtype).toBe('Currency')
+			expect(priceField.component).toBe('ACurrencyInput')
 			expect(priceField.component).toBe('ACurrencyInput')
 		})
 	})

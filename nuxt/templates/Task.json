@@ -6,49 +6,42 @@
 			"fieldname": "id",
 			"label": "ID",
 			"component": "ATextInput",
-			"fieldtype": "Data",
 			"mode": "display"
 		},
 		{
 			"fieldname": "title",
 			"label": "Title",
 			"component": "ATextInput",
-			"fieldtype": "Data",
 			"required": true
 		},
 		{
 			"fieldname": "projectId",
 			"label": "Project",
 			"component": "AFormLink",
-			"fieldtype": "Link",
-			"options": "project",
+			"doctype": "project",
 			"required": true
 		},
 		{
 			"fieldname": "status",
 			"label": "Status",
 			"component": "ADropdown",
-			"fieldtype": "Select",
 			"options": ["Todo", "In Progress", "Done"],
 			"default": "Todo"
 		},
 		{
 			"fieldname": "description",
 			"label": "Description",
-			"component": "ATextarea",
-			"fieldtype": "Text"
+			"component": "ATextarea"
 		},
 		{
 			"fieldname": "dueDate",
 			"label": "Due Date",
-			"component": "ADatePicker",
-			"fieldtype": "Date"
+			"component": "ADatePicker"
 		},
 		{
 			"fieldname": "createdAt",
 			"label": "Created At",
 			"component": "ADateTime",
-			"fieldtype": "Datetime",
 			"mode": "display"
 		}
 	],

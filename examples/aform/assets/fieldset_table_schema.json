@@ -1,7 +1,6 @@
 [
 	{
 		"fieldname": "table_fieldset",
-		"fieldtype": "Fieldset",
 		"component": "AFieldset",
 		"collapsible": true,
 		"label": "Table/Fieldset",
@@ -14,7 +13,7 @@
 						"label": "Home Page",
 						"name": "home_page",
 						"fieldname": "home_page",
-						"fieldtype": "Data",
+						"component": "ATextInput",
 						"align": "left",
 						"edit": false,
 						"width": "35ch",
@@ -24,7 +23,7 @@
 						"label": "HTTP Method",
 						"name": "http_method",
 						"fieldname": "http_method",
-						"fieldtype": "Data",
+						"component": "ATextInput",
 						"align": "left",
 						"edit": true,
 						"width": "20ch"
@@ -33,7 +32,7 @@
 						"label": "IP Address",
 						"name": "ip_address",
 						"fieldname": "ip_address",
-						"fieldtype": "Data",
+						"component": "ATextInput",
 						"align": "left",
 						"edit": false,
 						"width": "20ch"
@@ -42,7 +41,7 @@
 						"label": "Status",
 						"name": "status",
 						"fieldname": "status",
-						"fieldtype": "Data",
+						"component": "ATextInput",
 						"align": "left",
 						"edit": true,
 						"width": "35ch"
@@ -51,7 +50,7 @@
 						"label": "Report Date",
 						"name": "report_date",
 						"fieldname": "report_date",
-						"fieldtype": "Date",
+						"component": "ADate",
 						"modalComponent": "ADatePicker",
 						"align": "center",
 						"edit": true,
@@ -59,7 +58,9 @@
 						"format": "value => { return (new Date(value).toLocaleDateString('en-US')) }"
 					}
 				],
-				"config": { "view": "list" },
+				"config": {
+					"view": "list"
+				},
 				"rows": [
 					{
 						"home_page": {
