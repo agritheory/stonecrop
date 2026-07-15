@@ -172,15 +172,13 @@ export function validateReferences(): ValidationError[] {
 			})
 		}
 
-		// Check link field targets. `doctype` is both the link marker and its target; a legacy link is
-		// `fieldtype: 'Link'` with a string-valued `options`, still read until that axis is removed.
+		// Check link field targets — `doctype` is both the link marker and its target.
 		for (const field of doctype.fields) {
 			if (field.kind !== 'field') continue
-			const target =
-				field.doctype ?? (field.fieldtype === 'Link' && typeof field.options === 'string' ? field.options : undefined)
+			const target = field.doctype
 			if (target !== undefined && !doctypeRegistry.has(target)) {
 				errors.push({
-					path: [doctype.name, 'fields', field.fieldname, field.doctype ? 'doctype' : 'options'],
+					path: [doctype.name, 'fields', field.fieldname, 'doctype'],
 					message: `Link references unknown doctype: ${target}`,
 				})
 			}

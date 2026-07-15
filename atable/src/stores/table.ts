@@ -515,23 +515,13 @@ export const createTableStore = (initData: {
 			const format = column.format
 
 			if (!format) {
-				// Component-primary cell formatting; falls back to the legacy fieldtype switch
-				// while both are present (dual-read during the migration).
+				// Default cell formatting comes from the component's category; anything without an
+				// opinion (including an unknown component) renders the raw value.
 				const category = componentCategory(column.component)
 				if (category === 'boolean') return value ? '✓' : '✗'
 				if (category === 'date') return value != null ? new Date(String(value)).toLocaleDateString() : value
 				if (category === 'datetime') return value != null ? new Date(String(value)).toLocaleString() : value
-				if (category) return value
-				switch (column.fieldtype) {
-					case 'Check':
-						return value ? '✓' : '✗'
-					case 'Date':
-						return value != null ? new Date(String(value)).toLocaleDateString() : value
-					case 'Datetime':
-						return value != null ? new Date(String(value)).toLocaleString() : value
-					default:
-						return value
-				}
+				return value
 			}
 
 			if (typeof format === 'function') {

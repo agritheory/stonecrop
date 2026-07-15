@@ -41,7 +41,7 @@ describe('table component', { tags: ['component'] }, () => {
 		{
 			label: 'Home Page',
 			name: 'home_page',
-			fieldtype: 'Data',
+			component: 'ATextInput',
 			align: 'left',
 			edit: false,
 			width: '35ch',
@@ -50,7 +50,7 @@ describe('table component', { tags: ['component'] }, () => {
 		{
 			label: 'HTTP Method',
 			name: 'http_method',
-			fieldtype: 'Data',
+			component: 'ATextInput',
 			align: 'left',
 			edit: true,
 			width: '20ch',
@@ -58,7 +58,7 @@ describe('table component', { tags: ['component'] }, () => {
 		{
 			label: 'Report Date',
 			name: 'report_date',
-			fieldtype: 'Date',
+			component: 'ADate',
 			align: 'center',
 			edit: true,
 			width: '25ch',
@@ -127,7 +127,7 @@ describe('table component', { tags: ['component'] }, () => {
 			{
 				label: 'Home Page',
 				name: 'home_page',
-				fieldtype: 'Data',
+				component: 'ATextInput',
 				align: 'left',
 				edit: false,
 				width: '35ch',
@@ -136,7 +136,7 @@ describe('table component', { tags: ['component'] }, () => {
 			{
 				label: 'HTTP Method',
 				name: 'http_method',
-				fieldtype: 'Data',
+				component: 'ATextInput',
 				align: 'left',
 				edit: true,
 				width: '20ch',
@@ -144,7 +144,7 @@ describe('table component', { tags: ['component'] }, () => {
 			{
 				label: 'Report Date',
 				name: 'report_date',
-				fieldtype: 'Date',
+				component: 'ADate',
 				align: 'center',
 				edit: true,
 				width: '25ch',
@@ -182,7 +182,7 @@ describe('table component', { tags: ['component'] }, () => {
 			{
 				label: 'Home Page',
 				name: 'home_page',
-				fieldtype: 'Data',
+				component: 'ATextInput',
 				align: 'left',
 				edit: false,
 				width: '35ch',
@@ -190,7 +190,7 @@ describe('table component', { tags: ['component'] }, () => {
 			{
 				label: 'HTTP Method',
 				name: 'http_method',
-				fieldtype: 'Data',
+				component: 'ATextInput',
 				align: 'left',
 				edit: true,
 				width: '20ch',
@@ -198,7 +198,7 @@ describe('table component', { tags: ['component'] }, () => {
 			{
 				label: 'Report Date',
 				name: 'report_date',
-				fieldtype: 'Date',
+				component: 'ADate',
 				align: 'center',
 				edit: true,
 				width: '25ch',
@@ -1169,8 +1169,8 @@ describe('Schema-driven columns', { tags: ['component'] }, () => {
 
 	it('renders columns derived from schema when no columns prop is provided', () => {
 		const schema: ColumnSchema[] = [
-			{ fieldname: 'name', fieldtype: 'Data', label: 'Name', width: '200px' },
-			{ fieldname: 'status', fieldtype: 'Data', label: 'Status', width: '150px' },
+			{ fieldname: 'name', component: 'ATextInput', label: 'Name', width: '200px' },
+			{ fieldname: 'status', component: 'ATextInput', label: 'Status', width: '150px' },
 		]
 		const wrapper = mount(ATable, {
 			props: {
@@ -1189,8 +1189,8 @@ describe('Schema-driven columns', { tags: ['component'] }, () => {
 
 	it('excludes hidden fields from derived columns', () => {
 		const schema: ColumnSchema[] = [
-			{ fieldname: 'name', fieldtype: 'Data', label: 'Name' },
-			{ fieldname: 'secret', fieldtype: 'Data', label: 'Secret', hidden: true },
+			{ fieldname: 'name', component: 'ATextInput', label: 'Name' },
+			{ fieldname: 'secret', component: 'ATextInput', label: 'Secret', hidden: true },
 		]
 		const wrapper = mount(ATable, {
 			props: {
@@ -1207,7 +1207,7 @@ describe('Schema-driven columns', { tags: ['component'] }, () => {
 	})
 
 	it('explicit columns prop takes precedence over schema when both are provided', () => {
-		const schema: ColumnSchema[] = [{ fieldname: 'name', fieldtype: 'Data', label: 'Name from Schema' }]
+		const schema: ColumnSchema[] = [{ fieldname: 'name', component: 'ATextInput', label: 'Name from Schema' }]
 		const explicitColumns: TableColumn[] = [
 			{ name: 'id', label: 'ID', width: '100px' },
 			{ name: 'name', label: 'Name from Columns', width: '200px' },

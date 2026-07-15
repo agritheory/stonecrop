@@ -7,7 +7,7 @@ import type { TableColumn } from './types'
  *
  * Fields are excluded when:
  * - `hidden: true` — field should not be visible in any view
- * - no `component` and no `fieldtype` — non-scalar entry (nested table or fieldset), no column equivalent
+ * - no `component` — non-scalar entry (nested table or fieldset), no column equivalent
  *
  * `fieldname` is renamed to `name`; `hidden` is stripped. All other `ColumnSchema` properties
  * spread through automatically.
@@ -21,17 +21,14 @@ import type { TableColumn } from './types'
  */
 export function schemaToColumns(schema: ColumnSchema[]): TableColumn[] {
 	return schema
-		.filter(f => !f.hidden && (f.component || f.fieldtype))
+		.filter(f => !f.hidden && f.component)
 		.map(({ fieldname, hidden: _hidden, ...rest }) => {
 			const col: TableColumn = Object.assign({ name: fieldname }, rest)
 
 			// Link fields: store the linked doctype for async resolution by ACell, and add a sync
-			// format that handles pre-resolved AFormLinkValue objects. `doctype` is the marker; the
-			// legacy `fieldtype: 'Link'` arm only matters for un-migrated fields, whose target the
-			// resolver has already copied onto `doctype`.
-			if ((rest.doctype || rest.fieldtype === 'Link') && !rest.cellComponent) {
-				const linkedDoctype = rest.doctype
-				if (linkedDoctype) col.linkDoctype = linkedDoctype
+			// format that handles pre-resolved AFormLinkValue objects.
+			if (rest.doctype && !rest.cellComponent) {
+				col.linkDoctype = rest.doctype
 
 				if (!rest.format) {
 					col.format = (v: any): string => {

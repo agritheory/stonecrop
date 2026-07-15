@@ -437,16 +437,16 @@ function flattenFields(fields: DoctypeField[]): (ValueField | TableField)[] {
 
 /**
  * Derive quoted SQL column entries from a flat field array.
- * Skips non-scalar fields (kind !== 'field'), `fieldtype: 'Display'` fields
- * (computed/read-only fields with no backing DB column), and *expanding* links
+ * Skips non-scalar fields (kind !== 'field'), `computed` fields
+ * (no backing DB column), and *expanding* links
  * (relations fetched separately, not scalar columns on this table).
  */
 function collectColumns(fields: DoctypeField[], links: Map<string, LinkDeclaration>): string[] {
 	const columns: string[] = []
 	for (const f of flattenFields(fields)) {
 		if (f.kind !== 'field') continue
-		// Computed/display fields have no backing DB column (dual-read: `computed` or legacy `Display`).
-		if (f.computed || f.fieldtype === 'Display') continue
+		// A computed field has no backing DB column.
+		if (f.computed) continue
 		// Only an *expanding* link is a relation rather than a column. An inline link (a picker)
 		// keeps its FK on this table and must still be selected — `resolveLinkRenderMode` is the
 		// shared rule, also used by the client resolver; never re-derive it here.
@@ -462,7 +462,7 @@ function collectColumns(fields: DoctypeField[], links: Map<string, LinkDeclarati
  * Derive a quoted SQL column list from doctype field definitions.
  * Applies camelToSnake to each fieldname to get the DB column name, then
  * aliases it back to the fieldname so result rows carry API-layer keys.
- * Excludes `fieldtype: 'Display'` fields (no backing DB column), Fieldset
+ * Excludes `computed` fields (no backing DB column), Fieldset
  * containers (recursing into their children instead), and *expanding* links
  * (relations fetched separately). An inline link keeps its FK column here.
  *
@@ -479,12 +479,11 @@ export function getSqlColumns(meta: DoctypeMeta): string {
 }
 
 /**
- * Find the field declared with fieldtype 'PrimaryKey' in the doctype.
- * Returns undefined when no PrimaryKey field is declared (PK-less doctypes).
+ * Find the field marked `primaryKey` in the doctype.
+ * Returns undefined when none is marked (PK-less doctypes).
  */
 function getPkMeta(meta: DoctypeMeta): ValueField | undefined {
-	// Dual-read: `primaryKey` (component-primary) or legacy `fieldtype: 'PrimaryKey'`.
-	return meta.fields.find((f): f is ValueField => f.kind === 'field' && (f.primaryKey || f.fieldtype === 'PrimaryKey'))
+	return meta.fields.find((f): f is ValueField => f.kind === 'field' && Boolean(f.primaryKey))
 }
 
 /**

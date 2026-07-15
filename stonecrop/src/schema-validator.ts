@@ -6,6 +6,7 @@
 
 import type { DoctypeField } from '@stonecrop/schema'
 import type { LinkDeclaration } from '@stonecrop/schema'
+import { componentLinkExpansion } from '@stonecrop/schema'
 import type { List, Map as ImmutableMap } from 'immutable'
 import type { AnyStateNodeConfig } from 'xstate'
 
@@ -59,7 +60,7 @@ export class SchemaValidator {
 
 		// Validate required properties
 		if (this.options.validateRequiredProperties) {
-			issues.push(...this.validateRequiredProperties(doctype, schemaArray))
+			issues.push(...this.validateRequiredProperties(doctype, schemaArray, links))
 		}
 
 		// Validate Link field targets
@@ -102,7 +103,11 @@ export class SchemaValidator {
 	 * Validates that required schema properties are present
 	 * @internal
 	 */
-	private validateRequiredProperties(doctype: string, schema: DoctypeField[]): ValidationIssue[] {
+	private validateRequiredProperties(
+		doctype: string,
+		schema: DoctypeField[],
+		links?: Record<string, LinkDeclaration>
+	): ValidationIssue[] {
 		const issues: ValidationIssue[] = []
 
 		for (const field of schema) {
@@ -118,12 +123,34 @@ export class SchemaValidator {
 				continue
 			}
 
-			// ValueField requires fieldtype; fieldset/table have their own structural requirements
-			if (field.kind === 'field' && !field.component && !field.fieldtype) {
+			// A value field renders through its component and has no other rendering axis;
+			// fieldset/table have their own structural requirements.
+			if (field.kind === 'field' && !field.component) {
 				issues.push({
 					severity: ValidationSeverity.ERROR,
-					rule: 'required-component-or-fieldtype',
-					message: `Field "${field.fieldname}" must have either component or fieldtype property`,
+					rule: 'required-component',
+					message: `Field "${field.fieldname}" must have a component property`,
+					doctype,
+					fieldname: field.fieldname,
+				})
+			}
+
+			// A link component with nothing to point at renders an empty picker, which looks exactly
+			// like a record that has no value — so this fails silently at runtime rather than loudly.
+			// Link-ness comes from `doctype` or a `links` declaration, so this is a field that named
+			// a link component and gave it neither.
+			if (
+				field.kind === 'field' &&
+				componentLinkExpansion(field.component) &&
+				!field.doctype &&
+				!links?.[field.fieldname]
+			) {
+				issues.push({
+					severity: ValidationSeverity.ERROR,
+					rule: 'link-component-without-doctype',
+					message:
+						`Field "${field.fieldname}" renders with "${field.component}", which is a link component, ` +
+						`but has no \`doctype\` to name its target`,
 					doctype,
 					fieldname: field.fieldname,
 				})
@@ -131,7 +158,7 @@ export class SchemaValidator {
 
 			// Validate nested schemas recursively (fieldset only; table columns are ColumnSchema not DoctypeField)
 			if (field.kind === 'fieldset') {
-				issues.push(...this.validateRequiredProperties(doctype, field.schema))
+				issues.push(...this.validateRequiredProperties(doctype, field.schema, links))
 			}
 		}
 
@@ -146,32 +173,14 @@ export class SchemaValidator {
 		const issues: ValidationIssue[] = []
 
 		for (const field of schema) {
-			if (field.kind === 'field' && (field.doctype || field.fieldtype === 'Link')) {
-				// `doctype` is both the link marker and its target; a legacy `fieldtype: 'Link'` carries its
-				// target in a string-valued `options`.
-				const options = field.doctype ?? field.options
-				if (!options) {
-					issues.push({
-						severity: ValidationSeverity.ERROR,
-						rule: 'link-missing-options',
-						message: `Link field "${field.fieldname}" is missing a target doctype (\`doctype\`)`,
-						doctype,
-						fieldname: field.fieldname,
-					})
-					continue
-				}
-
-				const targetDoctype = typeof options === 'string' ? options : ''
-				if (!targetDoctype) {
-					issues.push({
-						severity: ValidationSeverity.ERROR,
-						rule: 'link-invalid-options',
-						message: `Link field "${field.fieldname}" has invalid options format (expected string doctype name)`,
-						doctype,
-						fieldname: field.fieldname,
-					})
-					continue
-				}
+			// `doctype` is both the link marker and its target, and the schema types it as a
+			// non-empty string — so there is no "missing target" or "malformed target" state left
+			// to check here. The rules that did (`link-missing-options`, `link-invalid-options`)
+			// were removed with the `options`-as-link-target convention; the case they actually
+			// guarded — a link component with no target — is now `link-component-without-doctype`,
+			// which fires in validateRequiredProperties whether or not a registry is configured.
+			if (field.kind === 'field' && field.doctype) {
+				const targetDoctype = field.doctype
 				const targetMeta = registry.registry[targetDoctype] || registry.registry[targetDoctype.toLowerCase()]
 
 				if (!targetMeta) {
@@ -207,10 +216,10 @@ export class SchemaValidator {
 	): ValidationIssue[] {
 		const issues: ValidationIssue[] = []
 
-		// Build a map of Link fields by fieldname for quick lookup (dual-read: `doctype` or legacy `fieldtype`)
+		// Build a map of link fields by fieldname for quick lookup
 		const linkFieldsByFieldname = new Map<string, DoctypeField>()
 		for (const field of schema) {
-			if (field.kind === 'field' && (field.doctype || field.fieldtype === 'Link')) {
+			if (field.kind === 'field' && field.doctype) {
 				linkFieldsByFieldname.set(field.fieldname, field)
 			}
 		}
@@ -271,8 +280,8 @@ export class SchemaValidator {
 			if (link.fieldname) {
 				const linkField = linkFieldsByFieldname.get(link.fieldname)
 				if (linkField && linkField.kind === 'field') {
-					const linkFieldTarget =
-						linkField.doctype ?? (typeof linkField.options === 'string' ? linkField.options : undefined)
+					// Map membership implies `doctype` is set — that is the map's build condition.
+					const linkFieldTarget = linkField.doctype
 					if (linkFieldTarget && linkFieldTarget !== link.target) {
 						issues.push({
 							severity: ValidationSeverity.ERROR,

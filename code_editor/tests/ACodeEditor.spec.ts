@@ -31,12 +31,16 @@ const { mockEditorInstance, mockModel, mockMonaco, mockLoader } = vi.hoisted(() 
 			defineTheme: vi.fn(),
 			setTheme: vi.fn(),
 		},
+		// Mirrors what `loader.init()` actually resolves with: the global monaco API object, whose
+		// only typescript namespace is `languages.typescript` (NOT the top-level `monaco.typescript`,
+		// which exists on the module namespace and never on this object).
 		languages: {
 			typescript: {
 				javascriptDefaults: {
 					addExtraLib: vi.fn(),
 					setCompilerOptions: vi.fn(),
 				},
+				ScriptTarget: { ES2020: 7 },
 			},
 		},
 	}
@@ -70,7 +74,7 @@ describe('ACodeEditor', { tag: 'component' }, () => {
 
 	it('creates the model with the correct value, language, and file extension', async () => {
 		mount(ACodeEditor, {
-			props: { modelValue: 'console.log("hello")', schema: { fieldtype: 'Code' } },
+			props: { modelValue: 'console.log("hello")', schema: { language: 'typescript' } },
 		})
 		await flushPromises()
 		// value + language + the .ts extension live on createModel now; create receives the model.
@@ -85,9 +89,9 @@ describe('ACodeEditor', { tag: 'component' }, () => {
 		)
 	})
 
-	it('uses the json language and a .json model for the JSON fieldtype', async () => {
+	it('uses the json language and a .json model when the field declares json', async () => {
 		mount(ACodeEditor, {
-			props: { modelValue: '{ "foo": "bar" }', schema: { fieldtype: 'JSON' } },
+			props: { modelValue: '{ "foo": "bar" }', schema: { language: 'json' } },
 		})
 		await flushPromises()
 		expect(mockMonaco.editor.createModel).toHaveBeenCalledWith(
@@ -107,6 +111,20 @@ describe('ACodeEditor', { tag: 'component' }, () => {
 		mount(ACodeEditor, { props: { language: 'javascript' } })
 		await flushPromises()
 		expect(mockMonaco.editor.createModel).toHaveBeenCalledWith('', 'javascript', expect.stringMatching(/\.js$/))
+	})
+
+	it('falls back to plaintext when neither the field nor the prop declares a language', async () => {
+		// `language` is the only thing that says which kind of code this is, so there is nothing to
+		// infer from — plaintext highlights nothing rather than highlighting it wrong.
+		mount(ACodeEditor, { props: { modelValue: 'some text' } })
+		await flushPromises()
+		expect(mockMonaco.editor.createModel).toHaveBeenCalledWith('some text', 'plaintext', expect.any(String))
+	})
+
+	it("prefers the field's own language over the language prop", async () => {
+		mount(ACodeEditor, { props: { schema: { language: 'json' }, language: 'python' } })
+		await flushPromises()
+		expect(mockMonaco.editor.createModel).toHaveBeenCalledWith('', 'json', expect.stringMatching(/\.json$/))
 	})
 
 	it('gives each concurrently-mounted editor a distinct model URI', async () => {

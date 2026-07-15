@@ -27,9 +27,9 @@ beforeAll(async () => {
 		ScItem: {
 			name: 'ScItem',
 			fields: [
-				{ kind: 'field', fieldname: 'id', fieldtype: 'PrimaryKey', label: 'ID' },
-				{ kind: 'field', fieldname: 'name', fieldtype: 'Data', label: 'Name' },
-				{ kind: 'field', fieldname: 'status', fieldtype: 'Data', label: 'Status' },
+				{ kind: 'field', fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
+				{ kind: 'field', fieldname: 'name', component: 'ATextInput', label: 'Name' },
+				{ kind: 'field', fieldname: 'status', component: 'ATextInput', label: 'Status' },
 			],
 			links: {
 				tags: {
@@ -55,30 +55,30 @@ beforeAll(async () => {
 		ScTag: {
 			name: 'ScTag',
 			fields: [
-				{ kind: 'field', fieldname: 'id', fieldtype: 'PrimaryKey', label: 'ID' },
-				{ kind: 'field', fieldname: 'label', fieldtype: 'Data', label: 'Label' },
-				{ kind: 'field', fieldname: 'item_id', fieldtype: 'Data', label: 'Item ID' },
+				{ kind: 'field', fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
+				{ kind: 'field', fieldname: 'label', component: 'ATextInput', label: 'Label' },
+				{ kind: 'field', fieldname: 'item_id', component: 'ATextInput', label: 'Item ID' },
 			],
 		},
 		ScNote: {
 			name: 'ScNote',
 			fields: [
-				{ kind: 'field', fieldname: 'id', fieldtype: 'PrimaryKey', label: 'ID' },
-				{ kind: 'field', fieldname: 'body', fieldtype: 'Data', label: 'Body' },
-				{ kind: 'field', fieldname: 'item_id', fieldtype: 'Data', label: 'Item ID' },
+				{ kind: 'field', fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
+				{ kind: 'field', fieldname: 'body', component: 'ATextInput', label: 'Body' },
+				{ kind: 'field', fieldname: 'item_id', component: 'ATextInput', label: 'Item ID' },
 			],
 		},
 		ScWidget: {
 			name: 'ScWidget',
 			fields: [
-				{ fieldname: 'id', fieldtype: 'PrimaryKey', label: 'ID' },
+				{ fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
 				{
 					fieldname: 'basicInfo_fieldset',
-					fieldtype: 'Fieldset',
+
 					component: 'AFieldset',
 					schema: [
-						{ fieldname: 'itemName', fieldtype: 'Data', label: 'Name' },
-						{ fieldname: 'itemColor', fieldtype: 'Data', label: 'Color' },
+						{ fieldname: 'itemName', component: 'ATextInput', label: 'Name' },
+						{ fieldname: 'itemColor', component: 'ATextInput', label: 'Color' },
 					],
 				},
 			],
@@ -86,22 +86,24 @@ beforeAll(async () => {
 		ScPart: {
 			name: 'ScPart',
 			fields: [
-				{ fieldname: 'id', fieldtype: 'PrimaryKey', label: 'ID' },
-				{ fieldname: 'gadget_id', fieldtype: 'Data', label: 'Gadget ID' },
-				{ fieldname: 'partName', fieldtype: 'Data', label: 'Part Name' },
+				{ fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
+				{ fieldname: 'gadget_id', component: 'ATextInput', label: 'Gadget ID' },
+				{ fieldname: 'partName', component: 'ATextInput', label: 'Part Name' },
 			],
 		},
 		ScGadget: {
 			name: 'ScGadget',
 			fields: [
-				{ fieldname: 'id', fieldtype: 'PrimaryKey', label: 'ID' },
+				{ fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
 				{
 					fieldname: 'info_fieldset',
-					fieldtype: 'Fieldset',
+
 					component: 'AFieldset',
 					schema: [
-						{ fieldname: 'gadgetName', fieldtype: 'Data', label: 'Name' },
-						{ fieldname: 'parts', fieldtype: 'Link', options: 'ScPart' },
+						{ fieldname: 'gadgetName', component: 'ATextInput', label: 'Name' },
+						// An expanding reverse relation (noneOrMany + backlink), not a forward FK:
+						// there is no `parts` column on sc_gadget, so it must not reach the SELECT.
+						{ fieldname: 'parts', component: 'ATable', doctype: 'ScPart' },
 					],
 				},
 			],
@@ -117,15 +119,15 @@ beforeAll(async () => {
 		ScProduct: {
 			name: 'ScProduct',
 			fields: [
-				{ fieldname: 'id', fieldtype: 'PrimaryKey', label: 'ID' },
+				{ fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
 				{
 					fieldname: 'info_fieldset',
-					fieldtype: 'Fieldset',
+
 					component: 'AFieldset',
 					schema: [
-						{ fieldname: 'productName', fieldtype: 'Data', label: 'Name' },
-						{ fieldname: 'price', fieldtype: 'Int', label: 'Price' },
-						{ fieldname: 'priceDisplay', fieldtype: 'Display', label: 'Formatted Price' },
+						{ fieldname: 'productName', component: 'ATextInput', label: 'Name' },
+						{ fieldname: 'price', component: 'ANumericInput', label: 'Price' },
+						{ fieldname: 'priceDisplay', component: 'ATextInput', computed: true, label: 'Formatted Price' },
 					],
 				},
 			],

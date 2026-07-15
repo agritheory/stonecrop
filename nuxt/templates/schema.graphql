@@ -13,7 +13,6 @@ Field metadata from doctype schema
 type StonecropField {
 	kind: String!
 	fieldname: String!
-	fieldtype: String
 	component: String
 	primaryKey: Boolean
 	computed: Boolean

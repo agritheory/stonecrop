@@ -23,14 +23,10 @@ export const ActionDefinition: z.ZodObject<{
 // @public
 export type ActionDefinition = z.infer<typeof ActionDefinition>;
 
+// Warning: (ae-forgotten-export) The symbol "FieldTemplate" needs to be exported by the entry point index.d.ts
+//
 // @public
 export function buildScalarMap(customScalars?: Record<string, Partial<FieldTemplate>>): Record<string, FieldTemplate>;
-
-// @public
-export const BUILTIN_FIELD_TYPES: readonly ["Data", "Text", "Int", "Float", "Decimal", "Check", "Date", "Time", "Datetime", "Duration", "DateRange", "JSON", "Code", "Link", "Attach", "Currency", "Quantity", "Select", "PrimaryKey", "Fieldset", "Display"];
-
-// @public
-export type BuiltinFieldType = (typeof BUILTIN_FIELD_TYPES)[number];
 
 // @public
 export function camelToLabel(camelCase: string): string;
@@ -65,7 +61,6 @@ export interface ColumnSchema {
     doctype?: string;
     edit?: boolean;
     fieldname: string;
-    fieldtype?: string;
     filterable?: boolean;
     filterComponent?: string;
     filterOptions?: any[];
@@ -236,7 +231,7 @@ export const FetchStrategy: z.ZodDiscriminatedUnion<[z.ZodObject<{
 export type FetchStrategy = z.infer<typeof FetchStrategy>;
 
 // @public
-export const FieldOptions: z.ZodUnion<readonly [z.ZodString, z.ZodArray<z.ZodString>, z.ZodRecord<z.ZodString, z.ZodUnknown>]>;
+export const FieldOptions: z.ZodUnion<readonly [z.ZodArray<z.ZodString>, z.ZodRecord<z.ZodString, z.ZodUnknown>]>;
 
 // @public
 export type FieldOptions = z.infer<typeof FieldOptions>;
@@ -268,21 +263,12 @@ export const FieldsetFieldSchema: z.ZodObject<{
 }, z.core.$strip>;
 
 // @public
-export interface FieldTemplate {
-    component: string;
-    fieldtype: BuiltinFieldType;
-}
-
-// @public
 export const FieldValidation: z.ZodObject<{
     errorMessage: z.ZodString;
 }, z.core.$loose>;
 
 // @public
 export type FieldValidation = z.infer<typeof FieldValidation>;
-
-// @public
-export function getDefaultComponent(fieldtype: BuiltinFieldType): string;
 
 // @public
 export interface GetRecordOptions {
@@ -307,8 +293,7 @@ export interface GetRecordsOptions {
 export const GQL_SCALAR_MAP: Record<string, FieldTemplate>;
 
 // @public
-export interface GraphQLConversionFieldMeta extends Omit<ValueField, 'fieldtype'> {
-    fieldtype?: string;
+export interface GraphQLConversionFieldMeta extends ValueField {
     _graphqlType?: string;
     _isLink?: boolean;
     _unmapped?: boolean;
@@ -339,9 +324,6 @@ export type IntrospectionSource = IntrospectionQuery | string;
 export function isActionAllowedInState(action: {
     allowedStates?: string[] | null;
 }, currentState: string): boolean;
-
-// @public
-export function isBuiltinFieldType(fieldtype: string): fieldtype is BuiltinFieldType;
 
 // @public
 export const LazyFetch: z.ZodObject<{
@@ -394,9 +376,6 @@ export function parseField(data: unknown): DoctypeField;
 export function pascalToSnake(pascal: string): string;
 
 // @public
-export function resolveComponent(fieldtype: string): string;
-
-// @public
 export function resolveLinkRenderMode(link: {
     component?: string;
     cardinality?: string;
@@ -410,9 +389,6 @@ export function snakeToCamel(snakeCase: string): string;
 
 // @public
 export function snakeToLabel(snakeCase: string): string;
-
-// @public
-export const StonecropFieldType: z.ZodString;
 
 // @public
 export const SyncFetch: z.ZodObject<{
@@ -506,9 +482,6 @@ export const TriggerDefinition: z.ZodObject<{
 export type TriggerDefinition = z.infer<typeof TriggerDefinition>;
 
 // @public
-export const TYPE_MAP: Record<BuiltinFieldType, FieldTemplate>;
-
-// @public
 export function validateDoctype(data: unknown): ValidationResult;
 
 // @public
@@ -530,13 +503,12 @@ export interface ValidationResult {
 export interface ValueField {
     align?: 'left' | 'center' | 'right' | 'start' | 'end';
     cardinality?: 'atMostOne' | 'one' | 'noneOrMany' | 'atLeastOne';
-    component?: string;
+    component: string;
     computed?: boolean;
     default?: unknown;
     doctype?: string;
     edit?: boolean;
     fieldname: string;
-    fieldtype?: string;
     format?: string;
     hidden?: boolean;
     kind: 'field';
@@ -557,8 +529,7 @@ export interface ValueField {
 export const ValueFieldSchema: z.ZodObject<{
     kind: z.ZodLiteral<"field">;
     fieldname: z.ZodString;
-    fieldtype: z.ZodOptional<z.ZodString>;
-    component: z.ZodOptional<z.ZodString>;
+    component: z.ZodString;
     primaryKey: z.ZodOptional<z.ZodBoolean>;
     computed: z.ZodOptional<z.ZodBoolean>;
     language: z.ZodOptional<z.ZodString>;
@@ -580,7 +551,7 @@ export const ValueFieldSchema: z.ZodObject<{
         read: "read";
         display: "display";
     }>>;
-    options: z.ZodOptional<z.ZodUnion<readonly [z.ZodString, z.ZodArray<z.ZodString>, z.ZodRecord<z.ZodString, z.ZodUnknown>]>>;
+    options: z.ZodOptional<z.ZodUnion<readonly [z.ZodArray<z.ZodString>, z.ZodRecord<z.ZodString, z.ZodUnknown>]>>;
     required: z.ZodOptional<z.ZodBoolean>;
     readOnly: z.ZodOptional<z.ZodBoolean>;
     hidden: z.ZodOptional<z.ZodBoolean>;

@@ -4,19 +4,7 @@ export type { InteractionMode } from './mode'
 // Table authoring types
 export { TableViewConfig } from './table'
 
-// Field types
-export {
-	StonecropFieldType,
-	BUILTIN_FIELD_TYPES,
-	TYPE_MAP,
-	getDefaultComponent,
-	resolveComponent,
-	isBuiltinFieldType,
-	type BuiltinFieldType,
-	type FieldTemplate,
-} from './fieldtype'
-
-// Component → semantic category (the component-primary replacement for fieldtype-based behaviour)
+// Component → semantic category — the single source of "what kind of value does this component render"
 export {
 	CANONICAL_COMPONENTS,
 	COMPONENT_CATEGORY,

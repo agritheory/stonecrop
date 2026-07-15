@@ -9,7 +9,6 @@ export const typeDefs = gql`
 	type StonecropFieldMeta {
 		kind: String!
 		fieldname: String!
-		fieldtype: String
 		component: String
 		primaryKey: Boolean
 		computed: Boolean

@@ -22,7 +22,7 @@ describe('Column Filter Component', { tags: ['component'] }, () => {
 		baseColumn = {
 			name: 'name',
 			label: 'Name',
-			fieldtype: 'Data',
+			component: 'ATextInput',
 		}
 	})
 
@@ -513,11 +513,11 @@ describe('Column Filter Component', { tags: ['component'] }, () => {
 		})
 	})
 
-	describe('fieldtype-based filterType derivation', () => {
-		it('renders checkbox when fieldtype is Check and filterType is absent', () => {
+	describe('component-based filterType derivation', () => {
+		it('renders checkbox for ACheckbox when filterType is absent', () => {
 			const wrapper = mount(ATableColumnFilter, {
 				props: {
-					column: { name: 'active', label: 'Active', fieldtype: 'Check' },
+					column: { name: 'active', label: 'Active', component: 'ACheckbox' },
 					colIndex: 0,
 					store: mockStore,
 				},
@@ -525,10 +525,10 @@ describe('Column Filter Component', { tags: ['component'] }, () => {
 			expect(wrapper.find('input[type="checkbox"]').exists()).toBe(true)
 		})
 
-		it('renders date input when fieldtype is Date and filterType is absent', () => {
+		it('renders date input for ADate when filterType is absent', () => {
 			const wrapper = mount(ATableColumnFilter, {
 				props: {
-					column: { name: 'created', label: 'Created', fieldtype: 'Date' },
+					column: { name: 'created', label: 'Created', component: 'ADate' },
 					colIndex: 0,
 					store: mockStore,
 				},
@@ -536,10 +536,10 @@ describe('Column Filter Component', { tags: ['component'] }, () => {
 			expect(wrapper.find('input[type="date"]').exists()).toBe(true)
 		})
 
-		it('renders two date inputs (dateRange) when fieldtype is Datetime and filterType is absent', () => {
+		it('renders two date inputs (dateRange) for ADateTime when filterType is absent', () => {
 			const wrapper = mount(ATableColumnFilter, {
 				props: {
-					column: { name: 'created_at', label: 'Created At', fieldtype: 'Datetime' },
+					column: { name: 'created_at', label: 'Created At', component: 'ADateTime' },
 					colIndex: 0,
 					store: mockStore,
 				},
@@ -547,10 +547,10 @@ describe('Column Filter Component', { tags: ['component'] }, () => {
 			expect(wrapper.findAll('input[type="date"]')).toHaveLength(2)
 		})
 
-		it('renders number input when fieldtype is Int and filterType is absent', () => {
+		it('renders number input for ANumericInput when filterType is absent', () => {
 			const wrapper = mount(ATableColumnFilter, {
 				props: {
-					column: { name: 'qty', label: 'Qty', fieldtype: 'Int' },
+					column: { name: 'qty', label: 'Qty', component: 'ANumericInput' },
 					colIndex: 0,
 					store: mockStore,
 				},
@@ -558,23 +558,10 @@ describe('Column Filter Component', { tags: ['component'] }, () => {
 			expect(wrapper.find('input[type="number"]').exists()).toBe(true)
 		})
 
-		it('renders number input when fieldtype is Float, Currency, Decimal, or Quantity and filterType is absent', () => {
-			for (const fieldtype of ['Float', 'Currency', 'Decimal', 'Quantity']) {
-				const wrapper = mount(ATableColumnFilter, {
-					props: {
-						column: { name: 'amount', label: 'Amount', fieldtype },
-						colIndex: 0,
-						store: mockStore,
-					},
-				})
-				expect(wrapper.find('input[type="number"]').exists()).toBe(true)
-			}
-		})
-
-		it('renders select when fieldtype is Select and filterType is absent', () => {
+		it('renders select for ADropdown when filterType is absent', () => {
 			const wrapper = mount(ATableColumnFilter, {
 				props: {
-					column: { name: 'status', label: 'Status', fieldtype: 'Select' },
+					column: { name: 'status', label: 'Status', component: 'ADropdown' },
 					colIndex: 0,
 					store: mockStore,
 				},
@@ -582,11 +569,11 @@ describe('Column Filter Component', { tags: ['component'] }, () => {
 			expect(wrapper.find('select').exists()).toBe(true)
 		})
 
-		it('explicit filterType takes precedence over fieldtype', () => {
-			// fieldtype says Check (→ checkbox) but explicit filterType overrides to text
+		it('explicit filterType takes precedence over the component', () => {
+			// ACheckbox would derive a checkbox, but an explicit filterType overrides it
 			const wrapper = mount(ATableColumnFilter, {
 				props: {
-					column: { name: 'active', label: 'Active', fieldtype: 'Check', filterType: 'text' },
+					column: { name: 'active', label: 'Active', component: 'ACheckbox', filterType: 'text' },
 					colIndex: 0,
 					store: mockStore,
 				},
@@ -595,10 +582,10 @@ describe('Column Filter Component', { tags: ['component'] }, () => {
 			expect(wrapper.find('input[type="checkbox"]').exists()).toBe(false)
 		})
 
-		it('falls back to text for unknown fieldtype', () => {
+		it('falls back to text for an unknown (custom) component', () => {
 			const wrapper = mount(ATableColumnFilter, {
 				props: {
-					column: { name: 'misc', label: 'Misc', fieldtype: 'UnknownType' },
+					column: { name: 'misc', label: 'Misc', component: 'MyCustomWidget' },
 					colIndex: 0,
 					store: mockStore,
 				},

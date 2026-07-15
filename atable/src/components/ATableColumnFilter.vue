@@ -71,8 +71,7 @@ import { componentCategory, type ComponentCategory } from '@stonecrop/schema'
 import { createTableStore } from '../stores/table'
 import type { TableColumn } from '../types'
 
-// Component-primary filter widget selection. Falls back to the legacy fieldtype switch below
-// while both `component` and `fieldtype` are present (dual-read during the migration).
+// The filter widget is chosen by the component's semantic category.
 const CATEGORY_FILTER: Record<ComponentCategory, 'text' | 'select' | 'number' | 'date' | 'dateRange' | 'checkbox'> = {
 	text: 'text',
 	number: 'number',
@@ -101,24 +100,8 @@ const resolvedFilterType = computed(() => {
 	if (column.filterType) return column.filterType
 	const category = componentCategory(column.component)
 	if (category) return CATEGORY_FILTER[category]
-	switch (column.fieldtype) {
-		case 'Check':
-			return 'checkbox'
-		case 'Date':
-			return 'date'
-		case 'Datetime':
-			return 'dateRange'
-		case 'Select':
-			return 'select'
-		case 'Int':
-		case 'Float':
-		case 'Currency':
-		case 'Decimal':
-		case 'Quantity':
-			return 'number'
-		default:
-			return 'text'
-	}
+	// An unknown (custom) component gets the widget that can filter anything.
+	return 'text'
 })
 
 const getSelectOptions = (col: TableColumn): any[] => {

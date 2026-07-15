@@ -39,7 +39,7 @@ import { defaultIsEntityType, defaultIsEntityField, classifyFieldType } from './
  * // With PostGraphile custom scalars
  * const doctypes = convertGraphQLSchema(introspection, {
  *   customScalars: {
- *     BigFloat: { component: 'ADecimalInput', fieldtype: 'Decimal' }
+ *     BigFloat: { component: 'ANumericInput' }
  *   }
  * })
  * ```

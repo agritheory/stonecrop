@@ -139,7 +139,7 @@ describe('validateReferences', { tags: ['unit', 'graphql'] }, () => {
 		loadDoctypesFromObject({
 			User: { fields: [] },
 			Task: {
-				fields: [{ kind: 'field', fieldname: 'owner', fieldtype: 'Link', label: 'Owner', options: 'User' }],
+				fields: [{ kind: 'field', fieldname: 'owner', component: 'AFormLink', label: 'Owner', doctype: 'User' }],
 			},
 		})
 		expect(validateReferences()).toHaveLength(0)
@@ -153,22 +153,26 @@ describe('validateReferences', { tags: ['unit', 'graphql'] }, () => {
 
 	it('reports error for Link field targeting unknown doctype', () => {
 		loadDoctypesFromObject({
-			Task: { fields: [{ kind: 'field', fieldname: 'owner', fieldtype: 'Link', label: 'Owner', options: 'User' }] },
+			Task: {
+				fields: [{ kind: 'field', fieldname: 'owner', component: 'AFormLink', label: 'Owner', doctype: 'User' }],
+			},
 		})
 		const errors = validateReferences()
 		expect(errors.some(e => e.message.includes('User'))).toBe(true)
 	})
 
-	it('does not report error for Link field with non-string options', () => {
+	it('does not treat a field with options but no doctype as a link', () => {
+		// `options` carries choices/config and never names a link target — `doctype` does. A select
+		// whose choices happen to look like doctype names must not be resolved as a reference.
 		loadDoctypesFromObject({
 			Task: {
 				fields: [
 					{
 						kind: 'field' as const,
 						fieldname: 'tag',
-						fieldtype: 'Link',
+						component: 'ADropdown',
 						label: 'Tag',
-						options: { component: 'Select' } as unknown as string,
+						options: ['User', 'NotADoctype'],
 					},
 				],
 			},

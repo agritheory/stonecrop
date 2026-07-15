@@ -1,7 +1,6 @@
 import { z } from 'zod'
 
 import type { ColumnSchema } from './column-schema'
-import { StonecropFieldType } from './fieldtype'
 import type { InteractionMode } from './mode'
 import { TableViewConfig } from './table'
 
@@ -12,15 +11,15 @@ import { TableViewConfig } from './table'
  * - Select: array of choices (["Draft", "Submitted", "Cancelled"])
  * - Decimal: config object (\{ precision: 10, scale: 2 \})
  * - Code: config object (\{ language: "python" \})
- * - Link target as a bare string ("customer") — **legacy**, superseded by `ValueField.doctype`.
- *   Tolerated until every fixture migrates; the `z.string()` branch is dropped after that, which
- *   leaves this a clean choices-or-config bag with no shape-encodes-meaning overload.
+ *
+ * Deliberately *not* a bare string: a string once meant "link target", which made the value's
+ * shape encode its meaning. That job belongs to `ValueField.doctype`, leaving this a plain
+ * choices-or-config bag.
  *
  * @public
  */
 export const FieldOptions = z
 	.union([
-		z.string(), // legacy link target: "customer" — superseded by `doctype`
 		z.array(z.string()), // Select choices: ["A", "B", "C"]
 		z.record(z.string(), z.unknown()), // Config: \{ precision: 10, scale: 2 \}
 	])
@@ -61,7 +60,8 @@ export type FieldValidation = z.infer<typeof FieldValidation>
 
 /**
  * A field that holds a scalar value, a link to another record, or a select choice.
- * The most common kind of field. `fieldtype` determines the default component and behavior.
+ * The most common kind of field. `component` determines how it renders; the attributes below
+ * carry everything else that is not a rendering concern.
  * @public
  */
 export interface ValueField {
@@ -70,25 +70,21 @@ export interface ValueField {
 	/** Unique identifier for this field within its doctype */
 	fieldname: string
 	/**
-	 * Semantic field type (legacy). Optional during the component-primary migration — `component`
-	 * is now the primary rendering axis. Retained so un-migrated fields keep working; removed once
-	 * every field carries `component`.
+	 * Vue component that renders this field — the primary (and only) rendering axis. Required:
+	 * there is nothing left to derive it from, and a field without one has nothing to render it.
+	 * Any string is valid; naming a custom component is how an app renders a field Stonecrop
+	 * ships no widget for. See `CANONICAL_COMPONENTS` for the set Stonecrop provides.
 	 */
-	fieldtype?: string
-	/** Vue component that renders this field — the primary rendering axis. */
-	component?: string
-	/** True for the field that identifies the record's primary-key column (replaces `fieldtype: 'PrimaryKey'`). */
+	component: string
+	/** True for the field that identifies the record's primary-key column. */
 	primaryKey?: boolean
-	/**
-	 * True for a computed/display field with no backing DB column — excluded from SQL SELECT
-	 * (replaces `fieldtype: 'Display'`).
-	 */
+	/** True for a computed/display field with no backing DB column — excluded from SQL SELECT. */
 	computed?: boolean
-	/** Editor language for code fields (e.g. `'json'`, `'typescript'`) — disambiguates JSON vs Code, which share `ACodeEditor`. */
+	/** Editor language for code fields (e.g. `'json'`, `'typescript'`) — the only thing distinguishing
+	 *  a JSON editor from a code editor, since both render with `ACodeEditor`. */
 	language?: string
 	/**
-	 * Target doctype slug — this field is a link to that doctype (replaces `fieldtype: 'Link'` and
-	 * the legacy convention of a string-valued `options`). Presence is what makes a field a link.
+	 * Target doctype slug. Presence is what makes a field a link.
 	 *
 	 * How it renders is decided by `component`, not by this: `AFormLink` renders an
 	 * inline id-picker, while `AForm`/`ATable` expand the target (see `linkRenderMode`). Expansion
@@ -112,8 +108,8 @@ export interface ValueField {
 	format?: string
 	/** Per-field interaction mode override */
 	mode?: InteractionMode
-	/** Type-specific options: Select choices, Decimal precision config, etc. A string value is the
-	 *  legacy link target — superseded by `doctype`, tolerated until the migration completes. */
+	/** Type-specific options: Select choices, Decimal precision config, etc. A link's target is not
+	 *  here — it is `doctype`. */
 	options?: FieldOptions
 	/** Whether the field is required */
 	required?: boolean
@@ -194,7 +190,8 @@ export type DoctypeField = ValueField | FieldsetField | TableField
 /**
  * Infers the `kind` discriminant from the structural properties of a raw field
  * object, then injects it if absent. This allows authored JSON to omit `kind`
- * entirely — authors write only `fieldtype`, `schema`, or `columns`.
+ * entirely — a `schema` key means fieldset, `columns` means table, anything else
+ * is a value field.
  *
  * Rules (applied in order):
  *   has `schema`  → fieldset
@@ -218,8 +215,7 @@ function createDoctypeFieldSchemas() {
 		.object({
 			kind: z.literal('field'),
 			fieldname: z.string().min(1),
-			fieldtype: StonecropFieldType.optional(),
-			component: z.string().optional(),
+			component: z.string().min(1),
 			primaryKey: z.boolean().optional(),
 			computed: z.boolean().optional(),
 			language: z.string().optional(),

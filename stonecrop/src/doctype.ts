@@ -111,8 +111,8 @@ export default class Doctype {
 	 * const planDoctype = Doctype.fromObject({
 	 *   name: 'Plan',
 	 *   fields: [
-	 *     { fieldname: 'title', label: 'Title', fieldtype: 'Data' },
-	 *     { fieldname: 'status', label: 'Status', fieldtype: 'Data' },
+	 *     { fieldname: 'title', label: 'Title', component: 'ATextInput' },
+	 *     { fieldname: 'status', label: 'Status', component: 'ATextInput' },
 	 *   ],
 	 *   workflow: {
 	 *     id: 'plan',

@@ -8,7 +8,7 @@ import { createTableStore } from '../stores/table'
 /**
  * Runtime column definition for ATable.
  *
- * Extends `ColumnSchema` from `@stonecrop/schema` — all authoring properties (`label`, `fieldtype`, `width`,
+ * Extends `ColumnSchema` from `@stonecrop/schema` — all authoring properties (`label`, `component`, `width`,
  * `pinned`, filter config, cell/modal component names, etc.) are inherited. The overrides
  * below widen three properties for runtime use (live functions, broader alignment values)
  * and add two runtime-only additions (`mask`, `originalIndex`).
@@ -45,7 +45,7 @@ export interface TableColumn extends Omit<ColumnSchema, 'fieldname' | 'hidden' |
 	mask?: (value: any) => any
 
 	/**
-	 * For `fieldtype: 'Link'` columns: the target doctype slug used by the `linkResolver`
+	 * For link columns (those carrying `doctype`): the target doctype slug used by the `linkResolver`
 	 * to look up display text for bare ID values. Set automatically by `schemaToColumns`
 	 * from the field's `doctype` property.
 	 */

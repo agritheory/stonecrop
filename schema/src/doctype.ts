@@ -309,7 +309,7 @@ export const DoctypeMeta = z
 		/** URL-friendly slug (kebab-case) */
 		slug: z.string().min(1).optional(),
 
-		/** Field definitions (including link fields with fieldtype: 'Link') */
+		/** Field definitions (a link field is one carrying `doctype`) */
 		fields: z.array(DoctypeFieldSchema),
 
 		/** Relationship links to other doctypes */

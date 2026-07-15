@@ -1,11 +1,11 @@
 /**
  * Semantic category for a rendering component.
  *
- * As `component` replaces `fieldtype` as the primary field axis, the runtime consumers that
- * used to branch on `fieldtype` (atable cell formatting / filter widgets, record-default init)
- * instead derive their behaviour from the component's category. This is the single source of
- * "what kind of value does this component render", keyed by the canonical registered component
- * names — each consumer maps the category to its own concern (filter widget, default value, …).
+ * `component` is the primary field axis, so the runtime consumers that need to know what a field
+ * *means* (atable cell formatting / filter widgets, record-default init) derive it from here. This
+ * is the single source of "what kind of value does this component render", keyed by the canonical
+ * registered component names — each consumer maps the category to its own concern (filter widget,
+ * default value, …).
  *
  * @public
  */
@@ -35,8 +35,8 @@ export const COMPONENT_CATEGORY: Record<string, ComponentCategory> = {
 }
 
 /**
- * Resolve a component's semantic category, or `undefined` for an absent/unknown component
- * (so callers can fall back to a legacy `fieldtype`-based path during the migration).
+ * Resolve a component's semantic category, or `undefined` for an unknown (custom) component —
+ * callers treat that as "no opinion" and use their own default.
  * @public
  */
 export function componentCategory(component?: string): ComponentCategory | undefined {

@@ -21,23 +21,18 @@ export interface ColumnSchema {
 	fieldname: string
 
 	/**
-	 * Semantic field type (e.g. `'Data'`, `'Int'`, `'Date'`, `'Check'`). Legacy — being replaced
-	 * by `component`. Fields without a `fieldtype` *and* without a `component` are treated as
-	 * non-scalar (nested table or fieldset) and excluded by `schemaToColumns`.
-	 */
-	fieldtype?: string
-
-	/**
-	 * Rendering component (e.g. `'ATextInput'`, `'ANumericInput'`, `'ADate'`). The component-primary
-	 * replacement for `fieldtype`: default cell formatting and filter widgets derive from its
-	 * {@link ComponentCategory}, falling back to `fieldtype` while both are present.
+	 * Rendering component (e.g. `'ATextInput'`, `'ANumericInput'`, `'ADate'`). Default cell
+	 * formatting and filter widgets derive from its {@link ComponentCategory}.
+	 *
+	 * Optional here, unlike `ValueField.component`: absence is what marks an entry as non-scalar
+	 * (a nested table or fieldset), which `schemaToColumns` excludes — it has no column equivalent.
 	 */
 	component?: string
 
 	/**
-	 * Target doctype slug — marks this column as a link (replaces `fieldtype: 'Link'`). When set
-	 * and no `cellComponent` is given, `schemaToColumns` copies it to `TableColumn.linkDoctype`,
-	 * which ACell uses to resolve a bare id to display text.
+	 * Target doctype slug — marks this column as a link. When set and no `cellComponent` is given,
+	 * `schemaToColumns` copies it to `TableColumn.linkDoctype`, which ACell uses to resolve a bare
+	 * id to display text.
 	 */
 	doctype?: string
 
@@ -100,9 +95,10 @@ export interface ColumnSchema {
 	filterable?: boolean
 
 	/**
-	 * The type of filter control to render. When absent, a default is derived from `fieldtype`
-	 * (`Check` → `checkbox`, `Date` → `date`, `Datetime` → `dateRange`, `Select` → `select`,
-	 * numeric types → `number`, everything else → `text`).
+	 * The type of filter control to render. When absent, a default is derived from the
+	 * `component`'s {@link ComponentCategory} (`boolean` → `checkbox`, `date` → `date`,
+	 * `datetime` → `dateRange`, `select` → `select`, `number` → `number`, everything else
+	 * — including an unknown component — → `text`).
 	 */
 	filterType?: 'text' | 'select' | 'number' | 'date' | 'dateRange' | 'checkbox' | 'component'
 

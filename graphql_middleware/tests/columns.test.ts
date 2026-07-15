@@ -7,10 +7,10 @@ import { loadDoctypesFromObject, getMeta, clearRegistry } from '../src/registry/
 // getSqlColumns — SQL column selection rules
 //
 // Regression guard for the display/mode conflation: the SELECT-column builder
-// must key the "no backing DB column" decision off `fieldtype: 'Display'`
+// must key the "no backing DB column" decision off `component: 'ATextInput', computed: true`
 // ONLY. `mode` is an interaction/rendering concern ('edit' | 'read' | 'display')
 // and a `mode: 'display'` field still has a real column that must be selected.
-// (See schema/src/mode.ts and schema/src/fieldtype.ts.)
+// (See schema/src/mode.ts and schema/src/component-meta.ts.)
 // ===========================================================================
 
 describe('getSqlColumns', { tags: ['unit', 'graphql'] }, () => {
@@ -18,19 +18,25 @@ describe('getSqlColumns', { tags: ['unit', 'graphql'] }, () => {
 		clearRegistry()
 	})
 
-	it('selects mode:"display" columns but excludes fieldtype:"Display" fields', () => {
+	it('selects mode:"display" columns but excludes computed fields', () => {
 		loadDoctypesFromObject({
 			ColumnSample: {
 				name: 'ColumnSample',
 				fields: [
-					{ kind: 'field', fieldname: 'id', fieldtype: 'PrimaryKey', label: 'ID' },
-					{ kind: 'field', fieldname: 'name', fieldtype: 'Data', label: 'Name' },
+					{ kind: 'field', fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
+					{ kind: 'field', fieldname: 'name', component: 'ATextInput', label: 'Name' },
 					// real column the author renders read-only as plain text — MUST be selected
-					{ kind: 'field', fieldname: 'createdAt', fieldtype: 'Datetime', label: 'Created At', mode: 'display' },
+					{ kind: 'field', fieldname: 'createdAt', component: 'ADateTime', label: 'Created At', mode: 'display' },
 					// real column rendered read-only with form chrome — MUST be selected
-					{ kind: 'field', fieldname: 'status', fieldtype: 'Data', label: 'Status', mode: 'read' },
+					{ kind: 'field', fieldname: 'status', component: 'ATextInput', label: 'Status', mode: 'read' },
 					// computed, no backing column — MUST be excluded
-					{ kind: 'field', fieldname: 'computedTotal', fieldtype: 'Display', label: 'Computed Total' },
+					{
+						kind: 'field',
+						fieldname: 'computedTotal',
+						component: 'ATextInput',
+						computed: true,
+						label: 'Computed Total',
+					},
 				],
 			},
 		})
@@ -43,7 +49,7 @@ describe('getSqlColumns', { tags: ['unit', 'graphql'] }, () => {
 		expect(columns).toContain('"status"')
 		// plain editable field is selected
 		expect(columns).toContain('"name"')
-		// fieldtype:'Display' field is NOT selected (no backing column)
+		// the computed field is NOT selected (no backing column)
 		expect(columns).not.toContain('computed_total')
 		expect(columns).not.toContain('computedTotal')
 	})
@@ -55,7 +61,7 @@ describe('getSqlColumns', { tags: ['unit', 'graphql'] }, () => {
 				fields: [
 					{ kind: 'field', fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
 					{ kind: 'field', fieldname: 'name', component: 'ATextInput', label: 'Name' },
-					// computed, no backing column — MUST be excluded (was fieldtype:'Display')
+					// computed, no backing column — MUST be excluded
 					{ kind: 'field', fieldname: 'total', component: 'ANumericInput', computed: true, label: 'Total' },
 				],
 			},
@@ -73,14 +79,14 @@ describe('getSqlColumns', { tags: ['unit', 'graphql'] }, () => {
 			FieldsetSample: {
 				name: 'FieldsetSample',
 				fields: [
-					{ kind: 'field', fieldname: 'id', fieldtype: 'PrimaryKey', label: 'ID' },
+					{ kind: 'field', fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
 					{
 						fieldname: 'basicInfo_fieldset',
-						fieldtype: 'Fieldset',
+
 						component: 'AFieldset',
 						schema: [
-							{ fieldname: 'itemName', fieldtype: 'Data', label: 'Name' },
-							{ fieldname: 'itemColor', fieldtype: 'Data', label: 'Color', mode: 'display' },
+							{ fieldname: 'itemName', component: 'ATextInput', label: 'Name' },
+							{ fieldname: 'itemColor', component: 'ATextInput', label: 'Color', mode: 'display' },
 						],
 					},
 				],
@@ -105,7 +111,7 @@ describe('getSqlColumns', { tags: ['unit', 'graphql'] }, () => {
 			InlineLinkSample: {
 				name: 'InlineLinkSample',
 				fields: [
-					{ kind: 'field', fieldname: 'id', primaryKey: true, label: 'ID' },
+					{ kind: 'field', fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
 					{ kind: 'field', fieldname: 'userId', component: 'AFormLink', doctype: 'user', label: 'User' },
 				],
 				links: {
@@ -124,8 +130,8 @@ describe('getSqlColumns', { tags: ['unit', 'graphql'] }, () => {
 			LinkSample: {
 				name: 'LinkSample',
 				fields: [
-					{ kind: 'field', fieldname: 'id', fieldtype: 'PrimaryKey', label: 'ID' },
-					{ kind: 'field', fieldname: 'name', fieldtype: 'Data', label: 'Name' },
+					{ kind: 'field', fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
+					{ kind: 'field', fieldname: 'name', component: 'ATextInput', label: 'Name' },
 				],
 				links: {
 					children: {

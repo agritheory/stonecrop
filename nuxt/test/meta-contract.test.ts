@@ -94,7 +94,7 @@ describe.each([
 			{
 				kind: 'field',
 				fieldname: 'amount',
-				fieldtype: 'Data',
+				component: 'ATextInput',
 				format: '0.00',
 				source: 'introspected',
 				cardinality: 'one',

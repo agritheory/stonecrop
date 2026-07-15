@@ -10,7 +10,6 @@ describe('Field Validation', { tags: ['unit'] }, () => {
 			const field = {
 				kind: 'field' as const,
 				fieldname: 'email',
-				fieldtype: 'Data',
 				component: 'ATextInput',
 				label: 'Email',
 			}
@@ -24,7 +23,7 @@ describe('Field Validation', { tags: ['unit'] }, () => {
 			const field = {
 				kind: 'field' as const,
 				fieldname: 'name',
-				fieldtype: 'Data',
+				component: 'ATextInput',
 			}
 			const result = validateField(field)
 
@@ -35,7 +34,7 @@ describe('Field Validation', { tags: ['unit'] }, () => {
 		it('should reject field missing fieldname', () => {
 			const field = {
 				kind: 'field',
-				fieldtype: 'Data',
+				component: 'ATextInput',
 			}
 			const result = validateField(field)
 
@@ -45,10 +44,20 @@ describe('Field Validation', { tags: ['unit'] }, () => {
 			expect(result.errors[0].message).toBeTruthy()
 		})
 
-		it('should accept a field with a component and no fieldtype (component-primary shape)', () => {
-			// fieldtype is optional during the component-primary migration: a field may carry
-			// only `component`. The app-level `required-component-or-fieldtype` rule (in stonecrop)
-			// still enforces that at least one is present; the Zod gate itself is permissive.
+		it('should reject a field with no component', () => {
+			// `component` is the only rendering axis, so a field without one has nothing to render
+			// it. There is no longer anything to derive it from, hence required rather than optional.
+			const field = {
+				kind: 'field' as const,
+				fieldname: 'test',
+			}
+			const result = validateField(field)
+
+			expect(result.success).toBe(false)
+			expect(result.errors[0].path).toContain('component')
+		})
+
+		it('should accept a field carrying only fieldname and component', () => {
 			const field = {
 				kind: 'field' as const,
 				fieldname: 'test',
@@ -76,7 +85,7 @@ describe('Field Validation', { tags: ['unit'] }, () => {
 		})
 
 		it('should preserve the doctype attribute through a round-trip', () => {
-			// `doctype` is both the link marker and its target — it replaces `fieldtype: 'Link'` plus the
+			// `doctype` is both the link marker and its target — it replaces `component: 'AFormLink'` plus the
 			// string-`options` convention.
 			const field = {
 				kind: 'field' as const,
@@ -91,7 +100,7 @@ describe('Field Validation', { tags: ['unit'] }, () => {
 			expect(parsed.doctype).toBe('user')
 		})
 
-		it('should accept a link field carrying doctype with no fieldtype and no options', () => {
+		it('should accept a link field carrying doctype and no options', () => {
 			const result = validateField({
 				kind: 'field' as const,
 				fieldname: 'assignee',
@@ -101,35 +110,52 @@ describe('Field Validation', { tags: ['unit'] }, () => {
 			expect(!result.success && result.errors).toBe(false)
 		})
 
-		it('should accept custom fieldtypes not in the builtin list', () => {
-			// StonecropFieldType is now an open string — any non-empty string is valid
+		it('should accept a custom component Stonecrop does not ship', () => {
+			// `component` is an open axis — naming a custom component is how an app renders a field
+			// Stonecrop has no widget for. CANONICAL_COMPONENTS is a suggestion set, not a whitelist.
 			const field = {
 				kind: 'field' as const,
 				fieldname: 'test',
-				fieldtype: 'Phone',
+				component: 'MyCompanyPhoneInput',
 			}
 			const result = validateField(field)
 
 			expect(result.success).toBe(true)
 		})
 
-		it('should reject empty string fieldtype', () => {
+		it('should reject an empty string component', () => {
 			const field = {
 				kind: 'field' as const,
 				fieldname: 'test',
-				fieldtype: '',
+				component: '',
 			}
 			const result = validateField(field)
 
 			expect(result.success).toBe(false)
 			expect(result.errors.length).toBeGreaterThan(0)
-			expect(result.errors[0].path).toContain('fieldtype')
+			expect(result.errors[0].path).toContain('component')
+		})
+
+		it('should reject a string-valued options (the retired link-target convention)', () => {
+			// A link target is `doctype`. `options` carrying a bare string once meant "link to this
+			// doctype", which made the value's shape encode its meaning; that branch is gone, so the
+			// old shape must now fail loudly rather than parse into something inert.
+			const field = {
+				kind: 'field' as const,
+				fieldname: 'assignee',
+				component: 'AFormLink',
+				options: 'user',
+			}
+			const result = validateField(field)
+
+			expect(result.success).toBe(false)
+			expect(result.errors[0].path).toContain('options')
 		})
 
 		it('should reject invalid options type', () => {
 			const field = {
 				fieldname: 'test',
-				fieldtype: 'Data',
+				component: 'ATextInput',
 				options: 123, // Should be string, string[], or Record
 			}
 			const result = validateField(field)
@@ -142,7 +168,6 @@ describe('Field Validation', { tags: ['unit'] }, () => {
 			const field = {
 				kind: 'field' as const,
 				fieldname: 'status',
-				fieldtype: 'Select',
 				component: 'ADropdown',
 				label: 'Status',
 				width: '200px',
@@ -167,28 +192,28 @@ describe('Field Validation', { tags: ['unit'] }, () => {
 			const field = {
 				kind: 'field' as const,
 				fieldname: 'email',
-				fieldtype: 'Data',
+				component: 'ATextInput',
 			}
 			const parsed = parseField(field)
 
 			expect(parsed.fieldname).toBe('email')
 			expect(parsed.kind).toBe('field')
-			expect((parsed as ValueField).fieldtype).toBe('Data')
+			expect((parsed as ValueField).component).toBe('ATextInput')
 		})
 
 		it('should throw ZodError for invalid field', () => {
 			const field = {
 				kind: 'field',
-				fieldtype: 'Data',
+				component: 'ATextInput',
 				// Missing required fieldname
 			}
 			expect(() => parseField(field)).toThrow(ZodError)
 		})
 
-		it('should throw ZodError for empty fieldtype', () => {
+		it('should throw ZodError for empty component', () => {
 			const field = {
 				fieldname: 'test',
-				fieldtype: '',
+				component: '',
 			}
 			expect(() => parseField(field)).toThrow(ZodError)
 		})
@@ -202,8 +227,8 @@ describe('Doctype Validation', { tags: ['unit'] }, () => {
 				name: 'User',
 				slug: 'user',
 				fields: [
-					{ kind: 'field', fieldname: 'id', fieldtype: 'Data' },
-					{ kind: 'field', fieldname: 'name', fieldtype: 'Data' },
+					{ kind: 'field', fieldname: 'id', component: 'ATextInput' },
+					{ kind: 'field', fieldname: 'name', component: 'ATextInput' },
 				],
 			}
 			const result = validateDoctype(doctype)
@@ -215,7 +240,7 @@ describe('Doctype Validation', { tags: ['unit'] }, () => {
 		it('should validate a minimal doctype', () => {
 			const doctype = {
 				name: 'Task',
-				fields: [{ kind: 'field', fieldname: 'title', fieldtype: 'Data' }],
+				fields: [{ kind: 'field', fieldname: 'title', component: 'ATextInput' }],
 			}
 			const result = validateDoctype(doctype)
 
@@ -225,7 +250,7 @@ describe('Doctype Validation', { tags: ['unit'] }, () => {
 
 		it('should reject doctype missing name', () => {
 			const doctype = {
-				fields: [{ kind: 'field', fieldname: 'id', fieldtype: 'Data' }],
+				fields: [{ kind: 'field', fieldname: 'id', component: 'ATextInput' }],
 			}
 			const result = validateDoctype(doctype)
 
@@ -249,8 +274,8 @@ describe('Doctype Validation', { tags: ['unit'] }, () => {
 			const doctype = {
 				name: 'User',
 				fields: [
-					{ kind: 'field', fieldname: 'id', fieldtype: 'Data' },
-					{ kind: 'field', fieldtype: 'Data' }, // Missing required fieldname
+					{ kind: 'field', fieldname: 'id', component: 'ATextInput' },
+					{ kind: 'field', component: 'ATextInput' }, // Missing required fieldname
 				],
 			}
 			const result = validateDoctype(doctype)
@@ -262,7 +287,7 @@ describe('Doctype Validation', { tags: ['unit'] }, () => {
 		it('should validate doctype with workflow', () => {
 			const doctype = {
 				name: 'Order',
-				fields: [{ kind: 'field', fieldname: 'id', fieldtype: 'Data' }],
+				fields: [{ kind: 'field', fieldname: 'id', component: 'ATextInput' }],
 				workflow: {
 					states: ['Draft', 'Submitted', 'Approved'],
 					actions: {
@@ -285,7 +310,7 @@ describe('Doctype Validation', { tags: ['unit'] }, () => {
 			// A mutate-in-place `save`: scoped to mutable states, no nextState, marked selfTransition.
 			const doctype = {
 				name: 'Issue',
-				fields: [{ kind: 'field', fieldname: 'id', fieldtype: 'Data' }],
+				fields: [{ kind: 'field', fieldname: 'id', component: 'ATextInput' }],
 				workflow: {
 					states: ['Draft', 'Pending', 'Closed'],
 					actions: {
@@ -321,7 +346,7 @@ describe('Doctype Validation', { tags: ['unit'] }, () => {
 		it('should reject doctype with invalid workflow action', () => {
 			const doctype = {
 				name: 'Order',
-				fields: [{ kind: 'field', fieldname: 'id', fieldtype: 'Data' }],
+				fields: [{ kind: 'field', fieldname: 'id', component: 'ATextInput' }],
 				workflow: {
 					actions: {
 						submit: {
@@ -339,7 +364,7 @@ describe('Doctype Validation', { tags: ['unit'] }, () => {
 		it('should validate doctype with workflow triggers', () => {
 			const doctype = {
 				name: 'Order',
-				fields: [{ kind: 'field', fieldname: 'id', fieldtype: 'Data' }],
+				fields: [{ kind: 'field', fieldname: 'id', component: 'ATextInput' }],
 				workflow: {
 					states: ['Draft', 'Submitted'],
 					triggers: {
@@ -360,7 +385,7 @@ describe('Doctype Validation', { tags: ['unit'] }, () => {
 		it('should preserve workflow triggers through parseDoctype (not stripped)', () => {
 			const doctype = {
 				name: 'Order',
-				fields: [{ kind: 'field', fieldname: 'id', fieldtype: 'Data' }],
+				fields: [{ kind: 'field', fieldname: 'id', component: 'ATextInput' }],
 				workflow: {
 					triggers: {
 						dateOrder: {
@@ -380,7 +405,7 @@ describe('Doctype Validation', { tags: ['unit'] }, () => {
 		it('should validate doctype with workflow layout', () => {
 			const doctype = {
 				name: 'Order',
-				fields: [{ kind: 'field', fieldname: 'id', fieldtype: 'Data' }],
+				fields: [{ kind: 'field', fieldname: 'id', component: 'ATextInput' }],
 				workflow: {
 					states: ['Draft', 'Submitted'],
 					layout: {
@@ -400,7 +425,7 @@ describe('Doctype Validation', { tags: ['unit'] }, () => {
 			// positions would silently vanish on every save/load round-trip.
 			const doctype = {
 				name: 'Order',
-				fields: [{ kind: 'field', fieldname: 'id', fieldtype: 'Data' }],
+				fields: [{ kind: 'field', fieldname: 'id', component: 'ATextInput' }],
 				workflow: {
 					states: ['Draft'],
 					layout: { Draft: { position: { x: 42, y: 7 }, sourcePosition: 'bottom' } },
@@ -415,7 +440,7 @@ describe('Doctype Validation', { tags: ['unit'] }, () => {
 		it('should reject a layout handle side outside left/top/right/bottom', () => {
 			const doctype = {
 				name: 'Order',
-				fields: [{ kind: 'field', fieldname: 'id', fieldtype: 'Data' }],
+				fields: [{ kind: 'field', fieldname: 'id', component: 'ATextInput' }],
 				workflow: {
 					states: ['Draft'],
 					layout: { Draft: { targetPosition: 'diagonal' } },
@@ -430,7 +455,7 @@ describe('Doctype Validation', { tags: ['unit'] }, () => {
 		it('should reject a trigger missing clientHandler', () => {
 			const doctype = {
 				name: 'Order',
-				fields: [{ kind: 'field', fieldname: 'id', fieldtype: 'Data' }],
+				fields: [{ kind: 'field', fieldname: 'id', component: 'ATextInput' }],
 				workflow: {
 					triggers: {
 						dateOrder: {
@@ -449,7 +474,7 @@ describe('Doctype Validation', { tags: ['unit'] }, () => {
 		it('should validate doctype with inheritance', () => {
 			const doctype = {
 				name: 'Employee',
-				fields: [{ kind: 'field', fieldname: 'employeeId', fieldtype: 'Data' }],
+				fields: [{ kind: 'field', fieldname: 'employeeId', component: 'ATextInput' }],
 				inherits: 'Person',
 			}
 			const result = validateDoctype(doctype)
@@ -462,8 +487,8 @@ describe('Doctype Validation', { tags: ['unit'] }, () => {
 			const doctype = {
 				name: 'Recipe',
 				fields: [
-					{ kind: 'field', fieldname: 'name', fieldtype: 'Data' },
-					{ kind: 'field', fieldname: 'status', fieldtype: 'Data' },
+					{ kind: 'field', fieldname: 'name', component: 'ATextInput' },
+					{ kind: 'field', fieldname: 'status', component: 'ATextInput' },
 				],
 				links: {
 					tasks: { target: 'recipe-task', cardinality: 'noneOrMany', backlink: 'recipe' },
@@ -479,7 +504,7 @@ describe('Doctype Validation', { tags: ['unit'] }, () => {
 		it('should validate doctype with links without backlink', () => {
 			const doctype = {
 				name: 'Recipe',
-				fields: [{ kind: 'field', fieldname: 'name', fieldtype: 'Data' }],
+				fields: [{ kind: 'field', fieldname: 'name', component: 'ATextInput' }],
 				links: {
 					tasks: { target: 'recipe-task', cardinality: 'noneOrMany' },
 				},
@@ -493,7 +518,7 @@ describe('Doctype Validation', { tags: ['unit'] }, () => {
 		it('should reject link with missing target', () => {
 			const doctype = {
 				name: 'Recipe',
-				fields: [{ kind: 'field', fieldname: 'name', fieldtype: 'Data' }],
+				fields: [{ kind: 'field', fieldname: 'name', component: 'ATextInput' }],
 				links: {
 					tasks: { cardinality: 'noneOrMany' },
 				},
@@ -507,7 +532,7 @@ describe('Doctype Validation', { tags: ['unit'] }, () => {
 		it('should reject link with missing cardinality', () => {
 			const doctype = {
 				name: 'Recipe',
-				fields: [{ kind: 'field', fieldname: 'name', fieldtype: 'Data' }],
+				fields: [{ kind: 'field', fieldname: 'name', component: 'ATextInput' }],
 				links: {
 					tasks: { target: 'recipe-task' },
 				},
@@ -521,7 +546,7 @@ describe('Doctype Validation', { tags: ['unit'] }, () => {
 		it('should reject link with invalid cardinality', () => {
 			const doctype = {
 				name: 'Recipe',
-				fields: [{ kind: 'field', fieldname: 'name', fieldtype: 'Data' }],
+				fields: [{ kind: 'field', fieldname: 'name', component: 'ATextInput' }],
 				links: {
 					tasks: { target: 'recipe-task', cardinality: 'many' },
 				},
@@ -538,7 +563,7 @@ describe('Doctype Validation', { tags: ['unit'] }, () => {
 				const field = {
 					kind: 'field' as const,
 					fieldname: 'child',
-					fieldtype: 'Data',
+					component: 'ATextInput',
 					cardinality,
 				}
 				const result = validateField(field)
@@ -550,9 +575,9 @@ describe('Doctype Validation', { tags: ['unit'] }, () => {
 			const doctype = {
 				name: 'Recipe',
 				fields: [
-					{ kind: 'field', fieldname: 'name', fieldtype: 'Data' },
-					{ kind: 'field', fieldname: 'tasks', fieldtype: 'Link', options: 'recipe-task' },
-					{ kind: 'field', fieldname: 'status', fieldtype: 'Data' },
+					{ kind: 'field', fieldname: 'name', component: 'ATextInput' },
+					{ kind: 'field', fieldname: 'tasks', component: 'ATable', doctype: 'recipe-task' },
+					{ kind: 'field', fieldname: 'status', component: 'ATextInput' },
 				],
 				links: {
 					tasks: { target: 'recipe-task', cardinality: 'noneOrMany', fieldname: 'tasks' },
@@ -568,8 +593,8 @@ describe('Doctype Validation', { tags: ['unit'] }, () => {
 			const doctype = {
 				name: 'Recipe',
 				fields: [
-					{ kind: 'field', fieldname: 'name', fieldtype: 'Data' },
-					{ kind: 'field', fieldname: 'tasks', fieldtype: 'Link', options: 'recipe-task' },
+					{ kind: 'field', fieldname: 'name', component: 'ATextInput' },
+					{ kind: 'field', fieldname: 'tasks', component: 'ATable', doctype: 'recipe-task' },
 				],
 				links: {
 					tasks: { target: 'recipe-task', cardinality: 'noneOrMany', fieldname: 'tasks' },
@@ -584,7 +609,7 @@ describe('Doctype Validation', { tags: ['unit'] }, () => {
 		it('should parse a valid doctype', () => {
 			const doctype = {
 				name: 'User',
-				fields: [{ kind: 'field', fieldname: 'id', fieldtype: 'Data' }],
+				fields: [{ kind: 'field', fieldname: 'id', component: 'ATextInput' }],
 			}
 			const parsed = parseDoctype(doctype)
 
@@ -596,7 +621,7 @@ describe('Doctype Validation', { tags: ['unit'] }, () => {
 		it('should throw ZodError for invalid doctype', () => {
 			const doctype = {
 				// Missing name
-				fields: [{ kind: 'field', fieldname: 'id', fieldtype: 'Data' }],
+				fields: [{ kind: 'field', fieldname: 'id', component: 'ATextInput' }],
 			}
 			expect(() => parseDoctype(doctype)).toThrow(ZodError)
 		})
@@ -613,8 +638,8 @@ describe('Doctype Validation', { tags: ['unit'] }, () => {
 			const doctype = {
 				name: 'User',
 				fields: [
-					{ kind: 'field', fieldname: 'id', fieldtype: 'Data' },
-					{ kind: 'field', fieldtype: 'Data' }, // Missing required fieldname
+					{ kind: 'field', fieldname: 'id', component: 'ATextInput' },
+					{ kind: 'field', component: 'ATextInput' }, // Missing required fieldname
 				],
 			}
 			expect(() => parseDoctype(doctype)).toThrow(ZodError)
@@ -624,9 +649,9 @@ describe('Doctype Validation', { tags: ['unit'] }, () => {
 			const doctype = {
 				name: 'Recipe',
 				fields: [
-					{ kind: 'field', fieldname: 'name', fieldtype: 'Data' },
-					{ kind: 'field', fieldname: 'status', fieldtype: 'Data' },
-					{ kind: 'field', fieldname: 'tasks', fieldtype: 'Link', options: 'recipe-task' },
+					{ kind: 'field', fieldname: 'name', component: 'ATextInput' },
+					{ kind: 'field', fieldname: 'status', component: 'ATextInput' },
+					{ kind: 'field', fieldname: 'tasks', component: 'ATable', doctype: 'recipe-task' },
 				],
 				links: {
 					tasks: { target: 'recipe-task', cardinality: 'noneOrMany', backlink: 'recipe', fieldname: 'tasks' },
@@ -693,8 +718,8 @@ describe('Error Path Information', { tags: ['unit'] }, () => {
 		const doctype = {
 			name: 'User',
 			fields: [
-				{ kind: 'field', fieldname: 'id', fieldtype: 'Data' },
-				{ kind: 'field', fieldtype: 'Data' }, // Missing required fieldname at index 1
+				{ kind: 'field', fieldname: 'id', component: 'ATextInput' },
+				{ kind: 'field', component: 'ATextInput' }, // Missing required fieldname at index 1
 			],
 		}
 		const result = validateDoctype(doctype)
@@ -711,7 +736,7 @@ describe('Error Path Information', { tags: ['unit'] }, () => {
 	it('should provide message for each validation error', () => {
 		const field = {
 			fieldname: 'test',
-			fieldtype: 'InvalidType',
+			component: 'ATextInput',
 			required: 'not-a-boolean', // Invalid type
 		}
 		const result = validateField(field)
@@ -733,7 +758,7 @@ describe('LinkDeclaration Validation', { tags: ['unit'] }, () => {
 		for (const cardinality of cardinalities) {
 			const doctype = {
 				name: 'Recipe',
-				fields: [{ kind: 'field', fieldname: 'name', fieldtype: 'Data' }],
+				fields: [{ kind: 'field', fieldname: 'name', component: 'ATextInput' }],
 				links: {
 					items: { target: 'recipe-task', cardinality },
 				},
@@ -746,7 +771,7 @@ describe('LinkDeclaration Validation', { tags: ['unit'] }, () => {
 	it('should accept component on a link declaration', () => {
 		const doctype = {
 			name: 'Recipe',
-			fields: [{ kind: 'field', fieldname: 'name', fieldtype: 'Data' }],
+			fields: [{ kind: 'field', fieldname: 'name', component: 'ATextInput' }],
 			links: {
 				tasks: { target: 'recipe-task', cardinality: 'noneOrMany', component: 'MyCustomTable' },
 			},
@@ -758,7 +783,7 @@ describe('LinkDeclaration Validation', { tags: ['unit'] }, () => {
 	it('should reject link with empty string target', () => {
 		const doctype = {
 			name: 'Recipe',
-			fields: [{ kind: 'field', fieldname: 'name', fieldtype: 'Data' }],
+			fields: [{ kind: 'field', fieldname: 'name', component: 'ATextInput' }],
 			links: {
 				tasks: { target: '', cardinality: 'noneOrMany' },
 			},
@@ -773,7 +798,7 @@ describe('FetchStrategy Validation', { tags: ['unit'] }, () => {
 	it('should validate sync fetch strategy', () => {
 		const doctype = {
 			name: 'Recipe',
-			fields: [{ kind: 'field', fieldname: 'name', fieldtype: 'Data' }],
+			fields: [{ kind: 'field', fieldname: 'name', component: 'ATextInput' }],
 			links: {
 				tasks: { target: 'recipe-task', cardinality: 'noneOrMany', fetch: { method: 'sync' } },
 			},
@@ -786,7 +811,7 @@ describe('FetchStrategy Validation', { tags: ['unit'] }, () => {
 	it('should validate sync fetch strategy with limit', () => {
 		const doctype = {
 			name: 'Recipe',
-			fields: [{ kind: 'field', fieldname: 'name', fieldtype: 'Data' }],
+			fields: [{ kind: 'field', fieldname: 'name', component: 'ATextInput' }],
 			links: {
 				tasks: { target: 'recipe-task', cardinality: 'noneOrMany', fetch: { method: 'sync', limit: 25 } },
 			},
@@ -799,7 +824,7 @@ describe('FetchStrategy Validation', { tags: ['unit'] }, () => {
 	it('should validate lazy fetch strategy', () => {
 		const doctype = {
 			name: 'Recipe',
-			fields: [{ kind: 'field', fieldname: 'name', fieldtype: 'Data' }],
+			fields: [{ kind: 'field', fieldname: 'name', component: 'ATextInput' }],
 			links: {
 				address: { target: 'address', cardinality: 'one', fetch: { method: 'lazy' } },
 			},
@@ -812,7 +837,7 @@ describe('FetchStrategy Validation', { tags: ['unit'] }, () => {
 	it('should validate custom fetch strategy', () => {
 		const doctype = {
 			name: 'Recipe',
-			fields: [{ kind: 'field', fieldname: 'name', fieldtype: 'Data' }],
+			fields: [{ kind: 'field', fieldname: 'name', component: 'ATextInput' }],
 			links: {
 				tasks: {
 					target: 'recipe-task',
@@ -829,7 +854,7 @@ describe('FetchStrategy Validation', { tags: ['unit'] }, () => {
 	it('should reject invalid fetch method', () => {
 		const doctype = {
 			name: 'Recipe',
-			fields: [{ kind: 'field', fieldname: 'name', fieldtype: 'Data' }],
+			fields: [{ kind: 'field', fieldname: 'name', component: 'ATextInput' }],
 			links: {
 				tasks: { target: 'recipe-task', cardinality: 'noneOrMany', fetch: { method: 'invalid' } },
 			},
@@ -842,7 +867,7 @@ describe('FetchStrategy Validation', { tags: ['unit'] }, () => {
 	it('should reject sync fetch with negative limit', () => {
 		const doctype = {
 			name: 'Recipe',
-			fields: [{ kind: 'field', fieldname: 'name', fieldtype: 'Data' }],
+			fields: [{ kind: 'field', fieldname: 'name', component: 'ATextInput' }],
 			links: {
 				tasks: { target: 'recipe-task', cardinality: 'noneOrMany', fetch: { method: 'sync', limit: -1 } },
 			},
@@ -855,7 +880,7 @@ describe('FetchStrategy Validation', { tags: ['unit'] }, () => {
 	it('should reject sync fetch with zero limit', () => {
 		const doctype = {
 			name: 'Recipe',
-			fields: [{ kind: 'field', fieldname: 'name', fieldtype: 'Data' }],
+			fields: [{ kind: 'field', fieldname: 'name', component: 'ATextInput' }],
 			links: {
 				tasks: { target: 'recipe-task', cardinality: 'noneOrMany', fetch: { method: 'sync', limit: 0 } },
 			},
@@ -868,7 +893,7 @@ describe('FetchStrategy Validation', { tags: ['unit'] }, () => {
 	it('should reject sync fetch with non-integer limit', () => {
 		const doctype = {
 			name: 'Recipe',
-			fields: [{ kind: 'field', fieldname: 'name', fieldtype: 'Data' }],
+			fields: [{ kind: 'field', fieldname: 'name', component: 'ATextInput' }],
 			links: {
 				tasks: { target: 'recipe-task', cardinality: 'noneOrMany', fetch: { method: 'sync', limit: 5.5 } },
 			},
@@ -881,7 +906,7 @@ describe('FetchStrategy Validation', { tags: ['unit'] }, () => {
 	it('should reject custom fetch without handler', () => {
 		const doctype = {
 			name: 'Recipe',
-			fields: [{ kind: 'field', fieldname: 'name', fieldtype: 'Data' }],
+			fields: [{ kind: 'field', fieldname: 'name', component: 'ATextInput' }],
 			links: {
 				tasks: { target: 'recipe-task', cardinality: 'noneOrMany', fetch: { method: 'custom' } },
 			},
@@ -894,7 +919,7 @@ describe('FetchStrategy Validation', { tags: ['unit'] }, () => {
 	it('should accept link without fetch strategy', () => {
 		const doctype = {
 			name: 'Recipe',
-			fields: [{ kind: 'field', fieldname: 'name', fieldtype: 'Data' }],
+			fields: [{ kind: 'field', fieldname: 'name', component: 'ATextInput' }],
 			links: {
 				tasks: { target: 'recipe-task', cardinality: 'noneOrMany' },
 			},
@@ -916,7 +941,7 @@ describe('FetchStrategy Validation', { tags: ['unit'] }, () => {
 			for (const fetch of fetchMethods) {
 				const doctype = {
 					name: 'Recipe',
-					fields: [{ kind: 'field', fieldname: 'name', fieldtype: 'Data' }],
+					fields: [{ kind: 'field', fieldname: 'name', component: 'ATextInput' }],
 					links: {
 						items: { target: 'recipe-item', cardinality, fetch },
 					},
@@ -940,8 +965,8 @@ describe('DoctypeField — FieldsetField variant', { tags: ['unit'] }, () => {
 			label: 'Details',
 			collapsible: true,
 			schema: [
-				{ kind: 'field' as const, fieldname: 'email', fieldtype: 'Data' },
-				{ kind: 'field' as const, fieldname: 'phone', fieldtype: 'Data' },
+				{ kind: 'field' as const, fieldname: 'email', component: 'ATextInput' },
+				{ kind: 'field' as const, fieldname: 'phone', component: 'ATextInput' },
 			],
 		}
 		const result = validateField(field)
@@ -967,7 +992,7 @@ describe('DoctypeField — FieldsetField variant', { tags: ['unit'] }, () => {
 				{
 					kind: 'fieldset' as const,
 					fieldname: 'inner',
-					schema: [{ kind: 'field' as const, fieldname: 'name', fieldtype: 'Data' }],
+					schema: [{ kind: 'field' as const, fieldname: 'name', component: 'ATextInput' }],
 				},
 			],
 		}
@@ -978,7 +1003,7 @@ describe('DoctypeField — FieldsetField variant', { tags: ['unit'] }, () => {
 	it('should reject a FieldsetField missing fieldname', () => {
 		const field = {
 			kind: 'fieldset' as const,
-			schema: [{ kind: 'field' as const, fieldname: 'email', fieldtype: 'Data' }],
+			schema: [{ kind: 'field' as const, fieldname: 'email', component: 'ATextInput' }],
 		}
 		const result = validateField(field)
 		expect(result.success).toBe(false)
@@ -990,7 +1015,7 @@ describe('DoctypeField — FieldsetField variant', { tags: ['unit'] }, () => {
 			kind: 'fieldset' as const,
 			fieldname: 'details',
 			schema: [
-				{ kind: 'field' as const, fieldtype: 'Data' }, // missing required fieldname
+				{ kind: 'field' as const, component: 'ATextInput' }, // missing required fieldname
 			],
 		}
 		const result = validateField(field)
@@ -1001,7 +1026,7 @@ describe('DoctypeField — FieldsetField variant', { tags: ['unit'] }, () => {
 		const field = {
 			kind: 'fieldset' as const,
 			fieldname: 'details',
-			schema: [{ kind: 'field' as const, fieldname: 'email', fieldtype: 'Data' }],
+			schema: [{ kind: 'field' as const, fieldname: 'email', component: 'ATextInput' }],
 		}
 		const parsed = parseField(field)
 		expect(parsed.kind).toBe('fieldset')
@@ -1015,8 +1040,8 @@ describe('DoctypeField — TableField variant', { tags: ['unit'] }, () => {
 			fieldname: 'items',
 			label: 'Line Items',
 			columns: [
-				{ fieldname: 'qty', label: 'Qty', fieldtype: 'Int' },
-				{ fieldname: 'unit_price', label: 'Unit Price', fieldtype: 'Currency' },
+				{ fieldname: 'qty', label: 'Qty', component: 'ANumericInput' },
+				{ fieldname: 'unit_price', label: 'Unit Price', component: 'ANumericInput' },
 			],
 		}
 		const result = validateField(field)
@@ -1028,7 +1053,7 @@ describe('DoctypeField — TableField variant', { tags: ['unit'] }, () => {
 		const field = {
 			kind: 'table' as const,
 			fieldname: 'items',
-			columns: [{ fieldname: 'qty', fieldtype: 'Int' }],
+			columns: [{ fieldname: 'qty', component: 'ANumericInput' }],
 			config: { view: 'list' as const },
 		}
 		const result = validateField(field)
@@ -1041,7 +1066,7 @@ describe('DoctypeField — TableField variant', { tags: ['unit'] }, () => {
 			const field = {
 				kind: 'table' as const,
 				fieldname: 'items',
-				columns: [{ fieldname: 'id', fieldtype: 'Data' }],
+				columns: [{ fieldname: 'id', component: 'ATextInput' }],
 				config: { view },
 			}
 			const result = validateField(field)
@@ -1052,7 +1077,7 @@ describe('DoctypeField — TableField variant', { tags: ['unit'] }, () => {
 	it('should reject a TableField missing fieldname', () => {
 		const field = {
 			kind: 'table' as const,
-			columns: [{ fieldname: 'qty', fieldtype: 'Int' }],
+			columns: [{ fieldname: 'qty', component: 'ANumericInput' }],
 		}
 		const result = validateField(field)
 		expect(result.success).toBe(false)
@@ -1062,7 +1087,7 @@ describe('DoctypeField — TableField variant', { tags: ['unit'] }, () => {
 		const field = {
 			kind: 'table' as const,
 			fieldname: 'items',
-			columns: [{ label: 'Qty', fieldtype: 'Int' }],
+			columns: [{ label: 'Qty', component: 'ANumericInput' }],
 		}
 		const result = validateField(field)
 		expect(result.success).toBe(false)
@@ -1072,7 +1097,7 @@ describe('DoctypeField — TableField variant', { tags: ['unit'] }, () => {
 		const field = {
 			kind: 'table' as const,
 			fieldname: 'items',
-			columns: [{ fieldname: 'qty', fieldtype: 'Int' }],
+			columns: [{ fieldname: 'qty', component: 'ANumericInput' }],
 		}
 		const parsed = parseField(field)
 		expect(parsed.kind).toBe('table')
@@ -1084,16 +1109,16 @@ describe('DoctypeField — discriminated union boundaries', { tags: ['unit'] }, 
 		const doctype = {
 			name: 'Order',
 			fields: [
-				{ kind: 'field' as const, fieldname: 'status', fieldtype: 'Select', options: ['Draft', 'Submitted'] },
+				{ kind: 'field' as const, fieldname: 'status', component: 'ADropdown', options: ['Draft', 'Submitted'] },
 				{
 					kind: 'fieldset' as const,
 					fieldname: 'billing',
-					schema: [{ kind: 'field' as const, fieldname: 'address', fieldtype: 'Data' }],
+					schema: [{ kind: 'field' as const, fieldname: 'address', component: 'ATextInput' }],
 				},
 				{
 					kind: 'table' as const,
 					fieldname: 'line_items',
-					columns: [{ fieldname: 'qty', fieldtype: 'Int' }],
+					columns: [{ fieldname: 'qty', component: 'ANumericInput' }],
 				},
 			],
 		}
@@ -1107,8 +1132,8 @@ describe('DoctypeField — discriminated union boundaries', { tags: ['unit'] }, 
 		expect(result.success).toBe(false)
 	})
 
-	it('should infer kind: field when fieldtype is present and schema/columns are absent', () => {
-		const parsed = parseField({ fieldname: 'email', fieldtype: 'Data' })
+	it('should infer kind: field when neither schema nor columns are present', () => {
+		const parsed = parseField({ fieldname: 'email', component: 'ATextInput' })
 		expect(parsed.kind).toBe('field')
 	})
 
@@ -1118,7 +1143,7 @@ describe('DoctypeField — discriminated union boundaries', { tags: ['unit'] }, 
 	})
 
 	it('should infer kind: table when columns property is present', () => {
-		const parsed = parseField({ fieldname: 'line_items', columns: [{ fieldname: 'qty', fieldtype: 'Int' }] })
+		const parsed = parseField({ fieldname: 'line_items', columns: [{ fieldname: 'qty', component: 'ANumericInput' }] })
 		expect(parsed.kind).toBe('table')
 	})
 })

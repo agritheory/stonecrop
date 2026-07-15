@@ -11,6 +11,7 @@ import {
 	defaultIsEntityField,
 	classifyFieldType,
 } from '../src/converter'
+import { CANONICAL_COMPONENTS } from '../src/component-meta'
 import { validateDoctype, parseDoctype } from '../src/validation'
 
 // ═══════════════════════════════════════════════════════════════
@@ -104,52 +105,35 @@ type CreateUserPayload {
 
 describe('GQL_SCALAR_MAP', { tags: ['unit'] }, () => {
 	it('should map all standard GraphQL scalars', () => {
-		expect(GQL_SCALAR_MAP.String).toEqual({ component: 'ATextInput', fieldtype: 'Data' })
-		expect(GQL_SCALAR_MAP.Int).toEqual({ component: 'ANumericInput', fieldtype: 'Int' })
-		expect(GQL_SCALAR_MAP.Float).toEqual({ component: 'ANumericInput', fieldtype: 'Float' })
-		expect(GQL_SCALAR_MAP.Boolean).toEqual({ component: 'ACheckbox', fieldtype: 'Check' })
-		expect(GQL_SCALAR_MAP.ID).toEqual({ component: 'ATextInput', fieldtype: 'Data' })
+		expect(GQL_SCALAR_MAP.String).toEqual({ component: 'ATextInput' })
+		expect(GQL_SCALAR_MAP.Int).toEqual({ component: 'ANumericInput' })
+		expect(GQL_SCALAR_MAP.Float).toEqual({ component: 'ANumericInput' })
+		expect(GQL_SCALAR_MAP.Boolean).toEqual({ component: 'ACheckbox' })
+		expect(GQL_SCALAR_MAP.ID).toEqual({ component: 'ATextInput' })
 	})
 })
 
 describe('WELL_KNOWN_SCALARS', { tags: ['unit'] }, () => {
 	it('should map common custom scalars', () => {
-		expect(WELL_KNOWN_SCALARS.BigFloat).toEqual({ component: 'ANumericInput', fieldtype: 'Decimal' })
-		expect(WELL_KNOWN_SCALARS.UUID).toEqual({ component: 'ATextInput', fieldtype: 'Data' })
-		expect(WELL_KNOWN_SCALARS.DateTime).toEqual({ component: 'ADateTime', fieldtype: 'Datetime' })
-		expect(WELL_KNOWN_SCALARS.Datetime).toEqual({ component: 'ADateTime', fieldtype: 'Datetime' })
-		expect(WELL_KNOWN_SCALARS.Date).toEqual({ component: 'ADate', fieldtype: 'Date' })
-		expect(WELL_KNOWN_SCALARS.Time).toEqual({ component: 'ATextInput', fieldtype: 'Time' })
-		expect(WELL_KNOWN_SCALARS.JSON).toEqual({ component: 'ACodeEditor', fieldtype: 'JSON' })
-		expect(WELL_KNOWN_SCALARS.BigInt).toEqual({ component: 'ANumericInput', fieldtype: 'Int' })
-		expect(WELL_KNOWN_SCALARS.Duration).toEqual({ component: 'ADuration', fieldtype: 'Duration' })
+		expect(WELL_KNOWN_SCALARS.BigFloat).toEqual({ component: 'ANumericInput' })
+		expect(WELL_KNOWN_SCALARS.UUID).toEqual({ component: 'ATextInput' })
+		expect(WELL_KNOWN_SCALARS.DateTime).toEqual({ component: 'ADateTime' })
+		expect(WELL_KNOWN_SCALARS.Datetime).toEqual({ component: 'ADateTime' })
+		expect(WELL_KNOWN_SCALARS.Date).toEqual({ component: 'ADate' })
+		expect(WELL_KNOWN_SCALARS.Time).toEqual({ component: 'ATextInput' })
+		expect(WELL_KNOWN_SCALARS.JSON).toEqual({ component: 'ACodeEditor' })
+		expect(WELL_KNOWN_SCALARS.BigInt).toEqual({ component: 'ANumericInput' })
+		expect(WELL_KNOWN_SCALARS.Duration).toEqual({ component: 'ADuration' })
 	})
 
-	it('should include all entries with valid Stonecrop field types', () => {
-		const validTypes = [
-			'Data',
-			'Text',
-			'Int',
-			'Float',
-			'Decimal',
-			'Check',
-			'Date',
-			'Time',
-			'Datetime',
-			'Duration',
-			'DateRange',
-			'JSON',
-			'Code',
-			'Link',
-			'Attach',
-			'Currency',
-			'Quantity',
-			'Select',
-		]
-		for (const [_name, template] of Object.entries(WELL_KNOWN_SCALARS)) {
-			expect(validTypes).toContain(template.fieldtype)
-			expect(template.component).toBeTruthy()
-		}
+	it('should map every entry to a component Stonecrop actually ships', () => {
+		// The converter's output is authored data nobody reviews by hand, so a scalar mapped to a
+		// component that does not exist renders nothing at all — the `ACombobox`/`ADatepicker` class
+		// of bug. CANONICAL_COMPONENTS is the real set, so this cannot drift from a hand-kept list.
+		const offenders = Object.entries(WELL_KNOWN_SCALARS)
+			.filter(([, template]) => !CANONICAL_COMPONENTS.includes(template.component))
+			.map(([name, template]) => `${name} → ${template.component}`)
+		expect(offenders).toEqual([])
 	})
 })
 
@@ -174,18 +158,18 @@ describe('buildScalarMap', { tags: ['unit'] }, () => {
 
 	it('should let custom scalars override everything', () => {
 		const map = buildScalarMap({
-			String: { component: 'CustomInput', fieldtype: 'Text' },
-			MyScalar: { component: 'MyComponent', fieldtype: 'Currency' },
+			String: { component: 'CustomInput' },
+			MyScalar: { component: 'MyComponent' },
 		})
-		expect(map.String).toEqual({ component: 'CustomInput', fieldtype: 'Text' })
-		expect(map.MyScalar).toEqual({ component: 'MyComponent', fieldtype: 'Currency' })
+		expect(map.String).toEqual({ component: 'CustomInput' })
+		expect(map.MyScalar).toEqual({ component: 'MyComponent' })
 	})
 
-	it('should default component and fieldtype for partial custom scalars', () => {
+	it('should default the component for a custom scalar that names none', () => {
 		const map = buildScalarMap({
-			Partial: { fieldtype: 'Decimal' },
+			Partial: {},
 		})
-		expect(map.Partial).toEqual({ component: 'ATextInput', fieldtype: 'Decimal' })
+		expect(map.Partial).toEqual({ component: 'ATextInput' })
 	})
 })
 
@@ -284,10 +268,9 @@ describe('classifyFieldType', { tags: ['unit'] }, () => {
 	const userType = schema.getType('User') as any
 	const userFields = userType.getFields()
 
-	it('should classify String as Data', () => {
+	it('should classify String as ATextInput', () => {
 		const field = classifyFieldType('name', userFields.name, entityTypes)
 		expect(field.component).toBe('ATextInput')
-		expect(field.fieldtype).toBeUndefined()
 		expect(field.required).toBe(true) // String!
 	})
 
@@ -373,11 +356,10 @@ describe('classifyFieldType', { tags: ['unit'] }, () => {
 
 		const field = classifyFieldType('amount', testFields.amount, new Set(['TestEntity']), {
 			customScalars: {
-				Money: { component: 'ACurrencyInput', fieldtype: 'Currency' },
+				Money: { component: 'ACurrencyInput' },
 			},
 		})
 		expect(field.component).toBe('ACurrencyInput')
-		expect(field.fieldtype).toBeUndefined()
 	})
 
 	it('should generate a label from the field name', () => {
@@ -566,14 +548,14 @@ describe('convertGraphQLSchema', { tags: ['unit'] }, () => {
 			const doctypes = convertGraphQLSchema(basicSdl, {
 				typeOverrides: {
 					User: {
-						email: { fieldtype: 'Text', component: 'ATextarea' },
+						email: { component: 'ATextarea', label: 'Email Address' },
 					},
 				},
 			})
 			const user = doctypes.find(d => d.name === 'User')!
 			const emailField = user.fields.find(f => f.fieldname === 'email')!
-			expect(emailField.fieldtype).toBe('Text')
 			expect(emailField.component).toBe('ATextarea')
+			expect(emailField.label).toBe('Email Address')
 		})
 
 		it('should use custom isEntityType', () => {
@@ -598,15 +580,15 @@ describe('convertGraphQLSchema', { tags: ['unit'] }, () => {
 			const doctypes = convertGraphQLSchema(basicSdl, {
 				classifyField: fieldName => {
 					if (fieldName === 'email') {
-						return { fieldtype: 'Code', component: 'ACodeEditor', label: 'Email Address' }
+						return { component: 'ACodeEditor', language: 'json', label: 'Email Address' }
 					}
 					return null // fall through to default
 				},
 			})
 			const user = doctypes.find(d => d.name === 'User')!
 			const emailField = user.fields.find(f => f.fieldname === 'email')!
-			expect(emailField.fieldtype).toBe('Code')
 			expect(emailField.component).toBe('ACodeEditor')
+			expect(emailField.language).toBe('json')
 			expect(emailField.label).toBe('Email Address')
 		})
 
@@ -636,7 +618,7 @@ describe('convertGraphQLSchema', { tags: ['unit'] }, () => {
 			`
 			const doctypes = convertGraphQLSchema(customSdl, {
 				customScalars: {
-					Money: { component: 'ACurrencyInput', fieldtype: 'Currency' },
+					Money: { component: 'ACurrencyInput' },
 				},
 			})
 			expect(doctypes.length).toBe(1)
@@ -710,7 +692,7 @@ describe('convertGraphQLSchema', { tags: ['unit'] }, () => {
 			const doctypes = convertGraphQLSchema(basicSdl, {
 				typeOverrides: {
 					User: {
-						email: { component: 'AEmailInput', fieldtype: 'Data' },
+						email: { component: 'AEmailInput' },
 					},
 				},
 			})
@@ -725,7 +707,7 @@ describe('convertGraphQLSchema', { tags: ['unit'] }, () => {
 			const doctypes = convertGraphQLSchema(basicSdl, {
 				classifyField: fieldName => {
 					if (fieldName === 'email') {
-						return { component: 'AEmailInput', fieldtype: 'Data' }
+						return { component: 'AEmailInput' }
 					}
 					return null
 				},
@@ -769,7 +751,7 @@ describe('provenance stamping (source: "introspected")', { tags: ['unit'] }, () 
 		const doctypes = convertGraphQLSchema(basicSdl, {
 			classifyField: fieldName => {
 				if (fieldName === 'email') {
-					return { component: 'AEmailInput', fieldtype: 'Data' }
+					return { component: 'AEmailInput' }
 				}
 				return null
 			},

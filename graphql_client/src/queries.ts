@@ -17,7 +17,6 @@ export const GET_META_QUERY = `
 			fields {
 				kind
 				fieldname
-				fieldtype
 				component
 				doctype
 				label
@@ -75,7 +74,6 @@ export const GET_ALL_META_QUERY = `
 			fields {
 				kind
 				fieldname
-				fieldtype
 				component
 				doctype
 				label

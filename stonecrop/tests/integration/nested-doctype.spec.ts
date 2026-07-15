@@ -15,19 +15,19 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 
 		// Address doctype
 		const addressSchema = List([
-			{ kind: 'field' as const, fieldname: 'street', fieldtype: 'Data', component: 'ATextInput' },
-			{ kind: 'field' as const, fieldname: 'city', fieldtype: 'Data', component: 'ATextInput' },
-			{ kind: 'field' as const, fieldname: 'state', fieldtype: 'Data', component: 'ATextInput' },
-			{ kind: 'field' as const, fieldname: 'zip_code', fieldtype: 'Data', component: 'ATextInput' },
+			{ kind: 'field' as const, fieldname: 'street', component: 'ATextInput' },
+			{ kind: 'field' as const, fieldname: 'city', component: 'ATextInput' },
+			{ kind: 'field' as const, fieldname: 'state', component: 'ATextInput' },
+			{ kind: 'field' as const, fieldname: 'zip_code', component: 'ATextInput' },
 		])
 		addressDoctype = new Doctype('address', addressSchema as any, undefined, undefined)
 		registry.addDoctype(addressDoctype)
 
 		// Customer doctype with nested Address (1:1) declared via links
 		const customerSchema = List([
-			{ kind: 'field' as const, fieldname: 'customer_name', fieldtype: 'Data', component: 'ATextInput' },
-			{ kind: 'field' as const, fieldname: 'email', fieldtype: 'Data', component: 'ATextInput' },
-			{ kind: 'field' as const, fieldname: 'address', fieldtype: 'Link', component: 'AForm', options: 'address' },
+			{ kind: 'field' as const, fieldname: 'customer_name', component: 'ATextInput' },
+			{ kind: 'field' as const, fieldname: 'email', component: 'ATextInput' },
+			{ kind: 'field' as const, fieldname: 'address', component: 'AForm', doctype: 'address' },
 		])
 		customerDoctype = new Doctype('customer', customerSchema as any, undefined, undefined, undefined, {
 			address: { target: 'address', cardinality: 'one', fieldname: 'address' },
@@ -42,8 +42,8 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 			const resolved = registry.resolveSchema(customerDoctype)
 
 			// Non-Doctype fields are unchanged
-			expect(resolved[0]).toEqual(expect.objectContaining({ fieldname: 'customer_name', fieldtype: 'Data' }))
-			expect(resolved[1]).toEqual(expect.objectContaining({ fieldname: 'email', fieldtype: 'Data' }))
+			expect(resolved[0]).toEqual(expect.objectContaining({ fieldname: 'customer_name', component: 'ATextInput' }))
+			expect(resolved[1]).toEqual(expect.objectContaining({ fieldname: 'email', component: 'ATextInput' }))
 
 			// Doctype field has embedded schema
 			const addressField = resolved[2]
@@ -67,13 +67,12 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 		it('handles deeply nested doctypes', () => {
 			// Create a "company" doctype that nests "customer" which nests "address"
 			const companySchema = List([
-				{ kind: 'field' as const, fieldname: 'company_name', fieldtype: 'Data', component: 'ATextInput' },
+				{ kind: 'field' as const, fieldname: 'company_name', component: 'ATextInput' },
 				{
 					kind: 'field' as const,
 					fieldname: 'primary_contact',
-					fieldtype: 'Link',
 					component: 'AForm',
-					options: 'customer',
+					doctype: 'customer',
 				},
 			])
 			const companyDoctype = new Doctype('company', companySchema as any, undefined, undefined, undefined, {
@@ -98,8 +97,8 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 			// The parent field points to the same doctype - when resolved, it should
 			// return the circular-blocked schema (without further parent resolution)
 			const selfRefSchema = List([
-				{ kind: 'field' as const, fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' },
-				{ kind: 'field' as const, fieldname: 'parent', fieldtype: 'Link', component: 'AForm', options: 'self-ref' },
+				{ kind: 'field' as const, fieldname: 'name', component: 'ATextInput' },
+				{ kind: 'field' as const, fieldname: 'parent', component: 'AForm', doctype: 'self-ref' },
 			])
 			const selfRefDoctype = new Doctype('self-ref', selfRefSchema as any, undefined, undefined, undefined, {
 				parent: { target: 'self-ref', cardinality: 'one', fieldname: 'parent' },
@@ -122,13 +121,12 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 			const testDoctype = new Doctype(
 				'test',
 				List([
-					{ kind: 'field' as const, fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' },
+					{ kind: 'field' as const, fieldname: 'name', component: 'ATextInput' },
 					{
 						kind: 'field' as const,
 						fieldname: 'missing',
-						fieldtype: 'Link',
 						component: 'AForm',
-						options: 'nonexistent',
+						doctype: 'nonexistent',
 					},
 				]) as any,
 				undefined,
@@ -148,8 +146,8 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 			const testDoctype = new Doctype(
 				'test',
 				List([
-					{ kind: 'field' as const, fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' },
-					{ kind: 'field' as const, fieldname: 'active', fieldtype: 'Check', component: 'ACheckbox' },
+					{ kind: 'field' as const, fieldname: 'name', component: 'ATextInput' },
+					{ kind: 'field' as const, fieldname: 'active', component: 'ACheckbox' },
 				]) as any,
 				undefined,
 				undefined
@@ -157,21 +155,20 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 			const resolved = registry.resolveSchema(testDoctype)
 
 			expect(resolved).toHaveLength(2)
-			expect(resolved[0]).toEqual(expect.objectContaining({ fieldname: 'name', fieldtype: 'Data' }))
-			expect(resolved[1]).toEqual(expect.objectContaining({ fieldname: 'active', fieldtype: 'Check' }))
+			expect(resolved[0]).toEqual(expect.objectContaining({ fieldname: 'name', component: 'ATextInput' }))
+			expect(resolved[1]).toEqual(expect.objectContaining({ fieldname: 'active', component: 'ACheckbox' }))
 		})
 
 		it('resolves a link with cardinality:noneOrMany by auto-deriving columns from child doctype', () => {
 			const testDoctype = new Doctype(
 				'test',
 				List([
-					{ kind: 'field' as const, fieldname: 'customer_name', fieldtype: 'Data', component: 'ATextInput' },
+					{ kind: 'field' as const, fieldname: 'customer_name', component: 'ATextInput' },
 					{
 						kind: 'field' as const,
 						fieldname: 'addresses',
-						fieldtype: 'Link',
 						component: 'ATable',
-						options: 'address',
+						doctype: 'address',
 					},
 				]) as any,
 				undefined,
@@ -182,7 +179,7 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 			const resolved = registry.resolveSchema(testDoctype)
 
 			// Scalar fields are unchanged
-			expect(resolved[0]).toEqual(expect.objectContaining({ fieldname: 'customer_name', fieldtype: 'Data' }))
+			expect(resolved[0]).toEqual(expect.objectContaining({ fieldname: 'customer_name', component: 'ATextInput' }))
 
 			// Link with cardinality:noneOrMany has kind discriminant, delegated schema, and config
 			const tableField = resolved[1] as any
@@ -195,7 +192,7 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 			// Schema delegated to ATable — child fields are preserved, columns are not pre-built
 			expect(Array.isArray(tableField.schema)).toBe(true)
 			expect(tableField.schema).toHaveLength(4)
-			expect(tableField.schema[0]).toEqual(expect.objectContaining({ fieldname: 'street', fieldtype: 'Data' }))
+			expect(tableField.schema[0]).toEqual(expect.objectContaining({ fieldname: 'street', component: 'ATextInput' }))
 			expect(tableField.schema[1]).toEqual(expect.objectContaining({ fieldname: 'city' }))
 			expect(tableField.schema[2]).toEqual(expect.objectContaining({ fieldname: 'state' }))
 			expect(tableField.schema[3]).toEqual(expect.objectContaining({ fieldname: 'zip_code' }))
@@ -209,9 +206,8 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 					{
 						kind: 'field' as const,
 						fieldname: 'addresses',
-						fieldtype: 'Link',
 						component: 'ATable',
-						options: 'address',
+						doctype: 'address',
 					},
 				]) as any,
 				undefined,
@@ -236,9 +232,8 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 					{
 						kind: 'field' as const,
 						fieldname: 'addresses',
-						fieldtype: 'Link',
 						component: 'ATable',
-						options: 'address',
+						doctype: 'address',
 					},
 				]) as any,
 				undefined,
@@ -349,9 +344,8 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 					{
 						kind: 'field' as const,
 						fieldname: 'addresses',
-						fieldtype: 'Link',
 						component: 'ATable',
-						options: 'address',
+						doctype: 'address',
 					},
 				]) as any,
 				undefined,
@@ -374,9 +368,8 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 					{
 						kind: 'field' as const,
 						fieldname: 'items',
-						fieldtype: 'Link',
 						component: 'ATable',
-						options: 'nonexistent',
+						doctype: 'nonexistent',
 					},
 				]) as any,
 				undefined,
@@ -398,9 +391,8 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 					{
 						kind: 'field' as const,
 						fieldname: 'addresses',
-						fieldtype: 'Link',
 						component: 'ATable',
-						options: 'address',
+						doctype: 'address',
 					},
 				]) as any,
 				undefined,
@@ -428,9 +420,8 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 					{
 						kind: 'field' as const,
 						fieldname: 'shippingAddress',
-						fieldtype: 'Link',
 						component: 'AForm',
-						options: 'address',
+						doctype: 'address',
 					},
 				]) as any,
 				undefined,
@@ -454,8 +445,8 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 					{
 						kind: 'field' as const,
 						fieldname: 'address',
-						fieldtype: 'Link',
-						options: 'address',
+						component: 'AFormLink',
+						doctype: 'address',
 						required: true,
 						readOnly: false,
 					},
@@ -478,7 +469,7 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 			const testDoctype = new Doctype(
 				'table-with-meta',
 				List([
-					{ kind: 'field' as const, fieldname: 'addresses', fieldtype: 'Link', options: 'address', required: true },
+					{ kind: 'field' as const, fieldname: 'addresses', component: 'ATable', doctype: 'address', required: true },
 				]) as any,
 				undefined,
 				undefined,
@@ -500,9 +491,8 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 					{
 						kind: 'fieldset' as const,
 						fieldname: 'address_section',
-						fieldtype: 'Fieldset',
 						component: 'AFieldset',
-						schema: [{ kind: 'field' as const, fieldname: 'address', fieldtype: 'Link', options: 'address' }],
+						schema: [{ kind: 'field' as const, fieldname: 'address', component: 'AForm', doctype: 'address' }],
 					},
 				]) as any,
 				undefined,
@@ -531,8 +521,8 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 			const testDoctype = new Doctype(
 				'undeclared-link',
 				List([
-					{ kind: 'field' as const, fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' },
-					{ kind: 'field' as const, fieldname: 'orphan', fieldtype: 'Link', component: 'ALink' },
+					{ kind: 'field' as const, fieldname: 'name', component: 'ATextInput' },
+					{ kind: 'field' as const, fieldname: 'orphan', component: 'AFormLink', doctype: 'territory' },
 				]) as any,
 				undefined,
 				undefined
@@ -542,7 +532,7 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 
 			expect(resolved).toHaveLength(2)
 			expect(resolved[1].fieldname).toBe('orphan')
-			expect((resolved[1] as any).fieldtype).toBe('Link')
+			expect((resolved[1] as any).doctype).toBe('territory')
 		})
 
 		it('copies scalar fields inside a fieldset as-is', () => {
@@ -552,11 +542,10 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 					{
 						kind: 'fieldset' as const,
 						fieldname: 'contact_section',
-						fieldtype: 'Fieldset',
 						component: 'AFieldset',
 						schema: [
-							{ kind: 'field' as const, fieldname: 'phone', fieldtype: 'Data', component: 'ATextInput' },
-							{ kind: 'field' as const, fieldname: 'email', fieldtype: 'Data', component: 'ATextInput' },
+							{ kind: 'field' as const, fieldname: 'phone', component: 'ATextInput' },
+							{ kind: 'field' as const, fieldname: 'email', component: 'ATextInput' },
 						],
 					},
 				]) as any,
@@ -568,7 +557,7 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 
 			expect(fieldset.schema).toHaveLength(2)
 			expect(fieldset.schema[0].fieldname).toBe('phone')
-			expect(fieldset.schema[0].fieldtype).toBe('Data')
+			expect(fieldset.schema[0].component).toBe('ATextInput')
 			expect(fieldset.schema[1].fieldname).toBe('email')
 		})
 
@@ -579,9 +568,8 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 					{
 						kind: 'fieldset' as const,
 						fieldname: 'section',
-						fieldtype: 'Fieldset',
 						component: 'AFieldset',
-						schema: [{ kind: 'field' as const, fieldname: 'orphan', fieldtype: 'Link', component: 'ALink' }],
+						schema: [{ kind: 'field' as const, fieldname: 'orphan', component: 'AFormLink', doctype: 'territory' }],
 					},
 				]) as any,
 				undefined,
@@ -593,7 +581,8 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 
 			expect(fieldset.schema).toHaveLength(1)
 			expect(fieldset.schema[0].fieldname).toBe('orphan')
-			expect(fieldset.schema[0].fieldtype).toBe('Link')
+			expect(fieldset.schema[0].doctype).toBe('territory')
+			expect(fieldset.schema[0].component).toBe('AFormLink')
 		})
 
 		it('copies a Link field inside a fieldset as-is when the target doctype is not registered', () => {
@@ -603,9 +592,10 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 					{
 						kind: 'fieldset' as const,
 						fieldname: 'section',
-						fieldtype: 'Fieldset',
 						component: 'AFieldset',
-						schema: [{ kind: 'field' as const, fieldname: 'missing_link', fieldtype: 'Link', options: 'nonexistent' }],
+						schema: [
+							{ kind: 'field' as const, fieldname: 'missing_link', component: 'AFormLink', doctype: 'nonexistent' },
+						],
 					},
 				]) as any,
 				undefined,
@@ -618,7 +608,7 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 
 			expect(fieldset.schema).toHaveLength(1)
 			expect(fieldset.schema[0].fieldname).toBe('missing_link')
-			expect(fieldset.schema[0].fieldtype).toBe('Link')
+			expect(fieldset.schema[0].doctype).toBe('nonexistent')
 		})
 
 		it('resolves a noneOrMany Link inside a fieldset into a table config', () => {
@@ -628,16 +618,14 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 					{
 						kind: 'fieldset' as const,
 						fieldname: 'address_section',
-						fieldtype: 'Fieldset',
 						component: 'AFieldset',
 						schema: [
-							{ kind: 'field' as const, fieldname: 'label', fieldtype: 'Data', component: 'ATextInput' },
+							{ kind: 'field' as const, fieldname: 'label', component: 'ATextInput' },
 							{
 								kind: 'field' as const,
 								fieldname: 'addresses',
-								fieldtype: 'Link',
 								component: 'ATable',
-								options: 'address',
+								doctype: 'address',
 							},
 						],
 					},
@@ -652,7 +640,7 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 
 			// scalar field inside fieldset is copied as-is
 			expect(fieldset.schema[0].fieldname).toBe('label')
-			expect(fieldset.schema[0].fieldtype).toBe('Data')
+			expect(fieldset.schema[0].component).toBe('ATextInput')
 
 			// noneOrMany link inside fieldset is resolved to a table config
 			const tableField = fieldset.schema[1]
@@ -671,15 +659,13 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 					{
 						kind: 'fieldset' as const,
 						fieldname: 'outer_section',
-						fieldtype: 'Fieldset',
 						component: 'AFieldset',
 						schema: [
 							{
 								kind: 'fieldset' as const,
 								fieldname: 'inner_section',
-								fieldtype: 'Fieldset',
 								component: 'AFieldset',
-								schema: [{ kind: 'field' as const, fieldname: 'address', fieldtype: 'Link', options: 'address' }],
+								schema: [{ kind: 'field' as const, fieldname: 'address', component: 'AForm', doctype: 'address' }],
 							},
 						],
 					},
@@ -704,9 +690,9 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 		it('renders link fields in the order they appear in the fields array', () => {
 			// Link field is in the middle of scalar fields - order is determined by fields array
 			const orderedSchema = List([
-				{ kind: 'field' as const, fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' },
-				{ kind: 'field' as const, fieldname: 'tasks', fieldtype: 'Link', component: 'ATable', options: 'address' },
-				{ kind: 'field' as const, fieldname: 'status', fieldtype: 'Data', component: 'ATextInput' },
+				{ kind: 'field' as const, fieldname: 'name', component: 'ATextInput' },
+				{ kind: 'field' as const, fieldname: 'tasks', component: 'ATable', doctype: 'address' },
+				{ kind: 'field' as const, fieldname: 'status', component: 'ATextInput' },
 			])
 			const docWithOrderedLinks = new Doctype('recipe', orderedSchema as any, undefined, undefined, undefined, {
 				tasks: { target: 'address', cardinality: 'noneOrMany', fieldname: 'tasks' },
@@ -719,12 +705,12 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 			expect(resolved[2].fieldname).toBe('status')
 		})
 
-		it('undeclared Link field gets component AFormLink', () => {
+		it('undeclared link field gets component AFormLink', () => {
 			const testDoctype = new Doctype(
 				'test',
 				List([
-					{ kind: 'field' as const, fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' },
-					{ kind: 'field' as const, fieldname: 'territory', fieldtype: 'Link', options: 'territory' },
+					{ kind: 'field' as const, fieldname: 'name', component: 'ATextInput' },
+					{ kind: 'field' as const, fieldname: 'territory', doctype: 'territory' },
 				]) as any,
 				undefined,
 				undefined
@@ -739,12 +725,11 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 			const testDoctype = new Doctype(
 				'test',
 				List([
-					{ kind: 'field' as const, fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' },
+					{ kind: 'field' as const, fieldname: 'name', component: 'ATextInput' },
 					{
 						kind: 'field' as const,
 						fieldname: 'territory',
-						fieldtype: 'Link',
-						options: 'territory',
+						doctype: 'territory',
 						component: 'MyCustomLink',
 					},
 				]) as any,
@@ -757,29 +742,7 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 			expect((resolved[1] as any).component).toBe('MyCustomLink')
 		})
 
-		it('prefers the authored doctype over the legacy string options', () => {
-			// `doctype` is both the link marker and its target. It used to be ignored here (the target
-			// was derived from `options` only); it is now the source, and `options` is the fallback.
-			const testDoctype = new Doctype(
-				'test',
-				List([
-					{
-						kind: 'field' as const,
-						fieldname: 'territory',
-						fieldtype: 'Link',
-						options: 'legacy-value',
-						doctype: 'territory',
-					},
-				]) as any,
-				undefined,
-				undefined
-			)
-			const resolved = registry.resolveSchema(testDoctype)
-
-			expect((resolved[0] as any).doctype).toBe('territory')
-		})
-
-		it('treats a field carrying only doctype as a link — no fieldtype, no options', () => {
+		it('treats a field carrying only doctype as a link', () => {
 			const testDoctype = new Doctype(
 				'test',
 				List([{ kind: 'field' as const, fieldname: 'territory', component: 'AFormLink', doctype: 'territory' }]) as any,
@@ -793,44 +756,32 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 			expect(resolved[0].kind).toBe('field')
 		})
 
-		it('undeclared Link field with string options gets doctype from options', () => {
-			const testDoctype = new Doctype(
-				'test',
-				List([{ kind: 'field' as const, fieldname: 'territory', fieldtype: 'Link', options: 'territory' }]) as any,
-				undefined,
-				undefined
-			)
-			const resolved = registry.resolveSchema(testDoctype)
-
-			expect((resolved[0] as any).doctype).toBe('territory')
-		})
-
-		it('undeclared Link field without options gets no doctype prop and emits a console warning', () => {
+		it('warns when a link component has no doctype to point at', () => {
+			// Link-ness comes from `doctype`, so this field is not a link at all and renders as a plain
+			// field — an empty picker that looks exactly like a record with no value. Warn instead.
 			const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
 			const testDoctype = new Doctype(
 				'test',
-				List([{ kind: 'field' as const, fieldname: 'territory', fieldtype: 'Link' }]) as any,
+				List([{ kind: 'field' as const, fieldname: 'territory', component: 'AFormLink' }]) as any,
 				undefined,
 				undefined
 			)
 			const resolved = registry.resolveSchema(testDoctype)
 
-			expect((resolved[0] as any).component).toBe('AFormLink')
 			expect('doctype' in resolved[0]).toBe(false)
 			expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('territory'))
 			warnSpy.mockRestore()
 		})
 
-		it('undeclared Link field preserves other field properties', () => {
+		it('undeclared link field preserves other field properties', () => {
 			const testDoctype = new Doctype(
 				'test',
 				List([
 					{
 						kind: 'field' as const,
 						fieldname: 'territory',
-						fieldtype: 'Link',
+						doctype: 'territory',
 						label: 'Sales Territory',
-						options: 'territory',
 					},
 				]) as any,
 				undefined,
@@ -839,11 +790,11 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 			const resolved = registry.resolveSchema(testDoctype)
 
 			expect(resolved[0].fieldname).toBe('territory')
-			expect((resolved[0] as any).fieldtype).toBe('Link')
+			expect((resolved[0] as any).doctype).toBe('territory')
 			expect((resolved[0] as any).label).toBe('Sales Territory')
 		})
 
-		it('declared Link fields are unaffected by undeclared-Link logic', () => {
+		it('declared link fields are unaffected by undeclared-link logic', () => {
 			const resolved = registry.resolveSchema(customerDoctype)
 
 			// The address field is a declared Link — it should be resolved as an embedded AForm schema
@@ -855,7 +806,7 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 	})
 
 	describe('mode propagation through resolveSchema()', () => {
-		it('mode on a ValueField with fieldtype: Link + noneOrMany is preserved in ResolvedTable.mode', () => {
+		it('mode on a link ValueField with noneOrMany is preserved in ResolvedTable.mode', () => {
 			const resolved = registry.resolveSchema(
 				new Doctype(
 					'order',
@@ -863,8 +814,8 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 						{
 							kind: 'field' as const,
 							fieldname: 'items',
-							fieldtype: 'Link',
-							options: 'address',
+							component: 'ATable',
+							doctype: 'address',
 							mode: 'read' as const,
 						},
 					]) as any,
@@ -888,7 +839,7 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 							kind: 'fieldset' as const,
 							fieldname: 'billing',
 							mode: 'read' as const,
-							schema: [{ kind: 'field' as const, fieldname: 'card', fieldtype: 'Data', component: 'ATextInput' }],
+							schema: [{ kind: 'field' as const, fieldname: 'card', component: 'ATextInput' }],
 						},
 					]) as any,
 					undefined,
@@ -908,7 +859,7 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 						{
 							kind: 'table' as const,
 							fieldname: 'items',
-							columns: [{ fieldname: 'qty', fieldtype: 'Int' }],
+							columns: [{ fieldname: 'qty', component: 'ANumericInput' }],
 							// no config — should default to { view: 'list' }
 						},
 					]) as any,
@@ -931,8 +882,8 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 						{
 							kind: 'field' as const,
 							fieldname: 'items',
-							fieldtype: 'Link',
-							options: 'address',
+							component: 'ATable',
+							doctype: 'address',
 							cardinality: 'one', // advisory only
 						},
 					]) as any,
@@ -949,16 +900,16 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 	})
 
 	describe('Registry.initializeRecord()', () => {
-		it('initializes default values based on fieldtype', () => {
+		it('initializes default values based on the component category', () => {
 			const schema = [
-				{ kind: 'field' as const, fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' },
-				{ kind: 'field' as const, fieldname: 'bio', fieldtype: 'Text', component: 'ATextInput' },
-				{ kind: 'field' as const, fieldname: 'active', fieldtype: 'Check', component: 'ACheckbox' },
-				{ kind: 'field' as const, fieldname: 'count', fieldtype: 'Int', component: 'ANumericInput' },
-				{ kind: 'field' as const, fieldname: 'price', fieldtype: 'Float', component: 'ANumericInput' },
-				{ kind: 'field' as const, fieldname: 'amount', fieldtype: 'Decimal', component: 'ANumericInput' },
-				{ kind: 'field' as const, fieldname: 'cost', fieldtype: 'Currency', component: 'ANumericInput' },
-				{ kind: 'field' as const, fieldname: 'qty', fieldtype: 'Quantity', component: 'ANumericInput' },
+				{ kind: 'field' as const, fieldname: 'name', component: 'ATextInput' },
+				{ kind: 'field' as const, fieldname: 'bio', component: 'ATextarea' },
+				{ kind: 'field' as const, fieldname: 'active', component: 'ACheckbox' },
+				{ kind: 'field' as const, fieldname: 'count', component: 'ANumericInput' },
+				{ kind: 'field' as const, fieldname: 'price', component: 'ANumericInput' },
+				{ kind: 'field' as const, fieldname: 'amount', component: 'ANumericInput' },
+				{ kind: 'field' as const, fieldname: 'cost', component: 'ANumericInput' },
+				{ kind: 'field' as const, fieldname: 'qty', component: 'ANumericInput' },
 				{
 					kind: 'table' as const,
 					fieldname: 'items',
@@ -966,8 +917,8 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 					schema: [],
 					config: { view: 'list' as const },
 				},
-				{ kind: 'field' as const, fieldname: 'meta', fieldtype: 'JSON', component: 'ACodeEditor' },
-				{ kind: 'field' as const, fieldname: 'birthday', fieldtype: 'Date', component: 'ADatePicker' },
+				{ kind: 'field' as const, fieldname: 'meta', component: 'ACodeEditor', language: 'json' },
+				{ kind: 'field' as const, fieldname: 'birthday', component: 'ADatePicker' },
 			]
 			const record = registry.initializeRecord(schema)
 
@@ -984,23 +935,19 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 			expect(record.birthday).toBe(null)
 		})
 
-		it('initializes default values from component when fieldtype is absent (component-primary)', () => {
+		it('distinguishes a JSON editor from a code editor by language alone', () => {
+			// Both render with ACodeEditor, so `language` is the only thing that says which empty
+			// value is wanted; with none, there is nothing to derive it from.
 			const schema = [
-				{ kind: 'field' as const, fieldname: 'name', component: 'ATextInput' },
-				{ kind: 'field' as const, fieldname: 'active', component: 'ACheckbox' },
-				{ kind: 'field' as const, fieldname: 'count', component: 'ANumericInput' },
-				{ kind: 'field' as const, fieldname: 'birthday', component: 'ADate' },
 				{ kind: 'field' as const, fieldname: 'config', component: 'ACodeEditor', language: 'json' },
 				{ kind: 'field' as const, fieldname: 'code', component: 'ACodeEditor', language: 'typescript' },
+				{ kind: 'field' as const, fieldname: 'unknown', component: 'ACodeEditor' },
 			]
 			const record = registry.initializeRecord(schema)
 
-			expect(record.name).toBe('')
-			expect(record.active).toBe(false)
-			expect(record.count).toBe(0)
-			expect(record.birthday).toBe(null)
 			expect(record.config).toEqual({})
 			expect(record.code).toBe('')
+			expect(record.unknown).toBe(null)
 		})
 
 		it('recursively initializes nested Doctype fields with resolved schemas', () => {
@@ -1017,13 +964,13 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 			})
 		})
 
-		it('initializes link entries as empty string when schema not resolved', () => {
-			// Resolved scalar field (no kind) — fieldtype defaults to null
-			const schema = [{ kind: 'field' as const, fieldname: 'address', fieldtype: 'Data', component: 'AForm' }]
+		it('initializes an unresolved link entry to null', () => {
+			// A link whose target was never registered stays kind: 'field'. AForm is a container, not
+			// a value component, so it has no category and thus no opinion about what empty means.
+			const schema = [{ kind: 'field' as const, fieldname: 'address', component: 'AForm' }]
 			const record = registry.initializeRecord(schema as any)
 
-			// kind: 'field' with fieldtype 'Data' → empty string
-			expect(record.address).toBe('')
+			expect(record.address).toBe(null)
 		})
 
 		it('initializes atLeastOne link entry to empty array', () => {
@@ -1045,9 +992,7 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 			const resolved = registry.resolveSchema(
 				new Doctype(
 					'parent',
-					List([
-						{ kind: 'field' as const, fieldname: 'address', fieldtype: 'Link', component: 'AForm', options: 'address' },
-					]) as any,
+					List([{ kind: 'field' as const, fieldname: 'address', component: 'AForm', doctype: 'address' }]) as any,
 					undefined,
 					undefined,
 					undefined,
@@ -1169,13 +1114,13 @@ describe('resolveSchema → schemaToColumns pipeline', { tags: ['unit'] }, () =>
 		registry = new Registry()
 
 		const taskSchema = List([
-			{ kind: 'field' as const, fieldname: 'title', fieldtype: 'Data', label: 'Title', component: 'ATextInput' },
-			{ kind: 'field' as const, fieldname: 'status', fieldtype: 'Select', label: 'Status', component: 'ATextInput' },
-			{ kind: 'field' as const, fieldname: 'assignee', fieldtype: 'Link', options: 'user', component: 'AForm' },
+			{ kind: 'field' as const, fieldname: 'title', label: 'Title', component: 'ATextInput' },
+			{ kind: 'field' as const, fieldname: 'status', label: 'Status', component: 'ADropdown' },
+			{ kind: 'field' as const, fieldname: 'assignee', doctype: 'user', component: 'AForm' },
 		])
 		const userSchema = List([
-			{ kind: 'field' as const, fieldname: 'name', fieldtype: 'Data', label: 'Name', component: 'ATextInput' },
-			{ kind: 'field' as const, fieldname: 'email', fieldtype: 'Data', label: 'Email', component: 'ATextInput' },
+			{ kind: 'field' as const, fieldname: 'name', label: 'Name', component: 'ATextInput' },
+			{ kind: 'field' as const, fieldname: 'email', label: 'Email', component: 'ATextInput' },
 		])
 		const userDoctype = new Doctype('user', userSchema as any, undefined, undefined)
 		const taskDoctype = new Doctype('task', taskSchema as any, undefined, undefined, undefined, {
@@ -1202,11 +1147,11 @@ describe('resolveSchema → schemaToColumns pipeline', { tags: ['unit'] }, () =>
 		expect(colNames).toContain('email')
 	})
 
-	it('ResolvedTable entry has schema but no fieldtype', () => {
+	it('ResolvedTable entry has a resolved schema', () => {
 		const resolved = registry.resolveSchema(registry.getDoctype('task')!)
 		const tableEntry = resolved.find((f: any) => f.kind === 'table')
 		expect(tableEntry).toBeDefined()
-		expect((tableEntry as any).fieldtype).toBeUndefined()
+		expect((tableEntry as any).schema).toBeDefined()
 
 		// assignee is the table entry; it does not appear as a scalar column
 		const tableColumns = schemaToColumns((tableEntry as any).schema)
@@ -1230,14 +1175,14 @@ describe('resolveSchema → schemaToColumns pipeline', { tags: ['unit'] }, () =>
 		}
 	})
 
-	it('label and fieldtype are preserved on ResolvedScalar fields', () => {
+	it('label and component are preserved on ResolvedScalar fields', () => {
 		const resolved = registry.resolveSchema(registry.getDoctype('task')!)
 
 		const titleField = resolved.find((f: any) => f.fieldname === 'title') as any
 		expect(titleField?.label).toBe('Title')
-		expect(titleField?.fieldtype).toBe('Data')
+		expect(titleField?.component).toBe('ATextInput')
 
 		const statusField = resolved.find((f: any) => f.fieldname === 'status') as any
-		expect(statusField?.fieldtype).toBe('Select')
+		expect(statusField?.component).toBe('ADropdown')
 	})
 })

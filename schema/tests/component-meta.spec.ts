@@ -22,8 +22,8 @@ describe('component-meta', { tags: ['unit'] }, () => {
 	})
 
 	it('categorizes the date components that previously had no category', () => {
-		// Without these, a migrated `ADatePicker` field (e.g. Task.json.dueDate) loses date
-		// formatting the moment `fieldtype` is removed.
+		// The component is the only thing that says what a field means, so an uncategorised
+		// `ADatePicker` (e.g. Task.json.dueDate) would silently lose its date formatting.
 		expect(componentCategory('ADatePicker')).toBe('date')
 		expect(componentCategory('ADateSelection')).toBe('date')
 	})

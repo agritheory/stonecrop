@@ -23,7 +23,7 @@ import {
 	type GraphQLNamedType,
 } from 'graphql'
 
-import type { FieldTemplate } from '../fieldtype'
+import type { FieldTemplate } from './types'
 import type { GraphQLConversionFieldMeta, GraphQLConversionOptions } from './types'
 import { buildScalarMap, INTERNAL_SCALARS } from './scalars'
 import { toSlug, camelToLabel, toPascalCase } from '../naming'

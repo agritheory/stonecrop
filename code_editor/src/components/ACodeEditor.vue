@@ -19,10 +19,9 @@ import { onMounted, onUnmounted, shallowRef, watch } from 'vue'
 import { useTemplateRef } from 'vue'
 
 import { theme } from '../theme/code_editor/agritheory'
-import { detectLanguage } from '../utils/language'
 import { toEditorString } from '../utils/serialization'
 
-type EditorSchema = { fieldtype?: string; [key: string]: unknown }
+type EditorSchema = { language?: string; [key: string]: unknown }
 
 const modelValue = defineModel<string>()
 const {
@@ -71,22 +70,28 @@ onMounted(async () => {
 	if (vsPath) loader.config({ paths: { vs: vsPath } })
 
 	const monacoInstance: typeof Monaco = await loader.init()
-	// Dual-read: the field's `language` attribute (component-primary) takes precedence over the
-	// `language` prop, then falls back to the legacy `fieldtype` (JSON/Code) inside detectLanguage.
-	const lang = detectLanguage(schema?.fieldtype, schema?.language ?? language)
+	// The field declares its own language; without one, highlight nothing rather than guess.
+	const lang = schema?.language ?? language ?? 'plaintext'
 
+	// `languages.typescript` is marked deprecated in monaco's *module* typings, which tell you to
+	// use the top-level `monaco.typescript` instead. That does not apply here. The loader resolves
+	// with `window.monaco`, which is the `editor.api2.js` namespace (`editor`, `languages`, `Uri`,
+	// …) — `editor.main.js` only ever mutates `languages.typescript` onto it, and the top-level
+	// `typescript` export lives on a *different* module namespace that this object is not. So
+	// `monacoInstance.typescript` is `undefined` at runtime; `languages.typescript` is the real one.
+	const ts = monacoInstance.languages.typescript
 	if (extraLibs) {
-		monacoInstance.languages.typescript.javascriptDefaults.addExtraLib(extraLibs, 'ts:stonecrop.d.ts')
+		ts.javascriptDefaults.addExtraLib(extraLibs, 'ts:stonecrop.d.ts')
 	}
 	if (extraLibs || libs) {
-		monacoInstance.languages.typescript.javascriptDefaults.setCompilerOptions({
+		ts.javascriptDefaults.setCompilerOptions({
 			checkJs: true,
 			noImplicitAny: false,
 			// `lib` is authoritative — it replaces Monaco's default set, so passing e.g.
 			// ['es2020'] retains the JS built-ins (Promise/Array/JSON/…) while removing the
 			// DOM/browser globals. `target` is matched so ES2020 syntax isn't flagged.
 			...(libs && {
-				target: monacoInstance.languages.typescript.ScriptTarget.ES2020,
+				target: ts.ScriptTarget.ES2020,
 				lib: libs,
 			}),
 		})
@@ -99,11 +104,7 @@ onMounted(async () => {
 	// run getSyntacticDiagnostics without throwing "Could not find source file".
 	const ext = lang === 'typescript' ? 'ts' : lang === 'json' ? 'json' : lang === 'python' ? 'py' : 'js'
 	const modelUri = monacoInstance.Uri.parse(`file:///stonecrop-editor-${++editorModelCounter}.${ext}`)
-	const editorModel = monacoInstance.editor.createModel(
-		toEditorString(modelValue.value, schema?.fieldtype),
-		lang,
-		modelUri
-	)
+	const editorModel = monacoInstance.editor.createModel(toEditorString(modelValue.value), lang, modelUri)
 
 	const inst = monacoInstance.editor.create(editorRef.value!, {
 		automaticLayout: true,

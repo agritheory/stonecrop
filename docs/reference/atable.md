@@ -161,7 +161,6 @@ createTableStore: (initData: {
         mask?: ((value: any) => any) | undefined;
         linkDoctype?: string | undefined;
         readonly originalIndex?: number | undefined;
-        fieldtype?: string | undefined;
         component?: string | undefined;
         doctype?: string | undefined;
         label?: string | undefined;
@@ -188,7 +187,6 @@ createTableStore: (initData: {
         mask?: ((value: any) => any) | undefined;
         linkDoctype?: string | undefined;
         readonly originalIndex?: number | undefined;
-        fieldtype?: string | undefined;
         component?: string | undefined;
         doctype?: string | undefined;
         label?: string | undefined;
@@ -1035,7 +1033,6 @@ createTableStore: (initData: {
         mask?: ((value: any) => any) | undefined;
         linkDoctype?: string | undefined;
         readonly originalIndex?: number | undefined;
-        fieldtype?: string | undefined;
         component?: string | undefined;
         doctype?: string | undefined;
         label?: string | undefined;
@@ -1062,7 +1059,6 @@ createTableStore: (initData: {
         mask?: ((value: any) => any) | undefined;
         linkDoctype?: string | undefined;
         readonly originalIndex?: number | undefined;
-        fieldtype?: string | undefined;
         component?: string | undefined;
         doctype?: string | undefined;
         label?: string | undefined;
@@ -1909,7 +1905,6 @@ createTableStore: (initData: {
         mask?: ((value: any) => any) | undefined;
         linkDoctype?: string | undefined;
         readonly originalIndex?: number | undefined;
-        fieldtype?: string | undefined;
         component?: string | undefined;
         doctype?: string | undefined;
         label?: string | undefined;
@@ -1936,7 +1931,6 @@ createTableStore: (initData: {
         mask?: ((value: any) => any) | undefined;
         linkDoctype?: string | undefined;
         readonly originalIndex?: number | undefined;
-        fieldtype?: string | undefined;
         component?: string | undefined;
         doctype?: string | undefined;
         label?: string | undefined;
@@ -2804,7 +2798,7 @@ declare function install(app: App): void;
 
 Convert an array of doctype field descriptors into ATable column definitions.
 
-Fields are excluded when: - `hidden: true` — field should not be visible in any view - no `component` and no `fieldtype` — non-scalar entry (nested table or fieldset), no column equivalent
+Fields are excluded when: - `hidden: true` — field should not be visible in any view - no `component` — non-scalar entry (nested table or fieldset), no column equivalent
 
 `fieldname` is renamed to `name`; `hidden` is stripped. All other `ColumnSchema` properties spread through automatically.
 
@@ -3249,7 +3243,7 @@ export interface RowMoveEvent {
 
 Runtime column definition for ATable.
 
-Extends `ColumnSchema` from `@stonecrop/schema` — all authoring properties (`label`, `fieldtype`, `width`, `pinned`, filter config, cell/modal component names, etc.) are inherited. The overrides below widen three properties for runtime use (live functions, broader alignment values) and add two runtime-only additions (`mask`, `originalIndex`).
+Extends `ColumnSchema` from `@stonecrop/schema` — all authoring properties (`label`, `component`, `width`, `pinned`, filter config, cell/modal component names, etc.) are inherited. The overrides below widen three properties for runtime use (live functions, broader alignment values) and add two runtime-only additions (`mask`, `originalIndex`).
 
 Schema-based callers should author columns as `ColumnSchema[]` (using `fieldname`) and pass them via ATable's `:schema` prop — `TableColumn` is the internal runtime type and callers working from a doctype schema never need to construct it directly.
 
@@ -3271,7 +3265,7 @@ export interface TableColumn {
 | Property | Type | Description |
 |----------|------|-------------|
 | format? | `string \| ((value: any, context: CellContext) => string)` | Widens `ColumnSchema.format` (string-only) to also accept a live function at runtime. Serialized string functions are deserialized by the table store's `getFormattedValue`. |
-| linkDoctype? | `string` | For `fieldtype: 'Link'` columns: the target doctype slug used by the `linkResolver` to look up display text for bare ID values. Set automatically by `schemaToColumns` from the field's `doctype` property. |
+| linkDoctype? | `string` | For link columns (those carrying `doctype`): the target doctype slug used by the `linkResolver` to look up display text for bare ID values. Set automatically by `schemaToColumns` from the field's `doctype` property. |
 | mask? | `(value: any) => any` | Input mask applied to the cell value before display. Accepts a live function only — masks cannot be serialized to JSON so they are absent from `ColumnSchema`. |
 | modalComponent? | `string \| ((context: CellContext) => string)` | Widens `ColumnSchema.modalComponent` (string-only) to also accept a factory function. When a function is provided it receives the cell context and returns the component name. The cell context exposes: - `row` — the row object for the current cell - `column` — the column object for the current cell - `table` — the table object |
 | name | `string` | Runtime column key. Corresponds to `fieldname` in `ColumnSchema`; populated by `schemaToColumns`. |
