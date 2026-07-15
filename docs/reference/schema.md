@@ -94,6 +94,22 @@ export declare function componentCategory(component?: string): ComponentCategory
 |-----------|------|-------------|
 | component | `string` |  |
 
+### componentLinkExpansion
+
+Resolve a component's link expansion, or `undefined` for an absent/unmapped component.
+
+**Signature:**
+
+```typescript
+export declare function componentLinkExpansion(component?: string): LinkExpansion | undefined;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| component | `string` |  |
+
 ### convertGraphQLSchema
 
 Convert a GraphQL schema to Stonecrop doctype schemas.
@@ -267,6 +283,30 @@ export declare function resolveComponent(fieldtype: string): string;
 |-----------|------|-------------|
 | fieldtype | `string` | Any fieldtype string (builtin or custom) |
 
+### resolveLinkRenderMode
+
+Decide how a *declared* link (one with a `LinkDeclaration`) renders.
+
+Two independent axes: the **component** picks inline vs expand, and when expanding the **cardinality** picks record vs table (many → table). The declaration's component wins over the field's, matching the precedence the resolver already uses for the rendered component.
+
+This is the single definition of "does this link expand" — it is consumed by both the client resolver (which builds the nested schema) and the server column builder (which must still SELECT an `inline` link's FK column). Call it; never re-derive the rule at the call site, or the two will drift and the client will render a table for a column the server never selected.
+
+**Signature:**
+
+```typescript
+export declare function resolveLinkRenderMode(link: {
+    component?: string;
+    cardinality?: string;
+}, fieldComponent?: string): LinkRenderMode;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| link | `{ component?: string; cardinality?: string; }` | the link declaration (only `component` and `cardinality` are consulted) |
+| fieldComponent | `string` | the linked field's own `component`, used when the declaration names none |
+
 ### snakeToCamel
 
 Converts snake_case to camelCase
@@ -380,6 +420,7 @@ export interface ColumnSchema {
   cellComponentProps?: Record<string, any>;
   colspan?: number;
   component?: string;
+  doctype?: string;
   edit?: boolean;
   fieldname: string;
   fieldtype?: string;
@@ -410,6 +451,7 @@ export interface ColumnSchema {
 | cellComponentProps? | `Record<string, any>` | Additional props passed to `cellComponent`. Only applicable when `cellComponent` is set. |
 | colspan? | `number` | Number of columns this Gantt bar spans across. When absent, the bar stretches to cover all non-pinned columns in the table. Only applicable for Gantt tables. |
 | component? | `string` | Rendering component (e.g. `'ATextInput'`, `'ANumericInput'`, `'ADate'`). The component-primary replacement for `fieldtype`: default cell formatting and filter widgets derive from its `ComponentCategory`, falling back to `fieldtype` while both are present. |
+| doctype? | `string` | Target doctype slug — marks this column as a link (replaces `fieldtype: 'Link'`). When set and no `cellComponent` is given, `schemaToColumns` copies it to `TableColumn.linkDoctype`, which ACell uses to resolve a bare id to display text. |
 | edit? | `boolean` | Whether the column cell is editable in the table. |
 | fieldname | `string` | Unique identifier for the field within its doctype. Maps to `name` on `TableColumn`. |
 | fieldtype? | `string` | Semantic field type (e.g. `'Data'`, `'Int'`, `'Date'`, `'Check'`). Legacy — being replaced by `component`. Fields without a `fieldtype` *and* without a `component` are treated as non-scalar (nested table or fieldset) and excluded by `schemaToColumns`. |
@@ -759,6 +801,7 @@ export interface ValueField {
   component?: string;
   computed?: boolean;
   default?: unknown;
+  doctype?: string;
   edit?: boolean;
   fieldname: string;
   fieldtype?: string;
@@ -788,6 +831,7 @@ export interface ValueField {
 | component? | `string` | Vue component that renders this field — the primary rendering axis. |
 | computed? | `boolean` | True for a computed/display field with no backing DB column — excluded from SQL SELECT (replaces `fieldtype: 'Display'`). |
 | default? | `unknown` | Default value for new records |
+| doctype? | `string` | Target doctype slug — this field is a link to that doctype (replaces `fieldtype: 'Link'` and the legacy convention of a string-valued `options`). Presence is what makes a field a link. How it renders is decided by `component`, not by this: `AFormLink`/`AComboBox` render an inline id-picker, while `AForm`/`ATable` expand the target (see `linkRenderMode`). Expansion metadata — backlink, fetch strategy, authoritative cardinality — lives in the doctype's `links` map, which is additive and never required for a plain foreign key. |
 | edit? | `boolean` | Whether the field is editable in table cell context |
 | fieldname | `string` | Unique identifier for this field within its doctype |
 | fieldtype? | `string` | Semantic field type (legacy). Optional during the component-primary migration — `component` is now the primary rendering axis. Retained so un-migrated fields keep working; removed once every field carries `component`. |
@@ -798,11 +842,11 @@ export interface ValueField {
 | language? | `string` | Editor language for code fields (e.g. `'json'`, `'typescript'`) — disambiguates JSON vs Code, which share `ACodeEditor`. |
 | mask? | `string` | Input mask pattern or serialized function |
 | mode? | `InteractionMode` | Per-field interaction mode override |
-| options? | `FieldOptions` | Type-specific options: Link target slug, Select choices, Decimal precision config, etc. |
+| options? | `FieldOptions` | Type-specific options: Select choices, Decimal precision config, etc. A string value is the legacy link target — superseded by `doctype`, tolerated until the migration completes. |
 | primaryKey? | `boolean` | True for the field that identifies the record's primary-key column (replaces `fieldtype: 'PrimaryKey'`). |
 | readOnly? | `boolean` | Whether the field is read-only |
 | required? | `boolean` | Whether the field is required |
-| source? | `'introspected'` | Provenance marker — stamped only by the GraphQL converter; absence means hand-authored. When present, the docbuilder freezes the field's identity set (`fieldname`, `primaryKey`, `required`, `options`, `cardinality` — and `fieldtype` while it remains), since `fieldname` is the GraphQL/column binding. Link identity is carried by the doctype's `links` map. |
+| source? | `'introspected'` | Provenance marker — stamped only by the GraphQL converter; absence means hand-authored. When present, the docbuilder freezes the field's identity set (`fieldname`, `primaryKey`, `required`, `options`, `cardinality`, `doctype` — and `fieldtype` while it remains), since `fieldname` is the GraphQL/column binding and `doctype` is the FK's target. |
 | validation? | `FieldValidation` | Validation configuration |
 | width? | `string` | CSS width (e.g. `"40ch"`, `"200px"`) |
 
@@ -958,6 +1002,30 @@ Link declaration type inferred from Zod schema
 export type LinkDeclaration = z.infer<typeof LinkDeclaration>;
 ```
 
+### LinkExpansion
+
+Whether a link component expands its target doctype, or renders the link inline.
+
+This is the *only* axis the component decides. It deliberately does not choose between an embedded record and an embedded table: `cardinality` states whether the value is a scalar or an array, which is a fact about the data rather than a rendering preference, so a component must not be able to override it (an `AForm` over a `noneOrMany` link would be handed an array it cannot render). Component names encode both axes — `AFormLink`/`ATableLink` are the inline pair, `AForm`/`ATable` the expanding pair — but only the inline/expand half is authoritative.
+
+**Definition:**
+
+```typescript
+export type LinkExpansion = 'inline' | 'expand';
+```
+
+### LinkRenderMode
+
+How a link field renders.
+
+- `inline` — a scalar id-picker; the target is *not* expanded (the field keeps its own value and carries a `doctype` prop for async display-text resolution and navigation). - `record` — the target doctype is resolved and embedded as a nested form. - `table` — the target doctype is resolved and embedded as a child table.
+
+**Definition:**
+
+```typescript
+export type LinkRenderMode = 'inline' | 'record' | 'table';
+```
+
 ### SerializedFunction
 
 Serialized function type - a function serialized to a string. Used for custom fetch handlers.
@@ -1071,6 +1139,16 @@ Canonical component → semantic category. Only the components Stonecrop ships w
 
 ```typescript
 export const COMPONENT_CATEGORY: Record<string, ComponentCategory>
+```
+
+### COMPONENT_LINK_EXPANSION
+
+Canonical link component → expansion. Only components Stonecrop ships with appear here; an unmapped (custom) component has none, and callers treat that as `expand` — the behaviour that predates this map, so a custom component can never silently collapse a link to a picker.
+
+**Type:**
+
+```typescript
+export const COMPONENT_LINK_EXPANSION: Record<string, LinkExpansion>
 ```
 
 ### CustomFetch
@@ -1190,7 +1268,7 @@ export const FetchStrategy: z.ZodDiscriminatedUnion<[z.ZodObject<{
 
 Field options - flexible bag for type-specific configuration.
 
-Usage by fieldtype: - Link/Doctype: target doctype slug as string ("customer", "sales-order-item") - Select: array of choices (["Draft", "Submitted", "Cancelled"]) - Decimal: config object ( precision: 10, scale: 2 ) - Code: config object ( language: "python" )
+Usage: - Select: array of choices (["Draft", "Submitted", "Cancelled"]) - Decimal: config object ( precision: 10, scale: 2 ) - Code: config object ( language: "python" ) - Link target as a bare string ("customer") — **legacy**, superseded by `ValueField.doctype`. Tolerated until every fixture migrates; the `z.string()` branch is dropped after that, which leaves this a clean choices-or-config bag with no shape-encodes-meaning overload.
 
 **Type:**
 
@@ -1429,6 +1507,7 @@ export const ValueFieldSchema: z.ZodObject<{
     primaryKey: z.ZodOptional<z.ZodBoolean>;
     computed: z.ZodOptional<z.ZodBoolean>;
     language: z.ZodOptional<z.ZodString>;
+    doctype: z.ZodOptional<z.ZodString>;
     label: z.ZodOptional<z.ZodString>;
     width: z.ZodOptional<z.ZodString>;
     align: z.ZodOptional<z.ZodEnum<{

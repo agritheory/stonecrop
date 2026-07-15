@@ -259,6 +259,89 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 			expect(tableField.component).toBe('MyCustomTable')
 		})
 
+		describe('D1c — component decides the render mode', () => {
+			it('renders a declared link as an inline picker when the component is AFormLink', () => {
+				// The link declaration supplies the target (and could supply backlink/fetch), but an
+				// inline component means the target is NOT expanded — it stays a scalar id-picker.
+				const testDoctype = new Doctype(
+					'test',
+					List([{ kind: 'field' as const, fieldname: 'address', component: 'AFormLink', doctype: 'address' }]) as any,
+					undefined,
+					undefined,
+					undefined,
+					{ address: { target: 'address', cardinality: 'one', fieldname: 'address' } }
+				)
+				const resolved = registry.resolveSchema(testDoctype)
+
+				expect(resolved[0].kind).toBe('field')
+				expect('schema' in resolved[0]).toBe(false)
+				expect((resolved[0] as any).doctype).toBe('address')
+				expect((resolved[0] as any).component).toBe('AFormLink')
+			})
+
+			it('takes the inline component from the link declaration too', () => {
+				const testDoctype = new Doctype(
+					'test',
+					List([{ kind: 'field' as const, fieldname: 'address', doctype: 'address' }]) as any,
+					undefined,
+					undefined,
+					undefined,
+					{ address: { target: 'address', cardinality: 'one', component: 'AComboBox', fieldname: 'address' } }
+				)
+				const resolved = registry.resolveSchema(testDoctype)
+
+				expect(resolved[0].kind).toBe('field')
+				expect((resolved[0] as any).doctype).toBe('address')
+			})
+
+			it('lets cardinality — not the component — choose record vs table when expanding', () => {
+				// An expanding component picks expansion, never the shape: `cardinality` says the
+				// value is an array, and AForm cannot render an array.
+				const testDoctype = new Doctype(
+					'test',
+					List([{ kind: 'field' as const, fieldname: 'address', component: 'AForm', doctype: 'address' }]) as any,
+					undefined,
+					undefined,
+					undefined,
+					{ address: { target: 'address', cardinality: 'noneOrMany', fieldname: 'address' } }
+				)
+				const resolved = registry.resolveSchema(testDoctype)
+
+				expect(resolved[0].kind).toBe('table')
+			})
+
+			it('expands a link whose component is unmapped, deferring to cardinality', () => {
+				const testDoctype = new Doctype(
+					'test',
+					List([
+						{ kind: 'field' as const, fieldname: 'address', component: 'MyCustomThing', doctype: 'address' },
+					]) as any,
+					undefined,
+					undefined,
+					undefined,
+					{ address: { target: 'address', cardinality: 'one', fieldname: 'address' } }
+				)
+				const resolved = registry.resolveSchema(testDoctype)
+
+				expect(resolved[0].kind).toBe('link')
+			})
+
+			it('resolves an inline link whose target is not registered — a picker only needs the slug', () => {
+				const testDoctype = new Doctype(
+					'test',
+					List([{ kind: 'field' as const, fieldname: 'ghost', component: 'AFormLink', doctype: 'nonexistent' }]) as any,
+					undefined,
+					undefined,
+					undefined,
+					{ ghost: { target: 'nonexistent', cardinality: 'one', fieldname: 'ghost' } }
+				)
+				const resolved = registry.resolveSchema(testDoctype)
+
+				expect(resolved[0].kind).toBe('field')
+				expect((resolved[0] as any).doctype).toBe('nonexistent')
+			})
+		})
+
 		it('does not mutate addressDoctype schema when resolving noneOrMany link', () => {
 			const testDoctype = new Doctype(
 				'test',
@@ -674,7 +757,9 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 			expect((resolved[1] as any).component).toBe('MyCustomLink')
 		})
 
-		it('ignores raw doctype in JSON and derives from options only', () => {
+		it('prefers the authored doctype over the legacy string options', () => {
+			// D1b: `doctype` is the link marker and target. It used to be ignored here (the target
+			// was derived from `options` only); it is now the source, and `options` is the fallback.
 			const testDoctype = new Doctype(
 				'test',
 				List([
@@ -682,8 +767,8 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 						kind: 'field' as const,
 						fieldname: 'territory',
 						fieldtype: 'Link',
-						options: 'territory',
-						doctype: 'ignored-value',
+						options: 'legacy-value',
+						doctype: 'territory',
 					},
 				]) as any,
 				undefined,
@@ -692,6 +777,20 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 			const resolved = registry.resolveSchema(testDoctype)
 
 			expect((resolved[0] as any).doctype).toBe('territory')
+		})
+
+		it('treats a field carrying only doctype as a link — no fieldtype, no options', () => {
+			const testDoctype = new Doctype(
+				'test',
+				List([{ kind: 'field' as const, fieldname: 'territory', component: 'AComboBox', doctype: 'territory' }]) as any,
+				undefined,
+				undefined
+			)
+			const resolved = registry.resolveSchema(testDoctype)
+
+			expect((resolved[0] as any).doctype).toBe('territory')
+			expect((resolved[0] as any).component).toBe('AComboBox')
+			expect(resolved[0].kind).toBe('field')
 		})
 
 		it('undeclared Link field with string options gets doctype from options', () => {

@@ -172,15 +172,17 @@ export function validateReferences(): ValidationError[] {
 			})
 		}
 
-		// Check Link field targets (legacy flat links: `fieldtype:'Link'` + string `options`)
+		// Check link field targets. Dual-read: `doctype` is the marker and the target (D1b); a
+		// legacy flat link is `fieldtype:'Link'` with a string-valued `options`.
 		for (const field of doctype.fields) {
-			if (field.kind === 'field' && field.fieldtype === 'Link' && typeof field.options === 'string') {
-				if (!doctypeRegistry.has(field.options)) {
-					errors.push({
-						path: [doctype.name, 'fields', field.fieldname, 'options'],
-						message: `Link references unknown doctype: ${field.options}`,
-					})
-				}
+			if (field.kind !== 'field') continue
+			const target =
+				field.doctype ?? (field.fieldtype === 'Link' && typeof field.options === 'string' ? field.options : undefined)
+			if (target !== undefined && !doctypeRegistry.has(target)) {
+				errors.push({
+					path: [doctype.name, 'fields', field.fieldname, field.doctype ? 'doctype' : 'options'],
+					message: `Link references unknown doctype: ${target}`,
+				})
 			}
 		}
 

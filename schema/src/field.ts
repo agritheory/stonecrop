@@ -8,17 +8,19 @@ import { TableViewConfig } from './table'
 /**
  * Field options - flexible bag for type-specific configuration.
  *
- * Usage by fieldtype:
- * - Link/Doctype: target doctype slug as string ("customer", "sales-order-item")
+ * Usage:
  * - Select: array of choices (["Draft", "Submitted", "Cancelled"])
  * - Decimal: config object (\{ precision: 10, scale: 2 \})
  * - Code: config object (\{ language: "python" \})
+ * - Link target as a bare string ("customer") — **legacy**, superseded by `ValueField.doctype`.
+ *   Tolerated until every fixture migrates; the `z.string()` branch is dropped after that, which
+ *   leaves this a clean choices-or-config bag with no shape-encodes-meaning overload.
  *
  * @public
  */
 export const FieldOptions = z
 	.union([
-		z.string(), // Link/Doctype target: "customer"
+		z.string(), // legacy link target: "customer" — superseded by `doctype`
 		z.array(z.string()), // Select choices: ["A", "B", "C"]
 		z.record(z.string(), z.unknown()), // Config: \{ precision: 10, scale: 2 \}
 	])
@@ -84,6 +86,16 @@ export interface ValueField {
 	computed?: boolean
 	/** Editor language for code fields (e.g. `'json'`, `'typescript'`) — disambiguates JSON vs Code, which share `ACodeEditor`. */
 	language?: string
+	/**
+	 * Target doctype slug — this field is a link to that doctype (replaces `fieldtype: 'Link'` and
+	 * the legacy convention of a string-valued `options`). Presence is what makes a field a link.
+	 *
+	 * How it renders is decided by `component`, not by this: `AFormLink`/`AComboBox` render an
+	 * inline id-picker, while `AForm`/`ATable` expand the target (see `linkRenderMode`). Expansion
+	 * metadata — backlink, fetch strategy, authoritative cardinality — lives in the doctype's
+	 * `links` map, which is additive and never required for a plain foreign key.
+	 */
+	doctype?: string
 	/** Human-readable label */
 	label?: string
 	/** CSS width (e.g. `"40ch"`, `"200px"`) */
@@ -100,7 +112,8 @@ export interface ValueField {
 	format?: string
 	/** Per-field interaction mode override */
 	mode?: InteractionMode
-	/** Type-specific options: Link target slug, Select choices, Decimal precision config, etc. */
+	/** Type-specific options: Select choices, Decimal precision config, etc. A string value is the
+	 *  legacy link target — superseded by `doctype`, tolerated until the migration completes. */
 	options?: FieldOptions
 	/** Whether the field is required */
 	required?: boolean
@@ -117,8 +130,8 @@ export interface ValueField {
 	/**
 	 * Provenance marker — stamped only by the GraphQL converter; absence means hand-authored.
 	 * When present, the docbuilder freezes the field's identity set (`fieldname`, `primaryKey`,
-	 * `required`, `options`, `cardinality` — and `fieldtype` while it remains), since `fieldname`
-	 * is the GraphQL/column binding. Link identity is carried by the doctype's `links` map.
+	 * `required`, `options`, `cardinality`, `doctype` — and `fieldtype` while it remains), since
+	 * `fieldname` is the GraphQL/column binding and `doctype` is the FK's target.
 	 */
 	source?: 'introspected'
 }
@@ -209,6 +222,7 @@ function createDoctypeFieldSchemas() {
 			primaryKey: z.boolean().optional(),
 			computed: z.boolean().optional(),
 			language: z.string().optional(),
+			doctype: z.string().min(1).optional(),
 			label: z.string().optional(),
 			width: z.string().optional(),
 			align: z.enum(['left', 'center', 'right', 'start', 'end']).optional(),

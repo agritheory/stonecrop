@@ -35,6 +35,13 @@ export interface ColumnSchema {
 	component?: string
 
 	/**
+	 * Target doctype slug — marks this column as a link (replaces `fieldtype: 'Link'`). When set
+	 * and no `cellComponent` is given, `schemaToColumns` copies it to `TableColumn.linkDoctype`,
+	 * which ACell uses to resolve a bare id to display text.
+	 */
+	doctype?: string
+
+	/**
 	 * Human-readable column header. When absent, ATable assigns labels alphabetically
 	 * (A, B, C, …).
 	 */

@@ -12,7 +12,7 @@ import type { TableColumn } from './types'
  * `fieldname` is renamed to `name`; `hidden` is stripped. All other `ColumnSchema` properties
  * spread through automatically.
  *
- * For `fieldtype: 'Link'` fields without an explicit `cellComponent`:
+ * For link fields (those carrying `doctype`) without an explicit `cellComponent`:
  * - `linkDoctype` is set from the field's `doctype` property (used by ACell's async resolver).
  * - A synchronous `format` function is added (unless the field already has one) that handles
  *   both bare ID strings and pre-resolved `{ id, displayText }` objects.
@@ -25,11 +25,12 @@ export function schemaToColumns(schema: ColumnSchema[]): TableColumn[] {
 		.map(({ fieldname, hidden: _hidden, ...rest }) => {
 			const col: TableColumn = Object.assign({ name: fieldname }, rest)
 
-			// Link fields: store the linked doctype for async resolution by ACell,
-			// and add a sync format that handles pre-resolved AFormLinkValue objects.
-			if (rest.fieldtype === 'Link' && !rest.cellComponent) {
-				const fields = rest as Record<string, unknown>
-				const linkedDoctype = typeof fields.doctype === 'string' ? fields.doctype : undefined
+			// Link fields: store the linked doctype for async resolution by ACell, and add a sync
+			// format that handles pre-resolved AFormLinkValue objects. `doctype` is the marker
+			// (D1b) — the legacy `fieldtype: 'Link'` arm only matters for un-migrated fields, whose
+			// target the resolver has already copied onto `doctype`.
+			if ((rest.doctype || rest.fieldtype === 'Link') && !rest.cellComponent) {
+				const linkedDoctype = rest.doctype
 				if (linkedDoctype) col.linkDoctype = linkedDoctype
 
 				if (!rest.format) {

@@ -19,6 +19,7 @@ export const GET_META_QUERY = `
 				fieldname
 				fieldtype
 				component
+				doctype
 				label
 				width
 				align
@@ -76,6 +77,7 @@ export const GET_ALL_META_QUERY = `
 				fieldname
 				fieldtype
 				component
+				doctype
 				label
 				width
 				align

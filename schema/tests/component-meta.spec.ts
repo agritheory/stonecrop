@@ -1,5 +1,10 @@
 import { describe, it, expect } from 'vitest'
-import { componentCategory, COMPONENT_CATEGORY } from '../src/component-meta'
+import {
+	componentCategory,
+	COMPONENT_CATEGORY,
+	componentLinkExpansion,
+	resolveLinkRenderMode,
+} from '../src/component-meta'
 
 describe('component-meta', { tags: ['unit'] }, () => {
 	it('categorizes the canonical components', () => {
@@ -15,6 +20,13 @@ describe('component-meta', { tags: ['unit'] }, () => {
 		expect(componentCategory('AFormLink')).toBe('link')
 	})
 
+	it('categorizes the date components that previously had no category', () => {
+		// Without these, a migrated `ADatePicker` field (e.g. Task.json.dueDate) loses date
+		// formatting the moment `fieldtype` is removed.
+		expect(componentCategory('ADatePicker')).toBe('date')
+		expect(componentCategory('ADateSelection')).toBe('date')
+	})
+
 	it('returns undefined for unknown or absent components (so callers can fall back)', () => {
 		expect(componentCategory('ASomethingCustom')).toBeUndefined()
 		expect(componentCategory(undefined)).toBeUndefined()
@@ -25,5 +37,56 @@ describe('component-meta', { tags: ['unit'] }, () => {
 		for (const name of Object.keys(COMPONENT_CATEGORY)) {
 			expect(componentCategory(name)).toBe(COMPONENT_CATEGORY[name])
 		}
+	})
+})
+
+describe('componentLinkExpansion', { tags: ['unit'] }, () => {
+	it('maps the inline pair and the expanding pair', () => {
+		expect(componentLinkExpansion('AFormLink')).toBe('inline')
+		expect(componentLinkExpansion('AComboBox')).toBe('inline')
+		expect(componentLinkExpansion('AForm')).toBe('expand')
+		expect(componentLinkExpansion('ATable')).toBe('expand')
+	})
+
+	it('returns undefined for unmapped or absent components (so callers can fall back)', () => {
+		expect(componentLinkExpansion('MyCustomLink')).toBeUndefined()
+		expect(componentLinkExpansion('ATextInput')).toBeUndefined()
+		expect(componentLinkExpansion(undefined)).toBeUndefined()
+	})
+})
+
+describe('resolveLinkRenderMode', { tags: ['unit'] }, () => {
+	it('lets the component decide inline vs expand', () => {
+		expect(resolveLinkRenderMode({ component: 'AFormLink', cardinality: 'one' })).toBe('inline')
+		expect(resolveLinkRenderMode({ component: 'AComboBox', cardinality: 'noneOrMany' })).toBe('inline')
+		expect(resolveLinkRenderMode({ component: 'AForm', cardinality: 'one' })).toBe('record')
+		expect(resolveLinkRenderMode({ component: 'ATable', cardinality: 'noneOrMany' })).toBe('table')
+	})
+
+	it('takes the component from the field when the declaration names none', () => {
+		expect(resolveLinkRenderMode({ cardinality: 'noneOrMany' }, 'AFormLink')).toBe('inline')
+		expect(resolveLinkRenderMode({ cardinality: 'one' }, 'AForm')).toBe('record')
+	})
+
+	it('prefers the declaration component over the field component', () => {
+		expect(resolveLinkRenderMode({ component: 'AFormLink', cardinality: 'one' }, 'AForm')).toBe('inline')
+		expect(resolveLinkRenderMode({ component: 'AForm', cardinality: 'one' }, 'AFormLink')).toBe('record')
+	})
+
+	it('lets cardinality — not the component — choose record vs table when expanding', () => {
+		// `cardinality` states whether the value is a scalar or an array. That is a fact about the
+		// data, so an expanding component must not override it: `AForm` over a many link would be
+		// handed an array it cannot render. Only the inline/expand half of the name is honoured.
+		expect(resolveLinkRenderMode({ component: 'AForm', cardinality: 'noneOrMany' })).toBe('table')
+		expect(resolveLinkRenderMode({ component: 'ATable', cardinality: 'one' })).toBe('record')
+	})
+
+	it('treats an absent or unmapped component as expanding, then defers to cardinality', () => {
+		expect(resolveLinkRenderMode({ cardinality: 'noneOrMany' })).toBe('table')
+		expect(resolveLinkRenderMode({ cardinality: 'atLeastOne' })).toBe('table')
+		expect(resolveLinkRenderMode({ cardinality: 'one' })).toBe('record')
+		expect(resolveLinkRenderMode({ cardinality: 'atMostOne' })).toBe('record')
+		// an unmapped custom component must never silently collapse a link to a picker
+		expect(resolveLinkRenderMode({ component: 'MyCustomTable', cardinality: 'noneOrMany' })).toBe('table')
 	})
 })

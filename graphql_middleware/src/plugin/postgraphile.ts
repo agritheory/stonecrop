@@ -1,5 +1,12 @@
-import type { DoctypeField, DoctypeMeta, TableField, ValueField, GetRecordOptions } from '@stonecrop/schema'
-import { camelToSnake, pascalToSnake } from '@stonecrop/schema'
+import type {
+	DoctypeField,
+	DoctypeMeta,
+	LinkDeclaration,
+	TableField,
+	ValueField,
+	GetRecordOptions,
+} from '@stonecrop/schema'
+import { camelToSnake, pascalToSnake, resolveLinkRenderMode } from '@stonecrop/schema'
 import { loadOneWithPgClient, sideEffectWithPgClient } from '@dataplan/pg'
 import type { PgClient, PgExecutor } from '@dataplan/pg'
 import { constant, lambda, object } from 'postgraphile/grafast'
@@ -431,18 +438,20 @@ function flattenFields(fields: DoctypeField[]): (ValueField | TableField)[] {
 /**
  * Derive quoted SQL column entries from a flat field array.
  * Skips non-scalar fields (kind !== 'field'), `fieldtype: 'Display'` fields
- * (computed/read-only fields with no backing DB column), and Link fields with
- * an explicit links declaration.
+ * (computed/read-only fields with no backing DB column), and *expanding* links
+ * (relations fetched separately, not scalar columns on this table).
  */
-function collectColumns(fields: DoctypeField[], linkedFieldnames: Set<string>): string[] {
+function collectColumns(fields: DoctypeField[], links: Map<string, LinkDeclaration>): string[] {
 	const columns: string[] = []
 	for (const f of flattenFields(fields)) {
 		if (f.kind !== 'field') continue
 		// Computed/display fields have no backing DB column (dual-read: `computed` or legacy `Display`).
 		if (f.computed || f.fieldtype === 'Display') continue
-		// Fields with a link declaration are FK relations, not scalar columns — keyed off the
-		// links map alone (covers both migrated links and legacy `fieldtype:'Link'`).
-		if (linkedFieldnames.has(f.fieldname)) continue
+		// Only an *expanding* link is a relation rather than a column. An inline link (a picker)
+		// keeps its FK on this table and must still be selected — `resolveLinkRenderMode` is the
+		// shared rule, also used by the client resolver; never re-derive it here.
+		const link = links.get(f.fieldname)
+		if (link && resolveLinkRenderMode(link, f.component) !== 'inline') continue
 		const col = camelToSnake(f.fieldname)
 		columns.push(col !== f.fieldname ? `"${col}" AS "${f.fieldname}"` : `"${f.fieldname}"`)
 	}
@@ -454,19 +463,19 @@ function collectColumns(fields: DoctypeField[], linkedFieldnames: Set<string>): 
  * Applies camelToSnake to each fieldname to get the DB column name, then
  * aliases it back to the fieldname so result rows carry API-layer keys.
  * Excludes `fieldtype: 'Display'` fields (no backing DB column), Fieldset
- * containers (recursing into their children instead), and Link fields that have
- * an explicit `links` declaration (FK references, not scalar columns).
+ * containers (recursing into their children instead), and *expanding* links
+ * (relations fetched separately). An inline link keeps its FK column here.
  *
  * Exported for unit testing (not re-exported from the package index).
  */
 export function getSqlColumns(meta: DoctypeMeta): string {
-	const linkedFieldnames = new Set<string>()
+	const links = new Map<string, LinkDeclaration>()
 	if (meta.links) {
 		for (const [key, link] of Object.entries(meta.links)) {
-			linkedFieldnames.add(link.fieldname ?? key)
+			links.set(link.fieldname ?? key, link)
 		}
 	}
-	return collectColumns(meta.fields, linkedFieldnames).join(', ')
+	return collectColumns(meta.fields, links).join(', ')
 }
 
 /**

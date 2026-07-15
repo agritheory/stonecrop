@@ -75,6 +75,32 @@ describe('Field Validation', { tags: ['unit'] }, () => {
 			expect(parsed.language).toBe('json')
 		})
 
+		it('should preserve the doctype attribute through a round-trip', () => {
+			// `doctype` is the link marker AND target (D1b) — it replaces `fieldtype: 'Link'`
+			// plus the string-`options` convention.
+			const field = {
+				kind: 'field' as const,
+				fieldname: 'userId',
+				component: 'AFormLink',
+				doctype: 'user',
+			}
+			const result = validateField(field)
+			expect(!result.success && result.errors).toBe(false)
+
+			const parsed = parseField(field) as ValueField
+			expect(parsed.doctype).toBe('user')
+		})
+
+		it('should accept a link field carrying doctype with no fieldtype and no options', () => {
+			const result = validateField({
+				kind: 'field' as const,
+				fieldname: 'assignee',
+				component: 'AComboBox',
+				doctype: 'user',
+			})
+			expect(!result.success && result.errors).toBe(false)
+		})
+
 		it('should accept custom fieldtypes not in the builtin list', () => {
 			// StonecropFieldType is now an open string — any non-empty string is valid
 			const field = {

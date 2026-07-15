@@ -98,6 +98,28 @@ describe('getSqlColumns', { tags: ['unit', 'graphql'] }, () => {
 		expect(columns).not.toContain('basic_info_fieldset')
 	})
 
+	it('still selects an inline link FK column even though it has a links declaration', () => {
+		// D1c: an inline component means the link is NOT expanded — `userId` is a real FK column on
+		// this table and must be SELECTed. Excluding it (the pre-D1c rule, which dropped every
+		// declared link) would silently strip the field from every query.
+		loadDoctypesFromObject({
+			InlineLinkSample: {
+				name: 'InlineLinkSample',
+				fields: [
+					{ kind: 'field', fieldname: 'id', primaryKey: true, label: 'ID' },
+					{ kind: 'field', fieldname: 'userId', component: 'AFormLink', doctype: 'user', label: 'User' },
+				],
+				links: {
+					userId: { target: 'user', cardinality: 'atMostOne' as const, fieldname: 'userId' },
+				},
+			},
+		})
+
+		const columns = getSqlColumns(getMeta('InlineLinkSample')!)
+
+		expect(columns).toContain('"user_id" AS "userId"')
+	})
+
 	it('excludes Link fields that have an explicit links declaration', () => {
 		loadDoctypesFromObject({
 			LinkSample: {

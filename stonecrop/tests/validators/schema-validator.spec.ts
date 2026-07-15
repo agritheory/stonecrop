@@ -419,15 +419,30 @@ describe('SchemaValidator — link declarations', { tags: ['unit'] }, () => {
 		expect(result.valid).toBe(true) // links not validated, so no error
 	})
 
-	it('reports error when Link field has no corresponding link declaration', () => {
+	it('accepts a link field with no corresponding link declaration — a plain FK', () => {
+		// D1b: the `links` map is additive (it carries expansion metadata), not required. A link with
+		// no declaration is a plain foreign key, which `Registry.resolveFields` resolves to an inline
+		// picker. The old `link-field-without-declaration` error contradicted that, and flagged any
+		// doctype mixing an expanded relation with a plain FK (e.g. `country`).
 		const validator = new SchemaValidator({ registry: mockRegistry })
 		const schemaWithLinkField = [
 			{ kind: 'field' as const, fieldname: 'name', fieldtype: 'Data' } as any,
-			{ kind: 'field' as const, fieldname: 'tasks', fieldtype: 'Link', options: 'recipe-task' } as any,
+			{ kind: 'field' as const, fieldname: 'assignee', component: 'AFormLink', doctype: 'recipe-task' } as any,
 		]
 		const result = validator.validate('recipe', schemaWithLinkField, undefined, undefined, {})
-		expect(result.valid).toBe(false)
-		expect(result.issues.some(i => i.rule === 'link-field-without-declaration')).toBe(true)
+		expect(result.issues).toEqual([])
+	})
+
+	it('mixes an expanded relation and a plain FK on one doctype without error', () => {
+		const validator = new SchemaValidator({ registry: mockRegistry })
+		const mixedSchema = [
+			{ kind: 'field' as const, fieldname: 'tasks', component: 'ATable', doctype: 'recipe-task' } as any,
+			{ kind: 'field' as const, fieldname: 'assignee', component: 'AFormLink', doctype: 'recipe-task' } as any,
+		]
+		const result = validator.validate('recipe', mixedSchema, undefined, undefined, {
+			tasks: { target: 'recipe-task', cardinality: 'noneOrMany', fieldname: 'tasks' },
+		})
+		expect(result.issues).toEqual([])
 	})
 
 	it('reports error when Link field target does not match link declaration target', () => {

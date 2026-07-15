@@ -163,6 +163,7 @@ createTableStore: (initData: {
         readonly originalIndex?: number | undefined;
         fieldtype?: string | undefined;
         component?: string | undefined;
+        doctype?: string | undefined;
         label?: string | undefined;
         align?: "left" | "right" | "center" | "start" | "end" | undefined;
         edit?: boolean | undefined;
@@ -189,6 +190,7 @@ createTableStore: (initData: {
         readonly originalIndex?: number | undefined;
         fieldtype?: string | undefined;
         component?: string | undefined;
+        doctype?: string | undefined;
         label?: string | undefined;
         align?: "left" | "right" | "center" | "start" | "end" | undefined;
         edit?: boolean | undefined;
@@ -1035,6 +1037,7 @@ createTableStore: (initData: {
         readonly originalIndex?: number | undefined;
         fieldtype?: string | undefined;
         component?: string | undefined;
+        doctype?: string | undefined;
         label?: string | undefined;
         align?: "left" | "right" | "center" | "start" | "end" | undefined;
         edit?: boolean | undefined;
@@ -1061,6 +1064,7 @@ createTableStore: (initData: {
         readonly originalIndex?: number | undefined;
         fieldtype?: string | undefined;
         component?: string | undefined;
+        doctype?: string | undefined;
         label?: string | undefined;
         align?: "left" | "right" | "center" | "start" | "end" | undefined;
         edit?: boolean | undefined;
@@ -1907,6 +1911,7 @@ createTableStore: (initData: {
         readonly originalIndex?: number | undefined;
         fieldtype?: string | undefined;
         component?: string | undefined;
+        doctype?: string | undefined;
         label?: string | undefined;
         align?: "left" | "right" | "center" | "start" | "end" | undefined;
         edit?: boolean | undefined;
@@ -1933,6 +1938,7 @@ createTableStore: (initData: {
         readonly originalIndex?: number | undefined;
         fieldtype?: string | undefined;
         component?: string | undefined;
+        doctype?: string | undefined;
         label?: string | undefined;
         align?: "left" | "right" | "center" | "start" | "end" | undefined;
         edit?: boolean | undefined;
@@ -2802,7 +2808,7 @@ Fields are excluded when: - `hidden: true` — field should not be visible in an
 
 `fieldname` is renamed to `name`; `hidden` is stripped. All other `ColumnSchema` properties spread through automatically.
 
-For `fieldtype: 'Link'` fields without an explicit `cellComponent`: - `linkDoctype` is set from the field's `doctype` property (used by ACell's async resolver). - A synchronous `format` function is added (unless the field already has one) that handles both bare ID strings and pre-resolved `{ id, displayText }` objects.
+For link fields (those carrying `doctype`) without an explicit `cellComponent`: - `linkDoctype` is set from the field's `doctype` property (used by ACell's async resolver). - A synchronous `format` function is added (unless the field already has one) that handles both bare ID strings and pre-resolved `{ id, displayText }` objects.
 
 **Signature:**
 

@@ -59,6 +59,7 @@ export interface ColumnSchema {
     cellComponentProps?: Record<string, any>;
     colspan?: number;
     component?: string;
+    doctype?: string;
     edit?: boolean;
     fieldname: string;
     fieldtype?: string;
@@ -83,10 +84,16 @@ export interface ColumnSchema {
 export const COMPONENT_CATEGORY: Record<string, ComponentCategory>;
 
 // @public
+export const COMPONENT_LINK_EXPANSION: Record<string, LinkExpansion>;
+
+// @public
 export type ComponentCategory = 'text' | 'number' | 'boolean' | 'date' | 'datetime' | 'select' | 'code' | 'link' | 'attach';
 
 // @public
 export function componentCategory(component?: string): ComponentCategory | undefined;
+
+// @public
+export function componentLinkExpansion(component?: string): LinkExpansion | undefined;
 
 // @public
 export interface ConvertedGraphQLDoctype extends Omit<DoctypeMeta, 'fields'> {
@@ -369,6 +376,12 @@ export const LinkDeclaration: z.ZodObject<{
 export type LinkDeclaration = z.infer<typeof LinkDeclaration>;
 
 // @public
+export type LinkExpansion = 'inline' | 'expand';
+
+// @public
+export type LinkRenderMode = 'inline' | 'record' | 'table';
+
+// @public
 export function parseDoctype(data: unknown): DoctypeMeta;
 
 // @public
@@ -379,6 +392,12 @@ export function pascalToSnake(pascal: string): string;
 
 // @public
 export function resolveComponent(fieldtype: string): string;
+
+// @public
+export function resolveLinkRenderMode(link: {
+    component?: string;
+    cardinality?: string;
+}, fieldComponent?: string): LinkRenderMode;
 
 // @public
 export type SerializedFunction = string;
@@ -511,6 +530,7 @@ export interface ValueField {
     component?: string;
     computed?: boolean;
     default?: unknown;
+    doctype?: string;
     edit?: boolean;
     fieldname: string;
     fieldtype?: string;
@@ -539,6 +559,7 @@ export const ValueFieldSchema: z.ZodObject<{
     primaryKey: z.ZodOptional<z.ZodBoolean>;
     computed: z.ZodOptional<z.ZodBoolean>;
     language: z.ZodOptional<z.ZodString>;
+    doctype: z.ZodOptional<z.ZodString>;
     label: z.ZodOptional<z.ZodString>;
     width: z.ZodOptional<z.ZodString>;
     align: z.ZodOptional<z.ZodEnum<{

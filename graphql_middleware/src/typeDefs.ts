@@ -14,6 +14,7 @@ export const typeDefs = gql`
 		primaryKey: Boolean
 		computed: Boolean
 		language: String
+		doctype: String
 		label: String
 		width: String
 		align: String

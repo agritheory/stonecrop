@@ -146,13 +146,15 @@ export class SchemaValidator {
 		const issues: ValidationIssue[] = []
 
 		for (const field of schema) {
-			if (field.kind === 'field' && field.fieldtype === 'Link') {
-				const options = field.options
+			if (field.kind === 'field' && (field.doctype || field.fieldtype === 'Link')) {
+				// Dual-read: `doctype` is the marker and the target (D1b); a legacy `fieldtype: 'Link'`
+				// carries its target in a string-valued `options`.
+				const options = field.doctype ?? field.options
 				if (!options) {
 					issues.push({
 						severity: ValidationSeverity.ERROR,
 						rule: 'link-missing-options',
-						message: `Link field "${field.fieldname}" is missing options property (target doctype)`,
+						message: `Link field "${field.fieldname}" is missing a target doctype (\`doctype\`)`,
 						doctype,
 						fieldname: field.fieldname,
 					})
@@ -205,10 +207,10 @@ export class SchemaValidator {
 	): ValidationIssue[] {
 		const issues: ValidationIssue[] = []
 
-		// Build a map of Link fields by fieldname for quick lookup
+		// Build a map of Link fields by fieldname for quick lookup (dual-read: `doctype` or legacy `fieldtype`)
 		const linkFieldsByFieldname = new Map<string, DoctypeField>()
 		for (const field of schema) {
-			if (field.kind === 'field' && field.fieldtype === 'Link') {
+			if (field.kind === 'field' && (field.doctype || field.fieldtype === 'Link')) {
 				linkFieldsByFieldname.set(field.fieldname, field)
 			}
 		}
@@ -269,7 +271,8 @@ export class SchemaValidator {
 			if (link.fieldname) {
 				const linkField = linkFieldsByFieldname.get(link.fieldname)
 				if (linkField && linkField.kind === 'field') {
-					const linkFieldTarget = typeof linkField.options === 'string' ? linkField.options : undefined
+					const linkFieldTarget =
+						linkField.doctype ?? (typeof linkField.options === 'string' ? linkField.options : undefined)
 					if (linkFieldTarget && linkFieldTarget !== link.target) {
 						issues.push({
 							severity: ValidationSeverity.ERROR,
@@ -284,20 +287,12 @@ export class SchemaValidator {
 			}
 		}
 
-		// Check that every Link field has a corresponding link declaration
-		// A Link field corresponds to a link if the link's fieldname property matches the field's fieldname
-		for (const [fieldname, _field] of linkFieldsByFieldname) {
-			const hasCorrespondingLink = Object.values(links).some(link => link.fieldname === fieldname)
-			if (!hasCorrespondingLink) {
-				issues.push({
-					severity: ValidationSeverity.ERROR,
-					rule: 'link-field-without-declaration',
-					message: `Link field "${fieldname}" has no corresponding link declaration`,
-					doctype,
-					fieldname,
-				})
-			}
-		}
+		// NOTE: there is deliberately no "every link field needs a declaration" rule. A plain foreign
+		// key is a link with no `links` entry (D1b) — the `links` map is additive, carrying expansion
+		// metadata (backlink/fetch/cardinality), and is not required. Such a rule also contradicted
+		// `Registry.resolveFields`, which resolves undeclared links to inline pickers, and would flag
+		// every doctype that mixes an expanded relation with a plain FK (e.g. `country`: a `links`
+		// map for states/languages/subdivisions plus a flat `continent` picker).
 
 		return issues
 	}

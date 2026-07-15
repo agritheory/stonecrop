@@ -1,6 +1,6 @@
 import type { ResolvedField, ResolvedLink, ResolvedScalar, ResolvedTable, ResolvedFieldset } from '@stonecrop/aform'
 import type { ColumnSchema, DoctypeField, LinkDeclaration, TableViewConfig, ValueField } from '@stonecrop/schema'
-import { componentCategory } from '@stonecrop/schema'
+import { componentCategory, resolveLinkRenderMode } from '@stonecrop/schema'
 import { Router } from 'vue-router'
 
 import Doctype from './doctype'
@@ -166,26 +166,33 @@ export default class Registry {
 		const resolved: ResolvedField[] = []
 
 		for (const field of fields) {
-			// Dual-read link detection: a field is a link when it has a LinkDeclaration (the
-			// component-primary source of truth) OR carries the legacy `fieldtype: 'Link'`.
+			// Dual-read link detection: a field is a link when it carries `doctype` (the
+			// component-primary marker), has a LinkDeclaration, or carries the legacy
+			// `fieldtype: 'Link'`.
 			const linkDecl = field.kind === 'field' ? links.get(field.fieldname) : undefined
-			if (field.kind === 'field' && (linkDecl || field.fieldtype === 'Link')) {
+			if (field.kind === 'field' && (linkDecl || field.doctype || field.fieldtype === 'Link')) {
 				const link = linkDecl
-				if (!link) {
-					// Unresolved link — warn and produce a scalar with component: 'AFormLink'
-					const linkDoctype = typeof field.options === 'string' ? field.options : undefined
-					if (linkDoctype === undefined) {
+				// Target precedence: the declaration, then the field's own `doctype`, then the
+				// legacy string-valued `options`.
+				const linkTarget =
+					link?.target ?? field.doctype ?? (typeof field.options === 'string' ? field.options : undefined)
+
+				// An undeclared link, or a declared one whose component renders an inline picker,
+				// stays a scalar: the target is not expanded, it only needs the slug for async
+				// display-text resolution and navigation.
+				if (!link || resolveLinkRenderMode(link, field.component) === 'inline') {
+					if (linkTarget === undefined) {
 						console.warn(
-							`[Stonecrop] Link field "${field.fieldname}" has no \`options\` or corresponding \`links\` declaration. ` +
+							`[Stonecrop] Link field "${field.fieldname}" has no \`doctype\` or corresponding \`links\` declaration. ` +
 								`AFormLink will be created without a \`doctype\` prop, so navigation will not work. ` +
-								`Add \`"options": "<doctype-slug>"\` to the field definition.`
+								`Add \`"doctype": "<doctype-slug>"\` to the field definition.`
 						)
 					}
 					const { cardinality: _c, ...rest } = field
 					resolved.push({
 						...rest,
 						component: rest.component || 'AFormLink',
-						...(linkDoctype !== undefined ? { doctype: linkDoctype } : {}),
+						...(linkTarget !== undefined ? { doctype: linkTarget } : {}),
 					})
 					continue
 				}
@@ -201,7 +208,7 @@ export default class Registry {
 				const childSchema = this.resolveSchema(targetDoctype, new Set(visited))
 				const { fieldtype: _ft, options: _opt, cardinality: _card, kind: _kind, ...fieldRest } = field
 
-				if (link.cardinality === 'noneOrMany' || link.cardinality === 'atLeastOne') {
+				if (resolveLinkRenderMode(link, field.component) === 'table') {
 					resolved.push(this.buildTableConfig(field, childSchema, link.component))
 				} else {
 					const linkEntry: ResolvedLink = {
