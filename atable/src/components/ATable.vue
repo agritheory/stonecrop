@@ -204,10 +204,13 @@ watch(
 watch(
 	columns,
 	newColumns => {
+		// The model is optional, so it can be absent — there is nothing to sync from, and the store
+		// keeps the columns it resolved from the schema.
+		if (!newColumns) return
 		// Only update if the columns have actually changed (avoid infinite loops)
 		if (JSON.stringify(newColumns) !== JSON.stringify(store.columns)) {
 			store.columns = [...newColumns]
-			emit('columns:update', [...newColumns] as TableColumn[])
+			emit('columns:update', [...newColumns])
 		}
 	},
 	{ deep: true }

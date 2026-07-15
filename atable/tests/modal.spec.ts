@@ -8,11 +8,15 @@ import ARow from '../src/components/ARow.vue'
 import ATable from '../src/components/ATable.vue'
 import ATableModal from '../src/components/ATableModal.vue'
 import { createTableStore } from '../src/stores/table'
-import type { TableColumn, TableConfig } from '../src/types'
+import type { CellContext, TableColumn, TableConfig } from '../src/types'
 
 // Mock useElementBounding from VueUse
 vi.mock('@vueuse/core', () => ({
+	// The real composable always returns all of these; omitting left/bottom made the mock a shape
+	// the library never produces, which is how a TypeError in ACell's $patch went unnoticed.
 	useElementBounding: vi.fn(() => ({
+		left: { value: 10 },
+		bottom: { value: 60 },
 		width: { value: 200 },
 		height: { value: 100 },
 	})),
@@ -73,6 +77,47 @@ describe('table modal component', { tags: ['component'] }, () => {
 
 		await cellElement!.trigger('click')
 		expect(wrapper.vm.store.modal.visible).toBe(true)
+	})
+
+	it('passes the resolved table data to a modalComponent function', async () => {
+		// Regression: the context was built inside `store.$patch(state => ...)`, which hands back
+		// `$state`. `table` is a computed, so Pinia exposes it as a getter and it is NOT on `$state` —
+		// every modalComponent function silently received `table: undefined`.
+		const contexts: CellContext[] = []
+		const dateColumn: TableColumn = {
+			...columns[2],
+			modalComponent: (context: CellContext) => {
+				contexts.push(context)
+				return 'DateInput'
+			},
+		}
+		const wrapper = mount(ATable, {
+			props: { ...props, columns: [columns[0], columns[1], dateColumn] },
+			global: { components: { ACell } },
+		})
+
+		const cells = wrapper.findAllComponents(ACell)
+		await cells.at(2)!.trigger('click')
+
+		expect(contexts).toHaveLength(1)
+		// The store's `table` computed keys cell values by `${colIndex}:${rowIndex}`.
+		expect(contexts[0].table).toBeDefined()
+		expect(contexts[0].table['1:0']).toBe(data[0].http_method)
+		expect(wrapper.vm.store.modal.component).toBe('DateInput')
+	})
+
+	it('snapshots the cell bounds into the store as plain numbers', async () => {
+		const wrapper = mount(ATable, { props, global: { components: { ACell } } })
+
+		const cells = wrapper.findAllComponents(ACell)
+		await cells.at(2)!.trigger('click')
+
+		// useElementBounding hands back refs; the store's contract is numbers. Assigning the refs raw
+		// only appeared to work because reactive reads unwrap them.
+		expect(wrapper.vm.store.modal.width).toBe(200)
+		expect(wrapper.vm.store.modal.height).toBe(100)
+		expect(wrapper.vm.store.modal.left).toBe(10)
+		expect(wrapper.vm.store.modal.bottom).toBe(60)
 	})
 
 	it('click inside to keep modal component alive', async () => {

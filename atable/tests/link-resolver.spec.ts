@@ -4,7 +4,11 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { nextTick } from 'vue'
 
 vi.mock('@vueuse/core', () => ({
+	// The real composable always returns all of these; omitting left/bottom made the mock a shape
+	// the library never produces, which is how a TypeError in ACell's $patch went unnoticed.
 	useElementBounding: vi.fn(() => ({
+		left: { value: 10 },
+		bottom: { value: 60 },
 		width: { value: 200 },
 		height: { value: 100 },
 	})),

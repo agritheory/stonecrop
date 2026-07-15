@@ -136,15 +136,19 @@ const showModal = () => {
 			state.modal.visible = true
 			state.modal.colIndex = colIndex
 			state.modal.rowIndex = rowIndex
-			// TODO: typing refs somehow resolves to unref'd value; probably a bug in TS?
-			state.modal.left = left
-			state.modal.bottom = bottom
-			state.modal.width = width
-			state.modal.height = height
+			// Snapshot the cell's box as it was when the modal opened. These are refs, and assigning
+			// them raw happened to work only because reactive reads unwrap refs — which also left the
+			// stored values live, tracking the cell for as long as the modal stayed open.
+			state.modal.left = left.value
+			state.modal.bottom = bottom.value
+			state.modal.width = width.value
+			state.modal.height = height.value
 			state.modal.cell = cellRef.value
 
 			if (typeof column.modalComponent === 'function') {
-				state.modal.component = column.modalComponent({ table: state.table, row, column })
+				// `table` is a computed, so Pinia exposes it as a getter — it is not on `$state`, which
+				// is what $patch hands back. Reading it off the store is what passes a real table.
+				state.modal.component = column.modalComponent({ table: store.table, row, column })
 			} else {
 				state.modal.component = column.modalComponent
 			}

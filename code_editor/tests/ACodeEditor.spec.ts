@@ -31,17 +31,16 @@ const { mockEditorInstance, mockModel, mockMonaco, mockLoader } = vi.hoisted(() 
 			defineTheme: vi.fn(),
 			setTheme: vi.fn(),
 		},
-		// Mirrors what `loader.init()` actually resolves with: the global monaco API object, whose
-		// only typescript namespace is `languages.typescript` (NOT the top-level `monaco.typescript`,
-		// which exists on the module namespace and never on this object).
-		languages: {
-			typescript: {
-				javascriptDefaults: {
-					addExtraLib: vi.fn(),
-					setCompilerOptions: vi.fn(),
-				},
-				ScriptTarget: { ES2020: 7 },
+		// Mirrors what `loader.init()` actually resolves with: the `vs/editor/editor.main` AMD exports,
+		// which carry `typescript` at the top level. Verified against monaco 0.55.1 in a browser —
+		// `languages.typescript` is the same object, but it is deprecated and typed as a tombstone.
+		languages: {},
+		typescript: {
+			javascriptDefaults: {
+				addExtraLib: vi.fn(),
+				setCompilerOptions: vi.fn(),
 			},
+			ScriptTarget: { ES2020: 7 },
 		},
 	}
 	const hoistedLoader = {
@@ -163,7 +162,7 @@ describe('ACodeEditor', { tag: 'component' }, () => {
 		const libs = 'declare const record: Record<string, unknown>'
 		mount(ACodeEditor, { props: { extraLibs: libs, language: 'javascript' } })
 		await flushPromises()
-		const jsDefaults = mockMonaco.languages.typescript.javascriptDefaults
+		const jsDefaults = mockMonaco.typescript.javascriptDefaults
 		expect(jsDefaults.addExtraLib).toHaveBeenCalledWith(libs, 'ts:stonecrop.d.ts')
 		expect(jsDefaults.setCompilerOptions).toHaveBeenCalledWith(expect.objectContaining({ checkJs: true }))
 	})

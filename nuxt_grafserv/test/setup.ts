@@ -19,26 +19,11 @@ vi.mock('#internal/grafserv/middleware', () => ({
 	default: [],
 }))
 
-// Mock the internal PostGraphile instance module
-vi.mock('#internal/grafserv/pgl', () => ({
-	pgl: {
-		getSchema: vi.fn(async () => {
-			const { GraphQLSchema, GraphQLObjectType, GraphQLString } = await import('graphql')
-			return new GraphQLSchema({
-				query: new GraphQLObjectType({
-					name: 'Query',
-					fields: {
-						hello: {
-							type: GraphQLString,
-							resolve: () => 'world from PostGraphile mock',
-						},
-					},
-				}),
-			})
-		}),
-		release: vi.fn(),
-	},
-}))
+// NOTE: `#internal/grafserv/pgl` is deliberately NOT vi.mock'd here. vitest.config.ts already
+// aliases it to ./mocks/pgl.ts, so a factory here is redundant — and worse, it re-declared the
+// instance's shape in a second place. The two copies drifted: this one still described the old
+// getSchema/release API long after the runtime moved to pgl.createServ(), which silently made the
+// PostGraphile branch of handler.ts untestable. One definition, in ./mocks/pgl.ts.
 
 // Mock the build-time preset module
 vi.mock('#build/grafserv-preset', () => ({

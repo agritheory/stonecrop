@@ -73,13 +73,10 @@ onMounted(async () => {
 	// The field declares its own language; without one, highlight nothing rather than guess.
 	const lang = schema?.language ?? language ?? 'plaintext'
 
-	// `languages.typescript` is marked deprecated in monaco's *module* typings, which tell you to
-	// use the top-level `monaco.typescript` instead. That does not apply here. The loader resolves
-	// with `window.monaco`, which is the `editor.api2.js` namespace (`editor`, `languages`, `Uri`,
-	// …) — `editor.main.js` only ever mutates `languages.typescript` onto it, and the top-level
-	// `typescript` export lives on a *different* module namespace that this object is not. So
-	// `monacoInstance.typescript` is `undefined` at runtime; `languages.typescript` is the real one.
-	const ts = monacoInstance.languages.typescript
+	// `monaco.languages.typescript` is deprecated in favour of this top-level namespace; both name
+	// the same object at runtime, but only this one is typed (the old path is a `{ deprecated: true }`
+	// tombstone). Needs monaco >= 0.53, so a `vsPath` override must serve a matching version.
+	const ts = monacoInstance.typescript
 	if (extraLibs) {
 		ts.javascriptDefaults.addExtraLib(extraLibs, 'ts:stonecrop.d.ts')
 	}

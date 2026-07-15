@@ -193,6 +193,20 @@ jobs:
       - name: Rush Build
         run: node common/scripts/install-run-rush.js build --to ${{ steps.pkg.outputs.name }}
 
+      # Nothing else typechecks single-file components: `heft build` compiles only .ts and
+      # `vite build` does not typecheck, so a type error inside a <script setup> block — or in a
+      # template binding — shipped silently. Only vue-tsc reads .vue, and it needs the dependency
+      # closure built above for cross-package types to resolve.
+      # Packages opt in by defining a `test:types` script, the same way `lint` works.
+      - name: Typecheck
+        working-directory: ./${{ matrix.package }}
+        run: |
+          if node -e "process.exit(require('./package.json').scripts?.['test:types'] ? 0 : 1)"; then
+            node ../common/scripts/install-run-rushx.js test:types
+          else
+            echo "No test:types script for ${{ matrix.package }} — skipping."
+          fi
+
       - name: Run Tests
         working-directory: ./${{ matrix.package }}
         run: node ../common/scripts/install-run-rushx.js test:coverage

@@ -6,7 +6,11 @@ import type { ColumnSchema } from '@stonecrop/schema'
 
 // Mock VueUse functions
 vi.mock('@vueuse/core', () => ({
+	// The real composable always returns all of these; omitting left/bottom made the mock a shape
+	// the library never produces, which is how a TypeError in ACell's $patch went unnoticed.
 	useElementBounding: vi.fn(() => ({
+		left: { value: 10 },
+		bottom: { value: 60 },
 		width: { value: 200 },
 		height: { value: 100 },
 	})),
@@ -661,6 +665,25 @@ describe('table component', { tags: ['component'] }, () => {
 		expect(wrapper.emitted('columns:update')).toBeTruthy()
 		const emittedColumns = wrapper.emitted('columns:update')?.[0][0] as TableColumn[]
 		expect(emittedColumns[0].width).toBe('150px')
+	})
+
+	it('keeps the resolved columns when the columns model is cleared', async () => {
+		// `columns` is a defineModel, so it is optional and a consumer can bind it to undefined.
+		// The watcher spread it unguarded, throwing "newColumns is not iterable".
+		const initialColumns: TableColumn[] = [
+			{ name: 'id', label: 'ID', width: '100px' },
+			{ name: 'name', label: 'Name', width: '200px' },
+		]
+
+		const wrapper = mount(ATable, {
+			props: { rows: getBasicRows(), columns: initialColumns },
+		})
+		expect(wrapper.vm.store.columns).toEqual(initialColumns)
+
+		await wrapper.setProps({ columns: undefined })
+
+		// Nothing to sync from, so the store keeps what it already resolved.
+		expect(wrapper.vm.store.columns).toEqual(initialColumns)
 	})
 
 	it('should work with v-model:columns using model prop', async () => {
