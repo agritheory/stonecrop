@@ -43,7 +43,7 @@ Why all five types? Introspection follows the schema's relationships: `Country` 
 
 ## Provenance: why some fields are locked in the builder
 
-The generator stamps every emitted field with `"source": "introspected"`. The DocBuilder reads that marker and freezes the field's **identity set** (`fieldname`, `fieldtype`, `required`, `options`, `cardinality`) — `fieldname` is the GraphQL binding, so renaming it would silently break reads. Labels, components, and display options stay editable. Fields you add by hand carry no marker and are fully editable.
+The generator stamps every emitted field with `"source": "introspected"`. The DocBuilder reads that marker and freezes the field's **identity set** (`fieldname`, `primaryKey`, `required`, `options`, `cardinality`, `doctype`) — `fieldname` is the GraphQL binding, so renaming it would silently break reads, and `doctype` is the link's FK target. Labels, components, and display options stay editable. Fields you add by hand carry no marker and are fully editable.
 
 Builder edits to *generated* doctypes survive only until the next CLI run — durable tuning belongs in `overrides.json`.
 

@@ -25,7 +25,7 @@ Stonecrop uses **ancestor/descendant** terminology for relationships:
 
 ### Phase 1: Schema Definition
 
-Relationships are declared in the `links` object on `DoctypeMeta`. Link fields (`fieldtype: 'Link'`) are placed in the `fields` array at the position where they should render.
+Relationships are declared in the `links` object on `DoctypeMeta`. Link fields (marked with a `doctype` target) are placed in the `fields` array at the position where they should render.
 
 **customer_schema.json:**
 
@@ -34,10 +34,10 @@ Relationships are declared in the `links` object on `DoctypeMeta`. Link fields (
   "name": "Customer",
   "slug": "customer",
   "fields": [
-    { "fieldname": "customer_name", "fieldtype": "Data", "label": "Customer Name", "component": "ATextInput" },
-    { "fieldname": "email", "fieldtype": "Data", "label": "Email", "component": "ATextInput" },
-    { "fieldname": "address", "fieldtype": "Link", "label": "Address", "options": "address", "component": "AForm" },
-    { "fieldname": "orders", "fieldtype": "Link", "label": "Orders", "options": "sales-order", "component": "ATable" }
+    { "fieldname": "customer_name", "label": "Customer Name", "component": "ATextInput" },
+    { "fieldname": "email", "label": "Email", "component": "ATextInput" },
+    { "fieldname": "address", "label": "Address", "doctype": "address", "component": "AForm" },
+    { "fieldname": "orders", "label": "Orders", "doctype": "sales-order", "component": "ATable" }
   ],
   "links": {
     "address": {
@@ -63,11 +63,11 @@ Relationships are declared in the `links` object on `DoctypeMeta`. Link fields (
   "name": "Address",
   "slug": "address",
   "fields": [
-    { "fieldname": "street", "fieldtype": "Data", "label": "Street", "component": "ATextInput" },
-    { "fieldname": "city", "fieldtype": "Data", "label": "City", "component": "ATextInput" },
-    { "fieldname": "state", "fieldtype": "Data", "label": "State", "component": "ATextInput" },
-    { "fieldname": "zip_code", "fieldtype": "Data", "label": "Zip Code", "component": "ATextInput" },
-    { "fieldname": "customer", "fieldtype": "Link", "label": "Customer", "options": "customer", "component": "AForm", "readOnly": true }
+    { "fieldname": "street", "label": "Street", "component": "ATextInput" },
+    { "fieldname": "city", "label": "City", "component": "ATextInput" },
+    { "fieldname": "state", "label": "State", "component": "ATextInput" },
+    { "fieldname": "zip_code", "label": "Zip Code", "component": "ATextInput" },
+    { "fieldname": "customer", "label": "Customer", "doctype": "customer", "component": "AForm", "readOnly": true }
   ],
   "links": {
     "customer": {
@@ -305,12 +305,12 @@ import type { ResolvedField } from '@stonecrop/aform'
 
 // Manually embed the child schema (use ResolvedField[] for AForm's :schema prop)
 const addressSchema: ResolvedField[] = [
-  { kind: 'field', fieldname: 'street', fieldtype: 'Data', label: 'Street', component: 'ATextInput' },
-  { kind: 'field', fieldname: 'city', fieldtype: 'Data', label: 'City', component: 'ATextInput' },
+  { kind: 'field', fieldname: 'street', label: 'Street', component: 'ATextInput' },
+  { kind: 'field', fieldname: 'city', label: 'City', component: 'ATextInput' },
 ]
 
 const customerSchema: ResolvedField[] = [
-  { kind: 'field', fieldname: 'customer_name', fieldtype: 'Data', label: 'Customer Name', component: 'ATextInput' },
+  { kind: 'field', fieldname: 'customer_name', label: 'Customer Name', component: 'ATextInput' },
   {
     kind: 'link',
     fieldname: 'address',

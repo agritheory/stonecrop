@@ -40,7 +40,7 @@ import { apiClient } from './api-client'
 const customerDoctype = new Doctype(
   'Customer',
   List([
-    { fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' },
+    { fieldname: 'name', component: 'ATextInput' },
   ]),
   {
     id: 'customer',
@@ -86,7 +86,7 @@ Given a doctype with scalar fields and a `links` object declaring relationships:
 ```typescript
 // fields (scalars only):
 [
-  { fieldname: 'name', fieldtype: 'Data' },
+  { fieldname: 'name', component: 'ATextInput' },
 ]
 
 // links object:

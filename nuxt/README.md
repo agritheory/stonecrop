@@ -77,22 +77,22 @@ Create a JSON schema in `/doctypes/task.json`:
 {
   "name": "task",
   "label": "Task",
-  "schema": [
+  "fields": [
     {
       "fieldname": "title",
       "label": "Title",
-      "fieldtype": "Data",
+      "component": "ATextInput",
       "required": true
     },
     {
       "fieldname": "description",
       "label": "Description",
-      "fieldtype": "Text"
+      "component": "ATextarea"
     },
     {
       "fieldname": "completed",
       "label": "Completed",
-      "fieldtype": "Check"
+      "component": "ACheckbox"
     }
   ]
 }

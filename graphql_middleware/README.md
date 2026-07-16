@@ -94,8 +94,8 @@ Each doctype JSON file defines structure, relationships, and workflow:
 {
   "name": "SalesOrder",
   "fields": [
-    { "fieldname": "id", "fieldtype": "Data" },
-    { "fieldname": "status", "fieldtype": "Select" }
+    { "fieldname": "id", "component": "ATextInput" },
+    { "fieldname": "status", "component": "ADropdown" }
   ],
   "links": {
     "items": {
@@ -128,10 +128,10 @@ When `fetch` is omitted, `noneOrMany`/`atLeastOne` links default to `sync` (limi
 
 ### Display-only fields
 
-Fields with `fieldtype: "Display"` have no backing database column and are excluded from all SQL queries:
+Fields with `computed: true` have no backing database column and are excluded from all SQL queries:
 
 ```json
-{ "fieldname": "planner", "fieldtype": "Display", "component": "Planner", "label": "Resource Planner" }
+{ "fieldname": "planner", "component": "Planner", "computed": true, "label": "Resource Planner" }
 ```
 
 ## Actions

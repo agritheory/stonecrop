@@ -74,8 +74,8 @@ In your doctype JSON:
 {
   "name": "Order",
   "fields": [
-    { "fieldname": "id", "fieldtype": "Data" },
-    { "fieldname": "status", "fieldtype": "Select" }
+    { "fieldname": "id", "component": "ATextInput" },
+    { "fieldname": "status", "component": "ADropdown" }
   ],
   "links": {
     "summary": {

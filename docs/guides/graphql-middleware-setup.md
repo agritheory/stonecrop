@@ -63,8 +63,8 @@ import { loadDoctypesFromObject } from '@stonecrop/graphql-middleware'
 loadDoctypesFromObject({
   Customer: {
     fields: [
-      { fieldname: 'id', fieldtype: 'Data' },
-      { fieldname: 'name', fieldtype: 'Data' },
+      { fieldname: 'id', component: 'ATextInput' },
+      { fieldname: 'name', component: 'ATextInput' },
     ],
   },
 })

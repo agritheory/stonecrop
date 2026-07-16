@@ -36,7 +36,7 @@ This registers all components globally. They can also be imported individually.
 Set `width` on any schema field to control its share of the form row. The value is any valid CSS size and is applied as `flex-basis` + `width` directly on the field's flex item:
 
 ```json
-{ "fieldname": "notes", "fieldtype": "Text", "component": "ATextInput", "label": "Notes", "width": "100%" }
+{ "fieldname": "notes", "component": "ATextInput", "label": "Notes", "width": "100%" }
 ```
 
 | Value | Effect |
@@ -51,7 +51,7 @@ Fields without `width` continue to share space equally (`flex-grow: 1; min-width
 
 ## AFormLink
 
-A form input for selecting and navigating to linked documents (`fieldtype: 'Link'`). Combines a searchable text input, an optional dropdown of results, and a navigation arrow button.
+A form input for selecting and navigating to linked documents (fields carrying a `doctype` marker). Combines a searchable text input, an optional dropdown of results, and a navigation arrow button.
 
 ### Value shape
 
@@ -141,14 +141,14 @@ If no navigator is provided, the arrow button is still rendered but navigation c
 
 ### Via resolveSchema
 
-For `fieldtype: 'Link'` fields with no matching `links` declaration, `Registry.resolveSchema()` automatically assigns `component: 'AFormLink'` and sets `doctype` from `field.options`. No manual wiring required:
+For fields carrying a `doctype` marker with no matching `links` declaration and no `component`, `Registry.resolveSchema()` automatically assigns `component: 'AFormLink'`. No manual wiring required:
 
 ```typescript
 const config: DoctypeConfig = {
   slug: 'sales-order',
   fields: [
-    { fieldname: 'order_number', fieldtype: 'Data', component: 'ATextInput', label: 'Order Number' },
-    { fieldname: 'territory', fieldtype: 'Link', options: 'territory', label: 'Territory' },
+    { fieldname: 'order_number', component: 'ATextInput', label: 'Order Number' },
+    { fieldname: 'territory', doctype: 'territory', label: 'Territory' },
     // no 'links' entry for territory
   ],
 }
