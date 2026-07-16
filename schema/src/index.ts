@@ -19,7 +19,13 @@ export {
 
 // Field schema
 export type { DoctypeField, FieldOptions, FieldValidation, FieldsetField, TableField, ValueField } from './field'
-export { DoctypeFieldSchema, FieldsetFieldSchema, TableFieldSchema, ValueFieldSchema } from './field'
+export {
+	DoctypeFieldSchema,
+	FieldsetFieldSchema,
+	normalizeFieldKind,
+	TableFieldSchema,
+	ValueFieldSchema,
+} from './field'
 
 // Doctype schema
 // ActionDefinition and WorkflowMeta are exported as values (Zod schemas) so consumers can use

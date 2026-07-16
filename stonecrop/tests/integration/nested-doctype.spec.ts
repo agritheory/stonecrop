@@ -1185,4 +1185,94 @@ describe('resolveSchema → schemaToColumns pipeline', { tags: ['unit'] }, () =>
 		const statusField = resolved.find((f: any) => f.fieldname === 'status') as any
 		expect(statusField?.component).toBe('ADropdown')
 	})
+
+	describe('kind-less authoring via Doctype.fromObject()', () => {
+		// Authored JSON omits the `kind` discriminant — the Zod schema injects it via a
+		// preprocess, but `fromObject` bypasses Zod. `resolveFields` gates link/fieldset
+		// handling on `field.kind === 'field'`/`'fieldset'`, so without normalization a
+		// JSON-authored link silently resolves to a flat scalar instead of expanding.
+
+		// `Registry` is a `_root` singleton whose `addDoctype` ignores an already-registered
+		// slug, so a doctype left over from a sibling test would shadow the ones built here.
+		// Reset it so each case resolves against exactly the doctypes it registers.
+		beforeEach(() => {
+			Registry._root = undefined as unknown as Registry
+		})
+
+		it('expands a declared link authored without an explicit kind', () => {
+			const reg = new Registry()
+
+			const address = Doctype.fromObject({
+				name: 'address',
+				fields: [
+					{ fieldname: 'street', component: 'ATextInput' },
+					{ fieldname: 'city', component: 'ATextInput' },
+				],
+			} as any)
+			reg.addDoctype(address)
+
+			const customer = Doctype.fromObject({
+				name: 'customer',
+				fields: [
+					{ fieldname: 'customer_name', component: 'ATextInput' },
+					{ fieldname: 'address', component: 'AForm', doctype: 'address' },
+				],
+				links: { address: { target: 'address', cardinality: 'one', fieldname: 'address' } },
+			} as any)
+			reg.addDoctype(customer)
+
+			const resolved = reg.resolveSchema(customer)
+			const addressField = resolved.find((f: any) => f.fieldname === 'address') as any
+
+			expect(addressField).toBeDefined()
+			expect('schema' in addressField).toBe(true)
+			expect(addressField.schema).toHaveLength(2)
+			expect(addressField.schema[0].fieldname).toBe('street')
+		})
+
+		it('recurses into fieldset children authored without an explicit kind', () => {
+			const reg = new Registry()
+
+			const address = Doctype.fromObject({
+				name: 'address',
+				fields: [
+					{ fieldname: 'street', component: 'ATextInput' },
+					{ fieldname: 'city', component: 'ATextInput' },
+				],
+			} as any)
+			reg.addDoctype(address)
+
+			// A fieldset with a link child. Without kind-injection recursion the fieldset itself is
+			// mishandled (falls through as a bare scalar) and its child link never expands, so the
+			// nested `address` stays a flat scalar with no embedded schema.
+			const doctype = Doctype.fromObject({
+				name: 'profile',
+				fields: [
+					{ fieldname: 'name', component: 'ATextInput' },
+					{
+						fieldname: 'contact',
+						label: 'Contact',
+						schema: [
+							{ fieldname: 'email', component: 'ATextInput' },
+							{ fieldname: 'home_address', component: 'AForm', doctype: 'address' },
+						],
+					},
+				],
+				links: { home_address: { target: 'address', cardinality: 'one', fieldname: 'home_address' } },
+			} as any)
+			reg.addDoctype(doctype)
+
+			const resolved = reg.resolveSchema(doctype)
+			const fieldset = resolved.find((f: any) => f.fieldname === 'contact') as any
+
+			expect(fieldset).toBeDefined()
+			expect(fieldset.kind).toBe('fieldset')
+			expect(fieldset.schema).toHaveLength(2)
+
+			const nestedLink = fieldset.schema.find((f: any) => f.fieldname === 'home_address')
+			expect('schema' in nestedLink).toBe(true)
+			expect(nestedLink.schema).toHaveLength(2)
+			expect(nestedLink.schema[0].fieldname).toBe('street')
+		})
+	})
 })

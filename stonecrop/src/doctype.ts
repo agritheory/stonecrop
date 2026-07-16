@@ -1,5 +1,5 @@
 import type { DoctypeField, LinkDeclaration, TriggerDefinition, WorkflowMeta } from '@stonecrop/schema'
-import { isActionAllowedInState } from '@stonecrop/schema'
+import { isActionAllowedInState, normalizeFieldKind } from '@stonecrop/schema'
 import { List, Map } from 'immutable'
 import { Component } from 'vue'
 
@@ -125,7 +125,13 @@ export default class Doctype {
 	 * @public
 	 */
 	static fromObject(config: DoctypeConfig): Doctype {
-		const schema = config.fields ? List(config.fields) : List<DoctypeField>()
+		// Authored JSON may omit the `kind` discriminant; the Zod schema injects it via a
+		// preprocess, but this path bypasses Zod. Normalize here so the registry's
+		// `resolveFields` (which gates link/fieldset handling on `field.kind`) sees the same
+		// shape a parsed doctype would — otherwise links silently fail to expand.
+		// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- normalizeFieldKind only injects the `kind` discriminant; the field shape is otherwise preserved
+		const fields = config.fields?.map(normalizeFieldKind) as DoctypeField[] | undefined
+		const schema = fields ? List(fields) : List<DoctypeField>()
 		const actions = config.actions ? Map(config.actions) : Map<string, string[]>()
 
 		return new Doctype(config.name, schema, config.workflow, actions, undefined, config.links)

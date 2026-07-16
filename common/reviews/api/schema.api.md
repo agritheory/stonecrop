@@ -367,6 +367,9 @@ export type LinkExpansion = 'inline' | 'expand';
 export type LinkRenderMode = 'inline' | 'record' | 'table';
 
 // @public
+export function normalizeFieldKind(field: unknown): unknown;
+
+// @public
 export function parseDoctype(data: unknown): DoctypeMeta;
 
 // @public

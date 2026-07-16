@@ -187,6 +187,26 @@ export declare function isActionAllowedInState(action: {
 | action | `{ allowedStates?: string[] \| null; }` |  |
 | currentState | `string` |  |
 
+### normalizeFieldKind
+
+Recursively injects the `kind` discriminant into a raw field object and, for fieldsets, into each of its nested `schema` children — mirroring exactly what Zod's `preprocess` does at every level of the discriminated union.
+
+Table `columns` are `ColumnSchema` entries, not `DoctypeField`s, so they are left untouched — the Zod table schema validates them with a plain passthrough and never injects `kind` there either.
+
+Needed because `Doctype.fromObject` constructs a Doctype without running Zod, yet the registry's `resolveFields` gates link and fieldset handling on `field.kind`. Without this, a JSON-authored link resolves to a flat scalar and a fieldset's children are dropped.
+
+**Signature:**
+
+```typescript
+export declare function normalizeFieldKind(field: unknown): unknown;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| field | `unknown` |  |
+
 ### parseDoctype
 
 Parse and validate a doctype, throwing on failure

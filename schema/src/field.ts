@@ -199,6 +199,11 @@ export type DoctypeField = ValueField | FieldsetField | TableField
  *   otherwise     → field (value-holding scalar or link)
  *
  * Objects that already carry `kind` pass through unchanged (backward-compatible).
+ *
+ * Single-node only. Zod applies this at every level of the discriminated union (via the
+ * `z.lazy` in the fieldset schema), so nested fieldset children are normalized during a
+ * parse. Callers that bypass Zod — notably `Doctype.fromObject` — must use the exported
+ * {@link normalizeFieldKind} instead, which replicates that recursion.
  */
 function injectKind(data: unknown): unknown {
 	if (typeof data !== 'object' || data === null || Array.isArray(data)) return data
@@ -208,6 +213,32 @@ function injectKind(data: unknown): unknown {
 	if ('schema' in obj) return { kind: 'fieldset', ...obj }
 	if ('columns' in obj) return { kind: 'table', ...obj }
 	return { kind: 'field', ...obj }
+}
+
+/**
+ * Recursively injects the `kind` discriminant into a raw field object and, for fieldsets,
+ * into each of its nested `schema` children — mirroring exactly what Zod's `preprocess`
+ * does at every level of the discriminated union.
+ *
+ * Table `columns` are {@link ColumnSchema} entries, not `DoctypeField`s, so they are left
+ * untouched — the Zod table schema validates them with a plain passthrough and never injects
+ * `kind` there either.
+ *
+ * Needed because `Doctype.fromObject` constructs a Doctype without running Zod, yet the
+ * registry's `resolveFields` gates link and fieldset handling on `field.kind`. Without this,
+ * a JSON-authored link resolves to a flat scalar and a fieldset's children are dropped.
+ *
+ * @public
+ */
+export function normalizeFieldKind(field: unknown): unknown {
+	const injected = injectKind(field)
+	if (typeof injected !== 'object' || injected === null) return injected
+	// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- injectKind returns a non-null object for object input; guarded above
+	const obj = injected as Record<string, unknown>
+	if (obj.kind === 'fieldset' && Array.isArray(obj.schema)) {
+		return { ...obj, schema: obj.schema.map(normalizeFieldKind) }
+	}
+	return injected
 }
 
 function createDoctypeFieldSchemas() {
