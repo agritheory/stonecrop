@@ -321,8 +321,8 @@ describe('Desktop FSM state reading', { tags: ['component'] }, () => {
 
 		// WorkflowMeta-format workflow (states array + labeled actions), mirroring Order.json.
 		const schema = List([
-			{ kind: 'field' as const, fieldname: 'id', fieldtype: 'Data', label: 'ID', component: 'ATextInput' },
-			{ kind: 'field' as const, fieldname: 'status', fieldtype: 'Data', label: 'Status', component: 'ATextInput' },
+			{ kind: 'field' as const, fieldname: 'id', label: 'ID', component: 'ATextInput' },
+			{ kind: 'field' as const, fieldname: 'status', label: 'Status', component: 'ATextInput' },
 		])
 		const workflow = {
 			states: ['PROCESSING', 'SHIPPED', 'CANCELLED'],
@@ -370,8 +370,8 @@ describe('Desktop FSM state reading', { tags: ['component'] }, () => {
 		const stonecrop = new Stonecrop(registry)
 
 		const schema = List([
-			{ kind: 'field' as const, fieldname: 'id', fieldtype: 'Data', label: 'ID', component: 'ATextInput' },
-			{ kind: 'field' as const, fieldname: 'status', fieldtype: 'Data', label: 'Status', component: 'ATextInput' },
+			{ kind: 'field' as const, fieldname: 'id', label: 'ID', component: 'ATextInput' },
+			{ kind: 'field' as const, fieldname: 'status', label: 'Status', component: 'ATextInput' },
 		])
 		// A transition available in PROCESSING + a global stateless Command (Save).
 		const workflow = {
@@ -417,9 +417,7 @@ describe('Desktop FSM state reading', { tags: ['component'] }, () => {
 		const registry = new Registry()
 		const stonecrop = new Stonecrop(registry)
 
-		const schema = List([
-			{ kind: 'field' as const, fieldname: 'id', fieldtype: 'Data', label: 'ID', component: 'ATextInput' },
-		])
+		const schema = List([{ kind: 'field' as const, fieldname: 'id', label: 'ID', component: 'ATextInput' }])
 		// No `states` array: getAvailableTransitions yields nothing, so before Phase E the
 		// Actions dropdown would not render at all. The global Command must still surface.
 		const workflow = { actions: { save: { label: 'Save', stateless: true, clientHandler: 'return true' } } }
@@ -466,8 +464,8 @@ describe('Desktop – fieldset flattening in records view', { tags: ['component'
 				label: 'Info',
 				component: 'AFieldset',
 				schema: [
-					{ kind: 'field' as const, fieldname: 'color', fieldtype: 'Data', label: 'Color', component: 'ATextInput' },
-					{ kind: 'field' as const, fieldname: 'weight', fieldtype: 'Data', label: 'Weight', component: 'ATextInput' },
+					{ kind: 'field' as const, fieldname: 'color', label: 'Color', component: 'ATextInput' },
+					{ kind: 'field' as const, fieldname: 'weight', label: 'Weight', component: 'ATextInput' },
 				],
 			} as any,
 		])
@@ -526,8 +524,8 @@ describe('Desktop – currentViewData fieldset nesting', { tags: ['component'] }
 				label: 'Info',
 				component: 'AFieldset',
 				schema: [
-					{ kind: 'field' as const, fieldname: 'color', fieldtype: 'Data', label: 'Color', component: 'ATextInput' },
-					{ kind: 'field' as const, fieldname: 'weight', fieldtype: 'Data', label: 'Weight', component: 'ATextInput' },
+					{ kind: 'field' as const, fieldname: 'color', label: 'Color', component: 'ATextInput' },
+					{ kind: 'field' as const, fieldname: 'weight', label: 'Weight', component: 'ATextInput' },
 				],
 			} as any,
 		])
@@ -571,8 +569,8 @@ describe('Desktop – currentViewData fieldset nesting', { tags: ['component'] }
 				label: 'Info',
 				component: 'AFieldset',
 				schema: [
-					{ kind: 'field' as const, fieldname: 'color', fieldtype: 'Data', label: 'Color', component: 'ATextInput' },
-					{ kind: 'field' as const, fieldname: 'weight', fieldtype: 'Data', label: 'Weight', component: 'ATextInput' },
+					{ kind: 'field' as const, fieldname: 'color', label: 'Color', component: 'ATextInput' },
+					{ kind: 'field' as const, fieldname: 'weight', label: 'Weight', component: 'ATextInput' },
 				],
 			} as any,
 		])

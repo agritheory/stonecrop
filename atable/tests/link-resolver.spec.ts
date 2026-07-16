@@ -38,9 +38,7 @@ describe('ATable linkResolver', { tags: ['component'] }, () => {
 	it('resolves a bare Link ID to its display name when linkResolver is provided', async () => {
 		const linkResolver = vi.fn().mockResolvedValue('Personal')
 
-		const columns: TableColumn[] = [
-			{ name: 'category_id', label: 'Category', fieldtype: 'Link', linkDoctype: 'category' },
-		]
+		const columns: TableColumn[] = [{ name: 'category_id', label: 'Category', linkDoctype: 'category' }]
 
 		const wrapper = mount(ATable, {
 			props: {
@@ -63,9 +61,7 @@ describe('ATable linkResolver', { tags: ['component'] }, () => {
 	it('falls back to the raw ID when linkResolver returns undefined', async () => {
 		const linkResolver = vi.fn().mockResolvedValue(undefined)
 
-		const columns: TableColumn[] = [
-			{ name: 'category_id', label: 'Category', fieldtype: 'Link', linkDoctype: 'category' },
-		]
+		const columns: TableColumn[] = [{ name: 'category_id', label: 'Category', linkDoctype: 'category' }]
 
 		const wrapper = mount(ATable, {
 			props: {
@@ -87,7 +83,7 @@ describe('ATable linkResolver', { tags: ['component'] }, () => {
 	it('does not call linkResolver for non-Link columns', async () => {
 		const linkResolver = vi.fn().mockResolvedValue('ignored')
 
-		const columns: TableColumn[] = [{ name: 'title', label: 'Title', fieldtype: 'Data' }]
+		const columns: TableColumn[] = [{ name: 'title', label: 'Title' }]
 
 		const wrapper = mount(ATable, {
 			props: {
@@ -110,9 +106,7 @@ describe('ATable linkResolver', { tags: ['component'] }, () => {
 	it('displays pre-resolved AFormLinkValue objects without calling linkResolver', async () => {
 		const linkResolver = vi.fn()
 
-		const columns: TableColumn[] = [
-			{ name: 'category_id', label: 'Category', fieldtype: 'Link', linkDoctype: 'category' },
-		]
+		const columns: TableColumn[] = [{ name: 'category_id', label: 'Category', linkDoctype: 'category' }]
 
 		const wrapper = mount(ATable, {
 			props: {
@@ -135,9 +129,7 @@ describe('ATable linkResolver', { tags: ['component'] }, () => {
 	it('resolves via injected aformLinkResolver when no prop is given', async () => {
 		const injectedResolver = vi.fn().mockResolvedValue('Work')
 
-		const columns: TableColumn[] = [
-			{ name: 'category_id', label: 'Category', fieldtype: 'Link', linkDoctype: 'category' },
-		]
+		const columns: TableColumn[] = [{ name: 'category_id', label: 'Category', linkDoctype: 'category' }]
 
 		const wrapper = mount(ATable, {
 			props: {

@@ -9,7 +9,7 @@ import type { ParsedDoctype, RouteStrategyFn } from '../src/types'
 function doctype(overrides: Partial<ParsedDoctype> & Pick<ParsedDoctype, 'fileName'>): ParsedDoctype {
 	return {
 		data: {},
-		fields: [{ fieldname: 'name', fieldtype: 'Data' }],
+		fields: [{ fieldname: 'name' }],
 		...overrides,
 	}
 }
@@ -101,7 +101,7 @@ describe('RouteStrategyFn', { tags: ['unit', 'nuxt'] }, () => {
 	})
 
 	it('passes schema fields and doctype data in meta', () => {
-		const fields = [{ fieldname: 'email', fieldtype: 'Data' }]
+		const fields = [{ fieldname: 'email' }]
 		const data = { name: 'User', slug: 'user' }
 
 		const strategy: RouteStrategyFn = doctypes =>
@@ -140,7 +140,7 @@ describe('ParsedDoctype', { tags: ['unit', 'nuxt'] }, () => {
 		const dt: ParsedDoctype = {
 			fileName: 'User',
 			data: { name: 'User', slug: 'user' },
-			fields: [{ fieldname: 'email', fieldtype: 'Data' }],
+			fields: [{ fieldname: 'email' }],
 		}
 
 		expect(dt.fileName).toBe('User')

@@ -13,16 +13,14 @@ import { ImmutableDoctype } from '../../src/types'
 global.fetch = vi.fn()
 
 function createDoctype(name: string, fields?: DoctypeField[], links?: Record<string, any>) {
-	const schema = List(
-		fields || [{ kind: 'field', fieldname: 'title', component: 'ATextInput', label: 'Title', fieldtype: 'Data' }]
-	)
+	const schema = List(fields || [{ kind: 'field', fieldname: 'title', component: 'ATextInput', label: 'Title' }])
 	return new Doctype(name, schema as any, undefined, Map({}), undefined, links)
 }
 
 function createMockDoctype(name: string) {
 	const mockSchema: ImmutableDoctype['schema'] = List<DoctypeField>([
-		{ kind: 'field', fieldname: 'title', label: 'Title', fieldtype: 'Data' },
-		{ kind: 'field', fieldname: 'status', label: 'Status', fieldtype: 'Select' },
+		{ kind: 'field', fieldname: 'title', label: 'Title', component: 'ATextInput' },
+		{ kind: 'field', fieldname: 'status', label: 'Status', component: 'ADropdown' },
 	])
 
 	const mockWorkflowConfig: ImmutableDoctype['workflow'] = {
@@ -674,8 +672,8 @@ describe('Stonecrop class with HST integration', { tags: ['unit'] }, () => {
 
 		it('collects flat record data from HST', () => {
 			const taskDoctype = createDoctype('Task', [
-				{ kind: 'field', fieldname: 'title', fieldtype: 'Data', component: 'ATextInput' },
-				{ kind: 'field', fieldname: 'status', fieldtype: 'Data', component: 'ATextInput' },
+				{ kind: 'field', fieldname: 'title', component: 'ATextInput' },
+				{ kind: 'field', fieldname: 'status', component: 'ATextInput' },
 			])
 			localRegistry.addDoctype(taskDoctype)
 
@@ -689,14 +687,14 @@ describe('Stonecrop class with HST integration', { tags: ['unit'] }, () => {
 
 		it('collects array data for cardinality: many fields', () => {
 			const itemDoctype = createDoctype('Item', [
-				{ kind: 'field', fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' },
-				{ kind: 'field', fieldname: 'qty', fieldtype: 'Int', component: 'ANumericInput' },
+				{ kind: 'field', fieldname: 'name', component: 'ATextInput' },
+				{ kind: 'field', fieldname: 'qty', component: 'ANumericInput' },
 			])
 			localRegistry.addDoctype(itemDoctype)
 
 			const orderDoctype = createDoctype(
 				'Order',
-				[{ kind: 'field', fieldname: 'order_number', fieldtype: 'Data', component: 'ATextInput' }],
+				[{ kind: 'field', fieldname: 'order_number', component: 'ATextInput' }],
 				{ items: { target: 'item', cardinality: 'noneOrMany' } }
 			)
 			localRegistry.addDoctype(orderDoctype)
@@ -718,14 +716,14 @@ describe('Stonecrop class with HST integration', { tags: ['unit'] }, () => {
 
 		it('collects nested 1:1 doctype fields', () => {
 			const addressDoctype = createDoctype('Address', [
-				{ kind: 'field', fieldname: 'street', fieldtype: 'Data', component: 'ATextInput' },
-				{ kind: 'field', fieldname: 'city', fieldtype: 'Data', component: 'ATextInput' },
+				{ kind: 'field', fieldname: 'street', component: 'ATextInput' },
+				{ kind: 'field', fieldname: 'city', component: 'ATextInput' },
 			])
 			localRegistry.addDoctype(addressDoctype)
 
 			const customerDoctype = createDoctype(
 				'Customer',
-				[{ kind: 'field', fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' }],
+				[{ kind: 'field', fieldname: 'name', component: 'ATextInput' }],
 				{ address: { target: 'address', cardinality: 'one' } }
 			)
 			localRegistry.addDoctype(customerDoctype)
@@ -742,21 +740,19 @@ describe('Stonecrop class with HST integration', { tags: ['unit'] }, () => {
 		})
 
 		it('recursively collects 1:many inside nested 1:1', () => {
-			const phoneDoctype = createDoctype('Phone', [
-				{ kind: 'field', fieldname: 'number', fieldtype: 'Data', component: 'ATextInput' },
-			])
+			const phoneDoctype = createDoctype('Phone', [{ kind: 'field', fieldname: 'number', component: 'ATextInput' }])
 			localRegistry.addDoctype(phoneDoctype)
 
 			const addressDoctype = createDoctype(
 				'Address',
-				[{ kind: 'field', fieldname: 'street', fieldtype: 'Data', component: 'ATextInput' }],
+				[{ kind: 'field', fieldname: 'street', component: 'ATextInput' }],
 				{ phones: { target: 'phone', cardinality: 'noneOrMany' } }
 			)
 			localRegistry.addDoctype(addressDoctype)
 
 			const customerDoctype = createDoctype(
 				'Customer',
-				[{ kind: 'field', fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' }],
+				[{ kind: 'field', fieldname: 'name', component: 'ATextInput' }],
 				{ address: { target: 'address', cardinality: 'one' } }
 			)
 			localRegistry.addDoctype(customerDoctype)

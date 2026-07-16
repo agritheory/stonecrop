@@ -13,25 +13,21 @@ describe('fieldset input component', { tags: ['component'] }, () => {
 				schema: [
 					{
 						fieldname: 'first_name',
-						fieldtype: 'Data',
 						component: 'ATextInput',
 						label: 'First Name',
 					},
 					{
 						fieldname: 'middle_name',
-						fieldtype: 'Data',
 						component: 'ATextInput',
 						label: 'Middle Name',
 					},
 					{
 						fieldname: 'last_name',
-						fieldtype: 'Data',
 						component: 'ATextInput',
 						label: 'Last Name',
 					},
 					{
 						fieldname: 'age',
-						fieldtype: 'Int',
 						component: 'ANumericInput',
 						label: 'Age',
 					},
@@ -53,25 +49,21 @@ describe('fieldset input component', { tags: ['component'] }, () => {
 				schema: [
 					{
 						fieldname: 'first_name',
-						fieldtype: 'Data',
 						component: 'ATextInput',
 						label: 'First Name',
 					},
 					{
 						fieldname: 'middle_name',
-						fieldtype: 'Data',
 						component: 'ATextInput',
 						label: 'Middle Name',
 					},
 					{
 						fieldname: 'last_name',
-						fieldtype: 'Data',
 						component: 'ATextInput',
 						label: 'Last Name',
 					},
 					{
 						fieldname: 'age',
-						fieldtype: 'Int',
 						component: 'ANumericInput',
 						label: 'Age',
 					},

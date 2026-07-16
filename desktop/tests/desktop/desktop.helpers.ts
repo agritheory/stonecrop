@@ -23,9 +23,9 @@ export const makeStonecropPlugin = vi.defineHelper((registry: Registry, stonecro
 export const buildDoctype = vi.defineHelper(
 	(name: string, initialState: string, states: Record<string, any>, extraFields?: DoctypeField[]) => {
 		const baseFields = [
-			{ kind: 'field' as const, fieldname: 'id', fieldtype: 'Data', label: 'ID', component: 'ATextInput' },
-			{ kind: 'field' as const, fieldname: 'title', fieldtype: 'Data', label: 'Title', component: 'ATextInput' },
-			{ kind: 'field' as const, fieldname: 'status', fieldtype: 'Data', label: 'Status', component: 'ATextInput' },
+			{ kind: 'field' as const, fieldname: 'id', label: 'ID', component: 'ATextInput' },
+			{ kind: 'field' as const, fieldname: 'title', label: 'Title', component: 'ATextInput' },
+			{ kind: 'field' as const, fieldname: 'status', label: 'Status', component: 'ATextInput' },
 		]
 
 		const schema = extraFields ? List([...baseFields, ...extraFields]) : List(baseFields)

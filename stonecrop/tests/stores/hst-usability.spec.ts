@@ -23,10 +23,10 @@ describe('HST Edge Cases & Performance', { tags: ['unit'] }, () => {
 
 		// Complex schema with nested fields and special cases
 		const complexSchema = List([
-			{ kind: 'field', fieldname: 'name', fieldtype: 'Data', label: 'Name', component: 'ATextInput' },
-			{ kind: 'field', fieldname: 'metadata', fieldtype: 'JSON', label: 'Metadata', component: 'ATextInput' },
-			{ kind: 'field', fieldname: 'config', fieldtype: 'JSON', label: 'Config', component: 'ATextInput' },
-			{ kind: 'field', fieldname: 'nested_data', fieldtype: 'JSON', label: 'Nested Data', component: 'ATextInput' },
+			{ kind: 'field', fieldname: 'name', label: 'Name', component: 'ATextInput' },
+			{ kind: 'field', fieldname: 'metadata', label: 'Metadata', component: 'ATextInput' },
+			{ kind: 'field', fieldname: 'config', label: 'Config', component: 'ATextInput' },
+			{ kind: 'field', fieldname: 'nested_data', label: 'Nested Data', component: 'ATextInput' },
 		])
 
 		const mockWorkflow: UnknownMachineConfig = {

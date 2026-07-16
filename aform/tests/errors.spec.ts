@@ -126,8 +126,8 @@ describe('inline field errors', { tags: ['component'] }, () => {
 			const w = mount(AForm, {
 				props: {
 					schema: [
-						{ fieldname: 'start_date', fieldtype: 'Data', component: 'ATextInput', label: 'Start' },
-						{ fieldname: 'end_date', fieldtype: 'Data', component: 'ATextInput', label: 'End' },
+						{ fieldname: 'start_date', component: 'ATextInput', label: 'Start' },
+						{ fieldname: 'end_date', component: 'ATextInput', label: 'End' },
 					] as ResolvedField[],
 					data: { start_date: '2020-01-02', end_date: '2020-01-01' },
 					errors: { end_date: ['End before start'] },

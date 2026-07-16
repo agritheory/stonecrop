@@ -14,7 +14,7 @@ const itemByLabel = (wrapper: { findAll(selector: string): Array<{ text(): strin
 // directional moveUp/moveDown action types, and a per-row `disabled` predicate that greys an
 // individual item (move-at-the-ends, lock-aware delete) which the global config alone can't.
 describe('ARowActions dropdown: directional moves + per-row disable', { tags: ['component'] }, () => {
-	const columns: TableColumn[] = [{ name: 'a', label: 'A', fieldtype: 'Data', edit: false }]
+	const columns: TableColumn[] = [{ name: 'a', label: 'A', edit: false }]
 	const rows = [{ a: '1' }, { a: '2' }, { a: '3' }]
 
 	const config: RowActionsConfig = {

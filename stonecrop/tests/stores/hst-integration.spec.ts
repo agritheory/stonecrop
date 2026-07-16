@@ -31,18 +31,16 @@ describe('HST Real Component Integration', { tags: ['unit'] }, () => {
 			{
 				kind: 'field',
 				fieldname: 'name',
-				fieldtype: 'Data',
 				label: 'Task Name',
 				component: 'ATextInput',
 				required: true,
 			},
-			{ kind: 'field', fieldname: 'description', fieldtype: 'Text', label: 'Description', component: 'ATextInput' },
+			{ kind: 'field', fieldname: 'description', label: 'Description', component: 'ATextInput' },
 
 			// Numeric fields
 			{
 				kind: 'field',
 				fieldname: 'priority',
-				fieldtype: 'Int',
 				label: 'Priority',
 				component: 'ANumericInput',
 				min: 1,
@@ -51,7 +49,6 @@ describe('HST Real Component Integration', { tags: ['unit'] }, () => {
 			{
 				kind: 'field',
 				fieldname: 'progress',
-				fieldtype: 'Float',
 				label: 'Progress %',
 				component: 'ANumericInput',
 				min: 0,
@@ -59,18 +56,17 @@ describe('HST Real Component Integration', { tags: ['unit'] }, () => {
 			},
 
 			// Boolean field
-			{ kind: 'field', fieldname: 'active', fieldtype: 'Check', label: 'Active', component: 'ACheckbox' },
-			{ kind: 'field', fieldname: 'urgent', fieldtype: 'Check', label: 'Urgent', component: 'ACheckbox' },
+			{ kind: 'field', fieldname: 'active', label: 'Active', component: 'ACheckbox' },
+			{ kind: 'field', fieldname: 'urgent', label: 'Urgent', component: 'ACheckbox' },
 
 			// Date fields
-			{ kind: 'field', fieldname: 'due_date', fieldtype: 'Date', label: 'Due Date', component: 'ADate' },
-			{ kind: 'field', fieldname: 'created_at', fieldtype: 'Datetime', label: 'Created At', component: 'ADate' },
+			{ kind: 'field', fieldname: 'due_date', label: 'Due Date', component: 'ADate' },
+			{ kind: 'field', fieldname: 'created_at', label: 'Created At', component: 'ADateTime' },
 
 			// Selection fields
 			{
 				kind: 'field',
 				fieldname: 'status',
-				fieldtype: 'Select',
 				label: 'Status',
 				component: 'ADropdown',
 				options: ['Draft', 'In Progress', 'Completed', 'Cancelled'],
@@ -78,14 +74,13 @@ describe('HST Real Component Integration', { tags: ['unit'] }, () => {
 			{
 				kind: 'field',
 				fieldname: 'category',
-				fieldtype: 'Select',
 				label: 'Category',
 				component: 'ADropdown',
 				options: ['Development', 'Testing', 'Documentation', 'Support'],
 			},
 
 			// JSON field for complex data
-			{ kind: 'field', fieldname: 'metadata', fieldtype: 'JSON', label: 'Metadata', component: 'ATextInput' },
+			{ kind: 'field', fieldname: 'metadata', label: 'Metadata', component: 'ATextInput' },
 		])
 
 		const mockWorkflow: UnknownMachineConfig = {
@@ -200,7 +195,6 @@ describe('HST Real Component Integration', { tags: ['unit'] }, () => {
 
 					const fieldSchema = {
 						fieldname: 'name',
-						fieldtype: 'Data',
 						label: 'Task Name',
 						component: 'ATextInput',
 					}
@@ -302,8 +296,8 @@ describe('HST Real Component Integration', { tags: ['unit'] }, () => {
 					return {
 						priorityValue,
 						progressValue,
-						prioritySchema: { fieldname: 'priority', fieldtype: 'Int', label: 'Priority' },
-						progressSchema: { fieldname: 'progress', fieldtype: 'Float', label: 'Progress' },
+						prioritySchema: { fieldname: 'priority', label: 'Priority' },
+						progressSchema: { fieldname: 'progress', label: 'Progress' },
 						handlePriorityChange: (val: number) => {
 							priorityValue.value = val
 						},
@@ -386,8 +380,8 @@ describe('HST Real Component Integration', { tags: ['unit'] }, () => {
 					return {
 						activeValue,
 						urgentValue,
-						activeSchema: { fieldname: 'active', fieldtype: 'Check', label: 'Active' },
-						urgentSchema: { fieldname: 'urgent', fieldtype: 'Check', label: 'Urgent' },
+						activeSchema: { fieldname: 'active', label: 'Active' },
+						urgentSchema: { fieldname: 'urgent', label: 'Urgent' },
 						handleActiveChange: (val: boolean) => {
 							activeValue.value = val
 						},
@@ -466,7 +460,7 @@ describe('HST Real Component Integration', { tags: ['unit'] }, () => {
 
 					return {
 						metadataValue,
-						metadataSchema: { fieldname: 'metadata', fieldtype: 'JSON', label: 'Metadata' },
+						metadataSchema: { fieldname: 'metadata', label: 'Metadata' },
 						handleMetadataChange: (val: string) => {
 							metadataValue.value = val
 						},

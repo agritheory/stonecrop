@@ -15,9 +15,9 @@ import { makeStonecropPlugin } from './desktop.helpers'
 // A booking doctype with a cross-field validation trigger: end date must not precede start date.
 function buildBookingDoctype() {
 	const fields = List([
-		{ kind: 'field' as const, fieldname: 'start_date', fieldtype: 'Data', label: 'Start', component: 'ATextInput' },
-		{ kind: 'field' as const, fieldname: 'end_date', fieldtype: 'Data', label: 'End', component: 'ATextInput' },
-		{ kind: 'field' as const, fieldname: 'status', fieldtype: 'Data', label: 'Status', component: 'ATextInput' },
+		{ kind: 'field' as const, fieldname: 'start_date', label: 'Start', component: 'ATextInput' },
+		{ kind: 'field' as const, fieldname: 'end_date', label: 'End', component: 'ATextInput' },
+		{ kind: 'field' as const, fieldname: 'status', label: 'Status', component: 'ATextInput' },
 	])
 	const workflow = {
 		states: ['draft'],

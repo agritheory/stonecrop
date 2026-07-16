@@ -206,7 +206,7 @@ describe('table store', { tags: ['component'] }, () => {
 			expect(formatted).toBe('String: test')
 		})
 
-		describe('fieldtype-based formatting defaults', () => {
+		describe('component-based formatting defaults', () => {
 			it('formats Check true as ✓', () => {
 				store.columns[0] = { name: 'id', component: 'ACheckbox' }
 				expect(store.getFormattedValue(0, 0, true)).toBe('✓')
@@ -241,12 +241,12 @@ describe('table store', { tags: ['component'] }, () => {
 				expect(store.getFormattedValue(0, 0, null)).toBeNull()
 			})
 
-			it('passes value through for unknown fieldtype', () => {
+			it('passes value through for an unknown component', () => {
 				store.columns[0] = { name: 'id', component: 'ATextInput' }
 				expect(store.getFormattedValue(0, 0, 'hello')).toBe('hello')
 			})
 
-			it('explicit format function takes precedence over fieldtype default', () => {
+			it('explicit format function takes precedence over the component default', () => {
 				store.columns[0] = { name: 'id', component: 'ACheckbox', format: (value: any) => (value ? 'yes' : 'no') }
 				expect(store.getFormattedValue(0, 0, true)).toBe('yes')
 			})

@@ -56,7 +56,9 @@ const valueFields = (doctype: Record<string, unknown>): Field[] => {
 	return out
 }
 
-const isLink = (f: Field) => Boolean(f.doctype) || f.fieldtype === 'Link'
+// Link-ness is carried solely by `doctype` now; the legacy `fieldtype === 'Link'` marker is gone
+// and the guard below keeps it from returning.
+const isLink = (f: Field) => Boolean(f.doctype)
 
 describe('doctype fixtures', { tags: ['unit'] }, () => {
 	it('every fixture passes schema validation', () => {

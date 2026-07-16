@@ -406,8 +406,8 @@ describe('Doctype class', { tags: ['unit'] }, () => {
 			const obj = {
 				name: 'Plan',
 				fields: [
-					{ kind: 'field', fieldname: 'title', label: 'Title', fieldtype: 'Data' },
-					{ kind: 'field', fieldname: 'status', label: 'Status', fieldtype: 'Data' },
+					{ kind: 'field', fieldname: 'title', label: 'Title' },
+					{ kind: 'field', fieldname: 'status', label: 'Status' },
 				] as DoctypeField[],
 				workflow: {
 					id: 'plan',
@@ -580,8 +580,8 @@ describe('Doctype class', { tags: ['unit'] }, () => {
 			const obj = {
 				name: 'Plan',
 				fields: [
-					{ kind: 'field', fieldname: 'title', label: 'Title', fieldtype: 'Data' },
-					{ kind: 'field', fieldname: 'status', label: 'Status', fieldtype: 'Data' },
+					{ kind: 'field', fieldname: 'title', label: 'Title' },
+					{ kind: 'field', fieldname: 'status', label: 'Status' },
 				] as DoctypeField[],
 			}
 
