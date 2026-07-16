@@ -265,7 +265,6 @@ console.log('All operations:', operationLog.operations.value)
 interface OperationLogConfig {
   maxOperations?: number              // Default: 100
   enableCrossTabSync?: boolean        // Default: true
-  autoSyncInterval?: number           // Default: 30000 (ms)
   enablePersistence?: boolean         // Default: false
   persistenceKeyPrefix?: string       // Default: 'stonecrop-ops'
   userId?: string

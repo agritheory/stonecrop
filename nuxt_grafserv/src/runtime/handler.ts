@@ -3,7 +3,7 @@ import { loadTypedefs } from '@graphql-tools/load'
 import { grafserv } from 'grafserv/h3/v1'
 import { makeGrafastSchema } from 'grafast'
 import type { GraphQLSchema, DocumentNode } from 'graphql'
-import { defineEventHandler, type H3Event } from 'h3'
+import { defineEventHandler, setResponseStatus, type H3Event } from 'h3'
 import { useRuntimeConfig } from 'nitropack/runtime'
 
 import type { ModuleOptions } from '../types'
@@ -154,9 +154,22 @@ export default defineEventHandler(async (event: H3Event) => {
 	const config = useRuntimeConfig()
 	const options = config.grafserv as ModuleOptions
 
+	// Resolved to a concrete boolean by the module (explicit `graphiql`, else dev-only).
+	// grafserv always builds the Ruru handler and, by default, serves it on any browser
+	// GET (`graphiqlOnGraphQLGET`); neither is gated by the `graphiql` flag in this
+	// direct-call setup. This module never enables `graphqlOverGET`, so a GET here is only
+	// ever an IDE request — short-circuit it when the IDE is disabled so both the GET path
+	// and the graphiql fallback below stay off.
+	const graphiqlEnabled = options.graphiql ?? false
+
 	try {
 		// Get grafserv instance
 		const serv = await getGrafservInstance(options)
+
+		if (!graphiqlEnabled && event.method === 'GET') {
+			setResponseStatus(event, 404)
+			return 'GraphiQL is disabled'
+		}
 
 		// Try GraphQL handler first - it will return null if not a GraphQL operation
 		const graphqlResult = await serv.handleGraphQLEvent(event)
@@ -164,8 +177,12 @@ export default defineEventHandler(async (event: H3Event) => {
 			return graphqlResult
 		}
 
-		// If not a GraphQL operation, try GraphiQL UI handler
-		return serv.handleGraphiqlEvent(event)
+		// Not a GraphQL operation: serve the GraphiQL UI only when enabled
+		if (graphiqlEnabled) {
+			return serv.handleGraphiqlEvent(event)
+		}
+		setResponseStatus(event, 404)
+		return 'GraphiQL is disabled'
 	} catch (error) {
 		console.error('[@stonecrop/nuxt-grafserv] Error in GraphQL handler:', error)
 		throw error

@@ -138,7 +138,7 @@ Use `type: 'postgraphile'` for PostGraphile-based GraphQL APIs:
 | `schemas` | `string[]` | ❌ | PostgreSQL schemas to expose (default: `['public']`). Ignored when `preset` is set. |
 | `explain` | `boolean` | ❌ | Enable Ruru Explain tab. **Never use in production.** Ignored when `preset` is set. |
 | `url` | `string` | ❌ | GraphQL endpoint URL (default: `/graphql/`) |
-| `graphiql` | `boolean` | ❌ | Serve the Ruru GraphiQL IDE and its static assets. No module default — set `true` explicitly to enable. |
+| `graphiql` | `boolean` | ❌ | Serve the Ruru GraphiQL IDE and its static assets. Defaults to `true` in development and `false` in production. |
 
 **Minimal example (no preset file):**
 
@@ -181,7 +181,7 @@ Use `type: 'schema'` for custom GraphQL schemas with Grafast resolvers:
 | `schema` | `string \| string[] \| SchemaProvider` | ✅ | Path(s) to .graphql files or schema provider function |
 | `resolvers` | `string` | ❌ | Path to resolvers file (required for .graphql files) |
 | `url` | `string` | ❌ | GraphQL endpoint URL (default: `/graphql/`) |
-| `graphiql` | `boolean` | ❌ | Serve the Ruru GraphiQL IDE and its static assets. No module default — set `true` explicitly to enable. |
+| `graphiql` | `boolean` | ❌ | Serve the Ruru GraphiQL IDE and its static assets. Defaults to `true` in development and `false` in production. |
 
 **Example with files:**
 

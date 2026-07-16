@@ -346,7 +346,6 @@ export type OperationLogAPI = {
 
 // @public
 export interface OperationLogConfig {
-    autoSyncInterval?: number;
     enableCrossTabSync?: boolean;
     enablePersistence?: boolean;
     maxOperations?: number;
@@ -492,7 +491,6 @@ export class Stonecrop {
     config: Ref<    {
     maxOperations?: number | undefined;
     enableCrossTabSync?: boolean | undefined;
-    autoSyncInterval?: number | undefined;
     enablePersistence?: boolean | undefined;
     persistenceKeyPrefix?: string | undefined;
     userId?: string | undefined;
@@ -500,7 +498,6 @@ export class Stonecrop {
     }, OperationLogConfig | {
     maxOperations?: number | undefined;
     enableCrossTabSync?: boolean | undefined;
-    autoSyncInterval?: number | undefined;
     enablePersistence?: boolean | undefined;
     persistenceKeyPrefix?: string | undefined;
     userId?: string | undefined;
@@ -578,7 +575,6 @@ export class Stonecrop {
     config: Ref<    {
     maxOperations?: number | undefined;
     enableCrossTabSync?: boolean | undefined;
-    autoSyncInterval?: number | undefined;
     enablePersistence?: boolean | undefined;
     persistenceKeyPrefix?: string | undefined;
     userId?: string | undefined;
@@ -586,7 +582,6 @@ export class Stonecrop {
     }, OperationLogConfig | {
     maxOperations?: number | undefined;
     enableCrossTabSync?: boolean | undefined;
-    autoSyncInterval?: number | undefined;
     enablePersistence?: boolean | undefined;
     persistenceKeyPrefix?: string | undefined;
     userId?: string | undefined;
@@ -664,7 +659,6 @@ export class Stonecrop {
     config: Ref<    {
     maxOperations?: number | undefined;
     enableCrossTabSync?: boolean | undefined;
-    autoSyncInterval?: number | undefined;
     enablePersistence?: boolean | undefined;
     persistenceKeyPrefix?: string | undefined;
     userId?: string | undefined;
@@ -672,7 +666,6 @@ export class Stonecrop {
     }, OperationLogConfig | {
     maxOperations?: number | undefined;
     enableCrossTabSync?: boolean | undefined;
-    autoSyncInterval?: number | undefined;
     enablePersistence?: boolean | undefined;
     persistenceKeyPrefix?: string | undefined;
     userId?: string | undefined;
@@ -892,7 +885,6 @@ currentIndex: Ref<number, number>;
 config: Ref<    {
 maxOperations?: number | undefined;
 enableCrossTabSync?: boolean | undefined;
-autoSyncInterval?: number | undefined;
 enablePersistence?: boolean | undefined;
 persistenceKeyPrefix?: string | undefined;
 userId?: string | undefined;
@@ -900,7 +892,6 @@ operationFilter?: ((operation: HSTOperation) => boolean) | undefined;
 }, OperationLogConfig | {
 maxOperations?: number | undefined;
 enableCrossTabSync?: boolean | undefined;
-autoSyncInterval?: number | undefined;
 enablePersistence?: boolean | undefined;
 persistenceKeyPrefix?: string | undefined;
 userId?: string | undefined;
@@ -978,7 +969,6 @@ currentIndex: Ref<number, number>;
 config: Ref<    {
 maxOperations?: number | undefined;
 enableCrossTabSync?: boolean | undefined;
-autoSyncInterval?: number | undefined;
 enablePersistence?: boolean | undefined;
 persistenceKeyPrefix?: string | undefined;
 userId?: string | undefined;
@@ -986,7 +976,6 @@ operationFilter?: ((operation: HSTOperation) => boolean) | undefined;
 }, OperationLogConfig | {
 maxOperations?: number | undefined;
 enableCrossTabSync?: boolean | undefined;
-autoSyncInterval?: number | undefined;
 enablePersistence?: boolean | undefined;
 persistenceKeyPrefix?: string | undefined;
 userId?: string | undefined;
@@ -1064,7 +1053,6 @@ currentIndex: Ref<number, number>;
 config: Ref<    {
 maxOperations?: number | undefined;
 enableCrossTabSync?: boolean | undefined;
-autoSyncInterval?: number | undefined;
 enablePersistence?: boolean | undefined;
 persistenceKeyPrefix?: string | undefined;
 userId?: string | undefined;
@@ -1072,7 +1060,6 @@ operationFilter?: ((operation: HSTOperation) => boolean) | undefined;
 }, OperationLogConfig | {
 maxOperations?: number | undefined;
 enableCrossTabSync?: boolean | undefined;
-autoSyncInterval?: number | undefined;
 enablePersistence?: boolean | undefined;
 persistenceKeyPrefix?: string | undefined;
 userId?: string | undefined;

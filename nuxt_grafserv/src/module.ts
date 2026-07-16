@@ -69,6 +69,11 @@ const module: NuxtModule<ModuleOptions> = defineNuxtModule<ModuleOptions>({
 		// Validate configuration early
 		validateConfig(options)
 
+		// GraphiQL IDE: honor an explicit `graphiql`; otherwise enable in dev, disable in prod.
+		// Resolved to a concrete boolean here so the asset handler, the runtime handler, and
+		// the docs all agree on one value.
+		const graphiqlEnabled = options.graphiql ?? nuxt.options.dev
+
 		const { resolve } = createResolver(import.meta.url)
 		const require = createRequire(import.meta.url)
 
@@ -233,7 +238,7 @@ const module: NuxtModule<ModuleOptions> = defineNuxtModule<ModuleOptions>({
 				config.runtimeConfig.grafserv = {
 					type: 'postgraphile' as const,
 					url: options.url || '/graphql/',
-					graphiql: options.graphiql,
+					graphiql: graphiqlEnabled,
 				}
 			} else if (options.type === 'schema') {
 				logger.info('Using schema configuration')
@@ -270,7 +275,7 @@ const module: NuxtModule<ModuleOptions> = defineNuxtModule<ModuleOptions>({
 					schema: runtimeSchema,
 					resolversPath: resolverPath,
 					url: options.url || '/graphql/',
-					graphiql: options.graphiql,
+					graphiql: graphiqlEnabled,
 				}
 
 				// Create virtual modules for resolvers
@@ -324,7 +329,7 @@ const module: NuxtModule<ModuleOptions> = defineNuxtModule<ModuleOptions>({
 
 		// Set up Grafast handlers
 		addServerHandler({ route: options.url || '/graphql/', handler: resolve('./runtime/handler') })
-		if (options.graphiql) {
+		if (graphiqlEnabled) {
 			addServerHandler({ route: '/ruru-static/**', handler: resolve('./runtime/ruru-static') })
 		}
 		if (nuxt.options.dev) {

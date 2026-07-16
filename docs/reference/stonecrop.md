@@ -685,7 +685,6 @@ Operation log configuration
 
 ```typescript
 export interface OperationLogConfig {
-  autoSyncInterval?: number;
   enableCrossTabSync?: boolean;
   enablePersistence?: boolean;
   maxOperations?: number;
@@ -699,7 +698,6 @@ export interface OperationLogConfig {
 
 | Property | Type | Description |
 |----------|------|-------------|
-| autoSyncInterval? | `number` | Auto-sync interval in milliseconds (default: 30000) |
 | enableCrossTabSync? | `boolean` | Enable cross-tab synchronization (default: true) |
 | enablePersistence? | `boolean` | Enable operation persistence to localStorage (default: false) |
 | maxOperations? | `number` | Maximum operations to store (default: 100) |
@@ -2087,7 +2085,6 @@ export const useOperationLogStore: import("pinia").StoreDefinition<"hst-operatio
     config: import("vue").Ref<{
         maxOperations?: number | undefined;
         enableCrossTabSync?: boolean | undefined;
-        autoSyncInterval?: number | undefined;
         enablePersistence?: boolean | undefined;
         persistenceKeyPrefix?: string | undefined;
         userId?: string | undefined;
@@ -2095,7 +2092,6 @@ export const useOperationLogStore: import("pinia").StoreDefinition<"hst-operatio
     }, OperationLogConfig | {
         maxOperations?: number | undefined;
         enableCrossTabSync?: boolean | undefined;
-        autoSyncInterval?: number | undefined;
         enablePersistence?: boolean | undefined;
         persistenceKeyPrefix?: string | undefined;
         userId?: string | undefined;
@@ -2173,7 +2169,6 @@ export const useOperationLogStore: import("pinia").StoreDefinition<"hst-operatio
     config: import("vue").Ref<{
         maxOperations?: number | undefined;
         enableCrossTabSync?: boolean | undefined;
-        autoSyncInterval?: number | undefined;
         enablePersistence?: boolean | undefined;
         persistenceKeyPrefix?: string | undefined;
         userId?: string | undefined;
@@ -2181,7 +2176,6 @@ export const useOperationLogStore: import("pinia").StoreDefinition<"hst-operatio
     }, OperationLogConfig | {
         maxOperations?: number | undefined;
         enableCrossTabSync?: boolean | undefined;
-        autoSyncInterval?: number | undefined;
         enablePersistence?: boolean | undefined;
         persistenceKeyPrefix?: string | undefined;
         userId?: string | undefined;
@@ -2259,7 +2253,6 @@ export const useOperationLogStore: import("pinia").StoreDefinition<"hst-operatio
     config: import("vue").Ref<{
         maxOperations?: number | undefined;
         enableCrossTabSync?: boolean | undefined;
-        autoSyncInterval?: number | undefined;
         enablePersistence?: boolean | undefined;
         persistenceKeyPrefix?: string | undefined;
         userId?: string | undefined;
@@ -2267,7 +2260,6 @@ export const useOperationLogStore: import("pinia").StoreDefinition<"hst-operatio
     }, OperationLogConfig | {
         maxOperations?: number | undefined;
         enableCrossTabSync?: boolean | undefined;
-        autoSyncInterval?: number | undefined;
         enablePersistence?: boolean | undefined;
         persistenceKeyPrefix?: string | undefined;
         userId?: string | undefined;

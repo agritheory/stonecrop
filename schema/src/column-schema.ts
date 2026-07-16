@@ -48,7 +48,7 @@ export interface ColumnSchema {
 	/**
 	 * Horizontal text alignment for the column cell and header.
 	 *
-	 * @defaultValue 'left'
+	 * @defaultValue 'center'
 	 */
 	align?: 'left' | 'right' | 'center' | 'start' | 'end'
 
