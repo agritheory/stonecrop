@@ -10,12 +10,17 @@ Schema-driven form components for the Stonecrop framework. Renders a `ResolvedFi
 | `ACheckbox` | Boolean toggle |
 | `ADate` | Date text input |
 | `ADatePicker` | Date picker with calendar UI |
+| `ADateTime` | Combined date and time input |
+| `ADateRange` | Date-range input (start and end) |
+| `ADateSelection` | Wrapper combining a date picker and time input |
+| `ADuration` | Duration input |
 | `ADropdown` | Single-select dropdown for string enum fields |
 | `AFieldset` | Collapsible grouping container for other fields |
 | `AFileAttach` | File upload and attachment |
 | `AFormLink` | Linked document selector with search dropdown and navigation arrow |
 | `ANumericInput` | Numeric input with type-specific formatting |
 | `ATextInput` | Single-line text input |
+| `ATextarea` | Multi-line text input |
 
 ## Installation
 
@@ -145,7 +150,7 @@ For fields carrying a `doctype` marker with no matching `links` declaration and 
 
 ```typescript
 const config: DoctypeConfig = {
-  slug: 'sales-order',
+  name: 'Sales Order',
   fields: [
     { fieldname: 'order_number', component: 'ATextInput', label: 'Order Number' },
     { fieldname: 'territory', doctype: 'territory', label: 'Territory' },
@@ -155,7 +160,7 @@ const config: DoctypeConfig = {
 
 registry.addDoctype(Doctype.fromObject(config))
 const resolved = registry.resolveSchema(registry.registry['sales-order'])
-// resolved[1] === { fieldname: 'territory', component: 'AFormLink', doctype: 'territory', label: 'Territory' }
+// resolved[1] === { kind: 'field', fieldname: 'territory', component: 'AFormLink', doctype: 'territory', label: 'Territory' }
 
 // Pass to AForm as normal — the territory field renders as AFormLink automatically
 ```

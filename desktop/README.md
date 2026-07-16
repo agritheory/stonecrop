@@ -132,10 +132,9 @@ async function handleAction(payload: ActionEventPayload) {
   }
 
   // 2. Call the server (StonecropClient, $fetch, tRPC — whatever your stack uses)
-  const result = await client.runAction(payload.doctype, payload.name, {
-    id: payload.recordId,
-    data: payload.data,
-  })
+  const result = await client.runAction({ name: payload.doctype }, payload.name, [
+    { id: payload.recordId, data: payload.data },
+  ])
 
   // 3. Sync the server response back into HST
   if (result.success && result.data) {

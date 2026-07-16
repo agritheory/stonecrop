@@ -6,7 +6,6 @@ The HST Operation Log is a global Pinia-based store that tracks all HST mutation
 
 - **Time Travel**: Undo/redo operations with full state restoration
 - **Cross-Tab Synchronization**: Sync operations across browser tabs (via VueUse's `useBroadcastChannel`)
-- **Server Synchronization**: Delta-based sync with server
 - **Audit Trail**: Complete history of all changes
 - **XState Integration**: Mark FSM transitions as irreversible
 - **Keyboard Shortcuts**: Built-in undo/redo shortcuts (via VueUse's `useMagicKeys`)
@@ -84,12 +83,12 @@ if (canRedo.value) {
 Keyboard shortcuts use VueUse's `useMagicKeys` composable for better reliability and cross-platform support.
 
 ```typescript
-import { useStonecrop } from '@stonecrop/stonecrop'
+import { useStonecrop, useUndoRedoShortcuts } from '@stonecrop/stonecrop'
 
-const { hstStore, operationLog } = useStonecrop({ doctype, recordId })
+const { hstStore } = useStonecrop({ doctype, recordId })
 
-// Setup keyboard shortcuts from operation log
-operationLog.setupUndoRedoShortcuts(hstStore.value)
+// Setup keyboard shortcuts (cleanup is automatic when the component unmounts)
+useUndoRedoShortcuts(hstStore.value)
 
 // Keyboard shortcuts are automatically active:
 // - Ctrl+Z / Cmd+Z = undo
@@ -97,18 +96,18 @@ operationLog.setupUndoRedoShortcuts(hstStore.value)
 // - Ctrl+Y = redo (Windows/Linux)
 
 // Optionally disable shortcuts
-operationLog.setupUndoRedoShortcuts(hstStore.value, false)
+useUndoRedoShortcuts(hstStore.value, false)
 ```
 
 ### Batch Operations
 
 ```typescript
-import { useStonecrop } from '@stonecrop/stonecrop'
+import { useStonecrop, withBatch } from '@stonecrop/stonecrop'
 
-const { hstStore, operationLog } = useStonecrop({ doctype, recordId })
+const { hstStore } = useStonecrop({ doctype, recordId })
 
 // All operations in the batch are treated as a single undo/redo unit
-const batchId = await operationLog.withBatch(() => {
+const batchId = await withBatch(() => {
   hstStore.value.set('task.123.title', 'New Title')
   hstStore.value.set('task.123.status', 'active')
   hstStore.value.set('task.123.priority', 'high')
@@ -118,19 +117,18 @@ const batchId = await operationLog.withBatch(() => {
 ### Marking Operations as Irreversible
 
 ```typescript
-import { registerGlobalAction, markOperationIrreversible } from '@stonecrop/stonecrop'
+import { registerGlobalAction, markOperationIrreversible, useOperationLogStore } from '@stonecrop/stonecrop'
 
 // Register a field trigger that makes an API call
 registerGlobalAction('submitOrder', async (context) => {
   // Make irreversible API call
   const response = await api.submitOrder(context.afterValue)
 
-  // Mark the operation as irreversible
-  // operationId is automatically tracked in context metadata
-  markOperationIrreversible(
-    context.metadata?.operationId,
-    'Order submitted to external system'
-  )
+  // Mark the triggering operation irreversible so undo skips it. There is no
+  // operation id on the trigger context — read it from the operation log, whose
+  // most recent entry is the field change that fired this trigger.
+  const opLog = useOperationLogStore()
+  markOperationIrreversible(opLog.operations.at(-1)?.id, 'Order submitted to external system')
 
   return response
 })
@@ -162,19 +160,17 @@ await node?.triggerTransition('SAVE')  // Automatically logged as TRANSITION
 If you need to mark specific transition actions as irreversible:
 
 ```typescript
-import { registerTransitionAction, markOperationIrreversible } from '@stonecrop/stonecrop'
+import { registerTransitionAction, markOperationIrreversible, useOperationLogStore } from '@stonecrop/stonecrop'
 
 // Register a transition action that commits data
 registerTransitionAction('COMMIT_INVOICE', async (context) => {
   // Save to database
   await database.saveInvoice(context.fsmContext?.invoice)
 
-  // Mark the RELATED FIELD OPERATIONS as irreversible (not the transition itself)
-  // Transitions are already non-reversible
-  markOperationIrreversible(
-    context.metadata?.operationId,
-    'Invoice committed to database'
-  )
+  // Mark the most recent logged operation irreversible. Operation ids come from
+  // the log — there is none on the transition context.
+  const opLog = useOperationLogStore()
+  markOperationIrreversible(opLog.operations.at(-1)?.id, 'Invoice committed to database')
 })
 ```
 
@@ -196,7 +192,9 @@ registerTransitionAction('COMMIT_INVOICE', async (context) => {
   - Metadata includes transition details and FSM context
 
 - **`BATCH`**: Grouped operations (reversible)
-  - Multiple operations treated as single undo/redo unit### Cross-Tab Synchronization
+  - Multiple operations treated as single undo/redo unit
+
+### Cross-Tab Synchronization
 
 Cross-tab sync is enabled by default and uses the `BroadcastChannel` API:
 
@@ -211,29 +209,6 @@ operationLog.configure({
 
 // Operations from other tabs are automatically synced
 // Changes in one tab will be reflected in all open tabs
-```
-
-### Server Synchronization
-
-```typescript
-import { useStonecrop } from '@stonecrop/stonecrop'
-
-const { operationLog } = useStonecrop({ doctype, recordId })
-
-operationLog.configure({
-  enableServerSync: true,
-  serverSyncEndpoint: '/api/sync',
-  autoSyncInterval: 30000  // Sync every 30 seconds
-})
-
-// Manual sync
-const delta = operationLog.createSyncDelta()
-const response = await fetch('/api/sync', {
-  method: 'POST',
-  body: JSON.stringify(delta)
-})
-const serverDelta = await response.json()
-operationLog.applySyncDelta(serverDelta)
 ```
 
 ### Persistence
@@ -290,8 +265,6 @@ console.log('All operations:', operationLog.operations.value)
 interface OperationLogConfig {
   maxOperations?: number              // Default: 100
   enableCrossTabSync?: boolean        // Default: true
-  enableServerSync?: boolean          // Default: false
-  serverSyncEndpoint?: string
   autoSyncInterval?: number           // Default: 30000 (ms)
   enablePersistence?: boolean         // Default: false
   persistenceKeyPrefix?: string       // Default: 'stonecrop-ops'
@@ -313,7 +286,8 @@ Always mark operations as irreversible when they:
 ```typescript
 registerGlobalAction('sendEmail', async (context) => {
   await emailService.send(context.afterValue)
-  markOperationIrreversible(context.metadata?.operationId, 'Email sent')
+  const opLog = useOperationLogStore()
+  markOperationIrreversible(opLog.operations.at(-1)?.id, 'Email sent')
 })
 ```
 
@@ -322,9 +296,9 @@ registerGlobalAction('sendEmail', async (context) => {
 Group related field changes into batches:
 
 ```typescript
-const { hstStore, operationLog } = useStonecrop({ doctype, recordId })
+const { hstStore } = useStonecrop({ doctype, recordId })
 
-await operationLog.withBatch(() => {
+await withBatch(() => {
   hstStore.value.set('invoice.123.status', 'paid')
   hstStore.value.set('invoice.123.paidDate', new Date())
   hstStore.value.set('invoice.123.paymentMethod', 'credit_card')
@@ -344,18 +318,6 @@ operationLog.configure({
     // Only track user-initiated changes
     return op.source === 'user'
   }
-})
-```
-
-### 4. Handle Conflicts
-
-When syncing across tabs or with server:
-
-```typescript
-const { operationLog } = useStonecrop({ doctype, recordId })
-
-operationLog.configure({
-  conflictStrategy: 'latest-wins'  // or 'manual' or 'merge'
 })
 ```
 

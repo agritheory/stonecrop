@@ -6,7 +6,7 @@ GraphQL backend for the Stonecrop framework. Reads doctype schemas and exposes t
 
 - **Record fetching** — Resolves `stonecropRecord` and `stonecropRecords` via direct parameterised SQL, batched via `loadOneWithPgClient` from `@dataplan/pg`
 - **Fetch-strategy dispatch** — For `stonecropRecord`, iterates `meta.links` and applies `sync` / `lazy` / `custom` strategies; sync links issue additional SQL and merge results into the record; lazy links are absent from the response
-- **Action dispatch** — Routes doctype actions to registered handlers via `sideEffectWithPgClient`
+- **Action dispatch** — Runs a doctype's declared `workflow.actions` as guarded state transitions (`applyGuardedTransition`) via `sideEffectWithPgClient`
 - **Preset** — `createStonecropPreset()` wraps `PostGraphileAmberPreset` so user apps never import from PostGraphile directly
 
 ## Setup
@@ -17,11 +17,9 @@ import {
   createStonecropPlugin,
   makePgService,
   loadDoctypes,
-  registerBuiltinHandlers,
 } from '@stonecrop/graphql-middleware'
 
 loadDoctypes('./doctypes')
-registerBuiltinHandlers()
 
 const preset: GraphileConfig.Preset = {
   extends: [createStonecropPreset()],
@@ -34,7 +32,8 @@ const preset: GraphileConfig.Preset = {
 
 | Option | Default | Description |
 |--------|---------|-------------|
-| `pkField` | `'id'` | Primary key column name for record lookups |
+| `debug` | `false` | Log SQL run inside custom `loadOneWithPgClient` callbacks (prefixed `[@stonecrop/graphql-middleware]`) |
+| `tables` | `{}` | Override the PostgreSQL `FROM` target per doctype (name → table; bare `'plan'` or schema-qualified `'orpin.plan'`). Defaults to `camelToSnake(name)`. |
 
 ## Debugging
 
@@ -108,7 +107,7 @@ Each doctype JSON file defines structure, relationships, and workflow:
   "workflow": {
     "states": ["Draft", "Submitted"],
     "actions": {
-      "submit": { "label": "Submit", "handler": "submitOrder" }
+      "submit": { "label": "Submit", "allowedStates": ["Draft"], "nextState": "Submitted" }
     }
   }
 }
@@ -136,17 +135,19 @@ Fields with `computed: true` have no backing database column and are excluded fr
 
 ## Actions
 
-Register action handlers with `registerHandler`. Handlers receive the action arguments and an `ActionContext` that includes the active `PgClient`:
+Actions are declared per doctype in `workflow.actions` — there is no separate handler registry. Each action names the states it may run from (`allowedStates`) and the state the record moves to (`nextState`):
 
-```typescript
-import { registerHandler } from '@stonecrop/graphql-middleware'
-
-registerHandler('submitOrder', async (args, ctx) => {
-  const [orderId] = args as [string]
-  // ctx.pgClient is available for additional database work
-  return { submitted: true }
-})
+```json
+"workflow": {
+  "states": ["Draft", "Submitted", "Cancelled"],
+  "actions": {
+    "submit": { "label": "Submit", "allowedStates": ["Draft"], "nextState": "Submitted" },
+    "cancel": { "label": "Cancel", "allowedStates": ["Draft", "Submitted"], "nextState": "Cancelled" }
+  }
+}
 ```
+
+The `stonecropAction(doctype, action, args)` mutation dispatches through `applyGuardedTransition`: it reads the record's `status`, rejects the action if the current state is not in `allowedStates` (`isActionAllowedInState`), then writes `nextState`. The record is identified by `args[0].id`. Actions with no `nextState` (stateless commands) and self-transitions have no state target and are rejected by this backend rather than silently succeeding.
 
 ## Custom fetch handlers
 

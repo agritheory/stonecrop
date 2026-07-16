@@ -104,7 +104,7 @@ const links = registry.getDescendantLinks('customer')
 
 // Get links on other doctypes that target this one
 const ancestors = registry.getAncestorLinks('address')
-// [{ fieldname: 'customer', target: 'address', cardinality: 'one', backlink: 'address', doctype: 'customer' }]
+// [{ fieldname: 'address', target: 'address', cardinality: 'one', backlink: 'customer', doctype: 'customer' }]
 ```
 
 ### Phase 3: Schema Resolution
@@ -118,13 +118,13 @@ const resolvedSchema = registry.resolveSchema(customerDoctype)
 
 // address link resolves to:
 // {
+//   kind: 'link',
 //   fieldname: 'address',
-//   label: 'address',
-//   cardinality: 'one',
+//   label: 'Address',
 //   component: 'AForm',
 //   schema: [ /* address fields */ ]
 // }
-// AForm detects `'schema' in field` (without kind: 'table') and renders a nested AForm.
+// AForm narrows on `kind === 'link'` (or `'fieldset'`) with a non-empty schema and renders a nested AForm.
 ```
 
 **1:many links** (`noneOrMany`, `atLeastOne`) — embed child schema for an inline table:
@@ -132,12 +132,12 @@ const resolvedSchema = registry.resolveSchema(customerDoctype)
 ```typescript
 // orders link resolves to:
 // {
-//   fieldname: 'orders',
-//   label: 'orders',
-//   cardinality: 'noneOrMany',
-//   component: 'ATable',
 //   kind: 'table',
-//   schema: [ /* sales-order fields as ColumnSchema[] */ ]
+//   fieldname: 'orders',
+//   label: 'Orders',
+//   component: 'ATable',
+//   schema: [ /* sales-order fields as ColumnSchema[] */ ],
+//   config: { view: 'list' }
 // }
 // AForm detects `kind === 'table'` and renders an ATable with :schema bound to the embedded
 // schema array. ATable calls schemaToColumns() internally — no TableColumn objects needed.

@@ -111,7 +111,7 @@ async function updateTaskCompletely() {
 ### 4. Mark Operations as Irreversible
 
 ```typescript
-import { registerGlobalAction, markOperationIrreversible } from '@stonecrop/stonecrop'
+import { registerGlobalAction, markOperationIrreversible, useOperationLogStore } from '@stonecrop/stonecrop'
 
 // Register a field trigger that makes API calls
 registerGlobalAction('submitInvoice', async (context) => {
@@ -121,12 +121,10 @@ registerGlobalAction('submitInvoice', async (context) => {
     body: JSON.stringify({ invoiceId: context.recordId })
   })
 
-  // Mark this operation as irreversible
-  // Users won't be able to undo past this point
-  markOperationIrreversible(
-    context.metadata?.operationId,
-    'Invoice submitted to payment processor'
-  )
+  // Mark this operation irreversible so users can't undo past this point. The
+  // operation id comes from the log's most recent entry, not the trigger context.
+  const opLog = useOperationLogStore()
+  markOperationIrreversible(opLog.operations.at(-1)?.id, 'Invoice submitted to payment processor')
 
   return response.json()
 })
@@ -135,18 +133,16 @@ registerGlobalAction('submitInvoice', async (context) => {
 ### 5. XState Integration
 
 ```typescript
-import { registerTransitionAction, markOperationIrreversible } from '@stonecrop/stonecrop'
+import { registerTransitionAction, markOperationIrreversible, useOperationLogStore } from '@stonecrop/stonecrop'
 
 // Register XState transition action
 registerTransitionAction('COMMIT_TO_DATABASE', async (context) => {
   // Save to database
   await database.commitTransaction(context.fsmContext?.transactionId)
 
-  // Mark as irreversible since it's committed
-  markOperationIrreversible(
-    context.metadata?.operationId,
-    'Data committed to database'
-  )
+  // Mark the most recent logged operation irreversible now that it's committed.
+  const opLog = useOperationLogStore()
+  markOperationIrreversible(opLog.operations.at(-1)?.id, 'Data committed to database')
 })
 
 // In your XState machine:
@@ -201,7 +197,6 @@ console.log('Snapshot:', {
 | **Persistence** | Save to localStorage | ✅ |
 | **Irreversible Ops** | Mark API calls, DB commits as irreversible | ✅ |
 | **XState Integration** | FSM transition tracking | ✅ |
-| **Server Sync** | Delta-based server synchronization | ✅ |
 | **Filtering** | Custom operation filtering | ✅ |
 | **Audit Trail** | Complete operation history | ✅ |
 
@@ -267,19 +262,16 @@ async function saveWizardStep(stepData: any) {
 }
 ```
 
-### Pattern 3: Collaborative Editing
+### Pattern 3: Cross-Tab Editing
 
 ```typescript
-// Configure for multi-user scenario
+// Sync operations across the user's browser tabs
 configure({
   userId: currentUser.id,
   enableCrossTabSync: true,
-  enableServerSync: true,
-  serverSyncEndpoint: '/api/operations/sync',
-  autoSyncInterval: 5000  // Sync every 5 seconds
 })
 
-// Operations from other tabs/users are automatically synced
+// Operations from other tabs are automatically synced
 ```
 
 ## Debugging
@@ -310,7 +302,7 @@ if (import.meta.env.DEV) {
 3. **Mark irreversible operations** - Any external API call or DB commit should be marked
 4. **Set reasonable limits** - Don't track unlimited operations, use `maxOperations`
 5. **Filter when needed** - Use `operationFilter` to exclude temporary/internal changes
-6. **Clean up shortcuts** - Always call `cleanupShortcuts()` in `onUnmounted()`
+6. **Cleanup is automatic** - `useUndoRedoShortcuts` removes its listeners when the component unmounts; no manual teardown needed
 
 ## Troubleshooting
 
@@ -331,9 +323,9 @@ if (import.meta.env.DEV) {
 
 ## More Information
 
-- Full documentation: `/docs/operation-log.md`
+- Full documentation: `./operation-log.md`
 - API documentation: `/api.md`
-- Test examples: `/tests/operation-log.spec.ts`
+- Test examples: `tests/composables/operation-log.spec.ts`, `tests/stores/operation-log.spec.ts`
 
 ## Support
 

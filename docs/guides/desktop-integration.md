@@ -24,23 +24,20 @@ This guide covers the wiring needed to integrate Desktop in a Nuxt app, but appl
 ```typescript
 // app/plugins/stonecrop.ts (Nuxt plugin)
 import { defineNuxtPlugin } from '#app'
-import StonecropPlugin, { Registry, DoctypeMeta } from '@stonecrop/stonecrop'
-import { List, Map } from 'immutable'
+import StonecropPlugin, { Doctype, type Registry } from '@stonecrop/stonecrop'
 import planDoctype from '~/doctypes/plan.json'
 
 export default defineNuxtPlugin(nuxtApp => {
-  const registry = new Registry()
+  // The plugin owns the Registry (it constructs one internally and provides it as
+  // `$registry`). Install it first, then register doctypes on that registry.
+  nuxtApp.vueApp.use(StonecropPlugin)
 
-  // Register doctypes — load from JSON, API, or inline
-  registry.addDoctype(new DoctypeMeta(
-    planDoctype.name,
-    List(planDoctype.fields),
-    planDoctype.workflow,
-    Map(planDoctype.actions ?? {}),
-  ))
+  const registry = nuxtApp.vueApp.config.globalProperties.$registry as Registry
+
+  // Register doctypes — load from JSON, API, or inline. Doctype.fromObject handles
+  // the List/Map conversion from a plain config object internally.
+  registry.addDoctype(Doctype.fromObject(planDoctype))
   // ... register other doctypes
-
-  nuxtApp.vueApp.use(StonecropPlugin, { registry })
 })
 ```
 
@@ -221,7 +218,7 @@ stonecrop.value?.addRecord(doctype, record.id, record)
 
 ## 7. FSM transitions and available actions
 
-Desktop renders the action toolbar for a record view by calling `DoctypeMeta.getAvailableTransitions(currentState)` where `currentState` is resolved by `Stonecrop.getRecordState(doctype, recordId)`.
+Desktop renders the action toolbar for a record view by calling `Doctype.getAvailableTransitions(currentState)` where `currentState` is resolved by `Stonecrop.getRecordState(doctype, recordId)`.
 
 `getRecordState` reads the record's `status` field from HST and falls back to `workflow.initial` when the field is absent. This means:
 

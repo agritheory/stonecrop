@@ -86,7 +86,6 @@ const actions = Map({
   'status': ['updateTimestamp'],                     // Simple field trigger
   'emailAddress.*.is_primary': ['validateEmailPrimary'], // Wildcard pattern
   'profile.name': ['validateName', 'updateTimestamp'], // Multiple actions
-  'title': ['(context) => console.log("Title changed:", context.afterValue)'], // Inline function
 })
 
 const doctype = new Doctype(
@@ -246,18 +245,12 @@ The system automatically handles the `recordId` segment, so your patterns only n
 
 ### Action Execution
 
-Field triggers support both global registered actions and inline function strings:
+Each entry in a field trigger's action array is the **name** of a globally-registered action. The engine looks the name up in the action registry and throws if it is not found — action arrays hold names, not inline function bodies:
 
 ```typescript
 const actions = Map({
-  // Global registered actions
   'status': ['updateTimestamp', 'notifyUsers'],
-
-  // Inline function strings
-  'title': ['(context) => console.log("Title:", context.afterValue)'],
-
-  // Mix of both
-  'price': ['validatePrice', '(context) => { console.log("Price changed:", context.afterValue); }']
+  'price': ['validatePrice', 'logPriceChange'],
 })
 ```
 
@@ -279,24 +272,9 @@ const actions = Map({
 })
 ```
 
-### 2. Inline Functions
+### 2. Async Actions
 
-```typescript
-const actions = Map({
-  // Arrow function
-  'title': ['(context) => console.log("Title:", context.afterValue)'],
-
-  // Function expression
-  'status': ['function(context) { updateStatus(context.afterValue); }'],
-
-  // Function body only
-  'count': ['console.log("Count changed to:", context.afterValue);']
-})
-```
-
-### 3. Async Actions
-
-Both registered and inline functions can be async:
+Registered actions can be async:
 
 ```typescript
 import { registerGlobalAction } from '@stonecrop/stonecrop'
@@ -308,9 +286,9 @@ registerGlobalAction('asyncAction', async (context) => {
   })
 })
 
-// Inline async
+// Reference it by name in a field trigger
 const actions = Map({
-  'field': ['async (context) => { await saveToServer(context); }']
+  'field': ['asyncAction']
 })
 ```
 

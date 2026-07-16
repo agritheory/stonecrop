@@ -219,13 +219,11 @@ export default defineNuxtConfig({
 
     // Enable DocBuilder for visual schema editing
     docbuilder: false,
-  },
 
-  // Import Stonecrop theme
-  css: [
-    '@stonecrop/themes/default/default.css',
-    // or your custom theme
-  ]
+    // The default theme (@stonecrop/themes/default.css) loads automatically.
+    // Override it, or set `false` to bring your own:
+    // theme: '@stonecrop/themes/dark.css',
+  },
 })
 ```
 
@@ -237,6 +235,7 @@ export default defineNuxtConfig({
 | `routeStrategy` | `RouteStrategyFn` | Custom function receiving all parsed doctypes; returns a `NuxtPage[]`. Takes priority over `pageComponent`. |
 | `docbuilder` | `boolean` | Enable the DocBuilder feature at `/docbuilder`. Defaults to `false`. |
 | `doctypesDir` | `string` | Override the doctypes directory path. Defaults to `doctypes/` inside `srcDir`. |
+| `theme` | `string \| false` | Base theme stylesheet loaded into the host app (supplies the `--sc-*` CSS variables). Defaults to `'@stonecrop/themes/default.css'`; set `false` to load none and bring your own. |
 
 If neither `pageComponent` nor `routeStrategy` is configured the module logs a warning and skips doctype route registration.
 
@@ -375,10 +374,8 @@ export default defineNuxtPlugin(() => {
 | `stonecrop` | `Stonecrop \| undefined` | The Stonecrop instance (undefined if not ready) |
 | `isReady` | `boolean` | `true` when both registry and stonecrop are available |
 | `registerClient(client)` | `(client: DataClient) => void` | Set the data client for record fetching. Throws if stonecrop not available. |
-| `getClient()` | `() => DataClient \| undefined` | Get the currently configured client. |
 | `registerMeta(fn)` | `(fn: (ctx) => Doctype) => void` | Set the `getMeta` function on the Registry. Throws if registry not available. |
 | `registerDoctype(doctype)` | `(doctype: Doctype) => void` | Pre-load a doctype into the Registry. Throws if registry not available. |
-| `dispatchAction(...)` | `Promise<{ success, data, error }>` | Dispatch an action via the configured client. |
 
 ## `useStonecropRegistry()` — Using the Framework in Components
 
@@ -527,7 +524,7 @@ npx stonecrop-nuxt init
 cd /path/to/stonecrop/nuxt
 npm pack
 cd /tmp/my-test-app
-npm install /path/to/stonecrop/nuxt/stonecrop-nuxt-0.6.3.tgz
+npm install /path/to/stonecrop/nuxt/stonecrop-nuxt-<version>.tgz
 npx stonecrop-nuxt init
 ```
 

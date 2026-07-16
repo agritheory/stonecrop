@@ -25,11 +25,9 @@ import {
   createStonecropPlugin,
   makePgService,
   loadDoctypes,
-  registerBuiltinHandlers,
 } from '@stonecrop/graphql-middleware'
 
 loadDoctypes('./doctypes')
-registerBuiltinHandlers()
 
 export default {
   extends: [createStonecropPreset()],
@@ -38,7 +36,7 @@ export default {
 }
 ```
 
-`loadDoctypes` reads JSON doctype definitions from a directory. `registerBuiltinHandlers` registers Stonecrop's built-in action handlers. Both calls should happen before the GraphQL schema is built.
+`loadDoctypes` reads JSON doctype definitions from a directory. It must run before the GraphQL schema is built.
 
 ---
 
@@ -106,18 +104,23 @@ export default {
 
 `createStonecropPlugin` extends the GraphQL schema with the `stonecropRecord`, `stonecropRecords`, `stonecropMeta`, `stonecropAllMeta`, and `stonecropAction` fields.
 
-### Primary key column
+### Primary key
 
-The plugin defaults to `id` as the primary key column for all record lookups:
+The primary key is declared per doctype, not globally — mark the identifying field with `primaryKey: true` in the doctype's `fields`. The middleware detects it via `meta.fields.find(f => f.primaryKey)`:
 
-```typescript
-createStonecropPlugin()                    // uses "id"
-createStonecropPlugin({ pkField: 'uuid' }) // uses "uuid"
+```json
+{ "fieldname": "id", "component": "ATextInput", "primaryKey": true }
 ```
 
-Override `pkField` only if all your tables use a different primary key column name. This is a global setting; per-table overrides are not supported.
+A doctype with no `primaryKey` field cannot be fetched by id — `stonecropRecord` returns `{ data: null }` — but still supports list/filter/sort via `stonecropRecords`. The plugin compares primary keys using text equality (`pkColumn::text = $1`), so the GraphQL `id: String!` argument works with any underlying column type — `integer`, `uuid`, `text`, or `bigint`.
 
-The plugin compares primary keys using text equality (`pkColumn::text = $1`), so the GraphQL `id: String!` argument works with any underlying column type — `integer`, `uuid`, `text`, or `bigint`.
+### Table name
+
+By default the PostgreSQL `FROM` target is `camelToSnake(doctype.name)`. Override it per doctype with the `tables` option — for a doctype that projects a shared table, or a schema-qualified name:
+
+```typescript
+createStonecropPlugin({ tables: { Planner: 'plan', Invoice: 'billing.invoice' } })
+```
 
 ### orderBy format
 
@@ -160,15 +163,13 @@ import {
   createStonecropPlugin,
   makePgService,
   loadDoctypes,
-  registerBuiltinHandlers,
 } from '@stonecrop/graphql-middleware'
 
 loadDoctypes('./doctypes')
-registerBuiltinHandlers()
 
 export default {
   extends: [createStonecropPreset()],
-  plugins: [createStonecropPlugin({ pkField: 'id' })],
+  plugins: [createStonecropPlugin()],
   pgServices: [
     makePgService({
       connectionString: process.env.DATABASE_URL,
@@ -184,17 +185,16 @@ export default {
 
 When using `@stonecrop/nuxt-grafserv`, the zero-config path (`type: 'postgraphile'` with no `preset` option) synthesises the PostGraphile preset automatically from `DATABASE_URL`. You do not need a separate preset file.
 
-Doctype registration and handler setup must still happen before any GraphQL request executes. The right place in a Nuxt app is a Nitro server plugin, which runs at server startup:
+Doctype registration must still happen before any GraphQL request executes. The right place in a Nuxt app is a Nitro server plugin, which runs at server startup:
 
 ```typescript
 // server/plugins/stonecrop.ts
-import { loadDoctypesFromObject, registerBuiltinHandlers } from '@stonecrop/graphql-middleware'
+import { loadDoctypesFromObject } from '@stonecrop/graphql-middleware'
 import userDoctype from '../doctypes/user.json'
 import orderDoctype from '../doctypes/order.json'
 
 export default defineNitroPlugin(() => {
   loadDoctypesFromObject({ User: userDoctype, Order: orderDoctype })
-  registerBuiltinHandlers()
 })
 ```
 

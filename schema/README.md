@@ -10,7 +10,7 @@ Schema definitions and validation for Stonecrop doctypes, fields, and workflows.
 - **Doctype definitions** (`DoctypeMeta`) - Complete document type schemas
 - **Workflows** (`WorkflowMeta`) - State machines and action definitions
 - **Validation** - Runtime schema validation with detailed error reporting
-- **DDL Conversion** - PostgreSQL DDL to Stonecrop schema transformation
+- **GraphQL Conversion** - GraphQL schema (SDL, introspection, or live endpoint) to Stonecrop doctype generation
 
 This package is schema-only and has no UI dependencies - it can be used in both frontend and backend contexts.
 
@@ -146,7 +146,7 @@ const doctype: DoctypeMeta = {
     actions: {
       submit: {
         label: 'Submit',
-        handler: 'submitOrder',
+        nextState: 'Submitted',
         requiredFields: ['customer', 'items'],
         allowedStates: ['Draft'],
       },
@@ -196,15 +196,14 @@ const workflow: WorkflowMeta = {
   actions: {
     submit: {
       label: 'Submit for Approval',
-      handler: 'handleSubmit',
+      nextState: 'Pending Approval',
       requiredFields: ['title', 'description'],
       allowedStates: ['Draft'],
     },
     approve: {
       label: 'Approve',
-      handler: 'handleApprove',
+      nextState: 'Approved',
       allowedStates: ['Pending Approval'],
-      args: { notifyUser: true },
     },
   },
 }

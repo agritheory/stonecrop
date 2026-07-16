@@ -70,8 +70,9 @@ ATable supports two ways to define columns.
 ### Schema-driven columns (recommended)
 
 Pass a `ColumnSchema[]` array via the `:schema` prop. ATable calls `schemaToColumns()` internally —
-`fieldname` becomes `name`, `hidden: true` fields are excluded, and form-only properties are stripped.
-This is the preferred approach when working from doctype definitions.
+`fieldname` becomes `name`, entries that are `hidden` or have no `component` are excluded, the `hidden`
+flag is dropped, and all other properties pass through unchanged. This is the preferred approach when
+working from doctype definitions.
 
 ```vue
 <template>
