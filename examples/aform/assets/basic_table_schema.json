@@ -1,6 +1,7 @@
 [
 	{
 		"fieldname": "line_items",
+		"kind": "table",
 		"component": "ATable",
 		"label": "Order Line Items",
 		"schema": [

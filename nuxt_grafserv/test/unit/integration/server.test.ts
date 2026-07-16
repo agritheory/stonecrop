@@ -88,50 +88,6 @@ describe('Nuxt Grafserv Integration', { tags: ['e2e', 'nuxt', 'graphql'] }, () =
 	})
 
 	describe('Handler Endpoints', () => {
-		it('should call handleGraphQLEvent for GraphQL handler', async () => {
-			const { clearGrafservCache } = await import('../../../src/runtime/handler')
-			await clearGrafservCache()
-
-			const graphqlHandler = await import('../../../src/runtime/graphql')
-
-			const mockEvent = {
-				node: {
-					req: {
-						url: '/graphql/',
-						method: 'POST',
-						headers: {},
-					},
-				},
-				context: { params: {} },
-			}
-
-			await graphqlHandler.default(mockEvent as H3Event)
-
-			expect(mockHandleGraphQLEvent).toHaveBeenCalledWith(mockEvent)
-		})
-
-		it('should call handleGraphiqlEvent for Ruru handler', async () => {
-			const { clearGrafservCache } = await import('../../../src/runtime/handler')
-			await clearGrafservCache()
-
-			const ruruHandler = await import('../../../src/runtime/ruru')
-
-			const mockEvent = {
-				node: {
-					req: {
-						url: '/graphql/',
-						method: 'GET',
-						headers: {},
-					},
-				},
-				context: { params: {} },
-			}
-
-			await ruruHandler.default(mockEvent as H3Event)
-
-			expect(mockHandleGraphiqlEvent).toHaveBeenCalledWith(mockEvent)
-		})
-
 		it('should call handleGraphiqlStaticEvent for static assets handler', async () => {
 			const { clearGrafservCache } = await import('../../../src/runtime/handler')
 			await clearGrafservCache()
@@ -187,6 +143,14 @@ describe('Nuxt Grafserv Integration', { tags: ['e2e', 'nuxt', 'graphql'] }, () =
 			const event = { method: 'POST', node: { req: { url: '/graphql/', method: 'POST', headers: {} } } }
 			await handler(event as unknown as H3Event)
 			expect(mockHandleGraphQLEvent).toHaveBeenCalledWith(event)
+		})
+
+		it('falls back to the GraphiQL UI when enabled and the request is not a GraphQL operation', async () => {
+			mockHandleGraphQLEvent.mockResolvedValueOnce(null)
+			const handler = await loadHandler(true)
+			const event = { method: 'POST', node: { req: { url: '/graphql/', method: 'POST', headers: {} } } }
+			await handler(event as unknown as H3Event)
+			expect(mockHandleGraphiqlEvent).toHaveBeenCalledWith(event)
 		})
 	})
 
