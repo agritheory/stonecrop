@@ -17,6 +17,12 @@
 			"fieldname": "phone",
 			"component": "ATextInput",
 			"label": "Phone"
+		},
+		{
+			"fieldname": "address",
+			"component": "AForm",
+			"doctype": "address",
+			"label": "Address"
 		}
 	],
 	"links": {

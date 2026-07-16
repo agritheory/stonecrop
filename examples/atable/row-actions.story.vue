@@ -130,7 +130,6 @@ const columns: TableColumn[] = [
 	{
 		label: 'ID',
 		name: 'id',
-		fieldtype: 'Int',
 		align: 'left',
 		edit: false,
 		width: '3ch',
@@ -138,7 +137,6 @@ const columns: TableColumn[] = [
 	{
 		label: 'Name',
 		name: 'name',
-		fieldtype: 'Data',
 		align: 'left',
 		edit: true,
 		width: '25ch',
@@ -146,7 +144,6 @@ const columns: TableColumn[] = [
 	{
 		label: 'Email',
 		name: 'email',
-		fieldtype: 'Data',
 		align: 'left',
 		edit: true,
 		width: '30ch',
@@ -154,7 +151,6 @@ const columns: TableColumn[] = [
 	{
 		label: 'Status',
 		name: 'status',
-		fieldtype: 'Data',
 		align: 'center',
 		edit: true,
 		width: '15ch',

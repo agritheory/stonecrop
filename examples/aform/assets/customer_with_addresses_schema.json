@@ -17,6 +17,12 @@
 			"fieldname": "phone",
 			"component": "ATextInput",
 			"label": "Phone"
+		},
+		{
+			"fieldname": "addresses",
+			"component": "ATable",
+			"doctype": "address",
+			"label": "Addresses"
 		}
 	],
 	"links": {

@@ -18,10 +18,10 @@ const schema = ref([
 		component: 'ATable',
 		config: { view: 'list' },
 		columns: [
-			{ name: 'name', label: 'Name', fieldtype: 'Data' },
-			{ name: 'slug', label: 'Slug', fieldtype: 'Data' },
-			{ name: 'description', label: 'Description', fieldtype: 'Data' },
-			{ name: 'routes', label: 'Available Routes', fieldtype: 'Data' },
+			{ name: 'name', label: 'Name' },
+			{ name: 'slug', label: 'Slug' },
+			{ name: 'description', label: 'Description' },
+			{ name: 'routes', label: 'Available Routes' },
 		],
 		rows: doctypes.map(doctype => ({
 			id: doctype,

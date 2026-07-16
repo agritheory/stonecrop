@@ -98,7 +98,7 @@ const ResolvedSchemaDemo = defineComponent({
 					JSON.stringify(
 						this.resolvedSchema.map((f: any) => ({
 							fieldname: f.fieldname,
-							fieldtype: f.fieldtype,
+							component: f.component,
 							...(f.schema ? { schema: `[${f.schema.length} fields]` } : {}),
 						})),
 						null,
@@ -139,7 +139,6 @@ const StandaloneDemo = defineComponent({
 			{
 				kind: 'field',
 				fieldname: 'invoice_number',
-				fieldtype: 'Data',
 				component: 'ATextInput',
 				label: 'Invoice Number',
 			},
@@ -149,10 +148,10 @@ const StandaloneDemo = defineComponent({
 				component: 'AForm',
 				label: 'Billing Address',
 				schema: [
-					{ kind: 'field', fieldname: 'street', fieldtype: 'Data', component: 'ATextInput', label: 'Street' },
-					{ kind: 'field', fieldname: 'city', fieldtype: 'Data', component: 'ATextInput', label: 'City' },
-					{ kind: 'field', fieldname: 'state', fieldtype: 'Data', component: 'ATextInput', label: 'State' },
-					{ kind: 'field', fieldname: 'zip_code', fieldtype: 'Data', component: 'ATextInput', label: 'Zip Code' },
+					{ kind: 'field', fieldname: 'street', component: 'ATextInput', label: 'Street' },
+					{ kind: 'field', fieldname: 'city', component: 'ATextInput', label: 'City' },
+					{ kind: 'field', fieldname: 'state', component: 'ATextInput', label: 'State' },
+					{ kind: 'field', fieldname: 'zip_code', component: 'ATextInput', label: 'Zip Code' },
 				],
 			},
 		])
@@ -392,14 +391,12 @@ const AddressListDemo = defineComponent({
 					JSON.stringify(
 						this.resolvedSchema.map((f: any) => ({
 							fieldname: f.fieldname,
-							fieldtype: f.fieldtype,
 							...(f.component ? { component: f.component } : {}),
 							...(f.columns
 								? {
 										columns: f.columns.map((c: any) => ({
 											name: c.name,
 											label: c.label,
-											fieldtype: c.fieldtype,
 										})),
 									}
 								: {}),
