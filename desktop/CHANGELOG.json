@@ -2,6 +2,18 @@
   "name": "@stonecrop/desktop",
   "entries": [
     {
+      "version": "0.14.0",
+      "tag": "@stonecrop/desktop_v0.14.0",
+      "date": "Fri, 17 Jul 2026 07:01:54 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "fix ActionSet `dropdownOpen` ref typing (boolean[] instead of the inferred never[]), which surfaced once the fullstack example began type-checking"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.13.14",
       "tag": "@stonecrop/desktop_v0.13.14",
       "date": "Wed, 01 Jul 2026 08:35:25 GMT",

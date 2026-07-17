@@ -1,6 +1,21 @@
 # Change Log - @stonecrop/nuxt
 
-This log was last generated on Wed, 01 Jul 2026 08:35:25 GMT and should not be manually modified.
+This log was last generated on Fri, 17 Jul 2026 07:01:54 GMT and should not be manually modified.
+
+## 0.14.0
+Fri, 17 Jul 2026 07:01:54 GMT
+
+### Minor changes
+
+- update fullstack doctype schemas
+- add clientHandler field to ActionDefinition for client-side JS handler authoring
+- add vsPath and extraLibs props to ACodeEditor for offline Monaco support and JS type checking
+
+### Patches
+
+- template server SDL/resolvers reconciled with @stonecrop/schema: field type carries the full ValueField contract, workflow actions are a structured list, stale handler/args removed; resolvers pass doctype meta through instead of enumerating keys
+- type-check the fullstack example in test:types (add a fullstack tsconfig + wire it in), making the Desktop `@action="run"` payload contract a compile-time regression guard; add the @stonecrop/graphql-client dependency it and the templates already import
+- expose the field `format` (display formatter) as an editable text property in the docbuilder fields panel, alongside `mask` (input) — the two are distinct and only `mask` was authorable
 
 ## 0.13.14
 Wed, 01 Jul 2026 08:35:25 GMT

@@ -2,6 +2,35 @@
   "name": "@stonecrop/nuxt",
   "entries": [
     {
+      "version": "0.14.0",
+      "tag": "@stonecrop/nuxt_v0.14.0",
+      "date": "Fri, 17 Jul 2026 07:01:54 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "update fullstack doctype schemas"
+          },
+          {
+            "comment": "add clientHandler field to ActionDefinition for client-side JS handler authoring"
+          },
+          {
+            "comment": "add vsPath and extraLibs props to ACodeEditor for offline Monaco support and JS type checking"
+          }
+        ],
+        "patch": [
+          {
+            "comment": "template server SDL/resolvers reconciled with @stonecrop/schema: field type carries the full ValueField contract, workflow actions are a structured list, stale handler/args removed; resolvers pass doctype meta through instead of enumerating keys"
+          },
+          {
+            "comment": "type-check the fullstack example in test:types (add a fullstack tsconfig + wire it in), making the Desktop `@action=\"run\"` payload contract a compile-time regression guard; add the @stonecrop/graphql-client dependency it and the templates already import"
+          },
+          {
+            "comment": "expose the field `format` (display formatter) as an editable text property in the docbuilder fields panel, alongside `mask` (input) — the two are distinct and only `mask` was authorable"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.13.14",
       "tag": "@stonecrop/nuxt_v0.13.14",
       "date": "Wed, 01 Jul 2026 08:35:25 GMT",

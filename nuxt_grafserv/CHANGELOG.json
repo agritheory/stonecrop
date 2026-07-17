@@ -2,6 +2,24 @@
   "name": "@stonecrop/nuxt-grafserv",
   "entries": [
     {
+      "version": "0.14.0",
+      "tag": "@stonecrop/nuxt-grafserv_v0.14.0",
+      "date": "Fri, 17 Jul 2026 07:01:54 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "update playground doctype schemas"
+          },
+          {
+            "comment": "add clientHandler field to ActionDefinition for client-side JS handler authoring"
+          },
+          {
+            "comment": "add vsPath and extraLibs props to ACodeEditor for offline Monaco support and JS type checking"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.13.14",
       "tag": "@stonecrop/nuxt-grafserv_v0.13.14",
       "date": "Wed, 01 Jul 2026 08:35:25 GMT",

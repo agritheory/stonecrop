@@ -2,6 +2,27 @@
   "name": "@stonecrop/schema",
   "entries": [
     {
+      "version": "0.14.0",
+      "tag": "@stonecrop/schema_v0.14.0",
+      "date": "Fri, 17 Jul 2026 07:01:54 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "add nextState to ActionDefinition"
+          },
+          {
+            "comment": "add clientHandler field to ActionDefinition for client-side JS handler authoring"
+          },
+          {
+            "comment": "add vsPath and extraLibs props to ACodeEditor for offline Monaco support and JS type checking"
+          },
+          {
+            "comment": "add source: 'introspected' provenance marker to ValueField; the GraphQL converter/CLI stamps it on every emitted field"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.13.14",
       "tag": "@stonecrop/schema_v0.13.14",
       "date": "Wed, 01 Jul 2026 08:35:25 GMT",

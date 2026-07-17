@@ -2,6 +2,21 @@
   "name": "@stonecrop/graphql-client",
   "entries": [
     {
+      "version": "0.14.0",
+      "tag": "@stonecrop/graphql-client_v0.14.0",
+      "date": "Fri, 17 Jul 2026 07:01:54 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "remove confirm from schema"
+          },
+          {
+            "comment": "meta queries select the full ValueField contract (kind/format/cardinality/source added, phantom precision/scale removed)"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.13.14",
       "tag": "@stonecrop/graphql-client_v0.13.14",
       "date": "Wed, 01 Jul 2026 08:35:25 GMT",

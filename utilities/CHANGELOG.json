@@ -2,6 +2,18 @@
   "name": "@stonecrop/utilities",
   "entries": [
     {
+      "version": "0.14.0",
+      "tag": "@stonecrop/utilities_v0.14.0",
+      "date": "Fri, 17 Jul 2026 07:01:54 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "improve typing for keyboard navigation selectors"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.13.14",
       "tag": "@stonecrop/utilities_v0.13.14",
       "date": "Wed, 01 Jul 2026 08:35:25 GMT",

@@ -1,6 +1,13 @@
 # Change Log - @stonecrop/themes
 
-This log was last generated on Wed, 01 Jul 2026 08:35:25 GMT and should not be manually modified.
+This log was last generated on Fri, 17 Jul 2026 07:01:54 GMT and should not be manually modified.
+
+## 0.14.0
+Fri, 17 Jul 2026 07:01:54 GMT
+
+### Minor changes
+
+- set font family from defined variables
 
 ## 0.13.14
 Wed, 01 Jul 2026 08:35:25 GMT

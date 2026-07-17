@@ -1,6 +1,14 @@
 # Change Log - @stonecrop/graphql-client
 
-This log was last generated on Wed, 01 Jul 2026 08:35:25 GMT and should not be manually modified.
+This log was last generated on Fri, 17 Jul 2026 07:01:54 GMT and should not be manually modified.
+
+## 0.14.0
+Fri, 17 Jul 2026 07:01:54 GMT
+
+### Patches
+
+- remove confirm from schema
+- meta queries select the full ValueField contract (kind/format/cardinality/source added, phantom precision/scale removed)
 
 ## 0.13.14
 Wed, 01 Jul 2026 08:35:25 GMT

@@ -1,6 +1,16 @@
 # Change Log - @stonecrop/graphql-middleware
 
-This log was last generated on Wed, 01 Jul 2026 08:35:25 GMT and should not be manually modified.
+This log was last generated on Fri, 17 Jul 2026 07:01:54 GMT and should not be manually modified.
+
+## 0.14.0
+Fri, 17 Jul 2026 07:01:54 GMT
+
+### Minor changes
+
+- change StonecropWorkflowAction SDL type
+- add clientHandler field to ActionDefinition for client-side JS handler authoring
+- add vsPath and extraLibs props to ACodeEditor for offline Monaco support and JS type checking
+- align StonecropFieldMeta with ValueFieldSchema: add format/cardinality/source, remove phantom precision/scale; add field-level SDL drift test
 
 ## 0.13.14
 Wed, 01 Jul 2026 08:35:25 GMT

@@ -2,6 +2,18 @@
   "name": "@stonecrop/themes",
   "entries": [
     {
+      "version": "0.14.0",
+      "tag": "@stonecrop/themes_v0.14.0",
+      "date": "Fri, 17 Jul 2026 07:01:54 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "set font family from defined variables"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.13.14",
       "tag": "@stonecrop/themes_v0.13.14",
       "date": "Wed, 01 Jul 2026 08:35:25 GMT",
