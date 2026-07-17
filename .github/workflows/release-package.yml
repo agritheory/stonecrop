@@ -122,6 +122,12 @@ jobs:
       # misleading 404.  The log is therefore the only signal, and the missing
       # id-token permission is reported at "silly" rather than "verbose", so a
       # quieter log level would hide the very failure this is here to catch.
+      #
+      # --ignore-scripts is required, not tidiness: npm runs "prepublishOnly" before
+      # it reaches the token exchange, and this package's hook shells out to "rushx",
+      # which only exists inside Rush's own tooling.  Without it the hook exits 127
+      # and npm gives up before authenticating at all.  Skipping the hook costs
+      # nothing here because "Build Stonecrop" above has already produced dist/.
       # Probes the token exchange for every package, not just the one exercised by
       # the dry run below.  The endpoint mints a short-lived, package-scoped
       # credential and publishes nothing, so it is safe to call repeatedly.  Each
@@ -213,7 +219,7 @@ jobs:
           # Capture the status rather than letting "bash -e" abort here, so the
           # diagnostics below still run when the dry run itself fails.
           status=0
-          npm publish --dry-run --force --loglevel=silly 2>&1 | tee /tmp/oidc.log || status=$?
+          npm publish --dry-run --force --ignore-scripts --loglevel=silly 2>&1 | tee /tmp/oidc.log || status=$?
 
           if grep -q "oidc.*Successfully retrieved and set token" /tmp/oidc.log; then
             echo "::notice::OIDC token exchange succeeded — trusted publishing is configured correctly"
