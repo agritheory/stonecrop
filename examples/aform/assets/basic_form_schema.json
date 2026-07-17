@@ -1,42 +1,50 @@
 [
 	{
 		"fieldname": "first_name",
+		"kind": "field",
 		"component": "ATextInput",
 		"label": "First Name"
 	},
 	{
 		"fieldname": "last_name",
+		"kind": "field",
 		"component": "ATextInput",
 		"label": "Last Name"
 	},
 	{
 		"fieldname": "enabled",
+		"kind": "field",
 		"component": "ACheckbox",
 		"label": "Enabled"
 	},
 	{
 		"fieldname": "age",
+		"kind": "field",
 		"component": "ANumericInput",
 		"label": "Age"
 	},
 	{
 		"fieldname": "date",
+		"kind": "field",
 		"component": "ATextInput",
 		"label": "Date"
 	},
 	{
 		"fieldname": "card",
+		"kind": "field",
 		"component": "ATextInput",
 		"label": "Card"
 	},
 	{
 		"fieldname": "phone",
+		"kind": "field",
 		"component": "ATextInput",
 		"label": "Phone",
 		"mask": "(locale) => { if (locale === 'en-US') { return '(###) ###-####' } else if (locale === 'en-IN') { return '####-######'} }"
 	},
 	{
 		"fieldname": "attach_file",
+		"kind": "field",
 		"component": "AFileAttach",
 		"label": "Attach Files"
 	}

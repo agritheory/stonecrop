@@ -34,7 +34,12 @@ describe('AForm Component', { tags: ['component'] }, () => {
 		expect((updateDataEvents![updateDataEvents!.length - 1][0] as Record<string, any>).first_name).toBe('Steve')
 	})
 
-	it('passes rows from dataModel to a component that has columns but no rows in schema', async () => {
+	it('does not inject rows for a columns-shaped field without kind: "table"', async () => {
+		// `columns` is the *authoring* key (TableField); AForm consumes the *resolved* shape,
+		// where a table is `kind: 'table'` + `schema`. A field carrying `columns` never went
+		// through the registry, so AForm must not treat it as a table — leaving `rows`
+		// unset makes ATable's required-prop check fail loudly instead of silently
+		// rendering an empty table.
 		const MockTable = defineComponent({
 			name: 'MockTable',
 			props: ['columns', 'rows', 'label', 'fieldname', 'schema', 'data', 'mode'],
@@ -49,9 +54,8 @@ describe('AForm Component', { tags: ['component'] }, () => {
 						component: 'MockTable',
 						label: 'Items',
 						columns: [{ name: 'id', label: 'ID' }],
-						// intentionally no 'rows' key — rows should come from dataModel
 					},
-				] as ResolvedField[],
+				] as unknown as ResolvedField[],
 				data: { items: [{ id: 1 }, { id: 2 }] },
 			},
 			global: { components: { MockTable } },
@@ -61,7 +65,7 @@ describe('AForm Component', { tags: ['component'] }, () => {
 
 		const mockTable = localWrapper.findComponent(MockTable)
 		expect(mockTable.exists()).toBe(true)
-		expect(mockTable.props('rows')).toEqual([{ id: 1 }, { id: 2 }])
+		expect(mockTable.props('rows')).toBeUndefined()
 	})
 
 	it('should handle componentProps with rows data for nested tables', () => {

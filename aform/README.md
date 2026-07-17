@@ -1,6 +1,6 @@
 # @stonecrop/aform
 
-Schema-driven form components for the Stonecrop framework. Renders a `ResolvedField[]` array (produced by `registry.resolveSchema()`) into a form, wiring field values to a `data` object via `v-model:data`.
+Schema-driven form components for the Stonecrop framework. Renders a `ResolvedField[]` array into a form, wiring field values to a `data` object via `v-model:data`. The array usually comes from `registry.resolveSchema()`, but may also be hand-authored for view chrome that has no backing doctype — see [Authoring space vs rendering space](#authoring-space-vs-rendering-space).
 
 ## Components
 
@@ -35,6 +35,52 @@ This registers all components globally. They can also be imported individually.
 ---
 
 ## AForm
+
+### Authoring space vs rendering space
+
+Stonecrop has two field shapes, and AForm consumes only the second:
+
+| | Type | Produced by | Table columns live under |
+|---|---|---|---|
+| **Authoring space** | `DoctypeField[]` (`@stonecrop/schema`) | hand-authored doctype JSON, the docbuilder, the GraphQL converter | `columns` |
+| **Rendering space** | `ResolvedField[]` (this package) | `registry.resolveSchema()` | `schema` |
+
+`resolveSchema()` renames a table's `columns` to `schema` because `schema` is the ATable prop that runs
+`schemaToColumns()`; ATable's own `columns` prop means already-converted `TableColumn[]`. Passing an
+authoring-space field straight to AForm therefore does **not** render a table.
+
+`kind` is required and is the only thing AForm dispatches on — it does not infer a field's type from its
+structure. Every path into rendering space sets it: Zod's preprocess, `Doctype.fromObject`, and the
+registry. When hand-authoring, declare it yourself and use `satisfies` to stay checked:
+
+```typescript
+import type { ResolvedField, ResolvedTable } from '@stonecrop/aform/types'
+
+const schema: ResolvedField[] = [
+  {
+    kind: 'table',
+    fieldname: 'line_items',
+    component: 'ATable',
+    schema: [{ fieldname: 'item_code', label: 'SKU', component: 'ATextInput' }],
+    config: { view: 'list' },
+  } satisfies ResolvedTable,
+]
+```
+
+Each column needs a `component`: `schemaToColumns()` drops entries without one, since absence is what
+marks a non-scalar entry.
+
+### Table rows come from the data model
+
+A table's rows are never part of its schema. AForm reads them from `dataModel[fieldname]`, so a `rows`
+key on the schema field is ignored, and a table whose `fieldname` has no matching data key renders empty:
+
+```typescript
+// schema declares fieldname: 'line_items' → rows are read from here
+const data = ref({ line_items: [{ item_code: 'LAPTOP-PRO-15', quantity: 2 }] })
+```
+
+For a table nested in a fieldset, the rows nest the same way — `data[fieldsetFieldname][tableFieldname]`.
 
 ### Field width
 

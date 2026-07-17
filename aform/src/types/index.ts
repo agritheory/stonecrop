@@ -14,7 +14,18 @@ export type { InteractionMode } from '@stonecrop/schema'
 
 // ---------------------------------------------------------------------------
 // ResolvedField — the output-space type that AForm consumes
-// Produced by resolveSchema(); never authored directly.
+//
+// Usually produced by resolveSchema() from an authoring-space DoctypeField[].
+// It may also be hand-authored, for view chrome that has no backing doctype
+// (see Desktop.vue's doctype list) — annotate such literals with `satisfies
+// ResolvedTable`/`satisfies ResolvedField` so they stay checked.
+//
+// Authoring space and output space are NOT interchangeable. The trap is tables:
+// an authoring TableField carries its columns under `columns`, while resolveSchema
+// renames that key to `schema` (registry.ts) because `schema` is the ATable prop
+// that runs schemaToColumns(). Hand-authoring `columns` here — or feeding an
+// authoring-space field straight to AForm — produces a field AForm does not
+// recognise as a table.
 // ---------------------------------------------------------------------------
 
 /**
@@ -60,6 +71,14 @@ export interface ResolvedLink {
  * A resolved table — either from a Link with `noneOrMany`/`atLeastOne` cardinality,
  * or from an inline TableField. ATable receives columns via `:schema` (ColumnSchema[])
  * and row data via `:rows` from formData at render time.
+ *
+ * Note the key rename: an authoring `TableField` declares its columns under `columns`;
+ * `resolveSchema` moves them to `schema` here, because `schema` is the ATable prop that
+ * runs `schemaToColumns()` (ATable's own `columns` prop means already-converted
+ * `TableColumn[]`). A hand-authored table must therefore use `schema`, not `columns`.
+ *
+ * Rows are never part of the schema. AForm sources them from the data model at
+ * `dataModel[fieldname]`, so a `rows` key placed on this object is ignored.
  * @public
  */
 export interface ResolvedTable {
@@ -111,9 +130,13 @@ export interface ResolvedFieldset {
 }
 
 /**
- * The discriminated union of all resolved field types — what AForm consumes
- * after `resolveSchema()` has transformed the authoring `DoctypeField[]`.
+ * The discriminated union of all resolved field types — what AForm consumes,
+ * usually after `resolveSchema()` has transformed the authoring `DoctypeField[]`,
+ * but also valid hand-authored for view chrome with no backing doctype.
  * Narrowed by `kind`: `'field'` | `'link'` | `'table'` | `'fieldset'`.
+ *
+ * `kind` is required — AForm dispatches on it alone and does not infer a field's
+ * type from its structure.
  * @public
  */
 export type ResolvedField = ResolvedScalar | ResolvedLink | ResolvedTable | ResolvedFieldset

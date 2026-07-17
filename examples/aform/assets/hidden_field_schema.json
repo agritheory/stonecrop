@@ -1,6 +1,7 @@
 [
 	{
 		"fieldname": "id",
+		"kind": "field",
 		"component": "ATextInput",
 		"label": "ID",
 		"mode": "display",
@@ -8,16 +9,19 @@
 	},
 	{
 		"fieldname": "first_name",
+		"kind": "field",
 		"component": "ATextInput",
 		"label": "First Name"
 	},
 	{
 		"fieldname": "last_name",
+		"kind": "field",
 		"component": "ATextInput",
 		"label": "Last Name"
 	},
 	{
 		"fieldname": "email",
+		"kind": "field",
 		"component": "ATextInput",
 		"label": "Email"
 	}

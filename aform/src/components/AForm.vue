@@ -99,9 +99,10 @@ const componentProps = (componentObj: ResolvedField) => {
 		}
 	}
 
-	// kind: 'table' is the canonical check; 'columns' in componentObj is a structural fallback
-	// for schemas passed directly to AForm without going through the registry.
-	if (componentObj.kind === 'table' || 'columns' in componentObj) {
+	// A table sources its rows from the data model, never from the schema. `kind` is the only
+	// check: every path into AForm sets it (Zod's injectKind, Doctype.fromObject's
+	// normalizeFieldKind, and the registry), and hand-built ResolvedTable literals declare it.
+	if (componentObj.kind === 'table') {
 		propsToPass['rows'] = dataModel.value[componentObj.fieldname] || []
 	}
 
