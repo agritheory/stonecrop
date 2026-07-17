@@ -3,68 +3,85 @@
 	"fields": [
 		{
 			"fieldname": "id",
-			"fieldtype": "Data",
+			"component": "ATextInput",
 			"label": "ID",
 			"required": true
 		},
 		{
 			"fieldname": "userId",
-			"fieldtype": "Link",
+			"component": "AFormLink",
 			"label": "User",
 			"required": true,
-			"options": {
-				"doctype": "User"
-			}
+			"doctype": "User"
 		},
 		{
 			"fieldname": "status",
-			"fieldtype": "Select",
+			"component": "ADropdown",
 			"label": "Status",
 			"required": true,
-			"options": {
-				"values": ["pending", "processing", "shipped", "completed", "cancelled"]
-			}
+			"options": [
+				"pending",
+				"processing",
+				"shipped",
+				"completed",
+				"cancelled"
+			]
 		},
 		{
 			"fieldname": "total",
-			"fieldtype": "Currency",
+			"component": "ANumericInput",
 			"label": "Total",
 			"required": true
 		},
 		{
 			"fieldname": "items",
-			"fieldtype": "JSON",
+			"component": "ACodeEditor",
+			"language": "json",
 			"label": "Items"
 		},
 		{
 			"fieldname": "createdAt",
-			"fieldtype": "Datetime",
+			"component": "ADateTime",
 			"label": "Created At"
 		}
 	],
 	"workflow": {
-		"states": ["pending", "processing", "shipped", "completed", "cancelled"],
+		"states": [
+			"pending",
+			"processing",
+			"shipped",
+			"completed",
+			"cancelled"
+		],
 		"actions": {
 			"process": {
 				"label": "Start Processing",
-				"handler": "process_order",
-				"allowedStates": ["pending"]
+				"allowedStates": [
+					"pending"
+				],
+				"nextState": "processing"
 			},
 			"ship": {
 				"label": "Ship Order",
-				"handler": "ship_order",
-				"allowedStates": ["processing"]
+				"allowedStates": [
+					"processing"
+				],
+				"nextState": "shipped"
 			},
 			"complete": {
 				"label": "Mark Completed",
-				"handler": "complete_order",
-				"allowedStates": ["shipped"]
+				"allowedStates": [
+					"shipped"
+				],
+				"nextState": "completed"
 			},
 			"cancel": {
 				"label": "Cancel Order",
-				"handler": "cancel_order",
-				"allowedStates": ["pending", "processing"],
-				"confirm": true
+				"allowedStates": [
+					"pending",
+					"processing"
+				],
+				"nextState": "cancelled"
 			}
 		}
 	}

@@ -1,21 +1,18 @@
 {
 	"name": "@stonecrop/nuxt",
-	"version": "0.13.9",
+	"version": "0.15.0",
 	"description": "Nuxt module for Stonecrop",
-	"license": "MIT",
-	"type": "module",
-	"author": {
-		"name": "Tyler Matteson",
-		"email": "tyler@agritheory.com"
-	},
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/agritheory/stonecrop",
 		"directory": "nuxt"
 	},
-	"bin": {
-		"stonecrop-nuxt": "./bin/init.mjs"
+	"license": "MIT",
+	"author": {
+		"name": "Tyler Matteson",
+		"email": "tyler@agritheory.com"
 	},
+	"type": "module",
 	"exports": {
 		".": {
 			"types": "./dist/types.d.mts",
@@ -30,6 +27,9 @@
 			]
 		}
 	},
+	"bin": {
+		"stonecrop-nuxt": "./bin/init.mjs"
+	},
 	"files": [
 		"dist",
 		"bin",
@@ -38,65 +38,72 @@
 	],
 	"scripts": {
 		"_phase:build": "rushx dev:prepare && nuxt-module-build build",
-		"prepublish": "rushx dev:prepare && nuxt-module-build build",
-		"prepack": "rushx dev:prepare && nuxt-module-build build",
 		"build": "rushx dev:prepare && nuxt-module-build build",
-		"docs": "echo 'Nuxt modules use custom build system - skipping API docs generation'",
-		"dev": "rushx dev:prepare && nuxi dev playground",
-		"dev:basic": "rushx dev:prepare && nuxi dev playground",
-		"dev:full": "rushx dev:prepare:full && nuxi dev fullstack",
-		"dev:prepare:full": "nuxt-module-build build --stub && nuxt-module-build prepare && nuxi prepare fullstack",
+		"dev": "rushx dev:prepare && nuxi dev playground --host",
 		"dev:build": "nuxi build playground",
+		"dev:full": "rushx dev:prepare:full && nuxi dev fullstack --host",
 		"dev:prepare": "nuxt-module-build build --stub && nuxt-module-build prepare && nuxi prepare playground && nuxi prepare fullstack",
+		"dev:prepare:full": "nuxt-module-build build --stub && nuxt-module-build prepare && nuxi prepare fullstack",
+		"docs": "echo 'Nuxt modules use custom build system - skipping API docs generation'",
 		"lint": "eslint .",
+		"prepack": "rushx dev:prepare && nuxt-module-build build",
+		"prepublish": "rushx dev:prepare && nuxt-module-build build",
 		"test": "vitest run",
-		"test:ui": "vitest --ui",
 		"test:coverage": "vitest run --coverage.enabled --coverage.provider=istanbul",
-		"test:watch": "vitest watch",
-		"test:types": "vue-tsc --noEmit && cd playground && vue-tsc --noEmit"
+		"test:types": "vue-tsc --noEmit -p tsconfig.runtime.json && cd playground && vue-tsc --noEmit && cd ../fullstack && vue-tsc --noEmit",
+		"test:ui": "vitest --ui",
+		"test:watch": "vitest watch"
 	},
 	"dependencies": {
 		"@nuxt/kit": "^4.4.4",
 		"@stonecrop/aform": "workspace:*",
 		"@stonecrop/atable": "workspace:*",
 		"@stonecrop/casl-middleware": "workspace:*",
+		"@stonecrop/code-editor": "workspace:*",
+		"@stonecrop/desktop": "workspace:*",
+		"@stonecrop/graphql-client": "workspace:*",
 		"@stonecrop/graphql-middleware": "workspace:*",
 		"@stonecrop/node-editor": "workspace:*",
 		"@stonecrop/nuxt-grafserv": "workspace:*",
 		"@stonecrop/schema": "workspace:*",
 		"@stonecrop/stonecrop": "workspace:*",
-		"pinia": "^3.0.4",
-		"citty": "^0.2.1",
-		"consola": "^3.4.0",
-		"jiti": "^2.4.2",
+		"@stonecrop/themes": "workspace:*",
+		"citty": "^0.2.2",
+		"consola": "^3.4.2",
+		"h3": "^1.15.11",
+		"jiti": "^2.7.0",
 		"pathe": "^2.0.3",
+		"pinia": "^3.0.4",
 		"prompts": "^2.4.2"
 	},
 	"devDependencies": {
 		"@eslint/js": "^10.0.1",
 		"@nuxt/devtools": "^3.2.4",
-		"@nuxt/eslint-config": "^1.15.2",
-		"@nuxt/eslint": "1.15.2",
+		"@nuxt/eslint": "1.16.0",
+		"@nuxt/eslint-config": "^1.16.0",
 		"@nuxt/module-builder": "^1.0.2",
-		"@nuxt/schema": "^4.4.4",
+		"@nuxt/schema": "^4.4.8",
 		"@nuxt/test-utils": "^4.0.3",
 		"@types/prompts": "^2.4.9",
 		"@vitest/coverage-istanbul": "^4.1.5",
 		"baseline-browser-mapping": "latest",
 		"browserslist": "latest",
+		"eslint": "^10.6.0",
 		"eslint-config-prettier": "^10.1.8",
-		"eslint-plugin-vue": "^10.9.0",
-		"eslint": "^10.3.0",
+		"eslint-plugin-vue": "^10.9.2",
 		"globals": "^17.6.0",
-		"nuxt": "^4.4.4",
+		"graphql": "^16.14.0",
+		"monaco-editor": "^0.55.1",
+		"nuxt": "^4.4.8",
+		"nuxt-graphql-middleware": "^5.4.0",
 		"postgraphile": "^5.0.3",
-		"typescript-eslint": "^8.59.1",
 		"typescript": "^6.0.3",
+		"typescript-eslint": "^8.62.1",
 		"vite": "^7.3.2",
 		"vitest": "^4.1.5",
+		"vue": "^3.5.33",
 		"vue-router": "^5.0.6",
-		"vue-tsc": "^3.2.7",
-		"vue": "^3.5.33"
+		"vue-tsc": "^3.3.6"
 	},
 	"engines": {
 		"node": ">=24.0.0"

@@ -51,9 +51,9 @@
 			<div class="link-section wide">
 				<h4>Sales Order — undeclared Link resolved to AFormLink</h4>
 				<p class="info-text">
-					The <code>territory</code> field has <code>fieldtype: 'Link'</code> and <code>options: 'territory'</code> but
-					no entry in <code>links</code>. <code>resolveSchema()</code> assigns <code>component: 'AFormLink'</code> and
-					<code>doctype: 'territory'</code> automatically.
+					The <code>territory</code> field carries a <code>doctype: 'territory'</code> marker but no entry in
+					<code>links</code> and no <code>component</code>. <code>resolveSchema()</code> assigns
+					<code>component: 'AFormLink'</code> automatically.
 				</p>
 				<AForm :schema="resolvedSchema" v-model:data="formData" />
 				<div class="data-preview">
@@ -132,9 +132,9 @@ const salesOrderConfig: DoctypeConfig = {
 	name: 'Sales Order',
 	slug: 'sales-order',
 	fields: [
-		{ fieldname: 'order_number', fieldtype: 'Data', component: 'ATextInput', label: 'Order Number' },
-		{ fieldname: 'customer', fieldtype: 'Data', component: 'ATextInput', label: 'Customer Name' },
-		{ fieldname: 'territory', fieldtype: 'Link', options: 'territory', label: 'Territory' },
+		{ fieldname: 'order_number', component: 'ATextInput', label: 'Order Number' },
+		{ fieldname: 'customer', component: 'ATextInput', label: 'Customer Name' },
+		{ fieldname: 'territory', doctype: 'territory', label: 'Territory' },
 	],
 }
 
@@ -289,12 +289,12 @@ If no navigator is provided, the arrow is still rendered when `hasValidId` is tr
 
 ## Via resolveSchema
 
-For `fieldtype: 'Link'` fields with no matching `links` declaration, `resolveSchema()` automatically assigns `component: 'AFormLink'` and sets `doctype` from `field.options`. No manual wiring needed:
+For fields carrying a `doctype` marker with no matching `links` declaration and no `component`, `resolveSchema()` automatically assigns `component: 'AFormLink'`. No manual wiring needed:
 
 ```typescript
 const config: DoctypeConfig = {
 	slug: 'sales-order',
-	fields: [{ fieldname: 'territory', fieldtype: 'Link', options: 'territory', label: 'Territory' }],
+	fields: [{ fieldname: 'territory', doctype: 'territory', label: 'Territory' }],
 	// no 'links' entry for territory — resolveSchema handles it
 }
 

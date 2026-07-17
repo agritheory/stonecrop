@@ -12,7 +12,6 @@ describe('AForm Component', { tags: ['component'] }, () => {
 			schema: [
 				{
 					fieldname: 'first_name',
-					fieldtype: 'Data',
 					component: 'ATextInput',
 					label: 'First Name',
 				},
@@ -35,7 +34,12 @@ describe('AForm Component', { tags: ['component'] }, () => {
 		expect((updateDataEvents![updateDataEvents!.length - 1][0] as Record<string, any>).first_name).toBe('Steve')
 	})
 
-	it('passes rows from dataModel to a component that has columns but no rows in schema', async () => {
+	it('does not inject rows for a columns-shaped field without kind: "table"', async () => {
+		// `columns` is the *authoring* key (TableField); AForm consumes the *resolved* shape,
+		// where a table is `kind: 'table'` + `schema`. A field carrying `columns` never went
+		// through the registry, so AForm must not treat it as a table — leaving `rows`
+		// unset makes ATable's required-prop check fail loudly instead of silently
+		// rendering an empty table.
 		const MockTable = defineComponent({
 			name: 'MockTable',
 			props: ['columns', 'rows', 'label', 'fieldname', 'schema', 'data', 'mode'],
@@ -49,10 +53,9 @@ describe('AForm Component', { tags: ['component'] }, () => {
 						fieldname: 'items',
 						component: 'MockTable',
 						label: 'Items',
-						columns: [{ name: 'id', label: 'ID', fieldtype: 'Int' }],
-						// intentionally no 'rows' key — rows should come from dataModel
+						columns: [{ name: 'id', label: 'ID' }],
 					},
-				] as ResolvedField[],
+				] as unknown as ResolvedField[],
 				data: { items: [{ id: 1 }, { id: 2 }] },
 			},
 			global: { components: { MockTable } },
@@ -62,7 +65,7 @@ describe('AForm Component', { tags: ['component'] }, () => {
 
 		const mockTable = localWrapper.findComponent(MockTable)
 		expect(mockTable.exists()).toBe(true)
-		expect(mockTable.props('rows')).toEqual([{ id: 1 }, { id: 2 }])
+		expect(mockTable.props('rows')).toBeUndefined()
 	})
 
 	it('should handle componentProps with rows data for nested tables', () => {
@@ -127,7 +130,7 @@ describe('AForm Component', { tags: ['component'] }, () => {
 							component: 'MockTable',
 							label: 'Items',
 							kind: 'table',
-							schema: [{ fieldname: 'qty', fieldtype: 'Int', label: 'Qty' }],
+							schema: [{ fieldname: 'qty', label: 'Qty' }],
 						},
 					] as any[],
 					data: { items: [{ qty: 1 }, { qty: 2 }] },
@@ -149,7 +152,6 @@ describe('AForm Component', { tags: ['component'] }, () => {
 				schema: [
 					{
 						fieldname: 'first_name',
-						fieldtype: 'Data',
 						component: 'ATextInput',
 						label: 'First Name',
 					},
@@ -172,13 +174,11 @@ describe('AForm Component', { tags: ['component'] }, () => {
 					schema: [
 						{
 							fieldname: 'visible_field',
-							fieldtype: 'Data',
 							component: 'ATextInput',
 							label: 'Visible',
 						},
 						{
 							fieldname: 'hidden_field',
-							fieldtype: 'Data',
 							component: 'ATextInput',
 							label: 'Hidden',
 							hidden: true,
@@ -199,7 +199,6 @@ describe('AForm Component', { tags: ['component'] }, () => {
 					schema: [
 						{
 							fieldname: 'visible_field',
-							fieldtype: 'Data',
 							component: 'ATextInput',
 							label: 'Visible',
 							hidden: false,
@@ -220,7 +219,6 @@ describe('AForm Component', { tags: ['component'] }, () => {
 			const schema: ResolvedField[] = [
 				{
 					fieldname: 'phone',
-					fieldtype: 'Data',
 					component: 'ATextInput',
 					label: 'Phone',
 					mask: '(###) ### - ####',
@@ -241,7 +239,6 @@ describe('AForm Component', { tags: ['component'] }, () => {
 			const schema: ResolvedField[] = [
 				{
 					fieldname: 'phone',
-					fieldtype: 'Data',
 					component: 'ATextInput',
 					label: 'Phone',
 					mask: '###-###-####',
@@ -263,7 +260,6 @@ describe('AForm Component', { tags: ['component'] }, () => {
 			const schema: ResolvedField[] = [
 				{
 					fieldname: 'first_name',
-					fieldtype: 'Data',
 					component: 'ATextInput',
 					label: 'First Name',
 				} as ResolvedField,
@@ -296,7 +292,6 @@ describe('AForm Component', { tags: ['component'] }, () => {
 							fieldname: 'canvas',
 							component: 'MockField',
 							label: 'Canvas',
-							fieldtype: 'Display',
 							width: '100%',
 						},
 					] as ResolvedField[],
@@ -325,7 +320,6 @@ describe('AForm Component', { tags: ['component'] }, () => {
 							fieldname: 'name',
 							component: 'MockField',
 							label: 'Name',
-							fieldtype: 'Data',
 						},
 					] as ResolvedField[],
 					data: {},
@@ -355,7 +349,7 @@ describe('AForm mode forwarding', { tags: ['component'] }, () => {
 				fieldname: 'line_items',
 				component: 'MockTable',
 				label: 'Line Items',
-				schema: [{ fieldname: 'qty', fieldtype: 'Int' }],
+				schema: [{ fieldname: 'qty' }],
 				config: { view: 'list' as const },
 			},
 		]

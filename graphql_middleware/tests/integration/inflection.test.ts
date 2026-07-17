@@ -27,9 +27,9 @@ beforeAll(async () => {
 		ScItem: {
 			name: 'ScItem',
 			fields: [
-				{ kind: 'field', fieldname: 'id', fieldtype: 'PrimaryKey', label: 'ID' },
-				{ kind: 'field', fieldname: 'name', fieldtype: 'Data', label: 'Name' },
-				{ kind: 'field', fieldname: 'status', fieldtype: 'Data', label: 'Status' },
+				{ kind: 'field', fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
+				{ kind: 'field', fieldname: 'name', component: 'ATextInput', label: 'Name' },
+				{ kind: 'field', fieldname: 'status', component: 'ATextInput', label: 'Status' },
 			],
 			links: {
 				tags: {
@@ -43,9 +43,9 @@ beforeAll(async () => {
 		ScTag: {
 			name: 'ScTag',
 			fields: [
-				{ kind: 'field', fieldname: 'id', fieldtype: 'PrimaryKey', label: 'ID' },
-				{ kind: 'field', fieldname: 'label', fieldtype: 'Data', label: 'Label' },
-				{ kind: 'field', fieldname: 'item_id', fieldtype: 'Data', label: 'Item ID' },
+				{ kind: 'field', fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
+				{ kind: 'field', fieldname: 'label', component: 'ATextInput', label: 'Label' },
+				{ kind: 'field', fieldname: 'item_id', component: 'ATextInput', label: 'Item ID' },
 			],
 		},
 	})
@@ -101,7 +101,7 @@ async function runQuery(query: string, variables?: Record<string, unknown>): Pro
 }
 
 // ===========================================================================
-// Phase B deferred test: non-default inflection with includeNested
+// Non-default inflection with includeNested
 // ===========================================================================
 
 describe('stonecropRecord with pascalCase field inflection', { tags: ['integration', 'graphql'] }, () => {

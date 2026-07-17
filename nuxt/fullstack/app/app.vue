@@ -1,11 +1,13 @@
 <script setup lang="ts">
 // Fullstack playground demonstrating @stonecrop/nuxt + nuxt-grafserv
 import SheetNav from '../../../desktop/src/components/SheetNav.vue'
-import ActionSet from '../../../desktop/src/components/ActionSet.vue'
-import type { ActionElements } from '../../../desktop/src/types'
 
 const route = useRoute()
-const router = useRouter()
+
+// Nav section highlighting: a link stays lit while you're anywhere under its path
+// (e.g. Orders stays active on /order/2). Home ('/') matches only the exact root.
+const isSection = (base: string) =>
+	base === '/' ? route.path === '/' : route.path === base || route.path.startsWith(`${base}/`)
 
 const breadcrumbs = computed(() => {
 	const path = route.path
@@ -15,11 +17,10 @@ const breadcrumbs = computed(() => {
 	if (parts.length === 0) return crumbs
 
 	let currentPath = ''
-	for (let i = 0; i < parts.length; i++) {
-		currentPath += `/${parts[i]}`
-		const segment = parts[i]
+	for (const segment of parts) {
+		currentPath += `/${segment}`
 
-		let title = segment
+		const title = segment
 			.split('-')
 			.map(word => word.charAt(0).toUpperCase() + word.slice(1))
 			.join(' ')
@@ -29,47 +30,18 @@ const breadcrumbs = computed(() => {
 
 	return crumbs
 })
-
-const actionSetElements = computed(() => {
-	const elements: ActionElements[] = []
-
-	const navActions = [
-		{ label: 'Users', action: () => router.push('/user') },
-		{ label: 'Orders', action: () => router.push('/order') },
-		{ label: 'DocBuilder', action: () => router.push('/docbuilder') },
-		{ label: 'GraphiQL', action: () => window.open('/graphql/', '_blank') },
-	]
-
-	if (route.path !== '/') {
-		navActions.unshift({ label: 'Home', action: () => router.push('/') })
-	}
-
-	elements.push({
-		type: 'dropdown',
-		label: 'Navigate',
-		actions: navActions,
-	})
-
-	if (route.path !== '/' && route.path !== '/user' && route.path !== '/order' && route.path !== '/docbuilder') {
-		elements.push({
-			type: 'button',
-			label: 'Back',
-			action: () => router.back(),
-		})
-	}
-
-	return elements
-})
-
-const handleActionClick = async (label: string, action?: () => void | Promise<void>) => {
-	if (action) {
-		await action()
-	}
-}
 </script>
 
 <template>
 	<div class="fullstack-app">
+		<nav class="app-nav">
+			<NuxtLink to="/" :class="{ 'app-nav-active': isSection('/') }">Home</NuxtLink>
+			<NuxtLink to="/user" :class="{ 'app-nav-active': isSection('/user') }">Users</NuxtLink>
+			<NuxtLink to="/order" :class="{ 'app-nav-active': isSection('/order') }">Orders</NuxtLink>
+			<NuxtLink to="/docbuilder" :class="{ 'app-nav-active': isSection('/docbuilder') }">DocBuilder</NuxtLink>
+			<a class="app-nav-external" href="/graphql/" target="_blank" rel="noopener">GraphiQL</a>
+		</nav>
+
 		<main class="app-main">
 			<NuxtPage />
 		</main>
@@ -80,8 +52,6 @@ const handleActionClick = async (label: string, action?: () => void | Promise<vo
 				<div class="sheetnav-placeholder" />
 			</template>
 		</ClientOnly>
-
-		<ActionSet v-if="actionSetElements.length > 0" :elements="actionSetElements" @action-click="handleActionClick" />
 	</div>
 </template>
 
@@ -92,7 +62,6 @@ const handleActionClick = async (label: string, action?: () => void | Promise<vo
 
 body {
 	margin: 0;
-	font-family: var(--sc-font-family);
 	background: var(--sc-gray-5);
 }
 </style>
@@ -104,6 +73,25 @@ body {
 	flex-direction: column;
 	font-family: var(--sc-font-family);
 	background: var(--sc-form-background);
+}
+
+.app-nav {
+	display: flex;
+	gap: 1.5rem;
+	padding: 1rem 2rem;
+	background: var(--sc-gray-5);
+	border-bottom: 1px solid var(--sc-header-border-color);
+}
+
+.app-nav a {
+	color: var(--sc-gray-60);
+	text-decoration: none;
+	font-weight: 500;
+}
+
+.app-nav a:hover,
+.app-nav a.app-nav-active {
+	color: var(--sc-primary-color);
 }
 
 .app-main {

@@ -7,6 +7,10 @@
       "allowedCategories": [ "production", "prototype" ]
     },
     {
+      "name": "@dagrejs/dagre",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
       "name": "@dataplan/pg",
       "allowedCategories": [ "utilities" ]
     },
@@ -156,7 +160,7 @@
     },
     {
       "name": "@stonecrop/graphql-middleware",
-      "allowedCategories": [ "production", "prototype" ]
+      "allowedCategories": [ "production", "prototype", "utilities" ]
     },
     {
       "name": "@stonecrop/node-editor",
@@ -280,7 +284,7 @@
     },
     {
       "name": "graphql",
-      "allowedCategories": [ "production", "utilities" ]
+      "allowedCategories": [ "production", "prototype", "utilities" ]
     },
     {
       "name": "graphql-middleware",
@@ -361,6 +365,10 @@
     {
       "name": "nuxt",
       "allowedCategories": [ "production", "prototype" ]
+    },
+    {
+      "name": "nuxt-graphql-middleware",
+      "allowedCategories": [ "prototype" ]
     },
     {
       "name": "ofetch",

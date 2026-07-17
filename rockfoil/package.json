@@ -1,22 +1,25 @@
 {
 	"name": "@stonecrop/rockfoil",
-	"version": "0.13.9",
-	"license": "MIT",
-	"type": "module",
-	"author": {
-		"name": "Tyler Matteson",
-		"email": "tyler@agritheory.com"
-	},
+	"version": "0.15.0",
+	"description": "PostGraphile plugin for Stonecrop schema integration",
 	"homepage": "https://github.com/agritheory/rockfoil#readme",
+	"bugs": {
+		"url": "https://github.com/agritheory/stonecrop/issues"
+	},
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/agritheory/stonecrop",
 		"directory": "rockfoil"
 	},
-	"bugs": {
-		"url": "https://github.com/agritheory/stonecrop/issues"
+	"license": "MIT",
+	"author": {
+		"name": "Tyler Matteson",
+		"email": "tyler@agritheory.com"
 	},
-	"types": "./dist/rockfoil.d.ts",
+	"sideEffects": [
+		"**/*.css"
+	],
+	"type": "module",
 	"exports": {
 		".": {
 			"types": "./dist/rockfoil.d.ts",
@@ -25,27 +28,24 @@
 		"./styles": "./dist/assets/index.css",
 		"./types": "./dist/src/types/index.d.ts"
 	},
+	"types": "./dist/rockfoil.d.ts",
 	"files": [
 		"dist/*",
 		"src/*"
 	],
-	"description": "PostGraphile plugin for Stonecrop schema integration",
-	"sideEffects": [
-		"**/*.css"
-	],
 	"scripts": {
 		"_phase:build": "heft build && vite build && rushx docs",
-		"prepublishOnly": "heft build && vite build && rushx docs",
 		"build": "heft build && vite build && rushx docs",
 		"dev": "vite",
 		"docs": "bash ../common/scripts/run-docs.sh rockfoil",
 		"lint": "oxlint",
 		"lint:fix": "oxlint --fix",
+		"prepublishOnly": "heft build && vite build && rushx docs",
 		"preview": "vite preview",
 		"test": "vitest run --coverage.enabled false",
-		"test:watch": "vitest watch",
 		"test:coverage": "vitest run --coverage",
-		"test:ui": "vitest --ui"
+		"test:ui": "vitest --ui",
+		"test:watch": "vitest watch"
 	},
 	"dependencies": {
 		"graphql": "^16.14.0",

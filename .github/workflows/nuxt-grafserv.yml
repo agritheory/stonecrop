@@ -57,10 +57,10 @@ jobs:
       - name: Rush Install
         run: node common/scripts/install-run-rush.js install
 
-      - name: Update Autoinstallers
+      - name: Install Autoinstallers
         run: |
-          node common/scripts/install-run-rush.js update-autoinstaller --name rush-plugins
-          node common/scripts/install-run-rush.js update-autoinstaller --name doc-tools
+          node common/scripts/install-run-rush.js install-autoinstaller --name rush-plugins
+          node common/scripts/install-run-rush.js install-autoinstaller --name doc-tools
 
       - name: Rush Build
         run: node common/scripts/install-run-rush.js build --to @stonecrop/nuxt-grafserv

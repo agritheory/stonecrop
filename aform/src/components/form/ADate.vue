@@ -20,7 +20,7 @@
 					}
 				" />
 			<label :for="uuid">{{ label }}</label>
-			<p v-show="validation.errorMessage" v-html="validation.errorMessage"></p>
+			<p v-show="errorText" v-html="errorText"></p>
 			<ADateSelection
 				v-if="showPicker"
 				ref="picker"
@@ -39,7 +39,17 @@ import { onClickOutside } from '@vueuse/core'
 import ADateSelection from './ADateSelection.vue'
 import type { ComponentProps } from '../../types'
 
-const { label = 'Date', required, mode, uuid, validation = { errorMessage: '&nbsp;' } } = defineProps<ComponentProps>()
+const {
+	label = 'Date',
+	required,
+	mode,
+	uuid,
+	errors,
+	validation = { errorMessage: '' },
+} = defineProps<ComponentProps>()
+
+// Dynamic trigger errors take precedence over a static schema errorMessage; empty means the slot hides.
+const errorText = computed(() => (errors?.length ? errors.join('; ') : (validation.errorMessage ?? '')))
 
 const modelValue = defineModel<string | Date>()
 

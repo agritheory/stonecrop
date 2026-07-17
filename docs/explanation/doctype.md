@@ -29,7 +29,7 @@ Doctypes unify these concerns. A single definition tells you everything about an
 
 A doctype addresses four distinct concerns:
 
-**Schema** defines the shape of data. Field definitions declare types, labels, and constraints. This drives both validation and UI rendering—forms and tables read from the same source of truth.
+**Schema** defines the shape of data. Field definitions declare their component, labels, and constraints. This drives both validation and UI rendering—forms and tables read from the same source of truth.
 
 **Workflow** models the document's lifecycle as explicit states and transitions. Rather than implicit conditionals scattered through code (`if status == 'pending' and user.can_approve`), the valid paths are declared upfront and enforced by a state machine.
 

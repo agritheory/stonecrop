@@ -1,0 +1,101 @@
+{
+	"name": "Issue",
+	"slug": "issue",
+	"fields": [
+		{
+			"fieldname": "subject",
+			"label": "Subject",
+			"component": "ATextInput",
+			"required": true
+		},
+		{
+			"fieldname": "description",
+			"label": "Description",
+			"component": "ATextarea",
+			"required": true
+		},
+		{
+			"fieldname": "reported_date",
+			"label": "Report Date",
+			"component": "ADate",
+			"readOnly": true
+		},
+		{
+			"fieldname": "assigned_date",
+			"label": "Assigned Date",
+			"component": "ADate",
+			"readOnly": true
+		},
+		{
+			"fieldname": "assigned_to",
+			"label": "Assigned To",
+			"component": "AFormLink",
+			"doctype": "user",
+			"cardinality": "noneOrMany"
+		},
+		{
+			"fieldname": "resolved_date",
+			"label": "Resolved Date",
+			"component": "ADate",
+			"readOnly": true
+		},
+		{
+			"fieldname": "closed_date",
+			"label": "Closed Date",
+			"component": "ADate",
+			"readOnly": true
+		},
+		{
+			"fieldname": "resolution",
+			"label": "Resolution",
+			"component": "ATextarea"
+		}
+	],
+	"workflow": {
+		"states": [
+			"New",
+			"Draft",
+			"Assigned",
+			"Resolved",
+			"Closed"
+		],
+		"actions": {
+			"Save": {
+				"label": "Save",
+				"allowedStates": [
+					"New"
+				],
+				"nextState": "Draft"
+			},
+			"Assign": {
+				"label": "Assign",
+				"allowedStates": [
+					"Draft"
+				],
+				"nextState": "Assigned"
+			},
+			"Resolve": {
+				"label": "Resolve",
+				"allowedStates": [
+					"Draft",
+					"Assigned"
+				],
+				"nextState": "Resolved"
+			},
+			"Close": {
+				"label": "Close",
+				"allowedStates": [
+					"Resolved"
+				],
+				"nextState": "Closed"
+			},
+			"Reopen": {
+				"label": "Reopen",
+				"allowedStates": [
+					"Closed"
+				],
+				"nextState": "Draft"
+			}
+		}
+	}
+}

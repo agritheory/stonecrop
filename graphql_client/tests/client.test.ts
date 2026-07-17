@@ -40,8 +40,8 @@ const taskRef: DoctypeRef = { name: 'Task' }
 const taskMeta: DoctypeMeta = {
 	name: 'Task',
 	fields: [
-		{ fieldname: 'id', fieldtype: 'Data', label: 'ID' },
-		{ fieldname: 'title', fieldtype: 'Data', label: 'Title' },
+		{ fieldname: 'id', component: 'ATextInput', label: 'ID' },
+		{ fieldname: 'title', component: 'ATextInput', label: 'Title' },
 	],
 }
 

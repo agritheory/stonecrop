@@ -9,31 +9,36 @@ export const typeDefs = gql`
 	type StonecropFieldMeta {
 		kind: String!
 		fieldname: String!
-		fieldtype: String!
 		component: String
+		primaryKey: Boolean
+		computed: Boolean
+		language: String
+		doctype: String
 		label: String
 		width: String
 		align: String
+		edit: Boolean
+		mask: String
+		format: String
+		mode: String
+		options: JSON
 		required: Boolean
 		readOnly: Boolean
-		edit: Boolean
 		hidden: Boolean
 		default: JSON
-		options: JSON
-		mask: String
-		precision: Int
-		scale: Int
-		mode: String
 		validation: JSON
+		cardinality: String
+		source: String
 	}
 
 	type StonecropWorkflowAction {
 		label: String!
-		handler: String!
 		requiredFields: [String!]
 		allowedStates: [String!]
-		confirm: Boolean
-		args: JSON
+		nextState: String
+		stateless: Boolean
+		selfTransition: Boolean
+		clientHandler: String
 	}
 
 	type StonecropWorkflowMeta {

@@ -42,8 +42,8 @@ export function makeServer() {
 				'category-listMeta': {
 					name: 'category',
 					schema: [
-						{ kind: 'field', fieldname: 'id', label: 'ID', hidden: true, fieldtype: 'Data' },
-						{ kind: 'field', fieldname: 'name', label: 'Name', fieldtype: 'Data', component: 'ATextInput' },
+						{ kind: 'field', fieldname: 'id', label: 'ID', hidden: true, component: 'ATextInput' },
+						{ kind: 'field', fieldname: 'name', label: 'Name', component: 'ATextInput' },
 					] as DoctypeField[],
 					workflow: { id: 'category', initial: 'active', states: { active: {} } },
 					actions: {},
@@ -51,11 +51,10 @@ export function makeServer() {
 				'category-formMeta': {
 					name: 'category-form',
 					schema: [
-						{ kind: 'field', fieldname: 'id', label: 'ID', hidden: true, fieldtype: 'Data' },
+						{ kind: 'field', fieldname: 'id', label: 'ID', hidden: true, component: 'ATextInput' },
 						{
 							kind: 'field',
 							fieldname: 'name',
-							fieldtype: 'Data',
 							component: 'ATextInput',
 							label: 'Name',
 							required: true,
@@ -81,11 +80,11 @@ export function makeServer() {
 				'todo-listMeta': {
 					name: 'todo-list',
 					schema: [
-						{ kind: 'field', fieldname: 'id', label: 'ID', hidden: true, fieldtype: 'Data' },
-						{ kind: 'field', fieldname: 'first_name', label: 'First Name', fieldtype: 'Data' },
-						{ kind: 'field', fieldname: 'last_name', label: 'Last Name', fieldtype: 'Data' },
-						{ kind: 'field', fieldname: 'phone', label: 'Phone', fieldtype: 'Phone' },
-						{ kind: 'field', fieldname: 'category_id', label: 'Category', fieldtype: 'Link', options: 'category' },
+						{ kind: 'field', fieldname: 'id', label: 'ID', hidden: true, component: 'ATextInput' },
+						{ kind: 'field', fieldname: 'first_name', label: 'First Name', component: 'ATextInput' },
+						{ kind: 'field', fieldname: 'last_name', label: 'Last Name', component: 'ATextInput' },
+						{ kind: 'field', fieldname: 'phone', label: 'Phone', component: 'ATextInput' },
+						{ kind: 'field', fieldname: 'category_id', label: 'Category', component: 'AFormLink', doctype: 'category' },
 					] as DoctypeField[],
 					workflow: {
 						id: 'todoList',
@@ -117,7 +116,6 @@ export function makeServer() {
 						{
 							kind: 'field',
 							fieldname: 'header',
-							fieldtype: 'HTML',
 							component: 'div',
 							label: 'Todo Details',
 							value:
@@ -126,7 +124,6 @@ export function makeServer() {
 						{
 							kind: 'field',
 							fieldname: 'first_name',
-							fieldtype: 'Data',
 							component: 'ATextInput',
 							label: 'First Name',
 							required: true,
@@ -134,7 +131,6 @@ export function makeServer() {
 						{
 							kind: 'field',
 							fieldname: 'last_name',
-							fieldtype: 'Data',
 							component: 'ATextInput',
 							label: 'Last Name',
 							required: true,
@@ -142,7 +138,6 @@ export function makeServer() {
 						{
 							kind: 'field',
 							fieldname: 'phone',
-							fieldtype: 'Phone',
 							component: 'ATextInput',
 							label: 'Phone',
 							mask: "(locale) => { if (locale === 'en-US') { return '(###) ###-####' } else if (locale === 'en-IN') { return '####-######'} }",
@@ -150,7 +145,6 @@ export function makeServer() {
 						{
 							kind: 'field',
 							fieldname: 'email',
-							fieldtype: 'Data',
 							component: 'ATextInput',
 							label: 'Email',
 							placeholder: 'user@example.com',
@@ -158,7 +152,6 @@ export function makeServer() {
 						{
 							kind: 'field',
 							fieldname: 'notes',
-							fieldtype: 'Text',
 							component: 'ATextarea',
 							label: 'Notes',
 							placeholder: 'Additional notes about this todo...',
@@ -166,10 +159,9 @@ export function makeServer() {
 						{
 							kind: 'field',
 							fieldname: 'category_id',
-							fieldtype: 'Link',
 							component: 'AFormLink',
 							label: 'Category',
-							options: 'category',
+							doctype: 'category',
 						},
 					] as DoctypeField[],
 					workflow: {
@@ -232,10 +224,10 @@ export function makeServer() {
 				'issue-listMeta': {
 					name: 'issue-list',
 					schema: [
-						{ kind: 'field', fieldname: 'id', label: 'ID', hidden: true, fieldtype: 'Data' },
-						{ kind: 'field', fieldname: 'subject', label: 'Subject', fieldtype: 'Data' },
-						{ kind: 'field', fieldname: 'date', label: 'Date', fieldtype: 'Date' },
-						{ kind: 'field', fieldname: 'status', label: 'Status', fieldtype: 'Select' },
+						{ kind: 'field', fieldname: 'id', label: 'ID', hidden: true, component: 'ATextInput' },
+						{ kind: 'field', fieldname: 'subject', label: 'Subject', component: 'ATextInput' },
+						{ kind: 'field', fieldname: 'date', label: 'Date', component: 'ADate' },
+						{ kind: 'field', fieldname: 'status', label: 'Status', component: 'ADropdown' },
 					] as DoctypeField[],
 					workflow: {
 						id: 'issueList',
@@ -268,7 +260,6 @@ export function makeServer() {
 						{
 							kind: 'field',
 							fieldname: 'header',
-							fieldtype: 'HTML',
 							component: 'div',
 							label: 'Issue Details',
 							value:
@@ -277,7 +268,6 @@ export function makeServer() {
 						{
 							kind: 'field',
 							fieldname: 'subject',
-							fieldtype: 'Data',
 							component: 'ATextInput',
 							label: 'Subject',
 							required: true,
@@ -285,7 +275,6 @@ export function makeServer() {
 						{
 							kind: 'field',
 							fieldname: 'date',
-							fieldtype: 'Date',
 							component: 'ADate',
 							label: 'Date',
 							required: true,
@@ -293,14 +282,12 @@ export function makeServer() {
 						{
 							kind: 'field',
 							fieldname: 'description',
-							fieldtype: 'Text',
 							component: 'ATextarea',
 							label: 'Description',
 						},
 						{
 							kind: 'field',
 							fieldname: 'status',
-							fieldtype: 'Select',
 							component: 'ASelect',
 							label: 'Status',
 							options: ['Open', 'In Progress', 'Resolved', 'Closed'],
@@ -308,7 +295,6 @@ export function makeServer() {
 						{
 							kind: 'field',
 							fieldname: 'priority',
-							fieldtype: 'Select',
 							component: 'ASelect',
 							label: 'Priority',
 							options: ['Low', 'Medium', 'High', 'Critical'],

@@ -4,14 +4,12 @@
  */
 
 import { existsSync } from 'node:fs'
-import { mkdir, writeFile, readFile } from 'node:fs/promises'
-import { join, dirname } from 'pathe'
-import { fileURLToPath } from 'node:url'
+import { mkdir, writeFile } from 'node:fs/promises'
+import { join } from 'pathe'
 import consola from 'consola'
 import { addDependencies } from '../utils/package'
 import { updateNuxtConfig } from '../utils/config'
-
-const __dirname = dirname(fileURLToPath(import.meta.url))
+import { loadTemplate } from '../utils/templates'
 
 export interface GrafservInstallerOptions {
 	cwd: string
@@ -52,6 +50,10 @@ export async function installGrafserv(options: GrafservInstallerOptions): Promis
 			moduleOptions: {
 				key: 'grafserv',
 				value: `{
+		// Use in-memory Grafast resolvers (no database required)
+		// Switch to 'postgraphile' when connecting a real database
+		type: 'schema',
+
 		// GraphQL schema and resolvers
 		schema: '${schemaPath}',
 		resolvers: '${resolversPath}',
@@ -126,183 +128,29 @@ async function scaffoldServerFiles(cwd: string): Promise<void> {
 	} else {
 		consola.info('server/plugins.ts already exists, skipping')
 	}
-}
 
-/**
- * Load a template file
- */
-async function loadTemplate(filename: string): Promise<string> {
-	// Try to load from templates directory
-	const templatePath = join(__dirname, '..', '..', '..', 'templates', filename)
-
-	if (existsSync(templatePath)) {
-		return readFile(templatePath, 'utf-8')
+	// Scaffold server/data.ts (in-memory data store)
+	const dataPath = join(serverDir, 'data.ts')
+	if (!existsSync(dataPath)) {
+		const dataTemplate = await loadTemplate('data.ts')
+		await writeFile(dataPath, dataTemplate, 'utf-8')
+		consola.info('Created server/data.ts')
+	} else {
+		consola.info('server/data.ts already exists, skipping')
 	}
 
-	// Fallback to inline templates
-	return getInlineTemplate(filename)
-}
-
-/**
- * Get inline template content as fallback
- */
-function getInlineTemplate(filename: string): string {
-	const templates: Record<string, string> = {
-		'schema.graphql': `# Stonecrop GraphQL Schema
-# Add your type definitions here
-
-scalar JSON
-
-type Query {
-	"""
-	Health check endpoint
-	"""
-	healthCheck: HealthStatus!
-
-	"""
-	Get metadata for a doctype
-	"""
-	getMeta(doctype: String!): JSON
-}
-
-type Mutation {
-	"""
-	Execute a doctype action
-	"""
-	stonecropAction(doctype: String!, action: String!, args: JSON): ActionResult!
-}
-
-type HealthStatus {
-	status: String!
-	timestamp: String!
-}
-
-type ActionResult {
-	success: Boolean!
-	data: JSON
-	error: String
-}
-`,
-		'resolvers.ts': `/**
- * GraphQL Resolvers
- * Add your resolver implementations here
- */
-
-export const resolvers = {
-	Query: {
-		healthCheck: () => ({
-			status: 'healthy',
-			timestamp: new Date().toISOString(),
-		}),
-
-		getMeta: (_: unknown, { doctype }: { doctype: string }) => {
-			// TODO: Implement doctype metadata lookup
-			console.log('getMeta called for:', doctype)
-			return null
-		},
-	},
-
-	Mutation: {
-		stonecropAction: async (
-			_: unknown,
-			{ doctype, action, args }: { doctype: string; action: string; args?: unknown }
-		) => {
-			// TODO: Implement action execution
-			console.log('stonecropAction called:', { doctype, action, args })
-			return {
-				success: true,
-				data: null,
-				error: null,
-			}
-		},
-	},
-}
-
-export default resolvers
-`,
-		'plugins.ts': `/**
- * Grafserv Plugins
- * Add custom middleware and hooks via Grafserv plugins
- *
- * @see https://grafast.org/grafserv/plugins
- */
-
-import type { GraphileConfig } from 'graphile-config'
-
-/**
- * Example: Request logging plugin
- */
-const loggingPlugin: GraphileConfig.Plugin = {
-	name: 'request-logging',
-	version: '1.0.0',
-	grafserv: {
-		middleware: {
-			processGraphQLRequestBody: async (next, event) => {
-				const start = Date.now()
-				console.log('[GraphQL] Request started:', {
-					path: event.request.url,
-					method: event.request.method,
-				})
-
-				const result = await next()
-
-				const duration = Date.now() - start
-				console.log(\`[GraphQL] Request completed in \${duration}ms\`)
-
-				return result
-			},
-		},
-	},
-}
-
-/**
- * Example: Authentication plugin
- */
-const authPlugin: GraphileConfig.Plugin = {
-	name: 'authentication',
-	version: '1.0.0',
-	grafserv: {
-		middleware: {
-			processGraphQLRequestBody: async (next, event) => {
-				// Extract authentication from headers
-				const authHeader = event.request.headers.get('authorization')
-
-				if (authHeader?.startsWith('Bearer ')) {
-					const token = authHeader.slice(7)
-					// TODO: Validate token and set user context
-					console.log('[Auth] Token received:', token)
-				} else {
-					console.log('[Auth] Anonymous request')
-				}
-
-				return next()
-			},
-		},
-	},
-}
-
-/**
- * Export all plugins
- * Import these in your nuxt.config.ts:
- *
- * import plugins from './server/plugins'
- *
- * export default defineNuxtConfig({
- *   grafserv: {
- *     preset: {
- *       plugins
- *     }
- *   }
- * })
- */
-export const plugins: GraphileConfig.Plugin[] = [
-	loggingPlugin,
-	// authPlugin, // Uncomment to enable authentication
-]
-
-export default plugins
-`,
+	// Scaffold server/plugins/stonecrop.ts (Nitro server plugin for handler registration)
+	const nitroPluginsDir = join(serverDir, 'plugins')
+	if (!existsSync(nitroPluginsDir)) {
+		await mkdir(nitroPluginsDir, { recursive: true })
+		consola.info('Created server/plugins/ directory')
 	}
-
-	return templates[filename] || ''
+	const stonecropPluginPath = join(nitroPluginsDir, 'stonecrop.ts')
+	if (!existsSync(stonecropPluginPath)) {
+		const stonecropTemplate = await loadTemplate('stonecrop.ts')
+		await writeFile(stonecropPluginPath, stonecropTemplate, 'utf-8')
+		consola.info('Created server/plugins/stonecrop.ts')
+	} else {
+		consola.info('server/plugins/stonecrop.ts already exists, skipping')
+	}
 }

@@ -3,19 +3,19 @@
 	"fields": [
 		{
 			"fieldname": "id",
-			"fieldtype": "Data",
+			"component": "ATextInput",
 			"label": "ID",
 			"required": true
 		},
 		{
 			"fieldname": "name",
-			"fieldtype": "Data",
+			"component": "ATextInput",
 			"label": "Name",
 			"required": true
 		},
 		{
 			"fieldname": "email",
-			"fieldtype": "Data",
+			"component": "ATextInput",
 			"label": "Email",
 			"required": true,
 			"options": {
@@ -24,43 +24,54 @@
 		},
 		{
 			"fieldname": "role",
-			"fieldtype": "Select",
+			"component": "ADropdown",
 			"label": "Role",
 			"required": true,
-			"options": {
-				"values": ["admin", "user", "guest"]
-			}
+			"options": [
+				"admin",
+				"user",
+				"guest"
+			]
 		},
 		{
 			"fieldname": "createdAt",
-			"fieldtype": "Datetime",
+			"component": "ADateTime",
 			"label": "Created At"
 		},
 		{
 			"fieldname": "updatedAt",
-			"fieldtype": "Datetime",
+			"component": "ADateTime",
 			"label": "Updated At"
 		}
 	],
 	"workflow": {
-		"states": ["active", "suspended", "deleted"],
+		"states": [
+			"active",
+			"suspended",
+			"deleted"
+		],
 		"actions": {
 			"suspend": {
 				"label": "Suspend User",
-				"handler": "suspend_user",
-				"allowedStates": ["active"],
-				"confirm": true
+				"allowedStates": [
+					"active"
+				],
+				"nextState": "suspended"
 			},
 			"activate": {
 				"label": "Activate User",
-				"handler": "activate_user",
-				"allowedStates": ["suspended"]
+				"allowedStates": [
+					"suspended"
+				],
+				"nextState": "active"
 			},
 			"delete": {
 				"label": "Delete User",
-				"handler": "delete_user",
-				"allowedStates": ["active", "suspended"],
-				"confirm": true
+				"allowedStates": [
+					"active",
+					"suspended"
+				],
+				"nextState": "deleted"
 			}
 		}
 	}

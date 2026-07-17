@@ -1,6 +1,7 @@
 import { createPinia } from 'pinia'
 import { createApp } from 'vue'
 
+import '@stonecrop/themes/default.css'
 import '@stonecrop/desktop/styles'
 import { install as AForm } from '@stonecrop/aform'
 import { StonecropDesktop } from '@stonecrop/desktop'

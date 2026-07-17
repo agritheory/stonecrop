@@ -1,5 +1,6 @@
 import type { ResolvedField, ResolvedLink, ResolvedScalar, ResolvedTable, ResolvedFieldset } from '@stonecrop/aform'
 import type { ColumnSchema, DoctypeField, LinkDeclaration, TableViewConfig, ValueField } from '@stonecrop/schema'
+import { componentCategory, componentLinkExpansion, resolveLinkRenderMode } from '@stonecrop/schema'
 import { Router } from 'vue-router'
 
 import Doctype from './doctype'
@@ -165,23 +166,22 @@ export default class Registry {
 		const resolved: ResolvedField[] = []
 
 		for (const field of fields) {
-			if (field.kind === 'field' && field.fieldtype === 'Link') {
-				const link = links.get(field.fieldname)
-				if (!link) {
-					// Unresolved link — warn and produce a scalar with component: 'AFormLink'
-					const linkDoctype = typeof field.options === 'string' ? field.options : undefined
-					if (linkDoctype === undefined) {
-						console.warn(
-							`[Stonecrop] Link field "${field.fieldname}" has no \`options\` or corresponding \`links\` declaration. ` +
-								`AFormLink will be created without a \`doctype\` prop, so navigation will not work. ` +
-								`Add \`"options": "<doctype-slug>"\` to the field definition.`
-						)
-					}
+			// A field is a link when it carries `doctype` (the marker) or has a LinkDeclaration.
+			const linkDecl = field.kind === 'field' ? links.get(field.fieldname) : undefined
+			if (field.kind === 'field' && (linkDecl || field.doctype)) {
+				const link = linkDecl
+				// The declaration's target wins over the field's own `doctype`.
+				const linkTarget = link?.target ?? field.doctype
+
+				// An undeclared link, or a declared one whose component renders an inline picker,
+				// stays a scalar: the target is not expanded, it only needs the slug for async
+				// display-text resolution and navigation.
+				if (!link || resolveLinkRenderMode(link, field.component) === 'inline') {
 					const { cardinality: _c, ...rest } = field
 					resolved.push({
 						...rest,
 						component: rest.component || 'AFormLink',
-						...(linkDoctype !== undefined ? { doctype: linkDoctype } : {}),
+						...(linkTarget !== undefined ? { doctype: linkTarget } : {}),
 					})
 					continue
 				}
@@ -195,9 +195,9 @@ export default class Registry {
 				}
 
 				const childSchema = this.resolveSchema(targetDoctype, new Set(visited))
-				const { fieldtype: _ft, options: _opt, cardinality: _card, kind: _kind, ...fieldRest } = field
+				const { options: _opt, cardinality: _card, kind: _kind, ...fieldRest } = field
 
-				if (link.cardinality === 'noneOrMany' || link.cardinality === 'atLeastOne') {
+				if (resolveLinkRenderMode(link, field.component) === 'table') {
 					resolved.push(this.buildTableConfig(field, childSchema, link.component))
 				} else {
 					const linkEntry: ResolvedLink = {
@@ -229,7 +229,18 @@ export default class Registry {
 				}
 				resolved.push(tableEntry)
 			} else {
-				// Scalar field (kind: 'field', not a Link) — strip cardinality
+				// Scalar field (kind: 'field', not a link) — strip cardinality.
+				// A link-rendering component with nothing to point at renders an empty picker (or an
+				// empty embedded form), which is indistinguishable from "the record has no value".
+				// Link-ness comes from `doctype`/`links`, so this is a field that named a link
+				// component and forgot the target.
+				if (field.kind === 'field' && componentLinkExpansion(field.component)) {
+					console.warn(
+						`[Stonecrop] Field "${field.fieldname}" renders with "${field.component}", which is a link component, ` +
+							`but the field is not a link: it has no \`doctype\` and no \`links\` declaration. It will render ` +
+							`as a plain field. Add \`"doctype": "<doctype-slug>"\` to the field definition.`
+					)
+				}
 				const { cardinality: _c, ...rest } = field
 				resolved.push({ ...rest })
 			}
@@ -250,7 +261,7 @@ export default class Registry {
 			.map(({ kind: _k, ...col }) => col)
 
 		const config: TableViewConfig = (field as ValueField & { config?: TableViewConfig }).config ?? { view: 'list' }
-		const { fieldtype: _ft, options: _opt, cardinality: _card, ...fieldRest } = field
+		const { options: _opt, cardinality: _card, ...fieldRest } = field
 
 		return {
 			...fieldRest,
@@ -268,7 +279,7 @@ export default class Registry {
 	 *
 	 * - `kind: 'table'` or `kind: 'link'` → `[]` or `{}`
 	 * - `kind: 'fieldset'` → recursively initializes children as `{}`
-	 * - `kind: 'field'` → derives default from `fieldtype`; falls back to `null`
+	 * - `kind: 'field'` → derives the default from the component's category; falls back to `null`
 	 *
 	 * @param schema - The resolved schema array to derive defaults from
 	 * @returns A plain object with default values for each field
@@ -285,32 +296,26 @@ export default class Registry {
 			} else if (field.kind === 'fieldset') {
 				record[field.fieldname] = this.initializeRecord(field.schema)
 			} else {
-				// kind: 'field' — derive from fieldtype
+				// kind: 'field' — the empty default comes from the component's category.
 				const fieldDefault = field.default
 				if (fieldDefault !== undefined) {
 					record[field.fieldname] = fieldDefault
 				} else {
-					switch (field.fieldtype) {
-						case 'Data':
-						case 'Text':
-						case 'Code':
-							record[field.fieldname] = ''
-							break
-						case 'Check':
-							record[field.fieldname] = false
-							break
-						case 'Int':
-						case 'Float':
-						case 'Decimal':
-						case 'Currency':
-						case 'Quantity':
-							record[field.fieldname] = 0
-							break
-						case 'JSON':
-							record[field.fieldname] = {}
-							break
-						default:
-							record[field.fieldname] = null
+					const category = componentCategory(field.component)
+					if (category === 'text') {
+						record[field.fieldname] = ''
+					} else if (category === 'number') {
+						record[field.fieldname] = 0
+					} else if (category === 'boolean') {
+						record[field.fieldname] = false
+					} else if (category === 'code' && field.language) {
+						// A JSON editor starts from an empty object; any other language from empty source.
+						record[field.fieldname] = field.language === 'json' ? {} : ''
+					} else {
+						// date / datetime / select / link / attach — plus two cases with no better answer
+						// than "no value": an unknown (custom) component, and a code field whose missing
+						// `language` doesn't say which kind of empty it wants.
+						record[field.fieldname] = null
 					}
 				}
 			}

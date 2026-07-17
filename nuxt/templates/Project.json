@@ -1,0 +1,50 @@
+{
+	"name": "Project",
+	"slug": "project",
+	"fields": [
+		{
+			"fieldname": "id",
+			"label": "ID",
+			"component": "ATextInput",
+			"mode": "display"
+		},
+		{
+			"fieldname": "title",
+			"label": "Title",
+			"component": "ATextInput",
+			"required": true
+		},
+		{
+			"fieldname": "description",
+			"label": "Description",
+			"component": "ATextarea"
+		},
+		{
+			"fieldname": "status",
+			"label": "Status",
+			"component": "ADropdown",
+			"options": ["Active", "Archived"],
+			"default": "Active"
+		},
+		{
+			"fieldname": "createdAt",
+			"label": "Created At",
+			"component": "ADateTime",
+			"mode": "display"
+		}
+	],
+	"workflow": {
+		"states": ["Active", "Archived"],
+		"actions": {
+			"save": {
+				"label": "Save",
+				"stateless": true
+			},
+			"archive": {
+				"label": "Archive Project",
+				"allowedStates": ["Active"],
+				"nextState": "Archived"
+			}
+		}
+	}
+}

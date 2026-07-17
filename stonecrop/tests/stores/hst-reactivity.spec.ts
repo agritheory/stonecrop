@@ -193,8 +193,8 @@ describe('HST Vue Reactivity', { tags: ['unit'] }, () => {
 		registry = new Registry()
 
 		const mockSchema = List([
-			{ kind: 'field', fieldname: 'name', fieldtype: 'Data', label: 'Name', component: 'MockATextInput' },
-			{ kind: 'field', fieldname: 'active', fieldtype: 'Check', label: 'Active', component: 'MockACheckbox' },
+			{ kind: 'field', fieldname: 'name', label: 'Name', component: 'MockATextInput' },
+			{ kind: 'field', fieldname: 'active', label: 'Active', component: 'MockACheckbox' },
 		])
 
 		const mockWorkflow: UnknownMachineConfig = {
@@ -462,7 +462,7 @@ describe('HST Vue Reactivity', { tags: ['unit'] }, () => {
 			expect((textInput.element as HTMLInputElement).value).toBe('Bidirectional Test')
 		})
 
-		it('should handle complex fieldtypes with proper HST structure', async () => {
+		it('should handle a variety of field components with proper HST structure', async () => {
 			wrapper = mount(MockDoctypeForm, {
 				props: {
 					doctype: doctype,
@@ -578,7 +578,6 @@ describe('HST Vue Reactivity', { tags: ['unit'] }, () => {
 				fields: Array.from({ length: 50 }, (_, i) => ({
 					fieldname: `field_${i}`,
 					label: `Field ${i}`,
-					fieldtype: 'Data',
 					reqd: 0,
 				})),
 			}

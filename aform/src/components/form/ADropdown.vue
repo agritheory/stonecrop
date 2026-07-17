@@ -2,6 +2,7 @@
 	<div v-if="mode === 'display'" class="input-wrapper">
 		<span class="aform_display-value">{{ search ?? '' }}</span>
 		<label>{{ label }}</label>
+		<p v-show="errorText" class="aform_error" v-html="errorText"></p>
 	</div>
 	<div v-else v-on-click-outside="onClickOutside" class="autocomplete" :class="{ isOpen: dropdown.open }">
 		<div class="input-wrapper">
@@ -31,12 +32,13 @@
 			</ul>
 			<label>{{ label }}</label>
 		</div>
+		<p v-show="errorText" class="aform_error" v-html="errorText"></p>
 	</div>
 </template>
 
 <script setup lang="ts">
 import { vOnClickOutside } from '@vueuse/components'
-import { reactive, ref } from 'vue'
+import { computed, reactive, ref } from 'vue'
 
 import type { ComponentProps } from '../../types'
 
@@ -46,6 +48,8 @@ const {
 	isAsync = false,
 	filterFunction = undefined,
 	mode,
+	errors,
+	validation = { errorMessage: '' },
 } = defineProps<
 	ComponentProps & {
 		options?: string[]
@@ -53,6 +57,9 @@ const {
 		filterFunction?: (search: string) => string[] | Promise<string[]>
 	}
 >()
+
+// Dynamic trigger errors take precedence over a static schema errorMessage; empty means the slot hides.
+const errorText = computed(() => (errors?.length ? errors.join('; ') : (validation.errorMessage ?? '')))
 const search = defineModel<string>()
 
 // tracks the last explicitly-committed value so outside-click reverts instead of clears
@@ -218,5 +225,15 @@ label {
 .autocomplete-result:hover {
 	background-color: var(--sc-row-color-zebra-light);
 	color: var(--sc-input-active-border-color);
+}
+
+/* Keep the field error in-flow below the control. The shared .aform_error is absolutely
+   positioned against a .aform_form-element anchor, which this component does not use. */
+p.aform_error {
+	position: static;
+	display: block;
+	color: var(--sc-brand-danger, red);
+	font-size: 0.7rem;
+	margin: 0.25rem 0 0;
 }
 </style>

@@ -66,8 +66,23 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed } from 'vue'
+import { componentCategory, type ComponentCategory } from '@stonecrop/schema'
+
 import { createTableStore } from '../stores/table'
 import type { TableColumn } from '../types'
+
+// The filter widget is chosen by the component's semantic category.
+const CATEGORY_FILTER: Record<ComponentCategory, 'text' | 'select' | 'number' | 'date' | 'dateRange' | 'checkbox'> = {
+	text: 'text',
+	number: 'number',
+	boolean: 'checkbox',
+	date: 'date',
+	datetime: 'dateRange',
+	select: 'select',
+	code: 'text',
+	link: 'text',
+	attach: 'text',
+}
 
 const { column, colIndex, store } = defineProps<{
 	column: TableColumn
@@ -83,24 +98,10 @@ const dateFilter = reactive({
 
 const resolvedFilterType = computed(() => {
 	if (column.filterType) return column.filterType
-	switch (column.fieldtype) {
-		case 'Check':
-			return 'checkbox'
-		case 'Date':
-			return 'date'
-		case 'Datetime':
-			return 'dateRange'
-		case 'Select':
-			return 'select'
-		case 'Int':
-		case 'Float':
-		case 'Currency':
-		case 'Decimal':
-		case 'Quantity':
-			return 'number'
-		default:
-			return 'text'
-	}
+	const category = componentCategory(column.component)
+	if (category) return CATEGORY_FILTER[category]
+	// An unknown (custom) component gets the widget that can filter anything.
+	return 'text'
 })
 
 const getSelectOptions = (col: TableColumn): any[] => {

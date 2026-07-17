@@ -19,7 +19,8 @@
 						:row="row"
 						:row-index="row.originalIndex"
 						:store="store"
-						@row:action="handleRowAction">
+						@row:action="handleRowAction"
+						@row:click="handleRowClick">
 						<template v-for="(column, colIndex) in getProcessedColumnsForRow(row)" :key="column.name">
 							<component
 								:is="column.ganttComponent || 'AGanttCell'"
@@ -101,6 +102,7 @@ import type {
 	GanttDragEvent,
 	RowActionType,
 	RowAddEvent,
+	RowClickEvent,
 	RowDeleteEvent,
 	RowDuplicateEvent,
 	RowInsertEvent,
@@ -134,11 +136,13 @@ const emit = defineEmits<{
 	'connection:event': [event: ConnectionEvent]
 	'columns:update': [columns: TableColumn[]]
 	'row:add': [event: RowAddEvent]
+	'row:click': [event: RowClickEvent]
 	'row:delete': [event: RowDeleteEvent]
 	'row:duplicate': [event: RowDuplicateEvent]
 	'row:insert-above': [event: RowInsertEvent]
 	'row:insert-below': [event: RowInsertEvent]
 	'row:move': [event: RowMoveEvent]
+	'row:open': [event: RowClickEvent]
 }>()
 
 const tableRef = useTemplateRef<HTMLTableElement>('table')
@@ -200,10 +204,13 @@ watch(
 watch(
 	columns,
 	newColumns => {
+		// The model is optional, so it can be absent — there is nothing to sync from, and the store
+		// keeps the columns it resolved from the schema.
+		if (!newColumns) return
 		// Only update if the columns have actually changed (avoid infinite loops)
 		if (JSON.stringify(newColumns) !== JSON.stringify(store.columns)) {
 			store.columns = [...newColumns]
-			emit('columns:update', [...newColumns] as TableColumn[])
+			emit('columns:update', [...newColumns])
 		}
 	},
 	{ deep: true }
@@ -309,10 +316,18 @@ const handleConnectionDelete = (connection: ConnectionPath) => {
 }
 
 /**
+ * Handle row click events from ARow components.
+ */
+const handleRowClick = (rowIndex: number, event: MouseEvent) => {
+	const row = store.rows[rowIndex]
+	emit('row:click', { row, rowIndex, event })
+}
+
+/**
  * Handle row action events from ARow components.
  * Performs the default action and emits the appropriate event.
  */
-const handleRowAction = (actionType: RowActionType, rowIndex: number) => {
+const handleRowAction = (actionType: RowActionType, rowIndex: number, event?: MouseEvent) => {
 	switch (actionType) {
 		case 'add': {
 			// Add a new row after the current row
@@ -357,6 +372,25 @@ const handleRowAction = (actionType: RowActionType, rowIndex: number) => {
 			// Move action requires a target index - for now, emit an event
 			// The consumer should handle showing a UI for selecting the target
 			emit('row:move', { fromIndex: rowIndex, toIndex: -1 })
+			break
+		}
+		case 'moveUp': {
+			if (rowIndex > 0 && store.moveRow(rowIndex, rowIndex - 1)) {
+				rows.value = [...store.rows]
+				emit('row:move', { fromIndex: rowIndex, toIndex: rowIndex - 1 })
+			}
+			break
+		}
+		case 'moveDown': {
+			if (rowIndex < store.rows.length - 1 && store.moveRow(rowIndex, rowIndex + 1)) {
+				rows.value = [...store.rows]
+				emit('row:move', { fromIndex: rowIndex, toIndex: rowIndex + 1 })
+			}
+			break
+		}
+		case 'open': {
+			const row = store.rows[rowIndex]
+			emit('row:open', { row, rowIndex, event })
 			break
 		}
 	}
@@ -408,7 +442,6 @@ td.sticky-index {
 </style>
 
 <style scoped>
-@import url('@stonecrop/themes/default.css');
 .atable {
 	position: relative;
 	font-family: var(--sc-atable-font-family);

@@ -12,6 +12,7 @@ export default defineConfig({
 			'beam/*/vite.config.ts',
 			'casl_middleware/*/vite.config.ts',
 			'desktop/vite.config.ts',
+			'node_editor/vite.config.ts',
 			'nuxt/*',
 			'rockfoil/*/vite.config.ts',
 			'stonecrop/*/vite.config.ts',

@@ -1,141 +1,150 @@
 /**
  * Stonecrop GraphQL Resolvers
  *
- * This file contains resolver implementations for the Stonecrop GraphQL schema.
- * Customize these resolvers to connect to your data sources.
+ * Uses Grafast plan resolvers — functions that return Steps (execution plans)
+ * rather than raw data. The key step functions used here:
  *
- * Grafast uses a planning-based execution model where resolvers return "steps"
- * (execution plans) rather than raw data. Common step functions:
- * - constant(value) - Returns a constant value
- * - context() - Accesses request context
- * - object({ ... }) - Creates an object with planned properties
- * - access($step, 'property') - Accesses a property from another step
- * - lambda($step, fn) - Transforms a step SYNCHRONOUSLY (no async/await!)
- * - loadOne($step, fn) - Batch loads data ASYNCHRONOUSLY (for DB queries)
- * - list([$a, $b]) - Combines multiple steps into a tuple
+ * - constant(value)           — return a static value
+ * - lambda($step, fn)         — transform a step SYNCHRONOUSLY (no async/await)
+ * - loadOne($step, fn)        — batch-load data ASYNCHRONOUSLY (for DB queries)
+ * - object({ ... })           — group multiple steps into a single step object
  *
- * CRITICAL RULES:
- * 1. lambda functions MUST be synchronous. For async operations, use loadOne/loadMany.
- * 2. Plan resolver args come pre-destructured with $ prefix: (_$parent, { $argName }) => ...
- * 3. Never call access() on args - they're already steps!
+ * Data reads go through loadOne. Workflow state transitions are applied by the
+ * stonecropAction resolver itself (server-owns-transition, guarded by allowedStates);
+ * side-effecting saves go through registered handlers (project:save, task:save).
+ *
+ * To connect a real database, replace the imports from ./data with your
+ * PostGraphile setup. See: https://stonecrop.io/docs/guides/postgraphile
  */
 
-// Import Grafast step functions
-// IMPORTANT: Must import from 'grafast' not 'postgraphile/grafast' for Nitro bundling
-import { constant, lambda, list } from 'grafast'
+import { constant, lambda, loadOne, object } from 'grafast'
+import { getMeta, getAllMeta, applyGuardedTransition } from '@stonecrop/graphql-middleware'
+import type { DoctypeMeta } from '@stonecrop/schema'
+import { projects, tasks, type Project, type Task } from './data'
 
-// Import Stonecrop middleware for doctype metadata
-// import { getMeta, getAllMeta } from '@stonecrop/graphql-middleware'
+// ============================================================
+// Formatting helpers (shape doctype metadata for the GraphQL
+// response type defined in server/schema.graphql)
+// ============================================================
+
+export function formatDoctypeMeta(meta: DoctypeMeta) {
+	// Fields and actions pass through verbatim — the SDL alone decides what is
+	// selectable. Enumerating keys here silently drops any field the schema gains
+	// later; the only computed addition is `name` (an action's key in the
+	// WorkflowMeta.actions record, flattened into the list the SDL declares).
+	const actions = meta.workflow?.actions
+	const actionList = actions
+		? Object.entries(actions as Record<string, Record<string, unknown>>).map(([name, action]) => ({
+				name,
+				...action,
+			}))
+		: []
+	return {
+		name: meta.name,
+		slug: meta.slug ?? null,
+		fields: meta.fields,
+		workflow: meta.workflow
+			? {
+					states: meta.workflow.states ?? null,
+					actions: actionList,
+				}
+			: null,
+		inherits: meta.inherits ?? null,
+	}
+}
+
+// ============================================================
+// Record helpers — read/write the in-memory Maps by doctype
+// ============================================================
+
+function getRecord(doctype: string, id: string): Project | Task | null {
+	const d = doctype.toLowerCase()
+	if (d === 'project') return projects.get(id) ?? null
+	if (d === 'task') return tasks.get(id) ?? null
+	return null
+}
+
+function getRecords(doctype: string, filters?: Record<string, unknown>): (Project | Task)[] {
+	const d = doctype.toLowerCase()
+	if (d === 'project') {
+		return Array.from(projects.values())
+	}
+	if (d === 'task') {
+		let all = Array.from(tasks.values())
+		if (filters?.projectId) {
+			all = all.filter(t => t.projectId === filters.projectId)
+		}
+		return all
+	}
+	return []
+}
+
+function nextId(doctype: string): string {
+	const d = doctype.toLowerCase()
+	const ids = d === 'project' ? projects.keys() : tasks.keys()
+	const max = Math.max(0, ...Array.from(ids, id => Number(id) || 0))
+	return String(max + 1)
+}
+
+// ============================================================
+// Resolvers (Grafast plan format)
+// ============================================================
 
 export const resolvers = {
 	Query: {
 		plans: {
-			/**
-			 * Health check endpoint
-			 * Returns a constant object with health status
-			 */
 			healthCheck() {
-				return constant({
-					status: 'healthy',
-					timestamp: new Date().toISOString(),
-					version: '1.0.0',
+				return constant({ status: 'healthy', timestamp: new Date().toISOString(), version: '1.0.0' })
+			},
+
+			getMeta(_: unknown, { $doctype }: any) {
+				return lambda($doctype, (doctype: unknown) => {
+					const meta = getMeta(doctype as string)
+					return meta ? formatDoctypeMeta(meta) : null
 				})
 			},
 
-			/**
-			 * Get metadata for a specific doctype
-			 * Connect this to your doctype registry or database
-			 */
-			getMeta(_$parent, { $doctype }) {
-				// $doctype is already a step from destructured args
-
-				// TODO: Implement doctype metadata lookup
-				// For synchronous lookups, use lambda:
-				// return lambda($doctype, doctype => {
-				// 	const meta = getMeta(doctype) // Must be synchronous!
-				// 	return meta ? formatDoctypeMeta(meta) : null
-				// })
-				//
-				// For async lookups, use loadOne:
-				// return loadOne($doctype, async doctypes => {
-				// 	return await Promise.all(
-				// 		doctypes.map(async dt => {
-				// 			const meta = await fetchMeta(dt)
-				// 			return meta ? formatDoctypeMeta(meta) : null
-				// 		})
-				// 	)
-				// })
-
-				return lambda($doctype, doctype => {
-					console.log('getMeta called for:', doctype)
-					return null
+			stonecropMeta(_: unknown, { $doctype }: any) {
+				return lambda($doctype, (doctype: unknown) => {
+					const meta = getMeta(doctype as string)
+					return meta ? formatDoctypeMeta(meta) : null
 				})
 			},
 
-			/**
-			 * Get all registered doctype metadata
-			 * Returns an array of doctype metadata
-			 */
 			stonecropAllMeta() {
-				// TODO: Implement - return all doctype metadata
-				// Example with graphql-middleware:
-				// return constant(getAllMeta().map(formatDoctypeMeta))
-
-				return constant([])
+				return constant(getAllMeta().map(formatDoctypeMeta))
 			},
 
-			/**
-			 * Get a single record by doctype and ID
-			 */
-			stonecropRecord(_$parent, { $doctype, $id }) {
-				// Arguments come pre-destructured as steps with $ prefix
-
-				// TODO: Implement record fetching from your database
-				// Use loadOne for async database queries:
-				// return loadOne(list([$doctype, $id]), async pairs => {
-				// 	return await Promise.all(
-				// 		pairs.map(async ([doctype, id]) => {
-				// 			const record = await fetchRecordFromDB(doctype, id)
-				// 			return { data: record, doctype }
-				// 		})
-				// 	)
-				// })
-
-				return lambda(list([$doctype, $id]), ([doctype, id]) => {
-					console.log('stonecropRecord called:', { doctype, id })
-					return {
-						data: null,
-						doctype,
-					}
+			stonecropRecord(_: unknown, { $doctype, $id, $options }: any) {
+				return loadOne(object({ doctype: $doctype, id: $id, options: $options }), async (specs: readonly any[]) => {
+					return specs.map(spec => ({
+						data: getRecord(spec.doctype, spec.id),
+						doctype: spec.doctype,
+					}))
 				})
 			},
 
-			/**
-			 * Get multiple records with filtering
-			 */
-			stonecropRecords(_$parent, { $doctype, $filters, $orderBy, $limit, $offset, $options }) {
-				// Arguments come pre-destructured as steps with $ prefix
-
-				// TODO: Implement records fetching from your database
-				// Use loadOne for async database queries:
-				// return loadOne(list([$doctype, $filters, $orderBy, $limit, $offset]), async queryParams => {
-				// 	return await Promise.all(
-				// 		queryParams.map(async ([doctype, filters, orderBy, limit, offset]) => {
-				// 			const result = await queryRecordsFromDB(doctype, { filters, orderBy, limit, offset })
-				// 			return { data: result.records, doctype, count: result.totalCount }
-				// 		})
-				// 	)
-				// })
-
-				return lambda(
-					list([$doctype, $filters, $orderBy, $limit, $offset, $options]),
-					([doctype, filters, orderBy, limit, offset, options]) => {
-						console.log('stonecropRecords called:', { doctype, filters, orderBy, limit, offset, options })
-						return {
-							data: [],
-							doctype,
-							count: 0,
-						}
+			stonecropRecords(_: unknown, { $doctype, $filters, $orderBy, $limit, $offset, $options }: any) {
+				return loadOne(
+					object({
+						doctype: $doctype,
+						filters: $filters,
+						orderBy: $orderBy,
+						limit: $limit,
+						offset: $offset,
+						options: $options,
+					}),
+					async (specs: readonly any[]) => {
+						return specs.map(spec => {
+							const all = getRecords(spec.doctype, spec.filters ?? {})
+							const offset = spec.offset ?? 0
+							const limit = spec.limit ?? 100
+							return {
+								data: all.slice(offset, offset + limit),
+								doctype: spec.doctype,
+								count: all.length,
+							}
+						})
 					}
 				)
 			},
@@ -144,109 +153,122 @@ export const resolvers = {
 
 	Mutation: {
 		plans: {
-			/**
-			 * Execute a doctype action (workflow actions like activate, archive, etc.)
-			 */
-			stonecropAction(_$parent, { $doctype, $action, $args }) {
-				// Arguments come pre-destructured as steps with $ prefix
+			stonecropAction(_: unknown, { $doctype, $action, $args: $actionArgs }: any) {
+				return loadOne(
+					object({ doctype: $doctype, action: $action, actionArgs: $actionArgs }),
+					async (specs: readonly any[]) => {
+						return Promise.all(
+							specs.map(async spec => {
+								const meta = getMeta(spec.doctype)
+								if (!meta) return { success: false, data: null, error: `Unknown doctype: ${spec.doctype}` }
 
-				// TODO: Implement action execution
-				// Use loadOne for async operations:
-				// return loadOne(list([$doctype, $action, $args]), async actionParams => {
-				// 	return await Promise.all(
-				// 		actionParams.map(async ([doctype, action, actionArgs]) => {
-				// 			const result = await executeAction(doctype, action, actionArgs)
-				// 			return { success: result.success, data: result.data, error: result.error }
-				// 		})
-				// 	)
-				// })
+								const actionDef = meta.workflow?.actions?.[spec.action]
+								if (!actionDef) return { success: false, data: null, error: `Unknown action: ${spec.action}` }
 
-				return lambda(list([$doctype, $action, $args]), ([doctype, action, actionArgs]) => {
-					console.log('stonecropAction called:', { doctype, action, args: actionArgs })
-					return {
-						success: true,
-						data: null,
-						error: null,
+								// Record envelope: [{ id, data }] — the transition keys off the record id, and a
+								// self-transition persists the edited field `data` in place.
+								const argList = Array.isArray(spec.actionArgs) ? spec.actionArgs : []
+								const recordId = argList[0]?.id != null ? String(argList[0].id) : undefined
+								const recordData: Record<string, unknown> = argList[0]?.data ?? {}
+								const d = spec.doctype.toLowerCase()
+
+								try {
+									// The server owns the transition: read current state, guard against allowedStates,
+									// write nextState. Reads/writes go straight to the in-memory Maps; a PostGraphile
+									// setup swaps in pgClient SQL instead.
+									return await applyGuardedTransition(
+										actionDef,
+										{
+											readState: async () => {
+												if (recordId == null) return undefined
+												const record = getRecord(d, recordId)
+												return record?.status == null ? undefined : String(record.status)
+											},
+											writeState: async (nextState: string) => {
+												if (recordId == null) return
+												const existing = getRecord(d, recordId)
+												if (!existing) return
+												if (d === 'project') projects.set(recordId, { ...existing, status: nextState } as Project)
+												else if (d === 'task') tasks.set(recordId, { ...existing, status: nextState } as Task)
+											},
+											// Self-transition data write: merge the edited fields into the record (status
+											// untouched) and return the full record for the client writeback.
+											writeData: async (patch: Record<string, unknown>) => {
+												if (recordId == null) return {}
+												const existing = getRecord(d, recordId)
+												if (!existing) return {}
+												const updated = { ...existing, ...patch }
+												if (d === 'project') projects.set(recordId, updated as Project)
+												else if (d === 'task') tasks.set(recordId, updated as Task)
+												return updated as Record<string, unknown>
+											},
+										},
+										recordData
+									)
+								} catch (err) {
+									return { success: false, data: null, error: err instanceof Error ? err.message : String(err) }
+								}
+							})
+						)
 					}
+				)
+			},
+
+			stonecropCreate(_: unknown, { $doctype, $input }: any) {
+				return loadOne(object({ doctype: $doctype, input: $input }), async (specs: readonly any[]) => {
+					return specs.map(spec => {
+						const d = spec.doctype.toLowerCase()
+						const id = nextId(d)
+						const now = new Date().toISOString()
+						if (d === 'project') {
+							const record: Project = { id, createdAt: now, status: 'Active', description: '', ...spec.input }
+							projects.set(id, record)
+							return { data: record, doctype: spec.doctype }
+						}
+						if (d === 'task') {
+							const record: Task = { id, createdAt: now, status: 'Todo', description: '', dueDate: null, ...spec.input }
+							tasks.set(id, record)
+							return { data: record, doctype: spec.doctype }
+						}
+						return { data: null, doctype: spec.doctype }
+					})
 				})
 			},
 
-			/**
-			 * Create a new record
-			 */
-			stonecropCreate(_$parent, { $doctype, $input }) {
-				// Arguments come pre-destructured as steps with $ prefix
-
-				// TODO: Implement record creation
-				// Use loadOne for async database operations:
-				// return loadOne(list([$doctype, $input]), async createParams => {
-				// 	return await Promise.all(
-				// 		createParams.map(async ([doctype, input]) => {
-				// 			const newRecord = await createRecordInDB(doctype, input)
-				// 			return { data: newRecord, doctype }
-				// 		})
-				// 	)
-				// })
-
-				return lambda(list([$doctype, $input]), ([doctype, input]) => {
-					console.log('stonecropCreate called:', { doctype, input })
-					return {
-						data: { id: 'new-id', ...input },
-						doctype,
-					}
+			stonecropUpdate(_: unknown, { $doctype, $id, $patch }: any) {
+				return loadOne(object({ doctype: $doctype, id: $id, patch: $patch }), async (specs: readonly any[]) => {
+					return specs.map(spec => {
+						const d = spec.doctype.toLowerCase()
+						const existing = getRecord(d, spec.id)
+						if (!existing) return null
+						if (d === 'project') {
+							const updated = { ...existing, ...spec.patch } as Project
+							projects.set(spec.id, updated)
+							return { data: updated, doctype: spec.doctype }
+						}
+						if (d === 'task') {
+							const updated = { ...existing, ...spec.patch } as Task
+							tasks.set(spec.id, updated)
+							return { data: updated, doctype: spec.doctype }
+						}
+						return null
+					})
 				})
 			},
 
-			/**
-			 * Update an existing record
-			 */
-			stonecropUpdate(_$parent, { $doctype, $id, $patch }) {
-				// Arguments come pre-destructured as steps with $ prefix
-
-				// TODO: Implement record update
-				// Use loadOne for async database operations:
-				// return loadOne(list([$doctype, $id, $patch]), async updateParams => {
-				// 	return await Promise.all(
-				// 		updateParams.map(async ([doctype, id, patch]) => {
-				// 			const updatedRecord = await updateRecordInDB(doctype, id, patch)
-				// 			return { data: updatedRecord, doctype }
-				// 		})
-				// 	)
-				// })
-
-				return lambda(list([$doctype, $id, $patch]), ([doctype, id, patch]) => {
-					console.log('stonecropUpdate called:', { doctype, id, patch })
-					return {
-						data: { id, ...patch },
-						doctype,
-					}
-				})
-			},
-
-			/**
-			 * Delete a record
-			 */
-			stonecropDelete(_$parent, { $doctype, $id }) {
-				// Arguments come pre-destructured as steps with $ prefix
-
-				// TODO: Implement record deletion
-				// Use loadOne for async database operations:
-				// return loadOne(list([$doctype, $id]), async deleteParams => {
-				// 	return await Promise.all(
-				// 		deleteParams.map(async ([doctype, id]) => {
-				// 			await deleteRecordFromDB(doctype, id)
-				// 			return { success: true, data: { id }, error: null }
-				// 		})
-				// 	)
-				// })
-
-				return lambda(list([$doctype, $id]), ([doctype, id]) => {
-					console.log('stonecropDelete called:', { doctype, id })
-					return {
-						success: true,
-						data: { id },
-						error: null,
-					}
+			stonecropDelete(_: unknown, { $doctype, $id }: any) {
+				return loadOne(object({ doctype: $doctype, id: $id }), async (specs: readonly any[]) => {
+					return specs.map(spec => {
+						const d = spec.doctype.toLowerCase()
+						let deleted = false
+						if (d === 'project') deleted = projects.delete(spec.id)
+						else if (d === 'task') deleted = tasks.delete(spec.id)
+						return {
+							success: deleted,
+							data: deleted ? { id: spec.id } : null,
+							error: deleted ? null : 'Record not found',
+						}
+					})
 				})
 			},
 		},

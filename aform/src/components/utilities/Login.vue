@@ -84,7 +84,6 @@ function onSubmit(event: Event) {
 </script>
 
 <style scoped>
-/* @import url('@stonecrop/themes/default.css'); */
 .login-container {
 	width: 100%;
 	position: relative;

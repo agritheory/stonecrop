@@ -1,13 +1,4 @@
 import { type Elements, type Element, type XYPosition, Position } from '@vue-flow/core'
-import type { AnyStateNodeDefinition, AnyStateNodeConfig } from 'xstate'
-
-/**
- * Editor states
- * @public
- */
-export type EditorStates = {
-	[key: string]: AnyStateNodeDefinition | AnyStateNodeConfig['states']
-}
 
 /**
  * Flow elements
@@ -15,7 +6,9 @@ export type EditorStates = {
  */
 export type FlowElements = Elements<
 	{ hasInput?: boolean; hasOutput?: boolean },
-	{ hasInput?: boolean; hasOutput?: boolean }
+	// `actionKey` is the stable action identity carried on an edge, decoupled from its visible
+	// `label` (the display name). It lets an edge be relabeled without re-keying the action.
+	{ hasInput?: boolean; hasOutput?: boolean; actionKey?: string }
 >
 
 /**
@@ -24,7 +17,7 @@ export type FlowElements = Elements<
  */
 export type FlowElement = Element<
 	{ hasInput?: boolean; hasOutput?: boolean },
-	{ hasInput?: boolean; hasOutput?: boolean }
+	{ hasInput?: boolean; hasOutput?: boolean; actionKey?: string }
 >
 
 /**

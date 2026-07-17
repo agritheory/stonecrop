@@ -2,6 +2,7 @@ import { existsSync } from 'node:fs'
 import { readFile, readdir } from 'node:fs/promises'
 import { extname } from 'node:path'
 import {
+	addComponent,
 	addImportsDir,
 	addLayout,
 	addPlugin,
@@ -26,7 +27,7 @@ const { resolve } = createResolver(import.meta.url)
 export interface ModuleOptions {
 	/** Enable the DocBuilder feature with /docbuilder routes */
 	docbuilder?: boolean
-	/** Path to doctypes folder relative to srcDir (defaults to 'doctypes', resolving to app/doctypes) */
+	/** Path to doctypes folder relative to the project root (defaults to 'doctypes') */
 	doctypesDir?: string
 	/**
 	 * Path to the page component used for default slug-based routing.
@@ -54,6 +55,16 @@ export interface ModuleOptions {
 	 * ```
 	 */
 	routeStrategy?: RouteStrategyFn
+	/**
+	 * Base theme stylesheet loaded into the host app. Provides the `--sc-*` CSS variables,
+	 * applies the document font, and normalizes form controls / code to inherit it. Defaults
+	 * to Stonecrop's default theme. Set to `false` to load no theme (bring your own), or pass
+	 * a different theme's module specifier / path (e.g. `'@stonecrop/themes/dark.css'`).
+	 *
+	 * The Stonecrop component packages are theme-agnostic — they consume `--sc-*` variables
+	 * but never bundle a theme — so the host must supply one; the module does that here.
+	 */
+	theme?: string | false
 }
 
 // Stonecrop packages that need to be transpiled (they import CSS in their dist bundles)
@@ -76,6 +87,7 @@ export default defineNuxtModule<ModuleOptions>({
 		return {
 			docbuilder: false,
 			doctypesDir: 'doctypes',
+			theme: '@stonecrop/themes/default.css',
 		}
 	},
 
@@ -92,6 +104,16 @@ export default defineNuxtModule<ModuleOptions>({
 			}
 		}
 		logger.log('Added Stonecrop packages to build.transpile for SSR CSS handling')
+
+		// Supply the base theme to the host app: the --sc-* variables, the document font, and
+		// the control/code font-inheritance reset. Loaded here rather than bundled into the
+		// component packages, so the components stay theme-agnostic and any Nuxt host gets a
+		// theme just by using the module. unshift keeps it at the base of the cascade; opt out
+		// or swap themes with the `theme` option.
+		if (options.theme && !nuxt.options.css.includes(options.theme)) {
+			nuxt.options.css.unshift(options.theme)
+			logger.log(`Added Stonecrop theme to app CSS: ${options.theme}`)
+		}
 
 		// Configure Nitro to bundle Stonecrop packages instead of treating them as external
 		// This is critical for handling CSS imports in the distributed packages
@@ -124,7 +146,7 @@ export default defineNuxtModule<ModuleOptions>({
 
 		// find doctype schemas in the nuxt application and add them as pages
 		const appDir = nuxt.options.srcDir
-		const doctypesDir = resolve(appDir, options.doctypesDir ?? 'doctypes')
+		const doctypesDir = resolve(nuxt.options.rootDir, options.doctypesDir ?? 'doctypes')
 
 		// Expose the resolved absolute doctypesDir to server-side handlers via runtimeConfig
 		// Without this, server API handlers fall back to process.cwd()/doctypes which is wrong
@@ -133,13 +155,17 @@ export default defineNuxtModule<ModuleOptions>({
 			doctypesDir,
 		}
 
+		// Parse doctype definitions when the directory exists; otherwise proceed with none so route
+		// generation below still runs: a configured routeStrategy can be self-sufficient (fullstack's
+		// is a catch-all that ignores doctypes), so gating route-gen on the doctypes directory would
+		// silently drop the strategy and 404 every doctype URL (see test/route-strategy.test.ts).
+		const doctypes: ParsedDoctype[] = []
 		if (existsSync(doctypesDir)) {
 			try {
 				const dirContents = await readdir(doctypesDir)
 				const schemas = dirContents.filter(file => extname(file) === '.json')
 
 				// Parse all doctype JSON files into ParsedDoctype objects
-				const doctypes: ParsedDoctype[] = []
 				for (const schema of schemas) {
 					try {
 						const schemaPath = resolve(doctypesDir, schema)
@@ -153,72 +179,20 @@ export default defineNuxtModule<ModuleOptions>({
 							continue
 						}
 
-						const schemaFields = schemaData.schema || schemaData.fields
-						if (!schemaFields) {
-							logger.warn(`Schema file '${schema}' missing 'schema' or 'fields' property, skipping`)
+						if (!schemaData.fields) {
+							logger.warn(`Schema file '${schema}' missing 'fields' property, skipping`)
 							continue
 						}
 
 						doctypes.push({
 							fileName: schema.replace('.json', ''),
 							data: schemaData,
-							fields: schemaFields,
+							fields: schemaData.fields,
 						})
 					} catch (schemaError) {
 						logger.error(`Error processing schema '${schema}':`, schemaError)
 					}
 				}
-
-				extendPages(pages => {
-					const pagePaths = pages.map(page => page.path)
-
-					// Only add the module's home page if there isn't already a root page
-					if (!pagePaths.includes('/')) {
-						pages.unshift({
-							name: 'stonecrop-home',
-							path: '/',
-							file: homepage,
-						})
-						logger.log('Added Stonecrop home page at /')
-					} else {
-						logger.log('Skipping Stonecrop home page: root page already exists')
-					}
-
-					// Generate routes: custom strategy takes priority, then slug-based default
-					let generatedPages: NuxtPage[] = []
-
-					if (options.routeStrategy) {
-						// User-provided strategy has full control
-						generatedPages = options.routeStrategy(doctypes)
-					} else if (options.pageComponent) {
-						// Default slug-based routing with user's page component
-						const componentPath = resolve(appDir, options.pageComponent)
-						generatedPages = doctypes.map(({ fileName, data, fields }) => {
-							const slug = (data.slug as string) || fileName.toLowerCase()
-							return {
-								name: `stonecrop-${fileName}`,
-								path: `/${slug}`,
-								file: componentPath,
-								meta: { schema: fields, doctype: data },
-							}
-						})
-					} else {
-						logger.warn(
-							'No routeStrategy or pageComponent configured — ' +
-								'doctype routes will not be registered. ' +
-								'Set pageComponent to a page path or provide a routeStrategy function.'
-						)
-					}
-
-					for (const page of generatedPages) {
-						if (!pagePaths.includes(page.path)) {
-							pages.unshift(page)
-							logger.log(`Added route: ${page.path} (${page.name})`)
-						} else {
-							logger.warn(`Route ${page.path} already exists, skipping ${page.name}`)
-						}
-					}
-				})
 			} catch (doctypeError) {
 				// Log error but don't break the build if doctypes directory exists but has issues
 				logger.error('Error setting up doctype pages:', doctypeError)
@@ -231,9 +205,131 @@ export default defineNuxtModule<ModuleOptions>({
 			}
 		}
 
-		// Setup DocBuilder if enabled
-		if (options.docbuilder) {
+		extendPages(pages => {
+			const pagePaths = pages.map(page => page.path)
+
+			// Only add the module's home page if there isn't already a root page
+			if (!pagePaths.includes('/')) {
+				pages.unshift({
+					name: 'stonecrop-home',
+					path: '/',
+					file: homepage,
+				})
+				logger.log('Added Stonecrop home page at /')
+			} else {
+				logger.log('Skipping Stonecrop home page: root page already exists')
+			}
+
+			// Generate routes: custom strategy takes priority, then slug-based default
+			let generatedPages: NuxtPage[] = []
+
+			if (options.routeStrategy) {
+				// User-provided strategy has full control
+				generatedPages = options.routeStrategy(doctypes)
+			} else if (options.pageComponent) {
+				// Default slug-based routing with user's page component
+				const componentPath = resolve(appDir, options.pageComponent)
+				generatedPages = doctypes.map(({ fileName, data, fields }) => {
+					const slug = (data.slug as string) || fileName.toLowerCase()
+					return {
+						name: `stonecrop-${fileName}`,
+						path: `/${slug}`,
+						file: componentPath,
+						meta: { schema: fields, doctype: data },
+					}
+				})
+			} else {
+				logger.warn(
+					'No routeStrategy or pageComponent configured — ' +
+						'doctype routes will not be registered. ' +
+						'Set pageComponent to a page path or provide a routeStrategy function.'
+				)
+			}
+
+			for (const page of generatedPages) {
+				if (!pagePaths.includes(page.path)) {
+					pages.unshift(page)
+					logger.log(`Added route: ${page.path} (${page.name})`)
+				} else {
+					logger.warn(`Route ${page.path} already exists, skipping ${page.name}`)
+				}
+			}
+		})
+
+		// Setup DocBuilder if enabled — dev-only enforcement (Invariant 1)
+		if (options.docbuilder && process.env.NODE_ENV === 'development') {
 			logger.log('DocBuilder enabled, adding routes and handlers')
+
+			// VueFlow CSS must be at document level — component @import lands too late for VueFlow's init check
+			nuxt.options.css.push('@vue-flow/core/dist/style.css')
+			nuxt.options.css.push('@vue-flow/core/dist/theme-default.css')
+
+			// node-editor ships its component styles as a separate dist file (the `./styles` export)
+			// and its JS only imports VueFlow's base CSS — so its own styles (custom nodes, edge
+			// labels, chart controls, wrapper) are never loaded unless the consumer imports them.
+			nuxt.options.css.push('@stonecrop/node-editor/styles')
+
+			// desktop ships its styles separately too; the docbuilder renders desktop's ActionSet and
+			// must load them, or the control renders unstyled in non-playground hosts.
+			nuxt.options.css.push('@stonecrop/desktop/styles')
+
+			// Pre-bundle the docbuilder's client dependencies so Vite optimizes them at startup
+			// rather than discovering them on the first doctype load. Late discovery forces a
+			// mid-session re-optimization with two distinct failure modes:
+			//   - code-editor: the auto-import transform re-runs over the prebuilt dist and injects
+			//     a second `import { h } from 'vue'`, colliding with the dist's own vue import —
+			//     "Identifier 'h' has already been declared" (500 at client app init).
+			//   - schema: it pulls `zod`/`graphql` transitively; discovering them late bumps the
+			//     optimize browserHash and invalidates in-flight chunk imports —
+			//     "error loading dynamically imported module: .../graphql.js?v=...".
+			// Bare `zod`/`graphql` can't be listed here (unresolvable from the app root); pre-bundling
+			// the resolvable parent package pulls them into the startup optimization instead.
+			nuxt.options.vite.optimizeDeps = nuxt.options.vite.optimizeDeps || {}
+			nuxt.options.vite.optimizeDeps.include = nuxt.options.vite.optimizeDeps.include || []
+			for (const dep of ['@stonecrop/code-editor', '@stonecrop/schema']) {
+				if (!nuxt.options.vite.optimizeDeps.include.includes(dep)) {
+					nuxt.options.vite.optimizeDeps.include.push(dep)
+				}
+			}
+
+			// Vite keys its optimize cache on dep version + lockfile, not dist *content*. Rebuilding a
+			// workspace package's dist without bumping its version therefore leaves the running dev
+			// server on the stale pre-bundle — e.g. an old @stonecrop/schema still rejecting a
+			// since-removed field. These deps can't be excluded (they eager-pull zod/graphql; see above),
+			// so force a fresh re-optimize each dev start to keep source edits reflected. Cost: a few
+			// seconds of re-bundling per restart.
+			nuxt.options.vite.optimizeDeps.force = true
+
+			// A docbuilder Save writes doctype JSON into doctypesDir. Those files are import.meta.glob'd
+			// into the client (e.g. the example apps' useDoctypes), so Vite sees the write as an HMR update
+			// to a JSON module with no accept boundary and escalates to a full page reload — which flashes
+			// the builder and discards in-progress edits (e.g. a just-dragged node layout that hasn't been
+			// reloaded yet). The builder owns the authoritative in-memory state and re-fetches on mount, so
+			// suppress HMR for its data dir: returning [] tells Vite "no modules to update" instead of
+			// reloading. Trade-off: an external edit to a doctype JSON needs a manual refresh to appear on
+			// the runtime browse pages — acceptable, and strictly better than a reload on every save.
+			nuxt.options.vite.plugins = nuxt.options.vite.plugins || []
+			nuxt.options.vite.plugins.push({
+				name: 'stonecrop:docbuilder-suppress-doctype-reload',
+				handleHotUpdate(ctx: { file: string }) {
+					if (ctx.file.startsWith(doctypesDir)) return []
+				},
+			})
+
+			// Serve Monaco AMD build via Nitro publicAssets so the code editor works without CDN access.
+			// The AMD build (min/vs) has workers pre-bundled — no separate worker interception needed.
+			const { createRequire } = await import('node:module')
+			const { resolve: nodeResolve } = await import('node:path')
+			const req = createRequire(import.meta.url)
+			const monacoMinPath = nodeResolve(req.resolve('monaco-editor/package.json'), '../min')
+			nuxt.hook('nitro:config', nitroConfig => {
+				nitroConfig.publicAssets = nitroConfig.publicAssets ?? []
+				nitroConfig.publicAssets.push({
+					dir: monacoMinPath,
+					baseURL: '/stonecrop-monaco',
+					maxAge: 60 * 60 * 24 * 365,
+				})
+			})
 
 			const docBuilderIndex = resolve('runtime/app/pages/DocBuilderIndex.vue')
 			const docBuilderDetail = resolve('runtime/app/pages/DocBuilderDetail.vue')
@@ -244,6 +340,7 @@ export default defineNuxtModule<ModuleOptions>({
 					name: 'docbuilder-index',
 					path: '/docbuilder',
 					file: docBuilderIndex,
+					meta: { layout: false },
 				})
 
 				// Add docbuilder detail page
@@ -251,6 +348,7 @@ export default defineNuxtModule<ModuleOptions>({
 					name: 'docbuilder-detail',
 					path: '/docbuilder/:doctype',
 					file: docBuilderDetail,
+					meta: { layout: false },
 				})
 
 				logger.log('Added DocBuilder pages at /docbuilder')
@@ -279,6 +377,11 @@ export default defineNuxtModule<ModuleOptions>({
 			})
 
 			logger.log('Added DocBuilder API handlers at /api/_stonecrop/docbuilder/')
+
+			addComponent({
+				name: 'DocBuilderActionsPanel',
+				filePath: resolve('runtime/app/components/DocBuilderActionsPanel.vue'),
+			})
 		}
 
 		// Do not add the extension since the `.ts` will be transpiled to `.mjs` after `npm run prepack`

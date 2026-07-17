@@ -57,7 +57,6 @@ const default_columns = [
 	{
 		label: 'Number',
 		name: 'account_number',
-		fieldtype: 'Data',
 		align: 'left',
 		edit: false,
 		width: '10ch',
@@ -65,7 +64,6 @@ const default_columns = [
 	{
 		label: 'Account',
 		name: 'account_title',
-		fieldtype: 'Data',
 		align: 'left',
 		edit: true,
 		width: '50ch',
@@ -73,7 +71,6 @@ const default_columns = [
 	{
 		label: 'Balance',
 		name: 'balance',
-		fieldtype: 'Currency',
 		align: 'left',
 		edit: false,
 		width: '20ch',
@@ -88,7 +85,6 @@ const pinned_columns = [
 	{
 		label: 'Number',
 		name: 'account_number',
-		fieldtype: 'Data',
 		align: 'left',
 		edit: false,
 		width: '10ch',
@@ -97,7 +93,6 @@ const pinned_columns = [
 	{
 		label: 'Account',
 		name: 'account_title',
-		fieldtype: 'Data',
 		align: 'left',
 		edit: true,
 		width: '50ch',
@@ -106,7 +101,6 @@ const pinned_columns = [
 	{
 		label: 'Balance',
 		name: 'balance',
-		fieldtype: 'Currency',
 		align: 'left',
 		edit: false,
 		width: '20ch',

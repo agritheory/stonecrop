@@ -1,6 +1,6 @@
 # @stonecrop/aform
 
-Schema-driven form components for the Stonecrop framework. Renders a `ResolvedField[]` array (produced by `registry.resolveSchema()`) into a form, wiring field values to a `data` object via `v-model:data`.
+Schema-driven form components for the Stonecrop framework. Renders a `ResolvedField[]` array into a form, wiring field values to a `data` object via `v-model:data`. The array usually comes from `registry.resolveSchema()`, but may also be hand-authored for view chrome that has no backing doctype — see [Authoring space vs rendering space](#authoring-space-vs-rendering-space).
 
 ## Components
 
@@ -8,15 +8,19 @@ Schema-driven form components for the Stonecrop framework. Renders a `ResolvedFi
 |---|---|
 | `AForm` | Root form renderer — iterates schema, renders child components, handles nested forms |
 | `ACheckbox` | Boolean toggle |
-| `AComboBox` | Editable combo box with option list |
 | `ADate` | Date text input |
 | `ADatePicker` | Date picker with calendar UI |
+| `ADateTime` | Combined date and time input |
+| `ADateRange` | Date-range input (start and end) |
+| `ADateSelection` | Wrapper combining a date picker and time input |
+| `ADuration` | Duration input |
 | `ADropdown` | Single-select dropdown for string enum fields |
 | `AFieldset` | Collapsible grouping container for other fields |
 | `AFileAttach` | File upload and attachment |
 | `AFormLink` | Linked document selector with search dropdown and navigation arrow |
 | `ANumericInput` | Numeric input with type-specific formatting |
 | `ATextInput` | Single-line text input |
+| `ATextarea` | Multi-line text input |
 
 ## Installation
 
@@ -32,12 +36,58 @@ This registers all components globally. They can also be imported individually.
 
 ## AForm
 
+### Authoring space vs rendering space
+
+Stonecrop has two field shapes, and AForm consumes only the second:
+
+| | Type | Produced by | Table columns live under |
+|---|---|---|---|
+| **Authoring space** | `DoctypeField[]` (`@stonecrop/schema`) | hand-authored doctype JSON, the docbuilder, the GraphQL converter | `columns` |
+| **Rendering space** | `ResolvedField[]` (this package) | `registry.resolveSchema()` | `schema` |
+
+`resolveSchema()` renames a table's `columns` to `schema` because `schema` is the ATable prop that runs
+`schemaToColumns()`; ATable's own `columns` prop means already-converted `TableColumn[]`. Passing an
+authoring-space field straight to AForm therefore does **not** render a table.
+
+`kind` is required and is the only thing AForm dispatches on — it does not infer a field's type from its
+structure. Every path into rendering space sets it: Zod's preprocess, `Doctype.fromObject`, and the
+registry. When hand-authoring, declare it yourself and use `satisfies` to stay checked:
+
+```typescript
+import type { ResolvedField, ResolvedTable } from '@stonecrop/aform/types'
+
+const schema: ResolvedField[] = [
+  {
+    kind: 'table',
+    fieldname: 'line_items',
+    component: 'ATable',
+    schema: [{ fieldname: 'item_code', label: 'SKU', component: 'ATextInput' }],
+    config: { view: 'list' },
+  } satisfies ResolvedTable,
+]
+```
+
+Each column needs a `component`: `schemaToColumns()` drops entries without one, since absence is what
+marks a non-scalar entry.
+
+### Table rows come from the data model
+
+A table's rows are never part of its schema. AForm reads them from `dataModel[fieldname]`, so a `rows`
+key on the schema field is ignored, and a table whose `fieldname` has no matching data key renders empty:
+
+```typescript
+// schema declares fieldname: 'line_items' → rows are read from here
+const data = ref({ line_items: [{ item_code: 'LAPTOP-PRO-15', quantity: 2 }] })
+```
+
+For a table nested in a fieldset, the rows nest the same way — `data[fieldsetFieldname][tableFieldname]`.
+
 ### Field width
 
 Set `width` on any schema field to control its share of the form row. The value is any valid CSS size and is applied as `flex-basis` + `width` directly on the field's flex item:
 
 ```json
-{ "fieldname": "notes", "fieldtype": "Text", "component": "ATextInput", "label": "Notes", "width": "100%" }
+{ "fieldname": "notes", "component": "ATextInput", "label": "Notes", "width": "100%" }
 ```
 
 | Value | Effect |
@@ -52,7 +102,7 @@ Fields without `width` continue to share space equally (`flex-grow: 1; min-width
 
 ## AFormLink
 
-A form input for selecting and navigating to linked documents (`fieldtype: 'Link'`). Combines a searchable text input, an optional dropdown of results, and a navigation arrow button.
+A form input for selecting and navigating to linked documents (fields carrying a `doctype` marker). Combines a searchable text input, an optional dropdown of results, and a navigation arrow button.
 
 ### Value shape
 
@@ -142,21 +192,21 @@ If no navigator is provided, the arrow button is still rendered but navigation c
 
 ### Via resolveSchema
 
-For `fieldtype: 'Link'` fields with no matching `links` declaration, `Registry.resolveSchema()` automatically assigns `component: 'AFormLink'` and sets `doctype` from `field.options`. No manual wiring required:
+For fields carrying a `doctype` marker with no matching `links` declaration and no `component`, `Registry.resolveSchema()` automatically assigns `component: 'AFormLink'`. No manual wiring required:
 
 ```typescript
 const config: DoctypeConfig = {
-  slug: 'sales-order',
+  name: 'Sales Order',
   fields: [
-    { fieldname: 'order_number', fieldtype: 'Data', component: 'ATextInput', label: 'Order Number' },
-    { fieldname: 'territory', fieldtype: 'Link', options: 'territory', label: 'Territory' },
+    { fieldname: 'order_number', component: 'ATextInput', label: 'Order Number' },
+    { fieldname: 'territory', doctype: 'territory', label: 'Territory' },
     // no 'links' entry for territory
   ],
 }
 
 registry.addDoctype(Doctype.fromObject(config))
 const resolved = registry.resolveSchema(registry.registry['sales-order'])
-// resolved[1] === { fieldname: 'territory', component: 'AFormLink', doctype: 'territory', label: 'Territory' }
+// resolved[1] === { kind: 'field', fieldname: 'territory', component: 'AFormLink', doctype: 'territory', label: 'Territory' }
 
 // Pass to AForm as normal — the territory field renders as AFormLink automatically
 ```

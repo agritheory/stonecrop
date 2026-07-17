@@ -1,0 +1,108 @@
+{
+	"name": "Assignment",
+	"slug": "assignment",
+	"fields": [
+		{
+			"fieldname": "user",
+			"label": "User",
+			"component": "AFormLink",
+			"doctype": "user",
+			"required": true
+		},
+		{
+			"fieldname": "issue",
+			"label": "Issue",
+			"component": "AFormLink",
+			"doctype": "issue",
+			"required": true
+		},
+		{
+			"fieldname": "due_date",
+			"label": "Due Date",
+			"component": "ADate"
+		},
+		{
+			"fieldname": "assigned_date",
+			"label": "Assigned Date",
+			"component": "ADate",
+			"readOnly": true
+		},
+		{
+			"fieldname": "assigned_by",
+			"label": "Assigned By",
+			"component": "AFormLink",
+			"doctype": "user"
+		},
+		{
+			"fieldname": "completed_date",
+			"label": "Completed Date",
+			"component": "ADate",
+			"readOnly": true
+		}
+	],
+	"workflow": {
+		"states": [
+			"New",
+			"Draft",
+			"Completed",
+			"Cancelled"
+		],
+		"actions": {
+			"SAVE": {
+				"label": "SAVE",
+				"allowedStates": [
+					"New"
+				],
+				"nextState": "Draft"
+			},
+			"COMPLETE": {
+				"label": "COMPLETE",
+				"allowedStates": [
+					"Draft"
+				],
+				"nextState": "Completed"
+			},
+			"CANCEL": {
+				"label": "CANCEL",
+				"allowedStates": [
+					"Completed"
+				],
+				"nextState": "Cancelled"
+			}
+		},
+		"layout": {
+			"New": {
+				"position": {
+					"x": 0,
+					"y": 0
+				},
+				"targetPosition": "left",
+				"sourcePosition": "right"
+			},
+			"Draft": {
+				"position": {
+					"x": 238,
+					"y": 93.5
+				},
+				"targetPosition": "left",
+				"sourcePosition": "right"
+			},
+			"Completed": {
+				"position": {
+					"x": 431.5,
+					"y": -100.5
+				},
+				"targetPosition": "left",
+				"sourcePosition": "right"
+			},
+			"Cancelled": {
+				"position": {
+					"x": 647,
+					"y": 44
+				},
+				"targetPosition": "left",
+				"sourcePosition": "right"
+			}
+		}
+	}
+}

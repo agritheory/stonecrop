@@ -1,41 +1,23 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { GraphQLSchema, GraphQLObjectType, GraphQLString } from 'graphql'
 
-import type { SchemaConfig } from '../../../src/types'
+import type { PostGraphileConfig, SchemaConfig } from '../../../src/types'
 
-// Create mock schema for reuse
-const mockPostGraphileSchema = new GraphQLSchema({
-	query: new GraphQLObjectType({
-		name: 'Query',
-		fields: {
-			hello: {
-				type: GraphQLString,
-				resolve: () => 'world from PostGraphile',
-			},
-		},
-	}),
-})
+// NOTE: `postgraphile` and `#build/grafserv-preset` are deliberately NOT mocked here. Neither is
+// imported by src/runtime/handler.ts — `postgraphile` appears only inside the virtual-module
+// template strings module.ts writes at build time. Mocking them was dead weight, and the stale
+// belief that `#build/grafserv-preset` was on this code path is what every skip reason below cited.
+// The real dependency is `#internal/grafserv/pgl`, which vitest.config.ts aliases to ./mocks/pgl.
 
-// Mock postgraphile module
-vi.mock('postgraphile', () => ({
-	makeSchema: vi.fn(async (preset: any) => {
-		// Return a mock schema result
-		return {
-			schema: mockPostGraphileSchema,
-			resolvedPreset: preset,
-		}
-	}),
-}))
-
-// Mock the virtual preset module - needs to be set up per test
-vi.mock('#build/grafserv-preset', async () => {
-	return {
-		preset: {
-			extends: [],
-			pgServices: [],
-		},
-	}
-})
+// `afterEach` calls vi.resetModules(), so each test gets a fresh copy of the handler AND of the pgl
+// mock it imports. A module-scoped `import { pgl }` would therefore be a stale object from a
+// previous test's registry — load both together, inside the test, after the reset.
+const loadFreshHandler = async () => {
+	const handler = await import('../../../src/runtime/handler')
+	const pglMock = await import('../../mocks/pgl')
+	await handler.clearGrafservCache()
+	return { ...handler, ...pglMock }
+}
 
 // Mock grafserv
 vi.mock('grafserv/h3/v1', () => ({
@@ -58,23 +40,51 @@ describe('PostGraphile Preset Integration', { tags: ['e2e', 'nuxt', 'graphql'] }
 	})
 
 	describe('PostGraphileConfig', () => {
-		it.skip('should detect postgraphile type and call makeSchema with preset', async () => {
-			// Skip: The virtual module #build/grafserv-preset cannot be properly mocked in vitest
-			// This functionality is tested in E2E tests with actual Nuxt build
-			expect(true).toBe(true)
+		const postgraphileConfig: PostGraphileConfig = { type: 'postgraphile' }
+
+		it('builds the grafserv instance via pgl.createServ for postgraphile type', async () => {
+			const { getGrafservInstance, pgl, mockPglSchema } = await loadFreshHandler()
+
+			const instance = await getGrafservInstance(postgraphileConfig)
+
+			// createServ receives the grafserv factory itself — that is the contract preserving
+			// withPgClient/pgSettings/plugin middleware, and the reason the handler does not build
+			// the schema itself.
+			expect(pgl.createServ).toHaveBeenCalledOnce()
+			expect(pgl.createServ.mock.calls[0][0]).toBeTypeOf('function')
+			expect(instance.schema).toBe(mockPglSchema)
 		})
 
-		it('should throw helpful error when postgraphile package is missing', async () => {
-			// This test verifies error handling when postgraphile is not installed
-			// Since we can't easily unmock postgraphile in this test suite,
-			// we'll skip it as the error path is tested in the actual handler
-			expect(true).toBe(true)
+		it('throws a helpful error when the postgraphile package is missing', async () => {
+			const { getGrafservInstance, pgl } = await loadFreshHandler()
+
+			pgl.createServ.mockImplementationOnce(() => {
+				const error = new Error("Cannot find module 'postgraphile'") as Error & { code: string }
+				error.code = 'MODULE_NOT_FOUND'
+				throw error
+			})
+
+			await expect(getGrafservInstance(postgraphileConfig)).rejects.toThrow(/"postgraphile" package not found/)
 		})
 
-		it.skip('should cache schema on subsequent calls', async () => {
-			// Skip: The virtual module #build/grafserv-preset cannot be properly mocked in vitest
-			// This functionality is tested in E2E tests with actual Nuxt build
-			expect(true).toBe(true)
+		it('rethrows a non-MODULE_NOT_FOUND failure unchanged', async () => {
+			const { getGrafservInstance, pgl } = await loadFreshHandler()
+
+			pgl.createServ.mockImplementationOnce(() => {
+				throw new Error('pg connection refused')
+			})
+
+			await expect(getGrafservInstance(postgraphileConfig)).rejects.toThrow('pg connection refused')
+		})
+
+		it('caches the instance on subsequent calls', async () => {
+			const { getGrafservInstance, pgl } = await loadFreshHandler()
+
+			const first = await getGrafservInstance(postgraphileConfig)
+			const second = await getGrafservInstance(postgraphileConfig)
+
+			expect(second).toBe(first)
+			expect(pgl.createServ).toHaveBeenCalledOnce()
 		})
 	})
 
@@ -115,10 +125,13 @@ describe('PostGraphile Preset Integration', { tags: ['e2e', 'nuxt', 'graphql'] }
 	})
 
 	describe('Type discrimination', () => {
-		it.skip('should handle postgraphile type correctly', async () => {
-			// Skip: The virtual module #build/grafserv-preset cannot be properly mocked in vitest
-			// This functionality is tested in E2E tests with actual Nuxt build
-			expect(true).toBe(true)
+		it('should handle postgraphile type correctly', async () => {
+			const { getGrafservInstance } = await loadFreshHandler()
+
+			const instance = await getGrafservInstance({ type: 'postgraphile' } as PostGraphileConfig)
+
+			expect(instance).toBeDefined()
+			expect(instance.handleGraphQLEvent).toBeDefined()
 		})
 
 		it('should handle schema type correctly', async () => {
@@ -161,10 +174,17 @@ describe('PostGraphile Preset Integration', { tags: ['e2e', 'nuxt', 'graphql'] }
 	})
 
 	describe('Grafserv instance creation', () => {
-		it.skip('should pass only schema to grafserv for PostGraphile config', async () => {
-			// Skip: The virtual module #build/grafserv-preset cannot be properly mocked in vitest
-			// This functionality is tested in E2E tests with actual Nuxt build
-			expect(true).toBe(true)
+		it('passes the preset and schema through to grafserv for a PostGraphile config', async () => {
+			const { getGrafservInstance, mockPglSchema } = await loadFreshHandler()
+			const { grafserv } = await import('grafserv/h3/v1')
+
+			await getGrafservInstance({ type: 'postgraphile' } as PostGraphileConfig)
+
+			// The handler hands grafserv to createServ; postgraphile is what calls it, with both the
+			// resolved preset and the schema it built.
+			expect(grafserv).toHaveBeenCalledOnce()
+			expect(vi.mocked(grafserv).mock.calls[0][0]).toMatchObject({ schema: mockPglSchema })
+			expect(vi.mocked(grafserv).mock.calls[0][0]).toHaveProperty('preset')
 		})
 	})
 })

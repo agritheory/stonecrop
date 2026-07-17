@@ -16,8 +16,8 @@ export function install(_app: App): void;
 
 // @public
 export type KeyboardNavigationOptions = {
-    parent?: string | HTMLElement | Ref<HTMLElement>;
-    selectors?: string | HTMLElement | HTMLElement[] | ComponentPublicInstance[] | Ref<HTMLElement> | Ref<HTMLElement[]> | Ref<ComponentPublicInstance[]>;
+    parent?: string | HTMLElement | Readonly<Ref<HTMLElement | null>>;
+    selectors?: string | HTMLElement | HTMLElement[] | ComponentPublicInstance[] | Readonly<Ref<HTMLElement | null>> | Readonly<Ref<HTMLElement[] | null>> | Readonly<Ref<ComponentPublicInstance[] | null>>;
     handlers?: KeypressHandlers;
 };
 

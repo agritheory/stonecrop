@@ -1,0 +1,52 @@
+{
+	"name": "Order Item",
+	"slug": "order-item",
+	"fields": [
+		{
+			"fieldname": "id",
+			"label": "ID",
+			"component": "ATextInput",
+			"readOnly": true,
+			"hidden": true
+		},
+		{
+			"fieldname": "productId",
+			"label": "Product ID",
+			"component": "ATextInput",
+			"required": true,
+			"width": "12ch"
+		},
+		{
+			"fieldname": "productName",
+			"label": "Product",
+			"component": "ATextInput",
+			"required": true,
+			"width": "25ch"
+		},
+		{
+			"fieldname": "quantity",
+			"label": "Qty",
+			"component": "ANumericInput",
+			"required": true,
+			"default": 1,
+			"width": "8ch",
+			"align": "right"
+		},
+		{
+			"fieldname": "unitPrice",
+			"label": "Unit Price",
+			"component": "ANumericInput",
+			"required": true,
+			"width": "12ch",
+			"align": "right"
+		},
+		{
+			"fieldname": "total",
+			"label": "Total",
+			"component": "ANumericInput",
+			"readOnly": true,
+			"width": "12ch",
+			"align": "right"
+		}
+	]
+}

@@ -8,7 +8,7 @@ import type { DoctypeConfig } from '@stonecrop/stonecrop'
 
 import { useNuxtApp } from 'nuxt/app'
 
-const modules = import.meta.glob<DoctypeConfig>('../doctypes/*.json', {
+const modules = import.meta.glob<DoctypeConfig>('../../doctypes/*.json', {
 	eager: true,
 	import: 'default',
 })

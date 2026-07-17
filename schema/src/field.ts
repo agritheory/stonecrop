@@ -1,24 +1,25 @@
 import { z } from 'zod'
 
 import type { ColumnSchema } from './column-schema'
-import { StonecropFieldType } from './fieldtype'
 import type { InteractionMode } from './mode'
 import { TableViewConfig } from './table'
 
 /**
  * Field options - flexible bag for type-specific configuration.
  *
- * Usage by fieldtype:
- * - Link/Doctype: target doctype slug as string ("customer", "sales-order-item")
+ * Usage:
  * - Select: array of choices (["Draft", "Submitted", "Cancelled"])
  * - Decimal: config object (\{ precision: 10, scale: 2 \})
  * - Code: config object (\{ language: "python" \})
+ *
+ * Deliberately *not* a bare string: a string once meant "link target", which made the value's
+ * shape encode its meaning. That job belongs to `ValueField.doctype`, leaving this a plain
+ * choices-or-config bag.
  *
  * @public
  */
 export const FieldOptions = z
 	.union([
-		z.string(), // Link/Doctype target: "customer"
 		z.array(z.string()), // Select choices: ["A", "B", "C"]
 		z.record(z.string(), z.unknown()), // Config: \{ precision: 10, scale: 2 \}
 	])
@@ -59,7 +60,8 @@ export type FieldValidation = z.infer<typeof FieldValidation>
 
 /**
  * A field that holds a scalar value, a link to another record, or a select choice.
- * The most common kind of field. `fieldtype` determines the default component and behavior.
+ * The most common kind of field. `component` determines how it renders; the attributes below
+ * carry everything else that is not a rendering concern.
  * @public
  */
 export interface ValueField {
@@ -67,10 +69,29 @@ export interface ValueField {
 	kind: 'field'
 	/** Unique identifier for this field within its doctype */
 	fieldname: string
-	/** Semantic field type — determines behavior and default rendering component */
-	fieldtype: string
-	/** Vue component to render this field. Derived from `fieldtype` when absent. */
-	component?: string
+	/**
+	 * Vue component that renders this field — the primary (and only) rendering axis. Required:
+	 * there is nothing left to derive it from, and a field without one has nothing to render it.
+	 * Any string is valid; naming a custom component is how an app renders a field Stonecrop
+	 * ships no widget for. See `CANONICAL_COMPONENTS` for the set Stonecrop provides.
+	 */
+	component: string
+	/** True for the field that identifies the record's primary-key column. */
+	primaryKey?: boolean
+	/** True for a computed/display field with no backing DB column — excluded from SQL SELECT. */
+	computed?: boolean
+	/** Editor language for code fields (e.g. `'json'`, `'typescript'`) — the only thing distinguishing
+	 *  a JSON editor from a code editor, since both render with `ACodeEditor`. */
+	language?: string
+	/**
+	 * Target doctype slug. Presence is what makes a field a link.
+	 *
+	 * How it renders is decided by `component`, not by this: `AFormLink` renders an
+	 * inline id-picker, while `AForm`/`ATable` expand the target (see `linkRenderMode`). Expansion
+	 * metadata — backlink, fetch strategy, authoritative cardinality — lives in the doctype's
+	 * `links` map, which is additive and never required for a plain foreign key.
+	 */
+	doctype?: string
 	/** Human-readable label */
 	label?: string
 	/** CSS width (e.g. `"40ch"`, `"200px"`) */
@@ -81,9 +102,14 @@ export interface ValueField {
 	edit?: boolean
 	/** Input mask pattern or serialized function */
 	mask?: string
+	/** Serialized `(value) => string` function for display formatting — distinct from `mask` (input).
+	 *  Spreads through `schemaToColumns` to `ColumnSchema.format`; deserialized at render time by
+	 *  ATable's `getFormattedValue`. */
+	format?: string
 	/** Per-field interaction mode override */
 	mode?: InteractionMode
-	/** Type-specific options: Link target slug, Select choices, Decimal precision config, etc. */
+	/** Type-specific options: Select choices, Decimal precision config, etc. A link's target is not
+	 *  here — it is `doctype`. */
 	options?: FieldOptions
 	/** Whether the field is required */
 	required?: boolean
@@ -97,6 +123,14 @@ export interface ValueField {
 	validation?: FieldValidation
 	/** Cardinality for Link fields — authoritative value on LinkDeclaration takes precedence */
 	cardinality?: 'atMostOne' | 'one' | 'noneOrMany' | 'atLeastOne'
+	/**
+	 * Provenance marker — stamped only by the GraphQL converter; absence means hand-authored.
+	 * When present, the docbuilder freezes the field's identity set (`fieldname`, `primaryKey`,
+	 * `required`, `options`, `cardinality`, `doctype`), since `fieldname` is the GraphQL/column
+	 * binding and `doctype` is the FK's target. `component` is deliberately **not** frozen: it
+	 * chooses the widget, which is an authoring decision the database has no opinion about.
+	 */
+	source?: 'introspected'
 }
 
 /**
@@ -156,7 +190,8 @@ export type DoctypeField = ValueField | FieldsetField | TableField
 /**
  * Infers the `kind` discriminant from the structural properties of a raw field
  * object, then injects it if absent. This allows authored JSON to omit `kind`
- * entirely — authors write only `fieldtype`, `schema`, or `columns`.
+ * entirely — a `schema` key means fieldset, `columns` means table, anything else
+ * is a value field.
  *
  * Rules (applied in order):
  *   has `schema`  → fieldset
@@ -164,6 +199,11 @@ export type DoctypeField = ValueField | FieldsetField | TableField
  *   otherwise     → field (value-holding scalar or link)
  *
  * Objects that already carry `kind` pass through unchanged (backward-compatible).
+ *
+ * Single-node only. Zod applies this at every level of the discriminated union (via the
+ * `z.lazy` in the fieldset schema), so nested fieldset children are normalized during a
+ * parse. Callers that bypass Zod — notably `Doctype.fromObject` — must use the exported
+ * {@link normalizeFieldKind} instead, which replicates that recursion.
  */
 function injectKind(data: unknown): unknown {
 	if (typeof data !== 'object' || data === null || Array.isArray(data)) return data
@@ -175,18 +215,48 @@ function injectKind(data: unknown): unknown {
 	return { kind: 'field', ...obj }
 }
 
+/**
+ * Recursively injects the `kind` discriminant into a raw field object and, for fieldsets,
+ * into each of its nested `schema` children — mirroring exactly what Zod's `preprocess`
+ * does at every level of the discriminated union.
+ *
+ * Table `columns` are {@link ColumnSchema} entries, not `DoctypeField`s, so they are left
+ * untouched — the Zod table schema validates them with a plain passthrough and never injects
+ * `kind` there either.
+ *
+ * Needed because `Doctype.fromObject` constructs a Doctype without running Zod, yet the
+ * registry's `resolveFields` gates link and fieldset handling on `field.kind`. Without this,
+ * a JSON-authored link resolves to a flat scalar and a fieldset's children are dropped.
+ *
+ * @public
+ */
+export function normalizeFieldKind(field: unknown): unknown {
+	const injected = injectKind(field)
+	if (typeof injected !== 'object' || injected === null) return injected
+	// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- injectKind returns a non-null object for object input; guarded above
+	const obj = injected as Record<string, unknown>
+	if (obj.kind === 'fieldset' && Array.isArray(obj.schema)) {
+		return { ...obj, schema: obj.schema.map(normalizeFieldKind) }
+	}
+	return injected
+}
+
 function createDoctypeFieldSchemas() {
 	const ValueFieldSchema = z
 		.object({
 			kind: z.literal('field'),
 			fieldname: z.string().min(1),
-			fieldtype: StonecropFieldType,
-			component: z.string().optional(),
+			component: z.string().min(1),
+			primaryKey: z.boolean().optional(),
+			computed: z.boolean().optional(),
+			language: z.string().optional(),
+			doctype: z.string().min(1).optional(),
 			label: z.string().optional(),
 			width: z.string().optional(),
 			align: z.enum(['left', 'center', 'right', 'start', 'end']).optional(),
 			edit: z.boolean().optional(),
 			mask: z.string().optional(),
+			format: z.string().optional(),
 			mode: z.enum(['edit', 'read', 'display']).optional(),
 			options: FieldOptions.optional(),
 			required: z.boolean().optional(),
@@ -195,6 +265,7 @@ function createDoctypeFieldSchemas() {
 			default: z.unknown().optional(),
 			validation: FieldValidation.optional(),
 			cardinality: z.enum(['atMostOne', 'one', 'noneOrMany', 'atLeastOne']).optional(),
+			source: z.literal('introspected').optional(),
 		})
 		.meta({ title: 'ValueField' })
 

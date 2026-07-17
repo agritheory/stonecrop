@@ -6,31 +6,38 @@
 
 <script setup lang="ts">
 import { AForm } from '@stonecrop/aform'
+import type { ResolvedField, ResolvedTable } from '@stonecrop/aform/types'
 import { ref } from 'vue'
 
 const { doctypes = ['todo', 'issue'] } = defineProps<{ doctypes?: string[] }>()
 
-const tableData = ref<Record<string, any>>({})
+// Rows live in the data model, keyed by the table field's fieldname — AForm sources
+// a table's `rows` from here, so rows placed in the schema itself are ignored.
+const tableData = ref<Record<string, any>>({
+	doctypes_table: doctypes.map(doctype => ({
+		id: doctype,
+		name: doctype.charAt(0).toUpperCase() + doctype.slice(1),
+		slug: doctype,
+		description: `Manage ${doctype} records`,
+		routes: `/${doctype}/ (list), /${doctype}/1 (form)`,
+	})),
+})
 
-// Create schema for displaying doctypes in an ATable
-const schema = ref([
+// Hand-built resolved schema for displaying doctypes in an ATable
+const schema = ref<ResolvedField[]>([
 	{
+		kind: 'table',
+		fieldname: 'doctypes_table',
 		component: 'ATable',
-		config: { view: 'list' },
-		columns: [
-			{ name: 'name', label: 'Name', fieldtype: 'Data' },
-			{ name: 'slug', label: 'Slug', fieldtype: 'Data' },
-			{ name: 'description', label: 'Description', fieldtype: 'Data' },
-			{ name: 'routes', label: 'Available Routes', fieldtype: 'Data' },
+		label: 'Doctypes',
+		schema: [
+			{ fieldname: 'name', label: 'Name', component: 'ATextInput' },
+			{ fieldname: 'slug', label: 'Slug', component: 'ATextInput' },
+			{ fieldname: 'description', label: 'Description', component: 'ATextInput' },
+			{ fieldname: 'routes', label: 'Available Routes', component: 'ATextInput' },
 		],
-		rows: doctypes.map(doctype => ({
-			id: doctype,
-			name: doctype.charAt(0).toUpperCase() + doctype.slice(1),
-			slug: doctype,
-			description: `Manage ${doctype} records`,
-			routes: `/${doctype}/ (list), /${doctype}/1 (form)`,
-		})),
-	},
+		config: { view: 'list' },
+	} satisfies ResolvedTable,
 ])
 </script>
 

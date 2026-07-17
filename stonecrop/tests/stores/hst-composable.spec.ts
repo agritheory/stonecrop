@@ -20,9 +20,9 @@ describe('HST Composable Functionality', { tags: ['unit'] }, () => {
 		registry = new Registry()
 
 		const mockSchema = List([
-			{ kind: 'field', fieldname: 'name', fieldtype: 'Data', label: 'Name', component: 'ATextInput' },
-			{ kind: 'field', fieldname: 'active', fieldtype: 'Check', label: 'Active', component: 'ACheckbox' },
-			{ kind: 'field', fieldname: 'count', fieldtype: 'Int', label: 'Count', component: 'ANumericInput' },
+			{ kind: 'field', fieldname: 'name', label: 'Name', component: 'ATextInput' },
+			{ kind: 'field', fieldname: 'active', label: 'Active', component: 'ACheckbox' },
+			{ kind: 'field', fieldname: 'count', label: 'Count', component: 'ANumericInput' },
 		])
 
 		const mockWorkflow: UnknownMachineConfig = {

@@ -1,29 +1,34 @@
 {
 	"name": "@stonecrop/graphql-middleware",
-	"version": "0.13.9",
+	"version": "0.15.0",
+	"description": "GraphQL middleware for PostGraphile and Stonecrop schema",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/agritheory/stonecrop",
+		"directory": "graphql_middleware"
+	},
 	"type": "module",
-	"types": "./dist/graphql-middleware.d.ts",
 	"exports": {
 		".": {
 			"types": "./dist/graphql-middleware.d.ts",
 			"import": "./dist/index.js"
 		}
 	},
+	"types": "./dist/graphql-middleware.d.ts",
 	"files": [
 		"dist"
 	],
-	"description": "GraphQL middleware for PostGraphile and Stonecrop schema",
 	"scripts": {
 		"_phase:build": "heft build && vite build && rushx docs",
-		"prepublishOnly": "heft build && vite build && rushx docs",
 		"build": "heft build && vite build && rushx docs",
 		"docs": "bash ../common/scripts/run-docs.sh graphql_middleware",
 		"lint": "oxlint",
 		"lint:fix": "oxlint --fix",
+		"prepublishOnly": "heft build && vite build && rushx docs",
 		"test": "vitest run --coverage.enabled false",
-		"test:watch": "vitest watch",
 		"test:coverage": "vitest run --coverage",
-		"test:ui": "vitest --ui"
+		"test:ui": "vitest --ui",
+		"test:watch": "vitest watch"
 	},
 	"dependencies": {
 		"@dataplan/pg": "^1.0.3",

@@ -1,0 +1,23 @@
+{
+	"Country": {
+		"code": { "readOnly": true },
+		"emoji": { "label": "Flag" },
+		"native": { "label": "Native Name" },
+		"phone": { "label": "Phone Code" },
+		"awsRegion": { "label": "AWS Region" }
+	},
+	"Continent": {
+		"code": { "readOnly": true }
+	},
+	"Language": {
+		"code": { "readOnly": true },
+		"native": { "label": "Native Name" },
+		"rtl": { "label": "Right-to-Left" }
+	},
+	"State": {
+		"code": { "readOnly": true }
+	},
+	"Subdivision": {
+		"code": { "readOnly": true }
+	}
+}

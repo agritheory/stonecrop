@@ -123,9 +123,6 @@ export interface OperationLogConfig {
 	/** Enable cross-tab synchronization (default: true) */
 	enableCrossTabSync?: boolean
 
-	/** Auto-sync interval in milliseconds (default: 30000) */
-	autoSyncInterval?: number
-
 	/** Enable operation persistence to localStorage (default: false) */
 	enablePersistence?: boolean
 

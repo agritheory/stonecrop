@@ -21,6 +21,8 @@ export interface NuxtConfigUpdate {
 	nitroConfig?: {
 		externalsInline?: string[]
 	}
+	/** CSS files/packages to add to the css array */
+	css?: string[]
 }
 
 /**
@@ -220,6 +222,43 @@ export async function updateNuxtConfig(cwd: string, updates: NuxtConfigUpdate): 
 					}
 					modified = true
 				}
+			}
+		}
+	}
+
+	// Add CSS configuration
+	if (updates.css && updates.css.length > 0) {
+		const cssMatch = content.match(/css\s*:\s*\[/)
+		const newEntries = updates.css.map(pkg => `'${pkg}'`)
+
+		if (cssMatch && cssMatch.index !== undefined) {
+			// css array exists — add entries that aren't present (match regardless of quote style)
+			const startIndex = cssMatch.index + cssMatch[0].length
+			const closingIndex = findMatchingBracket(content, startIndex - 1)
+			if (closingIndex !== -1) {
+				const arrayContent = content.slice(startIndex, closingIndex)
+				const toAdd = updates.css.filter(
+					pkg => !arrayContent.includes(`'${pkg}'`) && !arrayContent.includes(`"${pkg}"`)
+				)
+				if (toAdd.length > 0) {
+					const separator = arrayContent.trim().length > 0 ? ', ' : ''
+					const insertion = toAdd.map(pkg => `'${pkg}'`).join(', ')
+					content = content.slice(0, closingIndex) + separator + insertion + content.slice(closingIndex)
+					modified = true
+				}
+			}
+		} else {
+			// No css array — add it after the modules array or at the start of config
+			const modulesEndMatch = content.match(/modules\s*:\s*\[[^\]]*\]\s*,?/)
+			const defineNuxtConfigMatch = content.match(/defineNuxtConfig\s*\(\s*\{/)
+			if (modulesEndMatch && modulesEndMatch.index !== undefined) {
+				const insertIndex = modulesEndMatch.index + modulesEndMatch[0].length
+				content = content.slice(0, insertIndex) + `\n\n\tcss: [${newEntries.join(', ')}],` + content.slice(insertIndex)
+				modified = true
+			} else if (defineNuxtConfigMatch && defineNuxtConfigMatch.index !== undefined) {
+				const insertIndex = defineNuxtConfigMatch.index + defineNuxtConfigMatch[0].length
+				content = content.slice(0, insertIndex) + `\n\tcss: [${newEntries.join(', ')}],` + content.slice(insertIndex)
+				modified = true
 			}
 		}
 	}

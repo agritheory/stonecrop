@@ -108,7 +108,4 @@ execFileSync('docker', ['compose', 'exec', '-T', 'postgres', 'psql', '-U', 'ston
 })
 
 console.log()
-console.log('Ready. Start the dev server from nuxt_grafserv/:')
-console.log('  rushx dev')
-console.log()
-console.log('GraphiQL: http://localhost:3000/graphql/')
+console.log('✔ Database ready — Postgres on localhost:5435, migrations applied.')

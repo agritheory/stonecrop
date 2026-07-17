@@ -3,7 +3,7 @@
 		<Desktop
 			:available-doctypes="availableDoctypes"
 			:route-adapter="routeAdapter"
-			@action="handleAction"
+			@action="run"
 			@load-records="handleLoadRecords"
 			@load-record="handleLoadRecord" />
 		<template #fallback>
@@ -15,25 +15,18 @@
 </template>
 
 <script setup lang="ts">
-import {
-	Desktop,
-	type ActionEventPayload,
-	type LoadRecordEventPayload,
-	type LoadRecordsEventPayload,
-} from '@stonecrop/desktop'
+import { Desktop, type LoadRecordEventPayload, type LoadRecordsEventPayload } from '@stonecrop/desktop'
 import { useStonecrop } from '@stonecrop/stonecrop'
 
 import { useFullstackRouteAdapter } from '~/composables/useFullstackRouteAdapter'
-import {
-	doctypeMap,
-	useDoctypeConfig,
-	fetchDoctypeRecords,
-	fetchDoctypeRecord,
-	runDoctypeAction,
-} from '~/composables/useDoctypes'
+import { doctypeMap, useDoctypeConfig, fetchDoctypeRecords, fetchDoctypeRecord } from '~/composables/useDoctypes'
 
 const routeAdapter = useFullstackRouteAdapter()
 const { stonecrop } = useStonecrop()
+// Shared action executor (auto-imported from @stonecrop/nuxt): runs an action's
+// clientHandler if present, else dispatches to the server handler + writes HST.
+// Bound directly to Desktop's @action — no host-specific wrapper needed.
+const { run } = useClientAction()
 
 const availableDoctypes = computed(() => Array.from(doctypeMap.keys()))
 
@@ -69,31 +62,6 @@ async function handleLoadRecord(payload: LoadRecordEventPayload) {
 		}
 	} catch (error) {
 		console.error('Failed to load record:', error)
-	}
-}
-
-async function handleAction(payload: ActionEventPayload) {
-	const doctypeConfig = useDoctypeConfig(payload.doctype)
-	if (!doctypeConfig) {
-		console.warn(`No doctype config found for ${payload.doctype}`)
-		return
-	}
-
-	try {
-		const result = await runDoctypeAction(doctypeConfig, payload.name, {
-			id: payload.recordId,
-			data: payload.data,
-		})
-
-		if (result.success && result.data && stonecrop.value && payload.recordId) {
-			stonecrop.value.addRecord(payload.doctype, payload.recordId, result.data as Record<string, unknown>)
-		}
-
-		if (!result.success) {
-			console.error('Action failed:', result.error)
-		}
-	} catch (error) {
-		console.error('Action error:', error)
 	}
 }
 </script>

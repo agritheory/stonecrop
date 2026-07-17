@@ -7,15 +7,14 @@ import ATextInput from '../src/components/form/ATextInput.vue'
 
 describe('AForm Nested Schema Rendering', { tags: ['component'] }, () => {
 	const addressSchema = [
-		{ kind: 'field' as const, fieldname: 'street', fieldtype: 'Data', component: 'ATextInput', label: 'Street' },
-		{ kind: 'field' as const, fieldname: 'city', fieldtype: 'Data', component: 'ATextInput', label: 'City' },
+		{ kind: 'field' as const, fieldname: 'street', component: 'ATextInput', label: 'Street' },
+		{ kind: 'field' as const, fieldname: 'city', component: 'ATextInput', label: 'City' },
 	]
 
 	const nestedSchema = [
 		{
 			kind: 'field' as const,
 			fieldname: 'name',
-			fieldtype: 'Data',
 			component: 'ATextInput',
 			label: 'Name',
 		},
@@ -60,7 +59,6 @@ describe('AForm Nested Schema Rendering', { tags: ['component'] }, () => {
 			{
 				kind: 'field' as const,
 				fieldname: 'name',
-				fieldtype: 'Data',
 				component: 'ATextInput',
 				label: 'Name',
 			},
@@ -211,7 +209,6 @@ describe('AForm Nested Schema Rendering', { tags: ['component'] }, () => {
 			{
 				kind: 'field' as const,
 				fieldname: 'name',
-				fieldtype: 'Data',
 				component: 'ATextInput',
 				label: 'Name',
 			},
@@ -246,15 +243,14 @@ describe('AForm Nested Schema Rendering', { tags: ['component'] }, () => {
 			{
 				kind: 'field' as const,
 				fieldname: 'name',
-				fieldtype: 'Data',
 				component: 'ATextInput',
 				label: 'Name',
 			},
 			{
 				kind: 'field' as const,
 				fieldname: 'address',
-				fieldtype: 'Link',
-				options: 'address',
+				component: 'AFormLink',
+				doctype: 'address',
 				label: 'Address',
 				// no schema property — renders as plain scalar
 			},
@@ -305,7 +301,6 @@ describe('AForm Nested Schema Rendering', { tags: ['component'] }, () => {
 			{
 				kind: 'field' as const,
 				fieldname: 'name',
-				fieldtype: 'Data',
 				component: 'ATextInput',
 				label: 'Name',
 			},
@@ -346,7 +341,6 @@ describe('AForm Nested Schema Rendering', { tags: ['component'] }, () => {
 			{
 				kind: 'field' as const,
 				fieldname: 'card_number',
-				fieldtype: 'Data',
 				component: 'ATextInput',
 				label: 'Card Number',
 			},
@@ -356,7 +350,6 @@ describe('AForm Nested Schema Rendering', { tags: ['component'] }, () => {
 			{
 				kind: 'field' as const,
 				fieldname: 'name',
-				fieldtype: 'Data',
 				component: 'ATextInput',
 				label: 'Name',
 			},
@@ -401,7 +394,6 @@ describe('AForm Nested Schema Rendering', { tags: ['component'] }, () => {
 		const tableSchema = [
 			{
 				fieldname: 'name',
-				fieldtype: 'Data',
 				component: 'ATextInput',
 				label: 'Name',
 			},
@@ -411,8 +403,8 @@ describe('AForm Nested Schema Rendering', { tags: ['component'] }, () => {
 				component: 'ATable',
 				kind: 'table',
 				schema: [
-					{ fieldname: 'qty', fieldtype: 'Int', label: 'Qty' },
-					{ fieldname: 'price', fieldtype: 'Currency', label: 'Price' },
+					{ fieldname: 'qty', label: 'Qty' },
+					{ fieldname: 'price', label: 'Price' },
 				],
 			} as any,
 		]
@@ -436,7 +428,6 @@ describe('AForm Nested Schema Rendering', { tags: ['component'] }, () => {
 			{
 				kind: 'field' as const,
 				fieldname: 'first_name',
-				fieldtype: 'Data',
 				component: 'ATextInput',
 				label: 'First Name',
 			},
@@ -469,7 +460,6 @@ describe('AForm Nested Schema Rendering', { tags: ['component'] }, () => {
 			{
 				kind: 'field' as const,
 				fieldname: 'first_name',
-				fieldtype: 'Data',
 				component: 'ATextInput',
 				label: 'First Name',
 			},
@@ -492,14 +482,12 @@ describe('AForm Nested Schema Rendering', { tags: ['component'] }, () => {
 			{
 				kind: 'field' as const,
 				fieldname: 'first_name',
-				fieldtype: 'Data',
 				component: 'ATextInput',
 				label: 'First Name',
 			},
 			{
 				kind: 'field' as const,
 				fieldname: 'last_name',
-				fieldtype: 'Data',
 				component: 'ATextInput',
 				label: 'Last Name',
 			},
@@ -549,7 +537,6 @@ describe('AForm Nested Schema Rendering', { tags: ['component'] }, () => {
 			{
 				kind: 'field' as const,
 				fieldname: 'name',
-				fieldtype: 'Data',
 				component: 'ATextInput',
 				label: 'Name',
 			},
@@ -559,8 +546,8 @@ describe('AForm Nested Schema Rendering', { tags: ['component'] }, () => {
 				label: 'Items',
 				component: 'ATable',
 				schema: [
-					{ fieldname: 'item_name', label: 'Item', fieldtype: 'Data' },
-					{ fieldname: 'qty', label: 'Qty', fieldtype: 'Int' },
+					{ fieldname: 'item_name', label: 'Item' },
+					{ fieldname: 'qty', label: 'Qty' },
 				],
 				config: { view: 'list' as const },
 			},
@@ -595,9 +582,7 @@ describe('AForm Nested Schema Rendering', { tags: ['component'] }, () => {
 	})
 
 	describe('AFieldset inside AForm', () => {
-		const fieldsetSchema = [
-			{ fieldname: 'first_name', fieldtype: 'Data', component: 'ATextInput', label: 'First Name' },
-		]
+		const fieldsetSchema = [{ fieldname: 'first_name', component: 'ATextInput', label: 'First Name' }]
 
 		it('renders the fieldset legend text when component is AFieldset', async () => {
 			const wrapper = mount(AForm, {
@@ -670,7 +655,7 @@ describe('AForm Nested Schema Rendering', { tags: ['component'] }, () => {
 
 		it('passes mode to a component with kind: "fieldset" in the schema', async () => {
 			const fieldsetInnerSchema = [
-				{ kind: 'field' as const, fieldname: 'email', fieldtype: 'Data', component: 'ATextInput', label: 'Email' },
+				{ kind: 'field' as const, fieldname: 'email', component: 'ATextInput', label: 'Email' },
 			]
 
 			const schemaWithFieldset = [
