@@ -3,63 +3,140 @@ import { flushPromises, mount } from '@vue/test-utils'
 
 import ACodeEditor from '../src/components/ACodeEditor.vue'
 
-// vi.mock is hoisted above module-level declarations — vi.hoisted() ensures
-// mockEditorInstance and mockMonaco are defined before the factory runs.
-const { mockEditorInstance, mockMonaco } = vi.hoisted(() => {
+// vi.mock is hoisted above module-level declarations — vi.hoisted() ensures these
+// mocks are defined before the mock factory runs.
+//
+// NOTE ON SCOPE: these are unit tests against a fully mocked Monaco. They verify the
+// contract the component controls — value normalization, language detection, the model's
+// file extension (so the TS worker treats it as .ts/.json/.py/.js), and disposal. They
+// deliberately do NOT assert the `file://` URI scheme: whether that scheme actually lets
+// Monaco's TS worker run getSyntacticDiagnostics without "Could not find source file"
+// (see ACodeEditor.vue) is a real-worker behavior a mock cannot prove. Proving it would
+// need a browser-mode integration test, which is out of scope for these unit tests.
+const { mockEditorInstance, mockModel, mockMonaco, mockLoader } = vi.hoisted(() => {
+	const hoistedModel = { dispose: vi.fn() }
 	const hoistedEditorInstance = {
 		getValue: vi.fn(() => ''),
 		setValue: vi.fn(),
 		updateOptions: vi.fn(),
+		getModel: vi.fn(() => hoistedModel),
 		onDidChangeModelContent: vi.fn(_cb => ({ dispose: vi.fn() })),
 		dispose: vi.fn(),
 	}
 	const hoistedMonaco = {
+		Uri: { parse: vi.fn((uri: string) => uri) },
 		editor: {
 			create: vi.fn(() => hoistedEditorInstance),
+			createModel: vi.fn(() => hoistedModel),
 			defineTheme: vi.fn(),
 			setTheme: vi.fn(),
 		},
+		// Mirrors what `loader.init()` actually resolves with: the `vs/editor/editor.main` AMD exports,
+		// which carry `typescript` at the top level. Verified against monaco 0.55.1 in a browser —
+		// `languages.typescript` is the same object, but it is deprecated and typed as a tombstone.
+		languages: {},
+		typescript: {
+			javascriptDefaults: {
+				addExtraLib: vi.fn(),
+				setCompilerOptions: vi.fn(),
+			},
+			ScriptTarget: { ES2020: 7 },
+		},
 	}
-	return { mockEditorInstance: hoistedEditorInstance, mockMonaco: hoistedMonaco }
+	const hoistedLoader = {
+		init: vi.fn(() => Promise.resolve(hoistedMonaco)),
+		config: vi.fn(),
+	}
+	return {
+		mockEditorInstance: hoistedEditorInstance,
+		mockModel: hoistedModel,
+		mockMonaco: hoistedMonaco,
+		mockLoader: hoistedLoader,
+	}
 })
 
-vi.mock('@monaco-editor/loader', () => ({
-	default: { init: vi.fn(() => Promise.resolve(mockMonaco)) },
-}))
+vi.mock('@monaco-editor/loader', () => ({ default: mockLoader }))
 
 describe('ACodeEditor', { tag: 'component' }, () => {
 	beforeEach(() => {
 		vi.clearAllMocks()
-		// Re-establish return values that individual tests may have overridden via mockReturnValue
-		// (clearAllMocks clears call history but not mockReturnValue overrides)
+		// clearAllMocks clears call history but not return-value overrides individual tests
+		// install via mockReturnValue — re-establish the baselines so they don't leak.
 		mockEditorInstance.getValue.mockReturnValue('')
+		mockEditorInstance.getModel.mockReturnValue(mockModel)
 		mockEditorInstance.onDidChangeModelContent.mockImplementation(_cb => ({ dispose: vi.fn() }))
 		mockMonaco.editor.create.mockReturnValue(mockEditorInstance)
+		mockMonaco.editor.createModel.mockReturnValue(mockModel)
+		mockMonaco.Uri.parse.mockImplementation((uri: string) => uri)
+		mockLoader.init.mockResolvedValue(mockMonaco)
 	})
 
-	it('initializes the editor with the correct value and language', async () => {
+	it('creates the model with the correct value, language, and file extension', async () => {
 		mount(ACodeEditor, {
-			props: { modelValue: 'console.log("hello")', schema: { fieldtype: 'Code' } },
+			props: { modelValue: 'console.log("hello")', schema: { language: 'typescript' } },
 		})
 		await flushPromises()
+		// value + language + the .ts extension live on createModel now; create receives the model.
+		expect(mockMonaco.editor.createModel).toHaveBeenCalledWith(
+			'console.log("hello")',
+			'typescript',
+			expect.stringMatching(/\.ts$/)
+		)
 		expect(mockMonaco.editor.create).toHaveBeenCalledWith(
 			expect.any(HTMLElement),
-			expect.objectContaining({ value: 'console.log("hello")', language: 'typescript' })
+			expect.objectContaining({ model: mockModel })
 		)
 	})
 
-	it('coerces an object modelValue to formatted JSON on init', async () => {
+	it('uses the json language and a .json model when the field declares json', async () => {
 		mount(ACodeEditor, {
-			props: {
-				modelValue: { foo: 'bar' } as unknown as string,
-				schema: { fieldtype: 'JSON' },
-			},
+			props: { modelValue: '{ "foo": "bar" }', schema: { language: 'json' } },
 		})
 		await flushPromises()
-		expect(mockMonaco.editor.create).toHaveBeenCalledWith(
-			expect.any(HTMLElement),
-			expect.objectContaining({ value: '{\n  "foo": "bar"\n}', language: 'json' })
+		expect(mockMonaco.editor.createModel).toHaveBeenCalledWith(
+			'{ "foo": "bar" }',
+			'json',
+			expect.stringMatching(/\.json$/)
 		)
+	})
+
+	it('uses a .py model extension for python', async () => {
+		mount(ACodeEditor, { props: { language: 'python' } })
+		await flushPromises()
+		expect(mockMonaco.editor.createModel).toHaveBeenCalledWith('', 'python', expect.stringMatching(/\.py$/))
+	})
+
+	it('falls back to a .js model extension for other languages', async () => {
+		mount(ACodeEditor, { props: { language: 'javascript' } })
+		await flushPromises()
+		expect(mockMonaco.editor.createModel).toHaveBeenCalledWith('', 'javascript', expect.stringMatching(/\.js$/))
+	})
+
+	it('falls back to plaintext when neither the field nor the prop declares a language', async () => {
+		// `language` is the only thing that says which kind of code this is, so there is nothing to
+		// infer from — plaintext highlights nothing rather than highlighting it wrong.
+		mount(ACodeEditor, { props: { modelValue: 'some text' } })
+		await flushPromises()
+		expect(mockMonaco.editor.createModel).toHaveBeenCalledWith('some text', 'plaintext', expect.any(String))
+	})
+
+	it("prefers the field's own language over the language prop", async () => {
+		mount(ACodeEditor, { props: { schema: { language: 'json' }, language: 'python' } })
+		await flushPromises()
+		expect(mockMonaco.editor.createModel).toHaveBeenCalledWith('', 'json', expect.stringMatching(/\.json$/))
+	})
+
+	it('gives each concurrently-mounted editor a distinct model URI', async () => {
+		// Regression: the URI counter was declared inside <script setup>, making it per-instance
+		// (always 1). Two editors mounted at once both built `file:///stonecrop-editor-1.js`, so the
+		// second's createModel threw "Cannot add model because it already exists!" and only one loaded.
+		// The counter must be module-scoped so every instance gets a unique URI.
+		mount(ACodeEditor, { props: { language: 'javascript' } })
+		mount(ACodeEditor, { props: { language: 'javascript' } })
+		await flushPromises()
+		const uris = mockMonaco.editor.createModel.mock.calls.map(call => call[2])
+		expect(uris).toHaveLength(2)
+		expect(new Set(uris).size).toBe(2)
 	})
 
 	it('defines and applies the theme before creating the editor', async () => {
@@ -73,6 +150,21 @@ describe('ACodeEditor', { tag: 'component' }, () => {
 		const createOrder = mockMonaco.editor.create.mock.invocationCallOrder[0]
 		expect(defineOrder).toBeLessThan(createOrder)
 		expect(setOrder).toBeLessThan(createOrder)
+	})
+
+	it('configures the Monaco loader path when vsPath is provided', async () => {
+		mount(ACodeEditor, { props: { vsPath: '/custom/vs' } })
+		await flushPromises()
+		expect(mockLoader.config).toHaveBeenCalledWith({ paths: { vs: '/custom/vs' } })
+	})
+
+	it('registers extra libs and enables JS type-checking when extraLibs is provided', async () => {
+		const libs = 'declare const record: Record<string, unknown>'
+		mount(ACodeEditor, { props: { extraLibs: libs, language: 'javascript' } })
+		await flushPromises()
+		const jsDefaults = mockMonaco.typescript.javascriptDefaults
+		expect(jsDefaults.addExtraLib).toHaveBeenCalledWith(libs, 'ts:stonecrop.d.ts')
+		expect(jsDefaults.setCompilerOptions).toHaveBeenCalledWith(expect.objectContaining({ checkJs: true }))
 	})
 
 	it('emits update:modelValue when editor content changes', async () => {
@@ -125,10 +217,18 @@ describe('ACodeEditor', { tag: 'component' }, () => {
 		)
 	})
 
-	it('disposes the editor instance on unmount', async () => {
+	it('toggles readOnly when the mode prop changes after mount', async () => {
+		const wrapper = mount(ACodeEditor, { props: { mode: 'edit' } })
+		await flushPromises()
+		await wrapper.setProps({ mode: 'read' })
+		expect(mockEditorInstance.updateOptions).toHaveBeenCalledWith({ readOnly: true })
+	})
+
+	it('disposes the editor and its model on unmount', async () => {
 		const wrapper = mount(ACodeEditor)
 		await flushPromises()
 		wrapper.unmount()
+		expect(mockModel.dispose).toHaveBeenCalledOnce()
 		expect(mockEditorInstance.dispose).toHaveBeenCalledOnce()
 	})
 })

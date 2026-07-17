@@ -42,6 +42,7 @@
 		"lint:fix": "oxlint --fix",
 		"preview": "vite preview",
 		"test": "vitest run --coverage.enabled false",
+		"test:types": "vue-tsc --noEmit",
 		"test:watch": "vitest watch",
 		"test:coverage": "vitest run --coverage",
 		"test:ui": "vitest --ui"
@@ -72,7 +73,8 @@
 		"vite-plugin-lib-inject-css": "^2.2.2",
 		"vitest": "^4.1.5",
 		"vue": "^3.5.33",
-		"vue-router": "^5.0.6"
+		"vue-router": "^5.0.6",
+		"vue-tsc": "^3.3.6"
 	},
 	"publishConfig": {
 		"access": "public"

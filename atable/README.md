@@ -70,8 +70,9 @@ ATable supports two ways to define columns.
 ### Schema-driven columns (recommended)
 
 Pass a `ColumnSchema[]` array via the `:schema` prop. ATable calls `schemaToColumns()` internally —
-`fieldname` becomes `name`, `hidden: true` fields are excluded, and form-only properties are stripped.
-This is the preferred approach when working from doctype definitions.
+`fieldname` becomes `name`, entries that are `hidden` or have no `component` are excluded, the `hidden`
+flag is dropped, and all other properties pass through unchanged. This is the preferred approach when
+working from doctype definitions.
 
 ```vue
 <template>
@@ -82,10 +83,10 @@ This is the preferred approach when working from doctype definitions.
 import type { ColumnSchema } from '@stonecrop/schema'
 
 const fields: ColumnSchema[] = [
-  { fieldname: 'name', fieldtype: 'Data', label: 'Name', width: '150px' },
-  { fieldname: 'species', fieldtype: 'Select', label: 'Species', align: 'left', edit: true },
-  { fieldname: 'set_date', fieldtype: 'Date', label: 'Date', width: '30ch', edit: true },
-  { fieldname: 'internal_notes', fieldtype: 'Data', label: 'Notes', hidden: true },
+  { fieldname: 'name', component: 'ATextInput', label: 'Name', width: '150px' },
+  { fieldname: 'species', component: 'ADropdown', label: 'Species', align: 'left', edit: true },
+  { fieldname: 'set_date', component: 'ADate', label: 'Date', width: '30ch', edit: true },
+  { fieldname: 'internal_notes', component: 'ATextInput', label: 'Notes', hidden: true },
 ]
 </script>
 ```
@@ -101,7 +102,7 @@ accept live functions in addition to serialized strings.
 
 - `name`: String; required (column key — corresponds to `fieldname` in ColumnSchema)
 - `label`: String; optional (display label for the column header)
-- `fieldtype`: String; optional (semantic field type — see [Column Data Types](#column-data-types))
+- `component`: String; optional (rendering component — see [Column Data Types](#column-data-types))
 - `align`: String; optional (one of `left`, `right`, `center`, `start`, `end`; defaults to `center`)
 - `edit`: Boolean; optional (whether the cell is editable; defaults to `false`)
 - `width`: String; optional (CSS column width; defaults to `40ch`)
@@ -109,8 +110,8 @@ accept live functions in addition to serialized strings.
 
 ```js
 const tableColumns = ref([
-  { name: 'batch_name', label: 'Batch Name', fieldtype: 'Data', align: 'right' },
-  { name: 'set_date', label: 'Date', fieldtype: 'Date', align: 'center', edit: true, width: '30ch',
+  { name: 'batch_name', label: 'Batch Name', component: 'ATextInput', align: 'right' },
+  { name: 'set_date', label: 'Date', component: 'ADate', align: 'center', edit: true, width: '30ch',
     mask: value => `${value}+/-` },
 ])
 ```
@@ -142,8 +143,8 @@ import { ref } from 'vue'
 
 const tableData = ref([...])
 const tableColumns = ref([
-  { name: 'id', label: 'ID', width: '80px', fieldtype: 'Int' },
-  { name: 'name', label: 'Name', width: '150px', fieldtype: 'Data' },
+  { name: 'id', label: 'ID', width: '80px', component: 'ANumericInput' },
+  { name: 'name', label: 'Name', width: '150px', component: 'ATextInput' },
 ])
 
 const onColumnsChange = (columns) => {

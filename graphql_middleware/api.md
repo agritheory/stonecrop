@@ -22,6 +22,37 @@ import { ValidationError } from '@stonecrop/graphql_middleware'
 
 ## Functions
 
+### applyGuardedTransition
+
+Apply a workflow action's state transition on the server, enforcing `allowedStates`.
+
+The server owns the transition: it reads the record's authoritative current state, rejects the action when `isActionAllowedInState` denies it, then writes `nextState` verbatim. Storage access is injected via `io` so this one guard serves every backend and can never disagree with the frontend's `getAvailableTransitions`, which shares the same predicate.
+
+There are three action shapes this guard distinguishes: - A cross-state **transition** (has `nextState`): writes the new `status`, guarded by `allowedStates`. - A **self-transition** (`selfTransition: true`, no `nextState`, e.g. `Save`): stays in the current state and persists record field `data` in place via `io.writeData`, guarded by `allowedStates`. A backend without a data-write path rejects it loudly instead of dropping it silently. - Anything else with no `nextState` and no `selfTransition` flag is a genuine authoring mistake (or a stateless side-effect command whose server handler is not wired — the intended `callHandler` primitive is still unimplemented): it fails loudly before touching the backend rather than reporting a false success.
+
+**Signature:**
+
+```typescript
+export declare function applyGuardedTransition(actionDef: {
+    label?: string;
+    allowedStates?: string[];
+    nextState?: string;
+    selfTransition?: boolean;
+}, io: GuardedTransitionIO, data?: Record<string, unknown>): Promise<{
+    success: boolean;
+    data: unknown;
+    error: string | null;
+}>;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| actionDef | `{ label?: string; allowedStates?: string[]; nextState?: string; selfTransition?: boolean; }` | The action's `label`, `allowedStates`, and either `nextState` (transition) or `selfTransition` |
+| io | `GuardedTransitionIO` | Backend read/write closures |
+| data | `Record<string, unknown>` | Record field data for a self-transition's mutate-in-place write (ignored by transitions) |
+
 ### clearFetchHandlers
 
 Remove all registered fetch handlers. Primarily for test isolation.
@@ -30,16 +61,6 @@ Remove all registered fetch handlers. Primarily for test isolation.
 
 ```typescript
 export declare function clearFetchHandlers(): void;
-```
-
-### clearHandlers
-
-Clear all registered handlers
-
-**Signature:**
-
-```typescript
-export declare function clearHandlers(): void;
 ```
 
 ### clearRegistry
@@ -134,22 +155,6 @@ export declare function getFetchHandler(name: string): FetchHandler | undefined;
 |-----------|------|-------------|
 | name | `string` |  |
 
-### getHandler
-
-Get a registered handler by name
-
-**Signature:**
-
-```typescript
-export declare function getHandler(name: string): ActionHandler | undefined;
-```
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| name | `string` | Name of the action handler to retrieve |
-
 ### getMeta
 
 Get a doctype by name
@@ -165,22 +170,6 @@ export declare function getMeta(name: string): DoctypeMeta | undefined;
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | name | `string` | Name of the doctype to retrieve |
-
-### hasHandler
-
-Check if a handler is registered
-
-**Signature:**
-
-```typescript
-export declare function hasHandler(name: string): boolean;
-```
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| name | `string` | Name of the action handler to check |
 
 ### hasMeta
 
@@ -232,16 +221,6 @@ export declare function loadDoctypesFromObject(doctypes: Record<string, unknown>
 | doctypes | `Record<string, unknown>` | Object mapping doctype names to doctype definitions |
 | options | `LoadDoctypesOptions` | Options for loading doctypes (continueOnError, onError callback) |
 
-### registerBuiltinHandlers
-
-Register all built-in handlers
-
-**Signature:**
-
-```typescript
-export declare function registerBuiltinHandlers(): void;
-```
-
 ### registerFetchHandler
 
 Register a custom fetch handler by name. The name must match the `handler` field on a `CustomFetch` strategy declaration.
@@ -259,23 +238,6 @@ export declare function registerFetchHandler(name: string, handler: FetchHandler
 | name | `string` |  |
 | handler | `FetchHandler` |  |
 
-### registerHandler
-
-Register an action handler
-
-**Signature:**
-
-```typescript
-export declare function registerHandler(name: string, handler: ActionHandler): void;
-```
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| name | `string` | Unique name for the action handler |
-| handler | `ActionHandler` | Action handler function to register |
-
 ### validateReferences
 
 Validate cross-doctype references (Link fields, inherits, etc.) Call after all doctypes are loaded.
@@ -287,28 +249,6 @@ export declare function validateReferences(): ValidationError[];
 ```
 
 ## Interfaces
-
-### ActionContext
-
-Context passed to action handlers.
-
-The open index signature is the extension point for injecting an application-owned data access layer (see ADR 0003) — in a PostGraphile setup that slot is `pgClient`; custom backends inject their own (e.g. an in-memory executor).
-
-**Definition:**
-
-```typescript
-export interface ActionContext {
-  doctype: DoctypeMeta;
-  pgClient?: PgClient;
-}
-```
-
-**Properties:**
-
-| Property | Type | Description |
-|----------|------|-------------|
-| doctype | `DoctypeMeta` | Doctype metadata for the action being executed |
-| pgClient? | `PgClient` | Active database client — available when the action is dispatched via stonecropAction. Rows returned by raw `pgClient.query()` carry **snake_case column names**, not the camelCase fieldnames the client expects (see ADR 0004 — the middleware's own read paths alias columns at the SQL layer, e.g. `"display_name" AS "displayName"`). Handlers querying with `pgClient` own the same conversion for their return values — see `ActionHandler`. |
 
 ### DebugPluginOptions
 
@@ -329,6 +269,28 @@ export interface DebugPluginOptions {
 |----------|------|-------------|
 | logPlans? | `boolean` | Log a message when a plan is built for a Stonecrop field. Default: `true` |
 | logTiming? | `boolean` | Log timing for plan construction. Default: `false` |
+
+### GuardedTransitionIO
+
+Backend IO the dispatch layer injects so the transition logic stays storage-agnostic. The same guard runs whether the record lives in Postgres, a mock executor, or an in-memory Map — only these two closures change per backend.
+
+**Definition:**
+
+```typescript
+export interface GuardedTransitionIO {
+  readState: () => Promise<string | undefined>;
+  writeData?: (patch: Record<string, unknown>) => Promise<Record<string, unknown>>;
+  writeState: (nextState: string) => Promise<void>;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| readState | `() => Promise<string \| undefined>` | Read the record's current workflow state (the value of its `status` field), or undefined if unknown. |
+| writeData? | `(patch: Record<string, unknown>) => Promise<Record<string, unknown>>` | Persist record field data for a mutate-in-place self-transition, returning the full updated record (so the client writeback reflects the new data). Optional: a backend with no data-write path (e.g. PostGraphile today, which writes only `status`) omits it, and a self-transition is then rejected loudly rather than silently dropped. |
+| writeState | `(nextState: string) => Promise<void>` | Persist the record's new workflow state, written verbatim. |
 
 ### LoadDoctypesOptions
 
@@ -371,20 +333,6 @@ export interface StonecropPluginOptions {
 | tables? | `Record<string, string>` | Override the PostgreSQL FROM clause target for specific doctypes, keyed by doctype name. Values may be a bare table name (`'plan'`) or a schema-qualified name (`'orpin.plan'`). SQL fragments and subqueries are not supported. When absent for a doctype, the table name is derived as `camelToSnake(doctype.name)`. |
 
 ## Type Aliases
-
-### ActionHandler
-
-Action handler function signature.
-
-The resolved value is passed through verbatim as `ActionResult.data` — the middleware applies no transformation. Return **API-layer data**: plain objects keyed by camelCase fieldnames, matching what `stonecropRecord` returns (see ADR 0004).
-
-When reading from the database via `context.pgClient`, either alias columns in the SQL (`SELECT display_name AS "displayName" ...`, as the middleware's own queries do) or convert row keys with `snakeToCamel` from `@stonecrop/schema` before returning. Returning raw query rows leaks snake_case column names to the client.
-
-**Definition:**
-
-```typescript
-export type ActionHandler = (args: unknown[], context: ActionContext) => Promise<unknown>;
-```
 
 ### FetchHandler
 
@@ -430,16 +378,6 @@ new DoctypeValidationError(file: string, errors: ValidationError[])
 | file | `string` | File path or name where the validation error occurred |
 
 ## Variables
-
-### builtinHandlers
-
-Built-in handlers available for registration
-
-**Type:**
-
-```typescript
-export const builtinHandlers: Record<string, ActionHandler>
-```
 
 ### StonecropPreset
 

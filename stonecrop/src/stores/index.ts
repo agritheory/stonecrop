@@ -16,4 +16,6 @@ pinia.use(
 
 export { hst, pinia }
 export { useOperationLogStore } from './operation-log'
+export { useValidationStore } from './validation'
+export type { ValidationError } from './validation'
 export type { HSTNode } from './hst'

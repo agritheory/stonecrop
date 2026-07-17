@@ -53,6 +53,7 @@ import basic_fieldset_schema from './assets/basic_fieldset_schema.json'
 import basic_table_schema from './assets/basic_table_schema.json'
 import fieldset_table_schema from './assets/fieldset_table_schema.json'
 import hidden_field_schema_json from './assets/hidden_field_schema.json'
+import HTTP_LOGS from './assets/http_logs_data.json'
 
 const form_schema = ref(basic_form_schema)
 const fieldset_schema = ref(basic_fieldset_schema)
@@ -139,11 +140,12 @@ const data = ref({
 	phone: '',
 })
 
-// Table variants: rows keyed by fieldname at each nesting level
+// Table variants: rows keyed by fieldname at each nesting level.
 // The simple Table variant has line_items at the top level.
-// The Fieldset with Table variant has line_items nested under the fieldset fieldname.
+// The Fieldset with Table variant nests http_logs under the fieldset's fieldname —
+// these keys must match the schema's fieldnames exactly or AForm resolves the rows to [].
 const table_data = ref({ line_items: ORDER_LINE_ITEMS })
-const fieldset_table_data = ref({ order_details: { line_items: ORDER_LINE_ITEMS } })
+const fieldset_table_data = ref({ table_fieldset: { http_logs: HTTP_LOGS } })
 
 // Fieldset variant: scalar data nested under the fieldset fieldname
 const fieldset_data = ref({

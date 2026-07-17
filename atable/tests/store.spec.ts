@@ -1,7 +1,7 @@
 import { createPinia, setActivePinia } from 'pinia'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 
-import { createTableStore } from '../src/stores/table'
+import { createTableStore, getIndent } from '../src/stores/table'
 import type { TableColumn, TableRow, GanttBarInfo, ConnectionHandle } from '../src/types'
 
 describe('table store', { tags: ['component'] }, () => {
@@ -206,48 +206,48 @@ describe('table store', { tags: ['component'] }, () => {
 			expect(formatted).toBe('String: test')
 		})
 
-		describe('fieldtype-based formatting defaults', () => {
+		describe('component-based formatting defaults', () => {
 			it('formats Check true as ✓', () => {
-				store.columns[0] = { name: 'id', fieldtype: 'Check' }
+				store.columns[0] = { name: 'id', component: 'ACheckbox' }
 				expect(store.getFormattedValue(0, 0, true)).toBe('✓')
 			})
 
 			it('formats Check false as ✗', () => {
-				store.columns[0] = { name: 'id', fieldtype: 'Check' }
+				store.columns[0] = { name: 'id', component: 'ACheckbox' }
 				expect(store.getFormattedValue(0, 0, false)).toBe('✗')
 			})
 
 			it('formats Date string as locale date', () => {
-				store.columns[0] = { name: 'id', fieldtype: 'Date' }
+				store.columns[0] = { name: 'id', component: 'ADate' }
 				const input = '2024-06-15'
 				const result = store.getFormattedValue(0, 0, input)
 				expect(result).toBe(new Date(input).toLocaleDateString())
 			})
 
 			it('returns null for Date when value is null', () => {
-				store.columns[0] = { name: 'id', fieldtype: 'Date' }
+				store.columns[0] = { name: 'id', component: 'ADate' }
 				expect(store.getFormattedValue(0, 0, null)).toBeNull()
 			})
 
 			it('formats Datetime string as locale datetime', () => {
-				store.columns[0] = { name: 'id', fieldtype: 'Datetime' }
+				store.columns[0] = { name: 'id', component: 'ADateTime' }
 				const input = '2024-06-15T14:30:00Z'
 				const result = store.getFormattedValue(0, 0, input)
 				expect(result).toBe(new Date(input).toLocaleString())
 			})
 
 			it('returns null for Datetime when value is null', () => {
-				store.columns[0] = { name: 'id', fieldtype: 'Datetime' }
+				store.columns[0] = { name: 'id', component: 'ADateTime' }
 				expect(store.getFormattedValue(0, 0, null)).toBeNull()
 			})
 
-			it('passes value through for unknown fieldtype', () => {
-				store.columns[0] = { name: 'id', fieldtype: 'Data' }
+			it('passes value through for an unknown component', () => {
+				store.columns[0] = { name: 'id', component: 'ATextInput' }
 				expect(store.getFormattedValue(0, 0, 'hello')).toBe('hello')
 			})
 
-			it('explicit format function takes precedence over fieldtype default', () => {
-				store.columns[0] = { name: 'id', fieldtype: 'Check', format: (value: any) => (value ? 'yes' : 'no') }
+			it('explicit format function takes precedence over the component default', () => {
+				store.columns[0] = { name: 'id', component: 'ACheckbox', format: (value: any) => (value ? 'yes' : 'no') }
 				expect(store.getFormattedValue(0, 0, true)).toBe('yes')
 			})
 		})
@@ -292,10 +292,10 @@ describe('table store', { tags: ['component'] }, () => {
 		})
 
 		it('should get indent for tree columns', () => {
-			const indent = store.getIndent(0, 2)
+			const indent = getIndent(0, 2)
 			expect(indent).toBe('2ch')
 
-			const noIndent = store.getIndent(1, 2)
+			const noIndent = getIndent(1, 2)
 			expect(noIndent).toBe('inherit')
 		})
 	})

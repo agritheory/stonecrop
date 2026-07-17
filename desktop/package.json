@@ -39,6 +39,7 @@
 		"lint": "oxlint",
 		"lint:fix": "oxlint --fix",
 		"test": "vitest run --coverage.enabled false",
+		"test:types": "vue-tsc --noEmit",
 		"test:watch": "vitest watch",
 		"test:coverage": "vitest run --coverage"
 	},
@@ -50,6 +51,7 @@
 		"@stonecrop/themes": "workspace:*"
 	},
 	"peerDependencies": {
+		"pinia": "^3.0.4",
 		"vue": "^3.5.33"
 	},
 	"devDependencies": {
@@ -70,7 +72,8 @@
 		"vite": "^7.3.2",
 		"vitest": "^4.1.5",
 		"vue": "^3.5.33",
-		"vue-router": "^5.0.6"
+		"vue-router": "^5.0.6",
+		"vue-tsc": "^3.3.6"
 	},
 	"description": "Desktop-specific components for Stonecrop UI",
 	"publishConfig": {

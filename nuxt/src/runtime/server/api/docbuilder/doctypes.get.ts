@@ -1,7 +1,8 @@
 import { existsSync } from 'node:fs'
 import { readFile, readdir } from 'node:fs/promises'
 import { extname, resolve } from 'node:path'
-import { defineEventHandler, useRuntimeConfig } from '#imports'
+import { defineEventHandler } from 'h3'
+import { useRuntimeConfig } from '#imports'
 
 export default defineEventHandler(async _event => {
 	// Get doctypes directory from runtime config or default to 'doctypes'
@@ -23,13 +24,14 @@ export default defineEventHandler(async _event => {
 				const data = JSON.parse(content)
 				const name = file.replace('.json', '')
 
+				const slug = name.toLowerCase()
 				return {
 					name: name
 						.split('-')
 						.map(w => w.charAt(0).toUpperCase() + w.slice(1))
 						.join(' '),
-					slug: name,
-					fieldCount: (data.schema ?? data.fields)?.length || 0,
+					slug,
+					fieldCount: data.fields?.length || 0,
 				}
 			})
 		)

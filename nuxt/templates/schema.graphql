@@ -11,36 +11,44 @@ scalar JSON
 Field metadata from doctype schema
 """
 type StonecropField {
+	kind: String!
 	fieldname: String!
-	fieldtype: String!
-	label: String
-	required: Boolean
-	readOnly: Boolean
-	options: JSON
-	default: JSON
-	width: String
-	validation: JSON
 	component: String
+	primaryKey: Boolean
+	computed: Boolean
+	language: String
+	doctype: String
+	label: String
+	width: String
 	align: String
 	edit: Boolean
-	hidden: Boolean
 	mask: String
-	precision: Int
-	scale: Int
+	format: String
 	mode: String
+	options: JSON
+	required: Boolean
+	readOnly: Boolean
+	hidden: Boolean
+	default: JSON
+	validation: JSON
+	cardinality: String
+	source: String
 }
 
 """
-A single workflow action definition
+A single workflow action definition (`name` is the action's key in
+WorkflowMeta.actions; the other fields mirror ActionDefinition in
+@stonecrop/schema)
 """
 type WorkflowAction {
 	name: String!
-	label: String
-	handler: String
+	label: String!
 	requiredFields: [String!]
 	allowedStates: [String!]
-	confirm: Boolean
-	args: JSON
+	nextState: String
+	stateless: Boolean
+	selfTransition: Boolean
+	clientHandler: String
 }
 
 """

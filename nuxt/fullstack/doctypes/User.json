@@ -1,0 +1,114 @@
+{
+	"name": "User",
+	"slug": "user",
+	"fields": [
+		{
+			"fieldname": "id",
+			"label": "ID",
+			"component": "ATextInput",
+			"mode": "display"
+		},
+		{
+			"fieldname": "email",
+			"label": "Email",
+			"component": "ATextInput",
+			"required": true
+		},
+		{
+			"fieldname": "name",
+			"label": "Name",
+			"component": "ATextInput",
+			"required": true
+		},
+		{
+			"fieldname": "role",
+			"label": "Role",
+			"component": "ADropdown",
+			"options": [
+				"ADMIN",
+				"MANAGER",
+				"USER",
+				"GUEST"
+			],
+			"default": "USER"
+		},
+		{
+			"fieldname": "status",
+			"label": "Status",
+			"component": "ADropdown",
+			"options": [
+				"ACTIVE",
+				"SUSPENDED",
+				"PENDING",
+				"DELETED"
+			],
+			"default": "PENDING"
+		},
+		{
+			"fieldname": "createdAt",
+			"label": "Created At",
+			"component": "ADateTime",
+			"mode": "display"
+		},
+		{
+			"fieldname": "updatedAt",
+			"label": "Updated At",
+			"component": "ADateTime",
+			"mode": "display"
+		},
+		{
+			"fieldname": "lastLogin",
+			"label": "Last Login",
+			"component": "ADateTime",
+			"mode": "display"
+		},
+		{
+			"fieldname": "bio",
+			"label": "Bio",
+			"component": "ATextarea"
+		},
+		{
+			"fieldname": "phone",
+			"label": "Phone",
+			"component": "ATextInput"
+		}
+	],
+	"workflow": {
+		"states": [
+			"PENDING",
+			"ACTIVE",
+			"SUSPENDED",
+			"DELETED"
+		],
+		"actions": {
+			"save": {
+				"label": "Save",
+				"stateless": true
+			},
+			"activate": {
+				"label": "Activate User",
+				"allowedStates": [
+					"PENDING",
+					"SUSPENDED"
+				],
+				"nextState": "ACTIVE"
+			},
+			"suspend": {
+				"label": "Suspend User",
+				"allowedStates": [
+					"ACTIVE"
+				],
+				"nextState": "SUSPENDED"
+			},
+			"delete": {
+				"label": "Delete User",
+				"allowedStates": [
+					"ACTIVE",
+					"SUSPENDED",
+					"PENDING"
+				],
+				"nextState": "DELETED"
+			}
+		}
+	}
+}

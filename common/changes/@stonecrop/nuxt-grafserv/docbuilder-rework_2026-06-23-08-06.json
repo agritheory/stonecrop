@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "comment": "add vsPath and extraLibs props to ACodeEditor for offline Monaco support and JS type checking",
+      "type": "minor",
+      "packageName": "@stonecrop/nuxt-grafserv"
+    }
+  ],
+  "packageName": "@stonecrop/nuxt-grafserv"
+}

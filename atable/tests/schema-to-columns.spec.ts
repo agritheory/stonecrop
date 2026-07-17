@@ -5,36 +5,36 @@ import type { ColumnSchema } from '@stonecrop/schema'
 
 describe('schemaToColumns', { tags: ['component'] }, () => {
 	it('maps fieldname to name', () => {
-		const schema: ColumnSchema[] = [{ fieldname: 'item_name', fieldtype: 'Data', label: 'Item Name' }]
+		const schema: ColumnSchema[] = [{ fieldname: 'item_name', component: 'ATextInput', label: 'Item Name' }]
 		const columns = schemaToColumns(schema)
 		expect(columns[0].name).toBe('item_name')
 		expect((columns[0] as any).fieldname).toBeUndefined()
 	})
 
-	it('preserves label, fieldtype, width, align', () => {
+	it('preserves label, component, width, align', () => {
 		const schema: ColumnSchema[] = [
-			{ fieldname: 'qty', fieldtype: 'Int', label: 'Quantity', width: '10ch', align: 'right' },
+			{ fieldname: 'qty', component: 'ANumericInput', label: 'Quantity', width: '10ch', align: 'right' },
 		]
 		const columns = schemaToColumns(schema)
 		expect(columns[0].label).toBe('Quantity')
-		expect(columns[0].fieldtype).toBe('Int')
+		expect(columns[0].component).toBe('ANumericInput')
 		expect(columns[0].width).toBe('10ch')
 		expect(columns[0].align).toBe('right')
 	})
 
 	it('filters out fields with hidden: true', () => {
 		const schema: ColumnSchema[] = [
-			{ fieldname: 'visible', fieldtype: 'Data', label: 'Visible' },
-			{ fieldname: 'secret', fieldtype: 'Data', label: 'Secret', hidden: true },
+			{ fieldname: 'visible', component: 'ATextInput', label: 'Visible' },
+			{ fieldname: 'secret', component: 'ATextInput', label: 'Secret', hidden: true },
 		]
 		const columns = schemaToColumns(schema)
 		expect(columns).toHaveLength(1)
 		expect(columns[0].name).toBe('visible')
 	})
 
-	it('filters out fields without fieldtype (nested table/fieldset entries)', () => {
+	it('filters out fields without a component (nested table/fieldset entries)', () => {
 		const schema = [
-			{ fieldname: 'title', fieldtype: 'Data', label: 'Title' },
+			{ fieldname: 'title', component: 'ATextInput', label: 'Title' },
 			{ fieldname: 'sub_items' } as ColumnSchema,
 		]
 		const columns = schemaToColumns(schema)
@@ -43,7 +43,7 @@ describe('schemaToColumns', { tags: ['component'] }, () => {
 	})
 
 	it('strips hidden from output', () => {
-		const schema: ColumnSchema[] = [{ fieldname: 'title', fieldtype: 'Data', label: 'Title', hidden: false }]
+		const schema: ColumnSchema[] = [{ fieldname: 'title', component: 'ATextInput', label: 'Title', hidden: false }]
 		const columns = schemaToColumns(schema)
 		expect((columns[0] as any).hidden).toBeUndefined()
 	})
@@ -52,7 +52,7 @@ describe('schemaToColumns', { tags: ['component'] }, () => {
 		const schema: ColumnSchema[] = [
 			{
 				fieldname: 'status',
-				fieldtype: 'Select',
+				component: 'ADropdown',
 				label: 'Status',
 				cellComponent: 'StatusBadge',
 				cellComponentProps: { color: 'green' },
@@ -73,8 +73,8 @@ describe('schemaToColumns', { tags: ['component'] }, () => {
 
 	it('returns empty array when all fields are hidden', () => {
 		const schema: ColumnSchema[] = [
-			{ fieldname: 'a', fieldtype: 'Data', hidden: true },
-			{ fieldname: 'b', fieldtype: 'Data', hidden: true },
+			{ fieldname: 'a', component: 'ATextInput', hidden: true },
+			{ fieldname: 'b', component: 'ATextInput', hidden: true },
 		]
 		expect(schemaToColumns(schema)).toEqual([])
 	})
@@ -82,7 +82,7 @@ describe('schemaToColumns', { tags: ['component'] }, () => {
 	describe('Link field handling', () => {
 		it('adds a display format function for Link fields without explicit format or cellComponent', () => {
 			const schema: ColumnSchema[] = [
-				{ fieldname: 'category_id', fieldtype: 'Link', label: 'Category', component: 'AFormLink' } as any,
+				{ fieldname: 'category_id', label: 'Category', component: 'AFormLink', doctype: 'category' } as any,
 			]
 			const columns = schemaToColumns(schema)
 			expect(typeof columns[0].format).toBe('function')
@@ -95,21 +95,28 @@ describe('schemaToColumns', { tags: ['component'] }, () => {
 
 		it('sets linkDoctype from the field doctype property', () => {
 			const schema = [
-				{ fieldname: 'category_id', fieldtype: 'Link', label: 'Category', doctype: 'category' },
+				{ fieldname: 'category_id', component: 'AFormLink', label: 'Category', doctype: 'category' },
 			] as ColumnSchema[]
 			const columns = schemaToColumns(schema)
 			expect(columns[0].linkDoctype).toBe('category')
 		})
 
-		it('leaves linkDoctype undefined when field has no doctype property', () => {
-			const schema: ColumnSchema[] = [{ fieldname: 'ref_id', fieldtype: 'Link', label: 'Ref' }]
+		it('leaves linkDoctype undefined for a column that is not a link', () => {
+			// `doctype` is what makes a column a link — without it this is a plain scalar column.
+			const schema: ColumnSchema[] = [{ fieldname: 'ref_id', component: 'ATextInput', label: 'Ref' }]
 			const columns = schemaToColumns(schema)
 			expect(columns[0].linkDoctype).toBeUndefined()
 		})
 
 		it('does not override an explicit format on a Link field', () => {
 			const schema: ColumnSchema[] = [
-				{ fieldname: 'customer_id', fieldtype: 'Link', label: 'Customer', format: '(v) => v.toUpperCase()' },
+				{
+					fieldname: 'customer_id',
+					component: 'AFormLink',
+					doctype: 'customer',
+					label: 'Customer',
+					format: '(v) => v.toUpperCase()',
+				},
 			]
 			const columns = schemaToColumns(schema)
 			expect(columns[0].format).toBe('(v) => v.toUpperCase()')
@@ -119,7 +126,7 @@ describe('schemaToColumns', { tags: ['component'] }, () => {
 			const schema = [
 				{
 					fieldname: 'customer_id',
-					fieldtype: 'Link',
+					component: 'AFormLink',
 					label: 'Customer',
 					cellComponent: 'MyLinkCell',
 					doctype: 'customer',
@@ -131,7 +138,7 @@ describe('schemaToColumns', { tags: ['component'] }, () => {
 		})
 
 		it('does not add format for non-Link fields', () => {
-			const schema: ColumnSchema[] = [{ fieldname: 'title', fieldtype: 'Data', label: 'Title' }]
+			const schema: ColumnSchema[] = [{ fieldname: 'title', component: 'ATextInput', label: 'Title' }]
 			const columns = schemaToColumns(schema)
 			expect(columns[0].format).toBeUndefined()
 			expect(columns[0].linkDoctype).toBeUndefined()
@@ -140,10 +147,18 @@ describe('schemaToColumns', { tags: ['component'] }, () => {
 
 	it('preserves field order', () => {
 		const schema: ColumnSchema[] = [
-			{ fieldname: 'z', fieldtype: 'Data', label: 'Z' },
-			{ fieldname: 'a', fieldtype: 'Data', label: 'A' },
-			{ fieldname: 'm', fieldtype: 'Data', label: 'M' },
+			{ fieldname: 'z', component: 'ATextInput', label: 'Z' },
+			{ fieldname: 'a', component: 'ATextInput', label: 'A' },
+			{ fieldname: 'm', component: 'ATextInput', label: 'M' },
 		]
 		expect(schemaToColumns(schema).map(c => c.name)).toEqual(['z', 'a', 'm'])
+	})
+
+	it('excludes fields without a component', () => {
+		const schema: ColumnSchema[] = [
+			{ fieldname: 'title', component: 'ATextInput', label: 'Title' },
+			{ fieldname: 'nested', label: 'Nested' }, // no component → non-scalar, excluded
+		]
+		expect(schemaToColumns(schema).map(c => c.name)).toEqual(['title'])
 	})
 })

@@ -18,6 +18,7 @@ import type { ResolvedField } from '@stonecrop/aform';
 import { Router } from 'vue-router';
 import { Store } from 'pinia';
 import { StoreDefinition } from 'pinia';
+import type { TriggerDefinition } from '@stonecrop/schema';
 import type { UnknownMachineConfig } from 'xstate';
 import type { WorkflowMeta } from '@stonecrop/schema';
 
@@ -54,6 +55,9 @@ export interface BatchOperation {
 }
 
 // @public
+export type ClientHandlerApi = Record<string, unknown>;
+
+// @public
 export function createHST(target: any, doctype: string): HSTNode;
 
 // @public
@@ -80,18 +84,19 @@ export class Doctype {
     static fromObject(config: DoctypeConfig): Doctype;
     getActionMeta(actionName: string): {
         label: string;
-        handler: string;
         requiredFields?: string[];
         allowedStates?: string[];
-        confirm?: boolean;
-        args?: Record<string, unknown>;
     } | undefined;
     getActionsObject(): Record<string, string[]>;
+    getAvailableCommands(currentState?: string): Array<{
+        name: string;
+    }>;
     getAvailableTransitions(currentState: string): Array<{
         name: string;
         targetState: string;
     }>;
     getSchemaArray(): DoctypeField[];
+    getTriggers(): Record<string, TriggerDefinition> | undefined;
     readonly links?: Record<string, LinkDeclaration>;
     get name(): string;
     readonly schema: ImmutableDoctype['schema'];
@@ -109,6 +114,9 @@ export type DoctypeConfig = {
     actions?: Record<string, string[]>;
     inherits?: string;
 };
+
+// @public
+export function executeClientHandler(code: string, api?: ClientHandlerApi): Promise<unknown>;
 
 // @public
 export type FieldAction = FieldActionFunction | FieldActionString;
@@ -338,7 +346,6 @@ export type OperationLogAPI = {
 
 // @public
 export interface OperationLogConfig {
-    autoSyncInterval?: number;
     enableCrossTabSync?: boolean;
     enablePersistence?: boolean;
     maxOperations?: number;
@@ -484,7 +491,6 @@ export class Stonecrop {
     config: Ref<    {
     maxOperations?: number | undefined;
     enableCrossTabSync?: boolean | undefined;
-    autoSyncInterval?: number | undefined;
     enablePersistence?: boolean | undefined;
     persistenceKeyPrefix?: string | undefined;
     userId?: string | undefined;
@@ -492,7 +498,6 @@ export class Stonecrop {
     }, OperationLogConfig | {
     maxOperations?: number | undefined;
     enableCrossTabSync?: boolean | undefined;
-    autoSyncInterval?: number | undefined;
     enablePersistence?: boolean | undefined;
     persistenceKeyPrefix?: string | undefined;
     userId?: string | undefined;
@@ -570,7 +575,6 @@ export class Stonecrop {
     config: Ref<    {
     maxOperations?: number | undefined;
     enableCrossTabSync?: boolean | undefined;
-    autoSyncInterval?: number | undefined;
     enablePersistence?: boolean | undefined;
     persistenceKeyPrefix?: string | undefined;
     userId?: string | undefined;
@@ -578,7 +582,6 @@ export class Stonecrop {
     }, OperationLogConfig | {
     maxOperations?: number | undefined;
     enableCrossTabSync?: boolean | undefined;
-    autoSyncInterval?: number | undefined;
     enablePersistence?: boolean | undefined;
     persistenceKeyPrefix?: string | undefined;
     userId?: string | undefined;
@@ -656,7 +659,6 @@ export class Stonecrop {
     config: Ref<    {
     maxOperations?: number | undefined;
     enableCrossTabSync?: boolean | undefined;
-    autoSyncInterval?: number | undefined;
     enablePersistence?: boolean | undefined;
     persistenceKeyPrefix?: string | undefined;
     userId?: string | undefined;
@@ -664,7 +666,6 @@ export class Stonecrop {
     }, OperationLogConfig | {
     maxOperations?: number | undefined;
     enableCrossTabSync?: boolean | undefined;
-    autoSyncInterval?: number | undefined;
     enablePersistence?: boolean | undefined;
     persistenceKeyPrefix?: string | undefined;
     userId?: string | undefined;
@@ -884,7 +885,6 @@ currentIndex: Ref<number, number>;
 config: Ref<    {
 maxOperations?: number | undefined;
 enableCrossTabSync?: boolean | undefined;
-autoSyncInterval?: number | undefined;
 enablePersistence?: boolean | undefined;
 persistenceKeyPrefix?: string | undefined;
 userId?: string | undefined;
@@ -892,7 +892,6 @@ operationFilter?: ((operation: HSTOperation) => boolean) | undefined;
 }, OperationLogConfig | {
 maxOperations?: number | undefined;
 enableCrossTabSync?: boolean | undefined;
-autoSyncInterval?: number | undefined;
 enablePersistence?: boolean | undefined;
 persistenceKeyPrefix?: string | undefined;
 userId?: string | undefined;
@@ -970,7 +969,6 @@ currentIndex: Ref<number, number>;
 config: Ref<    {
 maxOperations?: number | undefined;
 enableCrossTabSync?: boolean | undefined;
-autoSyncInterval?: number | undefined;
 enablePersistence?: boolean | undefined;
 persistenceKeyPrefix?: string | undefined;
 userId?: string | undefined;
@@ -978,7 +976,6 @@ operationFilter?: ((operation: HSTOperation) => boolean) | undefined;
 }, OperationLogConfig | {
 maxOperations?: number | undefined;
 enableCrossTabSync?: boolean | undefined;
-autoSyncInterval?: number | undefined;
 enablePersistence?: boolean | undefined;
 persistenceKeyPrefix?: string | undefined;
 userId?: string | undefined;
@@ -1056,7 +1053,6 @@ currentIndex: Ref<number, number>;
 config: Ref<    {
 maxOperations?: number | undefined;
 enableCrossTabSync?: boolean | undefined;
-autoSyncInterval?: number | undefined;
 enablePersistence?: boolean | undefined;
 persistenceKeyPrefix?: string | undefined;
 userId?: string | undefined;
@@ -1064,7 +1060,6 @@ operationFilter?: ((operation: HSTOperation) => boolean) | undefined;
 }, OperationLogConfig | {
 maxOperations?: number | undefined;
 enableCrossTabSync?: boolean | undefined;
-autoSyncInterval?: number | undefined;
 enablePersistence?: boolean | undefined;
 persistenceKeyPrefix?: string | undefined;
 userId?: string | undefined;
@@ -1104,7 +1099,71 @@ export function useStonecrop(options: {
 export function useUndoRedoShortcuts(hstStore: HSTNode, enabled?: boolean): void;
 
 // @public
+export const useValidationStore: StoreDefinition<"stonecrop-validation", Pick<{
+errors: Ref<    {
+trigger: string;
+field: string;
+message: string;
+}[], ValidationError[] | {
+trigger: string;
+field: string;
+message: string;
+}[]>;
+isValid: ComputedRef<boolean>;
+errorsByField: ComputedRef<Record<string, string[]>>;
+errorsFor: (field: string) => string[];
+setError: (trigger: string, field: string, message: string) => void;
+clearTrigger: (trigger: string) => void;
+clearAll: () => void;
+validateField: (triggers: Record<string, TriggerDefinition>, changedField: string, record: Record<string, unknown>) => Promise<void>;
+validateRecord: (triggers: Record<string, TriggerDefinition>, record: Record<string, unknown>) => Promise<void>;
+}, "errors">, Pick<{
+errors: Ref<    {
+trigger: string;
+field: string;
+message: string;
+}[], ValidationError[] | {
+trigger: string;
+field: string;
+message: string;
+}[]>;
+isValid: ComputedRef<boolean>;
+errorsByField: ComputedRef<Record<string, string[]>>;
+errorsFor: (field: string) => string[];
+setError: (trigger: string, field: string, message: string) => void;
+clearTrigger: (trigger: string) => void;
+clearAll: () => void;
+validateField: (triggers: Record<string, TriggerDefinition>, changedField: string, record: Record<string, unknown>) => Promise<void>;
+validateRecord: (triggers: Record<string, TriggerDefinition>, record: Record<string, unknown>) => Promise<void>;
+}, "isValid" | "errorsByField">, Pick<{
+errors: Ref<    {
+trigger: string;
+field: string;
+message: string;
+}[], ValidationError[] | {
+trigger: string;
+field: string;
+message: string;
+}[]>;
+isValid: ComputedRef<boolean>;
+errorsByField: ComputedRef<Record<string, string[]>>;
+errorsFor: (field: string) => string[];
+setError: (trigger: string, field: string, message: string) => void;
+clearTrigger: (trigger: string) => void;
+clearAll: () => void;
+validateField: (triggers: Record<string, TriggerDefinition>, changedField: string, record: Record<string, unknown>) => Promise<void>;
+validateRecord: (triggers: Record<string, TriggerDefinition>, record: Record<string, unknown>) => Promise<void>;
+}, "errorsFor" | "setError" | "clearTrigger" | "clearAll" | "validateField" | "validateRecord">>;
+
+// @public
 export function validateSchema(doctype: string, schema: List<DoctypeField> | DoctypeField[] | undefined, registry: Registry, workflow?: AnyStateNodeConfig, actions?: Map_2<string, string[]> | Map<string, string[]>): ValidationResult;
+
+// @public
+export interface ValidationError {
+    field: string;
+    message: string;
+    trigger: string;
+}
 
 // @public
 export interface ValidationIssue {

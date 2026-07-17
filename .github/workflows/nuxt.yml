@@ -77,6 +77,10 @@ jobs:
         working-directory: nuxt/
         run: node ../common/scripts/install-run-rushx.js test
 
+      - name: Type Check
+        working-directory: nuxt/
+        run: node ../common/scripts/install-run-rushx.js test:types
+
       - name: Save Rush Build Cache
         if: always()
         uses: actions/cache/save@v5

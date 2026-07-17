@@ -1,117 +1,164 @@
 import { Position, type Node } from '@vue-flow/core'
+import type { ActionDefinition, WorkflowMeta } from '@stonecrop/schema'
 
-import type { EditorStates, FlowElements, Layout } from '../types'
+import type { FlowElements, Layout } from '../types'
 
-export function statesToFlowElements(states: EditorStates, layout?: Layout): FlowElements {
-	const hasInputs: Record<string, boolean> = {}
-	const stateElements: FlowElements = []
-	const stateHash: Record<string, Node> = {}
+export function statesToFlowElements(workflow: WorkflowMeta, layout?: Layout): FlowElements {
+	const { states = [], actions = {} } = workflow
+	const edges: FlowElements = []
+	const nodes: Node[] = []
 
-	let index = 0
-	for (const [key, value] of Object.entries(states)) {
-		const el: Node = {
-			id: key,
-			label: key,
-			position: layout?.[key]?.position ?? { x: 200 * index, y: 100 },
-			targetPosition: layout?.[key]?.targetPosition ?? Position.Left,
-			sourcePosition: layout?.[key]?.sourcePosition ?? Position.Right,
-		}
+	for (const [actionKey, actionDef] of Object.entries(actions)) {
+		// Stateless commands (print/email) have no graph presence; anything graph-owned needs states.
+		if (actionDef.stateless || !actionDef.allowedStates?.length) continue
 
-		if (value.type === 'final') {
-			el.type = 'output'
-			el.class = 'default-output-node'
-		}
-
-		stateHash[key] = el
-		index++
-	}
-
-	for (const [key, value] of Object.entries(states)) {
-		if (value.on) {
-			for (const [edgeKey, edgeValue] of Object.entries(value.on)) {
-				const target =
-					typeof edgeValue === 'string'
-						? edgeValue
-						: edgeValue != null &&
-							  typeof edgeValue === 'object' &&
-							  'target' in edgeValue &&
-							  typeof edgeValue.target === 'string'
-							? edgeValue.target
-							: ''
-				stateElements.push({
-					id: `${key}-${target}`,
-					source: key,
-					target,
-					label: edgeKey,
+		// A self-transition (mutate-in-place `save`) renders as a self-loop on each allowed state:
+		// `source === target`, tagged `selfloop` so NodeEditor routes it to the arc renderer.
+		if (actionDef.selfTransition) {
+			for (const source of actionDef.allowedStates) {
+				edges.push({
+					id: `${actionKey}-${source}`,
+					source,
+					target: source,
+					label: actionDef.label ?? actionKey,
+					data: { actionKey },
 					animated: true,
-					type: 'smoothstep',
+					type: 'selfloop',
 					interactionWidth: 40,
 				})
-				hasInputs[target] = true
 			}
+			continue
+		}
+
+		// A cross-state transition needs a target; a malformed action with neither is skipped.
+		if (!actionDef.nextState) continue
+		for (const source of actionDef.allowedStates) {
+			edges.push({
+				id: `${actionKey}-${source}`,
+				source,
+				target: actionDef.nextState,
+				// The edge paints the human display label; its identity (the action key) rides in
+				// `data.actionKey`, so relabeling the edge renames the action without re-keying it.
+				label: actionDef.label ?? actionKey,
+				data: { actionKey },
+				animated: true,
+				type: 'smoothstep',
+				interactionWidth: 40,
+			})
 		}
 	}
 
-	for (const [key] of Object.entries(stateHash)) {
-		if (!hasInputs[key]) {
-			stateHash[key].type = 'input'
-			stateHash[key].class = 'default-input-node'
+	for (let index = 0; index < states.length; index++) {
+		const state = states[index]
+		const node: Node = {
+			id: state,
+			label: state,
+			position: layout?.[state]?.position ?? { x: 200 * index, y: 100 },
+			targetPosition: layout?.[state]?.targetPosition ?? Position.Left,
+			sourcePosition: layout?.[state]?.sourcePosition ?? Position.Right,
 		}
-		stateElements.push(stateHash[key])
+		// Every state renders identically — both handles, no start-state styling — so any transition
+		// (including a returning `reject`/`reopen` into the initial state) is authorable and a
+		// self-loop can anchor both ends. Marking an entry state is deferred (YAGNI) until needed.
+		nodes.push(node)
 	}
 
-	return stateElements
+	return [...edges, ...nodes]
 }
 
-export function flowElementsToStates(nextElements: FlowElements): { states: EditorStates; layout: Layout } {
-	const transitionsBySource: Record<string, Record<string, { target: string }>> = {}
+export function flowElementsToStates(
+	nextElements: FlowElements,
+	existingWorkflow?: WorkflowMeta
+): { workflow: WorkflowMeta; layout: Layout } {
 	const idToLabel: Record<string, string> = {}
-	const nodeTypeByLabel: Record<string, string | undefined> = {}
 	const nextLayout: Layout = {}
+	const stateNames: string[] = []
 
-	// First pass: build id→label map from nodes so edge targets resolve correctly
 	for (const el of nextElements) {
-		if (!('source' in el)) {
-			idToLabel[el.id] = typeof el.label === 'string' ? el.label : el.id
-		}
-	}
-
-	// Second pass: collect node types, layout positions, and edge transitions
-	for (const el of nextElements) {
-		if ('source' in el && 'target' in el) {
-			const edgeLabel = typeof el.label === 'string' ? el.label : el.id
-			const sourceLabel = idToLabel[el.source] || el.source
-			const targetLabel = idToLabel[el.target] || el.target
-			transitionsBySource[sourceLabel] = transitionsBySource[sourceLabel] ?? {}
-			transitionsBySource[sourceLabel][edgeLabel] = { target: targetLabel }
-		} else {
-			const nodeLabel = typeof el.label === 'string' ? el.label : el.id
-			nodeTypeByLabel[nodeLabel] = el.type
-			if (el.position) {
-				nextLayout[nodeLabel] = {
-					position: el.position,
-					...(el.targetPosition !== undefined && { targetPosition: el.targetPosition }),
-					...(el.sourcePosition !== undefined && { sourcePosition: el.sourcePosition }),
-				}
+		if ('source' in el) continue
+		const label = typeof el.label === 'string' ? el.label : el.id
+		idToLabel[el.id] = label
+		stateNames.push(label)
+		if (el.position) {
+			nextLayout[label] = {
+				position: el.position,
+				...(el.targetPosition !== undefined && { targetPosition: el.targetPosition }),
+				...(el.sourcePosition !== undefined && { sourcePosition: el.sourcePosition }),
 			}
 		}
 	}
 
-	// Build states from node types and collected transitions
-	const nextStates: EditorStates = {}
-	for (const [label, nodeType] of Object.entries(nodeTypeByLabel)) {
-		if (nodeType === 'output') {
-			nextStates[label] = { type: 'final' }
+	// Group directed edges by their stable action key. A round-tripped edge carries the key in
+	// `data.actionKey`; a freshly-drawn edge (no data yet) falls back to its label as the key — the
+	// one moment label and key coincide, when the action is first born. The edge's label is captured
+	// separately as the display name, so a later relabel renames the action without re-keying it.
+	const transitionGroups: Record<
+		string,
+		{ nextState?: string; allowedStates: string[]; label: string; selfLoop: boolean }
+	> = {}
+	for (const el of nextElements) {
+		if (!('source' in el)) continue
+		const edgeLabel = typeof el.label === 'string' ? el.label : el.id
+		const actionKey = el.data?.actionKey ?? edgeLabel
+		const sourceLabel = idToLabel[el.source] || el.source
+		const targetLabel = idToLabel[el.target] || el.target
+		// Classify by topology, not by edge `type`: a self-loop (source === target) round-trips to a
+		// self-transition regardless of how it was authored (drawn node→itself, or re-rendered from a
+		// `selfTransition` action). A group's kind is set by its first edge; a multi-state self-loop
+		// (e.g. `save` on Draft AND Pending) accumulates each source into allowedStates.
+		const isSelf = el.source === el.target
+		if (!transitionGroups[actionKey]) {
+			transitionGroups[actionKey] = {
+				allowedStates: [sourceLabel],
+				label: edgeLabel,
+				selfLoop: isSelf,
+				...(isSelf ? {} : { nextState: targetLabel }),
+			}
 		} else {
-			nextStates[label] = { on: transitionsBySource[label] ?? {} }
-		}
-	}
-	// Capture any transition sources that had no corresponding node entry
-	for (const [sourceLabel, on] of Object.entries(transitionsBySource)) {
-		if (!nextStates[sourceLabel]) {
-			nextStates[sourceLabel] = { on }
+			transitionGroups[actionKey].allowedStates.push(sourceLabel)
 		}
 	}
 
-	return { states: nextStates, layout: nextLayout }
+	const nextActions: Record<string, ActionDefinition> = {}
+
+	// Transitions (and self-transitions) derived from graph edges
+	for (const [actionKey, group] of Object.entries(transitionGroups)) {
+		const existing = existingWorkflow?.actions?.[actionKey]
+		nextActions[actionKey] = {
+			// Spread existing first so every field the graph does NOT own — clientHandler,
+			// requiredFields and any field added to ActionDefinition later — survives the
+			// round-trip. The graph owns topology (allowedStates/nextState/selfTransition) and the
+			// display label. (Enumerating named fields here previously dropped clientHandler.)
+			...existing,
+			// The edge's label is the display name (decoupled from the key). Fall back to the
+			// existing label, then the key, if an edge ever arrives label-less.
+			label: group.label || existing?.label || actionKey,
+			// The graph owns topology only. A self-transition (self-loop) stays in place: mark
+			// `selfTransition`, carry NO `nextState`. A cross-state transition carries `nextState`
+			// and clears any stale self flag (a self-loop redrawn as a normal edge). Explicit
+			// `undefined` on the unused field is dropped by JSON.stringify, so no format churn.
+			allowedStates: group.allowedStates,
+			nextState: group.selfLoop ? undefined : group.nextState,
+			selfTransition: group.selfLoop ? true : undefined,
+		}
+	}
+
+	// Pass through Verbs (stateless: true) and global Workflow actions (no allowedStates) verbatim
+	for (const [actionKey, actionDef] of Object.entries(existingWorkflow?.actions ?? {})) {
+		if (actionKey in transitionGroups) continue
+		if (actionDef.stateless || !actionDef.allowedStates?.length) {
+			nextActions[actionKey] = actionDef
+		}
+		// Workflow action with allowedStates not in graph = user deleted its edges → remove
+	}
+
+	return {
+		// Spread existingWorkflow first so every top-level key the graph does NOT own — the
+		// sibling `triggers` map (field-validation triggers), and any WorkflowMeta key added
+		// later — survives the round-trip. The graph owns topology only: states + actions,
+		// overridden below. (Same principle the per-action spread applies above; enumerating
+		// only states+actions here previously dropped `triggers` on every graph edit.)
+		workflow: { ...existingWorkflow, states: stateNames, actions: nextActions },
+		layout: nextLayout,
+	}
 }

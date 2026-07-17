@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/themes",
+      "comment": "set font family from defined variables",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@stonecrop/themes"
+}

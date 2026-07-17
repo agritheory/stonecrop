@@ -26,6 +26,7 @@
 					type="button"
 					class="row-action-menu-item"
 					role="menuitem"
+					:disabled="action.disabled"
 					@click.stop="executeAction(action.type, $event)">
 					<span class="action-icon" v-html="action.icon" />
 					<span class="action-label">{{ action.label }}</span>
@@ -42,6 +43,7 @@
 				class="row-action-btn"
 				:title="action.label"
 				:aria-label="action.label"
+				:disabled="action.disabled"
 				@click.stop="executeAction(action.type, $event)">
 				<span class="action-icon" v-html="action.icon" />
 			</button>
@@ -83,15 +85,27 @@ const defaultLabels: Record<RowActionType, string> = {
 	insertAbove: 'Insert Above',
 	insertBelow: 'Insert Below',
 	move: 'Move Record',
+	moveUp: 'Move Up',
+	moveDown: 'Move Down',
 	open: 'Open Record',
 }
 
 // Determine which actions are enabled
 const enabledActions = computed(() => {
-	const actions: Array<{ type: RowActionType; label: string; icon: string }> = []
+	const actions: Array<{ type: RowActionType; label: string; icon: string; disabled: boolean }> = []
 	const configActions = props.config.actions || {}
 
-	const actionTypes: RowActionType[] = ['open', 'add', 'delete', 'duplicate', 'insertAbove', 'insertBelow', 'move']
+	const actionTypes: RowActionType[] = [
+		'open',
+		'moveUp',
+		'moveDown',
+		'duplicate',
+		'insertAbove',
+		'insertBelow',
+		'add',
+		'delete',
+		'move',
+	]
 
 	for (const type of actionTypes) {
 		const actionConfig = configActions[type]
@@ -105,15 +119,18 @@ const enabledActions = computed(() => {
 		let enabled = true
 		let label = defaultLabels[type]
 		let icon = actionIcons[type]
+		let disabled = false
 
 		if (typeof actionConfig === 'object') {
 			enabled = actionConfig.enabled !== false
 			label = actionConfig.label || label
 			icon = actionConfig.icon || icon
+			// Per-row predicate; reading store state here keeps this computed reactive to row changes.
+			if (actionConfig.disabled) disabled = actionConfig.disabled(props.rowIndex, props.store)
 		}
 
 		if (enabled) {
-			actions.push({ type, label, icon })
+			actions.push({ type, label, icon, disabled })
 		}
 	}
 
@@ -172,7 +189,9 @@ const checkDropdownPosition = () => {
 
 	const buttonRect = toggleButtonRef.value.getBoundingClientRect()
 	const viewportHeight = window.innerHeight
+	const viewportWidth = window.innerWidth
 	const estimatedMenuHeight = enabledActions.value.length * 40 + 16 // ~40px per item + padding
+	const estimatedMenuWidth = 160 // matches min-width: 10rem
 
 	// Check if menu would extend beyond viewport bottom
 	const spaceBelow = viewportHeight - buttonRect.bottom
@@ -181,17 +200,17 @@ const checkDropdownPosition = () => {
 	// Flip if not enough space below but enough space above
 	dropdownFlipped.value = spaceBelow < estimatedMenuHeight && spaceAbove > estimatedMenuHeight
 
+	// Horizontal: anchor the menu's left edge to the button, but right-align it to the button when
+	// it would overflow the viewport's right edge (e.g. an end-positioned actions column).
+	let left = buttonRect.left
+	if (left + estimatedMenuWidth > viewportWidth) {
+		left = Math.max(0, buttonRect.right - estimatedMenuWidth)
+	}
+
 	// Calculate fixed position
-	if (dropdownFlipped.value) {
-		menuPosition.value = {
-			top: buttonRect.top,
-			left: buttonRect.left,
-		}
-	} else {
-		menuPosition.value = {
-			top: buttonRect.bottom,
-			left: buttonRect.left,
-		}
+	menuPosition.value = {
+		top: dropdownFlipped.value ? buttonRect.top : buttonRect.bottom,
+		left,
 	}
 }
 
@@ -219,8 +238,6 @@ const executeAction = (actionType: RowActionType, event?: MouseEvent) => {
 </script>
 
 <style>
-@import url('@stonecrop/themes/default.css');
-
 .atable-row-actions {
 	width: 2rem;
 	min-width: 2rem;
@@ -357,6 +374,17 @@ const executeAction = (actionType: RowActionType, event?: MouseEvent) => {
 .row-action-menu-item:focus {
 	outline: none;
 	background-color: var(--sc-gray-10, #f5f5f5);
+}
+
+.row-action-menu-item:disabled,
+.row-action-btn:disabled {
+	opacity: 0.4;
+	cursor: not-allowed;
+}
+
+.row-action-menu-item:disabled:hover,
+.row-action-btn:disabled:hover {
+	background-color: transparent;
 }
 
 .row-action-menu-item .action-icon {

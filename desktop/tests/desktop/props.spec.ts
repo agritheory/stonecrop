@@ -163,7 +163,7 @@ describe('Desktop props', { tags: ['component'] }, () => {
 					draft: { on: { SUBMIT: 'submitted' } },
 					submitted: { type: 'final' },
 				},
-				[{ fieldname: 'uuid', fieldtype: 'Data', label: 'UUID', component: 'ATextInput' }]
+				[{ kind: 'field' as const, fieldname: 'uuid', label: 'UUID', component: 'ATextInput' }]
 			)
 			registry.addDoctype(doctype)
 			stonecrop.addRecord('task', 'task-1', { id: 1, uuid: 'uuid-abc-123', title: 'My Task' })

@@ -1,0 +1,116 @@
+{
+	"name": "Country",
+	"slug": "country",
+	"fields": [
+		{
+			"kind": "field",
+			"fieldname": "awsRegion",
+			"label": "AWS Region",
+			"component": "ATextInput",
+			"required": true,
+			"source": "introspected"
+		},
+		{
+			"kind": "field",
+			"fieldname": "capital",
+			"label": "Capital",
+			"component": "ATextInput",
+			"source": "introspected"
+		},
+		{
+			"kind": "field",
+			"fieldname": "code",
+			"label": "Code",
+			"component": "ATextInput",
+			"required": true,
+			"readOnly": true,
+			"source": "introspected"
+		},
+		{
+			"kind": "field",
+			"fieldname": "continent",
+			"label": "Continent",
+			"component": "AFormLink",
+			"required": true,
+			"doctype": "continent",
+			"source": "introspected"
+		},
+		{
+			"kind": "field",
+			"fieldname": "currencies",
+			"label": "Currencies",
+			"component": "ATextInput",
+			"required": true,
+			"source": "introspected"
+		},
+		{
+			"kind": "field",
+			"fieldname": "currency",
+			"label": "Currency",
+			"component": "ATextInput",
+			"source": "introspected"
+		},
+		{
+			"kind": "field",
+			"fieldname": "emoji",
+			"label": "Flag",
+			"component": "ATextInput",
+			"required": true,
+			"source": "introspected"
+		},
+		{
+			"kind": "field",
+			"fieldname": "emojiU",
+			"label": "Emoji U",
+			"component": "ATextInput",
+			"required": true,
+			"source": "introspected"
+		},
+		{
+			"kind": "field",
+			"fieldname": "name",
+			"label": "Name",
+			"component": "ATextInput",
+			"required": true,
+			"source": "introspected"
+		},
+		{
+			"kind": "field",
+			"fieldname": "native",
+			"label": "Native Name",
+			"component": "ATextInput",
+			"required": true,
+			"source": "introspected"
+		},
+		{
+			"kind": "field",
+			"fieldname": "phone",
+			"label": "Phone Code",
+			"component": "ATextInput",
+			"required": true,
+			"source": "introspected"
+		},
+		{
+			"kind": "field",
+			"fieldname": "phones",
+			"label": "Phones",
+			"component": "ATextInput",
+			"required": true,
+			"source": "introspected"
+		}
+	],
+	"links": {
+		"languages": {
+			"target": "language",
+			"cardinality": "noneOrMany"
+		},
+		"states": {
+			"target": "state",
+			"cardinality": "noneOrMany"
+		},
+		"subdivisions": {
+			"target": "subdivision",
+			"cardinality": "noneOrMany"
+		}
+	}
+}

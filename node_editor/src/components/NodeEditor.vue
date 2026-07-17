@@ -16,6 +16,9 @@
 				<div>
 					<button class="button-default" @click="fitView">Center</button>
 				</div>
+				<div>
+					<button class="button-default" @click="autoArrange">Auto-arrange</button>
+				</div>
 				<div v-if="activeElementIndex > -1">
 					<button class="button-default" @click="shiftInput">Shift Input Position</button>
 				</div>
@@ -32,6 +35,7 @@
 			:prevent-scrolling="true"
 			:zoom-on-scroll="false"
 			:fit-view-on-init="true"
+			:pan-activation-key-code="null"
 			@connect="handleConnect"
 			@pane-ready="setInstance"
 			@node-click="handleNodeClick"
@@ -44,6 +48,9 @@
 			</template>
 			<template #edge-editable="props">
 				<EditableEdge v-bind="props" @change="labelChanged($event, props.id)" @remove="removeEdge(props.id)" />
+			</template>
+			<template #edge-selfloop="props">
+				<SelfLoopEdge v-bind="props" @change="labelChanged($event, props.id)" @remove="removeEdge(props.id)" />
 			</template>
 		</VueFlow>
 	</div>
@@ -65,6 +72,8 @@ import { type HTMLAttributes, ref, computed, nextTick, onBeforeUnmount, onMounte
 
 import EditableEdge from './EditableEdge.vue'
 import EditableNode from './EditableNode.vue'
+import SelfLoopEdge from './SelfLoopEdge.vue'
+import { autoLayout } from '../utils/autoLayout'
 import type { FlowElements } from '../types'
 
 const { modelValue, nodeContainerClass = '' } = defineProps<{
@@ -86,9 +95,11 @@ const elements = computed({
 	get: () => {
 		const items = modelValue
 
-		// Add data to each element
+		// Add rendering flags without clobbering caller-provided data. Edges carry `data.actionKey`
+		// (the stable action identity from stateTransforms); wiping data here would drop it before it
+		// round-trips back through emitElements, silently re-keying actions on every graph edit.
 		for (const element of items) {
-			element.data = {}
+			element.data = { ...element.data }
 			if (element.type === 'input') {
 				element.data.hasInput = false
 				element.data.hasOutput = true
@@ -100,7 +111,10 @@ const elements = computed({
 				element.data.hasOutput = true
 			}
 			element.class = 'vue-flow__node-default'
-			element.type = 'editable'
+			// A self-loop edge (source === target) routes to the SelfLoopEdge arc renderer; everything
+			// else (nodes and cross-state edges) uses the default editable slot. getBezierPath draws a
+			// useless near-straight segment for a self-loop, so it must not fall through to 'editable'.
+			element.type = 'source' in element && element.source === element.target ? 'selfloop' : 'editable'
 		}
 
 		return items
@@ -173,6 +187,35 @@ const fitView = async () => {
 	await vueFlowInstance.value?.fitView()
 }
 
+const autoArrange = async () => {
+	// Read measured node sizes from the VueFlow store so the layout fits actual box widths (state
+	// labels differ in length); autoLayout falls back to default dimensions for any unmeasured node.
+	const store = vueFlowInstance.value
+	const dimensions: Record<string, { width: number; height: number }> = {}
+	for (const el of vueFlowElements.value) {
+		if ('source' in el) continue
+		const dims = store?.findNode?.(el.id)?.dimensions
+		if (dims?.width && dims?.height) dimensions[el.id] = { width: dims.width, height: dims.height }
+	}
+
+	const laid = autoLayout(vueFlowElements.value, { dimensions })
+	const positionById = new Map<string, { x: number; y: number }>()
+	for (const el of laid) {
+		if ('source' in el) continue
+		positionById.set(el.id, el.position)
+	}
+	// Apply positions onto the v-model elements — VueFlow reacts to these, same as shiftInput/Output.
+	for (const el of vueFlowElements.value) {
+		if ('source' in el) continue
+		const position = positionById.get(el.id)
+		if (position) el.position = position
+	}
+
+	emitElements()
+	await nextTick()
+	await fitView()
+}
+
 const addNode = () => {
 	let makeEdge = false
 	let newNodePosition = { x: Math.random() * 200, y: Math.random() * 200 }
@@ -234,11 +277,13 @@ const handleEdgeClick = ({ edge }: EdgeMouseEvent) => {
 
 const handleConnect = async (event: Connection) => {
 	const id = vueFlowElements.value.length
+	// A node connected to itself is a self-transition (mutate-in-place) — render it as a loop.
+	const isSelfLoop = event.source === event.target
 	const newEdge = {
 		id: `edge-${id}`,
 		source: event.source,
 		target: event.target,
-		type: 'editable',
+		type: isSelfLoop ? 'selfloop' : 'editable',
 		label: `New Edge`,
 		interactionWidth: 400,
 		animated: true,
@@ -283,17 +328,23 @@ const emitElements = () => {
 }
 
 .chart-controls {
-	padding-left: 20px;
-	padding-right: 20px;
-	height: 1.8em;
-	border-bottom: 1px solid #ccc;
+	position: absolute;
+	bottom: 0.5rem;
+	left: 0.5rem;
+	z-index: 10;
 	display: flex;
-	flex-direction: row;
-	justify-content: space-between;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 0.35rem;
+	padding: 0.4rem 0.5rem;
+	background: rgba(255, 255, 255, 0.92);
+	border: 1px solid #ccc;
+	border-radius: 4px;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
 }
 
 .chart-controls div {
-	margin-bottom: 5px;
+	margin-bottom: 0;
 }
 
 .defaultContainerClass {

@@ -116,7 +116,6 @@ export const useOperationLogStore = defineStore('hst-operation-log', () => {
 	const config = ref<OperationLogConfig>({
 		maxOperations: 100,
 		enableCrossTabSync: true,
-		autoSyncInterval: 30000,
 		enablePersistence: false,
 		persistenceKeyPrefix: 'stonecrop-ops',
 	})

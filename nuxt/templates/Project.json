@@ -6,35 +6,30 @@
 			"fieldname": "id",
 			"label": "ID",
 			"component": "ATextInput",
-			"fieldtype": "Data",
 			"mode": "display"
 		},
 		{
 			"fieldname": "title",
 			"label": "Title",
 			"component": "ATextInput",
-			"fieldtype": "Data",
 			"required": true
 		},
 		{
 			"fieldname": "description",
 			"label": "Description",
-			"component": "ATextarea",
-			"fieldtype": "Text"
+			"component": "ATextarea"
 		},
 		{
 			"fieldname": "status",
 			"label": "Status",
 			"component": "ADropdown",
-			"fieldtype": "Select",
 			"options": ["Active", "Archived"],
 			"default": "Active"
 		},
 		{
 			"fieldname": "createdAt",
 			"label": "Created At",
-			"component": "ATextInput",
-			"fieldtype": "Datetime",
+			"component": "ADateTime",
 			"mode": "display"
 		}
 	],
@@ -43,13 +38,12 @@
 		"actions": {
 			"save": {
 				"label": "Save",
-				"handler": "project:save"
+				"stateless": true
 			},
 			"archive": {
 				"label": "Archive Project",
-				"handler": "archive_project",
 				"allowedStates": ["Active"],
-				"confirm": true
+				"nextState": "Archived"
 			}
 		}
 	}

@@ -33,14 +33,14 @@ Call `collectRecordPayload` in your doctype's **save action** defined in the wor
 ### Example: Save Action in Workflow
 
 ```typescript
-import { Doctype, getStonecrop } from '@stonecrop/stonecrop'
+import { Doctype, getStonecrop, registerTransitionAction, type TransitionChangeContext } from '@stonecrop/stonecrop'
 import { List, Map } from 'immutable'
 import { apiClient } from './api-client'
 
 const customerDoctype = new Doctype(
   'Customer',
   List([
-    { fieldname: 'name', fieldtype: 'Data', component: 'ATextInput' },
+    { fieldname: 'name', component: 'ATextInput' },
   ]),
   {
     id: 'customer',
@@ -63,10 +63,11 @@ const customerDoctype = new Doctype(
   }
 )
 
-// Register the action handler — runs outside Vue, so use getStonecrop()
-async function saveRecord(args: unknown[]) {
+// Register the action handler — runs outside Vue, so use getStonecrop().
+// Transition actions receive a single context object (not a positional args array).
+registerTransitionAction('saveRecord', async (context: TransitionChangeContext) => {
   const stonecrop = getStonecrop()
-  const recordId = args?.[0] as string
+  const { recordId } = context
   if (!recordId || !stonecrop) return
 
   // Collect all nested data into a single payload
@@ -74,7 +75,7 @@ async function saveRecord(args: unknown[]) {
 
   // Send to your API
   await apiClient.save('/customers', payload)
-}
+})
 ```
 
 ---
@@ -86,7 +87,7 @@ Given a doctype with scalar fields and a `links` object declaring relationships:
 ```typescript
 // fields (scalars only):
 [
-  { fieldname: 'name', fieldtype: 'Data' },
+  { fieldname: 'name', component: 'ATextInput' },
 ]
 
 // links object:
@@ -128,7 +129,7 @@ customer.123.orders = [{ total: 100 }, { total: 250 }]
 Since `collectRecordPayload` returns a plain object, you can modify it before sending:
 
 ```typescript
-const payload = collectRecordPayload(doctype, recordId)
+const payload = stonecrop.collectRecordPayload(doctype, recordId)
 
 // Add metadata
 payload._version = 2

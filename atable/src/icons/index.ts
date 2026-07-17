@@ -12,6 +12,12 @@ import InsertBelowIcon from './stonecrop-ui-icon-insert-below.svg?raw'
 import MoveIcon from './stonecrop-ui-icon-move.svg?raw'
 import OpenIcon from './stonecrop-ui-icon-open.svg?raw'
 
+// Directional move icons are inline (no dedicated SVG asset): simple up/down chevrons.
+const MoveUpIcon =
+	'<svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 13V3.5M4.5 7 8 3.5 11.5 7" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+const MoveDownIcon =
+	'<svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 3v9.5M4.5 9 8 12.5 11.5 9" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+
 export { AddIcon, DeleteIcon, DuplicateIcon, InsertAboveIcon, InsertBelowIcon, MoveIcon, OpenIcon }
 
 /**
@@ -26,5 +32,7 @@ export const actionIcons: Record<string, string> = {
 	insertAbove: InsertAboveIcon,
 	insertBelow: InsertBelowIcon,
 	move: MoveIcon,
+	moveUp: MoveUpIcon,
+	moveDown: MoveDownIcon,
 	open: OpenIcon,
 }

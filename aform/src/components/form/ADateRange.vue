@@ -17,7 +17,7 @@
 				@click="openPicker" />
 			<label :for="uuid">{{ label }}</label>
 
-			<p v-show="validation.errorMessage" v-html="validation.errorMessage"></p>
+			<p v-show="errorText" v-html="errorText"></p>
 
 			<ADateSelection
 				v-if="showPicker"
@@ -38,7 +38,10 @@ import type { ComponentProps } from '../../types'
 
 const fmt = (d: string) => new Date(d).toLocaleDateString()
 
-const { label = 'Date Range', mode, uuid, validation = { errorMessage: '&nbsp;' } } = defineProps<ComponentProps>()
+const { label = 'Date Range', mode, uuid, errors, validation = { errorMessage: '' } } = defineProps<ComponentProps>()
+
+// Dynamic trigger errors take precedence over a static schema errorMessage; empty means the slot hides.
+const errorText = computed(() => (errors?.length ? errors.join('; ') : (validation.errorMessage ?? '')))
 
 export interface DateRangeValue {
 	start_date: string | null

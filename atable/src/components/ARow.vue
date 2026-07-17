@@ -1,6 +1,7 @@
 <template>
 	<tr
 		v-show="isRowVisible"
+		v-bind="$attrs"
 		ref="rowEl"
 		:tabindex="tabIndex"
 		class="atable-row"
@@ -32,6 +33,14 @@
 				@click="store.toggleRowExpand(rowIndex)">
 				{{ rowExpandSymbol }}
 			</td>
+			<td
+				v-else-if="store.config.view === 'list-expansion'"
+				:tabIndex="-1"
+				class="expansion-index"
+				:class="store.hasPinnedColumns ? 'sticky-index' : ''"
+				@click="store.toggleRowExpand(rowIndex)">
+				{{ rowExpandSymbol }}
+			</td>
 		</slot>
 
 		<!-- Row actions after index -->
@@ -54,6 +63,13 @@
 			:config="rowActionsConfig"
 			:position="actionsPosition"
 			@action="onRowAction" />
+	</tr>
+
+	<!-- list-expansion content panel: a second row spanning the whole width -->
+	<tr v-if="isExpanded" :tabindex="tabIndex" class="atable-expanded-row">
+		<td :tabIndex="-1" :colspan="expandedColspan" class="atable-expanded-content">
+			<slot name="content" :row="store.rows[rowIndex]" :row-index="rowIndex" :store="store" />
+		</td>
 	</tr>
 </template>
 
@@ -101,24 +117,49 @@ const actionsPosition = computed(() => {
 	return rowActionsConfig.value.position || 'before-index'
 })
 
+// list-expansion: this row owns an expandable content panel (a second <tr>).
+const isExpanded = computed(() => store.config.view === 'list-expansion' && Boolean(store.display[rowIndex]?.expanded))
+
+// The content panel spans every column the main row occupies: data columns + the
+// index/chevron column (absent only in uncounted) + the row-actions column when enabled.
+const expandedColspan = computed(() => {
+	const indexCol = store.config.view === 'uncounted' ? 0 : 1
+	const actionsCol = showRowActions.value ? 1 : 0
+	return store.columns.length + indexCol + actionsCol
+})
+
 const onRowAction = (actionType: RowActionType, index: number, event?: MouseEvent) => {
 	emit('row:action', actionType, index, event)
 }
 
 const onRowClick = (event: MouseEvent) => {
-	// Ignore clicks on the row actions cell or tree expand cell
+	// Ignore clicks on the row actions cell or an expand/collapse chevron (tree or list-expansion),
+	// so toggling a chevron never doubles as a row-click navigation.
 	const target = event.target as HTMLElement
-	if (target.closest('.atable-row-actions') || target.closest('.tree-index')) return
+	if (target.closest('.atable-row-actions') || target.closest('.tree-index') || target.closest('.expansion-index'))
+		return
 	emit('row:click', rowIndex, event)
 }
 
-if (addNavigation) {
-	let handlers = defaultKeypressHandlers
+// A list-expansion row always binds Ctrl+G to toggle its own panel while opt-in
+// cell navigation stays gated on `addNavigation` (default off), so other view
+// types are unchanged.
+const isListExpansion = store.config.view === 'list-expansion'
 
-	if (typeof addNavigation === 'object') {
-		handlers = {
-			...handlers,
-			...addNavigation,
+if (addNavigation || isListExpansion) {
+	let handlers: KeypressHandlers = {}
+
+	if (addNavigation === true) {
+		handlers = { ...defaultKeypressHandlers }
+	} else if (typeof addNavigation === 'object') {
+		handlers = { ...defaultKeypressHandlers, ...addNavigation }
+	}
+
+	if (isListExpansion && !handlers['keydown.control.g']) {
+		handlers['keydown.control.g'] = (event: KeyboardEvent) => {
+			event.stopPropagation()
+			event.preventDefault()
+			store.toggleRowExpand(rowIndex)
 		}
 	}
 
@@ -132,8 +173,6 @@ if (addNavigation) {
 </script>
 
 <style>
-@import url('@stonecrop/themes/default.css');
-
 .atable-row {
 	background-color: white;
 }
@@ -174,15 +213,26 @@ if (addNavigation) {
 	padding-bottom: var(--sc-atable-row-padding);
 }
 
-.tree-index {
+.tree-index,
+.expansion-index {
 	color: var(--sc-header-text-color);
 	font-weight: bold;
 	text-align: center;
 	user-select: none;
 	width: 2ch;
 	box-sizing: border-box;
+	cursor: pointer;
 	padding-top: var(--sc-atable-row-padding);
 	padding-bottom: var(--sc-atable-row-padding);
+}
+
+.atable-expanded-row {
+	border-left: 2px solid var(--sc-row-border-color);
+}
+
+.atable-expanded-content {
+	border-top: 1px solid var(--sc-row-border-color);
+	padding: 1.5rem;
 }
 /* sticky cells in modified rows should be a solid color to properly hide non-sticky cells */
 .atable-row:has(td.cell-modified) > td.sticky-column,

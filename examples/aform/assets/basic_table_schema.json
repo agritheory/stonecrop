@@ -1,13 +1,14 @@
 [
 	{
 		"fieldname": "line_items",
+		"kind": "table",
 		"component": "ATable",
 		"label": "Order Line Items",
 		"schema": [
 			{
 				"fieldname": "item_code",
 				"label": "SKU",
-				"fieldtype": "Data",
+				"component": "ATextInput",
 				"align": "left",
 				"edit": false,
 				"width": "16ch"
@@ -15,7 +16,7 @@
 			{
 				"fieldname": "item_name",
 				"label": "Product",
-				"fieldtype": "Data",
+				"component": "ATextInput",
 				"align": "left",
 				"edit": false,
 				"width": "32ch"
@@ -23,7 +24,7 @@
 			{
 				"fieldname": "quantity",
 				"label": "Qty",
-				"fieldtype": "Int",
+				"component": "ANumericInput",
 				"align": "center",
 				"edit": true,
 				"width": "10ch"
@@ -31,7 +32,7 @@
 			{
 				"fieldname": "unit_price",
 				"label": "Unit Price",
-				"fieldtype": "Currency",
+				"component": "ANumericInput",
 				"align": "right",
 				"edit": false,
 				"width": "16ch",
@@ -40,7 +41,7 @@
 			{
 				"fieldname": "total",
 				"label": "Total",
-				"fieldtype": "Currency",
+				"component": "ANumericInput",
 				"align": "right",
 				"edit": false,
 				"width": "16ch",
@@ -49,7 +50,7 @@
 			{
 				"fieldname": "ship_date",
 				"label": "Ship Date",
-				"fieldtype": "Date",
+				"component": "ADate",
 				"modalComponent": "ADatePicker",
 				"align": "center",
 				"edit": true,
@@ -59,12 +60,15 @@
 			{
 				"fieldname": "status",
 				"label": "Status",
-				"fieldtype": "Select",
+				"component": "ADropdown",
 				"align": "center",
 				"edit": true,
 				"width": "14ch"
 			}
 		],
-		"config": { "view": "list", "fullWidth": true }
+		"config": {
+			"view": "list",
+			"fullWidth": true
+		}
 	}
 ]

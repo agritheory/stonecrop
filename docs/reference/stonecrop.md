@@ -43,6 +43,29 @@ export declare function createValidator(registry: Registry, options?: Partial<Va
 | registry | `Registry` | Registry instance |
 | options | `Partial<ValidatorOptions>` | Additional validator options |
 
+### executeClientHandler
+
+Execute a docbuilder-authored `clientHandler` body against an injected API map.
+
+`code` is a function *body* (statements), not a full function — authored in the docbuilder code editor and stored on `ActionDefinition.clientHandler`. It is compiled with the AsyncFunction constructor, so `await` works directly. Each key of `api` becomes a parameter name bound to its value, so a handler can reference `router`, `record`, `runAction`, etc. by name.
+
+This executor is deliberately concern-free: it performs no routing, dispatch, or HST writes itself — the caller assembles `api`. The injected set is an *intent* contract, not a sandbox (an AsyncFunction body can still reach `fetch`/`window`); enforcement of what a handler may actually do lives server-side, not here.
+
+Errors are propagated to the caller as a rejected promise — syntax errors at compile time and thrown errors / rejections at run time — so callers handle both uniformly.
+
+**Signature:**
+
+```typescript
+export declare function executeClientHandler(code: string, api?: ClientHandlerApi): Promise<unknown>;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| code | `string` | the clientHandler body, e.g. `"router.push('/users')"` |
+| api | `ClientHandlerApi` | named capabilities injected as parameters (default: none) |
+
 ### getGlobalTriggerEngine
 
 Get or create the global field trigger engine singleton
@@ -662,7 +685,6 @@ Operation log configuration
 
 ```typescript
 export interface OperationLogConfig {
-  autoSyncInterval?: number;
   enableCrossTabSync?: boolean;
   enablePersistence?: boolean;
   maxOperations?: number;
@@ -676,7 +698,6 @@ export interface OperationLogConfig {
 
 | Property | Type | Description |
 |----------|------|-------------|
-| autoSyncInterval? | `number` | Auto-sync interval in milliseconds (default: 30000) |
 | enableCrossTabSync? | `boolean` | Enable cross-tab synchronization (default: true) |
 | enablePersistence? | `boolean` | Enable operation persistence to localStorage (default: false) |
 | maxOperations? | `number` | Maximum operations to store (default: 100) |
@@ -828,6 +849,28 @@ export interface UndoRedoState {
 | redoCount | `number` | Number of operations available for redo |
 | undoCount | `number` | Number of operations available for undo |
 
+### ValidationError
+
+A single validation error contributed by a trigger, displayed on a field.
+
+**Definition:**
+
+```typescript
+export interface ValidationError {
+  field: string;
+  message: string;
+  trigger: string;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| field | `string` | The fieldname the error displays on (the `setError` target, not necessarily a fired field) |
+| message | `string` | The message to display |
+| trigger | `string` | The trigger that produced this error — the namespace a re-run clears before repopulating |
+
 ### ValidationIssue
 
 Validation issue
@@ -923,6 +966,16 @@ export type BaseStonecropReturn = {
     stonecrop: Ref<Stonecrop | undefined>;
     operationLog: OperationLogAPI;
 };
+```
+
+### ClientHandlerApi
+
+Named capabilities injected into a clientHandler body as function parameters. The caller (the assembly composable) owns what each name resolves to — typically `router`, `record`, `runAction`, and a read-only `graphql`.
+
+**Definition:**
+
+```typescript
+export type ClientHandlerApi = Record<string, unknown>;
 ```
 
 ### CrossTabMessageType
@@ -1233,11 +1286,8 @@ Returns metadata for a specific action, if available. Only works with WorkflowMe
 ```typescript
 getActionMeta(actionName: string): {
         label: string;
-        handler: string;
         requiredFields?: string[];
         allowedStates?: string[];
-        confirm?: boolean;
-        args?: Record<string, unknown>;
     } | undefined
 ```
 
@@ -1254,6 +1304,24 @@ Returns the actions as a plain object for use with components that expect plain 
 ```typescript
 getActionsObject(): Record<string, string[]>
 ```
+
+#### getAvailableCommands
+
+Returns the stateless **Commands** available in a given workflow state — side-effect actions (save/print/email…) that do not change workflow state. Unlike transitions, Commands may exist on a workflow that declares no `states` (a commands-only doctype), and a Command with no `allowedStates` is available in every state.
+
+Only meaningful for WorkflowMeta format; XState workflows have no Commands.
+
+```typescript
+getAvailableCommands(currentState: string): Array<{
+        name: string;
+    }>
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| currentState | `string` | The record's current state, used to honor a Command's `allowedStates` |
 
 #### getAvailableTransitions
 
@@ -1278,6 +1346,14 @@ Returns the raw authoring schema as a plain array. For the resolved schema suita
 
 ```typescript
 getSchemaArray(): DoctypeField[]
+```
+
+#### getTriggers
+
+Returns the field-validation **triggers** declared on this doctype's workflow (advisory, client-side). Keyed by trigger name. Returns undefined when the workflow is absent, is an XState machine (no triggers), or simply declares none.
+
+```typescript
+getTriggers(): Record<string, TriggerDefinition> | undefined
 ```
 
 ### FieldTriggerEngine
@@ -1544,7 +1620,7 @@ getDoctype(slug: string): Doctype | undefined
 
 Initialize a new record with default values based on a resolved schema. Narrows by `kind` discriminator for precise branch selection.
 
-- `kind: 'table'` or `kind: 'link'` → `[]` or `{}` - `kind: 'fieldset'` → recursively initializes children as `{}` - `kind: 'field'` → derives default from `fieldtype`; falls back to `null`
+- `kind: 'table'` or `kind: 'link'` → `[]` or `{}` - `kind: 'fieldset'` → recursively initializes children as `{}` - `kind: 'field'` → derives the default from the component's category; falls back to `null`
 
 ```typescript
 initializeRecord(schema: ResolvedField[]): Record<string, any>
@@ -2009,7 +2085,6 @@ export const useOperationLogStore: import("pinia").StoreDefinition<"hst-operatio
     config: import("vue").Ref<{
         maxOperations?: number | undefined;
         enableCrossTabSync?: boolean | undefined;
-        autoSyncInterval?: number | undefined;
         enablePersistence?: boolean | undefined;
         persistenceKeyPrefix?: string | undefined;
         userId?: string | undefined;
@@ -2017,7 +2092,6 @@ export const useOperationLogStore: import("pinia").StoreDefinition<"hst-operatio
     }, OperationLogConfig | {
         maxOperations?: number | undefined;
         enableCrossTabSync?: boolean | undefined;
-        autoSyncInterval?: number | undefined;
         enablePersistence?: boolean | undefined;
         persistenceKeyPrefix?: string | undefined;
         userId?: string | undefined;
@@ -2095,7 +2169,6 @@ export const useOperationLogStore: import("pinia").StoreDefinition<"hst-operatio
     config: import("vue").Ref<{
         maxOperations?: number | undefined;
         enableCrossTabSync?: boolean | undefined;
-        autoSyncInterval?: number | undefined;
         enablePersistence?: boolean | undefined;
         persistenceKeyPrefix?: string | undefined;
         userId?: string | undefined;
@@ -2103,7 +2176,6 @@ export const useOperationLogStore: import("pinia").StoreDefinition<"hst-operatio
     }, OperationLogConfig | {
         maxOperations?: number | undefined;
         enableCrossTabSync?: boolean | undefined;
-        autoSyncInterval?: number | undefined;
         enablePersistence?: boolean | undefined;
         persistenceKeyPrefix?: string | undefined;
         userId?: string | undefined;
@@ -2181,7 +2253,6 @@ export const useOperationLogStore: import("pinia").StoreDefinition<"hst-operatio
     config: import("vue").Ref<{
         maxOperations?: number | undefined;
         enableCrossTabSync?: boolean | undefined;
-        autoSyncInterval?: number | undefined;
         enablePersistence?: boolean | undefined;
         persistenceKeyPrefix?: string | undefined;
         userId?: string | undefined;
@@ -2189,7 +2260,6 @@ export const useOperationLogStore: import("pinia").StoreDefinition<"hst-operatio
     }, OperationLogConfig | {
         maxOperations?: number | undefined;
         enableCrossTabSync?: boolean | undefined;
-        autoSyncInterval?: number | undefined;
         enablePersistence?: boolean | undefined;
         persistenceKeyPrefix?: string | undefined;
         userId?: string | undefined;
@@ -2214,6 +2284,74 @@ export const useOperationLogStore: import("pinia").StoreDefinition<"hst-operatio
     markIrreversible: (operationId: string, reason: string) => void;
     logAction: (doctype: string, actionName: string, recordIds?: string[], result?: "success" | "failure" | "pending", error?: string) => string;
 }, "clear" | "undo" | "redo" | "configure" | "addOperation" | "startBatch" | "commitBatch" | "cancelBatch" | "getOperationsFor" | "getSnapshot" | "markIrreversible" | "logAction">>
+```
+
+### useValidationStore
+
+Reactive per-field validation error store + the advisory field-validation trigger engine.
+
+Holds the errors produced by field-validation triggers (see `TriggerDefinition` in `@stonecrop/schema`) and runs a trigger's `clientHandler` on demand. Errors are **namespaced by trigger**: re-running a trigger clears its own prior contributions before repopulating, so a corrected value clears its stale error without disturbing other triggers.
+
+The engine is **advisory** and does **no rollback** — an invalid value stays in the record so the user can fix it; validity is reported separately via `isValid` (read by the save gate) and the per-field messages are surfaced via `errorsByField` / `errorsFor` for display.
+
+**Type:**
+
+```typescript
+export const useValidationStore: import("pinia").StoreDefinition<"stonecrop-validation", Pick<{
+    errors: import("vue").Ref<{
+        trigger: string;
+        field: string;
+        message: string;
+    }[], ValidationError[] | {
+        trigger: string;
+        field: string;
+        message: string;
+    }[]>;
+    isValid: import("vue").ComputedRef<boolean>;
+    errorsByField: import("vue").ComputedRef<Record<string, string[]>>;
+    errorsFor: (field: string) => string[];
+    setError: (trigger: string, field: string, message: string) => void;
+    clearTrigger: (trigger: string) => void;
+    clearAll: () => void;
+    validateField: (triggers: Record<string, TriggerDefinition>, changedField: string, record: Record<string, unknown>) => Promise<void>;
+    validateRecord: (triggers: Record<string, TriggerDefinition>, record: Record<string, unknown>) => Promise<void>;
+}, "errors">, Pick<{
+    errors: import("vue").Ref<{
+        trigger: string;
+        field: string;
+        message: string;
+    }[], ValidationError[] | {
+        trigger: string;
+        field: string;
+        message: string;
+    }[]>;
+    isValid: import("vue").ComputedRef<boolean>;
+    errorsByField: import("vue").ComputedRef<Record<string, string[]>>;
+    errorsFor: (field: string) => string[];
+    setError: (trigger: string, field: string, message: string) => void;
+    clearTrigger: (trigger: string) => void;
+    clearAll: () => void;
+    validateField: (triggers: Record<string, TriggerDefinition>, changedField: string, record: Record<string, unknown>) => Promise<void>;
+    validateRecord: (triggers: Record<string, TriggerDefinition>, record: Record<string, unknown>) => Promise<void>;
+}, "isValid" | "errorsByField">, Pick<{
+    errors: import("vue").Ref<{
+        trigger: string;
+        field: string;
+        message: string;
+    }[], ValidationError[] | {
+        trigger: string;
+        field: string;
+        message: string;
+    }[]>;
+    isValid: import("vue").ComputedRef<boolean>;
+    errorsByField: import("vue").ComputedRef<Record<string, string[]>>;
+    errorsFor: (field: string) => string[];
+    setError: (trigger: string, field: string, message: string) => void;
+    clearTrigger: (trigger: string) => void;
+    clearAll: () => void;
+    validateField: (triggers: Record<string, TriggerDefinition>, changedField: string, record: Record<string, unknown>) => Promise<void>;
+    validateRecord: (triggers: Record<string, TriggerDefinition>, record: Record<string, unknown>) => Promise<void>;
+}, "errorsFor" | "setError" | "clearTrigger" | "clearAll" | "validateField" | "validateRecord">>
 ```
 
 ## Enums

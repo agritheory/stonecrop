@@ -4,37 +4,32 @@
 	"fields": [
 		{
 			"fieldname": "name",
-			"fieldtype": "Data",
 			"component": "ATextInput",
 			"label": "Name"
 		},
 		{
 			"fieldname": "required_task",
-			"fieldtype": "Link",
 			"component": "AForm",
 			"label": "Required Task",
-			"options": "recipe-task"
+			"doctype": "recipe-task"
 		},
 		{
 			"fieldname": "optional_task",
-			"fieldtype": "Link",
 			"component": "AForm",
 			"label": "Optional Task",
-			"options": "recipe-task"
+			"doctype": "recipe-task"
 		},
 		{
 			"fieldname": "optional_tasks",
-			"fieldtype": "Link",
 			"component": "ATable",
 			"label": "Optional Tasks",
-			"options": "recipe-task"
+			"doctype": "recipe-task"
 		},
 		{
 			"fieldname": "required_tasks",
-			"fieldtype": "Link",
 			"component": "ATable",
 			"label": "Required Tasks",
-			"options": "recipe-task"
+			"doctype": "recipe-task"
 		}
 	],
 	"links": {

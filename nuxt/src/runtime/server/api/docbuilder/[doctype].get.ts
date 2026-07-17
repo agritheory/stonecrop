@@ -1,7 +1,8 @@
 import { existsSync } from 'node:fs'
-import { readFile } from 'node:fs/promises'
+import { readFile, readdir } from 'node:fs/promises'
 import { resolve } from 'node:path'
-import { createError, defineEventHandler, getRouterParam, useRuntimeConfig } from '#imports'
+import { createError, defineEventHandler, getRouterParam } from 'h3'
+import { useRuntimeConfig } from '#imports'
 
 export default defineEventHandler(async event => {
 	const doctype = getRouterParam(event, 'doctype')
@@ -15,14 +16,24 @@ export default defineEventHandler(async event => {
 
 	const config = useRuntimeConfig()
 	const doctypesDir = config.stonecrop?.doctypesDir || resolve(process.cwd(), 'doctypes')
-	const filePath = resolve(doctypesDir, `${doctype}.json`)
 
-	// Security check
-	if (!filePath.startsWith(doctypesDir)) {
+	// Security check — ensure the resolved path stays inside doctypesDir (checked after resolution)
+	const exactPath = resolve(doctypesDir, `${doctype}.json`)
+	if (!exactPath.startsWith(doctypesDir + '/')) {
 		throw createError({
 			status: 400,
 			message: 'Invalid doctype name',
 		})
+	}
+
+	// Case-insensitive file lookup: try exact match first, then scan directory
+	let filePath = exactPath
+	if (!existsSync(filePath)) {
+		const files = await readdir(doctypesDir).catch(() => [] as string[])
+		const match = files.find(f => f.toLowerCase() === `${doctype.toLowerCase()}.json`)
+		if (match) {
+			filePath = resolve(doctypesDir, match)
+		}
 	}
 
 	if (!existsSync(filePath)) {
@@ -42,7 +53,8 @@ export default defineEventHandler(async event => {
 				.map(w => w.charAt(0).toUpperCase() + w.slice(1))
 				.join(' '),
 			slug: doctype,
-			schema: data.schema ?? data.fields ?? [],
+			fields: data.fields ?? [],
+			workflow: data.workflow ?? null,
 		}
 	} catch (error: any) {
 		throw createError({

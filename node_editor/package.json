@@ -41,12 +41,14 @@
 		"lint:fix": "oxlint --fix",
 		"preview": "vite preview",
 		"test": "vitest run --coverage.enabled false",
+		"test:types": "vue-tsc --noEmit",
 		"test:watch": "vitest watch",
 		"test:coverage": "vitest run --coverage"
 	},
 	"dependencies": {
-		"@vue-flow/core": "^1.48.1",
-		"xstate": "^5.25.0"
+		"@dagrejs/dagre": "^3.0.0",
+		"@stonecrop/schema": "workspace:*",
+		"@vue-flow/core": "^1.48.1"
 	},
 	"peerDependencies": {
 		"vue": "^3.5.33",
@@ -64,7 +66,8 @@
 		"vite": "^7.3.2",
 		"vitest": "^4.1.5",
 		"vue": "^3.5.33",
-		"vue-router": "^5.0.6"
+		"vue-router": "^5.0.6",
+		"vue-tsc": "^3.3.6"
 	},
 	"description": "Node editor UI for Stonecrop",
 	"publishConfig": {

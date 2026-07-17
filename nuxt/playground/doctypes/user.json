@@ -1,23 +1,18 @@
 {
-	"schema": [
+	"name": "User",
+	"slug": "user",
+	"fields": [
 		{
 			"label": "Username",
 			"fieldname": "username",
-			"fieldtype": "Data",
+			"component": "ATextInput",
 			"required": true
 		},
 		{
 			"label": "Disabled",
 			"fieldname": "disabled",
-			"fieldtype": "Check",
+			"component": "ACheckbox",
 			"default": false
 		}
-	],
-	"links": {
-		"has_roles": {
-			"target": "UserRole",
-			"cardinality": "noneOrMany",
-			"backlink": "user"
-		}
-	}
+	]
 }

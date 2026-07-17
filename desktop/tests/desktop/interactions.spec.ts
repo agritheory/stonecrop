@@ -310,7 +310,7 @@ describe('Desktop user interactions', { tags: ['component'] }, () => {
 					draft: { on: { SUBMIT: 'submitted' } },
 					submitted: { type: 'final' },
 				},
-				[{ fieldname: 'custom_id', fieldtype: 'Data', label: 'Custom ID', component: 'ATextInput' }]
+				[{ kind: 'field' as const, fieldname: 'custom_id', label: 'Custom ID', component: 'ATextInput' }]
 			)
 			registry.addDoctype(doctype)
 			stonecrop.addRecord('task', 'rec-1', { id: 'rec-1', custom_id: 'custom-123', title: 'My Task' })

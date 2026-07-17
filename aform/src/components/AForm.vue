@@ -14,6 +14,7 @@
 					:schema="componentObj.schema"
 					:label="componentObj.label"
 					:collapsible="componentObj.kind === 'fieldset' ? componentObj.collapsible : undefined"
+					:errors="errors"
 					@update:data="(val: any) => updateNestedData(componentObj.fieldname, val)" />
 			</div>
 
@@ -26,6 +27,7 @@
 				:schema="componentObj"
 				:data="dataModel[componentObj.fieldname]"
 				:mode="resolvedMode(componentObj)"
+				:errors="errors?.[componentObj.fieldname]"
 				v-bind="componentProps(componentObj)">
 			</component>
 		</template>
@@ -40,7 +42,16 @@ import type { InteractionMode } from '@stonecrop/schema'
 
 const emit = defineEmits(['update:schema', 'update:data'])
 const dataModel = defineModel<Record<string, any>>('data', { required: true })
-const { schema, mode = 'edit' } = defineProps<{ schema: ResolvedField[]; mode?: InteractionMode }>()
+const {
+	schema,
+	mode = 'edit',
+	errors,
+} = defineProps<{
+	schema: ResolvedField[]
+	mode?: InteractionMode
+	/** Inline validation errors keyed by fieldname. Fed by the host; the form stays store-agnostic. */
+	errors?: Record<string, string[]>
+}>()
 
 const isNestedSection = (componentObj: ResolvedField): componentObj is ResolvedLink | ResolvedFieldset =>
 	(componentObj.kind === 'link' || componentObj.kind === 'fieldset') &&
@@ -83,14 +94,15 @@ const componentProps = (componentObj: ResolvedField) => {
 	for (const [key, value] of Object.entries(componentObj)) {
 		// 'mode' is excluded here because it is handled by resolvedMode()
 		// and passed explicitly via :mode to avoid conflicting with the form-level defaults.
-		if (!['component', 'fieldtype', 'hidden', 'mode', 'width'].includes(key)) {
+		if (!['component', 'primaryKey', 'computed', 'language', 'hidden', 'mode', 'width'].includes(key)) {
 			propsToPass[key] = value
 		}
 	}
 
-	// kind: 'table' is the canonical check; 'columns' in componentObj is a structural fallback
-	// for schemas passed directly to AForm without going through the registry.
-	if (componentObj.kind === 'table' || 'columns' in componentObj) {
+	// A table sources its rows from the data model, never from the schema. `kind` is the only
+	// check: every path into AForm sets it (Zod's injectKind, Doctype.fromObject's
+	// normalizeFieldKind, and the registry), and hand-built ResolvedTable literals declare it.
+	if (componentObj.kind === 'table') {
 		propsToPass['rows'] = dataModel.value[componentObj.fieldname] || []
 	}
 
@@ -228,9 +240,9 @@ const childModels = computed(() => childModelsCache.value)
 	line-height: normal;
 }
 p.aform_error {
-	display: block;
+	/* v-show toggles visibility per field; base display must be visible (was stuck at `none`,
+	   which overrode v-show and left every field error dormant). */
 	display: inline-block;
-	display: none;
 	background: linear-gradient(var(--sc-form-background) 50%, var(--sc-input-field-background) 50%);
 	padding: 0 0.25rem;
 	margin: 0rem;
@@ -249,7 +261,6 @@ p.aform_error {
 </style>
 
 <style scoped>
-/* @import url('@stonecrop/themes/default.css'); */
 .aform {
 	display: flex;
 	flex-wrap: wrap;

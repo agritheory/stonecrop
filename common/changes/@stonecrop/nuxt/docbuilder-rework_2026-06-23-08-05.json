@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "comment": "add clientHandler field to ActionDefinition for client-side JS handler authoring",
+      "type": "minor",
+      "packageName": "@stonecrop/nuxt"
+    }
+  ],
+  "packageName": "@stonecrop/nuxt"
+}

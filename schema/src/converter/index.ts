@@ -39,7 +39,7 @@ import { defaultIsEntityType, defaultIsEntityField, classifyFieldType } from './
  * // With PostGraphile custom scalars
  * const doctypes = convertGraphQLSchema(introspection, {
  *   customScalars: {
- *     BigFloat: { component: 'ADecimalInput', fieldtype: 'Decimal' }
+ *     BigFloat: { component: 'ANumericInput' }
  *   }
  * })
  * ```
@@ -116,7 +116,6 @@ export function convertGraphQLSchema(
 						fieldname: fieldName,
 						label: custom.label ?? fieldName,
 						component: custom.component ?? 'ATextInput',
-						fieldtype: custom.fieldtype ?? 'Data',
 						...custom,
 					}
 				}
@@ -137,29 +136,31 @@ export function convertGraphQLSchema(
 		const links: Record<string, LinkDeclaration> = {}
 		const convertedFields = allClassifiedFields
 			.filter(field => {
-				if (field._isLink && typeof field.options === 'string' && field.cardinality) {
+				if (field._isLink && field.doctype && field.cardinality) {
 					links[field.fieldname] = {
-						target: field.options,
+						target: field.doctype,
 						cardinality: field.cardinality,
 					}
 					return false
 				}
 				return true
 			})
-			// Clean up internal metadata unless requested
+			// Clean up internal metadata unless requested, and stamp provenance.
+			// Stamped last so every classification path (default, classifyField,
+			// typeOverrides) carries the marker — the docbuilder's identity lock
+			// keys off it, and an override must not be able to unset it.
 			.map(field => {
 				if (!options.includeUnmappedMeta) {
 					const { _graphqlType, _unmapped, _isLink, ...clean } = field
-					return clean
+					return Object.assign(clean, { source: 'introspected' as const })
 				}
 				const { _isLink, ...rest } = field
-				return rest
+				return Object.assign(rest, { source: 'introspected' as const })
 			})
 
 		const doctype: ConvertedGraphQLDoctype = {
 			name: typeName,
 			slug: toSlug(typeName),
-			// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- safe: heuristics always set a fieldtype default ('Data'); the optional fieldtype on GraphQLConversionFieldMeta is for intermediate processing, not because output fields lack fieldtype
 			fields: convertedFields as ValueField[],
 		}
 

@@ -204,10 +204,13 @@ watch(
 watch(
 	columns,
 	newColumns => {
+		// The model is optional, so it can be absent — there is nothing to sync from, and the store
+		// keeps the columns it resolved from the schema.
+		if (!newColumns) return
 		// Only update if the columns have actually changed (avoid infinite loops)
 		if (JSON.stringify(newColumns) !== JSON.stringify(store.columns)) {
 			store.columns = [...newColumns]
-			emit('columns:update', [...newColumns] as TableColumn[])
+			emit('columns:update', [...newColumns])
 		}
 	},
 	{ deep: true }
@@ -371,6 +374,20 @@ const handleRowAction = (actionType: RowActionType, rowIndex: number, event?: Mo
 			emit('row:move', { fromIndex: rowIndex, toIndex: -1 })
 			break
 		}
+		case 'moveUp': {
+			if (rowIndex > 0 && store.moveRow(rowIndex, rowIndex - 1)) {
+				rows.value = [...store.rows]
+				emit('row:move', { fromIndex: rowIndex, toIndex: rowIndex - 1 })
+			}
+			break
+		}
+		case 'moveDown': {
+			if (rowIndex < store.rows.length - 1 && store.moveRow(rowIndex, rowIndex + 1)) {
+				rows.value = [...store.rows]
+				emit('row:move', { fromIndex: rowIndex, toIndex: rowIndex + 1 })
+			}
+			break
+		}
 		case 'open': {
 			const row = store.rows[rowIndex]
 			emit('row:open', { row, rowIndex, event })
@@ -425,7 +442,6 @@ td.sticky-index {
 </style>
 
 <style scoped>
-@import url('@stonecrop/themes/default.css');
 .atable {
 	position: relative;
 	font-family: var(--sc-atable-font-family);

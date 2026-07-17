@@ -4,7 +4,6 @@
 
 ```ts
 
-import type { AnyStateNodeConfig } from 'xstate';
 import { App } from 'vue';
 import { Element as Element_2 } from '@vue-flow/core';
 import { Elements } from '@vue-flow/core';
@@ -14,15 +13,13 @@ import StateEditor from './components/StateEditor.vue';
 import { XYPosition } from '@vue-flow/core';
 
 // @public
-export type EditorStates = Record<string, AnyStateNodeConfig>;
-
-// @public
 export type FlowElement = Element_2<{
     hasInput?: boolean;
     hasOutput?: boolean;
 }, {
     hasInput?: boolean;
     hasOutput?: boolean;
+    actionKey?: string;
 }>;
 
 // @public
@@ -32,6 +29,7 @@ export type FlowElements = Elements<{
 }, {
     hasInput?: boolean;
     hasOutput?: boolean;
+    actionKey?: string;
 }>;
 
 // @public

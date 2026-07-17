@@ -1,14 +1,14 @@
 <template>
 	<Story title="NodeEditor">
-		<StateEditor v-model="fetchConfig" :layout="layout" />
+		<StateEditor v-model="fetchWorkflow" :layout="layout" />
 	</Story>
 </template>
 
 <script setup lang="ts">
-import { StateEditor, type EditorStates, type Layout } from '@stonecrop/node-editor'
+import { StateEditor, type Layout } from '@stonecrop/node-editor'
+import type { WorkflowMeta } from '@stonecrop/schema'
 import { Position } from '@vue-flow/core'
 import { ref } from 'vue'
-import { createMachine } from 'xstate'
 
 const layout: Layout = {
 	idle: {
@@ -27,39 +27,15 @@ const layout: Layout = {
 	},
 }
 
-const fetchMachine = createMachine({
-	id: 'fetch',
-	initial: 'idle',
-	context: {
-		retries: 0,
-	},
-	states: {
-		idle: {
-			on: {
-				FETCH: 'loading',
-			},
-		},
-		loading: {
-			on: {
-				RESOLVE: 'success',
-				REJECT: 'failure',
-			},
-		},
-		success: {
-			type: 'final',
-		},
-		failure: {
-			on: {
-				RETRY: {
-					target: 'loading',
-					actions: context => context.retries + 1,
-				},
-			},
-		},
+const fetchWorkflow = ref<WorkflowMeta>({
+	states: ['idle', 'loading', 'success', 'failure'],
+	actions: {
+		FETCH: { label: 'FETCH', handler: '', allowedStates: ['idle'], nextState: 'loading' },
+		RESOLVE: { label: 'RESOLVE', handler: '', allowedStates: ['loading'], nextState: 'success' },
+		REJECT: { label: 'REJECT', handler: '', allowedStates: ['loading'], nextState: 'failure' },
+		RETRY: { label: 'RETRY', handler: '', allowedStates: ['failure'], nextState: 'loading' },
 	},
 })
-
-const fetchConfig = ref(fetchMachine.config.states as EditorStates)
 </script>
 
 <style>

@@ -50,7 +50,7 @@ const showLabelInput = async () => {
 	newLabel.value = props.label
 	showInput.value = true
 	await nextTick()
-	inputRef.value.focus()
+	inputRef.value?.focus()
 }
 
 const submitNewLabel = () => {

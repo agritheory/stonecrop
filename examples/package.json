@@ -7,16 +7,14 @@
 	"license": "MIT",
 	"main": "index.js",
 	"files": [
-		"aform/*",
-		"docbuilder/*"
+		"aform/*"
 	],
 	"scripts": {
 		"_phase:build": "",
 		"build": "",
 		"story": "histoire dev",
 		"build:stories": "histoire build",
-		"desktop": "vite --config desktop/vite.config.ts desktop",
-		"docbuilder": "vite --config docbuilder/vite.config.ts docbuilder"
+		"desktop": "vite --config desktop/vite.config.ts desktop"
 	},
 	"dependencies": {
 		"@stonecrop/aform": "workspace:*",
@@ -33,8 +31,7 @@
 		"pinia": "^3.0.4",
 		"vite": "^7.3.2",
 		"vue": "^3.5.33",
-		"vue-router": "^5.0.6",
-		"xstate": "^5.25.0"
+		"vue-router": "^5.0.6"
 	},
 	"devDependencies": {
 		"@eslint/js": "^10.0.1",
@@ -43,15 +40,15 @@
 		"@vitejs/plugin-vue": "^6.0.6",
 		"@vue-flow/core": "^1.48.1",
 		"concurrently": "^9.2.1",
-		"eslint": "^10.3.0",
-		"eslint-plugin-vue": "^10.9.0",
+		"eslint": "^10.6.0",
+		"eslint-plugin-vue": "^10.9.2",
 		"globals": "^17.6.0",
 		"histoire": "^1.0.0-beta.1",
 		"immutable": "^5.1.4",
 		"monaco-editor": "^0.55.1",
 		"portal-vue": "^3.0.0",
 		"typescript": "^6.0.3",
-		"typescript-eslint": "^8.59.1"
+		"typescript-eslint": "^8.62.1"
 	},
 	"engines": {
 		"node": ">=24.0.0"

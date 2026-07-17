@@ -199,10 +199,20 @@ describe('Doctype class', { tags: ['unit'] }, () => {
 				states: ['planning', 'review', 'approved', 'applied'],
 				actions: {
 					save: { label: 'Save', handler: 'plan:save', allowedStates: ['planning'] },
-					submit: { label: 'Submit', handler: 'plan:submit', allowedStates: ['planning'] },
-					approve: { label: 'Approve', handler: 'plan:approve', allowedStates: ['review'], confirm: true },
-					reject: { label: 'Reject', handler: 'plan:reject', allowedStates: ['review'] },
-					apply: { label: 'Apply', handler: 'plan:apply', allowedStates: ['planning', 'approved'] },
+					submit: { label: 'Submit', handler: 'plan:submit', allowedStates: ['planning'], nextState: 'review' },
+					approve: {
+						label: 'Approve',
+						handler: 'plan:approve',
+						allowedStates: ['review'],
+						nextState: 'approved',
+					},
+					reject: { label: 'Reject', handler: 'plan:reject', allowedStates: ['review'], nextState: 'planning' },
+					apply: {
+						label: 'Apply',
+						handler: 'plan:apply',
+						allowedStates: ['planning', 'approved'],
+						nextState: 'applied',
+					},
 					global: { label: 'Global', handler: 'plan:global' },
 				},
 			}
@@ -236,13 +246,33 @@ describe('Doctype class', { tags: ['unit'] }, () => {
 				expect(reviewTransitions.some(t => t.name === 'global')).toBe(true)
 			})
 
-			it('returns current state as targetState (server-side transitions)', () => {
+			it('returns nextState as targetState for state-transitioning actions', () => {
 				const doctype = new Doctype('Plan', mockSchema, workflowMeta, mockActions)
 
 				const transitions = doctype.getAvailableTransitions('planning')
-				transitions.forEach(t => {
-					expect(t.targetState).toBe('planning')
-				})
+				const submit = transitions.find(t => t.name === 'submit')
+				expect(submit?.targetState).toBe('review')
+
+				const apply = transitions.find(t => t.name === 'apply')
+				expect(apply?.targetState).toBe('applied')
+
+				const reviewTransitions = doctype.getAvailableTransitions('review')
+				const approve = reviewTransitions.find(t => t.name === 'approve')
+				expect(approve?.targetState).toBe('approved')
+
+				const reject = reviewTransitions.find(t => t.name === 'reject')
+				expect(reject?.targetState).toBe('planning')
+			})
+
+			it('falls back to currentState as targetState when nextState is absent', () => {
+				const doctype = new Doctype('Plan', mockSchema, workflowMeta, mockActions)
+
+				const transitions = doctype.getAvailableTransitions('planning')
+				const save = transitions.find(t => t.name === 'save')
+				expect(save?.targetState).toBe('planning')
+
+				const globalAction = transitions.find(t => t.name === 'global')
+				expect(globalAction?.targetState).toBe('planning')
 			})
 
 			it('returns empty array for state not in states list', () => {
@@ -268,13 +298,116 @@ describe('Doctype class', { tags: ['unit'] }, () => {
 		})
 	})
 
+	describe('getAvailableCommands', () => {
+		const workflowWithCommands: WorkflowMeta = {
+			states: ['draft', 'submitted'],
+			actions: {
+				// A genuine transition — must never appear as a command.
+				submit: { label: 'Submit', allowedStates: ['draft'], nextState: 'submitted' },
+				// Global command (no allowedStates) — available in every state.
+				print: { label: 'Print', stateless: true },
+				// Scoped command — only in 'submitted'.
+				archive: { label: 'Archive', stateless: true, allowedStates: ['submitted'] },
+			},
+		}
+
+		it('returns stateless commands, honoring allowedStates', () => {
+			const doctype = new Doctype('Doc', mockSchema, workflowWithCommands, mockActions)
+
+			expect(doctype.getAvailableCommands('draft').map(c => c.name)).toEqual(['print'])
+			expect(
+				doctype
+					.getAvailableCommands('submitted')
+					.map(c => c.name)
+					.toSorted()
+			).toEqual(['archive', 'print'])
+		})
+
+		it('excludes genuine transitions', () => {
+			const doctype = new Doctype('Doc', mockSchema, workflowWithCommands, mockActions)
+
+			expect(doctype.getAvailableCommands('draft').some(c => c.name === 'submit')).toBe(false)
+		})
+
+		it('surfaces global commands even without a states list (commands-only doctype)', () => {
+			const commandsOnly: WorkflowMeta = { actions: { print: { label: 'Print', stateless: true } } }
+			const doctype = new Doctype('Report', mockSchema, commandsOnly, mockActions)
+
+			// No current state passed — a global command is still available.
+			expect(doctype.getAvailableCommands().map(c => c.name)).toEqual(['print'])
+			expect(doctype.getAvailableCommands('anything').map(c => c.name)).toEqual(['print'])
+		})
+
+		it('returns an empty array when there are no stateless actions', () => {
+			const transitionsOnly: WorkflowMeta = {
+				states: ['draft', 'submitted'],
+				actions: { submit: { label: 'Submit', allowedStates: ['draft'], nextState: 'submitted' } },
+			}
+			const doctype = new Doctype('Doc', mockSchema, transitionsOnly, mockActions)
+
+			expect(doctype.getAvailableCommands('draft')).toEqual([])
+		})
+
+		it('returns an empty array for XState workflows (no actions map)', () => {
+			const xstate = { id: 'w', initial: 'draft', states: { draft: { on: { SUBMIT: 'submitted' } }, submitted: {} } }
+			const doctype = new Doctype('Doc', mockSchema, xstate as any, mockActions)
+
+			expect(doctype.getAvailableCommands('draft')).toEqual([])
+		})
+
+		it('returns an empty array when workflow is undefined', () => {
+			const doctype = new Doctype('Doc', mockSchema, undefined as any, mockActions)
+
+			expect(doctype.getAvailableCommands('draft')).toEqual([])
+		})
+
+		it('getAvailableTransitions excludes stateless commands', () => {
+			const doctype = new Doctype('Doc', mockSchema, workflowWithCommands, mockActions)
+
+			const draftNames = doctype.getAvailableTransitions('draft').map(t => t.name)
+			expect(draftNames).toContain('submit')
+			expect(draftNames).not.toContain('print')
+			expect(draftNames).not.toContain('archive')
+		})
+	})
+
+	describe('getTriggers', () => {
+		it('returns the workflow triggers map', () => {
+			const workflowWithTriggers: WorkflowMeta = {
+				states: ['draft'],
+				triggers: {
+					dateOrder: {
+						on: ['start_date', 'end_date'],
+						clientHandler: "if (record.end_date < record.start_date) setError('end_date', 'End before start')",
+					},
+				},
+			}
+			const doctype = new Doctype('Booking', mockSchema, workflowWithTriggers, mockActions)
+
+			expect(doctype.getTriggers()).toEqual(workflowWithTriggers.triggers)
+		})
+
+		it('returns undefined when the workflow declares no triggers', () => {
+			const noTriggers: WorkflowMeta = { states: ['draft'], actions: {} }
+			const doctype = new Doctype('Doc', mockSchema, noTriggers, mockActions)
+
+			expect(doctype.getTriggers()).toBeUndefined()
+		})
+
+		it('returns undefined when workflow is undefined', () => {
+			const doctype = new Doctype('Doc', mockSchema, undefined as any, mockActions)
+
+			expect(doctype.getTriggers()).toBeUndefined()
+		})
+	})
+
 	describe('fromObject', () => {
 		it('creates Doctype from obj object with all fields', () => {
 			const obj = {
 				name: 'Plan',
 				fields: [
-					{ kind: 'field', fieldname: 'title', label: 'Title', fieldtype: 'Data' },
-					{ kind: 'field', fieldname: 'status', label: 'Status', fieldtype: 'Data' },
+					{ kind: 'field', fieldname: 'title', label: 'Title' },
+					{ kind: 'field', fieldname: 'status', label: 'Status' },
 				] as DoctypeField[],
 				workflow: {
 					id: 'plan',
@@ -447,8 +580,8 @@ describe('Doctype class', { tags: ['unit'] }, () => {
 			const obj = {
 				name: 'Plan',
 				fields: [
-					{ kind: 'field', fieldname: 'title', label: 'Title', fieldtype: 'Data' },
-					{ kind: 'field', fieldname: 'status', label: 'Status', fieldtype: 'Data' },
+					{ kind: 'field', fieldname: 'title', label: 'Title' },
+					{ kind: 'field', fieldname: 'status', label: 'Status' },
 				] as DoctypeField[],
 			}
 
@@ -496,8 +629,6 @@ describe('Doctype class', { tags: ['unit'] }, () => {
 						handler: 'plan:submit',
 						requiredFields: ['title', 'description'],
 						allowedStates: ['draft'],
-						confirm: true,
-						args: { notify: true },
 					},
 				},
 			}
@@ -509,8 +640,6 @@ describe('Doctype class', { tags: ['unit'] }, () => {
 				handler: 'plan:submit',
 				requiredFields: ['title', 'description'],
 				allowedStates: ['draft'],
-				confirm: true,
-				args: { notify: true },
 			})
 		})
 

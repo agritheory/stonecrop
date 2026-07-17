@@ -8,7 +8,7 @@ import { createTableStore } from '../stores/table'
 /**
  * Runtime column definition for ATable.
  *
- * Extends `ColumnSchema` from `@stonecrop/schema` — all authoring properties (`label`, `fieldtype`, `width`,
+ * Extends `ColumnSchema` from `@stonecrop/schema` — all authoring properties (`label`, `component`, `width`,
  * `pinned`, filter config, cell/modal component names, etc.) are inherited. The overrides
  * below widen three properties for runtime use (live functions, broader alignment values)
  * and add two runtime-only additions (`mask`, `originalIndex`).
@@ -45,7 +45,7 @@ export interface TableColumn extends Omit<ColumnSchema, 'fieldname' | 'hidden' |
 	mask?: (value: any) => any
 
 	/**
-	 * For `fieldtype: 'Link'` columns: the target doctype slug used by the `linkResolver`
+	 * For link columns (those carrying `doctype`): the target doctype slug used by the `linkResolver`
 	 * to look up display text for bare ID values. Set automatically by `schemaToColumns`
 	 * from the field's `doctype` property.
 	 */
@@ -83,7 +83,8 @@ export interface CellContext {
  * Row action type identifiers.
  * @public
  */
-export type RowActionType = 'open' | 'add' | 'delete' | 'duplicate' | 'insertAbove' | 'insertBelow' | 'move'
+export type RowActionType =
+	'open' | 'add' | 'delete' | 'duplicate' | 'insertAbove' | 'insertBelow' | 'move' | 'moveUp' | 'moveDown'
 
 /**
  * Options for configuring individual row actions.
@@ -115,6 +116,16 @@ export interface RowActionOptions {
 	 * @returns void or false to prevent default behavior
 	 */
 	handler?: (rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean
+
+	/**
+	 * Per-row predicate to disable this action for specific rows (e.g. a lock-aware delete, or
+	 * move-up on the first row). Returns true to render the action disabled. Evaluated reactively
+	 * against the store, so it updates as rows change.
+	 *
+	 * @param rowIndex - The index of the row
+	 * @param store - The table store instance
+	 */
+	disabled?: (rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean
 }
 
 /**
@@ -163,6 +174,8 @@ export interface RowActionsConfig {
 		insertAbove?: boolean | RowActionOptions
 		insertBelow?: boolean | RowActionOptions
 		move?: boolean | RowActionOptions
+		moveUp?: boolean | RowActionOptions
+		moveDown?: boolean | RowActionOptions
 	}
 }
 

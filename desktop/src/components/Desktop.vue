@@ -4,7 +4,11 @@
 		<ActionSet :elements="actionElements" @action-click="handleActionClick" />
 
 		<!-- Main content using AForm -->
-		<AForm v-if="currentViewSchema.length > 0" v-model:data="currentViewData" :schema="currentViewSchema" />
+		<AForm
+			v-if="currentViewSchema.length > 0"
+			v-model:data="currentViewData"
+			:schema="currentViewSchema"
+			:errors="fieldErrors" />
 		<div v-else-if="!stonecrop" class="loading"><p>Initializing Stonecrop...</p></div>
 		<div v-else class="loading">
 			<p>Loading {{ currentView }} data...</p>
@@ -31,7 +35,7 @@
 </template>
 
 <script setup lang="ts">
-import { useStonecrop } from '@stonecrop/stonecrop'
+import { useStonecrop, useValidationStore } from '@stonecrop/stonecrop'
 import { AForm, type AFormLinkNavigator, type ResolvedField, type ResolvedTable } from '@stonecrop/aform'
 import type { ColumnSchema } from '@stonecrop/schema'
 import { computed, onMounted, onUnmounted, provide, ref, unref, watch } from 'vue'
@@ -104,6 +108,24 @@ const emit = defineEmits<{
 }>()
 
 const { stonecrop } = useStonecrop()
+
+// Field-validation store (advisory, client-side). Pinia is a declared peerDependency, kept external
+// in this package's build (rollupOptions), so `useValidationStore()` resolves the host app's single
+// active Pinia directly — the old `getCurrentInstance().$pinia` workaround for the bundled-Pinia bug
+// is no longer needed. Still guarded: validation is optional and Desktop predates it, so a host that
+// mounts Desktop without Pinia disables validation gracefully instead of crashing on mount.
+let validationStore: ReturnType<typeof useValidationStore> | null = null
+try {
+	validationStore = useValidationStore()
+} catch {
+	validationStore = null
+}
+
+// Inline field errors handed to AForm. Only surfaced in the record form view (currentView is
+// defined below); empty elsewhere so a previous record's errors never bleed into a list view.
+const fieldErrors = computed<Record<string, string[]>>(() =>
+	currentView.value === 'record' ? (validationStore?.errorsByField ?? {}) : {}
+)
 
 // State
 const loading = ref(false)
@@ -214,19 +236,45 @@ const currentViewData = computed<Record<string, any>>({
 			// schema fields absent from the record as undefined; writing them would silently
 			// clear values that exist in HST. Explicit null is allowed (intentional clear).
 			const hstStore = stonecrop.value.getStore()
+			const changedFields: string[] = []
 			for (const [fieldname, value] of Object.entries(flatData)) {
 				if (value === undefined) continue
 				const fieldPath = `${currentDoctype.value}.${currentRecordId.value}.${fieldname}`
 				const currentValue = hstStore.has(fieldPath) ? hstStore.get(fieldPath) : undefined
 				if (currentValue !== value) {
 					hstStore.set(fieldPath, value)
+					changedFields.push(fieldname)
 				}
+			}
+
+			// Advisory field-validation runs on the fields that actually changed (honors each
+			// trigger's `on` set). Driven here, after the HST writes, so HST stays value-only.
+			if (changedFields.length > 0) {
+				driveFieldValidation(changedFields)
 			}
 		} catch (error) {
 			console.warn('HST update failed:', error)
 		}
 	},
 })
+
+// Advisory field-validation: run the doctype's triggers for the fields that changed on this edit.
+// Snapshots the post-edit record as a plain, flat object so validators read siblings read-only
+// (the core store freezes it). Fire-and-forget — the reactive error store repaints AForm on resolve.
+function driveFieldValidation(changedFields: string[]) {
+	if (!validationStore || !stonecrop.value || !currentDoctype.value || !currentRecordId.value) return
+
+	const doctype = stonecrop.value.registry.getDoctype(currentDoctype.value)
+	const triggers = doctype?.getTriggers()
+	if (!triggers || Object.keys(triggers).length === 0) return
+
+	const node = stonecrop.value.getRecordById(currentDoctype.value, currentRecordId.value)
+	const record = { ...(node?.get('') as Record<string, unknown>) }
+
+	for (const field of changedFields) {
+		void validationStore.validateField(triggers, field, record)
+	}
+}
 
 // Computed properties for current route context.
 // When a routeAdapter is provided it takes full precedence over the registry's internal router.
@@ -353,8 +401,10 @@ const getAvailableTransitions = () => {
 
 		// Each transition emits an 'action' event. The host app decides what to do
 		// (call the server, trigger an FSM actor, update HST, etc.).
-		return transitions.map(({ name, targetState }) => ({
-			label: `${name} (→ ${targetState})`,
+		return transitions.map(({ name }) => ({
+			// Prefer the workflow action's human-readable label (WorkflowMeta format);
+			// fall back to the raw transition name for XState workflows with no action meta.
+			label: doctype.getActionMeta(name)?.label ?? name,
 			action: () => {
 				emit('action', {
 					name,
@@ -366,6 +416,39 @@ const getAvailableTransitions = () => {
 		}))
 	} catch (error) {
 		console.warn('Error getting available transitions:', error)
+		return []
+	}
+}
+
+// Helper: stateless Commands available for the current record — side-effect actions that
+// change no workflow state. Surfaced in the same Actions dropdown as transitions; each emits
+// the same 'action' event, so the host's handler runs a Command's clientHandler identically.
+const getAvailableCommands = () => {
+	if (!stonecrop.value || !currentDoctype.value || !currentRecordId.value) {
+		return []
+	}
+
+	try {
+		const doctype = stonecrop.value.registry.getDoctype(currentDoctype.value)
+		if (!doctype?.workflow) return []
+
+		const currentState = stonecrop.value.getRecordState(currentDoctype.value, currentRecordId.value)
+		const commands = doctype.getAvailableCommands(currentState)
+		const recordData = currentViewData.value || {}
+
+		return commands.map(({ name }) => ({
+			label: doctype.getActionMeta(name)?.label ?? name,
+			action: () => {
+				emit('action', {
+					name,
+					doctype: currentDoctype.value,
+					recordId: currentRecordId.value,
+					data: recordData,
+				})
+			},
+		}))
+	} catch (error) {
+		console.warn('Error getting available commands:', error)
 		return []
 	}
 }
@@ -382,14 +465,14 @@ const actionElements = computed(() => {
 			})
 			break
 		case 'record': {
-			// Populate the Actions dropdown with every FSM transition available in the
-			// record's current state.  Clicking a transition emits 'action'.
-			const transitionActions = getAvailableTransitions()
-			if (transitionActions.length > 0) {
+			// Populate the Actions dropdown with every FSM transition AND stateless Command
+			// available in the record's current state.  Clicking either emits 'action'.
+			const recordActions = [...getAvailableTransitions(), ...getAvailableCommands()]
+			if (recordActions.length > 0) {
 				elements.push({
 					type: 'dropdown',
 					label: 'Actions',
-					actions: transitionActions,
+					actions: recordActions,
 				})
 			}
 			break
@@ -556,7 +639,7 @@ const getDoctypesSchema = (): ResolvedField[] => {
 				{
 					fieldname: 'doctype',
 					label: 'Doctype',
-					fieldtype: 'Data',
+					component: 'ATextInput',
 					align: 'left' as const,
 					edit: false,
 					width: '20ch',
@@ -564,7 +647,7 @@ const getDoctypesSchema = (): ResolvedField[] => {
 				{
 					fieldname: 'display_name',
 					label: 'Name',
-					fieldtype: 'Data',
+					component: 'ATextInput',
 					align: 'left' as const,
 					edit: false,
 					width: '30ch',
@@ -572,7 +655,7 @@ const getDoctypesSchema = (): ResolvedField[] => {
 				{
 					fieldname: 'record_count',
 					label: 'Records',
-					fieldtype: 'Int',
+					component: 'ANumericInput',
 					align: 'center' as const,
 					edit: false,
 					width: '15ch',
@@ -580,7 +663,7 @@ const getDoctypesSchema = (): ResolvedField[] => {
 				{
 					fieldname: 'actions',
 					label: 'Actions',
-					fieldtype: 'Data',
+					component: 'ATextInput',
 					align: 'center' as const,
 					edit: false,
 					width: '20ch',
@@ -612,7 +695,7 @@ const getRecordsSchema = (): ResolvedField[] => {
 			component: 'ATable',
 			schema: [
 				...(flattenFieldsets(schema) as ColumnSchema[]),
-				{ fieldname: 'actions', label: 'Actions', fieldtype: 'Data' },
+				{ fieldname: 'actions', label: 'Actions', component: 'ATextInput' },
 			],
 			config: { view: 'list' as const, fullWidth: true },
 		} satisfies ResolvedTable,
@@ -786,6 +869,12 @@ watch(
 	},
 	{ immediate: true }
 )
+
+// Clear advisory validation errors when the target record changes, so errors from a previously
+// edited record never bleed into a newly opened one.
+watch([currentDoctype, currentRecordId], () => {
+	validationStore?.clearAll()
+})
 
 // Stonecrop reactive computed properties update automatically when the instance
 // becomes available — no manual watcher needed.

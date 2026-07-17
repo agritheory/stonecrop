@@ -52,7 +52,7 @@ const emit = defineEmits<{
 const dropdownStates = ref<Record<number, boolean>>({})
 
 const isOpen = ref(true)
-const dropdownOpen = ref([])
+const dropdownOpen = ref<boolean[]>([])
 
 onMounted(() => {
 	closeDropdowns()

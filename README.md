@@ -54,7 +54,7 @@ rushx lint
 - [`@stonecrop/nuxt-grafserv`](./nuxt_grafserv/README.md) — PostGraphile/Grafserv integration for Nuxt
 - [`@stonecrop/nuxt`](./nuxt/README.md) — Nuxt module: schema-driven routing, pages, and layouts
 - [`@stonecrop/rockfoil`](./rockfoil/CHANGELOG.md) — GraphQL authorization server
-- [`@stonecrop/schema`](./schema/README.md) — Doctype schema definitions, field types, naming utilities, and GraphQL → doctype converter
+- [`@stonecrop/schema`](./schema/README.md) — Doctype and field schema definitions, naming utilities, and GraphQL → doctype converter
 - [`@stonecrop/stonecrop`](./stonecrop/README.md) — Core orchestration: Registry, HST state management, and workflow engine
 - [`@stonecrop/themes`](./themes/README.md) — Shared CSS tokens and design system themes
 - [`@stonecrop/utilities`](./utilities/README.md) — Shared helper functions and type utilities

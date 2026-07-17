@@ -78,6 +78,38 @@ export declare function classifyFieldType(fieldName: string, field: GraphQLField
 | entityTypes | `Set<string>` | Set of type names classified as entities |
 | options | `GraphQLConversionOptions` | Conversion options (for custom scalars, unmapped meta, etc.) |
 
+### componentCategory
+
+Resolve a component's semantic category, or `undefined` for an unknown (custom) component — callers treat that as "no opinion" and use their own default.
+
+**Signature:**
+
+```typescript
+export declare function componentCategory(component?: string): ComponentCategory | undefined;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| component | `string` |  |
+
+### componentLinkExpansion
+
+Resolve a component's link expansion, or `undefined` for an absent/unmapped component.
+
+**Signature:**
+
+```typescript
+export declare function componentLinkExpansion(component?: string): LinkExpansion | undefined;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| component | `string` |  |
+
 ### convertGraphQLSchema
 
 Convert a GraphQL schema to Stonecrop doctype schemas.
@@ -134,37 +166,46 @@ export declare function defaultIsEntityType(typeName: string, type: GraphQLObjec
 | typeName | `string` | The GraphQL type name |
 | type | `GraphQLObjectType` | The GraphQL object type definition |
 
-### getDefaultComponent
+### isActionAllowedInState
 
-Get the default component for a builtin field type. For an open-string fieldtype that may be custom, use `resolveComponent` instead.
+Whether a workflow action may run from `currentState`.
+
+Single source of truth for the "is this action available here" rule, shared by the frontend (`getAvailableTransitions`) and the server-side dispatch guard so the two can never disagree. Empty or absent `allowedStates` means the action is available in ALL states — a plain `allowedStates.includes(currentState)` would wrongly block such actions everywhere.
 
 **Signature:**
 
 ```typescript
-export declare function getDefaultComponent(fieldtype: BuiltinFieldType): string;
+export declare function isActionAllowedInState(action: {
+    allowedStates?: string[] | null;
+}, currentState: string): boolean;
 ```
 
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| fieldtype | `BuiltinFieldType` | A builtin field type |
+| action | `{ allowedStates?: string[] \| null; }` |  |
+| currentState | `string` |  |
 
-### isBuiltinFieldType
+### normalizeFieldKind
 
-Returns `true` when `fieldtype` is one of the builtin types Stonecrop ships with.
+Recursively injects the `kind` discriminant into a raw field object and, for fieldsets, into each of its nested `schema` children — mirroring exactly what Zod's `preprocess` does at every level of the discriminated union.
+
+Table `columns` are `ColumnSchema` entries, not `DoctypeField`s, so they are left untouched — the Zod table schema validates them with a plain passthrough and never injects `kind` there either.
+
+Needed because `Doctype.fromObject` constructs a Doctype without running Zod, yet the registry's `resolveFields` gates link and fieldset handling on `field.kind`. Without this, a JSON-authored link resolves to a flat scalar and a fieldset's children are dropped.
 
 **Signature:**
 
 ```typescript
-export declare function isBuiltinFieldType(fieldtype: string): fieldtype is BuiltinFieldType;
+export declare function normalizeFieldKind(field: unknown): unknown;
 ```
 
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| fieldtype | `string` |  |
+| field | `unknown` |  |
 
 ### parseDoctype
 
@@ -214,21 +255,29 @@ export declare function pascalToSnake(pascal: string): string;
 |-----------|------|-------------|
 | pascal | `string` | PascalCase string |
 
-### resolveComponent
+### resolveLinkRenderMode
 
-Resolve the component name for any fieldtype string, falling back to `'ATextInput'` for unknown custom types.
+Decide how a *declared* link (one with a `LinkDeclaration`) renders.
+
+Two independent axes: the **component** picks inline vs expand, and when expanding the **cardinality** picks record vs table (many → table). The declaration's component wins over the field's, matching the precedence the resolver already uses for the rendered component.
+
+This is the single definition of "does this link expand" — it is consumed by both the client resolver (which builds the nested schema) and the server column builder (which must still SELECT an `inline` link's FK column). Call it; never re-derive the rule at the call site, or the two will drift and the client will render a table for a column the server never selected.
 
 **Signature:**
 
 ```typescript
-export declare function resolveComponent(fieldtype: string): string;
+export declare function resolveLinkRenderMode(link: {
+    component?: string;
+    cardinality?: string;
+}, fieldComponent?: string): LinkRenderMode;
 ```
 
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| fieldtype | `string` | Any fieldtype string (builtin or custom) |
+| link | `{ component?: string; cardinality?: string; }` | the link declaration (only `component` and `cardinality` are consulted) |
+| fieldComponent | `string` | the linked field's own `component`, used when the declaration names none |
 
 ### snakeToCamel
 
@@ -342,9 +391,10 @@ export interface ColumnSchema {
   cellComponent?: string;
   cellComponentProps?: Record<string, any>;
   colspan?: number;
+  component?: string;
+  doctype?: string;
   edit?: boolean;
   fieldname: string;
-  fieldtype?: string;
   filterable?: boolean;
   filterComponent?: string;
   filterOptions?: any[];
@@ -371,13 +421,14 @@ export interface ColumnSchema {
 | cellComponent? | `string` | Registered component name rendered inside the table cell instead of the default display. When absent, the table renders the value as plain text in a `<td>`. |
 | cellComponentProps? | `Record<string, any>` | Additional props passed to `cellComponent`. Only applicable when `cellComponent` is set. |
 | colspan? | `number` | Number of columns this Gantt bar spans across. When absent, the bar stretches to cover all non-pinned columns in the table. Only applicable for Gantt tables. |
+| component? | `string` | Rendering component (e.g. `'ATextInput'`, `'ANumericInput'`, `'ADate'`). Default cell formatting and filter widgets derive from its `ComponentCategory`. Optional here, unlike `ValueField.component`: absence is what marks an entry as non-scalar (a nested table or fieldset), which `schemaToColumns` excludes — it has no column equivalent. |
+| doctype? | `string` | Target doctype slug — marks this column as a link. When set and no `cellComponent` is given, `schemaToColumns` copies it to `TableColumn.linkDoctype`, which ACell uses to resolve a bare id to display text. |
 | edit? | `boolean` | Whether the column cell is editable in the table. |
 | fieldname | `string` | Unique identifier for the field within its doctype. Maps to `name` on `TableColumn`. |
-| fieldtype? | `string` | Semantic field type (e.g. `'Data'`, `'Int'`, `'Date'`, `'Check'`). Fields without a `fieldtype` are treated as non-scalar (nested table or fieldset) and excluded by `schemaToColumns`. |
 | filterable? | `boolean` | When `true`, a filter control is rendered in the column header. |
 | filterComponent? | `string` | Registered component name used when `filterType` is `'component'`. |
 | filterOptions? | `any[]` | Static option list for `filterType: 'select'`. When absent, options are derived from the unique values present in the column's rows. |
-| filterType? | `'text' \| 'select' \| 'number' \| 'date' \| 'dateRange' \| 'checkbox' \| 'component'` | The type of filter control to render. When absent, a default is derived from `fieldtype` (`Check` → `checkbox`, `Date` → `date`, `Datetime` → `dateRange`, `Select` → `select`, numeric types → `number`, everything else → `text`). |
+| filterType? | `'text' \| 'select' \| 'number' \| 'date' \| 'dateRange' \| 'checkbox' \| 'component'` | The type of filter control to render. When absent, a default is derived from the `component`'s `ComponentCategory` (`boolean` → `checkbox`, `date` → `date`, `datetime` → `dateRange`, `select` → `select`, `number` → `number`, everything else — including an unknown component — → `text`). |
 | format? | `string` | Serialized function string used to format the cell value for display. Deserialized at render time by the table store's `getFormattedValue`. `TableColumn.format` widens this to also accept a live function directly. |
 | ganttComponent? | `string` | Registered component name used to render Gantt bars in this column. Only applicable for Gantt tables. |
 | hidden? | `boolean` | When `true`, the field is excluded from the derived columns by `schemaToColumns`. |
@@ -499,26 +550,6 @@ export interface FieldsetField {
 | mode? | `InteractionMode` | Interaction mode for all children inside this fieldset |
 | schema | `DoctypeField[]` | Nested field definitions — resolved recursively by resolveSchema |
 
-### FieldTemplate
-
-Field template for TYPE_MAP entries. Defines the default component and semantic field type for a field.
-
-**Definition:**
-
-```typescript
-export interface FieldTemplate {
-  component: string;
-  fieldtype: BuiltinFieldType;
-}
-```
-
-**Properties:**
-
-| Property | Type | Description |
-|----------|------|-------------|
-| component | `string` | The Vue component name to render this field (e.g., 'ATextInput', 'ADropdown') |
-| fieldtype | `BuiltinFieldType` | The semantic field type (e.g., 'Data', 'Int', 'Select') |
-
 ### GetRecordOptions
 
 Options for fetching a single record
@@ -592,7 +623,6 @@ export interface GraphQLConversionFieldMeta {
   _graphqlType?: string;
   _isLink?: boolean;
   _unmapped?: boolean;
-  fieldtype?: string;
 }
 ```
 
@@ -603,7 +633,6 @@ export interface GraphQLConversionFieldMeta {
 | _graphqlType? | `string` | Original GraphQL type name (for debugging/reference) |
 | _isLink? | `boolean` | Marks relationship fields that belong in `links`, not `fields` |
 | _unmapped? | `boolean` | Marks fields that couldn't be automatically mapped |
-| fieldtype? | `string` | Semantic field type - optional for link fields which don't have a fieldtype |
 
 ### GraphQLConversionOptions
 
@@ -629,7 +658,7 @@ export interface GraphQLConversionOptions {
 | Property | Type | Description |
 |----------|------|-------------|
 | classifyField? | `(fieldName: string, field: GraphQLField<unknown, unknown>, parentType: GraphQLObjectType) => Omit<Partial<ValueField>, 'kind'> \| null` | Escape hatch: fully override the classification of a specific field. When this returns a non-null value, it is used as the field definition (merged with the field name). Return `null` to fall through to default classification. |
-| customScalars? | `Record<string, Partial<FieldTemplate>>` | Map custom or non-standard GraphQL scalar types to Stonecrop field types. Merged with the built-in scalar maps (GQL_SCALAR_MAP + WELL_KNOWN_SCALARS). User-provided entries take highest precedence. |
+| customScalars? | `Record<string, Partial<FieldTemplate>>` | Map custom or non-standard GraphQL scalar types to the component that renders them. Merged with the built-in scalar maps (GQL_SCALAR_MAP + WELL_KNOWN_SCALARS). User-provided entries take highest precedence. |
 | exclude? | `string[]` | GraphQL type names to exclude from conversion. Applied after `isEntityType` filtering. |
 | include? | `string[]` | Whitelist of GraphQL type names to convert. When provided, only these types are considered (after `isEntityType` filtering). |
 | includeUnmappedMeta? | `boolean` | Include `_graphqlType` and `_unmapped` metadata on converted fields. Useful for debugging conversions. Defaults to `false`. |
@@ -709,7 +738,7 @@ export interface ValidationResult {
 
 ### ValueField
 
-A field that holds a scalar value, a link to another record, or a select choice. The most common kind of field. `fieldtype` determines the default component and behavior.
+A field that holds a scalar value, a link to another record, or a select choice. The most common kind of field. `component` determines how it renders; the attributes below carry everything else that is not a rendering concern.
 
 **Definition:**
 
@@ -717,19 +746,24 @@ A field that holds a scalar value, a link to another record, or a select choice.
 export interface ValueField {
   align?: 'left' | 'center' | 'right' | 'start' | 'end';
   cardinality?: 'atMostOne' | 'one' | 'noneOrMany' | 'atLeastOne';
-  component?: string;
+  component: string;
+  computed?: boolean;
   default?: unknown;
+  doctype?: string;
   edit?: boolean;
   fieldname: string;
-  fieldtype: string;
+  format?: string;
   hidden?: boolean;
   kind: 'field';
   label?: string;
+  language?: string;
   mask?: string;
   mode?: InteractionMode;
   options?: FieldOptions;
+  primaryKey?: boolean;
   readOnly?: boolean;
   required?: boolean;
+  source?: 'introspected';
   validation?: FieldValidation;
   width?: string;
 }
@@ -741,19 +775,24 @@ export interface ValueField {
 |----------|------|-------------|
 | align? | `'left' \| 'center' \| 'right' \| 'start' \| 'end'` | Text alignment |
 | cardinality? | `'atMostOne' \| 'one' \| 'noneOrMany' \| 'atLeastOne'` | Cardinality for Link fields — authoritative value on LinkDeclaration takes precedence |
-| component? | `string` | Vue component to render this field. Derived from `fieldtype` when absent. |
+| component | `string` | Vue component that renders this field — the primary (and only) rendering axis. Required: there is nothing left to derive it from, and a field without one has nothing to render it. Any string is valid; naming a custom component is how an app renders a field Stonecrop ships no widget for. See `CANONICAL_COMPONENTS` for the set Stonecrop provides. |
+| computed? | `boolean` | True for a computed/display field with no backing DB column — excluded from SQL SELECT. |
 | default? | `unknown` | Default value for new records |
+| doctype? | `string` | Target doctype slug. Presence is what makes a field a link. How it renders is decided by `component`, not by this: `AFormLink` renders an inline id-picker, while `AForm`/`ATable` expand the target (see `linkRenderMode`). Expansion metadata — backlink, fetch strategy, authoritative cardinality — lives in the doctype's `links` map, which is additive and never required for a plain foreign key. |
 | edit? | `boolean` | Whether the field is editable in table cell context |
 | fieldname | `string` | Unique identifier for this field within its doctype |
-| fieldtype | `string` | Semantic field type — determines behavior and default rendering component |
+| format? | `string` | Serialized `(value) => string` function for display formatting — distinct from `mask` (input). Spreads through `schemaToColumns` to `ColumnSchema.format`; deserialized at render time by ATable's `getFormattedValue`. |
 | hidden? | `boolean` | Whether the field is hidden from the UI |
 | kind | `'field'` | Discriminator — identifies this as a value-holding field |
 | label? | `string` | Human-readable label |
+| language? | `string` | Editor language for code fields (e.g. `'json'`, `'typescript'`) — the only thing distinguishing a JSON editor from a code editor, since both render with `ACodeEditor`. |
 | mask? | `string` | Input mask pattern or serialized function |
 | mode? | `InteractionMode` | Per-field interaction mode override |
-| options? | `FieldOptions` | Type-specific options: Link target slug, Select choices, Decimal precision config, etc. |
+| options? | `FieldOptions` | Type-specific options: Select choices, Decimal precision config, etc. A link's target is not here — it is `doctype`. |
+| primaryKey? | `boolean` | True for the field that identifies the record's primary-key column. |
 | readOnly? | `boolean` | Whether the field is read-only |
 | required? | `boolean` | Whether the field is required |
+| source? | `'introspected'` | Provenance marker — stamped only by the GraphQL converter; absence means hand-authored. When present, the docbuilder freezes the field's identity set (`fieldname`, `primaryKey`, `required`, `options`, `cardinality`, `doctype`), since `fieldname` is the GraphQL/column binding and `doctype` is the FK's target. `component` is deliberately **not** frozen: it chooses the widget, which is an authoring decision the database has no opinion about. |
 | validation? | `FieldValidation` | Validation configuration |
 | width? | `string` | CSS width (e.g. `"40ch"`, `"200px"`) |
 
@@ -769,16 +808,6 @@ Action definition type inferred from Zod schema
 export type ActionDefinition = z.infer<typeof ActionDefinition>;
 ```
 
-### BuiltinFieldType
-
-Union of all builtin fieldtype string literals.
-
-**Definition:**
-
-```typescript
-export type BuiltinFieldType = (typeof BUILTIN_FIELD_TYPES)[number];
-```
-
 ### Cardinality
 
 Cardinality type inferred from Zod schema
@@ -787,6 +816,18 @@ Cardinality type inferred from Zod schema
 
 ```typescript
 export type Cardinality = z.infer<typeof Cardinality>;
+```
+
+### ComponentCategory
+
+Semantic category for a rendering component.
+
+`component` is the primary field axis, so the runtime consumers that need to know what a field *means* (atable cell formatting / filter widgets, record-default init) derive it from here. This is the single source of "what kind of value does this component render", keyed by the canonical registered component names — each consumer maps the category to its own concern (filter widget, default value, …).
+
+**Definition:**
+
+```typescript
+export type ComponentCategory = 'text' | 'number' | 'boolean' | 'date' | 'datetime' | 'select' | 'code' | 'link' | 'attach';
 ```
 
 ### CustomFetch
@@ -897,6 +938,30 @@ Link declaration type inferred from Zod schema
 export type LinkDeclaration = z.infer<typeof LinkDeclaration>;
 ```
 
+### LinkExpansion
+
+Whether a link component expands its target doctype, or renders the link inline.
+
+This is the *only* axis the component decides. It deliberately does not choose between an embedded record and an embedded table: `cardinality` states whether the value is a scalar or an array, which is a fact about the data rather than a rendering preference, so a component must not be able to override it (an `AForm` over a `noneOrMany` link would be handed an array it cannot render). Component names encode both axes — `AFormLink`/`ATableLink` are the inline pair, `AForm`/`ATable` the expanding pair — but only the inline/expand half is authoritative.
+
+**Definition:**
+
+```typescript
+export type LinkExpansion = 'inline' | 'expand';
+```
+
+### LinkRenderMode
+
+How a link field renders.
+
+- `inline` — a scalar id-picker; the target is *not* expanded (the field keeps its own value and carries a `doctype` prop for async display-text resolution and navigation). - `record` — the target doctype is resolved and embedded as a nested form. - `table` — the target doctype is resolved and embedded as a child table.
+
+**Definition:**
+
+```typescript
+export type LinkRenderMode = 'inline' | 'record' | 'table';
+```
+
 ### SerializedFunction
 
 Serialized function type - a function serialized to a string. Used for custom fetch handlers.
@@ -927,6 +992,26 @@ Table view configuration type inferred from Zod schema
 export type TableViewConfig = z.infer<typeof TableViewConfig>;
 ```
 
+### TriggerDefinition
+
+Trigger definition type inferred from Zod schema
+
+**Definition:**
+
+```typescript
+export type TriggerDefinition = z.infer<typeof TriggerDefinition>;
+```
+
+### WorkflowLayout
+
+Workflow layout type inferred from Zod schema
+
+**Definition:**
+
+```typescript
+export type WorkflowLayout = z.infer<typeof WorkflowLayout>;
+```
+
 ### WorkflowMeta
 
 Workflow metadata type inferred from Zod schema
@@ -948,22 +1033,27 @@ Action definition within a workflow
 ```typescript
 export const ActionDefinition: z.ZodObject<{
     label: z.ZodString;
-    handler: z.ZodString;
     requiredFields: z.ZodOptional<z.ZodArray<z.ZodString>>;
     allowedStates: z.ZodOptional<z.ZodArray<z.ZodString>>;
-    confirm: z.ZodOptional<z.ZodBoolean>;
-    args: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodUnknown>>;
+    nextState: z.ZodOptional<z.ZodString>;
+    stateless: z.ZodOptional<z.ZodBoolean>;
+    selfTransition: z.ZodOptional<z.ZodBoolean>;
+    clientHandler: z.ZodOptional<z.ZodString>;
 }, z.core.$strip>
 ```
 
-### BUILTIN_FIELD_TYPES
+### CANONICAL_COMPONENTS
 
-The complete list of field types built into Stonecrop. User apps can use any string as a fieldtype; this const is the exhaustive set of types that Stonecrop provides default components for.
+Every component Stonecrop ships with that can render a value field, sorted by name.
+
+The union of the two maps above is the definition, not a copy of it: a shipped component either categorises a value (`COMPONENT_CATEGORY`) or is one of the link containers that has no value of its own (`COMPONENT_LINK_EXPANSION`'s `AForm`/`ATable`). `AFieldset` is absent by the same rule — it is a `kind: 'fieldset'` container, so it is never a value field's component.
+
+`component` is an **open** axis: any string is valid, and naming a custom component is how an app renders a field Stonecrop ships no widget for. This list is therefore the set to *suggest* to an author, and to check first-party data against — never a set to validate arbitrary input against.
 
 **Type:**
 
 ```typescript
-export const BUILTIN_FIELD_TYPES: readonly ["Data", "Text", "Int", "Float", "Decimal", "Check", "Date", "Time", "Datetime", "Duration", "DateRange", "JSON", "Code", "Link", "Attach", "Currency", "Quantity", "Select", "PrimaryKey", "Fieldset", "Display"]
+export const CANONICAL_COMPONENTS: readonly string[]
 ```
 
 ### Cardinality
@@ -979,6 +1069,26 @@ export const Cardinality: z.ZodEnum<{
     noneOrMany: "noneOrMany";
     atLeastOne: "atLeastOne";
 }>
+```
+
+### COMPONENT_CATEGORY
+
+Canonical component → semantic category. Only the components Stonecrop ships with appear here; custom/unknown component names have no category and consumers fall back to their default.
+
+**Type:**
+
+```typescript
+export const COMPONENT_CATEGORY: Record<string, ComponentCategory>
+```
+
+### COMPONENT_LINK_EXPANSION
+
+Canonical link component → expansion. Only components Stonecrop ships with appear here; an unmapped (custom) component has none, and callers treat that as `expand` — the behaviour that predates this map, so a custom component can never silently collapse a link to a picker.
+
+**Type:**
+
+```typescript
+export const COMPONENT_LINK_EXPANSION: Record<string, LinkExpansion>
 ```
 
 ### CustomFetch
@@ -1041,11 +1151,35 @@ export const DoctypeMeta: z.ZodObject<{
         states: z.ZodOptional<z.ZodArray<z.ZodString>>;
         actions: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodObject<{
             label: z.ZodString;
-            handler: z.ZodString;
             requiredFields: z.ZodOptional<z.ZodArray<z.ZodString>>;
             allowedStates: z.ZodOptional<z.ZodArray<z.ZodString>>;
-            confirm: z.ZodOptional<z.ZodBoolean>;
-            args: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodUnknown>>;
+            nextState: z.ZodOptional<z.ZodString>;
+            stateless: z.ZodOptional<z.ZodBoolean>;
+            selfTransition: z.ZodOptional<z.ZodBoolean>;
+            clientHandler: z.ZodOptional<z.ZodString>;
+        }, z.core.$strip>>>;
+        triggers: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodObject<{
+            label: z.ZodOptional<z.ZodString>;
+            on: z.ZodArray<z.ZodString>;
+            clientHandler: z.ZodString;
+        }, z.core.$strip>>>;
+        layout: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodObject<{
+            position: z.ZodOptional<z.ZodObject<{
+                x: z.ZodNumber;
+                y: z.ZodNumber;
+            }, z.core.$strip>>;
+            targetPosition: z.ZodOptional<z.ZodEnum<{
+                left: "left";
+                right: "right";
+                top: "top";
+                bottom: "bottom";
+            }>>;
+            sourcePosition: z.ZodOptional<z.ZodEnum<{
+                left: "left";
+                right: "right";
+                top: "top";
+                bottom: "bottom";
+            }>>;
         }, z.core.$strip>>>;
     }, z.core.$strip>>;
     inherits: z.ZodOptional<z.ZodString>;
@@ -1074,12 +1208,14 @@ export const FetchStrategy: z.ZodDiscriminatedUnion<[z.ZodObject<{
 
 Field options - flexible bag for type-specific configuration.
 
-Usage by fieldtype: - Link/Doctype: target doctype slug as string ("customer", "sales-order-item") - Select: array of choices (["Draft", "Submitted", "Cancelled"]) - Decimal: config object ( precision: 10, scale: 2 ) - Code: config object ( language: "python" )
+Usage: - Select: array of choices (["Draft", "Submitted", "Cancelled"]) - Decimal: config object ( precision: 10, scale: 2 ) - Code: config object ( language: "python" )
+
+Deliberately *not* a bare string: a string once meant "link target", which made the value's shape encode its meaning. That job belongs to `ValueField.doctype`, leaving this a plain choices-or-config bag.
 
 **Type:**
 
 ```typescript
-export const FieldOptions: z.ZodUnion<readonly [z.ZodString, z.ZodArray<z.ZodString>, z.ZodRecord<z.ZodString, z.ZodUnknown>]>
+export const FieldOptions: z.ZodUnion<readonly [z.ZodArray<z.ZodString>, z.ZodRecord<z.ZodString, z.ZodUnknown>]>
 ```
 
 ### FieldsetFieldSchema
@@ -1179,16 +1315,6 @@ export const LinkDeclaration: z.ZodObject<{
 }, z.core.$strip>
 ```
 
-### StonecropFieldType
-
-Stonecrop field type — any non-empty string is valid; Stonecrop provides default components for the builtin types listed in `BUILTIN_FIELD_TYPES`. Custom fieldtypes are supported by supplying an explicit `component` on the field definition.
-
-**Type:**
-
-```typescript
-export const StonecropFieldType: z.ZodString
-```
-
 ### SyncFetch
 
 Sync fetch strategy - data is fetched in the initial query.
@@ -1270,14 +1396,22 @@ export const TableViewConfig: z.ZodObject<{
 }, z.core.$strip>
 ```
 
-### TYPE_MAP
+### TriggerDefinition
 
-Mapping from builtin fieldtypes to their default Vue component. Components can be overridden in the field definition.
+Reactive field-validation trigger — advisory, client-side only.
+
+A Trigger is a docbuilder-authored validator: when any field in `on` is edited, its `clientHandler` runs (client-side, no rollback) and may flag a field inline to block save in the UI. It is deliberately a **sibling** to `ActionDefinition`, not a member of it — a reactive validator is not a user-invoked action, so it lives in the `triggers` map on `WorkflowMeta` and never appears to action readers (transition/command dropdowns, the FSM graph).
+
+The two bindings are independent: `on` is the fire-set (which fields' edits run it), while the `setError(field, msg)` call inside `clientHandler` chooses which field displays the error.
 
 **Type:**
 
 ```typescript
-export const TYPE_MAP: Record<BuiltinFieldType, FieldTemplate>
+export const TriggerDefinition: z.ZodObject<{
+    label: z.ZodOptional<z.ZodString>;
+    on: z.ZodArray<z.ZodString>;
+    clientHandler: z.ZodString;
+}, z.core.$strip>
 ```
 
 ### ValueFieldSchema
@@ -1290,8 +1424,11 @@ Zod runtime validation schema for ValueField.
 export const ValueFieldSchema: z.ZodObject<{
     kind: z.ZodLiteral<"field">;
     fieldname: z.ZodString;
-    fieldtype: z.ZodString;
-    component: z.ZodOptional<z.ZodString>;
+    component: z.ZodString;
+    primaryKey: z.ZodOptional<z.ZodBoolean>;
+    computed: z.ZodOptional<z.ZodBoolean>;
+    language: z.ZodOptional<z.ZodString>;
+    doctype: z.ZodOptional<z.ZodString>;
     label: z.ZodOptional<z.ZodString>;
     width: z.ZodOptional<z.ZodString>;
     align: z.ZodOptional<z.ZodEnum<{
@@ -1303,12 +1440,13 @@ export const ValueFieldSchema: z.ZodObject<{
     }>>;
     edit: z.ZodOptional<z.ZodBoolean>;
     mask: z.ZodOptional<z.ZodString>;
+    format: z.ZodOptional<z.ZodString>;
     mode: z.ZodOptional<z.ZodEnum<{
         edit: "edit";
         read: "read";
         display: "display";
     }>>;
-    options: z.ZodOptional<z.ZodUnion<readonly [z.ZodString, z.ZodArray<z.ZodString>, z.ZodRecord<z.ZodString, z.ZodUnknown>]>>;
+    options: z.ZodOptional<z.ZodUnion<readonly [z.ZodArray<z.ZodString>, z.ZodRecord<z.ZodString, z.ZodUnknown>]>>;
     required: z.ZodOptional<z.ZodBoolean>;
     readOnly: z.ZodOptional<z.ZodBoolean>;
     hidden: z.ZodOptional<z.ZodBoolean>;
@@ -1322,6 +1460,7 @@ export const ValueFieldSchema: z.ZodObject<{
         noneOrMany: "noneOrMany";
         atLeastOne: "atLeastOne";
     }>>;
+    source: z.ZodOptional<z.ZodLiteral<"introspected">>;
 }, z.core.$strip>
 ```
 
@@ -1337,6 +1476,33 @@ Entries here have lower precedence than `customScalars` from options, but higher
 export const WELL_KNOWN_SCALARS: Record<string, FieldTemplate>
 ```
 
+### WorkflowLayout
+
+DocBuilder graph layout — node positions for the workflow-state graph, keyed by state name. Pure authoring view-state: persisted in the doctype JSON so an author's manual arrangement survives reloads, but — exactly like `WorkflowMeta`'s `triggers` — it is client-only and never mirrored into the runtime GraphQL SDL (see the WorkflowMeta type in the host SDLs, which expose only `states`/`actions`). The shape mirrors VueFlow's node fields; `position` is the node's canvas coordinate and `targetPosition`/`sourcePosition` are the handle sides.
+
+**Type:**
+
+```typescript
+export const WorkflowLayout: z.ZodRecord<z.ZodString, z.ZodObject<{
+    position: z.ZodOptional<z.ZodObject<{
+        x: z.ZodNumber;
+        y: z.ZodNumber;
+    }, z.core.$strip>>;
+    targetPosition: z.ZodOptional<z.ZodEnum<{
+        left: "left";
+        right: "right";
+        top: "top";
+        bottom: "bottom";
+    }>>;
+    sourcePosition: z.ZodOptional<z.ZodEnum<{
+        left: "left";
+        right: "right";
+        top: "top";
+        bottom: "bottom";
+    }>>;
+}, z.core.$strip>>
+```
+
 ### WorkflowMeta
 
 Workflow metadata - states and actions for a doctype
@@ -1348,11 +1514,35 @@ export const WorkflowMeta: z.ZodObject<{
     states: z.ZodOptional<z.ZodArray<z.ZodString>>;
     actions: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodObject<{
         label: z.ZodString;
-        handler: z.ZodString;
         requiredFields: z.ZodOptional<z.ZodArray<z.ZodString>>;
         allowedStates: z.ZodOptional<z.ZodArray<z.ZodString>>;
-        confirm: z.ZodOptional<z.ZodBoolean>;
-        args: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodUnknown>>;
+        nextState: z.ZodOptional<z.ZodString>;
+        stateless: z.ZodOptional<z.ZodBoolean>;
+        selfTransition: z.ZodOptional<z.ZodBoolean>;
+        clientHandler: z.ZodOptional<z.ZodString>;
+    }, z.core.$strip>>>;
+    triggers: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodObject<{
+        label: z.ZodOptional<z.ZodString>;
+        on: z.ZodArray<z.ZodString>;
+        clientHandler: z.ZodString;
+    }, z.core.$strip>>>;
+    layout: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodObject<{
+        position: z.ZodOptional<z.ZodObject<{
+            x: z.ZodNumber;
+            y: z.ZodNumber;
+        }, z.core.$strip>>;
+        targetPosition: z.ZodOptional<z.ZodEnum<{
+            left: "left";
+            right: "right";
+            top: "top";
+            bottom: "bottom";
+        }>>;
+        sourcePosition: z.ZodOptional<z.ZodEnum<{
+            left: "left";
+            right: "right";
+            top: "top";
+            bottom: "bottom";
+        }>>;
     }, z.core.$strip>>>;
 }, z.core.$strip>
 ```

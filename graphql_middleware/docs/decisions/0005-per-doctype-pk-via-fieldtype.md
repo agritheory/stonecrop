@@ -1,9 +1,22 @@
 ---
-status: accepted
+status: superseded
 date: "2026-05-25"
 deciders: ['Tyler Matteson', 'Rohan Bansal']
+superseded_by: "Removal of the `fieldtype` axis — PK detection now uses `primaryKey?: boolean` on `ValueField`"
 ---
 # Declare primary key per-doctype via `fieldtype: 'PrimaryKey'` — remove global `pkField` from plugin options
+
+> **Superseded.** This ADR chose `fieldtype: 'PrimaryKey'` and rejected Path C
+> (`primaryKey?: boolean` on the field). The project has since removed the `fieldtype`
+> axis entirely: `component` is the render axis, and the non-render jobs `fieldtype`
+> carried moved to explicit attributes — `primaryKey?: boolean` (this ADR's rejected
+> Path C), `computed?: boolean` (was `'Display'`), and `doctype?: string` (was `'Link'`).
+> The middleware now detects the PK via `meta.fields.find(f => f.kind === 'field' && f.primaryKey)`
+> and excludes `computed` fields from SQL via `if (f.computed) continue`. This ADR's core
+> objection to Path C — "two overlapping semantic properties on the same field" — no longer
+> applies, because the overlapping property (`fieldtype`) is gone. The per-doctype,
+> co-located identity decision below still holds; only its *mechanism* changed, from a
+> `fieldtype` value to a boolean flag.
 
 ## Context and Problem Statement
 

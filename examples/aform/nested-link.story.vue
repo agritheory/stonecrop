@@ -155,15 +155,15 @@ For rendering resolved schemas in `AForm`, see [nested schema](./nested.story.vu
 
 ## Schema with links
 
-Doctype relationships are declared in the `links` object alongside `fields`. The `fields` array contains both scalar fields and Link fields (`fieldtype: 'Link'`), positioned at the location where they should render:
+Doctype relationships are declared in the `links` object alongside `fields`. The `fields` array contains both scalar fields and link fields (matched to a `links` entry by `fieldname`; the field's `component` picks the render mode), positioned at the location where they should render:
 
 ```typescript
 Doctype.fromObject({
 	slug: 'recipe',
 	fields: [
-		{ fieldname: 'name', fieldtype: 'Data' },
-		{ fieldname: 'tasks', fieldtype: 'Link', options: 'recipe-task' },
-		{ fieldname: 'status', fieldtype: 'Data' },
+		{ fieldname: 'name', component: 'ATextInput' },
+		{ fieldname: 'tasks', component: 'ATable' },
+		{ fieldname: 'status', component: 'ATextInput' },
 	],
 	links: {
 		tasks: { target: 'recipe-task', cardinality: 'noneOrMany', backlink: 'recipe', fieldname: 'tasks' },

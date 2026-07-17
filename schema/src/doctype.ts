@@ -153,20 +153,29 @@ export const ActionDefinition = z
 		/** Display label for the action */
 		label: z.string().min(1),
 
-		/** Handler function name or path */
-		handler: z.string().min(1),
-
 		/** Fields that must have values before action can execute */
 		requiredFields: z.array(z.string()).optional(),
 
 		/** Workflow states where this action is available */
 		allowedStates: z.array(z.string()).optional(),
 
-		/** Whether to show a confirmation dialog */
-		confirm: z.boolean().optional(),
+		/** The state the record transitions to after this action executes */
+		nextState: z.string().optional(),
 
-		/** Additional arguments for the action */
-		args: z.record(z.string(), z.unknown()).optional(),
+		/** True for stateless command actions with no workflow effect at all (print, email, etc.) */
+		stateless: z.boolean().optional(),
+
+		/**
+		 * True for an internal self-transition: the action runs within the current state without
+		 * advancing the workflow (e.g. `save`, which mutates record data but stays put). Scoped by
+		 * `allowedStates`, rendered as a self-loop in the graph, and has no `nextState`. Distinct from
+		 * `stateless` (which has no workflow presence at all): a self-transition is graph-owned and,
+		 * unlike a stateless command, persists record data on dispatch.
+		 */
+		selfTransition: z.boolean().optional(),
+
+		/** JS function body stored as a string; executed client-side via AsyncFunction with injected API surface */
+		clientHandler: z.string().optional(),
 	})
 	.meta({
 		title: 'ActionDefinition',
@@ -180,6 +189,82 @@ export const ActionDefinition = z
 export type ActionDefinition = z.infer<typeof ActionDefinition>
 
 /**
+ * Reactive field-validation trigger — advisory, client-side only.
+ *
+ * A Trigger is a docbuilder-authored validator: when any field in `on` is edited, its
+ * `clientHandler` runs (client-side, no rollback) and may flag a field inline to block save
+ * in the UI. It is deliberately a **sibling** to {@link (ActionDefinition:type)}, not a member of it —
+ * a reactive validator is not a user-invoked action, so it lives in the `triggers` map on
+ * {@link (WorkflowMeta:type)} and never appears to action readers (transition/command dropdowns, the FSM graph).
+ *
+ * The two bindings are independent: `on` is the fire-set (which fields' edits run it), while the
+ * `setError(field, msg)` call inside `clientHandler` chooses which field displays the error.
+ * @public
+ */
+export const TriggerDefinition = z
+	.object({
+		/** Optional display label; the map key is the trigger's identity */
+		label: z.string().optional(),
+
+		/** Fieldnames whose edits fire this trigger (fires when any listed field changes) */
+		on: z.array(z.string()),
+
+		/** JS function body stored as a string; run client-side with `{ record, value, setError }`. Advisory. */
+		clientHandler: z.string(),
+	})
+	.meta({
+		title: 'TriggerDefinition',
+		description: 'Reactive field-validation trigger — advisory client-side',
+	})
+
+/**
+ * Trigger definition type inferred from Zod schema
+ * @public
+ */
+export type TriggerDefinition = z.infer<typeof TriggerDefinition>
+
+/**
+ * Whether a workflow action may run from `currentState`.
+ *
+ * Single source of truth for the "is this action available here" rule, shared by
+ * the frontend (`getAvailableTransitions`) and the server-side dispatch guard so
+ * the two can never disagree. Empty or absent `allowedStates` means the action is
+ * available in ALL states — a plain `allowedStates.includes(currentState)` would
+ * wrongly block such actions everywhere.
+ *
+ * @public
+ */
+export function isActionAllowedInState(action: { allowedStates?: string[] | null }, currentState: string): boolean {
+	const allowedStates = action.allowedStates
+	if (!allowedStates || allowedStates.length === 0) return true
+	return allowedStates.includes(currentState)
+}
+
+/**
+ * DocBuilder graph layout — node positions for the workflow-state graph, keyed by state name.
+ * Pure authoring view-state: persisted in the doctype JSON so an author's manual arrangement
+ * survives reloads, but — exactly like {@link (WorkflowMeta:type)}'s `triggers` — it is client-only
+ * and never mirrored into the runtime GraphQL SDL (see the WorkflowMeta type in the host SDLs, which
+ * expose only `states`/`actions`). The shape mirrors VueFlow's node fields; `position` is the node's
+ * canvas coordinate and `targetPosition`/`sourcePosition` are the handle sides.
+ * @public
+ */
+export const WorkflowLayout = z.record(
+	z.string(),
+	z.object({
+		position: z.object({ x: z.number(), y: z.number() }).optional(),
+		targetPosition: z.enum(['left', 'top', 'right', 'bottom']).optional(),
+		sourcePosition: z.enum(['left', 'top', 'right', 'bottom']).optional(),
+	})
+)
+
+/**
+ * Workflow layout type inferred from Zod schema
+ * @public
+ */
+export type WorkflowLayout = z.infer<typeof WorkflowLayout>
+
+/**
  * Workflow metadata - states and actions for a doctype
  * @public
  */
@@ -190,6 +275,16 @@ export const WorkflowMeta = z
 
 		/** Actions available in this workflow */
 		actions: z.record(z.string(), ActionDefinition).optional(),
+
+		/** Reactive field-validation triggers (advisory, client-side), keyed by trigger name */
+		triggers: z.record(z.string(), TriggerDefinition).optional(),
+
+		/**
+		 * DocBuilder node positions keyed by state name — authoring view-state. Persisted here so a
+		 * doctype author's manual graph arrangement survives reloads; like `triggers`, it is client-only
+		 * and never enters the runtime GraphQL SDL. See {@link (WorkflowLayout:variable)}.
+		 */
+		layout: WorkflowLayout.optional(),
 	})
 	.meta({
 		title: 'WorkflowMeta',
@@ -214,7 +309,7 @@ export const DoctypeMeta = z
 		/** URL-friendly slug (kebab-case) */
 		slug: z.string().min(1).optional(),
 
-		/** Field definitions (including link fields with fieldtype: 'Link') */
+		/** Field definitions (a link field is one carrying `doctype`) */
 		fields: z.array(DoctypeFieldSchema),
 
 		/** Relationship links to other doctypes */

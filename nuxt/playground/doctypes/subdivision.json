@@ -1,0 +1,30 @@
+{
+	"name": "Subdivision",
+	"slug": "subdivision",
+	"fields": [
+		{
+			"kind": "field",
+			"fieldname": "code",
+			"label": "Code",
+			"component": "ATextInput",
+			"required": true,
+			"readOnly": true,
+			"source": "introspected"
+		},
+		{
+			"kind": "field",
+			"fieldname": "emoji",
+			"label": "Emoji",
+			"component": "ATextInput",
+			"source": "introspected"
+		},
+		{
+			"kind": "field",
+			"fieldname": "name",
+			"label": "Name",
+			"component": "ATextInput",
+			"required": true,
+			"source": "introspected"
+		}
+	]
+}

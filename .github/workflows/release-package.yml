@@ -7,6 +7,10 @@ on:
     types:
       - closed
 
+permissions:
+  id-token: write  # Required for OIDC
+  contents: read
+
 jobs:
   publish-npm:
     if: github.event.pull_request.merged == true
@@ -24,8 +28,8 @@ jobs:
         name: Install Node.js
         with:
           node-version: 24
-          cache-dependency-path: '**/config/rush/pnpm-lock.yaml'
           registry-url: https://registry.npmjs.org/
+          package-manager-cache: false
 
       - name: Set Git User
         run: |

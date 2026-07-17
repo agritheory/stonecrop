@@ -74,7 +74,6 @@ const columns: TableColumn[] = [
 	{
 		label: 'Home Page',
 		name: 'home_page',
-		fieldtype: 'Data',
 		align: 'left',
 		edit: false,
 		width: '40ch',
@@ -85,7 +84,6 @@ const columns: TableColumn[] = [
 	{
 		label: 'HTTP Method',
 		name: 'http_method',
-		fieldtype: 'Data',
 		align: 'left',
 		edit: true,
 		width: '20ch',
@@ -93,7 +91,6 @@ const columns: TableColumn[] = [
 	{
 		label: 'Report Date',
 		name: 'report_date',
-		fieldtype: 'Date',
 		align: 'center',
 		edit: true,
 		width: '25ch',
@@ -106,7 +103,6 @@ const readonly_columns: TableColumn[] = [
 	{
 		label: 'Home Page',
 		name: 'home_page',
-		fieldtype: 'Data',
 		align: 'left',
 		edit: false,
 		width: '40ch',
@@ -115,7 +111,6 @@ const readonly_columns: TableColumn[] = [
 	{
 		label: 'HTTP Method',
 		name: 'http_method',
-		fieldtype: 'Data',
 		align: 'left',
 		edit: false,
 		width: '20ch',
@@ -123,7 +118,6 @@ const readonly_columns: TableColumn[] = [
 	{
 		label: 'Report Date',
 		name: 'report_date',
-		fieldtype: 'Date',
 		align: 'center',
 		edit: false,
 		width: '25ch',
@@ -137,7 +131,6 @@ const columns_filterable: TableColumn[] = [
 	{
 		label: 'Home Page',
 		name: 'home_page',
-		fieldtype: 'Data',
 		align: 'left',
 		edit: false,
 		width: '40ch',
@@ -151,7 +144,6 @@ const columns_filterable: TableColumn[] = [
 	{
 		label: 'HTTP Method',
 		name: 'http_method',
-		fieldtype: 'Data',
 		align: 'left',
 		edit: true,
 		width: '20ch',
@@ -168,7 +160,6 @@ const columns_filterable: TableColumn[] = [
 	{
 		label: 'Status',
 		name: 'status',
-		fieldtype: 'Data',
 		align: 'center',
 		edit: true,
 		width: '15ch',
@@ -179,7 +170,6 @@ const columns_filterable: TableColumn[] = [
 	{
 		label: 'Report Date',
 		name: 'report_date',
-		fieldtype: 'Date',
 		align: 'center',
 		edit: true,
 		width: '25ch',

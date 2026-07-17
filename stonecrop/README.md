@@ -26,6 +26,9 @@ const app = createApp(App)
 app.use(Stonecrop, {
   router,
 
+  // Run `onRouterInitialized` once the router is ready (defaults to false).
+  autoInitializeRouter: true,
+
   // Lazy-load doctype metadata from your API given the current route context.
   // routeContext = { path, segments } — adapt segments to your doctype naming.
   getMeta: async ({ segments }) => {
@@ -128,7 +131,7 @@ export default {
 
     // HST mode with lazy-loading — pass string doctype slug
     // Automatically loads doctype via registry.getMeta if not in registry
-    const { isLoading, error, resolvedDoctype, formData } = useStonecrop({
+    const { isLoading, error, resolvedDoctype, resolvedSchema, formData } = useStonecrop({
       doctype: 'plan',
       recordId: 'record-123',
     })
@@ -153,7 +156,7 @@ When you pass a string doctype slug instead of a `Doctype` instance, `useStonecr
 3. Return `isLoading`, `error`, and `resolvedDoctype` refs for handling the async state
 
 ```typescript
-const { isLoading, error, resolvedDoctype, formData } = useStonecrop({
+const { isLoading, error, resolvedDoctype, resolvedSchema, formData } = useStonecrop({
   doctype: 'plan', // string slug - triggers lazy-loading
   recordId: '123',
 })
@@ -161,7 +164,7 @@ const { isLoading, error, resolvedDoctype, formData } = useStonecrop({
 // In your template:
 // <div v-if="isLoading">Loading doctype...</div>
 // <div v-else-if="error">Error: {{ error.message }}</div>
-// <AForm v-else :schema="resolvedDoctype.schema" v-model:data="formData" />
+// <AForm v-else :schema="resolvedSchema" v-model:data="formData" />
 ```
 
 This pattern eliminates the timing mismatch when loading doctypes asynchronously in Nuxt plugins.

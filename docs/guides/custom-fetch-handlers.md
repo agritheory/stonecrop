@@ -74,8 +74,8 @@ In your doctype JSON:
 {
   "name": "Order",
   "fields": [
-    { "fieldname": "id", "fieldtype": "Data" },
-    { "fieldname": "status", "fieldtype": "Select" }
+    { "fieldname": "id", "component": "ATextInput" },
+    { "fieldname": "status", "component": "ADropdown" }
   ],
   "links": {
     "summary": {
@@ -148,4 +148,4 @@ Doctype:
 
 **Issuing transactions inside the handler.** The `pgClient` is already inside an active transaction managed by Grafast. Do not call `BEGIN`, `COMMIT`, or `ROLLBACK` inside a fetch handler — doing so will corrupt the transaction state.
 
-**Registering handlers after schema build.** Handlers must be registered before PostGraphile builds the schema. If you register a handler after the server starts, it will not be found when the resolver runs. Register all handlers in your application bootstrap, alongside `loadDoctypes` and `registerBuiltinHandlers`.
+**Registering handlers after schema build.** Handlers must be registered before PostGraphile builds the schema. If you register a handler after the server starts, it will not be found when the resolver runs. Register all handlers in your application bootstrap, alongside `loadDoctypes`.

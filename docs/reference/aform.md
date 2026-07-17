@@ -17,14 +17,6 @@ Vue component exported from @stonecrop/aform.
 import { ACheckbox } from '@stonecrop/aform'
 ```
 
-### AComboBox
-
-Vue component exported from @stonecrop/aform.
-
-```typescript
-import { AComboBox } from '@stonecrop/aform'
-```
-
 ### ADate
 
 Vue component exported from @stonecrop/aform.
@@ -119,6 +111,14 @@ Vue component exported from @stonecrop/aform.
 
 ```typescript
 import { ANumericInput } from '@stonecrop/aform'
+```
+
+### ATextarea
+
+Vue component exported from @stonecrop/aform.
+
+```typescript
+import { ATextarea } from '@stonecrop/aform'
 ```
 
 ### ATextInput
@@ -287,6 +287,10 @@ export interface ResolvedLink {
 
 A resolved table — either from a Link with `noneOrMany`/`atLeastOne` cardinality, or from an inline TableField. ATable receives columns via `:schema` (ColumnSchema[]) and row data via `:rows` from formData at render time.
 
+Note the key rename: an authoring `TableField` declares its columns under `columns`; `resolveSchema` moves them to `schema` here, because `schema` is the ATable prop that runs `schemaToColumns()` (ATable's own `columns` prop means already-converted `TableColumn[]`). A hand-authored table must therefore use `schema`, not `columns`.
+
+Rows are never part of the schema. AForm sources them from the data model at `dataModel[fieldname]`, so a `rows` key placed on this object is ignored.
+
 **Definition:**
 
 ```typescript
@@ -344,12 +348,15 @@ export type ComponentProps = {
         errorMessage: string;
         [key: string]: any;
     };
+    errors?: string[];
 };
 ```
 
 ### ResolvedField
 
-The discriminated union of all resolved field types — what AForm consumes after `resolveSchema()` has transformed the authoring `DoctypeField[]`. Narrowed by `kind`: `'field'` | `'link'` | `'table'` | `'fieldset'`.
+The discriminated union of all resolved field types — what AForm consumes, usually after `resolveSchema()` has transformed the authoring `DoctypeField[]`, but also valid hand-authored for view chrome with no backing doctype. Narrowed by `kind`: `'field'` | `'link'` | `'table'` | `'fieldset'`.
+
+`kind` is required — AForm dispatches on it alone and does not infer a field's type from its structure.
 
 **Definition:**
 

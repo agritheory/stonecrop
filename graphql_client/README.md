@@ -18,7 +18,7 @@ This boundary exists because PostGraphile's schema naming is configurable. An ap
 
 | Operation | Arguments | Returns |
 |-----------|-----------|---------|
-| `stonecropRecord` | `doctype`, `id`, `options?` | `{ record, unknownLinks? }` |
+| `stonecropRecord` | `doctype`, `id`, `options?` | `{ data, unknownLinks? }` |
 | `stonecropRecords` | `doctype`, `filters?`, `orderBy?`, `limit?`, `offset?`, `options?` | `{ data[], count }` |
 | `stonecropMeta` | `doctype` | `DoctypeMeta` |
 | `stonecropAllMeta` | — | `DoctypeMeta[]` |

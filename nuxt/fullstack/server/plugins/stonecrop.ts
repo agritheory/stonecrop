@@ -3,164 +3,13 @@
  *
  * This plugin runs on server startup to:
  * 1. Load doctype definitions from /fullstack/doctypes/
- * 2. Register built-in action handlers
- * 3. Configure the MockGraphQLExecutor instance
+ * 2. Configure the MockGraphQLExecutor instance
  */
 
 import { existsSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { loadDoctypes, registerBuiltinHandlers, registerHandler, clearRegistry } from '@stonecrop/graphql-middleware'
+import { loadDoctypes, clearRegistry } from '@stonecrop/graphql-middleware'
 import { mockExecutor } from '../mock-executor'
-
-/**
- * Action argument shape sent by the frontend — runDoctypeAction in
- * app/composables/useDoctypes.ts sends a single `{ id, data? }` object,
- * where `data` carries form values for save-type actions.
- */
-type ActionArgs = [{ id: string; data?: Record<string, unknown> }]
-
-// Define custom action handlers for this playground
-const customHandlers = {
-	/**
-	 * Save form edits to a user
-	 */
-	'user:save': async (args: unknown[], context: { executor: typeof mockExecutor }) => {
-		const [{ id, data }] = args as ActionArgs
-		const result = await context.executor.mutate<{
-			updateUserById: { user: { id: string } } | null
-		}>(`mutation { updateUserById(id: $id, patch: $patch) { user { id } } }`, {
-			id,
-			patch: data ?? {},
-		})
-		return result.updateUserById?.user
-	},
-
-	/**
-	 * Save form edits to an order
-	 */
-	'order:save': async (args: unknown[], context: { executor: typeof mockExecutor }) => {
-		const [{ id, data }] = args as ActionArgs
-		const result = await context.executor.mutate<{
-			updateOrderById: { order: { id: string } } | null
-		}>(`mutation { updateOrderById(id: $id, patch: $patch) { order { id } } }`, {
-			id,
-			patch: data ?? {},
-		})
-		return result.updateOrderById?.order
-	},
-
-	/**
-	 * Activate a user - transitions status from PENDING/SUSPENDED to ACTIVE
-	 */
-	activate_user: async (args: unknown[], context: { executor: typeof mockExecutor }) => {
-		const [{ id: userId }] = args as ActionArgs
-		const result = await context.executor.mutate<{
-			updateUserById: { user: { id: string; status: string } } | null
-		}>(`mutation { updateUserById(id: $id, patch: { status: "ACTIVE" }) { user { id status } } }`, {
-			id: userId,
-			patch: { status: 'ACTIVE' },
-		})
-		return result.updateUserById?.user
-	},
-
-	/**
-	 * Suspend a user - transitions status from ACTIVE to SUSPENDED
-	 */
-	suspend_user: async (args: unknown[], context: { executor: typeof mockExecutor }) => {
-		const [{ id: userId }] = args as ActionArgs
-		const result = await context.executor.mutate<{
-			updateUserById: { user: { id: string; status: string } } | null
-		}>(`mutation { updateUserById(id: $id, patch: { status: "SUSPENDED" }) { user { id status } } }`, {
-			id: userId,
-			patch: { status: 'SUSPENDED' },
-		})
-		return result.updateUserById?.user
-	},
-
-	/**
-	 * Delete a user - marks status as DELETED (soft delete)
-	 */
-	delete_user: async (args: unknown[], context: { executor: typeof mockExecutor }) => {
-		const [{ id: userId }] = args as ActionArgs
-		const result = await context.executor.mutate<{
-			updateUserById: { user: { id: string; status: string } } | null
-		}>(`mutation { updateUserById(id: $id, patch: { status: "DELETED" }) { user { id status } } }`, {
-			id: userId,
-			patch: { status: 'DELETED' },
-		})
-		return result.updateUserById?.user
-	},
-
-	/**
-	 * Submit an order - transitions from DRAFT to PENDING
-	 */
-	submit_order: async (args: unknown[], context: { executor: typeof mockExecutor }) => {
-		const [{ id: orderId }] = args as ActionArgs
-		const result = await context.executor.mutate<{
-			updateOrderById: { order: { id: string; status: string } } | null
-		}>(`mutation { updateOrderById(id: $id, patch: { status: "PENDING" }) { order { id status } } }`, {
-			id: orderId,
-			patch: { status: 'PENDING' },
-		})
-		return result.updateOrderById?.order
-	},
-
-	/**
-	 * Process an order - transitions from PENDING to PROCESSING
-	 */
-	process_order: async (args: unknown[], context: { executor: typeof mockExecutor }) => {
-		const [{ id: orderId }] = args as ActionArgs
-		const result = await context.executor.mutate<{
-			updateOrderById: { order: { id: string; status: string } } | null
-		}>(`mutation { updateOrderById(id: $id, patch: { status: "PROCESSING" }) { order { id status } } }`, {
-			id: orderId,
-			patch: { status: 'PROCESSING' },
-		})
-		return result.updateOrderById?.order
-	},
-
-	/**
-	 * Ship an order - transitions from PROCESSING to SHIPPED
-	 */
-	ship_order: async (args: unknown[], context: { executor: typeof mockExecutor }) => {
-		const [{ id: orderId }] = args as ActionArgs
-		const result = await context.executor.mutate<{
-			updateOrderById: { order: { id: string; status: string } } | null
-		}>(`mutation { updateOrderById(id: $id, patch: { status: "SHIPPED" }) { order { id status } } }`, {
-			id: orderId,
-			patch: { status: 'SHIPPED' },
-		})
-		return result.updateOrderById?.order
-	},
-
-	/**
-	 * Complete an order - transitions from SHIPPED to COMPLETED
-	 */
-	complete_order: async (args: unknown[], context: { executor: typeof mockExecutor }) => {
-		const [{ id: orderId }] = args as ActionArgs
-		const result = await context.executor.mutate<{
-			updateOrderById: { order: { id: string; status: string } } | null
-		}>(`mutation { updateOrderById(id: $id, patch: { status: "COMPLETED" }) { order { id status } } }`, {
-			id: orderId,
-			patch: { status: 'COMPLETED' },
-		})
-		return result.updateOrderById?.order
-	},
-
-	/**
-	 * Cancel an order - transitions to CANCELLED from any non-COMPLETED state
-	 */
-	cancel_order: async (args: unknown[], context: { executor: typeof mockExecutor }) => {
-		const [{ id: orderId }] = args as ActionArgs
-		const result = await context.executor.mutate<{
-			updateOrderById: { order: { id: string; status: string } } | null
-		}>(`mutation { updateOrderById(id: $id, patch: { status: "CANCELLED" }) { order { id status } } }`, {
-			id: orderId,
-			patch: { status: 'CANCELLED' },
-		})
-		return result.updateOrderById?.order
-	},
-}
 
 /**
  * Initialize Stonecrop on server startup
@@ -172,10 +21,11 @@ export default defineNitroPlugin(async () => {
 		// Clear any existing registry (for hot reload in development)
 		clearRegistry()
 
-		// Load doctype definitions from the doctypes directory
-		// The plugin is at server/plugins/stonecrop.ts, doctypes are at ../../app/doctypes
+		// Load doctype definitions from the doctypes directory. It lives at the project root
+		// (a shared sibling of app/ and server/), which is also the module's default doctypesDir.
+		// The plugin is at server/plugins/stonecrop.ts, so the root is two levels up.
 		const pluginDir = resolve(new URL(import.meta.url).pathname, '..')
-		const doctypesDir = resolve(pluginDir, '../../app/doctypes')
+		const doctypesDir = resolve(pluginDir, '../../doctypes')
 
 		if (!existsSync(doctypesDir)) {
 			console.warn(`[Stonecrop] Could not find doctypes directory at ${doctypesDir}, skipping doctype loading`)
@@ -192,15 +42,6 @@ export default defineNitroPlugin(async () => {
 		})
 
 		console.log('[Stonecrop] Doctypes loaded successfully')
-
-		// Register built-in handlers from graphql-middleware
-		registerBuiltinHandlers()
-
-		// Register custom action handlers for this playground
-		for (const [name, handler] of Object.entries(customHandlers)) {
-			registerHandler(name, handler as Parameters<typeof registerHandler>[1])
-			console.log(`[Stonecrop] Registered action handler: ${name}`)
-		}
 
 		console.log('[Stonecrop] Server plugin initialized successfully')
 	} catch (error) {

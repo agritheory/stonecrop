@@ -6,49 +6,42 @@
 			"fieldname": "id",
 			"label": "ID",
 			"component": "ATextInput",
-			"fieldtype": "Data",
 			"mode": "display"
 		},
 		{
 			"fieldname": "title",
 			"label": "Title",
 			"component": "ATextInput",
-			"fieldtype": "Data",
 			"required": true
 		},
 		{
 			"fieldname": "projectId",
 			"label": "Project",
-			"component": "ACombobox",
-			"fieldtype": "Link",
-			"options": "project",
+			"component": "AFormLink",
+			"doctype": "project",
 			"required": true
 		},
 		{
 			"fieldname": "status",
 			"label": "Status",
 			"component": "ADropdown",
-			"fieldtype": "Select",
 			"options": ["Todo", "In Progress", "Done"],
 			"default": "Todo"
 		},
 		{
 			"fieldname": "description",
 			"label": "Description",
-			"component": "ATextarea",
-			"fieldtype": "Text"
+			"component": "ATextarea"
 		},
 		{
 			"fieldname": "dueDate",
 			"label": "Due Date",
-			"component": "ADatepicker",
-			"fieldtype": "Date"
+			"component": "ADatePicker"
 		},
 		{
 			"fieldname": "createdAt",
 			"label": "Created At",
-			"component": "ATextInput",
-			"fieldtype": "Datetime",
+			"component": "ADateTime",
 			"mode": "display"
 		}
 	],
@@ -57,17 +50,17 @@
 		"actions": {
 			"save": {
 				"label": "Save",
-				"handler": "task:save"
+				"stateless": true
 			},
 			"start_task": {
 				"label": "Start Task",
-				"handler": "start_task",
-				"allowedStates": ["Todo"]
+				"allowedStates": ["Todo"],
+				"nextState": "In Progress"
 			},
 			"complete_task": {
 				"label": "Complete",
-				"handler": "complete_task",
-				"allowedStates": ["In Progress"]
+				"allowedStates": ["In Progress"],
+				"nextState": "Done"
 			}
 		}
 	}

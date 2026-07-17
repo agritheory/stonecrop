@@ -1,8 +1,9 @@
 import { mount } from '@vue/test-utils'
+import { List, Map } from 'immutable'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { nextTick } from 'vue'
 
-import { Registry, Stonecrop } from '@stonecrop/stonecrop'
+import { Doctype, Registry, Stonecrop } from '@stonecrop/stonecrop'
 
 import Desktop from '../../src/components/Desktop.vue'
 import type { RouteAdapter } from '../../src/types'
@@ -313,6 +314,141 @@ describe('Desktop FSM state reading', { tags: ['component'] }, () => {
 		expect(labels.some((l: string) => l.startsWith('START'))).toBe(true)
 		expect(labels.some((l: string) => l.startsWith('DONE'))).toBe(false)
 	})
+
+	it('labels transition actions with the workflow action label, not the raw key (WorkflowMeta format)', async () => {
+		const registry = new Registry()
+		const stonecrop = new Stonecrop(registry)
+
+		// WorkflowMeta-format workflow (states array + labeled actions), mirroring Order.json.
+		const schema = List([
+			{ kind: 'field' as const, fieldname: 'id', label: 'ID', component: 'ATextInput' },
+			{ kind: 'field' as const, fieldname: 'status', label: 'Status', component: 'ATextInput' },
+		])
+		const workflow = {
+			states: ['PROCESSING', 'SHIPPED', 'CANCELLED'],
+			actions: {
+				ship: { label: 'Ship Order', allowedStates: ['PROCESSING'], nextState: 'SHIPPED' },
+				cancel: { label: 'Cancel Order', allowedStates: ['PROCESSING'], nextState: 'CANCELLED' },
+			},
+		}
+		const doctype = new Doctype('order', schema, workflow, Map({}))
+		registry.addDoctype(doctype)
+		stonecrop.addRecord('order', 'order-1', { id: 'order-1', status: 'PROCESSING' })
+
+		const adapter: RouteAdapter = {
+			getCurrentDoctype: () => 'order',
+			getCurrentRecordId: () => 'order-1',
+			getCurrentView: () => 'record',
+			navigate: vi.fn(),
+		}
+
+		const wrapper = mount(Desktop, {
+			props: { routeAdapter: adapter },
+			global: {
+				plugins: [makeStonecropPlugin(registry, stonecrop)],
+				stubs: { AForm: true, SheetNav: true, CommandPalette: true },
+			},
+		})
+
+		await nextTick()
+
+		const actionSet = wrapper.findComponent({ name: 'ActionSet' })
+		const elements = actionSet.props('elements') as any[]
+		const actionsDropdown = elements.find((e: any) => e.type === 'dropdown' && e.label === 'Actions')
+		expect(actionsDropdown).toBeTruthy()
+		const labels = actionsDropdown.actions.map((a: any) => a.label as string)
+
+		// Human-readable labels from the workflow, not the raw transition keys.
+		expect(labels).toContain('Ship Order')
+		expect(labels).toContain('Cancel Order')
+		// Regression guard: the raw key (e.g. 'ship (→ SHIPPED)') must not leak through.
+		expect(labels.some((l: string) => l.includes('ship') || l.includes('→'))).toBe(false)
+	})
+
+	it('renders stateless Commands in the Actions dropdown alongside transitions (Phase E)', async () => {
+		const registry = new Registry()
+		const stonecrop = new Stonecrop(registry)
+
+		const schema = List([
+			{ kind: 'field' as const, fieldname: 'id', label: 'ID', component: 'ATextInput' },
+			{ kind: 'field' as const, fieldname: 'status', label: 'Status', component: 'ATextInput' },
+		])
+		// A transition available in PROCESSING + a global stateless Command (Save).
+		const workflow = {
+			states: ['PROCESSING', 'SHIPPED'],
+			actions: {
+				ship: { label: 'Ship Order', allowedStates: ['PROCESSING'], nextState: 'SHIPPED' },
+				save: { label: 'Save', stateless: true, clientHandler: 'return true' },
+			},
+		}
+		const doctype = new Doctype('order', schema, workflow, Map({}))
+		registry.addDoctype(doctype)
+		stonecrop.addRecord('order', 'order-1', { id: 'order-1', status: 'PROCESSING' })
+
+		const adapter: RouteAdapter = {
+			getCurrentDoctype: () => 'order',
+			getCurrentRecordId: () => 'order-1',
+			getCurrentView: () => 'record',
+			navigate: vi.fn(),
+		}
+
+		const wrapper = mount(Desktop, {
+			props: { routeAdapter: adapter },
+			global: {
+				plugins: [makeStonecropPlugin(registry, stonecrop)],
+				stubs: { AForm: true, SheetNav: true, CommandPalette: true },
+			},
+		})
+
+		await nextTick()
+
+		const actionSet = wrapper.findComponent({ name: 'ActionSet' })
+		const elements = actionSet.props('elements') as any[]
+		const actionsDropdown = elements.find((e: any) => e.type === 'dropdown' && e.label === 'Actions')
+		expect(actionsDropdown).toBeTruthy()
+		const labels = actionsDropdown.actions.map((a: any) => a.label as string)
+
+		// The transition and the stateless Command both appear in the one merged Actions dropdown.
+		expect(labels).toContain('Ship Order')
+		expect(labels).toContain('Save')
+	})
+
+	it('renders a Command on a commands-only doctype with no workflow states (Phase E)', async () => {
+		const registry = new Registry()
+		const stonecrop = new Stonecrop(registry)
+
+		const schema = List([{ kind: 'field' as const, fieldname: 'id', label: 'ID', component: 'ATextInput' }])
+		// No `states` array: getAvailableTransitions yields nothing, so before Phase E the
+		// Actions dropdown would not render at all. The global Command must still surface.
+		const workflow = { actions: { save: { label: 'Save', stateless: true, clientHandler: 'return true' } } }
+		const doctype = new Doctype('report', schema, workflow as any, Map({}))
+		registry.addDoctype(doctype)
+		stonecrop.addRecord('report', 'r-1', { id: 'r-1' })
+
+		const adapter: RouteAdapter = {
+			getCurrentDoctype: () => 'report',
+			getCurrentRecordId: () => 'r-1',
+			getCurrentView: () => 'record',
+			navigate: vi.fn(),
+		}
+
+		const wrapper = mount(Desktop, {
+			props: { routeAdapter: adapter },
+			global: {
+				plugins: [makeStonecropPlugin(registry, stonecrop)],
+				stubs: { AForm: true, SheetNav: true, CommandPalette: true },
+			},
+		})
+
+		await nextTick()
+
+		const actionSet = wrapper.findComponent({ name: 'ActionSet' })
+		const elements = actionSet.props('elements') as any[]
+		const actionsDropdown = elements.find((e: any) => e.type === 'dropdown' && e.label === 'Actions')
+		expect(actionsDropdown).toBeTruthy()
+		const labels = actionsDropdown.actions.map((a: any) => a.label as string)
+		expect(labels).toContain('Save')
+	})
 })
 
 describe('Desktop – fieldset flattening in records view', { tags: ['component'] }, () => {
@@ -328,8 +464,8 @@ describe('Desktop – fieldset flattening in records view', { tags: ['component'
 				label: 'Info',
 				component: 'AFieldset',
 				schema: [
-					{ kind: 'field' as const, fieldname: 'color', fieldtype: 'Data', label: 'Color', component: 'ATextInput' },
-					{ kind: 'field' as const, fieldname: 'weight', fieldtype: 'Data', label: 'Weight', component: 'ATextInput' },
+					{ kind: 'field' as const, fieldname: 'color', label: 'Color', component: 'ATextInput' },
+					{ kind: 'field' as const, fieldname: 'weight', label: 'Weight', component: 'ATextInput' },
 				],
 			} as any,
 		])
@@ -388,8 +524,8 @@ describe('Desktop – currentViewData fieldset nesting', { tags: ['component'] }
 				label: 'Info',
 				component: 'AFieldset',
 				schema: [
-					{ kind: 'field' as const, fieldname: 'color', fieldtype: 'Data', label: 'Color', component: 'ATextInput' },
-					{ kind: 'field' as const, fieldname: 'weight', fieldtype: 'Data', label: 'Weight', component: 'ATextInput' },
+					{ kind: 'field' as const, fieldname: 'color', label: 'Color', component: 'ATextInput' },
+					{ kind: 'field' as const, fieldname: 'weight', label: 'Weight', component: 'ATextInput' },
 				],
 			} as any,
 		])
@@ -433,8 +569,8 @@ describe('Desktop – currentViewData fieldset nesting', { tags: ['component'] }
 				label: 'Info',
 				component: 'AFieldset',
 				schema: [
-					{ kind: 'field' as const, fieldname: 'color', fieldtype: 'Data', label: 'Color', component: 'ATextInput' },
-					{ kind: 'field' as const, fieldname: 'weight', fieldtype: 'Data', label: 'Weight', component: 'ATextInput' },
+					{ kind: 'field' as const, fieldname: 'color', label: 'Color', component: 'ATextInput' },
+					{ kind: 'field' as const, fieldname: 'weight', label: 'Weight', component: 'ATextInput' },
 				],
 			} as any,
 		])

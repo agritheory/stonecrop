@@ -74,7 +74,9 @@ describe('Field Trigger Integration', { tags: ['unit'] }, () => {
 		registerGlobalAction('action1', action1)
 		registerGlobalAction('action2', action2)
 
-		const schema = List([{ fieldname: 'emailAddress', fieldtype: 'Data', label: 'Email' }])
+		const schema = List([
+			{ kind: 'field' as const, fieldname: 'emailAddress', label: 'Email', component: 'ATextInput' },
+		])
 		const workflow: UnknownMachineConfig = {
 			id: 'task',
 			initial: 'draft',
@@ -106,7 +108,7 @@ describe('Field Trigger Integration', { tags: ['unit'] }, () => {
 		const validateName = vi.fn()
 		registerGlobalAction('validateName', validateName)
 
-		const schema = List([{ fieldname: 'profile', fieldtype: 'Section', label: 'Profile' }])
+		const schema = List([{ kind: 'field' as const, fieldname: 'profile', label: 'Profile', component: 'ATextInput' }])
 		const workflow: UnknownMachineConfig = {
 			id: 'user',
 			initial: 'active',
@@ -142,7 +144,7 @@ describe('Field Trigger Integration', { tags: ['unit'] }, () => {
 		})
 		registerGlobalAction('errorAction', errorAction)
 
-		const schema = List([{ fieldname: 'title', fieldtype: 'Data', label: 'Title' }])
+		const schema = List([{ kind: 'field' as const, fieldname: 'title', label: 'Title', component: 'ATextInput' }])
 		const workflow: UnknownMachineConfig = {
 			id: 'task',
 			initial: 'draft',

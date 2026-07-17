@@ -5,7 +5,6 @@
 ```ts
 
 import ACheckbox from './components/form/ACheckbox.vue';
-import AComboBox from './components/form/AComboBox.vue';
 import ADate from './components/form/ADate.vue';
 import ADatePicker from './components/form/ADatePicker.vue';
 import ADateRange from './components/form/ADateRange.vue';
@@ -19,6 +18,7 @@ import AForm from './components/AForm.vue';
 import AFormLink from './components/form/AFormLink.vue';
 import ANumericInput from './components/form/ANumericInput.vue';
 import type { App } from 'vue';
+import ATextarea from './components/form/ATextarea.vue';
 import ATextInput from './components/form/ATextInput.vue';
 import type { ColumnSchema } from '@stonecrop/schema';
 import type { FieldValidation } from '@stonecrop/schema';
@@ -28,8 +28,6 @@ import type { TableViewConfig } from '@stonecrop/schema';
 import type { ValueField } from '@stonecrop/schema';
 
 export { ACheckbox }
-
-export { AComboBox }
 
 export { ADate }
 
@@ -67,6 +65,8 @@ export interface AFormLinkValue {
 
 export { ANumericInput }
 
+export { ATextarea }
+
 export { ATextInput }
 
 // @public
@@ -82,6 +82,7 @@ export type ComponentProps = {
         errorMessage: string;
         [key: string]: any;
     };
+    errors?: string[];
 };
 
 // @public

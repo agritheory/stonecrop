@@ -9,16 +9,16 @@
  * - loadOne($step, fn)        — batch-load data ASYNCHRONOUSLY (for DB queries)
  * - object({ ... })           — group multiple steps into a single step object
  *
- * Data reads go through loadOne; data writes happen in server/plugins/stonecrop.ts
- * via registered action handlers (start_task, complete_task, archive_project).
+ * Data reads go through loadOne. Workflow state transitions are applied by the
+ * stonecropAction resolver itself (server-owns-transition, guarded by allowedStates);
+ * side-effecting saves go through registered handlers (project:save, task:save).
  *
  * To connect a real database, replace the imports from ./data with your
  * PostGraphile setup. See: https://stonecrop.io/docs/guides/postgraphile
  */
 
 import { constant, lambda, loadOne, object } from 'grafast'
-import { getMeta, getAllMeta, getHandler } from '@stonecrop/graphql-middleware'
-import type { ActionContext } from '@stonecrop/graphql-middleware'
+import { getMeta, getAllMeta, applyGuardedTransition } from '@stonecrop/graphql-middleware'
 import type { DoctypeMeta } from '@stonecrop/schema'
 import { projects, tasks, type Project, type Task } from './data'
 
@@ -27,45 +27,22 @@ import { projects, tasks, type Project, type Task } from './data'
 // response type defined in server/schema.graphql)
 // ============================================================
 
-function formatFieldMeta(field: { kind?: string; fieldname: string; fieldtype?: string; [key: string]: unknown }) {
-	return {
-		fieldname: field.fieldname,
-		fieldtype: field.fieldtype ?? null,
-		label: field.label ?? null,
-		required: field.required ?? false,
-		readOnly: field.readOnly ?? false,
-		options: field.options ?? null,
-		default: field.default ?? null,
-		width: field.width ?? null,
-		validation: field.validation ?? null,
-		component: field.component ?? null,
-		align: field.align ?? null,
-		edit: field.edit ?? null,
-		hidden: field.hidden ?? null,
-		mask: field.mask ?? null,
-		precision: field.precision ?? null,
-		scale: field.scale ?? null,
-		mode: field.mode ?? null,
-	}
-}
-
-function formatDoctypeMeta(meta: DoctypeMeta) {
+export function formatDoctypeMeta(meta: DoctypeMeta) {
+	// Fields and actions pass through verbatim — the SDL alone decides what is
+	// selectable. Enumerating keys here silently drops any field the schema gains
+	// later; the only computed addition is `name` (an action's key in the
+	// WorkflowMeta.actions record, flattened into the list the SDL declares).
 	const actions = meta.workflow?.actions
 	const actionList = actions
 		? Object.entries(actions as Record<string, Record<string, unknown>>).map(([name, action]) => ({
 				name,
-				label: action.label ?? null,
-				handler: action.handler ?? null,
-				requiredFields: (action.requiredFields as string[]) ?? [],
-				allowedStates: (action.allowedStates as string[]) ?? [],
-				confirm: action.confirm ?? false,
-				args: action.args ?? null,
+				...action,
 			}))
 		: []
 	return {
 		name: meta.name,
 		slug: meta.slug ?? null,
-		fields: meta.fields.map(formatFieldMeta),
+		fields: meta.fields,
 		workflow: meta.workflow
 			? {
 					states: meta.workflow.states ?? null,
@@ -188,18 +165,46 @@ export const resolvers = {
 								const actionDef = meta.workflow?.actions?.[spec.action]
 								if (!actionDef) return { success: false, data: null, error: `Unknown action: ${spec.action}` }
 
-								const handler = getHandler(actionDef.handler)
-								if (!handler)
-									return { success: false, data: null, error: `Handler not registered: ${actionDef.handler}` }
-
-								// Pass doctype metadata via ActionContext. The handler in server/plugins/stonecrop.ts
-								// imports and mutates the data Maps directly — it does not need additional context here.
-								// In a PostGraphile setup, context.pgClient would provide the database connection instead.
-								const actionContext: ActionContext = { doctype: meta }
+								// Record envelope: [{ id, data }] — the transition keys off the record id, and a
+								// self-transition persists the edited field `data` in place.
+								const argList = Array.isArray(spec.actionArgs) ? spec.actionArgs : []
+								const recordId = argList[0]?.id != null ? String(argList[0].id) : undefined
+								const recordData: Record<string, unknown> = argList[0]?.data ?? {}
+								const d = spec.doctype.toLowerCase()
 
 								try {
-									const result = await handler(spec.actionArgs ?? [], actionContext)
-									return { success: true, data: result, error: null }
+									// The server owns the transition: read current state, guard against allowedStates,
+									// write nextState. Reads/writes go straight to the in-memory Maps; a PostGraphile
+									// setup swaps in pgClient SQL instead.
+									return await applyGuardedTransition(
+										actionDef,
+										{
+											readState: async () => {
+												if (recordId == null) return undefined
+												const record = getRecord(d, recordId)
+												return record?.status == null ? undefined : String(record.status)
+											},
+											writeState: async (nextState: string) => {
+												if (recordId == null) return
+												const existing = getRecord(d, recordId)
+												if (!existing) return
+												if (d === 'project') projects.set(recordId, { ...existing, status: nextState } as Project)
+												else if (d === 'task') tasks.set(recordId, { ...existing, status: nextState } as Task)
+											},
+											// Self-transition data write: merge the edited fields into the record (status
+											// untouched) and return the full record for the client writeback.
+											writeData: async (patch: Record<string, unknown>) => {
+												if (recordId == null) return {}
+												const existing = getRecord(d, recordId)
+												if (!existing) return {}
+												const updated = { ...existing, ...patch }
+												if (d === 'project') projects.set(recordId, updated as Project)
+												else if (d === 'task') tasks.set(recordId, updated as Task)
+												return updated as Record<string, unknown>
+											},
+										},
+										recordData
+									)
 								} catch (err) {
 									return { success: false, data: null, error: err instanceof Error ? err.message : String(err) }
 								}

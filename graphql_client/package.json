@@ -52,6 +52,7 @@
 		"@microsoft/api-documenter": "^7.30.5",
 		"@miragejs/graphql": "^0.1.13",
 		"@rushstack/heft": "^1.2.17",
+		"@stonecrop/graphql-middleware": "workspace:*",
 		"@types/node": "^24.12.4",
 		"@types/pluralize": "^0.0.33",
 		"@vitejs/plugin-vue": "^6.0.6",

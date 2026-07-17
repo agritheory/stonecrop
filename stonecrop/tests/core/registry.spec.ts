@@ -9,9 +9,7 @@ import Doctype from '../../src/doctype'
 
 // Helper: creates a Doctype with links
 const createDoctypeWithLinks = (name: string, links?: Record<string, any>) => {
-	const mockSchema = List([
-		{ kind: 'field' as const, fieldname: 'title', fieldtype: 'Data', component: 'ATextInput', label: 'Title' },
-	])
+	const mockSchema = List([{ kind: 'field' as const, fieldname: 'title', component: 'ATextInput', label: 'Title' }])
 
 	const mockWorkflow: UnknownMachineConfig = {
 		id: name.toLowerCase(),
@@ -27,7 +25,6 @@ function createMockDoctype(name: string) {
 		{
 			kind: 'field' as const,
 			fieldname: 'title',
-			fieldtype: 'Data',
 			component: 'ATextInput',
 			label: 'Title',
 		},
@@ -430,21 +427,19 @@ describe('Registry class', { tags: ['unit'] }, () => {
 		it('produces kind: "table" and schema array (not columns) for a 1:many link', () => {
 			registry = new Registry()
 			const taskSchema = List([
-				{ kind: 'field' as const, fieldname: 'name', fieldtype: 'Data', component: 'ATextInput', label: 'Name' },
-				{ kind: 'field' as const, fieldname: 'qty', fieldtype: 'Int', component: 'ATextInput', label: 'Qty' },
+				{ kind: 'field' as const, fieldname: 'name', component: 'ATextInput', label: 'Name' },
+				{ kind: 'field' as const, fieldname: 'qty', component: 'ATextInput', label: 'Qty' },
 			])
 			const taskWorkflow = { id: 'task', initial: 'draft', states: { draft: {} } }
 			const task = new Doctype('Task', taskSchema as any, taskWorkflow as any, Map())
 
 			const parentSchema = List([
-				{ kind: 'field' as const, fieldname: 'title', fieldtype: 'Data', component: 'ATextInput', label: 'Title' },
+				{ kind: 'field' as const, fieldname: 'title', component: 'ATextInput', label: 'Title' },
 				{
 					kind: 'field' as const,
 					fieldname: 'tasks',
-					fieldtype: 'Link',
 					component: 'ATable',
 					label: 'Tasks',
-					options: 'task',
 					cardinality: 'noneOrMany',
 				},
 			])
@@ -468,19 +463,18 @@ describe('Registry class', { tags: ['unit'] }, () => {
 		it('resolves a 1:1 link to a ResolvedLink with kind: "link"', () => {
 			registry = new Registry()
 			const addressSchema = List([
-				{ kind: 'field' as const, fieldname: 'street', fieldtype: 'Data', component: 'ATextInput', label: 'Street' },
+				{ kind: 'field' as const, fieldname: 'street', component: 'ATextInput', label: 'Street' },
 			])
 			const addressWorkflow = { id: 'address', initial: 'draft', states: { draft: {} } }
 			const address = new Doctype('Address', addressSchema as any, addressWorkflow as any, Map())
 
 			const personSchema = List([
-				{ kind: 'field' as const, fieldname: 'name', fieldtype: 'Data', component: 'ATextInput', label: 'Name' },
+				{ kind: 'field' as const, fieldname: 'name', component: 'ATextInput', label: 'Name' },
 				{
 					kind: 'field' as const,
 					fieldname: 'address',
-					fieldtype: 'Link',
 					label: 'Address',
-					options: 'address',
+					component: 'AForm',
 					cardinality: 'one',
 				},
 			])
@@ -530,7 +524,7 @@ describe('Registry class', { tags: ['unit'] }, () => {
 				{
 					kind: 'fieldset' as const,
 					fieldname: 'details',
-					schema: [{ kind: 'field' as const, fieldname: 'email', fieldtype: 'Data', component: 'ATextInput' }],
+					schema: [{ kind: 'field' as const, fieldname: 'email', component: 'ATextInput' }],
 				},
 			]
 			const record = registry.initializeRecord(schema)
@@ -540,8 +534,8 @@ describe('Registry class', { tags: ['unit'] }, () => {
 		it('initializes a field with kind: "field" and an explicit default to that default value', () => {
 			registry = new Registry()
 			const schema = [
-				{ kind: 'field' as const, fieldname: 'status', fieldtype: 'Select', component: 'ADropdown', default: 'Draft' },
-				{ kind: 'field' as const, fieldname: 'active', fieldtype: 'Check', component: 'ACheckbox', default: true },
+				{ kind: 'field' as const, fieldname: 'status', component: 'ADropdown', default: 'Draft' },
+				{ kind: 'field' as const, fieldname: 'active', component: 'ACheckbox', default: true },
 			]
 			const record = registry.initializeRecord(schema)
 			expect(record.status).toBe('Draft')
