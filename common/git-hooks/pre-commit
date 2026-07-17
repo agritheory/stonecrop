@@ -3,11 +3,16 @@
 # exit with non-zero status after issuing an appropriate message if
 # it wants to stop the commit.
 
+# Sort package.json before formatting, so prettier formats the reordered output.
+# CI enforces this ordering with "git diff --exit-code"; doing it here keeps a
+# forgotten sort from turning into a failed build.
+node common/scripts/install-run-rush.js sort-package-json || exit $?
+
 # Format all files (not just staged ones) so the tree never drifts from CI.
 # Using --cache means only files whose content changed since the last run are
 # re-checked, keeping this fast after the first invocation.
 # Note: .bin/prettier is a pnpm shell-script shim — do NOT prefix with `node`.
-node common/scripts/install-run-rush.js update-autoinstaller --name rush-prettier || exit $?
+node common/scripts/install-run-rush.js install-autoinstaller --name rush-prettier || exit $?
 common/autoinstallers/rush-prettier/node_modules/.bin/prettier --write . --cache --log-level warn || exit $?
 git add -u
 

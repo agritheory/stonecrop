@@ -1,21 +1,24 @@
 {
 	"name": "@stonecrop/node-editor",
 	"version": "0.14.0",
-	"license": "MIT",
-	"type": "module",
-	"author": {
-		"name": "Tyler Matteson",
-		"email": "tyler@agritheory.com"
+	"description": "Node editor UI for Stonecrop",
+	"bugs": {
+		"url": "https://github.com/agritheory/stonecrop/issues"
 	},
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/agritheory/stonecrop",
 		"directory": "node_editor"
 	},
-	"bugs": {
-		"url": "https://github.com/agritheory/stonecrop/issues"
+	"license": "MIT",
+	"author": {
+		"name": "Tyler Matteson",
+		"email": "tyler@agritheory.com"
 	},
-	"types": "./dist/node-editor.d.ts",
+	"sideEffects": [
+		"**/*.css"
+	],
+	"type": "module",
 	"exports": {
 		".": {
 			"types": "./dist/node-editor.d.ts",
@@ -24,35 +27,29 @@
 		"./styles": "./dist/node-editor.css",
 		"./types": "./dist/src/types/index.d.ts"
 	},
+	"types": "./dist/node-editor.d.ts",
 	"files": [
 		"dist/*",
 		"src/*"
 	],
-	"sideEffects": [
-		"**/*.css"
-	],
 	"scripts": {
 		"_phase:build": "heft build && vite build && rushx docs",
-		"prepublishOnly": "heft build && vite build && rushx docs",
 		"build": "heft build && vite build && rushx docs",
 		"dev": "vite",
 		"docs": "bash ../common/scripts/run-docs.sh node_editor",
 		"lint": "oxlint",
 		"lint:fix": "oxlint --fix",
+		"prepublishOnly": "heft build && vite build && rushx docs",
 		"preview": "vite preview",
 		"test": "vitest run --coverage.enabled false",
+		"test:coverage": "vitest run --coverage",
 		"test:types": "vue-tsc --noEmit",
-		"test:watch": "vitest watch",
-		"test:coverage": "vitest run --coverage"
+		"test:watch": "vitest watch"
 	},
 	"dependencies": {
 		"@dagrejs/dagre": "^3.0.0",
 		"@stonecrop/schema": "workspace:*",
 		"@vue-flow/core": "^1.48.1"
-	},
-	"peerDependencies": {
-		"vue": "^3.5.33",
-		"vue-router": "^5.0.6"
 	},
 	"devDependencies": {
 		"@microsoft/api-documenter": "^7.30.5",
@@ -69,11 +66,14 @@
 		"vue-router": "^5.0.6",
 		"vue-tsc": "^3.3.6"
 	},
-	"description": "Node editor UI for Stonecrop",
-	"publishConfig": {
-		"access": "public"
+	"peerDependencies": {
+		"vue": "^3.5.33",
+		"vue-router": "^5.0.6"
 	},
 	"engines": {
 		"node": ">=24.0.0"
+	},
+	"publishConfig": {
+		"access": "public"
 	}
 }

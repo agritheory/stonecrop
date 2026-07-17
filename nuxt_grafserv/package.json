@@ -2,20 +2,20 @@
 	"name": "@stonecrop/nuxt-grafserv",
 	"version": "0.14.0",
 	"description": "Pluggable Grafserv GraphQL server as Nuxt Module",
-	"license": "MIT",
-	"type": "module",
-	"author": {
-		"name": "Tyler Matteson",
-		"email": "tyler@agritheory.com"
+	"bugs": {
+		"url": "https://github.com/agritheory/stonecrop/issues"
 	},
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/agritheory/stonecrop",
 		"directory": "nuxt_grafserv"
 	},
-	"bugs": {
-		"url": "https://github.com/agritheory/stonecrop/issues"
+	"license": "MIT",
+	"author": {
+		"name": "Tyler Matteson",
+		"email": "tyler@agritheory.com"
 	},
+	"type": "module",
 	"exports": {
 		".": {
 			"import": "./dist/module.mjs",
@@ -39,18 +39,18 @@
 		"_phase:build": "rushx dev:prepare && rushx prepack",
 		"build": "rushx dev:prepare && rushx prepack",
 		"build:module": "rushx dev:prepare && rushx prepack",
-		"docs": "echo 'Nuxt modules use custom build system - skipping API docs generation'",
 		"dev": "node playground/scripts/bootstrap.mjs && nuxi dev playground --host",
 		"dev:build": "nuxi build playground",
 		"dev:prepare": "nuxt-module-build build --stub && nuxt-module-build prepare && nuxi prepare playground",
-		"prepack": "nuxt-module-build build",
+		"docs": "echo 'Nuxt modules use custom build system - skipping API docs generation'",
 		"lint": "eslint .",
+		"prepack": "nuxt-module-build build",
 		"test": "vitest run",
 		"test:ci": "vitest run --run",
 		"test:coverage": "vitest run --coverage.enabled --coverage.provider=istanbul",
 		"test:e2e": "vitest run test/e2e",
-		"test:watch": "vitest watch",
-		"test:types": "vue-tsc --noEmit && cd playground && vue-tsc --noEmit"
+		"test:types": "vue-tsc --noEmit && cd playground && vue-tsc --noEmit",
+		"test:watch": "vitest watch"
 	},
 	"dependencies": {
 		"@graphql-tools/graphql-file-loader": "^8.1.14",
@@ -71,13 +71,13 @@
 		"@nuxt/module-builder": "^1.0.2",
 		"@nuxt/schema": "^4.4.8",
 		"@nuxt/test-utils": "^4.0.3",
-		"@vitest/coverage-istanbul": "^4.1.5",
 		"@types/node": "^24.12.4",
-		"h3": "^1.15.11",
-		"nitropack": "^2.13.1",
+		"@vitest/coverage-istanbul": "^4.1.5",
 		"changelogen": "^0.6.2",
 		"eslint": "^10.6.0",
+		"h3": "^1.15.11",
 		"jsdom": "^29.1.1",
+		"nitropack": "^2.13.1",
 		"nuxt": "^4.4.8",
 		"postgraphile": "^5.0.3",
 		"typescript": "^6.0.3",
