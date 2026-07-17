@@ -1,22 +1,24 @@
 {
 	"name": "@stonecrop/beam",
 	"version": "0.14.0",
-	"license": "MIT",
-	"type": "module",
-	"author": {
-		"name": "Tyler Matteson",
-		"email": "tyler@agritheory.com"
+	"description": "UI component library for Stonecrop",
+	"bugs": {
+		"url": "https://github.com/agritheory/stonecrop/issues"
 	},
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/agritheory/stonecrop",
 		"directory": "beam"
 	},
-	"bugs": {
-		"url": "https://github.com/agritheory/stonecrop/issues"
+	"license": "MIT",
+	"author": {
+		"name": "Tyler Matteson",
+		"email": "tyler@agritheory.com"
 	},
-	"description": "UI component library for Stonecrop",
-	"types": "./dist/beam.d.ts",
+	"sideEffects": [
+		"**/*.css"
+	],
+	"type": "module",
 	"exports": {
 		".": {
 			"types": "./dist/beam.d.ts",
@@ -25,36 +27,31 @@
 		"./styles": "./dist/assets/index.css",
 		"./types": "./dist/src/types/index.d.ts"
 	},
+	"types": "./dist/beam.d.ts",
 	"files": [
 		"dist/*",
 		"src/*"
 	],
-	"sideEffects": [
-		"**/*.css"
-	],
 	"scripts": {
 		"_phase:build": "heft build && vite build && rushx docs",
-		"prepublishOnly": "heft build && vite build && rushx docs",
 		"build": "heft build && vite build && rushx docs",
 		"dev": "vite",
 		"docs": "bash ../common/scripts/run-docs.sh beam",
 		"lint": "oxlint",
 		"lint:fix": "oxlint --fix",
+		"prepublishOnly": "heft build && vite build && rushx docs",
 		"preview": "vite preview",
 		"test": "vitest run --coverage.enabled false",
-		"test:types": "vue-tsc --noEmit",
-		"test:watch": "vitest watch",
 		"test:coverage": "vitest run --coverage",
-		"test:ui": "vitest --ui"
+		"test:types": "vue-tsc --noEmit",
+		"test:ui": "vitest --ui",
+		"test:watch": "vitest watch"
 	},
 	"dependencies": {
 		"@vueuse/components": "^14.2.1",
 		"@vueuse/core": "^14.2.1",
 		"mqtt": "^5.14.1",
 		"onscan.js": "^1.5.2"
-	},
-	"peerDependencies": {
-		"vue": "^3.5.33"
 	},
 	"devDependencies": {
 		"@microsoft/api-documenter": "^7.30.5",
@@ -76,10 +73,13 @@
 		"vue-router": "^5.0.6",
 		"vue-tsc": "^3.3.6"
 	},
-	"publishConfig": {
-		"access": "public"
+	"peerDependencies": {
+		"vue": "^3.5.33"
 	},
 	"engines": {
 		"node": ">=24.0.0"
+	},
+	"publishConfig": {
+		"access": "public"
 	}
 }

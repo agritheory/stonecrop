@@ -1,22 +1,24 @@
 {
 	"name": "@stonecrop/aform",
 	"version": "0.14.0",
-	"license": "MIT",
-	"type": "module",
-	"author": {
-		"name": "Tyler Matteson",
-		"email": "tyler@agritheory.com"
+	"description": "Schema-driven form components for Stonecrop",
+	"bugs": {
+		"url": "https://github.com/agritheory/stonecrop/issues"
 	},
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/agritheory/stonecrop",
 		"directory": "aform"
 	},
-	"bugs": {
-		"url": "https://github.com/agritheory/stonecrop/issues"
+	"license": "MIT",
+	"author": {
+		"name": "Tyler Matteson",
+		"email": "tyler@agritheory.com"
 	},
-	"description": "Schema-driven form components for Stonecrop",
-	"types": "./dist/aform.d.ts",
+	"sideEffects": [
+		"**/*.css"
+	],
+	"type": "module",
 	"exports": {
 		".": {
 			"types": "./dist/aform.d.ts",
@@ -25,39 +27,33 @@
 		"./styles": "./dist/assets/index.css",
 		"./types": "./dist/src/types/index.d.ts"
 	},
+	"types": "./dist/aform.d.ts",
 	"files": [
 		"dist/*",
 		"src/*"
 	],
-	"sideEffects": [
-		"**/*.css"
-	],
 	"scripts": {
 		"_phase:build": "heft build && vite build && rushx docs",
-		"prepublishOnly": "heft build && vite build && rushx docs",
 		"build": "heft build && vite build && rushx docs",
 		"dev": "vite",
 		"docs": "bash ../common/scripts/run-docs.sh aform",
 		"lint": "oxlint",
 		"lint:fix": "oxlint --fix",
+		"prepublishOnly": "heft build && vite build && rushx docs",
 		"preview": "vite preview",
 		"test": "vitest run --coverage.enabled false",
-		"test:types": "vue-tsc --noEmit",
-		"test:watch": "vitest watch",
 		"test:coverage": "vitest run --coverage",
-		"test:ui": "vitest --ui"
+		"test:types": "vue-tsc --noEmit",
+		"test:ui": "vitest --ui",
+		"test:watch": "vitest watch"
 	},
 	"dependencies": {
 		"@stonecrop/atable": "workspace:*",
 		"@stonecrop/schema": "workspace:*",
 		"@stonecrop/themes": "workspace:*",
 		"@stonecrop/utilities": "workspace:*",
-		"@vueuse/core": "^14.2.1",
-		"@vueuse/components": "^14.2.1"
-	},
-	"peerDependencies": {
-		"pinia": "^3.0.4",
-		"vue": "^3.5.33"
+		"@vueuse/components": "^14.2.1",
+		"@vueuse/core": "^14.2.1"
 	},
 	"devDependencies": {
 		"@microsoft/api-documenter": "^7.30.5",
@@ -80,10 +76,14 @@
 		"vue-router": "^5.0.6",
 		"vue-tsc": "^3.3.6"
 	},
-	"publishConfig": {
-		"access": "public"
+	"peerDependencies": {
+		"pinia": "^3.0.4",
+		"vue": "^3.5.33"
 	},
 	"engines": {
 		"node": ">=24.0.0"
+	},
+	"publishConfig": {
+		"access": "public"
 	}
 }

@@ -1,6 +1,16 @@
 name: Publish Packages
 
 on:
+  # >>> TEMPORARY (OIDC VALIDATION) — REMOVE BEFORE MERGE >>>
+  # A push to this branch runs the workflow from the pushed ref, which lets the
+  # "Validate OIDC" step below exercise the real token exchange without merging.
+  # npm's trusted publisher matches on organization, repository, workflow filename
+  # and (optionally) environment — never on the branch — so claims produced here
+  # are accepted exactly as they would be from "development".
+  push:
+    branches:
+      - oidc-publishing
+  # <<< TEMPORARY (OIDC VALIDATION) — REMOVE BEFORE MERGE <<<
   pull_request:
     branches:
       - development
@@ -8,15 +18,22 @@ on:
       - closed
 
 permissions:
-  id-token: write  # Required for OIDC
   contents: read
 
 jobs:
   publish-npm:
-    if: github.event.pull_request.merged == true
+    # TEMPORARY: the "github.event_name == 'push'" disjunct is part of the OIDC
+    # validation above and should be removed with it, leaving only the merged check.
+    if: github.event_name == 'push' || github.event.pull_request.merged == true
     runs-on: ubuntu-latest
 
     permissions:
+      # "id-token: write" must be declared here rather than at the workflow level:
+      # a job's "permissions" block replaces the workflow's block outright instead of
+      # merging with it, so a workflow-level id-token grant never reaches this job.
+      # Without it the OIDC token request fails, pnpm falls back to publishing
+      # anonymously, and the registry reports that as a misleading 404.
+      id-token: write
       contents: write
       packages: write
 
@@ -24,11 +41,17 @@ jobs:
       - uses: actions/checkout@v6
         name: Checkout
 
+      # "registry-url" is deliberately omitted.  Setting it makes setup-node export
+      # NPM_CONFIG_USERCONFIG, which takes precedence over the home directory that
+      # "rush publish" remaps to common/temp/publish-home — so Rush's .npmrc-publish
+      # would be ignored in favor of an .npmrc containing an unresolved
+      # "_authToken=${NODE_AUTH_TOKEN}" placeholder.  Leaving it out keeps Rush's
+      # own .npmrc-publish authoritative and keeps trusted publishing as the only
+      # source of credentials.
       - uses: actions/setup-node@v6
         name: Install Node.js
         with:
           node-version: 24
-          registry-url: https://registry.npmjs.org/
           package-manager-cache: false
 
       - name: Set Git User
@@ -63,21 +86,139 @@ jobs:
       - name: Install Rush
         run: node common/scripts/install-run-rush.js install
 
-      - name: Update Autoinstallers
+      - name: Install Autoinstallers
         run: |
-          node common/scripts/install-run-rush.js update-autoinstaller --name doc-tools
-          node common/scripts/install-run-rush.js update-autoinstaller --name rush-plugins
+          node common/scripts/install-run-rush.js install-autoinstaller --name doc-tools
+          node common/scripts/install-run-rush.js install-autoinstaller --name rush-plugins
 
       - name: Build Stonecrop
         run: node common/scripts/install-run-rush.js rebuild
 
       - name: Bump Version for Packages
+        # TEMPORARY: guard belongs to the OIDC validation; remove with it.
+        if: github.event_name == 'pull_request'
         run: node common/scripts/install-run-rush.js version --bump --target-branch development --ignore-git-hooks
 
+      # Authentication comes from npm trusted publishing (OIDC): pnpm exchanges the
+      # job's id-token for a short-lived registry credential, so no NPM_AUTH_TOKEN is
+      # needed.  Each package must have a trusted publisher registered on npmjs.com
+      # naming this repository and this workflow's filename.
       - name: Publish Packages via Rush
+        # TEMPORARY: guard belongs to the OIDC validation; remove with it.
+        if: github.event_name == 'pull_request'
         run: node common/scripts/install-run-rush.js publish --apply --publish --include-all --version-policy stonecrop --target-branch development --add-commit-details --set-access-level=public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      # >>> TEMPORARY (OIDC VALIDATION) — REMOVE BEFORE MERGE >>>
+      # Proves the trusted publishing handshake without publishing anything.
+      #
+      # "npm publish" performs the OIDC token exchange before any of its --dry-run
+      # short-circuits, so a dry run still authenticates for real against npm.  The
+      # actual upload stays gated behind a separate "not a dry run" check, which
+      # --force does not affect: --force only skips the "version already exists"
+      # guard that would otherwise reject the current, already-published version.
+      #
+      # The exchange is deliberately never fatal — npm swallows every failure and
+      # falls back to publishing anonymously, which the registry reports as a
+      # misleading 404.  The log is therefore the only signal, and the missing
+      # id-token permission is reported at "silly" rather than "verbose", so a
+      # quieter log level would hide the very failure this is here to catch.
+      # Probes the token exchange for every package, not just the one exercised by
+      # the dry run below.  The endpoint mints a short-lived, package-scoped
+      # credential and publishes nothing, so it is safe to call repeatedly.  Each
+      # package carries its own trusted publisher record, and npm does not validate
+      # those records when they are saved: a typo in any one of them stays invisible
+      # until "rush publish" reaches that package — by which point "rush version
+      # --bump" has already committed and pushed a release.  Checking all sixteen up
+      # front costs seconds and turns that into a pre-merge failure.
+      - name: Validate OIDC Token Exchange (all packages)
+        if: github.event_name == 'push'
+        run: |
+          set -o pipefail
+
+          # GitHub only injects these when the job requests "id-token: write".  Check
+          # them explicitly: without it curl fails on a malformed URL instead, which
+          # reads as a networking problem rather than the permissions bug it is.
+          if [ -z "${ACTIONS_ID_TOKEN_REQUEST_URL:-}" ] || [ -z "${ACTIONS_ID_TOKEN_REQUEST_TOKEN:-}" ]; then
+            echo "::error::GitHub did not inject ACTIONS_ID_TOKEN_REQUEST_* — this job is missing the 'id-token: write' permission. Remember a job's permissions block replaces the workflow's rather than merging with it."
+            exit 1
+          fi
+
+          id_token=$(curl -sS \
+            -H "Authorization: Bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
+            -H "Accept: application/json" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=npm:registry.npmjs.org" | jq -r '.value // empty') || true
+
+          if [ -z "${id_token}" ]; then
+            echo "::error::Minting an id-token failed even though the request variables were present."
+            exit 1
+          fi
+
+          failed=0
+          for pkg in aform atable beam casl-middleware code-editor desktop \
+                     graphql-client graphql-middleware node-editor nuxt \
+                     nuxt-grafserv rockfoil schema stonecrop themes utilities; do
+            code=$(curl -sS -o /tmp/exchange.json -w '%{http_code}' -X POST \
+              -H "Authorization: Bearer ${id_token}" \
+              -H "Accept: application/json" \
+              -H "Content-Length: 0" \
+              "https://registry.npmjs.org/-/npm/v1/oidc/token/exchange/package/@stonecrop%2f${pkg}")
+            if [ "${code}" = "200" ]; then
+              echo "  ok    @stonecrop/${pkg}"
+            else
+              echo "  FAIL  @stonecrop/${pkg} — HTTP ${code}: $(cat /tmp/exchange.json)"
+              failed=1
+            fi
+          done
+
+          if [ "${failed}" -ne 0 ]; then
+            echo "::error::At least one package was refused. Compare its trusted publisher against 'npm trust list' — organization, repository and workflow filename are case-sensitive and exact."
+            exit 1
+          fi
+          echo "::notice::All 16 packages accepted the OIDC token exchange"
+
+      # Confirms the exchange also succeeds through a real publishing client rather
+      # than a hand-rolled request.  npm is used rather than pnpm because pnpm logs
+      # nothing on success — only a "Skipped OIDC" warning on failure, and it stays
+      # silent when the exchange is never attempted at all, so asserting on its
+      # output would pass in exactly the case worth catching.  Both clients send the
+      # same audience to the same endpoint, so acceptance carries over.
+      - name: Validate OIDC (npm client)
+        if: github.event_name == 'push'
+        working-directory: aform
+        run: |
+          set -o pipefail
+          # Capture the status rather than letting "bash -e" abort here, so the
+          # diagnostics below still run when the dry run itself fails.
+          status=0
+          npm publish --dry-run --force --loglevel=silly 2>&1 | tee /tmp/oidc.log || status=$?
+
+          if grep -q "oidc.*Successfully retrieved and set token" /tmp/oidc.log; then
+            echo "::notice::OIDC token exchange succeeded — trusted publishing is configured correctly"
+          else
+            echo "::error::OIDC token exchange failed — see the oidc log lines below"
+            grep -i "oidc" /tmp/oidc.log || echo "(no oidc log lines at all: the exchange was never attempted)"
+            exit 1
+          fi
+
+          # Provenance is not configured anywhere: publishing over OIDC turns it on by
+          # itself once the workflow runs on GitHub Actions, the repository is public
+          # and the package is public.  Both npm and pnpm apply that same rule and
+          # neither treats a negative result as an error — they simply publish without
+          # an attestation and note it in passing.  Asserting on it here is what makes
+          # a silently unsigned release fail before the merge instead of after.
+          if grep -q "oidc.*Enabling provenance" /tmp/oidc.log; then
+            echo "::notice::Provenance will be attached (auto-enabled for a public repository and package)"
+          else
+            echo "::error::Provenance would NOT be attached to this release. Check that the repository and the package are both public, and that package.json has a repository.url matching this repository."
+            grep -i "provenance" /tmp/oidc.log || echo "(provenance was never mentioned in the log)"
+            exit 1
+          fi
+
+          if [ "$status" -ne 0 ]; then
+            echo "::error::OIDC succeeded but 'npm publish --dry-run' exited ${status}"
+            exit "$status"
+          fi
+      # <<< TEMPORARY (OIDC VALIDATION) — REMOVE BEFORE MERGE <<<
 
       - name: Save Rush Build Cache
         if: always()

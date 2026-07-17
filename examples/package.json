@@ -1,10 +1,10 @@
 {
 	"name": "@stonecrop/examples",
 	"version": "0.2.6",
-	"description": "Example App(s) for the Stonecrop framework",
 	"private": true,
-	"type": "module",
+	"description": "Example App(s) for the Stonecrop framework",
 	"license": "MIT",
+	"type": "module",
 	"main": "index.js",
 	"files": [
 		"aform/*"
@@ -12,18 +12,18 @@
 	"scripts": {
 		"_phase:build": "",
 		"build": "",
-		"story": "histoire dev",
 		"build:stories": "histoire build",
-		"desktop": "vite --config desktop/vite.config.ts desktop"
+		"desktop": "vite --config desktop/vite.config.ts desktop",
+		"story": "histoire dev"
 	},
 	"dependencies": {
 		"@stonecrop/aform": "workspace:*",
 		"@stonecrop/atable": "workspace:*",
-		"@stonecrop/schema": "workspace:*",
 		"@stonecrop/beam": "workspace:*",
 		"@stonecrop/code-editor": "workspace:*",
 		"@stonecrop/desktop": "workspace:*",
 		"@stonecrop/node-editor": "workspace:*",
+		"@stonecrop/schema": "workspace:*",
 		"@stonecrop/stonecrop": "workspace:*",
 		"@stonecrop/themes": "workspace:*",
 		"@stonecrop/utilities": "workspace:*",
