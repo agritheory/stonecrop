@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/atable",
+      "comment": "sort package JSON",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/atable"
+}
