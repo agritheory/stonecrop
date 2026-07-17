@@ -37,9 +37,9 @@ export type FilterStateRecord = Record<number, FilterState>
 
 // Quantity columns hold a composite `{ qty, uom, ... }` value (see `QuantityValue` in
 // `@stonecrop/aform`); numeric comparisons (filtering, sorting) operate on `qty`.
-function toComparableNumber(cellValue: any): number {
+function toComparableNumber(cellValue: unknown): number {
 	if (cellValue !== null && typeof cellValue === 'object' && 'qty' in cellValue) {
-		return Number((cellValue as { qty: unknown }).qty)
+		return Number(cellValue.qty)
 	}
 	return Number(cellValue)
 }

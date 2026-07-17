@@ -108,6 +108,14 @@ Vue component exported from @stonecrop/aform.
 import { ANumericInput } from '@stonecrop/aform'
 ```
 
+### AQuantityInput
+
+Vue component exported from @stonecrop/aform.
+
+```typescript
+import { AQuantityInput } from '@stonecrop/aform'
+```
+
 ### ATextarea
 
 Vue component exported from @stonecrop/aform.
@@ -209,6 +217,54 @@ export interface AFormLinkValue {
 |----------|------|-------------|
 | displayText? | `string` | Display text shown in the input. Falls back to `String(id)` if omitted. |
 | id | `string \| number` | The FK/linked document ID. `id: 0` is a valid ID. |
+
+### QuantityOptions
+
+Type-specific configuration for AQuantityInput, passed via the field's `options` property.
+
+**Definition:**
+
+```typescript
+export interface QuantityOptions {
+  conversionFactors?: Record<string, number>;
+  stockUom?: string;
+  uoms?: string[];
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| conversionFactors? | `Record<string, number>` | Conversion factor lookup for each non-stock UOM, relative to `stockUom` (which is implicitly `1`) |
+| stockUom? | `string` | The item's base/stock unit of measure — fixed, not user-editable |
+| uoms? | `string[]` | Dropdown choices for the `uom` field |
+
+### QuantityValue
+
+The value shape for AQuantityInput — a quantity paired with its unit of measure, plus the derived stock-equivalent quantity/UOM. `conversionFactor` is carried on the value so it round-trips with the record even though it is never shown in the UI.
+
+**Definition:**
+
+```typescript
+export interface QuantityValue {
+  conversionFactor: number;
+  qty: number;
+  stockQty: number;
+  stockUom: string;
+  uom: string;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| conversionFactor | `number` | Multiplier from `uom` to `stockUom` — hidden from the UI, drives `stockQty` |
+| qty | `number` | The entered quantity, in `uom` units |
+| stockQty | `number` | `qty` converted into `stockUom` units — `qty * conversionFactor` |
+| stockUom | `string` | The item's base/stock unit of measure — fixed, not user-editable |
+| uom | `string` | Unit of measure the user entered `qty` in |
 
 ### ResolvedFieldset
 

@@ -7,7 +7,7 @@ import { AForm } from '@stonecrop/aform'
 const itemSchema = [
 	{
 		fieldname: 'qty',
-		fieldtype: 'Quantity',
+		kind: 'field',
 		component: 'AQuantityInput',
 		label: 'Quantity',
 		options: {
