@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/utilities",
+      "comment": "improve typing for keyboard navigation selectors",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/utilities"
+}
