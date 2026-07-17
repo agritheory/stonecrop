@@ -152,6 +152,9 @@ jobs:
             echo "::error::Minting an id-token failed even though the request variables were present."
             exit 1
           fi
+          # The id token authenticates as this workflow; keep it out of the log even
+          # if some later command echoes its arguments.
+          echo "::add-mask::${id_token}"
 
           failed=0
           for pkg in aform atable beam casl-middleware code-editor desktop \
@@ -162,12 +165,32 @@ jobs:
               -H "Accept: application/json" \
               -H "Content-Length: 0" \
               "https://registry.npmjs.org/-/npm/v1/oidc/token/exchange/package/@stonecrop%2f${pkg}")
-            if [ "${code}" = "200" ]; then
-              echo "  ok    @stonecrop/${pkg}"
-            else
-              echo "  FAIL  @stonecrop/${pkg} — HTTP ${code}: $(cat /tmp/exchange.json)"
-              failed=1
+
+            # A successful exchange answers 201, not 200, so match the whole 2xx
+            # family and confirm a token actually came back — the same pair of
+            # conditions npm applies (any 2xx, then "is there a token in the body").
+            minted=$(jq -r '.token // empty' /tmp/exchange.json 2>/dev/null || true)
+            if [ -n "${minted}" ]; then
+              echo "::add-mask::${minted}"
             fi
+
+            case "${code}" in
+              2*)
+                if [ -n "${minted}" ]; then
+                  echo "  ok    @stonecrop/${pkg}"
+                else
+                  echo "  FAIL  @stonecrop/${pkg} — HTTP ${code} but the response carried no token"
+                  failed=1
+                fi
+                ;;
+              *)
+                # Print only the error message.  A successful body contains a live
+                # registry credential, so this must never echo the response itself.
+                echo "  FAIL  @stonecrop/${pkg} — HTTP ${code}: $(jq -r '.message // "no message in response"' /tmp/exchange.json 2>/dev/null || echo 'unparseable response')"
+                failed=1
+                ;;
+            esac
+            rm -f /tmp/exchange.json
           done
 
           if [ "${failed}" -ne 0 ]; then
