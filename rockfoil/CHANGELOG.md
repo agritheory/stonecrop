@@ -1,6 +1,13 @@
 # Change Log - @stonecrop/rockfoil
 
-This log was last generated on Fri, 17 Jul 2026 07:01:54 GMT and should not be manually modified.
+This log was last generated on Fri, 17 Jul 2026 11:29:31 GMT and should not be manually modified.
+
+## 0.15.0
+Fri, 17 Jul 2026 11:29:31 GMT
+
+### Patches
+
+- sort package JSON
 
 ## 0.14.0
 Fri, 17 Jul 2026 07:01:54 GMT
