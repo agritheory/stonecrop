@@ -11,7 +11,8 @@ import {
 	defaultIsEntityField,
 	classifyFieldType,
 } from '../src/converter'
-import { validateDoctype } from '../src/validation'
+import { CANONICAL_COMPONENTS } from '../src/component-meta'
+import { validateDoctype, parseDoctype } from '../src/validation'
 
 // ═══════════════════════════════════════════════════════════════
 // Helper: Build introspection from SDL for testing
@@ -104,52 +105,35 @@ type CreateUserPayload {
 
 describe('GQL_SCALAR_MAP', { tags: ['unit'] }, () => {
 	it('should map all standard GraphQL scalars', () => {
-		expect(GQL_SCALAR_MAP.String).toEqual({ component: 'ATextInput', fieldtype: 'Data' })
-		expect(GQL_SCALAR_MAP.Int).toEqual({ component: 'ANumericInput', fieldtype: 'Int' })
-		expect(GQL_SCALAR_MAP.Float).toEqual({ component: 'ANumericInput', fieldtype: 'Float' })
-		expect(GQL_SCALAR_MAP.Boolean).toEqual({ component: 'ACheckbox', fieldtype: 'Check' })
-		expect(GQL_SCALAR_MAP.ID).toEqual({ component: 'ATextInput', fieldtype: 'Data' })
+		expect(GQL_SCALAR_MAP.String).toEqual({ component: 'ATextInput' })
+		expect(GQL_SCALAR_MAP.Int).toEqual({ component: 'ANumericInput' })
+		expect(GQL_SCALAR_MAP.Float).toEqual({ component: 'ANumericInput' })
+		expect(GQL_SCALAR_MAP.Boolean).toEqual({ component: 'ACheckbox' })
+		expect(GQL_SCALAR_MAP.ID).toEqual({ component: 'ATextInput' })
 	})
 })
 
 describe('WELL_KNOWN_SCALARS', { tags: ['unit'] }, () => {
 	it('should map common custom scalars', () => {
-		expect(WELL_KNOWN_SCALARS.BigFloat).toEqual({ component: 'ADecimalInput', fieldtype: 'Decimal' })
-		expect(WELL_KNOWN_SCALARS.UUID).toEqual({ component: 'ATextInput', fieldtype: 'Data' })
-		expect(WELL_KNOWN_SCALARS.DateTime).toEqual({ component: 'ADatetimePicker', fieldtype: 'Datetime' })
-		expect(WELL_KNOWN_SCALARS.Datetime).toEqual({ component: 'ADatetimePicker', fieldtype: 'Datetime' })
-		expect(WELL_KNOWN_SCALARS.Date).toEqual({ component: 'ADate', fieldtype: 'Date' })
-		expect(WELL_KNOWN_SCALARS.Time).toEqual({ component: 'ATimeInput', fieldtype: 'Time' })
-		expect(WELL_KNOWN_SCALARS.JSON).toEqual({ component: 'ACodeEditor', fieldtype: 'JSON' })
-		expect(WELL_KNOWN_SCALARS.BigInt).toEqual({ component: 'ANumericInput', fieldtype: 'Int' })
-		expect(WELL_KNOWN_SCALARS.Duration).toEqual({ component: 'ADurationInput', fieldtype: 'Duration' })
+		expect(WELL_KNOWN_SCALARS.BigFloat).toEqual({ component: 'ANumericInput' })
+		expect(WELL_KNOWN_SCALARS.UUID).toEqual({ component: 'ATextInput' })
+		expect(WELL_KNOWN_SCALARS.DateTime).toEqual({ component: 'ADateTime' })
+		expect(WELL_KNOWN_SCALARS.Datetime).toEqual({ component: 'ADateTime' })
+		expect(WELL_KNOWN_SCALARS.Date).toEqual({ component: 'ADate' })
+		expect(WELL_KNOWN_SCALARS.Time).toEqual({ component: 'ATextInput' })
+		expect(WELL_KNOWN_SCALARS.JSON).toEqual({ component: 'ACodeEditor' })
+		expect(WELL_KNOWN_SCALARS.BigInt).toEqual({ component: 'ANumericInput' })
+		expect(WELL_KNOWN_SCALARS.Duration).toEqual({ component: 'ADuration' })
 	})
 
-	it('should include all entries with valid Stonecrop field types', () => {
-		const validTypes = [
-			'Data',
-			'Text',
-			'Int',
-			'Float',
-			'Decimal',
-			'Check',
-			'Date',
-			'Time',
-			'Datetime',
-			'Duration',
-			'DateRange',
-			'JSON',
-			'Code',
-			'Link',
-			'Attach',
-			'Currency',
-			'Quantity',
-			'Select',
-		]
-		for (const [_name, template] of Object.entries(WELL_KNOWN_SCALARS)) {
-			expect(validTypes).toContain(template.fieldtype)
-			expect(template.component).toBeTruthy()
-		}
+	it('should map every entry to a component Stonecrop actually ships', () => {
+		// The converter's output is authored data nobody reviews by hand, so a scalar mapped to a
+		// component that does not exist renders nothing at all — the `ACombobox`/`ADatepicker` class
+		// of bug. CANONICAL_COMPONENTS is the real set, so this cannot drift from a hand-kept list.
+		const offenders = Object.entries(WELL_KNOWN_SCALARS)
+			.filter(([, template]) => !CANONICAL_COMPONENTS.includes(template.component))
+			.map(([name, template]) => `${name} → ${template.component}`)
+		expect(offenders).toEqual([])
 	})
 })
 
@@ -174,18 +158,18 @@ describe('buildScalarMap', { tags: ['unit'] }, () => {
 
 	it('should let custom scalars override everything', () => {
 		const map = buildScalarMap({
-			String: { component: 'CustomInput', fieldtype: 'Text' },
-			MyScalar: { component: 'MyComponent', fieldtype: 'Currency' },
+			String: { component: 'CustomInput' },
+			MyScalar: { component: 'MyComponent' },
 		})
-		expect(map.String).toEqual({ component: 'CustomInput', fieldtype: 'Text' })
-		expect(map.MyScalar).toEqual({ component: 'MyComponent', fieldtype: 'Currency' })
+		expect(map.String).toEqual({ component: 'CustomInput' })
+		expect(map.MyScalar).toEqual({ component: 'MyComponent' })
 	})
 
-	it('should default component and fieldtype for partial custom scalars', () => {
+	it('should default the component for a custom scalar that names none', () => {
 		const map = buildScalarMap({
-			Partial: { fieldtype: 'Decimal' },
+			Partial: {},
 		})
-		expect(map.Partial).toEqual({ component: 'ATextInput', fieldtype: 'Decimal' })
+		expect(map.Partial).toEqual({ component: 'ATextInput' })
 	})
 })
 
@@ -284,48 +268,43 @@ describe('classifyFieldType', { tags: ['unit'] }, () => {
 	const userType = schema.getType('User') as any
 	const userFields = userType.getFields()
 
-	it('should classify String as Data', () => {
+	it('should classify String as ATextInput', () => {
 		const field = classifyFieldType('name', userFields.name, entityTypes)
-		expect(field.fieldtype).toBe('Data')
 		expect(field.component).toBe('ATextInput')
 		expect(field.required).toBe(true) // String!
 	})
 
 	it('should classify ID as Data', () => {
 		const field = classifyFieldType('id', userFields.id, entityTypes)
-		expect(field.fieldtype).toBe('Data')
+		expect(field.component).toBe('ATextInput')
 		expect(field.required).toBe(true) // ID!
 	})
 
 	it('should classify Boolean as Check', () => {
 		const field = classifyFieldType('active', userFields.active, entityTypes)
-		expect(field.fieldtype).toBe('Check')
 		expect(field.component).toBe('ACheckbox')
 		expect(field.required).toBe(true) // Boolean!
 	})
 
 	it('should classify Int as Int', () => {
 		const field = classifyFieldType('age', userFields.age, entityTypes)
-		expect(field.fieldtype).toBe('Int')
 		expect(field.component).toBe('ANumericInput')
 		expect(field.required).toBeUndefined() // nullable Int
 	})
 
 	it('should classify Float as Float', () => {
 		const field = classifyFieldType('score', userFields.score, entityTypes)
-		expect(field.fieldtype).toBe('Float')
 		expect(field.component).toBe('ANumericInput')
 	})
 
 	it('should classify optional String without required', () => {
 		const field = classifyFieldType('email', userFields.email, entityTypes)
-		expect(field.fieldtype).toBe('Data')
+		expect(field.component).toBe('ATextInput')
 		expect(field.required).toBeUndefined()
 	})
 
 	it('should classify enum as Select', () => {
 		const field = classifyFieldType('status', postFields.status, entityTypes)
-		expect(field.fieldtype).toBe('Select')
 		expect(field.component).toBe('ADropdown')
 		expect(field.options).toEqual(['DRAFT', 'PUBLISHED', 'ARCHIVED'])
 		expect(field.required).toBe(true) // PostStatus!
@@ -333,18 +312,17 @@ describe('classifyFieldType', { tags: ['unit'] }, () => {
 
 	it('should classify entity reference as Link', () => {
 		const field = classifyFieldType('author', postFields.author, entityTypes)
-		expect(field.fieldtype).toBe('Link')
-		expect(field.component).toBe('ALink')
-		expect(field.options).toBe('user')
+		expect(field.component).toBe('AFormLink')
+		expect(field.doctype).toBe('user')
+		expect(field.options).toBeUndefined()
 		expect(field.required).toBe(true) // User!
 	})
 
 	it('should classify Connection field as a link (_isLink marker)', () => {
 		const field = classifyFieldType('comments', postFields.comments, entityTypes)
 		expect((field as any)._isLink).toBe(true)
-		expect(field.fieldtype).toBeUndefined()
 		expect(field.component).toBe('ATable')
-		expect(field.options).toBe('comment')
+		expect(field.doctype).toBe('comment')
 		expect(field.cardinality).toBe('noneOrMany')
 	})
 
@@ -378,10 +356,9 @@ describe('classifyFieldType', { tags: ['unit'] }, () => {
 
 		const field = classifyFieldType('amount', testFields.amount, new Set(['TestEntity']), {
 			customScalars: {
-				Money: { component: 'ACurrencyInput', fieldtype: 'Currency' },
+				Money: { component: 'ACurrencyInput' },
 			},
 		})
-		expect(field.fieldtype).toBe('Currency')
 		expect(field.component).toBe('ACurrencyInput')
 	})
 
@@ -411,12 +388,11 @@ describe('classifyFieldType — foreign key (ID → Link)', { tags: ['unit'] }, 
 		const entityTypesWithRecipe = new Set(['RecipeTask', 'Recipe'])
 
 		const recipeField = classifyFieldType('recipe', fields.recipe, entityTypesWithRecipe)
-		expect(recipeField.fieldtype).toBe('Link')
-		expect(recipeField.component).toBe('ALink')
-		expect(recipeField.options).toBe('recipe')
+		expect(recipeField.component).toBe('AFormLink')
+		expect(recipeField.doctype).toBe('recipe')
 	})
 
-	it('should leave ID field as Data when no matching entity type exists', () => {
+	it('should leave a plain ID field as a scalar when no matching entity type exists', () => {
 		const schema = buildSchema(`
 			type Query { user: User }
 			type User { id: ID! name: String! }
@@ -425,7 +401,8 @@ describe('classifyFieldType — foreign key (ID → Link)', { tags: ['unit'] }, 
 		const fields = userType.getFields()
 
 		const idField = classifyFieldType('id', fields.id, new Set(['User']))
-		expect(idField.fieldtype).toBe('Data')
+		expect(idField.component).toBe('ATextInput')
+		expect(idField.doctype).toBeUndefined()
 	})
 
 	it('should work end-to-end via convertGraphQLSchema', () => {
@@ -445,8 +422,8 @@ describe('classifyFieldType — foreign key (ID → Link)', { tags: ['unit'] }, 
 		const recipeTask = doctypes.find(d => d.name === 'RecipeTask')!
 		const recipeField = recipeTask.fields.find(f => f.fieldname === 'recipe')!
 
-		expect(recipeField.fieldtype).toBe('Link')
-		expect(recipeField.options).toBe('recipe')
+		expect(recipeField.component).toBe('AFormLink')
+		expect(recipeField.doctype).toBe('recipe')
 	})
 })
 
@@ -492,26 +469,26 @@ describe('convertGraphQLSchema', { tags: ['unit'] }, () => {
 			const user = doctypes.find(d => d.name === 'User')!
 
 			const idField = user.fields.find(f => f.fieldname === 'id')!
-			expect(idField.fieldtype).toBe('Data')
+			expect(idField.component).toBe('ATextInput')
 			expect(idField.required).toBe(true)
 
 			const nameField = user.fields.find(f => f.fieldname === 'name')!
-			expect(nameField.fieldtype).toBe('Data')
+			expect(nameField.component).toBe('ATextInput')
 			expect(nameField.required).toBe(true)
 
 			const emailField = user.fields.find(f => f.fieldname === 'email')!
-			expect(emailField.fieldtype).toBe('Data')
+			expect(emailField.component).toBe('ATextInput')
 			expect(emailField.required).toBeUndefined()
 
 			const activeField = user.fields.find(f => f.fieldname === 'active')!
-			expect(activeField.fieldtype).toBe('Check')
+			expect(activeField.component).toBe('ACheckbox')
 			expect(activeField.required).toBe(true)
 
 			const ageField = user.fields.find(f => f.fieldname === 'age')!
-			expect(ageField.fieldtype).toBe('Int')
+			expect(ageField.component).toBe('ANumericInput')
 
 			const scoreField = user.fields.find(f => f.fieldname === 'score')!
-			expect(scoreField.fieldtype).toBe('Float')
+			expect(scoreField.component).toBe('ANumericInput')
 		})
 
 		it('should correctly classify fields on Post', () => {
@@ -519,11 +496,11 @@ describe('convertGraphQLSchema', { tags: ['unit'] }, () => {
 			const post = doctypes.find(d => d.name === 'Post')!
 
 			const authorField = post.fields.find(f => f.fieldname === 'author')!
-			expect(authorField.fieldtype).toBe('Link')
-			expect(authorField.options).toBe('user')
+			expect(authorField.component).toBe('AFormLink')
+			expect(authorField.doctype).toBe('user')
 
 			const statusField = post.fields.find(f => f.fieldname === 'status')!
-			expect(statusField.fieldtype).toBe('Select')
+			expect(statusField.component).toBe('ADropdown')
 			expect(statusField.options).toEqual(['DRAFT', 'PUBLISHED', 'ARCHIVED'])
 
 			// Connection fields are placed in doctype.links, not doctype.fields
@@ -571,14 +548,14 @@ describe('convertGraphQLSchema', { tags: ['unit'] }, () => {
 			const doctypes = convertGraphQLSchema(basicSdl, {
 				typeOverrides: {
 					User: {
-						email: { fieldtype: 'Text', component: 'ATextarea' },
+						email: { component: 'ATextarea', label: 'Email Address' },
 					},
 				},
 			})
 			const user = doctypes.find(d => d.name === 'User')!
 			const emailField = user.fields.find(f => f.fieldname === 'email')!
-			expect(emailField.fieldtype).toBe('Text')
 			expect(emailField.component).toBe('ATextarea')
+			expect(emailField.label).toBe('Email Address')
 		})
 
 		it('should use custom isEntityType', () => {
@@ -603,15 +580,15 @@ describe('convertGraphQLSchema', { tags: ['unit'] }, () => {
 			const doctypes = convertGraphQLSchema(basicSdl, {
 				classifyField: fieldName => {
 					if (fieldName === 'email') {
-						return { fieldtype: 'Code', component: 'ACodeEditor', label: 'Email Address' }
+						return { component: 'ACodeEditor', language: 'json', label: 'Email Address' }
 					}
 					return null // fall through to default
 				},
 			})
 			const user = doctypes.find(d => d.name === 'User')!
 			const emailField = user.fields.find(f => f.fieldname === 'email')!
-			expect(emailField.fieldtype).toBe('Code')
 			expect(emailField.component).toBe('ACodeEditor')
+			expect(emailField.language).toBe('json')
 			expect(emailField.label).toBe('Email Address')
 		})
 
@@ -641,13 +618,13 @@ describe('convertGraphQLSchema', { tags: ['unit'] }, () => {
 			`
 			const doctypes = convertGraphQLSchema(customSdl, {
 				customScalars: {
-					Money: { component: 'ACurrencyInput', fieldtype: 'Currency' },
+					Money: { component: 'ACurrencyInput' },
 				},
 			})
 			expect(doctypes.length).toBe(1)
 			const product = doctypes[0]
 			const priceField = product.fields.find(f => f.fieldname === 'price')!
-			expect(priceField.fieldtype).toBe('Currency')
+			expect(priceField.component).toBe('ACurrencyInput')
 			expect(priceField.component).toBe('ACurrencyInput')
 		})
 	})
@@ -700,5 +677,98 @@ describe('convertGraphQLSchema', { tags: ['unit'] }, () => {
 				expect(result.success).toBe(true)
 			}
 		})
+
+		it('should produce fields that all have kind: "field"', () => {
+			const doctypes = convertGraphQLSchema(basicSdl)
+
+			for (const doctype of doctypes) {
+				for (const field of doctype.fields) {
+					expect(field.kind).toBe('field')
+				}
+			}
+		})
+
+		it('should preserve kind: "field" when typeOverrides are applied', () => {
+			const doctypes = convertGraphQLSchema(basicSdl, {
+				typeOverrides: {
+					User: {
+						email: { component: 'AEmailInput' },
+					},
+				},
+			})
+
+			const user = doctypes.find(d => d.name === 'User')!
+			const emailField = user.fields.find(f => f.fieldname === 'email')
+			expect(emailField?.kind).toBe('field')
+			expect(emailField?.component).toBe('AEmailInput')
+		})
+
+		it('should produce kind: "field" when classifyField hook is used', () => {
+			const doctypes = convertGraphQLSchema(basicSdl, {
+				classifyField: fieldName => {
+					if (fieldName === 'email') {
+						return { component: 'AEmailInput' }
+					}
+					return null
+				},
+			})
+
+			const user = doctypes.find(d => d.name === 'User')!
+			const emailField = user.fields.find(f => f.fieldname === 'email')
+			expect(emailField?.kind).toBe('field')
+		})
+	})
+})
+
+describe('provenance stamping (source: "introspected")', { tags: ['unit'] }, () => {
+	it('stamps source: "introspected" on every emitted field', () => {
+		const doctypes = convertGraphQLSchema(basicSdl)
+
+		expect(doctypes.length).toBeGreaterThan(0)
+		for (const doctype of doctypes) {
+			for (const field of doctype.fields) {
+				expect(field.source, `${doctype.name}.${field.fieldname}`).toBe('introspected')
+			}
+		}
+	})
+
+	it('preserves the marker when typeOverrides are applied', () => {
+		const doctypes = convertGraphQLSchema(basicSdl, {
+			typeOverrides: {
+				User: {
+					email: { label: 'Email Address', component: 'AEmailInput' },
+				},
+			},
+		})
+
+		const user = doctypes.find(d => d.name === 'User')!
+		const emailField = user.fields.find(f => f.fieldname === 'email')
+		expect(emailField?.label).toBe('Email Address')
+		expect(emailField?.source).toBe('introspected')
+	})
+
+	it('stamps fields produced by the classifyField hook', () => {
+		const doctypes = convertGraphQLSchema(basicSdl, {
+			classifyField: fieldName => {
+				if (fieldName === 'email') {
+					return { component: 'AEmailInput' }
+				}
+				return null
+			},
+		})
+
+		const user = doctypes.find(d => d.name === 'User')!
+		expect(user.fields.find(f => f.fieldname === 'email')?.source).toBe('introspected')
+	})
+
+	it('survives a Zod parse round-trip (declared on ValueFieldSchema, not stripped)', () => {
+		const doctypes = convertGraphQLSchema(basicSdl)
+
+		for (const doctype of doctypes) {
+			const parsed = parseDoctype(doctype)
+			for (const field of parsed.fields) {
+				expect(field, `${doctype.name}.${field.fieldname}`).toHaveProperty('source', 'introspected')
+			}
+		}
 	})
 })

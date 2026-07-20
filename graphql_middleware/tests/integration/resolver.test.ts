@@ -10,7 +10,6 @@ import { describe, it, expect, beforeAll, afterAll, inject } from 'vitest'
 
 import { createStonecropPlugin } from '../../src/plugin/postgraphile'
 import { loadDoctypesFromObject, clearRegistry } from '../../src/registry/doctypes'
-import { registerHandler, clearHandlers } from '../../src/registry/actions'
 
 // ---------------------------------------------------------------------------
 // Per-suite setup
@@ -28,9 +27,9 @@ beforeAll(async () => {
 		ScItem: {
 			name: 'ScItem',
 			fields: [
-				{ fieldname: 'id', fieldtype: 'PrimaryKey', label: 'ID' },
-				{ fieldname: 'name', fieldtype: 'Data', label: 'Name' },
-				{ fieldname: 'status', fieldtype: 'Data', label: 'Status' },
+				{ kind: 'field', fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
+				{ kind: 'field', fieldname: 'name', component: 'ATextInput', label: 'Name' },
+				{ kind: 'field', fieldname: 'status', component: 'ATextInput', label: 'Status' },
 			],
 			links: {
 				tags: {
@@ -49,37 +48,37 @@ beforeAll(async () => {
 			workflow: {
 				states: ['Draft', 'Active'],
 				actions: {
-					submit: { label: 'Submit', handler: 'submit', allowedStates: ['Draft'] },
+					submit: { label: 'Submit', allowedStates: ['Draft'], nextState: 'Active' },
 				},
 			},
 		},
 		ScTag: {
 			name: 'ScTag',
 			fields: [
-				{ fieldname: 'id', fieldtype: 'PrimaryKey', label: 'ID' },
-				{ fieldname: 'label', fieldtype: 'Data', label: 'Label' },
-				{ fieldname: 'item_id', fieldtype: 'Data', label: 'Item ID' },
+				{ kind: 'field', fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
+				{ kind: 'field', fieldname: 'label', component: 'ATextInput', label: 'Label' },
+				{ kind: 'field', fieldname: 'item_id', component: 'ATextInput', label: 'Item ID' },
 			],
 		},
 		ScNote: {
 			name: 'ScNote',
 			fields: [
-				{ fieldname: 'id', fieldtype: 'PrimaryKey', label: 'ID' },
-				{ fieldname: 'body', fieldtype: 'Data', label: 'Body' },
-				{ fieldname: 'item_id', fieldtype: 'Data', label: 'Item ID' },
+				{ kind: 'field', fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
+				{ kind: 'field', fieldname: 'body', component: 'ATextInput', label: 'Body' },
+				{ kind: 'field', fieldname: 'item_id', component: 'ATextInput', label: 'Item ID' },
 			],
 		},
 		ScWidget: {
 			name: 'ScWidget',
 			fields: [
-				{ fieldname: 'id', fieldtype: 'PrimaryKey', label: 'ID' },
+				{ fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
 				{
 					fieldname: 'basicInfo_fieldset',
-					fieldtype: 'Fieldset',
+
 					component: 'AFieldset',
 					schema: [
-						{ fieldname: 'itemName', fieldtype: 'Data', label: 'Name' },
-						{ fieldname: 'itemColor', fieldtype: 'Data', label: 'Color' },
+						{ fieldname: 'itemName', component: 'ATextInput', label: 'Name' },
+						{ fieldname: 'itemColor', component: 'ATextInput', label: 'Color' },
 					],
 				},
 			],
@@ -87,22 +86,24 @@ beforeAll(async () => {
 		ScPart: {
 			name: 'ScPart',
 			fields: [
-				{ fieldname: 'id', fieldtype: 'PrimaryKey', label: 'ID' },
-				{ fieldname: 'gadget_id', fieldtype: 'Data', label: 'Gadget ID' },
-				{ fieldname: 'partName', fieldtype: 'Data', label: 'Part Name' },
+				{ fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
+				{ fieldname: 'gadget_id', component: 'ATextInput', label: 'Gadget ID' },
+				{ fieldname: 'partName', component: 'ATextInput', label: 'Part Name' },
 			],
 		},
 		ScGadget: {
 			name: 'ScGadget',
 			fields: [
-				{ fieldname: 'id', fieldtype: 'PrimaryKey', label: 'ID' },
+				{ fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
 				{
 					fieldname: 'info_fieldset',
-					fieldtype: 'Fieldset',
+
 					component: 'AFieldset',
 					schema: [
-						{ fieldname: 'gadgetName', fieldtype: 'Data', label: 'Name' },
-						{ fieldname: 'parts', fieldtype: 'Link', options: 'ScPart' },
+						{ fieldname: 'gadgetName', component: 'ATextInput', label: 'Name' },
+						// An expanding reverse relation (noneOrMany + backlink), not a forward FK:
+						// there is no `parts` column on sc_gadget, so it must not reach the SELECT.
+						{ fieldname: 'parts', component: 'ATable', doctype: 'ScPart' },
 					],
 				},
 			],
@@ -114,6 +115,22 @@ beforeAll(async () => {
 					fetch: { method: 'sync' as const },
 				},
 			},
+		},
+		ScProduct: {
+			name: 'ScProduct',
+			fields: [
+				{ fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
+				{
+					fieldname: 'info_fieldset',
+
+					component: 'AFieldset',
+					schema: [
+						{ fieldname: 'productName', component: 'ATextInput', label: 'Name' },
+						{ fieldname: 'price', component: 'ANumericInput', label: 'Price' },
+						{ fieldname: 'priceDisplay', component: 'ATextInput', computed: true, label: 'Formatted Price' },
+					],
+				},
+			],
 		},
 	})
 
@@ -132,7 +149,6 @@ beforeAll(async () => {
 
 afterAll(async () => {
 	clearRegistry()
-	clearHandlers()
 	await pool?.end()
 	await releasePgService?.()
 })
@@ -289,18 +305,29 @@ describe('lazy link retrieval via stonecropRecords', { tags: ['integration', 'gr
 // ===========================================================================
 
 describe('stonecropAction', { tags: ['integration', 'graphql'] }, () => {
-	it('calls a registered handler and returns success', async () => {
-		registerHandler('submit', async _args => ({ submitted: true }))
-
+	it('applies the guarded transition when the action is allowed in the current state', async () => {
+		// ScItem 1 ('Alpha') seeds in 'Draft'; submit is allowed from Draft and lands in Active.
 		const result = await runQuery(
-			`mutation { stonecropAction(doctype: "ScItem", action: "submit", args: { id: "1" }) { success data } }`
+			`mutation { stonecropAction(doctype: "ScItem", action: "submit", args: [{ id: "1" }]) { success data error } }`
 		)
 		const action = (result as any).data?.stonecropAction
 		expect(action?.success).toBe(true)
-		expect(action?.data?.submitted).toBe(true)
+		expect(action?.data?.state).toBe('Active')
+		expect(action?.error).toBeNull()
 	})
 
-	it('returns error for an unregistered handler', async () => {
+	it('rejects the action when the current state is not in allowedStates', async () => {
+		// ScItem 2 ('Beta') seeds in 'Active'; submit is only allowed from 'Draft', so the
+		// server must refuse the transition — the guard is the security boundary, not the client.
+		const result = await runQuery(
+			`mutation { stonecropAction(doctype: "ScItem", action: "submit", args: [{ id: "2" }]) { success error } }`
+		)
+		const action = (result as any).data?.stonecropAction
+		expect(action?.success).toBe(false)
+		expect(action?.error).toContain('not allowed')
+	})
+
+	it('returns error for an unknown action', async () => {
 		const result = await runQuery(
 			`mutation { stonecropAction(doctype: "ScItem", action: "nonexistent") { success error } }`
 		)
@@ -376,5 +403,31 @@ describe('Fieldset container fields', { tags: ['integration', 'graphql'] }, () =
 		const records = (result as any).data?.stonecropRecords
 		expect(records?.data[0].gadgetName).toBe('Gadget One')
 		expect(records?.data[0].parts).toBeUndefined()
+	})
+
+	it('excludes Display fields inside a fieldset from the SELECT column list', async () => {
+		// ScProduct has a `priceDisplay` Display field inside a Fieldset.
+		// sc_product has no price_display column — if collectColumns includes Display fields,
+		// this throws "column price_display does not exist".
+		const result = await runQuery(`query { stonecropRecords(doctype: "ScProduct") { data } }`)
+		expect((result as any).errors).toBeUndefined()
+		const records = (result as any).data?.stonecropRecords
+		expect(records?.data).toHaveLength(1)
+		expect(records?.data[0].productName).toBe('Product A')
+		expect(records?.data[0].price).toBe(100)
+		expect(records?.data[0].priceDisplay).toBeUndefined()
+	})
+
+	it('rejects a filter by fieldset container name', async () => {
+		// basicInfo_fieldset is a Fieldset container in ScWidget — it has no DB column.
+		// knownFields must be built from flattenFields so container names are never
+		// accepted as filter fields. Before the fix, this would attempt a WHERE clause
+		// on a non-existent column.
+		const result = await runQuery(
+			`query { stonecropRecords(doctype: "ScWidget", filters: { basicInfo_fieldset: "anything" }) { data } }`
+		)
+		const errors = (result as any).errors
+		expect(errors).toBeDefined()
+		expect(errors[0].message).toContain('Unknown filter field')
 	})
 })

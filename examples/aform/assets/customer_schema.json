@@ -4,22 +4,25 @@
 	"fields": [
 		{
 			"fieldname": "customer_name",
-			"fieldtype": "Data",
 			"component": "ATextInput",
 			"label": "Customer Name",
 			"required": true
 		},
 		{
 			"fieldname": "email",
-			"fieldtype": "Data",
 			"component": "ATextInput",
 			"label": "Email"
 		},
 		{
 			"fieldname": "phone",
-			"fieldtype": "Data",
 			"component": "ATextInput",
 			"label": "Phone"
+		},
+		{
+			"fieldname": "address",
+			"component": "AForm",
+			"doctype": "address",
+			"label": "Address"
 		}
 	],
 	"links": {

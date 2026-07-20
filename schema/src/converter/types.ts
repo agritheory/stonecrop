@@ -7,8 +7,20 @@
 import type { IntrospectionQuery } from 'graphql'
 import type { GraphQLObjectType, GraphQLField } from 'graphql'
 
-import type { FieldMeta } from '../field'
-import type { FieldTemplate } from '../fieldtype'
+import type { ValueField } from '../field'
+
+/**
+ * The component a GraphQL scalar maps to.
+ *
+ * A one-property interface rather than a bare string so `customScalars` stays extensible: an
+ * override is a `Partial<FieldTemplate>`, and widening this later does not change that signature.
+ *
+ * @public
+ */
+export interface FieldTemplate {
+	/** The Vue component name to render fields of this scalar type (e.g. `'ATextInput'`). */
+	component: string
+}
 
 /**
  * Input source for the GraphQL schema converter.
@@ -52,23 +64,23 @@ export interface GraphQLConversionOptions {
 	 * ```typescript
 	 * {
 	 *   SalesOrder: {
-	 *     totalAmount: { fieldtype: 'Currency', component: 'ACurrencyInput' }
+	 *     totalAmount: { component: 'ANumericInput', align: 'right' }
 	 *   }
 	 * }
 	 * ```
 	 */
-	typeOverrides?: Record<string, Record<string, Partial<FieldMeta>>>
+	typeOverrides?: Record<string, Record<string, Omit<Partial<ValueField>, 'kind'>>>
 
 	/**
-	 * Map custom or non-standard GraphQL scalar types to Stonecrop field types.
+	 * Map custom or non-standard GraphQL scalar types to the component that renders them.
 	 * Merged with the built-in scalar maps (GQL_SCALAR_MAP + WELL_KNOWN_SCALARS).
 	 * User-provided entries take highest precedence.
 	 *
 	 * @example
 	 * ```typescript
 	 * {
-	 *   MyCustomMoney: { component: 'ACurrencyInput', fieldtype: 'Currency' },
-	 *   PostGISPoint: { component: 'ATextInput', fieldtype: 'Data' }
+	 *   MyCustomMoney: { component: 'ANumericInput' },
+	 *   PostGISPoint: { component: 'ATextInput' }
 	 * }
 	 * ```
 	 */
@@ -115,7 +127,7 @@ export interface GraphQLConversionOptions {
 		fieldName: string,
 		field: GraphQLField<unknown, unknown>,
 		parentType: GraphQLObjectType
-	) => Partial<FieldMeta> | null
+	) => Omit<Partial<ValueField>, 'kind'> | null
 
 	/**
 	 * Include `_graphqlType` and `_unmapped` metadata on converted fields.
@@ -130,9 +142,7 @@ export interface GraphQLConversionOptions {
  *
  * @public
  */
-export interface GraphQLConversionFieldMeta extends Omit<FieldMeta, 'fieldtype'> {
-	/** Semantic field type - optional for link fields which don't have a fieldtype */
-	fieldtype?: string
+export interface GraphQLConversionFieldMeta extends ValueField {
 	/** Original GraphQL type name (for debugging/reference) */
 	_graphqlType?: string
 	/** Marks fields that couldn't be automatically mapped */
@@ -147,8 +157,8 @@ export interface GraphQLConversionFieldMeta extends Omit<FieldMeta, 'fieldtype'>
  * @public
  */
 export interface ConvertedGraphQLDoctype extends Omit<DoctypeMeta, 'fields'> {
-	/** Field definitions with optional GraphQL conversion metadata */
-	fields: GraphQLConversionFieldMeta[]
+	/** Field definitions — GraphQL conversion metadata stripped; same shape as DoctypeMeta.fields */
+	fields: ValueField[]
 	/** Original GraphQL type name (for debugging/reference) */
 	_graphqlTypeName?: string
 }

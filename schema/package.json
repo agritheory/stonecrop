@@ -1,34 +1,39 @@
 {
 	"name": "@stonecrop/schema",
-	"version": "0.13.6",
+	"version": "0.15.0",
+	"description": "Stonecrop schema definitions and validation tooling",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/agritheory/stonecrop",
+		"directory": "schema"
+	},
+	"sideEffects": false,
 	"type": "module",
-	"types": "./dist/schema.d.ts",
 	"exports": {
 		".": {
 			"types": "./dist/schema.d.ts",
 			"import": "./dist/index.js"
 		}
 	},
-	"files": [
-		"dist"
-	],
+	"types": "./dist/schema.d.ts",
 	"bin": {
 		"stonecrop-schema": "./dist/cli.js"
 	},
-	"description": "Stonecrop schema definitions and validation tooling",
-	"sideEffects": false,
+	"files": [
+		"dist"
+	],
 	"scripts": {
 		"_phase:build": "heft build && vite build && rushx docs",
-		"prepublishOnly": "heft build && vite build && rushx docs",
 		"build": "heft build && vite build && rushx docs",
 		"docs": "bash ../common/scripts/run-docs.sh schema",
 		"lint": "oxlint",
 		"lint:fix": "oxlint --fix",
+		"prepublishOnly": "heft build && vite build && rushx docs",
 		"preview": "vite preview",
 		"test": "vitest run --coverage.enabled false",
-		"test:watch": "vitest watch",
 		"test:coverage": "vitest run --coverage",
-		"test:ui": "vitest --ui"
+		"test:ui": "vitest --ui",
+		"test:watch": "vitest watch"
 	},
 	"dependencies": {
 		"graphql": "^16.14.0",

@@ -117,7 +117,10 @@ export interface PostGraphileConfig {
 	/** GraphQL endpoint URL (default: '/graphql/') */
 	url?: string
 
-	/** Whether to enable GraphiQL IDE (default: true in dev, false in prod) */
+	/**
+	 * Serve the GraphiQL IDE (Ruru) and its static assets. Defaults to `true` in
+	 * development and `false` in production.
+	 */
 	graphiql?: boolean
 }
 
@@ -177,7 +180,10 @@ export interface SchemaConfig {
 	/** GraphQL endpoint URL (default: '/graphql/') */
 	url?: string
 
-	/** Whether to enable GraphiQL IDE (default: true in dev, false in prod) */
+	/**
+	 * Serve the GraphiQL IDE (Ruru) and its static assets. Defaults to `true` in
+	 * development and `false` in production.
+	 */
 	graphiql?: boolean
 }
 

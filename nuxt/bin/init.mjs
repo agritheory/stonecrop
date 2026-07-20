@@ -10,10 +10,13 @@
 import { defineCommand, runMain } from 'citty'
 import consola from 'consola'
 import { createJiti } from 'jiti'
+import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
+
+const { version } = JSON.parse(readFileSync(join(__dirname, '..', 'package.json'), 'utf8'))
 
 // Use jiti to load TypeScript CLI code
 const jiti = createJiti(import.meta.url, {
@@ -26,7 +29,7 @@ const { runInstaller } = await jiti.import(join(__dirname, '..', 'src', 'cli', '
 const main = defineCommand({
 	meta: {
 		name: 'stonecrop-nuxt',
-		version: '0.6.3',
+		version,
 		description: 'Install Stonecrop modules into your Nuxt project',
 	},
 	subCommands: {

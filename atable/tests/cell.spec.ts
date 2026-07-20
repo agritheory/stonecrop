@@ -15,7 +15,6 @@ describe('table cell component', { tags: ['component'] }, () => {
 		{
 			label: 'Home Page',
 			name: 'home_page',
-			fieldtype: 'Data',
 			align: 'left',
 			edit: false,
 			width: '35ch',
@@ -24,7 +23,6 @@ describe('table cell component', { tags: ['component'] }, () => {
 		{
 			label: 'HTTP Method',
 			name: 'http_method',
-			fieldtype: 'Data',
 			align: 'left',
 			edit: true,
 			width: '20ch',
@@ -32,7 +30,6 @@ describe('table cell component', { tags: ['component'] }, () => {
 		{
 			label: 'Report Date',
 			name: 'report_date',
-			fieldtype: 'Date',
 			align: 'center',
 			edit: true,
 			width: '25ch',

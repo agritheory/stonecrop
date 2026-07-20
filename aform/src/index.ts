@@ -4,7 +4,6 @@ import { install as installATable } from '@stonecrop/atable'
 import type { App } from 'vue'
 
 import ACheckbox from './components/form/ACheckbox.vue'
-import AComboBox from './components/form/AComboBox.vue'
 import ADate from './components/form/ADate.vue'
 import ADropdown from './components/form/ADropdown.vue'
 import ADatePicker from './components/form/ADatePicker.vue'
@@ -31,7 +30,6 @@ function install(app: App /* options */) {
 	app.use(installATable) // Install ATable components for use within AForm
 
 	app.component('ACheckbox', ACheckbox)
-	app.component('AComboBox', AComboBox)
 	app.component('ADate', ADate)
 	app.component('ADropdown', ADropdown)
 	app.component('ADatePicker', ADatePicker)
@@ -50,7 +48,6 @@ function install(app: App /* options */) {
 
 export {
 	ACheckbox,
-	AComboBox,
 	ADate,
 	ATextboxInput,
 	ADropdown,

@@ -69,8 +69,8 @@ registerTransitionAction('saveDocument', async (context) => {
 const todoDoctype = new Doctype(
   'Todo',
   List([
-    { fieldname: 'title', fieldtype: 'Data', label: 'Title' },
-    { fieldname: 'description', fieldtype: 'Text', label: 'Description' },
+    { fieldname: 'title', component: 'ATextInput', label: 'Title' },
+    { fieldname: 'description', component: 'ATextarea', label: 'Description' },
   ]),
   {
     id: 'todoWorkflow',

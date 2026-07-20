@@ -9,6 +9,9 @@ import { GraphQLResolveInfo } from 'graphql';
 import { PureAbility } from '@casl/ability';
 
 // @public
+export type AbilityBuilderFunction = (user?: Context['user']) => Promise<AppAbility> | AppAbility;
+
+// @public
 export interface AbilityResponse {
     ability: any;
     message: string;
@@ -25,8 +28,6 @@ export interface Context {
     user?: User;
 }
 
-// Warning: (ae-forgotten-export) The symbol "AbilityBuilderFunction" needs to be exported by the entry point index.d.ts
-//
 // @public
 export const createAbility: (user?: Context["user"], builderFn?: AbilityBuilderFunction) => Promise<AppAbility>;
 

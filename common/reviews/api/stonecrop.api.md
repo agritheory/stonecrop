@@ -8,16 +8,17 @@ import type { AnyStateNodeConfig } from 'xstate';
 import { Component } from 'vue';
 import { ComputedRef } from 'vue';
 import type { DataClient } from '@stonecrop/schema';
-import type { FieldMeta } from '@stonecrop/schema';
+import type { DoctypeField } from '@stonecrop/schema';
 import type { LinkDeclaration } from '@stonecrop/schema';
 import { List } from 'immutable';
 import { Map as Map_2 } from 'immutable';
 import { Plugin as Plugin_2 } from 'vue';
 import { Ref } from 'vue';
+import type { ResolvedField } from '@stonecrop/aform';
 import { Router } from 'vue-router';
-import type { SchemaTypes } from '@stonecrop/aform';
 import { Store } from 'pinia';
 import { StoreDefinition } from 'pinia';
+import type { TriggerDefinition } from '@stonecrop/schema';
 import type { UnknownMachineConfig } from 'xstate';
 import type { WorkflowMeta } from '@stonecrop/schema';
 
@@ -54,6 +55,9 @@ export interface BatchOperation {
 }
 
 // @public
+export type ClientHandlerApi = Record<string, unknown>;
+
+// @public
 export function createHST(target: any, doctype: string): HSTNode;
 
 // @public
@@ -80,18 +84,19 @@ export class Doctype {
     static fromObject(config: DoctypeConfig): Doctype;
     getActionMeta(actionName: string): {
         label: string;
-        handler: string;
         requiredFields?: string[];
         allowedStates?: string[];
-        confirm?: boolean;
-        args?: Record<string, unknown>;
     } | undefined;
     getActionsObject(): Record<string, string[]>;
+    getAvailableCommands(currentState?: string): Array<{
+        name: string;
+    }>;
     getAvailableTransitions(currentState: string): Array<{
         name: string;
         targetState: string;
     }>;
-    getSchemaArray(): SchemaTypes[];
+    getSchemaArray(): DoctypeField[];
+    getTriggers(): Record<string, TriggerDefinition> | undefined;
     readonly links?: Record<string, LinkDeclaration>;
     get name(): string;
     readonly schema: ImmutableDoctype['schema'];
@@ -103,12 +108,15 @@ export class Doctype {
 export type DoctypeConfig = {
     name: string;
     slug?: string;
-    fields?: (SchemaTypes | FieldMeta)[];
+    fields?: DoctypeField[];
     links?: Record<string, LinkDeclaration>;
     workflow?: UnknownMachineConfig | WorkflowMeta;
     actions?: Record<string, string[]>;
     inherits?: string;
 };
+
+// @public
+export function executeClientHandler(code: string, api?: ClientHandlerApi): Promise<unknown>;
 
 // @public
 export type FieldAction = FieldActionFunction | FieldActionString;
@@ -262,7 +270,7 @@ export type HSTStonecropReturn = BaseStonecropReturn & {
     handleHSTChange: (changeData: HSTChangeData) => void;
     hstStore: Ref<HSTNode | undefined>;
     formData: Ref<Record<string, any>>;
-    resolvedSchema: Ref<SchemaTypes[]>;
+    resolvedSchema: Ref<ResolvedField[]>;
     initializeNestedData: (path: string, doctype: Doctype) => void;
     fetchNestedData: (path: string, doctype: Doctype, recordId: string, options?: {
         includeNested?: boolean | string[];
@@ -281,10 +289,9 @@ export type HSTStonecropReturn = BaseStonecropReturn & {
 
 // @public
 export type ImmutableDoctype = {
-    readonly schema?: List<SchemaTypes>;
+    readonly schema?: List<DoctypeField>;
     readonly workflow?: UnknownMachineConfig | AnyStateNodeConfig | WorkflowMeta;
     readonly actions?: Map_2<string, string[]>;
-    readonly links?: Record<string, LinkDeclaration>;
 };
 
 // @public
@@ -308,14 +315,6 @@ export type LazyLink = {
 
 // @public
 export function markOperationIrreversible(operationId: string | undefined, reason: string): void;
-
-// @public
-export type MutableDoctype = {
-    doctype?: string;
-    schema?: SchemaTypes[];
-    workflow?: UnknownMachineConfig | AnyStateNodeConfig | WorkflowMeta;
-    actions?: Record<string, string[]>;
-};
 
 // @public
 export type OperationLogAPI = {
@@ -347,7 +346,6 @@ export type OperationLogAPI = {
 
 // @public
 export interface OperationLogConfig {
-    autoSyncInterval?: number;
     enableCrossTabSync?: boolean;
     enablePersistence?: boolean;
     maxOperations?: number;
@@ -399,10 +397,10 @@ export class Registry {
     }>;
     getDoctype(slug: string): Doctype | undefined;
     getMeta?: (routeContext: RouteContext) => Doctype | Promise<Doctype>;
-    initializeRecord(schema: SchemaTypes[]): Record<string, any>;
+    initializeRecord(schema: ResolvedField[]): Record<string, any>;
     readonly name: string;
     readonly registry: Record<string, Doctype>;
-    resolveSchema(doctype: Doctype, visited?: Set<string>): SchemaTypes[];
+    resolveSchema(doctype: Doctype, visited?: Set<string>): ResolvedField[];
     static _root: Registry;
     readonly router?: Router;
 }
@@ -414,15 +412,9 @@ export interface RouteContext {
 }
 
 // @public
-export type Schema = {
-    doctype: string;
-    schema: List<SchemaTypes>;
-};
-
-// @public
 export class SchemaValidator {
     constructor(options?: ValidatorOptions);
-    validate(doctype: string, schema: List<SchemaTypes> | SchemaTypes[] | undefined, workflow?: AnyStateNodeConfig, actions?: Map_2<string, string[]> | Map<string, string[]>, links?: Record<string, LinkDeclaration>): ValidationResult;
+    validate(doctype: string, schema: List<DoctypeField> | DoctypeField[] | undefined, workflow?: AnyStateNodeConfig, actions?: Map_2<string, string[]> | Map<string, string[]>, links?: Record<string, LinkDeclaration>): ValidationResult;
 }
 
 // @public
@@ -499,7 +491,6 @@ export class Stonecrop {
     config: Ref<    {
     maxOperations?: number | undefined;
     enableCrossTabSync?: boolean | undefined;
-    autoSyncInterval?: number | undefined;
     enablePersistence?: boolean | undefined;
     persistenceKeyPrefix?: string | undefined;
     userId?: string | undefined;
@@ -507,7 +498,6 @@ export class Stonecrop {
     }, OperationLogConfig | {
     maxOperations?: number | undefined;
     enableCrossTabSync?: boolean | undefined;
-    autoSyncInterval?: number | undefined;
     enablePersistence?: boolean | undefined;
     persistenceKeyPrefix?: string | undefined;
     userId?: string | undefined;
@@ -585,7 +575,6 @@ export class Stonecrop {
     config: Ref<    {
     maxOperations?: number | undefined;
     enableCrossTabSync?: boolean | undefined;
-    autoSyncInterval?: number | undefined;
     enablePersistence?: boolean | undefined;
     persistenceKeyPrefix?: string | undefined;
     userId?: string | undefined;
@@ -593,7 +582,6 @@ export class Stonecrop {
     }, OperationLogConfig | {
     maxOperations?: number | undefined;
     enableCrossTabSync?: boolean | undefined;
-    autoSyncInterval?: number | undefined;
     enablePersistence?: boolean | undefined;
     persistenceKeyPrefix?: string | undefined;
     userId?: string | undefined;
@@ -671,7 +659,6 @@ export class Stonecrop {
     config: Ref<    {
     maxOperations?: number | undefined;
     enableCrossTabSync?: boolean | undefined;
-    autoSyncInterval?: number | undefined;
     enablePersistence?: boolean | undefined;
     persistenceKeyPrefix?: string | undefined;
     userId?: string | undefined;
@@ -679,7 +666,6 @@ export class Stonecrop {
     }, OperationLogConfig | {
     maxOperations?: number | undefined;
     enableCrossTabSync?: boolean | undefined;
-    autoSyncInterval?: number | undefined;
     enablePersistence?: boolean | undefined;
     persistenceKeyPrefix?: string | undefined;
     userId?: string | undefined;
@@ -703,7 +689,7 @@ export class Stonecrop {
     getSnapshot: () => OperationLogSnapshot;
     markIrreversible: (operationId: string, reason: string) => void;
     logAction: (doctype: string, actionName: string, recordIds?: string[], result?: "success" | "failure" | "pending", error?: string) => string;
-    }, "undo" | "redo" | "configure" | "addOperation" | "startBatch" | "commitBatch" | "cancelBatch" | "clear" | "getOperationsFor" | "getSnapshot" | "markIrreversible" | "logAction">>;
+    }, "clear" | "undo" | "redo" | "configure" | "addOperation" | "startBatch" | "commitBatch" | "cancelBatch" | "getOperationsFor" | "getSnapshot" | "markIrreversible" | "logAction">>;
     getRecord(doctype: string | Doctype, recordId: string): Promise<void>;
     getRecordById(doctype: string | Doctype, recordId: string): HSTNode | undefined;
     getRecordIds(doctype: string | Doctype): string[];
@@ -899,7 +885,6 @@ currentIndex: Ref<number, number>;
 config: Ref<    {
 maxOperations?: number | undefined;
 enableCrossTabSync?: boolean | undefined;
-autoSyncInterval?: number | undefined;
 enablePersistence?: boolean | undefined;
 persistenceKeyPrefix?: string | undefined;
 userId?: string | undefined;
@@ -907,7 +892,6 @@ operationFilter?: ((operation: HSTOperation) => boolean) | undefined;
 }, OperationLogConfig | {
 maxOperations?: number | undefined;
 enableCrossTabSync?: boolean | undefined;
-autoSyncInterval?: number | undefined;
 enablePersistence?: boolean | undefined;
 persistenceKeyPrefix?: string | undefined;
 userId?: string | undefined;
@@ -985,7 +969,6 @@ currentIndex: Ref<number, number>;
 config: Ref<    {
 maxOperations?: number | undefined;
 enableCrossTabSync?: boolean | undefined;
-autoSyncInterval?: number | undefined;
 enablePersistence?: boolean | undefined;
 persistenceKeyPrefix?: string | undefined;
 userId?: string | undefined;
@@ -993,7 +976,6 @@ operationFilter?: ((operation: HSTOperation) => boolean) | undefined;
 }, OperationLogConfig | {
 maxOperations?: number | undefined;
 enableCrossTabSync?: boolean | undefined;
-autoSyncInterval?: number | undefined;
 enablePersistence?: boolean | undefined;
 persistenceKeyPrefix?: string | undefined;
 userId?: string | undefined;
@@ -1071,7 +1053,6 @@ currentIndex: Ref<number, number>;
 config: Ref<    {
 maxOperations?: number | undefined;
 enableCrossTabSync?: boolean | undefined;
-autoSyncInterval?: number | undefined;
 enablePersistence?: boolean | undefined;
 persistenceKeyPrefix?: string | undefined;
 userId?: string | undefined;
@@ -1079,7 +1060,6 @@ operationFilter?: ((operation: HSTOperation) => boolean) | undefined;
 }, OperationLogConfig | {
 maxOperations?: number | undefined;
 enableCrossTabSync?: boolean | undefined;
-autoSyncInterval?: number | undefined;
 enablePersistence?: boolean | undefined;
 persistenceKeyPrefix?: string | undefined;
 userId?: string | undefined;
@@ -1103,7 +1083,7 @@ getOperationsFor: (doctype: string, recordId?: string) => HSTOperation[];
 getSnapshot: () => OperationLogSnapshot;
 markIrreversible: (operationId: string, reason: string) => void;
 logAction: (doctype: string, actionName: string, recordIds?: string[], result?: "success" | "failure" | "pending", error?: string) => string;
-}, "undo" | "redo" | "configure" | "addOperation" | "startBatch" | "commitBatch" | "cancelBatch" | "clear" | "getOperationsFor" | "getSnapshot" | "markIrreversible" | "logAction">>;
+}, "clear" | "undo" | "redo" | "configure" | "addOperation" | "startBatch" | "commitBatch" | "cancelBatch" | "getOperationsFor" | "getSnapshot" | "markIrreversible" | "logAction">>;
 
 // @public
 export function useStonecrop(): BaseStonecropReturn | HSTStonecropReturn;
@@ -1119,7 +1099,71 @@ export function useStonecrop(options: {
 export function useUndoRedoShortcuts(hstStore: HSTNode, enabled?: boolean): void;
 
 // @public
-export function validateSchema(doctype: string, schema: List<SchemaTypes> | SchemaTypes[] | undefined, registry: Registry, workflow?: AnyStateNodeConfig, actions?: Map_2<string, string[]> | Map<string, string[]>): ValidationResult;
+export const useValidationStore: StoreDefinition<"stonecrop-validation", Pick<{
+errors: Ref<    {
+trigger: string;
+field: string;
+message: string;
+}[], ValidationError[] | {
+trigger: string;
+field: string;
+message: string;
+}[]>;
+isValid: ComputedRef<boolean>;
+errorsByField: ComputedRef<Record<string, string[]>>;
+errorsFor: (field: string) => string[];
+setError: (trigger: string, field: string, message: string) => void;
+clearTrigger: (trigger: string) => void;
+clearAll: () => void;
+validateField: (triggers: Record<string, TriggerDefinition>, changedField: string, record: Record<string, unknown>) => Promise<void>;
+validateRecord: (triggers: Record<string, TriggerDefinition>, record: Record<string, unknown>) => Promise<void>;
+}, "errors">, Pick<{
+errors: Ref<    {
+trigger: string;
+field: string;
+message: string;
+}[], ValidationError[] | {
+trigger: string;
+field: string;
+message: string;
+}[]>;
+isValid: ComputedRef<boolean>;
+errorsByField: ComputedRef<Record<string, string[]>>;
+errorsFor: (field: string) => string[];
+setError: (trigger: string, field: string, message: string) => void;
+clearTrigger: (trigger: string) => void;
+clearAll: () => void;
+validateField: (triggers: Record<string, TriggerDefinition>, changedField: string, record: Record<string, unknown>) => Promise<void>;
+validateRecord: (triggers: Record<string, TriggerDefinition>, record: Record<string, unknown>) => Promise<void>;
+}, "isValid" | "errorsByField">, Pick<{
+errors: Ref<    {
+trigger: string;
+field: string;
+message: string;
+}[], ValidationError[] | {
+trigger: string;
+field: string;
+message: string;
+}[]>;
+isValid: ComputedRef<boolean>;
+errorsByField: ComputedRef<Record<string, string[]>>;
+errorsFor: (field: string) => string[];
+setError: (trigger: string, field: string, message: string) => void;
+clearTrigger: (trigger: string) => void;
+clearAll: () => void;
+validateField: (triggers: Record<string, TriggerDefinition>, changedField: string, record: Record<string, unknown>) => Promise<void>;
+validateRecord: (triggers: Record<string, TriggerDefinition>, record: Record<string, unknown>) => Promise<void>;
+}, "errorsFor" | "setError" | "clearTrigger" | "clearAll" | "validateField" | "validateRecord">>;
+
+// @public
+export function validateSchema(doctype: string, schema: List<DoctypeField> | DoctypeField[] | undefined, registry: Registry, workflow?: AnyStateNodeConfig, actions?: Map_2<string, string[]> | Map<string, string[]>): ValidationResult;
+
+// @public
+export interface ValidationError {
+    field: string;
+    message: string;
+    trigger: string;
+}
 
 // @public
 export interface ValidationIssue {

@@ -4,23 +4,20 @@
 	"fields": [
 		{
 			"fieldname": "name",
-			"fieldtype": "Data",
 			"component": "ATextInput",
 			"label": "Task Name",
 			"required": true
 		},
 		{
 			"fieldname": "description",
-			"fieldtype": "Data",
 			"component": "ATextInput",
 			"label": "Description"
 		},
 		{
 			"fieldname": "recipe",
-			"fieldtype": "Link",
 			"component": "AForm",
 			"label": "Recipe",
-			"options": "recipe",
+			"doctype": "recipe",
 			"readOnly": true
 		}
 	],

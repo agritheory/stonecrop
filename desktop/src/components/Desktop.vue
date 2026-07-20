@@ -4,7 +4,11 @@
 		<ActionSet :elements="actionElements" @action-click="handleActionClick" />
 
 		<!-- Main content using AForm -->
-		<AForm v-if="currentViewSchema.length > 0" v-model:data="currentViewData" :schema="currentViewSchema" />
+		<AForm
+			v-if="currentViewSchema.length > 0"
+			v-model:data="currentViewData"
+			:schema="currentViewSchema"
+			:errors="fieldErrors" />
 		<div v-else-if="!stonecrop" class="loading"><p>Initializing Stonecrop...</p></div>
 		<div v-else class="loading">
 			<p>Loading {{ currentView }} data...</p>
@@ -31,10 +35,10 @@
 </template>
 
 <script setup lang="ts">
-import { useStonecrop } from '@stonecrop/stonecrop'
-import { AForm, type AFormLinkNavigator, type SchemaTypes } from '@stonecrop/aform'
+import { useStonecrop, useValidationStore } from '@stonecrop/stonecrop'
+import { AForm, type AFormLinkNavigator, type ResolvedField, type ResolvedTable } from '@stonecrop/aform'
 import type { ColumnSchema } from '@stonecrop/schema'
-import { computed, onMounted, provide, ref, unref, watch } from 'vue'
+import { computed, onMounted, onUnmounted, provide, ref, unref, watch } from 'vue'
 
 import ActionSet from './ActionSet.vue'
 import SheetNav from './SheetNav.vue'
@@ -49,7 +53,12 @@ import type {
 	LoadRecordEventPayload,
 } from '../types'
 
-const props = defineProps<{
+const {
+	availableDoctypes = [],
+	routeAdapter,
+	confirmFn,
+	recordIdField,
+} = defineProps<{
 	availableDoctypes?: string[]
 	/**
 	 * Pluggable router adapter. When provided, Desktop uses these functions for all
@@ -98,19 +107,63 @@ const emit = defineEmits<{
 	'load-record': [payload: LoadRecordEventPayload]
 }>()
 
-const { availableDoctypes = [] } = props
-
 const { stonecrop } = useStonecrop()
+
+// Field-validation store (advisory, client-side). Pinia is a declared peerDependency, kept external
+// in this package's build (rollupOptions), so `useValidationStore()` resolves the host app's single
+// active Pinia directly — the old `getCurrentInstance().$pinia` workaround for the bundled-Pinia bug
+// is no longer needed. Still guarded: validation is optional and Desktop predates it, so a host that
+// mounts Desktop without Pinia disables validation gracefully instead of crashing on mount.
+let validationStore: ReturnType<typeof useValidationStore> | null = null
+try {
+	validationStore = useValidationStore()
+} catch {
+	validationStore = null
+}
+
+// Inline field errors handed to AForm. Only surfaced in the record form view (currentView is
+// defined below); empty elsewhere so a previous record's errors never bleed into a list view.
+const fieldErrors = computed<Record<string, string[]>>(() =>
+	currentView.value === 'record' ? (validationStore?.errorsByField ?? {}) : {}
+)
 
 // State
 const loading = ref(false)
 const commandPaletteOpen = ref(false)
 
-// HST-based form data management - field triggers are handled automatically by HST
-
-// Computed property that reads from HST store for reactive form data
+// Form/list data management — each view produces a different data shape.
+// List views (doctypes, records) return table row data keyed by fieldname.
+// Record view returns HST record fields for two-way binding.
 const currentViewData = computed<Record<string, any>>({
 	get() {
+		// Doctypes list — rows come from availableDoctypes prop (reactive via availableDoctypes)
+		if (currentView.value === 'doctypes') {
+			return {
+				doctypes_table:
+					availableDoctypes?.map(doctype => ({
+						id: doctype,
+						doctype,
+						display_name: formatDoctypeName(doctype),
+						record_count: getRecordCount(doctype),
+						actions: 'View Records',
+					})) ?? [],
+			}
+		}
+
+		// Records list — rows come from HST store (reactive because HST is Vue reactive())
+		if (currentView.value === 'records') {
+			const idField = recordIdField || 'id'
+			return {
+				records_table: getRecords().map(record =>
+					Object.assign({}, record, {
+						id: record[idField] || record.id || '',
+						actions: 'Edit | Delete',
+					})
+				),
+			}
+		}
+
+		// Record form — read single record from HST
 		if (!stonecrop.value || !currentDoctype.value || !currentRecordId.value) {
 			return {}
 		}
@@ -120,25 +173,84 @@ const currentViewData = computed<Record<string, any>>({
 			// Return a plain shallow copy so AForm mutations don't propagate directly into
 			// the HST reactive object, which would bypass field-trigger diffing and cause
 			// setupDeepReactivity to fire triggers for all fields on every keystroke.
-			return { ...record?.get('') }
+			const flat: Record<string, any> = { ...record?.get('') }
+
+			// AFieldset receives data[fieldsetFieldname] as its data prop, so the fieldset's
+			// children must be grouped under the fieldset key. The server returns flat SQL rows,
+			// so we nest fieldset children here before AForm renders them.
+			const doctype = stonecrop.value.registry.registry[currentDoctype.value]
+			if (doctype) {
+				for (const field of doctype.getSchemaArray()) {
+					if (field.kind === 'fieldset') {
+						const nested: Record<string, any> = {}
+						for (const child of field.schema) {
+							if (child.fieldname) nested[child.fieldname] = flat[child.fieldname]
+						}
+						flat[field.fieldname] = nested
+					}
+				}
+			}
+			return flat
 		} catch {
 			return {}
 		}
 	},
 	set(newData: Record<string, any>) {
+		// List views are read-only from AForm's perspective — HST writes only apply to record form
+		if (currentView.value !== 'record') return
 		if (!stonecrop.value || !currentDoctype.value || !currentRecordId.value) {
 			return
 		}
 
 		try {
-			// Only update fields that actually changed to avoid triggering actions for unchanged fields
+			// AForm emits nested data for fieldsets: { fieldsetKey: { childA: val } }.
+			// HST and the server both expect flat rows, so flatten fieldset values back before writing.
+			const doctype = stonecrop.value.registry.registry[currentDoctype.value]
+			const fieldsetNames = new Set<string>()
+			if (doctype) {
+				for (const field of doctype.getSchemaArray()) {
+					if (field.kind === 'fieldset') {
+						fieldsetNames.add(field.fieldname)
+					}
+				}
+			}
+
+			// Two-pass flatten: non-fieldset keys first, then fieldset children.
+			// Fieldset children must be applied last — AForm may emit stale flat copies
+			// of fieldset children alongside the updated nested value, and the nested
+			// value must win regardless of key insertion order.
+			const flatData: Record<string, any> = {}
+			const fieldsetValues: Record<string, any>[] = []
+			for (const [key, value] of Object.entries(newData)) {
+				if (fieldsetNames.has(key) && value && typeof value === 'object' && !Array.isArray(value)) {
+					fieldsetValues.push(value)
+				} else {
+					flatData[key] = value
+				}
+			}
+			for (const nestedValue of fieldsetValues) {
+				Object.assign(flatData, nestedValue)
+			}
+
+			// Only update fields that actually changed. Never write undefined — AForm may emit
+			// schema fields absent from the record as undefined; writing them would silently
+			// clear values that exist in HST. Explicit null is allowed (intentional clear).
 			const hstStore = stonecrop.value.getStore()
-			for (const [fieldname, value] of Object.entries(newData)) {
+			const changedFields: string[] = []
+			for (const [fieldname, value] of Object.entries(flatData)) {
+				if (value === undefined) continue
 				const fieldPath = `${currentDoctype.value}.${currentRecordId.value}.${fieldname}`
 				const currentValue = hstStore.has(fieldPath) ? hstStore.get(fieldPath) : undefined
 				if (currentValue !== value) {
 					hstStore.set(fieldPath, value)
+					changedFields.push(fieldname)
 				}
+			}
+
+			// Advisory field-validation runs on the fields that actually changed (honors each
+			// trigger's `on` set). Driven here, after the HST writes, so HST stays value-only.
+			if (changedFields.length > 0) {
+				driveFieldValidation(changedFields)
 			}
 		} catch (error) {
 			console.warn('HST update failed:', error)
@@ -146,12 +258,30 @@ const currentViewData = computed<Record<string, any>>({
 	},
 })
 
+// Advisory field-validation: run the doctype's triggers for the fields that changed on this edit.
+// Snapshots the post-edit record as a plain, flat object so validators read siblings read-only
+// (the core store freezes it). Fire-and-forget — the reactive error store repaints AForm on resolve.
+function driveFieldValidation(changedFields: string[]) {
+	if (!validationStore || !stonecrop.value || !currentDoctype.value || !currentRecordId.value) return
+
+	const doctype = stonecrop.value.registry.getDoctype(currentDoctype.value)
+	const triggers = doctype?.getTriggers()
+	if (!triggers || Object.keys(triggers).length === 0) return
+
+	const node = stonecrop.value.getRecordById(currentDoctype.value, currentRecordId.value)
+	const record = { ...(node?.get('') as Record<string, unknown>) }
+
+	for (const field of changedFields) {
+		void validationStore.validateField(triggers, field, record)
+	}
+}
+
 // Computed properties for current route context.
 // When a routeAdapter is provided it takes full precedence over the registry's internal router.
-const route = computed(() => (props.routeAdapter ? null : unref(stonecrop.value?.registry.router?.currentRoute)))
-const router = computed(() => (props.routeAdapter ? null : stonecrop.value?.registry.router))
+const route = computed(() => (routeAdapter ? null : unref(stonecrop.value?.registry.router?.currentRoute)))
+const router = computed(() => (routeAdapter ? null : stonecrop.value?.registry.router))
 const currentDoctype = computed(() => {
-	if (props.routeAdapter) return props.routeAdapter.getCurrentDoctype()
+	if (routeAdapter) return routeAdapter.getCurrentDoctype()
 	if (!route.value) return ''
 
 	// First check if we have actualDoctype in meta (from registered routes)
@@ -175,7 +305,7 @@ const currentDoctype = computed(() => {
 
 // The route doctype for display and navigation (e.g., 'todo')
 const routeDoctype = computed(() => {
-	if (props.routeAdapter) return props.routeAdapter.getCurrentDoctype()
+	if (routeAdapter) return routeAdapter.getCurrentDoctype()
 	if (!route.value) return ''
 
 	// Check route meta first
@@ -198,7 +328,7 @@ const routeDoctype = computed(() => {
 })
 
 const currentRecordId = computed(() => {
-	if (props.routeAdapter) return props.routeAdapter.getCurrentRecordId()
+	if (routeAdapter) return routeAdapter.getCurrentRecordId()
 	if (!route.value) return ''
 
 	// For named routes, use params.recordId
@@ -218,7 +348,7 @@ const isNewRecord = computed(() => currentRecordId.value?.startsWith('new-'))
 
 // Determine current view based on route
 const currentView = computed(() => {
-	if (props.routeAdapter) return props.routeAdapter.getCurrentView()
+	if (routeAdapter) return routeAdapter.getCurrentView()
 	if (!route.value) {
 		return 'doctypes'
 	}
@@ -271,8 +401,10 @@ const getAvailableTransitions = () => {
 
 		// Each transition emits an 'action' event. The host app decides what to do
 		// (call the server, trigger an FSM actor, update HST, etc.).
-		return transitions.map(({ name, targetState }) => ({
-			label: `${name} (→ ${targetState})`,
+		return transitions.map(({ name }) => ({
+			// Prefer the workflow action's human-readable label (WorkflowMeta format);
+			// fall back to the raw transition name for XState workflows with no action meta.
+			label: doctype.getActionMeta(name)?.label ?? name,
 			action: () => {
 				emit('action', {
 					name,
@@ -284,6 +416,39 @@ const getAvailableTransitions = () => {
 		}))
 	} catch (error) {
 		console.warn('Error getting available transitions:', error)
+		return []
+	}
+}
+
+// Helper: stateless Commands available for the current record — side-effect actions that
+// change no workflow state. Surfaced in the same Actions dropdown as transitions; each emits
+// the same 'action' event, so the host's handler runs a Command's clientHandler identically.
+const getAvailableCommands = () => {
+	if (!stonecrop.value || !currentDoctype.value || !currentRecordId.value) {
+		return []
+	}
+
+	try {
+		const doctype = stonecrop.value.registry.getDoctype(currentDoctype.value)
+		if (!doctype?.workflow) return []
+
+		const currentState = stonecrop.value.getRecordState(currentDoctype.value, currentRecordId.value)
+		const commands = doctype.getAvailableCommands(currentState)
+		const recordData = currentViewData.value || {}
+
+		return commands.map(({ name }) => ({
+			label: doctype.getActionMeta(name)?.label ?? name,
+			action: () => {
+				emit('action', {
+					name,
+					doctype: currentDoctype.value,
+					recordId: currentRecordId.value,
+					data: recordData,
+				})
+			},
+		}))
+	} catch (error) {
+		console.warn('Error getting available commands:', error)
 		return []
 	}
 }
@@ -300,14 +465,14 @@ const actionElements = computed(() => {
 			})
 			break
 		case 'record': {
-			// Populate the Actions dropdown with every FSM transition available in the
-			// record's current state.  Clicking a transition emits 'action'.
-			const transitionActions = getAvailableTransitions()
-			if (transitionActions.length > 0) {
+			// Populate the Actions dropdown with every FSM transition AND stateless Command
+			// available in the record's current state.  Clicking either emits 'action'.
+			const recordActions = [...getAvailableTransitions(), ...getAvailableCommands()]
+			if (recordActions.length > 0) {
 				elements.push({
 					type: 'dropdown',
 					label: 'Actions',
-					actions: transitionActions,
+					actions: recordActions,
 				})
 			}
 			break
@@ -417,8 +582,8 @@ const getRecordCount = (doctype: string): number => {
 // or falls back to the registry's Vue Router instance.
 const doNavigate = async (target: NavigationTarget) => {
 	emit('navigate', target)
-	if (props.routeAdapter) {
-		await props.routeAdapter.navigate(target)
+	if (routeAdapter) {
+		await routeAdapter.navigate(target)
 	} else {
 		if (target.view === 'doctypes') {
 			await router.value?.push('/')
@@ -445,66 +610,71 @@ const createNewRecord = async () => {
 	await doNavigate({ view: 'record', doctype: routeDoctype.value, recordId: newId })
 }
 
-// Schema generator functions - moved here to be available to computed properties
-const getDoctypesSchema = (): SchemaTypes[] => {
-	if (!availableDoctypes.length) return []
+// Flatten Fieldset containers into individual columns for list/table views.
+// A Fieldset groups form fields visually but has no DB column; its children are the
+// actual data fields and should appear as flat columns in a list view.
+const flattenFieldsets = (fields: ResolvedField[]): ResolvedField[] => {
+	const result: ResolvedField[] = []
+	for (const field of fields) {
+		if (field.kind === 'fieldset') {
+			result.push(...flattenFieldsets(field.schema))
+		} else {
+			result.push(field)
+		}
+	}
+	return result
+}
 
-	const rows = availableDoctypes.map(doctype => ({
-		id: doctype,
-		doctype,
-		display_name: formatDoctypeName(doctype),
-		record_count: getRecordCount(doctype),
-		actions: 'View Records',
-	}))
+// Schema generator functions - moved here to be available to computed properties
+const getDoctypesSchema = (): ResolvedField[] => {
+	if (!availableDoctypes?.length) return []
 
 	return [
 		{
+			kind: 'table' as const,
 			fieldname: 'doctypes_table',
 			component: 'ATable',
-			columns: [
+			label: 'Doctypes',
+			schema: [
 				{
+					fieldname: 'doctype',
 					label: 'Doctype',
-					name: 'doctype',
-					fieldtype: 'Data',
-					align: 'left',
+					component: 'ATextInput',
+					align: 'left' as const,
 					edit: false,
 					width: '20ch',
 				},
 				{
+					fieldname: 'display_name',
 					label: 'Name',
-					name: 'display_name',
-					fieldtype: 'Data',
-					align: 'left',
+					component: 'ATextInput',
+					align: 'left' as const,
 					edit: false,
 					width: '30ch',
 				},
 				{
+					fieldname: 'record_count',
 					label: 'Records',
-					name: 'record_count',
-					fieldtype: 'Int',
-					align: 'center',
+					component: 'ANumericInput',
+					align: 'center' as const,
 					edit: false,
 					width: '15ch',
 				},
 				{
+					fieldname: 'actions',
 					label: 'Actions',
-					name: 'actions',
-					fieldtype: 'Data',
-					align: 'center',
+					component: 'ATextInput',
+					align: 'center' as const,
 					edit: false,
 					width: '20ch',
 				},
 			],
-			config: {
-				view: 'list',
-				fullWidth: true,
-			},
-			rows,
-		},
+			config: { view: 'list' as const, fullWidth: true },
+		} satisfies ResolvedTable,
 	]
 }
 
-const getRecordsSchema = (): SchemaTypes[] => {
+const getRecordsSchema = (): ResolvedField[] => {
 	if (!currentDoctype.value) return []
 	if (!stonecrop.value) return []
 
@@ -518,32 +688,21 @@ const getRecordsSchema = (): SchemaTypes[] => {
 	// If no schema is available, let the template fallback handle the loading state
 	if (schema.length === 0) return []
 
-	const records = getRecords()
-	const idField = props.recordIdField || 'id'
-
-	const rows = records.map(record =>
-		Object.assign({}, record, {
-			id: record[idField] || record.id || '',
-			actions: 'Edit | Delete',
-		})
-	)
-
 	return [
 		{
+			kind: 'table' as const,
 			fieldname: 'records_table',
 			component: 'ATable',
-			kind: 'table',
-			schema: [...(schema as ColumnSchema[]), { fieldname: 'actions', label: 'Actions', fieldtype: 'Data' }],
-			config: {
-				view: 'list',
-				fullWidth: true,
-			},
-			rows,
-		},
+			schema: [
+				...(flattenFieldsets(schema) as ColumnSchema[]),
+				{ fieldname: 'actions', label: 'Actions', component: 'ATextInput' },
+			],
+			config: { view: 'list' as const, fullWidth: true },
+		} satisfies ResolvedTable,
 	]
 }
 
-const getRecordFormSchema = (): SchemaTypes[] => {
+const getRecordFormSchema = (): ResolvedField[] => {
 	if (!currentDoctype.value) return []
 	if (!stonecrop.value) return []
 
@@ -605,8 +764,8 @@ const handleDelete = async (recordId?: string) => {
 	const targetRecordId = recordId || currentRecordId.value
 	if (!targetRecordId) return
 
-	const confirmed = props.confirmFn
-		? await props.confirmFn('Are you sure you want to delete this record?')
+	const confirmed = confirmFn
+		? await confirmFn('Are you sure you want to delete this record?')
 		: confirm('Are you sure you want to delete this record?')
 
 	if (confirmed) {
@@ -634,7 +793,7 @@ const getRecordIdFromRow = (rowElement: HTMLTableRowElement): string | null => {
 	const record = records[rowIndex]
 	if (!record) return null
 
-	const idField = props.recordIdField || 'id'
+	const idField = recordIdField || 'id'
 	return record[idField] || record.id || null
 }
 
@@ -711,6 +870,12 @@ watch(
 	{ immediate: true }
 )
 
+// Clear advisory validation errors when the target record changes, so errors from a previously
+// edited record never bleed into a newly opened one.
+watch([currentDoctype, currentRecordId], () => {
+	validationStore?.clearAll()
+})
+
 // Stonecrop reactive computed properties update automatically when the instance
 // becomes available — no manual watcher needed.
 
@@ -765,25 +930,21 @@ provide('aformLinkResolver', async (doctypeSlug: string, id: string): Promise<st
 	}
 })
 
+const handleKeydown = (event: KeyboardEvent) => {
+	if ((event.ctrlKey || event.metaKey) && event.key === 'k') {
+		event.preventDefault()
+		commandPaletteOpen.value = true
+	}
+	if (event.key === 'Escape' && commandPaletteOpen.value) {
+		commandPaletteOpen.value = false
+	}
+}
+
 onMounted(() => {
-	// Add keyboard shortcuts
-	const handleKeydown = (event: KeyboardEvent) => {
-		// Ctrl+K or Cmd+K to open command palette
-		if ((event.ctrlKey || event.metaKey) && event.key === 'k') {
-			event.preventDefault()
-			commandPaletteOpen.value = true
-		}
-		// Escape to close command palette
-		if (event.key === 'Escape' && commandPaletteOpen.value) {
-			commandPaletteOpen.value = false
-		}
-	}
-
 	document.addEventListener('keydown', handleKeydown)
+})
 
-	// Cleanup event listener on unmount
-	return () => {
-		document.removeEventListener('keydown', handleKeydown)
-	}
+onUnmounted(() => {
+	document.removeEventListener('keydown', handleKeydown)
 })
 </script>

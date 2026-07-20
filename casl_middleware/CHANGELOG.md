@@ -1,6 +1,60 @@
 # Change Log - @stonecrop/casl-middleware
 
-This log was last generated on Thu, 04 Jun 2026 09:33:09 GMT and should not be manually modified.
+This log was last generated on Fri, 17 Jul 2026 11:29:31 GMT and should not be manually modified.
+
+## 0.15.0
+Fri, 17 Jul 2026 11:29:31 GMT
+
+### Patches
+
+- sort package JSON
+
+## 0.14.0
+Fri, 17 Jul 2026 07:01:54 GMT
+
+_Version update only_
+
+## 0.13.14
+Wed, 01 Jul 2026 08:35:25 GMT
+
+_Version update only_
+
+## 0.13.13
+Thu, 18 Jun 2026 12:32:33 GMT
+
+_Version update only_
+
+## 0.13.12
+Tue, 16 Jun 2026 10:50:50 GMT
+
+_Version update only_
+
+## 0.13.11
+Mon, 15 Jun 2026 06:52:28 GMT
+
+_Version update only_
+
+## 0.13.10
+Thu, 11 Jun 2026 10:23:31 GMT
+
+_Version update only_
+
+## 0.13.9
+Mon, 08 Jun 2026 13:12:21 GMT
+
+### Minor changes
+
+- update missing import
+
+## 0.13.8
+Thu, 04 Jun 2026 12:04:15 GMT
+
+_Version update only_
+
+## 0.13.7
+Thu, 04 Jun 2026 11:09:19 GMT
+
+_Version update only_
 
 ## 0.13.6
 Thu, 04 Jun 2026 09:33:09 GMT

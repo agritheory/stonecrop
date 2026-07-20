@@ -7,12 +7,18 @@ on:
     types:
       - closed
 
+permissions:
+  contents: read
+
 jobs:
   publish-npm:
     if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
 
     permissions:
+      # Must be job-level: a job's permissions block replaces the workflow's, it does
+      # not merge. Without it OIDC fails and publishes anonymously, reported as a 404.
+      id-token: write
       contents: write
       packages: write
 
@@ -20,12 +26,13 @@ jobs:
       - uses: actions/checkout@v6
         name: Checkout
 
+      # No registry-url: it exports NPM_CONFIG_USERCONFIG, which shadows the .npmrc
+      # that "rush publish" installs in common/temp/publish-home.
       - uses: actions/setup-node@v6
         name: Install Node.js
         with:
           node-version: 24
-          cache-dependency-path: '**/config/rush/pnpm-lock.yaml'
-          registry-url: https://registry.npmjs.org/
+          package-manager-cache: false
 
       - name: Set Git User
         run: |
@@ -59,21 +66,27 @@ jobs:
       - name: Install Rush
         run: node common/scripts/install-run-rush.js install
 
-      - name: Update Autoinstallers
+      - name: Install Autoinstallers
         run: |
-          node common/scripts/install-run-rush.js update-autoinstaller --name doc-tools
-          node common/scripts/install-run-rush.js update-autoinstaller --name rush-plugins
+          node common/scripts/install-run-rush.js install-autoinstaller --name doc-tools
+          node common/scripts/install-run-rush.js install-autoinstaller --name rush-plugins
 
       - name: Build Stonecrop
         run: node common/scripts/install-run-rush.js rebuild
 
+      # Must run before the version bump: a bad trusted publisher only surfaces
+      # mid-publish, after the bump is pushed, leaving lockstep packages depending on
+      # siblings that were never published. Publishes nothing.
+      - name: Validate Trusted Publishing
+        run: bash common/scripts/validate-trusted-publishing.sh
+
       - name: Bump Version for Packages
         run: node common/scripts/install-run-rush.js version --bump --target-branch development --ignore-git-hooks
 
+      # No auth token: pnpm exchanges the job's id-token for a registry credential.
+      # Each package needs a trusted publisher on npmjs.com naming this workflow.
       - name: Publish Packages via Rush
         run: node common/scripts/install-run-rush.js publish --apply --publish --include-all --version-policy stonecrop --target-branch development --add-commit-details --set-access-level=public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Save Rush Build Cache
         if: always()

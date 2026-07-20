@@ -1,21 +1,37 @@
-// Field types
+// Interaction mode
+export type { InteractionMode } from './mode'
+
+// Table authoring types
+export { TableViewConfig } from './table'
+
+// Component → semantic category — the single source of "what kind of value does this component render"
 export {
-	StonecropFieldType,
-	BUILTIN_FIELD_TYPES,
-	TYPE_MAP,
-	getDefaultComponent,
-	resolveComponent,
-	isBuiltinFieldType,
-	type BuiltinFieldType,
-	type FieldTemplate,
-} from './fieldtype'
+	CANONICAL_COMPONENTS,
+	COMPONENT_CATEGORY,
+	COMPONENT_LINK_EXPANSION,
+	componentCategory,
+	componentLinkExpansion,
+	resolveLinkRenderMode,
+	type ComponentCategory,
+	type LinkExpansion,
+	type LinkRenderMode,
+} from './component-meta'
 
 // Field schema
-export type { FieldMeta, FieldOptions, FieldValidation } from './field'
+export type { DoctypeField, FieldOptions, FieldValidation, FieldsetField, TableField, ValueField } from './field'
+export {
+	DoctypeFieldSchema,
+	FieldsetFieldSchema,
+	normalizeFieldKind,
+	TableFieldSchema,
+	ValueFieldSchema,
+} from './field'
 
 // Doctype schema
+// ActionDefinition and WorkflowMeta are exported as values (Zod schemas) so consumers can use
+// .safeParse(), .shape, etc. at runtime. TypeScript types are inferred from the same exports.
+export { ActionDefinition, TriggerDefinition, WorkflowLayout, WorkflowMeta, isActionAllowedInState } from './doctype'
 export type {
-	ActionDefinition,
 	Cardinality,
 	CustomFetch,
 	DataClient,
@@ -30,7 +46,6 @@ export type {
 	LinkDeclaration,
 	SerializedFunction,
 	SyncFetch,
-	WorkflowMeta,
 } from './doctype'
 
 // Validation helpers

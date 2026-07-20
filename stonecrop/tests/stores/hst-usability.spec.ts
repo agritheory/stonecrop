@@ -6,7 +6,6 @@ import type { UnknownMachineConfig } from 'xstate'
 
 import ATextInput from '../../../aform/src/components/form/ATextInput.vue'
 import ANumericInput from '../../../aform/src/components/form/ANumericInput.vue'
-import type { SchemaTypes } from '../../../aform/src/types'
 import { useStonecrop } from '../../src/composables/stonecrop'
 import Doctype from '../../src/doctype'
 import Registry from '../../src/registry'
@@ -24,11 +23,11 @@ describe('HST Edge Cases & Performance', { tags: ['unit'] }, () => {
 
 		// Complex schema with nested fields and special cases
 		const complexSchema = List([
-			{ fieldname: 'name', fieldtype: 'Data', label: 'Name', component: 'ATextInput' },
-			{ fieldname: 'metadata', fieldtype: 'JSON', label: 'Metadata', component: 'ATextInput' },
-			{ fieldname: 'config', fieldtype: 'JSON', label: 'Config', component: 'ATextInput' },
-			{ fieldname: 'nested_data', fieldtype: 'JSON', label: 'Nested Data', component: 'ATextInput' },
-		] as SchemaTypes[])
+			{ kind: 'field', fieldname: 'name', label: 'Name', component: 'ATextInput' },
+			{ kind: 'field', fieldname: 'metadata', label: 'Metadata', component: 'ATextInput' },
+			{ kind: 'field', fieldname: 'config', label: 'Config', component: 'ATextInput' },
+			{ kind: 'field', fieldname: 'nested_data', label: 'Nested Data', component: 'ATextInput' },
+		])
 
 		const mockWorkflow: UnknownMachineConfig = {
 			id: 'complex',

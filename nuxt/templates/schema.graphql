@@ -10,16 +10,45 @@ scalar JSON
 """
 Field metadata from doctype schema
 """
-type FieldMeta {
+type StonecropField {
+	kind: String!
 	fieldname: String!
-	fieldtype: String!
+	component: String
+	primaryKey: Boolean
+	computed: Boolean
+	language: String
+	doctype: String
 	label: String
+	width: String
+	align: String
+	edit: Boolean
+	mask: String
+	format: String
+	mode: String
+	options: JSON
 	required: Boolean
 	readOnly: Boolean
-	options: JSON
+	hidden: Boolean
 	default: JSON
-	width: String
 	validation: JSON
+	cardinality: String
+	source: String
+}
+
+"""
+A single workflow action definition (`name` is the action's key in
+WorkflowMeta.actions; the other fields mirror ActionDefinition in
+@stonecrop/schema)
+"""
+type WorkflowAction {
+	name: String!
+	label: String!
+	requiredFields: [String!]
+	allowedStates: [String!]
+	nextState: String
+	stateless: Boolean
+	selfTransition: Boolean
+	clientHandler: String
 }
 
 """
@@ -27,7 +56,7 @@ Workflow metadata with states and actions
 """
 type WorkflowMeta {
 	states: [String!]
-	actions: JSON
+	actions: [WorkflowAction!]
 }
 
 """
@@ -36,7 +65,7 @@ Complete doctype metadata
 type DoctypeMeta {
 	name: String!
 	slug: String
-	fields: [FieldMeta!]!
+	fields: [StonecropField!]!
 	workflow: WorkflowMeta
 	inherits: String
 }
@@ -54,6 +83,7 @@ type HealthStatus {
 type RecordResult {
 	data: JSON
 	doctype: String!
+	unknownLinks: [String!]
 }
 
 type RecordsResult {
@@ -84,6 +114,11 @@ type Query {
 	getMeta(doctype: String!): DoctypeMeta
 
 	"""
+	Get metadata for a doctype (used by StonecropClient)
+	"""
+	stonecropMeta(doctype: String!): DoctypeMeta
+
+	"""
 	Get all registered doctype metadata
 	"""
 	stonecropAllMeta: [DoctypeMeta!]!
@@ -91,7 +126,7 @@ type Query {
 	"""
 	Get a single record by doctype and ID
 	"""
-	stonecropRecord(doctype: String!, id: String!): RecordResult
+	stonecropRecord(doctype: String!, id: String!, options: JSON): RecordResult
 
 	"""
 	Get multiple records with optional filtering

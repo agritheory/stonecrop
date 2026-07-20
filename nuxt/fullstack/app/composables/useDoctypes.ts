@@ -8,26 +8,26 @@ import type { DoctypeConfig } from '@stonecrop/stonecrop'
 
 import { useNuxtApp } from 'nuxt/app'
 
-const modules = import.meta.glob<DoctypeConfig>('../doctypes/*.json', {
+const modules = import.meta.glob<DoctypeConfig>('../../doctypes/*.json', {
 	eager: true,
 	import: 'default',
 })
 
 const doctypeMap = new Map<string, DoctypeConfig>()
 for (const [path, doctype] of Object.entries(modules)) {
-	const slug = path.split('/').pop()!.replace('.json', '')
+	const filename = path.split('/').pop()!.replace('.json', '')
+	// Use the same slug computation as Doctype.slug so URL lookups match map keys
+	const slug = filename
+		.replace(/([a-z])([A-Z])/g, '$1-$2')
+		.replace(/[\s_]+/g, '-')
+		.toLowerCase()
 	doctypeMap.set(slug, doctype)
 }
 
 export { doctypeMap }
 
 export function useDoctypeConfig(slug: string): DoctypeConfig | undefined {
-	// Try exact match first, then lowercase
-	let config = doctypeMap.get(slug)
-	if (!config) {
-		config = doctypeMap.get(slug.toLowerCase())
-	}
-	return config
+	return doctypeMap.get(slug)
 }
 
 export function useDoctypeList(): Array<{ slug: string; name: string }> {

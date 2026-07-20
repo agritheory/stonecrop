@@ -1,21 +1,22 @@
 {
 	"name": "@stonecrop/stonecrop",
-	"version": "0.13.6",
-	"license": "MIT",
-	"type": "module",
-	"author": {
-		"name": "Tyler Matteson",
-		"email": "tyler@agritheory.com"
+	"version": "0.15.0",
+	"description": "Schema-driven framework with XState workflows and HST state management",
+	"bugs": {
+		"url": "https://github.com/agritheory/stonecrop/issues"
 	},
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/agritheory/stonecrop",
 		"directory": "stonecrop"
 	},
-	"bugs": {
-		"url": "https://github.com/agritheory/stonecrop/issues"
+	"license": "MIT",
+	"author": {
+		"name": "Tyler Matteson",
+		"email": "tyler@agritheory.com"
 	},
-	"types": "./dist/stonecrop.d.ts",
+	"sideEffects": false,
+	"type": "module",
 	"exports": {
 		".": {
 			"types": "./dist/stonecrop.d.ts",
@@ -23,23 +24,23 @@
 		},
 		"./types": "./dist/src/types/index.d.ts"
 	},
+	"types": "./dist/stonecrop.d.ts",
 	"files": [
 		"dist/*",
 		"src/*"
 	],
-	"sideEffects": false,
 	"scripts": {
 		"_phase:build": "heft build && vite build && rushx docs",
-		"prepublishOnly": "heft build && vite build && rushx docs",
 		"build": "heft build && vite build && rushx docs",
 		"docs": "bash ../common/scripts/run-docs.sh stonecrop",
 		"lint": "oxlint",
 		"lint:fix": "oxlint --fix",
+		"prepublishOnly": "heft build && vite build && rushx docs",
 		"preview": "vite preview",
 		"test": "vitest run --coverage.enabled false",
-		"test:watch": "vitest watch",
 		"test:coverage": "vitest run --coverage",
-		"test:ui": "vitest --ui"
+		"test:ui": "vitest --ui",
+		"test:watch": "vitest watch"
 	},
 	"dependencies": {
 		"@stonecrop/schema": "workspace:*",
@@ -48,11 +49,6 @@
 		"pinia-shared-state": "^1.0.1",
 		"pinia-xstate": "^3.0.0",
 		"xstate": "^5.25.0"
-	},
-	"peerDependencies": {
-		"pinia": "^3.0.4",
-		"vue": "^3.5.33",
-		"vue-router": "^5.0.6"
 	},
 	"devDependencies": {
 		"@microsoft/api-documenter": "^7.30.5",
@@ -73,11 +69,15 @@
 		"vue": "^3.5.33",
 		"vue-router": "^5.0.6"
 	},
-	"description": "Schema-driven framework with XState workflows and HST state management",
-	"publishConfig": {
-		"access": "public"
+	"peerDependencies": {
+		"pinia": "^3.0.4",
+		"vue": "^3.5.33",
+		"vue-router": "^5.0.6"
 	},
 	"engines": {
 		"node": ">=24.0.0"
+	},
+	"publishConfig": {
+		"access": "public"
 	}
 }

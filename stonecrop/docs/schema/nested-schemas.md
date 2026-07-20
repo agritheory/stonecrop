@@ -25,7 +25,7 @@ Stonecrop uses **ancestor/descendant** terminology for relationships:
 
 ### Phase 1: Schema Definition
 
-Relationships are declared in the `links` object on `DoctypeMeta`. Link fields (`fieldtype: 'Link'`) are placed in the `fields` array at the position where they should render.
+Relationships are declared in the `links` object on `DoctypeMeta`. Link fields (marked with a `doctype` target) are placed in the `fields` array at the position where they should render.
 
 **customer_schema.json:**
 
@@ -34,10 +34,10 @@ Relationships are declared in the `links` object on `DoctypeMeta`. Link fields (
   "name": "Customer",
   "slug": "customer",
   "fields": [
-    { "fieldname": "customer_name", "fieldtype": "Data", "label": "Customer Name", "component": "ATextInput" },
-    { "fieldname": "email", "fieldtype": "Data", "label": "Email", "component": "ATextInput" },
-    { "fieldname": "address", "fieldtype": "Link", "label": "Address", "options": "address", "component": "AForm" },
-    { "fieldname": "orders", "fieldtype": "Link", "label": "Orders", "options": "sales-order", "component": "ATable" }
+    { "fieldname": "customer_name", "label": "Customer Name", "component": "ATextInput" },
+    { "fieldname": "email", "label": "Email", "component": "ATextInput" },
+    { "fieldname": "address", "label": "Address", "doctype": "address", "component": "AForm" },
+    { "fieldname": "orders", "label": "Orders", "doctype": "sales-order", "component": "ATable" }
   ],
   "links": {
     "address": {
@@ -63,11 +63,11 @@ Relationships are declared in the `links` object on `DoctypeMeta`. Link fields (
   "name": "Address",
   "slug": "address",
   "fields": [
-    { "fieldname": "street", "fieldtype": "Data", "label": "Street", "component": "ATextInput" },
-    { "fieldname": "city", "fieldtype": "Data", "label": "City", "component": "ATextInput" },
-    { "fieldname": "state", "fieldtype": "Data", "label": "State", "component": "ATextInput" },
-    { "fieldname": "zip_code", "fieldtype": "Data", "label": "Zip Code", "component": "ATextInput" },
-    { "fieldname": "customer", "fieldtype": "Link", "label": "Customer", "options": "customer", "component": "AForm", "readOnly": true }
+    { "fieldname": "street", "label": "Street", "component": "ATextInput" },
+    { "fieldname": "city", "label": "City", "component": "ATextInput" },
+    { "fieldname": "state", "label": "State", "component": "ATextInput" },
+    { "fieldname": "zip_code", "label": "Zip Code", "component": "ATextInput" },
+    { "fieldname": "customer", "label": "Customer", "doctype": "customer", "component": "AForm", "readOnly": true }
   ],
   "links": {
     "customer": {
@@ -104,7 +104,7 @@ const links = registry.getDescendantLinks('customer')
 
 // Get links on other doctypes that target this one
 const ancestors = registry.getAncestorLinks('address')
-// [{ fieldname: 'customer', target: 'address', cardinality: 'one', backlink: 'address', doctype: 'customer' }]
+// [{ fieldname: 'address', target: 'address', cardinality: 'one', backlink: 'customer', doctype: 'customer' }]
 ```
 
 ### Phase 3: Schema Resolution
@@ -118,13 +118,13 @@ const resolvedSchema = registry.resolveSchema(customerDoctype)
 
 // address link resolves to:
 // {
+//   kind: 'link',
 //   fieldname: 'address',
-//   label: 'address',
-//   cardinality: 'one',
+//   label: 'Address',
 //   component: 'AForm',
 //   schema: [ /* address fields */ ]
 // }
-// AForm detects `'schema' in field` (without kind: 'table') and renders a nested AForm.
+// AForm narrows on `kind === 'link'` (or `'fieldset'`) with a non-empty schema and renders a nested AForm.
 ```
 
 **1:many links** (`noneOrMany`, `atLeastOne`) — embed child schema for an inline table:
@@ -132,12 +132,12 @@ const resolvedSchema = registry.resolveSchema(customerDoctype)
 ```typescript
 // orders link resolves to:
 // {
-//   fieldname: 'orders',
-//   label: 'orders',
-//   cardinality: 'noneOrMany',
-//   component: 'ATable',
 //   kind: 'table',
-//   schema: [ /* sales-order fields as ColumnSchema[] */ ]
+//   fieldname: 'orders',
+//   label: 'Orders',
+//   component: 'ATable',
+//   schema: [ /* sales-order fields as ColumnSchema[] */ ],
+//   config: { view: 'list' }
 // }
 // AForm detects `kind === 'table'` and renders an ATable with :schema bound to the embedded
 // schema array. ATable calls schemaToColumns() internally — no TableColumn objects needed.
@@ -301,17 +301,18 @@ AForm can also work without the Registry by manually embedding schemas:
 <script setup lang="ts">
 import { ref } from 'vue'
 import { AForm } from '@stonecrop/aform'
-import type { SchemaTypes } from '@stonecrop/aform'
+import type { ResolvedField } from '@stonecrop/aform'
 
-// Manually embed the child schema
-const addressSchema: SchemaTypes[] = [
-  { fieldname: 'street', fieldtype: 'Data', label: 'Street', component: 'ATextInput' },
-  { fieldname: 'city', fieldtype: 'Data', label: 'City', component: 'ATextInput' },
+// Manually embed the child schema (use ResolvedField[] for AForm's :schema prop)
+const addressSchema: ResolvedField[] = [
+  { kind: 'field', fieldname: 'street', label: 'Street', component: 'ATextInput' },
+  { kind: 'field', fieldname: 'city', label: 'City', component: 'ATextInput' },
 ]
 
-const customerSchema: SchemaTypes[] = [
-  { fieldname: 'customer_name', fieldtype: 'Data', label: 'Customer Name', component: 'ATextInput' },
+const customerSchema: ResolvedField[] = [
+  { kind: 'field', fieldname: 'customer_name', label: 'Customer Name', component: 'ATextInput' },
   {
+    kind: 'link',
     fieldname: 'address',
     component: 'AForm',
     label: 'Address',

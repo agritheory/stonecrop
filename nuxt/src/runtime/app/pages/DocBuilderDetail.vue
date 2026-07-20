@@ -1,77 +1,108 @@
 <template>
-	<div class="docbuilder-container">
-		<div v-if="loading" class="loading">Loading...</div>
-		<div v-else class="docbuilder-wrapper">
-			<div class="docbuilder-header">
-				<h1>{{ doctypeName }}</h1>
-				<div class="docbuilder-actions">
-					<button class="btn-secondary" :disabled="validating" @click="validateSchema">
-						{{ validating ? 'Validating...' : 'Validate Schema' }}
-					</button>
-					<button class="btn-primary" :disabled="saving" @click="saveToDisk">
-						{{ saving ? 'Saving...' : 'Save to Disk' }}
-					</button>
+	<div class="docbuilder-page">
+		<div v-if="loading" style="padding: 2rem; text-align: center">Loading...</div>
+
+		<div v-else>
+			<!-- Validation Panel -->
+			<div v-if="validationIssues.length > 0 && !warningsDismissed" class="validation-panel">
+				<div v-if="errorCount > 0" class="validation-errors">
+					<strong>⚠️ {{ errorCount }} Error(s) — Cannot Save</strong>
+					<ul>
+						<li v-for="(issue, idx) in validationIssues.filter(i => i.severity === 'error')" :key="`err-${idx}`">
+							<code v-if="issue.fieldname">{{ issue.fieldname }}:</code> {{ issue.message }}
+						</li>
+					</ul>
+				</div>
+				<div v-if="warningCount > 0" class="validation-warnings">
+					<strong>⚡ {{ warningCount }} Warning(s)</strong>
+					<button class="dismiss-button" @click="warningsDismissed = true">Dismiss</button>
 				</div>
 			</div>
 
-			<!-- Validation Result -->
-			<div v-if="validationResult" class="message-box" :class="validationResult.success ? 'success' : 'error'">
-				<div class="message-header">
-					<span>{{ validationResult.success ? '✓ Schema is valid!' : '✗ Validation failed' }}</span>
-					<button class="dismiss-btn" @click="validationResult = null">×</button>
-				</div>
-				<ul v-if="!validationResult.success" class="error-list">
-					<li v-for="(error, idx) in validationResult.errors" :key="idx">
-						<code>{{ error.path.join('.') || 'root' }}</code
-						>: {{ error.message }}
-					</li>
-				</ul>
-			</div>
-
-			<!-- Save Message -->
-			<div v-if="saveMessage" class="message-box" :class="saveMessage.type">
-				<span>{{ saveMessage.text }}</span>
-				<button class="dismiss-btn" @click="saveMessage = null">×</button>
-			</div>
-
-			<!-- Fields -->
-			<section class="fields-section">
-				<h2>Fields ({{ doctype?.schema?.length || 0 }})</h2>
-				<div v-for="field in doctype?.schema" :key="field.fieldname" class="field-item">
-					<div class="field-header">
-						<span class="field-name">{{ field.fieldname }}</span>
-						<span class="field-type">{{ field.fieldtype }}</span>
-					</div>
-					<div class="field-label">{{ field.label }}</div>
-					<div v-if="field.required || field.readOnly" class="field-badges">
-						<span v-if="field.required" class="badge">Required</span>
-						<span v-if="field.readOnly" class="badge">Read Only</span>
+			<AFieldset label="Workflow" :collapsible="true">
+				<div class="builder-workflow">
+					<StateEditor
+						v-if="workflowConfig && workflowConfig.states && workflowConfig.states.length > 0"
+						v-model="workflowConfig"
+						v-model:layout="layout"
+						node-container-class="node-editor" />
+					<div v-else class="empty-workflow">
+						<p class="empty-workflow-hint">No workflow yet. Name the first state to start building the workflow.</p>
+						<div class="empty-workflow-form">
+							<input v-model="newStateName" type="text" placeholder="e.g. Draft" @keyup.enter="seedWorkflow" />
+							<button class="btn-seed" type="button" :disabled="!newStateName.trim()" @click="seedWorkflow">
+								Add first state
+							</button>
+						</div>
 					</div>
 				</div>
-			</section>
+			</AFieldset>
+
+			<AFieldset label="Actions" :collapsible="true">
+				<DocBuilderActionsPanel v-model="workflowConfig" />
+			</AFieldset>
+
+			<AFieldset label="Schema" :collapsible="true">
+				<DocBuilderFieldsPanel v-model="fields" />
+			</AFieldset>
+
+			<div v-if="saveMessage" class="builder-actions">
+				<span class="save-message" :class="saveMessage.type">{{ saveMessage.text }}</span>
+			</div>
+
+			<ActionSet :elements="docbuilderActions" @action-click="handleAction" />
 		</div>
 	</div>
 </template>
 
 <script setup lang="ts">
-import type { ValidationResult } from '@stonecrop/schema'
-import { ref, computed, onMounted } from 'vue'
-import { useRoute } from 'nuxt/app'
+import { AFieldset } from '@stonecrop/aform'
+import { StateEditor } from '@stonecrop/node-editor'
+import type { Layout } from '@stonecrop/node-editor'
+import { ActionSet } from '@stonecrop/desktop'
+import type { ActionElements } from '@stonecrop/desktop/types'
+import { WorkflowMeta } from '@stonecrop/schema'
+import { ref, watch, computed, onMounted } from 'vue'
+import { useRoute, useRouter } from 'nuxt/app'
+
+import DocBuilderActionsPanel from '../components/DocBuilderActionsPanel.vue'
+import DocBuilderFieldsPanel from '../components/DocBuilderFieldsPanel.vue'
 
 const route = useRoute()
+const router = useRouter()
 const doctypeName = computed(() => route.params.doctype as string)
 
-const doctype = ref<any>(null)
 const loading = ref(true)
-const validating = ref(false)
 const saving = ref(false)
-const validationResult = ref<ValidationResult | null>(null)
+const warningsDismissed = ref(false)
 const saveMessage = ref<{ type: 'success' | 'error'; text: string } | null>(null)
+
+const fields = ref<Record<string, unknown>[]>([])
+const workflowConfig = ref<WorkflowMeta | undefined>()
+const layout = ref<Layout>({})
+
+const validationIssues = ref<{ severity: 'error' | 'warning'; message: string; fieldname?: string }[]>([])
+const errorCount = computed(() => validationIssues.value.filter(i => i.severity === 'error').length)
+const warningCount = computed(() => validationIssues.value.filter(i => i.severity === 'warning').length)
 
 onMounted(async () => {
 	try {
-		const data = await $fetch(`/api/docbuilder/${doctypeName.value}`)
-		doctype.value = data
+		const data = await $fetch<{
+			name: string
+			slug: string
+			fields: Record<string, unknown>[]
+			workflow: WorkflowMeta | null
+		}>(`/api/_stonecrop/docbuilder/${doctypeName.value}`)
+		fields.value = data.fields ?? []
+		if (data.workflow) {
+			// Node positions ride inside the persisted workflow (schema: WorkflowMeta.layout). Split them
+			// back into the separate `layout` model so `workflowConfig` stays topology-only — otherwise the
+			// StateEditor round-trip would re-spread a stale layout through existingWorkflow. The cast bridges
+			// @vue-flow/core's Position enum and the schema's structurally-identical string-literal union.
+			const { layout: savedLayout, ...topology } = data.workflow
+			workflowConfig.value = topology
+			if (savedLayout) layout.value = savedLayout as Layout
+		}
 	} catch (error) {
 		console.error('Error loading doctype:', error)
 	} finally {
@@ -79,213 +110,202 @@ onMounted(async () => {
 	}
 })
 
-async function validateSchema() {
-	validating.value = true
-	validationResult.value = null
-	try {
-		const result = await $fetch<ValidationResult>('/api/docbuilder/validate', {
-			method: 'POST',
-			body: { fields: doctype.value?.schema || [] },
-		})
-		validationResult.value = result
-	} catch (error: any) {
-		validationResult.value = {
-			success: false,
-			errors: [{ path: [], message: error.message || 'Validation failed' }],
-		}
-	} finally {
-		validating.value = false
-	}
+const newStateName = ref('Draft')
+// Seed a minimal valid WorkflowMeta from the dev-typed first state. Once states.length > 0 the
+// StateEditor's v-if flips and its always-present "Add Node" toolbar takes over from here.
+function seedWorkflow() {
+	const name = newStateName.value.trim()
+	if (!name) return
+	workflowConfig.value = { states: [name], actions: {} }
 }
 
+function revalidate() {
+	const issues: typeof validationIssues.value = []
+	if (workflowConfig.value) {
+		const result = WorkflowMeta.safeParse(workflowConfig.value)
+		if (!result.success) {
+			for (const issue of result.error.issues) {
+				issues.push({
+					severity: 'error',
+					message: issue.message,
+					fieldname: issue.path.length > 0 ? issue.path.join('.') : undefined,
+				})
+			}
+		}
+	}
+	validationIssues.value = issues
+	if (issues.length > 0) warningsDismissed.value = false
+}
+
+watch(workflowConfig, revalidate, { deep: true })
+
 async function saveToDisk() {
+	if (errorCount.value > 0) return
 	saving.value = true
 	saveMessage.value = null
 	try {
-		await $fetch('/api/docbuilder/save', {
+		await $fetch('/api/_stonecrop/docbuilder/save', {
 			method: 'POST',
-			body: { doctype: doctypeName.value, schema: doctype.value?.schema || [] },
+			body: {
+				doctype: doctypeName.value,
+				fields: fields.value,
+				// Merge the author's node arrangement back into the workflow (WorkflowMeta.layout) so it
+				// persists. The layout ref is kept separate in memory (topology-only workflowConfig) and
+				// only rejoined here at the I/O boundary; omitted when empty to avoid churn on doctypes
+				// that were never manually arranged.
+				workflow: workflowConfig.value
+					? { ...workflowConfig.value, ...(Object.keys(layout.value).length > 0 && { layout: layout.value }) }
+					: null,
+			},
 		})
-		saveMessage.value = { type: 'success', text: 'Schema saved successfully!' }
+		saveMessage.value = { type: 'success', text: 'Saved.' }
 	} catch (error: any) {
-		saveMessage.value = { type: 'error', text: error.message || 'Failed to save' }
+		saveMessage.value = { type: 'error', text: error.message || 'Save failed.' }
 	} finally {
 		saving.value = false
 	}
 }
+
+// The docbuilder owns its action chrome (host layout suppressed via meta.layout=false on the route),
+// so Save lives in its own desktop ActionSet rather than the host app's. Back returns to the index.
+const docbuilderActions = computed<ActionElements[]>(() => [
+	{
+		type: 'button',
+		label: saving.value ? 'Saving…' : 'Save',
+		action: saveToDisk,
+		disabled: saving.value || errorCount.value > 0,
+	},
+	{ type: 'button', label: 'Back', action: () => void router.push('/docbuilder') },
+])
+function handleAction(_label: string, action?: () => void | Promise<void>) {
+	if (action) void action()
+}
 </script>
 
 <style scoped>
-.docbuilder-container {
+/* Own a full-viewport white surface: this page runs with `layout: false`, so nothing paints over
+   the playground layout's global grey `body` background. Without this, the page shows grey (or a
+   grey/white flicker) depending on navigation order. */
+.docbuilder-page {
+	background: var(--sc-form-background, #fff);
 	min-height: 100vh;
-}
-
-.docbuilder-wrapper {
-	max-width: 1200px;
-	margin: 0 auto;
+	box-sizing: border-box;
 	padding: 2rem;
 }
 
-.docbuilder-header {
-	text-align: center;
-	margin-bottom: 2rem;
+.builder-workflow {
+	padding: 0.5em 1em;
+	min-height: 8rem;
 }
 
-.docbuilder-header h1 {
-	font-size: 2rem;
-	margin: 0 0 1rem;
-	font-weight: 700;
+:deep(.node-editor) {
+	width: 100%;
+	height: 40vh;
+	overflow: hidden;
 }
 
-.docbuilder-actions {
+.empty-workflow {
+	padding: 1rem 0;
+}
+
+.empty-workflow-hint {
+	color: #9ca3af;
+	font-style: italic;
+	margin: 0 0 0.75rem;
+}
+
+.empty-workflow-form {
 	display: flex;
-	gap: 1rem;
-	justify-content: center;
+	align-items: center;
+	gap: 0.5rem;
 }
 
-.btn-primary,
-.btn-secondary {
-	padding: 0.5rem 1rem;
-	border-radius: 0.5rem;
+.empty-workflow-form input {
+	border: 1px solid var(--sc-gray-20, #d1d5db);
+	border-radius: 4px;
+	padding: 0.4em 0.6em;
+	font-size: 0.875rem;
+	font-family: inherit;
+}
+
+.btn-seed {
+	padding: 0.45em 1em;
+	background: var(--sc-blue-40, #3b82f6);
+	color: white;
+	border: none;
+	border-radius: 0.4rem;
 	font-weight: 500;
 	cursor: pointer;
-	transition: all 0.2s;
+	font-size: 0.875rem;
+}
+
+.btn-seed:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+.validation-panel {
+	margin-bottom: 1rem;
+}
+
+.validation-errors {
+	padding: 1rem;
+	background: #fee2e2;
+	border: 1px solid #ef4444;
+	border-radius: 6px;
+	margin-bottom: 0.5rem;
+	color: #991b1b;
+}
+
+.validation-warnings {
+	padding: 1rem;
+	background: #fef9c3;
+	border: 1px solid #eab308;
+	border-radius: 6px;
+	color: #713f12;
+}
+
+.dismiss-button {
+	margin-left: 1rem;
+	background: none;
+	border: 1px solid currentColor;
+	border-radius: 3px;
+	padding: 0.125em 0.5em;
+	cursor: pointer;
+	font-size: 0.75rem;
+}
+
+.builder-actions {
+	padding: 1rem;
+	display: flex;
+	align-items: center;
+	gap: 1rem;
 }
 
 .btn-primary {
-	background: #3b82f6;
+	padding: 0.5rem 1.5rem;
+	background: var(--sc-blue-40, #3b82f6);
 	color: white;
 	border: none;
+	border-radius: 0.5rem;
+	font-weight: 500;
+	cursor: pointer;
 }
 
-.btn-primary:hover:not(:disabled) {
-	background: #2563eb;
-}
-
-.btn-secondary {
-	background: #e5e7eb;
-	color: #374151;
-	border: 1px solid #d1d5db;
-}
-
-.btn-secondary:hover:not(:disabled) {
-	background: #d1d5db;
-}
-
-.btn-primary:disabled,
-.btn-secondary:disabled {
+.btn-primary:disabled {
 	opacity: 0.6;
 	cursor: not-allowed;
 }
 
-.message-box {
-	padding: 1rem;
-	border-radius: 0.5rem;
-	margin-bottom: 1rem;
-}
-
-.message-box.success {
-	background: #d1fae5;
-	border: 1px solid #10b981;
-	color: #065f46;
-}
-
-.message-box.error {
-	background: #fee2e2;
-	border: 1px solid #ef4444;
-	color: #991b1b;
-}
-
-.message-header {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-}
-
-.dismiss-btn {
-	background: none;
-	border: none;
-	font-size: 1.5rem;
-	cursor: pointer;
-	opacity: 0.6;
-}
-
-.dismiss-btn:hover {
-	opacity: 1;
-}
-
-.error-list {
-	margin: 0.5rem 0 0;
-	padding-left: 1.5rem;
-}
-
-.error-list code {
-	background: rgba(0, 0, 0, 0.1);
-	padding: 0.125rem 0.25rem;
-	border-radius: 0.25rem;
-}
-
-.loading {
-	text-align: center;
-	padding: 4rem;
-	color: #6b7280;
-}
-
-.fields-section {
-	background: white;
-	padding: 1.5rem;
-	border-radius: 0.75rem;
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.fields-section h2 {
-	margin: 0 0 1rem;
-	font-size: 1.25rem;
-}
-
-.field-item {
-	padding: 1rem;
-	background: #f9fafb;
-	border: 1px solid #e5e7eb;
-	border-radius: 0.5rem;
-	margin-bottom: 0.75rem;
-}
-
-.field-header {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	margin-bottom: 0.25rem;
-}
-
-.field-name {
-	font-family: monospace;
-	font-weight: 600;
-}
-
-.field-type {
-	font-size: 0.75rem;
-	padding: 0.25rem 0.5rem;
-	background: #dbeafe;
-	color: #1e40af;
-	border-radius: 0.25rem;
-}
-
-.field-label {
-	color: #6b7280;
+.save-message {
 	font-size: 0.875rem;
 }
 
-.field-badges {
-	margin-top: 0.5rem;
-	display: flex;
-	gap: 0.5rem;
+.save-message.success {
+	color: #065f46;
 }
 
-.badge {
-	font-size: 0.75rem;
-	padding: 0.125rem 0.5rem;
-	background: #e5e7eb;
-	border-radius: 0.25rem;
+.save-message.error {
+	color: #991b1b;
 }
 </style>

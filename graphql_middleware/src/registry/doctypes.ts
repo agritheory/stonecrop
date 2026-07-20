@@ -172,13 +172,25 @@ export function validateReferences(): ValidationError[] {
 			})
 		}
 
-		// Check Link field targets
+		// Check link field targets — `doctype` is both the link marker and its target.
 		for (const field of doctype.fields) {
-			if (field.fieldtype === 'Link' && typeof field.options === 'string') {
-				if (!doctypeRegistry.has(field.options)) {
+			if (field.kind !== 'field') continue
+			const target = field.doctype
+			if (target !== undefined && !doctypeRegistry.has(target)) {
+				errors.push({
+					path: [doctype.name, 'fields', field.fieldname, 'doctype'],
+					message: `Link references unknown doctype: ${target}`,
+				})
+			}
+		}
+
+		// Check link-declaration targets (component-primary links live in the `links` map)
+		if (doctype.links) {
+			for (const [key, link] of Object.entries(doctype.links)) {
+				if (!doctypeRegistry.has(link.target)) {
 					errors.push({
-						path: [doctype.name, 'fields', field.fieldname, 'options'],
-						message: `Link references unknown doctype: ${field.options}`,
+						path: [doctype.name, 'links', key, 'target'],
+						message: `Link references unknown doctype: ${link.target}`,
 					})
 				}
 			}

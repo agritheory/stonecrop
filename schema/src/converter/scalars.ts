@@ -9,7 +9,7 @@
  * @packageDocumentation
  */
 
-import type { FieldTemplate } from '../fieldtype'
+import type { FieldTemplate } from './types'
 
 /**
  * Mapping from standard GraphQL scalar types to Stonecrop field types.
@@ -18,11 +18,11 @@ import type { FieldTemplate } from '../fieldtype'
  * @public
  */
 export const GQL_SCALAR_MAP: Record<string, FieldTemplate> = {
-	String: { component: 'ATextInput', fieldtype: 'Data' },
-	Int: { component: 'ANumericInput', fieldtype: 'Int' },
-	Float: { component: 'ANumericInput', fieldtype: 'Float' },
-	Boolean: { component: 'ACheckbox', fieldtype: 'Check' },
-	ID: { component: 'ATextInput', fieldtype: 'Data' },
+	String: { component: 'ATextInput' },
+	Int: { component: 'ANumericInput' },
+	Float: { component: 'ANumericInput' },
+	Boolean: { component: 'ACheckbox' },
+	ID: { component: 'ATextInput' },
 }
 
 /**
@@ -36,28 +36,28 @@ export const GQL_SCALAR_MAP: Record<string, FieldTemplate> = {
  * @public
  */
 export const WELL_KNOWN_SCALARS: Record<string, FieldTemplate> = {
-	// Arbitrary precision / large numbers
-	BigFloat: { component: 'ADecimalInput', fieldtype: 'Decimal' },
-	BigDecimal: { component: 'ADecimalInput', fieldtype: 'Decimal' },
-	Decimal: { component: 'ADecimalInput', fieldtype: 'Decimal' },
-	BigInt: { component: 'ANumericInput', fieldtype: 'Int' },
-	Long: { component: 'ANumericInput', fieldtype: 'Int' },
+	// Arbitrary precision / large numbers — all numeric variants render with ANumericInput.
+	BigFloat: { component: 'ANumericInput' },
+	BigDecimal: { component: 'ANumericInput' },
+	Decimal: { component: 'ANumericInput' },
+	BigInt: { component: 'ANumericInput' },
+	Long: { component: 'ANumericInput' },
 
 	// Identifiers
-	UUID: { component: 'ATextInput', fieldtype: 'Data' },
+	UUID: { component: 'ATextInput' },
 
-	// Date / Time
-	DateTime: { component: 'ADatetimePicker', fieldtype: 'Datetime' },
-	Datetime: { component: 'ADatetimePicker', fieldtype: 'Datetime' },
-	Date: { component: 'ADate', fieldtype: 'Date' },
-	Time: { component: 'ATimeInput', fieldtype: 'Time' },
-	Interval: { component: 'ADurationInput', fieldtype: 'Duration' },
-	Duration: { component: 'ADurationInput', fieldtype: 'Duration' },
+	// Date / Time — no dedicated Time SFC exists; Time falls back to a plain text input.
+	DateTime: { component: 'ADateTime' },
+	Datetime: { component: 'ADateTime' },
+	Date: { component: 'ADate' },
+	Time: { component: 'ATextInput' },
+	Interval: { component: 'ADuration' },
+	Duration: { component: 'ADuration' },
 
 	// Structured data
-	JSON: { component: 'ACodeEditor', fieldtype: 'JSON' },
-	JSONObject: { component: 'ACodeEditor', fieldtype: 'JSON' },
-	JsonNode: { component: 'ACodeEditor', fieldtype: 'JSON' },
+	JSON: { component: 'ACodeEditor' },
+	JSONObject: { component: 'ACodeEditor' },
+	JsonNode: { component: 'ACodeEditor' },
 }
 
 /**
@@ -87,10 +87,7 @@ export function buildScalarMap(customScalars?: Record<string, Partial<FieldTempl
 	// Custom scalars override everything
 	if (customScalars) {
 		for (const [key, value] of Object.entries(customScalars)) {
-			merged[key] = {
-				component: value.component ?? 'ATextInput',
-				fieldtype: value.fieldtype ?? 'Data',
-			}
+			merged[key] = { component: value.component ?? 'ATextInput' }
 		}
 	}
 

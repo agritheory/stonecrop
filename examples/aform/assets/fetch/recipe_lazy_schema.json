@@ -4,22 +4,19 @@
 	"fields": [
 		{
 			"fieldname": "name",
-			"fieldtype": "Data",
 			"component": "ATextInput",
 			"label": "Recipe Name"
 		},
 		{
 			"fieldname": "description",
-			"fieldtype": "Data",
 			"component": "ATextInput",
 			"label": "Description"
 		},
 		{
 			"fieldname": "tasks",
-			"fieldtype": "Link",
 			"component": "ATable",
 			"label": "Tasks",
-			"options": "task"
+			"doctype": "task"
 		}
 	],
 	"links": {
@@ -28,7 +25,9 @@
 			"cardinality": "noneOrMany",
 			"backlink": "recipe",
 			"fieldname": "tasks",
-			"fetch": { "method": "lazy" }
+			"fetch": {
+				"method": "lazy"
+			}
 		}
 	}
 }

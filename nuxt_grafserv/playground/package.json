@@ -9,6 +9,6 @@
 	},
 	"dependencies": {
 		"@stonecrop/graphql-middleware": "workspace:*",
-		"nuxt": "^4.4.4"
+		"nuxt": "^4.4.8"
 	}
 }

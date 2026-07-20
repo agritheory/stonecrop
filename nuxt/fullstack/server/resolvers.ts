@@ -6,7 +6,7 @@
  */
 
 import { constant, lambda, loadOne, object } from 'grafast'
-import { getMeta, getAllMeta, getHandler, type ActionContext } from '@stonecrop/graphql-middleware'
+import { getMeta, getAllMeta, applyGuardedTransition } from '@stonecrop/graphql-middleware'
 import type { DoctypeMeta } from '@stonecrop/schema'
 
 import { mockExecutor } from './mock-executor'
@@ -32,29 +32,26 @@ function toMutationName(doctypeName: string, operation: 'create' | 'update' | 'd
 	return `${operation}${pascalName}ById`
 }
 
-function formatFieldMeta(field: { fieldname: string; fieldtype: string; [key: string]: unknown }) {
-	return {
-		fieldname: field.fieldname,
-		fieldtype: field.fieldtype,
-		label: field.label ?? null,
-		required: field.required ?? false,
-		readOnly: field.readOnly ?? false,
-		options: field.options ?? null,
-		default: field.default ?? null,
-		width: field.width ?? null,
-		validation: field.validation ?? null,
-	}
-}
-
-function formatDoctypeMeta(meta: DoctypeMeta) {
+export function formatDoctypeMeta(meta: DoctypeMeta) {
+	// Fields and actions pass through verbatim — the SDL alone decides what is
+	// selectable. Enumerating keys here silently drops any field the schema gains
+	// later; the only computed addition is `name` (an action's key in the
+	// WorkflowMeta.actions record, flattened into the list the SDL declares).
+	const actions = meta.workflow?.actions
+	const actionList = actions
+		? Object.entries(actions as Record<string, Record<string, unknown>>).map(([name, action]) => ({
+				name,
+				...action,
+			}))
+		: []
 	return {
 		name: meta.name,
 		slug: meta.slug ?? null,
-		fields: meta.fields.map(formatFieldMeta),
+		fields: meta.fields,
 		workflow: meta.workflow
 			? {
 					states: meta.workflow.states ?? null,
-					actions: meta.workflow.actions ?? null,
+					actions: actionList,
 				}
 			: null,
 		inherits: meta.inherits ?? null,
@@ -212,27 +209,46 @@ export default {
 									}
 								}
 
-								const handler = getHandler(actionDef.handler)
-								if (!handler) {
-									return {
-										success: false,
-										data: null,
-										error: `Handler not registered: ${actionDef.handler}`,
-									}
-								}
-
-								const actionContext: ActionContext = {
-									doctype: meta,
-									executor: mockExecutor,
-								}
+								// Record envelope: [{ id, data }] — the transition keys off the record id, and a
+								// self-transition persists the edited field `data` in place.
+								const argList = Array.isArray(spec.actionArgs) ? spec.actionArgs : []
+								const recordId = argList[0]?.id
+								const recordData: Record<string, unknown> = argList[0]?.data ?? {}
 
 								try {
-									const result = await handler(spec.actionArgs ?? [], actionContext)
-									return {
-										success: true,
-										data: result,
-										error: null,
-									}
+									// The server owns the transition: read current state, guard against
+									// allowedStates, write nextState. Reads/writes go through this app's
+									// mock executor; a PostGraphile setup swaps in pgClient SQL instead.
+									return await applyGuardedTransition(
+										actionDef,
+										{
+											readState: async () => {
+												if (recordId == null) return undefined
+												const queryName = toQueryName(meta.name)
+												const result = (await mockExecutor.query(queryName, { id: recordId })) as Record<
+													string,
+													{ status?: string | null } | undefined
+												>
+												const status = result[queryName]?.status
+												return status == null ? undefined : String(status)
+											},
+											writeState: async (nextState: string) => {
+												const mutationName = toMutationName(meta.name, 'update')
+												await mockExecutor.mutate(mutationName, { id: recordId, patch: { status: nextState } })
+											},
+											// Self-transition data write: patch the record's field data (status untouched)
+											// and return the full updated record for the client writeback. Verbatim patch
+											// mirrors stonecropUpdate; column-whitelisting is the (deferred) PostGraphile concern.
+											writeData: async (patch: Record<string, unknown>) => {
+												const mutationName = toMutationName(meta.name, 'update')
+												const result = await mockExecutor.mutate(mutationName, { id: recordId, patch })
+												const mutationResult = result[mutationName] as Record<string, unknown> | undefined
+												const recordKey = meta.name.charAt(0).toLowerCase() + meta.name.slice(1)
+												return (mutationResult?.[recordKey] ?? mutationResult ?? {}) as Record<string, unknown>
+											},
+										},
+										recordData
+									)
 								} catch (err) {
 									return {
 										success: false,

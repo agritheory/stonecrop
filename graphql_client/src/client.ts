@@ -7,6 +7,7 @@ import type {
 	GetRecordsOptions,
 } from '@stonecrop/schema'
 import type { GetRecordResult } from './types'
+import { GET_META_QUERY, GET_ALL_META_QUERY, RUN_ACTION_MUTATION } from './queries'
 
 export type { DoctypeContext, DoctypeRef }
 export type { GetRecordResult }
@@ -88,48 +89,9 @@ export class StonecropClient implements DataClient {
 		const cached = this.metaCache.get(context.doctype)
 		if (cached) return cached
 
-		const result = await this.query<{ stonecropMeta: DoctypeMeta | null }>(
-			`
-			query GetMeta($doctype: String!) {
-				stonecropMeta(doctype: $doctype) {
-					name
-					slug
-					fields {
-						fieldname
-						fieldtype
-						component
-						label
-						width
-						align
-						required
-						readOnly
-						edit
-						hidden
-						default
-						options
-						mask
-						precision
-						scale
-						mode
-						validation
-					}
-					workflow {
-						states
-						actions {
-							label
-							handler
-							requiredFields
-							allowedStates
-							confirm
-							args
-						}
-					}
-					inherits
-				}
-			}
-			`,
-			{ doctype: context.doctype }
-		)
+		const result = await this.query<{ stonecropMeta: DoctypeMeta | null }>(GET_META_QUERY, {
+			doctype: context.doctype,
+		})
 
 		if (result.stonecropMeta) {
 			this.metaCache.set(context.doctype, result.stonecropMeta)
@@ -142,47 +104,7 @@ export class StonecropClient implements DataClient {
 	 * Get all doctype metadata
 	 */
 	async getAllMeta(): Promise<DoctypeMeta[]> {
-		const result = await this.query<{ stonecropAllMeta: DoctypeMeta[] }>(
-			`
-			query GetAllMeta {
-				stonecropAllMeta {
-					name
-					slug
-					fields {
-						fieldname
-						fieldtype
-						component
-						label
-						width
-						align
-						required
-						readOnly
-						edit
-						hidden
-						default
-						options
-						mask
-						precision
-						scale
-						mode
-						validation
-					}
-					workflow {
-						states
-						actions {
-							label
-							handler
-							requiredFields
-							allowedStates
-							confirm
-							args
-						}
-					}
-					inherits
-				}
-			}
-			`
-		)
+		const result = await this.query<{ stonecropAllMeta: DoctypeMeta[] }>(GET_ALL_META_QUERY)
 
 		for (const meta of result.stonecropAllMeta) {
 			this.metaCache.set(meta.name, meta)
@@ -284,22 +206,11 @@ export class StonecropClient implements DataClient {
 	): Promise<{ success: boolean; data: unknown; error: string | null }> {
 		const result = await this.query<{
 			stonecropAction: { success: boolean; data: unknown; error: string | null }
-		}>(
-			`
-			mutation RunAction($doctype: String!, $action: String!, $args: JSON) {
-				stonecropAction(doctype: $doctype, action: $action, args: $args) {
-					success
-					data
-					error
-				}
-			}
-			`,
-			{
-				doctype: doctype.name,
-				action,
-				args,
-			}
-		)
+		}>(RUN_ACTION_MUTATION, {
+			doctype: doctype.name,
+			action,
+			args,
+		})
 
 		return result.stonecropAction
 	}

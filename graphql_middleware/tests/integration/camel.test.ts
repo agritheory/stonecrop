@@ -23,9 +23,9 @@ beforeAll(async () => {
 		ScCamelItem: {
 			name: 'ScCamelItem',
 			fields: [
-				{ fieldname: 'itemId', fieldtype: 'PrimaryKey', label: 'Item ID' },
-				{ fieldname: 'displayName', fieldtype: 'Data', label: 'Display Name' },
-				{ fieldname: 'itemStatus', fieldtype: 'Data', label: 'Item Status' },
+				{ kind: 'field', fieldname: 'itemId', component: 'ATextInput', primaryKey: true, label: 'Item ID' },
+				{ kind: 'field', fieldname: 'displayName', component: 'ATextInput', label: 'Display Name' },
+				{ kind: 'field', fieldname: 'itemStatus', component: 'ATextInput', label: 'Item Status' },
 			],
 			links: {
 				tags: {
@@ -39,17 +39,17 @@ beforeAll(async () => {
 		ScCamelTag: {
 			name: 'ScCamelTag',
 			fields: [
-				{ fieldname: 'tagId', fieldtype: 'PrimaryKey', label: 'Tag ID' },
-				{ fieldname: 'tagLabel', fieldtype: 'Data', label: 'Tag Label' },
-				{ fieldname: 'camelItemId', fieldtype: 'Data', label: 'Camel Item ID' },
+				{ kind: 'field', fieldname: 'tagId', component: 'ATextInput', primaryKey: true, label: 'Tag ID' },
+				{ kind: 'field', fieldname: 'tagLabel', component: 'ATextInput', label: 'Tag Label' },
+				{ kind: 'field', fieldname: 'camelItemId', component: 'ATextInput', label: 'Camel Item ID' },
 			],
 		},
 		// Doctype with no PrimaryKey field declared — stonecropRecord must return null
 		ScNoPk: {
 			name: 'ScNoPk',
 			fields: [
-				{ fieldname: 'body', fieldtype: 'Data', label: 'Body' },
-				{ fieldname: 'item_id', fieldtype: 'Data', label: 'Item ID' },
+				{ kind: 'field', fieldname: 'body', component: 'ATextInput', label: 'Body' },
+				{ kind: 'field', fieldname: 'item_id', component: 'ATextInput', label: 'Item ID' },
 			],
 		},
 	})

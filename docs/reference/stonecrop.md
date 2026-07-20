@@ -43,6 +43,29 @@ export declare function createValidator(registry: Registry, options?: Partial<Va
 | registry | `Registry` | Registry instance |
 | options | `Partial<ValidatorOptions>` | Additional validator options |
 
+### executeClientHandler
+
+Execute a docbuilder-authored `clientHandler` body against an injected API map.
+
+`code` is a function *body* (statements), not a full function — authored in the docbuilder code editor and stored on `ActionDefinition.clientHandler`. It is compiled with the AsyncFunction constructor, so `await` works directly. Each key of `api` becomes a parameter name bound to its value, so a handler can reference `router`, `record`, `runAction`, etc. by name.
+
+This executor is deliberately concern-free: it performs no routing, dispatch, or HST writes itself — the caller assembles `api`. The injected set is an *intent* contract, not a sandbox (an AsyncFunction body can still reach `fetch`/`window`); enforcement of what a handler may actually do lives server-side, not here.
+
+Errors are propagated to the caller as a rejected promise — syntax errors at compile time and thrown errors / rejections at run time — so callers handle both uniformly.
+
+**Signature:**
+
+```typescript
+export declare function executeClientHandler(code: string, api?: ClientHandlerApi): Promise<unknown>;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| code | `string` | the clientHandler body, e.g. `"router.push('/users')"` |
+| api | `ClientHandlerApi` | named capabilities injected as parameters (default: none) |
+
 ### getGlobalTriggerEngine
 
 Get or create the global field trigger engine singleton
@@ -327,7 +350,7 @@ Quick validation helper
 **Signature:**
 
 ```typescript
-export declare function validateSchema(doctype: string, schema: List<SchemaTypes> | SchemaTypes[] | undefined, registry: Registry, workflow?: AnyStateNodeConfig, actions?: ImmutableMap<string, string[]> | Map<string, string[]>): ValidationResult;
+export declare function validateSchema(doctype: string, schema: List<DoctypeField> | DoctypeField[] | undefined, registry: Registry, workflow?: AnyStateNodeConfig, actions?: ImmutableMap<string, string[]> | Map<string, string[]>): ValidationResult;
 ```
 
 **Parameters:**
@@ -335,7 +358,7 @@ export declare function validateSchema(doctype: string, schema: List<SchemaTypes
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | doctype | `string` | Doctype name |
-| schema | `List<SchemaTypes> \| SchemaTypes[] \| undefined` | Schema fields |
+| schema | `List<DoctypeField> \| DoctypeField[] \| undefined` | Schema fields |
 | registry | `Registry` | Registry instance |
 | workflow | `AnyStateNodeConfig` | Optional workflow configuration |
 | actions | `ImmutableMap<string, string[]> \| Map<string, string[]>` | Optional actions map |
@@ -662,7 +685,6 @@ Operation log configuration
 
 ```typescript
 export interface OperationLogConfig {
-  autoSyncInterval?: number;
   enableCrossTabSync?: boolean;
   enablePersistence?: boolean;
   maxOperations?: number;
@@ -676,7 +698,6 @@ export interface OperationLogConfig {
 
 | Property | Type | Description |
 |----------|------|-------------|
-| autoSyncInterval? | `number` | Auto-sync interval in milliseconds (default: 30000) |
 | enableCrossTabSync? | `boolean` | Enable cross-tab synchronization (default: true) |
 | enablePersistence? | `boolean` | Enable operation persistence to localStorage (default: false) |
 | maxOperations? | `number` | Maximum operations to store (default: 100) |
@@ -828,6 +849,28 @@ export interface UndoRedoState {
 | redoCount | `number` | Number of operations available for redo |
 | undoCount | `number` | Number of operations available for undo |
 
+### ValidationError
+
+A single validation error contributed by a trigger, displayed on a field.
+
+**Definition:**
+
+```typescript
+export interface ValidationError {
+  field: string;
+  message: string;
+  trigger: string;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| field | `string` | The fieldname the error displays on (the `setError` target, not necessarily a fired field) |
+| message | `string` | The message to display |
+| trigger | `string` | The trigger that produced this error — the namespace a re-run clears before repopulating |
+
 ### ValidationIssue
 
 Validation issue
@@ -925,6 +968,16 @@ export type BaseStonecropReturn = {
 };
 ```
 
+### ClientHandlerApi
+
+Named capabilities injected into a clientHandler body as function parameters. The caller (the assembly composable) owns what each name resolves to — typically `router`, `record`, `runAction`, and a read-only `graphql`.
+
+**Definition:**
+
+```typescript
+export type ClientHandlerApi = Record<string, unknown>;
+```
+
 ### CrossTabMessageType
 
 Cross-tab message types
@@ -937,7 +990,7 @@ export type CrossTabMessageType = 'operation' | 'undo' | 'redo' | 'sync-request'
 
 ### DoctypeConfig
 
-Plain object representation of doctype configuration for serialization/API responses. Compatible with the DoctypeMeta type from stonecrop/schema.
+Plain object representation of doctype configuration for serialization/API responses. Extends DoctypeMeta with Stonecrop-specific properties: actions, slug, inherits.
 
 **Definition:**
 
@@ -945,7 +998,7 @@ Plain object representation of doctype configuration for serialization/API respo
 export type DoctypeConfig = {
     name: string;
     slug?: string;
-    fields?: (SchemaTypes | FieldMeta)[];
+    fields?: DoctypeField[];
     links?: Record<string, LinkDeclaration>;
     workflow?: UnknownMachineConfig | WorkflowMeta;
     actions?: Record<string, string[]>;
@@ -1042,7 +1095,7 @@ export type HSTStonecropReturn = BaseStonecropReturn & {
     handleHSTChange: (changeData: HSTChangeData) => void;
     hstStore: Ref<HSTNode | undefined>;
     formData: Ref<Record<string, any>>;
-    resolvedSchema: Ref<SchemaTypes[]>;
+    resolvedSchema: Ref<ResolvedField[]>;
     initializeNestedData: (path: string, doctype: Doctype) => void;
     fetchNestedData: (path: string, doctype: Doctype, recordId: string, options?: {
         includeNested?: boolean | string[];
@@ -1062,16 +1115,15 @@ export type HSTStonecropReturn = BaseStonecropReturn & {
 
 ### ImmutableDoctype
 
-Immutable Doctype type for Stonecrop instances
+Immutable Doctype type for Stonecrop instances. App authors should use `Doctype.fromObject()` rather than constructing this shape manually.
 
 **Definition:**
 
 ```typescript
 export type ImmutableDoctype = {
-    readonly schema?: List<SchemaTypes>;
+    readonly schema?: List<DoctypeField>;
     readonly workflow?: UnknownMachineConfig | AnyStateNodeConfig | WorkflowMeta;
     readonly actions?: Map<string, string[]>;
-    readonly links?: Record<string, LinkDeclaration>;
 };
 ```
 
@@ -1105,21 +1157,6 @@ export type LazyLink = {
     error: Ref<Error | null>;
     reload: () => Promise<void>;
     data: ComputedRef;
-};
-```
-
-### MutableDoctype
-
-Mutable Doctype type for Stonecrop instances
-
-**Definition:**
-
-```typescript
-export type MutableDoctype = {
-    doctype?: string;
-    schema?: SchemaTypes[];
-    workflow?: UnknownMachineConfig | AnyStateNodeConfig | WorkflowMeta;
-    actions?: Record<string, string[]>;
 };
 ```
 
@@ -1166,19 +1203,6 @@ Operation source - where the change originated
 
 ```typescript
 export type OperationSource = 'user' | 'system' | 'sync' | 'undo' | 'redo';
-```
-
-### Schema
-
-Schema type for Stonecrop instances
-
-**Definition:**
-
-```typescript
-export type Schema = {
-    doctype: string;
-    schema: List<SchemaTypes>;
-};
 ```
 
 ### TransitionAction
@@ -1262,11 +1286,8 @@ Returns metadata for a specific action, if available. Only works with WorkflowMe
 ```typescript
 getActionMeta(actionName: string): {
         label: string;
-        handler: string;
         requiredFields?: string[];
         allowedStates?: string[];
-        confirm?: boolean;
-        args?: Record<string, unknown>;
     } | undefined
 ```
 
@@ -1283,6 +1304,24 @@ Returns the actions as a plain object for use with components that expect plain 
 ```typescript
 getActionsObject(): Record<string, string[]>
 ```
+
+#### getAvailableCommands
+
+Returns the stateless **Commands** available in a given workflow state — side-effect actions (save/print/email…) that do not change workflow state. Unlike transitions, Commands may exist on a workflow that declares no `states` (a commands-only doctype), and a Command with no `allowedStates` is available in every state.
+
+Only meaningful for WorkflowMeta format; XState workflows have no Commands.
+
+```typescript
+getAvailableCommands(currentState: string): Array<{
+        name: string;
+    }>
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| currentState | `string` | The record's current state, used to honor a Command's `allowedStates` |
 
 #### getAvailableTransitions
 
@@ -1303,10 +1342,18 @@ getAvailableTransitions(currentState: string): Array<{
 
 #### getSchemaArray
 
-Returns the schema as a plain array for use with components that expect plain JavaScript arrays (e.g., AForm, ATable).
+Returns the raw authoring schema as a plain array. For the resolved schema suitable for AForm, use `registry.resolveSchema(doctype)`.
 
 ```typescript
-getSchemaArray(): SchemaTypes[]
+getSchemaArray(): DoctypeField[]
+```
+
+#### getTriggers
+
+Returns the field-validation **triggers** declared on this doctype's workflow (advisory, client-side). Keyed by trigger name. Returns undefined when the workflow is absent, is an XState machine (no triggers), or simply declares none.
+
+```typescript
+getTriggers(): Record<string, TriggerDefinition> | undefined
 ```
 
 ### FieldTriggerEngine
@@ -1571,30 +1618,30 @@ getDoctype(slug: string): Doctype | undefined
 
 #### initializeRecord
 
-Initialize a new record with default values based on a schema.
+Initialize a new record with default values based on a resolved schema. Narrows by `kind` discriminator for precise branch selection.
+
+- `kind: 'table'` or `kind: 'link'` → `[]` or `{}` - `kind: 'fieldset'` → recursively initializes children as `{}` - `kind: 'field'` → derives the default from the component's category; falls back to `null`
 
 ```typescript
-initializeRecord(schema: SchemaTypes[]): Record<string, any>
+initializeRecord(schema: ResolvedField[]): Record<string, any>
 ```
 
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| schema | `SchemaTypes[]` | The schema array to derive defaults from |
+| schema | `ResolvedField[]` | The resolved schema array to derive defaults from |
 
 #### resolveSchema
 
-Resolve nested Doctype fields in a schema by embedding child schemas inline.
+Resolve a Doctype's authoring schema into a rendered schema array suitable for AForm.
 
-Accepts a Doctype and extracts `fields` and `links` internally. Fields array contains both scalar fields and link fields (with fieldtype: 'Link'). Render order is determined by the order of fields in the fields array.
+Transforms `DoctypeField[]` (authoring space) → `ResolvedField[]` (rendering space): - `kind: 'field'` (not Link) → `ResolvedScalar` - `kind: 'field'` (Link, no declaration) → `ResolvedScalar` with `component: 'AFormLink'` - `kind: 'field'` (Link, `noneOrMany`/`atLeastOne`) → `ResolvedTable` - `kind: 'field'` (Link, `one`/`atMostOne`) → `ResolvedLink` - `kind: 'fieldset'` → `ResolvedFieldset` (children resolved recursively) - `kind: 'table'` → `ResolvedTable` (columns as `ColumnSchema[]`)
 
-For each link field: - Looks up the corresponding link declaration in `links` by fieldname - `cardinality: 'noneOrMany'` or `'atLeastOne'`: auto-derives `columns` from the target's schema, sets `component` to `link.component ?? 'ATable'`, `config: { view: 'list' }`. - `cardinality: 'one'` or `'atMostOne'`: embeds the target schema as the entry's `schema` property, sets `component` to `link.component ?? 'AForm'`.
-
-Recurses for deeply nested doctypes. Circular references are protected against. Returns a new array — does not mutate the original.
+Circular references are protected against via the `visited` set.
 
 ```typescript
-resolveSchema(doctype: Doctype, visited: Set<string>): SchemaTypes[]
+resolveSchema(doctype: Doctype, visited: Set<string>): ResolvedField[]
 ```
 
 **Parameters:**
@@ -1627,7 +1674,7 @@ new SchemaValidator(options: ValidatorOptions)
 Validates a complete doctype schema
 
 ```typescript
-validate(doctype: string, schema: List<SchemaTypes> | SchemaTypes[] | undefined, workflow: AnyStateNodeConfig, actions: ImmutableMap<string, string[]> | Map<string, string[]>, links: Record<string, LinkDeclaration>): ValidationResult
+validate(doctype: string, schema: List<DoctypeField> | DoctypeField[] | undefined, workflow: AnyStateNodeConfig, actions: ImmutableMap<string, string[]> | Map<string, string[]>, links: Record<string, LinkDeclaration>): ValidationResult
 ```
 
 **Parameters:**
@@ -1635,7 +1682,7 @@ validate(doctype: string, schema: List<SchemaTypes> | SchemaTypes[] | undefined,
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | doctype | `string` | Doctype name |
-| schema | `List<SchemaTypes> \| SchemaTypes[] \| undefined` | Schema fields (List or Array) |
+| schema | `List<DoctypeField> \| DoctypeField[] \| undefined` | Schema fields (List or Array) |
 | workflow | `AnyStateNodeConfig` | Optional workflow configuration |
 | actions | `ImmutableMap<string, string[]> \| Map<string, string[]>` | Optional actions map |
 | links | `Record<string, LinkDeclaration>` | Optional links object |
@@ -2038,7 +2085,6 @@ export const useOperationLogStore: import("pinia").StoreDefinition<"hst-operatio
     config: import("vue").Ref<{
         maxOperations?: number | undefined;
         enableCrossTabSync?: boolean | undefined;
-        autoSyncInterval?: number | undefined;
         enablePersistence?: boolean | undefined;
         persistenceKeyPrefix?: string | undefined;
         userId?: string | undefined;
@@ -2046,7 +2092,6 @@ export const useOperationLogStore: import("pinia").StoreDefinition<"hst-operatio
     }, OperationLogConfig | {
         maxOperations?: number | undefined;
         enableCrossTabSync?: boolean | undefined;
-        autoSyncInterval?: number | undefined;
         enablePersistence?: boolean | undefined;
         persistenceKeyPrefix?: string | undefined;
         userId?: string | undefined;
@@ -2124,7 +2169,6 @@ export const useOperationLogStore: import("pinia").StoreDefinition<"hst-operatio
     config: import("vue").Ref<{
         maxOperations?: number | undefined;
         enableCrossTabSync?: boolean | undefined;
-        autoSyncInterval?: number | undefined;
         enablePersistence?: boolean | undefined;
         persistenceKeyPrefix?: string | undefined;
         userId?: string | undefined;
@@ -2132,7 +2176,6 @@ export const useOperationLogStore: import("pinia").StoreDefinition<"hst-operatio
     }, OperationLogConfig | {
         maxOperations?: number | undefined;
         enableCrossTabSync?: boolean | undefined;
-        autoSyncInterval?: number | undefined;
         enablePersistence?: boolean | undefined;
         persistenceKeyPrefix?: string | undefined;
         userId?: string | undefined;
@@ -2210,7 +2253,6 @@ export const useOperationLogStore: import("pinia").StoreDefinition<"hst-operatio
     config: import("vue").Ref<{
         maxOperations?: number | undefined;
         enableCrossTabSync?: boolean | undefined;
-        autoSyncInterval?: number | undefined;
         enablePersistence?: boolean | undefined;
         persistenceKeyPrefix?: string | undefined;
         userId?: string | undefined;
@@ -2218,7 +2260,6 @@ export const useOperationLogStore: import("pinia").StoreDefinition<"hst-operatio
     }, OperationLogConfig | {
         maxOperations?: number | undefined;
         enableCrossTabSync?: boolean | undefined;
-        autoSyncInterval?: number | undefined;
         enablePersistence?: boolean | undefined;
         persistenceKeyPrefix?: string | undefined;
         userId?: string | undefined;
@@ -2242,7 +2283,75 @@ export const useOperationLogStore: import("pinia").StoreDefinition<"hst-operatio
     getSnapshot: () => OperationLogSnapshot;
     markIrreversible: (operationId: string, reason: string) => void;
     logAction: (doctype: string, actionName: string, recordIds?: string[], result?: "success" | "failure" | "pending", error?: string) => string;
-}, "undo" | "redo" | "configure" | "addOperation" | "startBatch" | "commitBatch" | "cancelBatch" | "clear" | "getOperationsFor" | "getSnapshot" | "markIrreversible" | "logAction">>
+}, "clear" | "undo" | "redo" | "configure" | "addOperation" | "startBatch" | "commitBatch" | "cancelBatch" | "getOperationsFor" | "getSnapshot" | "markIrreversible" | "logAction">>
+```
+
+### useValidationStore
+
+Reactive per-field validation error store + the advisory field-validation trigger engine.
+
+Holds the errors produced by field-validation triggers (see `TriggerDefinition` in `@stonecrop/schema`) and runs a trigger's `clientHandler` on demand. Errors are **namespaced by trigger**: re-running a trigger clears its own prior contributions before repopulating, so a corrected value clears its stale error without disturbing other triggers.
+
+The engine is **advisory** and does **no rollback** — an invalid value stays in the record so the user can fix it; validity is reported separately via `isValid` (read by the save gate) and the per-field messages are surfaced via `errorsByField` / `errorsFor` for display.
+
+**Type:**
+
+```typescript
+export const useValidationStore: import("pinia").StoreDefinition<"stonecrop-validation", Pick<{
+    errors: import("vue").Ref<{
+        trigger: string;
+        field: string;
+        message: string;
+    }[], ValidationError[] | {
+        trigger: string;
+        field: string;
+        message: string;
+    }[]>;
+    isValid: import("vue").ComputedRef<boolean>;
+    errorsByField: import("vue").ComputedRef<Record<string, string[]>>;
+    errorsFor: (field: string) => string[];
+    setError: (trigger: string, field: string, message: string) => void;
+    clearTrigger: (trigger: string) => void;
+    clearAll: () => void;
+    validateField: (triggers: Record<string, TriggerDefinition>, changedField: string, record: Record<string, unknown>) => Promise<void>;
+    validateRecord: (triggers: Record<string, TriggerDefinition>, record: Record<string, unknown>) => Promise<void>;
+}, "errors">, Pick<{
+    errors: import("vue").Ref<{
+        trigger: string;
+        field: string;
+        message: string;
+    }[], ValidationError[] | {
+        trigger: string;
+        field: string;
+        message: string;
+    }[]>;
+    isValid: import("vue").ComputedRef<boolean>;
+    errorsByField: import("vue").ComputedRef<Record<string, string[]>>;
+    errorsFor: (field: string) => string[];
+    setError: (trigger: string, field: string, message: string) => void;
+    clearTrigger: (trigger: string) => void;
+    clearAll: () => void;
+    validateField: (triggers: Record<string, TriggerDefinition>, changedField: string, record: Record<string, unknown>) => Promise<void>;
+    validateRecord: (triggers: Record<string, TriggerDefinition>, record: Record<string, unknown>) => Promise<void>;
+}, "isValid" | "errorsByField">, Pick<{
+    errors: import("vue").Ref<{
+        trigger: string;
+        field: string;
+        message: string;
+    }[], ValidationError[] | {
+        trigger: string;
+        field: string;
+        message: string;
+    }[]>;
+    isValid: import("vue").ComputedRef<boolean>;
+    errorsByField: import("vue").ComputedRef<Record<string, string[]>>;
+    errorsFor: (field: string) => string[];
+    setError: (trigger: string, field: string, message: string) => void;
+    clearTrigger: (trigger: string) => void;
+    clearAll: () => void;
+    validateField: (triggers: Record<string, TriggerDefinition>, changedField: string, record: Record<string, unknown>) => Promise<void>;
+    validateRecord: (triggers: Record<string, TriggerDefinition>, record: Record<string, unknown>) => Promise<void>;
+}, "errorsFor" | "setError" | "clearTrigger" | "clearAll" | "validateField" | "validateRecord">>
 ```
 
 ## Enums

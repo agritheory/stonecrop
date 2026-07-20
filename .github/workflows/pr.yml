@@ -37,6 +37,7 @@ jobs:
             desktop: desktop/**
             graphql_client: graphql_client/**
             graphql_middleware: graphql_middleware/**
+            node_editor: node_editor/**
             rockfoil: rockfoil/**
             schema: schema/**
             stonecrop: stonecrop/**
@@ -63,7 +64,7 @@ jobs:
       # Note: .bin/prettier is a pnpm shell-script shim — do NOT prefix with `node`.
       - name: Prettier Check
         run: |
-          node common/scripts/install-run-rush.js update-autoinstaller --name rush-prettier
+          node common/scripts/install-run-rush.js install-autoinstaller --name rush-prettier
           common/autoinstallers/rush-prettier/node_modules/.bin/prettier --check .
 
       # actions/setup-node's `cache: 'pnpm'` calls `pnpm store path` during
@@ -82,8 +83,8 @@ jobs:
       - name: Rush Install
         run: node common/scripts/install-run-rush.js install
 
-      - name: Update Doc Tools Autoinstaller
-        run: node common/scripts/install-run-rush.js update-autoinstaller --name doc-tools
+      - name: Install Doc Tools Autoinstaller
+        run: node common/scripts/install-run-rush.js install-autoinstaller --name doc-tools
 
       # Restore per-repo build cache so Rush skips unchanged packages.
       # Type-aware oxlint (oxlint-tsgolint) requires compiled .d.ts files from
@@ -117,11 +118,21 @@ jobs:
         run: node common/scripts/install-run-rush.js lint
 
       # rush-plugins is required for the rush-sort-package-json plugin to load.
-      - name: Update Autoinstallers
-        run: node common/scripts/install-run-rush.js update-autoinstaller --name rush-plugins
+      - name: Install Autoinstallers
+        run: node common/scripts/install-run-rush.js install-autoinstaller --name rush-plugins
 
+      # "rush sort-package-json" rewrites the files in place, so on its own it only
+      # sorts a throwaway checkout and discards the result.  The "git diff" below is
+      # what actually enforces the convention: it fails the build when a committed
+      # package.json is not in sorted order.  Run "rush sort-package-json" locally
+      # and commit the result to resolve a failure here.
       - name: Sort package.json
         run: node common/scripts/install-run-rush.js sort-package-json
+
+      # Scoped to package.json so an unrelated file touched by an earlier step
+      # cannot fail this check with a misleading message.
+      - name: Verify package.json Is Sorted
+        run: git diff --exit-code -- '*package.json'
 
       - name: Verify Change Files
         run: node common/scripts/install-run-rush.js change --verify
@@ -176,10 +187,10 @@ jobs:
       - name: Rush Install
         run: node common/scripts/install-run-rush.js install
 
-      - name: Update Autoinstallers
+      - name: Install Autoinstallers
         run: |
-          node common/scripts/install-run-rush.js update-autoinstaller --name rush-plugins
-          node common/scripts/install-run-rush.js update-autoinstaller --name doc-tools
+          node common/scripts/install-run-rush.js install-autoinstaller --name rush-plugins
+          node common/scripts/install-run-rush.js install-autoinstaller --name doc-tools
 
       # Build only the dependency closure for this package, not the whole repo.
       # Matrix uses folder names; Rush --to requires the npm package name.
@@ -191,6 +202,20 @@ jobs:
 
       - name: Rush Build
         run: node common/scripts/install-run-rush.js build --to ${{ steps.pkg.outputs.name }}
+
+      # Nothing else typechecks single-file components: `heft build` compiles only .ts and
+      # `vite build` does not typecheck, so a type error inside a <script setup> block — or in a
+      # template binding — shipped silently. Only vue-tsc reads .vue, and it needs the dependency
+      # closure built above for cross-package types to resolve.
+      # Packages opt in by defining a `test:types` script, the same way `lint` works.
+      - name: Typecheck
+        working-directory: ./${{ matrix.package }}
+        run: |
+          if node -e "process.exit(require('./package.json').scripts?.['test:types'] ? 0 : 1)"; then
+            node ../common/scripts/install-run-rushx.js test:types
+          else
+            echo "No test:types script for ${{ matrix.package }} — skipping."
+          fi
 
       - name: Run Tests
         working-directory: ./${{ matrix.package }}

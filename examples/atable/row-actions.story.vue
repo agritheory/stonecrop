@@ -68,6 +68,40 @@
 				v-model:columns="uncounted_table.columns"
 				:config="uncounted_table.config" />
 		</Variant>
+
+		<Variant title="clickable rows (row:click)">
+			<p>
+				Set <code>config.clickable: true</code> to enable pointer cursor and hover styling. ATable emits
+				<code>row:click</code> with <code>{ row, rowIndex, event }</code>.
+			</p>
+			<div class="event-log">
+				<strong>Last clicked:</strong>
+				<span v-if="lastClickedRow">row {{ lastClickedRow.rowIndex }} — {{ lastClickedRow.row.name }}</span>
+				<span v-else>—</span>
+			</div>
+			<ATable
+				v-model:rows="clickable_table.rows"
+				v-model:columns="clickable_table.columns"
+				:config="clickable_table.config"
+				@row:click="e => (lastClickedRow = e)" />
+		</Variant>
+
+		<Variant title="open action (row:open)">
+			<p>
+				Add <code>open: true</code> to <code>rowActions.actions</code> to show an open/view icon per row. Emits
+				<code>row:open</code> with <code>{ row, rowIndex }</code>.
+			</p>
+			<div class="event-log">
+				<strong>Last opened:</strong>
+				<span v-if="lastOpenedRow">row {{ lastOpenedRow.rowIndex }} — {{ lastOpenedRow.row.name }}</span>
+				<span v-else>—</span>
+			</div>
+			<ATable
+				v-model:rows="open_action_table.rows"
+				v-model:columns="open_action_table.columns"
+				:config="open_action_table.config"
+				@row:open="e => (lastOpenedRow = e)" />
+		</Variant>
 	</Story>
 </template>
 
@@ -76,6 +110,7 @@ import type {
 	TableColumn,
 	TableConfig,
 	RowAddEvent,
+	RowClickEvent,
 	RowDeleteEvent,
 	RowDuplicateEvent,
 	RowInsertEvent,
@@ -95,7 +130,6 @@ const columns: TableColumn[] = [
 	{
 		label: 'ID',
 		name: 'id',
-		fieldtype: 'Int',
 		align: 'left',
 		edit: false,
 		width: '3ch',
@@ -103,7 +137,6 @@ const columns: TableColumn[] = [
 	{
 		label: 'Name',
 		name: 'name',
-		fieldtype: 'Data',
 		align: 'left',
 		edit: true,
 		width: '25ch',
@@ -111,7 +144,6 @@ const columns: TableColumn[] = [
 	{
 		label: 'Email',
 		name: 'email',
-		fieldtype: 'Data',
 		align: 'left',
 		edit: true,
 		width: '30ch',
@@ -119,7 +151,6 @@ const columns: TableColumn[] = [
 	{
 		label: 'Status',
 		name: 'status',
-		fieldtype: 'Data',
 		align: 'center',
 		edit: true,
 		width: '15ch',
@@ -129,6 +160,8 @@ const columns: TableColumn[] = [
 // Event logging
 const basicEvents = ref<string[]>([])
 const allActionsEvents = ref<string[]>([])
+const lastClickedRow = ref<RowClickEvent | null>(null)
+const lastOpenedRow = ref<RowClickEvent | null>(null)
 
 const logEvent = (
 	eventLog: typeof basicEvents.value,
@@ -268,6 +301,32 @@ const uncounted_table = reactive({
 		},
 	} as TableConfig,
 })
+
+// Clickable rows table (row:click)
+const clickable_table = reactive({
+	rows: createSampleRows(),
+	columns: [...columns],
+	config: {
+		view: 'list',
+		clickable: true,
+	} as TableConfig,
+})
+
+// Open action table (row:open)
+const open_action_table = reactive({
+	rows: createSampleRows(),
+	columns: [...columns],
+	config: {
+		view: 'list',
+		rowActions: {
+			enabled: true,
+			actions: {
+				open: true,
+				delete: true,
+			},
+		},
+	} as TableConfig,
+})
 </script>
 
 <style scoped>
@@ -324,10 +383,12 @@ rowActions: {
 
 ## Events
 
+- `row:click` - Emitted when a row is clicked (requires `config.clickable: true` for hover styling, but fires for any row click)
 - `row:add` - Emitted when a row is added
 - `row:delete` - Emitted when a row is deleted
 - `row:duplicate` - Emitted when a row is duplicated
 - `row:insert-above` - Emitted when a row is inserted above
 - `row:insert-below` - Emitted when a row is inserted below
 - `row:move` - Emitted when a row move is requested
+- `row:open` - Emitted when the `open` row action is clicked
 </docs>

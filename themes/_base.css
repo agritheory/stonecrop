@@ -1,0 +1,24 @@
+/*
+Base normalization shared across Stonecrop themes.
+
+Browsers exclude form controls (button/input/select/textarea) and code elements
+from font inheritance, giving them their own defaults (Arial, monospace) while every
+other element inherits the document font. This normalizes them to inherit too, so
+whatever font a theme applies via --sc-font-family governs the whole page — no per-app
+or per-component font overrides required.
+
+This file only normalizes inheritance; it never names a font. The font *choice* stays
+a theme concern (--sc-font-family), which keeps this safe to include from any theme
+regardless of the typeface it picks.
+*/
+button,
+input,
+select,
+textarea,
+optgroup,
+code,
+kbd,
+samp,
+pre {
+	font-family: inherit;
+}

@@ -1,9 +1,32 @@
-import { defineVitestConfig } from '@nuxt/test-utils/config'
+import { fileURLToPath } from 'node:url'
 
-export default defineVitestConfig({
-	// defineVitestConfig automatically sets up the correct environment
-	// Don't override environment here - it breaks the automatic Nuxt environment setup
+import { defineConfig } from 'vitest/config'
+
+// This package's tests all run in a plain `node` environment — NOT under @nuxt/test-utils'
+// `defineVitestConfig`. That wrapper installs the Nuxt-client machinery (including the Vue SFC
+// compiler) into vitest's Vite instance for every test it governs, which then breaks the
+// @nuxt/test-utils/e2e `setup()` build with "MagicString is not a constructor"
+// (nuxt/nuxt#34645; @vue/compiler-sfc@3.5.x's bare `require('magic-string')` resolves to the
+// ESM namespace, not the constructor). Per the Nuxt maintainers, `defineVitestConfig` is only
+// for tests that need the Nuxt client runtime — and none here do (the composable tests mock
+// `nuxt/app`; the rest are pure logic or the e2e harness). If a test is added that genuinely
+// needs the Nuxt runtime (e.g. `mountSuspended`), split this into a projects-based config and
+// put that test in a `defineVitestProject({ environment: 'nuxt' })` project (which pulls in
+// `happy-dom`), leaving the node/e2e tests here untouched.
+export default defineConfig({
+	resolve: {
+		alias: {
+			// grafast is not a dependency of this package (it belongs to consumer server
+			// contexts), but the templates/fullstack resolver modules import it at top level.
+			// The stub throws on any call — tests may exercise only the pure formatting helpers
+			// those modules export.
+			grafast: fileURLToPath(new URL('./test/stubs/grafast.ts', import.meta.url)),
+		},
+	},
 	test: {
+		environment: 'node',
+		include: ['test/**/*.test.ts'],
+		exclude: ['**/node_modules/**', '**/fixtures/**'],
 		tags: [
 			{ name: 'unit', description: 'Pure logic test — no DOM, network, or framework runtime.' },
 			{ name: 'component', description: 'Vue component test using jsdom + @vue/test-utils.' },

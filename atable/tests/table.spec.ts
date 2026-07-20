@@ -6,12 +6,18 @@ import type { ColumnSchema } from '@stonecrop/schema'
 
 // Mock VueUse functions
 vi.mock('@vueuse/core', () => ({
+	// The real composable always returns all of these; omitting left/bottom made the mock a shape
+	// the library never produces, which is how a TypeError in ACell's $patch went unnoticed.
 	useElementBounding: vi.fn(() => ({
+		left: { value: 10 },
+		bottom: { value: 60 },
 		width: { value: 200 },
 		height: { value: 100 },
 	})),
 	useDebounceFn: vi.fn(fn => fn),
 	useMutationObserver: vi.fn(),
+	useResizeObserver: vi.fn(),
+	onClickOutside: vi.fn(),
 }))
 
 vi.mock('@vueuse/components', () => ({
@@ -23,7 +29,7 @@ import data from './data/http_logs.json'
 import ACell from '../src/components/ACell.vue'
 import ARow from '../src/components/ARow.vue'
 import ATable from '../src/components/ATable.vue'
-import type { GanttOptions, TableColumn, TableConfig, TableRow } from '../src/types'
+import type { GanttOptions, RowClickEvent, TableColumn, TableConfig, TableRow } from '../src/types'
 
 function getBasicRows(): TableRow[] {
 	return [
@@ -39,7 +45,7 @@ describe('table component', { tags: ['component'] }, () => {
 		{
 			label: 'Home Page',
 			name: 'home_page',
-			fieldtype: 'Data',
+			component: 'ATextInput',
 			align: 'left',
 			edit: false,
 			width: '35ch',
@@ -48,7 +54,7 @@ describe('table component', { tags: ['component'] }, () => {
 		{
 			label: 'HTTP Method',
 			name: 'http_method',
-			fieldtype: 'Data',
+			component: 'ATextInput',
 			align: 'left',
 			edit: true,
 			width: '20ch',
@@ -56,7 +62,7 @@ describe('table component', { tags: ['component'] }, () => {
 		{
 			label: 'Report Date',
 			name: 'report_date',
-			fieldtype: 'Date',
+			component: 'ADate',
 			align: 'center',
 			edit: true,
 			width: '25ch',
@@ -125,7 +131,7 @@ describe('table component', { tags: ['component'] }, () => {
 			{
 				label: 'Home Page',
 				name: 'home_page',
-				fieldtype: 'Data',
+				component: 'ATextInput',
 				align: 'left',
 				edit: false,
 				width: '35ch',
@@ -134,7 +140,7 @@ describe('table component', { tags: ['component'] }, () => {
 			{
 				label: 'HTTP Method',
 				name: 'http_method',
-				fieldtype: 'Data',
+				component: 'ATextInput',
 				align: 'left',
 				edit: true,
 				width: '20ch',
@@ -142,7 +148,7 @@ describe('table component', { tags: ['component'] }, () => {
 			{
 				label: 'Report Date',
 				name: 'report_date',
-				fieldtype: 'Date',
+				component: 'ADate',
 				align: 'center',
 				edit: true,
 				width: '25ch',
@@ -180,7 +186,7 @@ describe('table component', { tags: ['component'] }, () => {
 			{
 				label: 'Home Page',
 				name: 'home_page',
-				fieldtype: 'Data',
+				component: 'ATextInput',
 				align: 'left',
 				edit: false,
 				width: '35ch',
@@ -188,7 +194,7 @@ describe('table component', { tags: ['component'] }, () => {
 			{
 				label: 'HTTP Method',
 				name: 'http_method',
-				fieldtype: 'Data',
+				component: 'ATextInput',
 				align: 'left',
 				edit: true,
 				width: '20ch',
@@ -196,7 +202,7 @@ describe('table component', { tags: ['component'] }, () => {
 			{
 				label: 'Report Date',
 				name: 'report_date',
-				fieldtype: 'Date',
+				component: 'ADate',
 				align: 'center',
 				edit: true,
 				width: '25ch',
@@ -505,6 +511,76 @@ describe('table component', { tags: ['component'] }, () => {
 		})
 	})
 
+	it('should emit row:click when a row is clicked', async () => {
+		const rows = getBasicRows()
+		const wrapper = mount(ATable, {
+			props: {
+				rows,
+				columns: basicColumns,
+			},
+		})
+
+		await nextTick()
+
+		const tr = wrapper.find('tbody tr')
+		await tr.trigger('click')
+
+		expect(wrapper.emitted('row:click')).toBeTruthy()
+		const event = wrapper.emitted('row:click')?.[0][0] as RowClickEvent
+		expect(event.rowIndex).toBe(0)
+		expect(event.row).toEqual(rows[0])
+	})
+
+	it('should add atable-row-clickable class when config.clickable is true', async () => {
+		const wrapper = mount(ATable, {
+			props: {
+				rows: getBasicRows(),
+				columns: basicColumns,
+				config: { clickable: true },
+			},
+		})
+
+		await nextTick()
+
+		const tr = wrapper.find('tbody tr')
+		expect(tr.classes()).toContain('atable-row-clickable')
+	})
+
+	it('should emit row:open when open row action is triggered', async () => {
+		const rows = getBasicRows()
+		const wrapper = mount(ATable, {
+			props: {
+				rows,
+				columns: basicColumns,
+				config: {
+					rowActions: {
+						enabled: true,
+						actions: { open: true },
+					},
+				},
+			},
+		})
+
+		await nextTick()
+
+		// Trigger open action via store directly (simulate what ARowActions does)
+		const tableStore = wrapper.vm.store
+		// Manually invoke handleRowAction through the exposed store event mechanism
+		tableStore.$onAction(() => {
+			// no-op listener to ensure watchers fire
+		})
+
+		// Trigger via the row:action event on ARow
+		const aRow = wrapper.findComponent(ARow)
+		aRow.vm.$emit('row:action', 'open', 0, undefined)
+		await nextTick()
+
+		expect(wrapper.emitted('row:open')).toBeTruthy()
+		const event = wrapper.emitted('row:open')?.[0][0] as RowClickEvent
+		expect(event.rowIndex).toBe(0)
+		expect(event.row).toEqual(rows[0])
+	})
+
 	it('should expose store and connection methods', () => {
 		const wrapper = mount(ATable, {
 			props: {
@@ -589,6 +665,25 @@ describe('table component', { tags: ['component'] }, () => {
 		expect(wrapper.emitted('columns:update')).toBeTruthy()
 		const emittedColumns = wrapper.emitted('columns:update')?.[0][0] as TableColumn[]
 		expect(emittedColumns[0].width).toBe('150px')
+	})
+
+	it('keeps the resolved columns when the columns model is cleared', async () => {
+		// `columns` is a defineModel, so it is optional and a consumer can bind it to undefined.
+		// The watcher spread it unguarded, throwing "newColumns is not iterable".
+		const initialColumns: TableColumn[] = [
+			{ name: 'id', label: 'ID', width: '100px' },
+			{ name: 'name', label: 'Name', width: '200px' },
+		]
+
+		const wrapper = mount(ATable, {
+			props: { rows: getBasicRows(), columns: initialColumns },
+		})
+		expect(wrapper.vm.store.columns).toEqual(initialColumns)
+
+		await wrapper.setProps({ columns: undefined })
+
+		// Nothing to sync from, so the store keeps what it already resolved.
+		expect(wrapper.vm.store.columns).toEqual(initialColumns)
 	})
 
 	it('should work with v-model:columns using model prop', async () => {
@@ -1097,8 +1192,8 @@ describe('Schema-driven columns', { tags: ['component'] }, () => {
 
 	it('renders columns derived from schema when no columns prop is provided', () => {
 		const schema: ColumnSchema[] = [
-			{ fieldname: 'name', fieldtype: 'Data', label: 'Name', width: '200px' },
-			{ fieldname: 'status', fieldtype: 'Data', label: 'Status', width: '150px' },
+			{ fieldname: 'name', component: 'ATextInput', label: 'Name', width: '200px' },
+			{ fieldname: 'status', component: 'ATextInput', label: 'Status', width: '150px' },
 		]
 		const wrapper = mount(ATable, {
 			props: {
@@ -1117,8 +1212,8 @@ describe('Schema-driven columns', { tags: ['component'] }, () => {
 
 	it('excludes hidden fields from derived columns', () => {
 		const schema: ColumnSchema[] = [
-			{ fieldname: 'name', fieldtype: 'Data', label: 'Name' },
-			{ fieldname: 'secret', fieldtype: 'Data', label: 'Secret', hidden: true },
+			{ fieldname: 'name', component: 'ATextInput', label: 'Name' },
+			{ fieldname: 'secret', component: 'ATextInput', label: 'Secret', hidden: true },
 		]
 		const wrapper = mount(ATable, {
 			props: {
@@ -1135,7 +1230,7 @@ describe('Schema-driven columns', { tags: ['component'] }, () => {
 	})
 
 	it('explicit columns prop takes precedence over schema when both are provided', () => {
-		const schema: ColumnSchema[] = [{ fieldname: 'name', fieldtype: 'Data', label: 'Name from Schema' }]
+		const schema: ColumnSchema[] = [{ fieldname: 'name', component: 'ATextInput', label: 'Name from Schema' }]
 		const explicitColumns: TableColumn[] = [
 			{ name: 'id', label: 'ID', width: '100px' },
 			{ name: 'name', label: 'Name from Columns', width: '200px' },

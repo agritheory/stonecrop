@@ -1,10 +1,9 @@
-import type { SchemaTypes } from '@stonecrop/aform'
-import type { LinkDeclaration, WorkflowMeta } from '@stonecrop/schema'
+import type { DoctypeField, LinkDeclaration, TriggerDefinition, WorkflowMeta } from '@stonecrop/schema'
+import { isActionAllowedInState, normalizeFieldKind } from '@stonecrop/schema'
 import { List, Map } from 'immutable'
 import { Component } from 'vue'
 
-import type { ImmutableDoctype } from './types'
-import type { DoctypeConfig } from './types/doctype'
+import type { DoctypeConfig, ImmutableDoctype } from './types/doctype'
 
 /**
  * Doctype runtime class with Immutable.js collections for HST change tracking.
@@ -112,8 +111,8 @@ export default class Doctype {
 	 * const planDoctype = Doctype.fromObject({
 	 *   name: 'Plan',
 	 *   fields: [
-	 *     { fieldname: 'title', label: 'Title', fieldtype: 'Data' },
-	 *     { fieldname: 'status', label: 'Status', fieldtype: 'Data' },
+	 *     { fieldname: 'title', label: 'Title', component: 'ATextInput' },
+	 *     { fieldname: 'status', label: 'Status', component: 'ATextInput' },
 	 *   ],
 	 *   workflow: {
 	 *     id: 'plan',
@@ -126,28 +125,34 @@ export default class Doctype {
 	 * @public
 	 */
 	static fromObject(config: DoctypeConfig): Doctype {
-		const schema = config.fields ? List(config.fields) : List<SchemaTypes>()
+		// Authored JSON may omit the `kind` discriminant; the Zod schema injects it via a
+		// preprocess, but this path bypasses Zod. Normalize here so the registry's
+		// `resolveFields` (which gates link/fieldset handling on `field.kind`) sees the same
+		// shape a parsed doctype would — otherwise links silently fail to expand.
+		// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- normalizeFieldKind only injects the `kind` discriminant; the field shape is otherwise preserved
+		const fields = config.fields?.map(normalizeFieldKind) as DoctypeField[] | undefined
+		const schema = fields ? List(fields) : List<DoctypeField>()
 		const actions = config.actions ? Map(config.actions) : Map<string, string[]>()
 
 		return new Doctype(config.name, schema, config.workflow, actions, undefined, config.links)
 	}
 
 	/**
-	 * Returns the schema as a plain array for use with components that expect
-	 * plain JavaScript arrays (e.g., AForm, ATable).
+	 * Returns the raw authoring schema as a plain array.
+	 * For the resolved schema suitable for AForm, use `registry.resolveSchema(doctype)`.
 	 *
-	 * @returns Array of schema fields
+	 * @returns Array of raw DoctypeField authoring definitions
 	 *
 	 * @example
 	 * ```ts
-	 * const schemaArray = doctype.getSchemaArray()
-	 * // Use with AForm
-	 * <AForm :schema="schemaArray" v-model:data="formData" />
+	 * const fields = doctype.getSchemaArray()
+	 * // Pass to resolveSchema for AForm-ready output:
+	 * const resolved = registry.resolveSchema(doctype)
 	 * ```
 	 *
 	 * @public
 	 */
-	getSchemaArray(): SchemaTypes[] {
+	getSchemaArray(): DoctypeField[] {
 		if (!this.schema) return []
 		return this.schema.toArray()
 	}
@@ -194,18 +199,16 @@ export default class Doctype {
 			const actions = (workflow as WorkflowMeta).actions
 			if (!actions) return []
 
-			return Object.entries(actions)
-				.filter(([, actionDef]) => {
-					const allowedStates = actionDef.allowedStates
-					// If no allowedStates specified, action is available in all valid states
-					if (!allowedStates || allowedStates.length === 0) return true
-					return allowedStates.includes(currentState)
-				})
-				.map(([name]) => ({
-					name,
-					// WorkflowMeta doesn't define target states - transitions are handled server-side
-					targetState: currentState,
-				}))
+			return (
+				Object.entries(actions)
+					// Exclude stateless Commands — they change no state and are surfaced separately
+					// via getAvailableCommands(). Genuine transitions carry a nextState.
+					.filter(([, actionDef]) => !actionDef.stateless && isActionAllowedInState(actionDef, currentState))
+					.map(([name, actionDef]) => ({
+						name,
+						targetState: actionDef.nextState ?? currentState,
+					}))
+			)
 		}
 
 		// XState format: use the on property of the state
@@ -220,6 +223,63 @@ export default class Doctype {
 	}
 
 	/**
+	 * Returns the stateless **Commands** available in a given workflow state — side-effect
+	 * actions (save/print/email…) that do not change workflow state. Unlike transitions,
+	 * Commands may exist on a workflow that declares no `states` (a commands-only doctype),
+	 * and a Command with no `allowedStates` is available in every state.
+	 *
+	 * Only meaningful for WorkflowMeta format; XState workflows have no Commands.
+	 *
+	 * @param currentState - The record's current state, used to honor a Command's `allowedStates`
+	 * @returns Array of command descriptors with `name`
+	 *
+	 * @example
+	 * ```ts
+	 * const commands = doctype.getAvailableCommands('Draft')
+	 * // [{ name: 'Print' }]
+	 * ```
+	 *
+	 * @public
+	 */
+	getAvailableCommands(currentState?: string): Array<{ name: string }> {
+		const workflow = this.workflow
+		if (!workflow) return []
+
+		// Only WorkflowMeta carries an `actions` map; XState workflows have no Commands.
+		// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- probing the workflow union for the optional WorkflowMeta actions map
+		const actions = (workflow as WorkflowMeta).actions
+		if (!actions) return []
+
+		return Object.entries(actions)
+			.filter(([, actionDef]) => actionDef.stateless === true && isActionAllowedInState(actionDef, currentState ?? ''))
+			.map(([name]) => ({ name }))
+	}
+
+	/**
+	 * Returns the field-validation **triggers** declared on this doctype's workflow (advisory,
+	 * client-side). Keyed by trigger name. Returns undefined when the workflow is absent, is an
+	 * XState machine (no triggers), or simply declares none.
+	 *
+	 * @returns The `workflow.triggers` map, or undefined
+	 *
+	 * @example
+	 * ```ts
+	 * const triggers = doctype.getTriggers()
+	 * // { dateOrder: { on: ['start_date', 'end_date'], clientHandler: '…' } }
+	 * ```
+	 *
+	 * @public
+	 */
+	getTriggers(): Record<string, TriggerDefinition> | undefined {
+		const workflow = this.workflow
+		if (!workflow) return undefined
+
+		// Only WorkflowMeta carries a `triggers` map; XState workflows have none.
+		// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- probing the workflow union for the optional WorkflowMeta triggers map
+		return (workflow as WorkflowMeta).triggers
+	}
+
+	/**
 	 * Returns metadata for a specific action, if available.
 	 * Only works with WorkflowMeta format; returns undefined for XState format.
 	 *
@@ -229,7 +289,7 @@ export default class Doctype {
 	 * @example
 	 * ```ts
 	 * const actionMeta = doctype.getActionMeta('submit')
-	 * // { label: 'Submit', handler: 'plan:submit', allowedStates: ['draft'] }
+	 * // { label: 'Submit', allowedStates: ['draft'] }
 	 * ```
 	 *
 	 * @public
@@ -237,17 +297,16 @@ export default class Doctype {
 	getActionMeta(actionName: string):
 		| {
 				label: string
-				handler: string
 				requiredFields?: string[]
 				allowedStates?: string[]
-				confirm?: boolean
-				args?: Record<string, unknown>
 		  }
 		| undefined {
 		const workflow = this.workflow
-		if (!workflow || !Array.isArray(workflow.states)) return undefined
+		if (!workflow) return undefined
 
-		// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Array.isArray(workflow.states) confirms WorkflowMeta format above
+		// Only WorkflowMeta carries an `actions` map (with labels); XState workflows have none.
+		// Don't require a `states` array — a commands-only doctype has labeled actions but no states.
+		// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- probing the workflow union for the optional WorkflowMeta actions map
 		const actions = (workflow as WorkflowMeta).actions
 		return actions?.[actionName]
 	}

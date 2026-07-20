@@ -163,7 +163,7 @@ describe('Desktop props', { tags: ['component'] }, () => {
 					draft: { on: { SUBMIT: 'submitted' } },
 					submitted: { type: 'final' },
 				},
-				[{ fieldname: 'uuid', fieldtype: 'Data', label: 'UUID', component: 'ATextInput' }]
+				[{ kind: 'field' as const, fieldname: 'uuid', label: 'UUID', component: 'ATextInput' }]
 			)
 			registry.addDoctype(doctype)
 			stonecrop.addRecord('task', 'task-1', { id: 1, uuid: 'uuid-abc-123', title: 'My Task' })
@@ -201,7 +201,9 @@ describe('Desktop props', { tags: ['component'] }, () => {
 			const schemaFields = tableSchema.schema as any[]
 			expect(schemaFields.some((f: any) => f.fieldname === 'uuid')).toBe(true)
 
-			const rows = tableSchema.rows as any[]
+			// Rows are now in formData (data prop), not in the schema
+			const data = aform.props('data') as Record<string, any>
+			const rows = data['records_table'] as any[]
 			expect(rows[0].id).toBe('uuid-abc-123')
 		})
 

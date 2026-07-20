@@ -60,7 +60,7 @@ graph TB
         PHST[provideHSTPath]
         HHST[handleHSTChange]
         SDUP[setupDeepReactivity]
-        INR[initializeNewRecord]
+        INR[initializeRecord]
     end
 
     subgraph "HST Path Management"
@@ -170,7 +170,7 @@ sequenceDiagram
         SC->>HST: get record data
         HST-->>US: existing formData
     else New record
-        US->>US: initializeNewRecord(doctype)
+        US->>US: initializeRecord(resolvedSchema)
     end
 
     US->>US: setupDeepReactivity(formData, hstStore)

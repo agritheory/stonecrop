@@ -1,4 +1,3 @@
-import type { SchemaTypes } from '@stonecrop/aform'
 import { mount } from '@vue/test-utils'
 import { List, Map } from 'immutable'
 import { createPinia, setActivePinia } from 'pinia'
@@ -21,11 +20,12 @@ import Doctype from '../../src/doctype'
 const createMockDoctype = (name: string) => {
 	const mockSchema = List([
 		{
+			kind: 'field',
 			fieldname: 'title',
 			component: 'ATextInput',
 			label: 'Title',
 		},
-	] as SchemaTypes[])
+	])
 
 	const mockWorkflow: MachineConfig<any, any, any> = {
 		id: name.toLowerCase(),
@@ -99,14 +99,14 @@ describe('useStonecrop composable', { tags: ['unit'] }, () => {
 		// Wait for onMounted to complete
 		await wrapper.vm.$nextTick()
 
-		const vm = wrapper.vm as any
+		const vm = wrapper.vm
 		expect(vm.stonecrop).toBeDefined()
 
 		// Should be Stonecrop instance after onMounted
 		expect(vm.stonecrop).toBeInstanceOf(Stonecrop)
 		// Check that the registry is the same (comparing name instead of object identity)
-		expect(vm.stonecrop.registry.name).toBe(registry.name)
-		expect(vm.stonecrop.getStore).toBeDefined()
+		expect(vm.stonecrop!.registry.name).toBe(registry.name)
+		expect(vm.stonecrop!.getStore).toBeDefined()
 	})
 
 	it('uses injected registry when no registry is provided', async () => {
@@ -129,11 +129,11 @@ describe('useStonecrop composable', { tags: ['unit'] }, () => {
 		// Wait for onMounted to complete
 		await wrapper.vm.$nextTick()
 
-		const vm = wrapper.vm as any
+		const vm = wrapper.vm
 		expect(vm.stonecrop).toBeDefined()
 		expect(vm.stonecrop).toBeInstanceOf(Stonecrop)
 		// Check that the registry is the same (comparing name instead of object identity)
-		expect(vm.stonecrop.registry.name).toBe(registry.name)
+		expect(vm.stonecrop!.registry.name).toBe(registry.name)
 	})
 
 	it('sets undefined stonecrop instance when no registry is available', async () => {
@@ -157,7 +157,7 @@ describe('useStonecrop composable', { tags: ['unit'] }, () => {
 		const wrapper = mount(TestComponent)
 		await wrapper.vm.$nextTick()
 
-		const vm = wrapper.vm as any
+		const vm = wrapper.vm
 		// The stonecrop ref should remain undefined due to error in onMounted
 		expect(vm.stonecrop).toBeUndefined()
 
@@ -188,7 +188,7 @@ describe('useStonecrop composable', { tags: ['unit'] }, () => {
 		// Wait for onMounted to complete
 		await wrapper.vm.$nextTick()
 
-		const vm = wrapper.vm as any
+		const vm = wrapper.vm
 		// Should still create Stonecrop instance
 		expect(vm.stonecrop).toBeInstanceOf(Stonecrop)
 	})
@@ -235,7 +235,7 @@ describe('useStonecrop composable', { tags: ['unit'] }, () => {
 		await wrapper.vm.$nextTick()
 		await new Promise(resolve => setTimeout(resolve, 10))
 
-		const vm = wrapper.vm as any
+		const vm = wrapper.vm
 		expect(mockGetMeta).toHaveBeenCalledWith({
 			path: '/task',
 			segments: ['task'],
@@ -243,7 +243,7 @@ describe('useStonecrop composable', { tags: ['unit'] }, () => {
 
 		// Check that HST store has the doctype section
 		expect(vm.stonecrop).toBeDefined()
-		const store = vm.stonecrop.getStore()
+		const store = vm.stonecrop!.getStore()
 		expect(store.has('task')).toBe(true)
 	})
 
@@ -289,7 +289,7 @@ describe('useStonecrop composable', { tags: ['unit'] }, () => {
 		await wrapper.vm.$nextTick()
 		await new Promise(resolve => setTimeout(resolve, 10))
 
-		const vm = wrapper.vm as any
+		const vm = wrapper.vm
 		expect(mockGetMeta).toHaveBeenCalledWith({
 			path: '/task/123',
 			segments: ['task', '123'],
@@ -297,7 +297,7 @@ describe('useStonecrop composable', { tags: ['unit'] }, () => {
 
 		// Check that stonecrop is working
 		expect(vm.stonecrop).toBeDefined()
-		expect(vm.stonecrop.getRecordIds('task').length).toBeGreaterThan(0)
+		expect(vm.stonecrop!.getRecordIds('task').length).toBeGreaterThan(0)
 	})
 
 	it('returns early when no doctype slug or record id', async () => {
@@ -356,14 +356,14 @@ describe('useStonecrop composable', { tags: ['unit'] }, () => {
 		// Wait for onMounted to complete
 		await wrapper.vm.$nextTick()
 
-		const vm = wrapper.vm as any
+		const vm = wrapper.vm
 		expect(vm.stonecrop).toBeDefined()
 		// Test HST-based methods exist
-		expect(typeof vm.stonecrop.records).toBe('function')
-		expect(typeof vm.stonecrop.addRecord).toBe('function')
+		expect(typeof vm.stonecrop!.records).toBe('function')
+		expect(typeof vm.stonecrop!.addRecord).toBe('function')
 
 		// Test that records returns HST node
-		const records = vm.stonecrop.records('task')
+		const records = vm.stonecrop!.records('task')
 		expect(records.getPath).toBeDefined()
 		expect(records.getPath()).toBe('task')
 	})
@@ -593,7 +593,7 @@ describe('useStonecrop with string doctype lazy-loading', { tags: ['unit'] }, ()
 		await wrapper.vm.$nextTick()
 		await new Promise(resolve => setTimeout(resolve, 10))
 
-		const vm = wrapper.vm as any
+		const vm = wrapper.vm
 
 		// getMeta should have been called
 		expect(mockGetMeta).toHaveBeenCalledWith({
@@ -638,7 +638,7 @@ describe('useStonecrop with string doctype lazy-loading', { tags: ['unit'] }, ()
 		await wrapper.vm.$nextTick()
 		await new Promise(resolve => setTimeout(resolve, 10))
 
-		const vm = wrapper.vm as any
+		const vm = wrapper.vm
 
 		// getMeta should NOT have been called since doctype was in registry
 		expect(mockGetMeta).not.toHaveBeenCalled()
@@ -670,7 +670,7 @@ describe('useStonecrop with string doctype lazy-loading', { tags: ['unit'] }, ()
 		await wrapper.vm.$nextTick()
 		await new Promise(resolve => setTimeout(resolve, 10))
 
-		const vm = wrapper.vm as any
+		const vm = wrapper.vm
 
 		// isLoading should be false
 		expect(vm.isLoading).toBe(false)
@@ -706,7 +706,7 @@ describe('useStonecrop with string doctype lazy-loading', { tags: ['unit'] }, ()
 		await wrapper.vm.$nextTick()
 		await new Promise(resolve => setTimeout(resolve, 10))
 
-		const vm = wrapper.vm as any
+		const vm = wrapper.vm
 
 		expect(vm.isLoading).toBe(false)
 		expect(vm.error).toBeDefined()
@@ -736,7 +736,7 @@ describe('useStonecrop with string doctype lazy-loading', { tags: ['unit'] }, ()
 		await wrapper.vm.$nextTick()
 		await new Promise(resolve => setTimeout(resolve, 10))
 
-		const vm = wrapper.vm as any
+		const vm = wrapper.vm
 
 		expect(vm.isLoading).toBe(false)
 		expect(vm.error).toBeDefined()
@@ -767,7 +767,7 @@ describe('useStonecrop with string doctype lazy-loading', { tags: ['unit'] }, ()
 			},
 		})
 
-		const vm = wrapper.vm as any
+		const vm = wrapper.vm
 
 		// resolvedDoctype should be set immediately for Doctype instance
 		expect(vm.immediateResolvedDoctype).toBeDefined()

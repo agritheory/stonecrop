@@ -1,22 +1,22 @@
 {
 	"name": "@stonecrop/graphql-client",
-	"version": "0.13.6",
-	"license": "MIT",
-	"type": "module",
-	"author": {
-		"name": "Tyler Matteson",
-		"email": "tyler@agritheory.com"
+	"version": "0.15.0",
+	"description": "GraphQL client integration for Stonecrop",
+	"bugs": {
+		"url": "https://github.com/agritheory/stonecrop/issues"
 	},
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/agritheory/stonecrop",
 		"directory": "graphql_client"
 	},
-	"bugs": {
-		"url": "https://github.com/agritheory/stonecrop/issues"
+	"license": "MIT",
+	"author": {
+		"name": "Tyler Matteson",
+		"email": "tyler@agritheory.com"
 	},
-	"description": "GraphQL client integration for Stonecrop",
-	"types": "./dist/graphql-client.d.ts",
+	"sideEffects": false,
+	"type": "module",
 	"exports": {
 		".": {
 			"types": "./dist/graphql-client.d.ts",
@@ -24,23 +24,23 @@
 		},
 		"./types": "./dist/src/types/index.d.ts"
 	},
+	"types": "./dist/graphql-client.d.ts",
 	"files": [
 		"dist/*",
 		"src/*"
 	],
-	"sideEffects": false,
 	"scripts": {
 		"_phase:build": "heft build && vite build && rushx docs",
-		"prepublishOnly": "heft build && vite build && rushx docs",
 		"build": "heft build && vite build && rushx docs",
 		"dev": "vite",
 		"docs": "bash ../common/scripts/run-docs.sh graphql_client",
 		"lint": "oxlint",
 		"lint:fix": "oxlint --fix",
+		"prepublishOnly": "heft build && vite build && rushx docs",
 		"preview": "vite preview",
 		"test": "vitest run --coverage.enabled false",
-		"test:watch": "vitest watch",
-		"test:coverage": "vitest run --coverage"
+		"test:coverage": "vitest run --coverage",
+		"test:watch": "vitest watch"
 	},
 	"dependencies": {
 		"@stonecrop/schema": "workspace:*",
@@ -52,6 +52,7 @@
 		"@microsoft/api-documenter": "^7.30.5",
 		"@miragejs/graphql": "^0.1.13",
 		"@rushstack/heft": "^1.2.17",
+		"@stonecrop/graphql-middleware": "workspace:*",
 		"@types/node": "^24.12.4",
 		"@types/pluralize": "^0.0.33",
 		"@vitejs/plugin-vue": "^6.0.6",
@@ -66,10 +67,10 @@
 		"vue": "^3.5.33",
 		"vue-router": "^5.0.6"
 	},
-	"publishConfig": {
-		"access": "public"
-	},
 	"engines": {
 		"node": ">=24.0.0"
+	},
+	"publishConfig": {
+		"access": "public"
 	}
 }

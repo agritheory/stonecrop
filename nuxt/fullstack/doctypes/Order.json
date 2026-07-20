@@ -1,0 +1,141 @@
+{
+	"name": "Order",
+	"slug": "order",
+	"fields": [
+		{
+			"fieldname": "id",
+			"label": "ID",
+			"component": "ATextInput",
+			"mode": "display"
+		},
+		{
+			"fieldname": "orderNumber",
+			"label": "Order Number",
+			"component": "ATextInput",
+			"mode": "display"
+		},
+		{
+			"fieldname": "userId",
+			"label": "Customer",
+			"component": "AFormLink",
+			"doctype": "user",
+			"required": true
+		},
+		{
+			"fieldname": "status",
+			"label": "Status",
+			"component": "ADropdown",
+			"options": [
+				"DRAFT",
+				"PENDING",
+				"PROCESSING",
+				"SHIPPED",
+				"COMPLETED",
+				"CANCELLED"
+			],
+			"default": "DRAFT"
+		},
+		{
+			"fieldname": "total",
+			"label": "Total",
+			"component": "ANumericInput",
+			"mode": "display"
+		},
+		{
+			"fieldname": "shippingAddress",
+			"label": "Shipping Address",
+			"component": "ATextarea"
+		},
+		{
+			"fieldname": "billingAddress",
+			"label": "Billing Address",
+			"component": "ATextarea"
+		},
+		{
+			"fieldname": "createdAt",
+			"label": "Created At",
+			"component": "ADateTime"
+		},
+		{
+			"fieldname": "updatedAt",
+			"label": "Updated At",
+			"component": "ADateTime"
+		}
+	],
+	"workflow": {
+		"states": [
+			"DRAFT",
+			"PENDING",
+			"PROCESSING",
+			"SHIPPED",
+			"COMPLETED",
+			"CANCELLED"
+		],
+		"actions": {
+			"save": {
+				"label": "Save",
+				"selfTransition": true,
+				"allowedStates": [
+					"DRAFT",
+					"PENDING"
+				]
+			},
+			"submit": {
+				"label": "Submit Order",
+				"allowedStates": [
+					"DRAFT"
+				],
+				"requiredFields": [
+					"userId",
+					"shippingAddress"
+				],
+				"nextState": "PENDING"
+			},
+			"process": {
+				"label": "Process Order",
+				"allowedStates": [
+					"PENDING"
+				],
+				"nextState": "PROCESSING"
+			},
+			"ship": {
+				"label": "Ship Order",
+				"allowedStates": [
+					"PROCESSING"
+				],
+				"nextState": "SHIPPED"
+			},
+			"complete": {
+				"label": "Complete Order",
+				"allowedStates": [
+					"SHIPPED"
+				],
+				"nextState": "COMPLETED"
+			},
+			"cancel": {
+				"label": "Cancel Order",
+				"allowedStates": [
+					"DRAFT",
+					"PENDING",
+					"PROCESSING"
+				],
+				"nextState": "CANCELLED"
+			},
+			"viewCustomer": {
+				"label": "View Customer",
+				"stateless": true,
+				"clientHandler": "router.push(record.userId ? `/user/${record.userId}` : '/user')"
+			}
+		},
+		"triggers": {
+			"dateOrder": {
+				"label": "Date order",
+				"on": [
+					"createdAt",
+					"updatedAt"
+				],
+				"clientHandler": "if (record.createdAt && record.updatedAt && record.updatedAt < record.createdAt) setError('updatedAt', 'Updated date cannot be before created date')"
+			}
+		}
+	}
+}

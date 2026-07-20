@@ -1,5 +1,5 @@
 export { createAbility, detectSubjectType } from './middleware/ability'
-export type { AppAbility } from './middleware/ability'
+export type { AppAbility, AbilityBuilderFunction } from './middleware/ability'
 export { createCaslMiddleware } from './middleware/graphql'
 export { pglCaslPlugin } from './middleware/postgraphile'
 export type {

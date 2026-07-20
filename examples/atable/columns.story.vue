@@ -57,9 +57,9 @@ const sampleData: TableRow[] = [
 
 const tableRows = ref<TableRow[]>([...sampleData])
 const tableColumns = ref<TableColumn[]>([
-	{ name: 'id', label: 'ID', width: '80px', fieldtype: 'Int' },
-	{ name: 'name', label: 'Name', width: '150px', fieldtype: 'Data' },
-	{ name: 'age', label: 'Age', width: '100px', fieldtype: 'Int' },
+	{ name: 'id', label: 'ID', width: '80px' },
+	{ name: 'name', label: 'Name', width: '150px' },
+	{ name: 'age', label: 'Age', width: '100px' },
 ])
 
 const tableConfig: TableConfig = {
@@ -77,7 +77,6 @@ const addColumn = () => {
 		name: `column_${columnCount + 1}`,
 		label: `Column ${columnCount + 1}`,
 		width: '120px',
-		fieldtype: 'Data',
 	}
 	tableColumns.value.push(newColumn)
 
@@ -112,11 +111,11 @@ const resizeFirstColumn = () => {
 
 // Schema-driven variant
 const schemaFields: ColumnSchema[] = [
-	{ fieldname: 'id', fieldtype: 'Int', label: 'ID', width: '80px' },
-	{ fieldname: 'name', fieldtype: 'Data', label: 'Name', width: '150px' },
-	{ fieldname: 'department', fieldtype: 'Data', label: 'Department', width: '150px' },
-	{ fieldname: 'age', fieldtype: 'Int', label: 'Age', width: '80px', align: 'right' },
-	{ fieldname: 'internal_notes', fieldtype: 'Data', label: 'Internal Notes', hidden: true },
+	{ fieldname: 'id', label: 'ID', width: '80px' },
+	{ fieldname: 'name', label: 'Name', width: '150px' },
+	{ fieldname: 'department', label: 'Department', width: '150px' },
+	{ fieldname: 'age', label: 'Age', width: '80px', align: 'right' },
+	{ fieldname: 'internal_notes', label: 'Internal Notes', hidden: true },
 ]
 
 const schemaRows = ref<TableRow[]>([

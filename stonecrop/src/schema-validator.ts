@@ -4,8 +4,9 @@
  * @packageDocumentation
  */
 
-import type { SchemaTypes } from '@stonecrop/aform'
+import type { DoctypeField } from '@stonecrop/schema'
 import type { LinkDeclaration } from '@stonecrop/schema'
+import { componentLinkExpansion } from '@stonecrop/schema'
 import type { List, Map as ImmutableMap } from 'immutable'
 import type { AnyStateNodeConfig } from 'xstate'
 
@@ -47,7 +48,7 @@ export class SchemaValidator {
 	 */
 	validate(
 		doctype: string,
-		schema: List<SchemaTypes> | SchemaTypes[] | undefined,
+		schema: List<DoctypeField> | DoctypeField[] | undefined,
 		workflow?: AnyStateNodeConfig,
 		actions?: ImmutableMap<string, string[]> | Map<string, string[]>,
 		links?: Record<string, LinkDeclaration>
@@ -59,7 +60,7 @@ export class SchemaValidator {
 
 		// Validate required properties
 		if (this.options.validateRequiredProperties) {
-			issues.push(...this.validateRequiredProperties(doctype, schemaArray))
+			issues.push(...this.validateRequiredProperties(doctype, schemaArray, links))
 		}
 
 		// Validate Link field targets
@@ -102,7 +103,11 @@ export class SchemaValidator {
 	 * Validates that required schema properties are present
 	 * @internal
 	 */
-	private validateRequiredProperties(doctype: string, schema: SchemaTypes[]): ValidationIssue[] {
+	private validateRequiredProperties(
+		doctype: string,
+		schema: DoctypeField[],
+		links?: Record<string, LinkDeclaration>
+	): ValidationIssue[] {
 		const issues: ValidationIssue[] = []
 
 		for (const field of schema) {
@@ -118,27 +123,42 @@ export class SchemaValidator {
 				continue
 			}
 
-			// Check for component or fieldtype
-			if (!field.component && !('fieldtype' in field)) {
+			// A value field renders through its component and has no other rendering axis;
+			// fieldset/table have their own structural requirements.
+			if (field.kind === 'field' && !field.component) {
 				issues.push({
 					severity: ValidationSeverity.ERROR,
-					rule: 'required-component-or-fieldtype',
-					message: `Field "${field.fieldname}" must have either component or fieldtype property`,
+					rule: 'required-component',
+					message: `Field "${field.fieldname}" must have a component property`,
 					doctype,
 					fieldname: field.fieldname,
 				})
 			}
 
-			// Validate nested schemas (recursively)
-			if ('schema' in field) {
-				// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- 'schema' in field guard confirms property exists; SchemaTypes union narrowed at runtime
-				const nestedSchema = (field as { schema: unknown }).schema
-				// oxlint-disable typescript/no-unsafe-type-assertion -- Immutable List or plain array; toArray() returns SchemaTypes elements
-				const nestedArray = (
-					Array.isArray(nestedSchema) ? nestedSchema : (nestedSchema as { toArray?: () => unknown[] }).toArray?.() || []
-				) as SchemaTypes[]
-				// oxlint-enable typescript/no-unsafe-type-assertion
-				issues.push(...this.validateRequiredProperties(doctype, nestedArray))
+			// A link component with nothing to point at renders an empty picker, which looks exactly
+			// like a record that has no value — so this fails silently at runtime rather than loudly.
+			// Link-ness comes from `doctype` or a `links` declaration, so this is a field that named
+			// a link component and gave it neither.
+			if (
+				field.kind === 'field' &&
+				componentLinkExpansion(field.component) &&
+				!field.doctype &&
+				!links?.[field.fieldname]
+			) {
+				issues.push({
+					severity: ValidationSeverity.ERROR,
+					rule: 'link-component-without-doctype',
+					message:
+						`Field "${field.fieldname}" renders with "${field.component}", which is a link component, ` +
+						`but has no \`doctype\` to name its target`,
+					doctype,
+					fieldname: field.fieldname,
+				})
+			}
+
+			// Validate nested schemas recursively (fieldset only; table columns are ColumnSchema not DoctypeField)
+			if (field.kind === 'fieldset') {
+				issues.push(...this.validateRequiredProperties(doctype, field.schema, links))
 			}
 		}
 
@@ -149,40 +169,18 @@ export class SchemaValidator {
 	 * Validates Link field targets exist in registry
 	 * @internal
 	 */
-	private validateLinkFields(doctype: string, schema: SchemaTypes[], registry: Registry): ValidationIssue[] {
+	private validateLinkFields(doctype: string, schema: DoctypeField[], registry: Registry): ValidationIssue[] {
 		const issues: ValidationIssue[] = []
 
 		for (const field of schema) {
-			// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- 'fieldtype' in field guard confirms property exists; accessing unknown-typed fieldtype safely
-			const fieldtype = 'fieldtype' in field ? (field as { fieldtype: unknown }).fieldtype : undefined
-
-			// Check Link fields
-			if (fieldtype === 'Link') {
-				const options = 'options' in field ? (field as { options: unknown }).options : undefined
-				if (!options) {
-					issues.push({
-						severity: ValidationSeverity.ERROR,
-						rule: 'link-missing-options',
-						message: `Link field "${field.fieldname}" is missing options property (target doctype)`,
-						doctype,
-						fieldname: field.fieldname,
-					})
-					continue
-				}
-
-				// Check if target doctype exists in registry
-				// Options should be a string representing the target doctype name
-				const targetDoctype = typeof options === 'string' ? options : ''
-				if (!targetDoctype) {
-					issues.push({
-						severity: ValidationSeverity.ERROR,
-						rule: 'link-invalid-options',
-						message: `Link field "${field.fieldname}" has invalid options format (expected string doctype name)`,
-						doctype,
-						fieldname: field.fieldname,
-					})
-					continue
-				}
+			// `doctype` is both the link marker and its target, and the schema types it as a
+			// non-empty string — so there is no "missing target" or "malformed target" state left
+			// to check here. The rules that did (`link-missing-options`, `link-invalid-options`)
+			// were removed with the `options`-as-link-target convention; the case they actually
+			// guarded — a link component with no target — is now `link-component-without-doctype`,
+			// which fires in validateRequiredProperties whether or not a registry is configured.
+			if (field.kind === 'field' && field.doctype) {
+				const targetDoctype = field.doctype
 				const targetMeta = registry.registry[targetDoctype] || registry.registry[targetDoctype.toLowerCase()]
 
 				if (!targetMeta) {
@@ -197,16 +195,9 @@ export class SchemaValidator {
 				}
 			}
 
-			// Recursively check nested schemas
-			if ('schema' in field) {
-				// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- 'schema' in field guard confirms property exists; SchemaTypes union narrowed at runtime
-				const nestedSchema = (field as { schema: unknown }).schema
-				// oxlint-disable typescript/no-unsafe-type-assertion -- Immutable List or plain array; toArray() returns SchemaTypes elements
-				const nestedArray = (
-					Array.isArray(nestedSchema) ? nestedSchema : (nestedSchema as { toArray?: () => unknown[] }).toArray?.() || []
-				) as SchemaTypes[]
-				// oxlint-enable typescript/no-unsafe-type-assertion
-				issues.push(...this.validateLinkFields(doctype, nestedArray, registry))
+			// Recursively check nested fieldset schemas
+			if (field.kind === 'fieldset') {
+				issues.push(...this.validateLinkFields(doctype, field.schema, registry))
 			}
 		}
 
@@ -220,15 +211,15 @@ export class SchemaValidator {
 	private validateLinkDeclarations(
 		doctype: string,
 		links: Record<string, LinkDeclaration>,
-		schema: SchemaTypes[],
+		schema: DoctypeField[],
 		registry: Registry
 	): ValidationIssue[] {
 		const issues: ValidationIssue[] = []
 
-		// Build a map of Link fields by fieldname for quick lookup
-		const linkFieldsByFieldname = new Map<string, SchemaTypes>()
+		// Build a map of link fields by fieldname for quick lookup
+		const linkFieldsByFieldname = new Map<string, DoctypeField>()
 		for (const field of schema) {
-			if ('fieldtype' in field && field.fieldtype === 'Link') {
+			if (field.kind === 'field' && field.doctype) {
 				linkFieldsByFieldname.set(field.fieldname, field)
 			}
 		}
@@ -288,9 +279,9 @@ export class SchemaValidator {
 			// Only check if link has fieldname set (otherwise it's a standalone link without a field)
 			if (link.fieldname) {
 				const linkField = linkFieldsByFieldname.get(link.fieldname)
-				if (linkField) {
-					const linkFieldOptions = 'options' in linkField ? (linkField as { options: unknown }).options : undefined
-					const linkFieldTarget = typeof linkFieldOptions === 'string' ? linkFieldOptions : undefined
+				if (linkField && linkField.kind === 'field') {
+					// Map membership implies `doctype` is set — that is the map's build condition.
+					const linkFieldTarget = linkField.doctype
 					if (linkFieldTarget && linkFieldTarget !== link.target) {
 						issues.push({
 							severity: ValidationSeverity.ERROR,
@@ -305,20 +296,12 @@ export class SchemaValidator {
 			}
 		}
 
-		// Check that every Link field has a corresponding link declaration
-		// A Link field corresponds to a link if the link's fieldname property matches the field's fieldname
-		for (const [fieldname, _field] of linkFieldsByFieldname) {
-			const hasCorrespondingLink = Object.values(links).some(link => link.fieldname === fieldname)
-			if (!hasCorrespondingLink) {
-				issues.push({
-					severity: ValidationSeverity.ERROR,
-					rule: 'link-field-without-declaration',
-					message: `Link field "${fieldname}" has no corresponding link declaration`,
-					doctype,
-					fieldname,
-				})
-			}
-		}
+		// NOTE: there is deliberately no "every link field needs a declaration" rule. A plain foreign
+		// key is a link with no `links` entry — the map is additive, carrying expansion metadata
+		// (backlink/fetch/cardinality), and is not required. Such a rule would contradict
+		// `Registry.resolveFields`, which resolves undeclared links to inline pickers, and would flag
+		// every doctype that mixes an expanded relation with a plain FK (e.g. `country`: a `links`
+		// map for states/languages/subdivisions plus a plain `continent` picker).
 
 		return issues
 	}
@@ -483,7 +466,7 @@ export function createValidator(registry: Registry, options?: Partial<ValidatorO
  */
 export function validateSchema(
 	doctype: string,
-	schema: List<SchemaTypes> | SchemaTypes[] | undefined,
+	schema: List<DoctypeField> | DoctypeField[] | undefined,
 	registry: Registry,
 	workflow?: AnyStateNodeConfig,
 	actions?: ImmutableMap<string, string[]> | Map<string, string[]>

@@ -1,21 +1,25 @@
 import { z } from 'zod'
 
-import { StonecropFieldType } from './fieldtype'
+import type { ColumnSchema } from './column-schema'
+import type { InteractionMode } from './mode'
+import { TableViewConfig } from './table'
 
 /**
  * Field options - flexible bag for type-specific configuration.
  *
- * Usage by fieldtype:
- * - Link/Doctype: target doctype slug as string ("customer", "sales-order-item")
+ * Usage:
  * - Select: array of choices (["Draft", "Submitted", "Cancelled"])
  * - Decimal: config object (\{ precision: 10, scale: 2 \})
  * - Code: config object (\{ language: "python" \})
+ *
+ * Deliberately *not* a bare string: a string once meant "link target", which made the value's
+ * shape encode its meaning. That job belongs to `ValueField.doctype`, leaving this a plain
+ * choices-or-config bag.
  *
  * @public
  */
 export const FieldOptions = z
 	.union([
-		z.string(), // Link/Doctype target: "customer"
 		z.array(z.string()), // Select choices: ["A", "B", "C"]
 		z.record(z.string(), z.unknown()), // Config: \{ precision: 10, scale: 2 \}
 	])
@@ -50,111 +54,290 @@ export const FieldValidation = z
  */
 export type FieldValidation = z.infer<typeof FieldValidation>
 
+// ---------------------------------------------------------------------------
+// DoctypeField — the discriminated union of authoring-time field variants
+// ---------------------------------------------------------------------------
+
 /**
- * Unified field metadata - the single source of truth for field definitions.
- * Works for both forms (AForm) and tables (ATable).
+ * A field that holds a scalar value, a link to another record, or a select choice.
+ * The most common kind of field. `component` determines how it renders; the attributes below
+ * carry everything else that is not a rendering concern.
+ * @public
+ */
+export interface ValueField {
+	/** Discriminator — identifies this as a value-holding field */
+	kind: 'field'
+	/** Unique identifier for this field within its doctype */
+	fieldname: string
+	/**
+	 * Vue component that renders this field — the primary (and only) rendering axis. Required:
+	 * there is nothing left to derive it from, and a field without one has nothing to render it.
+	 * Any string is valid; naming a custom component is how an app renders a field Stonecrop
+	 * ships no widget for. See `CANONICAL_COMPONENTS` for the set Stonecrop provides.
+	 */
+	component: string
+	/** True for the field that identifies the record's primary-key column. */
+	primaryKey?: boolean
+	/** True for a computed/display field with no backing DB column — excluded from SQL SELECT. */
+	computed?: boolean
+	/** Editor language for code fields (e.g. `'json'`, `'typescript'`) — the only thing distinguishing
+	 *  a JSON editor from a code editor, since both render with `ACodeEditor`. */
+	language?: string
+	/**
+	 * Target doctype slug. Presence is what makes a field a link.
+	 *
+	 * How it renders is decided by `component`, not by this: `AFormLink` renders an
+	 * inline id-picker, while `AForm`/`ATable` expand the target (see `linkRenderMode`). Expansion
+	 * metadata — backlink, fetch strategy, authoritative cardinality — lives in the doctype's
+	 * `links` map, which is additive and never required for a plain foreign key.
+	 */
+	doctype?: string
+	/** Human-readable label */
+	label?: string
+	/** CSS width (e.g. `"40ch"`, `"200px"`) */
+	width?: string
+	/** Text alignment */
+	align?: 'left' | 'center' | 'right' | 'start' | 'end'
+	/** Whether the field is editable in table cell context */
+	edit?: boolean
+	/** Input mask pattern or serialized function */
+	mask?: string
+	/** Serialized `(value) => string` function for display formatting — distinct from `mask` (input).
+	 *  Spreads through `schemaToColumns` to `ColumnSchema.format`; deserialized at render time by
+	 *  ATable's `getFormattedValue`. */
+	format?: string
+	/** Per-field interaction mode override */
+	mode?: InteractionMode
+	/** Type-specific options: Select choices, Decimal precision config, etc. A link's target is not
+	 *  here — it is `doctype`. */
+	options?: FieldOptions
+	/** Whether the field is required */
+	required?: boolean
+	/** Whether the field is read-only */
+	readOnly?: boolean
+	/** Whether the field is hidden from the UI */
+	hidden?: boolean
+	/** Default value for new records */
+	default?: unknown
+	/** Validation configuration */
+	validation?: FieldValidation
+	/** Cardinality for Link fields — authoritative value on LinkDeclaration takes precedence */
+	cardinality?: 'atMostOne' | 'one' | 'noneOrMany' | 'atLeastOne'
+	/**
+	 * Provenance marker — stamped only by the GraphQL converter; absence means hand-authored.
+	 * When present, the docbuilder freezes the field's identity set (`fieldname`, `primaryKey`,
+	 * `required`, `options`, `cardinality`, `doctype`), since `fieldname` is the GraphQL/column
+	 * binding and `doctype` is the FK's target. `component` is deliberately **not** frozen: it
+	 * chooses the widget, which is an authoring decision the database has no opinion about.
+	 */
+	source?: 'introspected'
+}
+
+/**
+ * A layout container that groups other fields. Resolves to a nested AForm.
+ * @public
+ */
+export interface FieldsetField {
+	/** Discriminator — identifies this as a fieldset container */
+	kind: 'fieldset'
+	/** Unique identifier for this fieldset within its doctype */
+	fieldname: string
+	/** Vue component to render this fieldset. Defaults to `'AFieldset'` in resolveSchema. */
+	component?: string
+	/** Human-readable label for the fieldset legend */
+	label?: string
+	/** Whether the fieldset can be collapsed */
+	collapsible?: boolean
+	/** Interaction mode for all children inside this fieldset */
+	mode?: InteractionMode
+	/** Nested field definitions — resolved recursively by resolveSchema */
+	schema: DoctypeField[]
+}
+
+/**
+ * An inline table whose columns are defined directly in the schema (no linked doctype).
+ * Use when the table data does not warrant a separate doctype.
+ * @public
+ */
+export interface TableField {
+	/** Discriminator — identifies this as an inline table */
+	kind: 'table'
+	/** Unique identifier for this table within its doctype */
+	fieldname: string
+	/** Vue component to render this table. Defaults to `'ATable'` in resolveSchema. */
+	component?: string
+	/** Human-readable label */
+	label?: string
+	/** Column definitions — use ColumnSchema (fieldname key) from \@stonecrop/schema */
+	columns: ColumnSchema[]
+	/** View configuration — defaults to `{ view: 'list' }` in resolveSchema when absent */
+	config?: TableViewConfig
+	/** Interaction mode for all cells inside this table */
+	mode?: InteractionMode
+}
+
+/**
+ * Union of all authoring-time field variants.
+ * Use `kind` to discriminate: `'field'` | `'fieldset'` | `'table'`.
+ * @public
+ */
+export type DoctypeField = ValueField | FieldsetField | TableField
+
+// ---------------------------------------------------------------------------
+// Zod runtime validation schemas
+// ---------------------------------------------------------------------------
+
+/**
+ * Infers the `kind` discriminant from the structural properties of a raw field
+ * object, then injects it if absent. This allows authored JSON to omit `kind`
+ * entirely — a `schema` key means fieldset, `columns` means table, anything else
+ * is a value field.
  *
- * Core principle: "Text" is "Text" regardless of rendering context.
+ * Rules (applied in order):
+ *   has `schema`  → fieldset
+ *   has `columns` → table
+ *   otherwise     → field (value-holding scalar or link)
+ *
+ * Objects that already carry `kind` pass through unchanged (backward-compatible).
+ *
+ * Single-node only. Zod applies this at every level of the discriminated union (via the
+ * `z.lazy` in the fieldset schema), so nested fieldset children are normalized during a
+ * parse. Callers that bypass Zod — notably `Doctype.fromObject` — must use the exported
+ * {@link normalizeFieldKind} instead, which replicates that recursion.
+ */
+function injectKind(data: unknown): unknown {
+	if (typeof data !== 'object' || data === null || Array.isArray(data)) return data
+	// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- safe: non-null, non-array object verified by guards above
+	const obj = data as Record<string, unknown>
+	if ('kind' in obj) return data
+	if ('schema' in obj) return { kind: 'fieldset', ...obj }
+	if ('columns' in obj) return { kind: 'table', ...obj }
+	return { kind: 'field', ...obj }
+}
+
+/**
+ * Recursively injects the `kind` discriminant into a raw field object and, for fieldsets,
+ * into each of its nested `schema` children — mirroring exactly what Zod's `preprocess`
+ * does at every level of the discriminated union.
+ *
+ * Table `columns` are {@link ColumnSchema} entries, not `DoctypeField`s, so they are left
+ * untouched — the Zod table schema validates them with a plain passthrough and never injects
+ * `kind` there either.
+ *
+ * Needed because `Doctype.fromObject` constructs a Doctype without running Zod, yet the
+ * registry's `resolveFields` gates link and fieldset handling on `field.kind`. Without this,
+ * a JSON-authored link resolves to a flat scalar and a fieldset's children are dropped.
  *
  * @public
  */
-export const FieldMeta = z
-	.object({
-		// === CORE (required) ===
+export function normalizeFieldKind(field: unknown): unknown {
+	const injected = injectKind(field)
+	if (typeof injected !== 'object' || injected === null) return injected
+	// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- injectKind returns a non-null object for object input; guarded above
+	const obj = injected as Record<string, unknown>
+	if (obj.kind === 'fieldset' && Array.isArray(obj.schema)) {
+		return { ...obj, schema: obj.schema.map(normalizeFieldKind) }
+	}
+	return injected
+}
 
-		/** Unique identifier for the field within its doctype */
-		fieldname: z.string().min(1),
+function createDoctypeFieldSchemas() {
+	const ValueFieldSchema = z
+		.object({
+			kind: z.literal('field'),
+			fieldname: z.string().min(1),
+			component: z.string().min(1),
+			primaryKey: z.boolean().optional(),
+			computed: z.boolean().optional(),
+			language: z.string().optional(),
+			doctype: z.string().min(1).optional(),
+			label: z.string().optional(),
+			width: z.string().optional(),
+			align: z.enum(['left', 'center', 'right', 'start', 'end']).optional(),
+			edit: z.boolean().optional(),
+			mask: z.string().optional(),
+			format: z.string().optional(),
+			mode: z.enum(['edit', 'read', 'display']).optional(),
+			options: FieldOptions.optional(),
+			required: z.boolean().optional(),
+			readOnly: z.boolean().optional(),
+			hidden: z.boolean().optional(),
+			default: z.unknown().optional(),
+			validation: FieldValidation.optional(),
+			cardinality: z.enum(['atMostOne', 'one', 'noneOrMany', 'atLeastOne']).optional(),
+			source: z.literal('introspected').optional(),
+		})
+		.meta({ title: 'ValueField' })
 
-		/** Semantic field type - determines behavior and default component */
-		fieldtype: StonecropFieldType,
+	const TableFieldSchema = z
+		.object({
+			kind: z.literal('table'),
+			fieldname: z.string().min(1),
+			component: z.string().optional(),
+			label: z.string().optional(),
+			// Validates that each column has fieldname; allows all other ColumnSchema properties
+			columns: z.array(z.object({ fieldname: z.string().min(1) }).passthrough()),
+			config: TableViewConfig.optional(),
+			mode: z.enum(['edit', 'read', 'display']).optional(),
+		})
+		.meta({ title: 'TableField' })
 
-		// === COMPONENT (optional - derived from fieldtype when not specified) ===
+	// DoctypeFieldSchema must be declared before FieldsetFieldSchema so the z.lazy
+	// callback can close over it. The placeholder is overwritten below; the callback
+	// only runs at parse time, after the real discriminated union is assigned.
+	// See: https://zod.dev/api?id=discriminated-unions#discriminated-unions
+	// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- required by Zod's recursive schema pattern; z.never() placeholder is overwritten before any parse call
+	let DoctypeFieldSchema: z.ZodType<DoctypeField> = z.never() as unknown as z.ZodType<DoctypeField>
 
-		/** Vue component to render this field. If not specified, derived from TYPE_MAP */
-		component: z.string().optional(),
+	// FieldsetFieldSchema stays as a plain ZodObject (not z.ZodType<T>) so that
+	// z.discriminatedUnion can inspect its 'kind' discriminant property.
+	const FieldsetFieldSchema = z
+		.object({
+			kind: z.literal('fieldset'),
+			fieldname: z.string().min(1),
+			component: z.string().optional(),
+			label: z.string().optional(),
+			collapsible: z.boolean().optional(),
+			mode: z.enum(['edit', 'read', 'display']).optional(),
+			schema: z.lazy(() => DoctypeFieldSchema.array()),
+		})
+		.meta({ title: 'FieldsetField' })
 
-		// === DISPLAY ===
+	const rawUnion = z.discriminatedUnion('kind', [ValueFieldSchema, FieldsetFieldSchema, TableFieldSchema])
 
-		/** Human-readable label for the field */
-		label: z.string().optional(),
+	// Overwrite the placeholder with the preprocessed schema. Because z.lazy captures
+	// DoctypeFieldSchema by closure reference, the lazy callback in FieldsetFieldSchema
+	// will resolve to this preprocessed version — so nested fieldsets also inject `kind`.
+	// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- ZodPipe output is DoctypeField; same pattern as the z.never() placeholder above
+	DoctypeFieldSchema = z.preprocess(injectKind, rawUnion) as unknown as z.ZodType<DoctypeField>
 
-		/** Width of the field (CSS value, e.g., "40ch", "200px") */
-		width: z.string().optional(),
+	return { ValueFieldSchema, TableFieldSchema, FieldsetFieldSchema, DoctypeFieldSchema }
+}
 
-		/** Text alignment within the field */
-		align: z.enum(['left', 'center', 'right', 'start', 'end']).optional(),
-
-		// === BEHAVIOR ===
-
-		/** Whether the field is required */
-		required: z.boolean().optional(),
-
-		/** Whether the field is read-only */
-		readOnly: z.boolean().optional(),
-
-		/** Whether the field is editable (for table cells) */
-		edit: z.boolean().optional(),
-
-		/** Whether the field is hidden from the UI */
-		hidden: z.boolean().optional(),
-
-		// === VALUE ===
-
-		/** Current value of the field */
-		value: z.unknown().optional(),
-
-		/** Default value for new records */
-		default: z.unknown().optional(),
-
-		// === TYPE-SPECIFIC ===
-
-		/**
-		 * Type-specific options:
-		 * - Link: target doctype slug ("customer")
-		 * - Doctype: child doctype slug ("sales-order-item")
-		 * - Select: choices array (["Draft", "Submitted"])
-		 * - Decimal: \{ precision, scale \}
-		 * - Code: \{ language \}
-		 */
-		options: FieldOptions.optional(),
-
-		/**
-		 * Cardinality for Doctype fields:
-		 * - 'one': exactly 1 (default)
-		 * - 'atMostOne': 0 or 1
-		 * - 'noneOrMany': 0 or more
-		 * - 'atLeastOne': 1 or more
-		 */
-		cardinality: z.enum(['one', 'atMostOne', 'noneOrMany', 'atLeastOne']).optional(),
-
-		/**
-		 * Input mask pattern. Accepts either a plain mask string or a stringified
-		 * arrow function that receives `locale` and returns a mask string.
-		 *
-		 * Plain pattern: `"##/##/####"`
-		 *
-		 * Function pattern: `"(locale) => locale === 'en-US' ? '(###) ###-####' : '####-######'"`
-		 */
-		mask: z.string().optional(),
-
-		// === VALIDATION ===
-
-		/** Validation configuration */
-		validation: FieldValidation.optional(),
-
-		// === LAYOUT ===
-
-		/** Nested field definitions for Fieldset containers — UI grouping only, no DB column */
-		schema: z.array(z.record(z.string(), z.unknown())).optional(),
-	})
-	.meta({
-		title: 'FieldMeta',
-		description:
-			'Unified field metadata - the single source of truth for field definitions, works for both forms (AForm) and tables (ATable)',
-	})
+const schemas = createDoctypeFieldSchemas()
 
 /**
- * Field metadata type inferred from Zod schema
+ * Zod runtime validation schema for ValueField.
  * @public
  */
-export type FieldMeta = z.infer<typeof FieldMeta>
+export const ValueFieldSchema = schemas.ValueFieldSchema
+
+/**
+ * Zod runtime validation schema for FieldsetField.
+ * Recursive — FieldsetField.schema is validated against DoctypeFieldSchema.
+ * @public
+ */
+export const FieldsetFieldSchema = schemas.FieldsetFieldSchema
+
+/**
+ * Zod runtime validation schema for TableField.
+ * @public
+ */
+export const TableFieldSchema = schemas.TableFieldSchema
+
+/**
+ * Zod runtime validation schema for the DoctypeField discriminated union.
+ * Validates all three field variants: `'field'`, `'fieldset'`, `'table'`.
+ * @public
+ */
+export const DoctypeFieldSchema = schemas.DoctypeFieldSchema

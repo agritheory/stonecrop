@@ -32,7 +32,7 @@
 
 <script setup lang="ts">
 import { AForm } from '@stonecrop/aform'
-import type { SchemaTypes } from '@stonecrop/aform'
+import type { ResolvedField } from '@stonecrop/aform'
 import { Doctype, type DoctypeConfig, Registry, Stonecrop } from '@stonecrop/stonecrop'
 import { type App, defineComponent, ref, h, computed } from 'vue'
 
@@ -75,7 +75,7 @@ const ResolvedSchemaDemo = defineComponent({
 		})
 
 		// One call resolves the full tree — link entries get `schema` embedded
-		const resolvedSchema = ref<SchemaTypes[]>(registryInstance!.resolveSchema(registryInstance!.registry['customer']))
+		const resolvedSchema = ref<ResolvedField[]>(registryInstance!.resolveSchema(registryInstance!.registry['customer']))
 
 		return { resolvedSchema, customerData }
 	},
@@ -98,7 +98,7 @@ const ResolvedSchemaDemo = defineComponent({
 					JSON.stringify(
 						this.resolvedSchema.map((f: any) => ({
 							fieldname: f.fieldname,
-							fieldtype: f.fieldtype,
+							component: f.component,
 							...(f.schema ? { schema: `[${f.schema.length} fields]` } : {}),
 						})),
 						null,
@@ -133,26 +133,27 @@ const StandaloneDemo = defineComponent({
 			},
 		})
 
-		// Build schema by hand — no Registry required
-		const schema = ref<SchemaTypes[]>([
+		// Build schema by hand — no Registry required.
+		// Use ResolvedField shapes directly: kind discriminates scalar ('field'), nested form ('link'), and table ('table').
+		const schema = ref<ResolvedField[]>([
 			{
+				kind: 'field',
 				fieldname: 'invoice_number',
-				fieldtype: 'Data',
 				component: 'ATextInput',
 				label: 'Invoice Number',
-			} as SchemaTypes,
+			},
 			{
+				kind: 'link',
 				fieldname: 'billing',
-				options: 'address',
+				component: 'AForm',
 				label: 'Billing Address',
-				// Manually embedded child schema — AForm checks `'schema' in field`
 				schema: [
-					{ fieldname: 'street', fieldtype: 'Data', component: 'ATextInput', label: 'Street' },
-					{ fieldname: 'city', fieldtype: 'Data', component: 'ATextInput', label: 'City' },
-					{ fieldname: 'state', fieldtype: 'Data', component: 'ATextInput', label: 'State' },
-					{ fieldname: 'zip_code', fieldtype: 'Data', component: 'ATextInput', label: 'Zip Code' },
+					{ kind: 'field', fieldname: 'street', component: 'ATextInput', label: 'Street' },
+					{ kind: 'field', fieldname: 'city', component: 'ATextInput', label: 'City' },
+					{ kind: 'field', fieldname: 'state', component: 'ATextInput', label: 'State' },
+					{ kind: 'field', fieldname: 'zip_code', component: 'ATextInput', label: 'Zip Code' },
 				],
-			} as SchemaTypes,
+			},
 		])
 
 		return { schema, data }
@@ -202,7 +203,7 @@ const HSTDemo = defineComponent({
 		stonecrop.addRecord('customer', customerId, initialData)
 
 		// Resolve the entire schema tree once
-		const resolvedSchema = ref<SchemaTypes[]>(registryInstance!.resolveSchema(registryInstance!.registry['customer']))
+		const resolvedSchema = ref<ResolvedField[]>(registryInstance!.resolveSchema(registryInstance!.registry['customer']))
 
 		const customerPath = `customer.${customerId}`
 
@@ -361,7 +362,7 @@ const AddressListDemo = defineComponent({
 		})
 
 		// resolveSchema handles both Doctype (1:1) and Table (1:many) fields
-		const resolvedSchema = ref<SchemaTypes[]>(
+		const resolvedSchema = ref<ResolvedField[]>(
 			registryInstance!.resolveSchema(registryInstance!.registry['customer-with-addresses'])
 		)
 
@@ -390,14 +391,12 @@ const AddressListDemo = defineComponent({
 					JSON.stringify(
 						this.resolvedSchema.map((f: any) => ({
 							fieldname: f.fieldname,
-							fieldtype: f.fieldtype,
 							...(f.component ? { component: f.component } : {}),
 							...(f.columns
 								? {
 										columns: f.columns.map((c: any) => ({
 											name: c.name,
 											label: c.label,
-											fieldtype: c.fieldtype,
 										})),
 									}
 								: {}),

@@ -44,8 +44,6 @@ const amodalStyles = computed((): StyleValue => {
 </script>
 
 <style>
-@import url('@stonecrop/themes/default.css');
-
 .amodal {
 	position: absolute;
 	background-color: var(--sc-row-color-zebra-dark);

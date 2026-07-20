@@ -73,3 +73,7 @@ CREATE TABLE sc_gadget (
 );
 INSERT INTO sc_gadget (id, gadget_name) VALUES (1, 'Gadget One');
 INSERT INTO sc_part (gadget_id, part_name) VALUES (1, 'Part A');
+
+-- Display field exclusion test fixture (no price_display column — proves Display is not SELECTed)
+CREATE TABLE sc_product (id serial PRIMARY KEY, product_name text, price integer);
+INSERT INTO sc_product (id, product_name, price) VALUES (1, 'Product A', 100);

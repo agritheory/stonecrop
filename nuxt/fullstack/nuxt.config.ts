@@ -13,7 +13,7 @@ export default defineNuxtConfig({
 	modules: [NuxtStonecrop, NuxtGrafserv],
 
 	stonecrop: {
-		docbuilder: false,
+		docbuilder: true,
 		routeStrategy: () => [
 			{
 				name: 'catch-all',
@@ -35,7 +35,7 @@ export default defineNuxtConfig({
 
 	vite: {
 		optimizeDeps: {
-			include: ['@stonecrop/desktop', '@stonecrop/graphql-client', '@stonecrop/schema'],
+			include: ['@stonecrop/schema', 'pinia'],
 		},
 	},
 

@@ -13,14 +13,20 @@
 				:disabled="mode === 'read'"
 				:required="required" />
 			<label class="aform_field-label" :for="uuid">{{ label }}</label>
-			<p v-show="validation.errorMessage" class="aform_error" v-html="validation.errorMessage"></p>
+			<p v-show="errorText" class="aform_error" v-html="errorText"></p>
 		</template>
 	</div>
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
+
 import { ComponentProps } from '../../types'
 
-const { label, required, mode, uuid, validation = { errorMessage: '&nbsp;' } } = defineProps<ComponentProps>()
+const { label, required, mode, uuid, errors, validation = { errorMessage: '' } } = defineProps<ComponentProps>()
+
+// Dynamic trigger errors take precedence over a static schema errorMessage; empty means the slot hides.
+const errorText = computed(() => (errors?.length ? errors.join('; ') : (validation.errorMessage ?? '')))
+
 const inputNumber = defineModel<number>()
 </script>

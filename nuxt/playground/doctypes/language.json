@@ -1,0 +1,45 @@
+{
+	"name": "Language",
+	"slug": "language",
+	"fields": [
+		{
+			"kind": "field",
+			"fieldname": "code",
+			"label": "Code",
+			"component": "ATextInput",
+			"required": true,
+			"readOnly": true,
+			"source": "introspected"
+		},
+		{
+			"kind": "field",
+			"fieldname": "name",
+			"label": "Name",
+			"component": "ATextInput",
+			"required": true,
+			"source": "introspected"
+		},
+		{
+			"kind": "field",
+			"fieldname": "native",
+			"label": "Native Name",
+			"component": "ATextInput",
+			"required": true,
+			"source": "introspected"
+		},
+		{
+			"kind": "field",
+			"fieldname": "rtl",
+			"label": "Right-to-Left",
+			"component": "ACheckbox",
+			"required": true,
+			"source": "introspected"
+		}
+	],
+	"links": {
+		"countries": {
+			"target": "country",
+			"cardinality": "noneOrMany"
+		}
+	}
+}

@@ -1,0 +1,11 @@
+{
+	// Typechecks the module's runtime components, which nothing else did: the package tsconfig pulls
+	// in `fullstack/` (a separate Nuxt context, checked on its own by `test:types`) and errors out,
+	// and `nuxt-module-build` only transpiles. These SFCs run inside a consumer app, so they are
+	// checked against the playground's generated context — the canonical consumer — which supplies
+	// the Nuxt auto-imports and registered components they resolve against.
+	//
+	// Requires `dev:prepare` to have generated `playground/.nuxt` first, as `test:types` already does.
+	"extends": "./playground/.nuxt/tsconfig.json",
+	"include": ["src/runtime/**/*.vue"]
+}

@@ -1,6 +1,77 @@
 # Change Log - @stonecrop/nuxt
 
-This log was last generated on Thu, 04 Jun 2026 09:33:09 GMT and should not be manually modified.
+This log was last generated on Fri, 17 Jul 2026 11:29:31 GMT and should not be manually modified.
+
+## 0.15.0
+Fri, 17 Jul 2026 11:29:31 GMT
+
+### Patches
+
+- sort package JSON
+
+## 0.14.0
+Fri, 17 Jul 2026 07:01:54 GMT
+
+### Minor changes
+
+- update fullstack doctype schemas
+- add clientHandler field to ActionDefinition for client-side JS handler authoring
+- add vsPath and extraLibs props to ACodeEditor for offline Monaco support and JS type checking
+
+### Patches
+
+- template server SDL/resolvers reconciled with @stonecrop/schema: field type carries the full ValueField contract, workflow actions are a structured list, stale handler/args removed; resolvers pass doctype meta through instead of enumerating keys
+- type-check the fullstack example in test:types (add a fullstack tsconfig + wire it in), making the Desktop `@action="run"` payload contract a compile-time regression guard; add the @stonecrop/graphql-client dependency it and the templates already import
+- expose the field `format` (display formatter) as an editable text property in the docbuilder fields panel, alongside `mask` (input) — the two are distinct and only `mask` was authorable
+
+## 0.13.14
+Wed, 01 Jul 2026 08:35:25 GMT
+
+### Patches
+
+- update ATable row click handlers
+
+## 0.13.13
+Thu, 18 Jun 2026 12:32:33 GMT
+
+### Patches
+
+- add commands for countries example
+
+## 0.13.12
+Tue, 16 Jun 2026 10:50:50 GMT
+
+_Version update only_
+
+## 0.13.11
+Mon, 15 Jun 2026 06:52:28 GMT
+
+_Version update only_
+
+## 0.13.10
+Thu, 11 Jun 2026 10:23:31 GMT
+
+### Patches
+
+- fix CLI bootstrap example
+- add Countries GraphQL playground example
+
+## 0.13.9
+Mon, 08 Jun 2026 13:12:21 GMT
+
+### Minor changes
+
+- update examples to use new schema types
+
+## 0.13.8
+Thu, 04 Jun 2026 12:04:15 GMT
+
+_Version update only_
+
+## 0.13.7
+Thu, 04 Jun 2026 11:09:19 GMT
+
+_Version update only_
 
 ## 0.13.6
 Thu, 04 Jun 2026 09:33:09 GMT

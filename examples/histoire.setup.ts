@@ -1,3 +1,7 @@
+// The component packages are theme-agnostic; the Histoire host loads the theme
+// (matches the per-package setup files and the Nuxt module's `theme` option).
+import '@stonecrop/themes/default.css'
+
 import { defineSetupVue3 } from '@histoire/plugin-vue'
 import { createPinia } from 'pinia'
 

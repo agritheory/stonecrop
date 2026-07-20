@@ -5,7 +5,6 @@
 ```ts
 
 import ACheckbox from './components/form/ACheckbox.vue';
-import AComboBox from './components/form/AComboBox.vue';
 import ADate from './components/form/ADate.vue';
 import ADatePicker from './components/form/ADatePicker.vue';
 import ADateRange from './components/form/ADateRange.vue';
@@ -22,14 +21,13 @@ import type { App } from 'vue';
 import ATextboxInput from './components/form/ATextboxInput.vue';
 import ATextInput from './components/form/ATextInput.vue';
 import type { ColumnSchema } from '@stonecrop/schema';
+import type { FieldValidation } from '@stonecrop/schema';
+import { InteractionMode } from '@stonecrop/schema';
 import Login from './components/utilities/Login.vue';
-import type { TableColumn } from '@stonecrop/atable';
-import type { TableConfig } from '@stonecrop/atable';
-import type { TableRow } from '@stonecrop/atable';
+import type { TableViewConfig } from '@stonecrop/schema';
+import type { ValueField } from '@stonecrop/schema';
 
 export { ACheckbox }
-
-export { AComboBox }
 
 export { ADate }
 
@@ -60,7 +58,6 @@ export interface AFormLinkNavigator {
 
 // @public
 export interface AFormLinkValue {
-    // (undocumented)
     [extra: string]: any;
     displayText?: string;
     id: string | number;
@@ -73,73 +70,80 @@ export { ATextboxInput }
 export { ATextInput }
 
 // @public
-export type BaseSchema = {
-    fieldname: string;
-    component?: string;
-    mode?: FormMode;
-    hidden?: boolean;
-};
-
-// @public
 export type ComponentProps = {
-    schema?: SchemaTypes;
+    schema?: ResolvedField;
     label?: string;
     selectRange?: boolean;
     mask?: string;
     required?: boolean;
-    mode?: FormMode;
+    mode?: InteractionMode;
     uuid?: string;
     validation?: {
         errorMessage: string;
         [key: string]: any;
     };
+    errors?: string[];
 };
 
 // @public
 export function deserializeFunction<T extends (...args: any[]) => any>(source: string): T;
 
 // @public
-export type FieldsetSchema = BaseSchema & {
-    label?: string;
-    schema?: SchemaTypes[];
-    collapsible?: boolean;
-};
-
-// @public
-export type FormMode = 'edit' | 'read' | 'display';
-
-// @public
-export type FormSchema = BaseSchema & {
-    align?: CanvasTextAlign;
-    edit?: boolean;
-    fieldtype?: string;
-    label?: string;
-    name?: string;
-    width?: string;
-    mask?: string;
-};
-
-// @public
 export function install(app: App): void;
+
+export { InteractionMode }
 
 export { Login }
 
 // @public
-export type SchemaTypes = FormSchema | TableSchema | FieldsetSchema;
+export type ResolvedField = ResolvedScalar | ResolvedLink | ResolvedTable | ResolvedFieldset;
 
 // @public
-export type TableSchema = BaseSchema & {
-    config?: TableConfig;
-    rows?: TableRow[];
-} & ({
-    columns?: TableColumn[];
-    kind?: never;
-    schema?: never;
-} | {
+export interface ResolvedFieldset {
+    collapsible?: boolean;
+    component?: string;
+    fieldname: string;
+    kind: 'fieldset';
+    label?: string;
+    mode?: InteractionMode;
+    schema: ResolvedField[];
+}
+
+// @public
+export interface ResolvedLink {
+    component: string;
+    default?: unknown;
+    fieldname: string;
+    hidden?: boolean;
+    kind: 'link';
+    label?: string;
+    mode?: InteractionMode;
+    readOnly?: boolean;
+    required?: boolean;
+    schema: ResolvedField[];
+    validation?: FieldValidation;
+}
+
+// @public
+export type ResolvedScalar = Omit<ValueField, 'cardinality'> & {
+    doctype?: string;
+};
+
+// @public
+export interface ResolvedTable {
+    component: string;
+    config: TableViewConfig;
+    default?: unknown;
+    fieldname: string;
+    hidden?: boolean;
     kind: 'table';
+    label?: string;
+    mode?: InteractionMode;
+    readOnly?: boolean;
+    required?: boolean;
     schema: ColumnSchema[];
-    columns?: never;
-});
+    validation?: FieldValidation;
+}
 
 
 export * from "@stonecrop/atable/types";

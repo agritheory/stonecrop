@@ -155,15 +155,15 @@ For rendering resolved schemas in `AForm`, see [nested schema](./nested.story.vu
 
 ## Schema with links
 
-Doctype relationships are declared in the `links` object alongside `fields`. The `fields` array contains both scalar fields and Link fields (`fieldtype: 'Link'`), positioned at the location where they should render:
+Doctype relationships are declared in the `links` object alongside `fields`. The `fields` array contains both scalar fields and link fields (matched to a `links` entry by `fieldname`; the field's `component` picks the render mode), positioned at the location where they should render:
 
 ```typescript
 Doctype.fromObject({
 	slug: 'recipe',
 	fields: [
-		{ fieldname: 'name', fieldtype: 'Data' },
-		{ fieldname: 'tasks', fieldtype: 'Link', options: 'recipe-task' },
-		{ fieldname: 'status', fieldtype: 'Data' },
+		{ fieldname: 'name', component: 'ATextInput' },
+		{ fieldname: 'tasks', component: 'ATable' },
+		{ fieldname: 'status', component: 'ATextInput' },
 	],
 	links: {
 		tasks: { target: 'recipe-task', cardinality: 'noneOrMany', backlink: 'recipe', fieldname: 'tasks' },
@@ -194,9 +194,9 @@ const recipeData = ref({
 
 ## Resolved schema
 
-`registry.resolveSchema()` produces a flat `SchemaTypes[]` ready for `AForm`. For each link entry it embeds the child schema directly on the field object:
+`registry.resolveSchema()` produces a flat `ResolvedField[]` ready for `AForm`. For each link entry it embeds the child schema directly on the field object:
 
-- **1:1 links** (`atMostOne`, `one`) — `schema: SchemaTypes[]` attached; AForm renders a nested form
+- **1:1 links** (`atMostOne`, `one`) — `schema: ResolvedField[]` attached; AForm renders a nested form
 - **1:many links** (`noneOrMany`, `atLeastOne`) — `schema` array + `kind: 'table'`; ATable derives its own columns
 
 AForm has no knowledge of the registry — it checks `'schema' in field && kind !== 'table'` to decide whether to recurse into a nested form.

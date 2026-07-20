@@ -1,9 +1,22 @@
 ---
-status: accepted
+status: superseded
 date: "2026-05-25"
 deciders: ['Tyler Matteson', 'Rohan Bansal']
+superseded_by: "Removal of the `fieldtype` axis — PK detection now uses `primaryKey?: boolean` on `ValueField`"
 ---
 # Declare primary key per-doctype via `fieldtype: 'PrimaryKey'` — remove global `pkField` from plugin options
+
+> **Superseded.** This ADR chose `fieldtype: 'PrimaryKey'` and rejected Path C
+> (`primaryKey?: boolean` on the field). The project has since removed the `fieldtype`
+> axis entirely: `component` is the render axis, and the non-render jobs `fieldtype`
+> carried moved to explicit attributes — `primaryKey?: boolean` (this ADR's rejected
+> Path C), `computed?: boolean` (was `'Display'`), and `doctype?: string` (was `'Link'`).
+> The middleware now detects the PK via `meta.fields.find(f => f.kind === 'field' && f.primaryKey)`
+> and excludes `computed` fields from SQL via `if (f.computed) continue`. This ADR's core
+> objection to Path C — "two overlapping semantic properties on the same field" — no longer
+> applies, because the overlapping property (`fieldtype`) is gone. The per-doctype,
+> co-located identity decision below still holds; only its *mechanism* changed, from a
+> `fieldtype` value to a boolean flag.
 
 ## Context and Problem Statement
 
@@ -95,8 +108,3 @@ When no such field is declared:
 key (product SKU, document number) is both the PK and required. A DB-generated surrogate key
 (`serial`, `uuid`) is the PK but not required from the application's perspective (the DB
 supplies it). The schema stays flexible for both patterns.
-
-When `2b_schema_types.md` Phase 4 lands (`DoctypeMeta.fields` → `DoctypeField[]`), the
-`getPkMeta` predicate and the `getSqlColumns` field iteration will need `f.kind === 'field'`
-narrowing added — `FieldsetField` and `TableField` have no `fieldtype` property. This is
-acknowledged rework; `TODO(schema-types Phase 4)` comments are left at those sites.

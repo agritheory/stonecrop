@@ -1,7 +1,7 @@
 # 0006 — `tableName` Removed from Schema; Middleware Derives FROM Target
 
-**Status:** Accepted  
-**Date:** 2026-05-26  
+**Status:** Accepted
+**Date:** 2026-05-26
 **Deciders:** Stonecrop core team
 
 ---
@@ -112,5 +112,5 @@ configuration, and correctly emits schema-qualified identifiers via dot detectio
 - The schema converter (`stonecrop-schema generate`) no longer emits `tableName` in generated
   doctype JSON. Existing generated files with `tableName` are silently dropped by Zod's default
   strip behavior — no validation failures, but manual cleanup is recommended.
-- FAB Phase 2: remove `tableName` from all 9 doctype JSONs; add `tables: { Planner: 'plan' }`
+- Remove `tableName` from all 9 doctype JSONs; add `tables: { Planner: 'plan' }`
   to `createStonecropPlugin()` in the graphile preset.

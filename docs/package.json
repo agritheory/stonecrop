@@ -4,11 +4,11 @@
 	"private": true,
 	"type": "module",
 	"scripts": {
-		"dev": "rushx build:full && vitepress dev",
-		"preview": "rushx build:full && vitepress preview",
 		"build": "bash ../common/scripts/run-docs.sh --aggregate && vitepress build",
+		"build:full": "rushx build:stories && rushx build",
 		"build:stories": "cd ../examples && rushx build:stories",
-		"build:full": "rushx build:stories && rushx build"
+		"dev": "rushx build:full && vitepress dev",
+		"preview": "rushx build:full && vitepress preview"
 	},
 	"devDependencies": {
 		"mermaid": "^11.12.2",

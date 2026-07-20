@@ -1,7 +1,7 @@
-import { List, Map } from 'immutable'
 import { createPinia } from 'pinia'
 import { createApp } from 'vue'
 
+import '@stonecrop/themes/default.css'
 import '@stonecrop/desktop/styles'
 import { install as AForm } from '@stonecrop/aform'
 import { StonecropDesktop } from '@stonecrop/desktop'
@@ -9,8 +9,7 @@ import StonecropPlugin, {
 	Doctype,
 	Registry,
 	Stonecrop,
-	type ImmutableDoctype,
-	type MutableDoctype,
+	type DoctypeConfig,
 	type RouteContext,
 } from '@stonecrop/stonecrop'
 
@@ -30,19 +29,13 @@ makeServer()
 // Create the getMeta function that will be used by the plugin
 const getMeta = async (routeContext: RouteContext) => {
 	const response = await fetch(`/api/meta?route=${encodeURIComponent(routeContext.path)}`)
-	const data: MutableDoctype = await response.json()
+	const data: DoctypeConfig = await response.json()
 
 	if ('error' in data) {
-		throw new Error(`Failed to get metadata: ${data.error}`)
+		throw new Error(`Failed to get metadata: ${(data as any).error}`)
 	}
 
-	const config: ImmutableDoctype = {
-		schema: List(data.schema),
-		workflow: data.workflow,
-		actions: Map(data.actions || {}),
-	}
-
-	return new Doctype(data.doctype!, config.schema, config.workflow, config.actions)
+	return Doctype.fromObject(data)
 }
 
 // Install plugins in correct order following Vue.js best practices

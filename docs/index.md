@@ -20,7 +20,7 @@ features:
   - icon:
       src: ./assets/schema-icon.svg
     title: Schema-Driven Forms
-    details: AForm renders forms from schema definitions with built-in validation, masking, and field types.
+    details: AForm renders forms from schema definitions with built-in validation, masking, and a rich set of field components.
   - icon: 
       src: ./assets/advanced-tables-icon.svg
     title: Advanced Tables

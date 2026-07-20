@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
 
 import AFieldset from '../src/components/form/AFieldset.vue'
-import type { SchemaTypes } from '../src/types'
+import type { ResolvedField } from '../src/types'
 
 describe('fieldset input component', { tags: ['component'] }, () => {
 	it('no change in collapse status when fieldset is uncollapsible', async () => {
@@ -13,29 +13,25 @@ describe('fieldset input component', { tags: ['component'] }, () => {
 				schema: [
 					{
 						fieldname: 'first_name',
-						fieldtype: 'Data',
 						component: 'ATextInput',
 						label: 'First Name',
 					},
 					{
 						fieldname: 'middle_name',
-						fieldtype: 'Data',
 						component: 'ATextInput',
 						label: 'Middle Name',
 					},
 					{
 						fieldname: 'last_name',
-						fieldtype: 'Data',
 						component: 'ATextInput',
 						label: 'Last Name',
 					},
 					{
 						fieldname: 'age',
-						fieldtype: 'Int',
 						component: 'ANumericInput',
 						label: 'Age',
 					},
-				] as SchemaTypes[],
+				] as ResolvedField[],
 			},
 		})
 
@@ -53,29 +49,25 @@ describe('fieldset input component', { tags: ['component'] }, () => {
 				schema: [
 					{
 						fieldname: 'first_name',
-						fieldtype: 'Data',
 						component: 'ATextInput',
 						label: 'First Name',
 					},
 					{
 						fieldname: 'middle_name',
-						fieldtype: 'Data',
 						component: 'ATextInput',
 						label: 'Middle Name',
 					},
 					{
 						fieldname: 'last_name',
-						fieldtype: 'Data',
 						component: 'ATextInput',
 						label: 'Last Name',
 					},
 					{
 						fieldname: 'age',
-						fieldtype: 'Int',
 						component: 'ANumericInput',
 						label: 'Age',
 					},
-				] as SchemaTypes[],
+				] as ResolvedField[],
 			},
 		})
 

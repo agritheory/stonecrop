@@ -4,7 +4,7 @@
 # Data Flow:
 # - getMeta: Returns doctype schema from /fullstack/doctypes/*.json
 # - stonecropRecord/stonecropRecords: Proxies to MockGraphQLExecutor
-# - stonecropAction: Executes registered action handlers
+# - stonecropAction: Applies the guarded workflow transition
 
 # ============================================
 # JSON Scalar for dynamic data
@@ -18,30 +18,47 @@ scalar JSON
 # ============================================
 
 """
-Field metadata from doctype schema
+Field metadata from doctype schema (mirrors ValueField in @stonecrop/schema)
 """
-type FieldMeta {
+type StonecropField {
+	kind: String!
 	fieldname: String!
-	fieldtype: String!
+	component: String
+	primaryKey: Boolean
+	computed: Boolean
+	language: String
+	doctype: String
 	label: String
+	width: String
+	align: String
+	edit: Boolean
+	mask: String
+	format: String
+	mode: String
+	options: JSON
 	required: Boolean
 	readOnly: Boolean
-	options: JSON
+	hidden: Boolean
 	default: JSON
-	width: String
 	validation: JSON
+	cardinality: String
+	source: String
 }
 
 """
-Action definition for doctype workflow
+A single workflow action definition (`name` is the action's key in
+WorkflowMeta.actions; the other fields mirror ActionDefinition in
+@stonecrop/schema)
 """
-type ActionDefinition {
+type WorkflowAction {
+	name: String!
 	label: String!
-	handler: String!
 	requiredFields: [String!]
 	allowedStates: [String!]
-	confirm: Boolean
-	args: JSON
+	nextState: String
+	stateless: Boolean
+	selfTransition: Boolean
+	clientHandler: String
 }
 
 """
@@ -49,7 +66,7 @@ Workflow metadata with states and actions
 """
 type WorkflowMeta {
 	states: [String!]
-	actions: JSON
+	actions: [WorkflowAction!]
 }
 
 """
@@ -58,7 +75,7 @@ Complete doctype metadata
 type DoctypeMeta {
 	name: String!
 	slug: String
-	fields: [FieldMeta!]!
+	fields: [StonecropField!]!
 	workflow: WorkflowMeta
 	inherits: String
 }
@@ -181,7 +198,7 @@ type Query {
 type Mutation {
 	# -------------------------------------------
 	# Stonecrop Action Mutation
-	# Executes registered action handlers
+	# Applies the guarded workflow transition
 	# -------------------------------------------
 
 	"""

@@ -2,6 +2,90 @@
   "name": "@stonecrop/atable",
   "entries": [
     {
+      "version": "0.15.0",
+      "tag": "@stonecrop/atable_v0.15.0",
+      "date": "Fri, 17 Jul 2026 11:29:31 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "sort package JSON"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.14.0",
+      "tag": "@stonecrop/atable_v0.14.0",
+      "date": "Fri, 17 Jul 2026 07:01:54 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "combine AExpansionRow and ARow"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.13.14",
+      "tag": "@stonecrop/atable_v0.13.14",
+      "date": "Wed, 01 Jul 2026 08:35:25 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "add row-click and row-open event emitters"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.13.13",
+      "tag": "@stonecrop/atable_v0.13.13",
+      "date": "Thu, 18 Jun 2026 12:32:33 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.13.12",
+      "tag": "@stonecrop/atable_v0.13.12",
+      "date": "Tue, 16 Jun 2026 10:50:50 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.13.11",
+      "tag": "@stonecrop/atable_v0.13.11",
+      "date": "Mon, 15 Jun 2026 06:52:28 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.13.10",
+      "tag": "@stonecrop/atable_v0.13.10",
+      "date": "Thu, 11 Jun 2026 10:23:31 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.13.9",
+      "tag": "@stonecrop/atable_v0.13.9",
+      "date": "Mon, 08 Jun 2026 13:12:21 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "update missing docstrings"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.13.8",
+      "tag": "@stonecrop/atable_v0.13.8",
+      "date": "Thu, 04 Jun 2026 12:04:15 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.13.7",
+      "tag": "@stonecrop/atable_v0.13.7",
+      "date": "Thu, 04 Jun 2026 11:09:19 GMT",
+      "comments": {}
+    },
+    {
       "version": "0.13.6",
       "tag": "@stonecrop/atable_v0.13.6",
       "date": "Thu, 04 Jun 2026 09:33:09 GMT",

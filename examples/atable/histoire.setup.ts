@@ -1,3 +1,5 @@
+import '@stonecrop/themes/default.css'
+
 import { defineSetupVue3 } from '@histoire/plugin-vue'
 import { install as AForm } from '@stonecrop/aform'
 import { install as ATable } from '@stonecrop/atable'

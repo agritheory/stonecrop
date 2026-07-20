@@ -217,6 +217,16 @@ export interface User {
 
 ## Type Aliases
 
+### AbilityBuilderFunction
+
+Function type for building user abilities
+
+**Definition:**
+
+```typescript
+export type AbilityBuilderFunction = (user?: Context['user']) => Promise<AppAbility> | AppAbility;
+```
+
 ### AppAbility
 
 CASL ability type for authorization with flexible subject types
