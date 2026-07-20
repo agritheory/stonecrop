@@ -156,15 +156,13 @@ export const useOperationLogStore = defineStore('hst-operation-log', () => {
 		return operations.value.length - 1 - currentIndex.value
 	})
 
-	const undoRedoState = computed(
-		(): UndoRedoState => ({
-			canUndo: canUndo.value,
-			canRedo: canRedo.value,
-			undoCount: undoCount.value,
-			redoCount: redoCount.value,
-			currentIndex: currentIndex.value,
-		})
-	)
+	const undoRedoState = computed((): UndoRedoState => ({
+		canUndo: canUndo.value,
+		canRedo: canRedo.value,
+		undoCount: undoCount.value,
+		redoCount: redoCount.value,
+		currentIndex: currentIndex.value,
+	}))
 
 	// Core Methods
 
