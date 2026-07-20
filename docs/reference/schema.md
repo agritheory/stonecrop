@@ -1053,7 +1053,7 @@ The union of the two maps above is the definition, not a copy of it: a shipped c
 **Type:**
 
 ```typescript
-export const BUILTIN_FIELD_TYPES: readonly ["Data", "Text", "Int", "Float", "Decimal", "Check", "Date", "Time", "Datetime", "Duration", "DateRange", "JSON", "Code", "Link", "Attach", "Currency", "Quantity", "Select", "PrimaryKey", "Fieldset","LongText", "Display"]
+export const CANONICAL_COMPONENTS: readonly string[]
 ```
 
 ### Cardinality
