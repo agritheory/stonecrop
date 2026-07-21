@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/atable",
+      "comment": "[AForm] Quantity Component",
+      "type": "none"
+    }
+  ],
+  "packageName": "@stonecrop/atable"
+}
