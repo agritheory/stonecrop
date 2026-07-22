@@ -16,9 +16,12 @@ import AFileAttach from './components/form/AFileAttach.vue'
 import AForm from './components/AForm.vue'
 import AFormLink from './components/form/AFormLink.vue'
 import ANumericInput from './components/form/ANumericInput.vue'
+import AQuantityInput from './components/form/AQuantityInput.vue'
 import ATextInput from './components/form/ATextInput.vue'
 import ATextboxInput from './components/form/ATextboxInput.vue'
 import Login from './components/utilities/Login.vue'
+import AFormLoading from './components/AFormLoading.vue'
+
 export type * from './types'
 
 /**
@@ -41,9 +44,11 @@ function install(app: App /* options */) {
 	app.component('AForm', AForm)
 	app.component('AFormLink', AFormLink)
 	app.component('ANumericInput', ANumericInput)
+	app.component('AQuantityInput', AQuantityInput)
 	app.component('ATextInput', ATextInput)
 	app.component('ATextboxInput', ATextboxInput)
 	app.component('ADuration', ADuration)
+	app.component('AFormLoading', AFormLoading)
 }
 
 export {
@@ -61,7 +66,9 @@ export {
 	AForm,
 	AFormLink,
 	ANumericInput,
+	AQuantityInput,
 	ATextInput,
 	Login,
+	AFormLoading,
 	install,
 }

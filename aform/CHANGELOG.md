@@ -1,6 +1,20 @@
 # Change Log - @stonecrop/aform
 
-This log was last generated on Fri, 17 Jul 2026 11:29:31 GMT and should not be manually modified.
+This log was last generated on Wed, 22 Jul 2026 08:03:10 GMT and should not be manually modified.
+
+## 0.16.1
+Wed, 22 Jul 2026 08:03:10 GMT
+
+### Patches
+
+- [AForm] Quantity Component
+
+## 0.16.0
+Wed, 22 Jul 2026 07:11:33 GMT
+
+### Updates
+
+- [aform] Loading component for AForm and FieldSet
 
 ## 0.15.0
 Fri, 17 Jul 2026 11:29:31 GMT

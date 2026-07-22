@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { isHtmlString, generateHash } from '../src/utils'
+import { isHtmlString, generateHash, formatQuantity } from '../src/utils'
 
 describe('utils', { tags: ['component'] }, () => {
 	describe('isHtmlString', () => {
@@ -53,6 +53,34 @@ describe('utils', { tags: ['component'] }, () => {
 			const hash1 = generateHash(1)
 			expect(hash1).toHaveLength(1)
 			expect(hash1).toMatch(/^[0-9a-f]$/)
+		})
+	})
+
+	describe('formatQuantity', () => {
+		it('renders a composite value as "<qty> <uom>"', () => {
+			expect(formatQuantity({ qty: 2, uom: 'Box' })).toBe('2 Box')
+		})
+
+		it('renders just the qty when the value carries no uom', () => {
+			expect(formatQuantity({ qty: 5 })).toBe('5')
+		})
+
+		it('renders just the uom when the value carries no qty', () => {
+			expect(formatQuantity({ uom: 'Box' })).toBe('Box')
+		})
+
+		it('returns an empty string for an empty object', () => {
+			expect(formatQuantity({})).toBe('')
+		})
+
+		it('returns an empty string for null or undefined', () => {
+			expect(formatQuantity(null)).toBe('')
+			expect(formatQuantity(undefined)).toBe('')
+		})
+
+		it('stringifies a primitive value', () => {
+			expect(formatQuantity(5)).toBe('5')
+			expect(formatQuantity('hello')).toBe('hello')
 		})
 	})
 })

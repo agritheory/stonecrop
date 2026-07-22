@@ -439,10 +439,6 @@
       "allowedCategories": [ "production", "prototype" ]
     },
     {
-      "name": "pretty-quick",
-      "allowedCategories": [ "prototype" ]
-    },
-    {
       "name": "prompts",
       "allowedCategories": [ "prototype" ]
     },

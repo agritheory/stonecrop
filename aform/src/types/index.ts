@@ -236,3 +236,35 @@ export interface AFormLinkNavigator {
 	/** Navigate to the linked document. Implementation is app-defined. */
 	navigate(doctype: string, id: string | number): void
 }
+
+/**
+ * The value shape for AQuantityInput — a quantity paired with its unit of measure, plus the
+ * derived stock-equivalent quantity/UOM. `conversionFactor` is carried on the value so it
+ * round-trips with the record even though it is never shown in the UI.
+ * @public
+ */
+export interface QuantityValue {
+	/** The entered quantity, in `uom` units */
+	qty: number
+	/** Unit of measure the user entered `qty` in */
+	uom: string
+	/** `qty` converted into `stockUom` units — `qty * conversionFactor` */
+	stockQty: number
+	/** The item's base/stock unit of measure — fixed, not user-editable */
+	stockUom: string
+	/** Multiplier from `uom` to `stockUom` — hidden from the UI, drives `stockQty` */
+	conversionFactor: number
+}
+
+/**
+ * Type-specific configuration for AQuantityInput, passed via the field's `options` property.
+ * @public
+ */
+export interface QuantityOptions {
+	/** Dropdown choices for the `uom` field */
+	uoms?: string[]
+	/** The item's base/stock unit of measure — fixed, not user-editable */
+	stockUom?: string
+	/** Conversion factor lookup for each non-stock UOM, relative to `stockUom` (which is implicitly `1`) */
+	conversionFactors?: Record<string, number>
+}
