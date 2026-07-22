@@ -2,6 +2,18 @@
   "name": "@stonecrop/rockfoil",
   "entries": [
     {
+      "version": "0.16.3",
+      "tag": "@stonecrop/rockfoil_v0.16.3",
+      "date": "Wed, 22 Jul 2026 11:52:14 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Externalize all bare imports — bundling graphql/postgraphile created a second graphql realm that risks instanceof failures in the host plugin chain; clean dist on every build"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.16.2",
       "tag": "@stonecrop/rockfoil_v0.16.2",
       "date": "Wed, 22 Jul 2026 08:50:22 GMT",

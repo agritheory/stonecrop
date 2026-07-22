@@ -2,6 +2,18 @@
   "name": "@stonecrop/graphql-client",
   "entries": [
     {
+      "version": "0.16.3",
+      "tag": "@stonecrop/graphql-client_v0.16.3",
+      "date": "Wed, 22 Jul 2026 11:52:14 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Externalize all bare imports; move graphql to devDependencies and drop unused pluralize and @stonecrop/stonecrop dependencies; clean dist on every build (removes a stale artifact importing graphql-request)"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.16.2",
       "tag": "@stonecrop/graphql-client_v0.16.2",
       "date": "Wed, 22 Jul 2026 08:50:22 GMT",

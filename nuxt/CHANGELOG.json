@@ -2,6 +2,18 @@
   "name": "@stonecrop/nuxt",
   "entries": [
     {
+      "version": "0.16.3",
+      "tag": "@stonecrop/nuxt_v0.16.3",
+      "date": "Wed, 22 Jul 2026 11:52:14 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Exclude prebuilt Stonecrop dists from the Nuxt auto-import transform, fixing \"Identifier 'h' has already been declared\" in symlinked workspace dev; fold symlinked-package fs.allow handling into module setup"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.16.2",
       "tag": "@stonecrop/nuxt_v0.16.2",
       "date": "Wed, 22 Jul 2026 08:50:22 GMT",

@@ -2,6 +2,18 @@
   "name": "@stonecrop/aform",
   "entries": [
     {
+      "version": "0.16.3",
+      "tag": "@stonecrop/aform_v0.16.3",
+      "date": "Wed, 22 Jul 2026 11:52:14 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Fix defineModel object/Date defaults to factory form (repairs vue-tsc typecheck and gives each component instance its own default); externalize @vueuse and @stonecrop dependencies from the bundle; clean dist on every build"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.16.2",
       "tag": "@stonecrop/aform_v0.16.2",
       "date": "Wed, 22 Jul 2026 08:50:22 GMT",

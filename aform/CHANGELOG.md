@@ -1,6 +1,13 @@
 # Change Log - @stonecrop/aform
 
-This log was last generated on Wed, 22 Jul 2026 08:50:22 GMT and should not be manually modified.
+This log was last generated on Wed, 22 Jul 2026 11:52:14 GMT and should not be manually modified.
+
+## 0.16.3
+Wed, 22 Jul 2026 11:52:14 GMT
+
+### Patches
+
+- Fix defineModel object/Date defaults to factory form (repairs vue-tsc typecheck and gives each component instance its own default); externalize @vueuse and @stonecrop dependencies from the bundle; clean dist on every build
 
 ## 0.16.2
 Wed, 22 Jul 2026 08:50:22 GMT

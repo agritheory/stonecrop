@@ -1,6 +1,13 @@
 # Change Log - @stonecrop/stonecrop
 
-This log was last generated on Wed, 22 Jul 2026 08:50:22 GMT and should not be manually modified.
+This log was last generated on Wed, 22 Jul 2026 11:52:14 GMT and should not be manually modified.
+
+## 0.16.3
+Wed, 22 Jul 2026 11:52:14 GMT
+
+### Patches
+
+- Externalize runtime dependencies from the bundle; declare @stonecrop/aform and @stonecrop/atable as dependencies so published types resolve; drop unused pinia-xstate dependency; add a test:types typecheck covering the test suite; clean dist on every build
 
 ## 0.16.2
 Wed, 22 Jul 2026 08:50:22 GMT

@@ -1,6 +1,13 @@
 # Change Log - @stonecrop/graphql-client
 
-This log was last generated on Wed, 22 Jul 2026 08:50:22 GMT and should not be manually modified.
+This log was last generated on Wed, 22 Jul 2026 11:52:14 GMT and should not be manually modified.
+
+## 0.16.3
+Wed, 22 Jul 2026 11:52:14 GMT
+
+### Patches
+
+- Externalize all bare imports; move graphql to devDependencies and drop unused pluralize and @stonecrop/stonecrop dependencies; clean dist on every build (removes a stale artifact importing graphql-request)
 
 ## 0.16.2
 Wed, 22 Jul 2026 08:50:22 GMT

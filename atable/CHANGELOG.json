@@ -2,6 +2,18 @@
   "name": "@stonecrop/atable",
   "entries": [
     {
+      "version": "0.16.3",
+      "tag": "@stonecrop/atable_v0.16.3",
+      "date": "Wed, 22 Jul 2026 11:52:14 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Externalize @vueuse and @stonecrop dependencies from the bundle; clean dist on every build"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.16.2",
       "tag": "@stonecrop/atable_v0.16.2",
       "date": "Wed, 22 Jul 2026 08:50:22 GMT",

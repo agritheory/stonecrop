@@ -1,6 +1,13 @@
 # Change Log - @stonecrop/node-editor
 
-This log was last generated on Wed, 22 Jul 2026 08:50:22 GMT and should not be manually modified.
+This log was last generated on Wed, 22 Jul 2026 11:52:14 GMT and should not be manually modified.
+
+## 0.16.3
+Wed, 22 Jul 2026 11:52:14 GMT
+
+### Patches
+
+- Externalize @stonecrop, @vue-flow, and @dagrejs/dagre dependencies from the bundle; clean dist on every build
 
 ## 0.16.2
 Wed, 22 Jul 2026 08:50:22 GMT

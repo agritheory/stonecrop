@@ -2,6 +2,18 @@
   "name": "@stonecrop/desktop",
   "entries": [
     {
+      "version": "0.16.3",
+      "tag": "@stonecrop/desktop_v0.16.3",
+      "date": "Wed, 22 Jul 2026 11:52:14 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Externalize @stonecrop dependencies from the bundle so host apps share a single copy of each package; remove unused router scaffolding; clean dist on every build"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.16.2",
       "tag": "@stonecrop/desktop_v0.16.2",
       "date": "Wed, 22 Jul 2026 08:50:22 GMT",

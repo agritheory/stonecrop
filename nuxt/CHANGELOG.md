@@ -1,6 +1,13 @@
 # Change Log - @stonecrop/nuxt
 
-This log was last generated on Wed, 22 Jul 2026 08:50:22 GMT and should not be manually modified.
+This log was last generated on Wed, 22 Jul 2026 11:52:14 GMT and should not be manually modified.
+
+## 0.16.3
+Wed, 22 Jul 2026 11:52:14 GMT
+
+### Patches
+
+- Exclude prebuilt Stonecrop dists from the Nuxt auto-import transform, fixing "Identifier 'h' has already been declared" in symlinked workspace dev; fold symlinked-package fs.allow handling into module setup
 
 ## 0.16.2
 Wed, 22 Jul 2026 08:50:22 GMT

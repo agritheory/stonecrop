@@ -1,6 +1,13 @@
 # Change Log - @stonecrop/casl-middleware
 
-This log was last generated on Wed, 22 Jul 2026 08:50:22 GMT and should not be manually modified.
+This log was last generated on Wed, 22 Jul 2026 11:52:14 GMT and should not be manually modified.
+
+## 0.16.3
+Wed, 22 Jul 2026 11:52:14 GMT
+
+### Patches
+
+- Clean dist on every build to stop publishing stale artifacts
 
 ## 0.16.2
 Wed, 22 Jul 2026 08:50:22 GMT
