@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/desktop",
-	"version": "0.16.1",
+	"version": "0.16.2",
 	"description": "Desktop-specific components for Stonecrop UI",
 	"bugs": {
 		"url": "https://github.com/agritheory/stonecrop/issues"
