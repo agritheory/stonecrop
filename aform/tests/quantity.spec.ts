@@ -23,6 +23,23 @@ const pickUom = async (wrapper: VueWrapper, value: string) => {
 const isMenuOpen = (wrapper: VueWrapper) =>
 	wrapper.find('.aquantity__uom-menu').attributes('style') !== 'display: none;'
 
+// The qty <input> guards keystrokes/pastes itself (@keydown/@paste). We dispatch native events
+// on the element and assert defaultPrevented — the flag the handlers set to reject the input.
+const dispatchKey = (wrapper: VueWrapper, key: string, init: KeyboardEventInit = {}) => {
+	const el = wrapper.find('.aquantity__qty').element as HTMLInputElement
+	const event = new KeyboardEvent('keydown', { key, cancelable: true, bubbles: true, ...init })
+	el.dispatchEvent(event)
+	return event
+}
+
+const dispatchPaste = (wrapper: VueWrapper, text: string) => {
+	const el = wrapper.find('.aquantity__qty').element as HTMLInputElement
+	const event = new Event('paste', { cancelable: true, bubbles: true })
+	Object.defineProperty(event, 'clipboardData', { value: { getData: () => text } })
+	el.dispatchEvent(event)
+	return event
+}
+
 describe('AQuantityInput', () => {
 	describe('rendering', () => {
 		it('renders a qty input and a uom dropdown-toggle button in edit mode', () => {
@@ -211,6 +228,139 @@ describe('AQuantityInput', () => {
 
 			expect(wrapper.find('.aquantity__field--stock-qty input').element.value).toBe('40')
 			expect(wrapper.find('.aquantity__field--conversion input').element.value).toBe('10')
+		})
+	})
+
+	describe('qty input restriction', () => {
+		it('allows digit keys', () => {
+			const wrapper = mount(AQuantityInput, { props: { options } })
+			expect(dispatchKey(wrapper, '7').defaultPrevented).toBe(false)
+		})
+
+		it('rejects non-numeric character keys', () => {
+			const wrapper = mount(AQuantityInput, { props: { options } })
+			for (const key of ['a', 'e', 'E', '+', '-']) {
+				expect(dispatchKey(wrapper, key).defaultPrevented).toBe(true)
+			}
+		})
+
+		it('allows navigation/editing keys such as Backspace and ArrowLeft', () => {
+			const wrapper = mount(AQuantityInput, { props: { options } })
+			expect(dispatchKey(wrapper, 'Backspace').defaultPrevented).toBe(false)
+			expect(dispatchKey(wrapper, 'ArrowLeft').defaultPrevented).toBe(false)
+		})
+
+		it('lets shortcut chords through (e.g. Ctrl+A)', () => {
+			const wrapper = mount(AQuantityInput, { props: { options } })
+			expect(dispatchKey(wrapper, 'a', { ctrlKey: true }).defaultPrevented).toBe(false)
+		})
+
+		it('allows a single decimal point but rejects a second one', () => {
+			const wrapper = mount(AQuantityInput, { props: { options } })
+			const el = wrapper.find('.aquantity__qty').element as HTMLInputElement
+			el.value = '1'
+			expect(dispatchKey(wrapper, '.').defaultPrevented).toBe(false)
+			el.value = '1.5'
+			expect(dispatchKey(wrapper, '.').defaultPrevented).toBe(true)
+		})
+
+		it('allows a numeric paste but blocks a non-numeric one', () => {
+			const wrapper = mount(AQuantityInput, { props: { options } })
+			expect(dispatchPaste(wrapper, '12.5').defaultPrevented).toBe(false)
+			expect(dispatchPaste(wrapper, '12abc').defaultPrevented).toBe(true)
+		})
+	})
+
+	describe('conversion factor resolution', () => {
+		it('keeps conversionFactor at 1 when qty is entered with no uom selected', async () => {
+			const wrapper = mount(AQuantityInput, {
+				props: { options, modelValue: { qty: 0, uom: '', stockQty: 0, stockUom: '', conversionFactor: 1 } },
+			})
+			await wrapper.find('input[type="number"]').setValue(3)
+
+			const emitted = wrapper.emitted('update:modelValue')!
+			const last = emitted[emitted.length - 1][0] as any
+			expect(last.conversionFactor).toBe(1)
+			expect(last.stockQty).toBe(3)
+		})
+
+		it('resets conversionFactor to 1 when switching to a uom absent from conversionFactors', async () => {
+			const wrapper = mount(AQuantityInput, {
+				props: {
+					options: { uoms: ['Nos', 'Box', 'Extra'], stockUom: 'Nos', conversionFactors: { Box: 10 } },
+					modelValue: { qty: 2, uom: 'Box', stockQty: 20, stockUom: 'Nos', conversionFactor: 10 },
+				},
+			})
+			await pickUom(wrapper, 'Extra')
+
+			const emitted = wrapper.emitted('update:modelValue')!
+			const last = emitted[emitted.length - 1][0] as any
+			// 'Extra' is a different unit with no mapping — must not silently reuse Box's ×10.
+			expect(last).toEqual({ qty: 2, uom: 'Extra', stockUom: 'Nos', conversionFactor: 1, stockQty: 2 })
+		})
+
+		it('preserves the stored conversionFactor when editing qty on the same (unmapped) uom', async () => {
+			const wrapper = mount(AQuantityInput, {
+				props: {
+					// No conversionFactors provided — factor comes from the loaded value and must round-trip.
+					options: { uoms: ['Nos', 'Box'], stockUom: 'Nos' },
+					modelValue: { qty: 2, uom: 'Box', stockQty: 20, stockUom: 'Nos', conversionFactor: 10 },
+				},
+			})
+			await wrapper.find('input[type="number"]').setValue(3)
+
+			const emitted = wrapper.emitted('update:modelValue')!
+			const last = emitted[emitted.length - 1][0] as any
+			expect(last).toEqual({ qty: 3, uom: 'Box', stockUom: 'Nos', conversionFactor: 10, stockQty: 30 })
+		})
+
+		it('rounds away floating-point noise in stockQty', async () => {
+			const wrapper = mount(AQuantityInput, {
+				props: {
+					options: { uoms: ['Nos', 'Frac'], stockUom: 'Nos', conversionFactors: { Frac: 0.1 } },
+					modelValue: { qty: 0, uom: '', stockQty: 0, stockUom: '', conversionFactor: 1 },
+				},
+			})
+			await pickUom(wrapper, 'Frac')
+			await wrapper.find('input[type="number"]').setValue(3)
+
+			const emitted = wrapper.emitted('update:modelValue')!
+			const last = emitted[emitted.length - 1][0] as any
+			expect(last.stockQty).toBe(0.3) // not 0.30000000000000004
+		})
+	})
+
+	describe('keyboard navigation (edge cases)', () => {
+		it('wraps to the last uom on ArrowUp from the first option', async () => {
+			const wrapper = mount(AQuantityInput, {
+				props: { options, modelValue: { qty: 1, uom: 'Nos', stockQty: 1, stockUom: 'Nos', conversionFactor: 1 } },
+			})
+			const toggle = wrapper.find('.aquantity__uom-toggle')
+			await toggle.trigger('keydown.down') // opens, active = Nos (index 0)
+			await toggle.trigger('keydown.up') // wraps to last (Kg)
+			await toggle.trigger('keydown.enter')
+
+			const emitted = wrapper.emitted('update:modelValue')!
+			expect((emitted[emitted.length - 1][0] as any).uom).toBe('Kg')
+		})
+
+		it('points aria-activedescendant at the active option once the menu is open', async () => {
+			const wrapper = mount(AQuantityInput, { props: { uuid: 'q', options } })
+			const toggle = wrapper.find('.aquantity__uom-toggle')
+			expect(toggle.attributes('aria-activedescendant')).toBeUndefined()
+			await toggle.trigger('keydown.down') // opens, active index 0
+			const active = toggle.attributes('aria-activedescendant')
+			expect(active).toBe('q-uom-opt-0')
+			expect(wrapper.find(`#${active}`).classes()).toContain('is-active')
+		})
+
+		it('does not throw or emit when there are no uom options', async () => {
+			const wrapper = mount(AQuantityInput, { props: { options: { uoms: [] } } })
+			const toggle = wrapper.find('.aquantity__uom-toggle')
+			await toggle.trigger('keydown.down')
+			await toggle.trigger('keydown.down')
+			await toggle.trigger('keydown.enter')
+			expect(wrapper.emitted('update:modelValue')).toBeUndefined()
 		})
 	})
 })

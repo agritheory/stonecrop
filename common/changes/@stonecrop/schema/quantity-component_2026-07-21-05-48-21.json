@@ -3,7 +3,7 @@
     {
       "packageName": "@stonecrop/schema",
       "comment": "[AForm] Quantity Component",
-      "type": "none"
+      "type": "patch"
     }
   ],
   "packageName": "@stonecrop/schema"

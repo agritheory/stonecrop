@@ -3,7 +3,7 @@
     {
       "packageName": "@stonecrop/atable",
       "comment": "[AForm] Quantity Component",
-      "type": "none"
+      "type": "patch"
     }
   ],
   "packageName": "@stonecrop/atable"

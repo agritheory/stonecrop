@@ -25,6 +25,9 @@
 								:disabled="mode === 'read'"
 								aria-haspopup="listbox"
 								:aria-expanded="dropdown.open"
+								:aria-activedescendant="
+									dropdown.open && dropdown.activeIndex >= 0 ? `${uuid}-uom-opt-${dropdown.activeIndex}` : undefined
+								"
 								@click="toggleDropdown"
 								@keydown.down.prevent="moveActive(1)"
 								@keydown.up.prevent="moveActive(-1)"
@@ -36,6 +39,7 @@
 							<ul v-show="dropdown.open" class="aquantity__uom-menu" role="listbox" :aria-label="uomLabel">
 								<li
 									v-for="(option, i) in uoms"
+									:id="`${uuid}-uom-opt-${i}`"
 									:key="option"
 									role="option"
 									:aria-selected="option === uom"
@@ -107,10 +111,20 @@ const modelValue = defineModel<QuantityValue>({
 
 const uoms = computed(() => options.uoms ?? [])
 
+// Round to shed binary floating-point noise (e.g. 0.1 * 3 → 0.30000000000000004) while
+// preserving any legitimate decimal places.
+const roundQty = (value: number): number => Number(value.toFixed(6))
+
 const resolveConversionFactor = (uom: string): number => {
 	const stockUom = options.stockUom ?? modelValue.value.stockUom
 	if (!uom || uom === stockUom) return 1
-	return options.conversionFactors?.[uom] ?? modelValue.value.conversionFactor ?? 1
+	const mapped = options.conversionFactors?.[uom]
+	if (mapped !== undefined) return mapped
+	// UOM absent from the conversion map: keep the stored factor only when the unit is
+	// unchanged (e.g. editing qty on a loaded value, so the factor round-trips). Switching
+	// to a new, unmapped unit resets to 1 rather than silently reusing the previous factor.
+	if (uom === modelValue.value.uom) return modelValue.value.conversionFactor ?? 1
+	return 1
 }
 
 const recompute = (qty: number, uom: string) => {
@@ -120,7 +134,7 @@ const recompute = (qty: number, uom: string) => {
 		uom,
 		conversionFactor,
 		stockUom: options.stockUom ?? modelValue.value.stockUom,
-		stockQty: qty * conversionFactor,
+		stockQty: roundQty(qty * conversionFactor),
 	}
 }
 
@@ -304,7 +318,7 @@ const displayText = computed(() => {
 	margin: 0.15rem 0 0 0;
 	padding: 0.25rem 0;
 	list-style: none;
-	background: #fff;
+	background: var(--sc-input-field-background, #fff);
 	border: 1px solid var(--sc-input-active-border-color);
 	border-radius: 0.25rem;
 }
