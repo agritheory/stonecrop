@@ -145,6 +145,24 @@ describe('schemaToColumns', { tags: ['component'] }, () => {
 		})
 	})
 
+	describe('Quantity field handling', () => {
+		it('adds a "<qty> <uom>" format for quantity fields without an explicit format', () => {
+			const schema: ColumnSchema[] = [{ fieldname: 'qty', component: 'AQuantityInput', label: 'Quantity' }]
+			const columns = schemaToColumns(schema)
+			expect(typeof columns[0].format).toBe('function')
+			expect((columns[0].format as Function)({ qty: 2, uom: 'Box' })).toBe('2 Box')
+			expect((columns[0].format as Function)(null)).toBe('')
+		})
+
+		it('does not override an explicit format on a quantity field', () => {
+			const schema: ColumnSchema[] = [
+				{ fieldname: 'qty', component: 'AQuantityInput', label: 'Quantity', format: '(v) => v.qty' },
+			]
+			const columns = schemaToColumns(schema)
+			expect(columns[0].format).toBe('(v) => v.qty')
+		})
+	})
+
 	it('preserves field order', () => {
 		const schema: ColumnSchema[] = [
 			{ fieldname: 'z', component: 'ATextInput', label: 'Z' },

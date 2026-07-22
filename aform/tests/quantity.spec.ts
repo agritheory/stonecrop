@@ -250,9 +250,11 @@ describe('AQuantityInput', () => {
 			expect(dispatchKey(wrapper, 'ArrowLeft').defaultPrevented).toBe(false)
 		})
 
-		it('lets shortcut chords through (e.g. Ctrl+A)', () => {
+		it('lets shortcut chords through (Ctrl / Meta / Alt + key)', () => {
 			const wrapper = mount(AQuantityInput, { props: { options } })
 			expect(dispatchKey(wrapper, 'a', { ctrlKey: true }).defaultPrevented).toBe(false)
+			expect(dispatchKey(wrapper, 'v', { metaKey: true }).defaultPrevented).toBe(false)
+			expect(dispatchKey(wrapper, 'x', { altKey: true }).defaultPrevented).toBe(false)
 		})
 
 		it('allows a single decimal point but rejects a second one', () => {
@@ -314,6 +316,31 @@ describe('AQuantityInput', () => {
 			expect(last).toEqual({ qty: 3, uom: 'Box', stockUom: 'Nos', conversionFactor: 10, stockQty: 30 })
 		})
 
+		it('tolerates a partial modelValue (missing qty or uom)', () => {
+			// A parent may bind a value that has not been fully populated yet; the getters
+			// fall back to 0 / '' rather than surfacing undefined.
+			const missingQty = mount(AQuantityInput, { props: { options, modelValue: { uom: 'Box' } as any } })
+			expect((missingQty.find('.aquantity__qty').element as HTMLInputElement).value).toBe('0')
+
+			const missingUom = mount(AQuantityInput, { props: { options, modelValue: { qty: 5 } as any, uomLabel: 'Unit' } })
+			expect(missingUom.find('.aquantity__uom-toggle').text()).toContain('Unit')
+		})
+
+		it('derives stockUom from the value when options omits it', async () => {
+			const wrapper = mount(AQuantityInput, {
+				props: {
+					options: { uoms: ['Nos', 'Box'], conversionFactors: { Box: 2 } }, // no stockUom in options
+					modelValue: { qty: 0, uom: '', stockQty: 0, stockUom: 'Nos', conversionFactor: 1 },
+				},
+			})
+			await pickUom(wrapper, 'Box')
+			await wrapper.find('input[type="number"]').setValue(4)
+
+			const emitted = wrapper.emitted('update:modelValue')!
+			const last = emitted[emitted.length - 1][0] as any
+			expect(last).toEqual({ qty: 4, uom: 'Box', stockUom: 'Nos', conversionFactor: 2, stockQty: 8 })
+		})
+
 		it('rounds away floating-point noise in stockQty', async () => {
 			const wrapper = mount(AQuantityInput, {
 				props: {
@@ -342,6 +369,21 @@ describe('AQuantityInput', () => {
 
 			const emitted = wrapper.emitted('update:modelValue')!
 			expect((emitted[emitted.length - 1][0] as any).uom).toBe('Kg')
+		})
+
+		it('opens the menu (without selecting) when Enter is pressed while it is closed', async () => {
+			const wrapper = mount(AQuantityInput, { props: { options } })
+			await wrapper.find('.aquantity__uom-toggle').trigger('keydown.enter')
+			expect(isMenuOpen(wrapper)).toBe(true)
+			expect(wrapper.emitted('update:modelValue')).toBeUndefined()
+		})
+
+		it('highlights an option on hover (mouseenter sets the active index)', async () => {
+			const wrapper = mount(AQuantityInput, { props: { options } })
+			await wrapper.find('.aquantity__uom-toggle').trigger('click')
+			const boxOption = wrapper.findAll('.aquantity__uom-option').find(li => li.text() === 'Box')!
+			await boxOption.trigger('mouseenter')
+			expect(boxOption.classes()).toContain('is-active')
 		})
 
 		it('points aria-activedescendant at the active option once the menu is open', async () => {
