@@ -64,7 +64,6 @@ export default defineConfig({
 				'**/cli/prompts.ts', // Interactive prompts - hard to unit test
 				'**/cli/utils/plugin.ts', // Plugin generator - needs file system operations
 				'**/module.ts', // Main Nuxt module - requires full Nuxt integration for testing
-				'**/plugins/symlinking.ts', // Skipping dev-only symlinking plugin
 			],
 			include: ['src/**/*.ts', 'src/**/*.js'],
 			thresholds: {

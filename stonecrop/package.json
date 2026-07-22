@@ -30,12 +30,12 @@
 		"src/*"
 	],
 	"scripts": {
-		"_phase:build": "heft build && vite build && rushx docs",
-		"build": "heft build && vite build && rushx docs",
+		"_phase:build": "heft build --clean && vite build && rushx docs",
+		"build": "heft build --clean && vite build && rushx docs",
 		"docs": "bash ../common/scripts/run-docs.sh stonecrop",
 		"lint": "oxlint",
 		"lint:fix": "oxlint --fix",
-		"prepublishOnly": "heft build && vite build && rushx docs",
+		"prepublishOnly": "heft build --clean && vite build && rushx docs",
 		"preview": "vite preview",
 		"test": "vitest run --coverage.enabled false",
 		"test:coverage": "vitest run --coverage",
@@ -43,18 +43,17 @@
 		"test:watch": "vitest watch"
 	},
 	"dependencies": {
+		"@stonecrop/aform": "workspace:*",
+		"@stonecrop/atable": "workspace:*",
 		"@stonecrop/schema": "workspace:*",
 		"@vueuse/core": "^14.2.1",
 		"immutable": "^5.1.4",
 		"pinia-shared-state": "^1.0.1",
-		"pinia-xstate": "^3.0.0",
 		"xstate": "^5.25.0"
 	},
 	"devDependencies": {
 		"@microsoft/api-documenter": "^7.30.5",
 		"@rushstack/heft": "^1.2.17",
-		"@stonecrop/aform": "workspace:*",
-		"@stonecrop/atable": "workspace:*",
 		"@vitejs/plugin-vue": "^6.0.6",
 		"@vitest/coverage-istanbul": "^4.1.5",
 		"@vue/test-utils": "^2.4.10",

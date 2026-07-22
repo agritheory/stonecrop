@@ -30,23 +30,20 @@
 		"src/*"
 	],
 	"scripts": {
-		"_phase:build": "heft build && vite build && rushx docs",
-		"build": "heft build && vite build && rushx docs",
+		"_phase:build": "heft build --clean && vite build && rushx docs",
+		"build": "heft build --clean && vite build && rushx docs",
 		"dev": "vite",
 		"docs": "bash ../common/scripts/run-docs.sh graphql_client",
 		"lint": "oxlint",
 		"lint:fix": "oxlint --fix",
-		"prepublishOnly": "heft build && vite build && rushx docs",
+		"prepublishOnly": "heft build --clean && vite build && rushx docs",
 		"preview": "vite preview",
 		"test": "vitest run --coverage.enabled false",
 		"test:coverage": "vitest run --coverage",
 		"test:watch": "vitest watch"
 	},
 	"dependencies": {
-		"@stonecrop/schema": "workspace:*",
-		"@stonecrop/stonecrop": "workspace:*",
-		"graphql": "^16.14.0",
-		"pluralize": "^8.0.0"
+		"@stonecrop/schema": "workspace:*"
 	},
 	"devDependencies": {
 		"@microsoft/api-documenter": "^7.30.5",

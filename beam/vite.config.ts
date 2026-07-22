@@ -16,7 +16,7 @@ export default defineConfig({
 			formats: ['es'],
 		},
 		rollupOptions: {
-			external: ['vue', /^@vueuse\//],
+			external: ['vue', /^@vueuse\//, 'mqtt', 'onscan.js'],
 			output: {
 				chunkFileNames: 'chunks/[name].[hash].js',
 				assetFileNames: 'assets/[name].[ext]',

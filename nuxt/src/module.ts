@@ -1,21 +1,20 @@
-import { existsSync } from 'node:fs'
+import { existsSync, realpathSync } from 'node:fs'
 import { readFile, readdir } from 'node:fs/promises'
-import { extname } from 'node:path'
+import { dirname, extname } from 'node:path'
 import {
 	addComponent,
 	addImportsDir,
 	addLayout,
 	addPlugin,
 	addServerHandler,
-	addVitePlugin,
 	createResolver,
 	defineNuxtModule,
 	extendPages,
+	resolvePath,
 	useLogger,
 } from '@nuxt/kit'
 import type { Nuxt, NuxtPage } from '@nuxt/schema' // do not remove this import since it causes a build issue
 
-import { createSymlinkedPackagesPlugin } from './plugins/symlinking'
 import type { RouteStrategyFn, ParsedDoctype } from './types'
 
 // Re-export strategy types for consumers
@@ -105,6 +104,27 @@ export default defineNuxtModule<ModuleOptions>({
 		}
 		logger.log('Added Stonecrop packages to build.transpile for SSR CSS handling')
 
+		// Keep Nuxt's auto-import transform away from the prebuilt dists. Its node_modules guard
+		// checks resolved paths, and pnpm symlinks resolve these dists to paths outside
+		// node_modules — so both the client and SSR pipelines rewrite them, and an injected
+		// import can collide with a minified identifier (e.g. an injected `import { h } from
+		// 'vue'` vs utilities.js's local `h`). themes is CSS-only and never transformed.
+		nuxt.options.imports = nuxt.options.imports || ({} as typeof nuxt.options.imports)
+		nuxt.options.imports.transform = nuxt.options.imports.transform || {}
+		nuxt.options.imports.transform.exclude = nuxt.options.imports.transform.exclude || []
+		const escapeRE = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+		for (const pkg of STONECROP_PACKAGES) {
+			if (pkg === '@stonecrop/themes') continue
+			try {
+				// realpath so the regex matches the symlink-resolved ids Vite hands to the transform
+				const distDir = dirname(realpathSync(await resolvePath(pkg)))
+				nuxt.options.imports.transform.exclude.push(new RegExp(`^${escapeRE(distDir)}`))
+				logger.log(`Excluded prebuilt dist from auto-import transform: ${distDir}`)
+			} catch {
+				// not installed in this app — nothing to exclude
+			}
+		}
+
 		// Supply the base theme to the host app: the --sc-* variables, the document font, and
 		// the control/code font-inheritance reset. Loaded here rather than bundled into the
 		// component packages, so the components stay theme-agnostic and any Nuxt host gets a
@@ -130,14 +150,29 @@ export default defineNuxtModule<ModuleOptions>({
 			logger.log('Added Stonecrop packages to Nitro externals.inline for CSS bundling')
 		})
 
-		// Add Vite plugin to handle symlinked packages during development
+		// Allow Vite to serve symlinked packages during development. Their real paths live outside
+		// the app root, and in a Rush repo Vite can't auto-detect the workspace root (no
+		// pnpm-workspace.yaml at the monorepo root), so add them to fs.allow explicitly.
 		if (nuxt.options.dev) {
-			const symlinkedPackagesPlugin = createSymlinkedPackagesPlugin({
-				rootDir: nuxt.options.rootDir,
-				packages: STONECROP_PACKAGES,
-				logger: (msg: string) => logger.log(msg),
-			})
-			addVitePlugin(symlinkedPackagesPlugin)
+			const allowPaths = new Set<string>()
+			for (const pkg of ['@stonecrop/nuxt', ...STONECROP_PACKAGES]) {
+				const pkgPath = `${nuxt.options.rootDir}/node_modules/${pkg}`
+				try {
+					const realPath = realpathSync(pkgPath)
+					if (realPath !== pkgPath) {
+						// for the module itself, allow the whole monorepo root (covers the pnpm store too)
+						allowPaths.add(pkg === '@stonecrop/nuxt' ? dirname(realPath) : realPath)
+					}
+				} catch {
+					// not installed — nothing to allow
+				}
+			}
+			if (allowPaths.size > 0) {
+				nuxt.options.vite.server = nuxt.options.vite.server || {}
+				nuxt.options.vite.server.fs = nuxt.options.vite.server.fs || {}
+				nuxt.options.vite.server.fs.allow = [...(nuxt.options.vite.server.fs.allow || []), ...allowPaths]
+				logger.log(`Vite fs.allow updated with ${allowPaths.size} symlinked package path(s)`)
+			}
 		}
 
 		// add the base Stonecrop layout from the module
@@ -273,17 +308,11 @@ export default defineNuxtModule<ModuleOptions>({
 			// must load them, or the control renders unstyled in non-playground hosts.
 			nuxt.options.css.push('@stonecrop/desktop/styles')
 
-			// Pre-bundle the docbuilder's client dependencies so Vite optimizes them at startup
-			// rather than discovering them on the first doctype load. Late discovery forces a
-			// mid-session re-optimization with two distinct failure modes:
-			//   - code-editor: the auto-import transform re-runs over the prebuilt dist and injects
-			//     a second `import { h } from 'vue'`, colliding with the dist's own vue import —
-			//     "Identifier 'h' has already been declared" (500 at client app init).
-			//   - schema: it pulls `zod`/`graphql` transitively; discovering them late bumps the
-			//     optimize browserHash and invalidates in-flight chunk imports —
-			//     "error loading dynamically imported module: .../graphql.js?v=...".
-			// Bare `zod`/`graphql` can't be listed here (unresolvable from the app root); pre-bundling
-			// the resolvable parent package pulls them into the startup optimization instead.
+			// Pre-bundle the docbuilder's client deps at startup: discovering them on the first
+			// doctype load forces a mid-session re-optimization that has broken the client before
+			// (auto-import collision in code-editor; browserHash bump invalidating in-flight chunks
+			// via schema's zod/graphql). Bare zod/graphql aren't resolvable from the app root, so
+			// list the parent packages, which pull them in.
 			nuxt.options.vite.optimizeDeps = nuxt.options.vite.optimizeDeps || {}
 			nuxt.options.vite.optimizeDeps.include = nuxt.options.vite.optimizeDeps.include || []
 			for (const dep of ['@stonecrop/code-editor', '@stonecrop/schema']) {
@@ -292,22 +321,15 @@ export default defineNuxtModule<ModuleOptions>({
 				}
 			}
 
-			// Vite keys its optimize cache on dep version + lockfile, not dist *content*. Rebuilding a
-			// workspace package's dist without bumping its version therefore leaves the running dev
-			// server on the stale pre-bundle — e.g. an old @stonecrop/schema still rejecting a
-			// since-removed field. These deps can't be excluded (they eager-pull zod/graphql; see above),
-			// so force a fresh re-optimize each dev start to keep source edits reflected. Cost: a few
-			// seconds of re-bundling per restart.
+			// Vite keys its optimize cache on dep version, not dist content, so rebuilding a
+			// workspace package would leave the server on a stale pre-bundle — force a fresh
+			// re-optimize each dev start (costs a few seconds per restart).
 			nuxt.options.vite.optimizeDeps.force = true
 
-			// A docbuilder Save writes doctype JSON into doctypesDir. Those files are import.meta.glob'd
-			// into the client (e.g. the example apps' useDoctypes), so Vite sees the write as an HMR update
-			// to a JSON module with no accept boundary and escalates to a full page reload — which flashes
-			// the builder and discards in-progress edits (e.g. a just-dragged node layout that hasn't been
-			// reloaded yet). The builder owns the authoritative in-memory state and re-fetches on mount, so
-			// suppress HMR for its data dir: returning [] tells Vite "no modules to update" instead of
-			// reloading. Trade-off: an external edit to a doctype JSON needs a manual refresh to appear on
-			// the runtime browse pages — acceptable, and strictly better than a reload on every save.
+			// A docbuilder Save writes doctype JSON that the client import.meta.glob's, so Vite
+			// escalates the write to a full page reload — discarding in-progress edits. The builder
+			// owns its state and re-fetches on mount, so suppress HMR for the data dir (returning []
+			// = "no modules to update"). Trade-off: external doctype edits need a manual refresh.
 			nuxt.options.vite.plugins = nuxt.options.vite.plugins || []
 			nuxt.options.vite.plugins.push({
 				name: 'stonecrop:docbuilder-suppress-doctype-reload',
