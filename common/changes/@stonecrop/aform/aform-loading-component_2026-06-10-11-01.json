@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/aform",
+      "comment": "[aform] Loading component for AForm and FieldSet",
+      "type": "none"
+    }
+  ],
+  "packageName": "@stonecrop/aform"
+}
