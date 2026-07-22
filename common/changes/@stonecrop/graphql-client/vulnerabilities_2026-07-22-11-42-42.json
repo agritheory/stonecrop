@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Externalize all bare imports; move graphql to devDependencies and drop unused pluralize and @stonecrop/stonecrop dependencies; clean dist on every build (removes a stale artifact importing graphql-request)",
+      "type": "patch",
+      "packageName": "@stonecrop/graphql-client"
+    }
+  ],
+  "packageName": "@stonecrop/graphql-client",
+  "email": "rohanbansal33@gmail.com"
+}

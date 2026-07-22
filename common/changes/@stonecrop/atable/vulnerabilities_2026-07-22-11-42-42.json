@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Externalize @vueuse and @stonecrop dependencies from the bundle; clean dist on every build",
+      "type": "patch",
+      "packageName": "@stonecrop/atable"
+    }
+  ],
+  "packageName": "@stonecrop/atable",
+  "email": "rohanbansal33@gmail.com"
+}

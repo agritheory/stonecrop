@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Externalize @vueuse dependencies from the bundle; drop unused xstate dependency; add a test suite for the keyboard-navigation and visibility composables; clean dist on every build",
+      "type": "patch",
+      "packageName": "@stonecrop/utilities"
+    }
+  ],
+  "packageName": "@stonecrop/utilities",
+  "email": "rohanbansal33@gmail.com"
+}

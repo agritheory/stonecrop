@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Clean dist on every build to stop publishing stale artifacts",
+      "type": "patch",
+      "packageName": "@stonecrop/code-editor"
+    }
+  ],
+  "packageName": "@stonecrop/code-editor",
+  "email": "rohanbansal33@gmail.com"
+}

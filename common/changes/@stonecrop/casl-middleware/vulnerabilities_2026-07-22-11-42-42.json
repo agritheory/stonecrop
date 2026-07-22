@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Clean dist on every build to stop publishing stale artifacts",
+      "type": "patch",
+      "packageName": "@stonecrop/casl-middleware"
+    }
+  ],
+  "packageName": "@stonecrop/casl-middleware",
+  "email": "rohanbansal33@gmail.com"
+}
