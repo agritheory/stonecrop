@@ -1,7 +1,8 @@
 import { mount, VueWrapper } from '@vue/test-utils'
 import { List, Map } from 'immutable'
+import type { DoctypeField } from '@stonecrop/schema'
 import { describe, it, expect, beforeEach } from 'vitest'
-import { nextTick, defineComponent, ref } from 'vue'
+import { nextTick, defineComponent, ref, type PropType } from 'vue'
 import type { UnknownMachineConfig } from 'xstate'
 
 import { useStonecrop } from '../../src/composables/stonecrop'
@@ -120,7 +121,7 @@ const MockATable = defineComponent({
 const MockDoctypeForm = defineComponent({
 	name: 'MockDoctypeForm',
 	props: {
-		doctype: Object,
+		doctype: { type: Object as PropType<Doctype>, required: true },
 		recordId: String,
 	},
 	template: `
@@ -192,7 +193,7 @@ describe('HST Vue Reactivity', { tags: ['unit'] }, () => {
 		Stonecrop._root = undefined as any
 		registry = new Registry()
 
-		const mockSchema = List([
+		const mockSchema = List<DoctypeField>([
 			{ kind: 'field', fieldname: 'name', label: 'Name', component: 'MockATextInput' },
 			{ kind: 'field', fieldname: 'active', label: 'Active', component: 'MockACheckbox' },
 		])

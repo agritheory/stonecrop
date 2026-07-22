@@ -1,15 +1,11 @@
 import { mount } from '@vue/test-utils'
 import { List, Map } from 'immutable'
+import type { DoctypeField } from '@stonecrop/schema'
 import { describe, it, expect, beforeEach } from 'vitest'
 import { nextTick, defineComponent, computed, ref } from 'vue'
 import type { UnknownMachineConfig } from 'xstate'
 
-import AForm from '../../../aform/src/components/AForm.vue'
-import ATextInput from '../../../aform/src/components/form/ATextInput.vue'
-import ANumericInput from '../../../aform/src/components/form/ANumericInput.vue'
-import ACheckbox from '../../../aform/src/components/form/ACheckbox.vue'
-import ADate from '../../../aform/src/components/form/ADate.vue'
-import ADropdown from '../../../aform/src/components/form/ADropdown.vue'
+import { ACheckbox, ADate, ADropdown, AForm, ANumericInput, ATextInput } from '@stonecrop/aform'
 import { useStonecrop } from '../../src/composables/stonecrop'
 import Doctype from '../../src/doctype'
 import Registry from '../../src/registry'
@@ -26,7 +22,7 @@ describe('HST Real Component Integration', { tags: ['unit'] }, () => {
 		registry = new Registry()
 
 		// Complete schema with all major field types
-		const completeSchema = List([
+		const completeSchema = List<DoctypeField>([
 			// Text fields
 			{
 				kind: 'field',
@@ -38,22 +34,8 @@ describe('HST Real Component Integration', { tags: ['unit'] }, () => {
 			{ kind: 'field', fieldname: 'description', label: 'Description', component: 'ATextInput' },
 
 			// Numeric fields
-			{
-				kind: 'field',
-				fieldname: 'priority',
-				label: 'Priority',
-				component: 'ANumericInput',
-				min: 1,
-				max: 5,
-			},
-			{
-				kind: 'field',
-				fieldname: 'progress',
-				label: 'Progress %',
-				component: 'ANumericInput',
-				min: 0,
-				max: 100,
-			},
+			{ kind: 'field', fieldname: 'priority', label: 'Priority', component: 'ANumericInput' },
+			{ kind: 'field', fieldname: 'progress', label: 'Progress %', component: 'ANumericInput' },
 
 			// Boolean field
 			{ kind: 'field', fieldname: 'active', label: 'Active', component: 'ACheckbox' },

@@ -1,5 +1,6 @@
 import { mount } from '@vue/test-utils'
 import { List, Map } from 'immutable'
+import type { DoctypeField } from '@stonecrop/schema'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { nextTick, defineComponent } from 'vue'
 import type { UnknownMachineConfig } from 'xstate'
@@ -19,7 +20,7 @@ describe('HST Composable Functionality', { tags: ['unit'] }, () => {
 		Stonecrop._root = undefined as any
 		registry = new Registry()
 
-		const mockSchema = List([
+		const mockSchema = List<DoctypeField>([
 			{ kind: 'field', fieldname: 'name', label: 'Name', component: 'ATextInput' },
 			{ kind: 'field', fieldname: 'active', label: 'Active', component: 'ACheckbox' },
 			{ kind: 'field', fieldname: 'count', label: 'Count', component: 'ANumericInput' },

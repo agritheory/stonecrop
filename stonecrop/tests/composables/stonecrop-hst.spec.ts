@@ -431,8 +431,8 @@ describe('useStonecrop HST mode', { tags: ['unit'] }, () => {
 		await vm.fetchNestedData('task.t1', taskDoctype, 't1')
 
 		// Verify data stored in HST at per-field paths
-		expect(stonecrop.hstStore.get('task.t1.title')).toBe('Test Task')
-		expect(stonecrop.hstStore.get('task.t1.status')).toBe('active')
+		expect(stonecrop['hstStore'].get('task.t1.title')).toBe('Test Task')
+		expect(stonecrop['hstStore'].get('task.t1.status')).toBe('active')
 	})
 
 	it('fetchNestedData throws RECORD_NOT_FOUND when server returns null', async () => {

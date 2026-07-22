@@ -33,12 +33,12 @@
 		"src/*"
 	],
 	"scripts": {
-		"_phase:build": "heft build && vite build && rushx docs",
-		"build": "heft build && vite build && rushx docs",
+		"_phase:build": "heft build --clean && vite build && rushx docs",
+		"build": "heft build --clean && vite build && rushx docs",
 		"docs": "bash ../common/scripts/run-docs.sh desktop",
 		"lint": "oxlint",
 		"lint:fix": "oxlint --fix",
-		"prepublishOnly": "heft build && vite build && rushx docs",
+		"prepublishOnly": "heft build --clean && vite build && rushx docs",
 		"test": "vitest run --coverage.enabled false",
 		"test:coverage": "vitest run --coverage",
 		"test:types": "vue-tsc --noEmit",

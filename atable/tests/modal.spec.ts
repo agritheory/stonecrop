@@ -11,7 +11,11 @@ import { createTableStore } from '../src/stores/table'
 import type { CellContext, TableColumn, TableConfig } from '../src/types'
 
 // Mock useElementBounding from VueUse
-vi.mock('@vueuse/core', () => ({
+vi.mock('@vueuse/core', async importOriginal => ({
+	// Partial mock: spread the real module so exports pulled in by dependencies (e.g.
+	// @stonecrop/utilities' focus composables) stay intact — a full-replacement mock breaks
+	// whenever the dependency graph needs an export the mock didn't list.
+	...(await importOriginal<typeof import('@vueuse/core')>()),
 	// The real composable always returns all of these; omitting left/bottom made the mock a shape
 	// the library never produces, which is how a TypeError in ACell's $patch went unnoticed.
 	useElementBounding: vi.fn(() => ({

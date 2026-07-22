@@ -16,8 +16,10 @@ export default defineConfig({
 			formats: ['es'],
 		},
 		rollupOptions: {
-			// Externalize Node.js built-ins for server-side library
-			external: [/^node:/, 'assert', 'util', 'crypto'],
+			// Externalize all bare imports (Node.js built-ins, graphql, postgraphile) so nothing
+			// is bundled into the library — bundling graphql would create a second graphql realm
+			// and break instanceof checks in the host's postgraphile plugin chain.
+			external: (id: string) => !id.startsWith('.') && !id.startsWith('/'),
 		},
 	},
 	test: {

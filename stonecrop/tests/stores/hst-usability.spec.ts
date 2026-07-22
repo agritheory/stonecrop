@@ -1,11 +1,11 @@
 import { mount } from '@vue/test-utils'
 import { List, Map } from 'immutable'
+import type { DoctypeField } from '@stonecrop/schema'
 import { describe, it, expect, beforeEach } from 'vitest'
 import { nextTick, defineComponent, computed, ref } from 'vue'
 import type { UnknownMachineConfig } from 'xstate'
 
-import ATextInput from '../../../aform/src/components/form/ATextInput.vue'
-import ANumericInput from '../../../aform/src/components/form/ANumericInput.vue'
+import { ANumericInput, ATextInput } from '@stonecrop/aform'
 import { useStonecrop } from '../../src/composables/stonecrop'
 import Doctype from '../../src/doctype'
 import Registry from '../../src/registry'
@@ -22,7 +22,7 @@ describe('HST Edge Cases & Performance', { tags: ['unit'] }, () => {
 		registry = new Registry()
 
 		// Complex schema with nested fields and special cases
-		const complexSchema = List([
+		const complexSchema = List<DoctypeField>([
 			{ kind: 'field', fieldname: 'name', label: 'Name', component: 'ATextInput' },
 			{ kind: 'field', fieldname: 'metadata', label: 'Metadata', component: 'ATextInput' },
 			{ kind: 'field', fieldname: 'config', label: 'Config', component: 'ATextInput' },

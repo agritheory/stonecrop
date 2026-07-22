@@ -30,23 +30,20 @@
 		"src/*"
 	],
 	"scripts": {
-		"_phase:build": "heft build && vite build && rushx docs",
-		"build": "heft build && vite build && rushx docs",
+		"_phase:build": "heft build --clean && vite build && rushx docs",
+		"build": "heft build --clean && vite build && rushx docs",
 		"dev": "vite",
 		"docs": "bash ../common/scripts/run-docs.sh graphql_client",
 		"lint": "oxlint",
 		"lint:fix": "oxlint --fix",
-		"prepublishOnly": "heft build && vite build && rushx docs",
+		"prepublishOnly": "heft build --clean && vite build && rushx docs",
 		"preview": "vite preview",
 		"test": "vitest run --coverage.enabled false",
 		"test:coverage": "vitest run --coverage",
 		"test:watch": "vitest watch"
 	},
 	"dependencies": {
-		"@stonecrop/schema": "workspace:*",
-		"@stonecrop/stonecrop": "workspace:*",
-		"graphql": "^16.14.0",
-		"pluralize": "^8.0.0"
+		"@stonecrop/schema": "workspace:*"
 	},
 	"devDependencies": {
 		"@microsoft/api-documenter": "^7.30.5",
@@ -54,9 +51,9 @@
 		"@rushstack/heft": "^1.2.17",
 		"@stonecrop/graphql-middleware": "workspace:*",
 		"@types/node": "^24.12.4",
-		"@types/pluralize": "^0.0.33",
 		"@vitejs/plugin-vue": "^6.0.6",
 		"@vitest/coverage-istanbul": "^4.1.5",
+		"graphql": "^16.14.0",
 		"miragejs": "^0.1.48",
 		"oxlint": "1.67.0",
 		"oxlint-tsgolint": "0.23.0",

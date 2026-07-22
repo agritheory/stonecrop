@@ -17,7 +17,7 @@ export default defineConfig({
 		rollupOptions: {
 			// Pinia must stay external so this package shares the host app's single Pinia instance
 			// (bundling it gave Desktop its own never-activated Pinia — the field-validation bug).
-			external: ['vue', 'pinia'],
+			external: ['vue', 'pinia', /^@stonecrop\//],
 			output: {
 				globals: {
 					vue: 'Vue',

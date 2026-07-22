@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Externalize runtime dependencies from the bundle; declare @stonecrop/aform and @stonecrop/atable as dependencies so published types resolve; drop unused pinia-xstate dependency; add a test:types typecheck covering the test suite; clean dist on every build",
+      "type": "patch",
+      "packageName": "@stonecrop/stonecrop"
+    }
+  ],
+  "packageName": "@stonecrop/stonecrop",
+  "email": "rohanbansal33@gmail.com"
+}

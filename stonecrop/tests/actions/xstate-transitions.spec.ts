@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { List, Map } from 'immutable'
+import type { DoctypeField } from '@stonecrop/schema'
 import {
 	getGlobalTriggerEngine,
 	registerGlobalAction,
@@ -105,7 +106,7 @@ describe('XState Transition Integration', { tags: ['unit'] }, () => {
 
 			const doctype = new Doctype(
 				'Todo',
-				Map(),
+				List<DoctypeField>(),
 				{},
 				Map({
 					SAVE: ['saveAction'],
@@ -152,7 +153,7 @@ describe('XState Transition Integration', { tags: ['unit'] }, () => {
 
 			const doctype = new Doctype(
 				'Todo',
-				Map(),
+				List<DoctypeField>(),
 				{},
 				Map({
 					VALIDATE: ['action1', 'action2', 'action3'],
@@ -184,7 +185,7 @@ describe('XState Transition Integration', { tags: ['unit'] }, () => {
 
 			const doctype = new Doctype(
 				'Todo',
-				Map(),
+				List<DoctypeField>(),
 				{},
 				Map({
 					SUBMIT: ['successAction', 'failAction', 'afterFailAction'],
@@ -212,7 +213,7 @@ describe('XState Transition Integration', { tags: ['unit'] }, () => {
 
 			const doctype = new Doctype(
 				'Todo',
-				Map(),
+				List<DoctypeField>(),
 				{},
 				Map({
 					SAVE: ['sharedAction'], // Used in transition
@@ -238,7 +239,7 @@ describe('XState Transition Integration', { tags: ['unit'] }, () => {
 
 			const doctype = new Doctype(
 				'Task',
-				Map(),
+				List<DoctypeField>(),
 				{},
 				Map({
 					SAVE: ['saveDoc'],
@@ -278,7 +279,7 @@ describe('XState Transition Integration', { tags: ['unit'] }, () => {
 
 			const doctype = new Doctype(
 				'Todo',
-				Map(),
+				List<DoctypeField>(),
 				{},
 				Map({
 					SUBMIT: ['captureContext'],
@@ -326,7 +327,7 @@ describe('XState Transition Integration', { tags: ['unit'] }, () => {
 		it('should handle unregistered transition action functions', async () => {
 			const doctype = new Doctype(
 				'Todo',
-				Map(),
+				List<DoctypeField>(),
 				{},
 				Map({
 					SAVE: ['unregisteredAction'],
@@ -401,7 +402,7 @@ describe('XState Transition Integration', { tags: ['unit'] }, () => {
 
 			const doctype = new Doctype(
 				'Document',
-				Map(),
+				List<DoctypeField>(),
 				{},
 				Map({
 					VALIDATE: ['validateData'],

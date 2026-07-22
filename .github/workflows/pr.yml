@@ -41,6 +41,7 @@ jobs:
             rockfoil: rockfoil/**
             schema: schema/**
             stonecrop: stonecrop/**
+            utilities: utilities/**
 
   pr-checks:
     name: Lint & Change Verify

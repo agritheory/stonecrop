@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Externalize @stonecrop dependencies from the bundle so host apps share a single copy of each package; remove unused router scaffolding; clean dist on every build",
+      "type": "patch",
+      "packageName": "@stonecrop/desktop"
+    }
+  ],
+  "packageName": "@stonecrop/desktop",
+  "email": "rohanbansal33@gmail.com"
+}

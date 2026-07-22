@@ -222,7 +222,7 @@ describe('Operation Log Composable', { tags: ['unit'] }, () => {
 
 	describe('useUndoRedoShortcuts', () => {
 		it('should setup keyboard shortcuts for undo/redo', async () => {
-			const { undo, _redo, canUndo, canRedo } = useOperationLog()
+			const { undo, canUndo, canRedo } = useOperationLog()
 
 			hstStore.set('task.123.title', 'Shortcut Test')
 

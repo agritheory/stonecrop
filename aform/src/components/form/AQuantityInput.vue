@@ -106,7 +106,7 @@ const {
 >()
 
 const modelValue = defineModel<QuantityValue>({
-	default: { qty: 0, uom: '', stockQty: 0, stockUom: '', conversionFactor: 1 },
+	default: () => ({ qty: 0, uom: '', stockQty: 0, stockUom: '', conversionFactor: 1 }),
 })
 
 const uoms = computed(() => options.uoms ?? [])
@@ -148,7 +148,7 @@ const uom = computed({
 	set: (value: string) => recompute(modelValue.value?.qty ?? 0, value),
 })
 
-const qtyNavigationKeys = [
+const qtyNavigationKeys = new Set([
 	'Backspace',
 	'Delete',
 	'Tab',
@@ -160,11 +160,11 @@ const qtyNavigationKeys = [
 	'ArrowDown',
 	'Home',
 	'End',
-]
+])
 
 const onQtyKeydown = (event: KeyboardEvent) => {
 	if (event.ctrlKey || event.metaKey || event.altKey) return
-	if (qtyNavigationKeys.includes(event.key)) return
+	if (qtyNavigationKeys.has(event.key)) return
 	if (/^[0-9]$/.test(event.key)) return
 	const input = event.target as HTMLInputElement
 	if (event.key === '.' && !input.value.includes('.')) return

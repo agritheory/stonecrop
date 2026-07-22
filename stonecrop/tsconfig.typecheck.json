@@ -1,0 +1,12 @@
+{
+	"extends": "./tsconfig.json",
+	"compilerOptions": {
+		"noEmit": true,
+		"tsBuildInfoFile": "./dist/stonecrop.typecheck.tsbuildinfo",
+		"types": ["vitest/globals"]
+	},
+	"include": ["src/**/*.ts", "tests/**/*.ts"],
+	// the shared options exclude **/*.spec.ts so heft never compiles specs into dist;
+	// this config exists precisely to typecheck them, so restore the default exclude
+	"exclude": ["node_modules"]
+}

@@ -329,7 +329,7 @@ describe('validateSchema helper', { tags: ['unit'] }, () => {
 				component: 'ATable',
 				options: 'item',
 				cardinality: 'noneOrMany',
-			} as DoctypeField,
+			} as unknown as DoctypeField,
 		]
 		const result = validator.validate('Doc', schema)
 		expect(result.valid).toBe(true)
@@ -342,7 +342,7 @@ describe('validateSchema helper', { tags: ['unit'] }, () => {
 				fieldname: 'status',
 				label: 'Status',
 				component: 'ADropdown',
-			} as DoctypeField,
+			} as unknown as DoctypeField,
 		]
 		const result = validator.validate('Doc', schema)
 		expect(result.valid).toBe(true)

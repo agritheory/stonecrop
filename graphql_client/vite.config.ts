@@ -13,7 +13,10 @@ export default defineConfig({
 			formats: ['es'],
 		},
 		rollupOptions: {
-			external: ['pluralize'],
+			// Externalize all bare imports so nothing is bundled into the library —
+			// runtime dependencies (direct and transitive) are resolved by the host app.
+			// Relative imports (local source files) are always kept in the bundle.
+			external: (id: string) => !id.startsWith('.') && !id.startsWith('/'),
 		},
 	},
 	test: {
