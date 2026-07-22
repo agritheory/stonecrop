@@ -70,7 +70,7 @@ const todoDoctype = new Doctype(
   'Todo',
   List([
     { fieldname: 'title', component: 'ATextInput', label: 'Title' },
-    { fieldname: 'description', component: 'ATextarea', label: 'Description' },
+    { fieldname: 'description', component: 'ATextboxInput', label: 'Description' },
   ]),
   {
     id: 'todoWorkflow',

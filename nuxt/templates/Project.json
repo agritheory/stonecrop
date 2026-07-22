@@ -17,7 +17,7 @@
 		{
 			"fieldname": "description",
 			"label": "Description",
-			"component": "ATextarea"
+			"component": "ATextboxInput"
 		},
 		{
 			"fieldname": "status",

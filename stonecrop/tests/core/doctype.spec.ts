@@ -17,7 +17,7 @@ describe('Doctype class', { tags: ['unit'] }, () => {
 		{
 			kind: 'field',
 			fieldname: 'description',
-			component: 'ATextarea',
+			component: 'ATextboxInput',
 			label: 'Description',
 		},
 	] as DoctypeField[])

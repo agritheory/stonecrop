@@ -903,7 +903,7 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 		it('initializes default values based on the component category', () => {
 			const schema = [
 				{ kind: 'field' as const, fieldname: 'name', component: 'ATextInput' },
-				{ kind: 'field' as const, fieldname: 'bio', component: 'ATextarea' },
+				{ kind: 'field' as const, fieldname: 'bio', component: 'ATextboxInput' },
 				{ kind: 'field' as const, fieldname: 'active', component: 'ACheckbox' },
 				{ kind: 'field' as const, fieldname: 'count', component: 'ANumericInput' },
 				{ kind: 'field' as const, fieldname: 'price', component: 'ANumericInput' },

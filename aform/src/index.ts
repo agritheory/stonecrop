@@ -18,7 +18,7 @@ import AFormLink from './components/form/AFormLink.vue'
 import ANumericInput from './components/form/ANumericInput.vue'
 import AQuantityInput from './components/form/AQuantityInput.vue'
 import ATextInput from './components/form/ATextInput.vue'
-import ATextarea from './components/form/ATextarea.vue'
+import ATextboxInput from './components/form/ATextboxInput.vue'
 import Login from './components/utilities/Login.vue'
 import AFormLoading from './components/AFormLoading.vue'
 
@@ -46,7 +46,7 @@ function install(app: App /* options */) {
 	app.component('ANumericInput', ANumericInput)
 	app.component('AQuantityInput', AQuantityInput)
 	app.component('ATextInput', ATextInput)
-	app.component('ATextarea', ATextarea)
+	app.component('ATextboxInput', ATextboxInput)
 	app.component('ADuration', ADuration)
 	app.component('AFormLoading', AFormLoading)
 }
@@ -67,7 +67,7 @@ export {
 	ANumericInput,
 	AQuantityInput,
 	ATextInput,
-	ATextarea,
+	ATextboxInput,
 	Login,
 	AFormLoading,
 	install,

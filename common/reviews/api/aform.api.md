@@ -20,7 +20,7 @@ import AFormLoading from './components/AFormLoading.vue';
 import ANumericInput from './components/form/ANumericInput.vue';
 import type { App } from 'vue';
 import AQuantityInput from './components/form/AQuantityInput.vue';
-import ATextarea from './components/form/ATextarea.vue';
+import ATextboxInput from './components/form/ATextboxInput.vue';
 import ATextInput from './components/form/ATextInput.vue';
 import type { ColumnSchema } from '@stonecrop/schema';
 import type { FieldValidation } from '@stonecrop/schema';
@@ -71,7 +71,7 @@ export { ANumericInput }
 
 export { AQuantityInput }
 
-export { ATextarea }
+export { ATextboxInput }
 
 export { ATextInput }
 

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/nuxt",
+      "comment": "Update example doctypes from ATextarea to ATextboxInput",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/nuxt"
+}

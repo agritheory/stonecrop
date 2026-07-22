@@ -152,7 +152,7 @@ export function makeServer() {
 						{
 							kind: 'field',
 							fieldname: 'notes',
-							component: 'ATextarea',
+							component: 'ATextboxInput',
 							label: 'Notes',
 							placeholder: 'Additional notes about this todo...',
 						},
@@ -282,7 +282,7 @@ export function makeServer() {
 						{
 							kind: 'field',
 							fieldname: 'description',
-							component: 'ATextarea',
+							component: 'ATextboxInput',
 							label: 'Description',
 						},
 						{
