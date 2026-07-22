@@ -3,6 +3,7 @@ import { setActivePinia, createPinia } from 'pinia'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 
 import Doctype from '../../src/doctype'
+import type { HSTNode } from '../../src/stores'
 import {
 	FieldTriggerEngine,
 	registerGlobalAction,
@@ -382,7 +383,8 @@ describe('Field Trigger Rollback', { tags: ['unit'] }, () => {
 				doctype: 'Contact',
 				recordId: 'contact-1',
 				timestamp: new Date(),
-				store: mockStore,
+				// deliberately partial mock — only get/set are exercised by the failing-rollback path
+				store: mockStore as unknown as HSTNode,
 			}
 
 			const result = await engine.executeFieldTriggers(context)

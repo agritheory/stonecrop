@@ -198,22 +198,22 @@ describe('Doctype class', { tags: ['unit'] }, () => {
 			const workflowMeta: WorkflowMeta = {
 				states: ['planning', 'review', 'approved', 'applied'],
 				actions: {
-					save: { label: 'Save', handler: 'plan:save', allowedStates: ['planning'] },
-					submit: { label: 'Submit', handler: 'plan:submit', allowedStates: ['planning'], nextState: 'review' },
+					save: { label: 'Save', clientHandler: 'plan:save', allowedStates: ['planning'] },
+					submit: { label: 'Submit', clientHandler: 'plan:submit', allowedStates: ['planning'], nextState: 'review' },
 					approve: {
 						label: 'Approve',
-						handler: 'plan:approve',
+						clientHandler: 'plan:approve',
 						allowedStates: ['review'],
 						nextState: 'approved',
 					},
-					reject: { label: 'Reject', handler: 'plan:reject', allowedStates: ['review'], nextState: 'planning' },
+					reject: { label: 'Reject', clientHandler: 'plan:reject', allowedStates: ['review'], nextState: 'planning' },
 					apply: {
 						label: 'Apply',
-						handler: 'plan:apply',
+						clientHandler: 'plan:apply',
 						allowedStates: ['planning', 'approved'],
 						nextState: 'applied',
 					},
-					global: { label: 'Global', handler: 'plan:global' },
+					global: { label: 'Global', clientHandler: 'plan:global' },
 				},
 			}
 
@@ -290,7 +290,7 @@ describe('Doctype class', { tags: ['unit'] }, () => {
 			})
 
 			it('handles empty states', () => {
-				const noStates: WorkflowMeta = { actions: { save: { label: 'Save', handler: 'save' } } }
+				const noStates: WorkflowMeta = { actions: { save: { label: 'Save', clientHandler: 'save' } } }
 				const doctype = new Doctype('Task', mockSchema, noStates, mockActions)
 
 				expect(doctype.getAvailableTransitions('draft')).toEqual([])
@@ -426,7 +426,7 @@ describe('Doctype class', { tags: ['unit'] }, () => {
 			expect(doctype.name).toBe('Plan')
 			expect(doctype.schema?.size).toBe(2)
 			expect(doctype.schema?.first()?.fieldname).toBe('title')
-			expect(doctype.workflow?.id).toBe('plan')
+			expect((doctype.workflow as UnknownMachineConfig)?.id).toBe('plan')
 			expect(doctype.actions?.size).toBe(2)
 			expect(doctype.actions?.get('save')).toEqual(['validateData', 'saveData'])
 		})
@@ -469,7 +469,7 @@ describe('Doctype class', { tags: ['unit'] }, () => {
 
 			expect(doctype.doctype).toBe('NoFields')
 			expect(doctype.schema?.size).toBe(0)
-			expect(doctype.workflow?.id).toBe('test')
+			expect((doctype.workflow as UnknownMachineConfig)?.id).toBe('test')
 		})
 
 		it('handles undefined actions gracefully', () => {
@@ -500,8 +500,8 @@ describe('Doctype class', { tags: ['unit'] }, () => {
 
 			const doctype = Doctype.fromObject(obj)
 
-			expect(doctype.workflow?.id).toBe('approval')
-			expect(doctype.workflow?.initial).toBe('draft')
+			expect((doctype.workflow as UnknownMachineConfig)?.id).toBe('approval')
+			expect((doctype.workflow as UnknownMachineConfig)?.initial).toBe('draft')
 			// String-style target: 'SUBMIT: 'pending'' extracts targetState correctly
 			expect(doctype.getAvailableTransitions('draft')).toEqual([{ name: 'SUBMIT', targetState: 'pending' }])
 		})
@@ -512,8 +512,8 @@ describe('Doctype class', { tags: ['unit'] }, () => {
 				workflow: {
 					states: ['draft', 'submitted', 'approved'],
 					actions: {
-						submit: { label: 'Submit', handler: 'plan:submit', allowedStates: ['draft'] },
-						approve: { label: 'Approve', handler: 'plan:approve', allowedStates: ['submitted'] },
+						submit: { label: 'Submit', clientHandler: 'plan:submit', allowedStates: ['draft'] },
+						approve: { label: 'Approve', clientHandler: 'plan:approve', allowedStates: ['submitted'] },
 					},
 				} as WorkflowMeta,
 			}
@@ -626,7 +626,7 @@ describe('Doctype class', { tags: ['unit'] }, () => {
 				actions: {
 					submit: {
 						label: 'Submit for Review',
-						handler: 'plan:submit',
+						clientHandler: 'plan:submit',
 						requiredFields: ['title', 'description'],
 						allowedStates: ['draft'],
 					},
@@ -637,7 +637,7 @@ describe('Doctype class', { tags: ['unit'] }, () => {
 			const meta = doctype.getActionMeta('submit')
 			expect(meta).toEqual({
 				label: 'Submit for Review',
-				handler: 'plan:submit',
+				clientHandler: 'plan:submit',
 				requiredFields: ['title', 'description'],
 				allowedStates: ['draft'],
 			})
@@ -646,7 +646,7 @@ describe('Doctype class', { tags: ['unit'] }, () => {
 		it('returns undefined for unknown action', () => {
 			const workflowMeta: WorkflowMeta = {
 				states: ['draft'],
-				actions: { submit: { label: 'Submit', handler: 'submit' } },
+				actions: { submit: { label: 'Submit', clientHandler: 'submit' } },
 			}
 			const doctype = new Doctype('Plan', mockSchema, workflowMeta, mockActions)
 

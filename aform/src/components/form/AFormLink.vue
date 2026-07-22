@@ -70,7 +70,7 @@ const {
 	}
 >()
 
-const modelValue = defineModel<AFormLinkValue>({ default: { id: '', displayText: '' } })
+const modelValue = defineModel<AFormLinkValue>({ default: () => ({ id: '', displayText: '' }) })
 
 const hasValidId = computed(() => {
 	const id = modelValue.value?.id

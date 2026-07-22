@@ -39,6 +39,7 @@
 		"preview": "vite preview",
 		"test": "vitest run --coverage.enabled false",
 		"test:coverage": "vitest run --coverage",
+		"test:types": "tsc --noEmit -p tsconfig.typecheck.json",
 		"test:ui": "vitest --ui",
 		"test:watch": "vitest watch"
 	},

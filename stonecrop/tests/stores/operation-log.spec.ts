@@ -908,8 +908,8 @@ describe('Operation Log Store', { tags: ['unit'] }, () => {
 			const calls = mockBroadcastChannel.postMessage.mock.calls
 			const undoCall = calls.find((call: any) => call[0].type === 'undo')
 			expect(undoCall).toBeDefined()
-			expect(undoCall[0].type).toBe('undo')
-			expect(undoCall[0].operation).toBeDefined()
+			expect(undoCall![0].type).toBe('undo')
+			expect(undoCall![0].operation).toBeDefined()
 		})
 
 		it('should broadcast redo to other tabs', () => {
@@ -938,8 +938,8 @@ describe('Operation Log Store', { tags: ['unit'] }, () => {
 			const calls = mockBroadcastChannel.postMessage.mock.calls
 			const redoCall = calls.find((call: any) => call[0].type === 'redo')
 			expect(redoCall).toBeDefined()
-			expect(redoCall[0].type).toBe('redo')
-			expect(redoCall[0].operation).toBeDefined()
+			expect(redoCall![0].type).toBe('redo')
+			expect(redoCall![0].operation).toBeDefined()
 		})
 	})
 

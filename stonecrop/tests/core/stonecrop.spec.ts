@@ -6,15 +6,17 @@ import { createRouter, createMemoryHistory } from 'vue-router'
 import Doctype from '../../src/doctype'
 import Registry from '../../src/registry'
 import { Stonecrop } from '../../src/stonecrop'
-import type { StonecropOptions } from '../../src/stonecrop'
+import type { StonecropOptions } from '../../src/types/stonecrop'
 import { ImmutableDoctype } from '../../src/types'
 
 // Mock fetch globally
-global.fetch = vi.fn()
+globalThis.fetch = vi.fn() as unknown as typeof fetch
 
 function createDoctype(name: string, fields?: DoctypeField[], links?: Record<string, any>) {
-	const schema = List(fields || [{ kind: 'field', fieldname: 'title', component: 'ATextInput', label: 'Title' }])
-	return new Doctype(name, schema as any, undefined, Map({}), undefined, links)
+	const schema = List<DoctypeField>(
+		fields || [{ kind: 'field', fieldname: 'title', component: 'ATextInput', label: 'Title' }]
+	)
+	return new Doctype(name, schema, undefined, Map({}), undefined, links)
 }
 
 function createMockDoctype(name: string) {

@@ -1384,7 +1384,7 @@ describe('table store', { tags: ['component'] }, () => {
 		beforeEach(() => {
 			qtyStore = createTableStore({
 				columns: quantityColumns,
-				rows: quantityRows.map(row => ({ ...row })),
+				rows: quantityRows.map(row => Object.assign({}, row)),
 			})
 		})
 

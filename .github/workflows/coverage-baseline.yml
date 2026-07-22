@@ -40,6 +40,7 @@ jobs:
           - rockfoil
           - schema
           - stonecrop
+          - utilities
 
     steps:
       - name: Checkout

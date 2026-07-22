@@ -91,7 +91,7 @@ const { mode, label, selectRange = false, errors, validation = { errorMessage: '
 // Dynamic trigger errors take precedence over a static schema errorMessage; empty means the slot hides.
 const errorText = computed(() => (errors?.length ? errors.join('; ') : (validation.errorMessage ?? '')))
 
-const date = defineModel<number | Date>({ default: new Date() })
+const date = defineModel<number | Date>({ default: () => new Date() })
 const selectedDate = ref(new Date(date.value))
 const currentMonth = ref<number>(selectedDate.value.getMonth())
 const currentYear = ref<number>(selectedDate.value.getFullYear())

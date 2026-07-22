@@ -28,7 +28,6 @@ function buildBookingDoctype() {
 			},
 		},
 	}
-	// oxlint-disable-next-line typescript/no-explicit-any -- test doctype construction mirrors desktop.helpers
 	return new Doctype('booking', fields as any, workflow as any, Map({}))
 }
 

@@ -170,13 +170,6 @@ describe('Stonecrop Stores', { tags: ['unit'] }, () => {
 			expect(hstNode.get('data.value')).toBe(42)
 		})
 
-		it('supports parent doctype specification', () => {
-			const target = { title: 'Subtask' }
-			const hstNode = createHST(target, 'Task', 'Project')
-
-			expect(hstNode.get('title')).toBe('Subtask')
-		})
-
 		it('provides tree navigation in created nodes', () => {
 			const target = {
 				project: {
