@@ -82,6 +82,7 @@ const CATEGORY_FILTER: Record<ComponentCategory, 'text' | 'select' | 'number' | 
 	code: 'text',
 	link: 'text',
 	attach: 'text',
+	quantity: 'number',
 }
 
 const { column, colIndex, store } = defineProps<{

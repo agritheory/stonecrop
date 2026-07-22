@@ -241,6 +241,11 @@ describe('table store', { tags: ['component'] }, () => {
 				expect(store.getFormattedValue(0, 0, null)).toBeNull()
 			})
 
+			it('formats a Quantity composite value as "<qty> <uom>"', () => {
+				store.columns[0] = { name: 'id', component: 'AQuantityInput' }
+				expect(store.getFormattedValue(0, 0, { qty: 2, uom: 'Box' })).toBe('2 Box')
+			})
+
 			it('passes value through for an unknown component', () => {
 				store.columns[0] = { name: 'id', component: 'ATextInput' }
 				expect(store.getFormattedValue(0, 0, 'hello')).toBe('hello')
@@ -1359,6 +1364,44 @@ describe('table store', { tags: ['component'] }, () => {
 			// After expanding parent, child becomes visible
 			treeStore.toggleRowExpand(0)
 			expect(treeStore.isRowVisible(1)).toBe(true)
+		})
+	})
+
+	describe('quantity column filtering and sorting', () => {
+		// Quantity cells hold a composite `{ qty, uom, ... }` value; numeric filter/sort must
+		// compare on `qty`, not the object itself (which would coerce to NaN).
+		const quantityColumns: TableColumn[] = [
+			{ name: 'item', label: 'Item' },
+			{ name: 'qty', label: 'Qty', component: 'AQuantityInput', filterType: 'number' },
+		]
+		const quantityRows: TableRow[] = [
+			{ item: 'A', qty: { qty: 30, uom: 'Box', stockQty: 30, stockUom: 'Nos', conversionFactor: 1 } },
+			{ item: 'B', qty: { qty: 5, uom: 'Nos', stockQty: 5, stockUom: 'Nos', conversionFactor: 1 } },
+			{ item: 'C', qty: { qty: 12, uom: 'Nos', stockQty: 12, stockUom: 'Nos', conversionFactor: 1 } },
+		]
+
+		let qtyStore: ReturnType<typeof createTableStore>
+		beforeEach(() => {
+			qtyStore = createTableStore({
+				columns: quantityColumns,
+				rows: quantityRows.map(row => ({ ...row })),
+			})
+		})
+
+		it("filters a quantity column by the composite value's qty", () => {
+			qtyStore.setFilter(1, { value: '12' })
+			expect(qtyStore.filteredRows.map(r => r.item)).toEqual(['C'])
+		})
+
+		it('sorts a quantity column numerically on qty (ascending)', () => {
+			qtyStore.sortByColumn(1)
+			expect(qtyStore.filteredRows.map(r => r.item)).toEqual(['B', 'C', 'A'])
+		})
+
+		it('sorts a quantity column numerically on qty (descending)', () => {
+			qtyStore.sortByColumn(1) // asc
+			qtyStore.sortByColumn(1) // desc
+			expect(qtyStore.filteredRows.map(r => r.item)).toEqual(['A', 'C', 'B'])
 		})
 	})
 })

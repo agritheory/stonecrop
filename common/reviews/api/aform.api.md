@@ -19,6 +19,7 @@ import AFormLink from './components/form/AFormLink.vue';
 import AFormLoading from './components/AFormLoading.vue';
 import ANumericInput from './components/form/ANumericInput.vue';
 import type { App } from 'vue';
+import AQuantityInput from './components/form/AQuantityInput.vue';
 import ATextarea from './components/form/ATextarea.vue';
 import ATextInput from './components/form/ATextInput.vue';
 import type { ColumnSchema } from '@stonecrop/schema';
@@ -68,6 +69,8 @@ export { AFormLoading }
 
 export { ANumericInput }
 
+export { AQuantityInput }
+
 export { ATextarea }
 
 export { ATextInput }
@@ -97,6 +100,22 @@ export function install(app: App): void;
 export { InteractionMode }
 
 export { Login }
+
+// @public
+export interface QuantityOptions {
+    conversionFactors?: Record<string, number>;
+    stockUom?: string;
+    uoms?: string[];
+}
+
+// @public
+export interface QuantityValue {
+    conversionFactor: number;
+    qty: number;
+    stockQty: number;
+    stockUom: string;
+    uom: string;
+}
 
 // @public
 export type ResolvedField = ResolvedScalar | ResolvedLink | ResolvedTable | ResolvedFieldset;

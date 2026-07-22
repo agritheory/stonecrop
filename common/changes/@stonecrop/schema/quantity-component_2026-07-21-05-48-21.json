@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/schema",
+      "comment": "[AForm] Quantity Component",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/schema"
+}
