@@ -2,6 +2,18 @@
   "name": "@stonecrop/schema",
   "entries": [
     {
+      "version": "0.16.2",
+      "tag": "@stonecrop/schema_v0.16.2",
+      "date": "Wed, 22 Jul 2026 08:50:22 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Register ATextboxInput as a 'text' component category (replacing ATextarea)"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.16.1",
       "tag": "@stonecrop/schema_v0.16.1",
       "date": "Wed, 22 Jul 2026 08:03:10 GMT",

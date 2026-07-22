@@ -1,6 +1,14 @@
 # Change Log - @stonecrop/aform
 
-This log was last generated on Wed, 22 Jul 2026 08:03:10 GMT and should not be manually modified.
+This log was last generated on Wed, 22 Jul 2026 08:50:22 GMT and should not be manually modified.
+
+## 0.16.2
+Wed, 22 Jul 2026 08:50:22 GMT
+
+### Patches
+
+- long text /text box input type
+- TextboxInput Type
 
 ## 0.16.1
 Wed, 22 Jul 2026 08:03:10 GMT
