@@ -16,6 +16,7 @@ import AFieldset from './components/form/AFieldset.vue';
 import AFileAttach from './components/form/AFileAttach.vue';
 import AForm from './components/AForm.vue';
 import AFormLink from './components/form/AFormLink.vue';
+import AFormLoading from './components/AFormLoading.vue';
 import ANumericInput from './components/form/ANumericInput.vue';
 import type { App } from 'vue';
 import AQuantityInput from './components/form/AQuantityInput.vue';
@@ -63,6 +64,8 @@ export interface AFormLinkValue {
     displayText?: string;
     id: string | number;
 }
+
+export { AFormLoading }
 
 export { ANumericInput }
 

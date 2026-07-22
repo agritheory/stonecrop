@@ -105,6 +105,14 @@ Vue component exported from @stonecrop/aform.
 import { AFormLink } from '@stonecrop/aform'
 ```
 
+### AFormLoading
+
+Vue component exported from @stonecrop/aform.
+
+```typescript
+import { AFormLoading } from '@stonecrop/aform'
+```
+
 ### ANumericInput
 
 Vue component exported from @stonecrop/aform.

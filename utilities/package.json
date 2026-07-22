@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/utilities",
-	"version": "0.15.0",
+	"version": "0.16.0",
 	"description": "Shared utility functions for Stonecrop",
 	"bugs": {
 		"url": "https://github.com/agritheory/stonecrop/issues"

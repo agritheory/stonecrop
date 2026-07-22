@@ -20,6 +20,8 @@ import AQuantityInput from './components/form/AQuantityInput.vue'
 import ATextInput from './components/form/ATextInput.vue'
 import ATextarea from './components/form/ATextarea.vue'
 import Login from './components/utilities/Login.vue'
+import AFormLoading from './components/AFormLoading.vue'
+
 export type * from './types'
 
 /**
@@ -46,6 +48,7 @@ function install(app: App /* options */) {
 	app.component('ATextInput', ATextInput)
 	app.component('ATextarea', ATextarea)
 	app.component('ADuration', ADuration)
+	app.component('AFormLoading', AFormLoading)
 }
 
 export {
@@ -66,5 +69,6 @@ export {
 	ATextInput,
 	ATextarea,
 	Login,
+	AFormLoading,
 	install,
 }
