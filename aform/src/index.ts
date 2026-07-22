@@ -54,7 +54,6 @@ function install(app: App /* options */) {
 export {
 	ACheckbox,
 	ADate,
-	ATextboxInput,
 	ADropdown,
 	ADatePicker,
 	ADateRange,
@@ -68,6 +67,7 @@ export {
 	ANumericInput,
 	AQuantityInput,
 	ATextInput,
+	ATextboxInput,
 	Login,
 	AFormLoading,
 	install,

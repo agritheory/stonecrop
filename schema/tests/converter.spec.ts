@@ -548,13 +548,13 @@ describe('convertGraphQLSchema', { tags: ['unit'] }, () => {
 			const doctypes = convertGraphQLSchema(basicSdl, {
 				typeOverrides: {
 					User: {
-						email: { component: 'ATextarea', label: 'Email Address' },
+						email: { component: 'ATextboxInput', label: 'Email Address' },
 					},
 				},
 			})
 			const user = doctypes.find(d => d.name === 'User')!
 			const emailField = user.fields.find(f => f.fieldname === 'email')!
-			expect(emailField.component).toBe('ATextarea')
+			expect(emailField.component).toBe('ATextboxInput')
 			expect(emailField.label).toBe('Email Address')
 		})
 

@@ -11,7 +11,7 @@ import {
 describe('component-meta', { tags: ['unit'] }, () => {
 	it('categorizes the canonical components', () => {
 		expect(componentCategory('ATextInput')).toBe('text')
-		expect(componentCategory('ATextarea')).toBe('text')
+		expect(componentCategory('ATextboxInput')).toBe('text')
 		expect(componentCategory('ANumericInput')).toBe('number')
 		expect(componentCategory('ACheckbox')).toBe('boolean')
 		expect(componentCategory('ADate')).toBe('date')

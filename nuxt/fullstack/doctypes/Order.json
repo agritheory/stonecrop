@@ -44,12 +44,12 @@
 		{
 			"fieldname": "shippingAddress",
 			"label": "Shipping Address",
-			"component": "ATextarea"
+			"component": "ATextboxInput"
 		},
 		{
 			"fieldname": "billingAddress",
 			"label": "Billing Address",
-			"component": "ATextarea"
+			"component": "ATextboxInput"
 		},
 		{
 			"fieldname": "createdAt",

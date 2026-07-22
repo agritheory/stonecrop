@@ -19,7 +19,7 @@ export type ComponentCategory =
  */
 export const COMPONENT_CATEGORY: Record<string, ComponentCategory> = {
 	ATextInput: 'text',
-	ATextarea: 'text',
+	ATextboxInput: 'text',
 	ANumericInput: 'number',
 	ACheckbox: 'boolean',
 	ADate: 'date',

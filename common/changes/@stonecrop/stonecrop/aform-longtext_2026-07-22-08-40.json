@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/stonecrop",
+      "comment": "Update fixtures/docs from ATextarea to ATextboxInput",
+      "type": "none"
+    }
+  ],
+  "packageName": "@stonecrop/stonecrop"
+}

@@ -20,7 +20,7 @@ Schema-driven form components for the Stonecrop framework. Renders a `ResolvedFi
 | `AFormLink` | Linked document selector with search dropdown and navigation arrow |
 | `ANumericInput` | Numeric input with type-specific formatting |
 | `ATextInput` | Single-line text input |
-| `ATextarea` | Multi-line text input |
+| `ATextboxInput` | Multi-line long-text input |
 
 ## Installation
 

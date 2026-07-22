@@ -65,7 +65,7 @@
 		{
 			"fieldname": "bio",
 			"label": "Bio",
-			"component": "ATextarea"
+			"component": "ATextboxInput"
 		},
 		{
 			"fieldname": "phone",

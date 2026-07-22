@@ -11,7 +11,7 @@
 		{
 			"fieldname": "description",
 			"label": "Description",
-			"component": "ATextarea",
+			"component": "ATextboxInput",
 			"required": true
 		},
 		{
@@ -48,7 +48,7 @@
 		{
 			"fieldname": "resolution",
 			"label": "Resolution",
-			"component": "ATextarea"
+			"component": "ATextboxInput"
 		}
 	],
 	"workflow": {

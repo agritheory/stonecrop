@@ -158,6 +158,10 @@ const childModels = computed(() => childModelsCache.value)
 
 <style>
 /* global styles for aform */
+.aform input {
+	font-family: var(--sc-font-family);
+	border: none;
+}
 .aform_form-element {
 	padding: 0;
 	margin: 0;
@@ -165,7 +169,7 @@ const childModels = computed(() => childModelsCache.value)
 	box-sizing: border-box;
 	flex-grow: 1;
 	min-width: 20ch;
-	margin-bottom: 1rem;
+	/* margin-bottom: 1rem; */
 }
 .aform__grid--full {
 	flex-basis: 100%;
@@ -184,6 +188,7 @@ const childModels = computed(() => childModelsCache.value)
 	position: relative;
 	color: var(--sc-cell-text-color);
 	background: var(--sc-input-field-background);
+	font-family: var(--sc-font-family);
 }
 .aform_input-field:focus {
 	outline: 1px solid var(--sc-input-active-border-color);
@@ -223,13 +228,16 @@ const childModels = computed(() => childModelsCache.value)
 	line-height: 0;
 	transform: translateY(-50%);
 }
-.aform_input-field:disabled {
+.aform_input-field:disabled,
+.aform_checkbox-container:has(.aform_checkbox:disabled) {
 	background: var(--sc-input-field-disabled-background);
 }
-.aform_input-field:disabled + .aform_field-label {
+.aform_input-field:disabled + .aform_field-label,
+.aform_checkbox-container:has(.aform_checkbox:disabled) + .aform_field-label {
 	background: linear-gradient(var(--sc-form-background) 50%, var(--sc-input-field-disabled-background) 50%);
 }
-.aform_input-field:disabled ~ p.aform_error {
+.aform_input-field:disabled ~ p.aform_error,
+.aform_checkbox-container:has(.aform_checkbox:disabled) ~ p.aform_error {
 	background: linear-gradient(var(--sc-form-background) 50%, var(--sc-input-field-disabled-background) 50%);
 }
 .aform_field-label::after {

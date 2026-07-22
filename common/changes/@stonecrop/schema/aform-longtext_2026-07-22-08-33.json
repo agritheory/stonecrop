@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@stonecrop/schema",
-      "comment": "long text /text box input type",
+      "comment": "Register ATextboxInput as a 'text' component category (replacing ATextarea)",
       "type": "none"
     }
   ],

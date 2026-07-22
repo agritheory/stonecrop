@@ -1,107 +1,66 @@
 <template>
-	<div v-if="!hidden" class="a-long-text" :class="{ 'is-read-only': isReadOnly }">
-		<label v-if="label" :for="fieldname" class="a-long-text__label">
-			{{ label }}<span v-if="required" class="a-long-text__required" aria-hidden="true">*</span>
-		</label>
-		<textarea
-			v-if="!isReadOnly"
-			:id="fieldname"
-			:name="fieldname"
-			class="a-long-text__input"
-			:value="modelValue ?? ''"
-			:placeholder="placeholder"
-			:required="required"
-			:disabled="disabled"
-			:rows="rows"
-			:maxlength="maxlength"
-			@input="onInput" />
-		<span v-else class="a-long-text__display">{{ modelValue }}</span>
+	<div class="aform_form-element">
+		<template v-if="mode === 'display'">
+			<span class="aform_display-value aform_textbox-display">{{ inputText ?? '' }}</span>
+			<label class="aform_field-label">{{ label }}</label>
+		</template>
+		<template v-else>
+			<textarea
+				:id="uuid"
+				v-model="inputText"
+				class="aform_input-field aform_textbox"
+				:placeholder="placeholder"
+				:rows="rows"
+				:maxlength="maxlength"
+				:disabled="mode === 'read'"
+				:required="required"></textarea>
+			<label class="aform_field-label" :for="uuid">{{ label }}</label>
+			<p v-show="errorText" class="aform_error" v-html="errorText"></p>
+		</template>
 	</div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
 
-interface Props {
-	fieldname: string
-	label?: string
-	modelValue?: string | null
-	placeholder?: string
-	required?: boolean
-	readOnly?: boolean
-	disabled?: boolean
-	hidden?: boolean
-	rows?: number
-	maxlength?: number
-	mode?: 'display' | 'edit'
-}
+import { ComponentProps } from '../../types'
 
 const {
-	label = '',
-	modelValue = null,
+	label,
+	required,
+	mode,
+	uuid,
+	errors,
 	placeholder = '',
-	required = false,
-	readOnly = false,
-	disabled = false,
-	hidden = false,
 	rows = 4,
-	mode = 'edit',
-} = defineProps<Props>()
+	maxlength,
+	validation = { errorMessage: '' },
+} = defineProps<
+	ComponentProps & {
+		/** Placeholder shown when the field is empty */
+		placeholder?: string
+		/** Visible number of text lines (maps to the textarea `rows` attribute) */
+		rows?: number
+		/** Maximum number of characters the field will accept */
+		maxlength?: number
+	}
+>()
 
-const emit = defineEmits<{
-	(e: 'update:modelValue', value: string): void
-	(e: 'change', value: string): void
-}>()
+// Dynamic trigger errors take precedence over a static schema errorMessage; empty means the slot hides.
+const errorText = computed(() => (errors?.length ? errors.join('; ') : (validation.errorMessage ?? '')))
 
-const isReadOnly = computed(() => readOnly || mode === 'display')
-
-function onInput(event: Event) {
-	const value = (event.target as HTMLTextAreaElement).value
-	emit('update:modelValue', value)
-	emit('change', value)
-}
+const inputText = defineModel<string | null>()
 </script>
 
 <style scoped>
-.a-long-text {
-	display: flex;
-	flex-direction: column;
-	gap: var(--space-xs, 0.25rem);
-}
-
-.a-long-text__label {
-	font-size: var(--font-size-sm, 0.875rem);
-	color: var(--color-text-secondary, #666);
-}
-
-.a-long-text__required {
-	color: var(--color-danger, #c00);
-	margin-left: 2px;
-}
-
-.a-long-text__input {
-	font-family: inherit;
-	font-size: var(--font-size-base, 1rem);
-	color: var(--color-text-primary, #111);
-	background: var(--color-input-bg, #fff);
-	border: 1px solid var(--color-border, #ccc);
-	border-radius: var(--radius-sm, 4px);
-	padding: var(--space-xs, 0.25rem) var(--space-sm, 0.5rem);
+.aform_textbox {
 	resize: vertical;
-	width: 100%;
-	box-sizing: border-box;
 	line-height: 1.5;
+	min-height: 4rem;
+	font-family: inherit;
 }
 
-.a-long-text__input:focus {
-	outline: none;
-	border-color: var(--color-focus, #0066cc);
-	box-shadow: 0 0 0 2px var(--color-focus-ring, rgba(0, 102, 204, 0.2));
-}
-
-.a-long-text__display {
+.aform_textbox-display {
 	white-space: pre-wrap;
-	font-size: var(--font-size-base, 1rem);
-	color: var(--color-text-primary, #111);
 }
 </style>

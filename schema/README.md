@@ -34,7 +34,7 @@ Every field declares a `component` — the Vue widget that renders it. `componen
 import { CANONICAL_COMPONENTS, componentCategory } from '@stonecrop/schema'
 
 // Components by value category (componentCategory):
-// text:     ATextInput, ATextarea, ADuration
+// text:     ATextInput, ATextboxInput, ADuration
 // number:   ANumericInput
 // boolean:  ACheckbox
 // date:     ADate, ADatePicker, ADateSelection, ADateRange
