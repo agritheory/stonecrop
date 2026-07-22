@@ -3,7 +3,7 @@
     {
       "packageName": "@stonecrop/schema",
       "comment": "Register ATextboxInput as a 'text' component category (replacing ATextarea)",
-      "type": "none"
+      "type": "patch"
     }
   ],
   "packageName": "@stonecrop/schema"

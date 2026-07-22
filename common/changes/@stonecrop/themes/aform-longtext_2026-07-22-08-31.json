@@ -3,7 +3,7 @@
     {
       "packageName": "@stonecrop/themes",
       "comment": "Quote the Arimo font-family value so it resolves consistently",
-      "type": "none"
+      "type": "patch"
     }
   ],
   "packageName": "@stonecrop/themes"

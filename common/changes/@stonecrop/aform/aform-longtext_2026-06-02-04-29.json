@@ -3,7 +3,7 @@
     {
       "packageName": "@stonecrop/aform",
       "comment": "long text /text box input type",
-      "type": "none"
+      "type": "patch"
     }
   ],
   "packageName": "@stonecrop/aform"
