@@ -199,8 +199,20 @@
 	 * PNPM documentation: https://pnpm.io/package_json#pnpmoverrides
 	 */
 	"globalOverrides": {
-		// "example1": "^1.0.0",
-		// "example2": "npm:@company/example2@^1.0.0"
+		// Security override for a transitive dependency with no in-range fix.
+		// vitepress@1.6.4 pins `vite: ^5.4.14`, but vite shipped no patch in the
+		// 5.x line for GHSA-fx2h-pf6j-xcff (High): server.fs.deny bypass on Windows.
+		// Force it up to the earliest fixed release (6.4.3), which vitepress 1.6.4
+		// runs fine against. Remove this once vitepress is upgraded to a release
+		// that depends on vite >= 6.4.3 / 7.3.5. Rush 5.178+ writes globalOverrides
+		// to the generated common/temp/pnpm-workspace.yaml for pnpm 11.
+		//
+		// All other critical/high Dependabot advisories (lodash-es, shell-quote,
+		// immutable, tar, linkify-it, undici, ws, svgo, serialize-javascript,
+		// brace-expansion) are resolved by normal resolution — their fixes are
+		// within the declared ranges and are pulled in by `rush update --full`,
+		// so they do not need overrides.
+		"vite@5": "6.4.3"
 	},
 
 	/**

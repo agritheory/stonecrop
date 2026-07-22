@@ -16,7 +16,7 @@ export default defineConfig({
 			formats: ['es'],
 		},
 		rollupOptions: {
-			external: ['vue'],
+			external: ['vue', /^@vueuse\//],
 			output: {
 				chunkFileNames: 'chunks/[name].[hash].js',
 				assetFileNames: 'assets/[name].[ext]',

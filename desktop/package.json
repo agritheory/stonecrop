@@ -49,7 +49,9 @@
 		"@stonecrop/atable": "workspace:*",
 		"@stonecrop/schema": "workspace:*",
 		"@stonecrop/stonecrop": "workspace:*",
-		"@stonecrop/themes": "workspace:*"
+		"@stonecrop/themes": "workspace:*",
+		"@vueuse/components": "^14.2.1",
+		"@vueuse/core": "^14.2.1"
 	},
 	"devDependencies": {
 		"@microsoft/api-documenter": "^7.30.5",
