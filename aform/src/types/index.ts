@@ -268,3 +268,40 @@ export interface QuantityOptions {
 	/** Conversion factor lookup for each non-stock UOM, relative to `stockUom` (which is implicitly `1`) */
 	conversionFactors?: Record<string, number>
 }
+
+/**
+ * The value shape for ACurrencyInput — an amount paired with its currency (an
+ * {@link AFormLinkValue} FK reference), plus the derived base-currency-equivalent amount.
+ * `exchangeRate` is carried on the value so it round-trips with the record even though it is
+ * never directly edited by the user.
+ * @public
+ */
+export interface CurrencyValue {
+	/** The entered amount, in `currency` units */
+	amount: number
+	/** FK reference to the Currency doctype the user entered `amount` in */
+	currency: AFormLinkValue
+	/** `amount` converted into `baseCurrency` units — `amount * exchangeRate` */
+	baseAmount: number
+	/** The record's base currency — fixed, not user-editable */
+	baseCurrency: AFormLinkValue
+	/** Multiplier from `currency` to `baseCurrency` — hidden from the UI, drives `baseAmount` */
+	exchangeRate: number
+}
+
+/**
+ * Type-specific configuration for ACurrencyInput, passed via the field's `options` property.
+ * @public
+ */
+export interface CurrencyOptions {
+	/** Currency doctype name, used for FK resolution (via `aformLinkResolver`) and navigation */
+	doctype?: string
+	/** The record's base currency — fixed, not user-editable. A bare id resolves to displayText via `aformLinkResolver`. */
+	baseCurrency?: AFormLinkValue | string
+	/** Exchange rate lookup for each non-base currency id, relative to `baseCurrency` (which is implicitly `1`) */
+	exchangeRates?: Record<string, number>
+	/** Search function backing the `currency` autocomplete dropdown — see AFormLink's `filterFunction` */
+	filterFunction?: string | ((search: string) => AFormLinkValue[] | Promise<AFormLinkValue[]>)
+	/** Whether `filterFunction` results should show a loading state — see AFormLink's `isAsync` */
+	isAsync?: boolean
+}

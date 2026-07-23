@@ -10,7 +10,7 @@
  * @public
  */
 export type ComponentCategory =
-	'text' | 'number' | 'boolean' | 'date' | 'datetime' | 'select' | 'code' | 'link' | 'attach' | 'quantity'
+	'text' | 'number' | 'boolean' | 'date' | 'datetime' | 'select' | 'code' | 'link' | 'attach' | 'quantity' | 'currency'
 
 /**
  * Canonical component → semantic category. Only the components Stonecrop ships with appear here;
@@ -33,6 +33,7 @@ export const COMPONENT_CATEGORY: Record<string, ComponentCategory> = {
 	AFormLink: 'link',
 	AFileAttach: 'attach',
 	AQuantityInput: 'quantity',
+	ACurrencyInput: 'currency',
 }
 
 /**

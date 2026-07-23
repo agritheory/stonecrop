@@ -163,6 +163,31 @@ describe('schemaToColumns', { tags: ['component'] }, () => {
 		})
 	})
 
+	describe('Currency field handling', () => {
+		it('adds a formatCurrency function for currency-category fields without explicit format', () => {
+			const schema: ColumnSchema[] = [{ fieldname: 'total', component: 'ACurrencyInput', label: 'Total' }]
+			const columns = schemaToColumns(schema)
+			expect(typeof columns[0].format).toBe('function')
+			expect((columns[0].format as Function)({ amount: 5, currency: { id: 'USD', displayText: 'US Dollar' } })).toBe(
+				'5 US Dollar'
+			)
+		})
+
+		it('does not override an explicit format on a currency field', () => {
+			const schema: ColumnSchema[] = [
+				{ fieldname: 'total', component: 'ACurrencyInput', label: 'Total', format: '(v) => v.amount' },
+			]
+			const columns = schemaToColumns(schema)
+			expect(columns[0].format).toBe('(v) => v.amount')
+		})
+
+		it('does not add format for non-currency fields', () => {
+			const schema: ColumnSchema[] = [{ fieldname: 'title', component: 'ATextInput', label: 'Title' }]
+			const columns = schemaToColumns(schema)
+			expect(columns[0].format).toBeUndefined()
+		})
+	})
+
 	it('preserves field order', () => {
 		const schema: ColumnSchema[] = [
 			{ fieldname: 'z', component: 'ATextInput', label: 'Z' },

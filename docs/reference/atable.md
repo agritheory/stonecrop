@@ -2806,6 +2806,8 @@ For link fields (those carrying `doctype`) without an explicit `cellComponent`: 
 
 For quantity fields — those whose `component` carries the `'quantity'` category — without an explicit `format`, a synchronous `format` is added that renders the `{ qty, uom }` value (see `QuantityValue` in `@stonecrop/aform`) as `"<qty> <uom>"`.
 
+For currency fields — those whose `component` carries the `'currency'` category — without an explicit `format`, a synchronous `format` is added that renders the `{ amount, currency }` value (see `CurrencyValue` in `@stonecrop/aform`) as `"<amount> <currency>"`.
+
 **Signature:**
 
 ```typescript

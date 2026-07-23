@@ -1,0 +1,75 @@
+<script setup lang="ts">
+import { ref } from 'vue'
+import { AForm } from '@stonecrop/aform'
+
+// "Invoice line" item: company's base currency is USD, but this line was billed in EUR.
+const CURRENCIES = [
+	{ id: 'USD', displayText: 'US Dollar' },
+	{ id: 'EUR', displayText: 'Euro' },
+	{ id: 'GBP', displayText: 'British Pound' },
+]
+
+const lineSchema = [
+	{
+		fieldname: 'total',
+		kind: 'field',
+		component: 'ACurrencyInput',
+		label: 'Total',
+		options: {
+			doctype: 'currency',
+			baseCurrency: { id: 'USD', displayText: 'US Dollar' },
+			exchangeRates: { EUR: 1.1, GBP: 1.3 },
+			filterFunction: (search: string) =>
+				CURRENCIES.filter(c => c.displayText.toLowerCase().includes(search.toLowerCase())),
+		},
+	},
+]
+
+// currency ('EUR') differs from baseCurrency ('USD'); ACurrencyInput computes baseAmount/
+// baseCurrency/exchangeRate internally and displays them read-only in its own row — nothing
+// extra to sync at the form level.
+//
+// Uses ref(), not reactive(): AForm's v-model:data emits a plain-object copy of the data on every
+// change (`{ ...dataModel.value }`), and re-assigning that to a `reactive()` binding replaces it
+// with a non-reactive plain object after the first update, silently breaking every update after
+// that. ref() survives the round trip because Vue re-wraps whatever is assigned to `.value` in
+// reactivity.
+const lineData = ref({
+	total: {
+		amount: 100,
+		currency: { id: 'EUR', displayText: 'Euro' },
+		baseAmount: 110,
+		baseCurrency: { id: 'USD', displayText: 'US Dollar' },
+		exchangeRate: 1.1,
+	},
+})
+
+const readOnlyData = ref({
+	total: {
+		amount: 100,
+		currency: { id: 'EUR', displayText: 'Euro' },
+		baseAmount: 110,
+		baseCurrency: { id: 'USD', displayText: 'US Dollar' },
+		exchangeRate: 1.1,
+	},
+})
+</script>
+
+<template>
+	<Story title="ACurrencyInput">
+		<Variant title="Realistic line (currency differs from base currency)">
+			<AForm :schema="lineSchema" v-model:data="lineData" />
+			<p style="margin-top: 1rem; font-size: 0.9em">
+				Line data: <strong>{{ lineData }}</strong>
+			</p>
+		</Variant>
+
+		<Variant title="Display mode">
+			<AForm :schema="lineSchema" :data="lineData" mode="display" />
+		</Variant>
+
+		<Variant title="Read mode">
+			<AForm :schema="lineSchema" :data="readOnlyData" mode="read" />
+		</Variant>
+	</Story>
+</template>

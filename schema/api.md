@@ -822,7 +822,7 @@ Semantic category for a rendering component.
 **Definition:**
 
 ```typescript
-export type ComponentCategory = 'text' | 'number' | 'boolean' | 'date' | 'datetime' | 'select' | 'code' | 'link' | 'attach' | 'quantity';
+export type ComponentCategory = 'text' | 'number' | 'boolean' | 'date' | 'datetime' | 'select' | 'code' | 'link' | 'attach' | 'quantity' | 'currency';
 ```
 
 ### CustomFetch

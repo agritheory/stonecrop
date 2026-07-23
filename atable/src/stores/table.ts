@@ -14,7 +14,7 @@ import type {
 	TableModal,
 	TableRow,
 } from '../types'
-import { formatQuantity, generateHash } from '../utils'
+import { formatCurrency, formatQuantity, generateHash } from '../utils'
 
 /**
  * Represents the state of a single filter
@@ -36,10 +36,13 @@ export interface FilterState {
 export type FilterStateRecord = Record<number, FilterState>
 
 // Quantity columns hold a composite `{ qty, uom, ... }` value (see `QuantityValue` in
-// `@stonecrop/aform`); numeric comparisons (filtering, sorting) operate on `qty`.
+// `@stonecrop/aform`); numeric comparisons (filtering, sorting) operate on `qty`. Currency columns
+// hold a composite `{ amount, currency, ... }` value (see `CurrencyValue` in `@stonecrop/aform`);
+// numeric comparisons operate on `amount`.
 function toComparableNumber(cellValue: unknown): number {
-	if (cellValue !== null && typeof cellValue === 'object' && 'qty' in cellValue) {
-		return Number(cellValue.qty)
+	if (cellValue !== null && typeof cellValue === 'object') {
+		if ('qty' in cellValue) return Number(cellValue.qty)
+		if ('amount' in cellValue) return Number((cellValue as { amount: unknown }).amount)
 	}
 	return Number(cellValue)
 }
@@ -531,6 +534,7 @@ export const createTableStore = (initData: {
 				if (category === 'date') return value != null ? new Date(String(value)).toLocaleDateString() : value
 				if (category === 'datetime') return value != null ? new Date(String(value)).toLocaleString() : value
 				if (category === 'quantity') return formatQuantity(value)
+				if (category === 'currency') return formatCurrency(value)
 				return value
 			}
 

@@ -5,6 +5,7 @@
 ```ts
 
 import ACheckbox from './components/form/ACheckbox.vue';
+import ACurrencyInput from './components/form/ACurrencyInput.vue';
 import ADate from './components/form/ADate.vue';
 import ADatePicker from './components/form/ADatePicker.vue';
 import ADateRange from './components/form/ADateRange.vue';
@@ -30,6 +31,8 @@ import type { TableViewConfig } from '@stonecrop/schema';
 import type { ValueField } from '@stonecrop/schema';
 
 export { ACheckbox }
+
+export { ACurrencyInput }
 
 export { ADate }
 
@@ -90,6 +93,24 @@ export type ComponentProps = {
     };
     errors?: string[];
 };
+
+// @public
+export interface CurrencyOptions {
+    baseCurrency?: AFormLinkValue | string;
+    doctype?: string;
+    exchangeRates?: Record<string, number>;
+    filterFunction?: string | ((search: string) => AFormLinkValue[] | Promise<AFormLinkValue[]>);
+    isAsync?: boolean;
+}
+
+// @public
+export interface CurrencyValue {
+    amount: number;
+    baseAmount: number;
+    baseCurrency: AFormLinkValue;
+    currency: AFormLinkValue;
+    exchangeRate: number;
+}
 
 // @public
 export function deserializeFunction<T extends (...args: any[]) => any>(source: string): T;

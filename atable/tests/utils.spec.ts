@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { isHtmlString, generateHash, formatQuantity } from '../src/utils'
+import { isHtmlString, generateHash, formatQuantity, formatCurrency } from '../src/utils'
 
 describe('utils', { tags: ['component'] }, () => {
 	describe('isHtmlString', () => {
@@ -81,6 +81,29 @@ describe('utils', { tags: ['component'] }, () => {
 		it('stringifies a primitive value', () => {
 			expect(formatQuantity(5)).toBe('5')
 			expect(formatQuantity('hello')).toBe('hello')
+		})
+	})
+
+	describe('formatCurrency', () => {
+		it('renders amount and currency displayText', () => {
+			expect(formatCurrency({ amount: 5, currency: { id: 'USD', displayText: 'US Dollar' } })).toBe('5 US Dollar')
+		})
+
+		it('falls back to currency id when displayText is absent', () => {
+			expect(formatCurrency({ amount: 5, currency: { id: 'USD' } })).toBe('5 USD')
+		})
+
+		it('renders just the amount when currency is absent', () => {
+			expect(formatCurrency({ amount: 5 })).toBe('5')
+		})
+
+		it('returns an empty string for null/undefined', () => {
+			expect(formatCurrency(null)).toBe('')
+			expect(formatCurrency(undefined)).toBe('')
+		})
+
+		it('stringifies non-object values as-is', () => {
+			expect(formatCurrency(5)).toBe('5')
 		})
 	})
 })

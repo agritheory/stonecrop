@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/schema",
+      "comment": "[AForm] Currency Component",
+      "type": "none"
+    }
+  ],
+  "packageName": "@stonecrop/schema"
+}
