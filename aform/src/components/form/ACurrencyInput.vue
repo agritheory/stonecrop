@@ -150,6 +150,10 @@ const resolveExchangeRate = (currencyId: string | number | undefined): number =>
 	return options.exchangeRates?.[String(currencyId)] ?? modelValue.value?.exchangeRate ?? 1
 }
 
+// Money doesn't carry more than 2 decimal places — also sheds floating-point noise from the
+// multiplication (e.g. 4 * 1.1 → 4.4 rather than 4.4000000000000004).
+const roundToCents = (value: number): number => Math.round(value * 100) / 100
+
 const recompute = (amount: number, currencyValue: AFormLinkValue) => {
 	const exchangeRate = resolveExchangeRate(currencyValue.id)
 	modelValue.value = {
@@ -157,7 +161,7 @@ const recompute = (amount: number, currencyValue: AFormLinkValue) => {
 		currency: currencyValue,
 		exchangeRate,
 		baseCurrency: resolvedBaseCurrency.value,
-		baseAmount: amount * exchangeRate,
+		baseAmount: roundToCents(amount * exchangeRate),
 	}
 }
 

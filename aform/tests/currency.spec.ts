@@ -190,6 +190,29 @@ describe('ACurrencyInput', () => {
 			expect(last.baseAmount).toBeCloseTo(3.3, 10)
 		})
 
+		it('rounds baseAmount to 2 decimal places, clearing floating-point noise', async () => {
+			// 3 * 1.3 === 3.9000000000000004 in raw JS float math — exercises the rounding, not
+			// just a value close enough to look right.
+			const wrapper = mount(ACurrencyInput, {
+				props: {
+					options,
+					modelValue: {
+						amount: 0,
+						currency: { id: '' },
+						baseAmount: 0,
+						baseCurrency: { id: '' },
+						exchangeRate: 1,
+					},
+				},
+			})
+			await pickCurrency(wrapper, 'British Pound')
+			await wrapper.find('input[type="number"]').setValue(3)
+
+			const emitted = wrapper.emitted('update:modelValue')!
+			const last = emitted[emitted.length - 1][0] as any
+			expect(last.baseAmount).toBe(3.9)
+		})
+
 		it('recomputes baseAmount when currency changes after amount is already set', async () => {
 			const wrapper = mount(ACurrencyInput, {
 				props: {
