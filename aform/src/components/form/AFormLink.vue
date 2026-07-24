@@ -1,5 +1,5 @@
 <template>
-	<div class="aform_form-element">
+	<div :class="['aform_form-element', { 'aform_form-element--embedded': embedded }]">
 		<span v-if="mode === 'display'" class="aform_display-value">{{ displayedText }}</span>
 		<template v-else>
 			<div v-on-click-outside="onClickOutside" class="aform_form-link-wrapper">
@@ -7,7 +7,8 @@
 					<input
 						v-model="searchText"
 						type="text"
-						class="aform_input-field"
+						:class="['aform_input-field', { 'aform_input-field--embedded': embedded }]"
+						:placeholder="placeholder"
 						:disabled="disabled || mode === 'read'"
 						@input="onInput"
 						@focus="onFocus"
@@ -19,7 +20,7 @@
 					<button
 						v-if="hasValidId && !disabled"
 						type="button"
-						class="aform_form-btn"
+						:class="['aform_form-btn', { 'aform_form-btn--embedded': embedded }]"
 						@click="handleNavigate"
 						@keydown.enter.prevent="handleNavigate">
 						<span>{{ icon === 'chevron-right' ? '›' : '→' }}</span>
@@ -38,7 +39,7 @@
 					</li>
 				</ul>
 			</div>
-			<label v-if="label" class="aform_field-label">{{ label }}</label>
+			<label v-if="label && !embedded" class="aform_field-label">{{ label }}</label>
 		</template>
 	</div>
 </template>
@@ -59,6 +60,8 @@ const {
 	disabled = false,
 	filterFunction = undefined,
 	isAsync = false,
+	embedded = false,
+	placeholder = undefined,
 } = defineProps<
 	ComponentProps & {
 		doctype?: string
@@ -67,6 +70,11 @@ const {
 		disabled?: boolean
 		filterFunction?: string | ((search: string) => AFormLinkValue[] | Promise<AFormLinkValue[]>)
 		isAsync?: boolean
+		// Bare rendering for compositing into another component's own bordered container
+		// (e.g. ACurrencyInput's merged amount+currency group): suppresses this component's
+		// own outline/border and floating label so the parent supplies both exactly once.
+		embedded?: boolean
+		placeholder?: string
 	}
 >()
 
@@ -227,6 +235,19 @@ const selectCurrent = () => {
 	min-width: 0;
 }
 
+.aform_form-element--embedded {
+	min-width: 0;
+	flex-grow: 0;
+}
+
+/* Embedded mode: the host component's own container supplies the border, so this input
+   goes borderless and inherits the host's padding scale instead of the standalone default. */
+.aform_input-field--embedded {
+	outline: none;
+	background: transparent;
+	padding: 0.5ch 1ch;
+}
+
 /* Give the button the same outline as the input, then slide it 2px left so the outlines
    overlap exactly at the join: input right outline sits at (input_right - 1px),
    button left outline also sits at (button_left + 1px) = (input_right - 2px + 1px) = same pixel. */
@@ -244,6 +265,22 @@ const selectCurrent = () => {
 .aform_form-btn:focus,
 .input-group:focus-within .aform_form-btn {
 	outline-color: var(--sc-input-active-border-color);
+}
+
+/* Declared after the base .aform_form-btn rule so these overrides win the equal-specificity
+   tie (both classes share the same scoped attribute selector) instead of being clobbered by it. */
+.aform_form-btn--embedded {
+	outline: none;
+	margin-left: 0;
+	border-left: 1px solid var(--sc-input-border-color);
+	border-radius: 0;
+	padding: 0.5ch 1ch;
+}
+
+.aform_form-btn--embedded:focus,
+.input-group:focus-within .aform_form-btn--embedded {
+	outline: none;
+	border-left-color: var(--sc-input-active-border-color);
 }
 
 .autocomplete-results {

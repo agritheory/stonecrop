@@ -7,25 +7,28 @@
 		<template v-else>
 			<div class="acurrency__row">
 				<div class="acurrency__field acurrency__field--amount">
-					<input
-						:id="uuid"
-						v-model.number="amount"
-						class="aform_input-field acurrency__amount"
-						type="number"
-						:disabled="mode === 'read'"
-						:required="required"
-						@keydown="onAmountKeydown"
-						@paste="onAmountPaste" />
+					<div class="acurrency__group">
+						<input
+							:id="uuid"
+							v-model.number="amount"
+							class="acurrency__amount"
+							type="number"
+							:disabled="mode === 'read'"
+							:required="required"
+							@keydown="onAmountKeydown"
+							@paste="onAmountPaste" />
+						<div class="acurrency__currency">
+							<AFormLink
+								v-model="currency"
+								:mode="mode"
+								embedded
+								:placeholder="currencyLabel"
+								:doctype="options.doctype"
+								:filter-function="options.filterFunction"
+								:is-async="options.isAsync" />
+						</div>
+					</div>
 					<label class="aform_field-label" :for="uuid">{{ label }}</label>
-				</div>
-				<div class="acurrency__field acurrency__field--currency">
-					<AFormLink
-						v-model="currency"
-						:mode="mode"
-						:label="currencyLabel"
-						:doctype="options.doctype"
-						:filter-function="options.filterFunction"
-						:is-async="options.isAsync" />
 				</div>
 			</div>
 			<div class="acurrency__row acurrency__row--base">
@@ -216,8 +219,26 @@ const displayText = computed(() => {
 	min-width: 0;
 }
 
-.acurrency__amount {
+.acurrency__group {
+	display: flex;
+	align-items: stretch;
 	width: 100%;
+	border: 1px solid var(--sc-input-border-color);
+	border-radius: 0.25rem;
+}
+
+.acurrency__group:focus-within {
+	border-color: var(--sc-input-active-border-color);
+}
+
+.acurrency__amount {
+	flex: 1;
+	min-width: 0;
+	border: none;
+	outline: none;
+	padding: 0.5ch 1ch;
+	background: transparent;
+	border-radius: 0.25rem 0 0 0.25rem;
 	appearance: textfield;
 	-moz-appearance: textfield;
 }
@@ -227,6 +248,13 @@ const displayText = computed(() => {
 	appearance: none;
 	-webkit-appearance: none;
 	margin: 0;
+}
+
+.acurrency__currency {
+	position: relative;
+	flex: 1;
+	min-width: 0;
+	border-left: 1px solid var(--sc-input-border-color);
 }
 
 .acurrency__base-field {

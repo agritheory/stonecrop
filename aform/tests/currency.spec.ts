@@ -18,7 +18,7 @@ const options = {
 // opens on focus), not a native <select> — selecting a currency means focusing the input, then
 // clicking the matching option.
 const pickCurrency = async (wrapper: VueWrapper, value: string) => {
-	const input = wrapper.find('.acurrency__field--currency input[type="text"]')
+	const input = wrapper.find('.acurrency__currency input[type="text"]')
 	await input.trigger('focus')
 	await flushPromises()
 	const option = wrapper.findAll('.autocomplete-result').find(li => li.text() === value)
@@ -32,7 +32,14 @@ describe('ACurrencyInput', () => {
 			const wrapper = mount(ACurrencyInput, { props: { label: 'Amount', options } })
 			expect(wrapper.find('input[type="number"]').exists()).toBe(true)
 			expect(wrapper.find('select').exists()).toBe(false)
-			expect(wrapper.find('.acurrency__field--currency input[type="text"]').exists()).toBe(true)
+			expect(wrapper.find('.acurrency__currency input[type="text"]').exists()).toBe(true)
+		})
+
+		it('shows the currency label as a placeholder instead of a floating label, merged into one group', () => {
+			const wrapper = mount(ACurrencyInput, { props: { label: 'Amount', options } })
+			const currencyInput = wrapper.find('.acurrency__currency input[type="text"]')
+			expect(currencyInput.attributes('placeholder')).toBe('Currency')
+			expect(wrapper.find('.acurrency__currency label').exists()).toBe(false)
 		})
 
 		it('renders amount and currency fields side by side in the same row', () => {
@@ -66,13 +73,13 @@ describe('ACurrencyInput', () => {
 					},
 				},
 			})
-			expect(wrapper.find('.acurrency__field--currency input[type="text"]').element.value).toBe('Euro')
+			expect(wrapper.find('.acurrency__currency input[type="text"]').element.value).toBe('Euro')
 		})
 
 		it('is disabled in read mode', () => {
 			const wrapper = mount(ACurrencyInput, { props: { mode: 'read', options } })
 			expect(wrapper.find('input[type="number"]').attributes()).toHaveProperty('disabled')
-			expect(wrapper.find('.acurrency__field--currency input[type="text"]').attributes()).toHaveProperty('disabled')
+			expect(wrapper.find('.acurrency__currency input[type="text"]').attributes()).toHaveProperty('disabled')
 		})
 
 		it('renders plain text in display mode without inputs', () => {
@@ -231,7 +238,9 @@ describe('ACurrencyInput', () => {
 		it('labels each read-only field', () => {
 			const wrapper = mount(ACurrencyInput, { props: { label: 'Amount', options, modelValue } })
 			const labels = wrapper.findAll('label').map(l => l.text())
-			expect(labels).toEqual(['Amount', 'Currency', 'Base Currency', 'Base Amount', 'Exchange Rate'])
+			// Currency has no label of its own — it's embedded in the amount+currency group,
+			// merged under the single "Amount" label, with its name shown as a placeholder instead.
+			expect(labels).toEqual(['Amount', 'Base Currency', 'Base Amount', 'Exchange Rate'])
 		})
 
 		it('is always disabled, even in edit mode', () => {
