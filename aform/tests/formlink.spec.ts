@@ -93,6 +93,14 @@ describe('AFormLink component', { tags: ['component'] }, () => {
 		expect(wrapper.find('button').exists()).toBe(true)
 	})
 
+	it('suppresses the arrow button and floating label in embedded mode', () => {
+		const wrapper = mount(AFormLink, {
+			props: { label: 'Customer', modelValue: validValue, embedded: true },
+		})
+		expect(wrapper.find('button').exists()).toBe(false)
+		expect(wrapper.find('.aform_field-label').exists()).toBe(false)
+	})
+
 	it('does not render arrow button when id is falsy', () => {
 		const wrapper = mount(AFormLink, {
 			props: { modelValue: { id: '' } },
@@ -285,6 +293,40 @@ describe('AFormLink component', { tags: ['component'] }, () => {
 
 		expect(wrapper.find('input').element.value).toBe('#CUST-001')
 		expect(formatter).toHaveBeenCalledWith(validValue)
+	})
+
+	it('formatter prop applies immediately on selecting a dropdown option', async () => {
+		const filterFunction = vi.fn((_: string) => [{ id: 'CUST-002', displayText: 'Beta LLC' }])
+		const formatter = (v: AFormLinkValue) => `#${String(v.id)}`
+		const wrapper = mount(AFormLink, {
+			props: { modelValue: { id: '' }, filterFunction, formatter },
+		})
+
+		await wrapper.find('input').trigger('focus')
+		await flushPromises()
+		await wrapper.find('.autocomplete-result').trigger('mousedown')
+		await wrapper.vm.$nextTick()
+
+		expect(wrapper.find('input').element.value).toBe('#CUST-002')
+	})
+
+	it('option slot customizes dropdown item content, falling back to displayText by default', async () => {
+		const filterFunction = vi.fn((_: string) => [{ id: 'CUST-002', displayText: 'Beta LLC' }])
+
+		const defaultWrapper = mount(AFormLink, {
+			props: { modelValue: { id: '' }, filterFunction },
+		})
+		await defaultWrapper.find('input').trigger('focus')
+		await flushPromises()
+		expect(defaultWrapper.find('.autocomplete-result').text()).toBe('Beta LLC')
+
+		const slottedWrapper = mount(AFormLink, {
+			props: { modelValue: { id: '' }, filterFunction },
+			slots: { option: '<template #option="{ option }">Custom: {{ option.displayText }}</template>' },
+		})
+		await slottedWrapper.find('input').trigger('focus')
+		await flushPromises()
+		expect(slottedWrapper.find('.autocomplete-result').text()).toBe('Custom: Beta LLC')
 	})
 
 	it('read mode: focus does not open the dropdown', async () => {

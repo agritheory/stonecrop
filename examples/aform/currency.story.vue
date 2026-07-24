@@ -3,10 +3,13 @@ import { ref } from 'vue'
 import { AForm } from '@stonecrop/aform'
 
 // "Invoice line" item: company's base currency is USD, but this line was billed in EUR.
+// `symbol` is optional on AFormLinkValue — ACurrencyInput shows it in the compact currency
+// box once picked, and alongside the name in the search dropdown, falling back to the name
+// wherever it's omitted.
 const CURRENCIES = [
-	{ id: 'USD', displayText: 'US Dollar' },
-	{ id: 'EUR', displayText: 'Euro' },
-	{ id: 'GBP', displayText: 'British Pound' },
+	{ id: 'USD', displayText: 'US Dollar', symbol: '$' },
+	{ id: 'EUR', displayText: 'Euro', symbol: '€' },
+	{ id: 'GBP', displayText: 'British Pound', symbol: '£' },
 ]
 
 const lineSchema = [
@@ -37,9 +40,9 @@ const lineSchema = [
 const lineData = ref({
 	total: {
 		amount: 100,
-		currency: { id: 'EUR', displayText: 'Euro' },
+		currency: { id: 'EUR', displayText: 'Euro', symbol: '€' },
 		baseAmount: 110,
-		baseCurrency: { id: 'USD', displayText: 'US Dollar' },
+		baseCurrency: { id: 'USD', displayText: 'US Dollar', symbol: '$' },
 		exchangeRate: 1.1,
 	},
 })
@@ -47,9 +50,9 @@ const lineData = ref({
 const readOnlyData = ref({
 	total: {
 		amount: 100,
-		currency: { id: 'EUR', displayText: 'Euro' },
+		currency: { id: 'EUR', displayText: 'Euro', symbol: '€' },
 		baseAmount: 110,
-		baseCurrency: { id: 'USD', displayText: 'US Dollar' },
+		baseCurrency: { id: 'USD', displayText: 'US Dollar', symbol: '$' },
 		exchangeRate: 1.1,
 	},
 })

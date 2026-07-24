@@ -18,9 +18,9 @@
 						@keydown.esc="closeDropdown"
 						@keydown.tab="closeDropdown" />
 					<button
-						v-if="hasValidId && !disabled"
+						v-if="hasValidId && !disabled && !embedded"
 						type="button"
-						:class="['aform_form-btn', { 'aform_form-btn--embedded': embedded }]"
+						class="aform_form-btn"
 						@click="handleNavigate"
 						@keydown.enter.prevent="handleNavigate">
 						<span>{{ icon === 'chevron-right' ? '›' : '→' }}</span>
@@ -35,7 +35,7 @@
 						class="autocomplete-result"
 						:class="{ 'is-active': i === activeIndex }"
 						@mousedown.prevent="selectOption(option)">
-						{{ option.displayText ?? String(option.id) }}
+						<slot name="option" :option="option">{{ option.displayText ?? String(option.id) }}</slot>
 					</li>
 				</ul>
 			</div>
@@ -192,7 +192,11 @@ const onInput = () => openDropdown(searchText.value)
 
 const selectOption = (option: AFormLinkValue) => {
 	modelValue.value = option
-	searchText.value = option.displayText ?? String(option.id)
+	// Format `option` directly rather than reading back displayedText/modelValue: under a real
+	// two-way v-model (e.g. ACurrencyInput binding to a computed with a side-effecting setter),
+	// modelValue.value still reflects the *prop* until the parent's update round-trips back,
+	// so reading it synchronously here would show stale (pre-selection) text for a tick.
+	searchText.value = formatter ? formatter(option) : (option.displayText ?? String(option.id))
 	dropdownOpen.value = false
 	activeIndex.value = null
 }
@@ -267,25 +271,12 @@ const selectCurrent = () => {
 	outline-color: var(--sc-input-active-border-color);
 }
 
-/* Declared after the base .aform_form-btn rule so these overrides win the equal-specificity
-   tie (both classes share the same scoped attribute selector) instead of being clobbered by it. */
-.aform_form-btn--embedded {
-	outline: none;
-	margin-left: 0;
-	border-left: 1px solid var(--sc-input-border-color);
-	border-radius: 0;
-	padding: 0.5ch 1ch;
-}
-
-.aform_form-btn--embedded:focus,
-.input-group:focus-within .aform_form-btn--embedded {
-	outline: none;
-	border-left-color: var(--sc-input-active-border-color);
-}
-
 .autocomplete-results {
 	position: absolute;
-	width: 100%;
+	/* At least as wide as the trigger, but free to grow for longer option text — lets the
+	   trigger itself stay compact (e.g. a currency symbol box) without truncating results. */
+	min-width: 100%;
+	width: max-content;
 	z-index: 100;
 	padding: 0;
 	margin: 0;

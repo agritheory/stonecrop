@@ -8,27 +8,34 @@
 			<div class="acurrency__row">
 				<div class="acurrency__field acurrency__field--amount">
 					<div class="acurrency__group">
-						<input
-							:id="uuid"
-							v-model.number="amount"
-							class="acurrency__amount"
-							type="number"
-							:disabled="mode === 'read'"
-							:required="required"
-							@keydown="onAmountKeydown"
-							@paste="onAmountPaste" />
 						<div class="acurrency__currency">
 							<AFormLink
 								v-model="currency"
 								:mode="mode"
 								embedded
 								:placeholder="currencyLabel"
+								:formatter="currencySymbol"
 								:doctype="options.doctype"
 								:filter-function="options.filterFunction"
-								:is-async="options.isAsync" />
+								:is-async="options.isAsync">
+								<template #option="{ option }"
+									>{{ option.symbol ? `${option.symbol} — ` : '' }}{{ option.displayText ?? option.id }}</template
+								>
+							</AFormLink>
+						</div>
+						<div class="acurrency__amount-wrap">
+							<input
+								:id="uuid"
+								v-model.number="amount"
+								class="acurrency__amount"
+								type="number"
+								:disabled="mode === 'read'"
+								:required="required"
+								@keydown="onAmountKeydown"
+								@paste="onAmountPaste" />
+							<label class="aform_field-label" :for="uuid">{{ label }}</label>
 						</div>
 					</div>
-					<label class="aform_field-label" :for="uuid">{{ label }}</label>
 				</div>
 			</div>
 			<div class="acurrency__row acurrency__row--base">
@@ -84,6 +91,11 @@ const {
 		exchangeRateLabel?: string
 	}
 >()
+
+// The merged currency prefix is compact by design, so it shows the symbol rather than the
+// full currency name once a value is picked — falls back gracefully when a currency record
+// (or the story/app data behind it) doesn't carry a `symbol`.
+const currencySymbol = (value: AFormLinkValue): string => value.symbol ?? value.displayText ?? String(value.id)
 
 const modelValue = defineModel<CurrencyValue>({
 	default: {
@@ -231,14 +243,30 @@ const displayText = computed(() => {
 	border-color: var(--sc-input-active-border-color);
 }
 
-.acurrency__amount {
+/* Wraps just the amount input so its floating label (`left: 10px` of the nearest
+   `position: relative` ancestor, per .aform_field-label) anchors above the amount box
+   specifically, not the group's outer left edge — which is now the currency prefix. */
+.acurrency__amount-wrap {
+	position: relative;
 	flex: 1;
 	min-width: 0;
+}
+
+/* The amount label ("Total") is the primary label for the whole merged group — bumped up
+   slightly from the shared .aform_field-label size so it reads as the group's main label. */
+.acurrency__amount-wrap .aform_field-label {
+	font-size: 0.85rem;
+}
+
+.acurrency__amount {
+	width: 100%;
+	box-sizing: border-box;
 	border: none;
 	outline: none;
 	padding: 0.5ch 1ch;
 	background: transparent;
-	border-radius: 0.25rem 0 0 0.25rem;
+	border-radius: 0 0.25rem 0.25rem 0;
+	text-align: right;
 	appearance: textfield;
 	-moz-appearance: textfield;
 }
@@ -250,23 +278,41 @@ const displayText = computed(() => {
 	margin: 0;
 }
 
+/* The currency picker reads as a simple prefix addon (like Bootstrap's "$" prepend) rather
+   than an equal partner to the amount box: compact width (it shows a symbol once a value is
+   picked, not the full name), tinted background, left-rounded to match the group's own
+   corner so the tint doesn't overhang the border. The dropdown itself isn't bound by this
+   width — see AFormLink's .autocomplete-results — so search results still show full names. */
 .acurrency__currency {
 	position: relative;
-	flex: 1;
-	min-width: 0;
-	border-left: 1px solid var(--sc-input-border-color);
+	flex: 0 0 auto;
+	min-width: 4.5rem;
+	background: var(--sc-gray-5);
+	border-right: 1px solid var(--sc-input-border-color);
+	border-radius: 0.25rem 0 0 0.25rem;
 }
 
 .acurrency__base-field {
 	width: 100%;
+	box-sizing: border-box;
 	font-size: 1rem;
 	padding: 0.5ch 1ch;
 	border: 1px solid var(--sc-input-border-color);
 	border-radius: 0.25rem;
 	outline: none;
+	appearance: textfield;
+	-moz-appearance: textfield;
 }
 
 .acurrency__base-field:disabled {
 	color: var(--sc-gray-50, #888);
+}
+
+/* Base Amount and Exchange Rate are read-only — the number spinner offers nothing here. */
+.acurrency__base-field::-webkit-outer-spin-button,
+.acurrency__base-field::-webkit-inner-spin-button {
+	appearance: none;
+	-webkit-appearance: none;
+	margin: 0;
 }
 </style>

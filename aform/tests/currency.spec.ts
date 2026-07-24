@@ -42,6 +42,22 @@ describe('ACurrencyInput', () => {
 			expect(wrapper.find('.acurrency__currency label').exists()).toBe(false)
 		})
 
+		it('has no navigate button in the currency box (embedded mode suppresses it)', () => {
+			const wrapper = mount(ACurrencyInput, {
+				props: {
+					options,
+					modelValue: {
+						amount: 5,
+						currency: { id: 'EUR', displayText: 'Euro' },
+						baseAmount: 5.5,
+						baseCurrency: { id: 'USD', displayText: 'US Dollar' },
+						exchangeRate: 1.1,
+					},
+				},
+			})
+			expect(wrapper.find('.acurrency__currency button').exists()).toBe(false)
+		})
+
 		it('renders amount and currency fields side by side in the same row', () => {
 			const wrapper = mount(ACurrencyInput, { props: { options } })
 			const row = wrapper.find('.acurrency__row')
@@ -295,6 +311,67 @@ describe('ACurrencyInput', () => {
 
 			expect(resolver).toHaveBeenCalledWith('currency', 'USD')
 			expect(wrapper.find('.acurrency__field--base-currency input').element.value).toBe('Resolved USD')
+		})
+	})
+
+	describe('currency symbol display', () => {
+		const optionsWithSymbols = {
+			doctype: 'currency',
+			baseCurrency: { id: 'USD', displayText: 'US Dollar', symbol: '$' },
+			exchangeRates: { EUR: 1.1 },
+			filterFunction: (_: string) => [
+				{ id: 'USD', displayText: 'US Dollar', symbol: '$' },
+				{ id: 'EUR', displayText: 'Euro', symbol: '€' },
+			],
+		}
+
+		it('shows the symbol, not the name, in the currency box once a currency is picked', () => {
+			const wrapper = mount(ACurrencyInput, {
+				props: {
+					options: optionsWithSymbols,
+					modelValue: {
+						amount: 5,
+						currency: { id: 'EUR', displayText: 'Euro', symbol: '€' },
+						baseAmount: 5.5,
+						baseCurrency: { id: 'USD', displayText: 'US Dollar', symbol: '$' },
+						exchangeRate: 1.1,
+					},
+				},
+			})
+			expect(wrapper.find('.acurrency__currency input[type="text"]').element.value).toBe('€')
+		})
+
+		it('shows the symbol alongside the name in the search dropdown', async () => {
+			const wrapper = mount(ACurrencyInput, { props: { options: optionsWithSymbols } })
+			const input = wrapper.find('.acurrency__currency input[type="text"]')
+			await input.trigger('focus')
+			await flushPromises()
+			const results = wrapper.findAll('.autocomplete-result').map(li => li.text())
+			expect(results).toEqual(['$ — US Dollar', '€ — Euro'])
+		})
+
+		it('falls back to the full name when a currency has no symbol', () => {
+			// `options` (module-level, no `symbol` field) covers the plain fallback case already
+			// exercised by the rendering tests above — this just makes the intent explicit here.
+			const wrapper = mount(ACurrencyInput, {
+				props: {
+					options,
+					modelValue: {
+						amount: 5,
+						currency: { id: 'EUR', displayText: 'Euro' },
+						baseAmount: 5.5,
+						baseCurrency: { id: 'USD', displayText: 'US Dollar' },
+						exchangeRate: 1.1,
+					},
+				},
+			})
+			expect(wrapper.find('.acurrency__currency input[type="text"]').element.value).toBe('Euro')
+		})
+
+		it('applies the symbol formatter immediately on selection, not just after blur', async () => {
+			const wrapper = mount(ACurrencyInput, { props: { options: optionsWithSymbols } })
+			await pickCurrency(wrapper, '€ — Euro')
+			expect(wrapper.find('.acurrency__currency input[type="text"]').element.value).toBe('€')
 		})
 	})
 })
