@@ -98,13 +98,13 @@ const {
 const currencySymbol = (value: AFormLinkValue): string => value.symbol ?? value.displayText ?? String(value.id)
 
 const modelValue = defineModel<CurrencyValue>({
-	default: {
+	default: () => ({
 		amount: 0,
 		currency: { id: '' },
 		baseAmount: 0,
 		baseCurrency: { id: '' },
 		exchangeRate: 1,
-	},
+	}),
 })
 
 // The base currency is fixed configuration, not user-editable. It may be supplied as a bare id
