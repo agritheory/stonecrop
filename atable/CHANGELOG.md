@@ -1,6 +1,13 @@
 # Change Log - @stonecrop/atable
 
-This log was last generated on Wed, 22 Jul 2026 11:52:14 GMT and should not be manually modified.
+This log was last generated on Tue, 28 Jul 2026 09:58:37 GMT and should not be manually modified.
+
+## 0.16.4
+Tue, 28 Jul 2026 09:58:37 GMT
+
+### Patches
+
+- [AForm] Currency Component
 
 ## 0.16.3
 Wed, 22 Jul 2026 11:52:14 GMT
