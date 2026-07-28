@@ -4,6 +4,8 @@ import { mount, flushPromises } from '@vue/test-utils'
 import AFormLink from '../src/components/form/AFormLink.vue'
 import type { AFormLinkValue } from '../src/types'
 
+const idFormatter = (v: AFormLinkValue) => `#${String(v.id)}`
+
 describe('AFormLink component', { tags: ['component'] }, () => {
 	const validValue: AFormLinkValue = { id: 'CUST-001', displayText: 'Acme Corp' }
 
@@ -91,6 +93,54 @@ describe('AFormLink component', { tags: ['component'] }, () => {
 			props: { modelValue: validValue },
 		})
 		expect(wrapper.find('button').exists()).toBe(true)
+	})
+
+	it('suppresses the arrow button and floating label in embedded mode', () => {
+		const wrapper = mount(AFormLink, {
+			props: { label: 'Customer', modelValue: validValue, embedded: true },
+		})
+		expect(wrapper.find('button').exists()).toBe(false)
+		expect(wrapper.find('.aform_field-label').exists()).toBe(false)
+	})
+
+	it('carries an accessible name from ariaLabel, which embedded mode has no visible label for', () => {
+		const wrapper = mount(AFormLink, {
+			props: { modelValue: validValue, embedded: true, ariaLabel: 'Currency' },
+		})
+		expect(wrapper.find('input').attributes('aria-label')).toBe('Currency')
+	})
+
+	it('exposes combobox semantics tying the input to its listbox and active option', async () => {
+		const filterFunction = vi.fn((_: string) => [
+			{ id: 'CUST-001', displayText: 'Acme Corp' },
+			{ id: 'CUST-002', displayText: 'Beta LLC' },
+		])
+		const wrapper = mount(AFormLink, { props: { uuid: 'customer', modelValue: { id: '' }, filterFunction } })
+		const input = wrapper.find('input')
+
+		expect(input.attributes('role')).toBe('combobox')
+		expect(input.attributes('aria-expanded')).toBe('false')
+		expect(input.attributes('aria-activedescendant')).toBeUndefined()
+
+		await input.trigger('focus')
+		await flushPromises()
+
+		expect(input.attributes('aria-expanded')).toBe('true')
+		const list = wrapper.find('ul')
+		expect(list.attributes('role')).toBe('listbox')
+		// the input's aria-controls must actually resolve to that listbox
+		expect(input.attributes('aria-controls')).toBe(list.attributes('id'))
+		expect(wrapper.findAll('li[role="option"]')).toHaveLength(2)
+
+		await input.trigger('keydown.down')
+
+		expect(input.attributes('aria-activedescendant')).toBe(wrapper.findAll('li').at(0)!.attributes('id'))
+		expect(wrapper.findAll('li').at(0)!.attributes('aria-selected')).toBe('true')
+	})
+
+	it('honours the shared `required` prop on the search input', () => {
+		const wrapper = mount(AFormLink, { props: { modelValue: { id: '' }, required: true } })
+		expect(wrapper.find('input').attributes()).toHaveProperty('required')
 	})
 
 	it('does not render arrow button when id is falsy', () => {
@@ -285,6 +335,53 @@ describe('AFormLink component', { tags: ['component'] }, () => {
 
 		expect(wrapper.find('input').element.value).toBe('#CUST-001')
 		expect(formatter).toHaveBeenCalledWith(validValue)
+	})
+
+	it('formatter prop applies immediately on selecting a dropdown option', async () => {
+		const filterFunction = vi.fn((_: string) => [{ id: 'CUST-002', displayText: 'Beta LLC' }])
+		const wrapper = mount(AFormLink, {
+			props: { modelValue: { id: '' }, filterFunction, formatter: idFormatter },
+		})
+
+		await wrapper.find('input').trigger('focus')
+		await flushPromises()
+		await wrapper.find('.autocomplete-result').trigger('mousedown')
+		await wrapper.vm.$nextTick()
+
+		expect(wrapper.find('input').element.value).toBe('#CUST-002')
+	})
+
+	it('formatter prop applies to display text resolved asynchronously from a bare id', async () => {
+		// A value loaded from the DB arrives as `{ id }` with no displayText, so it takes the
+		// resolution watch rather than selectOption. It must still render through `formatter` —
+		// otherwise the same value looks different depending on how it got there.
+		const filterFunction = vi.fn((_: string) => [{ id: 'CUST-002', displayText: 'Beta LLC' }])
+		const wrapper = mount(AFormLink, {
+			props: { modelValue: { id: 'CUST-002' }, filterFunction, formatter: idFormatter },
+		})
+
+		await flushPromises()
+
+		expect(wrapper.find('input').element.value).toBe('#CUST-002')
+	})
+
+	it('option slot customizes dropdown item content, falling back to displayText by default', async () => {
+		const filterFunction = vi.fn((_: string) => [{ id: 'CUST-002', displayText: 'Beta LLC' }])
+
+		const defaultWrapper = mount(AFormLink, {
+			props: { modelValue: { id: '' }, filterFunction },
+		})
+		await defaultWrapper.find('input').trigger('focus')
+		await flushPromises()
+		expect(defaultWrapper.find('.autocomplete-result').text()).toBe('Beta LLC')
+
+		const slottedWrapper = mount(AFormLink, {
+			props: { modelValue: { id: '' }, filterFunction },
+			slots: { option: '<template #option="{ option }">Custom: {{ option.displayText }}</template>' },
+		})
+		await slottedWrapper.find('input').trigger('focus')
+		await flushPromises()
+		expect(slottedWrapper.find('.autocomplete-result').text()).toBe('Custom: Beta LLC')
 	})
 
 	it('read mode: focus does not open the dropdown', async () => {

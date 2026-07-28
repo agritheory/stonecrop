@@ -85,7 +85,7 @@ export const COMPONENT_CATEGORY: Record<string, ComponentCategory>;
 export const COMPONENT_LINK_EXPANSION: Record<string, LinkExpansion>;
 
 // @public
-export type ComponentCategory = 'text' | 'number' | 'boolean' | 'date' | 'datetime' | 'select' | 'code' | 'link' | 'attach' | 'quantity';
+export type ComponentCategory = 'text' | 'number' | 'boolean' | 'date' | 'datetime' | 'select' | 'code' | 'link' | 'attach' | 'quantity' | 'currency';
 
 // @public
 export function componentCategory(component?: string): ComponentCategory | undefined;

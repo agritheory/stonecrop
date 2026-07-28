@@ -12,6 +12,14 @@ Vue component exported from @stonecrop/aform.
 import { ACheckbox } from '@stonecrop/aform'
 ```
 
+### ACurrencyInput
+
+Vue component exported from @stonecrop/aform.
+
+```typescript
+import { ACurrencyInput } from '@stonecrop/aform'
+```
+
 ### ADate
 
 Vue component exported from @stonecrop/aform.
@@ -225,6 +233,60 @@ export interface AFormLinkValue {
 |----------|------|-------------|
 | displayText? | `string` | Display text shown in the input. Falls back to `String(id)` if omitted. |
 | id | `string \| number` | The FK/linked document ID. `id: 0` is a valid ID. |
+
+### CurrencyOptions
+
+Type-specific configuration for ACurrencyInput, passed via the field's `options` property.
+
+**Definition:**
+
+```typescript
+export interface CurrencyOptions {
+  baseCurrency?: AFormLinkValue | string;
+  doctype?: string;
+  exchangeRates?: Record<string, number>;
+  filterFunction?: string | ((search: string) => AFormLinkValue[] | Promise<AFormLinkValue[]>);
+  isAsync?: boolean;
+  precision?: number;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| baseCurrency? | `AFormLinkValue \| string` | The record's base currency — fixed, not user-editable. A bare id resolves to displayText via `aformLinkResolver`. |
+| doctype? | `string` | Currency doctype name, used for FK resolution via `aformLinkResolver`. The currency picker is embedded, so it renders no navigate button. |
+| exchangeRates? | `Record<string, number>` | Exchange rate lookup for each non-base currency id, relative to `baseCurrency` (which is implicitly `1`) |
+| filterFunction? | `string \| ((search: string) => AFormLinkValue[] \| Promise<AFormLinkValue[]>)` | Search function backing the `currency` autocomplete dropdown — see AFormLink's `filterFunction` |
+| isAsync? | `boolean` | Whether `filterFunction` results should show a loading state — see AFormLink's `isAsync` |
+| precision? | `number` | Decimal places to round the derived `baseAmount` to — the base currency's scale (JPY carries 0, most carry 2, KWD 3). Applies only to `baseAmount`; the entered `amount` is left as typed. Omit to round only enough to shed binary floating-point noise, which never discards a digit the rate actually produced. A non-integer or out-of-range value falls back to that default. |
+
+### CurrencyValue
+
+The value shape for ACurrencyInput — an amount paired with its currency (an `AFormLinkValue` FK reference), plus the derived base-currency-equivalent amount. `exchangeRate` is carried on the value so it round-trips with the record even though it is never directly edited by the user.
+
+**Definition:**
+
+```typescript
+export interface CurrencyValue {
+  amount: number;
+  baseAmount: number;
+  baseCurrency: AFormLinkValue;
+  currency: AFormLinkValue;
+  exchangeRate: number;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| amount | `number` | The entered amount, in `currency` units |
+| baseAmount | `number` | `amount` converted into `baseCurrency` units — `amount * exchangeRate` |
+| baseCurrency | `AFormLinkValue` | The record's base currency — fixed, not user-editable |
+| currency | `AFormLinkValue` | FK reference to the Currency doctype the user entered `amount` in |
+| exchangeRate | `number` | Multiplier from `currency` to `baseCurrency` — hidden from the UI, drives `baseAmount` |
 
 ### QuantityOptions
 

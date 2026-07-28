@@ -21,3 +21,20 @@ export const formatQuantity = (value: any): string => {
 	}
 	return String(value)
 }
+
+/**
+ * Render a composite currency value (`{ amount, currency }`, see `CurrencyValue` in
+ * `@stonecrop/aform`) as `"<amount> <currency>"`. `currency` is an AFormLinkValue FK reference —
+ * its `displayText` is preferred, falling back to `id`. Shared by the two paths a currency column
+ * can reach formatting through: the `format` that `schemaToColumns` attaches, and the table
+ * store's category-based default.
+ */
+export const formatCurrency = (value: any): string => {
+	if (value === null || value === undefined) return ''
+	if (typeof value === 'object') {
+		const amount = value.amount ?? ''
+		const currency = value.currency?.displayText ?? value.currency?.id ?? ''
+		return currency ? `${amount} ${currency}`.trim() : String(amount)
+	}
+	return String(value)
+}
