@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/nuxt-grafserv",
-	"version": "0.16.3",
+	"version": "0.16.4",
 	"description": "Pluggable Grafserv GraphQL server as Nuxt Module",
 	"bugs": {
 		"url": "https://github.com/agritheory/stonecrop/issues"
