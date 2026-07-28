@@ -36,12 +36,20 @@ export interface FilterState {
 export type FilterStateRecord = Record<number, FilterState>
 
 // Quantity columns hold a composite `{ qty, uom, ... }` value (see `QuantityValue` in
-// `@stonecrop/aform`); numeric comparisons (filtering, sorting) operate on `qty`. Currency columns
-// hold a composite `{ amount, currency, ... }` value (see `CurrencyValue` in `@stonecrop/aform`);
-// numeric comparisons operate on `amount`.
+// `@stonecrop/aform`); numeric comparisons (filtering, sorting) operate on `qty`.
+//
+// Currency columns hold a composite `{ amount, currency, baseAmount, ... }` value (see
+// `CurrencyValue` in `@stonecrop/aform`), and a single column routinely mixes currencies —
+// comparing raw `amount` would rank 5 EUR equal to 5 USD and match 100 JPY against a `> 100`
+// filter. `baseAmount` is the whole reason the value carries one: it restates every row in the
+// record's base currency, which is the only axis on which they are comparable. Fall back to
+// `amount` for a value that predates the base conversion (or was authored without one).
 function toComparableNumber(cellValue: unknown): number {
 	if (cellValue !== null && typeof cellValue === 'object') {
 		if ('qty' in cellValue) return Number(cellValue.qty)
+		if ('baseAmount' in cellValue && (cellValue as { baseAmount: unknown }).baseAmount != null) {
+			return Number((cellValue as { baseAmount: unknown }).baseAmount)
+		}
 		if ('amount' in cellValue) return Number((cellValue as { amount: unknown }).amount)
 	}
 	return Number(cellValue)

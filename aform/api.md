@@ -247,6 +247,7 @@ export interface CurrencyOptions {
   exchangeRates?: Record<string, number>;
   filterFunction?: string | ((search: string) => AFormLinkValue[] | Promise<AFormLinkValue[]>);
   isAsync?: boolean;
+  precision?: number;
 }
 ```
 
@@ -255,10 +256,11 @@ export interface CurrencyOptions {
 | Property | Type | Description |
 |----------|------|-------------|
 | baseCurrency? | `AFormLinkValue \| string` | The record's base currency — fixed, not user-editable. A bare id resolves to displayText via `aformLinkResolver`. |
-| doctype? | `string` | Currency doctype name, used for FK resolution (via `aformLinkResolver`) and navigation |
+| doctype? | `string` | Currency doctype name, used for FK resolution via `aformLinkResolver`. The currency picker is embedded, so it renders no navigate button. |
 | exchangeRates? | `Record<string, number>` | Exchange rate lookup for each non-base currency id, relative to `baseCurrency` (which is implicitly `1`) |
 | filterFunction? | `string \| ((search: string) => AFormLinkValue[] \| Promise<AFormLinkValue[]>)` | Search function backing the `currency` autocomplete dropdown — see AFormLink's `filterFunction` |
 | isAsync? | `boolean` | Whether `filterFunction` results should show a loading state — see AFormLink's `isAsync` |
+| precision? | `number` | Decimal places to round the derived `baseAmount` to — the base currency's scale (JPY carries 0, most carry 2, KWD 3). Applies only to `baseAmount`; the entered `amount` is left as typed. Omit to round only enough to shed binary floating-point noise, which never discards a digit the rate actually produced. A non-integer or out-of-range value falls back to that default. |
 
 ### CurrencyValue
 

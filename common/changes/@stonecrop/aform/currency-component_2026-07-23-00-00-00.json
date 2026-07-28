@@ -3,7 +3,7 @@
     {
       "packageName": "@stonecrop/aform",
       "comment": "[AForm] Currency Component",
-      "type": "none"
+      "type": "patch"
     }
   ],
   "packageName": "@stonecrop/aform"

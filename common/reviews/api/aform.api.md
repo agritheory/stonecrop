@@ -101,6 +101,7 @@ export interface CurrencyOptions {
     exchangeRates?: Record<string, number>;
     filterFunction?: string | ((search: string) => AFormLinkValue[] | Promise<AFormLinkValue[]>);
     isAsync?: boolean;
+    precision?: number;
 }
 
 // @public

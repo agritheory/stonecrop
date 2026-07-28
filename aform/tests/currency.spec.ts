@@ -26,7 +26,36 @@ const pickCurrency = async (wrapper: VueWrapper, value: string) => {
 	await wrapper.vm.$nextTick()
 }
 
-describe('ACurrencyInput', () => {
+// `precision` states the *base* currency's scale. Every precision case converts the same 10 EUR at
+// the same 163.4567 rate, so the only variable is how far the option rounds the 1634.567 result
+// (which raw float math renders as 1634.5670000000002, so noise-shedding is exercised too).
+const mountWithPrecision = (precision?: number) =>
+	mount(ACurrencyInput, {
+		props: {
+			options: {
+				doctype: 'currency',
+				baseCurrency: { id: 'JPY', displayText: 'Yen' },
+				exchangeRates: { EUR: 163.4567 },
+				precision,
+				filterFunction: (_: string) => [{ id: 'EUR', displayText: 'Euro' }],
+			},
+			modelValue: {
+				amount: 0,
+				currency: { id: 'EUR', displayText: 'Euro' },
+				baseAmount: 0,
+				baseCurrency: { id: 'JPY', displayText: 'Yen' },
+				exchangeRate: 163.4567,
+			},
+		},
+	})
+
+const baseAmountAfterEntering = async (wrapper: VueWrapper, amount: number) => {
+	await wrapper.find('input[type="number"]').setValue(amount)
+	const emitted = wrapper.emitted('update:modelValue')!
+	return (emitted[emitted.length - 1][0] as any).baseAmount
+}
+
+describe('ACurrencyInput', { tags: ['component'] }, () => {
 	describe('rendering', () => {
 		it('renders an amount input and a currency link input in edit mode', () => {
 			const wrapper = mount(ACurrencyInput, { props: { label: 'Amount', options } })
@@ -190,7 +219,7 @@ describe('ACurrencyInput', () => {
 			expect(last.baseAmount).toBeCloseTo(3.3, 10)
 		})
 
-		it('rounds baseAmount to 2 decimal places, clearing floating-point noise', async () => {
+		it('clears floating-point noise from baseAmount', async () => {
 			// 3 * 1.3 === 3.9000000000000004 in raw JS float math — exercises the rounding, not
 			// just a value close enough to look right.
 			const wrapper = mount(ACurrencyInput, {
@@ -211,6 +240,33 @@ describe('ACurrencyInput', () => {
 			const emitted = wrapper.emitted('update:modelValue')!
 			const last = emitted[emitted.length - 1][0] as any
 			expect(last.baseAmount).toBe(3.9)
+		})
+
+		it('does not truncate a base amount smaller than a cent', async () => {
+			// Rounding hard to 2 decimals is not a property of money — it wipes out low-rate
+			// currencies entirely (50 IDR would convert to a base amount of 0).
+			const wrapper = mount(ACurrencyInput, {
+				props: {
+					options: {
+						doctype: 'currency',
+						baseCurrency: { id: 'USD', displayText: 'US Dollar' },
+						exchangeRates: { IDR: 0.000063 },
+						filterFunction: (_: string) => [{ id: 'IDR', displayText: 'Rupiah' }],
+					},
+					modelValue: {
+						amount: 0,
+						currency: { id: 'IDR', displayText: 'Rupiah' },
+						baseAmount: 0,
+						baseCurrency: { id: 'USD', displayText: 'US Dollar' },
+						exchangeRate: 0.000063,
+					},
+				},
+			})
+			await wrapper.find('input[type="number"]').setValue(50)
+
+			const emitted = wrapper.emitted('update:modelValue')!
+			const last = emitted[emitted.length - 1][0] as any
+			expect(last.baseAmount).toBe(0.00315)
 		})
 
 		it('recomputes baseAmount when currency changes after amount is already set', async () => {
@@ -238,6 +294,123 @@ describe('ACurrencyInput', () => {
 				baseAmount: 5.2,
 			})
 		})
+
+		it('resets the rate to 1 when switching to a currency absent from exchangeRates', async () => {
+			// Carrying the outgoing currency's rate over would price the new currency at the old
+			// one's rate — silently, and with no way for the user to see it.
+			const wrapper = mount(ACurrencyInput, {
+				props: {
+					options: { ...options, exchangeRates: { EUR: 1.1 } },
+					modelValue: {
+						amount: 10,
+						currency: { id: 'EUR', displayText: 'Euro' },
+						baseAmount: 11,
+						baseCurrency: { id: 'USD', displayText: 'US Dollar' },
+						exchangeRate: 1.1,
+					},
+				},
+			})
+			await pickCurrency(wrapper, 'British Pound')
+
+			const emitted = wrapper.emitted('update:modelValue')!
+			const last = emitted[emitted.length - 1][0] as any
+			expect(last.currency).toEqual({ id: 'GBP', displayText: 'British Pound' })
+			expect(last.exchangeRate).toBe(1)
+			expect(last.baseAmount).toBe(10)
+		})
+	})
+
+	describe('precision', () => {
+		it('rounds baseAmount to a 0-decimal base currency', async () => {
+			expect(await baseAmountAfterEntering(mountWithPrecision(0), 10)).toBe(1635)
+		})
+
+		it('rounds baseAmount to a 2-decimal base currency', async () => {
+			expect(await baseAmountAfterEntering(mountWithPrecision(2), 10)).toBe(1634.57)
+		})
+
+		it('rounds baseAmount to a 3-decimal base currency', async () => {
+			expect(await baseAmountAfterEntering(mountWithPrecision(3), 10)).toBe(1634.567)
+		})
+
+		it("leaves the entered amount alone — precision is the base currency's scale, not the input's", async () => {
+			const wrapper = mountWithPrecision(0)
+			await wrapper.find('input[type="number"]').setValue(10.75)
+			const emitted = wrapper.emitted('update:modelValue')!
+			expect((emitted[emitted.length - 1][0] as any).amount).toBe(10.75)
+		})
+
+		it('keeps full precision when the option is omitted', async () => {
+			expect(await baseAmountAfterEntering(mountWithPrecision(undefined), 10)).toBe(1634.567)
+		})
+
+		it.each([
+			['a negative value', -1],
+			['a non-integer', 2.5],
+			["a value past toFixed's ceiling", 101],
+			['NaN', Number.NaN],
+		])('ignores %s rather than throwing inside the setter', async (_label, precision) => {
+			// A schema is data, so `precision` can arrive as anything; a throw here would happen
+			// inside a computed setter and take the whole field down mid-keystroke.
+			expect(await baseAmountAfterEntering(mountWithPrecision(precision), 10)).toBe(1634.567)
+		})
+	})
+
+	describe('stored exchange rate', () => {
+		// Exchange rates are time-varying in a way UOM conversion factors are not: `exchangeRates`
+		// holds today's rates, while a saved record holds the rate it was booked at. Editing a
+		// record must not silently re-price it.
+		// 1.25 is deliberately not any rate in `options.exchangeRates` (EUR 1.1, GBP 1.3), so no
+		// assertion below can pass by coincidence.
+		const bookedAtHistoricalRate = {
+			amount: 100,
+			currency: { id: 'EUR', displayText: 'Euro' },
+			baseAmount: 125,
+			baseCurrency: { id: 'USD', displayText: 'US Dollar' },
+			exchangeRate: 1.25,
+		}
+
+		it('keeps the stored rate when the amount is edited and the currency is unchanged', async () => {
+			const wrapper = mount(ACurrencyInput, {
+				props: { options, modelValue: bookedAtHistoricalRate },
+			})
+			await wrapper.find('input[type="number"]').setValue(101)
+
+			const emitted = wrapper.emitted('update:modelValue')!
+			const last = emitted[emitted.length - 1][0] as any
+			expect(last.exchangeRate).toBe(1.25)
+			expect(last.baseAmount).toBe(126.25)
+		})
+
+		it('does not re-rate a stored value when AFormLink resolves its currency on mount', async () => {
+			// A currency loaded from the DB arrives as a bare id; AFormLink resolves its display
+			// text and writes it back through the embedded v-model, which runs recompute. That
+			// write-back must preserve the booked rate — this fires on render, with no user input.
+			const wrapper = mount(ACurrencyInput, {
+				props: {
+					options,
+					modelValue: { ...bookedAtHistoricalRate, currency: { id: 'EUR' } },
+				},
+			})
+			await flushPromises()
+
+			const emitted = wrapper.emitted('update:modelValue')
+			const last = emitted ? (emitted[emitted.length - 1][0] as any) : bookedAtHistoricalRate
+			expect(last.exchangeRate).toBe(1.25)
+			expect(last.baseAmount).toBe(125)
+		})
+
+		it('takes the current rate once the user actually changes currency', async () => {
+			const wrapper = mount(ACurrencyInput, {
+				props: { options, modelValue: bookedAtHistoricalRate },
+			})
+			await pickCurrency(wrapper, 'British Pound')
+
+			const emitted = wrapper.emitted('update:modelValue')!
+			const last = emitted[emitted.length - 1][0] as any
+			expect(last.exchangeRate).toBe(1.3)
+			expect(last.currency).toEqual({ id: 'GBP', displayText: 'British Pound' })
+		})
 	})
 
 	describe('amount input guarding', () => {
@@ -255,6 +428,48 @@ describe('ACurrencyInput', () => {
 			const event = new KeyboardEvent('keydown', { key: '5', cancelable: true })
 			input.dispatchEvent(event)
 			expect(event.defaultPrevented).toBe(false)
+		})
+
+		it('allows a leading minus — currency amounts are signed (credits, refunds, adjustments)', () => {
+			const wrapper = mount(ACurrencyInput, { props: { options } })
+			const input = wrapper.find('input[type="number"]').element as HTMLInputElement
+			const event = new KeyboardEvent('keydown', { key: '-', cancelable: true })
+			input.dispatchEvent(event)
+			expect(event.defaultPrevented).toBe(false)
+		})
+
+		it('computes a negative baseAmount from a negative amount', async () => {
+			const wrapper = mount(ACurrencyInput, {
+				props: {
+					options,
+					modelValue: {
+						amount: 0,
+						currency: { id: 'EUR', displayText: 'Euro' },
+						baseAmount: 0,
+						baseCurrency: { id: 'USD', displayText: 'US Dollar' },
+						exchangeRate: 1.1,
+					},
+				},
+			})
+			await wrapper.find('input[type="number"]').setValue(-20)
+
+			const emitted = wrapper.emitted('update:modelValue')!
+			const last = emitted[emitted.length - 1][0] as any
+			expect(last.amount).toBe(-20)
+			expect(last.baseAmount).toBe(-22)
+		})
+	})
+
+	describe('accessibility', () => {
+		it('gives the currency picker an accessible name, since embedded mode drops its label', () => {
+			const wrapper = mount(ACurrencyInput, { props: { options } })
+			expect(wrapper.find('.acurrency__currency input[type="text"]').attributes('aria-label')).toBe('Currency')
+		})
+
+		it('propagates `required` to the currency picker, not just the amount', () => {
+			const wrapper = mount(ACurrencyInput, { props: { options, required: true } })
+			expect(wrapper.find('.acurrency__currency input[type="text"]').attributes()).toHaveProperty('required')
+			expect(wrapper.find('input[type="number"]').attributes()).toHaveProperty('required')
 		})
 	})
 
@@ -394,6 +609,25 @@ describe('ACurrencyInput', () => {
 		it('applies the symbol formatter immediately on selection, not just after blur', async () => {
 			const wrapper = mount(ACurrencyInput, { props: { options: optionsWithSymbols } })
 			await pickCurrency(wrapper, '€ — Euro')
+			expect(wrapper.find('.acurrency__currency input[type="text"]').element.value).toBe('€')
+		})
+
+		it('shows the symbol for a currency that arrived as a bare id and was resolved on mount', async () => {
+			// A saved record stores the FK alone, so this value takes AFormLink's resolution watch
+			// rather than selectOption. It must land on the same "€" the picker would have shown.
+			const wrapper = mount(ACurrencyInput, {
+				props: {
+					options: optionsWithSymbols,
+					modelValue: {
+						amount: 5,
+						currency: { id: 'EUR' },
+						baseAmount: 5.5,
+						baseCurrency: { id: 'USD', displayText: 'US Dollar' },
+						exchangeRate: 1.1,
+					},
+				},
+			})
+			await flushPromises()
 			expect(wrapper.find('.acurrency__currency input[type="text"]').element.value).toBe('€')
 		})
 	})

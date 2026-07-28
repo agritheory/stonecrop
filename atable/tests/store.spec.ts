@@ -246,6 +246,13 @@ describe('table store', { tags: ['component'] }, () => {
 				expect(store.getFormattedValue(0, 0, { qty: 2, uom: 'Box' })).toBe('2 Box')
 			})
 
+			it('formats a Currency composite value as "<amount> <currency>"', () => {
+				store.columns[0] = { name: 'id', component: 'ACurrencyInput' }
+				expect(store.getFormattedValue(0, 0, { amount: 5, currency: { id: 'USD', displayText: 'US Dollar' } })).toBe(
+					'5 US Dollar'
+				)
+			})
+
 			it('passes value through for an unknown component', () => {
 				store.columns[0] = { name: 'id', component: 'ATextInput' }
 				expect(store.getFormattedValue(0, 0, 'hello')).toBe('hello')
@@ -1402,6 +1409,83 @@ describe('table store', { tags: ['component'] }, () => {
 			qtyStore.sortByColumn(1) // asc
 			qtyStore.sortByColumn(1) // desc
 			expect(qtyStore.filteredRows.map(r => r.item)).toEqual(['A', 'C', 'B'])
+		})
+	})
+
+	describe('currency column filtering and sorting', () => {
+		// Currency cells hold a composite `{ amount, currency, baseAmount, ... }` value, and one
+		// column routinely mixes currencies. Comparing raw `amount` would rank these rows
+		// 10 < 20 < 100 when what they are actually worth is 13 > 12 > 10 — every comparison the
+		// user can make is on `baseAmount`, the only common footing the rows have.
+		const currencyColumns: TableColumn[] = [
+			{ name: 'item', label: 'Item' },
+			{ name: 'total', label: 'Total', component: 'ACurrencyInput', filterType: 'number' },
+		]
+		const usd = { id: 'USD', displayText: 'US Dollar' }
+		const currencyRows: TableRow[] = [
+			{ item: 'A', total: { amount: 10, currency: usd, baseAmount: 10, baseCurrency: usd, exchangeRate: 1 } },
+			{
+				item: 'B',
+				total: {
+					amount: 100,
+					currency: { id: 'JPY', displayText: 'Yen' },
+					baseAmount: 10,
+					baseCurrency: usd,
+					exchangeRate: 0.1,
+				},
+			},
+			{
+				item: 'C',
+				total: {
+					amount: 10,
+					currency: { id: 'GBP', displayText: 'British Pound' },
+					baseAmount: 13,
+					baseCurrency: usd,
+					exchangeRate: 1.3,
+				},
+			},
+		]
+
+		let currencyStore: ReturnType<typeof createTableStore>
+		beforeEach(() => {
+			currencyStore = createTableStore({
+				columns: currencyColumns,
+				rows: currencyRows.map(row => Object.assign({}, row)),
+			})
+		})
+
+		it("filters a currency column on the value's baseAmount, not its raw amount", () => {
+			currencyStore.setFilter(1, { value: '13' })
+			expect(currencyStore.filteredRows.map(r => r.item)).toEqual(['C'])
+		})
+
+		it('does not match a raw amount that no row is actually worth', () => {
+			// 100 is B's amount in JPY; in base currency B is worth 10, so nothing matches.
+			currencyStore.setFilter(1, { value: '100' })
+			expect(currencyStore.filteredRows.map(r => r.item)).toEqual([])
+		})
+
+		it('sorts a currency column on baseAmount (ascending), keeping mixed currencies comparable', () => {
+			currencyStore.sortByColumn(1)
+			expect(currencyStore.filteredRows.map(r => r.item)).toEqual(['A', 'B', 'C'])
+		})
+
+		it('sorts a currency column on baseAmount (descending)', () => {
+			currencyStore.sortByColumn(1) // asc
+			currencyStore.sortByColumn(1) // desc
+			expect(currencyStore.filteredRows.map(r => r.item)).toEqual(['C', 'A', 'B'])
+		})
+
+		it('falls back to amount for a value carrying no baseAmount', () => {
+			const unconvertedStore = createTableStore({
+				columns: currencyColumns,
+				rows: [
+					{ item: 'A', total: { amount: 7, currency: usd } },
+					{ item: 'B', total: { amount: 3, currency: usd } },
+				],
+			})
+			unconvertedStore.sortByColumn(1)
+			expect(unconvertedStore.filteredRows.map(r => r.item)).toEqual(['B', 'A'])
 		})
 	})
 })

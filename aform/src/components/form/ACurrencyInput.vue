@@ -14,6 +14,8 @@
 								:mode="mode"
 								embedded
 								:placeholder="currencyLabel"
+								:aria-label="currencyLabel"
+								:required="required"
 								:formatter="currencySymbol"
 								:doctype="options.doctype"
 								:filter-function="options.filterFunction"
@@ -147,12 +149,37 @@ const baseCurrencyText = computed(() => {
 const resolveExchangeRate = (currencyId: string | number | undefined): number => {
 	const baseId = resolvedBaseCurrency.value.id
 	if (!currencyId || String(currencyId) === String(baseId)) return 1
-	return options.exchangeRates?.[String(currencyId)] ?? modelValue.value?.exchangeRate ?? 1
+	// The rate the value was booked at wins for as long as the currency is unchanged. Rates are
+	// time-varying in a way conversion factors are not (see AQuantityInput), so `exchangeRates`
+	// carries *today's* rates: preferring it here would silently re-rate a stored line to the
+	// current rate on any touch — including the write-back AFormLink does when it resolves the
+	// currency's display text, i.e. on mere render.
+	if (String(currencyId) === String(modelValue.value?.currency?.id)) {
+		return modelValue.value?.exchangeRate ?? options.exchangeRates?.[String(currencyId)] ?? 1
+	}
+	// Switching to a currency absent from the rate map resets to 1 rather than silently reusing
+	// the outgoing currency's rate.
+	return options.exchangeRates?.[String(currencyId)] ?? 1
 }
 
-// Money doesn't carry more than 2 decimal places — also sheds floating-point noise from the
-// multiplication (e.g. 4 * 1.1 → 4.4 rather than 4.4000000000000004).
-const roundToCents = (value: number): number => Math.round(value * 100) / 100
+// Enough decimal places to shed floating-point noise from the multiplication (e.g. 4 * 1.1 → 4.4
+// rather than 4.4000000000000004) without discarding a digit the rate actually produced. Matches
+// AQuantityInput's roundQty.
+const FLOAT_NOISE_DECIMALS = 6
+
+// How far to round the base amount is the *base currency's* business, and only the app knows what
+// that is — so it says so via `precision` (JPY carries 0 decimals, most currencies 2, KWD 3).
+// Unset stays deliberately loose rather than defaulting to 2: hard-rounding every currency to
+// cents destroys value outright, e.g. 50 IDR at 0.000063 rounds to a base amount of 0. A garbage
+// precision (non-integer, negative, or past toFixed's 100 ceiling) falls back rather than throwing
+// inside the setter and breaking the field.
+const baseDecimals = computed(() => {
+	const { precision } = options
+	if (precision === undefined) return FLOAT_NOISE_DECIMALS
+	return Number.isInteger(precision) && precision >= 0 && precision <= 100 ? precision : FLOAT_NOISE_DECIMALS
+})
+
+const roundAmount = (value: number): number => Number(value.toFixed(baseDecimals.value))
 
 const recompute = (amount: number, currencyValue: AFormLinkValue) => {
 	const exchangeRate = resolveExchangeRate(currencyValue.id)
@@ -161,7 +188,7 @@ const recompute = (amount: number, currencyValue: AFormLinkValue) => {
 		currency: currencyValue,
 		exchangeRate,
 		baseCurrency: resolvedBaseCurrency.value,
-		baseAmount: roundToCents(amount * exchangeRate),
+		baseAmount: roundAmount(amount * exchangeRate),
 	}
 }
 
@@ -175,7 +202,7 @@ const currency = computed<AFormLinkValue>({
 	set: (value: AFormLinkValue) => recompute(modelValue.value?.amount ?? 0, value),
 })
 
-const amountNavigationKeys = [
+const amountNavigationKeys = new Set([
 	'Backspace',
 	'Delete',
 	'Tab',
@@ -187,20 +214,28 @@ const amountNavigationKeys = [
 	'ArrowDown',
 	'Home',
 	'End',
-]
+])
 
 const onAmountKeydown = (event: KeyboardEvent) => {
 	if (event.ctrlKey || event.metaKey || event.altKey) return
-	if (amountNavigationKeys.includes(event.key)) return
+	if (amountNavigationKeys.has(event.key)) return
 	if (/^[0-9]$/.test(event.key)) return
+	// A currency amount is signed — credit notes, refunds and adjustments are negative.
+	//
+	// Both dedup checks below are best-effort: a `type="number"` input reports `value` as `''`
+	// whenever its content isn't a valid number, so mid-entry states like "1." or "-" read as
+	// empty and a second separator can slip through. The browser rejects the resulting value
+	// anyway; this guard exists to stop the obviously-wrong keys (letters, 'e', '+'), not to be
+	// the sole arbiter of well-formedness.
 	const input = event.target as HTMLInputElement
 	if (event.key === '.' && !input.value.includes('.')) return
+	if (event.key === '-' && !input.value.includes('-')) return
 	event.preventDefault()
 }
 
 const onAmountPaste = (event: ClipboardEvent) => {
 	const pasted = event.clipboardData?.getData('text') ?? ''
-	if (!/^\d*\.?\d*$/.test(pasted)) event.preventDefault()
+	if (!/^-?\d*\.?\d*$/.test(pasted)) event.preventDefault()
 }
 
 const showBase = computed(() => {

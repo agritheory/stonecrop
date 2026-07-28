@@ -7,8 +7,16 @@
 					<input
 						v-model="searchText"
 						type="text"
+						role="combobox"
+						autocomplete="off"
+						aria-autocomplete="list"
 						:class="['aform_input-field', { 'aform_input-field--embedded': embedded }]"
 						:placeholder="placeholder"
+						:aria-label="ariaLabel"
+						:required="required"
+						:aria-expanded="dropdownOpen"
+						:aria-controls="dropdownOpen ? listboxId : undefined"
+						:aria-activedescendant="activeIndex === null ? undefined : `${listboxId}-opt-${activeIndex}`"
 						:disabled="disabled || mode === 'read'"
 						@input="onInput"
 						@focus="onFocus"
@@ -26,12 +34,15 @@
 						<span>{{ icon === 'chevron-right' ? '›' : '→' }}</span>
 					</button>
 				</div>
-				<ul v-if="dropdownOpen" class="autocomplete-results">
+				<ul v-if="dropdownOpen" :id="listboxId" class="autocomplete-results" role="listbox" :aria-label="ariaLabel">
 					<li v-if="loading" class="autocomplete-result loading">Loading…</li>
 					<li
 						v-for="(option, i) in dropdownResults"
 						v-else
+						:id="`${listboxId}-opt-${i}`"
 						:key="String(option.id)"
+						role="option"
+						:aria-selected="i === activeIndex"
 						class="autocomplete-result"
 						:class="{ 'is-active': i === activeIndex }"
 						@mousedown.prevent="selectOption(option)">
@@ -46,7 +57,7 @@
 
 <script setup lang="ts">
 import { vOnClickOutside } from '@vueuse/components'
-import { computed, inject, ref, watch } from 'vue'
+import { computed, inject, ref, useId, watch } from 'vue'
 
 import type { AFormLinkNavigator, AFormLinkValue, ComponentProps } from '../../types'
 import { deserializeFunction } from '../../utils/deserialize'
@@ -54,6 +65,8 @@ import { deserializeFunction } from '../../utils/deserialize'
 const {
 	label,
 	mode,
+	uuid,
+	required,
 	doctype = undefined,
 	formatter = undefined,
 	icon = 'arrow-right',
@@ -62,6 +75,7 @@ const {
 	isAsync = false,
 	embedded = false,
 	placeholder = undefined,
+	ariaLabel = undefined,
 } = defineProps<
 	ComponentProps & {
 		doctype?: string
@@ -75,8 +89,17 @@ const {
 		// own outline/border and floating label so the parent supplies both exactly once.
 		embedded?: boolean
 		placeholder?: string
+		// Accessible name for the search input. Needed in `embedded` mode, where the visible
+		// <label> is suppressed and a placeholder is not a dependable accessible name — it is
+		// not exposed consistently across screen readers and vanishes once a value is picked.
+		ariaLabel?: string
 	}
 >()
+
+// Ties the input to its listbox and to the active option (aria-controls / aria-activedescendant).
+// `uuid` is per-field when AForm supplies it; the fallback keeps the ids unique for a standalone
+// mount so two pickers on one page can't cross-wire their ARIA relationships.
+const listboxId = `${uuid ?? `aform-link-${useId()}`}-listbox`
 
 const modelValue = defineModel<AFormLinkValue>({ default: () => ({ id: '', displayText: '' }) })
 
@@ -123,12 +146,14 @@ watch(
 	async id => {
 		if (!id || modelValue.value.displayText) return
 		try {
+			let match: AFormLinkValue | undefined
 			let displayText: string | undefined
 			if (filterFunction) {
 				const fn: FilterFn =
 					typeof filterFunction === 'string' ? deserializeFunction<FilterFn>(filterFunction) : filterFunction
 				const results = await fn(String(id))
-				displayText = results.find(r => String(r.id) === String(id))?.displayText
+				match = results.find(r => String(r.id) === String(id))
+				displayText = match?.displayText
 				if (displayText === undefined) {
 					console.warn(
 						`[AFormLink] filterFunction returned no matching result for id "${id}". ` +
@@ -139,8 +164,17 @@ watch(
 				displayText = (await resolver(doctype, id.toString())) ?? undefined
 			}
 			if (displayText) {
-				searchText.value = displayText
-				modelValue.value = { ...modelValue.value, displayText }
+				// Merge the whole matched record, not just its display text — the extra properties
+				// an AFormLinkValue carries are part of the value (ACurrencyInput's `symbol`, which
+				// its formatter renders, is one). `id` is pinned to the value we already hold so a
+				// loosely-typed match (1 vs '1') can't change the FK's type underneath the record.
+				const resolved: AFormLinkValue = { ...modelValue.value, ...match, id: modelValue.value.id, displayText }
+				// Format for the same reason selectOption does: the input shows `formatter`'s output
+				// everywhere else (initial render, blur), so assigning the raw displayText here would
+				// make a value that arrived as a bare id render differently from the identical value
+				// picked by hand — e.g. "Euro" instead of "€".
+				searchText.value = formatter ? formatter(resolved) : displayText
+				modelValue.value = resolved
 			}
 		} catch {
 			// silent — fall back to showing the raw id
@@ -252,6 +286,14 @@ const selectCurrent = () => {
 	padding: 0.5ch 1ch;
 }
 
+/* Only in embedded mode is the trigger deliberately narrower than its options (e.g. a currency
+   symbol box): let the dropdown grow past it rather than truncate. Standalone pickers keep the
+   dropdown flush with the input, so a long display text can't overhang a narrow form column. */
+.aform_form-element--embedded .autocomplete-results {
+	min-width: 100%;
+	width: max-content;
+}
+
 /* Give the button the same outline as the input, then slide it 2px left so the outlines
    overlap exactly at the join: input right outline sits at (input_right - 1px),
    button left outline also sits at (button_left + 1px) = (input_right - 2px + 1px) = same pixel. */
@@ -273,10 +315,7 @@ const selectCurrent = () => {
 
 .autocomplete-results {
 	position: absolute;
-	/* At least as wide as the trigger, but free to grow for longer option text — lets the
-	   trigger itself stay compact (e.g. a currency symbol box) without truncating results. */
-	min-width: 100%;
-	width: max-content;
+	width: 100%;
 	z-index: 100;
 	padding: 0;
 	margin: 0;

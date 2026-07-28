@@ -12,6 +12,9 @@ const CURRENCIES = [
 	{ id: 'GBP', displayText: 'British Pound', symbol: '£' },
 ]
 
+const searchCurrencies = (search: string) =>
+	CURRENCIES.filter(c => c.displayText.toLowerCase().includes(search.toLowerCase()))
+
 const lineSchema = [
 	{
 		fieldname: 'total',
@@ -22,8 +25,29 @@ const lineSchema = [
 			doctype: 'currency',
 			baseCurrency: { id: 'USD', displayText: 'US Dollar' },
 			exchangeRates: { EUR: 1.1, GBP: 1.3 },
-			filterFunction: (search: string) =>
-				CURRENCIES.filter(c => c.displayText.toLowerCase().includes(search.toLowerCase())),
+			// USD carries 2 decimals, so the derived base amount is rounded to cents. Omitting
+			// `precision` would leave it at full rate precision instead.
+			precision: 2,
+			filterFunction: searchCurrencies,
+		},
+	},
+]
+
+// Same field against a 0-decimal base currency. `precision` is the base currency's scale, not the
+// input's: the entered amount stays as typed, only the derived base amount is rounded — try 10.75
+// and watch Base Amount land on a whole yen.
+const yenSchema = [
+	{
+		fieldname: 'total',
+		kind: 'field',
+		component: 'ACurrencyInput',
+		label: 'Total',
+		options: {
+			doctype: 'currency',
+			baseCurrency: { id: 'JPY', displayText: 'Yen' },
+			exchangeRates: { USD: 157.2, EUR: 172.94, GBP: 203.51 },
+			precision: 0,
+			filterFunction: searchCurrencies,
 		},
 	},
 ]
@@ -56,6 +80,16 @@ const readOnlyData = ref({
 		exchangeRate: 1.1,
 	},
 })
+
+const yenData = ref({
+	total: {
+		amount: 100,
+		currency: { id: 'EUR', displayText: 'Euro', symbol: '€' },
+		baseAmount: 17294,
+		baseCurrency: { id: 'JPY', displayText: 'Yen', symbol: '¥' },
+		exchangeRate: 172.94,
+	},
+})
 </script>
 
 <template>
@@ -64,6 +98,13 @@ const readOnlyData = ref({
 			<AForm :schema="lineSchema" v-model:data="lineData" />
 			<p style="margin-top: 1rem; font-size: 0.9em">
 				Line data: <strong>{{ lineData }}</strong>
+			</p>
+		</Variant>
+
+		<Variant title="Whole-unit base currency (precision: 0)">
+			<AForm :schema="yenSchema" v-model:data="yenData" />
+			<p style="margin-top: 1rem; font-size: 0.9em">
+				Line data: <strong>{{ yenData }}</strong>
 			</p>
 		</Variant>
 

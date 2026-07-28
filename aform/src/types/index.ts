@@ -294,12 +294,14 @@ export interface CurrencyValue {
  * @public
  */
 export interface CurrencyOptions {
-	/** Currency doctype name, used for FK resolution (via `aformLinkResolver`) and navigation */
+	/** Currency doctype name, used for FK resolution via `aformLinkResolver`. The currency picker is embedded, so it renders no navigate button. */
 	doctype?: string
 	/** The record's base currency — fixed, not user-editable. A bare id resolves to displayText via `aformLinkResolver`. */
 	baseCurrency?: AFormLinkValue | string
 	/** Exchange rate lookup for each non-base currency id, relative to `baseCurrency` (which is implicitly `1`) */
 	exchangeRates?: Record<string, number>
+	/** Decimal places to round the derived `baseAmount` to — the base currency's scale (JPY carries 0, most carry 2, KWD 3). Applies only to `baseAmount`; the entered `amount` is left as typed. Omit to round only enough to shed binary floating-point noise, which never discards a digit the rate actually produced. A non-integer or out-of-range value falls back to that default. */
+	precision?: number
 	/** Search function backing the `currency` autocomplete dropdown — see AFormLink's `filterFunction` */
 	filterFunction?: string | ((search: string) => AFormLinkValue[] | Promise<AFormLinkValue[]>)
 	/** Whether `filterFunction` results should show a loading state — see AFormLink's `isAsync` */
