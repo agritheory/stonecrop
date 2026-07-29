@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/aform",
+      "comment": "[AForm] Fix ADatePicker allowing text selection when dragging across calendar cells",
+      "type": "none"
+    }
+  ],
+  "packageName": "@stonecrop/aform"
+}
