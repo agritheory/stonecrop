@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/aform",
+      "comment": "Fixed Date selection in Date Picker",
+      "type": "none"
+    }
+  ],
+  "packageName": "@stonecrop/aform"
+}
