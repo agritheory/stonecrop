@@ -70,14 +70,14 @@
 								<input
 									type="text"
 									:value="str(row.__field[p.key])"
-									:disabled="!!p.identity && isLocked(row.__field)"
+									:disabled="isIdentity(p.key) && isLocked(row.__field)"
 									@input="update(row.__realIndex, p.key, value($event) || undefined)" />
 							</label>
 							<label v-for="p in SELECT_PROPS" :key="p.key" class="field-prop">
 								<span>{{ p.label }}</span>
 								<select
 									:value="str(row.__field[p.key])"
-									:disabled="!!p.identity && isLocked(row.__field)"
+									:disabled="isIdentity(p.key) && isLocked(row.__field)"
 									@change="update(row.__realIndex, p.key, value($event) || undefined)">
 									<option value="">—</option>
 									<option v-for="o in p.options" :key="o" :value="o">{{ o }}</option>
@@ -87,7 +87,7 @@
 								<input
 									type="checkbox"
 									:checked="bool(row.__field[p.key])"
-									:disabled="!!p.identity && isLocked(row.__field)"
+									:disabled="isIdentity(p.key) && isLocked(row.__field)"
 									@change="update(row.__realIndex, p.key, checked($event) || undefined)" />
 								<span>{{ p.label }}</span>
 							</label>
@@ -96,7 +96,7 @@
 								<input
 									type="text"
 									:value="jsonStr(row.__field[p.key])"
-									:disabled="!!p.identity && isLocked(row.__field)"
+									:disabled="isIdentity(p.key) && isLocked(row.__field)"
 									:class="{ 'json-invalid': jsonErrors[`${row.__realIndex}:${p.key}`] }"
 									@change="updateJson(row.__realIndex, p.key, value($event))" />
 							</label>
@@ -128,7 +128,7 @@
 <script setup lang="ts">
 import { ATable, ARow } from '@stonecrop/atable'
 import type { TableColumn, TableConfig } from '@stonecrop/atable'
-import { CANONICAL_COMPONENTS } from '@stonecrop/schema'
+import { CANONICAL_COMPONENTS, INTROSPECTED_IDENTITY_PROPS } from '@stonecrop/schema'
 import { computed, nextTick, ref, useId } from 'vue'
 
 // Fields are edited as loose objects: the doctype JSON carries keys the builder doesn't display
@@ -138,12 +138,17 @@ type Field = Record<string, unknown>
 interface PropDef {
 	key: string
 	label: string
-	/** Part of the DB-derived identity set — frozen when the field is introspected. */
-	identity?: boolean
 }
+
 interface SelectPropDef extends PropDef {
 	options: string[]
 }
+
+// Which props the database owns is decided once, in @stonecrop/schema, and read here. The
+// converter's merge reads the same constant, so the panel cannot grey a different set than
+// regeneration refuses to overwrite.
+const IDENTITY_PROPS = new Set<string>(INTROSPECTED_IDENTITY_PROPS)
+const isIdentity = (key: string) => IDENTITY_PROPS.has(key)
 
 const componentListId = useId()
 
@@ -151,7 +156,7 @@ const componentListId = useId()
 // not a JSON one. As `options` (the legacy carrier) a link target had to be typed *with quotes*
 // or the JSON parse failed and the value was silently dropped.
 const TEXT_PROPS: PropDef[] = [
-	{ key: 'doctype', label: 'Link target', identity: true },
+	{ key: 'doctype', label: 'Link target' },
 	{ key: 'width', label: 'Width' },
 	{ key: 'mask', label: 'Mask' },
 	{ key: 'format', label: 'Format' },
@@ -164,18 +169,17 @@ const SELECT_PROPS: SelectPropDef[] = [
 		key: 'cardinality',
 		label: 'Cardinality',
 		options: ['atMostOne', 'one', 'noneOrMany', 'atLeastOne'],
-		identity: true,
 	},
 ]
 const BOOL_PROPS: PropDef[] = [
 	{ key: 'readOnly', label: 'Read only' },
 	{ key: 'hidden', label: 'Hidden' },
 	{ key: 'edit', label: 'Editable in table' },
-	{ key: 'primaryKey', label: 'Primary key', identity: true },
+	{ key: 'primaryKey', label: 'Primary key' },
 	{ key: 'computed', label: 'Computed (no DB column)' },
 ]
 const JSON_PROPS: PropDef[] = [
-	{ key: 'options', label: 'Options', identity: true },
+	{ key: 'options', label: 'Options' },
 	{ key: 'default', label: 'Default' },
 ]
 

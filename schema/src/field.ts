@@ -242,6 +242,27 @@ export function normalizeFieldKind(field: unknown): unknown {
 }
 
 /**
+ * The field properties a `source: 'introspected'` marker freezes — the ones the database owns.
+ *
+ * This is the single definition of the identity set. The docbuilder greys these inputs on an
+ * introspected field, and the converter's merge refuses to rewrite them. Stating it twice is how
+ * the two drift, so both read this constant.
+ *
+ * Everything absent from this list is author-owned, `component` most importantly: it chooses the
+ * widget, which is an authoring decision the database has no opinion about.
+ *
+ * @public
+ */
+export const INTROSPECTED_IDENTITY_PROPS = [
+	'fieldname',
+	'primaryKey',
+	'required',
+	'options',
+	'cardinality',
+	'doctype',
+] as const
+
+/**
  * Find the field a doctype marks as its primary key, or `undefined` when none is marked.
  *
  * This is the single definition of "which field identifies a record". Both sides depend on it:

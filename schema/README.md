@@ -333,10 +333,25 @@ then `--exclude` removes any remaining unwanted names.
 | `--output <dir>`          | `-o`  | Directory to write doctype JSON files (required)         |
 | `--include <types>`       |       | Comma-separated allowlist of type names to generate      |
 | `--exclude <types>`       |       | Comma-separated list of type names to skip               |
-| `--overrides <file>`      |       | JSON file with per-type, per-field overrides             |
+| `--names <file>`          |       | JSON file mapping GraphQL type name to doctype name      |
 | `--custom-scalars <file>` |       | JSON file mapping custom scalar names to field templates |
 | `--include-unmapped`      |       | Retain `_graphqlType` metadata on fields with no mapping |
+| `--check`                 |       | Report drift and exit non-zero if anything would change  |
 | `--help`                  | `-h`  | Show help                                                |
+
+### Regeneration is non-destructive
+
+An existing doctype file is the source of truth. Regeneration verifies each field against the
+schema, stamps `"source": "introspected"` on the ones it confirms, and **reports** anything it
+disagrees with rather than overwriting it — so labels, component choices and a hand-declared
+primary key all survive.
+
+That polarity is deliberate. A doctype legitimately declares identity the schema cannot express:
+a natural business key is usually a `UNIQUE` constraint rather than the table's `PRIMARY KEY`, and
+where a table carries several no rule can pick between them. Overwriting identity from the schema
+would silently re-key such a doctype on every run.
+
+Use `--check` in CI to fail the build when a doctype and the schema have diverged.
 
 ### Custom scalars
 
@@ -355,21 +370,20 @@ stonecrop-schema generate -e http://localhost:3000/graphql -o ./app/doctypes \
   --custom-scalars custom-scalars.json
 ```
 
-### Per-field overrides
+### Doctype name remap
 
-Override the generated field definition for specific types and fields:
+Emit a doctype under a name other than its GraphQL type — for a second view over an existing type,
+say, distinguished only by presentation. The `slug` follows the doctype name, so it addresses both
+the output file and the route. Keep this consistent with the middleware's `tables` option, which
+maps the resulting doctype name to its SQL target.
 
 ```json
-{
-  "SalesOrder": {
-    "totalAmount": { "component": "ANumericInput" }
-  }
-}
+{ "Plan": "Planner" }
 ```
 
 ```bash
 stonecrop-schema generate -e http://localhost:3000/graphql -o ./app/doctypes \
-  --overrides overrides.json
+  --names names.json
 ```
 
 ## Naming Utilities
