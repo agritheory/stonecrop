@@ -1,6 +1,13 @@
 # Change Log - @stonecrop/schema
 
-This log was last generated on Tue, 28 Jul 2026 09:58:37 GMT and should not be manually modified.
+This log was last generated on Mon, 03 Aug 2026 11:12:57 GMT and should not be manually modified.
+
+## 0.16.5
+Mon, 03 Aug 2026 11:12:57 GMT
+
+### Patches
+
+- Add getPrimaryKeyField/getRecordIdentity and INTROSPECTED_IDENTITY_PROPS; generation now verifies an existing doctype and stamps provenance instead of overwriting it, deriving primaryKey only for an unambiguous id. Replaces --overrides/typeOverrides with --names, and adds --check.
 
 ## 0.16.4
 Tue, 28 Jul 2026 09:58:37 GMT

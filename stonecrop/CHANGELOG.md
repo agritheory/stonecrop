@@ -1,6 +1,13 @@
 # Change Log - @stonecrop/stonecrop
 
-This log was last generated on Tue, 28 Jul 2026 09:58:37 GMT and should not be manually modified.
+This log was last generated on Mon, 03 Aug 2026 11:12:57 GMT and should not be manually modified.
+
+## 0.16.5
+Mon, 03 Aug 2026 11:12:57 GMT
+
+### Patches
+
+- Add Doctype.getRecordId and key stored records by it, so rows of a doctype with a natural or renamed primary key are no longer dropped before reaching the store.
 
 ## 0.16.4
 Tue, 28 Jul 2026 09:58:37 GMT

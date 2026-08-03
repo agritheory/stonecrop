@@ -1,6 +1,13 @@
 # Change Log - @stonecrop/nuxt
 
-This log was last generated on Tue, 28 Jul 2026 09:58:37 GMT and should not be manually modified.
+This log was last generated on Mon, 03 Aug 2026 11:12:57 GMT and should not be manually modified.
+
+## 0.16.5
+Mon, 03 Aug 2026 11:12:57 GMT
+
+### Patches
+
+- Inline @stonecrop/desktop and @stonecrop/code-editor for SSR, fixing an 'Unknown file extension .css' crash under pnpm installs where a transitively-externalized parent hid atable's stylesheet. DocBuilder now locks introspected identity fields from the shared schema constant, and the playground no longer needs overrides.json.
 
 ## 0.16.4
 Tue, 28 Jul 2026 09:58:37 GMT

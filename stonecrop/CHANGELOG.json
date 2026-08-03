@@ -2,6 +2,18 @@
   "name": "@stonecrop/stonecrop",
   "entries": [
     {
+      "version": "0.16.5",
+      "tag": "@stonecrop/stonecrop_v0.16.5",
+      "date": "Mon, 03 Aug 2026 11:12:57 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Add Doctype.getRecordId and key stored records by it, so rows of a doctype with a natural or renamed primary key are no longer dropped before reaching the store."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.16.4",
       "tag": "@stonecrop/stonecrop_v0.16.4",
       "date": "Tue, 28 Jul 2026 09:58:37 GMT",

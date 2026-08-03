@@ -2,6 +2,18 @@
   "name": "@stonecrop/nuxt",
   "entries": [
     {
+      "version": "0.16.5",
+      "tag": "@stonecrop/nuxt_v0.16.5",
+      "date": "Mon, 03 Aug 2026 11:12:57 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Inline @stonecrop/desktop and @stonecrop/code-editor for SSR, fixing an 'Unknown file extension .css' crash under pnpm installs where a transitively-externalized parent hid atable's stylesheet. DocBuilder now locks introspected identity fields from the shared schema constant, and the playground no longer needs overrides.json."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.16.4",
       "tag": "@stonecrop/nuxt_v0.16.4",
       "date": "Tue, 28 Jul 2026 09:58:37 GMT",

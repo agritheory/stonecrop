@@ -2,6 +2,18 @@
   "name": "@stonecrop/schema",
   "entries": [
     {
+      "version": "0.16.5",
+      "tag": "@stonecrop/schema_v0.16.5",
+      "date": "Mon, 03 Aug 2026 11:12:57 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Add getPrimaryKeyField/getRecordIdentity and INTROSPECTED_IDENTITY_PROPS; generation now verifies an existing doctype and stamps provenance instead of overwriting it, deriving primaryKey only for an unambiguous id. Replaces --overrides/typeOverrides with --names, and adds --check."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.16.4",
       "tag": "@stonecrop/schema_v0.16.4",
       "date": "Tue, 28 Jul 2026 09:58:37 GMT",
