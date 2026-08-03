@@ -166,6 +166,45 @@ export declare function defaultIsEntityType(typeName: string, type: GraphQLObjec
 | typeName | `string` | The GraphQL type name |
 | type | `GraphQLObjectType` | The GraphQL object type definition |
 
+### getPrimaryKeyField
+
+Find the field a doctype marks as its primary key, or `undefined` when none is marked.
+
+This is the single definition of "which field identifies a record". Both sides depend on it: the middleware builds the SQL identity predicate from it, and the client resolves a record's route/store key from it. Call this; never re-derive the rule at the call site, or the two will drift and the client will key records by a column the server never queried.
+
+Two deliberate limits, both matching the shape `primaryKey` actually has: - Only **top-level** fields are scanned. `primaryKey` is a `ValueField` flag and a fieldset's children are not identity columns, so a nested match would be an authoring error, not a PK. - The **first** match wins. Nothing in the schema enforces exactly one `primaryKey: true`, and there is no composite-key representation — a doctype with several is already malformed, and picking the first is what the middleware has always done.
+
+**Signature:**
+
+```typescript
+export declare function getPrimaryKeyField(fields: readonly DoctypeField[]): ValueField | undefined;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| fields | `readonly DoctypeField[]` | the doctype's top-level fields |
+
+### getRecordIdentity
+
+Resolve a record's identity value using the doctype's declared primary key.
+
+Falls back to `record.id` when the doctype declares no `primaryKey`. That fallback is load-bearing, not defensive: surrogate-key doctypes carry an `id` column and never mark a primary key, and PostGraphile renames a single-column `id` PK to `rowId` — so the declared field and `id` are both real sources, in that order.
+
+**Signature:**
+
+```typescript
+export declare function getRecordIdentity(fields: readonly DoctypeField[], record: Record<string, unknown>): string | undefined;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| fields | `readonly DoctypeField[]` | the doctype's top-level fields |
+| record | `Record<string, unknown>` | the record to read the identity from |
+
 ### isActionAllowedInState
 
 Whether a workflow action may run from `currentState`.

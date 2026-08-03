@@ -368,12 +368,14 @@ export class Stonecrop {
 
 		const records = await this._client.getRecords(doctype)
 
-		// Store each record in HST
+		// Key each record by its declared primary key, falling back to `id`. This used to read
+		// `record.id` only, which silently dropped every row of a natural-keyed doctype (no `id`
+		// column at all) — the records never entered HST, so the list rendered empty and no
+		// downstream id-resolution could recover them.
 		records.forEach(record => {
-			if (typeof record.id === 'string' && record.id) {
-				this.addRecord(doctype, record.id, record)
-			} else if (typeof record.id === 'number') {
-				this.addRecord(doctype, String(record.id), record)
+			const recordId = doctype.getRecordId(record)
+			if (recordId !== undefined) {
+				this.addRecord(doctype, recordId, record)
 			}
 		})
 	}

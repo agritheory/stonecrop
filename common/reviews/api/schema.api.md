@@ -271,6 +271,12 @@ export const FieldValidation: z.ZodObject<{
 export type FieldValidation = z.infer<typeof FieldValidation>;
 
 // @public
+export function getPrimaryKeyField(fields: readonly DoctypeField[]): ValueField | undefined;
+
+// @public
+export function getRecordIdentity(fields: readonly DoctypeField[], record: Record<string, unknown>): string | undefined;
+
+// @public
 export interface GetRecordOptions {
     includeNested?: boolean | string[];
     maxDepth?: number;

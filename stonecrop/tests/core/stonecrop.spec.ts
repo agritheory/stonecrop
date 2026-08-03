@@ -259,6 +259,40 @@ describe('Stonecrop class with HST integration', { tags: ['unit'] }, () => {
 			expect(record1!.getPath).toBeDefined()
 		})
 
+		it('getRecords keys natural-key records by their declared primaryKey', async () => {
+			// Regression: this used to read `record.id` only, so a natural-keyed doctype — whose
+			// rows carry no `id` column at all — had every row silently dropped before it reached
+			// HST. The list then rendered empty and no downstream id-resolution could recover it.
+			const uom = new Doctype(
+				'Uom',
+				List<DoctypeField>([
+					{ kind: 'field', fieldname: 'name', label: 'Name', component: 'ATextInput', primaryKey: true },
+					{ kind: 'field', fieldname: 'label', label: 'Label', component: 'ATextInput' },
+				])
+			)
+			registry.addDoctype(uom)
+
+			mockClient.getRecords.mockResolvedValue([
+				{ name: 'EACH', label: 'Each' },
+				{ name: 'BOX', label: 'Box' },
+			])
+
+			await stonecrop.getRecords(uom)
+
+			expect(stonecrop.getRecordIds('uom')).toEqual(['EACH', 'BOX'])
+			expect(stonecrop.getRecordById('uom', 'EACH')!.get('label')).toBe('Each')
+		})
+
+		it('getRecords still falls back to id when no primaryKey is declared', async () => {
+			// The surrogate-key path must keep working: those doctypes carry an `id` column and
+			// never mark a primary key.
+			mockClient.getRecords.mockResolvedValue([{ id: 'a1', title: 'Task A' }])
+
+			await stonecrop.getRecords(mockDoctype)
+
+			expect(stonecrop.getRecordIds('task')).toEqual(['a1'])
+		})
+
 		it('getRecord fetches and stores single record', async () => {
 			const mockRecord = { record: { id: '123', title: 'Test Task' }, unknownLinks: [] }
 			mockClient.getRecord.mockResolvedValue(mockRecord)

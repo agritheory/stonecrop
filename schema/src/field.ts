@@ -241,6 +241,57 @@ export function normalizeFieldKind(field: unknown): unknown {
 	return injected
 }
 
+/**
+ * Find the field a doctype marks as its primary key, or `undefined` when none is marked.
+ *
+ * This is the single definition of "which field identifies a record". Both sides depend on it:
+ * the middleware builds the SQL identity predicate from it, and the client resolves a record's
+ * route/store key from it. Call this; never re-derive the rule at the call site, or the two will
+ * drift and the client will key records by a column the server never queried.
+ *
+ * Two deliberate limits, both matching the shape `primaryKey` actually has:
+ * - Only **top-level** fields are scanned. `primaryKey` is a `ValueField` flag and a fieldset's
+ *   children are not identity columns, so a nested match would be an authoring error, not a PK.
+ * - The **first** match wins. Nothing in the schema enforces exactly one `primaryKey: true`, and
+ *   there is no composite-key representation — a doctype with several is already malformed, and
+ *   picking the first is what the middleware has always done.
+ *
+ * @param fields - the doctype's top-level fields
+ * @returns the primary-key field, or `undefined` for a PK-less doctype
+ * @public
+ */
+export function getPrimaryKeyField(fields: readonly DoctypeField[]): ValueField | undefined {
+	return fields.find((f): f is ValueField => f.kind === 'field' && Boolean(f.primaryKey))
+}
+
+/**
+ * Resolve a record's identity value using the doctype's declared primary key.
+ *
+ * Falls back to `record.id` when the doctype declares no `primaryKey`. That fallback is
+ * load-bearing, not defensive: surrogate-key doctypes carry an `id` column and never mark a
+ * primary key, and PostGraphile renames a single-column `id` PK to `rowId` — so the declared
+ * field and `id` are both real sources, in that order.
+ *
+ * @param fields - the doctype's top-level fields
+ * @param record - the record to read the identity from
+ * @returns the identity as a string, or `undefined` when neither source yields a usable value
+ * @public
+ */
+export function getRecordIdentity(
+	fields: readonly DoctypeField[],
+	record: Record<string, unknown>
+): string | undefined {
+	const pkField = getPrimaryKeyField(fields)
+	const candidates = pkField ? [record[pkField.fieldname], record.id] : [record.id]
+
+	for (const value of candidates) {
+		// Numbers are valid keys (a serial PK); 0 is a legitimate id, so test the type, not truthiness.
+		if (typeof value === 'number') return String(value)
+		if (typeof value === 'string' && value !== '') return value
+	}
+	return undefined
+}
+
 function createDoctypeFieldSchemas() {
 	const ValueFieldSchema = z
 		.object({

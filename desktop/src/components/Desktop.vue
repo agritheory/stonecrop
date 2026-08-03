@@ -152,11 +152,10 @@ const currentViewData = computed<Record<string, any>>({
 
 		// Records list — rows come from HST store (reactive because HST is Vue reactive())
 		if (currentView.value === 'records') {
-			const idField = recordIdField || 'id'
 			return {
 				records_table: getRecords().map(record =>
 					Object.assign({}, record, {
-						id: record[idField] || record.id || '',
+						id: resolveRecordId(record) ?? '',
 						actions: 'Edit | Delete',
 					})
 				),
@@ -778,6 +777,27 @@ const handleDelete = async (recordId?: string) => {
 	}
 }
 
+/**
+ * Resolve a record's identity for links and navigation.
+ *
+ * Precedence: the explicit `recordIdField` prop wins (a host that names a field has said which
+ * column it means), then the doctype's declared `primaryKey`, then `id`. Before this, the default
+ * was a bare `record.id`, which produced empty links for every natural-keyed doctype.
+ *
+ * Delegates to `Doctype.getRecordId` so this matches the key `Stonecrop.getRecords` stored the
+ * record under — resolving it independently here would let a row render a link to an HST path
+ * that does not exist.
+ */
+const resolveRecordId = (record: Record<string, unknown>): string | undefined => {
+	if (recordIdField) {
+		const explicit = record[recordIdField]
+		if (typeof explicit === 'number') return String(explicit)
+		if (typeof explicit === 'string' && explicit !== '') return explicit
+	}
+	if (!stonecrop.value || !currentDoctype.value) return undefined
+	return stonecrop.value.registry.registry[currentDoctype.value]?.getRecordId(record)
+}
+
 // Event handlers
 const getRecordIdFromRow = (rowElement: HTMLTableRowElement): string | null => {
 	const cell = rowElement.querySelector('td[data-rowindex]')
@@ -793,8 +813,7 @@ const getRecordIdFromRow = (rowElement: HTMLTableRowElement): string | null => {
 	const record = records[rowIndex]
 	if (!record) return null
 
-	const idField = recordIdField || 'id'
-	return record[idField] || record.id || null
+	return resolveRecordId(record) ?? null
 }
 
 const handleClick = async (event: Event) => {

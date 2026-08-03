@@ -1335,6 +1335,22 @@ getAvailableTransitions(currentState: string): Array<{
 |-----------|------|-------------|
 | currentState | `string` | The state name to read transitions from |
 
+#### getRecordId
+
+Resolve a record's identity using this doctype's declared `primaryKey`, falling back to `id`.
+
+Lives here rather than at the call site because the doctype owns its schema — and because the rule must match the server's, which builds its SQL identity predicate from the same declared field via `@stonecrop/schema`'s `getPrimaryKeyField`.
+
+```typescript
+getRecordId(record: Record<string, unknown>): string | undefined
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| record | `Record<string, unknown>` | the record to read the identity from |
+
 #### getSchemaArray
 
 Returns the raw authoring schema as a plain array. For the resolved schema suitable for AForm, use `registry.resolveSchema(doctype)`.

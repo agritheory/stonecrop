@@ -18,6 +18,9 @@ export const GET_META_QUERY = `
 				kind
 				fieldname
 				component
+				primaryKey
+				computed
+				language
 				doctype
 				label
 				width
@@ -41,6 +44,10 @@ export const GET_META_QUERY = `
 					label
 					requiredFields
 					allowedStates
+					nextState
+					stateless
+					selfTransition
+					clientHandler
 				}
 			}
 			inherits
@@ -75,6 +82,9 @@ export const GET_ALL_META_QUERY = `
 				kind
 				fieldname
 				component
+				primaryKey
+				computed
+				language
 				doctype
 				label
 				width
@@ -98,6 +108,10 @@ export const GET_ALL_META_QUERY = `
 					label
 					requiredFields
 					allowedStates
+					nextState
+					stateless
+					selfTransition
+					clientHandler
 				}
 			}
 			inherits
