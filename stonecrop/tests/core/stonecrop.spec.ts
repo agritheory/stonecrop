@@ -268,7 +268,9 @@ describe('Stonecrop class with HST integration', { tags: ['unit'] }, () => {
 				List<DoctypeField>([
 					{ kind: 'field', fieldname: 'name', label: 'Name', component: 'ATextInput', primaryKey: true },
 					{ kind: 'field', fieldname: 'label', label: 'Label', component: 'ATextInput' },
-				])
+				]),
+				undefined,
+				Map({})
 			)
 			registry.addDoctype(uom)
 
