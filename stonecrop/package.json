@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/stonecrop",
-	"version": "0.16.4",
+	"version": "0.16.5",
 	"description": "Schema-driven framework with XState workflows and HST state management",
 	"bugs": {
 		"url": "https://github.com/agritheory/stonecrop/issues"
