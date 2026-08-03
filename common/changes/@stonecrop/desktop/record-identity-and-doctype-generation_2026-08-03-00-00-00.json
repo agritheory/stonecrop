@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/desktop",
+      "comment": "Build row links from the doctype's declared primaryKey instead of assuming record.id, falling back to id when none is declared. List rows of natural-key doctypes now navigate.",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/desktop"
+}

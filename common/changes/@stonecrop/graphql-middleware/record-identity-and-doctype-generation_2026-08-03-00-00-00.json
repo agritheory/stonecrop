@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/graphql-middleware",
+      "comment": "Resolve record identity through the shared getPrimaryKeyField helper so the server and client agree on which key a doctype is addressed by.",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/graphql-middleware"
+}
