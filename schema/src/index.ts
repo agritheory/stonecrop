@@ -22,6 +22,9 @@ export type { DoctypeField, FieldOptions, FieldValidation, FieldsetField, TableF
 export {
 	DoctypeFieldSchema,
 	FieldsetFieldSchema,
+	getPrimaryKeyField,
+	getRecordIdentity,
+	INTROSPECTED_IDENTITY_PROPS,
 	normalizeFieldKind,
 	TableFieldSchema,
 	ValueFieldSchema,
@@ -65,13 +68,18 @@ export {
 	convertGraphQLSchema,
 	defaultIsEntityField,
 	defaultIsEntityType,
+	formatDoctypeDrift,
 	GQL_SCALAR_MAP,
 	INTERNAL_SCALARS,
+	mergeIntrospectedDoctype,
 	WELL_KNOWN_SCALARS,
+	type AuthoredDoctype,
 	type ConvertedGraphQLDoctype,
+	type DoctypeDrift,
 	type GraphQLConversionFieldMeta,
 	type GraphQLConversionOptions,
 	type IntrospectionSource,
+	type MergeResult,
 } from './converter'
 
 // Naming utilities

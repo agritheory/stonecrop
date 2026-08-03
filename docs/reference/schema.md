@@ -166,6 +166,61 @@ export declare function defaultIsEntityType(typeName: string, type: GraphQLObjec
 | typeName | `string` | The GraphQL type name |
 | type | `GraphQLObjectType` | The GraphQL object type definition |
 
+### formatDoctypeDrift
+
+Render a drift report as human-readable lines. Empty when generation agrees with the doctype.
+
+**Signature:**
+
+```typescript
+export declare function formatDoctypeDrift(drift: DoctypeDrift): string[];
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| drift | `DoctypeDrift` | a report from `mergeIntrospectedDoctype` |
+
+### getPrimaryKeyField
+
+Find the field a doctype marks as its primary key, or `undefined` when none is marked.
+
+This is the single definition of "which field identifies a record". Both sides depend on it: the middleware builds the SQL identity predicate from it, and the client resolves a record's route/store key from it. Call this; never re-derive the rule at the call site, or the two will drift and the client will key records by a column the server never queried.
+
+Two deliberate limits, both matching the shape `primaryKey` actually has: - Only **top-level** fields are scanned. `primaryKey` is a `ValueField` flag and a fieldset's children are not identity columns, so a nested match would be an authoring error, not a PK. - The **first** match wins. Nothing in the schema enforces exactly one `primaryKey: true`, and there is no composite-key representation — a doctype with several is already malformed, and picking the first is what the middleware has always done.
+
+**Signature:**
+
+```typescript
+export declare function getPrimaryKeyField(fields: readonly DoctypeField[]): ValueField | undefined;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| fields | `readonly DoctypeField[]` | the doctype's top-level fields |
+
+### getRecordIdentity
+
+Resolve a record's identity value using the doctype's declared primary key.
+
+Falls back to `record.id` when the doctype declares no `primaryKey`. That fallback is load-bearing, not defensive: surrogate-key doctypes carry an `id` column and never mark a primary key, and PostGraphile renames a single-column `id` PK to `rowId` — so the declared field and `id` are both real sources, in that order.
+
+**Signature:**
+
+```typescript
+export declare function getRecordIdentity(fields: readonly DoctypeField[], record: Record<string, unknown>): string | undefined;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| fields | `readonly DoctypeField[]` | the doctype's top-level fields |
+| record | `Record<string, unknown>` | the record to read the identity from |
+
 ### isActionAllowedInState
 
 Whether a workflow action may run from `currentState`.
@@ -186,6 +241,23 @@ export declare function isActionAllowedInState(action: {
 |-----------|------|-------------|
 | action | `{ allowedStates?: string[] \| null; }` |  |
 | currentState | `string` |  |
+
+### mergeIntrospectedDoctype
+
+Verify an authored doctype against freshly generated output and stamp provenance.
+
+**Signature:**
+
+```typescript
+export declare function mergeIntrospectedDoctype(authored: AuthoredDoctype, generated: ConvertedGraphQLDoctype): MergeResult;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| authored | `AuthoredDoctype` | the doctype as it exists on disk; every key not named below is preserved verbatim |
+| generated | `ConvertedGraphQLDoctype` | `convertGraphQLSchema` output for the corresponding GraphQL type |
 
 ### normalizeFieldKind
 
@@ -500,6 +572,40 @@ export interface DoctypeContext {
 | doctype | `string` | Doctype name (e.g., 'Task', 'Customer') |
 | recordId? | `string` | Optional record ID for viewing/editing a specific record |
 
+### DoctypeDrift
+
+What generation found that the authored doctype does not agree with. Every bucket is advisory — nothing here is applied automatically.
+
+**Definition:**
+
+```typescript
+export interface DoctypeDrift {
+  componentDrift: string[];
+  doctype: string;
+  identityDrift: string[];
+  mode: 'clean' | 'partial';
+  omitted: string[];
+  orphan: string[];
+  reason?: string;
+  requiredDrift: string[];
+  tagged: string[];
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| componentDrift | `string[]` | `fieldname: authored=… schema=…` where the chosen component differs from the scalar mapping. |
+| doctype | `string` | The authored doctype's name. |
+| identityDrift | `string[]` | Identity properties that differ. These are the ones a human must adjudicate. |
+| mode | `'clean' \| 'partial'` | `clean` — the authored primary key is the one generation would derive. `partial` — the doctype declares an identity generation cannot derive, so identity was left alone. |
+| omitted | `string[]` | Schema fields absent from the doctype. Usually deliberate curation, occasionally an oversight. |
+| orphan | `string[]` | Authored fields with no matching schema field — app components, fieldsets, or stale entries. |
+| reason? | `string` | Why the mode is `partial`, when it is. |
+| requiredDrift | `string[]` | `fieldname: authored=… schema=…` where nullability disagrees. |
+| tagged | `string[]` | Fieldnames confirmed against the schema and stamped. |
+
 ### DoctypeRef
 
 Base interface for doctype metadata passed to DataClient methods. Only requires properties needed for record fetching.
@@ -644,12 +750,13 @@ Options for converting a GraphQL schema to Stonecrop doctype schemas. All hooks 
 export interface GraphQLConversionOptions {
   classifyField?: (fieldName: string, field: GraphQLField<unknown, unknown>, parentType: GraphQLObjectType) => Omit<Partial<ValueField>, 'kind'> | null;
   customScalars?: Record<string, Partial<FieldTemplate>>;
+  doctypeNames?: Record<string, string>;
   exclude?: string[];
   include?: string[];
   includeUnmappedMeta?: boolean;
   isEntityField?: (fieldName: string, field: GraphQLField<unknown, unknown>, parentType: GraphQLObjectType) => boolean;
   isEntityType?: (typeName: string, type: GraphQLObjectType) => boolean;
-  typeOverrides?: Record<string, Record<string, Omit<Partial<ValueField>, 'kind'>>>;
+  onWarning?: (message: string) => void;
 }
 ```
 
@@ -659,12 +766,33 @@ export interface GraphQLConversionOptions {
 |----------|------|-------------|
 | classifyField? | `(fieldName: string, field: GraphQLField<unknown, unknown>, parentType: GraphQLObjectType) => Omit<Partial<ValueField>, 'kind'> \| null` | Escape hatch: fully override the classification of a specific field. When this returns a non-null value, it is used as the field definition (merged with the field name). Return `null` to fall through to default classification. |
 | customScalars? | `Record<string, Partial<FieldTemplate>>` | Map custom or non-standard GraphQL scalar types to the component that renders them. Merged with the built-in scalar maps (GQL_SCALAR_MAP + WELL_KNOWN_SCALARS). User-provided entries take highest precedence. |
+| doctypeNames? | `Record<string, string>` | Emit a doctype under a different name than its GraphQL type. Key is the GraphQL type name, value is the doctype `name`; `slug` is derived from the value. This exists for the case where a doctype is not one-to-one with a table — a second view over an existing type, say, distinguished only by presentation. Without it the converter can only ever name a doctype after its type. Keep it consistent with the middleware's `tables` option, which maps the resulting doctype name to its SQL target. |
 | exclude? | `string[]` | GraphQL type names to exclude from conversion. Applied after `isEntityType` filtering. |
 | include? | `string[]` | Whitelist of GraphQL type names to convert. When provided, only these types are considered (after `isEntityType` filtering). |
 | includeUnmappedMeta? | `boolean` | Include `_graphqlType` and `_unmapped` metadata on converted fields. Useful for debugging conversions. Defaults to `false`. |
 | isEntityField? | `(fieldName: string, field: GraphQLField<unknown, unknown>, parentType: GraphQLObjectType) => boolean` | Custom function to filter which fields on an entity type are included. When provided, replaces the default field filter. The default filter excludes `nodeId`, `__typename`, and `clientMutationId`. |
 | isEntityType? | `(typeName: string, type: GraphQLObjectType) => boolean` | Custom function to determine if a GraphQL object type represents an entity (→ doctype). When provided, replaces the default heuristic entirely. The default heuristic excludes types matching synthetic patterns: `*Connection`, `*Edge`, `*Input`, `*Patch`, `*Payload`, `*Condition`, `*Filter`, `*OrderBy`, `*Aggregate`, `Query`, `Mutation`, `Subscription`, `__*`. |
-| typeOverrides? | `Record<string, Record<string, Omit<Partial<ValueField>, 'kind'>>>` | Per-type, per-field overrides for the converted field definitions. Outer key is the GraphQL type name, inner key is the field name. |
+| onWarning? | `(message: string) => void` | Called with any advisory message raised during conversion — currently only the un-normalized-PostGraphile warning. Left to the caller so the library never writes to the console itself. |
+
+### MergeResult
+
+Outcome of a merge: the doctype to write, plus what generation disagreed with.
+
+**Definition:**
+
+```typescript
+export interface MergeResult {
+  doctype: AuthoredDoctype;
+  drift: DoctypeDrift;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| doctype | `AuthoredDoctype` | The authored doctype with `source` markers added and nothing else changed. |
+| drift | `DoctypeDrift` | Advisory report. Never applied. |
 
 ### TableField
 
@@ -806,6 +934,16 @@ Action definition type inferred from Zod schema
 
 ```typescript
 export type ActionDefinition = z.infer<typeof ActionDefinition>;
+```
+
+### AuthoredDoctype
+
+A doctype as it exists on disk: a plain object that may carry keys this package does not model (`handler` on an action, `filterFunction` on a field, whatever an app has added). Typing it loosely is what lets the merge round-trip those keys untouched instead of dropping them.
+
+**Definition:**
+
+```typescript
+export type AuthoredDoctype = Record<string, unknown>;
 ```
 
 ### Cardinality
@@ -1270,6 +1408,20 @@ Set of scalar type names that are internal to GraphQL servers and should be skip
 
 ```typescript
 export const INTERNAL_SCALARS: Set<string>
+```
+
+### INTROSPECTED_IDENTITY_PROPS
+
+The field properties a `source: 'introspected'` marker freezes — the ones the database owns.
+
+This is the single definition of the identity set. The docbuilder greys these inputs on an introspected field, and the converter's merge refuses to rewrite them. Stating it twice is how the two drift, so both read this constant.
+
+Everything absent from this list is author-owned, `component` most importantly: it chooses the widget, which is an authoring decision the database has no opinion about.
+
+**Type:**
+
+```typescript
+export const INTROSPECTED_IDENTITY_PROPS: readonly ["fieldname", "primaryKey", "required", "options", "cardinality", "doctype"]
 ```
 
 ### LazyFetch

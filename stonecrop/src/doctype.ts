@@ -1,5 +1,5 @@
 import type { DoctypeField, LinkDeclaration, TriggerDefinition, WorkflowMeta } from '@stonecrop/schema'
-import { isActionAllowedInState, normalizeFieldKind } from '@stonecrop/schema'
+import { getRecordIdentity, isActionAllowedInState, normalizeFieldKind } from '@stonecrop/schema'
 import { List, Map } from 'immutable'
 import { Component } from 'vue'
 
@@ -155,6 +155,22 @@ export default class Doctype {
 	getSchemaArray(): DoctypeField[] {
 		if (!this.schema) return []
 		return this.schema.toArray()
+	}
+
+	/**
+	 * Resolve a record's identity using this doctype's declared `primaryKey`, falling back to `id`.
+	 *
+	 * Lives here rather than at the call site because the doctype owns its schema — and because the
+	 * rule must match the server's, which builds its SQL identity predicate from the same declared
+	 * field via `@stonecrop/schema`'s `getPrimaryKeyField`.
+	 *
+	 * @param record - the record to read the identity from
+	 * @returns the identity as a string, or `undefined` when neither the declared key nor `id` yields one
+	 *
+	 * @public
+	 */
+	getRecordId(record: Record<string, unknown>): string | undefined {
+		return getRecordIdentity(this.getSchemaArray(), record)
 	}
 
 	/**

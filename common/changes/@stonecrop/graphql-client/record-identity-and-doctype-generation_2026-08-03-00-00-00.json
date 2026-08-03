@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/graphql-client",
+      "comment": "Select the seven published meta fields the queries omitted (primaryKey, computed, language, nextState, stateless, selfTransition, clientHandler), so client-handler dispatch and available-command filtering work over the wire.",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/graphql-client"
+}

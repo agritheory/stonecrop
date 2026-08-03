@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/stonecrop",
+      "comment": "Add Doctype.getRecordId and key stored records by it, so rows of a doctype with a natural or renamed primary key are no longer dropped before reaching the store.",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/stonecrop"
+}

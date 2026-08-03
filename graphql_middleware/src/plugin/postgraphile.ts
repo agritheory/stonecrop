@@ -6,7 +6,7 @@ import type {
 	ValueField,
 	GetRecordOptions,
 } from '@stonecrop/schema'
-import { camelToSnake, pascalToSnake, resolveLinkRenderMode } from '@stonecrop/schema'
+import { camelToSnake, getPrimaryKeyField, pascalToSnake, resolveLinkRenderMode } from '@stonecrop/schema'
 import { loadOneWithPgClient, sideEffectWithPgClient } from '@dataplan/pg'
 import type { PgClient, PgExecutor } from '@dataplan/pg'
 import { constant, lambda, object } from 'postgraphile/grafast'
@@ -481,9 +481,12 @@ export function getSqlColumns(meta: DoctypeMeta): string {
 /**
  * Find the field marked `primaryKey` in the doctype.
  * Returns undefined when none is marked (PK-less doctypes).
+ *
+ * Delegates to `@stonecrop/schema` so the server's identity predicate and the client's record
+ * keying resolve the same field — this used to be a private re-implementation of that rule.
  */
 function getPkMeta(meta: DoctypeMeta): ValueField | undefined {
-	return meta.fields.find((f): f is ValueField => f.kind === 'field' && Boolean(f.primaryKey))
+	return getPrimaryKeyField(meta.fields)
 }
 
 /**

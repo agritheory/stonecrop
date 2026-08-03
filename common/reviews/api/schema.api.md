@@ -23,6 +23,9 @@ export const ActionDefinition: z.ZodObject<{
 // @public
 export type ActionDefinition = z.infer<typeof ActionDefinition>;
 
+// @public
+export type AuthoredDoctype = Record<string, unknown>;
+
 // Warning: (ae-forgotten-export) The symbol "FieldTemplate" needs to be exported by the entry point index.d.ts
 //
 // @public
@@ -134,6 +137,19 @@ export interface DoctypeContext {
     [key: string]: unknown;
     doctype: string;
     recordId?: string;
+}
+
+// @public
+export interface DoctypeDrift {
+    componentDrift: string[];
+    doctype: string;
+    identityDrift: string[];
+    mode: 'clean' | 'partial';
+    omitted: string[];
+    orphan: string[];
+    reason?: string;
+    requiredDrift: string[];
+    tagged: string[];
 }
 
 // @public
@@ -271,6 +287,15 @@ export const FieldValidation: z.ZodObject<{
 export type FieldValidation = z.infer<typeof FieldValidation>;
 
 // @public
+export function formatDoctypeDrift(drift: DoctypeDrift): string[];
+
+// @public
+export function getPrimaryKeyField(fields: readonly DoctypeField[]): ValueField | undefined;
+
+// @public
+export function getRecordIdentity(fields: readonly DoctypeField[], record: Record<string, unknown>): string | undefined;
+
+// @public
 export interface GetRecordOptions {
     includeNested?: boolean | string[];
     maxDepth?: number;
@@ -303,12 +328,13 @@ export interface GraphQLConversionFieldMeta extends ValueField {
 export interface GraphQLConversionOptions {
     classifyField?: (fieldName: string, field: GraphQLField<unknown, unknown>, parentType: GraphQLObjectType) => Omit<Partial<ValueField>, 'kind'> | null;
     customScalars?: Record<string, Partial<FieldTemplate>>;
+    doctypeNames?: Record<string, string>;
     exclude?: string[];
     include?: string[];
     includeUnmappedMeta?: boolean;
     isEntityField?: (fieldName: string, field: GraphQLField<unknown, unknown>, parentType: GraphQLObjectType) => boolean;
     isEntityType?: (typeName: string, type: GraphQLObjectType) => boolean;
-    typeOverrides?: Record<string, Record<string, Omit<Partial<ValueField>, 'kind'>>>;
+    onWarning?: (message: string) => void;
 }
 
 // @public
@@ -316,6 +342,9 @@ export type InteractionMode = 'edit' | 'read' | 'display';
 
 // @public
 export const INTERNAL_SCALARS: Set<string>;
+
+// @public
+export const INTROSPECTED_IDENTITY_PROPS: readonly ["fieldname", "primaryKey", "required", "options", "cardinality", "doctype"];
 
 // @public
 export type IntrospectionSource = IntrospectionQuery | string;
@@ -365,6 +394,15 @@ export type LinkExpansion = 'inline' | 'expand';
 
 // @public
 export type LinkRenderMode = 'inline' | 'record' | 'table';
+
+// @public
+export function mergeIntrospectedDoctype(authored: AuthoredDoctype, generated: ConvertedGraphQLDoctype): MergeResult;
+
+// @public
+export interface MergeResult {
+    doctype: AuthoredDoctype;
+    drift: DoctypeDrift;
+}
 
 // @public
 export function normalizeFieldKind(field: unknown): unknown;

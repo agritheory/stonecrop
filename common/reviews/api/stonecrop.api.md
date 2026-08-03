@@ -95,6 +95,7 @@ export class Doctype {
         name: string;
         targetState: string;
     }>;
+    getRecordId(record: Record<string, unknown>): string | undefined;
     getSchemaArray(): DoctypeField[];
     getTriggers(): Record<string, TriggerDefinition> | undefined;
     readonly links?: Record<string, LinkDeclaration>;
