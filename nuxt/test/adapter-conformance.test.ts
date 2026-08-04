@@ -31,10 +31,14 @@ import { describe, it, expect, vi } from 'vitest'
 
 import type { DoctypeMeta } from '@stonecrop/schema'
 
-// The resolver modules below import the middleware at top level. vitest hoists this mock above
-// those imports, so the stub is registered before they load; the pure helpers under test never
-// call it. getMeta is given a real implementation because the record resolvers consult it — but
-// nothing in this file executes a plan resolver, so it stays a throwing stub like the rest.
+import { recordLookupField as templatesLookupField } from '../templates/resolvers'
+import { recordLookupField as fullstackLookupField } from '../fullstack/server/resolvers'
+
+// The two resolver modules above import the middleware at top level, which transitively boots
+// postgraphile + pg — a server-only chain that breaks vitest's node interop. vitest hoists this
+// `vi.mock` above every import in the file, so the stub is registered before those modules load;
+// the pure helpers under test never call it. Written after the imports to satisfy `import/first`,
+// which is safe precisely because of that hoisting — the same arrangement meta-contract.test.ts uses.
 vi.mock('@stonecrop/graphql-middleware', () => {
 	const notExecutable = (name: string) => () => {
 		throw new Error(`graphql-middleware stub: ${name}() must not execute in unit tests`)
@@ -46,9 +50,6 @@ vi.mock('@stonecrop/graphql-middleware', () => {
 		loadDoctypes: notExecutable('loadDoctypes'),
 	}
 })
-
-import { recordLookupField as templatesLookupField } from '../templates/resolvers'
-import { recordLookupField as fullstackLookupField } from '../fullstack/server/resolvers'
 
 // ---------------------------------------------------------------------------
 // The contract: what the client sends, and therefore what every host must serve
