@@ -1,6 +1,13 @@
 # Change Log - @stonecrop/nuxt
 
-This log was last generated on Mon, 03 Aug 2026 11:12:57 GMT and should not be manually modified.
+This log was last generated on Tue, 04 Aug 2026 12:14:33 GMT and should not be manually modified.
+
+## 0.16.6
+Tue, 04 Aug 2026 12:14:33 GMT
+
+### Patches
+
+- Resolve records by the declared primaryKey in scaffolded resolvers, and declare a primary key on every doctype
 
 ## 0.16.5
 Mon, 03 Aug 2026 11:12:57 GMT

@@ -1,6 +1,13 @@
 # Change Log - @stonecrop/nuxt-grafserv
 
-This log was last generated on Mon, 03 Aug 2026 11:12:57 GMT and should not be manually modified.
+This log was last generated on Tue, 04 Aug 2026 12:14:33 GMT and should not be manually modified.
+
+## 0.16.6
+Tue, 04 Aug 2026 12:14:33 GMT
+
+### Patches
+
+- Fix the test suite failing to collect under vite 7 / rolldown by dropping the Nuxt vitest environment
 
 ## 0.16.5
 Mon, 03 Aug 2026 11:12:57 GMT
