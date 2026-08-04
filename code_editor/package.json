@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/code-editor",
-	"version": "0.16.5",
+	"version": "0.16.6",
 	"description": "Monaco-based code editor component for Stonecrop",
 	"bugs": {
 		"url": "https://github.com/agritheory/stonecrop/issues"
