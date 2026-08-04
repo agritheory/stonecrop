@@ -5,6 +5,7 @@
 		{
 			"label": "Username",
 			"fieldname": "username",
+			"primaryKey": true,
 			"component": "ATextInput",
 			"required": true
 		},

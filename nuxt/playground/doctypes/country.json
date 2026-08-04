@@ -20,6 +20,7 @@
 		{
 			"kind": "field",
 			"fieldname": "code",
+			"primaryKey": true,
 			"label": "Code",
 			"component": "ATextInput",
 			"required": true,

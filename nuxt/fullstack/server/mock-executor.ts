@@ -1,14 +1,25 @@
 /**
  * Mock GraphQL Executor for Stonecrop
  *
- * Implements the GraphQLExecutor interface from @stonecrop/graphql-middleware
- * to simulate PostGraphile-style responses with in-memory data stores.
+ * Implements the local GraphQLExecutor interface below, simulating PostGraphile-style
+ * responses with in-memory data stores.
  *
  * This can be swapped for a real PostGraphile HTTP client or programmatic API
  * by simply replacing the executor instance in the nuxt.config.ts configuration.
  */
 
-import type { GraphQLExecutor } from '@stonecrop/graphql-middleware'
+/**
+ * The shape a Stonecrop host's data executor must satisfy.
+ *
+ * Declared here rather than imported: `@stonecrop/graphql-middleware` does not export a
+ * `GraphQLExecutor` type, and the import that claimed it did resolved to nothing — which
+ * silently disabled every check `implements` was meant to provide. Keeping it local means
+ * the contract is at least real. If the middleware ever publishes one, import that instead.
+ */
+interface GraphQLExecutor {
+	query<T = Record<string, unknown>>(query: string, variables?: Record<string, unknown>): Promise<T>
+	mutate<T = Record<string, unknown>>(mutation: string, variables?: Record<string, unknown>): Promise<T>
+}
 
 // =============================================================================
 // Data Types
@@ -165,7 +176,7 @@ const orders: Map<string, Order> = new Map([
 function extractQueryName(query: string): string | null {
 	// Match patterns like: userById, allUsers, orderById, allOrders
 	const match = query.match(/\{\s*(\w+)/)
-	return match ? match[1] : null
+	return match?.[1] ?? null
 }
 
 /**
@@ -173,6 +184,33 @@ function extractQueryName(query: string): string | null {
  */
 function toCamelCase(str: string): string {
 	return str.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase())
+}
+
+/**
+ * Look a record up by the doctype's declared key rather than always by `id`.
+ *
+ * `lookupField` comes from `recordLookupField()` in resolvers.ts, which reads the doctype's
+ * declared `primaryKey`. Keying the store by `id` is the fast path; any other field is a
+ * natural key, so the store is scanned. Values are compared as strings because the `id`
+ * argument arrives from GraphQL as `String!` while a record may hold a number.
+ */
+function findByLookupField<T extends object>(
+	store: ReadonlyMap<string, T>,
+	value: unknown,
+	lookupField?: unknown
+): T | null {
+	const field = typeof lookupField === 'string' && lookupField !== '' ? lookupField : 'id'
+	// Only primitives are usable keys; stringifying an object would compare "[object Object]".
+	if (typeof value !== 'string' && typeof value !== 'number') return null
+	const wanted = String(value)
+	if (field === 'id') return store.get(wanted) ?? null
+	for (const record of store.values()) {
+		const candidate: unknown = Reflect.get(record, field)
+		if ((typeof candidate === 'string' || typeof candidate === 'number') && String(candidate) === wanted) {
+			return record
+		}
+	}
+	return null
 }
 
 // =============================================================================
@@ -189,7 +227,7 @@ export class MockGraphQLExecutor implements GraphQLExecutor {
 	 * - orderById(id: "1") -> single order
 	 * - allOrders -> connection with nodes
 	 */
-	async query<T = unknown>(query: string, variables?: Record<string, unknown>): Promise<T> {
+	async query<T = Record<string, unknown>>(query: string, variables?: Record<string, unknown>): Promise<T> {
 		// Accept either a query name (e.g., "allUsers") or a full GraphQL query
 		let queryName = query.trim()
 		if (queryName.includes('{')) {
@@ -202,8 +240,7 @@ export class MockGraphQLExecutor implements GraphQLExecutor {
 
 		// Handle User queries
 		if (queryName === 'userById') {
-			const id = variables?.id as string
-			const user = users.get(id) || null
+			const user = findByLookupField(users, variables?.id, variables?.lookupField)
 			return { userById: user } as T
 		}
 
@@ -222,8 +259,7 @@ export class MockGraphQLExecutor implements GraphQLExecutor {
 
 		// Handle Order queries
 		if (queryName === 'orderById') {
-			const id = variables?.id as string
-			const order = orders.get(id) || null
+			const order = findByLookupField(orders, variables?.id, variables?.lookupField)
 			return { orderById: order } as T
 		}
 
@@ -248,15 +284,14 @@ export class MockGraphQLExecutor implements GraphQLExecutor {
 
 		// Handle OrderItem queries (nested)
 		if (queryName === 'orderItemById') {
-			const id = variables?.id as string
-			// Find the order item by ID across all orders
+			// Order items live nested inside orders rather than in their own store, so flatten
+			// first and then apply the same declared-key lookup every other doctype gets.
+			const items = new Map<string, OrderItem>()
 			for (const order of orders.values()) {
-				const item = order.items.find(i => i.id === id)
-				if (item) {
-					return { orderItemById: item } as T
-				}
+				for (const item of order.items) items.set(item.id, item)
 			}
-			return { orderItemById: null } as T
+			const item = findByLookupField(items, variables?.id, variables?.lookupField)
+			return { orderItemById: item } as T
 		}
 
 		if (queryName === 'allOrderItems') {
@@ -292,7 +327,7 @@ export class MockGraphQLExecutor implements GraphQLExecutor {
 	 * - updateUserById(id: "1", patch: {...}) -> update user
 	 * - deleteUserById(id: "1") -> delete user
 	 */
-	async mutate<T = unknown>(mutation: string, variables?: Record<string, unknown>): Promise<T> {
+	async mutate<T = Record<string, unknown>>(mutation: string, variables?: Record<string, unknown>): Promise<T> {
 		// Accept either a mutation name (e.g., "createUser") or a full GraphQL mutation
 		let mutationName = mutation.trim()
 		if (mutationName.includes('{')) {
