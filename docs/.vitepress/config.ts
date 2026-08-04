@@ -32,15 +32,45 @@ export default withMermaid(
 
 		themeConfig: {
 			logo: './assets/stonecrop-logo-solid.svg',
+			aside: false,
 			nav: [
 				{ text: 'Explanation', link: '/explanation/' },
 				{ text: 'Guides', link: '/guides/' },
 				{ text: 'Tutorials', link: '/tutorials/' },
+				{ text: 'Components', link: '/components/' },
 				{ text: 'Reference', link: '/reference/' },
 				{ text: 'Examples', link: '/stories/', target: '_self' },
 			],
 
 			sidebar: {
+				'/': [
+					{
+						items: [
+							{ text: 'Home', link: '/' },
+							{ text: 'Tutorials', link: '/tutorials/' },
+							{ text: 'Guides', link: '/guides/' },
+							{ text: 'Components', link: '/components/' },
+							{ text: 'Reference', link: '/reference/' },
+							{ text: 'Explanation', link: '/explanation/' },
+						],
+					},
+					{
+						items: [
+							{ text: 'Examples', link: '/stories/' },
+							{ text: 'GitHub', link: 'https://github.com/agritheory/stonecrop' },
+						],
+					},
+				],
+				'/components/': [
+					{
+						text: 'Components',
+						items: [
+							{ text: 'Overview', link: '/components/' },
+							{ text: 'Checkbox', link: '/components/checkbox' },
+							{ text: 'Currency', link: '/components/currency' },
+						],
+					},
+				],
 				'/tutorials/': [
 					{
 						text: 'Tutorials',

@@ -1,48 +1,79 @@
 ---
-layout: home
-
-hero:
-  name: Stonecrop
-  text: Schema-driven UI framework
-  tagline: Build business applications with type-safe forms, tables, and workflows
-  actions:
-    - theme: brand
-      text: Get Started
-      link: /tutorials/
-    - theme: alt
-      text: API Reference
-      link: /reference/
-    - theme: alt
-      text: View on GitHub
-      link: https://github.com/agritheory/stonecrop
-
-features:
-  - icon:
-      src: ./assets/schema-icon.svg
-    title: Schema-Driven Forms
-    details: AForm renders forms from schema definitions with built-in validation, masking, and a rich set of field components.
-  - icon: 
-      src: ./assets/advanced-tables-icon.svg
-    title: Advanced Tables
-    details: ATable provides sortable, filterable tables with tree views, Gantt charts, and inline editing.
-  - icon:
-      src: ./assets/state-management-icon.svg
-    title: State Management
-    details: Hierarchical State Tree (HST) with undo/redo, field triggers, and XState workflow integration.
-  - icon:
-      src: ./assets/graph-ql-logo.svg
-    title: GraphQL Integration
-    details: Full-stack GraphQL middleware with PostGraphile, CASL authorization, and Nuxt modules.
+title: Stonecrop
+description: Schema-driven UI framework for business applications
 ---
 
-## Documentation Structure
+# Stonecrop
 
-This documentation follows the [Divio documentation framework](https://documentation.divio.com/):
+---
 
-- **[Tutorials](/tutorials/)** — Learning-oriented guides to help you get started
-- **[Guides](/guides/)** — Task-oriented how-to guides for specific problems
-- **[Reference](/reference/)** — Technical API documentation for all packages
-- **[Explanation](/explanation/)** — Understanding-oriented discussions of architecture and design
+Documentation for Stonecrop, the schema-driven UI framework for Vue 3 business applications.
+
+Stonecrop pairs AForm's schema-driven fields with ATable's advanced grid, backed by a Hierarchical State Tree for undo/redo and field triggers, plus a full-stack GraphQL layer for wiring it all to a database. It's built for type-safe forms, tables, and workflows that come from a single schema definition.
+
+<CardGrid>
+
+<CardGridItem href="/tutorials/" title="Tutorials" description="Learning-oriented guides to help you get started">
+
+<template #icon>
+
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2 8l10 5 10-5-10-5Z"/><path d="M6 10.5V16c0 1.5 2.5 3 6 3s6-1.5 6-3v-5.5"/></svg>
+
+</template>
+
+</CardGridItem>
+
+<CardGridItem href="/guides/" title="Guides" description="Task-oriented how-to guides for specific problems">
+
+<template #icon>
+
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M15 9l-2 6-6 2 2-6 6-2Z"/></svg>
+
+</template>
+
+</CardGridItem>
+
+<CardGridItem href="/components/" title="Components" description="Live, interactive documentation for individual components">
+
+<template #icon>
+
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+
+</template>
+
+</CardGridItem>
+
+<CardGridItem href="/reference/" title="Reference" description="Technical API documentation for all packages">
+
+<template #icon>
+
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v17H6.5A2.5 2.5 0 0 0 4 21.5v-17Z"/><path d="M4 4.5v17"/></svg>
+
+</template>
+
+</CardGridItem>
+
+<CardGridItem href="/explanation/" title="Explanation" description="Understanding-oriented discussions of architecture and design">
+
+<template #icon>
+
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10.5c.6.6 1 1.4 1 2.5h6c0-1.1.4-1.9 1-2.5A6 6 0 0 0 12 3Z"/></svg>
+
+</template>
+
+</CardGridItem>
+
+<CardGridItem href="/stories/" title="Examples" description="Live component stories and sandboxes">
+
+<template #icon>
+
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/><path d="M10.5 12.5v4l3.5-2Z" fill="currentColor" stroke="none"/></svg>
+
+</template>
+
+</CardGridItem>
+
+</CardGrid>
 
 ## Packages
 
@@ -62,4 +93,3 @@ This documentation follows the [Divio documentation framework](https://documenta
 | [@stonecrop/nuxt-grafserv](/reference/) | Nuxt + Grafserv module |
 | [@stonecrop/themes](/reference/) | CSS themes |
 | [@stonecrop/utilities](/reference/utilities) | Shared utility functions |
-

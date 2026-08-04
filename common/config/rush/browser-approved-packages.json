@@ -132,7 +132,7 @@
     },
     {
       "name": "@stonecrop/aform",
-      "allowedCategories": [ "prototype" ]
+      "allowedCategories": [ "documentation", "prototype" ]
     },
     {
       "name": "@stonecrop/atable",
@@ -184,7 +184,7 @@
     },
     {
       "name": "@stonecrop/themes",
-      "allowedCategories": [ "prototype" ]
+      "allowedCategories": [ "documentation", "prototype" ]
     },
     {
       "name": "@stonecrop/utilities",
@@ -508,7 +508,7 @@
     },
     {
       "name": "vue",
-      "allowedCategories": [ "production", "prototype", "utilities" ]
+      "allowedCategories": [ "documentation", "production", "prototype", "utilities" ]
     },
     {
       "name": "vue-router",

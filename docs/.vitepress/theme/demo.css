@@ -1,0 +1,83 @@
+/**
+ * Scoped Stonecrop design tokens for live component demos.
+ *
+ * Values mirror @stonecrop/themes' default.css. Scoped to .stonecrop-demo (rather than
+ * importing that stylesheet globally) so a demo's own font/background choices don't leak
+ * into the rest of the docs site. This class only carries tokens + typography — the visual
+ * card chrome (border, background, padding) lives in DemoPanel so a demo can be dropped into
+ * any layout without doubling up on boxes.
+ */
+.stonecrop-demo {
+	--sc-primary-color: #0098c9;
+	--sc-primary-text-color: #ffffff;
+	--sc-brand-color: #202a44;
+	--sc-gray-5: #f2f2f2;
+	--sc-gray-10: #e6e6e6;
+	--sc-gray-20: #cccccc;
+	--sc-gray-50: #808080;
+	--sc-gray-60: #666666;
+	--sc-gray-80: #333333;
+	--sc-brand-danger: #e63c28;
+	--sc-brand-success: #155724;
+	--sc-brand-warning: #b99d3e;
+	--sc-input-active-border-color: #000000;
+	--sc-input-active-label-color: #000000;
+	--sc-input-border-color: var(--sc-gray-20);
+	--sc-input-label-color: var(--sc-gray-60);
+	--sc-required-border: #e63c28;
+	--sc-form-border: var(--sc-gray-5);
+	--sc-form-background: #ffffff;
+	--sc-input-field-background: #ffffff;
+	--sc-input-field-disabled-background: var(--sc-gray-5);
+	--sc-font-family: Arial, sans-serif;
+
+	display: block;
+	width: 100%;
+	max-width: 24rem;
+	color: var(--sc-cell-text-color, #3a3c41);
+	font-family: var(--sc-font-family);
+}
+
+/**
+ * API reference tables — wrap a markdown table with <div class="api-table">...</div>
+ * for a rounded card look distinct from plain prose tables elsewhere in the docs.
+ */
+.api-table {
+	margin: 1.5rem 0;
+	border: 1px solid var(--vp-c-divider);
+	border-radius: 12px;
+	overflow: hidden;
+}
+
+.api-table table {
+	margin: 0;
+	border: none;
+}
+
+.api-table th,
+.api-table td {
+	border: none;
+	border-bottom: 1px solid var(--vp-c-divider);
+	padding: 0.75rem 1rem;
+}
+
+.api-table tr:last-child td {
+	border-bottom: none;
+}
+
+.api-table th {
+	background: var(--vp-c-bg-soft);
+	font-size: 0.8rem;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+	color: var(--vp-c-text-2);
+}
+
+.api-table tr:nth-child(even) td {
+	background: transparent;
+}
+
+.api-table td:first-child code,
+.api-table td:nth-child(2) code {
+	color: var(--vp-c-brand-1);
+}
