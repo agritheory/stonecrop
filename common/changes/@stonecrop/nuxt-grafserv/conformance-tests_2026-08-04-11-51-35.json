@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fix the test suite failing to collect under vite 7 / rolldown by dropping the Nuxt vitest environment",
+      "type": "patch",
+      "packageName": "@stonecrop/nuxt-grafserv"
+    }
+  ],
+  "packageName": "@stonecrop/nuxt-grafserv",
+  "email": "rohanbansal33@gmail.com"
+}
