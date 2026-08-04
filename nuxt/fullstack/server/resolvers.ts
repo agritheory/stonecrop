@@ -10,6 +10,7 @@ import { getMeta, getAllMeta, applyGuardedTransition } from '@stonecrop/graphql-
 import { getPrimaryKeyField } from '@stonecrop/schema'
 import type { DoctypeMeta } from '@stonecrop/schema'
 
+import { actionHandlers } from './action-handlers'
 import { mockExecutor } from './mock-executor'
 
 // ============================================
@@ -255,6 +256,7 @@ export default {
 								const argList = Array.isArray(spec.actionArgs) ? spec.actionArgs : []
 								const recordId = argList[0]?.id
 								const recordData: Record<string, unknown> = argList[0]?.data ?? {}
+								const handler = actionHandlers[meta.name]?.[String(spec.action)]
 
 								try {
 									// The server owns the transition: read current state, guard against
@@ -293,6 +295,20 @@ export default {
 												const recordKey = meta.name.charAt(0).toLowerCase() + meta.name.slice(1)
 												return (mutationResult?.[recordKey] ?? mutationResult ?? {}) as Record<string, unknown>
 											},
+											// The server-owned effect, if this app registered one. Nothing in the
+											// doctype names it: the lookup is by (doctype, action) and stays here.
+											// See ./action-handlers.ts.
+											runEffect: handler
+												? (currentState: string | undefined) =>
+														handler({
+															doctype: String(spec.doctype),
+															action: String(spec.action),
+															meta,
+															recordId,
+															data: recordData,
+															currentState,
+														})
+												: undefined,
 										},
 										recordData
 									)

@@ -29,11 +29,13 @@ import { ValidationError } from '@stonecrop/graphql_middleware'
 
 ### applyGuardedTransition
 
-Apply a workflow action's state transition on the server, enforcing `allowedStates`.
+Apply a workflow action on the server, enforcing `allowedStates`.
 
-The server owns the transition: it reads the record's authoritative current state, rejects the action when `isActionAllowedInState` denies it, then writes `nextState` verbatim. Storage access is injected via `io` so this one guard serves every backend and can never disagree with the frontend's `getAvailableTransitions`, which shares the same predicate.
+The server owns the transition: it reads the record's authoritative current state, rejects the action when `isActionAllowedInState` denies it, then applies the outcome. Storage access is injected via `io` so this one guard serves every backend and can never disagree with the frontend's `getAvailableTransitions`, which shares the same predicate.
 
-There are three action shapes this guard distinguishes: - A cross-state **transition** (has `nextState`): writes the new `status`, guarded by `allowedStates`. - A **self-transition** (`selfTransition: true`, no `nextState`, e.g. `Save`): stays in the current state and persists record field `data` in place via `io.writeData`, guarded by `allowedStates`. A backend without a data-write path rejects it loudly instead of dropping it silently. - Anything else with no `nextState` and no `selfTransition` flag is a genuine authoring mistake (or a stateless side-effect command whose server handler is not wired — the intended `callHandler` primitive is still unimplemented): it fails loudly before touching the backend rather than reporting a false success.
+**The doctype decides whether an action may run and what state results; the adapter decides what actually happens.** `allowedStates`, `nextState` and `selfTransition` are authored in the doctype (in DocBuilder, by whoever models the workflow); the effect is registered by whoever owns the database. Neither names the other: an action never carries a handler name, and a handler never overrides the guard.
+
+There are four action shapes this distinguishes: - A cross-state **transition** (has `nextState`): writes the new `status`, guarded by `allowedStates`. - A **self-transition** (`selfTransition: true`, no `nextState`, e.g. `Save`): stays in the current state and persists record field `data` in place via `io.writeData`, guarded by `allowedStates`. - A **stateless command** (neither of the above) with an `io.runEffect`: the handler is the whole outcome. Still guarded by `allowedStates`, and still forbidden from moving the record. - Anything else — no `nextState`, no `selfTransition`, no registered effect — is either a genuine authoring mistake or a command whose handler was never wired. It fails loudly before touching the backend rather than reporting a false success.
 
 **Signature:**
 
@@ -55,7 +57,7 @@ export declare function applyGuardedTransition(actionDef: {
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | actionDef | `{ label?: string; allowedStates?: string[]; nextState?: string; selfTransition?: boolean; }` | The action's `label`, `allowedStates`, and either `nextState` (transition) or `selfTransition` |
-| io | `GuardedTransitionIO` | Backend read/write closures |
+| io | `GuardedTransitionIO` | Backend read/write closures, plus the optional adapter-owned effect |
 | data | `Record<string, unknown>` | Record field data for a self-transition's mutate-in-place write (ignored by transitions) |
 
 ### clearFetchHandlers
@@ -255,6 +257,40 @@ export declare function validateReferences(): ValidationError[];
 
 ## Interfaces
 
+### ActionHandlerContext
+
+Everything a server-side action handler is given when `stonecropAction` dispatches to it.
+
+A context object rather than positional parameters so the set can grow without breaking registered handlers — the adapters that supply these live in consumer repositories.
+
+**Definition:**
+
+```typescript
+export interface ActionHandlerContext {
+  action: string;
+  args: unknown[];
+  currentState?: string;
+  data: Record<string, unknown>;
+  doctype: string;
+  meta: DoctypeMeta;
+  pgClient: PgClient;
+  recordId?: string | number;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| action | `string` | The action's key in `workflow.actions` — the same string the handler was registered under. |
+| args | `unknown[]` | The full argument envelope, for the actions that need more than the first record. |
+| currentState? | `string` | The state the guard read, or `undefined` when nothing about the action required reading it. |
+| data | `Record<string, unknown>` | The record field data the client sent (`args[0].data`). Unvalidated: `args` is an opaque `JSON` scalar, so this is browser-supplied input that has passed through no schema. Treat it as untrusted — parameterize it into SQL and whitelist the fields the action is allowed to touch. |
+| doctype | `string` | The doctype the action was dispatched against, as the client sent it. |
+| meta | `DoctypeMeta` | The resolved doctype metadata, for field names, the primary key, and the workflow. |
+| pgClient | `PgClient` | Active database client for the current request, already inside the mutation's transaction. Rows from a raw `pgClient.query()` carry snake_case **column** names, while the middleware's own read paths alias them to camelCase fieldnames at the SQL layer (ADR 0004). A handler that returns raw rows therefore leaks snake_case keys to the client. Alias in SQL (`"display_name" AS "displayName"`) or convert with `snakeToCamel` from `@stonecrop/schema`. |
+| recordId? | `string \| number` | The target record's identity, taken from the first argument envelope. Absent for a record-less command. |
+
 ### DebugPluginOptions
 
 Options for the Stonecrop debug plugin.
@@ -277,13 +313,14 @@ export interface DebugPluginOptions {
 
 ### GuardedTransitionIO
 
-Backend IO the dispatch layer injects so the transition logic stays storage-agnostic. The same guard runs whether the record lives in Postgres, a mock executor, or an in-memory Map — only these two closures change per backend.
+Backend IO the dispatch layer injects so the transition logic stays storage-agnostic. The same guard runs whether the record lives in Postgres, a mock executor, or an in-memory Map — only these closures change per backend.
 
 **Definition:**
 
 ```typescript
 export interface GuardedTransitionIO {
   readState: () => Promise<string | undefined>;
+  runEffect?: (currentState: string | undefined) => Promise<unknown>;
   writeData?: (patch: Record<string, unknown>) => Promise<Record<string, unknown>>;
   writeState: (nextState: string) => Promise<void>;
 }
@@ -294,7 +331,8 @@ export interface GuardedTransitionIO {
 | Property | Type | Description |
 |----------|------|-------------|
 | readState | `() => Promise<string \| undefined>` | Read the record's current workflow state (the value of its `status` field), or undefined if unknown. |
-| writeData? | `(patch: Record<string, unknown>) => Promise<Record<string, unknown>>` | Persist record field data for a mutate-in-place self-transition, returning the full updated record (so the client writeback reflects the new data). Optional: a backend with no data-write path (e.g. PostGraphile today, which writes only `status`) omits it, and a self-transition is then rejected loudly rather than silently dropped. |
+| runEffect? | `(currentState: string \| undefined) => Promise<unknown>` | Run the adapter's side effect for this action, after the guard has passed and before any state is written. This is the seam a **database author** wires — see `StonecropPluginOptions.actionHandlers` for the Postgres adapter's registration surface. It is what makes a stateless Command (no `nextState`, no `selfTransition`) executable at all: without one, such an action has nothing to apply and fails loudly. Throwing rejects the action — nothing is written. Returning a full record makes it the client writeback payload; returning `undefined` leaves the doctype's own outcome to decide what comes back. |
+| writeData? | `(patch: Record<string, unknown>) => Promise<Record<string, unknown>>` | Persist record field data for a mutate-in-place self-transition, returning the full updated record (so the client writeback reflects the new data). Optional: a backend with no data-write path omits it, and a self-transition is then rejected loudly rather than silently dropped — unless `runEffect` is supplied, in which case the handler is the persistence path. |
 | writeState | `(nextState: string) => Promise<void>` | Persist the record's new workflow state, written verbatim. |
 
 ### LoadDoctypesOptions
@@ -325,6 +363,7 @@ Options for creating a Stonecrop PostGraphile plugin.
 
 ```typescript
 export interface StonecropPluginOptions {
+  actionHandlers?: Record<string, Record<string, ActionHandler>>;
   debug?: boolean;
   tables?: Record<string, string>;
 }
@@ -334,10 +373,25 @@ export interface StonecropPluginOptions {
 
 | Property | Type | Description |
 |----------|------|-------------|
+| actionHandlers? | `Record<string, Record<string, ActionHandler>>` | Server-side effects for workflow actions, keyed `[doctype name][action key]`. This is the seam that makes a stateless Command executable. `applyGuardedTransition` can apply a doctype's own outcome — a `nextState` transition, or a `selfTransition` data write — but an action that is neither has nothing to apply and fails loudly. Registering a handler here supplies the missing half. **The doctype never names a handler, and a handler never overrides the guard.** The two are authored by different people: a doctype is runtime data edited in DocBuilder by whoever models the workflow, while these run behind the GraphQL surface and belong to whoever owns the database. So the doctype keeps `allowedStates` (may this run) and `nextState` (what state results), and this keeps the effect (what actually happens). Routing between them is resolved here, on the server, and is never published to the client. Handlers are looked up by `meta.name` — the doctype's canonical name, not its slug. An unregistered action is not an error in itself: a transition needs no handler. It fails only when the doctype gave the action no outcome either, and the error then names the action and both ways to fix it, so a typo'd key reports as a missing effect rather than a silent no-op. |
 | debug? | `boolean` | When `true`, SQL queries executed inside `loadOneWithPgClient` callbacks are logged to `console.log` with `[@stonecrop/graphql-middleware]` prefix. Defaults to `false`. |
 | tables? | `Record<string, string>` | Override the PostgreSQL FROM clause target for specific doctypes, keyed by doctype name. Values may be a bare table name (`'plan'`) or a schema-qualified name (`'orpin.plan'`). SQL fragments and subqueries are not supported. When absent for a doctype, the table name is derived as `camelToSnake(doctype.name)`. |
 
 ## Type Aliases
+
+### ActionHandler
+
+A server-side effect for one doctype action, supplied by whoever owns the database.
+
+Throwing rejects the action and no state is written. Returning the updated record makes it the client writeback payload; returning `undefined` leaves the doctype's own outcome to decide.
+
+The return value is passed through verbatim as `StonecropActionResult.data`, so it must be API-layer data — camelCase fieldname keys, not raw snake_case columns. See `pgClient` above and ADR 0007.
+
+**Definition:**
+
+```typescript
+export type ActionHandler = (context: ActionHandlerContext) => Promise<unknown>;
+```
 
 ### FetchHandler
 

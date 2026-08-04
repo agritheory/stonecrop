@@ -19,6 +19,58 @@ import { applyGuardedTransition } from '../dispatch/transition'
 import { typeDefs } from '../typeDefs'
 
 /**
+ * Everything a server-side action handler is given when `stonecropAction` dispatches to it.
+ *
+ * A context object rather than positional parameters so the set can grow without breaking
+ * registered handlers — the adapters that supply these live in consumer repositories.
+ * @public
+ */
+export interface ActionHandlerContext {
+	/**
+	 * Active database client for the current request, already inside the mutation's transaction.
+	 *
+	 * Rows from a raw `pgClient.query()` carry snake_case **column** names, while the middleware's
+	 * own read paths alias them to camelCase fieldnames at the SQL layer (ADR 0004). A handler that
+	 * returns raw rows therefore leaks snake_case keys to the client. Alias in SQL
+	 * (`"display_name" AS "displayName"`) or convert with `snakeToCamel` from `@stonecrop/schema`.
+	 */
+	pgClient: PgClient
+	/** The doctype the action was dispatched against, as the client sent it. */
+	doctype: string
+	/** The action's key in `workflow.actions` — the same string the handler was registered under. */
+	action: string
+	/** The resolved doctype metadata, for field names, the primary key, and the workflow. */
+	meta: DoctypeMeta
+	/** The target record's identity, taken from the first argument envelope. Absent for a record-less command. */
+	recordId?: string | number
+	/**
+	 * The record field data the client sent (`args[0].data`).
+	 *
+	 * Unvalidated: `args` is an opaque `JSON` scalar, so this is browser-supplied input that has
+	 * passed through no schema. Treat it as untrusted — parameterize it into SQL and whitelist
+	 * the fields the action is allowed to touch.
+	 */
+	data: Record<string, unknown>
+	/** The full argument envelope, for the actions that need more than the first record. */
+	args: unknown[]
+	/** The state the guard read, or `undefined` when nothing about the action required reading it. */
+	currentState?: string
+}
+
+/**
+ * A server-side effect for one doctype action, supplied by whoever owns the database.
+ *
+ * Throwing rejects the action and no state is written. Returning the updated record makes it the
+ * client writeback payload; returning `undefined` leaves the doctype's own outcome to decide.
+ *
+ * The return value is passed through verbatim as `StonecropActionResult.data`, so it must be
+ * API-layer data — camelCase fieldname keys, not raw snake_case columns. See `pgClient` above and
+ * ADR 0007.
+ * @public
+ */
+export type ActionHandler = (context: ActionHandlerContext) => Promise<unknown>
+
+/**
  * Options for creating a Stonecrop PostGraphile plugin.
  * @public
  */
@@ -35,6 +87,44 @@ export interface StonecropPluginOptions {
 	 * When absent for a doctype, the table name is derived as `camelToSnake(doctype.name)`.
 	 */
 	tables?: Record<string, string>
+	/**
+	 * Server-side effects for workflow actions, keyed `[doctype name][action key]`.
+	 *
+	 * This is the seam that makes a stateless Command executable. `applyGuardedTransition` can
+	 * apply a doctype's own outcome — a `nextState` transition, or a `selfTransition` data write —
+	 * but an action that is neither has nothing to apply and fails loudly. Registering a handler
+	 * here supplies the missing half.
+	 *
+	 * **The doctype never names a handler, and a handler never overrides the guard.** The two are
+	 * authored by different people: a doctype is runtime data edited in DocBuilder by whoever
+	 * models the workflow, while these run behind the GraphQL surface and belong to whoever owns
+	 * the database. So the doctype keeps `allowedStates` (may this run) and `nextState` (what state
+	 * results), and this keeps the effect (what actually happens). Routing between them is
+	 * resolved here, on the server, and is never published to the client.
+	 *
+	 * Handlers are looked up by `meta.name` — the doctype's canonical name, not its slug. An
+	 * unregistered action is not an error in itself: a transition needs no handler. It fails only
+	 * when the doctype gave the action no outcome either, and the error then names the action and
+	 * both ways to fix it, so a typo'd key reports as a missing effect rather than a silent no-op.
+	 *
+	 * @example
+	 * ```ts
+	 * createStonecropPlugin({
+	 *   actionHandlers: {
+	 *     Order: {
+	 *       async recalculateTotal({ pgClient, recordId }) {
+	 *         const { rows } = await pgClient.query({
+	 *           text: 'UPDATE "order" SET total = (SELECT COALESCE(SUM(amount), 0) FROM order_item WHERE order_id = $1) WHERE id = $1 RETURNING *',
+	 *           values: [recordId],
+	 *         })
+	 *         return rows[0]
+	 *       },
+	 *     },
+	 *   },
+	 * })
+	 * ```
+	 */
+	actionHandlers?: Record<string, Record<string, ActionHandler>>
 }
 
 /**
@@ -363,39 +453,58 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 										}
 									}
 
-									const pkMeta = getPkMeta(meta)
-									if (!pkMeta) {
-										return {
-											success: false,
-											data: null,
-											error: `No primary key for doctype: ${spec.doctype}`,
-										}
-									}
-									const pkColumn = camelToSnake(pkMeta.fieldname)
 									const table = resolveTableName(meta.name, options.tables)
+									// Resolved lazily: only a state read or write needs the key column. A
+									// record-less command reaches its handler on a doctype that declares no
+									// primary key, which an eager check would refuse for no reason.
+									const pkColumn = () => {
+										const pkMeta = getPkMeta(meta)
+										if (!pkMeta) throw new Error(`No primary key for doctype: ${spec.doctype}`)
+										return camelToSnake(pkMeta.fieldname)
+									}
 									// Record envelope: [{ id, data }] — the transition keys off the record id.
 									// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- spec.actionArgs is a Grafast runtime value; record envelope shape is the dispatch contract
 									const argList = (Array.isArray(spec.actionArgs) ? spec.actionArgs : []) as Array<{
 										id?: string | number
+										data?: Record<string, unknown>
 									}>
 									const recordId = argList[0]?.id
+									const recordData = argList[0]?.data ?? {}
+
+									// The database author's effect for this action, if one is registered. Keyed
+									// by the doctype's canonical name so a slug-resolved lookup above cannot
+									// silently miss it.
+									const handler = options.actionHandlers?.[meta.name]?.[String(spec.action)]
 
 									try {
 										return await applyGuardedTransition(actionDef, {
 											readState: async () => {
 												if (recordId == null) return undefined
 												const { rows } = await debugSql<{ status: string | null }>(pgClient, {
-													text: `SELECT "status" FROM ${table} WHERE "${pkColumn}"::text = $1`,
+													text: `SELECT "status" FROM ${table} WHERE "${pkColumn()}"::text = $1`,
 													values: [String(recordId)],
 												})
 												return rows[0]?.status == null ? undefined : rows[0].status
 											},
 											writeState: async (nextState: string) => {
 												await debugSql(pgClient, {
-													text: `UPDATE ${table} SET "status" = $1 WHERE "${pkColumn}"::text = $2`,
+													text: `UPDATE ${table} SET "status" = $1 WHERE "${pkColumn()}"::text = $2`,
 													values: [nextState, String(recordId)],
 												})
 											},
+											runEffect: handler
+												? (currentState: string | undefined) =>
+														handler({
+															pgClient,
+															doctype: String(spec.doctype),
+															action: String(spec.action),
+															meta,
+															recordId,
+															data: recordData,
+															args: argList,
+															currentState,
+														})
+												: undefined,
 										})
 									} catch (err) {
 										return {

@@ -84,7 +84,8 @@
 		"actions": {
 			"save": {
 				"label": "Save",
-				"stateless": true
+				"stateless": true,
+				"selfTransition": true
 			},
 			"activate": {
 				"label": "Activate User",

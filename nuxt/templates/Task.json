@@ -51,6 +51,11 @@
 		"actions": {
 			"save": {
 				"label": "Save",
+				"stateless": true,
+				"selfTransition": true
+			},
+			"snooze": {
+				"label": "Snooze a Week",
 				"stateless": true
 			},
 			"start_task": {

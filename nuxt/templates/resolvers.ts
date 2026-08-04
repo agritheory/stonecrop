@@ -9,9 +9,10 @@
  * - loadOne($step, fn)        — batch-load data ASYNCHRONOUSLY (for DB queries)
  * - object({ ... })           — group multiple steps into a single step object
  *
- * Data reads go through loadOne. Workflow state transitions are applied by the
- * stonecropAction resolver itself (server-owns-transition, guarded by allowedStates);
- * side-effecting saves go through registered handlers (project:save, task:save).
+ * Data reads go through loadOne. Workflow outcomes are applied by the stonecropAction
+ * resolver itself (server-owns-transition, guarded by allowedStates), and anything a
+ * doctype cannot express — a Command with no state change — goes through the
+ * `actionHandlers` map below.
  *
  * To connect a real database, replace the imports from ./data with your
  * PostGraphile setup. See: https://stonecrop.io/docs/guides/postgraphile
@@ -114,6 +115,51 @@ function nextId(doctype: string): string {
 }
 
 // ============================================================
+// Server-side action effects
+// ============================================================
+// A doctype's workflow says whether an action may run (`allowedStates`) and what state results
+// (`nextState`, `selfTransition`). It deliberately says nothing about what the action *does*: a
+// doctype is runtime data edited in DocBuilder, and it must not name server code a different
+// author owns. So the routing from action to effect lives here, keyed `[doctype name][action
+// key]`, and is never published to the client.
+//
+// This is what makes a Command executable at all. An action with no `nextState` and no
+// `selfTransition` has nothing for the dispatcher to apply, and without an entry here it fails
+// loudly rather than reporting a false success.
+//
+// Add your own by registering under the doctype's `name`. Throwing rejects the action; returning
+// the updated record makes it the client writeback payload.
+
+type ActionHandler = (context: {
+	recordId?: string
+	/** Record field data the client sent. Unvalidated browser input — validate before trusting it. */
+	data: Record<string, unknown>
+	/** The state the guard read, or undefined when nothing about the action required reading it. */
+	currentState?: string
+}) => Promise<unknown>
+
+export const actionHandlers: Record<string, Record<string, ActionHandler>> = {
+	Task: {
+		/**
+		 * Push the due date out by a week.
+		 *
+		 * The example is deliberately a *stateless* command: snoozing does not move the task
+		 * through its workflow, so there is no state for the doctype to declare — only an effect.
+		 */
+		async snooze({ recordId }) {
+			const task = recordId != null ? tasks.get(recordId) : undefined
+			if (!task) throw new Error(`Task ${recordId ?? '(none)'} not found`)
+
+			const from = task.dueDate ? new Date(task.dueDate) : new Date()
+			from.setDate(from.getDate() + 7)
+			const updated: Task = { ...task, dueDate: from.toISOString().slice(0, 10) }
+			tasks.set(task.id, updated)
+			return Promise.resolve(updated)
+		},
+	},
+}
+
+// ============================================================
 // Resolvers (Grafast plan format)
 // ============================================================
 
@@ -201,6 +247,7 @@ export const resolvers = {
 								const recordId = argList[0]?.id != null ? String(argList[0].id) : undefined
 								const recordData: Record<string, unknown> = argList[0]?.data ?? {}
 								const d = spec.doctype.toLowerCase()
+								const handler = actionHandlers[meta.name]?.[String(spec.action)]
 
 								try {
 									// The server owns the transition: read current state, guard against allowedStates,
@@ -232,6 +279,10 @@ export const resolvers = {
 												else if (d === 'task') tasks.set(recordId, updated as Task)
 												return updated as Record<string, unknown>
 											},
+											// The server-owned effect for this action, if one is registered above.
+											runEffect: handler
+												? (currentState: string | undefined) => handler({ recordId, data: recordData, currentState })
+												: undefined,
 										},
 										recordData
 									)

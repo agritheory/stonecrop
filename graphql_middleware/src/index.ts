@@ -24,7 +24,7 @@ export type { GuardedTransitionIO } from './dispatch/transition'
 
 // PostGraphile plugin
 export { createStonecropPlugin } from './plugin/postgraphile'
-export type { StonecropPluginOptions } from './plugin/postgraphile'
+export type { StonecropPluginOptions, ActionHandler, ActionHandlerContext } from './plugin/postgraphile'
 
 // Debug plugin
 export { createDebugPlugin } from './debug'

@@ -31,8 +31,9 @@ import { describe, it, expect, vi } from 'vitest'
 
 import type { DoctypeMeta } from '@stonecrop/schema'
 
-import { recordLookupField as templatesLookupField } from '../templates/resolvers'
+import { recordLookupField as templatesLookupField, actionHandlers as templatesHandlers } from '../templates/resolvers'
 import { recordLookupField as fullstackLookupField } from '../fullstack/server/resolvers'
+import { actionHandlers as fullstackHandlers } from '../fullstack/server/action-handlers'
 
 // The two resolver modules above import the middleware at top level, which transitively boots
 // postgraphile + pg — a server-only chain that breaks vitest's node interop. vitest hoists this
@@ -271,9 +272,11 @@ describe('record identity — unresolved divergence', { tags: ['unit', 'graphql'
 	 *
 	 *   - The Postgres adapter treats the declaration as required. With no `primaryKey` it
 	 *     returns `data: null` from `stonecropRecord` (plugin/postgraphile.ts, the `!pkMeta`
-	 *     branch) and a loud `No primary key for doctype:` error from `stonecropAction`. Note it
-	 *     is already inconsistent with itself: the same condition fails silently in one operation
-	 *     and loudly in the other.
+	 *     branch), and `stonecropAction` fails loudly with `No primary key for doctype:` — but
+	 *     only for an action that reads or writes a record's state, since the key is resolved
+	 *     lazily. A record-less command still reaches its handler. Note the adapter is already
+	 *     inconsistent with itself: the same condition fails silently in one operation and
+	 *     loudly in the other.
 	 *   - Both nuxt hosts fall back to `id`, which is what `@stonecrop/schema`'s
 	 *     `getRecordIdentity` documents as correct: "surrogate-key doctypes carry an `id` column
 	 *     and never mark a primary key".
@@ -300,5 +303,82 @@ describe('record identity — unresolved divergence', { tags: ['unit', 'graphql'
 		// Pinned as prose against the source so this stays visible if the branch is ever removed.
 		const src = readSdl('../../graphql_middleware/src/plugin/postgraphile.ts')
 		expect(src).toContain('No primary key for doctype:')
+	})
+})
+
+// ---------------------------------------------------------------------------
+// Layer 3 — action executability
+// ---------------------------------------------------------------------------
+
+/**
+ * Every action a host publishes must be something that host can actually execute.
+ *
+ * `applyGuardedTransition` can apply two outcomes, both authored in the doctype: a `nextState`
+ * transition, or a `selfTransition` data write. An action with neither has nothing to apply and
+ * fails loudly — correct behaviour, but it means a doctype can publish a button that is
+ * guaranteed to error the moment anyone presses it, and nothing catches that at authoring time.
+ *
+ * The third way to be executable is a registered server-side effect. That registration lives on
+ * the adapter, never in the doctype: a doctype is runtime data edited in DocBuilder, and it must
+ * not name code behind the GraphQL surface that a different author owns. So the pairing can only
+ * be checked here, where both halves are visible at once.
+ *
+ * This is not hypothetical. It caught three shipped actions in one pass — `Project.save`,
+ * `Task.save` and `User.save` were each `stateless: true` with no `selfTransition`, no
+ * `clientHandler` and no handler, so Save was broken in both the scaffold the CLI writes and the
+ * fullstack playground.
+ *
+ * The rule restated below is pinned at its source by graphql_middleware's
+ * `tests/transition.test.ts` ("fails loudly for a side-effect action with no nextState and no
+ * registered effect"); the real dispatcher cannot be imported here because it boots postgraphile.
+ */
+describe('action executability', { tags: ['unit', 'graphql'] }, () => {
+	const HOSTS_WITH_DOCTYPES = [
+		{ name: 'templates', dir: '../templates', files: ['Project.json', 'Task.json'], handlers: templatesHandlers },
+		{
+			name: 'fullstack',
+			dir: '../fullstack/doctypes',
+			files: ['Order.json', 'OrderItem.json', 'User.json'],
+			handlers: fullstackHandlers,
+		},
+	]
+
+	it.each(HOSTS_WITH_DOCTYPES)(
+		'$name — every dispatchable action has an outcome or an effect',
+		({ dir, files, handlers }) => {
+			const checked: string[] = []
+
+			for (const file of files) {
+				const doctype = JSON.parse(readSdl(`${dir}/${file}`)) as {
+					name: string
+					workflow?: { actions?: Record<string, Record<string, unknown>> }
+				}
+
+				for (const [key, action] of Object.entries(doctype.workflow?.actions ?? {})) {
+					const clientHandler = typeof action.clientHandler === 'string' ? action.clientHandler : ''
+					// A clientHandler owns orchestration and may never reach the server at all — unless
+					// it calls `runAction`, in which case it dispatches like any other action.
+					if (clientHandler && !clientHandler.includes('runAction')) continue
+
+					const executable =
+						action.nextState != null || action.selfTransition === true || Boolean(handlers[doctype.name]?.[key])
+
+					expect(executable, `${file}: action "${key}" dispatches but nothing can execute it`).toBe(true)
+					checked.push(`${doctype.name}.${key}`)
+				}
+			}
+
+			// Guards against the loop silently covering nothing — a renamed doctypes directory or an
+			// empty `files` list would otherwise pass with zero assertions.
+			expect(checked.length).toBeGreaterThan(3)
+		}
+	)
+
+	it('a stateless command is executable only because the adapter registered an effect', () => {
+		// The positive control for the rule above: these two carry no outcome of their own, so
+		// removing their registration is what makes them unexecutable — nothing in the doctype
+		// changes. Asserted directly because it is the property the seam exists to provide.
+		expect(templatesHandlers.Task?.snooze).toBeTypeOf('function')
+		expect(fullstackHandlers.Order?.recalculateTotal).toBeTypeOf('function')
 	})
 })

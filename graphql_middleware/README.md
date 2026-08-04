@@ -135,7 +135,7 @@ Fields with `computed: true` have no backing database column and are excluded fr
 
 ## Actions
 
-Actions are declared per doctype in `workflow.actions` — there is no separate handler registry. Each action names the states it may run from (`allowedStates`) and the state the record moves to (`nextState`):
+Actions are declared per doctype in `workflow.actions`. Each action names the states it may run from (`allowedStates`) and the state the record moves to (`nextState`):
 
 ```json
 "workflow": {
@@ -147,7 +147,35 @@ Actions are declared per doctype in `workflow.actions` — there is no separate 
 }
 ```
 
-The `stonecropAction(doctype, action, args)` mutation dispatches through `applyGuardedTransition`: it reads the record's `status`, rejects the action if the current state is not in `allowedStates` (`isActionAllowedInState`), then writes `nextState`. The record is identified by `args[0].id`. Actions with no `nextState` (stateless commands) and self-transitions have no state target and are rejected by this backend rather than silently succeeding.
+The `stonecropAction(doctype, action, args)` mutation dispatches through `applyGuardedTransition`: it reads the record's `status`, rejects the action if the current state is not in `allowedStates` (`isActionAllowedInState`), then writes `nextState`. The record is identified by `args[0].id`. Self-transitions (`selfTransition: true`) have no state target and no data-write path on this backend, so they are rejected rather than silently succeeding.
+
+### Server-side effects
+
+A doctype can express two outcomes — a `nextState` transition and a `selfTransition` data write — and nothing else. An action that is neither, a stateless command like `Recalculate Total`, has nothing for the dispatcher to apply and fails loudly. Register an effect to give it one:
+
+```typescript
+createStonecropPlugin({
+  actionHandlers: {
+    Order: {
+      async recalculateTotal({ pgClient, recordId }) {
+        const { rows } = await pgClient.query({
+          text: 'UPDATE "order" SET total = (SELECT COALESCE(SUM(amount), 0) FROM order_item WHERE order_id = $1) WHERE id = $1 RETURNING *',
+          values: [recordId],
+        })
+        return rows[0] // becomes the client's writeback payload
+      },
+    },
+  },
+})
+```
+
+Handlers are keyed `[doctype name][action key]`, and **the doctype never names one**. The two are authored by different people: a doctype is runtime data edited in DocBuilder by whoever models the workflow, while handlers run behind the GraphQL surface and belong to whoever owns the database. So the doctype keeps the guard (`allowedStates`, `nextState`) and the adapter keeps the effect — the routing between them is resolved on the server and never published to the client.
+
+The guard always runs first, so a handler is never the thing that grants permission. It then runs before any state is written: throwing rejects the action and the record does not move. An action may carry both a handler and a `nextState`, in which case both apply.
+
+Handler return values are API-layer data — camelCase fieldname keys, per [ADR 0007](docs/decisions/0007-handler-result-casing-documentation-over-mechanism.md). Raw `pgClient.query()` rows carry snake_case column names; alias them in SQL or convert with `snakeToCamel` from `@stonecrop/schema`.
+
+`context.data` is the record data the client sent. `args` is an opaque `JSON` scalar that nothing validates, so treat it as untrusted input: parameterize it into SQL and whitelist the fields the action may touch.
 
 ## Custom fetch handlers
 
