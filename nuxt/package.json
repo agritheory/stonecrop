@@ -50,7 +50,7 @@
 		"prepublish": "rushx dev:prepare && nuxt-module-build build",
 		"test": "vitest run",
 		"test:coverage": "vitest run --coverage.enabled --coverage.provider=istanbul",
-		"test:types": "vue-tsc --noEmit -p tsconfig.runtime.json && cd playground && vue-tsc --noEmit && cd ../fullstack && vue-tsc --noEmit",
+		"test:types": "vue-tsc --noEmit -p tsconfig.runtime.json && cd playground && vue-tsc --noEmit && cd ../fullstack && vue-tsc --noEmit && vue-tsc --noEmit -p server/tsconfig.json",
 		"test:ui": "vitest --ui",
 		"test:watch": "vitest watch"
 	},

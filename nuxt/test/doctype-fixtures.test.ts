@@ -106,6 +106,33 @@ describe('doctype fixtures', { tags: ['unit'] }, () => {
 		expect(stragglers).toEqual([])
 	})
 
+	it('every doctype declares exactly one primary key', () => {
+		// The Postgres adapter treats a declared `primaryKey` as required: with none, `stonecropRecord`
+		// returns `data: null` and `stonecropAction` fails with "No primary key for doctype". Every
+		// fixture here previously declared none, so under that adapter not one of them could fetch a
+		// record. Declaring the key is the resolution; this keeps the next fixture from regressing.
+		//
+		// More than one is equally a bug: `getPrimaryKeyField` takes the first match, so a second
+		// declaration is silently ignored and the record keys off whichever field happens to come first.
+		//
+		// `assignment` is the one honest exception. It is a junction doctype whose identity is the pair
+		// (user, issue) — both required links — and `primaryKey` is a field-level boolean with no
+		// composite representation. It is DocBuilder-only (absent from playground/schema.graphql, linked
+		// solely as /docbuilder/assignment), so nothing fetches it by key. Remove this exemption if
+		// composite keys are ever modelled, or if the doctype gains its own identifier.
+		const COMPOSITE_KEY_EXEMPT = new Set(['playground/assignment.json'])
+
+		const offenders: string[] = []
+		for (const { file, doctype } of loadAll()) {
+			if (COMPOSITE_KEY_EXEMPT.has(file)) continue
+			const keys = valueFields(doctype)
+				.filter(f => f.primaryKey === true)
+				.map(f => String(f.fieldname))
+			if (keys.length !== 1) offenders.push(`${file} :: ${keys.length === 0 ? 'none declared' : keys.join(', ')}`)
+		}
+		expect(offenders).toEqual([])
+	})
+
 	it('every link field uses a link-capable component', () => {
 		// Link-ness is carried by `doctype`; the component decides whether the target is expanded, so an
 		// unmapped component on a link silently falls through to the cardinality default.

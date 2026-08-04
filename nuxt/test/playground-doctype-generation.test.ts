@@ -47,18 +47,31 @@ describe('playground doctype generation', { tags: ['unit'] }, () => {
 		}
 	})
 
-	it('reports no identity drift against the snapshot', () => {
+	it('declares a natural key the converter must neither derive nor overwrite', () => {
 		// The countries schema has no derivable primary key — every type is keyed on `code`, which
-		// SDL cannot distinguish from any other column. The doctypes declare none either, so the two
-		// agree. A failure here means the converter started guessing.
+		// SDL cannot distinguish from any other column, so the converter must abstain. The doctypes
+		// now declare `code` by hand: this is exactly the "natural-key PK left manual" case, where
+		// the merge REPORTS the divergence and must never apply it.
+		//
+		// Two independent failure modes are guarded here. If the converter starts guessing, the
+		// `should derive no primary key` assertion fails. If the merge starts applying generated
+		// identity over authored identity, the authored `code` key disappears — which the
+		// byte-identity check above would catch first, and the surviving-key check below confirms.
 		for (const doctype of generated) {
 			const onDisk = JSON.parse(readFileSync(join(doctypesDir, `${doctype.slug}.json`), 'utf-8'))
-			const { drift } = mergeIntrospectedDoctype(onDisk, doctype)
-			expect(drift.identityDrift, `${doctype.slug}`).toEqual([])
+			const { doctype: merged, drift } = mergeIntrospectedDoctype(onDisk, doctype)
+
+			expect(drift.identityDrift, `${doctype.slug} should report exactly the authored key`).toHaveLength(1)
+			expect(drift.identityDrift[0], `${doctype.slug}`).toContain('code.primaryKey')
+
 			expect(
 				doctype.fields.some(f => f.primaryKey),
 				`${doctype.slug} should derive no primary key`
 			).toBe(false)
+			expect(
+				merged.fields.find(f => f.primaryKey)?.fieldname,
+				`${doctype.slug} authored primary key must survive the merge`
+			).toBe('code')
 		}
 	})
 })

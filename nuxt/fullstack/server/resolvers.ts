@@ -7,9 +7,29 @@
 
 import { constant, lambda, loadOne, object } from 'grafast'
 import { getMeta, getAllMeta, applyGuardedTransition } from '@stonecrop/graphql-middleware'
+import { getPrimaryKeyField } from '@stonecrop/schema'
 import type { DoctypeMeta } from '@stonecrop/schema'
 
 import { mockExecutor } from './mock-executor'
+
+// ============================================
+// Mock response shapes
+// ============================================
+// The executor is generic and returns whatever the caller asks for, so these name what the
+// mock actually sends back. Without them every access below degrades to `unknown` and the
+// resolvers type-check only because nothing was checking them — see nuxt's `test:types`.
+
+/** A PostGraphile-style connection, as returned by the mock's `all<Type>s` queries. */
+interface MockConnection {
+	nodes?: unknown[]
+	totalCount?: number
+}
+
+/** A mutation payload. The mock nests the record under a camelCased type key. */
+type MockMutationPayload = Record<string, unknown> & {
+	deletedUserId?: string
+	deletedOrderId?: string
+}
 
 // ============================================
 // Type Helpers
@@ -20,6 +40,24 @@ function toQueryName(doctypeName: string, singular: boolean = true): string {
 	const pascalName = doctypeName.replace(/\s+/g, '')
 	const name = pascalName.charAt(0).toLowerCase() + pascalName.slice(1)
 	return singular ? `${name}ById` : `all${pascalName}s`
+}
+
+/**
+ * The field an incoming `stonecropRecord(id:)` argument is matched against.
+ *
+ * Part of the adapter contract — see test/adapter-conformance.test.ts, which runs the same
+ * expectations against every host. A doctype that declares a `primaryKey` is keyed by that
+ * field; the client resolves the same field via `@stonecrop/schema`'s `getRecordIdentity`,
+ * so an adapter that ignores the declaration looks records up by a key the client never sent.
+ *
+ * The `id` fallback covers doctypes that declare no `primaryKey`. Every doctype in this repo now
+ * declares one, enforced by test/doctype-fixtures.test.ts, so in-repo the fallback is inert.
+ * It stays for consumer doctypes that have not adopted the rule: the Postgres adapter refuses
+ * those outright (`data: null`), and this host stays permissive. The conformance suite records
+ * that difference rather than asserting one answer.
+ */
+export function recordLookupField(meta: DoctypeMeta): string {
+	return getPrimaryKeyField(meta.fields)?.fieldname ?? 'id'
 }
 
 function toMutationName(doctypeName: string, operation: 'create' | 'update' | 'delete'): string {
@@ -94,7 +132,10 @@ export default {
 
 							const queryName = toQueryName(meta.name)
 							try {
-								const result = await mockExecutor.query(queryName, { id: spec.id })
+								const result = await mockExecutor.query(queryName, {
+									id: spec.id,
+									lookupField: recordLookupField(meta),
+								})
 								return {
 									data: result[queryName] ?? null,
 									doctype: spec.doctype,
@@ -133,7 +174,7 @@ export default {
 
 								const queryName = toQueryName(meta.name, false)
 								try {
-									const result = await mockExecutor.query(queryName, {
+									const result = await mockExecutor.query<Record<string, MockConnection | null>>(queryName, {
 										first: spec.limit,
 										offset: spec.offset,
 										orderBy: spec.orderBy,
@@ -234,14 +275,20 @@ export default {
 											},
 											writeState: async (nextState: string) => {
 												const mutationName = toMutationName(meta.name, 'update')
-												await mockExecutor.mutate(mutationName, { id: recordId, patch: { status: nextState } })
+												await mockExecutor.mutate<Record<string, MockMutationPayload | undefined>>(mutationName, {
+													id: recordId,
+													patch: { status: nextState },
+												})
 											},
 											// Self-transition data write: patch the record's field data (status untouched)
 											// and return the full updated record for the client writeback. Verbatim patch
 											// mirrors stonecropUpdate; column-whitelisting is the (deferred) PostGraphile concern.
 											writeData: async (patch: Record<string, unknown>) => {
 												const mutationName = toMutationName(meta.name, 'update')
-												const result = await mockExecutor.mutate(mutationName, { id: recordId, patch })
+												const result = await mockExecutor.mutate<Record<string, MockMutationPayload | undefined>>(
+													mutationName,
+													{ id: recordId, patch }
+												)
 												const mutationResult = result[mutationName] as Record<string, unknown> | undefined
 												const recordKey = meta.name.charAt(0).toLowerCase() + meta.name.slice(1)
 												return (mutationResult?.[recordKey] ?? mutationResult ?? {}) as Record<string, unknown>
@@ -273,7 +320,10 @@ export default {
 
 							const mutationName = toMutationName(meta.name, 'create')
 							try {
-								const result = await mockExecutor.mutate(mutationName, { input: spec.input })
+								const result = await mockExecutor.mutate<Record<string, MockMutationPayload | undefined>>(
+									mutationName,
+									{ input: spec.input }
+								)
 								const mutationResult = result[mutationName]
 								const recordKey = meta.name.charAt(0).toLowerCase() + meta.name.slice(1)
 								return {
@@ -300,10 +350,13 @@ export default {
 
 							const mutationName = toMutationName(meta.name, 'update')
 							try {
-								const result = await mockExecutor.mutate(mutationName, {
-									id: spec.id,
-									patch: spec.patch,
-								})
+								const result = await mockExecutor.mutate<Record<string, MockMutationPayload | undefined>>(
+									mutationName,
+									{
+										id: spec.id,
+										patch: spec.patch,
+									}
+								)
 								const mutationResult = result[mutationName]
 								if (!mutationResult) {
 									return null
@@ -337,7 +390,10 @@ export default {
 
 							const mutationName = toMutationName(meta.name, 'delete')
 							try {
-								const result = await mockExecutor.mutate(mutationName, { id: spec.id })
+								const result = await mockExecutor.mutate<Record<string, MockMutationPayload | undefined>>(
+									mutationName,
+									{ id: spec.id }
+								)
 								const mutationResult = result[mutationName]
 								const deleted = mutationResult?.deletedUserId || mutationResult?.deletedOrderId
 

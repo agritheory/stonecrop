@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Resolve records by the declared primaryKey in scaffolded resolvers, and declare a primary key on every doctype",
+      "type": "patch",
+      "packageName": "@stonecrop/nuxt"
+    }
+  ],
+  "packageName": "@stonecrop/nuxt",
+  "email": "rohanbansal33@gmail.com"
+}

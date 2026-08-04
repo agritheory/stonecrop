@@ -19,6 +19,7 @@
 
 import { constant, lambda, loadOne, object } from 'grafast'
 import { getMeta, getAllMeta, applyGuardedTransition } from '@stonecrop/graphql-middleware'
+import { getPrimaryKeyField } from '@stonecrop/schema'
 import type { DoctypeMeta } from '@stonecrop/schema'
 import { projects, tasks, type Project, type Task } from './data'
 
@@ -57,10 +58,36 @@ export function formatDoctypeMeta(meta: DoctypeMeta) {
 // Record helpers — read/write the in-memory Maps by doctype
 // ============================================================
 
-function getRecord(doctype: string, id: string): Project | Task | null {
+/**
+ * The field an incoming `stonecropRecord(id:)` argument is matched against.
+ *
+ * Part of the adapter contract — see test/adapter-conformance.test.ts, which runs the same
+ * expectations against every host. A doctype that declares a `primaryKey` is keyed by that
+ * field; the client resolves the same field via `@stonecrop/schema`'s `getRecordIdentity`,
+ * so an adapter that ignores the declaration looks records up by a key the client never sent.
+ *
+ * The `id` fallback covers doctypes that declare no `primaryKey`. Every doctype in this repo now
+ * declares one, enforced by test/doctype-fixtures.test.ts, so in-repo the fallback is inert.
+ * It stays for consumer doctypes that have not adopted the rule: the Postgres adapter refuses
+ * those outright (`data: null`), and this host stays permissive. The conformance suite records
+ * that difference rather than asserting one answer.
+ */
+export function recordLookupField(meta: DoctypeMeta): string {
+	return getPrimaryKeyField(meta.fields)?.fieldname ?? 'id'
+}
+
+function getRecord(doctype: string, id: string, lookupField = 'id'): Project | Task | null {
 	const d = doctype.toLowerCase()
-	if (d === 'project') return projects.get(id) ?? null
-	if (d === 'task') return tasks.get(id) ?? null
+	const store = d === 'project' ? projects : d === 'task' ? tasks : null
+	if (!store) return null
+	if (lookupField === 'id') return store.get(id) ?? null
+	// A natural key is not the Map key, so the store is scanned. Values are compared as
+	// strings because the `id` argument arrives from GraphQL as `String!`. Only primitives
+	// are usable keys — stringifying an object would compare "[object Object]".
+	for (const record of store.values()) {
+		const value: unknown = Reflect.get(record, lookupField)
+		if ((typeof value === 'string' || typeof value === 'number') && String(value) === id) return record
+	}
 	return null
 }
 
@@ -117,10 +144,13 @@ export const resolvers = {
 
 			stonecropRecord(_: unknown, { $doctype, $id, $options }: any) {
 				return loadOne(object({ doctype: $doctype, id: $id, options: $options }), async (specs: readonly any[]) => {
-					return specs.map(spec => ({
-						data: getRecord(spec.doctype, spec.id),
-						doctype: spec.doctype,
-					}))
+					return specs.map(spec => {
+						const meta = getMeta(spec.doctype)
+						return {
+							data: meta ? getRecord(spec.doctype, spec.id, recordLookupField(meta)) : null,
+							doctype: spec.doctype,
+						}
+					})
 				})
 			},
 
