@@ -3,6 +3,7 @@ import { storeToRefs } from 'pinia'
 import { inject, onMounted, Ref, ref, watch, provide, computed } from 'vue'
 
 import Doctype from '../doctype'
+import { isDraftRecordId } from '../draft'
 import Registry from '../registry'
 import { Stonecrop } from '../stonecrop'
 import type { HSTNode } from '../types/hst'
@@ -29,7 +30,7 @@ export function useStonecrop(): BaseStonecropReturn | HSTStonecropReturn
  * `setTimeout` is required.
  *
  * The only remaining async work in `onMounted` is fetching an existing record from the
- * server when `recordId` is not `'new'`, and lazy-loading a doctype by slug string.
+ * server when `recordId` is not a draft, and lazy-loading a doctype by slug string.
  *
  * @param options - Configuration with doctype (string slug or Doctype instance) and optional recordId
  * @returns Stonecrop instance with full HST integration utilities
@@ -70,7 +71,7 @@ export function useStonecrop(options?: {
 
 	// Workflow readiness computed properties
 	const isWorkflowReady = computed(() => {
-		if (!stonecrop.value || !resolvedDoctype.value || !options.recordId || options.recordId === 'new') {
+		if (!stonecrop.value || !resolvedDoctype.value || !options.recordId || isDraftRecordId(options.recordId)) {
 			return true
 		}
 		const status = stonecrop.value.isWorkflowReady(resolvedDoctype.value, options.recordId)
@@ -78,7 +79,7 @@ export function useStonecrop(options?: {
 	})
 
 	const blockedLinks = computed(() => {
-		if (!stonecrop.value || !resolvedDoctype.value || !options.recordId || options.recordId === 'new') {
+		if (!stonecrop.value || !resolvedDoctype.value || !options.recordId || isDraftRecordId(options.recordId)) {
 			return []
 		}
 		const status = stonecrop.value.isWorkflowReady(resolvedDoctype.value, options.recordId)
@@ -209,7 +210,7 @@ export function useStonecrop(options?: {
 	if (options.doctype && typeof options.doctype !== 'string' && registry && stonecrop.value) {
 		hstStore.value = stonecrop.value.getStore()
 		resolvedSchema.value = registry.resolveSchema(options.doctype)
-		if (!options.recordId || options.recordId === 'new') {
+		if (!options.recordId || isDraftRecordId(options.recordId)) {
 			formData.value = registry.initializeRecord(resolvedSchema.value)
 		}
 		if (hstStore.value) {
@@ -256,7 +257,7 @@ export function useStonecrop(options?: {
 						resolvedSchema.value = registry.resolveSchema(doctype)
 					}
 
-					if (recordId && recordId !== 'new') {
+					if (recordId && !isDraftRecordId(recordId)) {
 						const existingRecord = stonecrop.value.getRecordById(doctype, recordId)
 						if (existingRecord) {
 							formData.value = existingRecord.get('') || {}
@@ -326,7 +327,7 @@ export function useStonecrop(options?: {
 
 				resolvedSchema.value = registry.resolveSchema(doctype)
 
-				if (recordId && recordId !== 'new') {
+				if (recordId && !isDraftRecordId(recordId)) {
 					const existingRecord = stonecrop.value.getRecordById(doctype, recordId)
 					if (existingRecord) {
 						formData.value = existingRecord.get('') || {}
@@ -351,7 +352,7 @@ export function useStonecrop(options?: {
 			} else {
 				// Doctype instance — sync init was done during setup().
 				// Only handle the async path: fetching an existing record from the server.
-				if (recordId && recordId !== 'new') {
+				if (recordId && !isDraftRecordId(recordId)) {
 					const doctype = options.doctype
 					const existingRecord = stonecrop.value.getRecordById(doctype, recordId)
 					if (existingRecord) {

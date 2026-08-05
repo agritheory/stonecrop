@@ -2,6 +2,7 @@ import { createPinia, setActivePinia } from 'pinia'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 import { useLazyLink } from '../../src/composables/lazy-link'
+import { newDraftRecordId } from '../../src/draft'
 import Registry from '../../src/registry'
 import { Stonecrop } from '../../src/stonecrop'
 import { HST } from '../../src/stores/hst'
@@ -334,6 +335,22 @@ describe('blockWorkflows', { tags: ['unit'] }, () => {
 		// New records don't block workflows
 		const status = stonecrop.isWorkflowReady(doctype, 'new')
 		expect(status.ready).toBe(true)
+	})
+
+	it('isWorkflowReady returns ready true for a draft id the desktop shell actually mints', () => {
+		// The case above passes the legacy literal, which is not what any running app produces.
+		// Desktop mints `new-<timestamp>`, and the guard used to compare with `=== 'new'` — so a
+		// genuinely new record fell through to the link check and was reported blocked by data an
+		// unsaved record has no way to have.
+		const doctype = createTestDoctype('Recipe', {
+			tasks: { target: 'recipe-task', cardinality: 'noneOrMany', fetch: { method: 'sync' } },
+		})
+		registry.addDoctype(doctype)
+		stonecrop.setup(doctype)
+
+		const status = stonecrop.isWorkflowReady(doctype, newDraftRecordId())
+		expect(status.ready).toBe(true)
+		expect(status.blockedLinks).toBeUndefined()
 	})
 
 	it('runAction throws when workflow is blocked', () => {

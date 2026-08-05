@@ -35,7 +35,12 @@
 </template>
 
 <script setup lang="ts">
-import { useStonecrop, useValidationStore } from '@stonecrop/stonecrop'
+// `isDraftRecordId`/`newDraftRecordId` come from @stonecrop/stonecrop rather than being spelled
+// out here. Desktop mints the id but it is not the only reader: the composables in that package
+// guard fetching, field initialization and workflow readiness on the same question, and when the
+// two were written separately they disagreed — Desktop minted `new-<timestamp>` while the other
+// dialect tested `=== 'new'`, so every guard over there was silently dead.
+import { isDraftRecordId, newDraftRecordId, useStonecrop, useValidationStore } from '@stonecrop/stonecrop'
 import { AForm, type AFormLinkNavigator, type ResolvedField, type ResolvedTable } from '@stonecrop/aform'
 import type { ColumnSchema } from '@stonecrop/schema'
 import { computed, onMounted, onUnmounted, provide, ref, unref, watch } from 'vue'
@@ -342,7 +347,7 @@ const currentRecordId = computed(() => {
 
 	return ''
 })
-const isNewRecord = computed(() => currentRecordId.value?.startsWith('new-'))
+const isNewRecord = computed(() => isDraftRecordId(currentRecordId.value))
 
 // Determine current view based on route
 const currentView = computed(() => {
@@ -604,8 +609,7 @@ const openRecord = async (recordId: string) => {
 }
 
 const createNewRecord = async () => {
-	const newId = `new-${Date.now()}`
-	await doNavigate({ view: 'record', doctype: routeDoctype.value, recordId: newId })
+	await doNavigate({ view: 'record', doctype: routeDoctype.value, recordId: newDraftRecordId() })
 }
 
 // Flatten Fieldset containers into individual columns for list/table views.
@@ -857,6 +861,12 @@ watch(
 			// Emit load-records event so host app can populate HST
 			emit('load-records', { doctype: currentDoctype.value })
 		} else if (currentView.value === 'record' && currentDoctype.value && currentRecordId.value) {
+			// A draft has nothing to fetch — the record does not exist on the server yet. Desktop
+			// used to emit anyway and leave the host to work it out, which meant every host had to
+			// recognise the private draft-id scheme above just to suppress a doomed request; all of
+			// them did, identically. `loadRecordData` declines the same case for the same reason.
+			if (isNewRecord.value) return
+
 			// Emit load-record event so host app can fetch and populate HST
 			emit('load-record', { doctype: currentDoctype.value, recordId: currentRecordId.value })
 			void loadRecordData()

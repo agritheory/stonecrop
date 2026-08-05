@@ -199,7 +199,12 @@ describe('Desktop events', { tags: ['component'] }, () => {
 			expect(emitted![0][0]).toMatchObject({ doctype: 'task', recordId: 'task-1' })
 		})
 
-		it('emits load-record even for new records (host app decides whether to fetch)', async () => {
+		it('does NOT emit "load-record" for an unsaved draft', async () => {
+			// A draft id is minted by Desktop and exists nowhere on the server, so the fetch this
+			// event asks for can only fail. Desktop used to emit anyway, on the grounds that the
+			// host should decide — but deciding meant every host reimplementing `startsWith('new-')`
+			// against a prefix Desktop never exported, and all three did so identically. Not
+			// emitting makes a host that knows nothing about drafts correct by default.
 			const adapter: RouteAdapter = {
 				getCurrentDoctype: () => 'task',
 				getCurrentRecordId: () => 'new-123',
@@ -222,9 +227,7 @@ describe('Desktop events', { tags: ['component'] }, () => {
 
 			await nextTick()
 
-			const emitted = wrapper.emitted('load-record')
-			expect(emitted).toBeTruthy()
-			expect(emitted![0][0]).toMatchObject({ doctype: 'task', recordId: 'new-123' })
+			expect(wrapper.emitted('load-record')).toBeFalsy()
 		})
 
 		it('emits load-records when view changes from doctypes to records', async () => {

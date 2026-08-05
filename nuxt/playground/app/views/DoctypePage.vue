@@ -9,7 +9,6 @@
 		<Desktop
 			:available-doctypes="availableDoctypes"
 			:route-adapter="routeAdapter"
-			record-id-field="code"
 			@load-records="handleLoadRecords"
 			@load-record="handleLoadRecord"
 			@action="handleAction" />
@@ -65,9 +64,20 @@ async function handleLoadRecords(payload: LoadRecordsEventPayload) {
 		return
 	}
 
+	// Key rows by whatever the doctype declares identifies a record. Every doctype here is
+	// natural-keyed — there is no `id` column anywhere in the countries schema — so this is the
+	// only thing that works, and it is resolved from the declaration rather than hardcoded to
+	// `code`, which is what makes this app live coverage of the natural-key path.
+	const doctype = stonecrop.value.registry.getDoctype(slug)
+
 	try {
 		for (const record of await load()) {
-			if (record.code) stonecrop.value.addRecord(slug, String(record.code), record)
+			const recordId = doctype?.getRecordId(record)
+			if (recordId === undefined) {
+				console.warn(`Skipping a ${slug} record with no resolvable identity:`, record)
+				continue
+			}
+			stonecrop.value.addRecord(slug, recordId, record)
 		}
 	} catch (e) {
 		console.error('Failed to load records:', e)
@@ -75,7 +85,8 @@ async function handleLoadRecords(payload: LoadRecordsEventPayload) {
 }
 
 async function handleLoadRecord(payload: LoadRecordEventPayload) {
-	if (!stonecrop.value || payload.recordId.startsWith('new-')) return
+	// Desktop does not emit this for an unsaved draft, so there is no draft id to screen out here.
+	if (!stonecrop.value) return
 	const { doctype: slug, recordId } = payload
 
 	const load = DETAIL_LOADERS[slug]

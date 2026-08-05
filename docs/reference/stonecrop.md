@@ -94,6 +94,24 @@ Use this when you need the Stonecrop instance outside a Vue component context (e
 export declare function getStonecrop(): Stonecrop | undefined;
 ```
 
+### isDraftRecordId
+
+Whether an id refers to a record that has not been saved yet.
+
+Guard anything that assumes the record exists — fetching it, resolving its links, judging workflow readiness — with this rather than comparing against a literal.
+
+**Signature:**
+
+```typescript
+export declare function isDraftRecordId(recordId: string | null | undefined): boolean;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| recordId | `string \| null \| undefined` | The record id to test |
+
 ### markOperationIrreversible
 
 Mark a specific operation as irreversible. Used to prevent undo of critical operations like publishing or deletion.
@@ -110,6 +128,16 @@ export declare function markOperationIrreversible(operationId: string | undefine
 |-----------|------|-------------|
 | operationId | `string \| undefined` | The ID of the operation to mark as irreversible |
 | reason | `string` | Human-readable reason why the operation cannot be undone |
+
+### newDraftRecordId
+
+Mint an id for a record that does not exist on the server yet.
+
+**Signature:**
+
+```typescript
+export declare function newDraftRecordId(): string;
+```
 
 ### registerGlobalAction
 
@@ -308,7 +336,7 @@ Unified Stonecrop composable with HST integration for a specific doctype and rec
 
 When a `Doctype` instance is passed, all synchronous initialisation (`hstStore`, `resolvedSchema`, `formData`, `handleHSTChange`, operation-log wiring) is performed during `setup()` — before the first render and without awaiting any lifecycle hook. Callers can read `hstStore.value`, `resolvedSchema.value`, and `formData.value` immediately after calling this composable; no `nextTick`, `flushPromises`, or `setTimeout` is required.
 
-The only remaining async work in `onMounted` is fetching an existing record from the server when `recordId` is not `'new'`, and lazy-loading a doctype by slug string.
+The only remaining async work in `onMounted` is fetching an existing record from the server when `recordId` is not a draft, and lazy-loading a doctype by slug string.
 
 **Signature:**
 

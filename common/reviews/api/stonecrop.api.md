@@ -307,6 +307,9 @@ export type InstallOptions = {
 };
 
 // @public
+export function isDraftRecordId(recordId: string | null | undefined): boolean;
+
+// @public
 export type LazyLink = {
     loading: Ref<boolean>;
     loaded: Ref<boolean>;
@@ -317,6 +320,9 @@ export type LazyLink = {
 
 // @public
 export function markOperationIrreversible(operationId: string | undefined, reason: string): void;
+
+// @public
+export function newDraftRecordId(): string;
 
 // @public
 export type OperationLogAPI = {

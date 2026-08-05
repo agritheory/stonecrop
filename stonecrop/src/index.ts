@@ -6,6 +6,7 @@ import { useLazyLink } from './composables/lazy-link'
 import { useStonecrop } from './composables/stonecrop'
 import { useOperationLog, useUndoRedoShortcuts, withBatch } from './composables/operation-log'
 import Doctype from './doctype'
+import { isDraftRecordId, newDraftRecordId } from './draft'
 import {
 	FieldTriggerEngine,
 	getGlobalTriggerEngine,
@@ -40,6 +41,9 @@ export {
 	Doctype,
 	Registry,
 	Stonecrop,
+	// Unsaved-record identity, shared with the desktop shell
+	isDraftRecordId,
+	newDraftRecordId,
 	useLazyLink,
 	useStonecrop,
 	// clientHandler executor

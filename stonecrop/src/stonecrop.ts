@@ -2,6 +2,7 @@ import type { DataClient } from '@stonecrop/schema'
 import { reactive } from 'vue'
 
 import Doctype from './doctype'
+import { isDraftRecordId } from './draft'
 import { getGlobalTriggerEngine } from './field-triggers'
 import Registry from './registry'
 import { createHST, type HSTNode } from './stores/hst'
@@ -331,7 +332,7 @@ export class Stonecrop {
 	 */
 	isWorkflowReady(doctype: Doctype, recordId: string): { ready: boolean; blockedLinks?: string[] } {
 		// New records don't block workflows - they haven't been saved yet
-		if (recordId === 'new') {
+		if (isDraftRecordId(recordId)) {
 			return { ready: true }
 		}
 

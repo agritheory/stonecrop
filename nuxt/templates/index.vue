@@ -36,11 +36,21 @@ async function handleLoadRecords(payload: LoadRecordsEventPayload) {
 	const doctypeConfig = useDoctypeConfig(payload.doctype)
 	if (!doctypeConfig || !stonecrop.value) return
 
+	// Key rows by whatever the doctype declares identifies a record, not a hardcoded `id`. A
+	// natural-keyed doctype has no `id` column at all, so reading one drops every row and the list
+	// renders empty. This is the same rule the server looks records up by, so a row is stored under
+	// the key its Edit link will ask for.
+	const doctype = stonecrop.value.registry.getDoctype(payload.doctype)
+
 	try {
 		const { data } = await fetchDoctypeRecords({ name: doctypeConfig.name })
 		for (const record of data) {
-			const recordId = record.id as string
-			if (recordId) stonecrop.value.addRecord(payload.doctype, recordId, record)
+			const recordId = doctype?.getRecordId(record)
+			if (recordId === undefined) {
+				console.warn(`Skipping a ${payload.doctype} record with no resolvable identity:`, record)
+				continue
+			}
+			stonecrop.value.addRecord(payload.doctype, recordId, record)
 		}
 	} catch (error) {
 		console.error('Failed to load records:', error)
@@ -48,7 +58,8 @@ async function handleLoadRecords(payload: LoadRecordsEventPayload) {
 }
 
 async function handleLoadRecord(payload: LoadRecordEventPayload) {
-	if (!stonecrop.value || payload.recordId.startsWith('new-')) return
+	// Desktop does not emit this for an unsaved draft, so there is no draft id to screen out here.
+	if (!stonecrop.value) return
 
 	const doctypeConfig = useDoctypeConfig(payload.doctype)
 	if (!doctypeConfig) return
