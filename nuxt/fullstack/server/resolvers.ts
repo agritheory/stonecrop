@@ -287,14 +287,17 @@ export default {
 													patch: { status: nextState },
 												})
 											},
-											// Self-transition data write: patch the record's field data (status untouched)
-											// and return the full updated record for the client writeback. Verbatim patch
-											// mirrors stonecropUpdate; column-whitelisting is the (deferred) PostGraphile concern.
-											writeData: async (patch: Record<string, unknown>) => {
-												const mutationName = toMutationName(meta.name, 'update')
+											// Save is an upsert, and it is the only write path — one request through the
+											// one interface, whether or not the row exists yet. Updating patches the
+											// record's field data (status untouched); creating lets the backend assign
+											// the identity, which is why the client's synthetic `new-<timestamp>` id is
+											// never stored. Either way the full record comes back for the writeback.
+											// Verbatim patch; column-whitelisting is the (deferred) PostGraphile concern.
+											writeData: async (patch: Record<string, unknown>, exists: boolean) => {
+												const mutationName = toMutationName(meta.name, exists ? 'update' : 'create')
 												const result = await mockExecutor.mutate<Record<string, MockMutationPayload | undefined>>(
 													mutationName,
-													{ id: recordId, patch }
+													exists ? { id: recordId, patch } : { input: patch }
 												)
 												const mutationResult = result[mutationName] as Record<string, unknown> | undefined
 												const recordKey = meta.name.charAt(0).toLowerCase() + meta.name.slice(1)

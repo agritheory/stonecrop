@@ -77,18 +77,68 @@ describe('applyGuardedTransition', () => {
 			expect(writeState).not.toHaveBeenCalled()
 		})
 
-		it('rejects an unguarded self-transition instead of reporting a false success', async () => {
-			// The worst of the two: with no `allowedStates` there was nothing to fail against, so
-			// this returned `{ success: true, data: {} }` and wrote nothing.
-			const writeData = vi.fn(async () => ({}))
+		it('is created by the same write, told that it does not exist yet', async () => {
+			// Saving a record that is not there yet IS the create path — one action, one interface,
+			// and one backend write. `exists` is the only thing that differs.
+			const writeData = vi.fn(async (patch: Record<string, unknown>) => ({ id: '7', ...patch }))
 			const result = await applyGuardedTransition(
 				{ label: 'Save', selfTransition: true },
 				{ readState: async () => null, writeState: async () => {}, writeData },
-				{ title: 'edited' }
+				{ title: 'new task' }
+			)
+			expect(result.success).toBe(true)
+			// The created record, carrying the identity the backend assigned — not the client's.
+			expect(result.data).toEqual({ id: '7', title: 'new task' })
+			expect(writeData).toHaveBeenCalledWith({ title: 'new task' }, false)
+		})
+
+		it('fails loudly when the backend only knows how to patch', async () => {
+			// A writeData that matches no row and returns nothing must not read as a save. This is
+			// the same false success the `null` state answer exists to kill, arriving by the other
+			// route, so it is closed here too rather than trusted to every backend author.
+			const result = await applyGuardedTransition(
+				{ label: 'Save', selfTransition: true },
+				{ readState: async () => null, writeState: async () => {}, writeData: async () => ({}) },
+				{ title: 'new task' }
+			)
+			expect(result.success).toBe(false)
+			expect(result.error).toContain('did not create it')
+		})
+
+		it('creates without consulting allowedStates', async () => {
+			// `allowedStates` constrains movement between states; a record being created is not in
+			// one. Guarding creation against them would make every doctype with a state-restricted
+			// Save uncreatable.
+			const result = await applyGuardedTransition(
+				{ label: 'Save', selfTransition: true, allowedStates: ['Draft'] },
+				{ readState: async () => null, writeState: async () => {}, writeData: async d => ({ id: '7', ...d }) },
+				{ title: 'new' }
+			)
+			expect(result.success).toBe(true)
+		})
+
+		it('is not created by a transition — only a self-transition creates', async () => {
+			// `submit` on a record that does not exist is a bad id, not a request to create one.
+			const writeData = vi.fn(async () => ({ id: '7' }))
+			const result = await applyGuardedTransition(
+				{ label: 'Submit', nextState: 'Active' },
+				{ readState: async () => null, writeState: async () => {}, writeData }
 			)
 			expect(result.success).toBe(false)
 			expect(result.error).toContain('does not exist')
 			expect(writeData).not.toHaveBeenCalled()
+		})
+
+		it('is not created by a backend with no data-write path at all', async () => {
+			// Omitting `writeData` is how a backend declines both saving and creating — the
+			// Postgres adapter's position today.
+			const result = await applyGuardedTransition(
+				{ label: 'Save', selfTransition: true },
+				{ readState: async () => null, writeState: async () => {} },
+				{ title: 'new' }
+			)
+			expect(result.success).toBe(false)
+			expect(result.error).toContain('does not support')
 		})
 
 		it('never reaches a registered effect', async () => {
@@ -251,6 +301,18 @@ describe('applyGuardedTransition', () => {
 	})
 
 	describe('self-transitions (mutate-in-place)', () => {
+		it('tells the backend the record exists, so an ordinary save updates', async () => {
+			// The other side of the upsert. `exists` is the whole signal, so it must be right.
+			const writeData = vi.fn(async (patch: Record<string, unknown>) => ({ id: '1', ...patch }))
+			const result = await applyGuardedTransition(
+				{ label: 'Save', selfTransition: true },
+				{ readState: async () => 'Draft', writeState: async () => {}, writeData },
+				{ title: 'edited' }
+			)
+			expect(result.data).toEqual({ id: '1', title: 'edited' })
+			expect(writeData).toHaveBeenCalledWith({ title: 'edited' }, true)
+		})
+
 		it('writes record data, keeps the state, and returns the full record when allowed', async () => {
 			const writeState = vi.fn(async () => {})
 			const writeData = vi.fn(async (patch: Record<string, unknown>) => ({
@@ -266,7 +328,7 @@ describe('applyGuardedTransition', () => {
 			expect(result.success).toBe(true)
 			// Full record returned (data changed, status unchanged) — the writeback stores this verbatim.
 			expect(result.data).toEqual({ id: '1', status: 'Draft', title: 'edited' })
-			expect(writeData).toHaveBeenCalledWith({ title: 'edited' })
+			expect(writeData).toHaveBeenCalledWith({ title: 'edited' }, true)
 			// A self-transition never writes status.
 			expect(writeState).not.toHaveBeenCalled()
 		})

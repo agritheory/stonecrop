@@ -92,6 +92,19 @@ function getRecord(doctype: string, id: string, lookupField = 'id'): Project | T
 	return null
 }
 
+/**
+ * Write a record into its store under `key`.
+ *
+ * `key` is the record's identity under the doctype's declared `primaryKey` — the same field
+ * `getRecord` matches against — so the store is keyed by whatever the doctype says identifies a
+ * record, not by a hardcoded `id`. Both doctypes here declare `id`, so the two coincide today.
+ */
+function setRecord(doctype: string, key: string, record: Record<string, unknown>): void {
+	const d = doctype.toLowerCase()
+	if (d === 'project') projects.set(key, record as unknown as Project)
+	else if (d === 'task') tasks.set(key, record as unknown as Task)
+}
+
 function getRecords(doctype: string, filters?: Record<string, unknown>): (Project | Task)[] {
 	const d = doctype.toLowerCase()
 	if (d === 'project') {
@@ -248,6 +261,10 @@ export const resolvers = {
 								const recordData: Record<string, unknown> = argList[0]?.data ?? {}
 								const d = spec.doctype.toLowerCase()
 								const handler = actionHandlers[meta.name]?.[String(spec.action)]
+								// The field a record is identified by. The read path already resolved records
+								// through this; the action path used to assume `id`, so an action on a
+								// natural-keyed doctype looked up a key the client never sent.
+								const lookupField = recordLookupField(meta)
 
 								try {
 									// The server owns the transition: read current state, guard against allowedStates,
@@ -262,27 +279,51 @@ export const resolvers = {
 												// `undefined` for both is what let a Save on a record that was
 												// never created report success while persisting nothing.
 												if (recordId == null) return null
-												const record = getRecord(d, recordId)
+												const record = getRecord(d, recordId, lookupField)
 												if (!record) return null
 												return record.status == null ? undefined : String(record.status)
 											},
 											writeState: async (nextState: string) => {
 												if (recordId == null) return
-												const existing = getRecord(d, recordId)
+												const existing = getRecord(d, recordId, lookupField)
 												if (!existing) return
-												if (d === 'project') projects.set(recordId, { ...existing, status: nextState } as Project)
-												else if (d === 'task') tasks.set(recordId, { ...existing, status: nextState } as Task)
+												setRecord(d, recordId, { ...existing, status: nextState })
 											},
-											// Self-transition data write: merge the edited fields into the record (status
-											// untouched) and return the full record for the client writeback.
-											writeData: async (patch: Record<string, unknown>) => {
-												if (recordId == null) return {}
-												const existing = getRecord(d, recordId)
-												if (!existing) return {}
-												const updated = { ...existing, ...patch }
-												if (d === 'project') projects.set(recordId, updated as Project)
-												else if (d === 'task') tasks.set(recordId, updated as Task)
-												return updated as Record<string, unknown>
+											// Save is an upsert, and it is the only write path — there is no create action
+											// and no create mutation. Updating merges the edited fields in place (status
+											// untouched); creating derives the identity from the doctype's declared
+											// primary key when the submitted data carries it, which is how a
+											// natural-keyed doctype is identified, and mints one only otherwise.
+											// Either way the full record comes back for the client writeback.
+											writeData: async (patch: Record<string, unknown>, exists: boolean) => {
+												if (exists) {
+													if (recordId == null) return {}
+													const existing = getRecord(d, recordId, lookupField)
+													if (!existing) return {}
+													const updated = { ...existing, ...patch }
+													setRecord(d, recordId, updated)
+													return updated as Record<string, unknown>
+												}
+
+												const declared = patch[lookupField]
+												const identity =
+													typeof declared === 'string' && declared !== ''
+														? declared
+														: typeof declared === 'number'
+															? String(declared)
+															: nextId(d)
+												const defaults =
+													d === 'project'
+														? { status: 'Active', description: '' }
+														: { status: 'Todo', description: '', dueDate: null }
+												const record = {
+													...defaults,
+													...patch,
+													[lookupField]: identity,
+													createdAt: new Date().toISOString(),
+												}
+												setRecord(d, identity, record)
+												return record
 											},
 											// The server-owned effect for this action, if one is registered above.
 											runEffect: handler

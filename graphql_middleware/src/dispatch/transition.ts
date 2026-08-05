@@ -23,12 +23,25 @@ export interface GuardedTransitionIO {
 	/** Persist the record's new workflow state, written verbatim. */
 	writeState: (nextState: string) => Promise<void>
 	/**
-	 * Persist record field data for a mutate-in-place self-transition, returning the full updated
-	 * record (so the client writeback reflects the new data). Optional: a backend with no data-write
-	 * path omits it, and a self-transition is then rejected loudly rather than silently dropped —
-	 * unless `runEffect` is supplied, in which case the handler is the persistence path.
+	 * Persist a record's field data for a self-transition, returning the full record as it now
+	 * stands (so the client writeback reflects it).
+	 *
+	 * **This is an upsert, and it is the create path.** Saving a record is one request whether or
+	 * not the row is there yet, so there is no create action and no create mutation — `exists` says
+	 * which case you are in, and the second argument exists only because the dispatcher already
+	 * knows: it read the record's state to run the guard. When `exists` is false, mint or derive the
+	 * identity here and return the created record; identity is the backend's business, not the
+	 * dispatcher's. Read the declared `primaryKey` out of `data` for a natural-keyed doctype — that
+	 * value is a field the user filled in — and mint one only when the doctype is surrogate-keyed.
+	 *
+	 * Never return an empty object for a creation: the dispatcher treats that as a backend that
+	 * only knows how to patch, and fails loudly rather than reporting a save that stored nothing.
+	 *
+	 * Optional. A backend with no data-write path omits it, which is how it declines both saving
+	 * and creating; a self-transition is then rejected loudly rather than silently dropped — unless
+	 * `runEffect` is supplied, in which case the handler is the persistence path.
 	 */
-	writeData?: (patch: Record<string, unknown>) => Promise<Record<string, unknown>>
+	writeData?: (patch: Record<string, unknown>, exists: boolean) => Promise<Record<string, unknown>>
 	/**
 	 * Run the adapter's side effect for this action, after the guard has passed and before any
 	 * state is written. This is the seam a **database author** wires — see
@@ -65,6 +78,9 @@ export interface GuardedTransitionIO {
  *  - A cross-state **transition** (has `nextState`): writes the new `status`, guarded by `allowedStates`.
  *  - A **self-transition** (`selfTransition: true`, no `nextState`, e.g. `Save`): stays in the current
  *    state and persists record field `data` in place via `io.writeData`, guarded by `allowedStates`.
+ *    When the target record does not exist the same write creates it — saving a record is one
+ *    request whether or not the row is there yet, so there is no separate create action, no create
+ *    mutation, and no second write path for it.
  *  - A **stateless command** (neither of the above) with an `io.runEffect`: the handler is the whole
  *    outcome. Still guarded by `allowedStates`, and still forbidden from moving the record.
  *  - Anything else — no `nextState`, no `selfTransition`, no registered effect — is either a genuine
@@ -97,8 +113,8 @@ export async function applyGuardedTransition(
 		}
 	}
 
-	// A self-transition exists to persist data; with neither a data-write path nor an effect to
-	// do it, reject before running anything rather than half-applying.
+	// A self-transition exists to persist data; with no way at all to do that — no data write, no
+	// create, no effect — reject before running anything rather than half-applying.
 	if (isSelfTransition && !io.writeData && !io.runEffect) {
 		return {
 			success: false,
@@ -119,6 +135,29 @@ export async function applyGuardedTransition(
 		// `allowedStates`: a misleading "not allowed from state: (unknown)" when it did, and a
 		// silent `{ success: true }` writing nothing when it did not.
 		if (state === null) {
+			// A self-transition against a record that is not there is a create — the same write,
+			// against a row that does not exist yet. The guard is deliberately skipped:
+			// `allowedStates` constrains movement between states, and a record being created is not
+			// in one; its initial state is the backend's to set.
+			//
+			// A registered effect does NOT run here. An effect is written against an existing row,
+			// and firing it against a just-created one is a different contract than the one it was
+			// registered under; making creation observable to effects is deferred rather than
+			// guessed at.
+			if (isSelfTransition && io.writeData) {
+				const created = await io.writeData(data ?? {}, false)
+				// A backend that only knows how to patch returns nothing here, having matched no
+				// row. Reporting that as success is the exact bug the `null` answer above exists to
+				// kill, so it must not come back through the create path.
+				if (!created || Object.keys(created).length === 0) {
+					return {
+						success: false,
+						data: null,
+						error: `Action "${label}" targets a record that does not exist, and the backend did not create it.`,
+					}
+				}
+				return { success: true, data: created, error: null }
+			}
 			return {
 				success: false,
 				data: null,
@@ -157,7 +196,7 @@ export async function applyGuardedTransition(
 	// record is returned so the client writeback reflects the new data. When the backend has no
 	// data-write path the effect above already did the persisting (guarded at the top).
 	if (isSelfTransition) {
-		const record = io.writeData ? await io.writeData(data ?? {}) : effectResult
+		const record = io.writeData ? await io.writeData(data ?? {}, true) : effectResult
 		return { success: true, data: record ?? null, error: null }
 	}
 

@@ -151,33 +151,15 @@ The `stonecropAction(doctype, action, args)` mutation dispatches through `applyG
 
 An action against a record that does not exist is reported as such, before the guard runs. This depends on the backend distinguishing the two things `undefined` used to mean — `GuardedTransitionIO.readState` returns `null` for a lookup that missed, and `undefined` only for a row that exists with no workflow state. A backend that returns `undefined` for both makes a bad id look like a workflow violation, or, when the action declares no `allowedStates`, makes it look like a success.
 
-### Server-side effects
+### Creating a record
 
-A doctype can express two outcomes — a `nextState` transition and a `selfTransition` data write — and nothing else. An action that is neither, a stateless command like `Recalculate Total`, has nothing for the dispatcher to apply and fails loudly. Register an effect to give it one:
+There is no create mutation, no create action, and no separate create write. **Saving a record that does not exist creates it**, because "persist this record's data" is one request whether or not the row is there yet. `GuardedTransitionIO.writeData` is an upsert: it receives an `exists` flag the dispatcher already knows, having read the record's state to run the guard. A backend that omits `writeData` declines both saving and creating, which is the Postgres adapter's position today; the two nuxt hosts implement it.
 
-```typescript
-createStonecropPlugin({
-  actionHandlers: {
-    Order: {
-      async recalculateTotal({ pgClient, recordId }) {
-        const { rows } = await pgClient.query({
-          text: 'UPDATE "order" SET total = (SELECT COALESCE(SUM(amount), 0) FROM order_item WHERE order_id = $1) WHERE id = $1 RETURNING *',
-          values: [recordId],
-        })
-        return rows[0] // becomes the client's writeback payload
-      },
-    },
-  },
-})
-```
+`allowedStates` is deliberately not consulted on creation — it constrains movement between states, and a record being created is not in one. Its initial state is the backend's to set. Only a self-transition creates: a `nextState` transition against a missing record is a bad id, not a request to create one.
 
-Handlers are keyed `[doctype name][action key]`, and **the doctype never names one**. The two are authored by different people: a doctype is runtime data edited in DocBuilder by whoever models the workflow, while handlers run behind the GraphQL surface and belong to whoever owns the database. So the doctype keeps the guard (`allowedStates`, `nextState`) and the adapter keeps the effect — the routing between them is resolved on the server and never published to the client.
+Identity belongs to `writeData`, not the dispatcher. Read the declared `primaryKey` out of the submitted data for a natural-keyed doctype — that value is a field the user filled in — and mint one only when the doctype is surrogate-keyed. The client's own record id is never the identity: the New Record flow dispatches against a synthetic `new-<timestamp>` id, and the created record comes back carrying the real one.
 
-The guard always runs first, so a handler is never the thing that grants permission. It then runs before any state is written: throwing rejects the action and the record does not move. An action may carry both a handler and a `nextState`, in which case both apply.
-
-Handler return values are API-layer data — camelCase fieldname keys, per [ADR 0007](docs/decisions/0007-handler-result-casing-documentation-over-mechanism.md). Raw `pgClient.query()` rows carry snake_case column names; alias them in SQL or convert with `snakeToCamel` from `@stonecrop/schema`.
-
-`context.data` is the record data the client sent. `args` is an opaque `JSON` scalar that nothing validates, so treat it as untrusted input: parameterize it into SQL and whitelist the fields the action may touch.
+A `writeData` that only knows how to patch will match no row and return nothing. The dispatcher treats an empty return on the create path as exactly that and fails loudly, rather than letting a save that stored nothing report success.
 
 ## Custom fetch handlers
 
