@@ -100,6 +100,7 @@ export class Doctype {
     getTriggers(): Record<string, TriggerDefinition> | undefined;
     readonly links?: Record<string, LinkDeclaration>;
     get name(): string;
+    get recordIdField(): string;
     readonly schema: ImmutableDoctype['schema'];
     get slug(): string;
     readonly workflow: ImmutableDoctype['workflow'];

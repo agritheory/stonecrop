@@ -4,6 +4,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 // `vi.mock`/`vi.hoisted` below are hoisted above this import at runtime, so the composable
 // still loads with the mocked `useStonecrop`/`useRouter`.
 import { useClientAction } from '../src/runtime/app/composables/useClientAction'
+import { Doctype } from '@stonecrop/stonecrop'
+import type { DoctypeField } from '@stonecrop/schema'
 
 // Shared holders the mocks read from; set per-test.
 const { mocks } = vi.hoisted(() => ({ mocks: { sc: null as any, router: null as any } }))
@@ -26,18 +28,42 @@ function makeRouter() {
 	return { push: vi.fn(), replace: vi.fn(), back: vi.fn(), forward: vi.fn() }
 }
 
-function makeSc(opts: { actions?: Actions; record?: Record<string, unknown>; client?: unknown; dispatch?: any } = {}) {
-	const doctype = {
+/** A surrogate-keyed doctype: nothing declares `primaryKey`, so identity falls back to `id`. */
+const ID_FIELDS: DoctypeField[] = [
+	{ kind: 'field', fieldname: 'id', component: 'ATextInput' },
+	{ kind: 'field', fieldname: 'title', component: 'ATextInput' },
+]
+
+/** A natural-keyed doctype that ALSO carries a surrogate `id` — the shape the strict check exists for. */
+const USERNAME_FIELDS: DoctypeField[] = [
+	{ kind: 'field', fieldname: 'username', component: 'ATextInput', primaryKey: true },
+	{ kind: 'field', fieldname: 'id', component: 'ATextInput' },
+]
+
+function makeSc(
+	opts: {
+		actions?: Actions
+		fields?: DoctypeField[]
+		record?: Record<string, unknown>
+		client?: unknown
+		dispatch?: any
+	} = {}
+) {
+	// The real Doctype, not a stand-in: the identity rule under test lives in `getRecordId` and
+	// `recordIdField`, and a hand-rolled object would be free to disagree with the class the app
+	// actually registers.
+	const doctype = Doctype.fromObject({
 		name: 'User',
-		slug: 'user',
+		fields: opts.fields ?? ID_FIELDS,
 		workflow: { states: ['active', 'assigned'], actions: opts.actions ?? {} },
-	}
+	})
 	return {
 		_doctype: doctype,
 		registry: { getDoctype: vi.fn(() => doctype) },
 		dispatchAction:
 			opts.dispatch ?? vi.fn(async () => ({ success: true, data: { id: 'r1', status: 'assigned' }, error: null })),
 		addRecord: vi.fn(),
+		removeRecord: vi.fn(),
 		getRecordById: vi.fn(() => ({ get: () => opts.record ?? {} })),
 		getClient: vi.fn(() => opts.client),
 	}
@@ -132,5 +158,93 @@ describe('useClientAction', { tags: ['unit'] }, () => {
 		expect(mocks.sc.addRecord).not.toHaveBeenCalled()
 		expect(errorSpy).toHaveBeenCalledWith('Action failed:', 'Handler not registered')
 		errorSpy.mockRestore()
+	})
+})
+
+// Desktop's "New Record" navigates to a synthetic `new-<timestamp>` id and the backend assigns
+// the real one when the Save creates the record. Writing the result back under the dispatched id
+// would leave the record under a key nothing can fetch, the route pointing at a spent id, and the
+// next Save creating a second record.
+describe('useClientAction record identity', { tags: ['unit'] }, () => {
+	it('stores a created record under the id the server assigned, and follows the route to it', async () => {
+		mocks.router = makeRouter()
+		mocks.sc = makeSc({
+			actions: { save: {} },
+			dispatch: vi.fn(async () => ({ success: true, data: { id: '7', title: 'drafted' }, error: null })),
+		})
+
+		await useClientAction().run({
+			name: 'save',
+			doctype: 'user',
+			recordId: 'new-1700000000000',
+			data: { title: 'drafted' },
+		})
+
+		expect(mocks.sc.addRecord).toHaveBeenCalledWith('user', '7', { id: '7', title: 'drafted' })
+		expect(mocks.sc.addRecord).not.toHaveBeenCalledWith('user', 'new-1700000000000', expect.anything())
+		expect(mocks.sc.removeRecord).toHaveBeenCalledWith('user', 'new-1700000000000')
+		// `replace`, not `push` — Back onto a spent `new-` id would offer a form that creates again.
+		expect(mocks.router.replace).toHaveBeenCalledWith('/user/7')
+		expect(mocks.router.push).not.toHaveBeenCalled()
+	})
+
+	it('leaves an updated record where it is', async () => {
+		mocks.router = makeRouter()
+		mocks.sc = makeSc({ actions: { save: {} } })
+
+		await useClientAction().run(payload('save'))
+
+		expect(mocks.sc.addRecord).toHaveBeenCalledWith('user', 'r1', { id: 'r1', status: 'assigned' })
+		expect(mocks.sc.removeRecord).not.toHaveBeenCalled()
+		expect(mocks.router.replace).not.toHaveBeenCalled()
+	})
+
+	it('follows a natural key the action rewrote', async () => {
+		mocks.router = makeRouter()
+		mocks.sc = makeSc({
+			actions: { rename: {} },
+			fields: USERNAME_FIELDS,
+			dispatch: vi.fn(async () => ({ success: true, data: { username: 'robert', id: '7' }, error: null })),
+		})
+
+		await useClientAction().run({ name: 'rename', doctype: 'user', recordId: 'bob', data: { username: 'robert' } })
+
+		// The declared key wins over the surrogate `id`, matching what the adapter looks up by.
+		expect(mocks.sc.addRecord).toHaveBeenCalledWith('user', 'robert', { username: 'robert', id: '7' })
+		expect(mocks.sc.removeRecord).toHaveBeenCalledWith('user', 'bob')
+		expect(mocks.router.replace).toHaveBeenCalledWith('/user/robert')
+	})
+
+	it('does not relocate a natural-keyed record when the result omits its key', async () => {
+		mocks.router = makeRouter()
+		mocks.sc = makeSc({
+			actions: { recalculate: {} },
+			fields: USERNAME_FIELDS,
+			// A registered effect returning a partial row. `getRecordId` alone would fall back to
+			// `id` and move the record to /user/7, which the adapter — looking up by `username` —
+			// cannot resolve.
+			dispatch: vi.fn(async () => ({ success: true, data: { id: '7', total: 75 }, error: null })),
+		})
+
+		await useClientAction().run({ name: 'recalculate', doctype: 'user', recordId: 'bob', data: {} })
+
+		expect(mocks.sc.addRecord).toHaveBeenCalledWith('user', 'bob', { id: '7', total: 75 })
+		expect(mocks.sc.removeRecord).not.toHaveBeenCalled()
+		expect(mocks.router.replace).not.toHaveBeenCalled()
+	})
+
+	it('leaves the record in place when the result states no identity at all', async () => {
+		mocks.router = makeRouter()
+		mocks.sc = makeSc({
+			actions: { approve: {} },
+			// The dispatcher's `{ state: nextState }` outcome, returned when nothing wrote data.
+			dispatch: vi.fn(async () => ({ success: true, data: { state: 'assigned' }, error: null })),
+		})
+
+		await useClientAction().run(payload('approve'))
+
+		expect(mocks.sc.addRecord).toHaveBeenCalledWith('user', 'r1', { state: 'assigned' })
+		expect(mocks.sc.removeRecord).not.toHaveBeenCalled()
+		expect(mocks.router.replace).not.toHaveBeenCalled()
 	})
 })

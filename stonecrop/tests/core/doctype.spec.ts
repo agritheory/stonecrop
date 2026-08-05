@@ -6,6 +6,8 @@ import type { WorkflowMeta } from '@stonecrop/schema'
 import Doctype from '../../src/doctype'
 import type { DoctypeField } from '@stonecrop/schema'
 
+const doctypeWithFields = (fields: DoctypeField[]) => Doctype.fromObject({ name: 'Uom', fields, workflow: undefined })
+
 describe('Doctype class', { tags: ['unit'] }, () => {
 	const mockSchema = List([
 		{
@@ -591,6 +593,40 @@ describe('Doctype class', { tags: ['unit'] }, () => {
 			expect(Array.isArray(schemaArray)).toBe(true)
 			expect(schemaArray).toHaveLength(2)
 			expect(schemaArray[0].fieldname).toBe('title')
+		})
+	})
+
+	describe('recordIdField', () => {
+		it('is the declared primary key', () => {
+			const doctype = doctypeWithFields([
+				{ kind: 'field', fieldname: 'uomName', component: 'ATextInput', primaryKey: true },
+				{ kind: 'field', fieldname: 'id', component: 'ATextInput' },
+			])
+			expect(doctype.recordIdField).toBe('uomName')
+		})
+
+		it('falls back to id when nothing is declared', () => {
+			const doctype = doctypeWithFields([{ kind: 'field', fieldname: 'id', component: 'ATextInput' }])
+			expect(doctype.recordIdField).toBe('id')
+		})
+
+		it('falls back to id when the doctype has no schema at all', () => {
+			expect(new Doctype('Task', undefined as any, mockWorkflow, mockActions).recordIdField).toBe('id')
+		})
+
+		it('names the field getRecordId reads, so a caller can tell a stated identity from a fallback', () => {
+			// The pair is the point: `getRecordId` answers `id` whether or not the declared key was
+			// present, so anything deciding whether a *response* settled on an identity has to check
+			// the field itself. A natural-keyed record that omits its key resolves to the surrogate.
+			const doctype = doctypeWithFields([
+				{ kind: 'field', fieldname: 'uomName', component: 'ATextInput', primaryKey: true },
+				{ kind: 'field', fieldname: 'id', component: 'ATextInput' },
+			])
+			const partial = { id: '7' }
+
+			expect(doctype.getRecordId(partial)).toBe('7')
+			expect(partial[doctype.recordIdField as keyof typeof partial]).toBeUndefined()
+			expect(doctype.getRecordId({ uomName: 'Kilogram', id: '7' })).toBe('Kilogram')
 		})
 	})
 

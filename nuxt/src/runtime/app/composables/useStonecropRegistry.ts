@@ -142,6 +142,11 @@ export function useStonecropRegistry() {
 		 * Dispatch an action to the server via the configured data client.
 		 * All state changes flow through this single mutation endpoint.
 		 *
+		 * This is the raw dispatch: it returns the result and writes nothing to the store. Prefer
+		 * `useClientAction`, which also runs a declared `clientHandler` and writes the result back
+		 * under the identity the *server* settled on — storing it under the id you dispatched
+		 * strands a newly created record under a key nothing can fetch.
+		 *
 		 * @param doctype - Doctype reference object with `name` and optional `slug` properties
 		 * @param doctype.name - Doctype name (e.g., 'plan')
 		 * @param doctype.slug - Optional doctype slug if it differs from the name (e.g., 'project-plan')

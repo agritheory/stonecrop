@@ -54,17 +54,6 @@ export async function fetchDoctypeRecord(
 	return result.record
 }
 
-export interface ActionResult {
-	success: boolean
-	data?: unknown
-	error?: string | null
-}
-
-export async function runDoctypeAction(
-	doctype: DoctypeConfig,
-	action: string,
-	args: { id: string; data?: Record<string, unknown> }
-): Promise<ActionResult> {
-	const { $stonecropClient } = useNuxtApp()
-	return $stonecropClient.runAction({ name: doctype.name }, action, [args])
-}
+// There is deliberately no `runDoctypeAction` here. Dispatching is not the whole job: the result
+// has to land in the store under the identity the server settled on, which is not always the id
+// that was dispatched. `useClientAction` owns both halves — call that instead.

@@ -1,4 +1,5 @@
 import { executeClientHandler, useStonecrop } from '@stonecrop/stonecrop'
+import type { Doctype } from '@stonecrop/stonecrop'
 import type { ActionEventPayload } from '@stonecrop/desktop'
 import type { WorkflowMeta } from '@stonecrop/schema'
 import { useRouter } from 'vue-router'
@@ -7,6 +8,20 @@ import { useRouter } from 'vue-router'
  * Result of dispatching an action to its server handler.
  */
 export type ActionDispatchResult = { success: boolean; data: unknown; error: string | null }
+
+/**
+ * The identity a server response settled on, or `undefined` when it did not state one.
+ *
+ * Deliberately stricter than `getRecordId`: that falls back to `id` when the declared key is
+ * absent, which here would let a handler returning a partial record (say `{ id, total }` for a
+ * natural-keyed doctype) look like a rename and relocate the record to a key the adapter cannot
+ * look up. An action whose result carries no identity at all — a `{ state }` outcome — leaves the
+ * record exactly where it is.
+ */
+function settledRecordId(doctype: Doctype, record: Record<string, unknown>): string | undefined {
+	if (record[doctype.recordIdField] === undefined) return undefined
+	return doctype.getRecordId(record)
+}
 
 /**
  * Surface an action failure to the user. There is no notification system yet, so this is a
@@ -31,7 +46,9 @@ function notifyActionError(message: string): void {
  *
  * `runAction` is the only blessed write: it dispatches **and** writes the returned record
  * back into HST, keeping the store consistent — the same invariant the host handler
- * previously upheld inline (`addRecord(result.data)` after dispatch).
+ * previously upheld inline (`addRecord(result.data)` after dispatch). It stores the record
+ * under the identity the *server* settled on, and follows the route there when that differs
+ * from the one dispatched.
  *
  * The composable owns the `[{ id, data }]` argument envelope every server handler reads
  * (`const [{ id }] = args`), so an authored handler calls `runAction('Assign')` without
@@ -42,8 +59,9 @@ export function useClientAction() {
 	const router = useRouter()
 
 	/**
-	 * Dispatch `action` for the record and write the updated record back to HST.
-	 * Owns the `[{ id, data, ...extra }]` envelope the server handlers destructure.
+	 * Dispatch `action` for the record and write the updated record back to HST, under whichever
+	 * identity the result carries. Owns the `[{ id, data, ...extra }]` envelope the server
+	 * handlers destructure.
 	 */
 	async function dispatchAndWriteback(
 		doctypeSlug: string,
@@ -60,10 +78,39 @@ export function useClientAction() {
 
 		const result = await sc.dispatchAction(doctype, action, [{ id: recordId, data, ...(extra ?? {}) }])
 
-		if (result.success && result.data && recordId) {
-			sc.addRecord(doctypeSlug, recordId, result.data as Record<string, unknown>)
+		if (result.success && result.data) {
+			// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- the action result payload is an opaque JSON scalar; every adapter returns the record as an object
+			const record = result.data as Record<string, unknown>
+			// The server decides identity, not the client. Saving a record that does not exist
+			// creates it, so the id the form dispatched — Desktop's synthetic `new-<timestamp>` —
+			// is not the one it now has; an action that rewrites a natural key moves it the same
+			// way. Writing the result back under the dispatched id would strand the record under a
+			// key nothing can fetch, and leave the next Save creating a second record.
+			const settledId = settledRecordId(doctype, record) ?? recordId
+			if (!settledId) return result
+
+			sc.addRecord(doctypeSlug, settledId, record)
+			if (recordId && recordId !== settledId) {
+				sc.removeRecord(doctypeSlug, recordId)
+				await followRecord(doctypeSlug, settledId)
+			}
 		}
 		return result
+	}
+
+	/**
+	 * Move the route onto the identity the record settled on.
+	 *
+	 * `replace`, not `push`: the id being left behind was never real — going Back to a spent
+	 * `new-<timestamp>` would show an empty form that creates yet another record.
+	 *
+	 * The path is built here rather than through Desktop's `RouteAdapter` because every adapter in
+	 * the project, and Desktop's own fallback, resolves a record view to exactly this shape, and
+	 * `NavigationTarget` has no way to ask for a replace. If a host ever needs a different shape,
+	 * give `NavigationTarget` a `replace` flag and take the adapter as an option here.
+	 */
+	async function followRecord(doctypeSlug: string, recordId: string): Promise<void> {
+		await router.replace(`/${doctypeSlug}/${recordId}`)
 	}
 
 	/**

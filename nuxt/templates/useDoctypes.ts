@@ -37,17 +37,7 @@ export async function fetchDoctypeRecord(
 	return result.record
 }
 
-export interface ActionResult {
-	success: boolean
-	data?: unknown
-	error?: string | null
-}
-
-export async function runDoctypeAction(
-	doctype: DoctypeConfig,
-	action: string,
-	args: { id: string; data?: Record<string, unknown> }
-): Promise<ActionResult> {
-	const { $stonecropClient } = useNuxtApp()
-	return $stonecropClient.runAction({ name: doctype.name }, action, [args])
-}
+// Actions are deliberately not dispatched from here. Dispatching is only half the job: the result
+// has to land in the store under the identity the server settled on, which is not always the id
+// that was dispatched — a Save against a record that does not exist creates one. `useClientAction`
+// (auto-imported from @stonecrop/nuxt) owns both halves; app/pages/index.vue binds it directly.

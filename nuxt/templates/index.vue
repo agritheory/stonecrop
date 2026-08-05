@@ -3,7 +3,7 @@
 		<Desktop
 			:available-doctypes="availableDoctypes"
 			:route-adapter="routeAdapter"
-			@action="handleAction"
+			@action="run"
 			@load-records="handleLoadRecords"
 			@load-record="handleLoadRecord" />
 		<template #fallback>
@@ -15,25 +15,20 @@
 </template>
 
 <script setup lang="ts">
-import {
-	Desktop,
-	type ActionEventPayload,
-	type LoadRecordEventPayload,
-	type LoadRecordsEventPayload,
-} from '@stonecrop/desktop'
+import { Desktop, type LoadRecordEventPayload, type LoadRecordsEventPayload } from '@stonecrop/desktop'
 import { useStonecrop } from '@stonecrop/stonecrop'
 
 import { useRouteAdapter } from '~/composables/useRouteAdapter'
-import {
-	doctypeMap,
-	useDoctypeConfig,
-	fetchDoctypeRecords,
-	fetchDoctypeRecord,
-	runDoctypeAction,
-} from '~/composables/useDoctypes'
+import { doctypeMap, useDoctypeConfig, fetchDoctypeRecords, fetchDoctypeRecord } from '~/composables/useDoctypes'
 
 const routeAdapter = useRouteAdapter()
 const { stonecrop } = useStonecrop()
+// Shared action executor, auto-imported from @stonecrop/nuxt: it runs an action's clientHandler
+// when the doctype declares one, otherwise dispatches to the server, and writes the result back
+// into the store under the identity the server settled on — a Save against a record that does not
+// exist creates it, so that identity is not always the one the form dispatched. Bound straight to
+// Desktop's @action; a host-written wrapper would have to restate all of that.
+const { run } = useClientAction()
 
 const availableDoctypes = computed(() => Array.from(doctypeMap.keys()))
 
@@ -63,26 +58,6 @@ async function handleLoadRecord(payload: LoadRecordEventPayload) {
 		if (record) stonecrop.value.addRecord(payload.doctype, payload.recordId, record)
 	} catch (error) {
 		console.error('Failed to load record:', error)
-	}
-}
-
-async function handleAction(payload: ActionEventPayload) {
-	const doctypeConfig = useDoctypeConfig(payload.doctype)
-	if (!doctypeConfig) return
-
-	try {
-		const result = await runDoctypeAction(doctypeConfig, payload.name, {
-			id: payload.recordId,
-			data: payload.data,
-		})
-
-		if (result.success && result.data && stonecrop.value && payload.recordId) {
-			stonecrop.value.addRecord(payload.doctype, payload.recordId, result.data as Record<string, unknown>)
-		}
-
-		if (!result.success) console.error('Action failed:', result.error)
-	} catch (error) {
-		console.error('Action error:', error)
 	}
 }
 </script>
