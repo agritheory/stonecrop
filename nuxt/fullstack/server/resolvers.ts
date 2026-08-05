@@ -27,10 +27,7 @@ interface MockConnection {
 }
 
 /** A mutation payload. The mock nests the record under a camelCased type key. */
-type MockMutationPayload = Record<string, unknown> & {
-	deletedUserId?: string
-	deletedOrderId?: string
-}
+type MockMutationPayload = Record<string, unknown>
 
 // ============================================
 // Type Helpers
@@ -61,10 +58,13 @@ export function recordLookupField(meta: DoctypeMeta): string {
 	return getPrimaryKeyField(meta.fields)?.fieldname ?? 'id'
 }
 
-function toMutationName(doctypeName: string, operation: 'create' | 'update' | 'delete'): string {
+/**
+ * Only the two operations a save needs. `delete` was dropped with `stonecropDelete`: removal is a
+ * declared workflow outcome now, so nothing maps a doctype to a delete mutation.
+ */
+function toMutationName(doctypeName: string, operation: 'create' | 'update'): string {
 	// Remove spaces and convert to PascalCase
 	const pascalName = doctypeName.replace(/\s+/g, '')
-	const name = pascalName.charAt(0).toLowerCase() + pascalName.slice(1)
 	if (operation === 'create') {
 		return `create${pascalName}`
 	}
@@ -331,111 +331,6 @@ export default {
 						)
 					}
 				)
-			},
-
-			stonecropCreate(_: unknown, { $doctype, $input }: any) {
-				return loadOne(object({ doctype: $doctype, input: $input }), async (specs: readonly any[]) => {
-					return Promise.all(
-						specs.map(async spec => {
-							const meta = getMeta(spec.doctype)
-							if (!meta) {
-								throw new Error(`Unknown doctype: ${spec.doctype}`)
-							}
-
-							const mutationName = toMutationName(meta.name, 'create')
-							try {
-								const result = await mockExecutor.mutate<Record<string, MockMutationPayload | undefined>>(
-									mutationName,
-									{ input: spec.input }
-								)
-								const mutationResult = result[mutationName]
-								const recordKey = meta.name.charAt(0).toLowerCase() + meta.name.slice(1)
-								return {
-									data: mutationResult?.[recordKey] ?? mutationResult,
-									doctype: spec.doctype,
-								}
-							} catch (error) {
-								console.error(`[stonecropCreate] Error:`, error)
-								throw error
-							}
-						})
-					)
-				})
-			},
-
-			stonecropUpdate(_: unknown, { $doctype, $id, $patch }: any) {
-				return loadOne(object({ doctype: $doctype, id: $id, patch: $patch }), async (specs: readonly any[]) => {
-					return Promise.all(
-						specs.map(async spec => {
-							const meta = getMeta(spec.doctype)
-							if (!meta) {
-								throw new Error(`Unknown doctype: ${spec.doctype}`)
-							}
-
-							const mutationName = toMutationName(meta.name, 'update')
-							try {
-								const result = await mockExecutor.mutate<Record<string, MockMutationPayload | undefined>>(
-									mutationName,
-									{
-										id: spec.id,
-										patch: spec.patch,
-									}
-								)
-								const mutationResult = result[mutationName]
-								if (!mutationResult) {
-									return null
-								}
-								const recordKey = meta.name.charAt(0).toLowerCase() + meta.name.slice(1)
-								return {
-									data: mutationResult?.[recordKey] ?? mutationResult,
-									doctype: spec.doctype,
-								}
-							} catch (error) {
-								console.error(`[stonecropUpdate] Error:`, error)
-								throw error
-							}
-						})
-					)
-				})
-			},
-
-			stonecropDelete(_: unknown, { $doctype, $id }: any) {
-				return loadOne(object({ doctype: $doctype, id: $id }), async (specs: readonly any[]) => {
-					return Promise.all(
-						specs.map(async spec => {
-							const meta = getMeta(spec.doctype)
-							if (!meta) {
-								return {
-									success: false,
-									data: null,
-									error: `Unknown doctype: ${spec.doctype}`,
-								}
-							}
-
-							const mutationName = toMutationName(meta.name, 'delete')
-							try {
-								const result = await mockExecutor.mutate<Record<string, MockMutationPayload | undefined>>(
-									mutationName,
-									{ id: spec.id }
-								)
-								const mutationResult = result[mutationName]
-								const deleted = mutationResult?.deletedUserId || mutationResult?.deletedOrderId
-
-								return {
-									success: !!deleted,
-									data: { id: deleted },
-									error: deleted ? null : 'Record not found',
-								}
-							} catch (error) {
-								return {
-									success: false,
-									data: null,
-									error: error instanceof Error ? error.message : String(error),
-								}
-							}
-						})
-					)
-				})
 			},
 		},
 	},

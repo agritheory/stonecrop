@@ -9,7 +9,7 @@ deciders: ['Rohan Bansal']
 
 A doctype's `workflow.actions` can express exactly two outcomes: a cross-state transition (`nextState`) and a mutate-in-place self-transition (`selfTransition`). An action that is neither — a stateless Command such as `Recalculate Total`, `Post to Ledger`, or `Send Reminder` — has nothing for `applyGuardedTransition` to apply. It fails loudly, which is the correct report but leaves the action unimplementable.
 
-This is load-bearing rather than cosmetic, because Stonecrop deliberately does not follow CRUD. There are no `stonecropCreate`/`Update`/`Delete` mutations in the Postgres adapter, so **actions are the only write path**. Every domain operation that is not a state change currently has nowhere to live.
+This is load-bearing rather than cosmetic, because Stonecrop deliberately does not follow CRUD. There are no `stonecropCreate`/`Update`/`Delete` mutations anywhere — the Postgres adapter never had them, and they were later removed from the two nuxt hosts that did — so **actions are the only write path**. Every domain operation that is not a state change currently has nowhere to live.
 
 The action-handler registry that once served this was removed in 0.14.0 (`4d691c99`, `2873799e`); `callHandler` has been documented as "still unimplemented" since. The consumer app that hit this (FAB) worked around it with a parallel dispatch plugin — 1314 lines, 51% of its GraphQL plugin surface — that intercepts `stonecropAction` and routes to its own registry, discarding the `allowedStates` guard to do so.
 

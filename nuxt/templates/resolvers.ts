@@ -340,64 +340,6 @@ export const resolvers = {
 					}
 				)
 			},
-
-			stonecropCreate(_: unknown, { $doctype, $input }: any) {
-				return loadOne(object({ doctype: $doctype, input: $input }), async (specs: readonly any[]) => {
-					return specs.map(spec => {
-						const d = spec.doctype.toLowerCase()
-						const id = nextId(d)
-						const now = new Date().toISOString()
-						if (d === 'project') {
-							const record: Project = { id, createdAt: now, status: 'Active', description: '', ...spec.input }
-							projects.set(id, record)
-							return { data: record, doctype: spec.doctype }
-						}
-						if (d === 'task') {
-							const record: Task = { id, createdAt: now, status: 'Todo', description: '', dueDate: null, ...spec.input }
-							tasks.set(id, record)
-							return { data: record, doctype: spec.doctype }
-						}
-						return { data: null, doctype: spec.doctype }
-					})
-				})
-			},
-
-			stonecropUpdate(_: unknown, { $doctype, $id, $patch }: any) {
-				return loadOne(object({ doctype: $doctype, id: $id, patch: $patch }), async (specs: readonly any[]) => {
-					return specs.map(spec => {
-						const d = spec.doctype.toLowerCase()
-						const existing = getRecord(d, spec.id)
-						if (!existing) return null
-						if (d === 'project') {
-							const updated = { ...existing, ...spec.patch } as Project
-							projects.set(spec.id, updated)
-							return { data: updated, doctype: spec.doctype }
-						}
-						if (d === 'task') {
-							const updated = { ...existing, ...spec.patch } as Task
-							tasks.set(spec.id, updated)
-							return { data: updated, doctype: spec.doctype }
-						}
-						return null
-					})
-				})
-			},
-
-			stonecropDelete(_: unknown, { $doctype, $id }: any) {
-				return loadOne(object({ doctype: $doctype, id: $id }), async (specs: readonly any[]) => {
-					return specs.map(spec => {
-						const d = spec.doctype.toLowerCase()
-						let deleted = false
-						if (d === 'project') deleted = projects.delete(spec.id)
-						else if (d === 'task') deleted = tasks.delete(spec.id)
-						return {
-							success: deleted,
-							data: deleted ? { id: spec.id } : null,
-							error: deleted ? null : 'Record not found',
-						}
-					})
-				})
-			},
 		},
 	},
 }

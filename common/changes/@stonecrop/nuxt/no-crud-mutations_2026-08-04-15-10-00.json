@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "BREAKING: remove stonecropCreate, stonecropUpdate and stonecropDelete from the scaffold and playground schemas. stonecropAction is the only write path; saving a record that does not exist creates it",
+      "type": "minor",
+      "packageName": "@stonecrop/nuxt"
+    }
+  ],
+  "packageName": "@stonecrop/nuxt",
+  "email": "rohanbansal33@gmail.com"
+}

@@ -20,8 +20,8 @@
  * Why this reads SDL as text rather than importing it: importing @stonecrop/graphql-middleware
  * boots postgraphile + pg, a server-only chain that breaks vitest's node interop (the same reason
  * meta-contract.test.ts stubs the module). All three hosts are therefore treated symmetrically as
- * SDL artifacts. Behavioural expectations run against pure helpers the resolver modules export —
- * plan resolvers never execute here, since vitest.config.ts aliases grafast to a throwing stub.
+ * SDL artifacts. Behavioural expectations here run against pure helpers the resolver modules
+ * export; for the scaffold's plan resolvers actually executing, see templates-host.test.ts.
  */
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
@@ -92,8 +92,10 @@ interface Host {
 	 * Root fields this host publishes beyond the contract, recorded so adding one is deliberate.
 	 *
 	 * None of these are called by @stonecrop/graphql-client and none exist in the Postgres
-	 * adapter, so an app that uses them is not portable. `getMeta` duplicates `stonecropMeta`;
-	 * the three CRUD mutations have no counterpart in the shipped adapter at all.
+	 * adapter, so an app that uses them is not portable. `getMeta` duplicates `stonecropMeta`.
+	 *
+	 * Both mutation lists are empty, and that is the point: `stonecropCreate`/`Update`/`Delete`
+	 * used to live here. See the CRUD-verb assertion below for why they are gone.
 	 */
 	extensions: { query: string[]; mutation: string[] }
 	/** Pure helper: which field an incoming `stonecropRecord(id:)` is matched against. */
@@ -107,7 +109,7 @@ const HOSTS: Host[] = [
 		sdl: readSdl('../templates/schema.graphql'),
 		extensions: {
 			query: ['healthCheck', 'getMeta'],
-			mutation: ['stonecropCreate', 'stonecropUpdate', 'stonecropDelete'],
+			mutation: [],
 		},
 		lookupField: templatesLookupField,
 	},
@@ -116,7 +118,7 @@ const HOSTS: Host[] = [
 		sdl: readSdl('../fullstack/server/schema.graphql'),
 		extensions: {
 			query: ['getMeta', 'healthCheck', 'serverInfo'],
-			mutation: ['stonecropCreate', 'stonecropUpdate', 'stonecropDelete'],
+			mutation: [],
 		},
 		lookupField: fullstackLookupField,
 	},
@@ -154,6 +156,16 @@ describe.each(HOSTS)('$name — contract surface', { tags: ['unit', 'graphql'] }
 
 	it.each(CONTRACT_MUTATION_FIELDS)('serves Mutation.%s', fieldName => {
 		expect(mutations.has(fieldName), `${name} does not serve Mutation.${fieldName}`).toBe(true)
+	})
+
+	it.each(['stonecropCreate', 'stonecropUpdate', 'stonecropDelete'])('does not publish %s', verb => {
+		// Named rather than left to the extension check above, because their absence is a decision
+		// and not an accident. Stonecrop does not follow CRUD: `stonecropAction` is the only write
+		// path, saving a record that does not exist creates it, and removal is a declared workflow
+		// outcome (`archive`, `cancel`). These three shipped in the scaffold for a while, called by
+		// nothing and absent from the Postgres adapter, which is exactly the drift this file exists
+		// to catch. Re-adding one should fail here and be argued for, not slip back in.
+		expect(mutations.has(verb), `${name} publishes ${verb}; write paths go through stonecropAction`).toBe(false)
 	})
 
 	it('publishes no root field beyond the contract without declaring it an extension', () => {

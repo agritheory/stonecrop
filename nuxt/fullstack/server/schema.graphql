@@ -205,24 +205,4 @@ type Mutation {
 	Execute a doctype action (e.g., activate_user, submit_order)
 	"""
 	stonecropAction(doctype: String!, action: String!, args: JSON): ActionResult!
-
-	# -------------------------------------------
-	# Stonecrop Record Mutations
-	# CRUD operations via MockGraphQLExecutor
-	# -------------------------------------------
-
-	"""
-	Create a new record
-	"""
-	stonecropCreate(doctype: String!, input: JSON!): RecordResult!
-
-	"""
-	Update an existing record
-	"""
-	stonecropUpdate(doctype: String!, id: String!, patch: JSON!): RecordResult
-
-	"""
-	Delete a record
-	"""
-	stonecropDelete(doctype: String!, id: String!): ActionResult!
 }
