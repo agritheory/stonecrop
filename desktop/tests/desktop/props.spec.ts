@@ -109,48 +109,6 @@ describe('Desktop props', { tags: ['component'] }, () => {
 		})
 	})
 
-	describe('confirmFn', () => {
-		it('uses the provided confirmFn instead of native confirm()', async () => {
-			const registry = new Registry()
-			const stonecrop = new Stonecrop(registry)
-			const doctype = buildDoctype('task', 'draft', { draft: { on: { DELETE: 'deleted' } }, deleted: {} })
-			registry.addDoctype(doctype)
-			stonecrop.addRecord('task', 'rec-1', { id: 'rec-1', title: 'T' })
-
-			const confirmFn = vi.fn().mockResolvedValue(false)
-			const adapter: RouteAdapter = {
-				getCurrentDoctype: () => 'task',
-				getCurrentRecordId: () => 'rec-1',
-				getCurrentView: () => 'record',
-				navigate: vi.fn(),
-			}
-
-			const wrapper = mount(Desktop, {
-				props: { routeAdapter: adapter, confirmFn },
-				global: {
-					plugins: [makeStonecropPlugin(registry, stonecrop)],
-					stubs: { AForm: true, ActionSet: true, SheetNav: true, CommandPalette: true },
-				},
-			})
-
-			await nextTick()
-
-			// Inject desktopMethods and call handleDelete
-			const provided = (wrapper.vm as any).$.provides
-			if (provided?.desktopMethods?.handleDelete) {
-				await provided.desktopMethods.handleDelete('rec-1')
-			} else {
-				await (wrapper.vm as any).handleDelete?.('rec-1')
-			}
-
-			await nextTick()
-
-			// confirmFn returned false → no 'action' event
-			expect(confirmFn).toHaveBeenCalledWith('Are you sure you want to delete this record?')
-			expect(wrapper.emitted('action')).toBeFalsy()
-		})
-	})
-
 	describe('recordIdField', () => {
 		it('uses custom recordIdField for table row ID', async () => {
 			const registry = new Registry()

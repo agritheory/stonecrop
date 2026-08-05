@@ -3,7 +3,6 @@
 		<Desktop
 			:available-doctypes="availableDoctypes"
 			:show-debug="showDebug"
-			:confirm-fn="confirmFn"
 			record-id-field="rowId"
 			@action="handleDesktopAction"
 			@navigate="handleDesktopNavigate"
@@ -63,10 +62,6 @@ function toggleOperationLog() {
 	showOperationLog.value = !showOperationLog.value
 }
 
-function confirmFn(message: string): boolean {
-	return window.confirm(message)
-}
-
 /**
  * Handle FSM transition actions emitted by Desktop.
  *
@@ -78,6 +73,13 @@ function confirmFn(message: string): boolean {
  */
 async function handleDesktopAction(payload: ActionEventPayload) {
 	if (!stonecrop.value) return
+
+	// 0. Confirm destructive actions. This is the host's call, not Desktop's: only the app
+	// knows which of its actions are destructive, and Desktop deliberately blesses no action
+	// name. It used to own a `confirmFn` prop that it fired for a hardcoded `DELETE`.
+	if (payload.name === 'DELETE' && !window.confirm('Are you sure you want to delete this record?')) {
+		return
+	}
 
 	// 1. Persist form field changes into HST before triggering the transition
 	const existing = stonecrop.value.getRecordById(payload.doctype, payload.recordId)

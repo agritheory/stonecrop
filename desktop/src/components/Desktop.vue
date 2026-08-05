@@ -56,7 +56,6 @@ import type {
 const {
 	availableDoctypes = [],
 	routeAdapter,
-	confirmFn,
 	recordIdField,
 } = defineProps<{
 	availableDoctypes?: string[]
@@ -66,12 +65,6 @@ const {
 	 * Nuxt hosts (or any host with custom route conventions) should supply this.
 	 */
 	routeAdapter?: RouteAdapter
-	/**
-	 * Replacement for the native `confirm()` dialog. Desktop calls this before
-	 * performing a destructive action. Return `true` to proceed.
-	 * Defaults to the native `window.confirm` if omitted.
-	 */
-	confirmFn?: (message: string) => boolean | Promise<boolean>
 	/**
 	 * The field name that holds the canonical record ID (e.g., 'rowId' for UUID).
 	 * Used for navigation and table row identification.
@@ -156,7 +149,13 @@ const currentViewData = computed<Record<string, any>>({
 				records_table: getRecords().map(record =>
 					Object.assign({}, record, {
 						id: resolveRecordId(record) ?? '',
-						actions: 'Edit | Delete',
+						// A list row is navigation. Actions live on the record view, where the Actions
+						// dropdown is built from what the doctype declares and what the record's
+						// current state allows. This cell used to also offer Delete, which dispatched
+						// an action named `DELETE` that Desktop invented — no doctype in a
+						// WorkflowMeta app declares it, so it failed on every click. Removal is a
+						// workflow outcome (`archive`, `cancel`) and belongs in the doctype.
+						actions: 'Edit',
 					})
 				),
 			}
@@ -756,27 +755,6 @@ const handleActionClick = (_label: string, action: (() => void | Promise<void>) 
 	}
 }
 
-// Desktop does NOT own the delete lifecycle — it asks for confirmation, then emits
-// an 'action' event.  The host app is responsible for removing the record from HST
-// and calling the server.
-const handleDelete = async (recordId?: string) => {
-	const targetRecordId = recordId || currentRecordId.value
-	if (!targetRecordId) return
-
-	const confirmed = confirmFn
-		? await confirmFn('Are you sure you want to delete this record?')
-		: confirm('Are you sure you want to delete this record?')
-
-	if (confirmed) {
-		emit('action', {
-			name: 'DELETE',
-			doctype: currentDoctype.value,
-			recordId: targetRecordId,
-			data: currentViewData.value || {},
-		})
-	}
-}
-
 /**
  * Resolve a record's identity for links and navigation.
  *
@@ -839,15 +817,13 @@ const handleClick = async (event: Event) => {
 					await navigateToDoctype(doctype)
 				}
 			}
-		} else if (cellText?.includes('Edit') && row) {
+		} else if (cellText === 'Edit' && row) {
+			// Matched exactly, not by substring. This handler is bound to the whole desktop, so a
+			// substring match fired on any cell whose *data* happened to contain the word — a task
+			// titled "Delete old backups" popped a delete confirmation when you clicked it.
 			const recordId = getRecordIdFromRow(row)
 			if (recordId) {
 				await openRecord(recordId)
-			}
-		} else if (cellText?.includes('Delete') && row) {
-			const recordId = getRecordIdFromRow(row)
-			if (recordId) {
-				await handleDelete(recordId)
 			}
 		}
 	}
@@ -903,7 +879,6 @@ const desktopMethods = {
 	navigateToDoctype,
 	openRecord,
 	createNewRecord,
-	handleDelete,
 	/**
 	 * Convenience wrapper so child components (e.g. slot content) can emit
 	 * an action event without needing a direct reference to the emit function.

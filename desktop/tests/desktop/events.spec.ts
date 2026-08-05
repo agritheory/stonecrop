@@ -77,59 +77,6 @@ describe('Desktop events', { tags: ['component'] }, () => {
 			expect(emitted).toBeTruthy()
 			expect(emitted![0][0]).toMatchObject({ view: 'records', doctype: 'task' })
 		})
-
-		it('emits "action" with DELETE payload when handleDelete is confirmed', async () => {
-			const adapter: RouteAdapter = {
-				getCurrentDoctype: () => 'task',
-				getCurrentRecordId: () => 'rec-1',
-				getCurrentView: () => 'record',
-				navigate: vi.fn(),
-			}
-
-			const wrapper = mount(Desktop, {
-				props: {
-					routeAdapter: adapter,
-					confirmFn: () => true,
-				},
-				global: {
-					plugins: [makeStonecropPlugin(registry, stonecrop)],
-					stubs: {
-						AForm: true,
-						ActionSet: true,
-						SheetNav: true,
-						CommandPalette: true,
-					},
-				},
-			})
-
-			await nextTick()
-
-			// Access the injected desktopMethods via the provide system
-			const injectedMethods =
-				(wrapper.vm as any).$.provides?.desktopMethods ?? (wrapper.vm as any).$.appContext.provides?.desktopMethods
-
-			if (injectedMethods?.handleDelete) {
-				await injectedMethods.handleDelete('rec-1')
-			} else {
-				// fallback: trigger via the raw vm
-				wrapper.vm.$emit('action', {
-					name: 'DELETE',
-					doctype: 'task',
-					recordId: 'rec-1',
-					data: {},
-				})
-			}
-
-			await nextTick()
-
-			const emittedActions = wrapper.emitted('action')
-			expect(emittedActions).toBeTruthy()
-			expect(emittedActions![0][0]).toMatchObject({
-				name: 'DELETE',
-				doctype: 'task',
-				recordId: 'rec-1',
-			})
-		})
 	})
 
 	describe('action click forwarding', () => {
@@ -401,7 +348,6 @@ describe('Desktop desktopMethods injection', { tags: ['component'] }, () => {
 		expect(typeof methods.navigateToDoctype).toBe('function')
 		expect(typeof methods.openRecord).toBe('function')
 		expect(typeof methods.createNewRecord).toBe('function')
-		expect(typeof methods.handleDelete).toBe('function')
 		expect(typeof methods.emitAction).toBe('function')
 	})
 

@@ -56,7 +56,6 @@ async function handleAction(payload: ActionEventPayload) {
 |------|------|---------|-------------|
 | `availableDoctypes` | `string[]` | `[]` | Doctype slugs to display in the doctypes list |
 | `routeAdapter` | `RouteAdapter` | — | Custom routing layer (required for Nuxt/custom hosts) |
-| `confirmFn` | `(msg: string) => boolean \| Promise<boolean>` | `window.confirm` | Replacement for the native browser confirm dialog |
 | `recordIdField` | `string` | `'id'` | Field name for the canonical record ID in list views |
 
 ## Emitted Events
@@ -150,8 +149,10 @@ Desktop provides a `desktopMethods` object that child components (slot content) 
 ```typescript
 import { inject } from 'vue'
 
-const { navigateToDoctype, openRecord, createNewRecord, handleDelete, emitAction } =
+const { navigateToDoctype, openRecord, createNewRecord, emitAction } =
   inject('desktopMethods')!
 ```
 
 `emitAction(name, data?)` is a convenience wrapper for emitting an `action` event from deeply nested slot content without passing refs down manually.
+
+Desktop blesses no action name. It used to expose a `handleDelete` method and a `confirmFn` prop, which together emitted a hardcoded `DELETE` action and prompted before it — but no doctype declares `DELETE`, so it failed on every click, and only the host knows which of its actions are destructive. Removal is a workflow outcome: declare an action with a `nextState` such as `Archived` or `CANCELLED`, and confirm inside your own `@action` handler before dispatching.
