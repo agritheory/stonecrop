@@ -149,6 +149,8 @@ Actions are declared per doctype in `workflow.actions`. Each action names the st
 
 The `stonecropAction(doctype, action, args)` mutation dispatches through `applyGuardedTransition`: it reads the record's `status`, rejects the action if the current state is not in `allowedStates` (`isActionAllowedInState`), then writes `nextState`. The record is identified by `args[0].id`. Self-transitions (`selfTransition: true`) have no state target and no data-write path on this backend, so they are rejected rather than silently succeeding.
 
+An action against a record that does not exist is reported as such, before the guard runs. This depends on the backend distinguishing the two things `undefined` used to mean — `GuardedTransitionIO.readState` returns `null` for a lookup that missed, and `undefined` only for a row that exists with no workflow state. A backend that returns `undefined` for both makes a bad id look like a workflow violation, or, when the action declares no `allowedStates`, makes it look like a success.
+
 ### Server-side effects
 
 A doctype can express two outcomes — a `nextState` transition and a `selfTransition` data write — and nothing else. An action that is neither, a stateless command like `Recalculate Total`, has nothing for the dispatcher to apply and fails loudly. Register an effect to give it one:

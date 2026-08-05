@@ -319,7 +319,7 @@ Backend IO the dispatch layer injects so the transition logic stays storage-agno
 
 ```typescript
 export interface GuardedTransitionIO {
-  readState: () => Promise<string | undefined>;
+  readState: () => Promise<string | null | undefined>;
   runEffect?: (currentState: string | undefined) => Promise<unknown>;
   writeData?: (patch: Record<string, unknown>) => Promise<Record<string, unknown>>;
   writeState: (nextState: string) => Promise<void>;
@@ -330,7 +330,7 @@ export interface GuardedTransitionIO {
 
 | Property | Type | Description |
 |----------|------|-------------|
-| readState | `() => Promise<string \| undefined>` | Read the record's current workflow state (the value of its `status` field), or undefined if unknown. |
+| readState | `() => Promise<string \| null \| undefined>` | Read the record's current workflow state — the value of its `status` field. Three answers, and the difference between the last two matters: - a string — the record's current state - `undefined` — the record exists but carries no workflow state - `null` — **there is no such record** Collapsing those two into `undefined` is what let an action against a missing record report success: the state read as `''`, an action declaring no `allowedStates` passed the guard, and the write then found nothing to write. Backends must return `null` when the lookup misses. |
 | runEffect? | `(currentState: string \| undefined) => Promise<unknown>` | Run the adapter's side effect for this action, after the guard has passed and before any state is written. This is the seam a **database author** wires — see `StonecropPluginOptions.actionHandlers` for the Postgres adapter's registration surface. It is what makes a stateless Command (no `nextState`, no `selfTransition`) executable at all: without one, such an action has nothing to apply and fails loudly. Throwing rejects the action — nothing is written. Returning a full record makes it the client writeback payload; returning `undefined` leaves the doctype's own outcome to decide what comes back. |
 | writeData? | `(patch: Record<string, unknown>) => Promise<Record<string, unknown>>` | Persist record field data for a mutate-in-place self-transition, returning the full updated record (so the client writeback reflects the new data). Optional: a backend with no data-write path omits it, and a self-transition is then rejected loudly rather than silently dropped — unless `runEffect` is supplied, in which case the handler is the persistence path. |
 | writeState | `(nextState: string) => Promise<void>` | Persist the record's new workflow state, written verbatim. |

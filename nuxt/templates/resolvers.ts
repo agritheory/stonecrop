@@ -257,9 +257,14 @@ export const resolvers = {
 										actionDef,
 										{
 											readState: async () => {
-												if (recordId == null) return undefined
+												// `null` means "no such record" and `undefined` means "exists, no
+												// state" — the dispatcher rejects the first outright. Returning
+												// `undefined` for both is what let a Save on a record that was
+												// never created report success while persisting nothing.
+												if (recordId == null) return null
 												const record = getRecord(d, recordId)
-												return record?.status == null ? undefined : String(record.status)
+												if (!record) return null
+												return record.status == null ? undefined : String(record.status)
 											},
 											writeState: async (nextState: string) => {
 												if (recordId == null) return

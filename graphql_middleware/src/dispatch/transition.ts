@@ -7,8 +7,19 @@ import { isActionAllowedInState } from '@stonecrop/schema'
  * @public
  */
 export interface GuardedTransitionIO {
-	/** Read the record's current workflow state (the value of its `status` field), or undefined if unknown. */
-	readState: () => Promise<string | undefined>
+	/**
+	 * Read the record's current workflow state — the value of its `status` field.
+	 *
+	 * Three answers, and the difference between the last two matters:
+	 *  - a string — the record's current state
+	 *  - `undefined` — the record exists but carries no workflow state
+	 *  - `null` — **there is no such record**
+	 *
+	 * Collapsing those two into `undefined` is what let an action against a missing record report
+	 * success: the state read as `''`, an action declaring no `allowedStates` passed the guard, and
+	 * the write then found nothing to write. Backends must return `null` when the lookup misses.
+	 */
+	readState: () => Promise<string | null | undefined>
 	/** Persist the record's new workflow state, written verbatim. */
 	writeState: (nextState: string) => Promise<void>
 	/**
@@ -100,7 +111,22 @@ export async function applyGuardedTransition(
 	// state outcome that the caller's readState is paired with. A handler-only command on a
 	// doctype with no `status` column must not be forced through a read it never uses.
 	const isGuarded = (actionDef.allowedStates?.length ?? 0) > 0
-	const currentState = isGuarded || hasStateOutcome ? ((await io.readState()) ?? '') : undefined
+	let currentState: string | undefined
+	if (isGuarded || hasStateOutcome) {
+		const state = await io.readState()
+		// A missing record is reported, never guarded around. Reaching the guard with a state of
+		// `''` produced two wrong answers depending only on whether the action declared
+		// `allowedStates`: a misleading "not allowed from state: (unknown)" when it did, and a
+		// silent `{ success: true }` writing nothing when it did not.
+		if (state === null) {
+			return {
+				success: false,
+				data: null,
+				error: `Action "${label}" targets a record that does not exist — nothing was executed.`,
+			}
+		}
+		currentState = state ?? ''
+	}
 
 	if (!isActionAllowedInState(actionDef, currentState ?? '')) {
 		return {

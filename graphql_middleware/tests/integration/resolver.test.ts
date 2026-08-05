@@ -106,6 +106,23 @@ beforeAll(async () => {
 				},
 			},
 		},
+		// Backed by sc_draft, whose single row has `status` NULL. `start` declares no
+		// `allowedStates`, so it is allowed from any state — including none at all. That makes it
+		// the control against a missing record, which must be refused despite the same absent guard.
+		ScDraft: {
+			name: 'ScDraft',
+			fields: [
+				{ kind: 'field', fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
+				{ kind: 'field', fieldname: 'name', component: 'ATextInput', label: 'Name' },
+				{ kind: 'field', fieldname: 'status', component: 'ATextInput', label: 'Status' },
+			],
+			workflow: {
+				states: ['Draft', 'Active'],
+				actions: {
+					start: { label: 'Start', nextState: 'Active' },
+				},
+			},
+		},
 		// No `primaryKey`, and no `sc_signal` table exists. A record-less command must reach its
 		// handler anyway: nothing about it consults a key or a row.
 		ScSignal: {
@@ -392,6 +409,43 @@ describe('stonecropAction', { tags: ['integration', 'graphql'] }, () => {
 		const action = (result as any).data?.stonecropAction
 		expect(action?.success).toBe(false)
 		expect(action?.error).toContain('not allowed')
+	})
+
+	it('reports a missing record as missing, not as a state violation', async () => {
+		// sc_item holds ids 1-3. Before the backend could answer "no such row", this read a state
+		// of '' and failed the `allowedStates: ['Draft']` guard, blaming the workflow for what is
+		// actually a bad id.
+		const result = await runQuery(
+			`mutation { stonecropAction(doctype: "ScItem", action: "submit", args: [{ id: "999" }]) { success data error } }`
+		)
+		const action = (result as any).data?.stonecropAction
+		expect(action?.success).toBe(false)
+		expect(action?.error).toContain('does not exist')
+		expect(action?.error).not.toContain('not allowed')
+	})
+
+	it('still transitions a row that exists with a NULL status', async () => {
+		// The control for the case above, and the reason absence needed its own answer rather than
+		// a tighter falsy check. sc_draft row 1 exists with `status` NULL; `start` declares no
+		// allowedStates. Same guard, same empty state — opposite outcome, decided only by whether
+		// the row is there.
+		const result = await runQuery(
+			`mutation { stonecropAction(doctype: "ScDraft", action: "start", args: [{ id: "1" }]) { success data error } }`
+		)
+		const action = (result as any).data?.stonecropAction
+		expect(action?.error).toBeNull()
+		expect(action?.success).toBe(true)
+		expect(action?.data?.state).toBe('Active')
+	})
+
+	it('refuses the same unguarded action on a row that is not there', async () => {
+		// Identical action and identical (absent) guard as the test above — only the row differs.
+		const result = await runQuery(
+			`mutation { stonecropAction(doctype: "ScDraft", action: "start", args: [{ id: "999" }]) { success error } }`
+		)
+		const action = (result as any).data?.stonecropAction
+		expect(action?.success).toBe(false)
+		expect(action?.error).toContain('does not exist')
 	})
 
 	it('returns error for an unknown action', async () => {

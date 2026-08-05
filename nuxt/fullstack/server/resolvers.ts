@@ -266,14 +266,19 @@ export default {
 										actionDef,
 										{
 											readState: async () => {
-												if (recordId == null) return undefined
+												// `null` means "no such record" and `undefined` means "exists, no
+												// state" — the dispatcher rejects the first outright. Returning
+												// `undefined` for both is what let a Save on a record that was
+												// never created report success while persisting nothing.
+												if (recordId == null) return null
 												const queryName = toQueryName(meta.name)
 												const result = (await mockExecutor.query(queryName, { id: recordId })) as Record<
 													string,
 													{ status?: string | null } | undefined
 												>
-												const status = result[queryName]?.status
-												return status == null ? undefined : String(status)
+												const record = result[queryName]
+												if (!record) return null
+												return record.status == null ? undefined : String(record.status)
 											},
 											writeState: async (nextState: string) => {
 												const mutationName = toMutationName(meta.name, 'update')

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Report an action against a nonexistent record as missing instead of guarding around it, which could report success while writing nothing",
+      "type": "minor",
+      "packageName": "@stonecrop/graphql-middleware"
+    }
+  ],
+  "packageName": "@stonecrop/graphql-middleware",
+  "email": "rohanbansal33@gmail.com"
+}

@@ -90,7 +90,7 @@ export function getMeta(name: string): DoctypeMeta | undefined;
 
 // @public
 export interface GuardedTransitionIO {
-    readState: () => Promise<string | undefined>;
+    readState: () => Promise<string | null | undefined>;
     runEffect?: (currentState: string | undefined) => Promise<unknown>;
     writeData?: (patch: Record<string, unknown>) => Promise<Record<string, unknown>>;
     writeState: (nextState: string) => Promise<void>;

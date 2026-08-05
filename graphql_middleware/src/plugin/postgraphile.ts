@@ -479,12 +479,16 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 									try {
 										return await applyGuardedTransition(actionDef, {
 											readState: async () => {
-												if (recordId == null) return undefined
+												// No id in the envelope means no record was targeted at all, which is
+												// the same answer as a lookup that misses: `null`, not `undefined`.
+												if (recordId == null) return null
 												const { rows } = await debugSql<{ status: string | null }>(pgClient, {
 													text: `SELECT "status" FROM ${table} WHERE "${pkColumn()}"::text = $1`,
 													values: [String(recordId)],
 												})
-												return rows[0]?.status == null ? undefined : rows[0].status
+												// No row at all vs. a row whose `status` is NULL — see GuardedTransitionIO.
+												if (rows.length === 0) return null
+												return rows[0].status ?? undefined
 											},
 											writeState: async (nextState: string) => {
 												await debugSql(pgClient, {

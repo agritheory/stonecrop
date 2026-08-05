@@ -58,6 +58,73 @@ describe('applyGuardedTransition', () => {
 		expect(writeState).not.toHaveBeenCalled()
 	})
 
+	describe('a record that does not exist', () => {
+		// `readState` answering `null` is the backend saying the lookup missed. Before that answer
+		// existed, both cases below read state `''` and produced a wrong result whose flavour
+		// depended only on whether the action declared `allowedStates` — misleading for the
+		// guarded one, silently successful for the other.
+
+		it('rejects a transition without writing, and says so plainly', async () => {
+			const writeState = vi.fn(async () => {})
+			const result = await applyGuardedTransition(
+				{ label: 'Submit', allowedStates: ['Draft'], nextState: 'Active' },
+				{ readState: async () => null, writeState }
+			)
+			expect(result.success).toBe(false)
+			expect(result.error).toContain('does not exist')
+			// The old message blamed the state, which sent you looking at the workflow.
+			expect(result.error).not.toContain('not allowed')
+			expect(writeState).not.toHaveBeenCalled()
+		})
+
+		it('rejects an unguarded self-transition instead of reporting a false success', async () => {
+			// The worst of the two: with no `allowedStates` there was nothing to fail against, so
+			// this returned `{ success: true, data: {} }` and wrote nothing.
+			const writeData = vi.fn(async () => ({}))
+			const result = await applyGuardedTransition(
+				{ label: 'Save', selfTransition: true },
+				{ readState: async () => null, writeState: async () => {}, writeData },
+				{ title: 'edited' }
+			)
+			expect(result.success).toBe(false)
+			expect(result.error).toContain('does not exist')
+			expect(writeData).not.toHaveBeenCalled()
+		})
+
+		it('never reaches a registered effect', async () => {
+			const runEffect = vi.fn(async () => ({ ok: true }))
+			const result = await applyGuardedTransition(
+				{ label: 'Recalculate', allowedStates: ['Draft'], nextState: 'Active' },
+				{ readState: async () => null, writeState: async () => {}, runEffect }
+			)
+			expect(result.success).toBe(false)
+			expect(runEffect).not.toHaveBeenCalled()
+		})
+
+		it('still treats `undefined` as an existing record with no workflow state', async () => {
+			// The other half of the distinction, and the reason `null` was needed rather than
+			// tightening the existing falsy check: this case must keep working.
+			const writeState = vi.fn(async () => {})
+			const result = await applyGuardedTransition(
+				{ label: 'Reset', nextState: 'Draft' },
+				{ readState: async () => undefined, writeState }
+			)
+			expect(result.success).toBe(true)
+			expect(writeState).toHaveBeenCalledWith('Draft')
+		})
+
+		it('is not consulted for a command that reads no state', async () => {
+			// A record-less command must not be rejected for having no record.
+			const readState = vi.fn(async () => null)
+			const result = await applyGuardedTransition(
+				{ label: 'Reindex' },
+				{ readState, writeState: async () => {}, runEffect: async () => ({ done: true }) }
+			)
+			expect(result.success).toBe(true)
+			expect(readState).not.toHaveBeenCalled()
+		})
+	})
+
 	describe('adapter-owned effects (runEffect)', () => {
 		it('makes a stateless command executable, with the handler result as the payload', async () => {
 			// The gap this closes: without a registered effect the same action fails outright
