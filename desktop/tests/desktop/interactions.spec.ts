@@ -301,7 +301,10 @@ describe('Desktop user interactions', { tags: ['component'] }, () => {
 			expect(navigateFn).toHaveBeenCalledWith(expect.objectContaining({ recordId: 'rec-2' }))
 		})
 
-		it('respects custom recordIdField prop', async () => {
+		// Edit must navigate to the key the record is stored under, or the record view opens on an
+		// HST path that does not exist. The declared `primaryKey` is what decides that key, and the
+		// surrogate `id` here must not win.
+		it('navigates by the declared primaryKey, not the surrogate id', async () => {
 			const registry = new Registry()
 			const stonecrop = new Stonecrop(registry)
 
@@ -312,10 +315,18 @@ describe('Desktop user interactions', { tags: ['component'] }, () => {
 					draft: { on: { SUBMIT: 'submitted' } },
 					submitted: { type: 'final' },
 				},
-				[{ kind: 'field' as const, fieldname: 'custom_id', label: 'Custom ID', component: 'ATextInput' }]
+				[
+					{
+						kind: 'field' as const,
+						fieldname: 'custom_id',
+						label: 'Custom ID',
+						component: 'ATextInput',
+						primaryKey: true,
+					},
+				]
 			)
 			registry.addDoctype(doctype)
-			stonecrop.addRecord('task', 'rec-1', { id: 'rec-1', custom_id: 'custom-123', title: 'My Task' })
+			stonecrop.addRecord('task', 'custom-123', { id: 'rec-1', custom_id: 'custom-123', title: 'My Task' })
 
 			const navigateFn = vi.fn()
 			const adapter: RouteAdapter = {
@@ -326,7 +337,7 @@ describe('Desktop user interactions', { tags: ['component'] }, () => {
 			}
 
 			const wrapper = mount(Desktop, {
-				props: { routeAdapter: adapter, recordIdField: 'custom_id' },
+				props: { routeAdapter: adapter },
 				global: {
 					plugins: [makeStonecropPlugin(registry, stonecrop)],
 					stubs: {

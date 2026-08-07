@@ -1,5 +1,5 @@
 import type { DoctypeField } from '@stonecrop/schema'
-import { List, Map } from 'immutable'
+import { List } from 'immutable'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { createRouter, createMemoryHistory } from 'vue-router'
 
@@ -16,7 +16,7 @@ function createDoctype(name: string, fields?: DoctypeField[], links?: Record<str
 	const schema = List<DoctypeField>(
 		fields || [{ kind: 'field', fieldname: 'title', component: 'ATextInput', label: 'Title' }]
 	)
-	return new Doctype(name, schema, undefined, Map({}), undefined, links)
+	return new Doctype(name, schema, undefined, undefined, links)
 }
 
 function createMockDoctype(name: string) {
@@ -44,12 +44,7 @@ function createMockDoctype(name: string) {
 		},
 	}
 
-	const mockActions: ImmutableDoctype['actions'] = Map({
-		load: ['loadData'],
-		save: ['validateData', 'saveData'],
-	})
-
-	return new Doctype(name, mockSchema, mockWorkflowConfig, mockActions)
+	return new Doctype(name, mockSchema, mockWorkflowConfig)
 }
 
 describe('Stonecrop class with HST integration', { tags: ['unit'] }, () => {
@@ -269,8 +264,7 @@ describe('Stonecrop class with HST integration', { tags: ['unit'] }, () => {
 					{ kind: 'field', fieldname: 'name', label: 'Name', component: 'ATextInput', primaryKey: true },
 					{ kind: 'field', fieldname: 'label', label: 'Label', component: 'ATextInput' },
 				]),
-				undefined,
-				Map({})
+				undefined
 			)
 			registry.addDoctype(uom)
 
@@ -492,7 +486,7 @@ describe('Stonecrop class with HST integration', { tags: ['unit'] }, () => {
 		})
 
 		it('returns empty string when the doctype has no workflow', () => {
-			const noWorkflowDoctype = new Doctype('Bare', List<DoctypeField>([]), undefined as any, Map({}))
+			const noWorkflowDoctype = new Doctype('Bare', List<DoctypeField>([]), undefined as any)
 			// Use a fresh registry to avoid singleton collision
 			Registry._root = undefined as any
 			Stonecrop._root = undefined as any
@@ -531,7 +525,7 @@ describe('Stonecrop class with HST integration', { tags: ['unit'] }, () => {
 						submit: { label: 'Submit', handler: 'plan:submit', allowedStates: ['planning'] },
 					},
 				}
-				const planDoctype = new Doctype('Plan', List<DoctypeField>([]), workflowMeta, Map({}))
+				const planDoctype = new Doctype('Plan', List<DoctypeField>([]), workflowMeta)
 				localRegistry.addDoctype(planDoctype)
 				localStonecrop.addRecord('plan', 'p-1', { id: 'p-1' })
 
@@ -549,7 +543,7 @@ describe('Stonecrop class with HST integration', { tags: ['unit'] }, () => {
 					states: ['planning', 'review', 'approved'],
 					actions: {},
 				}
-				const planDoctype = new Doctype('Plan', List<DoctypeField>([]), workflowMeta, Map({}))
+				const planDoctype = new Doctype('Plan', List<DoctypeField>([]), workflowMeta)
 				localRegistry.addDoctype(planDoctype)
 				localStonecrop.addRecord('plan', 'p-2', { id: 'p-2', status: 'review' })
 
@@ -567,7 +561,7 @@ describe('Stonecrop class with HST integration', { tags: ['unit'] }, () => {
 					states: [],
 					actions: {},
 				}
-				const doctype = new Doctype('Empty', List<DoctypeField>([]), emptyStatesMeta, Map({}))
+				const doctype = new Doctype('Empty', List<DoctypeField>([]), emptyStatesMeta)
 				localRegistry.addDoctype(doctype)
 				localStonecrop.addRecord('empty', 'e-1', { id: 'e-1' })
 
@@ -584,7 +578,7 @@ describe('Stonecrop class with HST integration', { tags: ['unit'] }, () => {
 				const noStatesMeta = {
 					actions: { save: { label: 'Save', handler: 'save' } },
 				}
-				const doctype = new Doctype('NoStates', List<DoctypeField>([]), noStatesMeta, Map({}))
+				const doctype = new Doctype('NoStates', List<DoctypeField>([]), noStatesMeta)
 				localRegistry.addDoctype(doctype)
 				localStonecrop.addRecord('no-states', 'ns-1', { id: 'ns-1' })
 

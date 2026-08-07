@@ -3,7 +3,6 @@
 		<Desktop
 			:available-doctypes="availableDoctypes"
 			:show-debug="showDebug"
-			record-id-field="rowId"
 			@action="handleDesktopAction"
 			@navigate="handleDesktopNavigate"
 			@record:open="handleRecordOpen"

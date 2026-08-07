@@ -58,11 +58,7 @@ import type {
 	LoadRecordEventPayload,
 } from '../types'
 
-const {
-	availableDoctypes = [],
-	routeAdapter,
-	recordIdField,
-} = defineProps<{
+const { availableDoctypes = [], routeAdapter } = defineProps<{
 	availableDoctypes?: string[]
 	/**
 	 * Pluggable router adapter. When provided, Desktop uses these functions for all
@@ -70,12 +66,6 @@ const {
 	 * Nuxt hosts (or any host with custom route conventions) should supply this.
 	 */
 	routeAdapter?: RouteAdapter
-	/**
-	 * The field name that holds the canonical record ID (e.g., 'rowId' for UUID).
-	 * Used for navigation and table row identification.
-	 * Defaults to 'id' if not specified.
-	 */
-	recordIdField?: string
 }>()
 
 const emit = defineEmits<{
@@ -762,20 +752,16 @@ const handleActionClick = (_label: string, action: (() => void | Promise<void>) 
 /**
  * Resolve a record's identity for links and navigation.
  *
- * Precedence: the explicit `recordIdField` prop wins (a host that names a field has said which
- * column it means), then the doctype's declared `primaryKey`, then `id`. Before this, the default
- * was a bare `record.id`, which produced empty links for every natural-keyed doctype.
+ * Identity is declared once, on the doctype: `primaryKey`, or `id` when nothing is declared.
+ * Delegating to `Doctype.getRecordId` is what guarantees this matches the key
+ * `Stonecrop.getRecords` stored the record under — resolving it independently here would let a
+ * row render a link to an HST path that does not exist.
  *
- * Delegates to `Doctype.getRecordId` so this matches the key `Stonecrop.getRecords` stored the
- * record under — resolving it independently here would let a row render a link to an HST path
- * that does not exist.
+ * There is deliberately no per-shell override. Identity is a per-doctype fact and one shell
+ * renders many doctypes, so a single prop cannot answer it; a shell that named a field would
+ * also be overriding the very declaration the store keyed on, which is the bug above.
  */
 const resolveRecordId = (record: Record<string, unknown>): string | undefined => {
-	if (recordIdField) {
-		const explicit = record[recordIdField]
-		if (typeof explicit === 'number') return String(explicit)
-		if (typeof explicit === 'string' && explicit !== '') return explicit
-	}
 	if (!stonecrop.value || !currentDoctype.value) return undefined
 	return stonecrop.value.registry.registry[currentDoctype.value]?.getRecordId(record)
 }

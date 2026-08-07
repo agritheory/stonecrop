@@ -3,11 +3,9 @@ import { reactive } from 'vue'
 
 import Doctype from './doctype'
 import { isDraftRecordId } from './draft'
-import { getGlobalTriggerEngine } from './field-triggers'
 import Registry from './registry'
 import { createHST, type HSTNode } from './stores/hst'
 import { useOperationLogStore } from './stores/operation-log'
-import type { FieldChangeContext } from './types/field-triggers'
 import type { OperationLogConfig } from './types/operation-log'
 import type { RouteContext } from './types/registry'
 import type { StonecropOptions } from './types/stonecrop'
@@ -239,72 +237,6 @@ export class Stonecrop {
 	setup(doctype: Doctype): void {
 		// Ensure doctype exists in store
 		this.ensureDoctypeExists(doctype.slug)
-	}
-
-	/**
-	 * Run action on doctype
-	 * Executes the action and logs it to the operation log for audit tracking
-	 * @param doctype - The doctype
-	 * @param action - The action to run
-	 * @param args - Action arguments (typically record IDs)
-	 */
-	runAction(doctype: Doctype, action: string, args?: string[]): void {
-		const registry = this.registry.registry[doctype.slug]
-		const actions = registry?.actions?.get(action)
-		const recordIds = Array.isArray(args) ? args.filter((arg): arg is string => typeof arg === 'string') : undefined
-		const recordId = recordIds?.[0]
-
-		// Check if workflow is ready (all blocked links have data)
-		const workflowStatus = recordId ? this.isWorkflowReady(doctype, recordId) : { ready: true }
-		if (!workflowStatus.ready) {
-			const opLogStore = this.getOperationLogStore()
-			opLogStore.logAction(
-				doctype.doctype,
-				action,
-				recordIds,
-				'failure',
-				`BLOCKED: missing data for links: ${workflowStatus.blockedLinks?.join(', ')}`
-			)
-			throw new Error(`Workflow blocked: missing data for links: ${workflowStatus.blockedLinks?.join(', ')}`)
-		}
-
-		// Log action execution start
-		const opLogStore = this.getOperationLogStore()
-		let actionResult: 'success' | 'failure' | 'pending' = 'success'
-		let actionError: string | undefined
-
-		try {
-			// Execute action functions
-			if (actions && actions.length > 0) {
-				const engine = getGlobalTriggerEngine()
-				actions.forEach(actionStr => {
-					try {
-						const actionFn = engine.getAction(actionStr)
-						if (!actionFn) throw new Error(`Action "${actionStr}" is not registered in FieldTriggerEngine`)
-						const context = {
-							path: `${doctype.slug}.${recordIds?.[0] ?? ''}`,
-							fieldname: action,
-							beforeValue: undefined,
-							afterValue: args,
-							operation: 'set',
-							doctype: doctype.doctype,
-							recordId: recordId,
-							timestamp: new Date(),
-						} as FieldChangeContext
-						void actionFn(context)
-					} catch (error) {
-						actionResult = 'failure'
-						actionError = error instanceof Error ? error.message : 'Unknown error'
-						throw error
-					}
-				})
-			}
-		} catch {
-			// Error already set in inner catch
-		} finally {
-			// Log the action execution to operation log
-			opLogStore.logAction(doctype.doctype, action, recordIds, actionResult, actionError)
-		}
 	}
 
 	/**

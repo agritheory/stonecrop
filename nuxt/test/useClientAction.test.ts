@@ -161,6 +161,59 @@ describe('useClientAction', { tags: ['unit'] }, () => {
 	})
 })
 
+// A host with its own notification system must be able to take the failure surface over. Without
+// this, converging a host onto `useClientAction` newly imposes a blocking alert on its users.
+describe('useClientAction onError', { tags: ['unit'] }, () => {
+	it('routes a refused dispatch to onError with the action context, and replaces the default', async () => {
+		const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+		const onError = vi.fn()
+		mocks.router = makeRouter()
+		mocks.sc = makeSc({
+			actions: { Activate: {} },
+			dispatch: vi.fn(async () => ({ success: false, data: null, error: 'Handler not registered' })),
+		})
+
+		await useClientAction({ onError }).run(payload('Activate'))
+
+		expect(onError).toHaveBeenCalledWith({
+			message: 'Handler not registered',
+			action: 'Activate',
+			doctype: 'user',
+			recordId: 'r1',
+		})
+		// Full replacement, console log included — the host owns the surface.
+		expect(errorSpy).not.toHaveBeenCalled()
+		errorSpy.mockRestore()
+	})
+
+	it('routes a clientHandler throw to onError and carries the thrown value as cause', async () => {
+		const onError = vi.fn()
+		mocks.router = makeRouter()
+		mocks.sc = makeSc({ actions: { Boom: { clientHandler: "throw new Error('handler exploded')" } } })
+
+		await useClientAction({ onError }).run(payload('Boom'))
+
+		expect(onError).toHaveBeenCalledTimes(1)
+		const failure = onError.mock.calls[0]?.[0]
+		expect(failure).toMatchObject({ message: 'handler exploded', action: 'Boom', doctype: 'user', recordId: 'r1' })
+		// `cause` is what separates a throw from a refused dispatch, and what a host forwards to Sentry.
+		expect(failure.cause).toBeInstanceOf(Error)
+	})
+
+	it('names the action when the server refuses without a message', async () => {
+		const onError = vi.fn()
+		mocks.router = makeRouter()
+		mocks.sc = makeSc({
+			actions: { Activate: {} },
+			dispatch: vi.fn(async () => ({ success: false, data: null, error: null })),
+		})
+
+		await useClientAction({ onError }).run(payload('Activate'))
+
+		expect(onError).toHaveBeenCalledWith(expect.objectContaining({ message: 'Action "Activate" failed' }))
+	})
+})
+
 // Desktop's "New Record" navigates to a synthetic `new-<timestamp>` id and the backend assigns
 // the real one when the Save creates the record. Writing the result back under the dispatched id
 // would leave the record under a key nothing can fetch, the route pointing at a spent id, and the

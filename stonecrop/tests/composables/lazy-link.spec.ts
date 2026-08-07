@@ -13,7 +13,7 @@ import Doctype from '../../src/doctype'
  */
 
 const createTestDoctype = (name: string, links?: Record<string, any>): Doctype => {
-	return new Doctype(name, [] as any, undefined, undefined, undefined, links)
+	return new Doctype(name, [] as any, undefined, undefined, links)
 }
 
 describe('useLazyLink', { tags: ['unit'] }, () => {
@@ -351,30 +351,6 @@ describe('blockWorkflows', { tags: ['unit'] }, () => {
 		const status = stonecrop.isWorkflowReady(doctype, newDraftRecordId())
 		expect(status.ready).toBe(true)
 		expect(status.blockedLinks).toBeUndefined()
-	})
-
-	it('runAction throws when workflow is blocked', () => {
-		const doctype = createTestDoctype('Recipe', {
-			tasks: { target: 'recipe-task', cardinality: 'noneOrMany', fetch: { method: 'sync' } },
-		})
-		registry.addDoctype(doctype)
-		registry.registry['recipe']?.actions?.set('submit', ['submitAction'])
-		stonecrop.setup(doctype)
-
-		// Attempting to run action when workflow is blocked should throw
-		expect(() => stonecrop.runAction(doctype, 'submit', ['123'])).toThrow(/Workflow blocked/)
-	})
-
-	it('runAction succeeds when workflow is not blocked', () => {
-		const doctype = createTestDoctype('Recipe', {
-			tasks: { target: 'recipe-task', cardinality: 'noneOrMany', fetch: { method: 'sync' }, blockWorkflows: false },
-		})
-		registry.addDoctype(doctype)
-		registry.registry['recipe']?.actions?.set('submit', ['submitAction'])
-		stonecrop.setup(doctype)
-
-		// Should not throw
-		expect(() => stonecrop.runAction(doctype, 'submit', ['123'])).not.toThrow()
 	})
 
 	it('blocks workflow when any blocking link is unloaded', () => {

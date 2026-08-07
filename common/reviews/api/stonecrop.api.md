@@ -11,7 +11,7 @@ import type { DataClient } from '@stonecrop/schema';
 import type { DoctypeField } from '@stonecrop/schema';
 import type { LinkDeclaration } from '@stonecrop/schema';
 import { List } from 'immutable';
-import { Map as Map_2 } from 'immutable';
+import type { Map as Map_2 } from 'immutable';
 import { Plugin as Plugin_2 } from 'vue';
 import { Ref } from 'vue';
 import type { ResolvedField } from '@stonecrop/aform';
@@ -77,8 +77,7 @@ export type CrossTabMessageType = 'operation' | 'undo' | 'redo' | 'sync-request'
 
 // @public
 export class Doctype {
-    constructor(doctype: string, schema: ImmutableDoctype['schema'], workflow: ImmutableDoctype['workflow'], actions: ImmutableDoctype['actions'], component?: Component, links?: Record<string, LinkDeclaration>);
-    readonly actions: ImmutableDoctype['actions'];
+    constructor(doctype: string, schema: ImmutableDoctype['schema'], workflow: ImmutableDoctype['workflow'], component?: Component, links?: Record<string, LinkDeclaration>);
     readonly component?: Component;
     readonly doctype: string;
     static fromObject(config: DoctypeConfig): Doctype;
@@ -87,7 +86,6 @@ export class Doctype {
         requiredFields?: string[];
         allowedStates?: string[];
     } | undefined;
-    getActionsObject(): Record<string, string[]>;
     getAvailableCommands(currentState?: string): Array<{
         name: string;
     }>;
@@ -113,7 +111,6 @@ export type DoctypeConfig = {
     fields?: DoctypeField[];
     links?: Record<string, LinkDeclaration>;
     workflow?: UnknownMachineConfig | WorkflowMeta;
-    actions?: Record<string, string[]>;
     inherits?: string;
 };
 
@@ -293,7 +290,6 @@ export type HSTStonecropReturn = BaseStonecropReturn & {
 export type ImmutableDoctype = {
     readonly schema?: List<DoctypeField>;
     readonly workflow?: UnknownMachineConfig | AnyStateNodeConfig | WorkflowMeta;
-    readonly actions?: Map_2<string, string[]>;
 };
 
 // @public
@@ -714,7 +710,6 @@ export class Stonecrop {
     removeRecord(doctype: string | Doctype, recordId: string): void;
     // @internal
     static _root: Stonecrop;
-    runAction(doctype: Doctype, action: string, args?: string[]): void;
     setClient(client: DataClient): void;
     setup(doctype: Doctype): void;
 }

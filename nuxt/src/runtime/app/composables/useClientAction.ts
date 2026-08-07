@@ -10,6 +10,39 @@ import { useRouter } from 'vue-router'
 export type ActionDispatchResult = { success: boolean; data: unknown; error: string | null }
 
 /**
+ * An action that did not complete, described well enough for a host to render it.
+ *
+ * An object rather than a bare message on purpose: a notification says *what* failed, and the
+ * action, doctype and record are all known at the point of failure. It is also the shape that can
+ * gain a field later without breaking a host that already destructures it.
+ */
+export interface ActionFailure {
+	/** Human-readable reason — the server's own message where there is one. */
+	message: string
+	/** The action that was clicked, not necessarily the one a `clientHandler` dispatched. */
+	action: string
+	/** Slug of the doctype the action was raised on. */
+	doctype: string
+	/** Record the action was raised against; a synthetic draft id for an unsaved record. */
+	recordId: string
+	/** The thrown value, present only when the failure was a throw rather than a refused dispatch. */
+	cause?: unknown
+}
+
+/**
+ * Host overrides for {@link useClientAction}.
+ */
+export interface UseClientActionOptions {
+	/**
+	 * Called instead of the built-in alert when an action fails. Supply this to route failures into
+	 * the host's own notification system, or pass a no-op to suppress them entirely.
+	 *
+	 * It fully replaces the default, console log included — a host that wants one writes it.
+	 */
+	onError?: (failure: ActionFailure) => void
+}
+
+/**
  * The identity a server response settled on, or `undefined` when it did not state one.
  *
  * Deliberately stricter than `getRecordId`: that falls back to `id` when the declared key is
@@ -24,14 +57,14 @@ function settledRecordId(doctype: Doctype, record: Record<string, unknown>): str
 }
 
 /**
- * Surface an action failure to the user. There is no notification system yet, so this is a
- * deliberate stopgap: a blocking alert beats a silent `console.error` for a failed action
- * (e.g. a Save that the server refused). Swap this for a real toast when one exists.
+ * Default failure surface: a blocking alert beats a silent `console.error` for a failed action
+ * (e.g. a Save that the server refused), and there is no notification system in the framework to
+ * route it into. A host with one passes `onError` and this is never called.
  */
-function notifyActionError(message: string): void {
+function notifyActionError(failure: ActionFailure): void {
 	// oxlint-disable-next-line no-console
-	console.error('Action failed:', message)
-	if (typeof window !== 'undefined') window.alert(message)
+	console.error('Action failed:', failure.message)
+	if (typeof window !== 'undefined') window.alert(failure.message)
 }
 
 /**
@@ -53,10 +86,14 @@ function notifyActionError(message: string): void {
  * The composable owns the `[{ id, data }]` argument envelope every server handler reads
  * (`const [{ id }] = args`), so an authored handler calls `runAction('Assign')` without
  * knowing that shape; an optional second argument is merged in for handlers needing more.
+ *
+ * Pass `onError` to route failures into the host's own notification system instead of the
+ * default alert. Everything else is framework behaviour and is deliberately not configurable.
  */
-export function useClientAction() {
+export function useClientAction(options: UseClientActionOptions = {}) {
 	const { stonecrop } = useStonecrop()
 	const router = useRouter()
+	const onError = options.onError ?? notifyActionError
 
 	/**
 	 * Dispatch `action` for the record and write the updated record back to HST, under whichever
@@ -135,7 +172,14 @@ export function useClientAction() {
 			if (!clientHandler) {
 				// No client handler — preserve the existing server-dispatch behavior.
 				const result = await dispatchAndWriteback(doctypeSlug, recordId, data, name)
-				if (!result.success) notifyActionError(result.error ?? `Action "${name}" failed`)
+				if (!result.success) {
+					onError({
+						message: result.error ?? `Action "${name}" failed`,
+						action: name,
+						doctype: doctypeSlug,
+						recordId,
+					})
+				}
 				return
 			}
 
@@ -163,7 +207,13 @@ export function useClientAction() {
 
 			await executeClientHandler(clientHandler, { router, record, runAction, graphql })
 		} catch (error) {
-			notifyActionError(error instanceof Error ? error.message : String(error))
+			onError({
+				message: error instanceof Error ? error.message : String(error),
+				action: name,
+				doctype: doctypeSlug,
+				recordId,
+				cause: error,
+			})
 		}
 	}
 

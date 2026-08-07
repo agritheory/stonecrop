@@ -1029,7 +1029,6 @@ export type DoctypeConfig = {
     fields?: DoctypeField[];
     links?: Record<string, LinkDeclaration>;
     workflow?: UnknownMachineConfig | WorkflowMeta;
-    actions?: Record<string, string[]>;
     inherits?: string;
 };
 ```
@@ -1151,7 +1150,6 @@ Immutable Doctype type for Stonecrop instances. App authors should use `Doctype.
 export type ImmutableDoctype = {
     readonly schema?: List<DoctypeField>;
     readonly workflow?: UnknownMachineConfig | AnyStateNodeConfig | WorkflowMeta;
-    readonly actions?: Map<string, string[]>;
 };
 ```
 
@@ -1262,7 +1260,7 @@ Doctype runtime class with Immutable.js collections for HST change tracking.
 **Constructor:**
 
 ```typescript
-new Doctype(doctype: string, schema: ImmutableDoctype['schema'], workflow: ImmutableDoctype['workflow'], actions: ImmutableDoctype['actions'], component: Component, links: Record<string, LinkDeclaration>)
+new Doctype(doctype: string, schema: ImmutableDoctype['schema'], workflow: ImmutableDoctype['workflow'], component: Component, links: Record<string, LinkDeclaration>)
 ```
 
 **Parameters:**
@@ -1272,7 +1270,6 @@ new Doctype(doctype: string, schema: ImmutableDoctype['schema'], workflow: Immut
 | doctype | `string` | The doctype name |
 | schema | `ImmutableDoctype['schema']` | The doctype schema definition |
 | workflow | `ImmutableDoctype['workflow']` | The doctype workflow configuration (XState machine) |
-| actions | `ImmutableDoctype['actions']` | The doctype actions and field triggers |
 | component | `Component` | Optional Vue component for rendering the doctype |
 | links | `Record<string, LinkDeclaration>` | Optional relationship links to other doctypes |
 
@@ -1280,7 +1277,6 @@ new Doctype(doctype: string, schema: ImmutableDoctype['schema'], workflow: Immut
 
 | Property | Type | Description |
 |----------|------|-------------|
-| actions | `ImmutableDoctype['actions']` | The doctype actions and field triggers |
 | component | `Component` | The doctype component |
 | doctype | `string` | The doctype name |
 | links | `Record<string, LinkDeclaration>` | Relationship links to other doctypes |
@@ -1325,14 +1321,6 @@ getActionMeta(actionName: string): {
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | actionName | `string` | The action name to get metadata for |
-
-#### getActionsObject
-
-Returns the actions as a plain object for use with components that expect plain JavaScript objects.
-
-```typescript
-getActionsObject(): Record<string, string[]>
-```
 
 #### getAvailableCommands
 
@@ -2012,22 +2000,6 @@ removeRecord(doctype: string | Doctype, recordId: string): void
 |-----------|------|-------------|
 | doctype | `string \| Doctype` | The doctype |
 | recordId | `string` | The record ID |
-
-#### runAction
-
-Run action on doctype Executes the action and logs it to the operation log for audit tracking
-
-```typescript
-runAction(doctype: Doctype, action: string, args: string[]): void
-```
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| doctype | `Doctype` | The doctype |
-| action | `string` | The action to run |
-| args | `string[]` | Action arguments (typically record IDs) |
 
 #### setClient
 

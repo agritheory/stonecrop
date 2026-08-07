@@ -56,13 +56,16 @@ async function handleAction(payload: ActionEventPayload) {
 |------|------|---------|-------------|
 | `availableDoctypes` | `string[]` | `[]` | Doctype slugs to display in the doctypes list |
 | `routeAdapter` | `RouteAdapter` | — | Custom routing layer (required for Nuxt/custom hosts) |
-| `recordIdField` | `string` | `'id'` | Field name for the canonical record ID in list views |
+
+Record identity is not a prop. It is declared per doctype (`primaryKey`, falling back to `id`) and
+resolved through `Doctype.getRecordId`, so a row's link always matches the key the record is stored
+under. One shell renders many doctypes, so a single prop could never answer this correctly.
 
 ## Emitted Events
 
 | Event | When |
 |-------|------|
-| `action` | User triggers an FSM transition or DELETE |
+| `action` | User triggers a declared action — an FSM transition or a Command |
 | `navigate` | Desktop wants to change views |
 | `record:open` | User opens a specific record |
 | `load-records` | Desktop navigates to a records list and needs records loaded into HST |

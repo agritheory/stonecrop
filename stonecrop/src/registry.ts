@@ -4,7 +4,6 @@ import { componentCategory, componentLinkExpansion, resolveLinkRenderMode } from
 import { Router } from 'vue-router'
 
 import Doctype from './doctype'
-import { getGlobalTriggerEngine } from './field-triggers'
 import { RouteContext } from './types/registry'
 
 /**
@@ -89,13 +88,12 @@ export default class Registry {
 			this._ancestorIndexDirty = true
 		}
 
-		// Register actions (including field triggers) with the field trigger engine
-		const triggerEngine = getGlobalTriggerEngine()
-		// Register under both doctype name and slug to handle different lookup patterns
-		triggerEngine.registerDoctypeActions(doctype.doctype, doctype.actions)
-		if (doctype.slug !== doctype.doctype) {
-			triggerEngine.registerDoctypeActions(doctype.slug, doctype.actions)
-		}
+		// Field triggers are registered imperatively, by the app, via the FieldTriggerEngine's own
+		// `registerDoctypeActions`. A doctype used to be able to declare them too, but that path
+		// could not survive the wire — neither the Zod gate nor the SDL carries such a map — so it
+		// only ever worked for a host bypassing both, and it left two public `runAction` methods
+		// meaning opposite things. Registering here would also overwrite an app's imperative
+		// registration, since `registerDoctypeActions` sets the maps even when handed nothing.
 
 		if (doctype.component && this.router && !this.router.hasRoute(doctype.doctype)) {
 			this.router.addRoute({

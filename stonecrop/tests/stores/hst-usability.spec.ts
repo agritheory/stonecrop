@@ -1,5 +1,5 @@
 import { mount } from '@vue/test-utils'
-import { List, Map } from 'immutable'
+import { List } from 'immutable'
 import type { DoctypeField } from '@stonecrop/schema'
 import { describe, it, expect, beforeEach } from 'vitest'
 import { nextTick, defineComponent, computed, ref } from 'vue'
@@ -38,12 +38,7 @@ describe('HST Edge Cases & Performance', { tags: ['unit'] }, () => {
 			},
 		}
 
-		const mockActions = Map({
-			load: ['loadData'],
-			save: ['saveData'],
-		})
-
-		doctype = new Doctype('Complex', complexSchema, mockWorkflow, mockActions, undefined, {
+		doctype = new Doctype('Complex', complexSchema, mockWorkflow, undefined, {
 			tags: { target: 'tag', cardinality: 'noneOrMany' },
 			items: { target: 'item', cardinality: 'noneOrMany' },
 		})

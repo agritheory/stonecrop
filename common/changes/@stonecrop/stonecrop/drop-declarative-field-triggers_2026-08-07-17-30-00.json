@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "comment": "Remove the declarative field-trigger path: Doctype.actions and its constructor parameter, Doctype.getActionsObject, Stonecrop.runAction, DoctypeConfig.actions and ImmutableDoctype.actions. A doctype could never carry this map across the wire — the Zod gate has actions only inside WorkflowMeta and StonecropDoctypeMeta has no such field — so under every GraphQL host it was always empty, and it put two public runAction methods in the API meaning opposite things (field triggers returning void, and the one write path returning a result). The FieldTriggerEngine and its imperative API are unchanged; applications register triggers with registerDoctypeActions, which is also what stops registration from overwriting an app's own. Note Stonecrop.runAction also emitted one operation-log row per navigation; isWorkflowReady survives and is exposed reactively by useStonecrop",
+      "type": "minor",
+      "packageName": "@stonecrop/stonecrop"
+    }
+  ],
+  "packageName": "@stonecrop/stonecrop"
+}

@@ -41,16 +41,15 @@ export function makeServer() {
 				// Category lookup doctype — used by todo category_id Link field
 				'category-listMeta': {
 					name: 'category',
-					schema: [
+					fields: [
 						{ kind: 'field', fieldname: 'id', label: 'ID', hidden: true, component: 'ATextInput' },
 						{ kind: 'field', fieldname: 'name', label: 'Name', component: 'ATextInput' },
 					] as DoctypeField[],
 					workflow: { id: 'category', initial: 'active', states: { active: {} } },
-					actions: {},
 				},
 				'category-formMeta': {
 					name: 'category-form',
-					schema: [
+					fields: [
 						{ kind: 'field', fieldname: 'id', label: 'ID', hidden: true, component: 'ATextInput' },
 						{
 							kind: 'field',
@@ -68,7 +67,6 @@ export function makeServer() {
 							saved: { on: { EDIT: 'editing' } },
 						},
 					},
-					actions: { SAVE: ['SAVE'] },
 				},
 				categories: [
 					{ id: '1', name: 'Personal' },
@@ -79,7 +77,7 @@ export function makeServer() {
 				// Todo List doctype
 				'todo-listMeta': {
 					name: 'todo-list',
-					schema: [
+					fields: [
 						{ kind: 'field', fieldname: 'id', label: 'ID', hidden: true, component: 'ATextInput' },
 						{ kind: 'field', fieldname: 'first_name', label: 'First Name', component: 'ATextInput' },
 						{ kind: 'field', fieldname: 'last_name', label: 'Last Name', component: 'ATextInput' },
@@ -94,14 +92,6 @@ export function makeServer() {
 							creating: { on: { SAVE: 'loaded' } },
 						},
 					},
-					actions: {
-						// XState transition actions (uppercase convention)
-						CREATE: 'CREATE', // Triggers XState transition action
-						// Field triggers - automatically executed when fields change
-						first_name: ['validateName', 'updateFullName'],
-						last_name: ['validateName', 'updateFullName'],
-						phone: ['validatePhoneFormat', 'notifyPhoneChange'],
-					},
 				},
 				'todo-lists': [
 					{ id: '1', first_name: 'Luke', last_name: 'Skywalker', phone: '+1 123 456 7890', category_id: '1' },
@@ -112,7 +102,7 @@ export function makeServer() {
 				// Todo Form doctype
 				'todo-formMeta': {
 					name: 'todo-form',
-					schema: [
+					fields: [
 						{
 							kind: 'field',
 							fieldname: 'header',
@@ -178,17 +168,6 @@ export function makeServer() {
 							deleted: {},
 						},
 					},
-					actions: {
-						// XState transition actions (uppercase convention)
-						SAVE: ['SAVE'],
-						DELETE: ['DELETE'],
-						// Field triggers - automatically executed when fields change
-						first_name: ['validateName', 'updateFullName', 'logFieldChange'],
-						last_name: ['validateName', 'updateFullName', 'logFieldChange'],
-						phone: ['validatePhoneFormat', 'notifyPhoneChange', 'logFieldChange'],
-						email: ['validateEmailFormat', 'logFieldChange'],
-						notes: ['validateNotes', 'logFieldChange'],
-					},
 				},
 				'todo-forms': [
 					{
@@ -223,7 +202,7 @@ export function makeServer() {
 				// Issue List doctype
 				'issue-listMeta': {
 					name: 'issue-list',
-					schema: [
+					fields: [
 						{ kind: 'field', fieldname: 'id', label: 'ID', hidden: true, component: 'ATextInput' },
 						{ kind: 'field', fieldname: 'subject', label: 'Subject', component: 'ATextInput' },
 						{ kind: 'field', fieldname: 'date', label: 'Date', component: 'ADate' },
@@ -237,15 +216,6 @@ export function makeServer() {
 							creating: { on: { SAVE: 'loaded' } },
 						},
 					},
-					actions: {
-						// XState transition actions (uppercase convention)
-						CREATE: 'CREATE',
-						// Field triggers - automatically executed when fields change
-						subject: ['validateSubject', 'logFieldChange'],
-						status: ['onStatusChange', 'updateTimestamp', 'logFieldChange'],
-						priority: ['onPriorityChange', 'logFieldChange'],
-						description: ['validateDescription', 'logFieldChange'],
-					},
 				},
 				'issue-lists': [
 					{ id: '1', subject: 'First Issue', date: '2022-01-01', status: 'Open', priority: 'High' },
@@ -256,7 +226,7 @@ export function makeServer() {
 				// Issue Form doctype
 				'issue-formMeta': {
 					name: 'issue-form',
-					schema: [
+					fields: [
 						{
 							kind: 'field',
 							fieldname: 'header',
@@ -313,17 +283,6 @@ export function makeServer() {
 							saved: { on: { EDIT: 'editing' } },
 							deleted: {},
 						},
-					},
-					actions: {
-						// XState transition actions (uppercase convention)
-						SAVE: ['SAVE'],
-						DELETE: ['DELETE'],
-						// Field triggers - automatically executed when fields change
-						subject: ['validateSubject', 'logFieldChange'],
-						status: ['onStatusChange', 'updateTimestamp', 'logFieldChange'],
-						priority: ['onPriorityChange', 'validatePriorityStatus', 'logFieldChange'],
-						description: ['validateDescription', 'logFieldChange'],
-						date: ['validateFutureDate', 'logFieldChange'],
 					},
 				},
 				'issue-forms': [

@@ -251,19 +251,29 @@ registerGlobalAction('logFieldChange', (context: FieldChangeContext) => {
 	addNotification(`Field "${fieldname}" changed`, 'info')
 })
 
-// ============= DOCTYPE FIELD TRIGGER REGISTRATION =============
-// Register field triggers for actual doctype names that HST will use
-// HST should generate paths like "todo-form.123.first_name" using doctype.slug
+// ============= DOCTYPE TRIGGER AND TRANSITION REGISTRATION =============
+//
+// This is the ONE place the app declares which named actions fire for which doctype. Each map
+// mixes both kinds and `registerDoctypeActions` splits them by the uppercase convention:
+// UPPERCASE keys are XState transitions, everything else is a field trigger keyed by fieldname.
+// HST builds paths like "todo-form.123.first_name" from `doctype.slug`, so these keys are slugs.
+//
+// The mock server used to ship a second copy of this inside each doctype's metadata, and
+// `registry.addDoctype` forwarded it to the engine. That declarative route is gone: it could
+// cross neither the Zod gate nor the SDL, so it never worked for any doctype loaded over
+// GraphQL — this app only got away with it by feeding `Doctype.fromObject` from its own REST
+// mock. Registering here works for every host, and it removes a map that was written twice.
+//
+// Note `registerDoctypeActions` REPLACES both maps for a doctype, so each call must be complete.
 
 const engine = getGlobalTriggerEngine()
 if (engine) {
-	// Register field triggers for actual doctype names from the server
-	// These match the doctype names defined in server.ts
-
-	// Todo form field triggers (doctype: "todo-form")
+	// Todo form (doctype: "todo-form")
 	engine.registerDoctypeActions(
 		'todo-form',
 		new Map([
+			['SAVE', ['SAVE']],
+			['DELETE', ['DELETE']],
 			['first_name', ['validateName', 'updateFullName', 'logFieldChange']],
 			['last_name', ['validateName', 'updateFullName', 'logFieldChange']],
 			['phone', ['validatePhoneFormat', 'notifyPhoneChange', 'logFieldChange']],
@@ -272,37 +282,46 @@ if (engine) {
 		])
 	)
 
-	// Todo list field triggers (doctype: "todo-list")
+	// Todo list (doctype: "todo-list")
 	engine.registerDoctypeActions(
 		'todo-list',
 		new Map([
+			['CREATE', ['CREATE']],
 			['first_name', ['validateName', 'updateFullName', 'logFieldChange']],
 			['last_name', ['validateName', 'updateFullName', 'logFieldChange']],
 			['phone', ['validatePhoneFormat', 'notifyPhoneChange', 'logFieldChange']],
 		])
 	)
 
-	// Issue form field triggers (doctype: "issue-form")
+	// Issue form (doctype: "issue-form")
 	engine.registerDoctypeActions(
 		'issue-form',
 		new Map([
+			['SAVE', ['SAVE']],
+			['DELETE', ['DELETE']],
 			['subject', ['validateSubject', 'logFieldChange']],
 			['status', ['onStatusChange', 'validatePriorityStatus', 'updateTimestamp', 'logFieldChange']],
 			['priority', ['onPriorityChange', 'validatePriorityStatus', 'logFieldChange']],
 			['description', ['validateDescription', 'logFieldChange']],
 			['due_date', ['validateFutureDate', 'updateTimestamp', 'logFieldChange']],
+			['date', ['validateFutureDate', 'logFieldChange']],
 		])
 	)
 
-	// Issue list field triggers (doctype: "issue-list")
+	// Issue list (doctype: "issue-list")
 	engine.registerDoctypeActions(
 		'issue-list',
 		new Map([
+			['CREATE', ['CREATE']],
 			['subject', ['validateSubject', 'logFieldChange']],
-			['status', ['onStatusChange', 'logFieldChange']],
+			['status', ['onStatusChange', 'updateTimestamp', 'logFieldChange']],
 			['priority', ['onPriorityChange', 'logFieldChange']],
+			['description', ['validateDescription', 'logFieldChange']],
 		])
 	)
+
+	// Category form (doctype: "category-form") — a transition only, no field triggers.
+	engine.registerDoctypeActions('category-form', new Map([['SAVE', ['SAVE']]]))
 }
 
 // ============= XSTATE TRANSITION ACTIONS =============

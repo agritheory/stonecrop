@@ -20,7 +20,7 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 			{ kind: 'field' as const, fieldname: 'state', component: 'ATextInput' },
 			{ kind: 'field' as const, fieldname: 'zip_code', component: 'ATextInput' },
 		])
-		addressDoctype = new Doctype('address', addressSchema as any, undefined, undefined)
+		addressDoctype = new Doctype('address', addressSchema as any, undefined)
 		registry.addDoctype(addressDoctype)
 
 		// Customer doctype with nested Address (1:1) declared via links
@@ -29,7 +29,7 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 			{ kind: 'field' as const, fieldname: 'email', component: 'ATextInput' },
 			{ kind: 'field' as const, fieldname: 'address', component: 'AForm', doctype: 'address' },
 		])
-		customerDoctype = new Doctype('customer', customerSchema as any, undefined, undefined, undefined, {
+		customerDoctype = new Doctype('customer', customerSchema as any, undefined, undefined, {
 			address: { target: 'address', cardinality: 'one', fieldname: 'address' },
 		})
 		registry.addDoctype(customerDoctype)
@@ -75,7 +75,7 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 					doctype: 'customer',
 				},
 			])
-			const companyDoctype = new Doctype('company', companySchema as any, undefined, undefined, undefined, {
+			const companyDoctype = new Doctype('company', companySchema as any, undefined, undefined, {
 				primary_contact: { target: 'customer', cardinality: 'one', fieldname: 'primary_contact' },
 			})
 			registry.addDoctype(companyDoctype)
@@ -100,7 +100,7 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 				{ kind: 'field' as const, fieldname: 'name', component: 'ATextInput' },
 				{ kind: 'field' as const, fieldname: 'parent', component: 'AForm', doctype: 'self-ref' },
 			])
-			const selfRefDoctype = new Doctype('self-ref', selfRefSchema as any, undefined, undefined, undefined, {
+			const selfRefDoctype = new Doctype('self-ref', selfRefSchema as any, undefined, undefined, {
 				parent: { target: 'self-ref', cardinality: 'one', fieldname: 'parent' },
 			})
 			registry.addDoctype(selfRefDoctype)
@@ -131,7 +131,6 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 				]) as any,
 				undefined,
 				undefined,
-				undefined,
 				{ missing: { target: 'nonexistent', cardinality: 'one', fieldname: 'missing' } }
 			)
 			const resolved = registry.resolveSchema(testDoctype)
@@ -149,7 +148,6 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 					{ kind: 'field' as const, fieldname: 'name', component: 'ATextInput' },
 					{ kind: 'field' as const, fieldname: 'active', component: 'ACheckbox' },
 				]) as any,
-				undefined,
 				undefined
 			)
 			const resolved = registry.resolveSchema(testDoctype)
@@ -171,7 +169,6 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 						doctype: 'address',
 					},
 				]) as any,
-				undefined,
 				undefined,
 				undefined,
 				{ addresses: { target: 'address', cardinality: 'noneOrMany', fieldname: 'addresses' } }
@@ -212,7 +209,6 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 				]) as any,
 				undefined,
 				undefined,
-				undefined,
 				{ addresses: { target: 'address', cardinality: 'noneOrMany', fieldname: 'addresses' } }
 			)
 			const resolved = registry.resolveSchema(testDoctype)
@@ -236,7 +232,6 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 						doctype: 'address',
 					},
 				]) as any,
-				undefined,
 				undefined,
 				undefined,
 				{
@@ -263,7 +258,6 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 					List([{ kind: 'field' as const, fieldname: 'address', component: 'AFormLink', doctype: 'address' }]) as any,
 					undefined,
 					undefined,
-					undefined,
 					{ address: { target: 'address', cardinality: 'one', fieldname: 'address' } }
 				)
 				const resolved = registry.resolveSchema(testDoctype)
@@ -278,7 +272,6 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 				const testDoctype = new Doctype(
 					'test',
 					List([{ kind: 'field' as const, fieldname: 'address', doctype: 'address' }]) as any,
-					undefined,
 					undefined,
 					undefined,
 					{ address: { target: 'address', cardinality: 'one', component: 'AFormLink', fieldname: 'address' } }
@@ -297,7 +290,6 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 					List([{ kind: 'field' as const, fieldname: 'address', component: 'AForm', doctype: 'address' }]) as any,
 					undefined,
 					undefined,
-					undefined,
 					{ address: { target: 'address', cardinality: 'noneOrMany', fieldname: 'address' } }
 				)
 				const resolved = registry.resolveSchema(testDoctype)
@@ -313,7 +305,6 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 					]) as any,
 					undefined,
 					undefined,
-					undefined,
 					{ address: { target: 'address', cardinality: 'one', fieldname: 'address' } }
 				)
 				const resolved = registry.resolveSchema(testDoctype)
@@ -325,7 +316,6 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 				const testDoctype = new Doctype(
 					'test',
 					List([{ kind: 'field' as const, fieldname: 'ghost', component: 'AFormLink', doctype: 'nonexistent' }]) as any,
-					undefined,
 					undefined,
 					undefined,
 					{ ghost: { target: 'nonexistent', cardinality: 'one', fieldname: 'ghost' } }
@@ -348,7 +338,6 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 						doctype: 'address',
 					},
 				]) as any,
-				undefined,
 				undefined,
 				undefined,
 				{ addresses: { target: 'address', cardinality: 'noneOrMany', fieldname: 'addresses' } }
@@ -374,7 +363,6 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 				]) as any,
 				undefined,
 				undefined,
-				undefined,
 				{ items: { target: 'nonexistent', cardinality: 'noneOrMany', fieldname: 'items' } }
 			)
 			const resolved = registry.resolveSchema(testDoctype)
@@ -395,7 +383,6 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 						doctype: 'address',
 					},
 				]) as any,
-				undefined,
 				undefined,
 				undefined,
 				{ addresses: { target: 'address', cardinality: 'atLeastOne', fieldname: 'addresses' } }
@@ -426,7 +413,6 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 				]) as any,
 				undefined,
 				undefined,
-				undefined,
 				{ shippingAddress: { target: 'address', cardinality: 'atMostOne', fieldname: 'shippingAddress' } }
 			)
 			const resolved = registry.resolveSchema(testDoctype)
@@ -453,7 +439,6 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 				]) as any,
 				undefined,
 				undefined,
-				undefined,
 				{ address: { target: 'address', cardinality: 'one', fieldname: 'address' } }
 			)
 
@@ -471,7 +456,6 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 				List([
 					{ kind: 'field' as const, fieldname: 'addresses', component: 'ATable', doctype: 'address', required: true },
 				]) as any,
-				undefined,
 				undefined,
 				undefined,
 				{ addresses: { target: 'address', cardinality: 'noneOrMany', fieldname: 'addresses' } }
@@ -495,7 +479,6 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 						schema: [{ kind: 'field' as const, fieldname: 'address', component: 'AForm', doctype: 'address' }],
 					},
 				]) as any,
-				undefined,
 				undefined,
 				undefined,
 				{ address: { target: 'address', cardinality: 'one', fieldname: 'address' } }
@@ -524,9 +507,7 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 					{ kind: 'field' as const, fieldname: 'name', component: 'ATextInput' },
 					{ kind: 'field' as const, fieldname: 'orphan', component: 'AFormLink', doctype: 'territory' },
 				]) as any,
-				undefined,
 				undefined
-				// no links declared
 			)
 			const resolved = registry.resolveSchema(testDoctype)
 
@@ -549,7 +530,6 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 						],
 					},
 				]) as any,
-				undefined,
 				undefined
 			)
 			const resolved = registry.resolveSchema(testDoctype)
@@ -572,9 +552,7 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 						schema: [{ kind: 'field' as const, fieldname: 'orphan', component: 'AFormLink', doctype: 'territory' }],
 					},
 				]) as any,
-				undefined,
 				undefined
-				// no links declared — orphan has no declaration
 			)
 			const resolved = registry.resolveSchema(testDoctype)
 			const fieldset = resolved[0] as any
@@ -598,7 +576,6 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 						],
 					},
 				]) as any,
-				undefined,
 				undefined,
 				undefined,
 				{ missing_link: { target: 'nonexistent', cardinality: 'one', fieldname: 'missing_link' } }
@@ -630,7 +607,6 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 						],
 					},
 				]) as any,
-				undefined,
 				undefined,
 				undefined,
 				{ addresses: { target: 'address', cardinality: 'noneOrMany', fieldname: 'addresses' } }
@@ -672,7 +648,6 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 				]) as any,
 				undefined,
 				undefined,
-				undefined,
 				{ address: { target: 'address', cardinality: 'one', fieldname: 'address' } }
 			)
 			const resolved = registry.resolveSchema(testDoctype)
@@ -694,7 +669,7 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 				{ kind: 'field' as const, fieldname: 'tasks', component: 'ATable', doctype: 'address' },
 				{ kind: 'field' as const, fieldname: 'status', component: 'ATextInput' },
 			])
-			const docWithOrderedLinks = new Doctype('recipe', orderedSchema as any, undefined, undefined, undefined, {
+			const docWithOrderedLinks = new Doctype('recipe', orderedSchema as any, undefined, undefined, {
 				tasks: { target: 'address', cardinality: 'noneOrMany', fieldname: 'tasks' },
 			})
 			const resolved = registry.resolveSchema(docWithOrderedLinks)
@@ -712,7 +687,6 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 					{ kind: 'field' as const, fieldname: 'name', component: 'ATextInput' },
 					{ kind: 'field' as const, fieldname: 'territory', doctype: 'territory' },
 				]) as any,
-				undefined,
 				undefined
 			)
 			const resolved = registry.resolveSchema(testDoctype)
@@ -733,7 +707,6 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 						component: 'MyCustomLink',
 					},
 				]) as any,
-				undefined,
 				undefined
 			)
 			const resolved = registry.resolveSchema(testDoctype)
@@ -746,7 +719,6 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 			const testDoctype = new Doctype(
 				'test',
 				List([{ kind: 'field' as const, fieldname: 'territory', component: 'AFormLink', doctype: 'territory' }]) as any,
-				undefined,
 				undefined
 			)
 			const resolved = registry.resolveSchema(testDoctype)
@@ -763,7 +735,6 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 			const testDoctype = new Doctype(
 				'test',
 				List([{ kind: 'field' as const, fieldname: 'territory', component: 'AFormLink' }]) as any,
-				undefined,
 				undefined
 			)
 			const resolved = registry.resolveSchema(testDoctype)
@@ -784,7 +755,6 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 						label: 'Sales Territory',
 					},
 				]) as any,
-				undefined,
 				undefined
 			)
 			const resolved = registry.resolveSchema(testDoctype)
@@ -821,7 +791,6 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 					]) as any,
 					undefined,
 					undefined,
-					undefined,
 					{ items: { target: 'address', cardinality: 'noneOrMany', fieldname: 'items' } }
 				)
 			)
@@ -842,7 +811,6 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 							schema: [{ kind: 'field' as const, fieldname: 'card', component: 'ATextInput' }],
 						},
 					]) as any,
-					undefined,
 					undefined
 				)
 			)
@@ -863,7 +831,6 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 							// no config — should default to { view: 'list' }
 						},
 					]) as any,
-					undefined,
 					undefined
 				)
 			)
@@ -887,7 +854,6 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 							cardinality: 'one', // advisory only
 						},
 					]) as any,
-					undefined,
 					undefined,
 					undefined,
 					{ items: { target: 'address', cardinality: 'noneOrMany', fieldname: 'items' } }
@@ -993,7 +959,6 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 				new Doctype(
 					'parent',
 					List([{ kind: 'field' as const, fieldname: 'address', component: 'AForm', doctype: 'address' }]) as any,
-					undefined,
 					undefined,
 					undefined,
 					{ address: { target: 'address', cardinality: 'atMostOne', fieldname: 'address' } }
@@ -1122,8 +1087,8 @@ describe('resolveSchema → schemaToColumns pipeline', { tags: ['unit'] }, () =>
 			{ kind: 'field' as const, fieldname: 'name', label: 'Name', component: 'ATextInput' },
 			{ kind: 'field' as const, fieldname: 'email', label: 'Email', component: 'ATextInput' },
 		])
-		const userDoctype = new Doctype('user', userSchema as any, undefined, undefined)
-		const taskDoctype = new Doctype('task', taskSchema as any, undefined, undefined, undefined, {
+		const userDoctype = new Doctype('user', userSchema as any, undefined)
+		const taskDoctype = new Doctype('task', taskSchema as any, undefined, undefined, {
 			assignee: { target: 'user', cardinality: 'noneOrMany', fieldname: 'assignee' },
 		})
 		registry.addDoctype(userDoctype)

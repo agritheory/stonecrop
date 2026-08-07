@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "comment": "Remove the recordIdField prop. Record identity is declared per doctype (primaryKey, falling back to id) and resolved through Doctype.getRecordId, which is the key Stonecrop.getRecords stores a record under; a per-shell string cannot answer a per-doctype question, and whenever the prop did override the declaration it produced a row link to an HST key nothing was stored under. Both known consumers set it to a value the declaration already yields, so no observable behaviour changes",
+      "type": "minor",
+      "packageName": "@stonecrop/desktop"
+    }
+  ],
+  "packageName": "@stonecrop/desktop"
+}

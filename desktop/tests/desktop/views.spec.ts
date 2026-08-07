@@ -1,5 +1,5 @@
 import { mount } from '@vue/test-utils'
-import { List, Map } from 'immutable'
+import { List } from 'immutable'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { nextTick } from 'vue'
 
@@ -331,7 +331,7 @@ describe('Desktop FSM state reading', { tags: ['component'] }, () => {
 				cancel: { label: 'Cancel Order', allowedStates: ['PROCESSING'], nextState: 'CANCELLED' },
 			},
 		}
-		const doctype = new Doctype('order', schema, workflow, Map({}))
+		const doctype = new Doctype('order', schema, workflow)
 		registry.addDoctype(doctype)
 		stonecrop.addRecord('order', 'order-1', { id: 'order-1', status: 'PROCESSING' })
 
@@ -381,7 +381,7 @@ describe('Desktop FSM state reading', { tags: ['component'] }, () => {
 				save: { label: 'Save', stateless: true, clientHandler: 'return true' },
 			},
 		}
-		const doctype = new Doctype('order', schema, workflow, Map({}))
+		const doctype = new Doctype('order', schema, workflow)
 		registry.addDoctype(doctype)
 		stonecrop.addRecord('order', 'order-1', { id: 'order-1', status: 'PROCESSING' })
 
@@ -421,7 +421,7 @@ describe('Desktop FSM state reading', { tags: ['component'] }, () => {
 		// No `states` array: getAvailableTransitions yields nothing, so before Phase E the
 		// Actions dropdown would not render at all. The global Command must still surface.
 		const workflow = { actions: { save: { label: 'Save', stateless: true, clientHandler: 'return true' } } }
-		const doctype = new Doctype('report', schema, workflow as any, Map({}))
+		const doctype = new Doctype('report', schema, workflow as any)
 		registry.addDoctype(doctype)
 		stonecrop.addRecord('report', 'r-1', { id: 'r-1' })
 

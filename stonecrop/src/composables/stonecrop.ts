@@ -279,8 +279,6 @@ export function useStonecrop(options?: {
 					if (hstStore.value) {
 						setupDeepReactivity(doctype, recordId || 'new', formData, hstStore.value)
 					}
-
-					stonecrop.value.runAction(doctype, 'load', recordId ? [recordId] : undefined)
 				}
 			}
 		}

@@ -1,5 +1,5 @@
 import { mount } from '@vue/test-utils'
-import { List, Map } from 'immutable'
+import { List } from 'immutable'
 import type { DoctypeField } from '@stonecrop/schema'
 import { createPinia, setActivePinia } from 'pinia'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
@@ -43,12 +43,7 @@ const createMockDoctype = (name: string) => {
 		},
 	}
 
-	const mockActions = Map({
-		load: ['loadData'],
-		save: ['validateData', 'saveData'],
-	})
-
-	return new Doctype(name, mockSchema, mockWorkflow, mockActions)
+	return new Doctype(name, mockSchema, mockWorkflow)
 }
 
 describe('useStonecrop composable', { tags: ['unit'] }, () => {
