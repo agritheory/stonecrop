@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "comment": "Correct two public docstrings that promised a transaction the dispatcher never opens: ActionHandlerContext.pgClient claimed it was already inside the mutation's transaction, and GuardedTransitionIO.runEffect claimed a throw meant nothing was written. Dispatch uses sideEffectWithPgClient, so the guard read, the handler and the state write are separate autocommit statements and a handler's own writes are not rolled back",
+      "type": "patch",
+      "packageName": "@stonecrop/graphql-middleware"
+    }
+  ],
+  "packageName": "@stonecrop/graphql-middleware"
+}

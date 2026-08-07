@@ -4,7 +4,7 @@ import { basename, resolve } from 'node:path'
 import { createError, defineEventHandler, readBody } from 'h3'
 import { useRuntimeConfig } from '#imports'
 
-import { orderKeysByReference } from './mergeDoctype'
+import { mergeSavedDoctype } from './mergeDoctype'
 
 export default defineEventHandler(async event => {
 	const body = await readBody(event)
@@ -74,36 +74,9 @@ export default defineEventHandler(async event => {
 		}
 	}
 
-	const doctypeData: Record<string, unknown> = {
-		...existing,
-		fields: body.fields,
-	}
-
-	// A null workflow means "this doctype has no workflow" — omit the key rather
-	// than writing `"workflow": null`, which fails doctype validation (the schema
-	// expects an object) and corrupts CLI-generated files on a plain field save.
-	// An existing workflow is preserved by the spread; body.workflow only ever
-	// narrows to null when the doctype had no workflow to begin with.
-	if (body.workflow !== undefined && body.workflow !== null) {
-		// Re-impose the on-disk action order: the builder rebuilds workflow.actions on every graph edit
-		// (transitions first, then stateless), which would otherwise reshuffle the file on the first save.
-		const existingActions = (existing.workflow as { actions?: Record<string, unknown> } | undefined)?.actions
-		const workflow = body.workflow as { actions?: Record<string, unknown> }
-		doctypeData.workflow = workflow.actions
-			? { ...workflow, actions: orderKeysByReference(workflow.actions, existingActions) }
-			: workflow
-	} else if (doctypeData.workflow === null || doctypeData.workflow === undefined) {
-		delete doctypeData.workflow
-	}
-
-	// `name` is required by the doctype schema and is never sent by the builder. Preserve the
-	// existing value verbatim; fall back to the requested name only when creating a new doctype.
-	if (typeof doctypeData.name !== 'string' || doctypeData.name.length === 0) {
-		doctypeData.name = requested
-	}
-
-	// Remove legacy 'schema' key if present — standardise on 'fields'
-	delete doctypeData.schema
+	// The merge itself is pure and lives in ./mergeDoctype so it can be unit-tested outside a Nuxt
+	// server context — this handler cannot be imported in a plain vitest run.
+	const doctypeData = mergeSavedDoctype(existing, body, requested)
 
 	try {
 		await writeFile(filePath, JSON.stringify(doctypeData, null, '\t') + '\n', 'utf-8')

@@ -87,7 +87,7 @@ definePageMeta({
 
 ## 3. Handle `@action`
 
-The `action` event fires when the user clicks an FSM transition button (or the Delete confirmation). The payload contains the transition name, the current doctype/recordId, and a snapshot of the form data.
+The `action` event fires when the user clicks an FSM transition button. The payload contains the transition name, the current doctype/recordId, and a snapshot of the form data.
 
 ```vue
 <script setup lang="ts">
@@ -147,17 +147,14 @@ async function handleAction(payload: ActionEventPayload) {
 </template>
 ```
 
-### DELETE is an action
+### Removal is a workflow outcome, not a blessed action
 
-When the user confirms a record deletion, Desktop emits `action` with `name: 'DELETE'`. The host app handles the server call and then removes the record from HST:
+Desktop blesses no action name, and there is no `DELETE`. It once emitted a hardcoded `DELETE` and
+prompted before it, but no doctype declares that action, so it failed on every click — and only the
+host knows which of its actions are destructive.
 
-```typescript
-if (payload.name === 'DELETE') {
-  await $fetch(`/api/${payload.doctype}/${payload.recordId}`, { method: 'DELETE' })
-  stonecrop.value?.removeRecord(payload.doctype, payload.recordId)
-  return
-}
-```
+Model removal the way you model every other state change: declare an action with a `nextState` such
+as `ARCHIVED` or `CANCELLED`, and confirm inside your own `@action` handler before dispatching it.
 
 ---
 
@@ -178,27 +175,7 @@ function handleRecordOpen(payload: RecordOpenEventPayload) {
 
 ---
 
-## 5. Inject a confirmation dialog
-
-Replace the browser's native `confirm()` with your app's modal:
-
-```typescript
-import { useModal } from '~/composables/useModal'
-
-const { confirm } = useModal()
-
-// Pass to Desktop:
-// <Desktop :confirm-fn="confirm" ... />
-```
-
-```typescript
-// The signature Desktop expects:
-type ConfirmFn = (message: string) => boolean | Promise<boolean>
-```
-
----
-
-## 6. Pre-load records into HST
+## 5. Pre-load records into HST
 
 Desktop reads records from HST — it does not fetch them itself. Pre-load records before rendering (e.g., in a route middleware or `onMounted`):
 
@@ -216,7 +193,7 @@ stonecrop.value?.addRecord(doctype, record.id, record)
 
 ---
 
-## 7. FSM transitions and available actions
+## 6. FSM transitions and available actions
 
 Desktop renders the action toolbar for a record view by calling `Doctype.getAvailableTransitions(currentState)` where `currentState` is resolved by `Stonecrop.getRecordState(doctype, recordId)`.
 

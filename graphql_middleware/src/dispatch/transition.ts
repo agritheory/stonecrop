@@ -50,9 +50,13 @@ export interface GuardedTransitionIO {
 	 * It is what makes a stateless Command (no `nextState`, no `selfTransition`) executable at
 	 * all: without one, such an action has nothing to apply and fails loudly.
 	 *
-	 * Throwing rejects the action — nothing is written. Returning a full record makes it the
-	 * client writeback payload; returning `undefined` leaves the doctype's own outcome to
-	 * decide what comes back.
+	 * Throwing rejects the action, so the dispatcher writes neither data nor state. It does **not**
+	 * undo writes the handler already made: this guard is storage-agnostic and owns no transaction,
+	 * and the Postgres adapter in particular dispatches outside one. A handler whose own statements
+	 * must be all-or-nothing has to wrap them itself.
+	 *
+	 * Returning a full record makes it the client writeback payload; returning `undefined` leaves
+	 * the doctype's own outcome to decide what comes back.
 	 *
 	 * @param currentState - The state the guard read, or `undefined` when nothing required reading it
 	 * @returns The updated record, or `undefined` to leave the result payload to the state outcome

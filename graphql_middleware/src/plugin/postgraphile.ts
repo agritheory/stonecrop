@@ -27,7 +27,13 @@ import { typeDefs } from '../typeDefs'
  */
 export interface ActionHandlerContext {
 	/**
-	 * Active database client for the current request, already inside the mutation's transaction.
+	 * Active database client for the current request. **It is not inside a transaction.**
+	 *
+	 * The dispatcher uses `sideEffectWithPgClient`, not `sideEffectWithPgClientTransaction`, so the
+	 * guard read, this handler, and the state write are three separate autocommit statements. A
+	 * handler that throws still rejects the action and stops the state write — but its own writes
+	 * are already committed and are **not** rolled back. A handler that needs atomicity must open
+	 * its own transaction (`BEGIN`/`COMMIT`/`ROLLBACK`) around its statements.
 	 *
 	 * Rows from a raw `pgClient.query()` carry snake_case **column** names, while the middleware's
 	 * own read paths alias them to camelCase fieldnames at the SQL layer (ADR 0004). A handler that

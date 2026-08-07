@@ -325,7 +325,9 @@ export class MockGraphQLExecutor implements GraphQLExecutor {
 	 * Supports PostGraphile-style mutation patterns:
 	 * - createUser(input: {...}) -> create user
 	 * - updateUserById(id: "1", patch: {...}) -> update user
-	 * - deleteUserById(id: "1") -> delete user
+	 *
+	 * There is no delete branch: removal is a declared workflow outcome, so `toMutationName` only
+	 * ever derives `create` and `update` and nothing can route a delete here.
 	 */
 	async mutate<T = Record<string, unknown>>(mutation: string, variables?: Record<string, unknown>): Promise<T> {
 		// Accept either a mutation name (e.g., "createUser") or a full GraphQL mutation
@@ -371,12 +373,6 @@ export class MockGraphQLExecutor implements GraphQLExecutor {
 			}
 			users.set(id, updated)
 			return { updateUserById: { user: updated } } as T
-		}
-
-		if (mutationName === 'deleteUserById') {
-			const id = variables?.id as string
-			const existed = users.delete(id)
-			return { deleteUserById: { deletedUserId: existed ? id : null } } as T
 		}
 
 		// Handle Order mutations
@@ -426,12 +422,6 @@ export class MockGraphQLExecutor implements GraphQLExecutor {
 
 			orders.set(id, updated)
 			return { updateOrderById: { order: updated } } as T
-		}
-
-		if (mutationName === 'deleteOrderById') {
-			const id = variables?.id as string
-			const existed = orders.delete(id)
-			return { deleteOrderById: { deletedOrderId: existed ? id : null } } as T
 		}
 
 		throw new Error(`Unknown mutation: ${mutationName}`)
