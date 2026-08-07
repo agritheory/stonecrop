@@ -1,5 +1,5 @@
 import type { DoctypeField, LinkDeclaration, TriggerDefinition, WorkflowMeta } from '@stonecrop/schema'
-import { getPrimaryKeyField, getRecordIdentity, isActionAllowedInState, normalizeFieldKind } from '@stonecrop/schema'
+import { getRecordIdentity, getRecordIdField, isActionAllowedInState, normalizeFieldKind } from '@stonecrop/schema'
 import { List } from 'immutable'
 import { Component } from 'vue'
 
@@ -166,9 +166,9 @@ export default class Doctype {
 	 * The field a record of this doctype is identified by: the declared `primaryKey`, or `id`
 	 * when nothing is declared.
 	 *
-	 * The client-side twin of the adapters' `recordLookupField`. Both resolve through
-	 * `@stonecrop/schema`'s `getPrimaryKeyField`, so the field a caller reads an identity out of
-	 * is the same field the adapter builds its lookup predicate on.
+	 * The client-side twin of the adapters' `recordLookupField`. Both are the same call to
+	 * `@stonecrop/schema`'s `getRecordIdField`, so the field a caller reads an identity out of is
+	 * the same field the adapter builds its lookup predicate on.
 	 *
 	 * Use this to ask whether a record *states* its own identity. `getRecordId` deliberately
 	 * falls back to `id` when the declared key is missing, which is right for resolving a link
@@ -181,7 +181,7 @@ export default class Doctype {
 	 * @public
 	 */
 	get recordIdField(): string {
-		return getPrimaryKeyField(this.getSchemaArray())?.fieldname ?? 'id'
+		return getRecordIdField(this.getSchemaArray())
 	}
 
 	/**

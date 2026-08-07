@@ -6,7 +6,7 @@ import type {
 	ValueField,
 	GetRecordOptions,
 } from '@stonecrop/schema'
-import { camelToSnake, getPrimaryKeyField, pascalToSnake, resolveLinkRenderMode } from '@stonecrop/schema'
+import { camelToSnake, getRecordIdField, pascalToSnake, resolveLinkRenderMode } from '@stonecrop/schema'
 import { loadOneWithPgClient, sideEffectWithPgClient } from '@dataplan/pg'
 import type { PgClient, PgExecutor } from '@dataplan/pg'
 import { constant, lambda, object } from 'postgraphile/grafast'
@@ -209,11 +209,10 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 											continue
 										}
 
+										// Not `data: null` — that is the answer for a record that does not exist, and a
+										// doctype nobody can look up is a misconfiguration, not an empty result.
 										const pkMeta = getPkMeta(meta)
-										if (!pkMeta) {
-											for (const i of indices) results[i] = { data: null, doctype }
-											continue
-										}
+										if (!pkMeta) throw unresolvableIdentityError(doctype)
 										const pkColumn = camelToSnake(pkMeta.fieldname)
 										const columns = getSqlColumns(meta)
 										const ids = indices.map(i => String(specs[i].id))
@@ -299,8 +298,11 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 															rowData[linkName] = null
 															continue
 														}
+														// `continue` here would drop the link from the payload, which reads to the
+														// client as "this record has no such relation" rather than "its target
+														// cannot be identified".
 														const targetPkMeta = getPkMeta(targetMeta)
-														if (!targetPkMeta) continue
+														if (!targetPkMeta) throw unresolvableIdentityError(targetMeta.name)
 														const targetPkColumn = camelToSnake(targetPkMeta.fieldname)
 														// TODO(perf): one-side link FK lookups per row could be parallelized; needs collecting across links before await
 														// oxlint-disable-next-line eslint/no-await-in-loop -- one FK lookup per link per row; see TODO above
@@ -465,7 +467,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 									// primary key, which an eager check would refuse for no reason.
 									const pkColumn = () => {
 										const pkMeta = getPkMeta(meta)
-										if (!pkMeta) throw new Error(`No primary key for doctype: ${spec.doctype}`)
+										if (!pkMeta) throw unresolvableIdentityError(String(spec.doctype))
 										return camelToSnake(pkMeta.fieldname)
 									}
 									// Record envelope: [{ id, data }] — the transition keys off the record id.
@@ -598,14 +600,33 @@ export function getSqlColumns(meta: DoctypeMeta): string {
 }
 
 /**
- * Find the field marked `primaryKey` in the doctype.
- * Returns undefined when none is marked (PK-less doctypes).
+ * Resolve the declared field this doctype's records are looked up by.
  *
- * Delegates to `@stonecrop/schema` so the server's identity predicate and the client's record
- * keying resolve the same field — this used to be a private re-implementation of that rule.
+ * Delegates the *rule* to `@stonecrop/schema` so the server's SQL identity predicate and the
+ * client's record keying name the same field — including the `id` fallback, whose absence here
+ * used to make the two disagree: a doctype declaring no `primaryKey` was keyed by `id` on the
+ * client and refused outright by this adapter, so every fetch answered `null` and looked exactly
+ * like a record that does not exist.
+ *
+ * Returns `undefined` only when the resolved name is not a declared top-level field — a doctype
+ * with no `primaryKey` and no `id`. That case cannot be served: `getSqlColumns` selects declared
+ * fields only, so the row map would key on a column the SELECT never returned and every lookup
+ * would miss silently. Callers must say so rather than answer `null`.
  */
 function getPkMeta(meta: DoctypeMeta): ValueField | undefined {
-	return getPrimaryKeyField(meta.fields)
+	const fieldname = getRecordIdField(meta.fields)
+	return meta.fields.find((f): f is ValueField => f.kind === 'field' && f.fieldname === fieldname)
+}
+
+/**
+ * The error a caller raises when `getPkMeta` cannot resolve an identity field, naming the doctype
+ * and both repairs. Shared so the three lookup sites report one diagnosis.
+ */
+function unresolvableIdentityError(doctype: string): Error {
+	return new Error(
+		`Doctype "${doctype}" has no identity field: it declares no field with \`primaryKey: true\` ` +
+			`and no field named \`id\`. Declare one of the two — records cannot be fetched or acted on until then.`
+	)
 }
 
 /**

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "comment": "Add getRecordIdField(fields), the single definition of which field identifies a record — the declared primaryKey, or id when none is declared. That one-line rule had been restated at four sites and the fourth, the Postgres adapter, omitted the id fallback, so a doctype the client keyed by id was one the server could not look up at all. DoctypeMeta now also rejects a doctype declaring more than one primaryKey: there is no composite representation, so getPrimaryKeyField takes the first match and the extras are silently ignored, leaving an adapter to build its lookup on a column that need not be unique. Declaring none stays legal and is not an omission — a surrogate-key doctype declares no key and resolves through the documented fallback",
+      "type": "minor",
+      "packageName": "@stonecrop/schema"
+    }
+  ],
+  "packageName": "@stonecrop/schema"
+}

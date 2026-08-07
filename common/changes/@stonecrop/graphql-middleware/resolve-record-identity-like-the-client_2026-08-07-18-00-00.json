@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "comment": "Resolve a record's identity field through @stonecrop/schema's getRecordIdField, so this adapter and the client name the same field. A doctype declaring no primaryKey is now fetchable through the documented id fallback; previously stonecropRecord answered data: null for it, which is the same answer as a record that does not exist, while the client resolved that doctype's identity to id and keyed records by it — both sides silent and disagreeing. When no identity can be resolved at all (no primaryKey and no declared id field) stonecropRecord and a link's target lookup now throw an error naming the doctype and both repairs, instead of returning null and dropping the link; stonecropAction already threw and keeps resolving the key lazily, so a record-less command still reaches its handler",
+      "type": "minor",
+      "packageName": "@stonecrop/graphql-middleware"
+    }
+  ],
+  "packageName": "@stonecrop/graphql-middleware"
+}

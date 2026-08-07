@@ -24,6 +24,7 @@ export {
 	FieldsetFieldSchema,
 	getPrimaryKeyField,
 	getRecordIdentity,
+	getRecordIdField,
 	INTROSPECTED_IDENTITY_PROPS,
 	normalizeFieldKind,
 	TableFieldSchema,

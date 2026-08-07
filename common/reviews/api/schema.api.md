@@ -296,6 +296,9 @@ export function getPrimaryKeyField(fields: readonly DoctypeField[]): ValueField 
 export function getRecordIdentity(fields: readonly DoctypeField[], record: Record<string, unknown>): string | undefined;
 
 // @public
+export function getRecordIdField(fields: readonly DoctypeField[]): string;
+
+// @public
 export interface GetRecordOptions {
     includeNested?: boolean | string[];
     maxDepth?: number;

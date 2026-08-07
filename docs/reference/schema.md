@@ -188,7 +188,7 @@ Find the field a doctype marks as its primary key, or `undefined` when none is m
 
 This is the single definition of "which field identifies a record". Both sides depend on it: the middleware builds the SQL identity predicate from it, and the client resolves a record's route/store key from it. Call this; never re-derive the rule at the call site, or the two will drift and the client will key records by a column the server never queried.
 
-Two deliberate limits, both matching the shape `primaryKey` actually has: - Only **top-level** fields are scanned. `primaryKey` is a `ValueField` flag and a fieldset's children are not identity columns, so a nested match would be an authoring error, not a PK. - The **first** match wins. Nothing in the schema enforces exactly one `primaryKey: true`, and there is no composite-key representation — a doctype with several is already malformed, and picking the first is what the middleware has always done.
+Two deliberate limits, both matching the shape `primaryKey` actually has: - Only **top-level** fields are scanned. `primaryKey` is a `ValueField` flag and a fieldset's children are not identity columns, so a nested match would be an authoring error, not a PK. - The **first** match wins. Identity is single-valued by design — a doctype describes the API surface, and mapping a composite database key onto one identity there is the adapter's job — so a doctype declaring several is malformed rather than composite. `DoctypeMeta` rejects that at the load gate; this stays total for callers holding fields that never went through it.
 
 **Signature:**
 
@@ -220,6 +220,28 @@ export declare function getRecordIdentity(fields: readonly DoctypeField[], recor
 |-----------|------|-------------|
 | fields | `readonly DoctypeField[]` | the doctype's top-level fields |
 | record | `Record<string, unknown>` | the record to read the identity from |
+
+### getRecordIdField
+
+The name of the field a record is identified by: the declared `primaryKey`, or `id` when the doctype declares none.
+
+The `id` fallback is load-bearing, not defensive — a surrogate-key doctype carries an `id` column and marks no primary key, so "nothing declared" means `id`, not "no identity".
+
+This exists because that one-line rule had been restated at four sites — the client's `Doctype.recordIdField`, both nuxt hosts' `recordLookupField`, and the Postgres adapter — and the fourth had omitted the fallback, so a doctype the client keyed by `id` was one the adapter could not look up at all. Call this; a fifth restatement is how they diverge again.
+
+The returned name is not guaranteed to be a declared field: a doctype that declares no `primaryKey` and no `id` yields `'id'` regardless. An adapter that must build a SQL predicate from it has to confirm the field exists and say so when it does not, because selecting a column the doctype never declared returns nothing rather than failing.
+
+**Signature:**
+
+```typescript
+export declare function getRecordIdField(fields: readonly DoctypeField[]): string;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| fields | `readonly DoctypeField[]` | the doctype's top-level fields |
 
 ### isActionAllowedInState
 

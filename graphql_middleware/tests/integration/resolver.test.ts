@@ -123,8 +123,20 @@ beforeAll(async () => {
 				},
 			},
 		},
-		// No `primaryKey`, and no `sc_signal` table exists. A record-less command must reach its
-		// handler anyway: nothing about it consults a key or a row.
+		// Declares no `primaryKey` but carries an `id` field, which is what a surrogate-keyed
+		// doctype looks like — the shape `getRecordIdField`'s `id` fallback exists for. Backed by
+		// sc_draft through the `tables` override so it can be read without a second table.
+		ScSurrogate: {
+			name: 'ScSurrogate',
+			fields: [
+				{ kind: 'field', fieldname: 'id', component: 'ATextInput', label: 'ID' },
+				{ kind: 'field', fieldname: 'name', component: 'ATextInput', label: 'Name' },
+				{ kind: 'field', fieldname: 'status', component: 'ATextInput', label: 'Status' },
+			],
+		},
+		// No `primaryKey`, no `id` field, and no `sc_signal` table exists. A record-less command
+		// must reach its handler anyway: nothing about it consults a key or a row. It doubles as
+		// the doctype whose identity genuinely cannot be resolved — see stonecropRecord below.
 		ScSignal: {
 			name: 'ScSignal',
 			fields: [{ kind: 'field', fieldname: 'label', component: 'ATextInput', label: 'Label' }],
@@ -224,7 +236,7 @@ beforeAll(async () => {
 		extends: [PostGraphileAmberPreset],
 		// Handlers are inert for every action that does not name one, so the transition suites
 		// above and below are unaffected by their presence.
-		plugins: [createStonecropPlugin({ actionHandlers })],
+		plugins: [createStonecropPlugin({ actionHandlers, tables: { ScSurrogate: 'sc_draft' } })],
 		pgServices: [pgService],
 	})
 	schema = result.schema
@@ -304,6 +316,28 @@ describe('stonecropRecord', { tags: ['integration', 'graphql'] }, () => {
 		)
 		const record = (result as any).data?.stonecropRecord
 		expect(record?.unknownLinks).toContain('missing')
+	})
+
+	// A doctype that declares no `primaryKey` used to be unfetchable here: the adapter resolved the
+	// key field with no `id` fallback and answered `data: null`, while the client resolved the same
+	// doctype's identity to `id` and keyed records by it. Both sides silent, and disagreeing.
+	it('fetches a record from a doctype that declares no primaryKey, via the id fallback', async () => {
+		const result = await runQuery(`query { stonecropRecord(doctype: "ScSurrogate", id: "1") { doctype data } }`)
+		const record = (result as any).data?.stonecropRecord
+		expect(record?.doctype).toBe('ScSurrogate')
+		expect(record?.data?.name).toBe('Stateless Row')
+	})
+
+	// The fallback is not unconditional: with neither a declared key nor an `id` field there is no
+	// column to match against, and answering `data: null` would report a misconfigured doctype as
+	// an absent record. The error has to name the doctype and both repairs.
+	it('errors, rather than reporting not-found, when no identity field can be resolved', async () => {
+		const result = await runQuery(`query { stonecropRecord(doctype: "ScSignal", id: "1") { doctype data } }`)
+		expect((result as any).data?.stonecropRecord).toBeNull()
+		const message = String((result as any).errors?.[0]?.message ?? '')
+		expect(message).toContain('ScSignal')
+		expect(message).toContain('primaryKey')
+		expect(message).toContain('`id`')
 	})
 })
 

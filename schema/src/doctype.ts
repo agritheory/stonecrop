@@ -325,6 +325,33 @@ export const DoctypeMeta = z
 		title: 'DoctypeMeta',
 		description: 'Doctype metadata - complete definition of a doctype',
 	})
+	.superRefine((doctype, ctx) => {
+		// A record is identified by exactly one field here, and that is the design rather than a
+		// limitation awaiting composite support. A doctype describes the **API surface** a client
+		// interacts with, not the table behind it; how a composite database key maps onto a single
+		// identity on that surface is the server's business, and the client neither sees nor
+		// encodes the parts. So there is nothing for a doctype-level composite key to express.
+		//
+		// Declaring several is therefore malformed, and silently so: `getPrimaryKeyField` takes the
+		// first match and the rest are ignored, leaving an adapter to key records on a column that
+		// need not be unique — `stonecropRecord`'s row map then keeps whichever row comes last.
+		// Refusing at the gate is what makes it say so.
+		//
+		// Zero keys stays legal and is not an omission: a surrogate-key doctype declares none and
+		// resolves through `getRecordIdField`'s documented `id` fallback.
+		const declared = doctype.fields.filter(f => f.kind === 'field' && f.primaryKey)
+		if (declared.length > 1) {
+			ctx.addIssue({
+				code: 'custom',
+				path: ['fields'],
+				message: `Doctype declares ${declared.length} primaryKey fields (${declared
+					.map(f => (f.kind === 'field' ? f.fieldname : ''))
+					.join(
+						', '
+					)}); a record is identified by exactly one field. A composite database key is mapped to a single identity by the adapter, so a doctype never declares its parts`,
+			})
+		}
+	})
 
 /**
  * Doctype metadata type inferred from Zod schema

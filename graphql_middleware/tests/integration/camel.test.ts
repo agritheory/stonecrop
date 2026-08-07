@@ -44,7 +44,9 @@ beforeAll(async () => {
 				{ kind: 'field', fieldname: 'camelItemId', component: 'ATextInput', label: 'Camel Item ID' },
 			],
 		},
-		// Doctype with no PrimaryKey field declared — stonecropRecord must return null
+		// No `primaryKey` and no `id` field, so no identity can be resolved at all — note this is
+		// distinct from declaring no key over a table that has `id`, which resolves through the
+		// documented fallback. `stonecropRecord` must refuse this one by name.
 		ScNoPk: {
 			name: 'ScNoPk',
 			fields: [
@@ -126,10 +128,15 @@ describe('stonecropRecord — camelCase fieldnames', { tags: ['integration', 'gr
 		expect(record?.data).toBeNull()
 	})
 
-	it('returns null when no PrimaryKey field is declared on the doctype', async () => {
+	it('errors when the doctype declares neither a primaryKey nor an `id` field', async () => {
+		// This used to answer `data: null` — the same shape as a record that does not exist. It is
+		// the sharpest case for why that was wrong: `sc_note` *does* have an `id` column, but the
+		// doctype never declares it, so `getSqlColumns` would not select it and every lookup would
+		// miss against a column that was right there. Declaring `id`, or a `primaryKey`, is the fix,
+		// and the error has to say so.
 		const result = await runQuery(`query { stonecropRecord(doctype: "ScNoPk", id: "1") { doctype data } }`)
-		const record = (result as any).data?.stonecropRecord
-		expect(record?.data).toBeNull()
+		expect((result as any).data?.stonecropRecord).toBeNull()
+		expect(String((result as any).errors?.[0]?.message ?? '')).toContain('ScNoPk')
 	})
 })
 

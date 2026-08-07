@@ -107,19 +107,21 @@ describe('doctype fixtures', { tags: ['unit'] }, () => {
 	})
 
 	it('every doctype declares exactly one primary key', () => {
-		// The Postgres adapter treats a declared `primaryKey` as required: with none, `stonecropRecord`
-		// returns `data: null` and `stonecropAction` fails with "No primary key for doctype". Every
-		// fixture here previously declared none, so under that adapter not one of them could fetch a
-		// record. Declaring the key is the resolution; this keeps the next fixture from regressing.
+		// Declaring none is now legal everywhere — every host resolves the identity field through
+		// `getRecordIdField`, whose `id` fallback the schema documents as load-bearing. This stays a
+		// repo convention rather than a rule: these fixtures are all surrogate- or natural-keyed with
+		// a key worth naming, and saying so keeps the declaration from quietly rotting away.
 		//
-		// More than one is equally a bug: `getPrimaryKeyField` takes the first match, so a second
-		// declaration is silently ignored and the record keys off whichever field happens to come first.
+		// More than one is a different matter, and `DoctypeMeta` refuses it at the load gate: identity
+		// is single-valued on the API surface by design, so the extras say nothing, and they would be
+		// silently ignored while the record keyed off whichever field happens to come first.
 		//
-		// `assignment` is the one honest exception. It is a junction doctype whose identity is the pair
-		// (user, issue) — both required links — and `primaryKey` is a field-level boolean with no
-		// composite representation. It is DocBuilder-only (absent from playground/schema.graphql, linked
-		// solely as /docbuilder/assignment), so nothing fetches it by key. Remove this exemption if
-		// composite keys are ever modelled, or if the doctype gains its own identifier.
+		// `assignment` is the exemption. Its database identity is the pair (user, issue) — both
+		// required links — and a doctype does not declare the parts of a composite key: mapping one
+		// onto a single identity is the adapter's job, and this doctype has no adapter. It is
+		// DocBuilder-only (absent from playground/schema.graphql, linked solely as
+		// /docbuilder/assignment), so nothing fetches it by key. Remove this exemption when it gains a
+		// server that exposes an identity for it.
 		const COMPOSITE_KEY_EXEMPT = new Set(['playground/assignment.json'])
 
 		const offenders: string[] = []

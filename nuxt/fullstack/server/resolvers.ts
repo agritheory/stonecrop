@@ -7,7 +7,7 @@
 
 import { constant, lambda, loadOne, object } from 'grafast'
 import { getMeta, getAllMeta, applyGuardedTransition } from '@stonecrop/graphql-middleware'
-import { getPrimaryKeyField } from '@stonecrop/schema'
+import { getRecordIdField } from '@stonecrop/schema'
 import type { DoctypeMeta } from '@stonecrop/schema'
 
 import { actionHandlers } from './action-handlers'
@@ -50,12 +50,13 @@ function toQueryName(doctypeName: string, singular: boolean = true): string {
  *
  * The `id` fallback covers doctypes that declare no `primaryKey`. Every doctype in this repo now
  * declares one, enforced by test/doctype-fixtures.test.ts, so in-repo the fallback is inert.
- * It stays for consumer doctypes that have not adopted the rule: the Postgres adapter refuses
- * those outright (`data: null`), and this host stays permissive. The conformance suite records
- * that difference rather than asserting one answer.
+ * It stays for consumer doctypes that have not adopted the rule, and every host now applies it —
+ * the Postgres adapter used to omit it and refuse those doctypes outright, which is what made the
+ * hosts disagree. This is a thin wrapper on the shared rule, kept for the `meta`-shaped signature
+ * the resolvers call it with.
  */
 export function recordLookupField(meta: DoctypeMeta): string {
-	return getPrimaryKeyField(meta.fields)?.fieldname ?? 'id'
+	return getRecordIdField(meta.fields)
 }
 
 /**

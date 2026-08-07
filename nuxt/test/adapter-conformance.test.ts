@@ -240,6 +240,10 @@ const IDENTITY_CASES: Array<{ label: string; meta: DoctypeMeta; expected: string
 	},
 	{
 		label: 'the first declared primary key wins when several are marked',
+		// The resolution stays total so callers holding un-gated fields get an answer, but a doctype
+		// in this shape never reaches an adapter: `DoctypeMeta` rejects more than one declared key.
+		// Identity is single-valued on the API surface by design, and a composite database key is
+		// the adapter's to map onto it, so the extras say nothing and would be silently ignored.
 		meta: {
 			name: 'Ambiguous',
 			fields: [field('code', { primaryKey: true }), field('altCode', { primaryKey: true })],
@@ -276,33 +280,26 @@ describe.each(HOSTS.filter(h => h.lookupField))(
 	}
 )
 
-describe('record identity — unresolved divergence', { tags: ['unit', 'graphql'] }, () => {
+describe('record identity — the no-primaryKey rule, now settled', { tags: ['unit', 'graphql'] }, () => {
 	/**
 	 * What should an adapter do for a doctype that declares NO `primaryKey`?
 	 *
-	 * The two shipped answers disagree, and neither is obviously wrong:
+	 * This used to record two shipped answers instead of asserting one. The nuxt hosts fell back to
+	 * `id`; the Postgres adapter had no fallback and answered `data: null` from `stonecropRecord`,
+	 * while `stonecropAction` failed loudly on the identical condition — so the adapter was not even
+	 * consistent with itself, and its silent half was indistinguishable from a record that does not
+	 * exist. Worse, the client resolves that same doctype's identity to `id` and keys records by it,
+	 * so client and server disagreed with nothing to say so.
 	 *
-	 *   - The Postgres adapter treats the declaration as required. With no `primaryKey` it
-	 *     returns `data: null` from `stonecropRecord` (plugin/postgraphile.ts, the `!pkMeta`
-	 *     branch), and `stonecropAction` fails loudly with `No primary key for doctype:` — but
-	 *     only for an action that reads or writes a record's state, since the key is resolved
-	 *     lazily. A record-less command still reaches its handler. Note the adapter is already
-	 *     inconsistent with itself: the same condition fails silently in one operation and
-	 *     loudly in the other.
-	 *   - Both nuxt hosts fall back to `id`, which is what `@stonecrop/schema`'s
-	 *     `getRecordIdentity` documents as correct: "surrogate-key doctypes carry an `id` column
-	 *     and never mark a primary key".
+	 * Settled in favour of the permissive answer, because the schema already specifies it:
+	 * `getRecordIdentity` calls the `id` fallback "load-bearing, not defensive". The rule now has a
+	 * single definition, `getRecordIdField`, and all three hosts call it.
 	 *
-	 * Half-resolved. The repo took the strict side for its own data: every doctype now declares a
-	 * key, enforced by `doctype-fixtures.test.ts` (the one exemption, `assignment`, is a junction
-	 * doctype with a composite identity the schema cannot express). That removes the practical
-	 * breakage — previously no fixture could fetch a record under the Postgres adapter.
-	 *
-	 * What is still open is the rule for **consumer** doctypes that declare nothing. The nuxt hosts
-	 * stay permissive, the Postgres adapter refuses, and the middleware remains inconsistent with
-	 * itself (silent in `stonecropRecord`, loud in `stonecropAction`). Deciding that changes
-	 * shipped behaviour, so this records both rather than asserting one. Fold it into the shared
-	 * cases above once settled — and fix the middleware's own silent/loud split either way.
+	 * The fallback is not unconditional. `getRecordIdField` always returns a name, but a doctype
+	 * declaring neither a `primaryKey` nor an `id` field names a column that does not exist, and an
+	 * adapter building a SQL predicate from it must say so — see the executed pair in
+	 * `graphql_middleware/tests/integration/resolver.test.ts`, which fetches through the fallback
+	 * and errors when nothing can be resolved.
 	 */
 	const noPk = { name: 'Surrogate', fields: [field('id'), field('label')] } as unknown as DoctypeMeta
 
@@ -311,10 +308,13 @@ describe('record identity — unresolved divergence', { tags: ['unit', 'graphql'
 		expect(fullstackLookupField(noPk)).toBe('id')
 	})
 
-	it('the Postgres adapter has no such fallback — documented, not asserted as correct', () => {
-		// Pinned as prose against the source so this stays visible if the branch is ever removed.
+	it('the Postgres adapter resolves the same field through the same rule', () => {
+		// Pinned as prose against the source: this file cannot import the plugin (doing so boots
+		// postgraphile + pg), so the shared call is what is checkable here. The behaviour it
+		// produces is asserted for real against PGlite in the middleware's integration suite.
 		const src = readSdl('../../graphql_middleware/src/plugin/postgraphile.ts')
-		expect(src).toContain('No primary key for doctype:')
+		expect(src).toContain('getRecordIdField(meta.fields)')
+		expect(src).not.toContain('getPrimaryKeyField')
 	})
 })
 
