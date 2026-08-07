@@ -1,12 +1,17 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { addServerHandler, addServerPlugin } from '@nuxt/kit'
 
-import type { ModuleOptions } from '../../src/types'
+import type { GrafservRuntimeConfig, ModuleOptions, SchemaRuntimeConfig } from '../../src/types'
 
 interface MockNitroConfig {
 	alias: Record<string, string>
 	runtimeConfig: {
-		grafserv?: ModuleOptions
+		/**
+		 * What the module *writes*, which is not what it *reads*. Authored `ModuleOptions` are
+		 * resolved during `nitro:config` into the narrower `GrafservRuntimeConfig` — absolute paths,
+		 * `resolversPath` in place of `resolvers`, and concrete `url`/`graphiql`.
+		 */
+		grafserv?: GrafservRuntimeConfig
 	}
 	virtual: Record<string, string>
 	externals: { external?: string[] }
@@ -22,6 +27,19 @@ interface MockNuxt {
 		grafserv?: ModuleOptions
 	}
 	hook: ReturnType<typeof vi.fn>
+}
+
+/**
+ * Narrow the captured runtime config to schema mode.
+ *
+ * `GrafservRuntimeConfig` is a discriminated union and only its schema arm carries `schema`, so the
+ * discriminant is asserted rather than cast past. A module that started writing the PostGraphile
+ * shape here would fail on the `type` expectation instead of silently reading `undefined`.
+ */
+function schemaRuntimeConfig(config: MockNitroConfig): SchemaRuntimeConfig {
+	const written = config.runtimeConfig.grafserv
+	expect(written?.type).toBe('schema')
+	return written as SchemaRuntimeConfig
 }
 
 /**
@@ -190,7 +208,7 @@ describe('Grafserv Module', { tags: ['unit', 'nuxt', 'graphql'] }, () => {
 			await module(options, mockNuxt)
 
 			expect(nitroConfig.runtimeConfig.grafserv).toBeDefined()
-			expect(nitroConfig.runtimeConfig.grafserv?.schema).toBe('/test/project/server/**/*.graphql')
+			expect(schemaRuntimeConfig(nitroConfig).schema).toBe('/test/project/server/**/*.graphql')
 		})
 
 		it('should handle absolute schema paths', async () => {
@@ -203,7 +221,7 @@ describe('Grafserv Module', { tags: ['unit', 'nuxt', 'graphql'] }, () => {
 
 			await module(options, mockNuxt)
 
-			expect(nitroConfig.runtimeConfig.grafserv?.schema).toBe('/absolute/path/schema.graphql')
+			expect(schemaRuntimeConfig(nitroConfig).schema).toBe('/absolute/path/schema.graphql')
 		})
 
 		it('should handle array of schema paths', async () => {
@@ -216,7 +234,7 @@ describe('Grafserv Module', { tags: ['unit', 'nuxt', 'graphql'] }, () => {
 
 			await module(options, mockNuxt)
 
-			expect(nitroConfig.runtimeConfig.grafserv?.schema).toEqual([
+			expect(schemaRuntimeConfig(nitroConfig).schema).toEqual([
 				'/test/project/server/schema1.graphql',
 				'/test/project/server/schema2.graphql',
 			])
@@ -233,7 +251,7 @@ describe('Grafserv Module', { tags: ['unit', 'nuxt', 'graphql'] }, () => {
 
 			await module(options, mockNuxt)
 
-			expect(nitroConfig.runtimeConfig.grafserv?.schema).toBe(schemaFn)
+			expect(schemaRuntimeConfig(nitroConfig).schema).toBe(schemaFn)
 		})
 
 		it('should create virtual module for resolvers', async () => {

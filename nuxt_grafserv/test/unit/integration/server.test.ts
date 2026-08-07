@@ -3,7 +3,7 @@
 import type { EventHandler, H3Event } from 'h3'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-import type { ModuleOptions } from '../../../src/types'
+import type { GrafservRuntimeConfig } from '../../../src/types'
 
 // Mock virtual modules FIRST before any other imports
 vi.mock('#internal/grafserv/resolvers', () => ({
@@ -154,28 +154,25 @@ describe('Nuxt Grafserv Integration', { tags: ['e2e', 'nuxt', 'graphql'] }, () =
 		})
 	})
 
-	describe('Preset Merging', () => {
-		it('should use grafserv options from preset', async () => {
+	// This block was called "Preset Merging" and asserted the opposite of its name: schema mode never
+	// merges a preset, because it calls `grafserv({ schema })` directly. The configs it passed carried
+	// an inline `preset` key that `SchemaConfig` does not declare and the handler never reads.
+	describe('Grafserv construction', () => {
+		it('constructs grafserv from the resolved runtime config in schema mode', async () => {
 			const { grafserv } = await import('grafserv/h3/v1')
 			const { getGrafservInstance, clearGrafservCache } = await import('../../../src/runtime/handler')
 
 			await clearGrafservCache()
 
-			const options: ModuleOptions = {
+			const options: GrafservRuntimeConfig = {
 				type: 'schema',
 				schema: 'test.graphql',
-				preset: {
-					grafserv: {
-						websockets: true,
-						maxRequestLength: 100000,
-						graphqlOverGET: true,
-					},
-				},
+				url: '/graphql/',
+				graphiql: false,
 			}
 
 			await getGrafservInstance(options)
 
-			// Note: grafserv only receives schema, not preset
 			expect(grafserv).toHaveBeenCalledWith(
 				expect.objectContaining({
 					schema: expect.anything(),

@@ -20,6 +20,25 @@
 			"allowWarningsInSuccessfulBuild": true
 		},
 		{
+			// Typechecks every project that opts in by defining a "test:types" script, the same
+			// opt-in convention "lint" uses. 9 of 19 projects define one; the rest are .ts-only and
+			// already covered by `heft build`.
+			//
+			// This exists because nothing else reads .vue files: `heft build` compiles only .ts and
+			// `vite build` does not typecheck, so only vue-tsc sees a <script setup> block or a
+			// template binding. That check used to run solely in pr.yml's paths-filtered matrix, so
+			// a change confined to schema/** could break a .vue file in desktop, aform, atable,
+			// node_editor, code_editor or beam and still go green.
+			//
+			// Run after `rush build` — vue-tsc needs dependencies' .d.ts files to resolve.
+			"name": "test:types",
+			"commandKind": "bulk",
+			"summary": "Runs each project's 'test:types' script (vue-tsc/tsc) repo-wide.",
+			"enableParallelism": true,
+			"ignoreMissingScript": true,
+			"allowWarningsInSuccessfulBuild": false
+		},
+		{
 			"name": "docs",
 			"commandKind": "bulk",
 			"summary": "Generate API documentation for all projects",

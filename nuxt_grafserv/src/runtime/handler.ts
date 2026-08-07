@@ -6,7 +6,7 @@ import type { GraphQLSchema, DocumentNode } from 'graphql'
 import { defineEventHandler, setResponseStatus, type H3Event } from 'h3'
 import { useRuntimeConfig } from 'nitropack/runtime'
 
-import type { ModuleOptions } from '../types'
+import type { GrafservRuntimeConfig, SchemaRuntimeConfig } from '../types'
 
 // Cache for the grafserv instance
 let grafservInstance: ReturnType<typeof grafserv> | null = null
@@ -27,7 +27,7 @@ async function loadTypeDefsFromFiles(schemaPath: string | string[]): Promise<Doc
  * Get the GraphQL schema for 'schema' mode only.
  * PostGraphile mode uses pgl.createServ() which handles schema internally.
  */
-async function getSchemaForSchemaMode(options: ModuleOptions & { type: 'schema' }): Promise<GraphQLSchema> {
+async function getSchemaForSchemaMode(options: SchemaRuntimeConfig): Promise<GraphQLSchema> {
 	if (cachedSchema) {
 		return cachedSchema
 	}
@@ -46,7 +46,6 @@ async function getSchemaForSchemaMode(options: ModuleOptions & { type: 'schema' 
 		// Load resolvers if provided
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any -- resolver module is dynamically imported; shape is unknown at compile time
 		const objects: Record<string, any> = {}
-		// @ts-expect-error - resolversPath exists on SchemaConfig runtime config
 		if (options.resolversPath) {
 			try {
 				// Import resolvers through virtual module so Nitro's alias applies
@@ -94,7 +93,7 @@ async function getSchemaForSchemaMode(options: ModuleOptions & { type: 'schema' 
  * execution context (withPgClient, pgSettings, plugin middleware, etc.).
  * For schema mode: builds a schema from files/function and wraps with grafserv.
  */
-export async function getGrafservInstance(options: ModuleOptions): Promise<ReturnType<typeof grafserv>> {
+export async function getGrafservInstance(options: GrafservRuntimeConfig): Promise<ReturnType<typeof grafserv>> {
 	if (grafservInstance) {
 		console.log('[@stonecrop/nuxt-grafserv] Returning cached grafserv instance')
 		return grafservInstance
@@ -127,7 +126,7 @@ export async function getGrafservInstance(options: ModuleOptions): Promise<Retur
 		console.log('[@stonecrop/nuxt-grafserv] Schema-mode grafserv instance created')
 	} else {
 		throw new Error(
-			`[@stonecrop/nuxt-grafserv] Invalid configuration type: ${(options as Partial<ModuleOptions>).type}`
+			`[@stonecrop/nuxt-grafserv] Invalid configuration type: ${(options as Partial<GrafservRuntimeConfig>).type}`
 		)
 	}
 
@@ -152,7 +151,7 @@ export async function clearGrafservCache(): Promise<void> {
  */
 export default defineEventHandler(async (event: H3Event) => {
 	const config = useRuntimeConfig()
-	const options = config.grafserv as ModuleOptions
+	const options = config.grafserv as GrafservRuntimeConfig
 
 	// Resolved to a concrete boolean by the module (explicit `graphiql`, else dev-only).
 	// grafserv always builds the Ruru handler and, by default, serves it on any browser

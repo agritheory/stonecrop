@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "comment": "Declare GrafservRuntimeConfig, the resolved shape the module writes into Nitro, and use it in the runtime handler and ruru-static instead of ModuleOptions. The two are not the same — the resolved config carries resolversPath rather than resolvers, and concrete url/graphiql — and conflating them is what forced a @ts-expect-error for resolversPath in the handler. Also adds tsconfig.src.json and tsconfig.test.json so test:types checks this package against the playground's app context, where Nuxt's hook types actually resolve",
+      "type": "minor",
+      "packageName": "@stonecrop/nuxt-grafserv"
+    }
+  ],
+  "packageName": "@stonecrop/nuxt-grafserv"
+}
