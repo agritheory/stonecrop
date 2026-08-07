@@ -128,10 +128,24 @@ beforeAll(async () => {
 		// sc_draft through the `tables` override so it can be read without a second table.
 		ScSurrogate: {
 			name: 'ScSurrogate',
+			// The only fixture here with a slug, so it is what exercises the handler-registration
+			// check's slug branch: `getMeta` matches a slug, but dispatch looks handlers up by name.
+			slug: 'sc-surrogate',
 			fields: [
 				{ kind: 'field', fieldname: 'id', component: 'ATextInput', label: 'ID' },
 				{ kind: 'field', fieldname: 'name', component: 'ATextInput', label: 'Name' },
 				{ kind: 'field', fieldname: 'status', component: 'ATextInput', label: 'Status' },
+			],
+		},
+		// Declares `item_id` as its identity over sc_note, where two rows share item_id = 1. The
+		// column is a plain FK with no unique constraint, which is what a mis-declared natural key
+		// looks like in practice — nothing in the schema refuses it, and a lookup silently returns
+		// whichever of the two rows came last.
+		ScAmbiguous: {
+			name: 'ScAmbiguous',
+			fields: [
+				{ kind: 'field', fieldname: 'item_id', component: 'ATextInput', primaryKey: true, label: 'Item ID' },
+				{ kind: 'field', fieldname: 'body', component: 'ATextInput', label: 'Body' },
 			],
 		},
 		// No `primaryKey`, no `id` field, and no `sc_signal` table exists. A record-less command
@@ -236,7 +250,7 @@ beforeAll(async () => {
 		extends: [PostGraphileAmberPreset],
 		// Handlers are inert for every action that does not name one, so the transition suites
 		// above and below are unaffected by their presence.
-		plugins: [createStonecropPlugin({ actionHandlers, tables: { ScSurrogate: 'sc_draft' } })],
+		plugins: [createStonecropPlugin({ actionHandlers, tables: { ScSurrogate: 'sc_draft', ScAmbiguous: 'sc_note' } })],
 		pgServices: [pgService],
 	})
 	schema = result.schema
@@ -326,6 +340,26 @@ describe('stonecropRecord', { tags: ['integration', 'graphql'] }, () => {
 		const record = (result as any).data?.stonecropRecord
 		expect(record?.doctype).toBe('ScSurrogate')
 		expect(record?.data?.name).toBe('Stateless Row')
+	})
+
+	// A declared key the database does not enforce as unique used to return an arbitrary row —
+	// `rowByPk` keeps whichever of the matching rows came last, with nothing to say a choice was
+	// made. Two rows of sc_note share item_id = 1, so this is that case exactly.
+	it('refuses to answer when the declared identity matches more than one row', async () => {
+		const result = await runQuery(`query { stonecropRecord(doctype: "ScAmbiguous", id: "1") { doctype data } }`)
+		expect((result as any).data?.stonecropRecord).toBeNull()
+		const message = String((result as any).errors?.[0]?.message ?? '')
+		expect(message).toContain('ScAmbiguous')
+		expect(message).toContain('item_id')
+		expect(message).toContain('not unique')
+	})
+
+	// The control for the case above: a genuinely unique declared key must not trip the check, and
+	// an id matching exactly one row still resolves normally.
+	it('answers normally when the declared identity matches one row', async () => {
+		const result = await runQuery(`query { stonecropRecord(doctype: "ScAmbiguous", id: "2") { doctype data } }`)
+		expect((result as any).errors).toBeUndefined()
+		expect((result as any).data?.stonecropRecord?.data?.body).toBe('Third note')
 	})
 
 	// The fallback is not unconditional: with neither a declared key nor an `id` field there is no
@@ -669,5 +703,63 @@ describe('Fieldset container fields', { tags: ['integration', 'graphql'] }, () =
 		const errors = (result as any).errors
 		expect(errors).toBeDefined()
 		expect(errors[0].message).toContain('Unknown filter field')
+	})
+})
+
+// ===========================================================================
+// actionHandlers registration — verified at schema build
+// ===========================================================================
+
+describe('actionHandlers registration', { tags: ['integration', 'graphql'] }, () => {
+	// Each case builds its own schema, because the check runs during schema construction. The
+	// doctypes registered in beforeAll are what it validates against.
+	const buildWith = async (handlers: Record<string, Record<string, ActionHandler>>) => {
+		const pgService = makePgService({ connectionString: inject('testDatabaseUrl') })
+		try {
+			await makeSchema({
+				extends: [PostGraphileAmberPreset],
+				plugins: [createStonecropPlugin({ actionHandlers: handlers })],
+				pgServices: [pgService],
+			})
+		} finally {
+			await pgService.release?.()
+		}
+	}
+
+	const noop: ActionHandler = () => Promise.resolve(undefined)
+
+	it('accepts a handler naming a real doctype and a real action', async () => {
+		await expect(buildWith({ ScItem: { recalculate: noop } })).resolves.toBeUndefined()
+	})
+
+	it('refuses a handler for a doctype nothing registers', async () => {
+		// The rename case: the doctype was renamed and its handlers were left behind. At dispatch
+		// this is invisible — an action with a nextState still transitions and still reports
+		// success, with the effect silently skipped.
+		await expect(buildWith({ ScRenamed: { submit: noop } })).rejects.toThrow(
+			/"ScRenamed": no doctype by that name is registered/
+		)
+	})
+
+	it('refuses a handler for an action the doctype does not declare', async () => {
+		await expect(buildWith({ ScItem: { recalculte: noop } })).rejects.toThrow(
+			/"ScItem\.recalculte": the doctype declares no action by that key/
+		)
+	})
+
+	it('refuses a slug-keyed registration, which resolves but could never fire', async () => {
+		// `getMeta` falls back to matching a slug, so this names a real doctype — but dispatch reads
+		// `actionHandlers[meta.name]`, so it would never be found. Reported as its own case because
+		// the repair is to re-key it, not to add the doctype.
+		await expect(buildWith({ 'sc-surrogate': { anything: noop } })).rejects.toThrow(
+			/matches the doctype named "ScSurrogate" by slug/
+		)
+	})
+
+	it('reports every offender at once', async () => {
+		// A consumer with a rename to repair should see the whole list, not fix one and rebuild.
+		await expect(buildWith({ ScGone: { a: noop }, ScItem: { b: noop, c: noop } })).rejects.toThrow(
+			/3 registered action handlers cannot be reached/
+		)
 	})
 })

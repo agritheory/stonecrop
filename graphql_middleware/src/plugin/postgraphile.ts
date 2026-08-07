@@ -166,6 +166,10 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 			throw new Error('StonecropPlugin: no pgExecutors found — ensure pgServices is configured')
 		}
 
+		// Schema build is the one point where both the registry and the plugin's options are in
+		// hand, so it is where a stale registration can be caught before it silently no-ops.
+		if (options.actionHandlers) assertActionHandlersResolve(options.actionHandlers)
+
 		return {
 			typeDefs,
 
@@ -227,6 +231,24 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 
 										// Use String() so integer PKs (e.g. serial) match the string ids from GraphQL
 										const rowByPk = new Map(rows.map(r => [String(r[pkMeta.fieldname]), r]))
+
+										// A declared key the database does not actually enforce as unique collapses several
+										// rows into that Map, and it keeps whichever came last — one arbitrary record,
+										// returned as though it were *the* record, with nothing to say so. Refuse instead.
+										//
+										// This is exact rather than a proxy for the problem: `ANY` matches each requested id
+										// once, so a shortfall here means two distinct rows genuinely share a key value. A
+										// `pg_index` check would instead ask whether a unique constraint exists, which is the
+										// cause rather than the harm — and would flag a column that is unique in practice but
+										// unconstrained, which is a real and common shape.
+										if (rows.length !== rowByPk.size) {
+											throw new Error(
+												`Doctype "${doctype}" declares "${pkMeta.fieldname}" as its identity, but that column ` +
+													`is not unique in ${resolveTableName(meta.name, options.tables)} — ${rows.length} rows ` +
+													`matched ${rowByPk.size} distinct values, so a lookup cannot say which record it means. ` +
+													`Declare a field that uniquely identifies a record, or add a unique constraint.`
+											)
+										}
 
 										for (const i of indices) {
 											const specId = String(specs[i].id)
@@ -616,6 +638,71 @@ export function getSqlColumns(meta: DoctypeMeta): string {
 function getPkMeta(meta: DoctypeMeta): ValueField | undefined {
 	const fieldname = getRecordIdField(meta.fields)
 	return meta.fields.find((f): f is ValueField => f.kind === 'field' && f.fieldname === fieldname)
+}
+
+/**
+ * Assert that every registered action handler names a doctype and an action that exist.
+ *
+ * An unregistered action is fine — a transition needs no effect. The reverse is not: a handler
+ * registered under a key nothing resolves to can never run, and **nothing says so at dispatch**.
+ * `applyGuardedTransition` fails loudly only when the action also has no state outcome; when it
+ * has one, the missing effect is skipped and the state write still reports success. So renaming a
+ * doctype leaves `approve` moving records to APPROVED while its ledger posting quietly stops.
+ *
+ * Two ways a key fails to resolve, and the second is the trap. `getMeta` falls back to matching a
+ * slug, but dispatch looks handlers up by `meta.name`, so a slug-keyed registration resolves to a
+ * real doctype here and still never fires. It is reported as its own case rather than as "unknown
+ * doctype", because the repair is different.
+ *
+ * Throws rather than warns: there is no legitimate reason to register a handler for an action that
+ * does not exist, and the alternative is a silent half-executed workflow. Every offender is
+ * collected so a consumer with several fixes them in one pass.
+ */
+function assertActionHandlersResolve(actionHandlers: Record<string, Record<string, ActionHandler>>): void {
+	// Nothing registered, nothing to check.
+	const registered = Object.entries(actionHandlers)
+	if (registered.length === 0) return
+
+	// An empty registry cannot tell "this key is stale" from "doctypes have not loaded yet" — a
+	// host is free to build the schema before its loader runs. Warn on that ambiguity rather than
+	// failing a boot that is merely early.
+	if (getAllMeta().length === 0) {
+		// oxlint-disable-next-line no-console
+		console.warn(
+			'[@stonecrop/graphql-middleware] Schema built with no doctypes registered, so the ' +
+				'`actionHandlers` map could not be verified. Load doctypes before building the schema to ' +
+				'have stale handler keys reported.'
+		)
+		return
+	}
+
+	const orphans: string[] = []
+	for (const [doctypeKey, handlers] of registered) {
+		const meta = getMeta(doctypeKey)
+		if (!meta) {
+			orphans.push(`"${doctypeKey}": no doctype by that name is registered`)
+			continue
+		}
+		if (meta.name !== doctypeKey) {
+			orphans.push(
+				`"${doctypeKey}": matches the doctype named "${meta.name}" by slug, but handlers are looked up by name — key it "${meta.name}"`
+			)
+			continue
+		}
+		const actions = meta.workflow?.actions ?? {}
+		for (const actionKey of Object.keys(handlers)) {
+			if (!(actionKey in actions)) {
+				orphans.push(`"${doctypeKey}.${actionKey}": the doctype declares no action by that key`)
+			}
+		}
+	}
+
+	if (orphans.length > 0) {
+		throw new Error(
+			`StonecropPlugin: ${orphans.length} registered action handler${orphans.length === 1 ? '' : 's'} ` +
+				`cannot be reached and would never run:\n  ${orphans.join('\n  ')}`
+		)
+	}
 }
 
 /**

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "comment": "Verify at schema build that every actionHandlers key names a registered doctype and an action that doctype declares, throwing with every offender listed. A handler that cannot be reached is invisible at dispatch: applyGuardedTransition fails loudly only when the action also has no state outcome, so an action with a nextState still transitions and still reports success while its effect is silently skipped — renaming a doctype leaves approve moving records to APPROVED with its ledger posting quietly stopped. A slug-keyed registration is reported as its own case, because getMeta matches a slug while dispatch looks handlers up by meta.name, so it resolves here and could still never fire. When no doctypes are registered at all the check warns instead, since it cannot tell a stale key from a loader that has not run. Separately, stonecropRecord now refuses to answer when the declared identity column matches more than one row: it previously kept whichever row came last and returned that one arbitrary record as though it were the record",
+      "type": "minor",
+      "packageName": "@stonecrop/graphql-middleware"
+    }
+  ],
+  "packageName": "@stonecrop/graphql-middleware"
+}
