@@ -77,18 +77,6 @@ export declare function getGlobalTriggerEngine(options?: FieldTriggerOptions): F
 |-----------|------|-------------|
 | options | `FieldTriggerOptions` | Optional configuration for the field trigger engine |
 
-### getStonecrop
-
-Returns the global Stonecrop singleton instance, or `undefined` if no instance has been created yet.
-
-Use this when you need the Stonecrop instance outside a Vue component context (e.g., in workflow action handlers, plugin setup code, or non-component utilities). Inside a component, prefer `useStonecrop()`.
-
-**Signature:**
-
-```typescript
-export declare function getStonecrop(): Stonecrop | undefined;
-```
-
 ### isDraftRecordId
 
 Whether a record id refers to a record that has not been saved yet.
@@ -307,12 +295,14 @@ export declare function useOperationLog(config?: Partial<OperationLogConfig>): {
 
 ### useStonecrop
 
-Unified Stonecrop composable - handles both general operations and HST reactive integration
+Unified Stonecrop composable - handles both general operations and HST reactive integration.
+
+Called with no doctype, it returns the Stonecrop instance and the operation log, and touches the network not at all. Name a doctype to get the HST surface.
 
 **Signature:**
 
 ```typescript
-export declare function useStonecrop(): BaseStonecropReturn | HSTStonecropReturn;
+export declare function useStonecrop(): BaseStonecropReturn;
 ```
 
 ### useStonecrop
@@ -321,7 +311,7 @@ Unified Stonecrop composable with HST integration for a specific doctype and rec
 
 When a `Doctype` instance is passed, all synchronous initialisation (`hstStore`, `resolvedSchema`, `formData`, `handleHSTChange`, operation-log wiring) is performed during `setup()` — before the first render and without awaiting any lifecycle hook. Callers can read `hstStore.value`, `resolvedSchema.value`, and `formData.value` immediately after calling this composable; no `nextTick`, `flushPromises`, or `setTimeout` is required.
 
-The only remaining async work in `onMounted` is fetching an existing record from the server when `recordId` is not a draft, and lazy-loading a doctype by slug string.
+The only async work in `onMounted` is fetching an existing record from the server when `recordId` is not a draft, and lazy-loading a doctype by slug string. Both need a doctype named here — nothing is inferred from the route.
 
 **Signature:**
 

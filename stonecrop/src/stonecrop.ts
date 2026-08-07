@@ -592,20 +592,6 @@ export class Stonecrop {
 }
 
 /**
- * Returns the global Stonecrop singleton instance, or `undefined` if no
- * instance has been created yet.
- *
- * Use this when you need the Stonecrop instance outside a Vue component
- * context (e.g., in workflow action handlers, plugin setup code, or
- * non-component utilities). Inside a component, prefer `useStonecrop()`.
- *
- * @public
- */
-export function getStonecrop(): Stonecrop | undefined {
-	return Stonecrop._root
-}
-
-/**
  * Create an Error with a `code` property for programmatic error handling.
  * @internal
  */

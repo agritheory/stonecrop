@@ -18,7 +18,7 @@ import {
 } from './field-triggers'
 import plugin from './plugins'
 import Registry from './registry'
-import { Stonecrop, getStonecrop } from './stonecrop'
+import { Stonecrop } from './stonecrop'
 import { HST, createHST, type HSTNode } from './stores/hst'
 import { useOperationLogStore } from './stores/operation-log'
 import { useValidationStore } from './stores/validation'
@@ -72,7 +72,6 @@ export {
 	// Field-validation store
 	useValidationStore,
 	// Utility functions
-	getStonecrop,
 }
 
 // Default export is the Vue plugin

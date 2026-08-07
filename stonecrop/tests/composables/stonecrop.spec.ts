@@ -4,7 +4,7 @@ import type { DoctypeField } from '@stonecrop/schema'
 import { createPinia, setActivePinia } from 'pinia'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { createRouter, createMemoryHistory } from 'vue-router'
-import { defineComponent, ref, computed } from 'vue'
+import { defineComponent } from 'vue'
 import { type MachineConfig } from 'xstate'
 
 import { useStonecrop } from '../../src/composables/stonecrop'
@@ -189,26 +189,16 @@ describe('useStonecrop composable', { tags: ['unit'] }, () => {
 		expect(vm.stonecrop).toBeInstanceOf(Stonecrop)
 	})
 
-	it('handles route with doctype slug and creates HST sections', async () => {
-		const mockDoctype = createMockDoctype('Task')
-		const mockGetMeta = vi.fn().mockResolvedValue(mockDoctype)
+	it('infers nothing from the route: no getMeta, no fetch, and base mode only', async () => {
+		// The inverse of two tests that used to live here, which asserted that a no-argument call
+		// resolved the route's doctype and fetched its record. Every no-argument caller wanted only
+		// the instance, so each of those fetches was paid for output nobody read.
+		const mockGetMeta = vi.fn().mockResolvedValue(createMockDoctype('Task'))
 		registry.getMeta = mockGetMeta
+		const getRecord = vi.spyOn(stonecrop, 'getRecord').mockResolvedValue(undefined as any)
 
-		const mockFetch = vi.fn().mockResolvedValue({
-			json: () =>
-				Promise.resolve([
-					{ id: '1', title: 'Task 1' },
-					{ id: '2', title: 'Task 2' },
-				]),
-		})
-		vi.stubGlobal('fetch', mockFetch)
-
-		// Mock router current route
 		vi.spyOn(mockRouter, 'currentRoute', 'get').mockReturnValue({
-			value: {
-				path: '/task',
-				params: {},
-			},
+			value: { path: '/task/123', params: {} },
 		})
 
 		const TestComponent = defineComponent({
@@ -219,81 +209,19 @@ describe('useStonecrop composable', { tags: ['unit'] }, () => {
 		})
 
 		const wrapper = mount(TestComponent, {
-			global: {
-				provide: {
-					$registry: registry,
-					$stonecrop: stonecrop,
-				},
-			},
+			global: { provide: { $registry: registry, $stonecrop: stonecrop } },
 		})
 
-		// Wait for async operations to complete
 		await wrapper.vm.$nextTick()
-		await new Promise(resolve => setTimeout(resolve, 10))
+		await new Promise(resolve => setTimeout(resolve, 20))
 
-		const vm = wrapper.vm
-		expect(mockGetMeta).toHaveBeenCalledWith({
-			path: '/task',
-			segments: ['task'],
-		})
-
-		// Check that HST store has the doctype section
-		expect(vm.stonecrop).toBeDefined()
-		const store = vm.stonecrop!.getStore()
-		expect(store.has('task')).toBe(true)
-	})
-
-	it('handles route with both doctype and record id', async () => {
-		const mockDoctype = createMockDoctype('Task')
-		const mockGetMeta = vi.fn().mockResolvedValue(mockDoctype)
-		registry.getMeta = mockGetMeta
-
-		// Mock client for record fetching
-		const mockClient = {
-			getMeta: vi.fn(),
-			getRecord: vi.fn().mockResolvedValue({ record: { id: '123', title: 'Test Task' }, unknownLinks: [] }),
-			getRecords: vi.fn(),
-			runAction: vi.fn(),
-		}
-		stonecrop.setClient(mockClient)
-
-		// Mock router current route
-		vi.spyOn(mockRouter, 'currentRoute', 'get').mockReturnValue({
-			value: {
-				path: '/task/123',
-				params: {},
-			},
-		})
-
-		const TestComponent = defineComponent({
-			setup() {
-				return useStonecrop()
-			},
-			template: '<div>test</div>',
-		})
-
-		const wrapper = mount(TestComponent, {
-			global: {
-				provide: {
-					$registry: registry,
-					$stonecrop: stonecrop,
-				},
-			},
-		})
-
-		// Wait for async operations to complete
-		await wrapper.vm.$nextTick()
-		await new Promise(resolve => setTimeout(resolve, 10))
-
-		const vm = wrapper.vm
-		expect(mockGetMeta).toHaveBeenCalledWith({
-			path: '/task/123',
-			segments: ['task', '123'],
-		})
-
-		// Check that stonecrop is working
-		expect(vm.stonecrop).toBeDefined()
-		expect(vm.stonecrop!.getRecordIds('task').length).toBeGreaterThan(0)
+		expect(mockGetMeta).not.toHaveBeenCalled()
+		expect(getRecord).not.toHaveBeenCalled()
+		expect(stonecrop.getRecordIds('task')).toEqual([])
+		// Base mode: the HST surface is only offered when a doctype is named.
+		expect('formData' in wrapper.vm).toBe(false)
+		expect('handleHSTChange' in wrapper.vm).toBe(false)
+		expect(wrapper.vm.stonecrop).toBeDefined()
 	})
 
 	it('returns early when no doctype slug or record id', async () => {
@@ -362,179 +290,6 @@ describe('useStonecrop composable', { tags: ['unit'] }, () => {
 		const records = vm.stonecrop!.records('task')
 		expect(records.getPath).toBeDefined()
 		expect(records.getPath()).toBe('task')
-	})
-})
-
-describe('useStonecrop router-based HST integration', { tags: ['unit'] }, () => {
-	let mockRouter: any
-	let registry: Registry
-	let stonecrop: Stonecrop
-
-	beforeEach(() => {
-		setActivePinia(createPinia())
-
-		// Reset static instances
-		Registry._root = undefined as any
-		Stonecrop._root = undefined as any
-		;(HST as any).instance = undefined
-
-		mockRouter = createRouter({
-			history: createMemoryHistory(),
-			routes: [
-				{ path: '/records/:records', name: 'list', component: {} },
-				{ path: '/records/:records/:record', name: 'form', component: {} },
-			],
-		})
-
-		registry = new Registry(mockRouter)
-		stonecrop = new Stonecrop(registry)
-
-		// Reset fetch mock
-		vi.clearAllMocks()
-	})
-
-	it('should initialize HST integration when doctype is loaded from router', async () => {
-		const mockDoctype = createMockDoctype('Issue')
-		const mockGetMeta = vi.fn().mockResolvedValue(mockDoctype)
-		registry.getMeta = mockGetMeta
-
-		vi.spyOn(mockRouter, 'currentRoute', 'get').mockReturnValue({
-			value: {
-				name: 'issue',
-				path: '/issue/1',
-				params: {
-					records: 'issue',
-					record: '1',
-				},
-			},
-		})
-
-		const TestComponent = defineComponent({
-			setup() {
-				// Using composable without explicit doctype, expecting router-based setup
-				const result = useStonecrop()
-
-				// Type guard to check if we have HST integration
-				const hasFormData = 'formData' in result
-				const hasHandleChange = 'handleHSTChange' in result
-
-				return {
-					...result,
-					// These should be defined but currently aren't
-					hasHSTIntegration: hasFormData && hasHandleChange,
-				}
-			},
-			template: '<div>{{ hasHSTIntegration }}</div>',
-		})
-
-		const wrapper = mount(TestComponent, {
-			global: {
-				provide: {
-					$registry: registry,
-					$stonecrop: stonecrop,
-				},
-			},
-		})
-		await wrapper.vm.$nextTick()
-		await new Promise(resolve => setTimeout(resolve, 50))
-
-		const vm = wrapper.vm as any
-
-		const result = vm
-		expect(result.formData).toBeDefined()
-		expect(result.handleHSTChange).toBeDefined()
-		expect(result.provideHSTPath).toBeDefined()
-		expect(result.hstStore).toBeDefined()
-	})
-
-	it('should handle field changes with router-loaded doctype', async () => {
-		const mockDoctype = createMockDoctype('Todo')
-		const mockGetMeta = vi.fn().mockResolvedValue(mockDoctype)
-		registry.getMeta = mockGetMeta
-
-		vi.spyOn(mockRouter, 'currentRoute', 'get').mockReturnValue({
-			value: {
-				name: 'todo-detail',
-				path: '/todo/1',
-				params: {
-					records: 'todo',
-					record: '1',
-				},
-			},
-		})
-
-		const TestComponent = defineComponent({
-			template: `
-				<div>
-					<input
-						v-model="title"
-						@input="handleTitleChange"
-						data-testid="title-input"
-					/>
-					<div data-testid="hst-path">{{ hstPath }}</div>
-				</div>
-			`,
-			setup() {
-				const composableResult = useStonecrop()
-
-				const title = ref('')
-
-				const handleTitleChange = (event: Event) => {
-					const value = (event.target as HTMLInputElement).value
-
-					// Type guard to check if we have HST integration
-					if ('handleHSTChange' in composableResult && 'provideHSTPath' in composableResult) {
-						const result = composableResult as any
-						result.handleHSTChange({
-							path: result.provideHSTPath('title') || '',
-							value,
-							fieldname: 'title',
-						})
-					}
-				}
-
-				const hstPath = computed(() => {
-					// Type guard for provideHSTPath
-					if ('provideHSTPath' in composableResult) {
-						const result = composableResult as any
-						return result.provideHSTPath('title') || 'undefined'
-					}
-					return 'undefined'
-				})
-
-				return {
-					title,
-					handleTitleChange,
-					hstPath,
-					...composableResult,
-				}
-			},
-		})
-
-		const wrapper = mount(TestComponent, {
-			global: {
-				provide: {
-					$registry: registry,
-					$stonecrop: stonecrop,
-				},
-			},
-		})
-		await wrapper.vm.$nextTick()
-		await new Promise(resolve => setTimeout(resolve, 50))
-
-		const input = wrapper.find('[data-testid="title-input"]')
-		const pathDiv = wrapper.find('[data-testid="hst-path"]')
-
-		// Verify HST path is generated (will fail currently)
-		expect(pathDiv.text()).not.toBe('undefined')
-		expect(pathDiv.text()).toContain('todo.1.title')
-
-		// Simulate field change
-		await input.setValue('New Todo Title')
-
-		const vm = wrapper.vm as any
-		expect(vm.formData).toBeDefined()
-		expect(vm.formData.title).toBe('New Todo Title')
 	})
 })
 

@@ -400,7 +400,7 @@ await dispatchAction({ name: 'plan' }, 'SUBMIT', [recordId])
 |-----------------|------|-------------|
 | `registry` | `Registry` | The Registry instance for doctype management. |
 | `stonecrop` | `Stonecrop` | The Stonecrop instance for HST and operation log access. Throws if not initialized. |
-| `setMeta(fn)` | `(fn: (ctx) => Doctype \| Promise<Doctype>) => void` | Sets the `getMeta` function on the Registry. Called by `useStonecrop()` to lazy-load doctype metadata for the current route. `ctx` = `{ path, segments }`. |
+| `setMeta(fn)` | `(fn: (ctx) => Doctype \| Promise<Doctype>) => void` | Sets the `getMeta` function on the Registry. Called by `useStonecrop({ doctype: 'slug' })` to lazy-load that doctype's metadata. `ctx` = `{ path, segments }`. |
 | `setClient(client)` | `(client: DataClient) => void` | Set the data client for record fetching. Throws if stonecrop not available. |
 | `getClient()` | `() => DataClient \| undefined` | Get the currently configured client. |
 | `dispatchAction(doctype, action, args)` | `Promise<{ success, data, error }>` | Dispatch an action via the configured client. Returns error if doctype not found in registry. |

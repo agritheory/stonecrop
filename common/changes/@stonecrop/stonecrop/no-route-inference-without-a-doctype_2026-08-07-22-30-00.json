@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "comment": "useStonecrop() called with no doctype no longer infers one from the route and now returns just the instance and the operation log, having previously spent a getMeta plus a getRecord per mount to populate refs no such caller read.",
+      "type": "minor",
+      "packageName": "@stonecrop/stonecrop"
+    }
+  ],
+  "packageName": "@stonecrop/stonecrop"
+}

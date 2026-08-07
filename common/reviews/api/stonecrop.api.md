@@ -196,9 +196,6 @@ export interface FieldTriggerOptions {
 export function getGlobalTriggerEngine(options?: FieldTriggerOptions): FieldTriggerEngine;
 
 // @public
-export function getStonecrop(): Stonecrop | undefined;
-
-// @public
 export class HST {
     getDoctypeMeta(doctype: string): any;
     static getInstance(): HST;
@@ -1089,7 +1086,7 @@ logAction: (doctype: string, actionName: string, recordIds?: string[], result?: 
 }, "clear" | "undo" | "redo" | "configure" | "addOperation" | "startBatch" | "commitBatch" | "cancelBatch" | "getOperationsFor" | "getSnapshot" | "markIrreversible" | "logAction">>;
 
 // @public
-export function useStonecrop(): BaseStonecropReturn | HSTStonecropReturn;
+export function useStonecrop(): BaseStonecropReturn;
 
 // @public
 export function useStonecrop(options: {

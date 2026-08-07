@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "comment": "Remove getStonecrop(): it had no callers anywhere, and non-component code should keep the instance the plugin already hands it via onRouterInitialized rather than reach for a global getter.",
+      "type": "minor",
+      "packageName": "@stonecrop/stonecrop"
+    }
+  ],
+  "packageName": "@stonecrop/stonecrop"
+}

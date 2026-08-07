@@ -192,7 +192,7 @@ export function useStonecropRegistry() {
 
 		/**
 		 * Set the `getMeta` function on the Registry.
-		 * Called by `useStonecrop()` to lazy-load doctype metadata for the current route.
+		 * Called by `useStonecrop({ doctype: 'slug' })` to lazy-load that doctype's metadata.
 		 *
 		 * You must bridge `RouteContext` → `DoctypeContext`:
 		 * - Extract doctype name from `segments` (e.g., `segments[0]`)
