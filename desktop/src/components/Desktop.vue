@@ -35,12 +35,10 @@
 </template>
 
 <script setup lang="ts">
-// `isDraftRecordId`/`newDraftRecordId` come from @stonecrop/stonecrop rather than being spelled
-// out here. Desktop mints the id but it is not the only reader: the composables in that package
-// guard fetching, field initialization and workflow readiness on the same question, and when the
-// two were written separately they disagreed — Desktop minted `new-<timestamp>` while the other
-// dialect tested `=== 'new'`, so every guard over there was silently dead.
-import { isDraftRecordId, newDraftRecordId, useStonecrop, useValidationStore } from '@stonecrop/stonecrop'
+// The draft segment comes from @stonecrop/stonecrop rather than being spelled out here: that
+// package guards fetching, field initialization and workflow readiness on the same question, and
+// when the two were written separately they disagreed and every guard over there went dead.
+import { DRAFT_RECORD_ID, isDraftRecordId, useStonecrop, useValidationStore } from '@stonecrop/stonecrop'
 import { AForm, type AFormLinkNavigator, type ResolvedField, type ResolvedTable } from '@stonecrop/aform'
 import type { ColumnSchema } from '@stonecrop/schema'
 import { computed, onMounted, onUnmounted, provide, ref, unref, watch } from 'vue'
@@ -119,9 +117,14 @@ const fieldErrors = computed<Record<string, string[]>>(() =>
 const loading = ref(false)
 const commandPaletteOpen = ref(false)
 
+// The record being composed on a `/{doctype}/new` route. Deliberately not in HST: a draft has no
+// identity to be keyed by, and both ways of faking one fail — see `DRAFT_RECORD_ID`.
+const draftRecord = ref<Record<string, any>>({})
+
 // Form/list data management — each view produces a different data shape.
 // List views (doctypes, records) return table row data keyed by fieldname.
-// Record view returns HST record fields for two-way binding.
+// Record view returns the record's fields for two-way binding — from HST, or from `draftRecord`
+// when the route is a draft.
 const currentViewData = computed<Record<string, any>>({
 	get() {
 		// Doctypes list — rows come from availableDoctypes prop (reactive via availableDoctypes)
@@ -162,11 +165,14 @@ const currentViewData = computed<Record<string, any>>({
 		}
 
 		try {
-			const record = stonecrop.value.getRecordById(currentDoctype.value, currentRecordId.value)
+			const source = isNewRecord.value
+				? draftRecord.value
+				: (stonecrop.value.getRecordById(currentDoctype.value, currentRecordId.value)?.get('') as
+						Record<string, any> | undefined)
 			// Return a plain shallow copy so AForm mutations don't propagate directly into
 			// the HST reactive object, which would bypass field-trigger diffing and cause
 			// setupDeepReactivity to fire triggers for all fields on every keystroke.
-			const flat: Record<string, any> = { ...record?.get('') }
+			const flat: Record<string, any> = { ...source }
 
 			// AFieldset receives data[fieldsetFieldname] as its data prop, so the fieldset's
 			// children must be grouped under the fieldset key. The server returns flat SQL rows,
@@ -227,16 +233,30 @@ const currentViewData = computed<Record<string, any>>({
 
 			// Only update fields that actually changed. Never write undefined — AForm may emit
 			// schema fields absent from the record as undefined; writing them would silently
-			// clear values that exist in HST. Explicit null is allowed (intentional clear).
-			const hstStore = stonecrop.value.getStore()
+			// clear values that exist. Explicit null is allowed (intentional clear).
 			const changedFields: string[] = []
-			for (const [fieldname, value] of Object.entries(flatData)) {
-				if (value === undefined) continue
-				const fieldPath = `${currentDoctype.value}.${currentRecordId.value}.${fieldname}`
-				const currentValue = hstStore.has(fieldPath) ? hstStore.get(fieldPath) : undefined
-				if (currentValue !== value) {
-					hstStore.set(fieldPath, value)
-					changedFields.push(fieldname)
+			if (isNewRecord.value) {
+				// Reassigned, not mutated, so the getter re-runs. Relying on in-place mutation of the
+				// cached object is what made a draft's edits vanish on any invalidation.
+				const next = { ...draftRecord.value }
+				for (const [fieldname, value] of Object.entries(flatData)) {
+					if (value === undefined) continue
+					if (next[fieldname] !== value) {
+						next[fieldname] = value
+						changedFields.push(fieldname)
+					}
+				}
+				draftRecord.value = next
+			} else {
+				const hstStore = stonecrop.value.getStore()
+				for (const [fieldname, value] of Object.entries(flatData)) {
+					if (value === undefined) continue
+					const fieldPath = `${currentDoctype.value}.${currentRecordId.value}.${fieldname}`
+					const currentValue = hstStore.has(fieldPath) ? hstStore.get(fieldPath) : undefined
+					if (currentValue !== value) {
+						hstStore.set(fieldPath, value)
+						changedFields.push(fieldname)
+					}
 				}
 			}
 
@@ -261,8 +281,15 @@ function driveFieldValidation(changedFields: string[]) {
 	const triggers = doctype?.getTriggers()
 	if (!triggers || Object.keys(triggers).length === 0) return
 
-	const node = stonecrop.value.getRecordById(currentDoctype.value, currentRecordId.value)
-	const record = { ...(node?.get('') as Record<string, unknown>) }
+	// A draft's siblings come from the buffer; reading HST would hand every validator an empty record.
+	const record = isNewRecord.value
+		? { ...draftRecord.value }
+		: {
+				...(stonecrop.value.getRecordById(currentDoctype.value, currentRecordId.value)?.get('') as Record<
+					string,
+					unknown
+				>),
+			}
 
 	for (const field of changedFields) {
 		void validationStore.validateField(triggers, field, record)
@@ -599,7 +626,7 @@ const openRecord = async (recordId: string) => {
 }
 
 const createNewRecord = async () => {
-	await doNavigate({ view: 'record', doctype: routeDoctype.value, recordId: newDraftRecordId() })
+	await doNavigate({ view: 'record', doctype: routeDoctype.value, recordId: DRAFT_RECORD_ID })
 }
 
 // Flatten Fieldset containers into individual columns for list/table views.
@@ -866,6 +893,22 @@ watch(
 watch([currentDoctype, currentRecordId], () => {
 	validationStore?.clearAll()
 })
+
+// Seeding on entry gives a new record the doctype's declared defaults, which it never used to get.
+// Discarding on exit matters as much: the draft segment is one shared literal, so a stale buffer
+// would open the next New Record pre-filled with the abandoned one's values.
+watch(
+	[currentDoctype, currentRecordId],
+	() => {
+		if (!isNewRecord.value) {
+			draftRecord.value = {}
+			return
+		}
+		const registry = stonecrop.value?.registry
+		draftRecord.value = registry ? registry.initializeRecord(getRecordFormSchema()) : {}
+	},
+	{ immediate: true }
+)
 
 // Stonecrop reactive computed properties update automatically when the instance
 // becomes available — no manual watcher needed.

@@ -62,26 +62,35 @@ describe('templates host — actions', { tags: ['unit', 'graphql'] }, () => {
 		expect(action?.data?.title).toBe('renamed')
 	})
 
-	it('creates the record when the save targets one that does not exist', async () => {
-		// The New Record flow navigates to a client-invented `new-<timestamp>` id, so the very
-		// first save of a new record always targets something absent. This used to report
-		// `{ success: true, data: {} }` and persist nothing.
+	it('creates the record when the save carries no id, which is the New Record shape', async () => {
+		// A draft has no identity to send, so `useClientAction` omits `id` entirely. This is the
+		// envelope the scaffold actually receives from a New Record save.
 		const result = await run(
-			`mutation { stonecropAction(doctype: "Task", action: "save", args: [{ id: "new-1700000000000", data: { title: "brand new", projectId: "1" } }]) { success data error } }`
+			`mutation { stonecropAction(doctype: "Task", action: "save", args: [{ data: { title: "brand new", projectId: "1" } }]) { success data error } }`
 		)
 		const action = result.data?.stonecropAction
 		expect(action?.error).toBeNull()
 		expect(action?.success).toBe(true)
 		expect(action?.data?.title).toBe('brand new')
-		// The backend assigned the identity; the client's synthetic id is not it.
 		expect(action?.data?.id).toBeTruthy()
-		expect(String(action?.data?.id)).not.toContain('new-')
 		// Defaults the scaffold applies on create.
 		expect(action?.data?.status).toBe('Todo')
 
 		// It is genuinely in the store, readable through the normal record path.
 		const readBack = await run(`query { stonecropRecord(doctype: "Task", id: "${action.data.id}") { data } }`)
 		expect(readBack.data?.stonecropRecord?.data?.title).toBe('brand new')
+	})
+
+	it('creates the record when the save targets an id that does not exist', async () => {
+		// Distinct from the draft case: an id was sent and matched nothing. Save is an upsert, so
+		// this creates too. It used to report `{ success: true, data: {} }` and persist nothing.
+		const result = await run(
+			`mutation { stonecropAction(doctype: "Task", action: "save", args: [{ id: "no-such-task", data: { title: "revived", projectId: "1" } }]) { success data error } }`
+		)
+		const action = result.data?.stonecropAction
+		expect(action?.error).toBeNull()
+		expect(action?.success).toBe(true)
+		expect(action?.data?.title).toBe('revived')
 	})
 
 	it('refuses a transition against a record that does not exist', async () => {

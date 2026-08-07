@@ -1,4 +1,4 @@
-import { executeClientHandler, useStonecrop } from '@stonecrop/stonecrop'
+import { executeClientHandler, isDraftRecordId, useStonecrop } from '@stonecrop/stonecrop'
 import type { Doctype } from '@stonecrop/stonecrop'
 import type { ActionEventPayload } from '@stonecrop/desktop'
 import type { WorkflowMeta } from '@stonecrop/schema'
@@ -23,7 +23,7 @@ export interface ActionFailure {
 	action: string
 	/** Slug of the doctype the action was raised on. */
 	doctype: string
-	/** Record the action was raised against; a synthetic draft id for an unsaved record. */
+	/** Record the action was raised against; the `new` route segment for an unsaved record. */
 	recordId: string
 	/** The thrown value, present only when the failure was a throw rather than a refused dispatch. */
 	cause?: unknown
@@ -113,21 +113,26 @@ export function useClientAction(options: UseClientActionOptions = {}) {
 		const doctype = sc.registry.getDoctype(doctypeSlug)
 		if (!doctype) return { success: false, data: null, error: `Unknown doctype: ${doctypeSlug}` }
 
-		const result = await sc.dispatchAction(doctype, action, [{ id: recordId, data, ...(extra ?? {}) }])
+		// A draft omits the id, which the write path reads as "create". Sending the route segment
+		// instead reaches the same branch by accident — via a lookup for a record named `new`.
+		const isDraft = isDraftRecordId(recordId)
+		const result = await sc.dispatchAction(doctype, action, [
+			{ ...(isDraft ? {} : { id: recordId }), data, ...(extra ?? {}) },
+		])
 
 		if (result.success && result.data) {
 			// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- the action result payload is an opaque JSON scalar; every adapter returns the record as an object
 			const record = result.data as Record<string, unknown>
-			// The server decides identity, not the client. Saving a record that does not exist
-			// creates it, so the id the form dispatched — Desktop's synthetic `new-<timestamp>` —
-			// is not the one it now has; an action that rewrites a natural key moves it the same
-			// way. Writing the result back under the dispatched id would strand the record under a
-			// key nothing can fetch, and leave the next Save creating a second record.
-			const settledId = settledRecordId(doctype, record) ?? recordId
+			// The server decides identity. Writing the result back under the dispatched id would
+			// strand the record under a key nothing can fetch, and leave the next Save creating a
+			// second record. A draft with no settled identity has nowhere to go — filing it under
+			// the route segment would put a record named `new` in the list view.
+			const settledId = settledRecordId(doctype, record) ?? (isDraft ? undefined : recordId)
 			if (!settledId) return result
 
 			sc.addRecord(doctypeSlug, settledId, record)
 			if (recordId && recordId !== settledId) {
+				// No-op for a draft, which was never in the store — `removeRecord` checks first.
 				sc.removeRecord(doctypeSlug, recordId)
 				await followRecord(doctypeSlug, settledId)
 			}
@@ -138,8 +143,8 @@ export function useClientAction(options: UseClientActionOptions = {}) {
 	/**
 	 * Move the route onto the identity the record settled on.
 	 *
-	 * `replace`, not `push`: the id being left behind was never real — going Back to a spent
-	 * `new-<timestamp>` would show an empty form that creates yet another record.
+	 * `replace`, not `push`: the route being left behind was never a record — going Back to
+	 * `/{doctype}/new` would show an empty form that creates yet another record.
 	 *
 	 * The path is built here rather than through Desktop's `RouteAdapter` because every adapter in
 	 * the project, and Desktop's own fallback, resolves a record view to exactly this shape, and

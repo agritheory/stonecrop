@@ -2,7 +2,7 @@ import { createPinia, setActivePinia } from 'pinia'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 import { useLazyLink } from '../../src/composables/lazy-link'
-import { newDraftRecordId } from '../../src/draft'
+import { DRAFT_RECORD_ID } from '../../src/draft'
 import Registry from '../../src/registry'
 import { Stonecrop } from '../../src/stonecrop'
 import { HST } from '../../src/stores/hst'
@@ -337,9 +337,9 @@ describe('blockWorkflows', { tags: ['unit'] }, () => {
 		expect(status.ready).toBe(true)
 	})
 
-	it('isWorkflowReady returns ready true for a draft id the desktop shell actually mints', () => {
-		// The case above passes the legacy literal, which is not what any running app produces.
-		// Desktop mints `new-<timestamp>`, and the guard used to compare with `=== 'new'` — so a
+	it('isWorkflowReady judges the draft segment the shell actually routes to', () => {
+		// The literal above is only correct while it is also what Desktop produces. It once was not
+		// — the shell minted `new-<timestamp>` while this guard compared with `=== 'new'` — so a
 		// genuinely new record fell through to the link check and was reported blocked by data an
 		// unsaved record has no way to have.
 		const doctype = createTestDoctype('Recipe', {
@@ -348,7 +348,7 @@ describe('blockWorkflows', { tags: ['unit'] }, () => {
 		registry.addDoctype(doctype)
 		stonecrop.setup(doctype)
 
-		const status = stonecrop.isWorkflowReady(doctype, newDraftRecordId())
+		const status = stonecrop.isWorkflowReady(doctype, DRAFT_RECORD_ID)
 		expect(status.ready).toBe(true)
 		expect(status.blockedLinks).toBeUndefined()
 	})

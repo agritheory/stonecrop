@@ -96,9 +96,9 @@ export declare function getStonecrop(): Stonecrop | undefined;
 
 ### isDraftRecordId
 
-Whether an id refers to a record that has not been saved yet.
+Whether a record id refers to a record that has not been saved yet.
 
-Guard anything that assumes the record exists — fetching it, resolving its links, judging workflow readiness — with this rather than comparing against a literal.
+Guard anything that assumes the record exists — fetching it, resolving its links, judging workflow readiness — with this rather than the literal. The shell and this package once spelled the rule differently, which left every guard here dead.
 
 **Signature:**
 
@@ -128,16 +128,6 @@ export declare function markOperationIrreversible(operationId: string | undefine
 |-----------|------|-------------|
 | operationId | `string \| undefined` | The ID of the operation to mark as irreversible |
 | reason | `string` | Human-readable reason why the operation cannot be undone |
-
-### newDraftRecordId
-
-Mint an id for a record that does not exist on the server yet.
-
-**Signature:**
-
-```typescript
-export declare function newDraftRecordId(): string;
-```
 
 ### registerGlobalAction
 
@@ -2030,6 +2020,18 @@ setup(doctype: Doctype): void
 | doctype | `Doctype` | The doctype to setup |
 
 ## Variables
+
+### DRAFT_RECORD_ID
+
+The record-id segment a draft route carries: `/{doctype}/new`.
+
+Route only — never a store key, and never sent: an action dispatched for a draft omits the id rather than sending this.
+
+**Type:**
+
+```typescript
+export const DRAFT_RECORD_ID: 
+```
 
 ### plugin
 

@@ -291,8 +291,8 @@ export default {
 											// Save is an upsert, and it is the only write path — one request through the
 											// one interface, whether or not the row exists yet. Updating patches the
 											// record's field data (status untouched); creating lets the backend assign
-											// the identity, which is why the client's synthetic `new-<timestamp>` id is
-											// never stored. Either way the full record comes back for the writeback.
+											// the identity, which is why a draft dispatches no id at all. Either way the
+											// full record comes back for the writeback.
 											// Verbatim patch; column-whitelisting is the (deferred) PostGraphile concern.
 											writeData: async (patch: Record<string, unknown>, exists: boolean) => {
 												const mutationName = toMutationName(meta.name, exists ? 'update' : 'create')

@@ -1,7 +1,7 @@
 {
   "changes": [
     {
-      "comment": "Doctype.recordIdField now calls @stonecrop/schema's getRecordIdField rather than restating the rule. No behaviour change",
+      "comment": "Doctype.recordIdField now calls @stonecrop/schema's getRecordIdField instead of restating the rule. No behaviour change.",
       "type": "patch",
       "packageName": "@stonecrop/stonecrop"
     }

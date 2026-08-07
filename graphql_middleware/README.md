@@ -157,7 +157,7 @@ There is no create mutation, no create action, and no separate create write. **S
 
 `allowedStates` is deliberately not consulted on creation — it constrains movement between states, and a record being created is not in one. Its initial state is the backend's to set. Only a self-transition creates: a `nextState` transition against a missing record is a bad id, not a request to create one.
 
-Identity belongs to `writeData`, not the dispatcher. Read the declared `primaryKey` out of the submitted data for a natural-keyed doctype — that value is a field the user filled in — and mint one only when the doctype is surrogate-keyed. The client's own record id is never the identity: the New Record flow dispatches against a synthetic `new-<timestamp>` id, and the created record comes back carrying the real one.
+Identity belongs to `writeData`, not the dispatcher. Read the declared `primaryKey` out of the submitted data for a natural-keyed doctype — that value is a field the user filled in — and mint one only when the doctype is surrogate-keyed. The New Record flow dispatches with **no** `id` in the envelope, because an unsaved record has no identity to send; the created record comes back carrying the one the backend assigned.
 
 A `writeData` that only knows how to patch will match no row and return nothing. The dispatcher treats an empty return on the create path as exactly that and fails loudly, rather than letting a save that stored nothing report success.
 

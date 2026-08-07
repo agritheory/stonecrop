@@ -1,7 +1,7 @@
 {
   "changes": [
     {
-      "comment": "recordLookupField in the scaffolded resolvers now calls @stonecrop/schema's getRecordIdField rather than restating the rule. Behaviour is unchanged — these hosts already applied the id fallback; the Postgres adapter was the site that did not, which is what made the hosts disagree",
+      "comment": "recordLookupField now calls @stonecrop/schema's getRecordIdField instead of restating the rule. No behaviour change.",
       "type": "patch",
       "packageName": "@stonecrop/nuxt"
     }

@@ -678,7 +678,7 @@ describe('Desktop – breadcrumb edge cases', { tags: ['component'] }, () => {
 
 		const adapter: RouteAdapter = {
 			getCurrentDoctype: () => 'task',
-			getCurrentRecordId: () => 'new-abc123',
+			getCurrentRecordId: () => 'new',
 			getCurrentView: () => 'record',
 			navigate: vi.fn(),
 		}

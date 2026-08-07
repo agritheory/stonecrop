@@ -200,14 +200,13 @@ describe('Desktop events', { tags: ['component'] }, () => {
 		})
 
 		it('does NOT emit "load-record" for an unsaved draft', async () => {
-			// A draft id is minted by Desktop and exists nowhere on the server, so the fetch this
-			// event asks for can only fail. Desktop used to emit anyway, on the grounds that the
-			// host should decide — but deciding meant every host reimplementing `startsWith('new-')`
-			// against a prefix Desktop never exported, and all three did so identically. Not
-			// emitting makes a host that knows nothing about drafts correct by default.
+			// A draft exists nowhere on the server, so the fetch this event asks for can only fail.
+			// Desktop used to emit anyway, on the grounds that the host should decide — but deciding
+			// meant every host reimplementing the draft test itself, and all three did so
+			// identically. Not emitting makes a host that knows nothing about drafts correct.
 			const adapter: RouteAdapter = {
 				getCurrentDoctype: () => 'task',
-				getCurrentRecordId: () => 'new-123',
+				getCurrentRecordId: () => 'new',
 				getCurrentView: () => 'record',
 				navigate: vi.fn(),
 			}

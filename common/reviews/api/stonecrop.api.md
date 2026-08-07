@@ -115,6 +115,9 @@ export type DoctypeConfig = {
 };
 
 // @public
+export const DRAFT_RECORD_ID = "new";
+
+// @public
 export function executeClientHandler(code: string, api?: ClientHandlerApi): Promise<unknown>;
 
 // @public
@@ -316,9 +319,6 @@ export type LazyLink = {
 
 // @public
 export function markOperationIrreversible(operationId: string | undefined, reason: string): void;
-
-// @public
-export function newDraftRecordId(): string;
 
 // @public
 export type OperationLogAPI = {

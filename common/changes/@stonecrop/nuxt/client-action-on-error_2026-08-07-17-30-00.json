@@ -1,7 +1,7 @@
 {
   "changes": [
     {
-      "comment": "useClientAction now takes an options object with onError, so a host can route action failures into its own notification system or suppress them, instead of being given an unsuppressable window.alert. The callback receives an ActionFailure — message plus the action, doctype and recordId it failed on, and the thrown value as cause when the failure was a throw rather than a refused dispatch — because a notification has to say what failed and an object can gain a field later without breaking hosts. Defaults to the existing alert, so nothing changes for a caller that passes no options",
+      "comment": "Add an onError option to useClientAction so a host can route action failures into its own notification system instead of the built-in alert.",
       "type": "minor",
       "packageName": "@stonecrop/nuxt"
     }

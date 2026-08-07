@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "comment": "useClientAction now omits id from the argument envelope for a draft, which is what the write path reads as create. A draft result carrying no identity is no longer stored.",
+      "type": "minor",
+      "packageName": "@stonecrop/nuxt"
+    }
+  ],
+  "packageName": "@stonecrop/nuxt"
+}

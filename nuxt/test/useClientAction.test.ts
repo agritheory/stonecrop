@@ -214,11 +214,25 @@ describe('useClientAction onError', { tags: ['unit'] }, () => {
 	})
 })
 
-// Desktop's "New Record" navigates to a synthetic `new-<timestamp>` id and the backend assigns
-// the real one when the Save creates the record. Writing the result back under the dispatched id
-// would leave the record under a key nothing can fetch, the route pointing at a spent id, and the
-// next Save creating a second record.
+// Desktop's "New Record" routes to `/{doctype}/new` and the backend assigns the identity when the
+// Save creates the record. Writing the result back under the route segment would leave the record
+// under a key nothing can fetch, the route pointing at the draft, and the next Save creating a
+// second record.
 describe('useClientAction record identity', { tags: ['unit'] }, () => {
+	it('dispatches a draft with no id at all, which is what the write path reads as create', async () => {
+		mocks.router = makeRouter()
+		mocks.sc = makeSc({
+			actions: { save: {} },
+			dispatch: vi.fn(async () => ({ success: true, data: { id: '7', title: 'drafted' }, error: null })),
+		})
+
+		await useClientAction().run({ name: 'save', doctype: 'user', recordId: 'new', data: { title: 'drafted' } })
+
+		expect(mocks.sc.dispatchAction).toHaveBeenCalledWith(mocks.sc._doctype, 'save', [{ data: { title: 'drafted' } }])
+		const [[, , args]] = mocks.sc.dispatchAction.mock.calls
+		expect('id' in args[0]).toBe(false)
+	})
+
 	it('stores a created record under the id the server assigned, and follows the route to it', async () => {
 		mocks.router = makeRouter()
 		mocks.sc = makeSc({
@@ -226,19 +240,28 @@ describe('useClientAction record identity', { tags: ['unit'] }, () => {
 			dispatch: vi.fn(async () => ({ success: true, data: { id: '7', title: 'drafted' }, error: null })),
 		})
 
-		await useClientAction().run({
-			name: 'save',
-			doctype: 'user',
-			recordId: 'new-1700000000000',
-			data: { title: 'drafted' },
-		})
+		await useClientAction().run({ name: 'save', doctype: 'user', recordId: 'new', data: { title: 'drafted' } })
 
 		expect(mocks.sc.addRecord).toHaveBeenCalledWith('user', '7', { id: '7', title: 'drafted' })
-		expect(mocks.sc.addRecord).not.toHaveBeenCalledWith('user', 'new-1700000000000', expect.anything())
-		expect(mocks.sc.removeRecord).toHaveBeenCalledWith('user', 'new-1700000000000')
-		// `replace`, not `push` — Back onto a spent `new-` id would offer a form that creates again.
+		expect(mocks.sc.addRecord).not.toHaveBeenCalledWith('user', 'new', expect.anything())
+		// `replace`, not `push` — Back onto the draft route would offer a form that creates again.
 		expect(mocks.router.replace).toHaveBeenCalledWith('/user/7')
 		expect(mocks.router.push).not.toHaveBeenCalled()
+	})
+
+	it('stores nothing when a draft action returns no identity', async () => {
+		// `getRecords` lists every key under the doctype, so filing this under `new` would put a
+		// record named `new` in the list view.
+		mocks.router = makeRouter()
+		mocks.sc = makeSc({
+			actions: { validate: {} },
+			dispatch: vi.fn(async () => ({ success: true, data: { state: 'checked' }, error: null })),
+		})
+
+		await useClientAction().run({ name: 'validate', doctype: 'user', recordId: 'new', data: { title: 'x' } })
+
+		expect(mocks.sc.addRecord).not.toHaveBeenCalled()
+		expect(mocks.router.replace).not.toHaveBeenCalled()
 	})
 
 	it('leaves an updated record where it is', async () => {
