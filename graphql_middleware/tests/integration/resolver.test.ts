@@ -64,6 +64,8 @@ const actionHandlers: Record<string, Record<string, ActionHandler>> = {
 
 let pool: Pool
 let schema: GraphQLSchema
+let cappedSchema: GraphQLSchema
+let cappedResolvedPreset: GraphileConfig.ResolvedPreset
 let resolvedPreset: GraphileConfig.ResolvedPreset
 let releasePgService: (() => void | PromiseLike<void>) | undefined
 
@@ -255,6 +257,16 @@ beforeAll(async () => {
 	})
 	schema = result.schema
 	resolvedPreset = result.resolvedPreset
+
+	// A second schema whose only difference is a deliberately tiny default row cap. Building it
+	// here rather than in its own file keeps the single PGlite instance this file already owns.
+	const cappedResult = await makeSchema({
+		extends: [PostGraphileAmberPreset],
+		plugins: [createStonecropPlugin({ actionHandlers, defaultRecordLimit: 1 })],
+		pgServices: [pgService],
+	})
+	cappedSchema = cappedResult.schema
+	cappedResolvedPreset = cappedResult.resolvedPreset
 }, 60_000)
 
 afterAll(async () => {
@@ -267,18 +279,22 @@ afterAll(async () => {
 // Helper: run a GraphQL query inside a rolled-back transaction
 // ---------------------------------------------------------------------------
 
-async function runQuery(query: string, variables?: Record<string, unknown>): Promise<Record<string, unknown>> {
+async function runQuery(
+	query: string,
+	variables?: Record<string, unknown>,
+	against?: { schema: GraphQLSchema; resolvedPreset: GraphileConfig.ResolvedPreset }
+): Promise<Record<string, unknown>> {
 	const client: PoolClient = await pool.connect()
 	await client.query('BEGIN')
 	let queryResult: Record<string, unknown> = {}
 	try {
 		const withPgClient = makeWithPgClientViaPgClientAlreadyInTransaction(client, true)
 		const args = await hookArgs({
-			schema,
+			schema: against?.schema ?? schema,
 			document: parse(query),
 			variableValues: variables ?? {},
 			contextValue: Object.create(null) as Record<string, unknown>,
-			resolvedPreset,
+			resolvedPreset: against?.resolvedPreset ?? resolvedPreset,
 			requestContext: {},
 		})
 		// Override the pool-based withPgClient with our in-transaction version so all
@@ -402,6 +418,36 @@ describe('stonecropRecords', { tags: ['integration', 'graphql'] }, () => {
 		expect(records?.data.length).toBe(1)
 		// count reflects the total, not the page size
 		expect(typeof records?.count).toBe('number')
+	})
+
+	it('caps an unqualified list at the configured default and still reports the true total', async () => {
+		// Omitting `limit` used to emit no LIMIT at all, so an unqualified list query returned the
+		// whole table. The only guard against that lived in the scaffold's fetch helper — the wrong
+		// layer, and absent from any host that wrote its own.
+		const capped = await runQuery(`query { stonecropRecords(doctype: "ScItem") { count data } }`, undefined, {
+			schema: cappedSchema,
+			resolvedPreset: cappedResolvedPreset,
+		})
+		const cappedRecords = (capped as any).data?.stonecropRecords
+		expect(cappedRecords?.data.length).toBe(1)
+
+		// The uncapped schema is the control: same query, same data, no truncation. Without it a
+		// broken query returning one row would read as a working cap.
+		const full = await runQuery(`query { stonecropRecords(doctype: "ScItem") { count data } }`)
+		const fullRecords = (full as any).data?.stonecropRecords
+		expect(fullRecords?.data.length).toBeGreaterThan(1)
+
+		// A capped page must not report its own size as the total, or a truncated list is
+		// indistinguishable from a complete one.
+		expect(cappedRecords?.count).toBe(fullRecords?.data.length)
+	})
+
+	it('lets an explicit limit override the default cap', async () => {
+		const result = await runQuery(`query { stonecropRecords(doctype: "ScItem", limit: 2) { count data } }`, undefined, {
+			schema: cappedSchema,
+			resolvedPreset: cappedResolvedPreset,
+		})
+		expect((result as any).data?.stonecropRecords?.data.length).toBe(2)
 	})
 
 	it('orders results by a column', async () => {

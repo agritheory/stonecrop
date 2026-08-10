@@ -285,4 +285,66 @@ describe('Desktop – currentViewData setter', { tags: ['component'] }, () => {
 			;(wrapper.vm as any).currentViewData = { some: 'data' }
 		}).not.toThrow()
 	})
+
+	it('fetches a list through Stonecrop.getRecords, not through the host', async () => {
+		// The list read used to be the host's alone — Desktop only emitted and waited. Three of the
+		// four in-repo hosts then hand-rolled the body of getRecords, and all three keyed rows the
+		// same wrong way at once. This asserts Desktop now asks for the list itself.
+		const mockGetRecords = vi.fn().mockResolvedValue([
+			{ id: 'rec-1', title: 'First' },
+			{ id: 'rec-2', title: 'Second' },
+		])
+		const mockClient = { getRecord: vi.fn(), getRecords: mockGetRecords, dispatchAction: vi.fn() }
+
+		const testRouter = createRouter({ history: createMemoryHistory(), routes: routerTestRoutes })
+		const registry = new Registry(testRouter)
+		const stonecrop = new Stonecrop(registry, undefined, { client: mockClient as any })
+		registry.addDoctype(buildDoctype('task', 'draft', { draft: {} }))
+
+		await testRouter.push('/task')
+		await testRouter.isReady()
+
+		const wrapper = mount(Desktop, {
+			global: {
+				plugins: [makeStonecropPlugin(registry, stonecrop), testRouter],
+				stubs: { AForm: true, ActionSet: true, SheetNav: true, CommandPalette: true },
+			},
+		})
+
+		await nextTick()
+		await nextTick()
+
+		expect(mockGetRecords).toHaveBeenCalledOnce()
+		// No row limit is passed: that is the server's call, not a shell prop's.
+		expect(mockGetRecords).toHaveBeenCalledWith(expect.anything(), undefined)
+		expect(stonecrop.getRecordIds('task')).toEqual(['rec-1', 'rec-2'])
+		// The event survives as a notification, so a host can still hang analytics off it.
+		expect(wrapper.emitted('load-records')).toBeTruthy()
+	})
+
+	it('reads nothing when no client is configured, leaving a host-populated store alone', async () => {
+		// A host that fills HST some other way keeps working: the loaders no-op rather than throwing
+		// "No data client configured" on every navigation.
+		const testRouter = createRouter({ history: createMemoryHistory(), routes: routerTestRoutes })
+		const registry = new Registry(testRouter)
+		const stonecrop = new Stonecrop(registry)
+		registry.addDoctype(buildDoctype('task', 'draft', { draft: {} }))
+		stonecrop.addRecord('task', 'rec-1', { id: 'rec-1', title: 'Host supplied' })
+
+		await testRouter.push('/task')
+		await testRouter.isReady()
+
+		const wrapper = mount(Desktop, {
+			global: {
+				plugins: [makeStonecropPlugin(registry, stonecrop), testRouter],
+				stubs: { AForm: true, ActionSet: true, SheetNav: true, CommandPalette: true },
+			},
+		})
+
+		await nextTick()
+		await nextTick()
+
+		expect(wrapper.emitted('load-records')).toBeTruthy()
+		expect(stonecrop.getRecordById('task', 'rec-1')?.get('title')).toBe('Host supplied')
+	})
 })

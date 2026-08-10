@@ -132,27 +132,19 @@ function handleRecordOpen(payload: RecordOpenEventPayload) {
 }
 
 /**
- * Handle load-records event - Desktop needs records for a list view.
- * Desktop has no self-fetch for list views, so the host must populate HST here.
+ * Both load events are notifications, not fetch requests. Stonecrop reads through the registered
+ * RestDataClient for lists and records alike, so a handler here is only for host-side side effects
+ * — analytics, breadcrumb prefetch, a progress indicator.
+ *
+ * This app used to call `stonecrop.getRecords()` from the list handler. That was the closest any
+ * host came to the right shape, and it is now what Desktop does for every host.
  */
-async function handleLoadRecords(payload: LoadRecordsEventPayload) {
-	if (!stonecrop.value) return
-	try {
-		const doctype = stonecrop.value.registry.getDoctype(payload.doctype)
-		if (doctype) await stonecrop.value.getRecords(doctype)
-	} catch (error) {
-		addNotification(`Failed to load ${payload.doctype} records`, 'error')
-		console.error('[example] load-records failed', error)
-	}
+function handleLoadRecords(payload: LoadRecordsEventPayload) {
+	console.debug('[example] load-records', payload)
 }
 
-/**
- * Handle load-record event - Desktop already self-fetches missing records when a
- * client is configured (see Desktop.vue loadRecordData). This handler is reserved
- * for host-side side effects (analytics, breadcrumb prefetch, etc.).
- */
-function handleLoadRecord(_payload: LoadRecordEventPayload) {
-	// no-op — Desktop handles the fetch via its internal loadRecordData()
+function handleLoadRecord(payload: LoadRecordEventPayload) {
+	console.debug('[example] load-record', payload)
 }
 </script>
 

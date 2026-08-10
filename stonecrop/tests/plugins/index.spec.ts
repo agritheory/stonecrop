@@ -308,7 +308,7 @@ describe('Stonecrop Vue Plugin with HST', { tags: ['unit'] }, () => {
 		await stonecropInstance.registry.addDoctype(mockDoctype)
 		await stonecropInstance.getRecord(mockDoctype, '99')
 
-		expect(mockClient.getRecord).toHaveBeenCalledWith(mockDoctype, '99')
+		expect(mockClient.getRecord).toHaveBeenCalledWith(mockDoctype, '99', undefined)
 	})
 
 	it('registers custom components when provided', () => {

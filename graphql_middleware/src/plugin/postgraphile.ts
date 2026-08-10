@@ -131,6 +131,21 @@ export interface StonecropPluginOptions {
 	 * ```
 	 */
 	actionHandlers?: Record<string, Record<string, ActionHandler>>
+	/**
+	 * Row cap applied to `stonecropRecords` when the caller requests no `limit`. Defaults to 200.
+	 *
+	 * A row cap is a statement about what this database can afford to serve, so it belongs to
+	 * whoever owns the database — not to a doctype (which describes the API surface, not the
+	 * table) and not to a page (which cannot know the size of an arbitrary table). Callers stay
+	 * free to ask for less; they cannot ask for an unbounded scan by omission.
+	 *
+	 * `count` still reports the true total whenever this cap applies, so a capped page is
+	 * distinguishable from a complete one.
+	 *
+	 * Set to `null` for no default cap. That is the pre-0.17 behaviour and it means an unqualified
+	 * list query returns the whole table.
+	 */
+	defaultRecordLimit?: number | null
 }
 
 /**
@@ -412,10 +427,15 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 												orderByClause = ` ORDER BY "${camelToSnake(fieldName)}" ${dir}`
 											}
 
-											// LIMIT / OFFSET
+											// LIMIT / OFFSET. A caller that names no limit gets the configured default rather
+											// than the whole table: omission is how an unbounded scan used to happen, and the
+											// only guard against it lived in the scaffold's fetch helper, which is neither the
+											// right layer nor present in a host that wrote its own.
+											const effectiveLimit =
+												spec.limit ?? (options.defaultRecordLimit === undefined ? 200 : options.defaultRecordLimit)
 											let pagingClause = ''
-											if (spec.limit != null) {
-												values.push(spec.limit)
+											if (effectiveLimit != null) {
+												values.push(effectiveLimit)
 												pagingClause += ` LIMIT $${values.length}`
 											}
 											if (spec.offset != null) {
@@ -428,9 +448,12 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 												values,
 											})
 
-											// Total count matching filters (independent of LIMIT/OFFSET)
+											// Total count matching filters (independent of LIMIT/OFFSET). Keyed off the
+											// effective limit, not the requested one: a default cap truncates just as a
+											// requested one does, and reporting `rows.length` there would make a capped page
+											// indistinguishable from a complete table.
 											let count = rows.length
-											if (spec.limit != null || spec.offset != null) {
+											if (effectiveLimit != null || spec.offset != null) {
 												const countValues: unknown[] = []
 												const countWhere: string[] = []
 												if (spec.filters != null) {

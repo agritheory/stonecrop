@@ -4,6 +4,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { createRouter, createMemoryHistory } from 'vue-router'
 
 import Doctype from '../../src/doctype'
+import { DRAFT_RECORD_ID } from '../../src/draft'
 import Registry from '../../src/registry'
 import { Stonecrop } from '../../src/stonecrop'
 import type { StonecropOptions } from '../../src/types/stonecrop'
@@ -243,7 +244,7 @@ describe('Stonecrop class with HST integration', { tags: ['unit'] }, () => {
 
 			await stonecrop.getRecords(mockDoctype)
 
-			expect(mockClient.getRecords).toHaveBeenCalledWith(mockDoctype)
+			expect(mockClient.getRecords).toHaveBeenCalledWith(mockDoctype, undefined)
 
 			// Check that records are stored in HST with proper wrapping
 			const recordIds = stonecrop.getRecordIds('task')
@@ -295,12 +296,62 @@ describe('Stonecrop class with HST integration', { tags: ['unit'] }, () => {
 
 			await stonecrop.getRecord(mockDoctype, '123')
 
-			expect(mockClient.getRecord).toHaveBeenCalledWith(mockDoctype, '123')
+			expect(mockClient.getRecord).toHaveBeenCalledWith(mockDoctype, '123', undefined)
 
 			// Check that record.record (not the wrapper) is stored
 			const record = stonecrop.getRecordById('task', '123')
 			expect(record!.get('title')).toBe('Test Task')
 			expect(record!.get('id')).toBe('123')
+		})
+
+		it('getRecord does not fetch a record already in HST', async () => {
+			// The guard lives here rather than in each caller. It used to be Desktop's, which is why
+			// a host handler and Desktop could both race past their own copies of it and fetch the
+			// same record twice.
+			stonecrop.addRecord(mockDoctype, '123', { id: '123', title: 'Already Here' })
+
+			await stonecrop.getRecord(mockDoctype, '123')
+
+			expect(mockClient.getRecord).not.toHaveBeenCalled()
+			expect(stonecrop.getRecordById('task', '123')!.get('title')).toBe('Already Here')
+		})
+
+		it('getRecord does not fetch a draft, which has no server record to find', async () => {
+			await stonecrop.getRecord(mockDoctype, DRAFT_RECORD_ID)
+
+			expect(mockClient.getRecord).not.toHaveBeenCalled()
+		})
+
+		it('getRecord forwards options to the client', async () => {
+			mockClient.getRecord.mockResolvedValue({ record: { id: '123' } })
+
+			await stonecrop.getRecord(mockDoctype, '123', { includeNested: true })
+
+			expect(mockClient.getRecord).toHaveBeenCalledWith(mockDoctype, '123', { includeNested: true })
+		})
+
+		it('getRecords forwards options to the client and invents no row limit', async () => {
+			// A row cap is a statement about what the backend can afford, so nothing on this side
+			// makes one up. An unqualified call must reach the client unqualified.
+			mockClient.getRecords.mockResolvedValue([])
+
+			await stonecrop.getRecords(mockDoctype, { limit: 25, orderBy: 'TITLE_ASC' })
+			expect(mockClient.getRecords).toHaveBeenCalledWith(mockDoctype, { limit: 25, orderBy: 'TITLE_ASC' })
+
+			await stonecrop.getRecords(mockDoctype)
+			expect(mockClient.getRecords).toHaveBeenLastCalledWith(mockDoctype, undefined)
+		})
+
+		it('getRecords refetches even when records are already in HST', async () => {
+			// Deliberately unguarded, unlike getRecord: a list is a view of data that changes, so
+			// revisiting one must re-read rather than serve whatever HST happens to hold.
+			mockClient.getRecords.mockResolvedValue([{ id: '1', title: 'Fresh' }])
+			stonecrop.addRecord(mockDoctype, '1', { id: '1', title: 'Stale' })
+
+			await stonecrop.getRecords(mockDoctype)
+
+			expect(mockClient.getRecords).toHaveBeenCalledOnce()
+			expect(stonecrop.getRecordById('task', '1')!.get('title')).toBe('Fresh')
 		})
 	})
 
@@ -332,7 +383,7 @@ describe('Stonecrop class with HST integration', { tags: ['unit'] }, () => {
 			await localStonecrop.getRecord(mockDoctype, 'abc')
 
 			expect(mockClient.getRecord).toHaveBeenCalledOnce()
-			expect(mockClient.getRecord).toHaveBeenCalledWith(mockDoctype, 'abc')
+			expect(mockClient.getRecord).toHaveBeenCalledWith(mockDoctype, 'abc', undefined)
 			expect(fetch).not.toHaveBeenCalled()
 
 			const stored = localStonecrop.getRecordById('task', 'abc')
@@ -357,7 +408,7 @@ describe('Stonecrop class with HST integration', { tags: ['unit'] }, () => {
 			await localStonecrop.getRecords(mockDoctype)
 
 			expect(mockClient.getRecords).toHaveBeenCalledOnce()
-			expect(mockClient.getRecords).toHaveBeenCalledWith(mockDoctype)
+			expect(mockClient.getRecords).toHaveBeenCalledWith(mockDoctype, undefined)
 			expect(fetch).not.toHaveBeenCalled()
 
 			const ids = localStonecrop.getRecordIds('task')

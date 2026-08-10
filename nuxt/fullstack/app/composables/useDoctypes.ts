@@ -1,12 +1,8 @@
 /**
- * Utilities for doctype schema resolution and data fetching.
- * Based on patterns from the fab application.
+ * Utilities for doctype schema resolution. Data fetching is Stonecrop's — see the note below.
  */
 
-import type { DoctypeRef } from '@stonecrop/schema'
 import type { DoctypeConfig } from '@stonecrop/stonecrop'
-
-import { useNuxtApp } from 'nuxt/app'
 
 const modules = import.meta.glob<DoctypeConfig>('../../doctypes/*.json', {
 	eager: true,
@@ -39,21 +35,14 @@ export function useDoctypeList(): Array<{ slug: string; name: string }> {
 		.sort((a, b) => a.name.localeCompare(b.name))
 }
 
-export async function fetchDoctypeRecords(doctype: DoctypeRef, limit = 200): Promise<{ data: any[]; count: number }> {
-	const { $stonecropClient } = useNuxtApp()
-	const data = (await $stonecropClient.getRecords({ name: doctype.name }, { limit })) as any[]
-	return { data, count: data.length }
-}
-
-export async function fetchDoctypeRecord(
-	doctype: DoctypeRef,
-	recordId: string
-): Promise<Record<string, unknown> | null> {
-	const { $stonecropClient } = useNuxtApp()
-	const result = await $stonecropClient.getRecord(doctype, recordId)
-	return result.record
-}
-
-// There is deliberately no `runDoctypeAction` here. Dispatching is not the whole job: the result
+// There are deliberately no fetch helpers here. Fetching is not the whole job: the result has to
+// land in the store under the identity the doctype declares, and something has to decide whether a
+// read is warranted at all. `Stonecrop.getRecord`/`getRecords` own all of it and reach this app's
+// backend through the registered client — call those instead.
+//
+// The pair that used to live here also hardcoded `limit = 200`, which is a decision about what the
+// backend can afford and therefore the server's to make, not a page's.
+//
+// There is deliberately no `runDoctypeAction` either. Dispatching is not the whole job: the result
 // has to land in the store under the identity the server settled on, which is not always the id
 // that was dispatched. `useClientAction` owns both halves — call that instead.

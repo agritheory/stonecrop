@@ -1,6 +1,4 @@
-import type { DoctypeRef } from '@stonecrop/schema'
 import type { DoctypeConfig } from '@stonecrop/stonecrop'
-import { useNuxtApp } from 'nuxt/app'
 
 const modules = import.meta.glob<DoctypeConfig>('../../doctypes/*.json', {
 	eager: true,
@@ -22,20 +20,13 @@ export function useDoctypeConfig(slug: string): DoctypeConfig | undefined {
 	return doctypeMap.get(slug)
 }
 
-export async function fetchDoctypeRecords(doctype: DoctypeRef, limit = 200): Promise<{ data: any[]; count: number }> {
-	const { $stonecropClient } = useNuxtApp()
-	const data = (await $stonecropClient.getRecords({ name: doctype.name }, { limit })) as any[]
-	return { data, count: data.length }
-}
-
-export async function fetchDoctypeRecord(
-	doctype: DoctypeRef,
-	recordId: string
-): Promise<Record<string, unknown> | null> {
-	const { $stonecropClient } = useNuxtApp()
-	const result = await $stonecropClient.getRecord(doctype, recordId)
-	return result.record
-}
+// There are deliberately no fetch helpers here. Fetching is not the whole job: the result has to
+// land in the store under the identity the doctype declares, and something has to decide whether a
+// read is warranted at all. `Stonecrop.getRecord`/`getRecords` own all of it and reach your backend
+// through the client registered in `stonecrop.client.ts` — call those instead.
+//
+// The pair that used to live here also hardcoded `limit = 200`, which is a decision about what the
+// backend can afford and therefore the server's to make, not a page's.
 
 // Actions are deliberately not dispatched from here. Dispatching is only half the job: the result
 // has to land in the store under the identity the server settled on, which is not always the id

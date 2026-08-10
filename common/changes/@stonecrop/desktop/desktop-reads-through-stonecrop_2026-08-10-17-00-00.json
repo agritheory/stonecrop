@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/desktop",
+      "comment": "Desktop now fetches list and record data through Stonecrop rather than waiting on the host; load-records and load-record remain as notifications for host-side side effects.",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@stonecrop/desktop"
+}

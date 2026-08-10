@@ -1,4 +1,4 @@
-import type { DataClient } from '@stonecrop/schema'
+import type { DataClient, GetRecordOptions, GetRecordsOptions } from '@stonecrop/schema'
 import { reactive } from 'vue'
 
 import Doctype from './doctype'
@@ -287,11 +287,24 @@ export class Stonecrop {
 	}
 
 	/**
-	 * Get records from server using the configured data client.
+	 * Fetch a doctype's records from the server and store them in HST.
+	 *
+	 * This is the one read path for a list. Every caller shares its keying rule, so a row is
+	 * always stored under the identity its Edit link will later ask for.
+	 *
+	 * Deliberately unguarded, unlike {@link Stonecrop.getRecord}: a list is a view of data that
+	 * changes, so revisiting one must re-read it rather than serve whatever HST happens to hold.
+	 *
+	 * `options` is forwarded to the client untouched — no row limit is invented here, because
+	 * nothing on this side of the wire knows what is safe for an arbitrary backend. A caller that
+	 * passes none gets whatever the server considers a reasonable page.
+	 *
 	 * @param doctype - The doctype
+	 * @param options - Query options (filters, orderBy, limit, offset), forwarded to the client
 	 * @throws Error if no data client has been configured
+	 * @public
 	 */
-	async getRecords(doctype: Doctype): Promise<void> {
+	async getRecords(doctype: Doctype, options?: GetRecordsOptions): Promise<void> {
 		if (!this._client) {
 			throw new Error(
 				'No data client configured. Call setClient() with a DataClient implementation ' +
@@ -299,7 +312,7 @@ export class Stonecrop {
 			)
 		}
 
-		const records = await this._client.getRecords(doctype)
+		const records = await this._client.getRecords(doctype, options)
 
 		// Key each record by its declared primary key, falling back to `id`. This used to read
 		// `record.id` only, which silently dropped every row of a natural-keyed doctype (no `id`
@@ -314,13 +327,24 @@ export class Stonecrop {
 	}
 
 	/**
-	 * Get single record from server using the configured data client.
+	 * Fetch a single record from the server and store it in HST.
+	 *
+	 * This is the one read path for a record, and it owns the whole job: deciding whether a fetch
+	 * is warranted, performing it, and writing the result back under the doctype's declared
+	 * identity. Callers ask for a record and get one; they do not re-derive when to ask.
+	 *
+	 * Two cases return without touching the network, because in both the answer is already known:
+	 * a draft does not exist on the server yet, and a record already in HST has been read.
+	 * Refetching the latter would also discard unsaved edits sitting in the store.
+	 *
 	 * @param doctype - The doctype slug string or Doctype object
 	 * @param recordId - The record ID
+	 * @param options - Query options (includeNested, maxDepth), forwarded to the client
 	 * @throws Error if no data client has been configured
 	 * @throws Error if a slug string is given and no matching doctype is found in the registry
+	 * @public
 	 */
-	async getRecord(doctype: string | Doctype, recordId: string): Promise<void> {
+	async getRecord(doctype: string | Doctype, recordId: string, options?: GetRecordOptions): Promise<void> {
 		if (!this._client) {
 			throw new Error(
 				'No data client configured. Call setClient() with a DataClient implementation ' +
@@ -333,7 +357,17 @@ export class Stonecrop {
 			throw new Error(`Doctype not found: ${typeof doctype === 'string' ? doctype : doctype.slug}`)
 		}
 
-		const result = await this._client.getRecord(resolved, recordId)
+		// An unsaved draft has no server record, so a fetch could only ever miss. This guard used
+		// to live in every host, which is how the private draft-id scheme leaked into all of them.
+		if (isDraftRecordId(recordId)) {
+			return
+		}
+
+		if (this.getRecordById(resolved.slug, recordId)) {
+			return
+		}
+
+		const result = await this._client.getRecord(resolved, recordId, options)
 
 		if (result?.record) {
 			this.addRecord(resolved, recordId, result.record)

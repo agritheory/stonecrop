@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/nuxt",
+      "comment": "The scaffolded app no longer binds load-records or load-record and ships no fetch helpers: the registered StonecropClient is its whole data layer.",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/nuxt"
+}

@@ -360,6 +360,7 @@ Options for creating a Stonecrop PostGraphile plugin.
 export interface StonecropPluginOptions {
   actionHandlers?: Record<string, Record<string, ActionHandler>>;
   debug?: boolean;
+  defaultRecordLimit?: number | null;
   tables?: Record<string, string>;
 }
 ```
@@ -370,6 +371,7 @@ export interface StonecropPluginOptions {
 |----------|------|-------------|
 | actionHandlers? | `Record<string, Record<string, ActionHandler>>` | Server-side effects for workflow actions, keyed `[doctype name][action key]`. This is the seam that makes a stateless Command executable. `applyGuardedTransition` can apply a doctype's own outcome — a `nextState` transition, or a `selfTransition` data write — but an action that is neither has nothing to apply and fails loudly. Registering a handler here supplies the missing half. **The doctype never names a handler, and a handler never overrides the guard.** The two are authored by different people: a doctype is runtime data edited in DocBuilder by whoever models the workflow, while these run behind the GraphQL surface and belong to whoever owns the database. So the doctype keeps `allowedStates` (may this run) and `nextState` (what state results), and this keeps the effect (what actually happens). Routing between them is resolved here, on the server, and is never published to the client. Handlers are looked up by `meta.name` — the doctype's canonical name, not its slug. An unregistered action is not an error in itself: a transition needs no handler. It fails only when the doctype gave the action no outcome either, and the error then names the action and both ways to fix it, so a typo'd key reports as a missing effect rather than a silent no-op. |
 | debug? | `boolean` | When `true`, SQL queries executed inside `loadOneWithPgClient` callbacks are logged to `console.log` with `[@stonecrop/graphql-middleware]` prefix. Defaults to `false`. |
+| defaultRecordLimit? | `number \| null` | Row cap applied to `stonecropRecords` when the caller requests no `limit`. Defaults to 200. A row cap is a statement about what this database can afford to serve, so it belongs to whoever owns the database — not to a doctype (which describes the API surface, not the table) and not to a page (which cannot know the size of an arbitrary table). Callers stay free to ask for less; they cannot ask for an unbounded scan by omission. `count` still reports the true total whenever this cap applies, so a capped page is distinguishable from a complete one. Set to `null` for no default cap. That is the pre-0.17 behaviour and it means an unqualified list query returns the whole table. |
 | tables? | `Record<string, string>` | Override the PostgreSQL FROM clause target for specific doctypes, keyed by doctype name. Values may be a bare table name (`'plan'`) or a schema-qualified name (`'orpin.plan'`). SQL fragments and subqueries are not supported. When absent for a doctype, the table name is derived as `camelToSnake(doctype.name)`. |
 
 ## Type Aliases

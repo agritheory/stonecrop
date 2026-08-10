@@ -120,6 +120,7 @@ export function registerFetchHandler(name: string, handler: FetchHandler): void;
 export interface StonecropPluginOptions {
     actionHandlers?: Record<string, Record<string, ActionHandler>>;
     debug?: boolean;
+    defaultRecordLimit?: number | null;
     tables?: Record<string, string>;
 }
 

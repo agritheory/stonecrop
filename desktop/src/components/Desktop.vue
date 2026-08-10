@@ -846,23 +846,40 @@ const handleClick = async (event: Event) => {
 	}
 }
 
+// Reads go through Stonecrop, which owns whether to fetch, how to key the result, and where to
+// put it. Desktop asks for data and renders what arrives; it decides none of that itself.
+//
+// Both loaders are no-ops without a client, so a host that populates HST some other way keeps
+// working unchanged rather than taking a thrown error on every navigation.
 const loadRecordData = async () => {
-	if (!stonecrop.value || !currentDoctype.value || isNewRecord.value) return
+	if (!stonecrop.value || !currentDoctype.value || !stonecrop.value.getClient()) return
 
-	// Record already in HST — nothing to fetch.
-	if (stonecrop.value.getRecordById(currentDoctype.value, currentRecordId.value)) return
+	loading.value = true
+	try {
+		await stonecrop.value.getRecord(currentDoctype.value, currentRecordId.value)
+	} catch (error) {
+		console.warn('Error fetching record:', error)
+	} finally {
+		loading.value = false
+	}
+}
 
-	// Record absent and a client is configured — fetch directly so the form
-	// populates even when the list view was never visited (direct URL navigation).
-	if (stonecrop.value.getClient()) {
-		loading.value = true
-		try {
-			await stonecrop.value.getRecord(currentDoctype.value, currentRecordId.value)
-		} catch (error) {
-			console.warn('Error fetching record:', error)
-		} finally {
-			loading.value = false
-		}
+const loadRecordsData = async () => {
+	if (!stonecrop.value || !currentDoctype.value || !stonecrop.value.getClient()) return
+
+	const doctype = stonecrop.value.registry.getDoctype(currentDoctype.value)
+	if (!doctype) return
+
+	// No row limit is passed. Desktop cannot know what is safe for the host's backend, and a
+	// single per-shell number could not serve doctypes of wildly different size anyway — the same
+	// reason the `recordIdField` prop was removed. The server decides the page.
+	loading.value = true
+	try {
+		await stonecrop.value.getRecords(doctype)
+	} catch (error) {
+		console.warn('Error fetching records:', error)
+	} finally {
+		loading.value = false
 	}
 }
 
@@ -870,17 +887,18 @@ const loadRecordData = async () => {
 watch(
 	[currentView, currentDoctype, currentRecordId],
 	() => {
+		// The events are notifications, not fetch requests: they announce what Desktop is about to
+		// read so a host can hang analytics or a prefetch off them. The read itself is Stonecrop's.
 		if (currentView.value === 'records' && currentDoctype.value) {
-			// Emit load-records event so host app can populate HST
 			emit('load-records', { doctype: currentDoctype.value })
+			void loadRecordsData()
 		} else if (currentView.value === 'record' && currentDoctype.value && currentRecordId.value) {
 			// A draft has nothing to fetch — the record does not exist on the server yet. Desktop
 			// used to emit anyway and leave the host to work it out, which meant every host had to
 			// recognise the private draft-id scheme above just to suppress a doomed request; all of
-			// them did, identically. `loadRecordData` declines the same case for the same reason.
+			// them did, identically. `getRecord` declines the same case for the same reason.
 			if (isNewRecord.value) return
 
-			// Emit load-record event so host app can fetch and populate HST
 			emit('load-record', { doctype: currentDoctype.value, recordId: currentRecordId.value })
 			void loadRecordData()
 		}

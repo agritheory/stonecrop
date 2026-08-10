@@ -1836,10 +1836,14 @@ getMeta(context: RouteContext): Promise<any>
 
 #### getRecord
 
-Get single record from server using the configured data client.
+Fetch a single record from the server and store it in HST.
+
+This is the one read path for a record, and it owns the whole job: deciding whether a fetch is warranted, performing it, and writing the result back under the doctype's declared identity. Callers ask for a record and get one; they do not re-derive when to ask.
+
+Two cases return without touching the network, because in both the answer is already known: a draft does not exist on the server yet, and a record already in HST has been read. Refetching the latter would also discard unsaved edits sitting in the store.
 
 ```typescript
-getRecord(doctype: string | Doctype, recordId: string): Promise<void>
+getRecord(doctype: string | Doctype, recordId: string, options: GetRecordOptions): Promise<void>
 ```
 
 **Parameters:**
@@ -1848,6 +1852,7 @@ getRecord(doctype: string | Doctype, recordId: string): Promise<void>
 |-----------|------|-------------|
 | doctype | `string \| Doctype` | The doctype slug string or Doctype object |
 | recordId | `string` | The record ID |
+| options | `GetRecordOptions` | Query options (includeNested, maxDepth), forwarded to the client |
 
 #### getRecordById
 
@@ -1880,10 +1885,16 @@ getRecordIds(doctype: string | Doctype): string[]
 
 #### getRecords
 
-Get records from server using the configured data client.
+Fetch a doctype's records from the server and store them in HST.
+
+This is the one read path for a list. Every caller shares its keying rule, so a row is always stored under the identity its Edit link will later ask for.
+
+Deliberately unguarded, unlike `getRecord`: a list is a view of data that changes, so revisiting one must re-read it rather than serve whatever HST happens to hold.
+
+`options` is forwarded to the client untouched — no row limit is invented here, because nothing on this side of the wire knows what is safe for an arbitrary backend. A caller that passes none gets whatever the server considers a reasonable page.
 
 ```typescript
-getRecords(doctype: Doctype): Promise<void>
+getRecords(doctype: Doctype, options: GetRecordsOptions): Promise<void>
 ```
 
 **Parameters:**
@@ -1891,6 +1902,7 @@ getRecords(doctype: Doctype): Promise<void>
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | doctype | `Doctype` | The doctype |
+| options | `GetRecordsOptions` | Query options (filters, orderBy, limit, offset), forwarded to the client |
 
 #### getRecordState
 
