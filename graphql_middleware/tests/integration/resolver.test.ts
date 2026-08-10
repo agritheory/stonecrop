@@ -48,6 +48,15 @@ const actionHandlers: Record<string, Record<string, ActionHandler>> = {
 		explode() {
 			return Promise.reject(new Error('handler blew up'))
 		},
+		// Writes first, then fails. The write is the oracle for rollback: without a transaction
+		// around the action it stays committed even though the action reports failure.
+		async writeThenExplode({ pgClient, recordId }) {
+			await pgClient.query({
+				text: `UPDATE sc_item SET name = 'SHOULD NOT SURVIVE' WHERE id::text = $1`,
+				values: [String(recordId)],
+			})
+			throw new Error('blew up after writing')
+		},
 	},
 	ScSignal: {
 		// Touches no record and needs no primary key.
@@ -103,6 +112,7 @@ beforeAll(async () => {
 					recalculate: { label: 'Recalculate', stateless: true, allowedStates: ['Draft'] },
 					unwired: { label: 'Unwired', stateless: true },
 					explode: { label: 'Explode', stateless: true },
+					writeThenExplode: { label: 'Write Then Explode', stateless: true },
 					// A transition that also carries an effect — the guard/effect split in one action.
 					publish: { label: 'Publish', allowedStates: ['Draft'], nextState: 'Active' },
 				},
@@ -278,6 +288,85 @@ afterAll(async () => {
 // ---------------------------------------------------------------------------
 // Helper: run a GraphQL query inside a rolled-back transaction
 // ---------------------------------------------------------------------------
+
+/**
+ * Run several documents against ONE connection inside a single rolled-back transaction, so a
+ * later read can observe what an earlier mutation wrote. `runQuery` opens and discards its own
+ * transaction per call, which makes a write invisible to the next call by construction.
+ */
+/**
+ * Like `runSequence`, but also records every SQL statement the middleware issues on the
+ * connection. PGlite is single-connection, so a genuine two-transaction lock test would block
+ * forever rather than fail; reading the statements the dispatcher emits is the strongest oracle
+ * available here for transaction and locking behaviour.
+ */
+async function runSequenceCapturingSql(
+	queries: string[]
+): Promise<{ results: Record<string, unknown>[]; sql: string[] }> {
+	const sql: string[] = []
+	const client: PoolClient = await pool.connect()
+	const originalQuery = client.query.bind(client)
+	// oxlint-disable-next-line typescript/no-explicit-any -- pg's query() is heavily overloaded; the spy only records and forwards
+	;(client as any).query = (config: any, ...rest: any[]) => {
+		sql.push(typeof config === 'string' ? config : String(config?.text ?? ''))
+		// oxlint-disable-next-line typescript/no-unsafe-return -- forwarding pg's own return value untouched
+		return (originalQuery as any)(config, ...rest)
+	}
+	await client.query('BEGIN')
+	const results: Record<string, unknown>[] = []
+	try {
+		const withPgClient = makeWithPgClientViaPgClientAlreadyInTransaction(client, true)
+		for (const query of queries) {
+			const args = await hookArgs({
+				schema,
+				document: parse(query),
+				variableValues: {},
+				contextValue: Object.create(null) as Record<string, unknown>,
+				resolvedPreset,
+				requestContext: {},
+			})
+			args.contextValue.withPgClient = withPgClient
+			results.push((await execute(args)) as Record<string, unknown>)
+		}
+	} finally {
+		try {
+			await client.query('ROLLBACK')
+		} catch {
+			client.release(new Error('rollback failed'))
+		}
+		client.release()
+	}
+	return { results, sql }
+}
+
+async function runSequence(queries: string[]): Promise<Record<string, unknown>[]> {
+	const client: PoolClient = await pool.connect()
+	await client.query('BEGIN')
+	const results: Record<string, unknown>[] = []
+	try {
+		const withPgClient = makeWithPgClientViaPgClientAlreadyInTransaction(client, true)
+		for (const query of queries) {
+			const args = await hookArgs({
+				schema,
+				document: parse(query),
+				variableValues: {},
+				contextValue: Object.create(null) as Record<string, unknown>,
+				resolvedPreset,
+				requestContext: {},
+			})
+			args.contextValue.withPgClient = withPgClient
+			results.push((await execute(args)) as Record<string, unknown>)
+		}
+	} finally {
+		try {
+			await client.query('ROLLBACK')
+		} catch {
+			client.release(new Error('rollback failed'))
+		}
+		client.release()
+	}
+	return results
+}
 
 async function runQuery(
 	query: string,
@@ -630,6 +719,53 @@ describe('stonecropAction with registered effects', { tags: ['integration', 'gra
 		expect(action?.success).toBe(false)
 		expect(action?.error).toContain('Explode')
 		expect(action?.error).toContain('handler blew up')
+	})
+
+	it("rolls back a failed handler's own writes, not just the state change", async () => {
+		// The action is atomic or it is not. Before the dispatcher opened a transaction, the guard
+		// read, the handler and the state write were three autocommit statements: a handler that
+		// wrote and then threw kept its write while the action reported failure.
+		const [mutation, readBack] = await runSequence([
+			`mutation { stonecropAction(doctype: "ScItem", action: "writeThenExplode", args: [{ id: "1" }]) { success error } }`,
+			`query { stonecropRecord(doctype: "ScItem", id: "1") { data } }`,
+		])
+		expect((mutation as any).data?.stonecropAction?.success).toBe(false)
+		expect((readBack as any).data?.stonecropRecord?.data?.name).not.toBe('SHOULD NOT SURVIVE')
+	})
+
+	it("commits a successful handler's writes, so the rollback test is not vacuous", async () => {
+		// The control. Without it, a read-back that simply cannot see handler writes would make the
+		// rollback assertion above pass no matter what the transaction did.
+		const [mutation, readBack] = await runSequence([
+			`mutation { stonecropAction(doctype: "ScItem", action: "recalculate", args: [{ id: "1", data: { suffix: "-OK" } }]) { success error } }`,
+			`query { stonecropRecord(doctype: "ScItem", id: "1") { data } }`,
+		])
+		expect((mutation as any).data?.stonecropAction?.success).toBe(true)
+		expect((readBack as any).data?.stonecropRecord?.data?.name).toContain('-OK')
+	})
+
+	it('locks the guarded row FOR UPDATE inside a transaction that wraps the whole action', async () => {
+		// The check-then-act race this closes: two concurrent approvals both read PENDING, both pass
+		// the guard, and both write. FOR UPDATE makes the second wait for the first to finish.
+		//
+		// Asserted on the statements the dispatcher actually issued, not on the source.
+		const { sql } = await runSequenceCapturingSql([
+			`mutation { stonecropAction(doctype: "ScItem", action: "submit", args: [{ id: "1" }]) { success error } }`,
+		])
+		const guardRead = sql.find(t => t.includes('SELECT "status"'))
+		expect(guardRead).toBeDefined()
+		expect(guardRead).toContain('FOR UPDATE')
+
+		// A lock is only worth anything if something holds it open past the read. These tests run
+		// inside their own transaction, so the dispatcher nests via savepoint rather than BEGIN.
+		expect(sql.some(t => /savepoint/i.test(t))).toBe(true)
+	})
+
+	it('undoes the action with a rollback when it fails, rather than committing it', async () => {
+		const { sql } = await runSequenceCapturingSql([
+			`mutation { stonecropAction(doctype: "ScItem", action: "writeThenExplode", args: [{ id: "1" }]) { success error } }`,
+		])
+		expect(sql.some(t => /rollback to savepoint/i.test(t))).toBe(true)
 	})
 
 	it('still fails loudly for a command with no handler registered', async () => {

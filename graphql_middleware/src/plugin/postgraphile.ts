@@ -27,13 +27,18 @@ import { typeDefs } from '../typeDefs'
  */
 export interface ActionHandlerContext {
 	/**
-	 * Active database client for the current request. **It is not inside a transaction.**
+	 * Active database client for the current request. **It is inside the action's transaction.**
 	 *
-	 * The dispatcher uses `sideEffectWithPgClient`, not `sideEffectWithPgClientTransaction`, so the
-	 * guard read, this handler, and the state write are three separate autocommit statements. A
-	 * handler that throws still rejects the action and stops the state write — but its own writes
-	 * are already committed and are **not** rolled back. A handler that needs atomicity must open
-	 * its own transaction (`BEGIN`/`COMMIT`/`ROLLBACK`) around its statements.
+	 * The guard read, this handler, and the state write all run on this client inside one
+	 * transaction, so the action is atomic: throw, and everything this handler wrote is rolled
+	 * back along with the state change. Returning normally commits the lot.
+	 *
+	 * Do **not** open your own `BEGIN`/`COMMIT` around these statements. A `COMMIT` here would
+	 * close the action's transaction early, committing work the guard may still reject. If you
+	 * need to undo part of your own work without failing the action, use a `SAVEPOINT`.
+	 *
+	 * Work sent to a *different* connection is outside all of this and will not be rolled back —
+	 * so use this client rather than opening one of your own.
 	 *
 	 * Rows from a raw `pgClient.query()` carry snake_case **column** names, while the middleware's
 	 * own read paths alias them to camelCase fieldnames at the SQL layer (ADR 0004). A handler that
@@ -146,6 +151,21 @@ export interface StonecropPluginOptions {
 	 * list query returns the whole table.
 	 */
 	defaultRecordLimit?: number | null
+}
+
+/**
+ * Carries a reported failure out through a `throw`, purely so the transaction rolls back.
+ *
+ * `applyGuardedTransition` reports every failure as a return value, and a value returned from
+ * inside `withTransaction` commits. This is the adapter between "the action failed" and "undo it"
+ * that does not also turn a refused guard into a GraphQL error: the dispatcher unwraps it and
+ * answers with the original envelope.
+ */
+class ActionRolledBack extends Error {
+	constructor(readonly outcome: { success: boolean; data: unknown; error: string | null }) {
+		super(outcome.error ?? 'Action failed')
+		this.name = 'ActionRolledBack'
+	}
 }
 
 /**
@@ -529,41 +549,65 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 									// silently miss it.
 									const handler = options.actionHandlers?.[meta.name]?.[String(spec.action)]
 
+									// One transaction spans the guard read, the effect and the state write, so an
+									// action either lands whole or not at all. `withTransaction` issues `begin` at
+									// the top level and a `savepoint` if something upstream already opened one, so
+									// nesting is safe rather than something callers must avoid.
+									//
+									// Every statement below runs on `tx`, not on the outer client. Work sent to the
+									// outer client — or to a connection a handler opens itself — is outside this
+									// transaction and would survive a rollback.
 									try {
-										return await applyGuardedTransition(actionDef, {
-											readState: async () => {
-												// No id in the envelope means no record was targeted at all, which is
-												// the same answer as a lookup that misses: `null`, not `undefined`.
-												if (recordId == null) return null
-												const { rows } = await debugSql<{ status: string | null }>(pgClient, {
-													text: `SELECT "status" FROM ${table} WHERE "${pkColumn()}"::text = $1`,
-													values: [String(recordId)],
-												})
-												// No row at all vs. a row whose `status` is NULL — see GuardedTransitionIO.
-												if (rows.length === 0) return null
-												return rows[0].status ?? undefined
-											},
-											writeState: async (nextState: string) => {
-												await debugSql(pgClient, {
-													text: `UPDATE ${table} SET "status" = $1 WHERE "${pkColumn()}"::text = $2`,
-													values: [nextState, String(recordId)],
-												})
-											},
-											runEffect: handler
-												? (currentState: string | undefined) =>
-														handler({
-															pgClient,
-															doctype: String(spec.doctype),
-															action: String(spec.action),
-															meta,
-															recordId,
-															data: recordData,
-															args: argList,
-															currentState,
-														})
-												: undefined,
+										return await pgClient.withTransaction(async (tx: PgClient) => {
+											const outcome = await applyGuardedTransition(actionDef, {
+												readState: async () => {
+													// No id in the envelope means no record was targeted at all, which is
+													// the same answer as a lookup that misses: `null`, not `undefined`.
+													if (recordId == null) return null
+													// FOR UPDATE holds the row until this transaction ends, so a second
+													// action on the same record waits rather than reading the same state
+													// and acting on it too. Without it the guard is a check-then-act
+													// race: two concurrent approvals both read PENDING and both proceed.
+													const { rows } = await debugSql<{ status: string | null }>(tx, {
+														text: `SELECT "status" FROM ${table} WHERE "${pkColumn()}"::text = $1 FOR UPDATE`,
+														values: [String(recordId)],
+													})
+													// No row at all vs. a row whose `status` is NULL — see GuardedTransitionIO.
+													if (rows.length === 0) return null
+													return rows[0].status ?? undefined
+												},
+												writeState: async (nextState: string) => {
+													await debugSql(tx, {
+														text: `UPDATE ${table} SET "status" = $1 WHERE "${pkColumn()}"::text = $2`,
+														values: [nextState, String(recordId)],
+													})
+												},
+												runEffect: handler
+													? (currentState: string | undefined) =>
+															handler({
+																pgClient: tx,
+																doctype: String(spec.doctype),
+																action: String(spec.action),
+																meta,
+																recordId,
+																data: recordData,
+																args: argList,
+																currentState,
+															})
+													: undefined,
+											})
+
+											// `applyGuardedTransition` REPORTS failure, it does not throw — a refused
+											// guard and a handler that blew up both come back as `{ success: false }`.
+											// Returning that normally would commit the transaction, so a handler that
+											// wrote three rows and then threw would keep all three. Throwing here is
+											// what makes the rollback happen; the envelope is carried across so the
+											// caller still gets `success: false` rather than a GraphQL error.
+											if (!outcome.success) throw new ActionRolledBack(outcome)
+											return outcome
 										})
 									} catch (err) {
+										if (err instanceof ActionRolledBack) return err.outcome
 										return {
 											success: false,
 											data: null,
