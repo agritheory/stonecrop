@@ -240,16 +240,6 @@ export declare function registerFetchHandler(name: string, handler: FetchHandler
 | name | `string` |  |
 | handler | `FetchHandler` |  |
 
-### validateReferences
-
-Validate cross-doctype references (Link fields, inherits, etc.) Call after all doctypes are loaded.
-
-**Signature:**
-
-```typescript
-export declare function validateReferences(): ValidationError[];
-```
-
 ## Interfaces
 
 ### ActionHandlerContext

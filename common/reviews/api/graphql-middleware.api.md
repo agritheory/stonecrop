@@ -130,9 +130,6 @@ export const StonecropPreset: GraphileConfig.Preset;
 // @public
 export const typeDefs: DocumentNode;
 
-// @public
-export function validateReferences(): ValidationError[];
-
 export { ValidationError }
 
 // (No @packageDocumentation comment for this package)

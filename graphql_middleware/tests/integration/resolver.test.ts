@@ -969,3 +969,48 @@ describe('actionHandlers registration', { tags: ['integration', 'graphql'] }, ()
 		)
 	})
 })
+
+// ===========================================================================
+// Cross-doctype references — verified at schema build
+// ===========================================================================
+
+describe('doctype reference resolution', { tags: ['integration', 'graphql'] }, () => {
+	const build = async () => {
+		const pgService = makePgService({ connectionString: inject('testDatabaseUrl') })
+		try {
+			await makeSchema({
+				extends: [PostGraphileAmberPreset],
+				plugins: [createStonecropPlugin({})],
+				pgServices: [pgService],
+			})
+		} finally {
+			await pgService.release?.()
+		}
+	}
+
+	it('accepts the registered doctypes, whose links all resolve', async () => {
+		await expect(build()).resolves.toBeUndefined()
+	})
+
+	it('refuses a link whose target nothing registers, then accepts it once repaired', async () => {
+		// The harm is silent without this: the link read is `getMeta(link.target)` followed by
+		// `if (!targetMeta) continue`, so a typo drops the relation from the response and reads on
+		// the wire as a record that legitimately has none.
+		loadDoctypesFromObject({
+			ScDangling: {
+				slug: 'sc-dangling',
+				fields: [],
+				links: { orphan: { target: 'sc-nonesuch', cardinality: 'noneOrMany' } },
+			},
+		})
+		await expect(build()).rejects.toThrow(
+			/ScDangling\.links\.orphan\.target: Link references unknown doctype: sc-nonesuch/
+		)
+
+		// Registering the target repairs it. This is the positive control — the same registry that
+		// just failed now builds — and it is also how this case cleans up after itself, since the
+		// registry is shared across the file and there is no removeDoctype.
+		loadDoctypesFromObject({ ScNonesuch: { slug: 'sc-nonesuch', fields: [] } })
+		await expect(build()).resolves.toBeUndefined()
+	})
+})

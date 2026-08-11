@@ -14,7 +14,7 @@ import { GraphileConfig } from 'postgraphile/graphile-build'
 import { extendSchema } from 'postgraphile/utils'
 
 import { getFetchHandler } from '../registry/fetchHandlers'
-import { getMeta, getAllMeta } from '../registry/doctypes'
+import { getMeta, getAllMeta, validateReferences } from '../registry/doctypes'
 import { applyGuardedTransition } from '../dispatch/transition'
 import { typeDefs } from '../typeDefs'
 
@@ -204,6 +204,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 		// Schema build is the one point where both the registry and the plugin's options are in
 		// hand, so it is where a stale registration can be caught before it silently no-ops.
 		if (options.actionHandlers) assertActionHandlersResolve(options.actionHandlers)
+		assertReferencesResolve()
 
 		return {
 			typeDefs,
@@ -791,6 +792,34 @@ function assertActionHandlersResolve(actionHandlers: Record<string, Record<strin
 				`cannot be reached and would never run:\n  ${orphans.join('\n  ')}`
 		)
 	}
+}
+
+/**
+ * Refuse a doctype set whose links or `inherits` name a doctype nobody registered.
+ *
+ * What it prevents is silent: the link read does `const targetMeta = getMeta(link.target)` followed
+ * by `if (!targetMeta) continue`, so an unresolvable target drops the relation from the response
+ * with no error. On the wire that is indistinguishable from "this record has no such relation", and
+ * a typo in a target reads as a legitimately empty link forever.
+ *
+ * Throws rather than warns, like the handler check above: a link pointing at a doctype that does not
+ * exist has no correct reading. Every offender is collected so a consumer fixes them in one pass.
+ *
+ * Deliberately no empty-registry warning, unlike `assertActionHandlersResolve`. That one warns
+ * because a registered handler map is evidence the host meant to be checked; here there is no such
+ * evidence, so warning would fire on every host that loads doctypes after building its schema —
+ * and an advisory that fires on a correct setup is worse than none. An empty registry simply
+ * reports nothing, because the loop has nothing to walk.
+ */
+function assertReferencesResolve(): void {
+	const broken = validateReferences()
+	if (broken.length === 0) return
+
+	throw new Error(
+		`StonecropPlugin: ${broken.length} doctype reference${broken.length === 1 ? '' : 's'} ` +
+			`cannot be resolved and would silently drop the relation:\n  ` +
+			broken.map(e => `${e.path.join('.')}: ${e.message}`).join('\n  ')
+	)
 }
 
 /**

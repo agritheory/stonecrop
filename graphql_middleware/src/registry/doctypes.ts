@@ -156,16 +156,31 @@ export function clearRegistry(): void {
 }
 
 /**
- * Validate cross-doctype references (Link fields, inherits, etc.)
- * Call after all doctypes are loaded.
- * @public
+ * Validate cross-doctype references (link targets, `inherits`) against what is loaded.
+ *
+ * Resolution goes through `getMeta`, never through the registry Map directly. The Map is keyed by
+ * doctype **name** while a link target is a **slug** (`DoctypeMeta.links[].target` is documented as
+ * one, and every doctype in this repo writes one), so a raw `.has()` reports a broken reference for
+ * every correct link — measured at 12 of 12 across the two in-repo hosts before this was fixed.
+ * `getMeta` is also what the plugin resolves a link with at fetch time, so this asks the same
+ * question the runtime asks.
+ *
+ * `inherits` is checked the same way even though nothing resolves it at runtime (both resolvers
+ * only echo it onto the wire) — one rule is cheaper than two, and it cannot be wrong in the
+ * permissive direction.
+ *
+ * Returns rather than throws so the caller decides; `assertReferencesResolve` in the plugin is that
+ * caller. Kept out of the package's public exports: it reads a module-level registry, so it is only
+ * meaningful after this module's own loaders have run.
+ *
+ * @internal
  */
 export function validateReferences(): ValidationError[] {
 	const errors: ValidationError[] = []
 
 	for (const doctype of doctypeRegistry.values()) {
 		// Check inherits reference
-		if (doctype.inherits && !doctypeRegistry.has(doctype.inherits)) {
+		if (doctype.inherits && getMeta(doctype.inherits) === undefined) {
 			errors.push({
 				path: [doctype.name, 'inherits'],
 				message: `References unknown doctype: ${doctype.inherits}`,
@@ -176,7 +191,7 @@ export function validateReferences(): ValidationError[] {
 		for (const field of doctype.fields) {
 			if (field.kind !== 'field') continue
 			const target = field.doctype
-			if (target !== undefined && !doctypeRegistry.has(target)) {
+			if (target !== undefined && getMeta(target) === undefined) {
 				errors.push({
 					path: [doctype.name, 'fields', field.fieldname, 'doctype'],
 					message: `Link references unknown doctype: ${target}`,
@@ -187,7 +202,7 @@ export function validateReferences(): ValidationError[] {
 		// Check link-declaration targets (component-primary links live in the `links` map)
 		if (doctype.links) {
 			for (const [key, link] of Object.entries(doctype.links)) {
-				if (!doctypeRegistry.has(link.target)) {
+				if (getMeta(link.target) === undefined) {
 					errors.push({
 						path: [doctype.name, 'links', key, 'target'],
 						message: `Link references unknown doctype: ${link.target}`,

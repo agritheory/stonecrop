@@ -135,18 +135,48 @@ describe('getMeta / getAllMeta / hasMeta / clearRegistry', { tags: ['unit', 'gra
 describe('validateReferences', { tags: ['unit', 'graphql'] }, () => {
 	beforeEach(() => clearRegistry())
 
-	it('returns empty array when all references are valid', () => {
+	// A link target is a SLUG and the registry is keyed by NAME. Every fixture here therefore
+	// declares both, because the earlier fixtures declared only a name and targeted it by name —
+	// a shape no real doctype uses, which is why five green tests never caught the check resolving
+	// through the raw Map. Measured against the two in-repo hosts at the time: 12 reported errors,
+	// 12 of them false.
+	it('resolves a link that targets a doctype by slug', () => {
 		loadDoctypesFromObject({
-			User: { fields: [] },
+			User: { slug: 'user', fields: [] },
 			Task: {
+				slug: 'task',
+				fields: [{ kind: 'field', fieldname: 'owner', component: 'AFormLink', label: 'Owner', doctype: 'user' }],
+			},
+		})
+		expect(validateReferences()).toHaveLength(0)
+	})
+
+	it('resolves a link that targets a doctype by name', () => {
+		// `getMeta` accepts either, so a consumer keying by name is not broken by the slug fix.
+		loadDoctypesFromObject({
+			User: { slug: 'user', fields: [] },
+			Task: {
+				slug: 'task',
 				fields: [{ kind: 'field', fieldname: 'owner', component: 'AFormLink', label: 'Owner', doctype: 'User' }],
 			},
 		})
 		expect(validateReferences()).toHaveLength(0)
 	})
 
+	it('resolves a links-map target by slug', () => {
+		loadDoctypesFromObject({
+			Country: { slug: 'country', fields: [] },
+			Continent: {
+				slug: 'continent',
+				fields: [],
+				links: { countries: { target: 'country', cardinality: 'noneOrMany' } },
+			},
+		})
+		expect(validateReferences()).toHaveLength(0)
+	})
+
 	it('reports error for unknown inherits reference', () => {
-		loadDoctypesFromObject({ Task: { fields: [], inherits: 'BaseTask' } })
+		loadDoctypesFromObject({ Task: { slug: 'task', fields: [], inherits: 'BaseTask' } })
 		const errors = validateReferences()
 		expect(errors.some(e => e.message.includes('BaseTask'))).toBe(true)
 	})
@@ -154,11 +184,24 @@ describe('validateReferences', { tags: ['unit', 'graphql'] }, () => {
 	it('reports error for Link field targeting unknown doctype', () => {
 		loadDoctypesFromObject({
 			Task: {
-				fields: [{ kind: 'field', fieldname: 'owner', component: 'AFormLink', label: 'Owner', doctype: 'User' }],
+				slug: 'task',
+				fields: [{ kind: 'field', fieldname: 'owner', component: 'AFormLink', label: 'Owner', doctype: 'nonesuch' }],
 			},
 		})
 		const errors = validateReferences()
-		expect(errors.some(e => e.message.includes('User'))).toBe(true)
+		expect(errors.some(e => e.message.includes('nonesuch'))).toBe(true)
+	})
+
+	it('reports error for links-map target that nothing declares', () => {
+		loadDoctypesFromObject({
+			Continent: {
+				slug: 'continent',
+				fields: [],
+				links: { countries: { target: 'nonesuch', cardinality: 'noneOrMany' } },
+			},
+		})
+		const errors = validateReferences()
+		expect(errors.some(e => e.path.includes('links') && e.message.includes('nonesuch'))).toBe(true)
 	})
 
 	it('does not treat a field with options but no doctype as a link', () => {
@@ -166,6 +209,7 @@ describe('validateReferences', { tags: ['unit', 'graphql'] }, () => {
 		// whose choices happen to look like doctype names must not be resolved as a reference.
 		loadDoctypesFromObject({
 			Task: {
+				slug: 'task',
 				fields: [
 					{
 						kind: 'field' as const,
@@ -181,15 +225,19 @@ describe('validateReferences', { tags: ['unit', 'graphql'] }, () => {
 		expect(errors.filter(e => e.path.includes('tag'))).toHaveLength(0)
 	})
 
-	it('returns multiple errors when multiple broken references exist', () => {
+	it('collects every broken reference rather than stopping at the first', () => {
+		// The plugin turns this list into one throw, so a consumer with several fixes them in one pass.
 		loadDoctypesFromObject({
 			Task: {
-				fields: [],
+				slug: 'task',
+				fields: [{ kind: 'field', fieldname: 'owner', component: 'AFormLink', label: 'Owner', doctype: 'nonesuch' }],
 				inherits: 'BaseTask',
+				links: { notes: { target: 'alsonone', cardinality: 'noneOrMany' } },
 			},
 		})
 		const errors = validateReferences()
-		expect(errors.length).toBeGreaterThanOrEqual(1)
+		expect(errors).toHaveLength(3)
+		expect(errors.map(e => e.message).join(' ')).toContain('BaseTask')
 	})
 })
 

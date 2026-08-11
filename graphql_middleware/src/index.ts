@@ -8,7 +8,6 @@ export {
 	getAllMeta,
 	hasMeta,
 	clearRegistry,
-	validateReferences,
 	DoctypeValidationError,
 } from './registry/doctypes'
 
