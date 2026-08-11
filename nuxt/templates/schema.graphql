@@ -89,7 +89,10 @@ type RecordResult {
 type RecordsResult {
 	data: [JSON!]!
 	doctype: String!
-	count: Int!
+	"Whether further records exist beyond this page."
+	hasMore: Boolean!
+	"Total matching the filters. Null unless the query asked for it with includeTotal."
+	count: Int
 }
 
 type ActionResult {
@@ -137,6 +140,7 @@ type Query {
 		orderBy: String
 		limit: Int
 		offset: Int
+		includeTotal: Boolean
 		options: JSON
 	): RecordsResult
 }

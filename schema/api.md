@@ -560,7 +560,7 @@ Interface for data clients that fetch doctype metadata and records. Implemented 
 export interface DataClient {
   getMeta(context: DoctypeContext): Promise<M | null>;
   getRecord(doctype: T, recordId: string, options: GetRecordOptions): Promise<GetRecordResult>;
-  getRecords(doctype: T, options: GetRecordsOptions): Promise<Record<string, unknown>[]>;
+  getRecords(doctype: T, options: GetRecordsOptions): Promise<GetRecordsResult>;
   runAction(doctype: T, action: string, args: unknown[]): Promise<{
         success: boolean;
         data: unknown;
@@ -720,6 +720,7 @@ Options for fetching multiple records
 ```typescript
 export interface GetRecordsOptions {
   filters?: Record<string, unknown>;
+  includeTotal?: boolean;
   limit?: number;
   offset?: number;
   orderBy?: string;
@@ -731,9 +732,34 @@ export interface GetRecordsOptions {
 | Property | Type | Description |
 |----------|------|-------------|
 | filters? | `Record<string, unknown>` | Filter expression (field-value pairs) |
+| includeTotal? | `boolean` | Ask the backend for the total matching the filters as well as the page. Off by default because it costs a second query — a full scan on Postgres — and knowing *whether* more exist (`hasMore`) is what a list view actually needs. Turn it on for a "showing 20 of 4,312" style display. |
 | limit? | `number` | Maximum number of records to return |
 | offset? | `number` | Number of records to skip |
 | orderBy? | `string` | Order by expression (e.g. 'NAME_ASC') |
+
+### GetRecordsResult
+
+Result from getRecords — a page of records, and enough to tell that it is one.
+
+A bare array used to be returned here, which claimed to be the whole collection. It is not: a limit always applies, so a caller could not distinguish a complete list from a truncated one. That is the entire reason this type exists.
+
+**Definition:**
+
+```typescript
+export interface GetRecordsResult {
+  count?: number;
+  data: Record<string, unknown>[];
+  hasMore: boolean;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| count? | `number` | Total records matching the filters, ignoring limit/offset. Present only when the caller asked for it via `includeTotal` — counting is a full scan on most backends, so it is never computed speculatively. |
+| data | `Record<string, unknown>[]` | The records in this page |
+| hasMore | `boolean` | Whether the backend holds further records beyond this page |
 
 ### GraphQLConversionFieldMeta
 

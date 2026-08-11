@@ -46,6 +46,7 @@ export type {
 	GetRecordOptions,
 	GetRecordResult,
 	GetRecordsOptions,
+	GetRecordsResult,
 	LazyFetch,
 	LinkDeclaration,
 	SerializedFunction,

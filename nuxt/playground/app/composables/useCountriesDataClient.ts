@@ -1,4 +1,11 @@
-import type { DataClient, DoctypeContext, DoctypeMeta, DoctypeRef, GetRecordResult } from '@stonecrop/schema'
+import type {
+	DataClient,
+	DoctypeContext,
+	DoctypeMeta,
+	DoctypeRef,
+	GetRecordResult,
+	GetRecordsResult,
+} from '@stonecrop/schema'
 
 /**
  * A `DataClient` over the public countries GraphQL API.
@@ -48,16 +55,17 @@ export class CountriesDataClient implements DataClient {
 		)
 	}
 
-	async getRecords(doctype: DoctypeRef): Promise<Record<string, unknown>[]> {
+	async getRecords(doctype: DoctypeRef): Promise<GetRecordsResult> {
 		const load = LIST_LOADERS[loaderKey(doctype)]
 		if (!load) {
 			// The docbuilder sample fixtures (issue, assignment, user) model authoring only and have
 			// no data source at all. An empty list is the honest answer; a throw would read as an
 			// outage on a doctype that was never backed by anything.
 			console.info(`[playground] "${doctype.name}" has no GraphQL data source — it is a docbuilder sample doctype`)
-			return []
+			return { data: [], hasMore: false }
 		}
-		return [...(await load())] as Record<string, unknown>[]
+		// The countries API paginates nothing — every query returns the full collection.
+		return { data: [...(await load())] as Record<string, unknown>[], hasMore: false }
 	}
 
 	async getRecord(doctype: DoctypeRef, recordId: string): Promise<GetRecordResult> {

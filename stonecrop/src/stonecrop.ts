@@ -1,4 +1,4 @@
-import type { DataClient, GetRecordOptions, GetRecordsOptions } from '@stonecrop/schema'
+import type { DataClient, GetRecordOptions, GetRecordsOptions, GetRecordsResult } from '@stonecrop/schema'
 import { reactive } from 'vue'
 
 import Doctype from './doctype'
@@ -28,6 +28,12 @@ export class Stonecrop {
 	private _operationLogStore?: ReturnType<typeof useOperationLogStore>
 	private _operationLogConfig?: Partial<OperationLogConfig>
 	private _client?: DataClient
+
+	/**
+	 * Per-doctype page info from the last list read, keyed by slug. Reactive so views tracking
+	 * it update on fetch. Deliberately not in HST — see {@link Stonecrop.getRecords}.
+	 */
+	private pageInfo: Record<string, { hasMore: boolean; count?: number }> = reactive({})
 
 	/** The registry instance containing all doctype definitions */
 	readonly registry!: Registry
@@ -304,7 +310,7 @@ export class Stonecrop {
 	 * @throws Error if no data client has been configured
 	 * @public
 	 */
-	async getRecords(doctype: Doctype, options?: GetRecordsOptions): Promise<void> {
+	async getRecords(doctype: Doctype, options?: GetRecordsOptions): Promise<GetRecordsResult> {
 		if (!this._client) {
 			throw new Error(
 				'No data client configured. Call setClient() with a DataClient implementation ' +
@@ -312,7 +318,13 @@ export class Stonecrop {
 			)
 		}
 
-		const records = await this._client.getRecords(doctype, options)
+		const result = await this._client.getRecords(doctype, options)
+		const records = result.data
+
+		// Page info is kept beside HST, not in it. `getRecordIds` reads the raw keys under a
+		// doctype node, so anything filed there becomes a phantom record — the same hazard that
+		// ruled out seeding a draft node.
+		this.pageInfo[doctype.slug] = { hasMore: result.hasMore, count: result.count }
 
 		// Key each record by its declared primary key, falling back to `id`. This used to read
 		// `record.id` only, which silently dropped every row of a natural-keyed doctype (no `id`
@@ -324,6 +336,24 @@ export class Stonecrop {
 				this.addRecord(doctype, recordId, record)
 			}
 		})
+
+		return result
+	}
+
+	/**
+	 * What the last {@link Stonecrop.getRecords} for this doctype returned about the wider set.
+	 *
+	 * Answers the question HST cannot: HST holds what was fetched, so counting its keys reports
+	 * how much has been seen, never how much exists. Reactive, so a view reading it re-renders
+	 * when a fetch lands.
+	 *
+	 * @param doctype - The doctype slug string or Doctype object
+	 * @returns Page info, or undefined if this doctype's records have not been fetched
+	 * @public
+	 */
+	getPageInfo(doctype: string | Doctype): { hasMore: boolean; count?: number } | undefined {
+		const slug = typeof doctype === 'string' ? doctype : doctype.slug
+		return this.pageInfo[slug]
 	}
 
 	/**

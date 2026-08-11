@@ -214,7 +214,7 @@ export const resolvers = {
 				})
 			},
 
-			stonecropRecords(_: unknown, { $doctype, $filters, $orderBy, $limit, $offset, $options }: any) {
+			stonecropRecords(_: unknown, { $doctype, $filters, $orderBy, $limit, $offset, $includeTotal, $options }: any) {
 				return loadOne(
 					object({
 						doctype: $doctype,
@@ -222,6 +222,7 @@ export const resolvers = {
 						orderBy: $orderBy,
 						limit: $limit,
 						offset: $offset,
+						includeTotal: $includeTotal,
 						options: $options,
 					}),
 					async (specs: readonly any[]) => {
@@ -229,10 +230,15 @@ export const resolvers = {
 							const all = getRecords(spec.doctype, spec.filters ?? {})
 							const offset = spec.offset ?? 0
 							const limit = spec.limit ?? 100
+							const page = all.slice(offset, offset + limit)
 							return {
-								data: all.slice(offset, offset + limit),
+								data: page,
 								doctype: spec.doctype,
-								count: all.length,
+								hasMore: offset + page.length < all.length,
+								// This store is in memory, so counting is free — but it stays opt-in anyway,
+								// because the scaffold is what a real adapter gets copied from and a backend
+								// that answers a total nobody asked for teaches the wrong default.
+								count: spec.includeTotal === true ? all.length : null,
 							}
 						})
 					}

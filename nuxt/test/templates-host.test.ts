@@ -148,7 +148,14 @@ describe('templates host — reads', { tags: ['unit', 'graphql'] }, () => {
 		expect(meta.data?.stonecropMeta?.name).toBe('Project')
 		expect(meta.data?.stonecropMeta?.fields?.some((f: any) => f.primaryKey)).toBe(true)
 
-		const records = await run(`query { stonecropRecords(doctype: "Project") { data count } }`)
-		expect(records.data?.stonecropRecords?.count).toBeGreaterThan(0)
+		const records = await run(`query { stonecropRecords(doctype: "Project") { data hasMore count } }`)
+		expect(records.data?.stonecropRecords?.data?.length).toBeGreaterThan(0)
+		expect(records.data?.stonecropRecords?.hasMore).toBe(false)
+		// The scaffold is what a new app's adapter is copied from, so it must withhold the total
+		// like the real one does — otherwise every scaffolded backend counts on every list read.
+		expect(records.data?.stonecropRecords?.count).toBeNull()
+
+		const withTotal = await run(`query { stonecropRecords(doctype: "Project", includeTotal: true) { count } }`)
+		expect(withTotal.data?.stonecropRecords?.count).toBeGreaterThan(0)
 	})
 })

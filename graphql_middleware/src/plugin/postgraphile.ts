@@ -144,8 +144,8 @@ export interface StonecropPluginOptions {
 	 * table) and not to a page (which cannot know the size of an arbitrary table). Callers stay
 	 * free to ask for less; they cannot ask for an unbounded scan by omission.
 	 *
-	 * `count` still reports the true total whenever this cap applies, so a capped page is
-	 * distinguishable from a complete one.
+	 * `hasMore` reports whether the cap truncated the result, so a capped page is always
+	 * distinguishable from a complete one without asking for a count.
 	 *
 	 * Set to `null` for no default cap. That is the pre-0.17 behaviour and it means an unqualified
 	 * list query returns the whole table.
@@ -389,7 +389,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 							)
 						},
 
-						stonecropRecords(_: any, { $doctype, $filters, $orderBy, $limit, $offset }: any) {
+						stonecropRecords(_: any, { $doctype, $filters, $orderBy, $limit, $offset, $includeTotal }: any) {
 							return loadOneWithPgClient(
 								executor,
 								object({
@@ -398,6 +398,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 									orderBy: $orderBy,
 									limit: $limit,
 									offset: $offset,
+									includeTotal: $includeTotal,
 								}),
 								async (pgClient: PgClient, specs) => {
 									return await Promise.all(
@@ -405,7 +406,11 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 											const doctype = String(spec.doctype)
 											const meta = getMeta(doctype)
 											if (!meta) {
-												return { data: [], doctype, count: 0 }
+												// An unknown doctype answers "no records" rather than erroring, so a caller
+												// who asked for a total gets 0. Returning null here would make null mean
+												// two things — "you did not ask" and "I could not say" — and a client
+												// cannot tell those apart.
+												return { data: [], doctype, hasMore: false, count: spec.includeTotal === true ? 0 : null }
 											}
 
 											const knownFields = new Set(flattenFields(meta.fields).map(f => f.fieldname))
@@ -451,11 +456,19 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 											// than the whole table: omission is how an unbounded scan used to happen, and the
 											// only guard against it lived in the scaffold's fetch helper, which is neither the
 											// right layer nor present in a host that wrote its own.
-											const effectiveLimit =
+											// Grafast passes arguments through as loosely-typed runtime values, so narrow
+											// before doing arithmetic on this — same reason orderBy is validated above.
+											if (spec.limit != null && typeof spec.limit !== 'number') {
+												throw new Error(`Invalid limit: expected number, got ${typeof spec.limit}`)
+											}
+											const effectiveLimit: number | null =
 												spec.limit ?? (options.defaultRecordLimit === undefined ? 200 : options.defaultRecordLimit)
 											let pagingClause = ''
 											if (effectiveLimit != null) {
-												values.push(effectiveLimit)
+												// One more row than asked for. Its presence is the whole `hasMore` answer, and
+												// it is discarded below — this is why knowing a list is truncated costs no
+												// second query, where a COUNT(*) would be a full scan on every list read.
+												values.push(effectiveLimit + 1)
 												pagingClause += ` LIMIT $${values.length}`
 											}
 											if (spec.offset != null) {
@@ -468,12 +481,20 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 												values,
 											})
 
-											// Total count matching filters (independent of LIMIT/OFFSET). Keyed off the
-											// effective limit, not the requested one: a default cap truncates just as a
-											// requested one does, and reporting `rows.length` there would make a capped page
-											// indistinguishable from a complete table.
-											let count = rows.length
-											if (effectiveLimit != null || spec.offset != null) {
+											// The extra row requested above is a probe, not data. Its presence is what makes
+											// a capped page distinguishable from a complete table; trim it before anything
+											// downstream can mistake it for a record.
+											const hasMore = effectiveLimit != null && rows.length > effectiveLimit
+											const data = hasMore ? rows.slice(0, effectiveLimit ?? rows.length) : rows
+
+											// Total matching the filters, independent of LIMIT/OFFSET, and opt-in.
+											//
+											// Explicitly requested rather than inferred from whether `count` was selected:
+											// this resolver is a Grafast plan step and receives only its arguments, never the
+											// selection set, and making the plan vary by selection is what Grafast optimises
+											// against. An argument also puts the cost in the query the client wrote.
+											let count: number | null = null
+											if (spec.includeTotal === true) {
 												const countValues: unknown[] = []
 												const countWhere: string[] = []
 												if (spec.filters != null) {
@@ -492,7 +513,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 												count = parseInt(countRows[0]?.row_count ?? '0', 10)
 											}
 
-											return { data: rows, doctype, count }
+											return { data, doctype, hasMore, count }
 										})
 									)
 								}

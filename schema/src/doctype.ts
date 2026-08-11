@@ -418,6 +418,14 @@ export interface GetRecordsOptions {
 	limit?: number
 	/** Number of records to skip */
 	offset?: number
+	/**
+	 * Ask the backend for the total matching the filters as well as the page.
+	 *
+	 * Off by default because it costs a second query — a full scan on Postgres — and knowing
+	 * *whether* more exist (`hasMore`) is what a list view actually needs. Turn it on for a
+	 * "showing 20 of 4,312" style display.
+	 */
+	includeTotal?: boolean
 }
 
 /**
@@ -427,6 +435,28 @@ export interface GetRecordsOptions {
 export interface GetRecordResult {
 	/** The record data, or null if not found */
 	record: Record<string, unknown> | null
+}
+
+/**
+ * Result from getRecords — a page of records, and enough to tell that it is one.
+ *
+ * A bare array used to be returned here, which claimed to be the whole collection. It is not:
+ * a limit always applies, so a caller could not distinguish a complete list from a truncated
+ * one. That is the entire reason this type exists.
+ *
+ * @public
+ */
+export interface GetRecordsResult {
+	/** The records in this page */
+	data: Record<string, unknown>[]
+	/** Whether the backend holds further records beyond this page */
+	hasMore: boolean
+	/**
+	 * Total records matching the filters, ignoring limit/offset. Present only when the caller
+	 * asked for it via {@link GetRecordsOptions.includeTotal} — counting is a full scan on most
+	 * backends, so it is never computed speculatively.
+	 */
+	count?: number
 }
 
 /**
@@ -460,12 +490,12 @@ export interface DataClient<T extends DoctypeRef = DoctypeRef, M = DoctypeMeta> 
 	getRecord(doctype: T, recordId: string, options?: GetRecordOptions): Promise<GetRecordResult>
 
 	/**
-	 * Fetch multiple records
+	 * Fetch a page of records
 	 * @param doctype - Doctype reference (name and optional slug)
 	 * @param options - Query options
-	 * @returns Array of record data
+	 * @returns The page, plus whether more exist and (on request) the total
 	 */
-	getRecords(doctype: T, options?: GetRecordsOptions): Promise<Record<string, unknown>[]>
+	getRecords(doctype: T, options?: GetRecordsOptions): Promise<GetRecordsResult>
 
 	/**
 	 * Execute a doctype action (e.g., SUBMIT, APPROVE, save).

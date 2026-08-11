@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "comment": "Return the page object from getRecords rather than selecting count over the wire and discarding it, and forward includeTotal so a caller can ask for a total.",
+      "type": "minor",
+      "packageName": "@stonecrop/graphql-client"
+    }
+  ],
+  "packageName": "@stonecrop/graphql-client"
+}

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "comment": "Update the scaffolded and fullstack resolvers for the records contract: both answer hasMore and withhold the total unless includeTotal is set.",
+      "type": "patch",
+      "packageName": "@stonecrop/nuxt"
+    }
+  ],
+  "packageName": "@stonecrop/nuxt"
+}

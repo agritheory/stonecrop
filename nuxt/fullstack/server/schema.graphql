@@ -95,12 +95,19 @@ type RecordResult {
 }
 
 """
-Result of a list query with count
+Result of a list query — a page, plus enough to tell that it is one
 """
 type RecordsResult {
 	data: [JSON!]!
 	doctype: String!
-	count: Int!
+	"""
+	Whether further records exist beyond this page
+	"""
+	hasMore: Boolean!
+	"""
+	Total matching the filters. Null unless the query asked for it with includeTotal
+	"""
+	count: Int
 }
 
 """
@@ -173,6 +180,7 @@ type Query {
 		orderBy: String
 		limit: Int
 		offset: Int
+		includeTotal: Boolean
 		options: JSON
 	): RecordsResult
 

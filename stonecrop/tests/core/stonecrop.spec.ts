@@ -240,7 +240,7 @@ describe('Stonecrop class with HST integration', { tags: ['unit'] }, () => {
 				{ id: '1', title: 'Task 1' },
 				{ id: '2', title: 'Task 2' },
 			]
-			mockClient.getRecords.mockResolvedValue(mockRecords)
+			mockClient.getRecords.mockResolvedValue({ data: mockRecords, hasMore: false })
 
 			await stonecrop.getRecords(mockDoctype)
 
@@ -269,10 +269,13 @@ describe('Stonecrop class with HST integration', { tags: ['unit'] }, () => {
 			)
 			registry.addDoctype(uom)
 
-			mockClient.getRecords.mockResolvedValue([
-				{ name: 'EACH', label: 'Each' },
-				{ name: 'BOX', label: 'Box' },
-			])
+			mockClient.getRecords.mockResolvedValue({
+				hasMore: false,
+				data: [
+					{ name: 'EACH', label: 'Each' },
+					{ name: 'BOX', label: 'Box' },
+				],
+			})
 
 			await stonecrop.getRecords(uom)
 
@@ -283,7 +286,7 @@ describe('Stonecrop class with HST integration', { tags: ['unit'] }, () => {
 		it('getRecords still falls back to id when no primaryKey is declared', async () => {
 			// The surrogate-key path must keep working: those doctypes carry an `id` column and
 			// never mark a primary key.
-			mockClient.getRecords.mockResolvedValue([{ id: 'a1', title: 'Task A' }])
+			mockClient.getRecords.mockResolvedValue({ data: [{ id: 'a1', title: 'Task A' }], hasMore: false })
 
 			await stonecrop.getRecords(mockDoctype)
 
@@ -333,7 +336,7 @@ describe('Stonecrop class with HST integration', { tags: ['unit'] }, () => {
 		it('getRecords forwards options to the client and invents no row limit', async () => {
 			// A row cap is a statement about what the backend can afford, so nothing on this side
 			// makes one up. An unqualified call must reach the client unqualified.
-			mockClient.getRecords.mockResolvedValue([])
+			mockClient.getRecords.mockResolvedValue({ data: [], hasMore: false })
 
 			await stonecrop.getRecords(mockDoctype, { limit: 25, orderBy: 'TITLE_ASC' })
 			expect(mockClient.getRecords).toHaveBeenCalledWith(mockDoctype, { limit: 25, orderBy: 'TITLE_ASC' })
@@ -345,7 +348,7 @@ describe('Stonecrop class with HST integration', { tags: ['unit'] }, () => {
 		it('getRecords refetches even when records are already in HST', async () => {
 			// Deliberately unguarded, unlike getRecord: a list is a view of data that changes, so
 			// revisiting one must re-read rather than serve whatever HST happens to hold.
-			mockClient.getRecords.mockResolvedValue([{ id: '1', title: 'Fresh' }])
+			mockClient.getRecords.mockResolvedValue({ data: [{ id: '1', title: 'Fresh' }], hasMore: false })
 			stonecrop.addRecord(mockDoctype, '1', { id: '1', title: 'Stale' })
 
 			await stonecrop.getRecords(mockDoctype)
@@ -398,7 +401,7 @@ describe('Stonecrop class with HST integration', { tags: ['unit'] }, () => {
 			const mockClient = {
 				getMeta: vi.fn(),
 				getRecord: vi.fn(),
-				getRecords: vi.fn().mockResolvedValue(mockRecords),
+				getRecords: vi.fn().mockResolvedValue({ data: mockRecords, hasMore: false }),
 				runAction: vi.fn(),
 			}
 

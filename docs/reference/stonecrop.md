@@ -1834,6 +1834,25 @@ getMeta(context: RouteContext): Promise<any>
 |-----------|------|-------------|
 | context | `RouteContext` | The route context |
 
+#### getPageInfo
+
+What the last `getRecords` for this doctype returned about the wider set.
+
+Answers the question HST cannot: HST holds what was fetched, so counting its keys reports how much has been seen, never how much exists. Reactive, so a view reading it re-renders when a fetch lands.
+
+```typescript
+getPageInfo(doctype: string | Doctype): {
+        hasMore: boolean;
+        count?: number;
+    } | undefined
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| doctype | `string \| Doctype` | The doctype slug string or Doctype object |
+
 #### getRecord
 
 Fetch a single record from the server and store it in HST.
@@ -1894,7 +1913,7 @@ Deliberately unguarded, unlike `getRecord`: a list is a view of data that change
 `options` is forwarded to the client untouched — no row limit is invented here, because nothing on this side of the wire knows what is safe for an arbitrary backend. A caller that passes none gets whatever the server considers a reasonable page.
 
 ```typescript
-getRecords(doctype: Doctype, options: GetRecordsOptions): Promise<void>
+getRecords(doctype: Doctype, options: GetRecordsOptions): Promise<GetRecordsResult>
 ```
 
 **Parameters:**

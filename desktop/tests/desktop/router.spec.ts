@@ -290,10 +290,13 @@ describe('Desktop – currentViewData setter', { tags: ['component'] }, () => {
 		// The list read used to be the host's alone — Desktop only emitted and waited. Three of the
 		// four in-repo hosts then hand-rolled the body of getRecords, and all three keyed rows the
 		// same wrong way at once. This asserts Desktop now asks for the list itself.
-		const mockGetRecords = vi.fn().mockResolvedValue([
-			{ id: 'rec-1', title: 'First' },
-			{ id: 'rec-2', title: 'Second' },
-		])
+		const mockGetRecords = vi.fn().mockResolvedValue({
+			data: [
+				{ id: 'rec-1', title: 'First' },
+				{ id: 'rec-2', title: 'Second' },
+			],
+			hasMore: false,
+		})
 		const mockClient = { getRecord: vi.fn(), getRecords: mockGetRecords, dispatchAction: vi.fn() }
 
 		const testRouter = createRouter({ history: createMemoryHistory(), routes: routerTestRoutes })
@@ -320,6 +323,42 @@ describe('Desktop – currentViewData setter', { tags: ['component'] }, () => {
 		expect(stonecrop.getRecordIds('task')).toEqual(['rec-1', 'rec-2'])
 		// The event survives as a notification, so a host can still hang analytics off it.
 		expect(wrapper.emitted('load-records')).toBeTruthy()
+	})
+
+	it.each([
+		{ hasMore: true, shown: true, label: 'says so when the backend reports a partial list' },
+		{ hasMore: false, shown: false, label: 'stays silent when the list is complete' },
+	])('$label', async ({ hasMore, shown }) => {
+		// Both directions, because the failure this guards against is a banner that never renders
+		// (truncation stays invisible) *and* one that always renders (every list looks truncated).
+		// No in-repo dataset exceeds the default 200-row cap, so this state is unreachable in a
+		// browser and a test is the only oracle.
+		const mockClient = {
+			getRecord: vi.fn(),
+			getRecords: vi.fn().mockResolvedValue({ data: [{ id: 'rec-1', title: 'First' }], hasMore }),
+			dispatchAction: vi.fn(),
+		}
+
+		const testRouter = createRouter({ history: createMemoryHistory(), routes: routerTestRoutes })
+		const registry = new Registry(testRouter)
+		const stonecrop = new Stonecrop(registry, undefined, { client: mockClient as any })
+		registry.addDoctype(buildDoctype('task', 'draft', { draft: {} }))
+
+		await testRouter.push('/task')
+		await testRouter.isReady()
+
+		const wrapper = mount(Desktop, {
+			global: {
+				plugins: [makeStonecropPlugin(registry, stonecrop), testRouter],
+				stubs: { AForm: true, ActionSet: true, SheetNav: true, CommandPalette: true },
+			},
+		})
+
+		await nextTick()
+		await nextTick()
+
+		expect(stonecrop.getPageInfo('task')?.hasMore).toBe(hasMore)
+		expect(wrapper.find('.truncation-note').exists()).toBe(shown)
 	})
 
 	it('reads nothing when no client is configured, leaving a host-populated store alone', async () => {

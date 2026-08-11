@@ -174,7 +174,9 @@ describe('stonecropRecord — camelCase backlink', { tags: ['integration', 'grap
 
 describe('stonecropRecords — camelCase fieldnames', { tags: ['integration', 'graphql'] }, () => {
 	it('returns all records', async () => {
-		const result = await runQuery(`query { stonecropRecords(doctype: "ScCamelItem") { count data } }`)
+		const result = await runQuery(
+			`query { stonecropRecords(doctype: "ScCamelItem", includeTotal: true) { count data } }`
+		)
 		const records = (result as any).data?.stonecropRecords
 		expect(records?.count).toBe(2)
 		expect(records?.data.length).toBe(2)
@@ -182,7 +184,7 @@ describe('stonecropRecords — camelCase fieldnames', { tags: ['integration', 'g
 
 	it('filters by a camelCase fieldname', async () => {
 		const result = await runQuery(
-			`query { stonecropRecords(doctype: "ScCamelItem", filters: { displayName: "Alpha" }) { count data } }`
+			`query { stonecropRecords(doctype: "ScCamelItem", filters: { displayName: "Alpha" }, includeTotal: true) { count data } }`
 		)
 		const records = (result as any).data?.stonecropRecords
 		expect(records?.count).toBe(1)

@@ -486,34 +486,57 @@ describe('stonecropRecord', { tags: ['integration', 'graphql'] }, () => {
 
 describe('stonecropRecords', { tags: ['integration', 'graphql'] }, () => {
 	it('returns all records when no filters given', async () => {
-		const result = await runQuery(`query { stonecropRecords(doctype: "ScItem") { count data } }`)
+		const result = await runQuery(`query { stonecropRecords(doctype: "ScItem") { hasMore data } }`)
 		const records = (result as any).data?.stonecropRecords
-		expect(records?.count).toBe(3)
 		expect(records?.data.length).toBe(3)
+		expect(records?.hasMore).toBe(false)
 	})
 
 	it('filters by a field value', async () => {
 		const result = await runQuery(
-			`query { stonecropRecords(doctype: "ScItem", filters: { status: "Active" }) { count data } }`
+			`query { stonecropRecords(doctype: "ScItem", filters: { status: "Active" }) { hasMore data } }`
 		)
 		const records = (result as any).data?.stonecropRecords
-		expect(records?.count).toBe(1)
+		expect(records?.data.length).toBe(1)
 		expect(records?.data[0].name).toBe('Beta')
+		expect(records?.hasMore).toBe(false)
 	})
 
-	it('respects limit and offset', async () => {
-		const result = await runQuery(`query { stonecropRecords(doctype: "ScItem", limit: 1, offset: 1) { count data } }`)
+	it('respects limit and offset, and reports that more remain', async () => {
+		const result = await runQuery(`query { stonecropRecords(doctype: "ScItem", limit: 1, offset: 1) { hasMore data } }`)
 		const records = (result as any).data?.stonecropRecords
 		expect(records?.data.length).toBe(1)
-		// count reflects the total, not the page size
-		expect(typeof records?.count).toBe('number')
+		// 3 rows, skip 1, take 1 — so one remains behind this page and the extra probe row finds it.
+		expect(records?.hasMore).toBe(true)
 	})
 
-	it('caps an unqualified list at the configured default and still reports the true total', async () => {
+	it('withholds the total unless the query asks for it', async () => {
+		// The count is a second query and a full scan on Postgres. It used to run on every list
+		// read and be discarded by the client, which paid for it on the wire and dropped it.
+		const withoutTotal = await runQuery(`query { stonecropRecords(doctype: "ScItem", limit: 1) { count data } }`)
+		expect((withoutTotal as any).data?.stonecropRecords?.count).toBeNull()
+
+		const withTotal = await runQuery(
+			`query { stonecropRecords(doctype: "ScItem", limit: 1, includeTotal: true) { count data } }`
+		)
+		const records = (withTotal as any).data?.stonecropRecords
+		// The total is of the whole filtered set, not of the page.
+		expect(records?.data.length).toBe(1)
+		expect(records?.count).toBe(3)
+	})
+
+	it('counts the filtered set, not the table, when a total is requested', async () => {
+		const result = await runQuery(
+			`query { stonecropRecords(doctype: "ScItem", filters: { status: "Active" }, includeTotal: true) { count data } }`
+		)
+		expect((result as any).data?.stonecropRecords?.count).toBe(1)
+	})
+
+	it('caps an unqualified list at the configured default and says the list is partial', async () => {
 		// Omitting `limit` used to emit no LIMIT at all, so an unqualified list query returned the
 		// whole table. The only guard against that lived in the scaffold's fetch helper — the wrong
 		// layer, and absent from any host that wrote its own.
-		const capped = await runQuery(`query { stonecropRecords(doctype: "ScItem") { count data } }`, undefined, {
+		const capped = await runQuery(`query { stonecropRecords(doctype: "ScItem") { hasMore data } }`, undefined, {
 			schema: cappedSchema,
 			resolvedPreset: cappedResolvedPreset,
 		})
@@ -522,17 +545,18 @@ describe('stonecropRecords', { tags: ['integration', 'graphql'] }, () => {
 
 		// The uncapped schema is the control: same query, same data, no truncation. Without it a
 		// broken query returning one row would read as a working cap.
-		const full = await runQuery(`query { stonecropRecords(doctype: "ScItem") { count data } }`)
+		const full = await runQuery(`query { stonecropRecords(doctype: "ScItem") { hasMore data } }`)
 		const fullRecords = (full as any).data?.stonecropRecords
 		expect(fullRecords?.data.length).toBeGreaterThan(1)
 
-		// A capped page must not report its own size as the total, or a truncated list is
-		// indistinguishable from a complete one.
-		expect(cappedRecords?.count).toBe(fullRecords?.data.length)
+		// The pair is the whole point: a capped page and a complete one must not look alike.
+		// Asserting both directions is what makes this fail if hasMore were hardcoded either way.
+		expect(cappedRecords?.hasMore).toBe(true)
+		expect(fullRecords?.hasMore).toBe(false)
 	})
 
 	it('lets an explicit limit override the default cap', async () => {
-		const result = await runQuery(`query { stonecropRecords(doctype: "ScItem", limit: 2) { count data } }`, undefined, {
+		const result = await runQuery(`query { stonecropRecords(doctype: "ScItem", limit: 2) { data } }`, undefined, {
 			schema: cappedSchema,
 			resolvedPreset: cappedResolvedPreset,
 		})
@@ -561,7 +585,7 @@ describe('lazy link retrieval via stonecropRecords', { tags: ['integration', 'gr
 	it('retrieves lazy-linked records via stonecropRecords with backlink filter', async () => {
 		// Simulate a client-side lazy load: fetch notes for item 1 via backlink filter
 		const result = await runQuery(
-			`query { stonecropRecords(doctype: "ScNote", filters: { item_id: "1" }) { count data } }`
+			`query { stonecropRecords(doctype: "ScNote", filters: { item_id: "1" }, includeTotal: true) { count data } }`
 		)
 		const records = (result as any).data?.stonecropRecords
 		expect(records?.count).toBe(2)

@@ -6,6 +6,7 @@ import type {
 	GetRecordOptions,
 	GetRecordResult,
 	GetRecordsOptions,
+	GetRecordsResult,
 } from '@stonecrop/schema'
 
 export class RestDataClient implements DataClient {
@@ -23,10 +24,14 @@ export class RestDataClient implements DataClient {
 		return { record: data }
 	}
 
-	async getRecords(doctype: DoctypeRef, _options?: GetRecordsOptions): Promise<Record<string, unknown>[]> {
+	async getRecords(doctype: DoctypeRef, _options?: GetRecordsOptions): Promise<GetRecordsResult> {
 		const response = await fetch(`/api/${doctype.slug}`)
-		if (!response.ok) return []
-		return response.json() as Promise<Record<string, unknown>[]>
+		if (!response.ok) return { data: [], hasMore: false }
+		const data = (await response.json()) as Record<string, unknown>[]
+		// This endpoint takes no limit and returns the whole collection, so the page is the set.
+		// `count` is left absent rather than set to data.length: the caller did not ask for a
+		// total, and answering one anyway is what made a truncated list look complete elsewhere.
+		return { data, hasMore: false }
 	}
 
 	async runAction(

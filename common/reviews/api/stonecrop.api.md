@@ -11,6 +11,7 @@ import type { DataClient } from '@stonecrop/schema';
 import type { DoctypeField } from '@stonecrop/schema';
 import type { GetRecordOptions } from '@stonecrop/schema';
 import type { GetRecordsOptions } from '@stonecrop/schema';
+import type { GetRecordsResult } from '@stonecrop/schema';
 import type { LinkDeclaration } from '@stonecrop/schema';
 import { List } from 'immutable';
 import type { Map as Map_2 } from 'immutable';
@@ -693,10 +694,14 @@ export class Stonecrop {
     markIrreversible: (operationId: string, reason: string) => void;
     logAction: (doctype: string, actionName: string, recordIds?: string[], result?: "success" | "failure" | "pending", error?: string) => string;
     }, "clear" | "undo" | "redo" | "configure" | "addOperation" | "startBatch" | "commitBatch" | "cancelBatch" | "getOperationsFor" | "getSnapshot" | "markIrreversible" | "logAction">>;
+    getPageInfo(doctype: string | Doctype): {
+        hasMore: boolean;
+        count?: number;
+    } | undefined;
     getRecord(doctype: string | Doctype, recordId: string, options?: GetRecordOptions): Promise<void>;
     getRecordById(doctype: string | Doctype, recordId: string): HSTNode | undefined;
     getRecordIds(doctype: string | Doctype): string[];
-    getRecords(doctype: Doctype, options?: GetRecordsOptions): Promise<void>;
+    getRecords(doctype: Doctype, options?: GetRecordsOptions): Promise<GetRecordsResult>;
     getRecordState(doctype: string | Doctype, recordId: string): string;
     getStore(): HSTNode;
     initializeNestedData(path: string, doctype: Doctype): void;

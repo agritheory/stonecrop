@@ -63,7 +63,16 @@ export const typeDefs = gql`
 	type StonecropRecordsResult {
 		data: [JSON!]!
 		doctype: String!
-		count: Int!
+		"""
+		Whether further records exist beyond this page. Always answered — it is read from the
+		page itself (one extra row is requested and discarded), so it costs no second query.
+		"""
+		hasMore: Boolean!
+		"""
+		Total matching the filters, ignoring limit/offset. Null unless the query asked for it
+		with includeTotal, because counting is a full scan on most backends.
+		"""
+		count: Int
 	}
 
 	type StonecropActionResult {
@@ -82,6 +91,7 @@ export const typeDefs = gql`
 			orderBy: String
 			limit: Int
 			offset: Int
+			includeTotal: Boolean
 			options: JSON
 		): StonecropRecordsResult
 	}

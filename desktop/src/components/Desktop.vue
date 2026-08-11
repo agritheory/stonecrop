@@ -14,6 +14,9 @@
 			<p>Loading {{ currentView }} data...</p>
 		</div>
 
+		<!-- No row count and no "of N": Desktop asks for neither, so stating one would be a guess. -->
+		<p v-if="listIsTruncated" class="truncation-note">This is a partial list — more records exist on the server.</p>
+
 		<!-- Sheet Navigation -->
 		<SheetNav :breadcrumbs="navigationBreadcrumbs" />
 
@@ -136,7 +139,6 @@ const currentViewData = computed<Record<string, any>>({
 						id: doctype,
 						doctype,
 						display_name: formatDoctypeName(doctype),
-						record_count: getRecordCount(doctype),
 						actions: 'View Records',
 					})) ?? [],
 			}
@@ -593,11 +595,13 @@ const formatDoctypeName = (doctype: string): string => {
 		.join(' ')
 }
 
-const getRecordCount = (doctype: string): number => {
-	if (!stonecrop.value) return 0
-	const recordIds = stonecrop.value.getRecordIds(doctype)
-	return recordIds.length
-}
+// Whether the list on screen is a page rather than the whole set. Read from the backend's own
+// answer, not inferred from how many rows arrived: a page that happens to be exactly the limit
+// is indistinguishable from a complete one by counting.
+const listIsTruncated = computed(() => {
+	if (currentView.value !== 'records' || !currentDoctype.value) return false
+	return stonecrop.value?.getPageInfo(currentDoctype.value)?.hasMore === true
+})
 
 // Internal navigation helper: emits 'navigate', then calls the adapter (if any)
 // or falls back to the registry's Vue Router instance.
@@ -672,14 +676,10 @@ const getDoctypesSchema = (): ResolvedField[] => {
 					edit: false,
 					width: '30ch',
 				},
-				{
-					fieldname: 'record_count',
-					label: 'Records',
-					component: 'ANumericInput',
-					align: 'center' as const,
-					edit: false,
-					width: '15ch',
-				},
+				// No record count column. It read `getRecordIds(doctype).length`, which is how many
+				// records HST happens to hold — zero for a doctype never opened, and the page size
+				// for one that was. The real total belongs to the backend and Desktop never asks
+				// for it, so this shell cannot answer it. Same reason the `recordIdField` prop went.
 				{
 					fieldname: 'actions',
 					label: 'Actions',

@@ -156,7 +156,7 @@ export default {
 				})
 			},
 
-			stonecropRecords(_: unknown, { $doctype, $filters, $orderBy, $limit, $offset, $options }: any) {
+			stonecropRecords(_: unknown, { $doctype, $filters, $orderBy, $limit, $offset, $includeTotal, $options }: any) {
 				return loadOne(
 					object({
 						doctype: $doctype,
@@ -164,6 +164,7 @@ export default {
 						orderBy: $orderBy,
 						limit: $limit,
 						offset: $offset,
+						includeTotal: $includeTotal,
 						options: $options,
 					}),
 					async (specs: readonly any[]) => {
@@ -184,17 +185,24 @@ export default {
 									})
 									const connection = result[queryName]
 									const data = connection?.nodes ?? []
+									const total = connection?.totalCount
+									const offset = spec.offset ?? 0
 									return {
 										data,
 										doctype: spec.doctype,
-										count: connection?.totalCount ?? data.length,
+										// The mock always reports totalCount; the fallback covers a connection that
+										// does not, where "there might be more" cannot be answered and claiming more
+										// exist would strand a list view asking for a page that is not there.
+										hasMore: total != null ? offset + data.length < total : false,
+										count: spec.includeTotal === true ? (total ?? data.length) : null,
 									}
 								} catch (error) {
 									console.error(`[stonecropRecords] Error:`, error)
 									return {
 										data: [],
 										doctype: spec.doctype,
-										count: 0,
+										hasMore: false,
+										count: null,
 									}
 								}
 							})
