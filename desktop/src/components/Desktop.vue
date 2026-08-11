@@ -14,6 +14,9 @@
 			<p>Loading {{ currentView }} data...</p>
 		</div>
 
+		<!-- No row count and no "of N": Desktop asks for neither, so stating one would be a guess. -->
+		<p v-if="listIsTruncated" class="truncation-note">This is a partial list — more records exist on the server.</p>
+
 		<!-- Sheet Navigation -->
 		<SheetNav :breadcrumbs="navigationBreadcrumbs" />
 
@@ -35,7 +38,10 @@
 </template>
 
 <script setup lang="ts">
-import { useStonecrop, useValidationStore } from '@stonecrop/stonecrop'
+// The draft segment comes from @stonecrop/stonecrop rather than being spelled out here: that
+// package guards fetching, field initialization and workflow readiness on the same question, and
+// when the two were written separately they disagreed and every guard over there went dead.
+import { DRAFT_RECORD_ID, isDraftRecordId, useStonecrop, useValidationStore } from '@stonecrop/stonecrop'
 import { AForm, type AFormLinkNavigator, type ResolvedField, type ResolvedTable } from '@stonecrop/aform'
 import type { ColumnSchema } from '@stonecrop/schema'
 import { computed, onMounted, onUnmounted, provide, ref, unref, watch } from 'vue'
@@ -53,12 +59,7 @@ import type {
 	LoadRecordEventPayload,
 } from '../types'
 
-const {
-	availableDoctypes = [],
-	routeAdapter,
-	confirmFn,
-	recordIdField,
-} = defineProps<{
+const { availableDoctypes = [], routeAdapter } = defineProps<{
 	availableDoctypes?: string[]
 	/**
 	 * Pluggable router adapter. When provided, Desktop uses these functions for all
@@ -66,18 +67,6 @@ const {
 	 * Nuxt hosts (or any host with custom route conventions) should supply this.
 	 */
 	routeAdapter?: RouteAdapter
-	/**
-	 * Replacement for the native `confirm()` dialog. Desktop calls this before
-	 * performing a destructive action. Return `true` to proceed.
-	 * Defaults to the native `window.confirm` if omitted.
-	 */
-	confirmFn?: (message: string) => boolean | Promise<boolean>
-	/**
-	 * The field name that holds the canonical record ID (e.g., 'rowId' for UUID).
-	 * Used for navigation and table row identification.
-	 * Defaults to 'id' if not specified.
-	 */
-	recordIdField?: string
 }>()
 
 const emit = defineEmits<{
@@ -96,13 +85,14 @@ const emit = defineEmits<{
 	 */
 	'record:open': [payload: RecordOpenEventPayload]
 	/**
-	 * Fired when Desktop needs records for a list view.
-	 * The host app should fetch and populate HST.
+	 * Fired when Desktop is about to read records for a list view. A notification, not a request:
+	 * Desktop performs the read itself through `Stonecrop.getRecords`. A host that fetches here
+	 * races that read into the same HST key.
 	 */
 	'load-records': [payload: LoadRecordsEventPayload]
 	/**
-	 * Fired when Desktop needs a single record for a form view.
-	 * The host app should fetch and populate HST.
+	 * Fired when Desktop is about to read a single record for a form view. A notification, not a
+	 * request — see `load-records`. Not emitted for a draft, which has nothing to fetch.
 	 */
 	'load-record': [payload: LoadRecordEventPayload]
 }>()
@@ -131,9 +121,14 @@ const fieldErrors = computed<Record<string, string[]>>(() =>
 const loading = ref(false)
 const commandPaletteOpen = ref(false)
 
+// The record being composed on a `/{doctype}/new` route. Deliberately not in HST: a draft has no
+// identity to be keyed by, and both ways of faking one fail — see `DRAFT_RECORD_ID`.
+const draftRecord = ref<Record<string, any>>({})
+
 // Form/list data management — each view produces a different data shape.
 // List views (doctypes, records) return table row data keyed by fieldname.
-// Record view returns HST record fields for two-way binding.
+// Record view returns the record's fields for two-way binding — from HST, or from `draftRecord`
+// when the route is a draft.
 const currentViewData = computed<Record<string, any>>({
 	get() {
 		// Doctypes list — rows come from availableDoctypes prop (reactive via availableDoctypes)
@@ -144,7 +139,6 @@ const currentViewData = computed<Record<string, any>>({
 						id: doctype,
 						doctype,
 						display_name: formatDoctypeName(doctype),
-						record_count: getRecordCount(doctype),
 						actions: 'View Records',
 					})) ?? [],
 			}
@@ -156,7 +150,13 @@ const currentViewData = computed<Record<string, any>>({
 				records_table: getRecords().map(record =>
 					Object.assign({}, record, {
 						id: resolveRecordId(record) ?? '',
-						actions: 'Edit | Delete',
+						// A list row is navigation. Actions live on the record view, where the Actions
+						// dropdown is built from what the doctype declares and what the record's
+						// current state allows. This cell used to also offer Delete, which dispatched
+						// an action named `DELETE` that Desktop invented — no doctype in a
+						// WorkflowMeta app declares it, so it failed on every click. Removal is a
+						// workflow outcome (`archive`, `cancel`) and belongs in the doctype.
+						actions: 'Edit',
 					})
 				),
 			}
@@ -168,11 +168,14 @@ const currentViewData = computed<Record<string, any>>({
 		}
 
 		try {
-			const record = stonecrop.value.getRecordById(currentDoctype.value, currentRecordId.value)
+			const source = isNewRecord.value
+				? draftRecord.value
+				: (stonecrop.value.getRecordById(currentDoctype.value, currentRecordId.value)?.get('') as
+						Record<string, any> | undefined)
 			// Return a plain shallow copy so AForm mutations don't propagate directly into
 			// the HST reactive object, which would bypass field-trigger diffing and cause
 			// setupDeepReactivity to fire triggers for all fields on every keystroke.
-			const flat: Record<string, any> = { ...record?.get('') }
+			const flat: Record<string, any> = { ...source }
 
 			// AFieldset receives data[fieldsetFieldname] as its data prop, so the fieldset's
 			// children must be grouped under the fieldset key. The server returns flat SQL rows,
@@ -233,16 +236,30 @@ const currentViewData = computed<Record<string, any>>({
 
 			// Only update fields that actually changed. Never write undefined — AForm may emit
 			// schema fields absent from the record as undefined; writing them would silently
-			// clear values that exist in HST. Explicit null is allowed (intentional clear).
-			const hstStore = stonecrop.value.getStore()
+			// clear values that exist. Explicit null is allowed (intentional clear).
 			const changedFields: string[] = []
-			for (const [fieldname, value] of Object.entries(flatData)) {
-				if (value === undefined) continue
-				const fieldPath = `${currentDoctype.value}.${currentRecordId.value}.${fieldname}`
-				const currentValue = hstStore.has(fieldPath) ? hstStore.get(fieldPath) : undefined
-				if (currentValue !== value) {
-					hstStore.set(fieldPath, value)
-					changedFields.push(fieldname)
+			if (isNewRecord.value) {
+				// Reassigned, not mutated, so the getter re-runs. Relying on in-place mutation of the
+				// cached object is what made a draft's edits vanish on any invalidation.
+				const next = { ...draftRecord.value }
+				for (const [fieldname, value] of Object.entries(flatData)) {
+					if (value === undefined) continue
+					if (next[fieldname] !== value) {
+						next[fieldname] = value
+						changedFields.push(fieldname)
+					}
+				}
+				draftRecord.value = next
+			} else {
+				const hstStore = stonecrop.value.getStore()
+				for (const [fieldname, value] of Object.entries(flatData)) {
+					if (value === undefined) continue
+					const fieldPath = `${currentDoctype.value}.${currentRecordId.value}.${fieldname}`
+					const currentValue = hstStore.has(fieldPath) ? hstStore.get(fieldPath) : undefined
+					if (currentValue !== value) {
+						hstStore.set(fieldPath, value)
+						changedFields.push(fieldname)
+					}
 				}
 			}
 
@@ -267,8 +284,15 @@ function driveFieldValidation(changedFields: string[]) {
 	const triggers = doctype?.getTriggers()
 	if (!triggers || Object.keys(triggers).length === 0) return
 
-	const node = stonecrop.value.getRecordById(currentDoctype.value, currentRecordId.value)
-	const record = { ...(node?.get('') as Record<string, unknown>) }
+	// A draft's siblings come from the buffer; reading HST would hand every validator an empty record.
+	const record = isNewRecord.value
+		? { ...draftRecord.value }
+		: {
+				...(stonecrop.value.getRecordById(currentDoctype.value, currentRecordId.value)?.get('') as Record<
+					string,
+					unknown
+				>),
+			}
 
 	for (const field of changedFields) {
 		void validationStore.validateField(triggers, field, record)
@@ -343,7 +367,7 @@ const currentRecordId = computed(() => {
 
 	return ''
 })
-const isNewRecord = computed(() => currentRecordId.value?.startsWith('new-'))
+const isNewRecord = computed(() => isDraftRecordId(currentRecordId.value))
 
 // Determine current view based on route
 const currentView = computed(() => {
@@ -571,11 +595,13 @@ const formatDoctypeName = (doctype: string): string => {
 		.join(' ')
 }
 
-const getRecordCount = (doctype: string): number => {
-	if (!stonecrop.value) return 0
-	const recordIds = stonecrop.value.getRecordIds(doctype)
-	return recordIds.length
-}
+// Whether the list on screen is a page rather than the whole set. Read from the backend's own
+// answer, not inferred from how many rows arrived: a page that happens to be exactly the limit
+// is indistinguishable from a complete one by counting.
+const listIsTruncated = computed(() => {
+	if (currentView.value !== 'records' || !currentDoctype.value) return false
+	return stonecrop.value?.getPageInfo(currentDoctype.value)?.hasMore === true
+})
 
 // Internal navigation helper: emits 'navigate', then calls the adapter (if any)
 // or falls back to the registry's Vue Router instance.
@@ -605,8 +631,7 @@ const openRecord = async (recordId: string) => {
 }
 
 const createNewRecord = async () => {
-	const newId = `new-${Date.now()}`
-	await doNavigate({ view: 'record', doctype: routeDoctype.value, recordId: newId })
+	await doNavigate({ view: 'record', doctype: routeDoctype.value, recordId: DRAFT_RECORD_ID })
 }
 
 // Flatten Fieldset containers into individual columns for list/table views.
@@ -651,14 +676,10 @@ const getDoctypesSchema = (): ResolvedField[] => {
 					edit: false,
 					width: '30ch',
 				},
-				{
-					fieldname: 'record_count',
-					label: 'Records',
-					component: 'ANumericInput',
-					align: 'center' as const,
-					edit: false,
-					width: '15ch',
-				},
+				// No record count column. It read `getRecordIds(doctype).length`, which is how many
+				// records HST happens to hold — zero for a doctype never opened, and the page size
+				// for one that was. The real total belongs to the backend and Desktop never asks
+				// for it, so this shell cannot answer it. Same reason the `recordIdField` prop went.
 				{
 					fieldname: 'actions',
 					label: 'Actions',
@@ -756,44 +777,19 @@ const handleActionClick = (_label: string, action: (() => void | Promise<void>) 
 	}
 }
 
-// Desktop does NOT own the delete lifecycle — it asks for confirmation, then emits
-// an 'action' event.  The host app is responsible for removing the record from HST
-// and calling the server.
-const handleDelete = async (recordId?: string) => {
-	const targetRecordId = recordId || currentRecordId.value
-	if (!targetRecordId) return
-
-	const confirmed = confirmFn
-		? await confirmFn('Are you sure you want to delete this record?')
-		: confirm('Are you sure you want to delete this record?')
-
-	if (confirmed) {
-		emit('action', {
-			name: 'DELETE',
-			doctype: currentDoctype.value,
-			recordId: targetRecordId,
-			data: currentViewData.value || {},
-		})
-	}
-}
-
 /**
  * Resolve a record's identity for links and navigation.
  *
- * Precedence: the explicit `recordIdField` prop wins (a host that names a field has said which
- * column it means), then the doctype's declared `primaryKey`, then `id`. Before this, the default
- * was a bare `record.id`, which produced empty links for every natural-keyed doctype.
+ * Identity is declared once, on the doctype: `primaryKey`, or `id` when nothing is declared.
+ * Delegating to `Doctype.getRecordId` is what guarantees this matches the key
+ * `Stonecrop.getRecords` stored the record under — resolving it independently here would let a
+ * row render a link to an HST path that does not exist.
  *
- * Delegates to `Doctype.getRecordId` so this matches the key `Stonecrop.getRecords` stored the
- * record under — resolving it independently here would let a row render a link to an HST path
- * that does not exist.
+ * There is deliberately no per-shell override. Identity is a per-doctype fact and one shell
+ * renders many doctypes, so a single prop cannot answer it; a shell that named a field would
+ * also be overriding the very declaration the store keyed on, which is the bug above.
  */
 const resolveRecordId = (record: Record<string, unknown>): string | undefined => {
-	if (recordIdField) {
-		const explicit = record[recordIdField]
-		if (typeof explicit === 'number') return String(explicit)
-		if (typeof explicit === 'string' && explicit !== '') return explicit
-	}
 	if (!stonecrop.value || !currentDoctype.value) return undefined
 	return stonecrop.value.registry.registry[currentDoctype.value]?.getRecordId(record)
 }
@@ -839,37 +835,52 @@ const handleClick = async (event: Event) => {
 					await navigateToDoctype(doctype)
 				}
 			}
-		} else if (cellText?.includes('Edit') && row) {
+		} else if (cellText === 'Edit' && row) {
+			// Matched exactly, not by substring. This handler is bound to the whole desktop, so a
+			// substring match fired on any cell whose *data* happened to contain the word — a task
+			// titled "Delete old backups" popped a delete confirmation when you clicked it.
 			const recordId = getRecordIdFromRow(row)
 			if (recordId) {
 				await openRecord(recordId)
-			}
-		} else if (cellText?.includes('Delete') && row) {
-			const recordId = getRecordIdFromRow(row)
-			if (recordId) {
-				await handleDelete(recordId)
 			}
 		}
 	}
 }
 
+// Reads go through Stonecrop, which owns whether to fetch, how to key the result, and where to
+// put it. Desktop asks for data and renders what arrives; it decides none of that itself.
+//
+// Both loaders are no-ops without a client, so a host that populates HST some other way keeps
+// working unchanged rather than taking a thrown error on every navigation.
 const loadRecordData = async () => {
-	if (!stonecrop.value || !currentDoctype.value || isNewRecord.value) return
+	if (!stonecrop.value || !currentDoctype.value || !stonecrop.value.getClient()) return
 
-	// Record already in HST — nothing to fetch.
-	if (stonecrop.value.getRecordById(currentDoctype.value, currentRecordId.value)) return
+	loading.value = true
+	try {
+		await stonecrop.value.getRecord(currentDoctype.value, currentRecordId.value)
+	} catch (error) {
+		console.warn('Error fetching record:', error)
+	} finally {
+		loading.value = false
+	}
+}
 
-	// Record absent and a client is configured — fetch directly so the form
-	// populates even when the list view was never visited (direct URL navigation).
-	if (stonecrop.value.getClient()) {
-		loading.value = true
-		try {
-			await stonecrop.value.getRecord(currentDoctype.value, currentRecordId.value)
-		} catch (error) {
-			console.warn('Error fetching record:', error)
-		} finally {
-			loading.value = false
-		}
+const loadRecordsData = async () => {
+	if (!stonecrop.value || !currentDoctype.value || !stonecrop.value.getClient()) return
+
+	const doctype = stonecrop.value.registry.getDoctype(currentDoctype.value)
+	if (!doctype) return
+
+	// No row limit is passed. Desktop cannot know what is safe for the host's backend, and a
+	// single per-shell number could not serve doctypes of wildly different size anyway — the same
+	// reason the `recordIdField` prop was removed. The server decides the page.
+	loading.value = true
+	try {
+		await stonecrop.value.getRecords(doctype)
+	} catch (error) {
+		console.warn('Error fetching records:', error)
+	} finally {
+		loading.value = false
 	}
 }
 
@@ -877,11 +888,18 @@ const loadRecordData = async () => {
 watch(
 	[currentView, currentDoctype, currentRecordId],
 	() => {
+		// The events are notifications, not fetch requests: they announce what Desktop is about to
+		// read so a host can hang analytics or a prefetch off them. The read itself is Stonecrop's.
 		if (currentView.value === 'records' && currentDoctype.value) {
-			// Emit load-records event so host app can populate HST
 			emit('load-records', { doctype: currentDoctype.value })
+			void loadRecordsData()
 		} else if (currentView.value === 'record' && currentDoctype.value && currentRecordId.value) {
-			// Emit load-record event so host app can fetch and populate HST
+			// A draft has nothing to fetch — the record does not exist on the server yet. Desktop
+			// used to emit anyway and leave the host to work it out, which meant every host had to
+			// recognise the private draft-id scheme above just to suppress a doomed request; all of
+			// them did, identically. `getRecord` declines the same case for the same reason.
+			if (isNewRecord.value) return
+
 			emit('load-record', { doctype: currentDoctype.value, recordId: currentRecordId.value })
 			void loadRecordData()
 		}
@@ -895,6 +913,22 @@ watch([currentDoctype, currentRecordId], () => {
 	validationStore?.clearAll()
 })
 
+// Seeding on entry gives a new record the doctype's declared defaults, which it never used to get.
+// Discarding on exit matters as much: the draft segment is one shared literal, so a stale buffer
+// would open the next New Record pre-filled with the abandoned one's values.
+watch(
+	[currentDoctype, currentRecordId],
+	() => {
+		if (!isNewRecord.value) {
+			draftRecord.value = {}
+			return
+		}
+		const registry = stonecrop.value?.registry
+		draftRecord.value = registry ? registry.initializeRecord(getRecordFormSchema()) : {}
+	},
+	{ immediate: true }
+)
+
 // Stonecrop reactive computed properties update automatically when the instance
 // becomes available — no manual watcher needed.
 
@@ -903,7 +937,6 @@ const desktopMethods = {
 	navigateToDoctype,
 	openRecord,
 	createNewRecord,
-	handleDelete,
 	/**
 	 * Convenience wrapper so child components (e.g. slot content) can emit
 	 * an action event without needing a direct reference to the emit function.

@@ -1,6 +1,6 @@
 import type { DoctypeField, LinkDeclaration, TriggerDefinition, WorkflowMeta } from '@stonecrop/schema'
-import { getRecordIdentity, isActionAllowedInState, normalizeFieldKind } from '@stonecrop/schema'
-import { List, Map } from 'immutable'
+import { getRecordIdentity, getRecordIdField, isActionAllowedInState, normalizeFieldKind } from '@stonecrop/schema'
+import { List } from 'immutable'
 import { Component } from 'vue'
 
 import type { DoctypeConfig, ImmutableDoctype } from './types/doctype'
@@ -41,13 +41,6 @@ export default class Doctype {
 	readonly workflow: ImmutableDoctype['workflow']
 
 	/**
-	 * The doctype actions and field triggers
-	 * @public
-	 * @readonly
-	 */
-	readonly actions: ImmutableDoctype['actions']
-
-	/**
 	 * The doctype component
 	 * @public
 	 * @readonly
@@ -66,7 +59,6 @@ export default class Doctype {
 	 * @param doctype - The doctype name
 	 * @param schema - The doctype schema definition
 	 * @param workflow - The doctype workflow configuration (XState machine)
-	 * @param actions - The doctype actions and field triggers
 	 * @param component - Optional Vue component for rendering the doctype
 	 * @param links - Optional relationship links to other doctypes
 	 */
@@ -74,14 +66,12 @@ export default class Doctype {
 		doctype: string,
 		schema: ImmutableDoctype['schema'],
 		workflow: ImmutableDoctype['workflow'],
-		actions: ImmutableDoctype['actions'],
 		component?: Component,
 		links?: Record<string, LinkDeclaration>
 	) {
 		this.doctype = doctype
 		this.schema = schema
 		this.workflow = workflow
-		this.actions = actions
 		this.component = component
 		this.links = links
 	}
@@ -132,9 +122,8 @@ export default class Doctype {
 		// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- normalizeFieldKind only injects the `kind` discriminant; the field shape is otherwise preserved
 		const fields = config.fields?.map(normalizeFieldKind) as DoctypeField[] | undefined
 		const schema = fields ? List(fields) : List<DoctypeField>()
-		const actions = config.actions ? Map(config.actions) : Map<string, string[]>()
 
-		return new Doctype(config.name, schema, config.workflow, actions, undefined, config.links)
+		return new Doctype(config.name, schema, config.workflow, undefined, config.links)
 	}
 
 	/**
@@ -174,16 +163,25 @@ export default class Doctype {
 	}
 
 	/**
-	 * Returns the actions as a plain object for use with components that expect
-	 * plain JavaScript objects.
+	 * The field a record of this doctype is identified by: the declared `primaryKey`, or `id`
+	 * when nothing is declared.
 	 *
-	 * @returns Object mapping action names to field trigger arrays
+	 * The client-side twin of the adapters' `recordLookupField`. Both are the same call to
+	 * `@stonecrop/schema`'s `getRecordIdField`, so the field a caller reads an identity out of is
+	 * the same field the adapter builds its lookup predicate on.
+	 *
+	 * Use this to ask whether a record *states* its own identity. `getRecordId` deliberately
+	 * falls back to `id` when the declared key is missing, which is right for resolving a link
+	 * from a record already in hand and wrong for deciding whether a server response settled on
+	 * a new identity: a response that omits a natural key would resolve through that fallback to
+	 * a surrogate the adapter cannot look up.
+	 *
+	 * @returns The identifying fieldname
 	 *
 	 * @public
 	 */
-	getActionsObject(): Record<string, string[]> {
-		if (!this.actions) return {}
-		return this.actions.toObject()
+	get recordIdField(): string {
+		return getRecordIdField(this.getSchemaArray())
 	}
 
 	/**

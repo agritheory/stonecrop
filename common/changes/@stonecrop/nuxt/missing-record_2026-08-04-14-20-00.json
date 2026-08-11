@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "comment": "Report a missing record from the scaffold and playground action resolvers so a save against one cannot report a false success",
+      "type": "patch",
+      "packageName": "@stonecrop/nuxt"
+    }
+  ],
+  "packageName": "@stonecrop/nuxt"
+}

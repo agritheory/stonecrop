@@ -7,9 +7,10 @@
 
 import { constant, lambda, loadOne, object } from 'grafast'
 import { getMeta, getAllMeta, applyGuardedTransition } from '@stonecrop/graphql-middleware'
-import { getPrimaryKeyField } from '@stonecrop/schema'
+import { getRecordIdField } from '@stonecrop/schema'
 import type { DoctypeMeta } from '@stonecrop/schema'
 
+import { actionHandlers } from './action-handlers'
 import { mockExecutor } from './mock-executor'
 
 // ============================================
@@ -26,10 +27,7 @@ interface MockConnection {
 }
 
 /** A mutation payload. The mock nests the record under a camelCased type key. */
-type MockMutationPayload = Record<string, unknown> & {
-	deletedUserId?: string
-	deletedOrderId?: string
-}
+type MockMutationPayload = Record<string, unknown>
 
 // ============================================
 // Type Helpers
@@ -52,18 +50,22 @@ function toQueryName(doctypeName: string, singular: boolean = true): string {
  *
  * The `id` fallback covers doctypes that declare no `primaryKey`. Every doctype in this repo now
  * declares one, enforced by test/doctype-fixtures.test.ts, so in-repo the fallback is inert.
- * It stays for consumer doctypes that have not adopted the rule: the Postgres adapter refuses
- * those outright (`data: null`), and this host stays permissive. The conformance suite records
- * that difference rather than asserting one answer.
+ * It stays for consumer doctypes that have not adopted the rule, and every host now applies it —
+ * the Postgres adapter used to omit it and refuse those doctypes outright, which is what made the
+ * hosts disagree. This is a thin wrapper on the shared rule, kept for the `meta`-shaped signature
+ * the resolvers call it with.
  */
 export function recordLookupField(meta: DoctypeMeta): string {
-	return getPrimaryKeyField(meta.fields)?.fieldname ?? 'id'
+	return getRecordIdField(meta.fields)
 }
 
-function toMutationName(doctypeName: string, operation: 'create' | 'update' | 'delete'): string {
+/**
+ * Only the two operations a save needs. `delete` was dropped with `stonecropDelete`: removal is a
+ * declared workflow outcome now, so nothing maps a doctype to a delete mutation.
+ */
+function toMutationName(doctypeName: string, operation: 'create' | 'update'): string {
 	// Remove spaces and convert to PascalCase
 	const pascalName = doctypeName.replace(/\s+/g, '')
-	const name = pascalName.charAt(0).toLowerCase() + pascalName.slice(1)
 	if (operation === 'create') {
 		return `create${pascalName}`
 	}
@@ -154,7 +156,7 @@ export default {
 				})
 			},
 
-			stonecropRecords(_: unknown, { $doctype, $filters, $orderBy, $limit, $offset, $options }: any) {
+			stonecropRecords(_: unknown, { $doctype, $filters, $orderBy, $limit, $offset, $includeTotal, $options }: any) {
 				return loadOne(
 					object({
 						doctype: $doctype,
@@ -162,6 +164,7 @@ export default {
 						orderBy: $orderBy,
 						limit: $limit,
 						offset: $offset,
+						includeTotal: $includeTotal,
 						options: $options,
 					}),
 					async (specs: readonly any[]) => {
@@ -182,17 +185,24 @@ export default {
 									})
 									const connection = result[queryName]
 									const data = connection?.nodes ?? []
+									const total = connection?.totalCount
+									const offset = spec.offset ?? 0
 									return {
 										data,
 										doctype: spec.doctype,
-										count: connection?.totalCount ?? data.length,
+										// The mock always reports totalCount; the fallback covers a connection that
+										// does not, where "there might be more" cannot be answered and claiming more
+										// exist would strand a list view asking for a page that is not there.
+										hasMore: total != null ? offset + data.length < total : false,
+										count: spec.includeTotal === true ? (total ?? data.length) : null,
 									}
 								} catch (error) {
 									console.error(`[stonecropRecords] Error:`, error)
 									return {
 										data: [],
 										doctype: spec.doctype,
-										count: 0,
+										hasMore: false,
+										count: null,
 									}
 								}
 							})
@@ -255,6 +265,7 @@ export default {
 								const argList = Array.isArray(spec.actionArgs) ? spec.actionArgs : []
 								const recordId = argList[0]?.id
 								const recordData: Record<string, unknown> = argList[0]?.data ?? {}
+								const handler = actionHandlers[meta.name]?.[String(spec.action)]
 
 								try {
 									// The server owns the transition: read current state, guard against
@@ -264,14 +275,19 @@ export default {
 										actionDef,
 										{
 											readState: async () => {
-												if (recordId == null) return undefined
+												// `null` means "no such record" and `undefined` means "exists, no
+												// state" — the dispatcher rejects the first outright. Returning
+												// `undefined` for both is what let a Save on a record that was
+												// never created report success while persisting nothing.
+												if (recordId == null) return null
 												const queryName = toQueryName(meta.name)
 												const result = (await mockExecutor.query(queryName, { id: recordId })) as Record<
 													string,
 													{ status?: string | null } | undefined
 												>
-												const status = result[queryName]?.status
-												return status == null ? undefined : String(status)
+												const record = result[queryName]
+												if (!record) return null
+												return record.status == null ? undefined : String(record.status)
 											},
 											writeState: async (nextState: string) => {
 												const mutationName = toMutationName(meta.name, 'update')
@@ -280,19 +296,36 @@ export default {
 													patch: { status: nextState },
 												})
 											},
-											// Self-transition data write: patch the record's field data (status untouched)
-											// and return the full updated record for the client writeback. Verbatim patch
-											// mirrors stonecropUpdate; column-whitelisting is the (deferred) PostGraphile concern.
-											writeData: async (patch: Record<string, unknown>) => {
-												const mutationName = toMutationName(meta.name, 'update')
+											// Save is an upsert, and it is the only write path — one request through the
+											// one interface, whether or not the row exists yet. Updating patches the
+											// record's field data (status untouched); creating lets the backend assign
+											// the identity, which is why a draft dispatches no id at all. Either way the
+											// full record comes back for the writeback.
+											// Verbatim patch; column-whitelisting is the (deferred) PostGraphile concern.
+											writeData: async (patch: Record<string, unknown>, exists: boolean) => {
+												const mutationName = toMutationName(meta.name, exists ? 'update' : 'create')
 												const result = await mockExecutor.mutate<Record<string, MockMutationPayload | undefined>>(
 													mutationName,
-													{ id: recordId, patch }
+													exists ? { id: recordId, patch } : { input: patch }
 												)
 												const mutationResult = result[mutationName] as Record<string, unknown> | undefined
 												const recordKey = meta.name.charAt(0).toLowerCase() + meta.name.slice(1)
 												return (mutationResult?.[recordKey] ?? mutationResult ?? {}) as Record<string, unknown>
 											},
+											// The server-owned effect, if this app registered one. Nothing in the
+											// doctype names it: the lookup is by (doctype, action) and stays here.
+											// See ./action-handlers.ts.
+											runEffect: handler
+												? (currentState: string | undefined) =>
+														handler({
+															doctype: String(spec.doctype),
+															action: String(spec.action),
+															meta,
+															recordId,
+															data: recordData,
+															currentState,
+														})
+												: undefined,
 										},
 										recordData
 									)
@@ -307,111 +340,6 @@ export default {
 						)
 					}
 				)
-			},
-
-			stonecropCreate(_: unknown, { $doctype, $input }: any) {
-				return loadOne(object({ doctype: $doctype, input: $input }), async (specs: readonly any[]) => {
-					return Promise.all(
-						specs.map(async spec => {
-							const meta = getMeta(spec.doctype)
-							if (!meta) {
-								throw new Error(`Unknown doctype: ${spec.doctype}`)
-							}
-
-							const mutationName = toMutationName(meta.name, 'create')
-							try {
-								const result = await mockExecutor.mutate<Record<string, MockMutationPayload | undefined>>(
-									mutationName,
-									{ input: spec.input }
-								)
-								const mutationResult = result[mutationName]
-								const recordKey = meta.name.charAt(0).toLowerCase() + meta.name.slice(1)
-								return {
-									data: mutationResult?.[recordKey] ?? mutationResult,
-									doctype: spec.doctype,
-								}
-							} catch (error) {
-								console.error(`[stonecropCreate] Error:`, error)
-								throw error
-							}
-						})
-					)
-				})
-			},
-
-			stonecropUpdate(_: unknown, { $doctype, $id, $patch }: any) {
-				return loadOne(object({ doctype: $doctype, id: $id, patch: $patch }), async (specs: readonly any[]) => {
-					return Promise.all(
-						specs.map(async spec => {
-							const meta = getMeta(spec.doctype)
-							if (!meta) {
-								throw new Error(`Unknown doctype: ${spec.doctype}`)
-							}
-
-							const mutationName = toMutationName(meta.name, 'update')
-							try {
-								const result = await mockExecutor.mutate<Record<string, MockMutationPayload | undefined>>(
-									mutationName,
-									{
-										id: spec.id,
-										patch: spec.patch,
-									}
-								)
-								const mutationResult = result[mutationName]
-								if (!mutationResult) {
-									return null
-								}
-								const recordKey = meta.name.charAt(0).toLowerCase() + meta.name.slice(1)
-								return {
-									data: mutationResult?.[recordKey] ?? mutationResult,
-									doctype: spec.doctype,
-								}
-							} catch (error) {
-								console.error(`[stonecropUpdate] Error:`, error)
-								throw error
-							}
-						})
-					)
-				})
-			},
-
-			stonecropDelete(_: unknown, { $doctype, $id }: any) {
-				return loadOne(object({ doctype: $doctype, id: $id }), async (specs: readonly any[]) => {
-					return Promise.all(
-						specs.map(async spec => {
-							const meta = getMeta(spec.doctype)
-							if (!meta) {
-								return {
-									success: false,
-									data: null,
-									error: `Unknown doctype: ${spec.doctype}`,
-								}
-							}
-
-							const mutationName = toMutationName(meta.name, 'delete')
-							try {
-								const result = await mockExecutor.mutate<Record<string, MockMutationPayload | undefined>>(
-									mutationName,
-									{ id: spec.id }
-								)
-								const mutationResult = result[mutationName]
-								const deleted = mutationResult?.deletedUserId || mutationResult?.deletedOrderId
-
-								return {
-									success: !!deleted,
-									data: { id: deleted },
-									error: deleted ? null : 'Record not found',
-								}
-							} catch (error) {
-								return {
-									success: false,
-									data: null,
-									error: error instanceof Error ? error.message : String(error),
-								}
-							}
-						})
-					)
-				})
 			},
 		},
 	},

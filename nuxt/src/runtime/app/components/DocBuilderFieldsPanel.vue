@@ -133,7 +133,9 @@ import { computed, nextTick, ref, useId } from 'vue'
 
 // Fields are edited as loose objects: the doctype JSON carries keys the builder doesn't display
 // (and may carry future ones), so the editor must spread-preserve every field rather than rebuild it.
-type Field = Record<string, unknown>
+// The write helpers live in ./docbuilderFields so that rule is unit-tested rather than only asserted
+// here — see `nuxt/test/docbuilderFields.test.ts`.
+import { updateFieldAt, type Field } from './docbuilderFields'
 
 interface PropDef {
 	key: string
@@ -280,17 +282,7 @@ function collapseAllRows() {
 // Every mutation rebuilds the FULL array by real index — nested fields at other indices are
 // untouched, and order is preserved. This is the field-level "spread, never enumerate" rule.
 function update(realIndex: number, key: string, val: unknown) {
-	emit(
-		'update:modelValue',
-		props.modelValue.map((f, i) => (i === realIndex ? setOrDelete(f, key, val) : f))
-	)
-}
-function setOrDelete(field: Field, key: string, val: unknown): Field {
-	if (val === undefined) {
-		const { [key]: _omit, ...rest } = field
-		return rest
-	}
-	return { ...field, [key]: val }
+	emit('update:modelValue', updateFieldAt(props.modelValue, realIndex, key, val))
 }
 
 const jsonErrors = ref<Record<string, boolean>>({})

@@ -2,6 +2,7 @@ import { createPinia, setActivePinia } from 'pinia'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 import { useLazyLink } from '../../src/composables/lazy-link'
+import { DRAFT_RECORD_ID } from '../../src/draft'
 import Registry from '../../src/registry'
 import { Stonecrop } from '../../src/stonecrop'
 import { HST } from '../../src/stores/hst'
@@ -12,7 +13,7 @@ import Doctype from '../../src/doctype'
  */
 
 const createTestDoctype = (name: string, links?: Record<string, any>): Doctype => {
-	return new Doctype(name, [] as any, undefined, undefined, undefined, links)
+	return new Doctype(name, [] as any, undefined, undefined, links)
 }
 
 describe('useLazyLink', { tags: ['unit'] }, () => {
@@ -336,28 +337,20 @@ describe('blockWorkflows', { tags: ['unit'] }, () => {
 		expect(status.ready).toBe(true)
 	})
 
-	it('runAction throws when workflow is blocked', () => {
+	it('isWorkflowReady judges the draft segment the shell actually routes to', () => {
+		// The literal above is only correct while it is also what Desktop produces. It once was not
+		// — the shell minted `new-<timestamp>` while this guard compared with `=== 'new'` — so a
+		// genuinely new record fell through to the link check and was reported blocked by data an
+		// unsaved record has no way to have.
 		const doctype = createTestDoctype('Recipe', {
 			tasks: { target: 'recipe-task', cardinality: 'noneOrMany', fetch: { method: 'sync' } },
 		})
 		registry.addDoctype(doctype)
-		registry.registry['recipe']?.actions?.set('submit', ['submitAction'])
 		stonecrop.setup(doctype)
 
-		// Attempting to run action when workflow is blocked should throw
-		expect(() => stonecrop.runAction(doctype, 'submit', ['123'])).toThrow(/Workflow blocked/)
-	})
-
-	it('runAction succeeds when workflow is not blocked', () => {
-		const doctype = createTestDoctype('Recipe', {
-			tasks: { target: 'recipe-task', cardinality: 'noneOrMany', fetch: { method: 'sync' }, blockWorkflows: false },
-		})
-		registry.addDoctype(doctype)
-		registry.registry['recipe']?.actions?.set('submit', ['submitAction'])
-		stonecrop.setup(doctype)
-
-		// Should not throw
-		expect(() => stonecrop.runAction(doctype, 'submit', ['123'])).not.toThrow()
+		const status = stonecrop.isWorkflowReady(doctype, DRAFT_RECORD_ID)
+		expect(status.ready).toBe(true)
+		expect(status.blockedLinks).toBeUndefined()
 	})
 
 	it('blocks workflow when any blocking link is unloaded', () => {

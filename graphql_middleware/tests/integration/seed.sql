@@ -90,3 +90,14 @@ INSERT INTO sc_code (code, name, status) VALUES
 	('ALPHA', 'Alpha Region', 'Draft'),
 	('BETA', 'Beta Region', 'Active'),
 	('GAMMA', 'Gamma Region', 'Draft');
+
+-- A row that exists but carries no workflow state: `status` is deliberately nullable here,
+-- unlike every other table above. It is the control for "record does not exist" — the two read
+-- identically until the backend can answer `null` for a missed lookup rather than `undefined`.
+CREATE TABLE sc_draft (
+	id serial PRIMARY KEY,
+	name text NOT NULL,
+	status text
+);
+INSERT INTO sc_draft (name, status) VALUES
+	('Stateless Row', NULL);

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "comment": "Add an onError option to useClientAction so a host can route action failures into its own notification system instead of the built-in alert.",
+      "type": "minor",
+      "packageName": "@stonecrop/nuxt"
+    }
+  ],
+  "packageName": "@stonecrop/nuxt"
+}

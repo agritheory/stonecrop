@@ -69,17 +69,16 @@ export type RouteAdapter = {
 }
 
 /**
- * Payload emitted with the 'action' event when the user triggers an FSM transition
+ * Payload emitted with the 'action' event when the user triggers a declared action.
+ *
+ * Re-exported, not defined here: the shell emits it and `useClientAction` consumes it, and those
+ * now live in different packages. It is declared in `@stonecrop/stonecrop` — which this package
+ * already depends on — so the two cannot drift. Importing it from `@stonecrop/desktop` still
+ * works and is still the natural place for a host to reach for it.
+ *
  * @public
  */
-export type ActionEventPayload = {
-	/** The FSM transition name (e.g. 'SAVE', 'SUBMIT', 'APPROVE') */
-	name: string
-	doctype: string
-	recordId: string
-	/** Snapshot of the form data at the time the action was triggered */
-	data: Record<string, any>
-}
+export type { ActionEventPayload } from '@stonecrop/stonecrop'
 
 /**
  * Payload emitted with the 'record:open' event

@@ -1,5 +1,5 @@
 import { mount } from '@vue/test-utils'
-import { List, Map } from 'immutable'
+import { List } from 'immutable'
 import type { DoctypeField } from '@stonecrop/schema'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { nextTick, defineComponent } from 'vue'
@@ -35,12 +35,7 @@ describe('HST Composable Functionality', { tags: ['unit'] }, () => {
 			},
 		}
 
-		const mockActions = Map({
-			load: ['loadData'],
-			save: ['saveData'],
-		})
-
-		doctype = new Doctype('Task', mockSchema, mockWorkflow, mockActions)
+		doctype = new Doctype('Task', mockSchema, mockWorkflow)
 		registry.addDoctype(doctype)
 		stonecrop = new Stonecrop(registry)
 	})

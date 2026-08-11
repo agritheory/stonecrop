@@ -1,5 +1,5 @@
 import { mount, VueWrapper } from '@vue/test-utils'
-import { List, Map } from 'immutable'
+import { List } from 'immutable'
 import type { DoctypeField } from '@stonecrop/schema'
 import { describe, it, expect, beforeEach } from 'vitest'
 import { nextTick, defineComponent, ref, type PropType } from 'vue'
@@ -207,12 +207,7 @@ describe('HST Vue Reactivity', { tags: ['unit'] }, () => {
 			},
 		}
 
-		const mockActions = Map({
-			load: ['loadData'],
-			save: ['saveData'],
-		})
-
-		doctype = new Doctype('Task', mockSchema, mockWorkflow, mockActions, undefined, {
+		doctype = new Doctype('Task', mockSchema, mockWorkflow, undefined, {
 			items: { target: 'item', cardinality: 'noneOrMany' },
 		})
 		registry.addDoctype(doctype)

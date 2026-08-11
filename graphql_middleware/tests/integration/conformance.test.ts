@@ -148,9 +148,16 @@ function buildInMemorySchema(): GraphQLSchema {
 						}))
 					)
 				},
-				stonecropRecords(_: unknown, { $doctype, $filters, $orderBy, $limit, $offset }: PlanArgs) {
+				stonecropRecords(_: unknown, { $doctype, $filters, $orderBy, $limit, $offset, $includeTotal }: PlanArgs) {
 					return loadOne(
-						object({ doctype: $doctype, filters: $filters, orderBy: $orderBy, limit: $limit, offset: $offset }),
+						object({
+							doctype: $doctype,
+							filters: $filters,
+							orderBy: $orderBy,
+							limit: $limit,
+							offset: $offset,
+							includeTotal: $includeTotal,
+						}),
 						async (specs: readonly Record<string, unknown>[]) =>
 							specs.map(spec => {
 								const doctype = String(spec.doctype)
@@ -180,7 +187,15 @@ function buildInMemorySchema(): GraphQLSchema {
 								}
 								const offset = typeof spec.offset === 'number' ? spec.offset : 0
 								const limit = typeof spec.limit === 'number' ? spec.limit : rows.length
-								return { data: rows.slice(offset, offset + limit), doctype, count: total }
+								const page = rows.slice(offset, offset + limit)
+								return {
+									data: page,
+									doctype,
+									hasMore: offset + page.length < total,
+									// Opt-in, matching the Postgres adapter. Counting is free here, which is
+									// exactly why this host would drift toward always answering it.
+									count: spec.includeTotal === true ? total : null,
+								}
 							})
 					)
 				},
@@ -278,9 +293,17 @@ const RECORD = parse(`
 
 const RECORDS = parse(`
 	query Rs($doctype: String!, $filters: JSON, $orderBy: String, $limit: Int, $offset: Int) {
-		stonecropRecords(doctype: $doctype, filters: $filters, orderBy: $orderBy, limit: $limit, offset: $offset) {
+		stonecropRecords(
+			doctype: $doctype
+			filters: $filters
+			orderBy: $orderBy
+			limit: $limit
+			offset: $offset
+			includeTotal: true
+		) {
 			data
 			doctype
+			hasMore
 			count
 		}
 	}

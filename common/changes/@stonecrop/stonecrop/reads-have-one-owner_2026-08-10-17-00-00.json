@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/stonecrop",
+      "comment": "Stonecrop.getRecord and getRecords now own the whole read: getRecord declines a draft or a record already in HST, both forward query options to the DataClient, and hosts no longer need a fetch handler.",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@stonecrop/stonecrop"
+}

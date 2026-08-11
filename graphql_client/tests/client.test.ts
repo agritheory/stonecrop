@@ -269,18 +269,48 @@ describe('StonecropClient.getRecord', { tags: ['unit', 'graphql'] }, () => {
 // ===========================================================================
 
 describe('StonecropClient.getRecords', { tags: ['unit', 'graphql'] }, () => {
-	it('returns the records array', async () => {
+	it('returns the page and whether more remain', async () => {
 		const client = new StonecropClient({ endpoint: ENDPOINT })
 		const records = [{ id: '1' }, { id: '2' }]
-		mockFetch.mockReturnValue(makeFetchResponse({ stonecropRecords: { data: records, count: 2 } }))
+		mockFetch.mockReturnValue(makeFetchResponse({ stonecropRecords: { data: records, hasMore: true, count: null } }))
 
 		const result = await client.getRecords(taskRef)
-		expect(result).toHaveLength(2)
+		expect(result.data).toHaveLength(2)
+		expect(result.hasMore).toBe(true)
+	})
+
+	it('omits count entirely when the server did not answer one', async () => {
+		// `count` absent and `count: 0` must stay distinguishable: one means nobody asked, the
+		// other means the set is empty. Passing null straight through would collapse them.
+		const client = new StonecropClient({ endpoint: ENDPOINT })
+		mockFetch.mockReturnValue(makeFetchResponse({ stonecropRecords: { data: [], hasMore: false, count: null } }))
+
+		const result = await client.getRecords(taskRef)
+		expect('count' in result).toBe(false)
+	})
+
+	it('keeps a zero total when one was requested', async () => {
+		const client = new StonecropClient({ endpoint: ENDPOINT })
+		mockFetch.mockReturnValue(makeFetchResponse({ stonecropRecords: { data: [], hasMore: false, count: 0 } }))
+
+		const result = await client.getRecords(taskRef, { includeTotal: true })
+		expect(result.count).toBe(0)
+	})
+
+	it('passes includeTotal to the query', async () => {
+		const client = new StonecropClient({ endpoint: ENDPOINT })
+		mockFetch.mockReturnValue(makeFetchResponse({ stonecropRecords: { data: [], hasMore: false, count: 3 } }))
+
+		await client.getRecords(taskRef, { includeTotal: true })
+
+		const [, options] = mockFetch.mock.calls[0] as [string, RequestInit]
+		const body = JSON.parse(options.body as string) as GraphQLRequestBody
+		expect(body.variables!.includeTotal).toBe(true)
 	})
 
 	it('passes limit, offset, orderBy, filters to the query', async () => {
 		const client = new StonecropClient({ endpoint: ENDPOINT })
-		mockFetch.mockReturnValue(makeFetchResponse({ stonecropRecords: { data: [], count: 0 } }))
+		mockFetch.mockReturnValue(makeFetchResponse({ stonecropRecords: { data: [], hasMore: false, count: null } }))
 
 		await client.getRecords(taskRef, {
 			limit: 10,
@@ -299,9 +329,9 @@ describe('StonecropClient.getRecords', { tags: ['unit', 'graphql'] }, () => {
 
 	it('works with no options (defaults)', async () => {
 		const client = new StonecropClient({ endpoint: ENDPOINT })
-		mockFetch.mockReturnValue(makeFetchResponse({ stonecropRecords: { data: [], count: 0 } }))
+		mockFetch.mockReturnValue(makeFetchResponse({ stonecropRecords: { data: [], hasMore: false, count: null } }))
 		const result = await client.getRecords(taskRef)
-		expect(result).toEqual([])
+		expect(result).toEqual({ data: [], hasMore: false })
 	})
 })
 

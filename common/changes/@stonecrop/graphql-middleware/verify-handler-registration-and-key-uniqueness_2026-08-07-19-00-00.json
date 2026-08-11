@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "comment": "Verify at schema build that every actionHandlers key names a registered doctype and an action it declares, throwing with every offender listed — an unreachable handler was silently skipped at dispatch. stonecropRecord now also refuses when the declared identity column matches more than one row, instead of returning an arbitrary one.",
+      "type": "minor",
+      "packageName": "@stonecrop/graphql-middleware"
+    }
+  ],
+  "packageName": "@stonecrop/graphql-middleware"
+}

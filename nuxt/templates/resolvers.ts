@@ -9,9 +9,10 @@
  * - loadOne($step, fn)        — batch-load data ASYNCHRONOUSLY (for DB queries)
  * - object({ ... })           — group multiple steps into a single step object
  *
- * Data reads go through loadOne. Workflow state transitions are applied by the
- * stonecropAction resolver itself (server-owns-transition, guarded by allowedStates);
- * side-effecting saves go through registered handlers (project:save, task:save).
+ * Data reads go through loadOne. Workflow outcomes are applied by the stonecropAction
+ * resolver itself (server-owns-transition, guarded by allowedStates), and anything a
+ * doctype cannot express — a Command with no state change — goes through the
+ * `actionHandlers` map below.
  *
  * To connect a real database, replace the imports from ./data with your
  * PostGraphile setup. See: https://stonecrop.io/docs/guides/postgraphile
@@ -19,7 +20,7 @@
 
 import { constant, lambda, loadOne, object } from 'grafast'
 import { getMeta, getAllMeta, applyGuardedTransition } from '@stonecrop/graphql-middleware'
-import { getPrimaryKeyField } from '@stonecrop/schema'
+import { getRecordIdField } from '@stonecrop/schema'
 import type { DoctypeMeta } from '@stonecrop/schema'
 import { projects, tasks, type Project, type Task } from './data'
 
@@ -68,12 +69,13 @@ export function formatDoctypeMeta(meta: DoctypeMeta) {
  *
  * The `id` fallback covers doctypes that declare no `primaryKey`. Every doctype in this repo now
  * declares one, enforced by test/doctype-fixtures.test.ts, so in-repo the fallback is inert.
- * It stays for consumer doctypes that have not adopted the rule: the Postgres adapter refuses
- * those outright (`data: null`), and this host stays permissive. The conformance suite records
- * that difference rather than asserting one answer.
+ * It stays for consumer doctypes that have not adopted the rule, and every host now applies it —
+ * the Postgres adapter used to omit it and refuse those doctypes outright, which is what made the
+ * hosts disagree. This is a thin wrapper on the shared rule, kept for the `meta`-shaped signature
+ * the resolvers call it with.
  */
 export function recordLookupField(meta: DoctypeMeta): string {
-	return getPrimaryKeyField(meta.fields)?.fieldname ?? 'id'
+	return getRecordIdField(meta.fields)
 }
 
 function getRecord(doctype: string, id: string, lookupField = 'id'): Project | Task | null {
@@ -89,6 +91,19 @@ function getRecord(doctype: string, id: string, lookupField = 'id'): Project | T
 		if ((typeof value === 'string' || typeof value === 'number') && String(value) === id) return record
 	}
 	return null
+}
+
+/**
+ * Write a record into its store under `key`.
+ *
+ * `key` is the record's identity under the doctype's declared `primaryKey` — the same field
+ * `getRecord` matches against — so the store is keyed by whatever the doctype says identifies a
+ * record, not by a hardcoded `id`. Both doctypes here declare `id`, so the two coincide today.
+ */
+function setRecord(doctype: string, key: string, record: Record<string, unknown>): void {
+	const d = doctype.toLowerCase()
+	if (d === 'project') projects.set(key, record as unknown as Project)
+	else if (d === 'task') tasks.set(key, record as unknown as Task)
 }
 
 function getRecords(doctype: string, filters?: Record<string, unknown>): (Project | Task)[] {
@@ -111,6 +126,51 @@ function nextId(doctype: string): string {
 	const ids = d === 'project' ? projects.keys() : tasks.keys()
 	const max = Math.max(0, ...Array.from(ids, id => Number(id) || 0))
 	return String(max + 1)
+}
+
+// ============================================================
+// Server-side action effects
+// ============================================================
+// A doctype's workflow says whether an action may run (`allowedStates`) and what state results
+// (`nextState`, `selfTransition`). It deliberately says nothing about what the action *does*: a
+// doctype is runtime data edited in DocBuilder, and it must not name server code a different
+// author owns. So the routing from action to effect lives here, keyed `[doctype name][action
+// key]`, and is never published to the client.
+//
+// This is what makes a Command executable at all. An action with no `nextState` and no
+// `selfTransition` has nothing for the dispatcher to apply, and without an entry here it fails
+// loudly rather than reporting a false success.
+//
+// Add your own by registering under the doctype's `name`. Throwing rejects the action; returning
+// the updated record makes it the client writeback payload.
+
+type ActionHandler = (context: {
+	recordId?: string
+	/** Record field data the client sent. Unvalidated browser input — validate before trusting it. */
+	data: Record<string, unknown>
+	/** The state the guard read, or undefined when nothing about the action required reading it. */
+	currentState?: string
+}) => Promise<unknown>
+
+export const actionHandlers: Record<string, Record<string, ActionHandler>> = {
+	Task: {
+		/**
+		 * Push the due date out by a week.
+		 *
+		 * The example is deliberately a *stateless* command: snoozing does not move the task
+		 * through its workflow, so there is no state for the doctype to declare — only an effect.
+		 */
+		async snooze({ recordId }) {
+			const task = recordId != null ? tasks.get(recordId) : undefined
+			if (!task) throw new Error(`Task ${recordId ?? '(none)'} not found`)
+
+			const from = task.dueDate ? new Date(task.dueDate) : new Date()
+			from.setDate(from.getDate() + 7)
+			const updated: Task = { ...task, dueDate: from.toISOString().slice(0, 10) }
+			tasks.set(task.id, updated)
+			return Promise.resolve(updated)
+		},
+	},
 }
 
 // ============================================================
@@ -154,7 +214,7 @@ export const resolvers = {
 				})
 			},
 
-			stonecropRecords(_: unknown, { $doctype, $filters, $orderBy, $limit, $offset, $options }: any) {
+			stonecropRecords(_: unknown, { $doctype, $filters, $orderBy, $limit, $offset, $includeTotal, $options }: any) {
 				return loadOne(
 					object({
 						doctype: $doctype,
@@ -162,6 +222,7 @@ export const resolvers = {
 						orderBy: $orderBy,
 						limit: $limit,
 						offset: $offset,
+						includeTotal: $includeTotal,
 						options: $options,
 					}),
 					async (specs: readonly any[]) => {
@@ -169,10 +230,15 @@ export const resolvers = {
 							const all = getRecords(spec.doctype, spec.filters ?? {})
 							const offset = spec.offset ?? 0
 							const limit = spec.limit ?? 100
+							const page = all.slice(offset, offset + limit)
 							return {
-								data: all.slice(offset, offset + limit),
+								data: page,
 								doctype: spec.doctype,
-								count: all.length,
+								hasMore: offset + page.length < all.length,
+								// This store is in memory, so counting is free — but it stays opt-in anyway,
+								// because the scaffold is what a real adapter gets copied from and a backend
+								// that answers a total nobody asked for teaches the wrong default.
+								count: spec.includeTotal === true ? all.length : null,
 							}
 						})
 					}
@@ -201,6 +267,11 @@ export const resolvers = {
 								const recordId = argList[0]?.id != null ? String(argList[0].id) : undefined
 								const recordData: Record<string, unknown> = argList[0]?.data ?? {}
 								const d = spec.doctype.toLowerCase()
+								const handler = actionHandlers[meta.name]?.[String(spec.action)]
+								// The field a record is identified by. The read path already resolved records
+								// through this; the action path used to assume `id`, so an action on a
+								// natural-keyed doctype looked up a key the client never sent.
+								const lookupField = recordLookupField(meta)
 
 								try {
 									// The server owns the transition: read current state, guard against allowedStates,
@@ -210,28 +281,61 @@ export const resolvers = {
 										actionDef,
 										{
 											readState: async () => {
-												if (recordId == null) return undefined
-												const record = getRecord(d, recordId)
-												return record?.status == null ? undefined : String(record.status)
+												// `null` means "no such record" and `undefined` means "exists, no
+												// state" — the dispatcher rejects the first outright. Returning
+												// `undefined` for both is what let a Save on a record that was
+												// never created report success while persisting nothing.
+												if (recordId == null) return null
+												const record = getRecord(d, recordId, lookupField)
+												if (!record) return null
+												return record.status == null ? undefined : String(record.status)
 											},
 											writeState: async (nextState: string) => {
 												if (recordId == null) return
-												const existing = getRecord(d, recordId)
+												const existing = getRecord(d, recordId, lookupField)
 												if (!existing) return
-												if (d === 'project') projects.set(recordId, { ...existing, status: nextState } as Project)
-												else if (d === 'task') tasks.set(recordId, { ...existing, status: nextState } as Task)
+												setRecord(d, recordId, { ...existing, status: nextState })
 											},
-											// Self-transition data write: merge the edited fields into the record (status
-											// untouched) and return the full record for the client writeback.
-											writeData: async (patch: Record<string, unknown>) => {
-												if (recordId == null) return {}
-												const existing = getRecord(d, recordId)
-												if (!existing) return {}
-												const updated = { ...existing, ...patch }
-												if (d === 'project') projects.set(recordId, updated as Project)
-												else if (d === 'task') tasks.set(recordId, updated as Task)
-												return updated as Record<string, unknown>
+											// Save is an upsert, and it is the only write path — there is no create action
+											// and no create mutation. Updating merges the edited fields in place (status
+											// untouched); creating derives the identity from the doctype's declared
+											// primary key when the submitted data carries it, which is how a
+											// natural-keyed doctype is identified, and mints one only otherwise.
+											// Either way the full record comes back for the client writeback.
+											writeData: async (patch: Record<string, unknown>, exists: boolean) => {
+												if (exists) {
+													if (recordId == null) return {}
+													const existing = getRecord(d, recordId, lookupField)
+													if (!existing) return {}
+													const updated = { ...existing, ...patch }
+													setRecord(d, recordId, updated)
+													return updated as Record<string, unknown>
+												}
+
+												const declared = patch[lookupField]
+												const identity =
+													typeof declared === 'string' && declared !== ''
+														? declared
+														: typeof declared === 'number'
+															? String(declared)
+															: nextId(d)
+												const defaults =
+													d === 'project'
+														? { status: 'Active', description: '' }
+														: { status: 'Todo', description: '', dueDate: null }
+												const record = {
+													...defaults,
+													...patch,
+													[lookupField]: identity,
+													createdAt: new Date().toISOString(),
+												}
+												setRecord(d, identity, record)
+												return record
 											},
+											// The server-owned effect for this action, if one is registered above.
+											runEffect: handler
+												? (currentState: string | undefined) => handler({ recordId, data: recordData, currentState })
+												: undefined,
 										},
 										recordData
 									)
@@ -242,64 +346,6 @@ export const resolvers = {
 						)
 					}
 				)
-			},
-
-			stonecropCreate(_: unknown, { $doctype, $input }: any) {
-				return loadOne(object({ doctype: $doctype, input: $input }), async (specs: readonly any[]) => {
-					return specs.map(spec => {
-						const d = spec.doctype.toLowerCase()
-						const id = nextId(d)
-						const now = new Date().toISOString()
-						if (d === 'project') {
-							const record: Project = { id, createdAt: now, status: 'Active', description: '', ...spec.input }
-							projects.set(id, record)
-							return { data: record, doctype: spec.doctype }
-						}
-						if (d === 'task') {
-							const record: Task = { id, createdAt: now, status: 'Todo', description: '', dueDate: null, ...spec.input }
-							tasks.set(id, record)
-							return { data: record, doctype: spec.doctype }
-						}
-						return { data: null, doctype: spec.doctype }
-					})
-				})
-			},
-
-			stonecropUpdate(_: unknown, { $doctype, $id, $patch }: any) {
-				return loadOne(object({ doctype: $doctype, id: $id, patch: $patch }), async (specs: readonly any[]) => {
-					return specs.map(spec => {
-						const d = spec.doctype.toLowerCase()
-						const existing = getRecord(d, spec.id)
-						if (!existing) return null
-						if (d === 'project') {
-							const updated = { ...existing, ...spec.patch } as Project
-							projects.set(spec.id, updated)
-							return { data: updated, doctype: spec.doctype }
-						}
-						if (d === 'task') {
-							const updated = { ...existing, ...spec.patch } as Task
-							tasks.set(spec.id, updated)
-							return { data: updated, doctype: spec.doctype }
-						}
-						return null
-					})
-				})
-			},
-
-			stonecropDelete(_: unknown, { $doctype, $id }: any) {
-				return loadOne(object({ doctype: $doctype, id: $id }), async (specs: readonly any[]) => {
-					return specs.map(spec => {
-						const d = spec.doctype.toLowerCase()
-						let deleted = false
-						if (d === 'project') deleted = projects.delete(spec.id)
-						else if (d === 'task') deleted = tasks.delete(spec.id)
-						return {
-							success: deleted,
-							data: deleted ? { id: spec.id } : null,
-							error: deleted ? null : 'Record not found',
-						}
-					})
-				})
 			},
 		},
 	},

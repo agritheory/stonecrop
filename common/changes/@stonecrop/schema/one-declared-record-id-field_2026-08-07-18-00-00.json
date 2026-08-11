@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "comment": "Add getRecordIdField(fields), the single definition of which field identifies a record. DoctypeMeta now rejects a doctype declaring more than one primaryKey; declaring none stays legal and resolves through the id fallback.",
+      "type": "minor",
+      "packageName": "@stonecrop/schema"
+    }
+  ],
+  "packageName": "@stonecrop/schema"
+}

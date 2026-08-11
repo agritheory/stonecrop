@@ -11,6 +11,7 @@ import type { DoctypeRef } from '@stonecrop/schema';
 import type { GetRecordOptions } from '@stonecrop/schema';
 import type { GetRecordResult as GetRecordResult_2 } from '@stonecrop/schema';
 import type { GetRecordsOptions } from '@stonecrop/schema';
+import type { GetRecordsResult } from '@stonecrop/schema';
 
 export { DoctypeContext }
 
@@ -28,7 +29,7 @@ export class StonecropClient implements DataClient {
     getAllMeta(): Promise<DoctypeMeta[]>;
     getMeta(context: DoctypeContext): Promise<DoctypeMeta | null>;
     getRecord(doctype: DoctypeRef, recordId: string, options?: GetRecordOptions): Promise<GetRecordResult>;
-    getRecords(doctype: DoctypeRef, options?: GetRecordsOptions): Promise<Record<string, unknown>[]>;
+    getRecords(doctype: DoctypeRef, options?: GetRecordsOptions): Promise<GetRecordsResult>;
     mutate<T = unknown>(mutation: string, variables?: Record<string, unknown>): Promise<T>;
     query<T = unknown>(query: string, variables?: Record<string, unknown>): Promise<T>;
     runAction(doctype: DoctypeRef, action: string, args?: unknown[]): Promise<{

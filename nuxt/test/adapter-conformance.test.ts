@@ -20,8 +20,8 @@
  * Why this reads SDL as text rather than importing it: importing @stonecrop/graphql-middleware
  * boots postgraphile + pg, a server-only chain that breaks vitest's node interop (the same reason
  * meta-contract.test.ts stubs the module). All three hosts are therefore treated symmetrically as
- * SDL artifacts. Behavioural expectations run against pure helpers the resolver modules export —
- * plan resolvers never execute here, since vitest.config.ts aliases grafast to a throwing stub.
+ * SDL artifacts. Behavioural expectations here run against pure helpers the resolver modules
+ * export; for the scaffold's plan resolvers actually executing, see templates-host.test.ts.
  */
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
@@ -31,8 +31,9 @@ import { describe, it, expect, vi } from 'vitest'
 
 import type { DoctypeMeta } from '@stonecrop/schema'
 
-import { recordLookupField as templatesLookupField } from '../templates/resolvers'
+import { recordLookupField as templatesLookupField, actionHandlers as templatesHandlers } from '../templates/resolvers'
 import { recordLookupField as fullstackLookupField } from '../fullstack/server/resolvers'
+import { actionHandlers as fullstackHandlers } from '../fullstack/server/action-handlers'
 
 // The two resolver modules above import the middleware at top level, which transitively boots
 // postgraphile + pg — a server-only chain that breaks vitest's node interop. vitest hoists this
@@ -91,8 +92,10 @@ interface Host {
 	 * Root fields this host publishes beyond the contract, recorded so adding one is deliberate.
 	 *
 	 * None of these are called by @stonecrop/graphql-client and none exist in the Postgres
-	 * adapter, so an app that uses them is not portable. `getMeta` duplicates `stonecropMeta`;
-	 * the three CRUD mutations have no counterpart in the shipped adapter at all.
+	 * adapter, so an app that uses them is not portable. `getMeta` duplicates `stonecropMeta`.
+	 *
+	 * Both mutation lists are empty, and that is the point: `stonecropCreate`/`Update`/`Delete`
+	 * used to live here. See the CRUD-verb assertion below for why they are gone.
 	 */
 	extensions: { query: string[]; mutation: string[] }
 	/** Pure helper: which field an incoming `stonecropRecord(id:)` is matched against. */
@@ -106,7 +109,7 @@ const HOSTS: Host[] = [
 		sdl: readSdl('../templates/schema.graphql'),
 		extensions: {
 			query: ['healthCheck', 'getMeta'],
-			mutation: ['stonecropCreate', 'stonecropUpdate', 'stonecropDelete'],
+			mutation: [],
 		},
 		lookupField: templatesLookupField,
 	},
@@ -115,7 +118,7 @@ const HOSTS: Host[] = [
 		sdl: readSdl('../fullstack/server/schema.graphql'),
 		extensions: {
 			query: ['getMeta', 'healthCheck', 'serverInfo'],
-			mutation: ['stonecropCreate', 'stonecropUpdate', 'stonecropDelete'],
+			mutation: [],
 		},
 		lookupField: fullstackLookupField,
 	},
@@ -153,6 +156,16 @@ describe.each(HOSTS)('$name — contract surface', { tags: ['unit', 'graphql'] }
 
 	it.each(CONTRACT_MUTATION_FIELDS)('serves Mutation.%s', fieldName => {
 		expect(mutations.has(fieldName), `${name} does not serve Mutation.${fieldName}`).toBe(true)
+	})
+
+	it.each(['stonecropCreate', 'stonecropUpdate', 'stonecropDelete'])('does not publish %s', verb => {
+		// Named rather than left to the extension check above, because their absence is a decision
+		// and not an accident. Stonecrop does not follow CRUD: `stonecropAction` is the only write
+		// path, saving a record that does not exist creates it, and removal is a declared workflow
+		// outcome (`archive`, `cancel`). These three shipped in the scaffold for a while, called by
+		// nothing and absent from the Postgres adapter, which is exactly the drift this file exists
+		// to catch. Re-adding one should fail here and be argued for, not slip back in.
+		expect(mutations.has(verb), `${name} publishes ${verb}; write paths go through stonecropAction`).toBe(false)
 	})
 
 	it('publishes no root field beyond the contract without declaring it an extension', () => {
@@ -227,6 +240,10 @@ const IDENTITY_CASES: Array<{ label: string; meta: DoctypeMeta; expected: string
 	},
 	{
 		label: 'the first declared primary key wins when several are marked',
+		// The resolution stays total so callers holding un-gated fields get an answer, but a doctype
+		// in this shape never reaches an adapter: `DoctypeMeta` rejects more than one declared key.
+		// Identity is single-valued on the API surface by design, and a composite database key is
+		// the adapter's to map onto it, so the extras say nothing and would be silently ignored.
 		meta: {
 			name: 'Ambiguous',
 			fields: [field('code', { primaryKey: true }), field('altCode', { primaryKey: true })],
@@ -263,31 +280,26 @@ describe.each(HOSTS.filter(h => h.lookupField))(
 	}
 )
 
-describe('record identity — unresolved divergence', { tags: ['unit', 'graphql'] }, () => {
+describe('record identity — the no-primaryKey rule, now settled', { tags: ['unit', 'graphql'] }, () => {
 	/**
 	 * What should an adapter do for a doctype that declares NO `primaryKey`?
 	 *
-	 * The two shipped answers disagree, and neither is obviously wrong:
+	 * This used to record two shipped answers instead of asserting one. The nuxt hosts fell back to
+	 * `id`; the Postgres adapter had no fallback and answered `data: null` from `stonecropRecord`,
+	 * while `stonecropAction` failed loudly on the identical condition — so the adapter was not even
+	 * consistent with itself, and its silent half was indistinguishable from a record that does not
+	 * exist. Worse, the client resolves that same doctype's identity to `id` and keys records by it,
+	 * so client and server disagreed with nothing to say so.
 	 *
-	 *   - The Postgres adapter treats the declaration as required. With no `primaryKey` it
-	 *     returns `data: null` from `stonecropRecord` (plugin/postgraphile.ts, the `!pkMeta`
-	 *     branch) and a loud `No primary key for doctype:` error from `stonecropAction`. Note it
-	 *     is already inconsistent with itself: the same condition fails silently in one operation
-	 *     and loudly in the other.
-	 *   - Both nuxt hosts fall back to `id`, which is what `@stonecrop/schema`'s
-	 *     `getRecordIdentity` documents as correct: "surrogate-key doctypes carry an `id` column
-	 *     and never mark a primary key".
+	 * Settled in favour of the permissive answer, because the schema already specifies it:
+	 * `getRecordIdentity` calls the `id` fallback "load-bearing, not defensive". The rule now has a
+	 * single definition, `getRecordIdField`, and all three hosts call it.
 	 *
-	 * Half-resolved. The repo took the strict side for its own data: every doctype now declares a
-	 * key, enforced by `doctype-fixtures.test.ts` (the one exemption, `assignment`, is a junction
-	 * doctype with a composite identity the schema cannot express). That removes the practical
-	 * breakage — previously no fixture could fetch a record under the Postgres adapter.
-	 *
-	 * What is still open is the rule for **consumer** doctypes that declare nothing. The nuxt hosts
-	 * stay permissive, the Postgres adapter refuses, and the middleware remains inconsistent with
-	 * itself (silent in `stonecropRecord`, loud in `stonecropAction`). Deciding that changes
-	 * shipped behaviour, so this records both rather than asserting one. Fold it into the shared
-	 * cases above once settled — and fix the middleware's own silent/loud split either way.
+	 * The fallback is not unconditional. `getRecordIdField` always returns a name, but a doctype
+	 * declaring neither a `primaryKey` nor an `id` field names a column that does not exist, and an
+	 * adapter building a SQL predicate from it must say so — see the executed pair in
+	 * `graphql_middleware/tests/integration/resolver.test.ts`, which fetches through the fallback
+	 * and errors when nothing can be resolved.
 	 */
 	const noPk = { name: 'Surrogate', fields: [field('id'), field('label')] } as unknown as DoctypeMeta
 
@@ -296,9 +308,89 @@ describe('record identity — unresolved divergence', { tags: ['unit', 'graphql'
 		expect(fullstackLookupField(noPk)).toBe('id')
 	})
 
-	it('the Postgres adapter has no such fallback — documented, not asserted as correct', () => {
-		// Pinned as prose against the source so this stays visible if the branch is ever removed.
+	it('the Postgres adapter resolves the same field through the same rule', () => {
+		// Pinned as prose against the source: this file cannot import the plugin (doing so boots
+		// postgraphile + pg), so the shared call is what is checkable here. The behaviour it
+		// produces is asserted for real against PGlite in the middleware's integration suite.
 		const src = readSdl('../../graphql_middleware/src/plugin/postgraphile.ts')
-		expect(src).toContain('No primary key for doctype:')
+		expect(src).toContain('getRecordIdField(meta.fields)')
+		expect(src).not.toContain('getPrimaryKeyField')
+	})
+})
+
+// ---------------------------------------------------------------------------
+// Layer 3 — action executability
+// ---------------------------------------------------------------------------
+
+/**
+ * Every action a host publishes must be something that host can actually execute.
+ *
+ * `applyGuardedTransition` can apply two outcomes, both authored in the doctype: a `nextState`
+ * transition, or a `selfTransition` data write. An action with neither has nothing to apply and
+ * fails loudly — correct behaviour, but it means a doctype can publish a button that is
+ * guaranteed to error the moment anyone presses it, and nothing catches that at authoring time.
+ *
+ * The third way to be executable is a registered server-side effect. That registration lives on
+ * the adapter, never in the doctype: a doctype is runtime data edited in DocBuilder, and it must
+ * not name code behind the GraphQL surface that a different author owns. So the pairing can only
+ * be checked here, where both halves are visible at once.
+ *
+ * This is not hypothetical. It caught three shipped actions in one pass — `Project.save`,
+ * `Task.save` and `User.save` were each `stateless: true` with no `selfTransition`, no
+ * `clientHandler` and no handler, so Save was broken in both the scaffold the CLI writes and the
+ * fullstack playground.
+ *
+ * The rule restated below is pinned at its source by graphql_middleware's
+ * `tests/transition.test.ts` ("fails loudly for a side-effect action with no nextState and no
+ * registered effect"); the real dispatcher cannot be imported here because it boots postgraphile.
+ */
+describe('action executability', { tags: ['unit', 'graphql'] }, () => {
+	const HOSTS_WITH_DOCTYPES = [
+		{ name: 'templates', dir: '../templates', files: ['Project.json', 'Task.json'], handlers: templatesHandlers },
+		{
+			name: 'fullstack',
+			dir: '../fullstack/doctypes',
+			files: ['Order.json', 'OrderItem.json', 'User.json'],
+			handlers: fullstackHandlers,
+		},
+	]
+
+	it.each(HOSTS_WITH_DOCTYPES)(
+		'$name — every dispatchable action has an outcome or an effect',
+		({ dir, files, handlers }) => {
+			const checked: string[] = []
+
+			for (const file of files) {
+				const doctype = JSON.parse(readSdl(`${dir}/${file}`)) as {
+					name: string
+					workflow?: { actions?: Record<string, Record<string, unknown>> }
+				}
+
+				for (const [key, action] of Object.entries(doctype.workflow?.actions ?? {})) {
+					const clientHandler = typeof action.clientHandler === 'string' ? action.clientHandler : ''
+					// A clientHandler owns orchestration and may never reach the server at all — unless
+					// it calls `runAction`, in which case it dispatches like any other action.
+					if (clientHandler && !clientHandler.includes('runAction')) continue
+
+					const executable =
+						action.nextState != null || action.selfTransition === true || Boolean(handlers[doctype.name]?.[key])
+
+					expect(executable, `${file}: action "${key}" dispatches but nothing can execute it`).toBe(true)
+					checked.push(`${doctype.name}.${key}`)
+				}
+			}
+
+			// Guards against the loop silently covering nothing — a renamed doctypes directory or an
+			// empty `files` list would otherwise pass with zero assertions.
+			expect(checked.length).toBeGreaterThan(3)
+		}
+	)
+
+	it('a stateless command is executable only because the adapter registered an effect', () => {
+		// The positive control for the rule above: these two carry no outcome of their own, so
+		// removing their registration is what makes them unexecutable — nothing in the doctype
+		// changes. Asserted directly because it is the property the seam exists to provide.
+		expect(templatesHandlers.Task?.snooze).toBeTypeOf('function')
+		expect(fullstackHandlers.Order?.recalculateTotal).toBeTypeOf('function')
 	})
 })

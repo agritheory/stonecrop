@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "comment": "Extract the docbuilder save merge into mergeSavedDoctype and the fields-panel write helpers into docbuilderFields, so the two hops of the unknown-key preservation chain that carried no test now have one. No behavioural change: the save handler and the panel call the extracted helpers verbatim",
+      "type": "patch",
+      "packageName": "@stonecrop/nuxt"
+    }
+  ],
+  "packageName": "@stonecrop/nuxt"
+}

@@ -15,6 +15,45 @@ afterEach(() => {
 	Stonecrop._root = undefined as any
 })
 
+/** Mount a records view over one doctype and return the rows AForm renders. */
+const renderRows = async (doctype: ReturnType<typeof buildDoctype>, recordId: string, record: object) => {
+	const registry = new Registry()
+	const stonecrop = new Stonecrop(registry)
+	registry.addDoctype(doctype)
+	stonecrop.addRecord('task', recordId, record)
+
+	const adapter: RouteAdapter = {
+		getCurrentDoctype: () => 'task',
+		getCurrentRecordId: () => '',
+		getCurrentView: () => 'records',
+		navigate: vi.fn(),
+	}
+
+	const wrapper = mount(Desktop, {
+		props: { routeAdapter: adapter },
+		global: {
+			plugins: [makeStonecropPlugin(registry, stonecrop)],
+			stubs: {
+				AForm: true,
+				ActionSet: true,
+				SheetNav: true,
+				CommandPalette: true,
+			},
+		},
+	})
+
+	await nextTick()
+
+	const aform = wrapper.findComponent({ name: 'AForm' })
+	const schema = aform.props('schema') as any[]
+	expect(schema).toBeTruthy()
+	expect(schema[0].component).toBe('ATable')
+	expect(schema[0].kind).toBe('table')
+
+	// Rows live in formData (the data prop), not in the schema.
+	return (aform.props('data') as Record<string, any>)['records_table'] as any[]
+}
+
 describe('StonecropDesktop plugin', { tags: ['component'] }, () => {
 	it('registers all desktop components globally', () => {
 		const app = createApp({ template: '<div />' })
@@ -109,53 +148,10 @@ describe('Desktop props', { tags: ['component'] }, () => {
 		})
 	})
 
-	describe('confirmFn', () => {
-		it('uses the provided confirmFn instead of native confirm()', async () => {
-			const registry = new Registry()
-			const stonecrop = new Stonecrop(registry)
-			const doctype = buildDoctype('task', 'draft', { draft: { on: { DELETE: 'deleted' } }, deleted: {} })
-			registry.addDoctype(doctype)
-			stonecrop.addRecord('task', 'rec-1', { id: 'rec-1', title: 'T' })
-
-			const confirmFn = vi.fn().mockResolvedValue(false)
-			const adapter: RouteAdapter = {
-				getCurrentDoctype: () => 'task',
-				getCurrentRecordId: () => 'rec-1',
-				getCurrentView: () => 'record',
-				navigate: vi.fn(),
-			}
-
-			const wrapper = mount(Desktop, {
-				props: { routeAdapter: adapter, confirmFn },
-				global: {
-					plugins: [makeStonecropPlugin(registry, stonecrop)],
-					stubs: { AForm: true, ActionSet: true, SheetNav: true, CommandPalette: true },
-				},
-			})
-
-			await nextTick()
-
-			// Inject desktopMethods and call handleDelete
-			const provided = (wrapper.vm as any).$.provides
-			if (provided?.desktopMethods?.handleDelete) {
-				await provided.desktopMethods.handleDelete('rec-1')
-			} else {
-				await (wrapper.vm as any).handleDelete?.('rec-1')
-			}
-
-			await nextTick()
-
-			// confirmFn returned false → no 'action' event
-			expect(confirmFn).toHaveBeenCalledWith('Are you sure you want to delete this record?')
-			expect(wrapper.emitted('action')).toBeFalsy()
-		})
-	})
-
-	describe('recordIdField', () => {
-		it('uses custom recordIdField for table row ID', async () => {
-			const registry = new Registry()
-			const stonecrop = new Stonecrop(registry)
-
+	// A row's id is the key its link resolves to, so it has to be the key the record was stored
+	// under. Both cases below assert exactly that, against the two ways identity is declared.
+	describe('row identity', () => {
+		it('keys a row by the declared primaryKey, matching the key the record is stored under', async () => {
 			const doctype = buildDoctype(
 				'task',
 				'draft',
@@ -163,91 +159,22 @@ describe('Desktop props', { tags: ['component'] }, () => {
 					draft: { on: { SUBMIT: 'submitted' } },
 					submitted: { type: 'final' },
 				},
-				[{ kind: 'field' as const, fieldname: 'uuid', label: 'UUID', component: 'ATextInput' }]
+				[{ kind: 'field' as const, fieldname: 'uuid', label: 'UUID', component: 'ATextInput', primaryKey: true }]
 			)
-			registry.addDoctype(doctype)
-			stonecrop.addRecord('task', 'task-1', { id: 1, uuid: 'uuid-abc-123', title: 'My Task' })
+			// Stored under the natural key, and carrying a surrogate `id` that must NOT win.
+			const rows = await renderRows(doctype, 'uuid-abc-123', { id: 1, uuid: 'uuid-abc-123', title: 'My Task' })
 
-			const adapter: RouteAdapter = {
-				getCurrentDoctype: () => 'task',
-				getCurrentRecordId: () => '',
-				getCurrentView: () => 'records',
-				navigate: vi.fn(),
-			}
-
-			const wrapper = mount(Desktop, {
-				props: { routeAdapter: adapter, recordIdField: 'uuid' },
-				global: {
-					plugins: [makeStonecropPlugin(registry, stonecrop)],
-					stubs: {
-						AForm: true,
-						ActionSet: true,
-						SheetNav: true,
-						CommandPalette: true,
-					},
-				},
-			})
-
-			await nextTick()
-
-			const aform = wrapper.findComponent({ name: 'AForm' })
-			const schema = aform.props('schema') as any[]
-			expect(schema).toBeTruthy()
-			expect(schema.length).toBeGreaterThan(0)
-
-			const tableSchema = schema[0]
-			expect(tableSchema.component).toBe('ATable')
-			expect(tableSchema.kind).toBe('table')
-			const schemaFields = tableSchema.schema as any[]
-			expect(schemaFields.some((f: any) => f.fieldname === 'uuid')).toBe(true)
-
-			// Rows are now in formData (data prop), not in the schema
-			const data = aform.props('data') as Record<string, any>
-			const rows = data['records_table'] as any[]
 			expect(rows[0].id).toBe('uuid-abc-123')
 		})
 
-		it('defaults recordIdField to "id" when not specified', async () => {
-			const registry = new Registry()
-			const stonecrop = new Stonecrop(registry)
-
+		it('falls back to `id` when the doctype declares no primaryKey', async () => {
 			const doctype = buildDoctype('task', 'draft', {
 				draft: { on: { SUBMIT: 'submitted' } },
 				submitted: { type: 'final' },
 			})
-			registry.addDoctype(doctype)
-			stonecrop.addRecord('task', 'task-1', { id: 'task-1', title: 'My Task' })
+			const rows = await renderRows(doctype, 'task-1', { id: 'task-1', title: 'My Task' })
 
-			const adapter: RouteAdapter = {
-				getCurrentDoctype: () => 'task',
-				getCurrentRecordId: () => '',
-				getCurrentView: () => 'records',
-				navigate: vi.fn(),
-			}
-
-			const wrapper = mount(Desktop, {
-				props: { routeAdapter: adapter },
-				global: {
-					plugins: [makeStonecropPlugin(registry, stonecrop)],
-					stubs: {
-						AForm: true,
-						ActionSet: true,
-						SheetNav: true,
-						CommandPalette: true,
-					},
-				},
-			})
-
-			await nextTick()
-
-			const aform = wrapper.findComponent({ name: 'AForm' })
-			const schema = aform.props('schema') as any[]
-			expect(schema).toBeTruthy()
-
-			const tableSchema = schema[0]
-			expect(tableSchema.kind).toBe('table')
-			const schemaFields = tableSchema.schema as any[]
-			expect(schemaFields.some((f: any) => f.fieldname === 'id')).toBe(true)
+			expect(rows[0].id).toBe('task-1')
 		})
 	})
 })

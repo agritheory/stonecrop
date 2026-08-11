@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "comment": "Fix templates/plugins.ts, which ships into every scaffolded app. It imported GraphileConfig from graphile-config — an optional peer dependency that is never installed — and the unresolved type degraded both example plugins to any, hiding that they were written against the Web Request API (request.url, request.headers.get) rather than grafserv's RequestDigest (request.path, request.getHeader), and that event.request is optional. Its docblock also showed an inline preset object, which is unsupported; preset is a path to a preset file. templates/ is now type-checked by test:types",
+      "type": "patch",
+      "packageName": "@stonecrop/nuxt"
+    }
+  ],
+  "packageName": "@stonecrop/nuxt"
+}

@@ -1,7 +1,7 @@
 import type { DoctypeField } from '@stonecrop/schema'
 import { LinkDeclaration } from '@stonecrop/schema'
 import { mount, flushPromises } from '@vue/test-utils'
-import { List, Map } from 'immutable'
+import { List } from 'immutable'
 import { createPinia, setActivePinia } from 'pinia'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { defineComponent } from 'vue'
@@ -50,12 +50,7 @@ const createDoctype = (name: string, fields?: DoctypeField[], links?: Record<str
 		},
 	}
 
-	const actions = Map({
-		load: ['loadData'],
-		save: ['validateData', 'saveData'],
-	})
-
-	return new Doctype(name, schema as any, workflow, actions, undefined, links)
+	return new Doctype(name, schema as any, workflow, undefined, links)
 }
 
 describe('useStonecrop HST mode', { tags: ['unit'] }, () => {

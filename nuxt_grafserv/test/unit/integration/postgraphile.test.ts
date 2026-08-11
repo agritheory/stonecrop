@@ -1,5 +1,5 @@
 import { makeGrafastSchema, grafast, constant } from 'grafast'
-import { type GraphQLSchema, parse } from 'graphql'
+import { type ExecutionResult, type GraphQLSchema, parse } from 'graphql'
 import { makeSchema } from 'postgraphile'
 import { PostGraphileAmberPreset } from 'postgraphile/presets/amber'
 import { describe, it, expect, beforeAll } from 'vitest'
@@ -11,6 +11,20 @@ import { describe, it, expect, beforeAll } from 'vitest'
  * 2. Custom resolvers are added for additional functionality
  * 3. Both PostGraphile queries and custom resolvers work together
  */
+/**
+ * Narrow `grafast()`'s return to a single result.
+ *
+ * It yields an async generator for incremental delivery (`@defer`/`@stream`) and a plain
+ * `ExecutionResult` otherwise. None of the queries below use those directives, so this narrows —
+ * and throws rather than letting `.data`/`.errors` silently read as `undefined` if that changes.
+ */
+function singleResult(result: Awaited<ReturnType<typeof grafast>>): ExecutionResult {
+	if (Symbol.asyncIterator in result) {
+		throw new Error('grafast returned an incremental stream; expected a single ExecutionResult')
+	}
+	return result
+}
+
 describe('PostGraphile makeSchema Integration', { tags: ['e2e', 'nuxt', 'graphql'] }, () => {
 	let postgraphileInstance: any
 	let combinedSchema: GraphQLSchema
@@ -139,10 +153,12 @@ describe('PostGraphile makeSchema Integration', { tags: ['e2e', 'nuxt', 'graphql
 				}
 			`
 
-			const result = await grafast({
-				schema: combinedSchema,
-				source: query,
-			})
+			const result = singleResult(
+				await grafast({
+					schema: combinedSchema,
+					source: query,
+				})
+			)
 
 			expect(result.errors).toBeUndefined()
 			expect(result.data).toEqual({
@@ -162,10 +178,12 @@ describe('PostGraphile makeSchema Integration', { tags: ['e2e', 'nuxt', 'graphql
 				}
 			`
 
-			const result = await grafast({
-				schema: combinedSchema,
-				source: query,
-			})
+			const result = singleResult(
+				await grafast({
+					schema: combinedSchema,
+					source: query,
+				})
+			)
 
 			expect(result.errors).toBeUndefined()
 			expect(result.data).toEqual({
@@ -188,10 +206,12 @@ describe('PostGraphile makeSchema Integration', { tags: ['e2e', 'nuxt', 'graphql
 				}
 			`
 
-			const result = await grafast({
-				schema: combinedSchema,
-				source: query,
-			})
+			const result = singleResult(
+				await grafast({
+					schema: combinedSchema,
+					source: query,
+				})
+			)
 
 			expect(result.errors).toBeUndefined()
 			expect(result.data).toEqual({

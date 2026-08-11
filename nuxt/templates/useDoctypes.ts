@@ -1,6 +1,4 @@
-import type { DoctypeRef } from '@stonecrop/schema'
 import type { DoctypeConfig } from '@stonecrop/stonecrop'
-import { useNuxtApp } from 'nuxt/app'
 
 const modules = import.meta.glob<DoctypeConfig>('../../doctypes/*.json', {
 	eager: true,
@@ -22,32 +20,15 @@ export function useDoctypeConfig(slug: string): DoctypeConfig | undefined {
 	return doctypeMap.get(slug)
 }
 
-export async function fetchDoctypeRecords(doctype: DoctypeRef, limit = 200): Promise<{ data: any[]; count: number }> {
-	const { $stonecropClient } = useNuxtApp()
-	const data = (await $stonecropClient.getRecords({ name: doctype.name }, { limit })) as any[]
-	return { data, count: data.length }
-}
+// There are deliberately no fetch helpers here. Fetching is not the whole job: the result has to
+// land in the store under the identity the doctype declares, and something has to decide whether a
+// read is warranted at all. `Stonecrop.getRecord`/`getRecords` own all of it and reach your backend
+// through the client registered in `stonecrop.client.ts` — call those instead.
+//
+// The pair that used to live here also hardcoded `limit = 200`, which is a decision about what the
+// backend can afford and therefore the server's to make, not a page's.
 
-export async function fetchDoctypeRecord(
-	doctype: DoctypeRef,
-	recordId: string
-): Promise<Record<string, unknown> | null> {
-	const { $stonecropClient } = useNuxtApp()
-	const result = await $stonecropClient.getRecord(doctype, recordId)
-	return result.record
-}
-
-export interface ActionResult {
-	success: boolean
-	data?: unknown
-	error?: string | null
-}
-
-export async function runDoctypeAction(
-	doctype: DoctypeConfig,
-	action: string,
-	args: { id: string; data?: Record<string, unknown> }
-): Promise<ActionResult> {
-	const { $stonecropClient } = useNuxtApp()
-	return $stonecropClient.runAction({ name: doctype.name }, action, [args])
-}
+// Actions are deliberately not dispatched from here. Dispatching is only half the job: the result
+// has to land in the store under the identity the server settled on, which is not always the id
+// that was dispatched — a Save against a record that does not exist creates one. `useClientAction`
+// (auto-imported from @stonecrop/nuxt) owns both halves; app/pages/index.vue binds it directly.

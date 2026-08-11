@@ -27,8 +27,11 @@ describe.skip('Basic Resolvers E2E', { tags: ['e2e', 'nuxt', 'graphql'] }, async
 			},
 		})
 
-		// GraphiQL/Ruru should return HTML
-		expect(typeof html).toBe('string')
+		// GraphiQL/Ruru should return HTML. `$fetch` infers a wide union from the route, so narrow with
+		// a real guard — `expect(typeof ...)` asserts at runtime but tells the compiler nothing.
+		if (typeof html !== 'string') {
+			throw new Error(`Expected an HTML string from /graphql/, got ${typeof html}`)
+		}
 		expect(html.length).toBeGreaterThan(0)
 	})
 

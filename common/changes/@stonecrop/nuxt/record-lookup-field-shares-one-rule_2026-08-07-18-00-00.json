@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "comment": "recordLookupField now calls @stonecrop/schema's getRecordIdField instead of restating the rule. No behaviour change.",
+      "type": "patch",
+      "packageName": "@stonecrop/nuxt"
+    }
+  ],
+  "packageName": "@stonecrop/nuxt"
+}

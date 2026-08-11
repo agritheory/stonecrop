@@ -1,5 +1,5 @@
 import { mount } from '@vue/test-utils'
-import { List, Map } from 'immutable'
+import { List } from 'immutable'
 import type { DoctypeField } from '@stonecrop/schema'
 import { describe, it, expect, beforeEach } from 'vitest'
 import { nextTick, defineComponent, computed, ref } from 'vue'
@@ -77,17 +77,7 @@ describe('HST Real Component Integration', { tags: ['unit'] }, () => {
 			},
 		}
 
-		const mockActions = Map({
-			load: ['loadTask'],
-			save: ['saveTask'],
-			submit: ['submitForReview'],
-			approve: ['approveTask'],
-			reject: ['rejectTask'],
-			complete: ['completeTask'],
-			cancel: ['cancelTask'],
-		})
-
-		doctype = new Doctype('Task', completeSchema, mockWorkflow, mockActions, undefined, {
+		doctype = new Doctype('Task', completeSchema, mockWorkflow, undefined, {
 			subtasks: { target: 'subtask', cardinality: 'noneOrMany' },
 		})
 		registry.addDoctype(doctype)

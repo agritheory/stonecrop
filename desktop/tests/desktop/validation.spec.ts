@@ -1,7 +1,7 @@
 import { mount, flushPromises } from '@vue/test-utils'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { nextTick } from 'vue'
-import { List, Map } from 'immutable'
+import { List } from 'immutable'
 import { createPinia, setActivePinia } from 'pinia'
 
 import { AForm } from '@stonecrop/aform'
@@ -28,7 +28,7 @@ function buildBookingDoctype() {
 			},
 		},
 	}
-	return new Doctype('booking', fields as any, workflow as any, Map({}))
+	return new Doctype('booking', fields as any, workflow as any)
 }
 
 const recordAdapter: RouteAdapter = {

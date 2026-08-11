@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "comment": "Fix scaffolded Save actions that could never dispatch, and wire the server-side action effect seam into the scaffold resolvers",
+      "type": "patch",
+      "packageName": "@stonecrop/nuxt"
+    }
+  ],
+  "packageName": "@stonecrop/nuxt"
+}

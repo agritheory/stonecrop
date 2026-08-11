@@ -39,7 +39,8 @@
 		"actions": {
 			"save": {
 				"label": "Save",
-				"stateless": true
+				"stateless": true,
+				"selfTransition": true
 			},
 			"archive": {
 				"label": "Archive Project",

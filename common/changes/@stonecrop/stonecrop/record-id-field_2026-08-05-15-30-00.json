@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "comment": "Add Doctype.recordIdField, the field a record is identified by, so a caller can tell an identity a record states from the `id` getRecordId falls back to",
+      "type": "minor",
+      "packageName": "@stonecrop/stonecrop"
+    }
+  ],
+  "packageName": "@stonecrop/stonecrop"
+}

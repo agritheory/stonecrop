@@ -77,17 +77,23 @@ export declare function getGlobalTriggerEngine(options?: FieldTriggerOptions): F
 |-----------|------|-------------|
 | options | `FieldTriggerOptions` | Optional configuration for the field trigger engine |
 
-### getStonecrop
+### isDraftRecordId
 
-Returns the global Stonecrop singleton instance, or `undefined` if no instance has been created yet.
+Whether a record id refers to a record that has not been saved yet.
 
-Use this when you need the Stonecrop instance outside a Vue component context (e.g., in workflow action handlers, plugin setup code, or non-component utilities). Inside a component, prefer `useStonecrop()`.
+Guard anything that assumes the record exists — fetching it, resolving its links, judging workflow readiness — with this rather than the literal. The shell and this package once spelled the rule differently, which left every guard here dead.
 
 **Signature:**
 
 ```typescript
-export declare function getStonecrop(): Stonecrop | undefined;
+export declare function isDraftRecordId(recordId: string | null | undefined): boolean;
 ```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| recordId | `string \| null \| undefined` | The record id to test |
 
 ### markOperationIrreversible
 
@@ -181,6 +187,32 @@ export declare function triggerTransition(doctype: string, transition: string, o
 | doctype | `string` | The doctype name |
 | transition | `string` | The XState transition name to trigger |
 | options | `{ recordId?: string; currentState?: string; targetState?: string; fsmContext?: Record<string, any>; path?: string; }` | Optional configuration for the transition |
+
+### useClientAction
+
+Shared executor for doctype action clicks. A host's Desktop `@action` handler delegates here so every host runs the same logic from one definition:
+
+- If the clicked action carries a `clientHandler`, run it. The handler **owns orchestration** — it calls `runAction` itself when it needs the server, navigates via `router`, reads `record`, or queries `graphql`. It supersedes the default dispatch. - Otherwise dispatch the action to its server `handler` (the pre-existing behavior), so actions without a `clientHandler` are unchanged.
+
+`runAction` is the only blessed write: it dispatches **and** leaves the store consistent, filing the returned record under the identity the *server* settled on and following the route there when that differs from the one dispatched. For a created record those are never the same, which is what makes hand-rolling this reliably wrong.
+
+The store write itself lives one layer down, in `dispatchAction`, so a host that never adopts this composable still cannot file a record under the wrong key. What stays here is only what needs the *dispatched* id: dropping the stale key, and moving the route.
+
+Pass `buildArgs` to change the argument envelope your backend receives, `followRecord` to change where a created record sends the user, and `onError` to route failures into your own notification system. Identity resolution and HST keying are deliberately not configurable — see `UseClientActionOptions`.
+
+**Signature:**
+
+```typescript
+export declare function useClientAction(options?: UseClientActionOptions): {
+    run: (payload: ActionEventPayload) => Promise<void>;
+};
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| options | `UseClientActionOptions` |  |
 
 ### useLazyLink
 
@@ -289,12 +321,14 @@ export declare function useOperationLog(config?: Partial<OperationLogConfig>): {
 
 ### useStonecrop
 
-Unified Stonecrop composable - handles both general operations and HST reactive integration
+Unified Stonecrop composable - handles both general operations and HST reactive integration.
+
+Called with no doctype, it returns the Stonecrop instance and the operation log, and touches the network not at all. Name a doctype to get the HST surface.
 
 **Signature:**
 
 ```typescript
-export declare function useStonecrop(): BaseStonecropReturn | HSTStonecropReturn;
+export declare function useStonecrop(): BaseStonecropReturn;
 ```
 
 ### useStonecrop
@@ -303,7 +337,7 @@ Unified Stonecrop composable with HST integration for a specific doctype and rec
 
 When a `Doctype` instance is passed, all synchronous initialisation (`hstStore`, `resolvedSchema`, `formData`, `handleHSTChange`, operation-log wiring) is performed during `setup()` — before the first render and without awaiting any lifecycle hook. Callers can read `hstStore.value`, `resolvedSchema.value`, and `formData.value` immediately after calling this composable; no `nextTick`, `flushPromises`, or `setTimeout` is required.
 
-The only remaining async work in `onMounted` is fetching an existing record from the server when `recordId` is not `'new'`, and lazy-loading a doctype by slug string.
+The only async work in `onMounted` is fetching an existing record from the server when `recordId` is not a draft, and lazy-loading a doctype by slug string. Both need a doctype named here — nothing is inferred from the route.
 
 **Signature:**
 
@@ -377,6 +411,34 @@ export declare function withBatch<T>(fn: () => T | Promise<T>, description?: str
 
 ## Interfaces
 
+### ActionArgsContext
+
+Everything known about a dispatch at the point the argument array is built.
+
+**Definition:**
+
+```typescript
+export interface ActionArgsContext {
+  action: string;
+  data: Record<string, unknown>;
+  doctype: string;
+  extra?: Record<string, unknown>;
+  isDraft: boolean;
+  recordId: string;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| action | `string` | The action being dispatched. |
+| data | `Record<string, unknown>` | The form snapshot being sent. |
+| doctype | `string` | Slug of the doctype the action was raised on. |
+| extra? | `Record<string, unknown>` | Extra fields a `clientHandler` passed to `runAction`. |
+| isDraft | `boolean` | Whether `recordId` is the draft segment rather than a real identity. |
+| recordId | `string` | The route's record segment — `DRAFT_RECORD_ID` for an unsaved record. |
+
 ### ActionExecutionResult
 
 Result of executing a field action
@@ -400,6 +462,34 @@ export interface ActionExecutionResult {
 | error? | `Error` | Error if execution failed |
 | executionTime | `number` | Execution time in milliseconds |
 | success | `boolean` | Whether the action executed successfully |
+
+### ActionFailure
+
+An action that did not complete, described well enough for a host to render it.
+
+An object rather than a bare message on purpose: a notification says *what* failed, and the action, doctype and record are all known at the point of failure. It is also the shape that can gain a field later without breaking a host that already destructures it.
+
+**Definition:**
+
+```typescript
+export interface ActionFailure {
+  action: string;
+  cause?: unknown;
+  doctype: string;
+  message: string;
+  recordId: string;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| action | `string` | The action that was clicked, not necessarily the one a `clientHandler` dispatched. |
+| cause? | `unknown` | The thrown value, present only when the failure was a throw rather than a refused dispatch. |
+| doctype | `string` | Slug of the doctype the action was raised on. |
+| message | `string` | Human-readable reason — the server's own message where there is one. |
+| recordId | `string` | Record the action was raised against; the `new` route segment for an unsaved record. |
 
 ### ActionRegistry
 
@@ -584,6 +674,28 @@ export interface FieldTriggerOptions {
 | defaultTimeout? | `number` | Default timeout for action execution in milliseconds |
 | enableRollback? | `boolean` | Whether to enable automatic rollback on failure (default: true) |
 | errorHandler? | `(error: Error, context: FieldChangeContext, action: FieldAction) => void` | Custom error handler for action failures |
+
+### FollowRecordContext
+
+Where a record ended up after the server settled its identity.
+
+**Definition:**
+
+```typescript
+export interface FollowRecordContext {
+  doctype: string;
+  previousRecordId: string;
+  recordId: string;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| doctype | `string` | Slug of the doctype the action was raised on. |
+| previousRecordId | `string` | The identity that was dispatched, which is no longer valid. |
+| recordId | `string` | The identity the server settled on — where the record now lives. |
 
 ### HSTNode
 
@@ -844,6 +956,30 @@ export interface UndoRedoState {
 | redoCount | `number` | Number of operations available for redo |
 | undoCount | `number` | Number of operations available for undo |
 
+### UseClientActionOptions
+
+Host overrides for `useClientAction`.
+
+These are the three things that legitimately differ between applications: how your backend wants an action's arguments shaped, where the user should end up after a create, and how a failure is shown. Everything else is framework behaviour and is deliberately not configurable — in particular, resolving a record's identity and keying it into HST stay sealed, because that is the rule the adapter re-derives server-side, and every host that re-derived it got it wrong.
+
+**Definition:**
+
+```typescript
+export interface UseClientActionOptions {
+  buildArgs?: (context: ActionArgsContext) => unknown[];
+  followRecord?: (context: FollowRecordContext) => void | Promise<void>;
+  onError?: (failure: ActionFailure) => void;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| buildArgs? | `(context: ActionArgsContext) => unknown[]` | Build the opaque argument array handed to `DataClient.runAction`. The default is `[{ id, data }]`, omitting `id` entirely for a draft — the envelope every in-repo server handler destructures. Supply this when your backend expects another shape; `examples/desktop` uses positional `[recordId, data]`, for instance. Nothing validates the array, so both ends of your own stack have to agree on it. Whatever you return is sent verbatim. It does not affect how the *result* is stored — that is keyed off the returned record's declared identity, not off what was sent. |
+| followRecord? | `(context: FollowRecordContext) => void \| Promise<void>` | Move the user to where a record ended up when the server settled on a different identity — the create case, and any action that rewrites a natural key. The default is `router.replace('/{doctype}/{recordId}')`. `replace`, not `push`: the route being left behind was never a record, so going Back to `/{doctype}/new` would show an empty form that creates yet another record. Supply this for a locale prefix, a nested path, or to stay put; the store has already been updated either way. |
+| onError? | `(failure: ActionFailure) => void` | Called instead of the built-in alert when an action fails. Supply this to route failures into the host's own notification system, or pass a no-op to suppress them entirely. It fully replaces the default, console log included — a host that wants one writes it. |
+
 ### ValidationError
 
 A single validation error contributed by a trigger, displayed on a field.
@@ -950,6 +1086,37 @@ export interface ValidatorOptions {
 
 ## Type Aliases
 
+### ActionDispatchResult
+
+Result of dispatching an action to its server handler.
+
+**Definition:**
+
+```typescript
+export type ActionDispatchResult = {
+    success: boolean;
+    data: unknown;
+    error: string | null;
+};
+```
+
+### ActionEventPayload
+
+Payload emitted with the 'action' event when the user triggers a declared action — an FSM transition or a stateless Command.
+
+Defined here rather than in `@stonecrop/desktop` because the shell that *emits* it and the runner that *consumes* it now live in different packages, and desktop already depends on this one. `@stonecrop/desktop` re-exports it, so a host importing it from there is unaffected.
+
+**Definition:**
+
+```typescript
+export type ActionEventPayload = {
+    name: string;
+    doctype: string;
+    recordId: string;
+    data: Record<string, any>;
+};
+```
+
 ### BaseStonecropReturn
 
 Base Stonecrop composable return type - includes operation log functionality
@@ -996,7 +1163,6 @@ export type DoctypeConfig = {
     fields?: DoctypeField[];
     links?: Record<string, LinkDeclaration>;
     workflow?: UnknownMachineConfig | WorkflowMeta;
-    actions?: Record<string, string[]>;
     inherits?: string;
 };
 ```
@@ -1118,7 +1284,6 @@ Immutable Doctype type for Stonecrop instances. App authors should use `Doctype.
 export type ImmutableDoctype = {
     readonly schema?: List<DoctypeField>;
     readonly workflow?: UnknownMachineConfig | AnyStateNodeConfig | WorkflowMeta;
-    readonly actions?: Map<string, string[]>;
 };
 ```
 
@@ -1229,7 +1394,7 @@ Doctype runtime class with Immutable.js collections for HST change tracking.
 **Constructor:**
 
 ```typescript
-new Doctype(doctype: string, schema: ImmutableDoctype['schema'], workflow: ImmutableDoctype['workflow'], actions: ImmutableDoctype['actions'], component: Component, links: Record<string, LinkDeclaration>)
+new Doctype(doctype: string, schema: ImmutableDoctype['schema'], workflow: ImmutableDoctype['workflow'], component: Component, links: Record<string, LinkDeclaration>)
 ```
 
 **Parameters:**
@@ -1239,7 +1404,6 @@ new Doctype(doctype: string, schema: ImmutableDoctype['schema'], workflow: Immut
 | doctype | `string` | The doctype name |
 | schema | `ImmutableDoctype['schema']` | The doctype schema definition |
 | workflow | `ImmutableDoctype['workflow']` | The doctype workflow configuration (XState machine) |
-| actions | `ImmutableDoctype['actions']` | The doctype actions and field triggers |
 | component | `Component` | Optional Vue component for rendering the doctype |
 | links | `Record<string, LinkDeclaration>` | Optional relationship links to other doctypes |
 
@@ -1247,11 +1411,11 @@ new Doctype(doctype: string, schema: ImmutableDoctype['schema'], workflow: Immut
 
 | Property | Type | Description |
 |----------|------|-------------|
-| actions | `ImmutableDoctype['actions']` | The doctype actions and field triggers |
 | component | `Component` | The doctype component |
 | doctype | `string` | The doctype name |
 | links | `Record<string, LinkDeclaration>` | Relationship links to other doctypes |
 | name | `string` | Alias for doctype (for DoctypeLike interface compatibility) |
+| recordIdField | `string` | The field a record of this doctype is identified by: the declared `primaryKey`, or `id` when nothing is declared. The client-side twin of the adapters' `recordLookupField`. Both are the same call to `@stonecrop/schema`'s `getRecordIdField`, so the field a caller reads an identity out of is the same field the adapter builds its lookup predicate on. Use this to ask whether a record *states* its own identity. `getRecordId` deliberately falls back to `id` when the declared key is missing, which is right for resolving a link from a record already in hand and wrong for deciding whether a server response settled on a new identity: a response that omits a natural key would resolve through that fallback to a surrogate the adapter cannot look up. |
 | schema | `ImmutableDoctype['schema']` | The doctype schema |
 | slug | `string` | Converts the registered doctype string to a slug (kebab-case). The following conversions are made: - It replaces camelCase and PascalCase with kebab-case strings - It replaces spaces and underscores with hyphens - It converts the string to lowercase |
 | workflow | `ImmutableDoctype['workflow']` | The doctype workflow |
@@ -1291,14 +1455,6 @@ getActionMeta(actionName: string): {
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | actionName | `string` | The action name to get metadata for |
-
-#### getActionsObject
-
-Returns the actions as a plain object for use with components that expect plain JavaScript objects.
-
-```typescript
-getActionsObject(): Record<string, string[]>
-```
 
 #### getAvailableCommands
 
@@ -1771,7 +1927,13 @@ collectRecordPayload(doctype: Doctype, recordId: string): Record<string, any>
 
 #### dispatchAction
 
-Dispatch an action to the server via the configured data client. All state changes flow through this single mutation endpoint.
+Dispatch an action to the server via the configured data client, and file the record it returns into HST under the identity the *server* settled on.
+
+The write is the point. For a created record the settled identity is never the one that was dispatched, so a caller that stores the result under the id it sent files the record under a key nothing can fetch and leaves the next save creating a second one. Every host that hand-rolled this got it wrong the same way, so it stops being the caller's job — this is the write-side twin of `getRecords`, which keys reads by the same rule.
+
+Two things are deliberately NOT done here, because both need the id that was dispatched and that lives inside `args` — an opaque array whose shape is a convention between a host's client and its server handlers, not something this layer may parse. Dropping the stale key and moving the route therefore stay with `useClientAction`, which knows both ids.
+
+A result that states no identity of its own — a `{ state: 'APPROVED' }` outcome — is left alone rather than guessed at, for the same reason `settledRecordId` is strict: a partial record must not be able to look like a rename.
 
 ```typescript
 dispatchAction(doctype: Doctype, action: string, args: unknown[]): Promise<{
@@ -1832,12 +1994,35 @@ getMeta(context: RouteContext): Promise<any>
 |-----------|------|-------------|
 | context | `RouteContext` | The route context |
 
-#### getRecord
+#### getPageInfo
 
-Get single record from server using the configured data client.
+What the last `getRecords` for this doctype returned about the wider set.
+
+Answers the question HST cannot: HST holds what was fetched, so counting its keys reports how much has been seen, never how much exists. Reactive, so a view reading it re-renders when a fetch lands.
 
 ```typescript
-getRecord(doctype: string | Doctype, recordId: string): Promise<void>
+getPageInfo(doctype: string | Doctype): {
+        hasMore: boolean;
+        count?: number;
+    } | undefined
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| doctype | `string \| Doctype` | The doctype slug string or Doctype object |
+
+#### getRecord
+
+Fetch a single record from the server and store it in HST.
+
+This is the one read path for a record, and it owns the whole job: deciding whether a fetch is warranted, performing it, and writing the result back under the doctype's declared identity. Callers ask for a record and get one; they do not re-derive when to ask.
+
+Two cases return without touching the network, because in both the answer is already known: a draft does not exist on the server yet, and a record already in HST has been read. Refetching the latter would also discard unsaved edits sitting in the store.
+
+```typescript
+getRecord(doctype: string | Doctype, recordId: string, options: GetRecordOptions): Promise<void>
 ```
 
 **Parameters:**
@@ -1846,6 +2031,7 @@ getRecord(doctype: string | Doctype, recordId: string): Promise<void>
 |-----------|------|-------------|
 | doctype | `string \| Doctype` | The doctype slug string or Doctype object |
 | recordId | `string` | The record ID |
+| options | `GetRecordOptions` | Query options (includeNested, maxDepth), forwarded to the client |
 
 #### getRecordById
 
@@ -1878,10 +2064,16 @@ getRecordIds(doctype: string | Doctype): string[]
 
 #### getRecords
 
-Get records from server using the configured data client.
+Fetch a doctype's records from the server and store them in HST.
+
+This is the one read path for a list. Every caller shares its keying rule, so a row is always stored under the identity its Edit link will later ask for.
+
+Deliberately unguarded, unlike `getRecord`: a list is a view of data that changes, so revisiting one must re-read it rather than serve whatever HST happens to hold.
+
+`options` is forwarded to the client untouched — no row limit is invented here, because nothing on this side of the wire knows what is safe for an arbitrary backend. A caller that passes none gets whatever the server considers a reasonable page.
 
 ```typescript
-getRecords(doctype: Doctype): Promise<void>
+getRecords(doctype: Doctype, options: GetRecordsOptions): Promise<GetRecordsResult>
 ```
 
 **Parameters:**
@@ -1889,6 +2081,7 @@ getRecords(doctype: Doctype): Promise<void>
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | doctype | `Doctype` | The doctype |
+| options | `GetRecordsOptions` | Query options (filters, orderBy, limit, offset), forwarded to the client |
 
 #### getRecordState
 
@@ -1979,22 +2172,6 @@ removeRecord(doctype: string | Doctype, recordId: string): void
 | doctype | `string \| Doctype` | The doctype |
 | recordId | `string` | The record ID |
 
-#### runAction
-
-Run action on doctype Executes the action and logs it to the operation log for audit tracking
-
-```typescript
-runAction(doctype: Doctype, action: string, args: string[]): void
-```
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| doctype | `Doctype` | The doctype |
-| action | `string` | The action to run |
-| args | `string[]` | Action arguments (typically record IDs) |
-
 #### setClient
 
 Set the data client for fetching doctype metadata and records. Use this for deferred configuration in Nuxt/Vue plugin setups.
@@ -2024,6 +2201,18 @@ setup(doctype: Doctype): void
 | doctype | `Doctype` | The doctype to setup |
 
 ## Variables
+
+### DRAFT_RECORD_ID
+
+The record-id segment a draft route carries: `/{doctype}/new`.
+
+Route only — never a store key, and never sent: an action dispatched for a draft omits the id rather than sending this.
+
+**Type:**
+
+```typescript
+export const DRAFT_RECORD_ID: 
+```
 
 ### plugin
 
@@ -2126,7 +2315,7 @@ export const useOperationLogStore: import("pinia").StoreDefinition<"hst-operatio
     getSnapshot: () => OperationLogSnapshot;
     markIrreversible: (operationId: string, reason: string) => void;
     logAction: (doctype: string, actionName: string, recordIds?: string[], result?: "success" | "failure" | "pending", error?: string) => string;
-}, "operations" | "currentIndex" | "config" | "clientId">, Pick<{
+}, "config" | "operations" | "clientId" | "currentIndex">, Pick<{
     operations: import("vue").Ref<{
         id: string;
         type: import("..").HSTOperationType;

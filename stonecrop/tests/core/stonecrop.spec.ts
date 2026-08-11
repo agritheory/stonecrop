@@ -1,9 +1,10 @@
 import type { DoctypeField } from '@stonecrop/schema'
-import { List, Map } from 'immutable'
+import { List } from 'immutable'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { createRouter, createMemoryHistory } from 'vue-router'
 
 import Doctype from '../../src/doctype'
+import { DRAFT_RECORD_ID } from '../../src/draft'
 import Registry from '../../src/registry'
 import { Stonecrop } from '../../src/stonecrop'
 import type { StonecropOptions } from '../../src/types/stonecrop'
@@ -16,7 +17,7 @@ function createDoctype(name: string, fields?: DoctypeField[], links?: Record<str
 	const schema = List<DoctypeField>(
 		fields || [{ kind: 'field', fieldname: 'title', component: 'ATextInput', label: 'Title' }]
 	)
-	return new Doctype(name, schema, undefined, Map({}), undefined, links)
+	return new Doctype(name, schema, undefined, undefined, links)
 }
 
 function createMockDoctype(name: string) {
@@ -44,12 +45,7 @@ function createMockDoctype(name: string) {
 		},
 	}
 
-	const mockActions: ImmutableDoctype['actions'] = Map({
-		load: ['loadData'],
-		save: ['validateData', 'saveData'],
-	})
-
-	return new Doctype(name, mockSchema, mockWorkflowConfig, mockActions)
+	return new Doctype(name, mockSchema, mockWorkflowConfig)
 }
 
 describe('Stonecrop class with HST integration', { tags: ['unit'] }, () => {
@@ -244,11 +240,11 @@ describe('Stonecrop class with HST integration', { tags: ['unit'] }, () => {
 				{ id: '1', title: 'Task 1' },
 				{ id: '2', title: 'Task 2' },
 			]
-			mockClient.getRecords.mockResolvedValue(mockRecords)
+			mockClient.getRecords.mockResolvedValue({ data: mockRecords, hasMore: false })
 
 			await stonecrop.getRecords(mockDoctype)
 
-			expect(mockClient.getRecords).toHaveBeenCalledWith(mockDoctype)
+			expect(mockClient.getRecords).toHaveBeenCalledWith(mockDoctype, undefined)
 
 			// Check that records are stored in HST with proper wrapping
 			const recordIds = stonecrop.getRecordIds('task')
@@ -269,15 +265,17 @@ describe('Stonecrop class with HST integration', { tags: ['unit'] }, () => {
 					{ kind: 'field', fieldname: 'name', label: 'Name', component: 'ATextInput', primaryKey: true },
 					{ kind: 'field', fieldname: 'label', label: 'Label', component: 'ATextInput' },
 				]),
-				undefined,
-				Map({})
+				undefined
 			)
 			registry.addDoctype(uom)
 
-			mockClient.getRecords.mockResolvedValue([
-				{ name: 'EACH', label: 'Each' },
-				{ name: 'BOX', label: 'Box' },
-			])
+			mockClient.getRecords.mockResolvedValue({
+				hasMore: false,
+				data: [
+					{ name: 'EACH', label: 'Each' },
+					{ name: 'BOX', label: 'Box' },
+				],
+			})
 
 			await stonecrop.getRecords(uom)
 
@@ -288,7 +286,7 @@ describe('Stonecrop class with HST integration', { tags: ['unit'] }, () => {
 		it('getRecords still falls back to id when no primaryKey is declared', async () => {
 			// The surrogate-key path must keep working: those doctypes carry an `id` column and
 			// never mark a primary key.
-			mockClient.getRecords.mockResolvedValue([{ id: 'a1', title: 'Task A' }])
+			mockClient.getRecords.mockResolvedValue({ data: [{ id: 'a1', title: 'Task A' }], hasMore: false })
 
 			await stonecrop.getRecords(mockDoctype)
 
@@ -301,12 +299,62 @@ describe('Stonecrop class with HST integration', { tags: ['unit'] }, () => {
 
 			await stonecrop.getRecord(mockDoctype, '123')
 
-			expect(mockClient.getRecord).toHaveBeenCalledWith(mockDoctype, '123')
+			expect(mockClient.getRecord).toHaveBeenCalledWith(mockDoctype, '123', undefined)
 
 			// Check that record.record (not the wrapper) is stored
 			const record = stonecrop.getRecordById('task', '123')
 			expect(record!.get('title')).toBe('Test Task')
 			expect(record!.get('id')).toBe('123')
+		})
+
+		it('getRecord does not fetch a record already in HST', async () => {
+			// The guard lives here rather than in each caller. It used to be Desktop's, which is why
+			// a host handler and Desktop could both race past their own copies of it and fetch the
+			// same record twice.
+			stonecrop.addRecord(mockDoctype, '123', { id: '123', title: 'Already Here' })
+
+			await stonecrop.getRecord(mockDoctype, '123')
+
+			expect(mockClient.getRecord).not.toHaveBeenCalled()
+			expect(stonecrop.getRecordById('task', '123')!.get('title')).toBe('Already Here')
+		})
+
+		it('getRecord does not fetch a draft, which has no server record to find', async () => {
+			await stonecrop.getRecord(mockDoctype, DRAFT_RECORD_ID)
+
+			expect(mockClient.getRecord).not.toHaveBeenCalled()
+		})
+
+		it('getRecord forwards options to the client', async () => {
+			mockClient.getRecord.mockResolvedValue({ record: { id: '123' } })
+
+			await stonecrop.getRecord(mockDoctype, '123', { includeNested: true })
+
+			expect(mockClient.getRecord).toHaveBeenCalledWith(mockDoctype, '123', { includeNested: true })
+		})
+
+		it('getRecords forwards options to the client and invents no row limit', async () => {
+			// A row cap is a statement about what the backend can afford, so nothing on this side
+			// makes one up. An unqualified call must reach the client unqualified.
+			mockClient.getRecords.mockResolvedValue({ data: [], hasMore: false })
+
+			await stonecrop.getRecords(mockDoctype, { limit: 25, orderBy: 'TITLE_ASC' })
+			expect(mockClient.getRecords).toHaveBeenCalledWith(mockDoctype, { limit: 25, orderBy: 'TITLE_ASC' })
+
+			await stonecrop.getRecords(mockDoctype)
+			expect(mockClient.getRecords).toHaveBeenLastCalledWith(mockDoctype, undefined)
+		})
+
+		it('getRecords refetches even when records are already in HST', async () => {
+			// Deliberately unguarded, unlike getRecord: a list is a view of data that changes, so
+			// revisiting one must re-read rather than serve whatever HST happens to hold.
+			mockClient.getRecords.mockResolvedValue({ data: [{ id: '1', title: 'Fresh' }], hasMore: false })
+			stonecrop.addRecord(mockDoctype, '1', { id: '1', title: 'Stale' })
+
+			await stonecrop.getRecords(mockDoctype)
+
+			expect(mockClient.getRecords).toHaveBeenCalledOnce()
+			expect(stonecrop.getRecordById('task', '1')!.get('title')).toBe('Fresh')
 		})
 	})
 
@@ -338,7 +386,7 @@ describe('Stonecrop class with HST integration', { tags: ['unit'] }, () => {
 			await localStonecrop.getRecord(mockDoctype, 'abc')
 
 			expect(mockClient.getRecord).toHaveBeenCalledOnce()
-			expect(mockClient.getRecord).toHaveBeenCalledWith(mockDoctype, 'abc')
+			expect(mockClient.getRecord).toHaveBeenCalledWith(mockDoctype, 'abc', undefined)
 			expect(fetch).not.toHaveBeenCalled()
 
 			const stored = localStonecrop.getRecordById('task', 'abc')
@@ -353,7 +401,7 @@ describe('Stonecrop class with HST integration', { tags: ['unit'] }, () => {
 			const mockClient = {
 				getMeta: vi.fn(),
 				getRecord: vi.fn(),
-				getRecords: vi.fn().mockResolvedValue(mockRecords),
+				getRecords: vi.fn().mockResolvedValue({ data: mockRecords, hasMore: false }),
 				runAction: vi.fn(),
 			}
 
@@ -363,7 +411,7 @@ describe('Stonecrop class with HST integration', { tags: ['unit'] }, () => {
 			await localStonecrop.getRecords(mockDoctype)
 
 			expect(mockClient.getRecords).toHaveBeenCalledOnce()
-			expect(mockClient.getRecords).toHaveBeenCalledWith(mockDoctype)
+			expect(mockClient.getRecords).toHaveBeenCalledWith(mockDoctype, undefined)
 			expect(fetch).not.toHaveBeenCalled()
 
 			const ids = localStonecrop.getRecordIds('task')
@@ -440,6 +488,79 @@ describe('Stonecrop class with HST integration', { tags: ['unit'] }, () => {
 			expect(result).toEqual(mockResult)
 		})
 
+		// The write half. It is here rather than in the composable because a host that never adopts
+		// `useClientAction` still dispatches through this method, and filing a created record under
+		// the id that was *sent* is the mistake every hand-rolled handler made — the record lands
+		// under a key nothing can fetch and the next save creates a second one.
+		describe('dispatchAction record writeback', () => {
+			const idFields: DoctypeField[] = [
+				{ kind: 'field', fieldname: 'id', component: 'ATextInput' },
+				{ kind: 'field', fieldname: 'title', component: 'ATextInput' },
+			]
+			const naturalFields: DoctypeField[] = [
+				{ kind: 'field', fieldname: 'username', component: 'ATextInput', primaryKey: true },
+				{ kind: 'field', fieldname: 'id', component: 'ATextInput' },
+			]
+
+			const withResult = (data: unknown, fields: DoctypeField[]) => {
+				const doctype = Doctype.fromObject({ name: 'User', fields })
+				const client = {
+					getMeta: vi.fn(),
+					getRecord: vi.fn(),
+					getRecords: vi.fn(),
+					runAction: vi.fn().mockResolvedValue({ success: true, data, error: null }),
+				}
+				return { doctype, sc: new Stonecrop(registry, undefined, { client } as StonecropOptions) }
+			}
+
+			it('files the returned record under the identity the server settled on, not the one dispatched', async () => {
+				// The create case: a draft sends no id at all, and the server answers with `7`.
+				const { doctype, sc } = withResult({ id: '7', title: 'drafted' }, idFields)
+
+				await sc.dispatchAction(doctype, 'save', [{ data: { title: 'drafted' } }])
+
+				expect(sc.getRecordById('user', '7')).toBeDefined()
+				expect(sc.getRecordIds('user')).toEqual(['7'])
+			})
+
+			it('prefers the declared natural key over a surrogate id the record also carries', async () => {
+				const { doctype, sc } = withResult({ username: 'robert', id: '7' }, naturalFields)
+
+				await sc.dispatchAction(doctype, 'rename', [{ id: 'bob', data: { username: 'robert' } }])
+
+				// `robert`, not `7` — the adapter looks records up by the declared key.
+				expect(sc.getRecordIds('user')).toEqual(['robert'])
+			})
+
+			it('declines a partial record that omits its declared key, rather than guessing', async () => {
+				// A registered effect returning `{ id, total }` for a natural-keyed doctype. Trusting
+				// `getRecordId`'s `id` fallback here would relocate the record to a key the adapter
+				// cannot resolve, which reads as a rename that never happened.
+				const { doctype, sc } = withResult({ id: '7', total: 75 }, naturalFields)
+
+				await sc.dispatchAction(doctype, 'recalculate', [{ id: 'bob', data: {} }])
+
+				expect(sc.getRecordIds('user')).toEqual([])
+			})
+
+			it('writes nothing for a state-only outcome or a refused action', async () => {
+				const { doctype, sc } = withResult({ state: 'APPROVED' }, idFields)
+				await sc.dispatchAction(doctype, 'approve', [{ id: 'r1', data: {} }])
+				expect(sc.getRecordIds('user')).toEqual([])
+
+				const refused = Doctype.fromObject({ name: 'User', fields: idFields })
+				const client = {
+					getMeta: vi.fn(),
+					getRecord: vi.fn(),
+					getRecords: vi.fn(),
+					runAction: vi.fn().mockResolvedValue({ success: false, data: { id: '7' }, error: 'refused' }),
+				}
+				const sc2 = new Stonecrop(registry, undefined, { client } as StonecropOptions)
+				await sc2.dispatchAction(refused, 'save', [{ data: {} }])
+				expect(sc2.getRecordIds('user')).toEqual([])
+			})
+		})
+
 		it('dispatchAction throws error when no client configured', async () => {
 			const localStonecrop = new Stonecrop(registry)
 
@@ -492,7 +613,7 @@ describe('Stonecrop class with HST integration', { tags: ['unit'] }, () => {
 		})
 
 		it('returns empty string when the doctype has no workflow', () => {
-			const noWorkflowDoctype = new Doctype('Bare', List<DoctypeField>([]), undefined as any, Map({}))
+			const noWorkflowDoctype = new Doctype('Bare', List<DoctypeField>([]), undefined as any)
 			// Use a fresh registry to avoid singleton collision
 			Registry._root = undefined as any
 			Stonecrop._root = undefined as any
@@ -531,7 +652,7 @@ describe('Stonecrop class with HST integration', { tags: ['unit'] }, () => {
 						submit: { label: 'Submit', handler: 'plan:submit', allowedStates: ['planning'] },
 					},
 				}
-				const planDoctype = new Doctype('Plan', List<DoctypeField>([]), workflowMeta, Map({}))
+				const planDoctype = new Doctype('Plan', List<DoctypeField>([]), workflowMeta)
 				localRegistry.addDoctype(planDoctype)
 				localStonecrop.addRecord('plan', 'p-1', { id: 'p-1' })
 
@@ -549,7 +670,7 @@ describe('Stonecrop class with HST integration', { tags: ['unit'] }, () => {
 					states: ['planning', 'review', 'approved'],
 					actions: {},
 				}
-				const planDoctype = new Doctype('Plan', List<DoctypeField>([]), workflowMeta, Map({}))
+				const planDoctype = new Doctype('Plan', List<DoctypeField>([]), workflowMeta)
 				localRegistry.addDoctype(planDoctype)
 				localStonecrop.addRecord('plan', 'p-2', { id: 'p-2', status: 'review' })
 
@@ -567,7 +688,7 @@ describe('Stonecrop class with HST integration', { tags: ['unit'] }, () => {
 					states: [],
 					actions: {},
 				}
-				const doctype = new Doctype('Empty', List<DoctypeField>([]), emptyStatesMeta, Map({}))
+				const doctype = new Doctype('Empty', List<DoctypeField>([]), emptyStatesMeta)
 				localRegistry.addDoctype(doctype)
 				localStonecrop.addRecord('empty', 'e-1', { id: 'e-1' })
 
@@ -584,7 +705,7 @@ describe('Stonecrop class with HST integration', { tags: ['unit'] }, () => {
 				const noStatesMeta = {
 					actions: { save: { label: 'Save', handler: 'save' } },
 				}
-				const doctype = new Doctype('NoStates', List<DoctypeField>([]), noStatesMeta, Map({}))
+				const doctype = new Doctype('NoStates', List<DoctypeField>([]), noStatesMeta)
 				localRegistry.addDoctype(doctype)
 				localStonecrop.addRecord('no-states', 'ns-1', { id: 'ns-1' })
 

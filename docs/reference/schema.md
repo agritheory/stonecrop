@@ -188,7 +188,7 @@ Find the field a doctype marks as its primary key, or `undefined` when none is m
 
 This is the single definition of "which field identifies a record". Both sides depend on it: the middleware builds the SQL identity predicate from it, and the client resolves a record's route/store key from it. Call this; never re-derive the rule at the call site, or the two will drift and the client will key records by a column the server never queried.
 
-Two deliberate limits, both matching the shape `primaryKey` actually has: - Only **top-level** fields are scanned. `primaryKey` is a `ValueField` flag and a fieldset's children are not identity columns, so a nested match would be an authoring error, not a PK. - The **first** match wins. Nothing in the schema enforces exactly one `primaryKey: true`, and there is no composite-key representation — a doctype with several is already malformed, and picking the first is what the middleware has always done.
+Two deliberate limits, both matching the shape `primaryKey` actually has: - Only **top-level** fields are scanned. `primaryKey` is a `ValueField` flag and a fieldset's children are not identity columns, so a nested match would be an authoring error, not a PK. - The **first** match wins. Identity is single-valued by design — a doctype describes the API surface, and mapping a composite database key onto one identity there is the adapter's job — so a doctype declaring several is malformed rather than composite. `DoctypeMeta` rejects that at the load gate; this stays total for callers holding fields that never went through it.
 
 **Signature:**
 
@@ -220,6 +220,28 @@ export declare function getRecordIdentity(fields: readonly DoctypeField[], recor
 |-----------|------|-------------|
 | fields | `readonly DoctypeField[]` | the doctype's top-level fields |
 | record | `Record<string, unknown>` | the record to read the identity from |
+
+### getRecordIdField
+
+The name of the field a record is identified by: the declared `primaryKey`, or `id` when the doctype declares none.
+
+The `id` fallback is load-bearing, not defensive — a surrogate-key doctype carries an `id` column and marks no primary key, so "nothing declared" means `id`, not "no identity".
+
+This exists because that one-line rule had been restated at four sites — the client's `Doctype.recordIdField`, both nuxt hosts' `recordLookupField`, and the Postgres adapter — and the fourth had omitted the fallback, so a doctype the client keyed by `id` was one the adapter could not look up at all. Call this; a fifth restatement is how they diverge again.
+
+The returned name is not guaranteed to be a declared field: a doctype that declares no `primaryKey` and no `id` yields `'id'` regardless. An adapter that must build a SQL predicate from it has to confirm the field exists and say so when it does not, because selecting a column the doctype never declared returns nothing rather than failing.
+
+**Signature:**
+
+```typescript
+export declare function getRecordIdField(fields: readonly DoctypeField[]): string;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| fields | `readonly DoctypeField[]` | the doctype's top-level fields |
 
 ### isActionAllowedInState
 
@@ -543,7 +565,7 @@ Interface for data clients that fetch doctype metadata and records. Implemented 
 export interface DataClient {
   getMeta(context: DoctypeContext): Promise<M | null>;
   getRecord(doctype: T, recordId: string, options: GetRecordOptions): Promise<GetRecordResult>;
-  getRecords(doctype: T, options: GetRecordsOptions): Promise<Record<string, unknown>[]>;
+  getRecords(doctype: T, options: GetRecordsOptions): Promise<GetRecordsResult>;
   runAction(doctype: T, action: string, args: unknown[]): Promise<{
         success: boolean;
         data: unknown;
@@ -703,6 +725,7 @@ Options for fetching multiple records
 ```typescript
 export interface GetRecordsOptions {
   filters?: Record<string, unknown>;
+  includeTotal?: boolean;
   limit?: number;
   offset?: number;
   orderBy?: string;
@@ -714,9 +737,34 @@ export interface GetRecordsOptions {
 | Property | Type | Description |
 |----------|------|-------------|
 | filters? | `Record<string, unknown>` | Filter expression (field-value pairs) |
+| includeTotal? | `boolean` | Ask the backend for the total matching the filters as well as the page. Off by default because it costs a second query — a full scan on Postgres — and knowing *whether* more exist (`hasMore`) is what a list view actually needs. Turn it on for a "showing 20 of 4,312" style display. |
 | limit? | `number` | Maximum number of records to return |
 | offset? | `number` | Number of records to skip |
 | orderBy? | `string` | Order by expression (e.g. 'NAME_ASC') |
+
+### GetRecordsResult
+
+Result from getRecords — a page of records, and enough to tell that it is one.
+
+A bare array used to be returned here, which claimed to be the whole collection. It is not: a limit always applies, so a caller could not distinguish a complete list from a truncated one. That is the entire reason this type exists.
+
+**Definition:**
+
+```typescript
+export interface GetRecordsResult {
+  count?: number;
+  data: Record<string, unknown>[];
+  hasMore: boolean;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| count? | `number` | Total records matching the filters, ignoring limit/offset. Present only when the caller asked for it via `includeTotal` — counting is a full scan on most backends, so it is never computed speculatively. |
+| data | `Record<string, unknown>[]` | The records in this page |
+| hasMore | `boolean` | Whether the backend holds further records beyond this page |
 
 ### GraphQLConversionFieldMeta
 

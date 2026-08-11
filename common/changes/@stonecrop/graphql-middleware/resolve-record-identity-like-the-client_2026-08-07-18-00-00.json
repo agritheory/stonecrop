@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "comment": "Resolve a record's identity field through getRecordIdField, so this adapter and the client name the same field — a doctype declaring no primaryKey is now fetchable through the id fallback instead of answering data: null. When no identity can be resolved at all, stonecropRecord and link target lookups throw instead of reporting not-found.",
+      "type": "minor",
+      "packageName": "@stonecrop/graphql-middleware"
+    }
+  ],
+  "packageName": "@stonecrop/graphql-middleware"
+}

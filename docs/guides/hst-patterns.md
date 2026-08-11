@@ -33,7 +33,8 @@ Call `collectRecordPayload` in your doctype's **save action** defined in the wor
 ### Example: Save Action in Workflow
 
 ```typescript
-import { Doctype, getStonecrop, registerTransitionAction, type TransitionChangeContext } from '@stonecrop/stonecrop'
+import { Doctype, registerTransitionAction, type TransitionChangeContext } from '@stonecrop/stonecrop'
+import { stonecrop } from './stonecrop-instance' // captured from the plugin's onRouterInitialized
 import { List, Map } from 'immutable'
 import { apiClient } from './api-client'
 
@@ -63,10 +64,10 @@ const customerDoctype = new Doctype(
   }
 )
 
-// Register the action handler — runs outside Vue, so use getStonecrop().
+// Register the action handler. It runs outside Vue, so it cannot call `useStonecrop()`;
+// use the instance the plugin handed the app at install time.
 // Transition actions receive a single context object (not a positional args array).
 registerTransitionAction('saveRecord', async (context: TransitionChangeContext) => {
-  const stonecrop = getStonecrop()
   const { recordId } = context
   if (!recordId || !stonecrop) return
 

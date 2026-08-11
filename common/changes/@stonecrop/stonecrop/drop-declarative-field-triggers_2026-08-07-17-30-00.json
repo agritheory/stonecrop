@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "comment": "Remove the declarative field-trigger path: Doctype.actions and its constructor parameter, Doctype.getActionsObject, Stonecrop.runAction, DoctypeConfig.actions and ImmutableDoctype.actions. It could never cross the wire, so it was always empty under a GraphQL host; register triggers with FieldTriggerEngine.registerDoctypeActions instead.",
+      "type": "minor",
+      "packageName": "@stonecrop/stonecrop"
+    }
+  ],
+  "packageName": "@stonecrop/stonecrop"
+}

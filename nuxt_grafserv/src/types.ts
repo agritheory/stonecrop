@@ -194,3 +194,46 @@ export interface SchemaConfig {
  * @see SchemaConfig for custom schemas with resolvers
  */
 export type ModuleOptions = PostGraphileConfig | SchemaConfig
+
+/**
+ * PostGraphile-mode runtime config, as the module writes it into Nitro.
+ *
+ * Build-time-only keys (`preset`, `fieldCasing`, `schemas`, `explain`, `debug`) are deliberately
+ * absent: they are consumed while building the `#internal/grafserv/pgl` virtual module and have no
+ * meaning at request time.
+ */
+export interface PostGraphileRuntimeConfig {
+	type: 'postgraphile'
+	/** Always concrete — the module resolves `options.url ?? '/graphql/'` at build time. */
+	url: string
+	/** Always concrete — the module resolves `options.graphiql ?? nuxt.options.dev` at build time. */
+	graphiql: boolean
+}
+
+/**
+ * Schema-mode runtime config, as the module writes it into Nitro.
+ *
+ * Note `resolversPath` rather than `resolvers`: the module resolves the authored path against
+ * `rootDir` and stores the absolute result, so the handler never re-resolves it.
+ */
+export interface SchemaRuntimeConfig {
+	type: 'schema'
+	/** File path(s) already resolved to absolute, or the provider function passed through. */
+	schema: SchemaConfig['schema']
+	/** Absolute path to the resolvers module, or `undefined` when none was configured. */
+	resolversPath?: string
+	/** Always concrete — the module resolves `options.url ?? '/graphql/'` at build time. */
+	url: string
+	/** Always concrete — the module resolves `options.graphiql ?? nuxt.options.dev` at build time. */
+	graphiql: boolean
+}
+
+/**
+ * What `runtimeConfig.grafserv` actually holds at request time.
+ *
+ * This is **not** `ModuleOptions`. The module resolves authored options during `nitro:config` and
+ * writes this narrower, fully-resolved shape instead. Treating the two as interchangeable is what
+ * previously forced a `@ts-expect-error` in the runtime handler for `resolversPath`, and left the
+ * unit tests describing the runtime config with a type that has no `resolversPath` at all.
+ */
+export type GrafservRuntimeConfig = PostGraphileRuntimeConfig | SchemaRuntimeConfig

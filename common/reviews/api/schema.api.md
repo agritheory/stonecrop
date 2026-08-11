@@ -118,7 +118,7 @@ export type CustomFetch = z.infer<typeof CustomFetch>;
 export interface DataClient<T extends DoctypeRef = DoctypeRef, M = DoctypeMeta> {
     getMeta(context: DoctypeContext): Promise<M | null>;
     getRecord(doctype: T, recordId: string, options?: GetRecordOptions): Promise<GetRecordResult>;
-    getRecords(doctype: T, options?: GetRecordsOptions): Promise<Record<string, unknown>[]>;
+    getRecords(doctype: T, options?: GetRecordsOptions): Promise<GetRecordsResult>;
     runAction(doctype: T, action: string, args?: unknown[]): Promise<{
         success: boolean;
         data: unknown;
@@ -296,6 +296,9 @@ export function getPrimaryKeyField(fields: readonly DoctypeField[]): ValueField 
 export function getRecordIdentity(fields: readonly DoctypeField[], record: Record<string, unknown>): string | undefined;
 
 // @public
+export function getRecordIdField(fields: readonly DoctypeField[]): string;
+
+// @public
 export interface GetRecordOptions {
     includeNested?: boolean | string[];
     maxDepth?: number;
@@ -309,9 +312,17 @@ export interface GetRecordResult {
 // @public
 export interface GetRecordsOptions {
     filters?: Record<string, unknown>;
+    includeTotal?: boolean;
     limit?: number;
     offset?: number;
     orderBy?: string;
+}
+
+// @public
+export interface GetRecordsResult {
+    count?: number;
+    data: Record<string, unknown>[];
+    hasMore: boolean;
 }
 
 // @public

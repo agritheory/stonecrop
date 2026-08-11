@@ -13,6 +13,21 @@ import type { PgClient } from '@dataplan/pg';
 import { ValidationError } from '@stonecrop/schema';
 
 // @public
+export type ActionHandler = (context: ActionHandlerContext) => Promise<unknown>;
+
+// @public
+export interface ActionHandlerContext {
+    action: string;
+    args: unknown[];
+    currentState?: string;
+    data: Record<string, unknown>;
+    doctype: string;
+    meta: DoctypeMeta;
+    pgClient: PgClient;
+    recordId?: string | number;
+}
+
+// @public
 export function applyGuardedTransition(actionDef: {
     label?: string;
     allowedStates?: string[];
@@ -75,8 +90,9 @@ export function getMeta(name: string): DoctypeMeta | undefined;
 
 // @public
 export interface GuardedTransitionIO {
-    readState: () => Promise<string | undefined>;
-    writeData?: (patch: Record<string, unknown>) => Promise<Record<string, unknown>>;
+    readState: () => Promise<string | null | undefined>;
+    runEffect?: (currentState: string | undefined) => Promise<unknown>;
+    writeData?: (patch: Record<string, unknown>, exists: boolean) => Promise<Record<string, unknown>>;
     writeState: (nextState: string) => Promise<void>;
 }
 
@@ -102,7 +118,9 @@ export function registerFetchHandler(name: string, handler: FetchHandler): void;
 
 // @public
 export interface StonecropPluginOptions {
+    actionHandlers?: Record<string, Record<string, ActionHandler>>;
     debug?: boolean;
+    defaultRecordLimit?: number | null;
     tables?: Record<string, string>;
 }
 
@@ -111,9 +129,6 @@ export const StonecropPreset: GraphileConfig.Preset;
 
 // @public
 export const typeDefs: DocumentNode;
-
-// @public
-export function validateReferences(): ValidationError[];
 
 export { ValidationError }
 
