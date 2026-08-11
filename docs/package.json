@@ -13,6 +13,7 @@
 	"dependencies": {
 		"@stonecrop/aform": "workspace:*",
 		"@stonecrop/themes": "workspace:*",
+		"pinia": "^3.0.4",
 		"vue": "^3.5.33"
 	},
 	"devDependencies": {

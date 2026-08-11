@@ -25,7 +25,6 @@ const showCode = ref(false)
 	margin: 1.5rem 0;
 	border: 1px solid var(--vp-c-divider);
 	border-radius: 12px;
-	overflow: hidden;
 	background: var(--vp-c-bg-soft);
 }
 
@@ -74,6 +73,8 @@ const showCode = ref(false)
 
 .demo-panel__code {
 	border-top: 1px solid var(--vp-c-divider);
+	border-radius: 0 0 12px 12px;
+	overflow: hidden;
 }
 
 .demo-panel__code :deep(div[class*='language-']) {

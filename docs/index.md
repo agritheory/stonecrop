@@ -13,7 +13,7 @@ Stonecrop pairs AForm's schema-driven fields with ATable's advanced grid, backed
 
 <CardGrid>
 
-<CardGridItem href="/tutorials/" title="Tutorials" description="Learning-oriented guides to help you get started">
+<CardGridItem href="/tutorials/" title="Tutorials" description="Learning-oriented guides to help you get started" color="blue">
 
 <template #icon>
 
@@ -23,7 +23,7 @@ Stonecrop pairs AForm's schema-driven fields with ATable's advanced grid, backed
 
 </CardGridItem>
 
-<CardGridItem href="/guides/" title="Guides" description="Task-oriented how-to guides for specific problems">
+<CardGridItem href="/guides/" title="Guides" description="Task-oriented how-to guides for specific problems" color="purple">
 
 <template #icon>
 
@@ -33,7 +33,7 @@ Stonecrop pairs AForm's schema-driven fields with ATable's advanced grid, backed
 
 </CardGridItem>
 
-<CardGridItem href="/components/" title="Components" description="Live, interactive documentation for individual components">
+<CardGridItem href="/components/" title="Components" description="Live, interactive documentation for individual components" color="teal">
 
 <template #icon>
 
@@ -43,7 +43,7 @@ Stonecrop pairs AForm's schema-driven fields with ATable's advanced grid, backed
 
 </CardGridItem>
 
-<CardGridItem href="/reference/" title="Reference" description="Technical API documentation for all packages">
+<CardGridItem href="/reference/" title="Reference" description="Technical API documentation for all packages" color="amber">
 
 <template #icon>
 
@@ -53,7 +53,7 @@ Stonecrop pairs AForm's schema-driven fields with ATable's advanced grid, backed
 
 </CardGridItem>
 
-<CardGridItem href="/explanation/" title="Explanation" description="Understanding-oriented discussions of architecture and design">
+<CardGridItem href="/explanation/" title="Explanation" description="Understanding-oriented discussions of architecture and design" color="rose">
 
 <template #icon>
 
@@ -63,7 +63,7 @@ Stonecrop pairs AForm's schema-driven fields with ATable's advanced grid, backed
 
 </CardGridItem>
 
-<CardGridItem href="/stories/" title="Examples" description="Live component stories and sandboxes">
+<CardGridItem href="/stories/" title="Examples" description="Live component stories and sandboxes" color="indigo">
 
 <template #icon>
 

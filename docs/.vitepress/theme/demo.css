@@ -7,6 +7,14 @@
  * card chrome (border, background, padding) lives in DemoPanel so a demo can be dropped into
  * any layout without doubling up on boxes.
  */
+
+/* Several field components (ADropdown, ADate, ADateRange, AFormLink's non-embedded label)
+   position their floating label with a hardcoded negative margin tuned against Arimo's line
+   metrics rather than an anchor like `top: 0`. Substituting a fallback font here shifts the
+   input's rendered height enough to throw that off — hence the label/value overlap. Loading
+   the real font (same source themes/default.css uses) keeps that math correct. */
+@import url('https://fonts.googleapis.com/css2?family=Arimo:ital,wght@0,400..700;1,400..700&display=swap');
+
 .stonecrop-demo {
 	--sc-primary-color: #0098c9;
 	--sc-primary-text-color: #ffffff;
@@ -20,20 +28,49 @@
 	--sc-brand-danger: #e63c28;
 	--sc-brand-success: #155724;
 	--sc-brand-warning: #b99d3e;
+	--sc-active-cell-background: #ffffff;
+	--sc-active-cell-outline: #e6a92d;
+	--sc-cell-border-color: #ffffff;
+	--sc-cell-text-color: #3a3c41;
+	--sc-focus-cell-background: #ffffff;
+	--sc-focus-cell-outline: #000000;
+	--sc-header-border-color: #ffffff;
+	--sc-header-text-color: var(--sc-gray-20);
+	--sc-row-border-color: var(--sc-gray-20);
+	--sc-row-color-zebra-dark: #dddddd;
+	--sc-row-color-zebra-light: #eeeeee;
+	--sc-row-number-background-color: #ffffff;
 	--sc-input-active-border-color: #000000;
 	--sc-input-active-label-color: #000000;
 	--sc-input-border-color: var(--sc-gray-20);
 	--sc-input-label-color: var(--sc-gray-60);
 	--sc-required-border: #e63c28;
+	--sc-cell-changed-color: #d8edff;
 	--sc-form-border: var(--sc-gray-5);
 	--sc-form-background: #ffffff;
 	--sc-input-field-background: #ffffff;
 	--sc-input-field-disabled-background: var(--sc-gray-5);
-	--sc-font-family: Arial, sans-serif;
+	--sc-font-family: 'Arimo', Arial, sans-serif;
+	--sc-table-font-size: 16px;
+	--sc-atable-font-family: Arial, sans-serif;
+	--sc-atable-row-padding: 0.125rem;
+	--sc-atable-row-height: 1.5em;
+	--sc-atable-cell-border-width: 2px;
+	--sc-table-loading-color: 204, 204, 204;
+	--sc-btn-border: #cccccc;
+	--sc-btn-color: white;
+	--sc-btn-hover: #f2f2f2;
+	--sc-btn-label-color: black;
 
+	/*
+	 * Full width, not shrink-to-fit/centered — matches how the rest of the docs site presents
+	 * demos. The background matters functionally, not just visually: several components
+	 * (ADropdown, ADate, ADateRange) hardcode a white floating-label background rather than
+	 * referencing a token, so they assume their host page is white.
+	 */
 	display: block;
 	width: 100%;
-	max-width: 24rem;
+	background: var(--sc-form-background);
 	color: var(--sc-cell-text-color, #3a3c41);
 	font-family: var(--sc-font-family);
 }

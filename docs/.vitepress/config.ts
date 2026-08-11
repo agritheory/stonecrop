@@ -64,10 +64,51 @@ export default withMermaid(
 				'/components/': [
 					{
 						text: 'Components',
+						items: [{ text: 'Overview', link: '/components/' }],
+					},
+					{
+						text: 'Orchestration',
 						items: [
-							{ text: 'Overview', link: '/components/' },
+							{ text: 'Form', link: '/components/form' },
+							{ text: 'Form Loading', link: '/components/form-loading' },
+							{ text: 'Fieldset', link: '/components/fieldset' },
+						],
+					},
+					{
+						text: 'Inputs',
+						items: [
 							{ text: 'Checkbox', link: '/components/checkbox' },
+							{ text: 'Text Input', link: '/components/text-input' },
+							{ text: 'Textbox Input', link: '/components/textbox-input' },
+							{ text: 'Numeric Input', link: '/components/numeric-input' },
+							{ text: 'Dropdown', link: '/components/dropdown' },
+							{ text: 'File Attach', link: '/components/file-attach' },
+						],
+					},
+					{
+						text: 'Dates & Time',
+						items: [
+							{ text: 'Date', link: '/components/date' },
+							{ text: 'Date Range', link: '/components/date-range' },
+							{ text: 'Date Time', link: '/components/date-time' },
+							{ text: 'Date Selection', link: '/components/date-selection' },
+							{ text: 'Date Picker', link: '/components/date-picker' },
+							{ text: 'Duration', link: '/components/duration' },
+						],
+					},
+					{
+						text: 'Linked Records & Money',
+						items: [
+							{ text: 'Form Link', link: '/components/form-link' },
 							{ text: 'Currency', link: '/components/currency' },
+							{ text: 'Quantity Input', link: '/components/quantity-input' },
+						],
+					},
+					{
+						text: 'Utilities',
+						items: [
+							{ text: 'Login', link: '/components/login' },
+							{ text: 'Collapse Button', link: '/components/collapse-button' },
 						],
 					},
 				],
