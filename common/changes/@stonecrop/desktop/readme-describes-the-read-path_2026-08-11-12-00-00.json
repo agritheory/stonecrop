@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "comment": "Correct the README's data-flow contract: Desktop reads through Stonecrop and the host-registered DataClient, so load-record and load-records are notifications rather than fetch requests, and drop two documented APIs that never existed.",
+      "type": "patch",
+      "packageName": "@stonecrop/desktop"
+    }
+  ],
+  "packageName": "@stonecrop/desktop"
+}

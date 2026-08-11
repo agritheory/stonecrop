@@ -1,6 +1,8 @@
 # @stonecrop/desktop
 
-A three-view UI shell for Stonecrop applications. Renders a doctype list → records list → record form layout driven entirely by the host application's Registry and HST state. Desktop owns no data lifecycle — it emits events and the host app decides what to do.
+A three-view UI shell for Stonecrop applications. Renders a doctype list → records list → record form layout driven by the host application's Registry and HST state.
+
+Desktop reads through Stonecrop — on navigating to a list or a record it calls `Stonecrop.getRecords` / `Stonecrop.getRecord`, which fetch through the host's registered `DataClient` and write into HST. Writes are the host's: Desktop emits `action` and the host dispatches it.
 
 ## Features
 
@@ -20,11 +22,24 @@ Desktop requires `@stonecrop/stonecrop` to be installed and the `StonecropPlugin
 
 ```typescript
 import { createApp } from 'vue'
-import Stonecrop from '@stonecrop/stonecrop'
-import { registry } from './registry'
+import Stonecrop, { Doctype } from '@stonecrop/stonecrop'
+import { RestDataClient } from './client'
+import planDoctype from './doctypes/plan.json'
 
-createApp(App).use(Stonecrop, { registry }).mount('#app')
+const app = createApp(App)
+
+// The plugin constructs the Registry itself and provides it as `$registry` — it does not
+// accept one. Register doctypes on that instance, after install.
+app.use(Stonecrop, { router, client: new RestDataClient() })
+
+const registry = app.config.globalProperties.$registry
+registry.addDoctype(Doctype.fromObject(planDoctype))
+
+app.mount('#app')
 ```
+
+`client` is the `DataClient` Desktop reads through. It can also be supplied later with
+`stonecrop.setClient(client)` — Nuxt hosts do this from a plugin via `useStonecropSetup().registerClient`.
 
 ## Basic Usage
 
@@ -37,8 +52,11 @@ import { useStonecrop } from '@stonecrop/stonecrop'
 const { stonecrop } = useStonecrop()
 
 async function handleAction(payload: ActionEventPayload) {
-  const node = stonecrop.value?.getRecordById(payload.doctype, payload.recordId)
-  await node?.triggerTransition(payload.name, { fsmContext: payload.data })
+  const doctype = stonecrop.value?.registry.getDoctype(payload.doctype)
+  if (!doctype) return
+  await stonecrop.value?.dispatchAction(doctype, payload.name, [
+    { id: payload.recordId, data: payload.data },
+  ])
 }
 </script>
 
@@ -68,15 +86,15 @@ under. One shell renders many doctypes, so a single prop could never answer this
 | `action` | User triggers a declared action — an FSM transition or a Command |
 | `navigate` | Desktop wants to change views |
 | `record:open` | User opens a specific record |
-| `load-records` | Desktop navigates to a records list and needs records loaded into HST |
-| `load-record` | Desktop navigates to a record form and needs a single record loaded into HST |
+| `load-records` | Desktop is about to read a records list (notification — Desktop performs the read) |
+| `load-record` | Desktop is about to read a single record (notification — Desktop performs the read) |
 
 See [api.md](./api.md) for payload type definitions.
 
 ### Event Handling Notes
 
-- **action**: Desktop reads available transitions from `Doctype.getAvailableTransitions` using `Stonecrop.getRecordState`. **Desktop never calls `triggerTransition` itself** — that is the host application's responsibility.
-- **load-records / load-record**: Desktop reads from HST but doesn't fetch data. Host apps should listen for these events, fetch from their data source, and call `stonecrop.addRecords()` or `stonecrop.addRecord()` to populate HST.
+- **action**: Desktop merges `Doctype.getAvailableTransitions` and `Doctype.getAvailableCommands`, both resolved against `Stonecrop.getRecordState`, into one Actions dropdown. **Desktop never dispatches** — that is the host application's responsibility.
+- **load-records / load-record**: notifications, not fetch requests. Desktop reads through `Stonecrop.getRecords` / `Stonecrop.getRecord` itself, using the registered `DataClient`; these events announce that read so a host can hang analytics off it. A host that fetches here races Desktop's own read into the same HST key. `load-record` is not emitted for a draft, which has nothing to fetch.
 
 ## Router Adapter
 
@@ -113,37 +131,25 @@ function useCustomRouteAdapter(): RouteAdapter {
 
 ## Handling `action` Events
 
-The complete host-side pattern for handling an action in a Nuxt context:
+Dispatching is not the whole job: the result has to land in HST under the identity the *server*
+settled on, which for a newly created record is not the id that was dispatched.
 
-```typescript
-import type { ActionEventPayload } from '@stonecrop/desktop'
-import { useStonecrop } from '@stonecrop/stonecrop'
+In a **Nuxt** host, delegate to `useClientAction` from `@stonecrop/nuxt` — it runs an action's
+`clientHandler` when it has one, dispatches otherwise, and owns the writeback and route-follow:
 
-const { stonecrop } = useStonecrop()
-
-async function handleAction(payload: ActionEventPayload) {
-  if (!stonecrop.value) return
-
-  // 1. Optionally persist field changes to HST before the transition
-  const store = stonecrop.value.getStore()
-  for (const [field, value] of Object.entries(payload.data)) {
-    const path = `${payload.doctype}.${payload.recordId}.${field}`
-    if (store.has(path) && store.get(path) !== value) {
-      store.set(path, value)
-    }
-  }
-
-  // 2. Call the server (StonecropClient, $fetch, tRPC — whatever your stack uses)
-  const result = await client.runAction({ name: payload.doctype }, payload.name, [
-    { id: payload.recordId, data: payload.data },
-  ])
-
-  // 3. Sync the server response back into HST
-  if (result.success && result.data) {
-    stonecrop.value.addRecord(payload.doctype, payload.recordId, result.data)
-  }
-}
+```vue
+<Desktop :route-adapter="routeAdapter" @action="run" />
 ```
+
+In **any other Vue 3 host**, dispatch through `Stonecrop.dispatchAction` as in Basic Usage above, and
+write the result back yourself. `args` is an opaque JSON array whose shape is a convention between
+your client and your server handlers — `useClientAction` uses `[{ id, data }]`, `examples/desktop`
+uses `[recordId, data]`. Keep both ends of your own stack on one of them.
+
+Do not copy form data into HST before dispatching. Desktop already hands you the current form
+snapshot in `payload.data`, and an unsaved record has no HST node to write to.
+
+See the [host integration guide](../docs/guides/desktop-integration.md) for the full wiring.
 
 ## Provide / Inject
 

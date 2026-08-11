@@ -82,13 +82,14 @@ const emit = defineEmits<{
 	 */
 	'record:open': [payload: RecordOpenEventPayload]
 	/**
-	 * Fired when Desktop needs records for a list view.
-	 * The host app should fetch and populate HST.
+	 * Fired when Desktop is about to read records for a list view. A notification, not a request:
+	 * Desktop performs the read itself through `Stonecrop.getRecords`. A host that fetches here
+	 * races that read into the same HST key.
 	 */
 	'load-records': [payload: LoadRecordsEventPayload]
 	/**
-	 * Fired when Desktop needs a single record for a form view.
-	 * The host app should fetch and populate HST.
+	 * Fired when Desktop is about to read a single record for a form view. A notification, not a
+	 * request — see `load-records`. Not emitted for a draft, which has nothing to fetch.
 	 */
 	'load-record': [payload: LoadRecordEventPayload]
 }>()

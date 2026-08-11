@@ -125,7 +125,7 @@ export default defineNuxtPlugin(() => {
 })
 ```
 
-This wires `useStonecrop()`'s automatic record loading to your GraphQL (or any other) backend. Without this step, `useStonecrop({ doctype, recordId })` falls back to a REST fetch stub that may not exist in your app.
+This wires record loading to your GraphQL (or any other) backend. It is the seam Desktop reads through as well. There is no fallback: without a registered client, `getRecord` and `getRecords` throw naming `setClient`, and Desktop skips the read and renders empty.
 
 ### Use the Stonecrop Composable
 
