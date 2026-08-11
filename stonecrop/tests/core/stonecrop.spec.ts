@@ -488,6 +488,79 @@ describe('Stonecrop class with HST integration', { tags: ['unit'] }, () => {
 			expect(result).toEqual(mockResult)
 		})
 
+		// The write half. It is here rather than in the composable because a host that never adopts
+		// `useClientAction` still dispatches through this method, and filing a created record under
+		// the id that was *sent* is the mistake every hand-rolled handler made — the record lands
+		// under a key nothing can fetch and the next save creates a second one.
+		describe('dispatchAction record writeback', () => {
+			const idFields: DoctypeField[] = [
+				{ kind: 'field', fieldname: 'id', component: 'ATextInput' },
+				{ kind: 'field', fieldname: 'title', component: 'ATextInput' },
+			]
+			const naturalFields: DoctypeField[] = [
+				{ kind: 'field', fieldname: 'username', component: 'ATextInput', primaryKey: true },
+				{ kind: 'field', fieldname: 'id', component: 'ATextInput' },
+			]
+
+			const withResult = (data: unknown, fields: DoctypeField[]) => {
+				const doctype = Doctype.fromObject({ name: 'User', fields })
+				const client = {
+					getMeta: vi.fn(),
+					getRecord: vi.fn(),
+					getRecords: vi.fn(),
+					runAction: vi.fn().mockResolvedValue({ success: true, data, error: null }),
+				}
+				return { doctype, sc: new Stonecrop(registry, undefined, { client } as StonecropOptions) }
+			}
+
+			it('files the returned record under the identity the server settled on, not the one dispatched', async () => {
+				// The create case: a draft sends no id at all, and the server answers with `7`.
+				const { doctype, sc } = withResult({ id: '7', title: 'drafted' }, idFields)
+
+				await sc.dispatchAction(doctype, 'save', [{ data: { title: 'drafted' } }])
+
+				expect(sc.getRecordById('user', '7')).toBeDefined()
+				expect(sc.getRecordIds('user')).toEqual(['7'])
+			})
+
+			it('prefers the declared natural key over a surrogate id the record also carries', async () => {
+				const { doctype, sc } = withResult({ username: 'robert', id: '7' }, naturalFields)
+
+				await sc.dispatchAction(doctype, 'rename', [{ id: 'bob', data: { username: 'robert' } }])
+
+				// `robert`, not `7` — the adapter looks records up by the declared key.
+				expect(sc.getRecordIds('user')).toEqual(['robert'])
+			})
+
+			it('declines a partial record that omits its declared key, rather than guessing', async () => {
+				// A registered effect returning `{ id, total }` for a natural-keyed doctype. Trusting
+				// `getRecordId`'s `id` fallback here would relocate the record to a key the adapter
+				// cannot resolve, which reads as a rename that never happened.
+				const { doctype, sc } = withResult({ id: '7', total: 75 }, naturalFields)
+
+				await sc.dispatchAction(doctype, 'recalculate', [{ id: 'bob', data: {} }])
+
+				expect(sc.getRecordIds('user')).toEqual([])
+			})
+
+			it('writes nothing for a state-only outcome or a refused action', async () => {
+				const { doctype, sc } = withResult({ state: 'APPROVED' }, idFields)
+				await sc.dispatchAction(doctype, 'approve', [{ id: 'r1', data: {} }])
+				expect(sc.getRecordIds('user')).toEqual([])
+
+				const refused = Doctype.fromObject({ name: 'User', fields: idFields })
+				const client = {
+					getMeta: vi.fn(),
+					getRecord: vi.fn(),
+					getRecords: vi.fn(),
+					runAction: vi.fn().mockResolvedValue({ success: false, data: { id: '7' }, error: 'refused' }),
+				}
+				const sc2 = new Stonecrop(registry, undefined, { client } as StonecropOptions)
+				await sc2.dispatchAction(refused, 'save', [{ data: {} }])
+				expect(sc2.getRecordIds('user')).toEqual([])
+			})
+		})
+
 		it('dispatchAction throws error when no client configured', async () => {
 			const localStonecrop = new Stonecrop(registry)
 

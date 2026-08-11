@@ -46,24 +46,18 @@ app.mount('#app')
 ```vue
 <script setup lang="ts">
 import { Desktop } from '@stonecrop/desktop'
-import type { ActionEventPayload } from '@stonecrop/desktop'
-import { useStonecrop } from '@stonecrop/stonecrop'
+import { useClientAction } from '@stonecrop/stonecrop'
 
-const { stonecrop } = useStonecrop()
-
-async function handleAction(payload: ActionEventPayload) {
-  const doctype = stonecrop.value?.registry.getDoctype(payload.doctype)
-  if (!doctype) return
-  await stonecrop.value?.dispatchAction(doctype, payload.name, [
-    { id: payload.recordId, data: payload.data },
-  ])
-}
+// Runs an action's clientHandler when the doctype declares one, dispatches to the server
+// otherwise, and reconciles the store and the route with the identity the server settled on.
+// In a Nuxt host this is auto-imported — drop the import line.
+const { run } = useClientAction()
 </script>
 
 <template>
   <Desktop
     :available-doctypes="['plan', 'recipe', 'resource']"
-    @action="handleAction"
+    @action="run"
   />
 </template>
 ```
@@ -134,17 +128,28 @@ function useCustomRouteAdapter(): RouteAdapter {
 Dispatching is not the whole job: the result has to land in HST under the identity the *server*
 settled on, which for a newly created record is not the id that was dispatched.
 
-In a **Nuxt** host, delegate to `useClientAction` from `@stonecrop/nuxt` — it runs an action's
-`clientHandler` when it has one, dispatches otherwise, and owns the writeback and route-follow:
+Bind `@action` to `useClientAction`'s `run`, as in Basic Usage above. It runs an action's
+`clientHandler` when it has one, dispatches otherwise, and reconciles the store and the route. It
+lives in `@stonecrop/stonecrop`, so every Vue 3 host gets the same one; Nuxt hosts also get it as an
+auto-import from `@stonecrop/nuxt`.
 
-```vue
-<Desktop :route-adapter="routeAdapter" @action="run" />
-```
+Three things are adjustable, for the cases that genuinely differ between applications:
 
-In **any other Vue 3 host**, dispatch through `Stonecrop.dispatchAction` as in Basic Usage above, and
-write the result back yourself. `args` is an opaque JSON array whose shape is a convention between
-your client and your server handlers — `useClientAction` uses `[{ id, data }]`, `examples/desktop`
-uses `[recordId, data]`. Keep both ends of your own stack on one of them.
+| Option | Replaces | Use it for |
+|--------|----------|------------|
+| `buildArgs` | the `[{ id, data }]` envelope | a backend expecting another argument shape |
+| `followRecord` | `router.replace('/{doctype}/{id}')` | a locale prefix, a nested route, or staying put |
+| `onError` | a blocking `window.alert` | your own notification system |
+
+`args` is an opaque JSON array: nothing validates it, so both ends of your own stack have to agree.
+`examples/desktop` uses positional `[recordId, data]` and supplies `buildArgs` to say so.
+
+Resolving a record's identity and keying it into HST are deliberately **not** adjustable. That rule
+is declared on the doctype and re-derived server-side by the adapter, and every host that re-derived
+it client-side got it wrong. If you dispatch through `Stonecrop.dispatchAction` directly instead of
+using this composable, that method still files the returned record under the settled identity — you
+cannot store it under the wrong key by accident. What you lose is the stale-key cleanup and the
+route-follow, which need the id you dispatched.
 
 Do not copy form data into HST before dispatching. Desktop already hands you the current form
 snapshot in `payload.data`, and an unsaved record has no HST node to write to.

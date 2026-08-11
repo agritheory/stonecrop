@@ -1,6 +1,7 @@
 export type * from '@stonecrop/aform/types'
 export type * from '@stonecrop/atable/types'
 
+import { useClientAction } from './client-action'
 import { executeClientHandler } from './client-handler'
 import { useLazyLink } from './composables/lazy-link'
 import { useStonecrop } from './composables/stonecrop'
@@ -48,6 +49,8 @@ export {
 	useStonecrop,
 	// clientHandler executor
 	executeClientHandler,
+	// The one blessed write path, shared by every Vue host
+	useClientAction,
 	// HST exports for advanced usage
 	HST,
 	createHST,

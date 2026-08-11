@@ -124,11 +124,12 @@ The `action` event fires when the user triggers a declared action — an FSM tra
 
 Dispatching is the host's job, and it is not the whole job: the result has to be written back into HST under whichever identity the *server* settled on, which for a newly created record is not the id that was dispatched.
 
-**In a Nuxt host**, delegate to `useClientAction` — it runs the action's `clientHandler` when it has one, dispatches to the server otherwise, and owns the writeback and the route-follow:
+Delegate to `useClientAction` — it runs the action's `clientHandler` when it has one, dispatches to the server otherwise, and reconciles both the store and the route with the identity the server settled on:
 
 ```vue
 <script setup lang="ts">
 import { Desktop } from '@stonecrop/desktop'
+import { useClientAction } from '@stonecrop/stonecrop'
 
 const { run } = useClientAction()
 const routeAdapter = useDesktopRouteAdapter()
@@ -143,21 +144,37 @@ const routeAdapter = useDesktopRouteAdapter()
 </template>
 ```
 
-Pass `onError` to route failures into your own notification system instead of the default alert:
+It lives in `@stonecrop/stonecrop`, so this is the same path in every Vue 3 host. In a **Nuxt** host it is auto-imported from `@stonecrop/nuxt`, so you can drop the import line — everything else is identical.
+
+### Adjusting it
+
+Three things legitimately differ between applications, and each fully replaces its default:
 
 ```typescript
 const { run } = useClientAction({
+  // Your backend expects another argument shape. `isDraft` tells you there is no id yet.
+  buildArgs: ({ recordId, isDraft, data }) => (isDraft ? [data] : [recordId, data]),
+  // A created record settled on a different identity — send the user somewhere else, or nowhere.
+  followRecord: ({ doctype, recordId }) => navigateTo(`/${locale}/${doctype}/${recordId}`),
+  // Replaces the default blocking alert, console log included.
   onError: failure => toast.error(failure.message),
 })
 ```
 
-**In any other Vue 3 host**, dispatch through `Stonecrop.dispatchAction`, which forwards to your client's `runAction`:
+`args` is an opaque JSON array. Its shape is a convention agreed between your client and your server handlers, not something the schema validates — the default is `[{ id, data }]`, omitting `id` for a draft, while `examples/desktop` uses positional `[recordId, data]` end to end and supplies `buildArgs` to say so. Pick one and keep both ends of your own stack on it.
+
+### What you cannot adjust, and why
+
+Resolving a record's identity and keying it into HST are not options. That rule is declared on the doctype and re-derived server-side by the adapter, so a host that overrode it would be disagreeing with the very lookup its own backend performs — which is how a hardcoded `record.id` once dropped every row of a natural-keyed doctype.
+
+For the same reason the write is not the composable's to begin with: `Stonecrop.dispatchAction` files the returned record under the settled identity itself. So dispatching directly still cannot store a record under the wrong key:
 
 ```typescript
+// Filed under whatever identity the result declares — not under the id you sent.
 const result = await stonecrop.value.dispatchAction(doctype, payload.name, args)
 ```
 
-`args` is an opaque JSON array. Its shape is a convention agreed between your client and your server handlers, not something the schema validates — `useClientAction` uses `[{ id, data }]` and omits `id` for a draft, while `examples/desktop` uses `[recordId, data]` end to end. Pick one and keep both ends of your own stack on it. `examples/desktop/components/View.vue` is the worked non-Nuxt example.
+What that does *not* do is drop the stale key or move the route, because both need the id you dispatched and it is inside `args`, which that layer must not parse. If you handle `@action` yourself, those two steps are yours. `examples/desktop/components/View.vue` is the worked non-Nuxt example.
 
 ### Removal is a workflow outcome, not a blessed action
 

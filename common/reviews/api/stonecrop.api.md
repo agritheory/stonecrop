@@ -26,11 +26,45 @@ import type { UnknownMachineConfig } from 'xstate';
 import type { WorkflowMeta } from '@stonecrop/schema';
 
 // @public
+export interface ActionArgsContext {
+    action: string;
+    data: Record<string, unknown>;
+    doctype: string;
+    extra?: Record<string, unknown>;
+    isDraft: boolean;
+    recordId: string;
+}
+
+// @public
+export type ActionDispatchResult = {
+    success: boolean;
+    data: unknown;
+    error: string | null;
+};
+
+// @public
+export type ActionEventPayload = {
+    name: string;
+    doctype: string;
+    recordId: string;
+    data: Record<string, any>;
+};
+
+// @public
 export interface ActionExecutionResult {
     action: FieldAction;
     error?: Error;
     executionTime: number;
     success: boolean;
+}
+
+// @public
+export interface ActionFailure {
+    action: string;
+    cause?: unknown;
+    doctype: string;
+    message: string;
+    recordId: string;
 }
 
 // @public
@@ -193,6 +227,13 @@ export interface FieldTriggerOptions {
     defaultTimeout?: number;
     enableRollback?: boolean;
     errorHandler?: (error: Error, context: FieldChangeContext, action: FieldAction) => void;
+}
+
+// @public
+export interface FollowRecordContext {
+    doctype: string;
+    previousRecordId: string;
+    recordId: string;
 }
 
 // @public
@@ -525,7 +566,7 @@ export class Stonecrop {
     getSnapshot: () => OperationLogSnapshot;
     markIrreversible: (operationId: string, reason: string) => void;
     logAction: (doctype: string, actionName: string, recordIds?: string[], result?: "success" | "failure" | "pending", error?: string) => string;
-    }, "operations" | "currentIndex" | "config" | "clientId">, Pick<{
+    }, "config" | "operations" | "clientId" | "currentIndex">, Pick<{
     operations: Ref<    {
     id: string;
     type: HSTOperationType;
@@ -765,6 +806,18 @@ export interface UndoRedoState {
 }
 
 // @public
+export function useClientAction(options?: UseClientActionOptions): {
+    run: (payload: ActionEventPayload) => Promise<void>;
+};
+
+// @public
+export interface UseClientActionOptions {
+    buildArgs?: (context: ActionArgsContext) => unknown[];
+    followRecord?: (context: FollowRecordContext) => void | Promise<void>;
+    onError?: (failure: ActionFailure) => void;
+}
+
+// @public
 export function useLazyLink(doctype: Doctype, recordId: string, linkFieldname: string): LazyLink;
 
 // @public
@@ -922,7 +975,7 @@ getOperationsFor: (doctype: string, recordId?: string) => HSTOperation[];
 getSnapshot: () => OperationLogSnapshot;
 markIrreversible: (operationId: string, reason: string) => void;
 logAction: (doctype: string, actionName: string, recordIds?: string[], result?: "success" | "failure" | "pending", error?: string) => string;
-}, "operations" | "currentIndex" | "config" | "clientId">, Pick<{
+}, "config" | "operations" | "clientId" | "currentIndex">, Pick<{
 operations: Ref<    {
 id: string;
 type: HSTOperationType;

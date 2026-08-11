@@ -405,8 +405,23 @@ export class Stonecrop {
 	}
 
 	/**
-	 * Dispatch an action to the server via the configured data client.
-	 * All state changes flow through this single mutation endpoint.
+	 * Dispatch an action to the server via the configured data client, and file the record it
+	 * returns into HST under the identity the *server* settled on.
+	 *
+	 * The write is the point. For a created record the settled identity is never the one that was
+	 * dispatched, so a caller that stores the result under the id it sent files the record under a
+	 * key nothing can fetch and leaves the next save creating a second one. Every host that
+	 * hand-rolled this got it wrong the same way, so it stops being the caller's job — this is the
+	 * write-side twin of {@link Stonecrop.getRecords}, which keys reads by the same rule.
+	 *
+	 * Two things are deliberately NOT done here, because both need the id that was dispatched and
+	 * that lives inside `args` — an opaque array whose shape is a convention between a host's
+	 * client and its server handlers, not something this layer may parse. Dropping the stale key
+	 * and moving the route therefore stay with `useClientAction`, which knows both ids.
+	 *
+	 * A result that states no identity of its own — a `{ state: 'APPROVED' }` outcome — is left
+	 * alone rather than guessed at, for the same reason `settledRecordId` is strict: a partial
+	 * record must not be able to look like a rename.
 	 *
 	 * @param doctype - The doctype
 	 * @param action - Action name to execute (e.g., 'SUBMIT', 'APPROVE', 'save')
@@ -426,7 +441,23 @@ export class Stonecrop {
 			)
 		}
 
-		return this._client.runAction(doctype, action, args)
+		const result = await this._client.runAction(doctype, action, args)
+
+		if (result.success && result.data && typeof result.data === 'object' && !Array.isArray(result.data)) {
+			// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- the guard above confirms a non-null, non-array object; the action result payload is an opaque JSON scalar
+			const record = result.data as Record<string, unknown>
+			// Require the declared key to be *present* before trusting `getRecordId`, which falls
+			// back to `id`. Without that, a handler returning `{ id, total }` for a natural-keyed
+			// doctype would relocate the record to a key the adapter cannot look up.
+			if (record[doctype.recordIdField] !== undefined) {
+				const settledId = doctype.getRecordId(record)
+				if (settledId !== undefined) {
+					this.addRecord(doctype, settledId, record)
+				}
+			}
+		}
+
+		return result
 	}
 
 	/**

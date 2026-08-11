@@ -343,15 +343,22 @@ export class MockGraphQLExecutor implements GraphQLExecutor {
 		// Handle User mutations
 		if (mutationName === 'createUser') {
 			const input = variables?.input as Partial<User>
-			const id = String(users.size + 1)
+			// Identity is assigned AFTER the spread, and an empty submitted value does not count as
+			// one. A draft submits every declared field — `id` included, seeded to '' by
+			// `initializeRecord` — so spreading input last overwrote the id this mock had just
+			// assigned, and the created record came back with `id: ''`. Nothing errored: the client
+			// correctly refuses to file or navigate to a record that states no identity, so a Save
+			// looked like it did nothing at all. Same rule as templates/resolvers.ts, deliberately.
+			const submitted = typeof input.id === 'string' && input.id !== '' ? input.id : undefined
+			const id = submitted ?? String(users.size + 1)
 			const user: User = {
-				id,
 				email: input.email || '',
 				name: input.name || '',
 				role: input.role || 'USER',
 				status: 'PENDING',
 				createdAt: new Date().toISOString(),
 				...input,
+				id,
 			}
 			users.set(id, user)
 			return { createUser: { user } } as T
@@ -378,10 +385,12 @@ export class MockGraphQLExecutor implements GraphQLExecutor {
 		// Handle Order mutations
 		if (mutationName === 'createOrder') {
 			const input = variables?.input as Partial<Order>
-			const id = String(orders.size + 1)
+			// Identity after the spread — see createUser above for why an empty submitted id must
+			// not win. `orderNumber` is derived, not declared identity, so it stays overridable.
+			const submitted = typeof input.id === 'string' && input.id !== '' ? input.id : undefined
+			const id = submitted ?? String(orders.size + 1)
 			const orderNumber = `ORD-2025-${String(orders.size + 1).padStart(4, '0')}`
 			const order: Order = {
-				id,
 				orderNumber,
 				userId: input.userId || '',
 				status: 'DRAFT',
@@ -389,6 +398,7 @@ export class MockGraphQLExecutor implements GraphQLExecutor {
 				items: [],
 				createdAt: new Date().toISOString(),
 				...input,
+				id,
 			}
 			orders.set(id, order)
 			return { createOrder: { order } } as T

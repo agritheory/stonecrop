@@ -105,11 +105,12 @@ async function handleDesktopAction(payload: ActionEventPayload) {
 		return
 	}
 
-	// 4. Sync response back into HST
+	// 4. Report the outcome. The store is NOT written here: `dispatchAction` already filed the
+	// returned record under the identity the server settled on. Writing it again under
+	// `payload.recordId` would file a created record under the draft segment too, leaving a
+	// phantom row named `new` in the list view — which is what this handler used to do.
 	switch (payload.name) {
 		case 'SAVE': {
-			const saved = result.data as Record<string, unknown> | null
-			if (saved) stonecrop.value.addRecord(payload.doctype, payload.recordId, saved)
 			addNotification(`${payload.doctype} record ${payload.recordId} saved`, 'success')
 			break
 		}
