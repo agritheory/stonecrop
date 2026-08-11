@@ -1,6 +1,25 @@
 # Change Log - @stonecrop/graphql-middleware
 
-This log was last generated on Tue, 04 Aug 2026 12:14:33 GMT and should not be manually modified.
+This log was last generated on Tue, 11 Aug 2026 12:49:04 GMT and should not be manually modified.
+
+## 0.17.0
+Tue, 11 Aug 2026 12:49:04 GMT
+
+### Minor changes
+
+- stonecropAction now runs the guard read, the effect and the state write in one transaction with the guarded row locked FOR UPDATE, so a failed action rolls back its handler's writes instead of leaving them committed.
+- Add server-side action effects via createStonecropPlugin({ actionHandlers }), making stateless commands executable
+- stonecropRecords now applies a default row cap of 200 when the caller names no limit, configurable via createStonecropPlugin({ defaultRecordLimit }), and reports the true total rather than the page size.
+- Answer hasMore on every list query by requesting one row past the limit, and make the total opt-in behind a new includeTotal argument so a full-scan COUNT no longer runs on every list read.
+- Report an action against a nonexistent record as missing instead of guarding around it, which could report success while writing nothing
+- Schema build now refuses a doctype whose link or `inherits` names a doctype nothing registered, instead of silently dropping the relation at fetch time; the unused `validateReferences` export is removed.
+- Resolve a record's identity field through getRecordIdField, so this adapter and the client name the same field — a doctype declaring no primaryKey is now fetchable through the id fallback instead of answering data: null. When no identity can be resolved at all, stonecropRecord and link target lookups throw instead of reporting not-found.
+- Saving a record that does not exist now creates it: GuardedTransitionIO.writeData is an upsert and takes an `exists` flag, so creation goes through stonecropAction rather than a create mutation
+- Verify at schema build that every actionHandlers key names a registered doctype and an action it declares, throwing with every offender listed — an unreachable handler was silently skipped at dispatch. stonecropRecord now also refuses when the declared identity column matches more than one row, instead of returning an arbitrary one.
+
+### Patches
+
+- Correct two public docstrings that promised a transaction the dispatcher never opens: ActionHandlerContext.pgClient claimed it was already inside the mutation's transaction, and GuardedTransitionIO.runEffect claimed a throw meant nothing was written. Dispatch uses sideEffectWithPgClient, so the guard read, the handler and the state write are separate autocommit statements and a handler's own writes are not rolled back
 
 ## 0.16.6
 Tue, 04 Aug 2026 12:14:33 GMT

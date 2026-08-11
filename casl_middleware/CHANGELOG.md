@@ -1,6 +1,11 @@
 # Change Log - @stonecrop/casl-middleware
 
-This log was last generated on Tue, 04 Aug 2026 12:14:33 GMT and should not be manually modified.
+This log was last generated on Tue, 11 Aug 2026 12:49:04 GMT and should not be manually modified.
+
+## 0.17.0
+Tue, 11 Aug 2026 12:49:04 GMT
+
+_Version update only_
 
 ## 0.16.6
 Tue, 04 Aug 2026 12:14:33 GMT

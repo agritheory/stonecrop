@@ -2,6 +2,41 @@
   "name": "@stonecrop/desktop",
   "entries": [
     {
+      "version": "0.17.0",
+      "tag": "@stonecrop/desktop_v0.17.0",
+      "date": "Tue, 11 Aug 2026 12:49:04 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Re-export ActionEventPayload from @stonecrop/stonecrop, so the shell that emits it and the composable that consumes it can no longer drift apart."
+          },
+          {
+            "comment": "Correct the README's data-flow contract: Desktop reads through Stonecrop and the host-registered DataClient, so load-record and load-records are notifications rather than fetch requests, and drop two documented APIs that never existed."
+          }
+        ],
+        "minor": [
+          {
+            "comment": "Desktop now fetches list and record data through Stonecrop rather than waiting on the host; load-records and load-record remain as notifications for host-side side effects."
+          },
+          {
+            "comment": "Resolve unsaved-record identity through @stonecrop/stonecrop instead of restating the scheme, and stop emitting load-record for a draft: the record does not exist yet, so the fetch it asked for could only fail and every host had to recognise a private id format to suppress it"
+          },
+          {
+            "comment": "Remove the recordIdField prop. Record identity is declared per doctype, and a per-shell string could not answer a per-doctype question."
+          },
+          {
+            "comment": "Hold a new record's data in the component rather than HST, and route New Record to /{doctype}/new. Fixes silent data loss: a draft's HST node never existed, so every field write threw and the typed data survived only in a cached object any addRecord invalidated. A draft is now also seeded with the doctype's declared defaults."
+          },
+          {
+            "comment": "BREAKING: remove the hardcoded row Delete affordance, the handleDelete method and the confirmFn prop. Desktop no longer invents a DELETE action; removal is a declared workflow outcome and confirmation belongs to the host"
+          },
+          {
+            "comment": "Drop the doctype list's record count, which reported how many records HST held rather than how many exist, and note when a records list is only a page."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.16.6",
       "tag": "@stonecrop/desktop_v0.16.6",
       "date": "Tue, 04 Aug 2026 12:14:33 GMT",

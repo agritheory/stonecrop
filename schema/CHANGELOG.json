@@ -2,6 +2,21 @@
   "name": "@stonecrop/schema",
   "entries": [
     {
+      "version": "0.17.0",
+      "tag": "@stonecrop/schema_v0.17.0",
+      "date": "Tue, 11 Aug 2026 12:49:04 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Add getRecordIdField(fields), the single definition of which field identifies a record. DoctypeMeta now rejects a doctype declaring more than one primaryKey; declaring none stays legal and resolves through the id fallback."
+          },
+          {
+            "comment": "Return a page from DataClient.getRecords instead of a bare array: the result carries hasMore, so a truncated list is distinguishable from a complete one, plus a count that is opt-in behind the new includeTotal option."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.16.6",
       "tag": "@stonecrop/schema_v0.16.6",
       "date": "Tue, 04 Aug 2026 12:14:33 GMT",
