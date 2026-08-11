@@ -45,7 +45,11 @@
 			//    * will restore these folders from the cache.  The strings are folder names under the project root folder.
 			//    * These folders should not be tracked by Git.  They must not contain symlinks.
 			//    */
-			"outputFolderNames": [".nuxt", "dist"]
+			// The two nested entries must be listed. `dev:prepare` runs `nuxi prepare` for both
+			// apps, and `test:types` type-checks from inside each one, so each needs its generated
+			// tsconfig present. A cache hit skips the script and restores only what is listed here.
+			// See nuxt_grafserv/config/rush-project.json for what the resulting failure looks like.
+			"outputFolderNames": [".nuxt", "dist", "playground/.nuxt", "fullstack/.nuxt"]
 			//
 			//   /**
 			//    * Specify a list of glob (minimatch) paths (absolute or relative) pointing to files
