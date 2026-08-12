@@ -284,6 +284,32 @@ describe('validateReferences', { tags: ['unit', 'graphql'] }, () => {
 		expect(errors[0].message).toContain('binds to field "owner"')
 	})
 
+	it('reports a one-side link bound to a computed field', () => {
+		// `computed` means "no backing DB column", and `getSqlColumns` skips such a field. A link
+		// bound to one has no foreign key to read, so the record read fails on a missing column —
+		// taking the whole record with it, not just the link. Refuse it at load instead.
+		loadDoctypesFromObject(
+			withLinks({ virtualRef: { target: 'owner', cardinality: 'one' } }, [
+				{ kind: 'field', fieldname: 'virtualRef', component: 'ATextInput', computed: true, label: 'Virtual' },
+			])
+		)
+		const errors = validateReferences()
+		expect(errors).toHaveLength(1)
+		expect(errors[0].message).toContain('no database column')
+	})
+
+	it('reports a one-side link bound to a container field', () => {
+		// A table field is a relation, not a column — same absence, different cause.
+		loadDoctypesFromObject(
+			withLinks({ rows: { target: 'owner', cardinality: 'one' } }, [
+				{ kind: 'table', fieldname: 'rows', component: 'ATable', label: 'Rows', columns: [{ fieldname: 'x' }] },
+			])
+		)
+		const errors = validateReferences()
+		expect(errors).toHaveLength(1)
+		expect(errors[0].message).toContain('no database column')
+	})
+
 	it('accepts a one-side link whose field is nested inside a fieldset', () => {
 		// A fieldset is a layout grouping, not a scope — `getSqlColumns` descends into it, so a
 		// checker that did not would report this working declaration as broken.

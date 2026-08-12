@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "comment": "Schema build now refuses a one-side link bound to a field with no database column of its own, which previously failed the whole record read on a missing column at runtime.",
+      "type": "minor",
+      "packageName": "@stonecrop/graphql-middleware"
+    }
+  ],
+  "packageName": "@stonecrop/graphql-middleware"
+}

@@ -1142,6 +1142,24 @@ describe('includeNested', { tags: ['integration', 'graphql'] }, () => {
 	})
 })
 
+/** ScColumnless with its link bound to a field that either has a column or, when computed, does not. */
+const columnless = (computed: boolean) => ({
+	ScColumnless: {
+		slug: 'sc-columnless',
+		fields: [
+			{ kind: 'field' as const, fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
+			{
+				kind: 'field' as const,
+				fieldname: 'virtualRef',
+				component: 'ATextInput',
+				label: 'Virtual',
+				...(computed ? { computed: true } : {}),
+			},
+		],
+		links: { virtualRef: { target: 'ScItem', cardinality: 'one' as const } },
+	},
+})
+
 describe('doctype reference resolution', { tags: ['integration', 'graphql'] }, () => {
 	const build = async () => {
 		const pgService = makePgService({ connectionString: inject('testDatabaseUrl') })
@@ -1179,6 +1197,18 @@ describe('doctype reference resolution', { tags: ['integration', 'graphql'] }, (
 		// just failed now builds — and it is also how this case cleans up after itself, since the
 		// registry is shared across the file and there is no removeDoctype.
 		loadDoctypesFromObject({ ScNonesuch: { slug: 'sc-nonesuch', fields: [] } })
+		await expect(build()).resolves.toBeUndefined()
+	})
+
+	it('refuses a link bound to a field with no column, before any read can fail on it', async () => {
+		// Observed directly before this check existed: the read answered `column "virtual_ref" does
+		// not exist` and returned null for the *whole record*, not merely the link — one malformed
+		// declaration took down every read of the doctype, at runtime, with no mention of the link.
+		loadDoctypesFromObject(columnless(true))
+		await expect(build()).rejects.toThrow(/ScColumnless\.links\.virtualRef: .*no database column/)
+
+		// Same name, same link, but the field now has a column — repairs it and cleans up.
+		loadDoctypesFromObject(columnless(false))
 		await expect(build()).resolves.toBeUndefined()
 	})
 })

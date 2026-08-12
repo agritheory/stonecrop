@@ -217,6 +217,11 @@ export function validateReferences(): ValidationError[] {
 		// Check link-declaration targets (component-primary links live in the `links` map)
 		if (doctype.links) {
 			const declared = new Set(fields.map(f => f.fieldname))
+			// Mirrors `collectColumns`: a foreign key is read from a column, and only a non-computed
+			// value field has one. A `computed` field is declared precisely to say it has no column,
+			// and a container (a table field) is a relation rather than a value — so both are names a
+			// link can resolve to and still find nothing behind.
+			const columnBacked = new Set(fields.filter(f => f.kind === 'field' && !f.computed).map(f => f.fieldname))
 
 			for (const [key, link] of Object.entries(doctype.links)) {
 				if (getMeta(link.target) === undefined) {
@@ -254,16 +259,23 @@ export function validateReferences(): ValidationError[] {
 				// `link.fieldname ?? key`. A name matching no declared field is not selected, so the
 				// link resolves to null forever and reads as "this record has no such relation".
 				const fieldname = link.fieldname ?? key
-				if (!declared.has(fieldname)) {
+				if (!columnBacked.has(fieldname)) {
 					errors.push({
 						// Point at whichever half actually carries the binding: the `fieldname`
 						// property when it is set, otherwise the key itself. Naming `target` here
 						// would send the reader to the one part that resolved correctly.
 						path: link.fieldname ? [doctype.name, 'links', key, 'fieldname'] : [doctype.name, 'links', key],
-						message:
-							`Link "${key}" binds to field "${fieldname}", which this doctype does not declare, so it ` +
-							`resolves to null with no error. Declare that field, or set \`fieldname\` to the field ` +
-							`holding the foreign key. (A link's key is its fieldname unless \`fieldname\` overrides it.)`,
+						// Two different repairs, so two different diagnoses: a name nothing declares
+						// is a typo, while a name that resolves to a column-less field is a binding
+						// pointed at the wrong one of several real fields.
+						message: declared.has(fieldname)
+							? `Link "${key}" binds to field "${fieldname}", which has no database column of its own — ` +
+								`it is computed, or a container rather than a value — so there is no foreign key to read ` +
+								`and the record read fails on the missing column. Bind the link to the field holding the ` +
+								`foreign key.`
+							: `Link "${key}" binds to field "${fieldname}", which this doctype does not declare, so it ` +
+								`resolves to null with no error. Declare that field, or set \`fieldname\` to the field ` +
+								`holding the foreign key. (A link's key is its fieldname unless \`fieldname\` overrides it.)`,
 					})
 				}
 			}
