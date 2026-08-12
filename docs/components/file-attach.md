@@ -65,7 +65,7 @@ Unlike the other field components on this site, `AFileAttach` does not declare a
 
 ### Props
 
-<div class="api-table">
+<ApiTable>
 
 | Name         | Type                            | Default  | Description                                                                                             |
 | ------------ | -------------------------------- | ---------- | ----------------------------------------------------------------------------------------------------------- |
@@ -76,11 +76,11 @@ Unlike the other field components on this site, `AFileAttach` does not declare a
 | `validation` | `{ errorMessage: string }`       | —         | Part of the shared field prop type; this component never renders an error message and does not read it. |
 | `errors`     | `string[]`                       | —         | Part of the shared field prop type; not read by this component.                                          |
 
-</div>
+</ApiTable>
 
 ### Modes
 
-<div class="api-table">
+<ApiTable>
 
 | Mode      | Rendering                                                                                     |
 | --------- | -------------------------------------------------------------------------------------------------- |
@@ -88,7 +88,7 @@ Unlike the other field components on this site, `AFileAttach` does not declare a
 | `read`    | Same layout, but both buttons are disabled.                                                     |
 | `display` | Static list of selected file names with a count, or "No file selected" if none are selected.    |
 
-</div>
+</ApiTable>
 
 ## Accessibility
 

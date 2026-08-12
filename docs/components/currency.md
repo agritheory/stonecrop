@@ -78,7 +78,7 @@ const data = ref({
 
 ### Props
 
-<div class="api-table">
+<ApiTable>
 
 | Name               | Type                            | Default            | Description                                                                                   |
 | ------------------ | -------------------------------- | -------------------- | ------------------------------------------------------------------------------------------------ |
@@ -95,11 +95,11 @@ const data = ref({
 | `validation`       | `{ errorMessage: string }`       | `{ errorMessage: '&nbsp;' }` | Static error message shown below the field.                                            |
 | `errors`           | `string[]`                      | —                     | Dynamic validation errors (e.g. from a trigger). Takes precedence over `validation.errorMessage` whenever the list is non-empty. |
 
-</div>
+</ApiTable>
 
 ### Options
 
-<div class="api-table">
+<ApiTable>
 
 | Name            | Type                                                              | Default | Description                                                                                                                                       |
 | ---------------- | -------------------------------------------------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -110,11 +110,11 @@ const data = ref({
 | `filterFunction` | `(search: string) => AFormLinkValue[] \| Promise<AFormLinkValue[]>` | —          | Search function backing the currency picker's autocomplete dropdown.                                                                              |
 | `isAsync`        | `boolean`                                                           | `false`    | Whether `filterFunction` results should show a loading state.                                                                                     |
 
-</div>
+</ApiTable>
 
 ### CurrencyValue
 
-<div class="api-table">
+<ApiTable>
 
 | Field         | Type            | Description                                                             |
 | -------------- | ----------------- | --------------------------------------------------------------------------- |
@@ -124,11 +124,11 @@ const data = ref({
 | `baseCurrency` | `AFormLinkValue`  | The record's base currency — fixed, not user-editable.                  |
 | `exchangeRate` | `number`          | Multiplier from `currency` to `baseCurrency`, hidden from the UI.       |
 
-</div>
+</ApiTable>
 
 ### Modes
 
-<div class="api-table">
+<ApiTable>
 
 | Mode      | Rendering                                                                              |
 | --------- | ----------------------------------------------------------------------------------------- |
@@ -136,7 +136,7 @@ const data = ref({
 | `read`    | Same layout, all inputs disabled.                                                     |
 | `display` | Static text: `amount currency` (with the base-currency equivalent in parentheses, if it differs). |
 
-</div>
+</ApiTable>
 
 ## Accessibility
 

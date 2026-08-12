@@ -122,7 +122,7 @@ const data = ref({
 
 ### Props
 
-<div class="api-table">
+<ApiTable>
 
 | Name          | Type                            | Default  | Description                                                                                                                     |
 | ------------- | -------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------ |
@@ -131,7 +131,7 @@ const data = ref({
 | `mode`        | `'edit' \| 'read' \| 'display'`   | `'edit'` | Cascades to every resolved field unless a field's own schema entry sets its own `mode`. See [Modes](#modes) above.             |
 | `errors`      | `Record<string, string[]>`        | —        | Validation errors keyed by `fieldname`, passed through to the matching field's `errors` prop. `AForm` stays store-agnostic — the host is responsible for populating this. |
 
-</div>
+</ApiTable>
 
 `AForm` also emits `update:data` (fired on every field change, alongside the `v-model:data` sync) and `update:schema` (fired whenever a field's value changes, re-emitting the current `schema` unchanged — useful for hosts that keep schema and data in the same reactive store).
 
@@ -141,7 +141,7 @@ Each entry in `schema` is a [`ResolvedField`](https://github.com/agritheory/ston
 
 The common keys on a `kind: 'field'` entry:
 
-<div class="api-table">
+<ApiTable>
 
 | Key         | Type                            | Description                                                                                          |
 | ----------- | -------------------------------- | ------------------------------------------------------------------------------------------------------ |
@@ -158,7 +158,7 @@ The common keys on a `kind: 'field'` entry:
 | `validation`| `{ errorMessage: string }`        | Static error message shown below the field.                                                           |
 | `default`   | `unknown`                         | Default value for new records.                                                                        |
 
-</div>
+</ApiTable>
 
 ## Accessibility
 

@@ -63,7 +63,7 @@ const data = ref({ delivery_date: '2026-08-05' })
 
 ### Props
 
-<div class="api-table">
+<ApiTable>
 
 | Name         | Type                          | Default                | Description                                                                                                                    |
 | ------------ | ----------------------------- | ----------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
@@ -75,11 +75,11 @@ const data = ref({ delivery_date: '2026-08-05' })
 | `validation` | `{ errorMessage: string }`    | `{ errorMessage: '' }`  | Static error message shown below the field.                                                                                    |
 | `errors`     | `string[]`                    | —                       | Dynamic validation errors (e.g. from a trigger). Takes precedence over `validation.errorMessage` whenever the list is non-empty. |
 
-</div>
+</ApiTable>
 
 ### Modes
 
-<div class="api-table">
+<ApiTable>
 
 | Mode      | Rendering                                                                                          |
 | --------- | ------------------------------------------------------------------------------------------------- |
@@ -87,7 +87,7 @@ const data = ref({ delivery_date: '2026-08-05' })
 | `read`    | Same text input, disabled — the calendar does not open, since disabled inputs don't fire clicks.  |
 | `display` | Static text showing the date via `toLocaleDateString()`, with the label rendered below it.        |
 
-</div>
+</ApiTable>
 
 ## Accessibility
 

@@ -39,13 +39,13 @@ import CollapseButton from '../../../../aform/src/components/base/CollapseButton
 
 ### Props
 
-<div class="api-table">
+<ApiTable>
 
 | Name        | Type      | Default        | Description                                                                                    |
 | ----------- | --------- | ---------------- | -------------------------------------------------------------------------------------------------- |
 | `collapsed` | `boolean` | — (required)     | Whether the button is rendered in its rotated (45°) or unrotated state. Purely visual — `CollapseButton` never changes this itself. |
 
-</div>
+</ApiTable>
 
 ## Accessibility
 

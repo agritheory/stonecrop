@@ -64,7 +64,7 @@ const data = ref({ accepted: false })
 
 ### Props
 
-<div class="api-table">
+<ApiTable>
 
 | Name         | Type                          | Default                | Description                                                                                                                    |
 | ------------ | ----------------------------- | ----------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
@@ -76,11 +76,11 @@ const data = ref({ accepted: false })
 | `validation` | `{ errorMessage: string }`    | `{ errorMessage: '' }`  | Static error message shown below the field.                                                                                    |
 | `errors`     | `string[]`                    | —                       | Dynamic validation errors (e.g. from a trigger). Takes precedence over `validation.errorMessage` whenever the list is non-empty. |
 
-</div>
+</ApiTable>
 
 ### Modes
 
-<div class="api-table">
+<ApiTable>
 
 | Mode      | Rendering                                              |
 | --------- | ------------------------------------------------------- |
@@ -88,7 +88,7 @@ const data = ref({ accepted: false })
 | `read`    | Checkbox input, disabled.                               |
 | `display` | Static label with a ✓ or ✗ shown in place of the input. |
 
-</div>
+</ApiTable>
 
 ## Accessibility
 

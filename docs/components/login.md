@@ -35,25 +35,25 @@ This demo listens for `loginSuccess`/`loginFailed` and prints whichever one fire
 
 ### Props
 
-<div class="api-table">
+<ApiTable>
 
 | Name              | Type     | Default                                       | Description                          |
 | ----------------- | -------- | ----------------------------------------------- | --------------------------------------- |
 | `headerTitle`     | `string` | `'Login'`                                       | Heading text above the form.          |
 | `headerSubtitle`  | `string` | `'Enter your email and password to login'`      | Subheading text below the title.      |
 
-</div>
+</ApiTable>
 
 ### Emits
 
-<div class="api-table">
+<ApiTable>
 
 | Name           | Payload | Description                                                                                                                     |
 | -------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------- |
 | `loginSuccess` | none    | Emitted on submit whenever the (currently unimplemented) failure path isn't taken — in the current source this fires on every submit. |
 | `loginFailed`  | none    | Emitted on submit if the internal `loginFailed` flag is set — nothing in the current source ever sets it, so this never fires yet. |
 
-</div>
+</ApiTable>
 
 Neither `email` nor `password` is exposed to the parent — they're local `ref`s inside `Login`, and both emits above carry no payload.
 

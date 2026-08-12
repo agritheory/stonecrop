@@ -65,7 +65,7 @@ Because `ADateSelection` has no `v-model`, mounting it this way does not wire `s
 
 ### Props
 
-<div class="api-table">
+<ApiTable>
 
 | Name                | Type      | Default | Description                                                                                                                    |
 | -------------------- | ----------- | --------- | ------------------------------------------------------------------------------------------------------------------------------ |
@@ -80,11 +80,11 @@ Because `ADateSelection` has no `v-model`, mounting it this way does not wire `s
 | `defaultMeridiem`     | `string`  | `'AM'`    | Initial AM/PM value passed to the `ADateTime` segment(s).                                                                      |
 | `useSeconds`          | `boolean` | `true`    | Whether the `ADateTime` segment(s) render a seconds field.                                                                     |
 
-</div>
+</ApiTable>
 
 ### Events
 
-<div class="api-table">
+<ApiTable>
 
 | Name       | Payload                                                        | Description                                                                                                                                            |
 | ----------- | ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -92,7 +92,7 @@ Because `ADateSelection` has no `v-model`, mounting it this way does not wire `s
 | `get-time` | `{ hours: number; minutes: number; seconds: number; meridiem: string }` | Re-emitted from the start `ADateTime` whenever its value changes — unless `selectRange` and `showEndTime` are both `true`, in which case time changes feed into `get-range` instead. |
 | `get-range`| `{ start: Date; end: Date }`                                    | Emitted only when `selectRange`, `showTime`, and `showEndTime` are all `true`. Merges the picked date range with both time segments into a start/end `Date` pair whenever either time segment changes. |
 
-</div>
+</ApiTable>
 
 ## Accessibility
 

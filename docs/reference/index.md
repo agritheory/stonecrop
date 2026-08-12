@@ -7,6 +7,8 @@ description: Technical API documentation for all Stonecrop packages
 
 Technical documentation for all packages in the Stonecrop monorepo. API documentation is automatically generated from TypeScript source code using API Extractor.
 
+Looking for a specific `aform` field's props and a live demo rather than a package-level API dump? See [Components](/components/) for interactive, per-component documentation.
+
 ## Core Packages
 
 | Package | Description | Status |

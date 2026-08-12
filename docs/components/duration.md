@@ -65,7 +65,7 @@ const data = ref({ task_duration: 0 })
 
 ### Props
 
-<div class="api-table">
+<ApiTable>
 
 | Name                | Type      | Default    | Description                                                                                 |
 | ------------------- | --------- | ---------- | --------------------------------------------------------------------------------------------- |
@@ -75,13 +75,13 @@ const data = ref({ task_duration: 0 })
 | `allowMilitaryTime` | `boolean` | `false`    | Renders the embedded time pickers in 24-hour format.                                        |
 | `useSeconds`        | `boolean` | `false`    | Shows a seconds field on the embedded time pickers.                                         |
 
-</div>
+</ApiTable>
 
 `ADuration` does not accept `required`, `uuid`, `validation`, or `errors` — it defines its own narrow prop set rather than the shared `ComponentProps` used by most other field components.
 
 ### Modes
 
-<div class="api-table">
+<ApiTable>
 
 | Mode      | Rendering                                                                                              |
 | --------- | ----------------------------------------------------------------------------------------------------- |
@@ -89,7 +89,7 @@ const data = ref({ task_duration: 0 })
 | `read`    | Static duration text with the label — rendered identically to `display` mode, since there is no input to disable. |
 | `display` | Static duration text with the label.                                                                    |
 
-</div>
+</ApiTable>
 
 ## Accessibility
 

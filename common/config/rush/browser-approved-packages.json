@@ -152,7 +152,7 @@
     },
     {
       "name": "@stonecrop/desktop",
-      "allowedCategories": [ "prototype" ]
+      "allowedCategories": [ "documentation", "prototype" ]
     },
     {
       "name": "@stonecrop/graphql-client",

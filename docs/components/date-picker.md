@@ -63,7 +63,7 @@ const data = ref({ orderDate: new Date() })
 
 ### Props
 
-<div class="api-table">
+<ApiTable>
 
 | Name         | Type                            | Default                | Description                                                                                                                    |
 | ------------ | -------------------------------- | ----------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
@@ -74,13 +74,13 @@ const data = ref({ orderDate: new Date() })
 | `validation` | `{ errorMessage: string }`       | `{ errorMessage: '' }`  | Static error message shown below the field.                                                                                    |
 | `errors`     | `string[]`                      | —                       | Dynamic validation errors (e.g. from a trigger). Takes precedence over `validation.errorMessage` whenever the list is non-empty. |
 
-</div>
+</ApiTable>
 
 `ADatePicker` also accepts the shared `uuid`, `required`, and `mask` props defined on `ComponentProps`, but none of them are read by this component — there's no `id`/`for` pair, no native `required` attribute, and no input mask applied to the calendar grid.
 
 ### Modes
 
-<div class="api-table">
+<ApiTable>
 
 | Mode      | Rendering                                                                                          |
 | --------- | ---------------------------------------------------------------------------------------------------- |
@@ -88,7 +88,7 @@ const data = ref({ orderDate: new Date() })
 | `read`    | Static text — same rendering as `display`. There is no separate disabled-but-visible calendar.    |
 | `display` | Static text: the selected date's `toLocaleDateString()` value (empty string if unset), followed by `label` if one was given. |
 
-</div>
+</ApiTable>
 
 ### Range selection
 
@@ -96,13 +96,13 @@ When `selectRange` is `true`, clicking a day sets the range's start date; the ne
 
 ### Events
 
-<div class="api-table">
+<ApiTable>
 
 | Event      | Payload                                                        | Description                                                                                     |
 | ---------- | ----------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
 | `get-date` | `{ start: Date \| null; end: Date \| null; selected: Date }`      | Emitted whenever a date is selected on the grid or entered into the start/end inputs. `start`/`end` are always `null` unless `selectRange` is `true`. |
 
-</div>
+</ApiTable>
 
 ## Accessibility
 

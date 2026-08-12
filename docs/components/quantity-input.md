@@ -72,7 +72,7 @@ const data = ref({
 
 ### Props
 
-<div class="api-table">
+<ApiTable>
 
 | Name                     | Type                            | Default                                                                     | Description                                                                              |
 | ------------------------- | -------------------------------- | ------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------- |
@@ -89,11 +89,11 @@ const data = ref({
 | `validation`             | `{ errorMessage: string }`       | `{ errorMessage: '&nbsp;' }`                                                  | Static error message shown below the field.                                              |
 | `errors`                 | `string[]`                      | —                                                                              | Accepted for interface compatibility with other field components, but has no effect — unlike other Stonecrop inputs, `AQuantityInput` always renders `validation.errorMessage` only. |
 
-</div>
+</ApiTable>
 
 ### Options
 
-<div class="api-table">
+<ApiTable>
 
 | Name                | Type                     | Default | Description                                                                                                                                                                                     |
 | -------------------- | -------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -101,11 +101,11 @@ const data = ref({
 | `stockUom`           | `string`                  | —          | The item's base/stock unit of measure — fixed, not user-editable.                                                                                                                              |
 | `conversionFactors`  | `Record<string, number>`  | —          | Conversion factor for each non-stock UOM, relative to `stockUom` (which is implicitly `1`). If the selected UOM is absent from this map, the factor resets to `1` unless it's unchanged from the current value (in which case the existing factor round-trips). |
 
-</div>
+</ApiTable>
 
 ### QuantityValue
 
-<div class="api-table">
+<ApiTable>
 
 | Field               | Type      | Description                                                                |
 | -------------------- | ----------- | --------------------------------------------------------------------------- |
@@ -115,11 +115,11 @@ const data = ref({
 | `stockUom`           | `string`   | The item's base/stock unit of measure — fixed, not user-editable.         |
 | `conversionFactor`   | `number`   | Multiplier from `uom` to `stockUom` — hidden from the UI, drives `stockQty`. |
 
-</div>
+</ApiTable>
 
 ### Modes
 
-<div class="api-table">
+<ApiTable>
 
 | Mode      | Rendering                                                                                                     |
 | --------- | ------------------------------------------------------------------------------------------------------------- |
@@ -127,7 +127,7 @@ const data = ref({
 | `read`    | Same layout, all inputs disabled.                                                                             |
 | `display` | Static text: `qty uom` (with the stock-equivalent quantity/UOM in parentheses, if either differs; `—` if no UOM is set). |
 
-</div>
+</ApiTable>
 
 ## Accessibility
 

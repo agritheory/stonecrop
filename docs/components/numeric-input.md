@@ -64,7 +64,7 @@ const data = ref({ quantity: 0 })
 
 ### Props
 
-<div class="api-table">
+<ApiTable>
 
 | Name         | Type                            | Default                | Description                                                                                                                    |
 | ------------ | -------------------------------- | ----------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
@@ -76,11 +76,11 @@ const data = ref({ quantity: 0 })
 | `validation` | `{ errorMessage: string }`      | `{ errorMessage: '' }`  | Static error message shown below the field.                                                                                    |
 | `errors`     | `string[]`                      | —                       | Dynamic validation errors (e.g. from a trigger). Takes precedence over `validation.errorMessage` whenever the list is non-empty. |
 
-</div>
+</ApiTable>
 
 ### Modes
 
-<div class="api-table">
+<ApiTable>
 
 | Mode      | Rendering                             |
 | --------- | ---------------------------------------- |
@@ -88,7 +88,7 @@ const data = ref({ quantity: 0 })
 | `read`    | Number input, disabled.                |
 | `display` | Static label with the value in place of the input (empty string if unset). |
 
-</div>
+</ApiTable>
 
 ## Accessibility
 

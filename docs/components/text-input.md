@@ -64,7 +64,7 @@ const data = ref({ name: '' })
 
 ### Props
 
-<div class="api-table">
+<ApiTable>
 
 | Name         | Type                             | Default                | Description                                                                                                                    |
 | ------------ | --------------------------------- | ----------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
@@ -77,11 +77,11 @@ const data = ref({ name: '' })
 | `validation` | `{ errorMessage: string }`       | `{ errorMessage: '' }`  | Static error message shown below the field.                                                                                    |
 | `errors`     | `string[]`                       | —                       | Dynamic validation errors (e.g. from a trigger). Takes precedence over `validation.errorMessage` whenever the list is non-empty. |
 
-</div>
+</ApiTable>
 
 ### Modes
 
-<div class="api-table">
+<ApiTable>
 
 | Mode      | Rendering                                        |
 | --------- | -------------------------------------------------- |
@@ -89,7 +89,7 @@ const data = ref({ name: '' })
 | `read`    | Text input, disabled.                            |
 | `display` | Static label with the value shown as plain text. |
 
-</div>
+</ApiTable>
 
 ## Accessibility
 

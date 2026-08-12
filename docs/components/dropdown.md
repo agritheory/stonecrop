@@ -64,7 +64,7 @@ const data = ref({ fruit: 'Orange' })
 
 ### Props
 
-<div class="api-table">
+<ApiTable>
 
 | Name             | Type                                                      | Default   | Description                                                                                                                    |
 | ---------------- | ------------------------------------------------------------ | ----------- | ----------------------------------------------------------------------------------------------------------------------------- |
@@ -79,11 +79,11 @@ const data = ref({ fruit: 'Orange' })
 | `validation`     | `{ errorMessage: string }`                                   | `{ errorMessage: '' }` | Static error message shown below the field.                                                                        |
 | `errors`         | `string[]`                                                   | —           | Dynamic validation errors (e.g. from a trigger). Takes precedence over `validation.errorMessage` whenever the list is non-empty. |
 
-</div>
+</ApiTable>
 
 ### Modes
 
-<div class="api-table">
+<ApiTable>
 
 | Mode      | Rendering                                                                          |
 | --------- | ----------------------------------------------------------------------------------- |
@@ -91,7 +91,7 @@ const data = ref({ fruit: 'Orange' })
 | `read`    | Same input, disabled — it cannot be focused, so the dropdown cannot be opened.     |
 | `display` | Static text: the current value, followed by the label.                            |
 
-</div>
+</ApiTable>
 
 ## Accessibility
 

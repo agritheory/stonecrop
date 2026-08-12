@@ -35,23 +35,23 @@ Mount `AFormLoading` directly, with the loading message as its default slot cont
 
 ### Props
 
-<div class="api-table">
+<ApiTable>
 
 | Name | Type | Default | Description                        |
 | ---- | ---- | ------- | ----------------------------------- |
 | —    | —    | —       | `AFormLoading` accepts no props.    |
 
-</div>
+</ApiTable>
 
 ### Slots
 
-<div class="api-table">
+<ApiTable>
 
 | Name      | Description                                                                                  |
 | --------- | ---------------------------------------------------------------------------------------------- |
 | `default` | Loading message text. When non-empty, an animated `...` suffix is appended automatically.     |
 
-</div>
+</ApiTable>
 
 ## Accessibility
 

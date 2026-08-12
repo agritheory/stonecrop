@@ -63,7 +63,7 @@ const data = ref({ notes: '' })
 
 ### Props
 
-<div class="api-table">
+<ApiTable>
 
 | Name          | Type                             | Default                | Description                                                                                                                    |
 | ------------- | --------------------------------- | ----------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
@@ -78,11 +78,11 @@ const data = ref({ notes: '' })
 | `validation`  | `{ errorMessage: string }`       | `{ errorMessage: '' }`  | Static error message shown below the field.                                                                                    |
 | `errors`      | `string[]`                       | —                       | Dynamic validation errors (e.g. from a trigger). Takes precedence over `validation.errorMessage` whenever the list is non-empty. |
 
-</div>
+</ApiTable>
 
 ### Modes
 
-<div class="api-table">
+<ApiTable>
 
 | Mode      | Rendering                                                              |
 | --------- | ------------------------------------------------------------------------- |
@@ -90,7 +90,7 @@ const data = ref({ notes: '' })
 | `read`    | Textarea, disabled.                                                   |
 | `display` | Static label with the value shown as plain, whitespace-preserved text. |
 
-</div>
+</ApiTable>
 
 ## Accessibility
 

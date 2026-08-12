@@ -1,3 +1,4 @@
+import { h } from 'vue'
 import DefaultTheme from 'vitepress/theme'
 import type { Theme } from 'vitepress'
 import { createPinia } from 'pinia'
@@ -5,6 +6,7 @@ import { install as installAform } from '@stonecrop/aform'
 
 import './custom.css'
 import './demo.css'
+import '@stonecrop/desktop/styles'
 import DemoPanel from './demos/DemoPanel.vue'
 import CheckboxDemo from './demos/CheckboxDemo.vue'
 import CurrencyDemo from './demos/CurrencyDemo.vue'
@@ -29,9 +31,19 @@ import LoginDemo from './demos/LoginDemo.vue'
 import CollapseButtonDemo from './demos/CollapseButtonDemo.vue'
 import CardGrid from './home/CardGrid.vue'
 import CardGridItem from './home/CardGridItem.vue'
+import DocsSearch from './DocsSearch.vue'
+import ApiTable from './ApiTable.vue'
+import ApiDataTable from './ApiDataTable.vue'
 
 export default {
 	...DefaultTheme,
+	Layout: () =>
+		h(DefaultTheme.Layout, null, {
+			// Replaces VitePress's own search box with @stonecrop/desktop's CommandPalette (see
+			// DocsSearch.vue), slotted in exactly where VPNavBarSearch would render — that component
+			// renders nothing itself once themeConfig.search is unset (see config.ts).
+			'nav-bar-content-before': () => h(DocsSearch),
+		}),
 	enhanceApp({ app }) {
 		// AForm resolves schema fields by string name through Vue's dynamic-component registry,
 		// which is only populated by this plugin (mirrors examples/histoire.setup.ts). Needed for
@@ -64,5 +76,7 @@ export default {
 
 		app.component('CardGrid', CardGrid)
 		app.component('CardGridItem', CardGridItem)
+		app.component('ApiTable', ApiTable)
+		app.component('ApiDataTable', ApiDataTable)
 	},
 } satisfies Theme

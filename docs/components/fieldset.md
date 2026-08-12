@@ -71,7 +71,7 @@ const data = ref({
 
 ### Props
 
-<div class="api-table">
+<ApiTable>
 
 | Name          | Type                 | Default | Description                                                                                  |
 | ------------- | -------------------- | ------- | ---------------------------------------------------------------------------------------------- |
@@ -81,7 +81,7 @@ const data = ref({
 | `data`        | `Record<string, any>` | `{}`   | Data object passed to the built-in nested `AForm`.                                            |
 | `mode`        | `InteractionMode`    | `'edit'` | Interaction mode forwarded to the built-in nested `AForm` (and, via the default slot's `AForm`, to every child field). |
 
-</div>
+</ApiTable>
 
 The default slot receives a `{ collapsed }` scope prop, so custom slot content can react to the collapsed state itself (as in the demo above) instead of relying on the built-in nested `AForm`. `AFieldset` also exposes its internal `collapsed` ref via `defineExpose`, for parent components holding a template ref to it.
 

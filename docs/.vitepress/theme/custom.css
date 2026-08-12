@@ -157,7 +157,7 @@
 
 /* Sidebar refinements */
 .VPSidebar {
-	border-right: 1px solid var(--vp-c-divider-light);
+	border-left: 1px solid var(--vp-c-divider-light);
 }
 
 .VPSidebarItem .link {
@@ -199,3 +199,57 @@
 ::-webkit-scrollbar-thumb:hover {
 	background: var(--vp-c-text-3);
 }
+
+/**
+ * Move the sidebar (Home/Tutorials/Guides/etc.) from the left edge to the right, so page
+ * content starts flush left instead of being indented for it. Mirrors VitePress's own
+ * VPSidebar.vue / VPContent.vue rules exactly (same breakpoints, same size formulas) with
+ * left/right swapped — desktop only; the sidebar is a full-screen overlay drawer on mobile,
+ * where "which side" doesn't apply the same way, so only its slide-in direction is flipped.
+ *
+ * !important is required here: VPSidebar.vue/VPContent.vue's own rules are `<style scoped>`,
+ * which Vue compiles to e.g. `.VPSidebar[data-v-hash]` — an attribute selector that beats a
+ * plain `.VPSidebar` on specificity regardless of source order, so an unqualified override is
+ * silently dropped.
+ */
+.VPSidebar {
+	left: auto !important;
+	right: 0 !important;
+	/* Mobile-closed state: hidden off the right edge instead of the left. */
+	transform: translateX(100%) !important;
+}
+
+.VPSidebar.open {
+	/* Mobile-open state: slid fully into view. */
+	transform: translateX(0) !important;
+}
+
+@media (min-width: 960px) {
+	.VPSidebar {
+		/* Desktop: always visible, not a drawer — VPSidebar.vue's own desktop rule sets this same
+		   translateX(0), but non-!important, so it was losing to the unconditional rule above. */
+		transform: translateX(0) !important;
+	}
+}
+
+@media (min-width: 1440px) {
+	.VPSidebar {
+		padding-left: 0 !important;
+		padding-right: max(32px, calc((100% - (var(--vp-layout-max-width) - 64px)) / 2)) !important;
+	}
+}
+
+@media (min-width: 960px) {
+	.VPContent.has-sidebar {
+		padding-left: 0 !important;
+		padding-right: var(--vp-sidebar-width) !important;
+	}
+}
+
+@media (min-width: 1440px) {
+	.VPContent.has-sidebar {
+		padding-left: calc((100vw - var(--vp-layout-max-width)) / 2) !important;
+		padding-right: calc((100vw - var(--vp-layout-max-width)) / 2 + var(--vp-sidebar-width)) !important;
+	}
+}
+

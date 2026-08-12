@@ -67,7 +67,7 @@ const data = ref({ territory: { id: '', displayText: '' } })
 
 ### Props
 
-<div class="api-table">
+<ApiTable>
 
 | Name             | Type                                                                 | Default                            | Description                                                                                                                       |
 | ---------------- | --------------------------------------------------------------------- | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
@@ -86,13 +86,13 @@ const data = ref({ territory: { id: '', displayText: '' } })
 | `mode`           | `'edit' \| 'read' \| 'display'`                                      | `'edit'`                             | See [Modes](#modes) below.                                                                                                         |
 | `uuid`           | `string`                                                             | auto-generated                       | Used to build the autocomplete listbox's id, wired to the input via `aria-controls`/`aria-activedescendant`.                      |
 
-</div>
+</ApiTable>
 
 `AFormLink` also participates in navigation: when `doctype` is set and an `aformLinkNavigator` has been provided (via `app.provide('aformLinkNavigator', { navigate(doctype, id) { ... } })`), the arrow button calls it with the linked record's doctype and id. Without a provided navigator, the arrow still renders whenever the field holds a valid id, but clicks are no-ops.
 
 ### AFormLinkValue
 
-<div class="api-table">
+<ApiTable>
 
 | Field         | Type               | Description                                                                |
 | -------------- | -------------------- | ------------------------------------------------------------------------------ |
@@ -100,11 +100,11 @@ const data = ref({ territory: { id: '', displayText: '' } })
 | `displayText`  | `string`            | Text shown in the input. Falls back to `String(id)` if omitted.               |
 | `[extra: string]` | `any`            | Additional properties carried on the value and passed through to `formatter` (e.g. `ACurrencyInput`'s `symbol`). |
 
-</div>
+</ApiTable>
 
 ### Modes
 
-<div class="api-table">
+<ApiTable>
 
 | Mode      | Rendering                                                                                          |
 | --------- | ------------------------------------------------------------------------------------------------------ |
@@ -112,7 +112,7 @@ const data = ref({ territory: { id: '', displayText: '' } })
 | `read`    | Input disabled; dropdown never opens even on focus. Navigate arrow still shown when the value has a valid id. |
 | `display` | Static text only — the formatted value, or `—` when the value has no id. No input, no navigate arrow. |
 
-</div>
+</ApiTable>
 
 ## Accessibility
 

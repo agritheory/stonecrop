@@ -65,7 +65,7 @@ Because `ADateTime` has no `v-model`, mounting it this way does not wire `create
 
 ### Props
 
-<div class="api-table">
+<ApiTable>
 
 | Name                | Type      | Default | Description                                                                             |
 | -------------------- | ----------- | --------- | ------------------------------------------------------------------------------------------- |
@@ -76,17 +76,17 @@ Because `ADateTime` has no `v-model`, mounting it this way does not wire `create
 | `defaultMeridiem`     | `string`  | `'AM'`    | Initial AM/PM selector value; any value other than `'AM'` resolves to `'PM'`.            |
 | `useSeconds`          | `boolean` | `true`    | Whether to render the seconds segment.                                                  |
 
-</div>
+</ApiTable>
 
 ### Events
 
-<div class="api-table">
+<ApiTable>
 
 | Name       | Payload                                                                                       | Description                                                                                                                     |
 | ----------- | ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------ |
 | `get-time` | `{ hours: number; minutes: number; seconds: number; meridiem: string; militaryTime: number }` | Emitted once on mount, and again whenever a segment is confirmed. `militaryTime` is always the 24-hour hour value, regardless of `allowMilitaryTime`. |
 
-</div>
+</ApiTable>
 
 ## Accessibility
 

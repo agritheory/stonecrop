@@ -39,6 +39,10 @@ Guides are being developed based on common questions and use cases. Planned topi
 - [Setting Up the GraphQL Middleware](./graphql-middleware-setup) — Configuring `createStonecropPreset`, `createStonecropPlugin`, and `loadDoctypes` in a Nuxt/Node application
 - [Custom Fetch Handlers](./custom-fetch-handlers) — Implementing and registering `FetchHandler` callbacks for the `custom` fetch strategy
 
+## Examples
+
+Prefer a working example over a walkthrough? [Browse live component stories and sandboxes](/stories/) — every field component in a range of configurations, editable in place.
+
 ## Quick Links
 
 - [API Reference](/reference/) — Technical documentation for all packages

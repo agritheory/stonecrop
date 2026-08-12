@@ -63,7 +63,7 @@ const data = ref({ reporting_period: { start_date: null, end_date: null } })
 
 ### Props
 
-<div class="api-table">
+<ApiTable>
 
 | Name         | Type                                    | Default                                | Description                                                                                                                    |
 | ------------ | ---------------------------------------- | ----------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
@@ -74,22 +74,22 @@ const data = ref({ reporting_period: { start_date: null, end_date: null } })
 | `validation` | `{ errorMessage: string }`                | `{ errorMessage: '' }`                    | Static error message shown below the field.                                                                                    |
 | `errors`     | `string[]`                                | —                                          | Dynamic validation errors (e.g. from a trigger). Takes precedence over `validation.errorMessage` whenever the list is non-empty. |
 
-</div>
+</ApiTable>
 
 ### DateRangeValue
 
-<div class="api-table">
+<ApiTable>
 
 | Field        | Type              | Description                                                  |
 | ------------- | ------------------ | ---------------------------------------------------------------- |
 | `start_date` | `string \| null`   | ISO date string for the start of the range, or `null` if unset. |
 | `end_date`   | `string \| null`   | ISO date string for the end of the range, or `null` if unset.   |
 
-</div>
+</ApiTable>
 
 ### Modes
 
-<div class="api-table">
+<ApiTable>
 
 | Mode      | Rendering                                                                                              |
 | --------- | -------------------------------------------------------------------------------------------------------- |
@@ -97,7 +97,7 @@ const data = ref({ reporting_period: { start_date: null, end_date: null } })
 | `read`    | Same input, disabled — the calendar does not open, since disabled inputs don't fire clicks.              |
 | `display` | Static text — `start — end`, `From start` (end unset), or `Until end` (start unset) — with the label.    |
 
-</div>
+</ApiTable>
 
 ## Accessibility
 

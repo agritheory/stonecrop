@@ -453,6 +453,9 @@ importers:
       '@stonecrop/aform':
         specifier: workspace:*
         version: link:../aform
+      '@stonecrop/desktop':
+        specifier: workspace:*
+        version: link:../desktop
       '@stonecrop/themes':
         specifier: workspace:*
         version: link:../themes
