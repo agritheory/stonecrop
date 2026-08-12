@@ -170,6 +170,14 @@ class ActionRolledBack extends Error {
 }
 
 /**
+ * Column-alias prefix for a foreign key the record SELECT carries only so the link expansion can
+ * read it. An *expanding* link is a relation in the payload rather than a scalar, so `getSqlColumns`
+ * omits its FK column by design — but the expansion needs the value to find the target. Aliasing
+ * keeps that need from changing the payload: every alias is stripped before the record is returned.
+ */
+const LINK_FK_ALIAS = '__stonecropLinkFk_'
+
+/**
  * Create a PostGraphile plugin that extends the GraphQL schema with Stonecrop functionality.
  *
  * The `PgExecutor` is obtained automatically from `build.input.pgRegistry.pgExecutors`
@@ -258,11 +266,36 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 										const columns = getSqlColumns(meta)
 										const ids = indices.map(i => String(specs[i].id))
 
+										// Resolved once per doctype: how each link renders, and which foreign keys the
+										// SELECT must carry for the expansion below to work at all.
+										//
+										// `resolveLinkRenderMode` needs the linked field's own component, so the fields
+										// are indexed by name — flattened, because a link's field may sit inside a
+										// fieldset and `getSqlColumns` already descends to select it.
+										const fieldByName = new Map(flattenFields(meta.fields).map(f => [f.fieldname, f]))
+										const linkFkAliases: Array<{ fieldname: string; alias: string }> = []
+										for (const [linkName, link] of Object.entries(meta.links ?? {})) {
+											// Many-side links find their rows by a column on the *target*; only a one-side
+											// link reads a foreign key off this row.
+											if (link.cardinality === 'noneOrMany' || link.cardinality === 'atLeastOne') continue
+											const fieldname = link.fieldname ?? linkName
+											// An inline link keeps its FK as a scalar, so `getSqlColumns` already selected
+											// it under its own name and no alias is needed.
+											if (resolveLinkRenderMode(link, fieldByName.get(fieldname)?.component) === 'inline') continue
+											linkFkAliases.push({ fieldname, alias: `${LINK_FK_ALIAS}${fieldname}` })
+										}
+										const selectList = [
+											columns,
+											...linkFkAliases.map(({ fieldname, alias }) => `"${camelToSnake(fieldname)}" AS "${alias}"`),
+										]
+											.filter(Boolean)
+											.join(', ')
+
 										// TODO(perf): queries per doctype group could be parallelized with Promise.all across doctype groups;
 										// requires refactoring the grouped-by-doctype loop to collect promises before resolving results
 										// oxlint-disable-next-line eslint/no-await-in-loop -- sequential per-doctype SQL; see TODO above
 										const { rows } = await debugSql<Record<string, unknown>>(pgClient, {
-											text: `SELECT ${columns} FROM ${resolveTableName(meta.name, options.tables)} WHERE "${pkColumn}"::text = ANY($1::text[])`,
+											text: `SELECT ${selectList} FROM ${resolveTableName(meta.name, options.tables)} WHERE "${pkColumn}"::text = ANY($1::text[])`,
 											values: [ids],
 										})
 
@@ -306,6 +339,13 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 											// FetchStrategy dispatch over link declarations
 											if (meta.links) {
 												for (const [linkName, link] of Object.entries(meta.links)) {
+													// The payload key is the *resolved* fieldname, not the map key: the client
+													// binds a link to the field named `link.fieldname ?? key` and reads the
+													// nested data off that field, so writing under the bare key put the result
+													// somewhere nothing looks whenever a declaration named its own `fieldname`.
+													// Identical for every declaration that omits `fieldname`, which is all of them
+													// in this repo — hence latent until now.
+													const fieldname = link.fieldname ?? linkName
 													const fetch = link.fetch
 													const isMany = link.cardinality === 'noneOrMany' || link.cardinality === 'atLeastOne'
 													const effectiveMethod = fetch?.method ?? (isMany ? 'sync' : 'lazy')
@@ -322,12 +362,19 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 														if (handler) {
 															// TODO(perf): custom link handlers per-row could run in parallel; needs collecting all custom handlers before await
 															// oxlint-disable-next-line eslint/no-await-in-loop -- custom handler per link; see TODO above
-															rowData[linkName] = await handler(pgClient, rowData, link)
+															rowData[fieldname] = await handler(pgClient, rowData, link)
 														}
 														continue
 													}
 
 													if (effectiveMethod !== 'sync' && !includeSet?.has(linkName)) continue
+
+													// `resolveLinkRenderMode` is the single definition of whether a link expands,
+													// and this loop was the one caller that never asked it. An `inline` link is a
+													// picker: the field holds its own id and the client resolves display text
+													// separately, so expanding it here overwrote that id with the whole target
+													// record and left the picker with an object it cannot render.
+													if (resolveLinkRenderMode(link, fieldByName.get(fieldname)?.component) === 'inline') continue
 
 													const targetMeta = getMeta(link.target)
 													if (!targetMeta) continue
@@ -349,17 +396,15 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 															text: sql,
 															values: linkValues,
 														})
-														rowData[linkName] = linked
+														rowData[fieldname] = linked
 													} else {
-														// `link.fieldname ?? linkName` — the map key IS the fieldname unless the
-														// declaration names another. Reading only the property dropped every link
-														// authored in the canonical key form, while `getSqlColumns` below and the
-														// client resolver both bound it: one rule, and this was the site that
-														// disagreed. A binding that names no declared field is refused at load by
-														// `validateReferences`, so reaching here means the field exists.
-														const fkValue = rowData[link.fieldname ?? linkName]
+														// Read from the reserved alias, never the fieldname: an expanding link's FK
+														// column is deliberately absent from `getSqlColumns`, so the plain read found
+														// `undefined` on every record and answered `null` — a relation that looked
+														// permanently empty rather than one nobody had asked the right question for.
+														const fkValue = rowData[`${LINK_FK_ALIAS}${fieldname}`]
 														if (fkValue == null) {
-															rowData[linkName] = null
+															rowData[fieldname] = null
 															continue
 														}
 														// `continue` here would drop the link from the payload, which reads to the
@@ -374,10 +419,15 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 															text: `SELECT ${targetColumns} FROM ${resolveTableName(targetMeta.name, options.tables)} WHERE "${targetPkColumn}" = $1`,
 															values: [fkValue],
 														})
-														rowData[linkName] = linked[0] ?? null
+														rowData[fieldname] = linked[0] ?? null
 													}
 												}
 											}
+
+											// The aliases are a read channel for this loop, not part of the record. Stripped
+											// unconditionally so a link that was never expanded cannot leak its raw FK into a
+											// payload that has otherwise always described that relation as a nested object.
+											for (const { alias } of linkFkAliases) delete rowData[alias]
 
 											// Names in includeNested that don't correspond to any link
 											const unknownLinks =

@@ -236,6 +236,38 @@ beforeAll(async () => {
 				},
 			},
 		},
+		// One-side link fixtures. Both map onto sc_tag (id, label, item_id -> sc_item.id), which
+		// differ only in render mode — the axis the expansion loop has to respect.
+		ScLinkExpand: {
+			name: 'ScLinkExpand',
+			fields: [
+				{ kind: 'field', fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
+				{ kind: 'field', fieldname: 'label', component: 'ATextInput', label: 'Label' },
+				{ kind: 'field', fieldname: 'itemId', component: 'ATextInput', label: 'Item' },
+			],
+			links: {
+				// `component: AForm` makes this expand, so `getSqlColumns` omits item_id from the
+				// payload SELECT — and the expansion still has to find the value somewhere.
+				itemId: {
+					target: 'ScItem',
+					cardinality: 'one' as const,
+					component: 'AForm',
+					fetch: { method: 'sync' as const },
+				},
+			},
+		},
+		ScLinkInline: {
+			name: 'ScLinkInline',
+			fields: [
+				{ kind: 'field', fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
+				{ kind: 'field', fieldname: 'label', component: 'ATextInput', label: 'Label' },
+				// AFormLink is a picker: the field keeps its own id and must survive the read.
+				{ kind: 'field', fieldname: 'itemId', component: 'AFormLink', label: 'Item' },
+			],
+			links: {
+				itemId: { target: 'ScItem', cardinality: 'one' as const, fetch: { method: 'sync' as const } },
+			},
+		},
 		ScProduct: {
 			name: 'ScProduct',
 			fields: [
@@ -262,7 +294,17 @@ beforeAll(async () => {
 		extends: [PostGraphileAmberPreset],
 		// Handlers are inert for every action that does not name one, so the transition suites
 		// above and below are unaffected by their presence.
-		plugins: [createStonecropPlugin({ actionHandlers, tables: { ScSurrogate: 'sc_draft', ScAmbiguous: 'sc_note' } })],
+		plugins: [
+			createStonecropPlugin({
+				actionHandlers,
+				tables: {
+					ScSurrogate: 'sc_draft',
+					ScAmbiguous: 'sc_note',
+					ScLinkExpand: 'sc_tag',
+					ScLinkInline: 'sc_tag',
+				},
+			}),
+		],
 		pgServices: [pgService],
 	})
 	schema = result.schema
@@ -973,6 +1015,44 @@ describe('actionHandlers registration', { tags: ['integration', 'graphql'] }, ()
 // ===========================================================================
 // Cross-doctype references — verified at schema build
 // ===========================================================================
+
+// ===========================================================================
+// One-side link expansion — render mode decides whether a link expands at all.
+//
+// `resolveLinkRenderMode` is the single definition of that, consumed by the client resolver and
+// by the SELECT column builder. The expansion loop used to not consult it, which broke both
+// render modes in opposite directions: the expanding one could never resolve (its FK column is
+// deliberately absent from the payload SELECT, so the read found `undefined`), and the inline one
+// was expanded when it should not be, replacing a picker's id with the whole target record.
+//
+// sc_tag row 1 is ('urgent', item_id 1) and sc_item row 1 is 'Alpha'.
+// ===========================================================================
+
+describe('one-side link expansion', { tags: ['integration', 'graphql'] }, () => {
+	it('expands a record-mode link whose FK column the payload SELECT omits', async () => {
+		const result = await runQuery(`query { stonecropRecord(doctype: "ScLinkExpand", id: "1") { data } }`)
+		expect((result as any).errors).toBeUndefined()
+		const data = (result as any).data?.stonecropRecord?.data
+		// Not `null`: the relation exists and item_id is 1. Before the render-mode fix this was
+		// null for every record of every doctype declaring an expanding one-side link.
+		expect(data.itemId).toMatchObject({ id: 1, name: 'Alpha' })
+	})
+
+	it('leaves an inline link as the scalar id the picker needs', async () => {
+		const result = await runQuery(`query { stonecropRecord(doctype: "ScLinkInline", id: "1") { data } }`)
+		expect((result as any).errors).toBeUndefined()
+		const data = (result as any).data?.stonecropRecord?.data
+		// An object here means the picker was handed a record where it expects an id to resolve
+		// display text from.
+		expect(data.itemId).toBe(1)
+	})
+
+	it('keeps the internal FK alias out of the payload', async () => {
+		const result = await runQuery(`query { stonecropRecord(doctype: "ScLinkExpand", id: "1") { data } }`)
+		const data = (result as any).data?.stonecropRecord?.data
+		expect(Object.keys(data).filter(k => k.startsWith('__stonecropLinkFk_'))).toEqual([])
+	})
+})
 
 describe('doctype reference resolution', { tags: ['integration', 'graphql'] }, () => {
 	const build = async () => {

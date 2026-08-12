@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "comment": "A one-side link now expands only when its render mode says it should: an inline picker keeps its own id instead of being replaced by the target record, and an expanding link resolves instead of always answering null.",
+      "type": "minor",
+      "packageName": "@stonecrop/graphql-middleware"
+    }
+  ],
+  "packageName": "@stonecrop/graphql-middleware"
+}
