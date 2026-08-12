@@ -1000,7 +1000,7 @@ describe('doctype reference resolution', { tags: ['integration', 'graphql'] }, (
 			ScDangling: {
 				slug: 'sc-dangling',
 				fields: [],
-				links: { orphan: { target: 'sc-nonesuch', cardinality: 'noneOrMany' } },
+				links: { orphan: { target: 'sc-nonesuch', cardinality: 'noneOrMany', backlink: 'danglingId' } },
 			},
 		})
 		await expect(build()).rejects.toThrow(

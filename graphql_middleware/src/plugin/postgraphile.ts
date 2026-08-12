@@ -13,6 +13,7 @@ import { constant, lambda, object } from 'postgraphile/grafast'
 import { GraphileConfig } from 'postgraphile/graphile-build'
 import { extendSchema } from 'postgraphile/utils'
 
+import { flattenFields } from '../fields'
 import { getFetchHandler } from '../registry/fetchHandlers'
 import { getMeta, getAllMeta, validateReferences } from '../registry/doctypes'
 import { applyGuardedTransition } from '../dispatch/transition'
@@ -350,8 +351,13 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 														})
 														rowData[linkName] = linked
 													} else {
-														if (!link.fieldname) continue
-														const fkValue = rowData[link.fieldname]
+														// `link.fieldname ?? linkName` — the map key IS the fieldname unless the
+														// declaration names another. Reading only the property dropped every link
+														// authored in the canonical key form, while `getSqlColumns` below and the
+														// client resolver both bound it: one rule, and this was the site that
+														// disagreed. A binding that names no declared field is refused at load by
+														// `validateReferences`, so reaching here means the field exists.
+														const fkValue = rowData[link.fieldname ?? linkName]
 														if (fkValue == null) {
 															rowData[linkName] = null
 															continue
@@ -649,23 +655,6 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 // ===========================================================================
 // SQL column helpers
 // ===========================================================================
-
-/**
- * Recursively flatten Fieldset containers into a flat array of non-container fields.
- * Fieldset entries are replaced by their children; all other fields pass through.
- * Used by getSqlColumns (for SELECT) and knownFields (for filter/orderBy validation).
- */
-function flattenFields(fields: DoctypeField[]): (ValueField | TableField)[] {
-	const result: (ValueField | TableField)[] = []
-	for (const f of fields) {
-		if (f.kind === 'fieldset') {
-			result.push(...flattenFields(f.schema))
-		} else {
-			result.push(f)
-		}
-	}
-	return result
-}
 
 /**
  * Derive quoted SQL column entries from a flat field array.
