@@ -351,6 +351,13 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 													const effectiveMethod = fetch?.method ?? (isMany ? 'sync' : 'lazy')
 													const effectiveLimit = fetch?.method === 'sync' ? fetch.limit : isMany ? 50 : undefined
 
+													// The one gate. It used to be followed by a second test that re-asked the
+													// same question using only `includeSet` — `null` for the boolean form — so
+													// `includeNested: true` admitted every link here and then silently dropped
+													// each non-`sync` one, handing back a partial record with no way to tell.
+													// That test was redundant wherever it was correct: with a name list this gate
+													// has already required membership, and without one it has already required
+													// `sync`, so it could only ever fire in the boolean case it got wrong.
 													const shouldInclude =
 														includeAll || (includeSet ? includeSet.has(linkName) : effectiveMethod === 'sync')
 
@@ -366,8 +373,6 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 														}
 														continue
 													}
-
-													if (effectiveMethod !== 'sync' && !includeSet?.has(linkName)) continue
 
 													// `resolveLinkRenderMode` is the single definition of whether a link expands,
 													// and this loop was the one caller that never asked it. An `inline` link is a

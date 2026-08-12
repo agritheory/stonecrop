@@ -287,6 +287,19 @@ beforeAll(async () => {
 				},
 			},
 		},
+		// No `fetch`, so a one-side link defaults to `lazy` — the only shape that can tell the two
+		// forms of `includeNested` apart.
+		ScLinkLazy: {
+			name: 'ScLinkLazy',
+			fields: [
+				{ kind: 'field', fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
+				{ kind: 'field', fieldname: 'label', component: 'ATextInput', label: 'Label' },
+				{ kind: 'field', fieldname: 'itemId', component: 'ATextInput', label: 'Item' },
+			],
+			links: {
+				itemId: { target: 'ScItem', cardinality: 'one' as const, component: 'AForm' },
+			},
+		},
 		ScProduct: {
 			name: 'ScProduct',
 			fields: [
@@ -322,6 +335,7 @@ beforeAll(async () => {
 					ScLinkExpand: 'sc_tag',
 					ScLinkInline: 'sc_tag',
 					ScLinkAliased: 'sc_tag',
+					ScLinkLazy: 'sc_tag',
 				},
 			}),
 		],
@@ -1083,6 +1097,48 @@ describe('one-side link expansion', { tags: ['integration', 'graphql'] }, () => 
 		const result = await runQuery(`query { stonecropRecord(doctype: "ScLinkExpand", id: "1") { data } }`)
 		const data = (result as any).data?.stonecropRecord?.data
 		expect(Object.keys(data).filter(k => k.startsWith('__stonecropLinkFk_'))).toEqual([])
+	})
+})
+
+// ===========================================================================
+// includeNested — the boolean and the name list must mean the same thing.
+//
+// `includeNested: true` is the documented form and the one `DataClient` describes, but a lazy link
+// was admitted by the `shouldInclude` gate and then dropped again a few lines later by a second
+// test that only ever consulted the name list — `null` for the boolean form. The result was a
+// partial record with nothing to say so.
+//
+// The three cases below are the whole truth table of that gate.
+// ===========================================================================
+
+describe('includeNested', { tags: ['integration', 'graphql'] }, () => {
+	it('expands a lazy link when asked with the boolean', async () => {
+		const result = await runQuery(
+			`query { stonecropRecord(doctype: "ScLinkLazy", id: "1", options: { includeNested: true }) { data } }`
+		)
+		expect((result as any).errors).toBeUndefined()
+		const data = (result as any).data?.stonecropRecord?.data
+		expect(data.itemId).toMatchObject({ id: 1, name: 'Alpha' })
+	})
+
+	it('expands a lazy link when asked by name', async () => {
+		// The control: this form always worked, which is what made the boolean's silence look like
+		// "there is nothing there" rather than "the request was dropped".
+		const result = await runQuery(
+			`query { stonecropRecord(doctype: "ScLinkLazy", id: "1", options: { includeNested: ["itemId"] }) { data } }`
+		)
+		expect((result as any).errors).toBeUndefined()
+		const data = (result as any).data?.stonecropRecord?.data
+		expect(data.itemId).toMatchObject({ id: 1, name: 'Alpha' })
+	})
+
+	it('leaves a lazy link alone when nothing asked for it', async () => {
+		// The half that must not change: `lazy` means "not in the initial query". Removing the
+		// second guard must widen what an explicit request reaches, not make every link eager.
+		const result = await runQuery(`query { stonecropRecord(doctype: "ScLinkLazy", id: "1") { data } }`)
+		expect((result as any).errors).toBeUndefined()
+		const data = (result as any).data?.stonecropRecord?.data
+		expect(data.itemId).toBeUndefined()
 	})
 })
 
