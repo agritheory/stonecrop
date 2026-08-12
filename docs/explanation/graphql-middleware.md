@@ -23,7 +23,9 @@ The `PgExecutor` — the object that provides the database connection — is dis
 
 `stonecropRecord` returns a single record, but records often have related data: line items on an order, an address on a customer, a computed summary across child rows. Rather than always fetching everything (expensive for large trees) or never fetching links (forcing clients to issue many follow-up queries), the middleware gives each link a *fetch strategy* via the `fetch` field in its `LinkDeclaration`.
 
-**`sync`** means linked records are fetched in the same resolver call and merged into the parent record's `data` payload. When the strategy is `sync`, the middleware issues an additional SQL query for that link and attaches the result directly. For `noneOrMany` and `atLeastOne` links (one-to-many), the default strategy is `sync` with a limit of 50 rows. Sync makes sense when the linked data is small and almost always needed.
+**`sync`** means linked records are fetched in the same resolver call and merged into the parent record's `data` payload. When the strategy is `sync`, the middleware issues an additional SQL query for that link and attaches the result directly. For `noneOrMany` and `atLeastOne` links (one-to-many), the default strategy is `sync`. Sync makes sense when the linked data is small and almost always needed.
+
+A many-side link is capped at `fetch.limit` if the declaration names one, and otherwise at the server's `defaultRecordLimit` — the same option that caps `stonecropRecords`, because a link is a list fetched a different way. When a cap cuts a relation short, the field's name appears in `truncatedLinks` on the result. Guard on it: a link cannot be paged, so writing back a relation you only partly received deletes the rest.
 
 **`lazy`** means the link is absent from the response entirely. The client retrieves it separately via `stonecropRecords` with a `filters` argument pointing back at the parent. For `atMostOne` and `one` links (many-to-one or one-to-one), the default strategy is `lazy`. Lazy is appropriate when the linked data is large, rarely needed, or retrieved conditionally.
 

@@ -78,6 +78,21 @@ INSERT INTO sc_part (gadget_id, part_name) VALUES (1, 'Part A');
 CREATE TABLE sc_product (id serial PRIMARY KEY, product_name text, price integer);
 INSERT INTO sc_product (id, product_name, price) VALUES (1, 'Product A', 100);
 
+-- Many-side link row-cap fixture. 64 children is the one number that matters: more than the
+-- 50 the middleware once hard-coded, fewer than the 200 it now defaults to, so an uncapped read
+-- and a capped one cannot be confused for each other in either direction.
+CREATE TABLE sc_bulk (
+	id serial PRIMARY KEY,
+	name text NOT NULL
+);
+CREATE TABLE sc_bulk_child (
+	id serial PRIMARY KEY,
+	bulk_id integer REFERENCES sc_bulk(id) ON DELETE CASCADE,
+	label text NOT NULL
+);
+INSERT INTO sc_bulk (name) VALUES ('Bulk Parent');
+INSERT INTO sc_bulk_child (bulk_id, label) SELECT 1, 'child ' || g FROM generate_series(1, 64) g;
+
 -- Cross-adapter conformance fixture: a NATURAL-key table (no `id` column at all).
 -- The rest of this seed is surrogate-keyed, which cannot expose a disagreement about
 -- which field a record is looked up by. See conformance.test.ts.

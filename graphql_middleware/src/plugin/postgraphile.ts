@@ -1,11 +1,4 @@
-import type {
-	DoctypeField,
-	DoctypeMeta,
-	LinkDeclaration,
-	TableField,
-	ValueField,
-	GetRecordOptions,
-} from '@stonecrop/schema'
+import type { DoctypeField, DoctypeMeta, LinkDeclaration, ValueField, GetRecordOptions } from '@stonecrop/schema'
 import { camelToSnake, getRecordIdField, pascalToSnake, resolveLinkRenderMode } from '@stonecrop/schema'
 import { loadOneWithPgClient, sideEffectWithPgClient } from '@dataplan/pg'
 import type { PgClient, PgExecutor } from '@dataplan/pg'
@@ -138,18 +131,26 @@ export interface StonecropPluginOptions {
 	 */
 	actionHandlers?: Record<string, Record<string, ActionHandler>>
 	/**
-	 * Row cap applied to `stonecropRecords` when the caller requests no `limit`. Defaults to 200.
+	 * Row cap applied when nothing else names one: to `stonecropRecords` when the caller requests
+	 * no `limit`, and to a many-side link when its declaration carries no `fetch.limit`. Defaults
+	 * to 200.
 	 *
 	 * A row cap is a statement about what this database can afford to serve, so it belongs to
 	 * whoever owns the database — not to a doctype (which describes the API surface, not the
 	 * table) and not to a page (which cannot know the size of an arbitrary table). Callers stay
 	 * free to ask for less; they cannot ask for an unbounded scan by omission.
 	 *
-	 * `hasMore` reports whether the cap truncated the result, so a capped page is always
-	 * distinguishable from a complete one without asking for a count.
+	 * One number covers both reads because a link *is* a list, fetched a different way. It used to
+	 * be capped at a hard-coded 50 that no option could reach, which is how an operator watching a
+	 * slow query found there was no knob to turn.
 	 *
-	 * Set to `null` for no default cap. That is the pre-0.17 behaviour and it means an unqualified
-	 * list query returns the whole table.
+	 * Truncation is always reported — `hasMore` for a list, `truncatedLinks` for a record — so a
+	 * partial answer is distinguishable from a complete one without asking for a count. That
+	 * matters more for a link than for a list: a link cannot be paged, so a client that writes
+	 * back a truncated relation deletes the rows it was never sent.
+	 *
+	 * Set to `null` for no default cap. That is the pre-0.17 behaviour for lists, and it means an
+	 * unqualified list query returns the whole table and a link returns the whole relation.
 	 */
 	defaultRecordLimit?: number | null
 }
@@ -201,6 +202,11 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 			}
 		: <T>(pgClient: PgClient, query: { text: string; values?: unknown[] }) => pgClient.query<T>(query)
 
+	// Resolved once, for both read paths. `undefined` means "not configured" and `null` means
+	// "configured off", which is a distinction `??` cannot make — and the two paths disagreeing
+	// about it is exactly how a link came to be capped by a different number than a list.
+	const defaultRowLimit: number | null = options.defaultRecordLimit === undefined ? 200 : options.defaultRecordLimit
+
 	return extendSchema(build => {
 		// Obtain the PgExecutor from pgExecutors — one entry exists per configured pgService.
 		// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- build.input.pgRegistry is a PostGraphile internal not in the public Build type
@@ -249,6 +255,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 										data: Record<string, unknown> | null
 										doctype: string
 										unknownLinks?: string[]
+										truncatedLinks?: string[]
 									}> = Array.from({ length: specs.length })
 
 									for (const [doctype, indices] of byDoctype) {
@@ -330,6 +337,9 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 											}
 
 											const rowData: Record<string, unknown> = { ...row }
+											// Per record, not per doctype: two records of one doctype can differ in whether
+											// a relation overflowed, and a shared list would report the wrong one truncated.
+											const truncatedLinks: string[] = []
 											const recordOptions = (specs[i].options ?? {}) as GetRecordOptions
 											const includeAll = recordOptions.includeNested === true
 											const includeSet = Array.isArray(recordOptions.includeNested)
@@ -349,7 +359,13 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 													const fetch = link.fetch
 													const isMany = link.cardinality === 'noneOrMany' || link.cardinality === 'atLeastOne'
 													const effectiveMethod = fetch?.method ?? (isMany ? 'sync' : 'lazy')
-													const effectiveLimit = fetch?.method === 'sync' ? fetch.limit : isMany ? 50 : undefined
+													// Two questions, kept apart. `method === 'sync'` is a *type narrowing* — only
+													// `SyncFetch` carries a `limit` — and the server default used to hang off its
+													// `else`, so declaring the method a many-side link already defaults to removed
+													// the cap entirely. "Did the author write a limit?" and "did the author write
+													// the word sync?" are now asked separately.
+													const declaredLimit = fetch?.method === 'sync' ? fetch.limit : undefined
+													const effectiveLimit = isMany ? (declaredLimit ?? defaultRowLimit) : undefined
 
 													// The one gate. It used to be followed by a second test that re-asked the
 													// same question using only `includeSet` — `null` for the boolean form — so
@@ -392,8 +408,10 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 														let sql = `SELECT ${targetColumns} FROM ${resolveTableName(targetMeta.name, options.tables)} WHERE "${backlinkCol}"::text = $1`
 														const linkValues: unknown[] = [specId]
 														if (effectiveLimit != null) {
+															// One row more than the cap, same probe the list path uses: its presence
+															// is the whole truncation answer and costs no second query.
 															sql += ` LIMIT $2`
-															linkValues.push(effectiveLimit)
+															linkValues.push(effectiveLimit + 1)
 														}
 														// TODO(perf): many-side link queries per row could be parallelized; needs collecting across links before await
 														// oxlint-disable-next-line eslint/no-await-in-loop -- one SQL per backlink per row; see TODO above
@@ -401,7 +419,16 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 															text: sql,
 															values: linkValues,
 														})
-														rowData[fieldname] = linked
+														// A truncated relation that says nothing is how a read-modify-write deletes
+														// the tail: the client cannot tell 50 rows from all of them, so it writes
+														// back what it was given. Reported for every source of truncation, the
+														// author's `fetch.limit` included — that one is just as silent.
+														if (effectiveLimit != null && linked.length > effectiveLimit) {
+															truncatedLinks.push(fieldname)
+															rowData[fieldname] = linked.slice(0, effectiveLimit)
+														} else {
+															rowData[fieldname] = linked
+														}
 													} else {
 														// Read from the reserved alias, never the fieldname: an expanding link's FK
 														// column is deliberately absent from `getSqlColumns`, so the plain read found
@@ -442,6 +469,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 												data: rowData,
 												doctype,
 												unknownLinks: unknownLinks?.length ? unknownLinks : undefined,
+												truncatedLinks: truncatedLinks.length ? truncatedLinks : undefined,
 											}
 										}
 									}
@@ -523,8 +551,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 											if (spec.limit != null && typeof spec.limit !== 'number') {
 												throw new Error(`Invalid limit: expected number, got ${typeof spec.limit}`)
 											}
-											const effectiveLimit: number | null =
-												spec.limit ?? (options.defaultRecordLimit === undefined ? 200 : options.defaultRecordLimit)
+											const effectiveLimit: number | null = spec.limit ?? defaultRowLimit
 											let pagingClause = ''
 											if (effectiveLimit != null) {
 												// One more row than asked for. Its presence is the whole `hasMore` answer, and

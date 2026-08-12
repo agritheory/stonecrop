@@ -300,6 +300,61 @@ beforeAll(async () => {
 				itemId: { target: 'ScItem', cardinality: 'one' as const, component: 'AForm' },
 			},
 		},
+		// Row-cap fixtures. Three doctypes over the one 64-child table, differing only in how the
+		// link declares its fetch — which is the axis the cap used to key off by accident.
+		ScBulkChild: {
+			name: 'ScBulkChild',
+			fields: [
+				{ kind: 'field', fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
+				{ kind: 'field', fieldname: 'label', component: 'ATextInput', label: 'Label' },
+				{ kind: 'field', fieldname: 'bulk_id', component: 'ATextInput', label: 'Bulk ID' },
+			],
+		},
+		// Declares no `fetch` at all. A many-side link defaults to `sync`, so this and ScBulkSync
+		// below resolve to the same strategy and must read the same rows.
+		ScBulk: {
+			name: 'ScBulk',
+			fields: [
+				{ kind: 'field', fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
+				{ kind: 'field', fieldname: 'name', component: 'ATextInput', label: 'Name' },
+			],
+			links: {
+				children: { target: 'ScBulkChild', cardinality: 'noneOrMany' as const, backlink: 'bulk_id' },
+			},
+		},
+		ScBulkSync: {
+			name: 'ScBulkSync',
+			fields: [
+				{ kind: 'field', fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
+				{ kind: 'field', fieldname: 'name', component: 'ATextInput', label: 'Name' },
+			],
+			links: {
+				children: {
+					target: 'ScBulkChild',
+					cardinality: 'noneOrMany' as const,
+					backlink: 'bulk_id',
+					fetch: { method: 'sync' as const },
+				},
+			},
+		},
+		// An author-declared cap, under a key that differs from the field it binds — so what the
+		// truncation report names is unambiguous rather than accidentally identical.
+		ScBulkCapped: {
+			name: 'ScBulkCapped',
+			fields: [
+				{ kind: 'field', fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
+				{ kind: 'field', fieldname: 'name', component: 'ATextInput', label: 'Name' },
+			],
+			links: {
+				kids: {
+					target: 'ScBulkChild',
+					cardinality: 'noneOrMany' as const,
+					backlink: 'bulk_id',
+					fieldname: 'children',
+					fetch: { method: 'sync' as const, limit: 10 },
+				},
+			},
+		},
 		ScProduct: {
 			name: 'ScProduct',
 			fields: [
@@ -336,6 +391,8 @@ beforeAll(async () => {
 					ScLinkInline: 'sc_tag',
 					ScLinkAliased: 'sc_tag',
 					ScLinkLazy: 'sc_tag',
+					ScBulkSync: 'sc_bulk',
+					ScBulkCapped: 'sc_bulk',
 				},
 			}),
 		],
@@ -684,6 +741,62 @@ describe('lazy link retrieval via stonecropRecords', { tags: ['integration', 'gr
 
 		// The data contents should match
 		expect(syncData?.notes?.map((n: any) => n.body).toSorted()).toEqual(lazyData?.map((n: any) => n.body).toSorted())
+	})
+})
+
+// ===========================================================================
+// Many-side link row cap
+// ===========================================================================
+
+describe('many-side link row cap', { tags: ['integration', 'graphql'] }, () => {
+	// The bug this suite exists for: the cap was `fetch?.method === 'sync' ? fetch.limit : isMany ? 50
+	// : undefined`, where `method === 'sync'` is a *type narrowing* (only SyncFetch carries `limit`)
+	// that someone also hung a default off. Writing the word `sync` — the very method a many-side
+	// link already defaults to — therefore removed the cap.
+	it('reads the same rows whether or not the link declares the method it already defaults to', async () => {
+		const [implicit, explicit] = await Promise.all([
+			runQuery(`query { stonecropRecord(doctype: "ScBulk", id: "1") { data } }`),
+			runQuery(`query { stonecropRecord(doctype: "ScBulkSync", id: "1") { data } }`),
+		])
+		const implicitChildren = (implicit as any).data?.stonecropRecord?.data?.children
+		const explicitChildren = (explicit as any).data?.stonecropRecord?.data?.children
+		// Asserted against the fixture's own size, not against each other: two reads that agree on
+		// the wrong number would pass an equality check.
+		expect(implicitChildren?.length).toBe(64)
+		expect(explicitChildren?.length).toBe(64)
+	})
+
+	it('applies the server default row cap to a link and says the link is partial', async () => {
+		const capped = await runQuery(
+			`query { stonecropRecord(doctype: "ScBulk", id: "1") { data truncatedLinks } }`,
+			undefined,
+			{
+				schema: cappedSchema,
+				resolvedPreset: cappedResolvedPreset,
+			}
+		)
+		const record = (capped as any).data?.stonecropRecord
+		expect(record?.data?.children.length).toBe(1)
+		expect(record?.truncatedLinks).toContain('children')
+	})
+
+	// The control. Without it a link that returned everything and reported truncation anyway would
+	// look identical to a working cap from the test above.
+	it('reports no truncation when the whole relation fits under the cap', async () => {
+		const result = await runQuery(`query { stonecropRecord(doctype: "ScBulk", id: "1") { data truncatedLinks } }`)
+		const record = (result as any).data?.stonecropRecord
+		expect(record?.data?.children.length).toBe(64)
+		expect(record?.truncatedLinks).toBeNull()
+	})
+
+	// An author-declared limit truncates just as silently as the old hard-coded one did, so it is
+	// reported the same way. The key is `kids` and the bound field is `children`: the report names
+	// the field, because that is the key the client reads the rows off and guards on.
+	it('reports an author-declared limit that truncates, naming the bound field', async () => {
+		const result = await runQuery(`query { stonecropRecord(doctype: "ScBulkCapped", id: "1") { data truncatedLinks } }`)
+		const record = (result as any).data?.stonecropRecord
+		expect(record?.data?.children.length).toBe(10)
+		expect(record?.truncatedLinks).toEqual(['children'])
 	})
 })
 
