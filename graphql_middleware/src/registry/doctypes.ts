@@ -4,7 +4,7 @@ import { join } from 'node:path'
 import { parseDoctype, validateDoctype } from '@stonecrop/schema'
 import type { DoctypeMeta, ValidationError } from '@stonecrop/schema'
 
-import { flattenFields } from '../fields'
+import { columnBackedFields, flattenFields } from '../fields'
 
 const doctypeRegistry: Map<string, DoctypeMeta> = new Map()
 
@@ -217,11 +217,10 @@ export function validateReferences(): ValidationError[] {
 		// Check link-declaration targets (component-primary links live in the `links` map)
 		if (doctype.links) {
 			const declared = new Set(fields.map(f => f.fieldname))
-			// Mirrors `collectColumns`: a foreign key is read from a column, and only a non-computed
-			// value field has one. A `computed` field is declared precisely to say it has no column,
-			// and a container (a table field) is a relation rather than a value — so both are names a
-			// link can resolve to and still find nothing behind.
-			const columnBacked = new Set(fields.filter(f => f.kind === 'field' && !f.computed).map(f => f.fieldname))
+			// A foreign key is read from a column, so a link can only bind to a field that has one.
+			// The rule itself lives in one place — see `columnBackedFields` — because the read path,
+			// the write path and this check all have to answer it the same way.
+			const columnBacked = new Set(columnBackedFields(doctype.fields).map(f => f.fieldname))
 
 			for (const [key, link] of Object.entries(doctype.links)) {
 				if (getMeta(link.target) === undefined) {

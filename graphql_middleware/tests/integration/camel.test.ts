@@ -35,6 +35,9 @@ beforeAll(async () => {
 					fetch: { method: 'sync' as const },
 				},
 			},
+			// Every column of sc_camel_item is snake_case while every fieldname here is camelCase,
+			// which is the only shape that can catch a write path returning raw columns.
+			workflow: { actions: { save: { label: 'Save', selfTransition: true } } },
 		},
 		ScCamelTag: {
 			name: 'ScCamelTag',
@@ -216,5 +219,21 @@ describe('stonecropRecords — camelCase fieldnames', { tags: ['integration', 'g
 		expect(row?.itemStatus).toBeDefined()
 		expect(row?.display_name).toBeUndefined()
 		expect(row?.item_status).toBeUndefined()
+	})
+
+	// The write half of the rule above, and the one the client cannot survive getting wrong: it
+	// resolves a record's identity by the *declared fieldname*. `RETURNING *` answers `item_id`,
+	// the client finds no `itemId`, and a record that was genuinely created is filed nowhere and
+	// silently lost. That bug has shipped once already and was patched downstream in a consumer;
+	// this is the adapter refusing to emit it in the first place.
+	it('a created record carries fieldname keys, so its identity is resolvable', async () => {
+		const result = await runQuery(
+			`mutation { stonecropAction(doctype: "ScCamelItem", action: "save", args: [{ data: { displayName: "Minted" } }]) { success error data } }`
+		)
+		const action = (result as any).data?.stonecropAction
+		expect(action?.error).toBeNull()
+		expect(action?.data?.displayName).toBe('Minted')
+		expect(action?.data?.itemId).toBeDefined()
+		expect(action?.data?.item_id).toBeUndefined()
 	})
 })

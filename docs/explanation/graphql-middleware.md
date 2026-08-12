@@ -33,6 +33,16 @@ A many-side link is capped at `fetch.limit` if the declaration names one, and ot
 
 The `stonecropRecord` query accepts an `options` argument with an `includeNested` field. Pass `true` to include all links, or pass an array of link names to include only those. When `includeNested` names a link that does not exist on the doctype, that name is returned in `unknownLinks` on the result object. This helps clients detect configuration errors: if `unknownLinks` is non-empty, a requested link name is not declared in the doctype schema.
 
+## Writing records
+
+There is one write path, and it is `stonecropAction`. Saving is a *self-transition* — an action declaring `selfTransition: true` — so there is no create mutation, no update mutation, and no separate create action. The client sends the record's id to update it and **sends no id to create it**; that absence is the entire signal, which is why a draft dispatches without one.
+
+What a write may set comes from the doctype, not from the request. The patch is intersected with the doctype's declared, column-backed fields — the same derivation the read path selects — so what a record exposes is what a record accepts. Keys naming no column are discarded, as are values that arrive as nested objects where the column holds a scalar (the shape a read-modify-write produces for an expanding link). Everything discarded is listed in `droppedFields` on the result. The action still succeeds; report it, because those keys are data the user believes was saved.
+
+Two things a patch can never set. `status` is one: state moves through `nextState`, guarded by `allowedStates`, and a patch that could write the state column would walk straight past the guard. Identity is the other — on create the declared primary key passes through only when the record itself carries it, which is what a natural-keyed doctype's user-entered key looks like; otherwise the column default mints it. The initial workflow state comes from the column default too. Nothing reads `workflow.states` for it: that array is unordered and has no initial marker, and a record being created is in no state for `allowedStates` to constrain.
+
+An id that was dispatched but matched no row is refused rather than created. It means the record went away since the client read it, and creating a replacement under a new identity would report success for a lost update.
+
 ## Why there is no `DataAdapter` base class yet
 
 Stonecrop's middleware currently targets one backend: a PostgreSQL database accessed through PostGraphile's Grafast pipeline. A natural next question is: should there be a `DataAdapter` interface so that a REST API, a localStorage cache, or a different database could be swapped in?

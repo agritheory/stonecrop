@@ -107,6 +107,10 @@ beforeAll(async () => {
 				states: ['Draft', 'Active'],
 				actions: {
 					submit: { label: 'Submit', allowedStates: ['Draft'], nextState: 'Active' },
+					// The self-transition: persists field data in place, and creates the record
+					// when there is none. No `allowedStates` — a save is allowed from any state,
+					// and a record being created is in none.
+					save: { label: 'Save', selfTransition: true },
 					// Stateless commands: no nextState, no selfTransition. Only a registered
 					// `actionHandlers` entry can make one of these do anything.
 					recalculate: { label: 'Recalculate', stateless: true, allowedStates: ['Draft'] },
@@ -255,6 +259,9 @@ beforeAll(async () => {
 					fetch: { method: 'sync' as const },
 				},
 			},
+			// Present so the write path can be pointed at an expanding link, whose read value is a
+			// nested record while its column holds a scalar foreign key.
+			workflow: { actions: { save: { label: 'Save', selfTransition: true } } },
 		},
 		ScLinkInline: {
 			name: 'ScLinkInline',
@@ -741,6 +748,110 @@ describe('lazy link retrieval via stonecropRecords', { tags: ['integration', 'gr
 
 		// The data contents should match
 		expect(syncData?.notes?.map((n: any) => n.body).toSorted()).toEqual(lazyData?.map((n: any) => n.body).toSorted())
+	})
+})
+
+// ===========================================================================
+// Saving and creating — the self-transition write path
+// ===========================================================================
+
+describe('self-transition data write', { tags: ['integration', 'graphql'] }, () => {
+	// The adapter supplied `readState`/`writeState`/`runEffect` and no `writeData` at all, which
+	// `GuardedTransitionIO` documents as how a backend *declines* to write. So the reference
+	// Postgres backend was indistinguishable from a read-only one, and every save answered
+	// "which this backend does not support" — loud, but a lie.
+	it('persists field data for a save against an existing record', async () => {
+		const [action, read] = await runSequence([
+			`mutation { stonecropAction(doctype: "ScItem", action: "save", args: [{ id: "1", data: { name: "Renamed" } }]) { success error data } }`,
+			`query { stonecropRecord(doctype: "ScItem", id: "1") { data } }`,
+		])
+		expect((action as any).data?.stonecropAction?.error).toBeNull()
+		expect((action as any).data?.stonecropAction?.success).toBe(true)
+		// The row itself, not just the echoed payload — the result could be right while nothing landed.
+		expect((read as any).data?.stonecropRecord?.data?.name).toBe('Renamed')
+	})
+
+	// Creating is the same request with no id. There is no create action and no create mutation:
+	// `save` upserts, and the absence of an id is the whole signal.
+	it('creates the record when no id is dispatched', async () => {
+		const [action, list] = await runSequence([
+			`mutation { stonecropAction(doctype: "ScItem", action: "save", args: [{ data: { name: "Minted" } }]) { success error data } }`,
+			`query { stonecropRecords(doctype: "ScItem", filters: { name: "Minted" }) { data } }`,
+		])
+		expect((action as any).data?.stonecropAction?.error).toBeNull()
+		const created = (action as any).data?.stonecropAction?.data
+		expect(created?.name).toBe('Minted')
+		// Identity must come back, or the client files the record nowhere and the create is lost.
+		expect(created?.id).toBeDefined()
+		expect((list as any).data?.stonecropRecords?.data.length).toBe(1)
+	})
+
+	// The client's contract is that an id means update and its absence means create
+	// (`client-action.ts`: `...(isDraft ? {} : { id: recordId })`). The guard's read collapses
+	// "no id dispatched" and "id dispatched, no such row" into the same `null`, so a save against
+	// a record someone else deleted lands on the create branch — minting a *new* row under a new
+	// identity and reporting success. The client then follows the settled id and nobody learns the
+	// original is gone. Silent, and wrong.
+	it('refuses to create when an id was dispatched but matched no row', async () => {
+		const [action, list] = await runSequence([
+			`mutation { stonecropAction(doctype: "ScItem", action: "save", args: [{ id: "9999", data: { name: "Ghost" } }]) { success error } }`,
+			`query { stonecropRecords(doctype: "ScItem", filters: { name: "Ghost" }) { data } }`,
+		])
+		const result = (action as any).data?.stonecropAction
+		expect(result?.success).toBe(false)
+		// Naming the id is the difference between a usable report and "something went wrong".
+		expect(String(result?.error)).toContain('9999')
+		// The oracle that matters: the envelope could say failure while a row was still written.
+		expect((list as any).data?.stonecropRecords?.data.length).toBe(0)
+	})
+
+	// The doctype owns state everywhere except creation, where `transition.ts` says the initial
+	// state is the backend's to set. The column default is the backend setting it — nothing reads
+	// `workflow.states`, which is an unordered array with no initial marker to read.
+	it('takes the initial state from the column default, never from the doctype', async () => {
+		const [action] = await runSequence([
+			`mutation { stonecropAction(doctype: "ScItem", action: "save", args: [{ data: { name: "Defaulted" } }]) { data } }`,
+		])
+		expect((action as any).data?.stonecropAction?.data?.status).toBe('Draft')
+	})
+
+	// A save is a self-transition: it stays in the current state by definition. Letting a patch
+	// carry `status` would let any client bypass `allowedStates` entirely by writing the column
+	// the guard reads.
+	it('refuses to move the workflow state through the data patch', async () => {
+		const [, read] = await runSequence([
+			`mutation { stonecropAction(doctype: "ScItem", action: "save", args: [{ id: "1", data: { name: "Still Draft", status: "Active" } }]) { success droppedFields } }`,
+			`query { stonecropRecord(doctype: "ScItem", id: "1") { data } }`,
+		])
+		const record = (read as any).data?.stonecropRecord?.data
+		expect(record?.name).toBe('Still Draft')
+		expect(record?.status).toBe('Draft')
+	})
+
+	// Column identifiers come from the doctype, never from the request — which is what makes the
+	// patch untrusted input safe to build SQL from. A key naming no column has nowhere to go.
+	it('drops a key that names no column, and says which', async () => {
+		const [action] = await runSequence([
+			`mutation { stonecropAction(doctype: "ScItem", action: "save", args: [{ id: "1", data: { name: "Kept", bogus: "x" } }]) { success droppedFields data } }`,
+		])
+		const result = (action as any).data?.stonecropAction
+		expect(result?.success).toBe(true)
+		expect(result?.data?.name).toBe('Kept')
+		// Silence here is data loss the user is told was saved.
+		expect(result?.droppedFields).toContain('bogus')
+	})
+
+	// The read returns an expanding link as a nested record; the column under it holds a scalar
+	// foreign key. A client that reads, edits and writes back sends the nested form straight into
+	// a uuid column — so the shape is checked, not just the name.
+	it('drops an expanded relation payload but writes the scalar foreign key', async () => {
+		const [expanded, scalar] = await runSequence([
+			`mutation { stonecropAction(doctype: "ScLinkExpand", action: "save", args: [{ id: "1", data: { itemId: { id: 2, name: "Beta" } } }]) { success droppedFields } }`,
+			`mutation { stonecropAction(doctype: "ScLinkExpand", action: "save", args: [{ id: "1", data: { itemId: "2" } }]) { success droppedFields } }`,
+		])
+		expect((expanded as any).data?.stonecropAction?.droppedFields).toContain('itemId')
+		expect((scalar as any).data?.stonecropAction?.success).toBe(true)
+		expect((scalar as any).data?.stonecropAction?.droppedFields).toBeNull()
 	})
 })
 

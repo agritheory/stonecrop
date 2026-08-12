@@ -6,7 +6,7 @@ import { constant, lambda, object } from 'postgraphile/grafast'
 import { GraphileConfig } from 'postgraphile/graphile-build'
 import { extendSchema } from 'postgraphile/utils'
 
-import { flattenFields } from '../fields'
+import { columnBackedFields, flattenFields } from '../fields'
 import { getFetchHandler } from '../registry/fetchHandlers'
 import { getMeta, getAllMeta, validateReferences } from '../registry/doctypes'
 import { applyGuardedTransition } from '../dispatch/transition'
@@ -177,6 +177,16 @@ class ActionRolledBack extends Error {
  * keeps that need from changing the payload: every alias is stripped before the record is returned.
  */
 const LINK_FK_ALIAS = '__stonecropLinkFk_'
+
+/**
+ * The column this adapter keeps a record's workflow state in.
+ *
+ * Named once because three statements depend on agreeing about it: the guard's `FOR UPDATE` read,
+ * the transition's write, and the data write that must refuse to touch it. A patch that could set
+ * this column would let any client walk past `allowedStates` by writing the very value the guard
+ * reads.
+ */
+const STATE_COLUMN = 'status'
 
 /**
  * Create a PostGraphile plugin that extends the GraphQL schema with Stonecrop functionality.
@@ -659,6 +669,51 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 									// silently miss it.
 									const handler = options.actionHandlers?.[meta.name]?.[String(spec.action)]
 
+									// What a data write is allowed to set. Column identifiers come from the
+									// doctype and never from the request — `args` is an opaque JSON scalar, so
+									// every key in `data` is browser-supplied — which is what makes it safe to
+									// build SQL from a patch at all.
+									//
+									// The same derivation the read path uses, so what a record exposes is what a
+									// record accepts. `status` is removed because state is the workflow's to
+									// move, never the patch's.
+									const writable = new Map(
+										columnBackedFields(meta.fields)
+											.filter(f => camelToSnake(f.fieldname) !== STATE_COLUMN)
+											.map(f => [f.fieldname, f] as const)
+									)
+									// Whether this doctype has a workflow state to read at all. Derived from the
+									// same declarations, so the guard cannot look for a column the doctype's own
+									// API surface does not describe.
+									const declaresState = columnBackedFields(meta.fields).some(
+										f => camelToSnake(f.fieldname) === STATE_COLUMN
+									)
+									// Reported on the result rather than logged: a dropped key is data the user
+									// believes was saved, which is the same data-loss signal `truncatedLinks`
+									// carries for a truncated read.
+									const droppedFields: string[] = []
+									const partitionPatch = (patch: Record<string, unknown>) => {
+										const cols: string[] = []
+										const values: unknown[] = []
+										for (const [key, value] of Object.entries(patch)) {
+											if (!writable.has(key)) {
+												droppedFields.push(key)
+												continue
+											}
+											// An expanding link reads back as a nested record while its column
+											// holds a scalar foreign key, so a read-modify-write hands this loop
+											// an object bound for a uuid column. The name resolving is not
+											// enough; the shape has to match a column value too.
+											if (value !== null && typeof value === 'object') {
+												droppedFields.push(key)
+												continue
+											}
+											cols.push(camelToSnake(key))
+											values.push(value)
+										}
+										return { cols, values }
+									}
+
 									// One transaction spans the guard read, the effect and the state write, so an
 									// action either lands whole or not at all. `withTransaction` issues `begin` at
 									// the top level and a `savepoint` if something upstream already opened one, so
@@ -669,43 +724,122 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 									// transaction and would survive a rollback.
 									try {
 										return await pgClient.withTransaction(async (tx: PgClient) => {
-											const outcome = await applyGuardedTransition(actionDef, {
-												readState: async () => {
-													// No id in the envelope means no record was targeted at all, which is
-													// the same answer as a lookup that misses: `null`, not `undefined`.
-													if (recordId == null) return null
-													// FOR UPDATE holds the row until this transaction ends, so a second
-													// action on the same record waits rather than reading the same state
-													// and acting on it too. Without it the guard is a check-then-act
-													// race: two concurrent approvals both read PENDING and both proceed.
-													const { rows } = await debugSql<{ status: string | null }>(tx, {
-														text: `SELECT "status" FROM ${table} WHERE "${pkColumn()}"::text = $1 FOR UPDATE`,
-														values: [String(recordId)],
-													})
-													// No row at all vs. a row whose `status` is NULL — see GuardedTransitionIO.
-													if (rows.length === 0) return null
-													return rows[0].status ?? undefined
-												},
-												writeState: async (nextState: string) => {
-													await debugSql(tx, {
-														text: `UPDATE ${table} SET "status" = $1 WHERE "${pkColumn()}"::text = $2`,
-														values: [nextState, String(recordId)],
-													})
-												},
-												runEffect: handler
-													? (currentState: string | undefined) =>
-															handler({
-																pgClient: tx,
-																doctype: String(spec.doctype),
-																action: String(spec.action),
-																meta,
-																recordId,
-																data: recordData,
-																args: argList,
-																currentState,
+											const outcome = await applyGuardedTransition(
+												actionDef,
+												{
+													readState: async () => {
+														// No id in the envelope means no record was targeted at all, which is
+														// the same answer as a lookup that misses: `null`, not `undefined`.
+														if (recordId == null) return null
+														// Selecting `status` unconditionally made this read fail outright on
+														// any table without that column — and a self-transition reaches here
+														// not to read a state but to learn whether the row exists, which is
+														// what decides create vs. update. So the projection follows the
+														// doctype: a doctype that declares no state field has none to read,
+														// and the honest answer for a row it finds is "exists, no state".
+														// (Measured: 24 of FAB's 35 guarded tables have no `status` column.)
+														const projection = declaresState ? `"${STATE_COLUMN}"` : `"${pkColumn()}"`
+														// FOR UPDATE holds the row until this transaction ends, so a second
+														// action on the same record waits rather than reading the same state
+														// and acting on it too. Without it the guard is a check-then-act
+														// race: two concurrent approvals both read PENDING and both proceed.
+														const { rows } = await debugSql<Record<string, string | null>>(tx, {
+															text: `SELECT ${projection} FROM ${table} WHERE "${pkColumn()}"::text = $1 FOR UPDATE`,
+															values: [String(recordId)],
+														})
+														// No row at all vs. a row whose `status` is NULL — see GuardedTransitionIO.
+														if (rows.length === 0) return null
+														if (!declaresState) return undefined
+														return rows[0][STATE_COLUMN] ?? undefined
+													},
+													writeState: async (nextState: string) => {
+														await debugSql(tx, {
+															text: `UPDATE ${table} SET "${STATE_COLUMN}" = $1 WHERE "${pkColumn()}"::text = $2`,
+															values: [nextState, String(recordId)],
+														})
+													},
+													// The upsert, and the only write path for record data. `exists`
+													// comes from the guard's own read, so no second lookup decides it.
+													//
+													// Returns the same projection the read path selects, never
+													// `RETURNING *`: raw columns come back snake_case, and the client
+													// resolves identity by the *declared fieldname*. A doctype keyed
+													// `itemId` would receive `item_id`, find no identity, and file a
+													// created record nowhere — which is that exact bug, already once
+													// shipped and patched downstream.
+													writeData: async (patch: Record<string, unknown>, exists: boolean) => {
+														const { cols, values } = partitionPatch(patch)
+														const returning = getSqlColumns(meta)
+
+														if (!exists) {
+															// Creating is what the *absence* of an id means. An id that was
+															// dispatched and matched nothing is a record that has gone away
+															// since the client read it, and treating that as a create mints a
+															// second row under a new identity while the client believes it
+															// updated the first — a lost update that reports success.
+															//
+															// The dispatcher cannot make this call: it never receives the id,
+															// deliberately, since identity is the backend's business. So the
+															// distinction its `readState` contract collapses is restored here,
+															// where the id is in scope.
+															if (recordId != null) {
+																throw new Error(
+																	`Action "${actionDef.label ?? spec.action}" targets ${meta.name} "${String(recordId)}", ` +
+																		`which no longer exists. Nothing was created — a record dispatched with an ` +
+																		`identity is an update, and creating one is what dispatching no identity means.`
+																)
+															}
+															// No identity is minted here. A declared key present in the
+															// patch is a natural key the user filled in and passes
+															// through the whitelist like any other column; absent, the
+															// column default supplies it. Either way the row states its
+															// own identity back.
+															const text = cols.length
+																? `INSERT INTO ${table} (${cols.map(c => `"${c}"`).join(', ')}) VALUES (${cols.map((_col, i) => `$${i + 1}`).join(', ')}) RETURNING ${returning}`
+																: `INSERT INTO ${table} DEFAULT VALUES RETURNING ${returning}`
+															const { rows } = await debugSql<Record<string, unknown>>(tx, { text, values })
+															return rows[0] ?? {}
+														}
+
+														// Nothing writable survived the patch. `SET` with no assignments
+														// is a syntax error, and reporting failure would be wrong — the
+														// record is fine, it just has no new data. Read it back so the
+														// client still gets the record, with `droppedFields` saying why
+														// nothing changed.
+														if (cols.length === 0) {
+															const { rows } = await debugSql<Record<string, unknown>>(tx, {
+																text: `SELECT ${returning} FROM ${table} WHERE "${pkColumn()}"::text = $1`,
+																values: [String(recordId)],
 															})
-													: undefined,
-											})
+															return rows[0] ?? {}
+														}
+
+														const assignments = cols.map((c, i) => `"${c}" = $${i + 1}`).join(', ')
+														const { rows } = await debugSql<Record<string, unknown>>(tx, {
+															text: `UPDATE ${table} SET ${assignments} WHERE "${pkColumn()}"::text = $${cols.length + 1} RETURNING ${returning}`,
+															values: [...values, String(recordId)],
+														})
+														return rows[0] ?? {}
+													},
+													runEffect: handler
+														? (currentState: string | undefined) =>
+																handler({
+																	pgClient: tx,
+																	doctype: String(spec.doctype),
+																	action: String(spec.action),
+																	meta,
+																	recordId,
+																	data: recordData,
+																	args: argList,
+																	currentState,
+																})
+														: undefined,
+												},
+												// The patch a self-transition persists. This adapter never passed it, which
+												// was moot while it had no `writeData` — nothing consumed it. Wiring the write
+												// without this argument saves an empty record and reports success.
+												recordData
+											)
 
 											// `applyGuardedTransition` REPORTS failure, it does not throw — a refused
 											// guard and a handler that blew up both come back as `{ success: false }`.
@@ -714,7 +848,11 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 											// what makes the rollback happen; the envelope is carried across so the
 											// caller still gets `success: false` rather than a GraphQL error.
 											if (!outcome.success) throw new ActionRolledBack(outcome)
-											return outcome
+											// Attached here rather than carried through `applyGuardedTransition`:
+											// which keys a backend can store is a storage question, and the
+											// dispatcher is deliberately storage-agnostic. A failed action wrote
+											// nothing, so the list is only meaningful on success.
+											return droppedFields.length ? { ...outcome, droppedFields } : outcome
 										})
 									} catch (err) {
 										if (err instanceof ActionRolledBack) return err.outcome
@@ -746,10 +884,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
  */
 function collectColumns(fields: DoctypeField[], links: Map<string, LinkDeclaration>): string[] {
 	const columns: string[] = []
-	for (const f of flattenFields(fields)) {
-		if (f.kind !== 'field') continue
-		// A computed field has no backing DB column.
-		if (f.computed) continue
+	for (const f of columnBackedFields(fields)) {
 		// Only an *expanding* link is a relation rather than a column. An inline link (a picker)
 		// keeps its FK on this table and must still be selected — `resolveLinkRenderMode` is the
 		// shared rule, also used by the client resolver; never re-derive it here.

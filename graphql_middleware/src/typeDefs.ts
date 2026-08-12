@@ -86,6 +86,14 @@ export const typeDefs = gql`
 		success: Boolean!
 		data: JSON
 		error: String
+		"""
+		Keys the write discarded because the doctype declares no column for them, or because the
+		value was a nested relation rather than a column value. Null when everything sent was
+		stored. The action still succeeded — this is what it did not keep, and a client that
+		reports an unqualified success without checking it tells the user data was saved that
+		was not.
+		"""
+		droppedFields: [String!]
 	}
 
 	extend type Query {
