@@ -268,6 +268,25 @@ beforeAll(async () => {
 				itemId: { target: 'ScItem', cardinality: 'one' as const, fetch: { method: 'sync' as const } },
 			},
 		},
+		// The declaration names its own `fieldname`, so the map key and the bound field differ —
+		// the one shape where `link.fieldname ?? key` is not a tautology.
+		ScLinkAliased: {
+			name: 'ScLinkAliased',
+			fields: [
+				{ kind: 'field', fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
+				{ kind: 'field', fieldname: 'label', component: 'ATextInput', label: 'Label' },
+				{ kind: 'field', fieldname: 'itemId', component: 'ATextInput', label: 'Item' },
+			],
+			links: {
+				item: {
+					target: 'ScItem',
+					cardinality: 'one' as const,
+					component: 'AForm',
+					fieldname: 'itemId',
+					fetch: { method: 'sync' as const },
+				},
+			},
+		},
 		ScProduct: {
 			name: 'ScProduct',
 			fields: [
@@ -302,6 +321,7 @@ beforeAll(async () => {
 					ScAmbiguous: 'sc_note',
 					ScLinkExpand: 'sc_tag',
 					ScLinkInline: 'sc_tag',
+					ScLinkAliased: 'sc_tag',
 				},
 			}),
 		],
@@ -1045,6 +1065,18 @@ describe('one-side link expansion', { tags: ['integration', 'graphql'] }, () => 
 		// An object here means the picker was handed a record where it expects an id to resolve
 		// display text from.
 		expect(data.itemId).toBe(1)
+	})
+
+	it('binds and returns an aliased link under its declared fieldname, not the map key', async () => {
+		// ScLinkAliased keys the declaration `item` but binds field `itemId`. Both halves of the
+		// one rule are load-bearing here: the FK is read via `fieldname ?? key`, and the result is
+		// written under that same resolved name — which is where the client looks for it.
+		const result = await runQuery(`query { stonecropRecord(doctype: "ScLinkAliased", id: "1") { data } }`)
+		expect((result as any).errors).toBeUndefined()
+		const data = (result as any).data?.stonecropRecord?.data
+		expect(data.itemId).toMatchObject({ id: 1, name: 'Alpha' })
+		// The map key must not become a payload field of its own.
+		expect(data.item).toBeUndefined()
 	})
 
 	it('keeps the internal FK alias out of the payload', async () => {
