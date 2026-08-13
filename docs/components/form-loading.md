@@ -3,6 +3,18 @@ title: Form Loading
 description: A loading-state placeholder shown while a form's data is being fetched or resolved.
 ---
 
+<script setup lang="ts">
+const propsHeaders = ["Name", "Type", "Default", "Description"]
+const propsRows = [
+	["—", "—", "—", "`AFormLoading` accepts no props."],
+]
+
+const slotsHeaders = ["Name", "Description"]
+const slotsRows = [
+	["`default`", "Loading message text. When non-empty, an animated `...` suffix is appended automatically."],
+]
+</script>
+
 # Form Loading
 
 `AFormLoading` is a presentational placeholder — an animated bar with an optional label — meant to stand in for a form or fieldset while its data is still being fetched or resolved. It takes no props; toggle its visibility (e.g. with `v-show`/`v-if`) alongside the form or fieldset it's covering for.
@@ -35,23 +47,11 @@ Mount `AFormLoading` directly, with the loading message as its default slot cont
 
 ### Props
 
-<ApiTable>
-
-| Name | Type | Default | Description                        |
-| ---- | ---- | ------- | ----------------------------------- |
-| —    | —    | —       | `AFormLoading` accepts no props.    |
-
-</ApiTable>
+<ApiDataTable :headers="propsHeaders" :rows="propsRows" />
 
 ### Slots
 
-<ApiTable>
-
-| Name      | Description                                                                                  |
-| --------- | ---------------------------------------------------------------------------------------------- |
-| `default` | Loading message text. When non-empty, an animated `...` suffix is appended automatically.     |
-
-</ApiTable>
+<ApiDataTable :headers="slotsHeaders" :rows="slotsRows" />
 
 ## Accessibility
 

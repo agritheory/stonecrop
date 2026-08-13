@@ -32,7 +32,6 @@ import CollapseButtonDemo from './demos/CollapseButtonDemo.vue'
 import CardGrid from './home/CardGrid.vue'
 import CardGridItem from './home/CardGridItem.vue'
 import DocsSearch from './DocsSearch.vue'
-import ApiTable from './ApiTable.vue'
 import ApiDataTable from './ApiDataTable.vue'
 
 export default {
@@ -76,7 +75,6 @@ export default {
 
 		app.component('CardGrid', CardGrid)
 		app.component('CardGridItem', CardGridItem)
-		app.component('ApiTable', ApiTable)
 		app.component('ApiDataTable', ApiDataTable)
 	},
 } satisfies Theme

@@ -3,6 +3,20 @@ title: Login
 description: A standalone email/password login form.
 ---
 
+<script setup lang="ts">
+const propsHeaders = ["Name", "Type", "Default", "Description"]
+const propsRows = [
+	["`headerTitle`", "`string`", "`'Login'`", "Heading text above the form."],
+	["`headerSubtitle`", "`string`", "`'Enter your email and password to login'`", "Subheading text below the title."],
+]
+
+const emitsHeaders = ["Name", "Payload", "Description"]
+const emitsRows = [
+	["`loginSuccess`", "none", "Emitted on submit whenever the (currently unimplemented) failure path isn't taken — in the current source this fires on every submit."],
+	["`loginFailed`", "none", "Emitted on submit if the internal `loginFailed` flag is set — nothing in the current source ever sets it, so this never fires yet."],
+]
+</script>
+
 # Login
 
 `Login` is a self-contained email/password sign-in form — a standalone utility component, not a schema-driven [AForm](/reference/aform) field. It manages its own `email`/`password` input state internally and emits `loginSuccess` or `loginFailed` when the form is submitted; wiring those events to a real authentication call is left to the consuming application.
@@ -35,25 +49,11 @@ This demo listens for `loginSuccess`/`loginFailed` and prints whichever one fire
 
 ### Props
 
-<ApiTable>
-
-| Name              | Type     | Default                                       | Description                          |
-| ----------------- | -------- | ----------------------------------------------- | --------------------------------------- |
-| `headerTitle`     | `string` | `'Login'`                                       | Heading text above the form.          |
-| `headerSubtitle`  | `string` | `'Enter your email and password to login'`      | Subheading text below the title.      |
-
-</ApiTable>
+<ApiDataTable :headers="propsHeaders" :rows="propsRows" />
 
 ### Emits
 
-<ApiTable>
-
-| Name           | Payload | Description                                                                                                                     |
-| -------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| `loginSuccess` | none    | Emitted on submit whenever the (currently unimplemented) failure path isn't taken — in the current source this fires on every submit. |
-| `loginFailed`  | none    | Emitted on submit if the internal `loginFailed` flag is set — nothing in the current source ever sets it, so this never fires yet. |
-
-</ApiTable>
+<ApiDataTable :headers="emitsHeaders" :rows="emitsRows" />
 
 Neither `email` nor `password` is exposed to the parent — they're local `ref`s inside `Login`, and both emits above carry no payload.
 

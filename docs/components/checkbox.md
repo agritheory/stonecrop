@@ -3,6 +3,31 @@ title: Checkbox
 description: A boolean input rendered from an AForm schema field.
 ---
 
+<script setup lang="ts">
+const propsHeaders = ['Name', 'Type', 'Default', 'Description']
+const propsRows = [
+	['`v-model`', '`boolean | undefined`', '—', "The checkbox's checked state."],
+	['`label`', '`string`', '—', 'Label text rendered next to the checkbox.'],
+	['`required`', '`boolean`', '`false`', 'Marks the input as required (`edit` mode only).'],
+	['`mode`', "`'edit' | 'read' | 'display'`", "`'edit'`", 'See [Modes](#modes) below.'],
+	['`uuid`', '`string`', 'auto-generated', "`id`/`for` pair linking the input to its label."],
+	['`validation`', '`{ errorMessage: string }`', "`{ errorMessage: '' }`", 'Static error message shown below the field.'],
+	[
+		'`errors`',
+		'`string[]`',
+		'—',
+		'Dynamic validation errors (e.g. from a trigger). Takes precedence over `validation.errorMessage` whenever the list is non-empty.',
+	],
+]
+
+const modesHeaders = ['Mode', 'Rendering']
+const modesRows = [
+	['`edit`', 'Interactive checkbox input.'],
+	['`read`', 'Checkbox input, disabled.'],
+	['`display`', 'Static label with a ✓ or ✗ shown in place of the input.'],
+]
+</script>
+
 # Checkbox
 
 `ACheckbox` renders a single boolean field — a native checkbox paired with a floating label — either standalone or as a field inside an [AForm](/reference/aform) schema. It supports the same `edit` / `read` / `display` interaction modes as every other Stonecrop field component.
@@ -64,31 +89,11 @@ const data = ref({ accepted: false })
 
 ### Props
 
-<ApiTable>
-
-| Name         | Type                          | Default                | Description                                                                                                                    |
-| ------------ | ----------------------------- | ----------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| `v-model`    | `boolean \| undefined`        | —                       | The checkbox's checked state.                                                                                                   |
-| `label`      | `string`                      | —                       | Label text rendered next to the checkbox.                                                                                      |
-| `required`   | `boolean`                     | `false`                 | Marks the input as required (`edit` mode only).                                                                                |
-| `mode`       | `'edit' \| 'read' \| 'display'` | `'edit'`                | See [Modes](#modes) below.                                                                                                      |
-| `uuid`       | `string`                      | auto-generated          | `id`/`for` pair linking the input to its label.                                                                                |
-| `validation` | `{ errorMessage: string }`    | `{ errorMessage: '' }`  | Static error message shown below the field.                                                                                    |
-| `errors`     | `string[]`                    | —                       | Dynamic validation errors (e.g. from a trigger). Takes precedence over `validation.errorMessage` whenever the list is non-empty. |
-
-</ApiTable>
+<ApiDataTable :headers="propsHeaders" :rows="propsRows" />
 
 ### Modes
 
-<ApiTable>
-
-| Mode      | Rendering                                              |
-| --------- | ------------------------------------------------------- |
-| `edit`    | Interactive checkbox input.                            |
-| `read`    | Checkbox input, disabled.                               |
-| `display` | Static label with a ✓ or ✗ shown in place of the input. |
-
-</ApiTable>
+<ApiDataTable :headers="modesHeaders" :rows="modesRows" />
 
 ## Accessibility
 

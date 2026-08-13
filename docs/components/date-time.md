@@ -3,6 +3,23 @@ title: Date Time
 description: A standalone hours:minutes:seconds time-of-day input with a 12-hour AM/PM or 24-hour toggle.
 ---
 
+<script setup lang="ts">
+const propsHeaders = ["Name", "Type", "Default", "Description"]
+const propsRows = [
+	["`allowMilitaryTime`", "`boolean`", "`false`", "Renders a single 24-hour hours segment instead of a 12-hour segment plus AM/PM selector."],
+	["`defaultHours`", "`number`", "`12`", "Initial value of the hours segment."],
+	["`defaultMinutes`", "`number`", "`0`", "Initial value of the minutes segment."],
+	["`defaultSeconds`", "`number`", "`0`", "Initial value of the seconds segment (only rendered when `useSeconds` is `true`)."],
+	["`defaultMeridiem`", "`string`", "`'AM'`", "Initial AM/PM selector value; any value other than `'AM'` resolves to `'PM'`."],
+	["`useSeconds`", "`boolean`", "`true`", "Whether to render the seconds segment."],
+]
+
+const eventsHeaders = ["Name", "Payload", "Description"]
+const eventsRows = [
+	["`get-time`", "`{ hours: number; minutes: number; seconds: number; meridiem: string; militaryTime: number }`", "Emitted once on mount, and again whenever a segment is confirmed. `militaryTime` is always the 24-hour hour value, regardless of `allowMilitaryTime`."],
+]
+</script>
+
 # Date Time
 
 `ADateTime` renders a compact time-of-day input — separate numeric segments for hours, minutes, and (optionally) seconds, plus an AM/PM selector or a 24-hour "military time" segment. It communicates purely through an emitted `get-time` event rather than a `v-model`, so it's most often composed inside a higher-level field like [`ADateSelection`](/components/date-selection) rather than used standalone.
@@ -65,28 +82,11 @@ Because `ADateTime` has no `v-model`, mounting it this way does not wire `create
 
 ### Props
 
-<ApiTable>
-
-| Name                | Type      | Default | Description                                                                             |
-| -------------------- | ----------- | --------- | ------------------------------------------------------------------------------------------- |
-| `allowMilitaryTime`   | `boolean` | `false`   | Renders a single 24-hour hours segment instead of a 12-hour segment plus AM/PM selector. |
-| `defaultHours`        | `number`  | `12`      | Initial value of the hours segment.                                                     |
-| `defaultMinutes`      | `number`  | `0`       | Initial value of the minutes segment.                                                   |
-| `defaultSeconds`      | `number`  | `0`       | Initial value of the seconds segment (only rendered when `useSeconds` is `true`).        |
-| `defaultMeridiem`     | `string`  | `'AM'`    | Initial AM/PM selector value; any value other than `'AM'` resolves to `'PM'`.            |
-| `useSeconds`          | `boolean` | `true`    | Whether to render the seconds segment.                                                  |
-
-</ApiTable>
+<ApiDataTable :headers="propsHeaders" :rows="propsRows" />
 
 ### Events
 
-<ApiTable>
-
-| Name       | Payload                                                                                       | Description                                                                                                                     |
-| ----------- | ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------ |
-| `get-time` | `{ hours: number; minutes: number; seconds: number; meridiem: string; militaryTime: number }` | Emitted once on mount, and again whenever a segment is confirmed. `militaryTime` is always the 24-hour hour value, regardless of `allowMilitaryTime`. |
-
-</ApiTable>
+<ApiDataTable :headers="eventsHeaders" :rows="eventsRows" />
 
 ## Accessibility
 

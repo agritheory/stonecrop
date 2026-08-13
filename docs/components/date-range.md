@@ -3,6 +3,31 @@ title: Date Range
 description: A start/end date range field with a single input and an inline range picker.
 ---
 
+<script setup lang="ts">
+const propsHeaders = ["Name", "Type", "Default", "Description"]
+const propsRows = [
+	["`v-model`", "[`DateRangeValue`](#daterangevalue)", "`{ start_date: null, end_date: null }`", "The selected date range."],
+	["`label`", "`string`", "`'Date Range'`", "Label rendered next to the input."],
+	["`mode`", "`'edit' | 'read' | 'display'`", "`'edit'`", "See [Modes](#modes) below."],
+	["`uuid`", "`string`", "auto-generated", "`id`/`for` pair linking the input to its label."],
+	["`validation`", "`{ errorMessage: string }`", "`{ errorMessage: '' }`", "Static error message shown below the field."],
+	["`errors`", "`string[]`", "—", "Dynamic validation errors (e.g. from a trigger). Takes precedence over `validation.errorMessage` whenever the list is non-empty."],
+]
+
+const dateRangeValueHeaders = ["Field", "Type", "Description"]
+const dateRangeValueRows = [
+	["`start_date`", "`string | null`", "ISO date string for the start of the range, or `null` if unset."],
+	["`end_date`", "`string | null`", "ISO date string for the end of the range, or `null` if unset."],
+]
+
+const modesHeaders = ["Mode", "Rendering"]
+const modesRows = [
+	["`edit`", "Read-only-styled text input showing the formatted range; clicking it opens an inline range calendar."],
+	["`read`", "Same input, disabled — the calendar does not open, since disabled inputs don't fire clicks."],
+	["`display`", "Static text — `start — end`, `From start` (end unset), or `Until end` (start unset) — with the label."],
+]
+</script>
+
 # Date Range
 
 `ADateRange` renders a start/end date range as a single field — a read-only-styled text input that summarizes the selected range, with an inline calendar (`ADatePicker`, in range-select mode) that opens when the input is clicked. Use it for reporting periods, filters, or any field that needs a from/to date pair, either standalone or as a field inside an [AForm](/reference/aform) schema.
@@ -63,41 +88,15 @@ const data = ref({ reporting_period: { start_date: null, end_date: null } })
 
 ### Props
 
-<ApiTable>
-
-| Name         | Type                                    | Default                                | Description                                                                                                                    |
-| ------------ | ---------------------------------------- | ----------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| `v-model`    | [`DateRangeValue`](#daterangevalue)      | `{ start_date: null, end_date: null }`   | The selected date range.                                                                                                       |
-| `label`      | `string`                                  | `'Date Range'`                            | Label rendered next to the input.                                                                                              |
-| `mode`       | `'edit' \| 'read' \| 'display'`           | `'edit'`                                  | See [Modes](#modes) below.                                                                                                      |
-| `uuid`       | `string`                                  | auto-generated                            | `id`/`for` pair linking the input to its label.                                                                                |
-| `validation` | `{ errorMessage: string }`                | `{ errorMessage: '' }`                    | Static error message shown below the field.                                                                                    |
-| `errors`     | `string[]`                                | —                                          | Dynamic validation errors (e.g. from a trigger). Takes precedence over `validation.errorMessage` whenever the list is non-empty. |
-
-</ApiTable>
+<ApiDataTable :headers="propsHeaders" :rows="propsRows" />
 
 ### DateRangeValue
 
-<ApiTable>
-
-| Field        | Type              | Description                                                  |
-| ------------- | ------------------ | ---------------------------------------------------------------- |
-| `start_date` | `string \| null`   | ISO date string for the start of the range, or `null` if unset. |
-| `end_date`   | `string \| null`   | ISO date string for the end of the range, or `null` if unset.   |
-
-</ApiTable>
+<ApiDataTable :headers="dateRangeValueHeaders" :rows="dateRangeValueRows" />
 
 ### Modes
 
-<ApiTable>
-
-| Mode      | Rendering                                                                                              |
-| --------- | -------------------------------------------------------------------------------------------------------- |
-| `edit`    | Read-only-styled text input showing the formatted range; clicking it opens an inline range calendar.    |
-| `read`    | Same input, disabled — the calendar does not open, since disabled inputs don't fire clicks.              |
-| `display` | Static text — `start — end`, `From start` (end unset), or `Until end` (start unset) — with the label.    |
-
-</ApiTable>
+<ApiDataTable :headers="modesHeaders" :rows="modesRows" />
 
 ## Accessibility
 

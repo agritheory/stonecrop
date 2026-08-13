@@ -3,6 +3,17 @@ title: Fieldset
 description: A collapsible container that groups a set of nested fields under a legend.
 ---
 
+<script setup lang="ts">
+const propsHeaders = ["Name", "Type", "Default", "Description"]
+const propsRows = [
+	["`schema`", "`ResolvedField[]`", "—", "Child fields rendered by the built-in nested `AForm` when the default slot is not overridden. Required, even if a custom slot makes it unused."],
+	["`label`", "`string`", "—", "Legend text. The `<legend>` element only renders at all when `label` or `collapsible` is set."],
+	["`collapsible`", "`boolean`", "—", "Whether clicking the legend toggles the group's collapsed state. Falsy (no toggle) when omitted."],
+	["`data`", "`Record<string, any>`", "`{}`", "Data object passed to the built-in nested `AForm`."],
+	["`mode`", "`InteractionMode`", "`'edit'`", "Interaction mode forwarded to the built-in nested `AForm` (and, via the default slot's `AForm`, to every child field)."],
+]
+</script>
+
 # Fieldset
 
 `AFieldset` groups a set of related fields under a native `<fieldset>`/`<legend>`, optionally letting the whole group be collapsed and expanded. Inside an [AForm](/reference/aform) schema it renders its children through a nested `AForm`; used directly, its default slot can be filled with any content instead.
@@ -71,17 +82,7 @@ const data = ref({
 
 ### Props
 
-<ApiTable>
-
-| Name          | Type                 | Default | Description                                                                                  |
-| ------------- | -------------------- | ------- | ---------------------------------------------------------------------------------------------- |
-| `schema`      | `ResolvedField[]`    | —       | Child fields rendered by the built-in nested `AForm` when the default slot is not overridden. Required, even if a custom slot makes it unused. |
-| `label`       | `string`             | —       | Legend text. The `<legend>` element only renders at all when `label` or `collapsible` is set. |
-| `collapsible` | `boolean`            | —       | Whether clicking the legend toggles the group's collapsed state. Falsy (no toggle) when omitted. |
-| `data`        | `Record<string, any>` | `{}`   | Data object passed to the built-in nested `AForm`.                                            |
-| `mode`        | `InteractionMode`    | `'edit'` | Interaction mode forwarded to the built-in nested `AForm` (and, via the default slot's `AForm`, to every child field). |
-
-</ApiTable>
+<ApiDataTable :headers="propsHeaders" :rows="propsRows" />
 
 The default slot receives a `{ collapsed }` scope prop, so custom slot content can react to the collapsed state itself (as in the demo above) instead of relying on the built-in nested `AForm`. `AFieldset` also exposes its internal `collapsed` ref via `defineExpose`, for parent components holding a template ref to it.
 

@@ -3,6 +3,13 @@ title: Collapse Button
 description: The rotating toggle glyph used by AFieldset's collapsible fieldsets.
 ---
 
+<script setup lang="ts">
+const propsHeaders = ["Name", "Type", "Default", "Description"]
+const propsRows = [
+	["`collapsed`", "`boolean`", "— (required)", "Whether the button is rendered in its rotated (45°) or unrotated state. Purely visual — `CollapseButton` never changes this itself."],
+]
+</script>
+
 # Collapse Button
 
 `CollapseButton` is an internal building block used by [AFieldset](/reference/aform)'s collapsible fieldsets — a small `×`-glyph button that rotates 45° when its `collapsed` prop is `true`. It isn't part of `@stonecrop/aform`'s public API (it isn't exported from the package's entry point), but is documented here for completeness. `CollapseButton` itself carries no click handler — in `AFieldset`, the surrounding `<legend>` owns the click listener that flips `collapsed` and passes it back down as a prop.
@@ -39,13 +46,7 @@ import CollapseButton from '../../../../aform/src/components/base/CollapseButton
 
 ### Props
 
-<ApiTable>
-
-| Name        | Type      | Default        | Description                                                                                    |
-| ----------- | --------- | ---------------- | -------------------------------------------------------------------------------------------------- |
-| `collapsed` | `boolean` | — (required)     | Whether the button is rendered in its rotated (45°) or unrotated state. Purely visual — `CollapseButton` never changes this itself. |
-
-</ApiTable>
+<ApiDataTable :headers="propsHeaders" :rows="propsRows" />
 
 ## Accessibility
 

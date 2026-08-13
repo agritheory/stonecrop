@@ -3,6 +3,32 @@ title: AForm
 description: The schema-driven form orchestrator that resolves and renders Stonecrop field components together.
 ---
 
+<script setup lang="ts">
+const propsHeaders = ["Name", "Type", "Default", "Description"]
+const propsRows = [
+	["`schema`", "[`ResolvedField[]`](#schema-field-shape)", "—", "The resolved field descriptors to render, in order. Required."],
+	["`data`", "`Record<string, any>`", "—", "The form's data object, bound with `v-model:data`. Required — each field reads/writes `data[fieldname]` through it."],
+	["`mode`", "`'edit' | 'read' | 'display'`", "`'edit'`", "Cascades to every resolved field unless a field's own schema entry sets its own `mode`. See [Modes](#modes) above."],
+	["`errors`", "`Record<string, string[]>`", "—", "Validation errors keyed by `fieldname`, passed through to the matching field's `errors` prop. `AForm` stays store-agnostic — the host is responsible for populating this."],
+]
+
+const schemaFieldHeaders = ["Key", "Type", "Description"]
+const schemaFieldRows = [
+	["`fieldname`", "`string`", "Key into the shared `data` object. Required."],
+	["`kind`", "`'field' | 'link' | 'table' | 'fieldset'`", "Discriminates how `AForm` resolves and renders the entry. Required."],
+	["`component`", "`string`", "Vue component name to resolve (e.g. `'ACheckbox'`, `'ACurrencyInput'`). Required for `kind: 'field'`."],
+	["`label`", "`string`", "Human-readable label, passed through to the field."],
+	["`options`", "`string[] | Record<string, unknown>`", "Type-specific configuration — Select choices, or a config object like [`CurrencyOptions`](./currency#options)."],
+	["`required`", "`boolean`", "Marks the field required (`edit` mode only)."],
+	["`mode`", "`'edit' | 'read' | 'display'`", "Per-field override of the form-level `mode`."],
+	["`hidden`", "`boolean`", "Skips rendering the field entirely; its value stays present in `data`."],
+	["`readOnly`", "`boolean`", "Present on the type and preserved through schema resolution, but not currently read by `AForm` or any field component — use `mode` (or a per-field `mode` override) to control interactivity instead."],
+	["`width`", "`string`", "CSS width (e.g. `'40ch'`) applied to the field's flex basis."],
+	["`validation`", "`{ errorMessage: string }`", "Static error message shown below the field."],
+	["`default`", "`unknown`", "Default value for new records."],
+]
+</script>
+
 # AForm
 
 `AForm` is the schema-driven orchestrator at the center of Stonecrop's form components. It takes a `schema` — an array of resolved field descriptors — and for each one resolves a Vue component by string name (e.g. `component: 'ACurrencyInput'`), renders it, and wires up shared `v-model:data`, `mode`, and validation plumbing so every field reads from and writes to one data object. Individual field components like [ACheckbox](./checkbox) and [ACurrencyInput](./currency) can be used standalone, but `AForm` is how they're normally composed into a real form.
@@ -122,16 +148,7 @@ const data = ref({
 
 ### Props
 
-<ApiTable>
-
-| Name          | Type                            | Default  | Description                                                                                                                     |
-| ------------- | -------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| `schema`      | [`ResolvedField[]`](#schema-field-shape) | —        | The resolved field descriptors to render, in order. Required.                                                                  |
-| `data`        | `Record<string, any>`             | —        | The form's data object, bound with `v-model:data`. Required — each field reads/writes `data[fieldname]` through it.            |
-| `mode`        | `'edit' \| 'read' \| 'display'`   | `'edit'` | Cascades to every resolved field unless a field's own schema entry sets its own `mode`. See [Modes](#modes) above.             |
-| `errors`      | `Record<string, string[]>`        | —        | Validation errors keyed by `fieldname`, passed through to the matching field's `errors` prop. `AForm` stays store-agnostic — the host is responsible for populating this. |
-
-</ApiTable>
+<ApiDataTable :headers="propsHeaders" :rows="propsRows" />
 
 `AForm` also emits `update:data` (fired on every field change, alongside the `v-model:data` sync) and `update:schema` (fired whenever a field's value changes, re-emitting the current `schema` unchanged — useful for hosts that keep schema and data in the same reactive store).
 
@@ -141,24 +158,7 @@ Each entry in `schema` is a [`ResolvedField`](https://github.com/agritheory/ston
 
 The common keys on a `kind: 'field'` entry:
 
-<ApiTable>
-
-| Key         | Type                            | Description                                                                                          |
-| ----------- | -------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| `fieldname` | `string`                          | Key into the shared `data` object. Required.                                                          |
-| `kind`      | `'field' \| 'link' \| 'table' \| 'fieldset'` | Discriminates how `AForm` resolves and renders the entry. Required.                       |
-| `component` | `string`                          | Vue component name to resolve (e.g. `'ACheckbox'`, `'ACurrencyInput'`). Required for `kind: 'field'`. |
-| `label`     | `string`                          | Human-readable label, passed through to the field.                                                    |
-| `options`   | `string[] \| Record<string, unknown>` | Type-specific configuration — Select choices, or a config object like [`CurrencyOptions`](./currency#options). |
-| `required`  | `boolean`                         | Marks the field required (`edit` mode only).                                                          |
-| `mode`      | `'edit' \| 'read' \| 'display'`   | Per-field override of the form-level `mode`.                                                          |
-| `hidden`    | `boolean`                         | Skips rendering the field entirely; its value stays present in `data`.                                |
-| `readOnly`  | `boolean`                         | Present on the type and preserved through schema resolution, but not currently read by `AForm` or any field component — use `mode` (or a per-field `mode` override) to control interactivity instead. |
-| `width`     | `string`                          | CSS width (e.g. `'40ch'`) applied to the field's flex basis.                                          |
-| `validation`| `{ errorMessage: string }`        | Static error message shown below the field.                                                           |
-| `default`   | `unknown`                         | Default value for new records.                                                                        |
-
-</ApiTable>
+<ApiDataTable :headers="schemaFieldHeaders" :rows="schemaFieldRows" />
 
 ## Accessibility
 

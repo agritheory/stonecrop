@@ -3,6 +3,29 @@ title: Textbox Input
 description: A multi-line textarea input rendered from an AForm schema field.
 ---
 
+<script setup lang="ts">
+const propsHeaders = ["Name", "Type", "Default", "Description"]
+const propsRows = [
+	["`v-model`", "`string | null | undefined`", "—", "The textarea's current value."],
+	["`label`", "`string`", "—", "Label text rendered next to the textarea."],
+	["`placeholder`", "`string`", "`''`", "Placeholder text shown when the field is empty."],
+	["`rows`", "`number`", "`4`", "Visible number of text lines (maps to the textarea's `rows` attribute)."],
+	["`maxlength`", "`number`", "—", "Maximum number of characters the field will accept."],
+	["`required`", "`boolean`", "`false`", "Marks the input as required (`edit` mode only)."],
+	["`mode`", "`'edit' | 'read' | 'display'`", "`'edit'`", "See [Modes](#modes) below."],
+	["`uuid`", "`string`", "auto-generated", "`id`/`for` pair linking the textarea to its label."],
+	["`validation`", "`{ errorMessage: string }`", "`{ errorMessage: '' }`", "Static error message shown below the field."],
+	["`errors`", "`string[]`", "—", "Dynamic validation errors (e.g. from a trigger). Takes precedence over `validation.errorMessage` whenever the list is non-empty."],
+]
+
+const modesHeaders = ["Mode", "Rendering"]
+const modesRows = [
+	["`edit`", "Interactive, resizable textarea."],
+	["`read`", "Textarea, disabled."],
+	["`display`", "Static label with the value shown as plain, whitespace-preserved text."],
+]
+</script>
+
 # Textbox Input
 
 `ATextboxInput` renders a multi-line text field — a `<textarea>` paired with a floating label — either standalone or as a field inside an [AForm](/reference/aform) schema. It's the multi-line counterpart to [`ATextInput`](/components/text-input): the same label/mode/validation behavior, but backed by a resizable textarea with configurable `rows`, `maxlength`, and `placeholder` instead of a single-line input (and no `mask` support).
@@ -63,34 +86,11 @@ const data = ref({ notes: '' })
 
 ### Props
 
-<ApiTable>
-
-| Name          | Type                             | Default                | Description                                                                                                                    |
-| ------------- | --------------------------------- | ----------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| `v-model`     | `string \| null \| undefined`     | —                       | The textarea's current value.                                                                                                  |
-| `label`       | `string`                         | —                       | Label text rendered next to the textarea.                                                                                       |
-| `placeholder` | `string`                         | `''`                    | Placeholder text shown when the field is empty.                                                                                |
-| `rows`        | `number`                         | `4`                     | Visible number of text lines (maps to the textarea's `rows` attribute).                                                        |
-| `maxlength`   | `number`                         | —                       | Maximum number of characters the field will accept.                                                                            |
-| `required`    | `boolean`                        | `false`                 | Marks the input as required (`edit` mode only).                                                                                |
-| `mode`        | `'edit' \| 'read' \| 'display'`   | `'edit'`                | See [Modes](#modes) below.                                                                                                      |
-| `uuid`        | `string`                         | auto-generated          | `id`/`for` pair linking the textarea to its label.                                                                             |
-| `validation`  | `{ errorMessage: string }`       | `{ errorMessage: '' }`  | Static error message shown below the field.                                                                                    |
-| `errors`      | `string[]`                       | —                       | Dynamic validation errors (e.g. from a trigger). Takes precedence over `validation.errorMessage` whenever the list is non-empty. |
-
-</ApiTable>
+<ApiDataTable :headers="propsHeaders" :rows="propsRows" />
 
 ### Modes
 
-<ApiTable>
-
-| Mode      | Rendering                                                              |
-| --------- | ------------------------------------------------------------------------- |
-| `edit`    | Interactive, resizable textarea.                                      |
-| `read`    | Textarea, disabled.                                                   |
-| `display` | Static label with the value shown as plain, whitespace-preserved text. |
-
-</ApiTable>
+<ApiDataTable :headers="modesHeaders" :rows="modesRows" />
 
 ## Accessibility
 

@@ -3,6 +3,25 @@ title: File Attach
 description: A button that opens the native file picker and lists the selected files.
 ---
 
+<script setup lang="ts">
+const propsHeaders = ["Name", "Type", "Default", "Description"]
+const propsRows = [
+	["`label`", "`string`", "—", 'Text for the "Attach" button. Only rendered in `edit`/`read` mode — not shown in `display` mode.'],
+	["`mode`", "`'edit' | 'read' | 'display'`", "`'edit'`", "See [Modes](#modes) below."],
+	["`required`", "`boolean`", "`false`", "Part of the shared field prop type; not read or applied by this component's current implementation."],
+	["`uuid`", "`string`", "—", "Part of the shared field prop type; not read by this component."],
+	["`validation`", "`{ errorMessage: string }`", "—", "Part of the shared field prop type; this component never renders an error message and does not read it."],
+	["`errors`", "`string[]`", "—", "Part of the shared field prop type; not read by this component."],
+]
+
+const modesHeaders = ["Mode", "Rendering"]
+const modesRows = [
+	["`edit`", "Attach and Reset buttons open the native file picker; selected file names are listed above them."],
+	["`read`", "Same layout, but both buttons are disabled."],
+	["`display`", 'Static list of selected file names with a count, or "No file selected" if none are selected.'],
+]
+</script>
+
 # File Attach
 
 `AFileAttach` triggers the browser's native file picker via a button and lists the files the user selects — either standalone or as a field inside an [AForm](/reference/aform) schema. It wraps VueUse's `useFileDialog`, so selection state (the browser's native `FileList`) lives inside the component rather than being passed in.
@@ -65,30 +84,11 @@ Unlike the other field components on this site, `AFileAttach` does not declare a
 
 ### Props
 
-<ApiTable>
-
-| Name         | Type                            | Default  | Description                                                                                             |
-| ------------ | -------------------------------- | ---------- | ----------------------------------------------------------------------------------------------------------- |
-| `label`      | `string`                         | —         | Text for the "Attach" button. Only rendered in `edit`/`read` mode — not shown in `display` mode.        |
-| `mode`       | `'edit' \| 'read' \| 'display'`   | `'edit'`  | See [Modes](#modes) below.                                                                               |
-| `required`   | `boolean`                        | `false`    | Part of the shared field prop type; not read or applied by this component's current implementation.     |
-| `uuid`       | `string`                         | —         | Part of the shared field prop type; not read by this component.                                          |
-| `validation` | `{ errorMessage: string }`       | —         | Part of the shared field prop type; this component never renders an error message and does not read it. |
-| `errors`     | `string[]`                       | —         | Part of the shared field prop type; not read by this component.                                          |
-
-</ApiTable>
+<ApiDataTable :headers="propsHeaders" :rows="propsRows" />
 
 ### Modes
 
-<ApiTable>
-
-| Mode      | Rendering                                                                                     |
-| --------- | -------------------------------------------------------------------------------------------------- |
-| `edit`    | Attach and Reset buttons open the native file picker; selected file names are listed above them. |
-| `read`    | Same layout, but both buttons are disabled.                                                     |
-| `display` | Static list of selected file names with a count, or "No file selected" if none are selected.    |
-
-</ApiTable>
+<ApiDataTable :headers="modesHeaders" :rows="modesRows" />
 
 ## Accessibility
 

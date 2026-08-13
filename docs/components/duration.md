@@ -3,6 +3,24 @@ title: Duration
 description: A start/end date-time range picker that derives an elapsed duration in milliseconds.
 ---
 
+<script setup lang="ts">
+const propsHeaders = ["Name", "Type", "Default", "Description"]
+const propsRows = [
+	["`v-model`", "`number | undefined`", "—", "The elapsed duration in milliseconds, derived from the selected start/end range."],
+	["`label`", "`string`", "`'Duration'`", "Label rendered below the picker (`edit` mode) or next to the value (`read`/`display`)."],
+	["`mode`", "`string`", "`'edit'`", "See [Modes](#modes) below. Declared as a plain `string` in the component's own props, not the shared `InteractionMode` union used elsewhere."],
+	["`allowMilitaryTime`", "`boolean`", "`false`", "Renders the embedded time pickers in 24-hour format."],
+	["`useSeconds`", "`boolean`", "`false`", "Shows a seconds field on the embedded time pickers."],
+]
+
+const modesHeaders = ["Mode", "Rendering"]
+const modesRows = [
+	["`edit`", "Interactive start/end date-time range picker (via the internal `ADateSelection`) with a live duration summary below it."],
+	["`read`", "Static duration text with the label — rendered identically to `display` mode, since there is no input to disable."],
+	["`display`", "Static duration text with the label."],
+]
+</script>
+
 # Duration
 
 `ADuration` pairs a date/time range picker with a live elapsed-duration readout. The user selects a start and end date and time; `v-model` receives the difference between them in milliseconds. It supports the same `edit` / `read` / `display` interaction modes as every other Stonecrop field component.
@@ -65,31 +83,13 @@ const data = ref({ task_duration: 0 })
 
 ### Props
 
-<ApiTable>
-
-| Name                | Type      | Default    | Description                                                                                 |
-| ------------------- | --------- | ---------- | --------------------------------------------------------------------------------------------- |
-| `v-model`           | `number \| undefined` | —    | The elapsed duration in milliseconds, derived from the selected start/end range.            |
-| `label`             | `string`  | `'Duration'` | Label rendered below the picker (`edit` mode) or next to the value (`read`/`display`).     |
-| `mode`              | `string`  | `'edit'`   | See [Modes](#modes) below. Declared as a plain `string` in the component's own props, not the shared `InteractionMode` union used elsewhere. |
-| `allowMilitaryTime` | `boolean` | `false`    | Renders the embedded time pickers in 24-hour format.                                        |
-| `useSeconds`        | `boolean` | `false`    | Shows a seconds field on the embedded time pickers.                                         |
-
-</ApiTable>
+<ApiDataTable :headers="propsHeaders" :rows="propsRows" />
 
 `ADuration` does not accept `required`, `uuid`, `validation`, or `errors` — it defines its own narrow prop set rather than the shared `ComponentProps` used by most other field components.
 
 ### Modes
 
-<ApiTable>
-
-| Mode      | Rendering                                                                                              |
-| --------- | ----------------------------------------------------------------------------------------------------- |
-| `edit`    | Interactive start/end date-time range picker (via the internal `ADateSelection`) with a live duration summary below it. |
-| `read`    | Static duration text with the label — rendered identically to `display` mode, since there is no input to disable. |
-| `display` | Static duration text with the label.                                                                    |
-
-</ApiTable>
+<ApiDataTable :headers="modesHeaders" :rows="modesRows" />
 
 ## Accessibility
 

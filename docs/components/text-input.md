@@ -3,6 +3,27 @@ title: Text Input
 description: A single-line text input rendered from an AForm schema field.
 ---
 
+<script setup lang="ts">
+const propsHeaders = ["Name", "Type", "Default", "Description"]
+const propsRows = [
+	["`v-model`", "`string | number | undefined`", "—", "The input's current value."],
+	["`label`", "`string`", "—", "Label text rendered next to the input."],
+	["`mask`", "`string`", "—", 'An input mask (e.g. `"(###) ###-####"`), or a stringified `(locale) => string` function that returns one. `#` marks an editable character position.'],
+	["`required`", "`boolean`", "`false`", "Marks the input as required (`edit` mode only)."],
+	["`mode`", "`'edit' | 'read' | 'display'`", "`'edit'`", "See [Modes](#modes) below."],
+	["`uuid`", "`string`", "auto-generated", "`id`/`for` pair linking the input to its label."],
+	["`validation`", "`{ errorMessage: string }`", "`{ errorMessage: '' }`", "Static error message shown below the field."],
+	["`errors`", "`string[]`", "—", "Dynamic validation errors (e.g. from a trigger). Takes precedence over `validation.errorMessage` whenever the list is non-empty."],
+]
+
+const modesHeaders = ["Mode", "Rendering"]
+const modesRows = [
+	["`edit`", "Interactive text input."],
+	["`read`", "Text input, disabled."],
+	["`display`", "Static label with the value shown as plain text."],
+]
+</script>
+
 # Text Input
 
 `ATextInput` renders a single-line text field — a native input paired with a floating label — either standalone or as a field inside an [AForm](/reference/aform) schema. It supports the same `edit` / `read` / `display` interaction modes as every other Stonecrop field component, and can optionally apply an input mask.
@@ -64,32 +85,11 @@ const data = ref({ name: '' })
 
 ### Props
 
-<ApiTable>
-
-| Name         | Type                             | Default                | Description                                                                                                                    |
-| ------------ | --------------------------------- | ----------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| `v-model`    | `string \| number \| undefined`   | —                       | The input's current value.                                                                                                     |
-| `label`      | `string`                         | —                       | Label text rendered next to the input.                                                                                          |
-| `mask`       | `string`                         | —                       | An input mask (e.g. `"(###) ###-####"`), or a stringified `(locale) => string` function that returns one. `#` marks an editable character position. |
-| `required`   | `boolean`                        | `false`                 | Marks the input as required (`edit` mode only).                                                                                |
-| `mode`       | `'edit' \| 'read' \| 'display'`   | `'edit'`                | See [Modes](#modes) below.                                                                                                      |
-| `uuid`       | `string`                         | auto-generated          | `id`/`for` pair linking the input to its label.                                                                                |
-| `validation` | `{ errorMessage: string }`       | `{ errorMessage: '' }`  | Static error message shown below the field.                                                                                    |
-| `errors`     | `string[]`                       | —                       | Dynamic validation errors (e.g. from a trigger). Takes precedence over `validation.errorMessage` whenever the list is non-empty. |
-
-</ApiTable>
+<ApiDataTable :headers="propsHeaders" :rows="propsRows" />
 
 ### Modes
 
-<ApiTable>
-
-| Mode      | Rendering                                        |
-| --------- | -------------------------------------------------- |
-| `edit`    | Interactive text input.                          |
-| `read`    | Text input, disabled.                            |
-| `display` | Static label with the value shown as plain text. |
-
-</ApiTable>
+<ApiDataTable :headers="modesHeaders" :rows="modesRows" />
 
 ## Accessibility
 

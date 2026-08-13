@@ -3,6 +3,29 @@ title: Date Selection
 description: A combined calendar and time-of-day picker for selecting a single date, a date range, and optional start/end times.
 ---
 
+<script setup lang="ts">
+const propsHeaders = ["Name", "Type", "Default", "Description"]
+const propsRows = [
+	["`showDate`", "`boolean`", "`true`", "Whether to render the `ADatePicker` calendar."],
+	["`showTime`", "`boolean`", "`true`", "Whether to render the (start) `ADateTime` segment."],
+	["`selectRange`", "`boolean`", "`true`", "Whether the calendar allows selecting a start/end date range, rather than a single date."],
+	["`showEndTime`", "`boolean`", "`false`", 'When `selectRange` and `showTime` are both `true`, also renders a second `ADateTime`, labeled "End time", for the end of the range.'],
+	["`allowMilitaryTime`", "`boolean`", "`false`", "Passed through to the `ADateTime` segment(s); renders 24-hour input instead of a 12-hour segment plus AM/PM selector."],
+	["`defaultHours`", "`number`", "`12`", "Initial hours value passed to the `ADateTime` segment(s)."],
+	["`defaultMinutes`", "`number`", "`0`", "Initial minutes value passed to the `ADateTime` segment(s)."],
+	["`defaultSeconds`", "`number`", "`0`", "Initial seconds value passed to the `ADateTime` segment(s)."],
+	["`defaultMeridiem`", "`string`", "`'AM'`", "Initial AM/PM value passed to the `ADateTime` segment(s)."],
+	["`useSeconds`", "`boolean`", "`true`", "Whether the `ADateTime` segment(s) render a seconds field."],
+]
+
+const eventsHeaders = ["Name", "Payload", "Description"]
+const eventsRows = [
+	["`get-date`", "`{ selected: Date; start?: Date | null; end?: Date | null }`", "Re-emitted from the underlying `ADatePicker` whenever a date (or range endpoint) is picked."],
+	["`get-time`", "`{ hours: number; minutes: number; seconds: number; meridiem: string }`", "Re-emitted from the start `ADateTime` whenever its value changes — unless `selectRange` and `showEndTime` are both `true`, in which case time changes feed into `get-range` instead."],
+	["`get-range`", "`{ start: Date; end: Date }`", "Emitted only when `selectRange`, `showTime`, and `showEndTime` are all `true`. Merges the picked date range with both time segments into a start/end `Date` pair whenever either time segment changes."],
+]
+</script>
+
 # Date Selection
 
 `ADateSelection` composes a calendar (`ADatePicker`) with one or two time-of-day inputs (`ADateTime`) into a single widget for picking a date — or a date range — together with a time of day. It underlies higher-level fields like `ADuration` and `ADateRange`, and like `ADateTime`, it communicates purely through emitted events rather than a `v-model`.
@@ -65,34 +88,11 @@ Because `ADateSelection` has no `v-model`, mounting it this way does not wire `s
 
 ### Props
 
-<ApiTable>
-
-| Name                | Type      | Default | Description                                                                                                                    |
-| -------------------- | ----------- | --------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| `showDate`            | `boolean` | `true`    | Whether to render the `ADatePicker` calendar.                                                                                  |
-| `showTime`            | `boolean` | `true`    | Whether to render the (start) `ADateTime` segment.                                                                             |
-| `selectRange`         | `boolean` | `true`    | Whether the calendar allows selecting a start/end date range, rather than a single date.                                       |
-| `showEndTime`         | `boolean` | `false`   | When `selectRange` and `showTime` are both `true`, also renders a second `ADateTime`, labeled "End time", for the end of the range. |
-| `allowMilitaryTime`   | `boolean` | `false`   | Passed through to the `ADateTime` segment(s); renders 24-hour input instead of a 12-hour segment plus AM/PM selector.          |
-| `defaultHours`        | `number`  | `12`      | Initial hours value passed to the `ADateTime` segment(s).                                                                      |
-| `defaultMinutes`      | `number`  | `0`       | Initial minutes value passed to the `ADateTime` segment(s).                                                                    |
-| `defaultSeconds`      | `number`  | `0`       | Initial seconds value passed to the `ADateTime` segment(s).                                                                    |
-| `defaultMeridiem`     | `string`  | `'AM'`    | Initial AM/PM value passed to the `ADateTime` segment(s).                                                                      |
-| `useSeconds`          | `boolean` | `true`    | Whether the `ADateTime` segment(s) render a seconds field.                                                                     |
-
-</ApiTable>
+<ApiDataTable :headers="propsHeaders" :rows="propsRows" />
 
 ### Events
 
-<ApiTable>
-
-| Name       | Payload                                                        | Description                                                                                                                                            |
-| ----------- | ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `get-date` | `{ selected: Date; start?: Date \| null; end?: Date \| null }`  | Re-emitted from the underlying `ADatePicker` whenever a date (or range endpoint) is picked.                                                             |
-| `get-time` | `{ hours: number; minutes: number; seconds: number; meridiem: string }` | Re-emitted from the start `ADateTime` whenever its value changes — unless `selectRange` and `showEndTime` are both `true`, in which case time changes feed into `get-range` instead. |
-| `get-range`| `{ start: Date; end: Date }`                                    | Emitted only when `selectRange`, `showTime`, and `showEndTime` are all `true`. Merges the picked date range with both time segments into a start/end `Date` pair whenever either time segment changes. |
-
-</ApiTable>
+<ApiDataTable :headers="eventsHeaders" :rows="eventsRows" />
 
 ## Accessibility
 

@@ -3,6 +3,26 @@ title: Date
 description: A single-date field with a text input and an inline calendar picker.
 ---
 
+<script setup lang="ts">
+const propsHeaders = ["Name", "Type", "Default", "Description"]
+const propsRows = [
+	["`v-model`", "`string | Date | undefined`", "—", "The selected date. Read back as an ISO `YYYY-MM-DD` string once the field has been used."],
+	["`label`", "`string`", "`'Date'`", "Label rendered next to the input."],
+	["`required`", "`boolean`", "`false`", "Marks the input as required (`edit` mode only)."],
+	["`mode`", "`'edit' | 'read' | 'display'`", "`'edit'`", "See [Modes](#modes) below."],
+	["`uuid`", "`string`", "auto-generated", "`id`/`for` pair linking the input to its label."],
+	["`validation`", "`{ errorMessage: string }`", "`{ errorMessage: '' }`", "Static error message shown below the field."],
+	["`errors`", "`string[]`", "—", "Dynamic validation errors (e.g. from a trigger). Takes precedence over `validation.errorMessage` whenever the list is non-empty."],
+]
+
+const modesHeaders = ["Mode", "Rendering"]
+const modesRows = [
+	["`edit`", "Interactive text input; clicking it opens an inline calendar for date selection."],
+	["`read`", "Same text input, disabled — the calendar does not open, since disabled inputs don't fire clicks."],
+	["`display`", "Static text showing the date via `toLocaleDateString()`, with the label rendered below it."],
+]
+</script>
+
 # Date
 
 `ADate` renders a single date field — a native-styled text input paired with a floating label, with an inline calendar (`ADatePicker`) that toggles open when the input is clicked and closes again on an outside click or on selection. Use it for any single-date field — due dates, birth dates, effective dates — either standalone or as a field inside an [AForm](/reference/aform) schema.
@@ -63,31 +83,11 @@ const data = ref({ delivery_date: '2026-08-05' })
 
 ### Props
 
-<ApiTable>
-
-| Name         | Type                          | Default                | Description                                                                                                                    |
-| ------------ | ----------------------------- | ----------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| `v-model`    | `string \| Date \| undefined` | —                       | The selected date. Read back as an ISO `YYYY-MM-DD` string once the field has been used.                                       |
-| `label`      | `string`                      | `'Date'`                | Label rendered next to the input.                                                                                              |
-| `required`   | `boolean`                     | `false`                 | Marks the input as required (`edit` mode only).                                                                                |
-| `mode`       | `'edit' \| 'read' \| 'display'` | `'edit'`                | See [Modes](#modes) below.                                                                                                      |
-| `uuid`       | `string`                      | auto-generated          | `id`/`for` pair linking the input to its label.                                                                                |
-| `validation` | `{ errorMessage: string }`    | `{ errorMessage: '' }`  | Static error message shown below the field.                                                                                    |
-| `errors`     | `string[]`                    | —                       | Dynamic validation errors (e.g. from a trigger). Takes precedence over `validation.errorMessage` whenever the list is non-empty. |
-
-</ApiTable>
+<ApiDataTable :headers="propsHeaders" :rows="propsRows" />
 
 ### Modes
 
-<ApiTable>
-
-| Mode      | Rendering                                                                                          |
-| --------- | ------------------------------------------------------------------------------------------------- |
-| `edit`    | Interactive text input; clicking it opens an inline calendar for date selection.                  |
-| `read`    | Same text input, disabled — the calendar does not open, since disabled inputs don't fire clicks.  |
-| `display` | Static text showing the date via `toLocaleDateString()`, with the label rendered below it.        |
-
-</ApiTable>
+<ApiDataTable :headers="modesHeaders" :rows="modesRows" />
 
 ## Accessibility
 
