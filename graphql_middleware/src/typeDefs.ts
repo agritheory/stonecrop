@@ -58,6 +58,13 @@ export const typeDefs = gql`
 		data: JSON
 		doctype: String!
 		unknownLinks: [String!]
+		"""
+		Fields whose linked rows were cut short by a row cap, so data holds a prefix of the
+		relation rather than all of it. Null when nothing was truncated. A link cannot be paged,
+		so a client that sees a name here must not write that relation back — the rows it never
+		received would be deleted.
+		"""
+		truncatedLinks: [String!]
 	}
 
 	type StonecropRecordsResult {
@@ -79,6 +86,14 @@ export const typeDefs = gql`
 		success: Boolean!
 		data: JSON
 		error: String
+		"""
+		Keys the write discarded because the doctype declares no column for them, or because the
+		value was a nested relation rather than a column value. Null when everything sent was
+		stored. The action still succeeded — this is what it did not keep, and a client that
+		reports an unqualified success without checking it tells the user data was saved that
+		was not.
+		"""
+		droppedFields: [String!]
 	}
 
 	extend type Query {

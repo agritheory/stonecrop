@@ -132,6 +132,16 @@ describe('getMeta / getAllMeta / hasMeta / clearRegistry', { tags: ['unit', 'gra
 // registry/doctypes.ts — validateReferences
 // ===========================================================================
 
+/** A doctype with one scalar field, plus whatever links the case under test needs. */
+const withLinks = (links: Record<string, unknown>, fields?: unknown[]) => ({
+	Task: {
+		slug: 'task',
+		fields: fields ?? [{ kind: 'field', fieldname: 'ownerId', component: 'AFormLink', label: 'Owner' }],
+		links,
+	},
+	Owner: { slug: 'owner', fields: [] },
+})
+
 describe('validateReferences', { tags: ['unit', 'graphql'] }, () => {
 	beforeEach(() => clearRegistry())
 
@@ -169,7 +179,7 @@ describe('validateReferences', { tags: ['unit', 'graphql'] }, () => {
 			Continent: {
 				slug: 'continent',
 				fields: [],
-				links: { countries: { target: 'country', cardinality: 'noneOrMany' } },
+				links: { countries: { target: 'country', cardinality: 'noneOrMany', backlink: 'continentId' } },
 			},
 		})
 		expect(validateReferences()).toHaveLength(0)
@@ -197,7 +207,7 @@ describe('validateReferences', { tags: ['unit', 'graphql'] }, () => {
 			Continent: {
 				slug: 'continent',
 				fields: [],
-				links: { countries: { target: 'nonesuch', cardinality: 'noneOrMany' } },
+				links: { countries: { target: 'nonesuch', cardinality: 'noneOrMany', backlink: 'continentId' } },
 			},
 		})
 		const errors = validateReferences()
@@ -232,12 +242,100 @@ describe('validateReferences', { tags: ['unit', 'graphql'] }, () => {
 				slug: 'task',
 				fields: [{ kind: 'field', fieldname: 'owner', component: 'AFormLink', label: 'Owner', doctype: 'nonesuch' }],
 				inherits: 'BaseTask',
-				links: { notes: { target: 'alsonone', cardinality: 'noneOrMany' } },
+				links: { notes: { target: 'alsonone', cardinality: 'noneOrMany', backlink: 'taskId' } },
 			},
 		})
 		const errors = validateReferences()
 		expect(errors).toHaveLength(3)
 		expect(errors.map(e => e.message).join(' ')).toContain('BaseTask')
+	})
+
+	// =======================================================================
+	// Link bindings — a link whose target resolves can still name no way to
+	// reach the rows. The reader answers that with `continue` or a `null`,
+	// which on the wire is indistinguishable from an empty relation.
+	// =======================================================================
+
+	it('reports a many-side link that names no backlink', () => {
+		loadDoctypesFromObject(withLinks({ owners: { target: 'owner', cardinality: 'noneOrMany' } }))
+		const errors = validateReferences()
+		expect(errors).toHaveLength(1)
+		expect(errors[0].path).toEqual(['Task', 'links', 'owners', 'backlink'])
+	})
+
+	it('accepts a one-side link bound by the map key alone', () => {
+		// The canonical form: the key IS the fieldname. Requiring an explicit `fieldname` here
+		// would outlaw the shape `getSqlColumns` and the client resolver both already bind.
+		loadDoctypesFromObject(withLinks({ ownerId: { target: 'owner', cardinality: 'one' } }))
+		expect(validateReferences()).toHaveLength(0)
+	})
+
+	it('accepts a one-side link bound by an explicit fieldname', () => {
+		loadDoctypesFromObject(withLinks({ owner: { target: 'owner', cardinality: 'one', fieldname: 'ownerId' } }))
+		expect(validateReferences()).toHaveLength(0)
+	})
+
+	it('reports a one-side link whose resolved fieldname matches no declared field', () => {
+		// FAB's shape before it was cleaned up: neither the key nor a `fieldname` named a field, so
+		// the FK was never read and the link resolved to null on every record, forever.
+		loadDoctypesFromObject(withLinks({ owner: { target: 'owner', cardinality: 'one' } }))
+		const errors = validateReferences()
+		expect(errors).toHaveLength(1)
+		expect(errors[0].message).toContain('binds to field "owner"')
+	})
+
+	it('reports a one-side link bound to a computed field', () => {
+		// `computed` means "no backing DB column", and `getSqlColumns` skips such a field. A link
+		// bound to one has no foreign key to read, so the record read fails on a missing column —
+		// taking the whole record with it, not just the link. Refuse it at load instead.
+		loadDoctypesFromObject(
+			withLinks({ virtualRef: { target: 'owner', cardinality: 'one' } }, [
+				{ kind: 'field', fieldname: 'virtualRef', component: 'ATextInput', computed: true, label: 'Virtual' },
+			])
+		)
+		const errors = validateReferences()
+		expect(errors).toHaveLength(1)
+		expect(errors[0].message).toContain('no database column')
+	})
+
+	it('reports a one-side link bound to a container field', () => {
+		// A table field is a relation, not a column — same absence, different cause.
+		loadDoctypesFromObject(
+			withLinks({ rows: { target: 'owner', cardinality: 'one' } }, [
+				{ kind: 'table', fieldname: 'rows', component: 'ATable', label: 'Rows', columns: [{ fieldname: 'x' }] },
+			])
+		)
+		const errors = validateReferences()
+		expect(errors).toHaveLength(1)
+		expect(errors[0].message).toContain('no database column')
+	})
+
+	it('accepts a one-side link whose field is nested inside a fieldset', () => {
+		// A fieldset is a layout grouping, not a scope — `getSqlColumns` descends into it, so a
+		// checker that did not would report this working declaration as broken.
+		loadDoctypesFromObject(
+			withLinks({ ownerId: { target: 'owner', cardinality: 'one' } }, [
+				{
+					kind: 'fieldset',
+					fieldname: 'details',
+					label: 'Details',
+					schema: [{ kind: 'field', fieldname: 'ownerId', component: 'AFormLink', label: 'Owner' }],
+				},
+			])
+		)
+		expect(validateReferences()).toHaveLength(0)
+	})
+
+	it('exempts a custom fetch strategy from both binding checks', () => {
+		// A custom handler is handed the row and the declaration and finds the target however it
+		// likes; the runtime returns before consulting either binding.
+		loadDoctypesFromObject(
+			withLinks({
+				owners: { target: 'owner', cardinality: 'noneOrMany', fetch: { method: 'custom', handler: 'h' } },
+				absent: { target: 'owner', cardinality: 'one', fetch: { method: 'custom', handler: 'h' } },
+			})
+		)
+		expect(validateReferences()).toHaveLength(0)
 	})
 })
 

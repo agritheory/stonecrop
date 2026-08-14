@@ -4,6 +4,8 @@ import { join } from 'node:path'
 import { parseDoctype, validateDoctype } from '@stonecrop/schema'
 import type { DoctypeMeta, ValidationError } from '@stonecrop/schema'
 
+import { columnBackedFields, flattenFields } from '../fields'
+
 const doctypeRegistry: Map<string, DoctypeMeta> = new Map()
 
 /**
@@ -156,7 +158,8 @@ export function clearRegistry(): void {
 }
 
 /**
- * Validate cross-doctype references (link targets, `inherits`) against what is loaded.
+ * Validate doctype references — link targets, `inherits`, and each link's binding — against what
+ * is loaded.
  *
  * Resolution goes through `getMeta`, never through the registry Map directly. The Map is keyed by
  * doctype **name** while a link target is a **slug** (`DoctypeMeta.links[].target` is documented as
@@ -168,6 +171,16 @@ export function clearRegistry(): void {
  * `inherits` is checked the same way even though nothing resolves it at runtime (both resolvers
  * only echo it onto the wire) — one rule is cheaper than two, and it cannot be wrong in the
  * permissive direction.
+ *
+ * The **binding** checks are the same defect class as an unresolvable target, one step further in:
+ * a link whose target resolves can still name no way to reach the rows, and the reader's answer for
+ * that is `continue` or a `null` — indistinguishable on the wire from a relation that is genuinely
+ * empty. Both halves of a declaration are `.optional()` in the schema because which one is required
+ * depends on cardinality, which Zod cannot express here; this is where that dependency is enforced.
+ *
+ * Only what the runtime actually consults is required. A `backlink` naming a column the target
+ * table does not have already fails loudly — Postgres rejects the SELECT — so it is left alone;
+ * the check exists for the silent cases, not to restate the database's own errors.
  *
  * Returns rather than throws so the caller decides; `assertReferencesResolve` in the plugin is that
  * caller. Kept out of the package's public exports: it reads a module-level registry, so it is only
@@ -187,8 +200,10 @@ export function validateReferences(): ValidationError[] {
 			})
 		}
 
+		const fields = flattenFields(doctype.fields)
+
 		// Check link field targets — `doctype` is both the link marker and its target.
-		for (const field of doctype.fields) {
+		for (const field of fields) {
 			if (field.kind !== 'field') continue
 			const target = field.doctype
 			if (target !== undefined && getMeta(target) === undefined) {
@@ -201,11 +216,65 @@ export function validateReferences(): ValidationError[] {
 
 		// Check link-declaration targets (component-primary links live in the `links` map)
 		if (doctype.links) {
+			const declared = new Set(fields.map(f => f.fieldname))
+			// A foreign key is read from a column, so a link can only bind to a field that has one.
+			// The rule itself lives in one place — see `columnBackedFields` — because the read path,
+			// the write path and this check all have to answer it the same way.
+			const columnBacked = new Set(columnBackedFields(doctype.fields).map(f => f.fieldname))
+
 			for (const [key, link] of Object.entries(doctype.links)) {
 				if (getMeta(link.target) === undefined) {
 					errors.push({
 						path: [doctype.name, 'links', key, 'target'],
 						message: `Link references unknown doctype: ${link.target}`,
+					})
+				}
+
+				// A custom fetch strategy hands the whole read to its handler, which is given the
+				// row and the declaration and finds the target however it likes. The runtime returns
+				// before consulting either binding below, so requiring one would refuse a link that
+				// works.
+				if (link.fetch?.method === 'custom') continue
+
+				// The two cardinalities bind through different halves of the declaration, so the
+				// check has to split the same way the reader does.
+				if (link.cardinality === 'noneOrMany' || link.cardinality === 'atLeastOne') {
+					// Many-side: the target rows are found by a column on the *target* table, so
+					// this doctype needs no field of its own — and the in-repo hosts disagree on
+					// whether one exists, which is why only `backlink` can be required here.
+					if (!link.backlink) {
+						errors.push({
+							path: [doctype.name, 'links', key, 'backlink'],
+							message:
+								`Link "${key}" is ${link.cardinality} but names no \`backlink\`, so the runtime cannot ` +
+								`find the target rows and drops the link with no error. Name the field on "${link.target}" ` +
+								`that points back to this doctype.`,
+						})
+					}
+					continue
+				}
+
+				// One-side: the foreign key is a column on *this* table, read as
+				// `link.fieldname ?? key`. A name matching no declared field is not selected, so the
+				// link resolves to null forever and reads as "this record has no such relation".
+				const fieldname = link.fieldname ?? key
+				if (!columnBacked.has(fieldname)) {
+					errors.push({
+						// Point at whichever half actually carries the binding: the `fieldname`
+						// property when it is set, otherwise the key itself. Naming `target` here
+						// would send the reader to the one part that resolved correctly.
+						path: link.fieldname ? [doctype.name, 'links', key, 'fieldname'] : [doctype.name, 'links', key],
+						// Two different repairs, so two different diagnoses: a name nothing declares
+						// is a typo, while a name that resolves to a column-less field is a binding
+						// pointed at the wrong one of several real fields.
+						message: declared.has(fieldname)
+							? `Link "${key}" binds to field "${fieldname}", which has no database column of its own — ` +
+								`it is computed, or a container rather than a value — so there is no foreign key to read ` +
+								`and the record read fails on the missing column. Bind the link to the field holding the ` +
+								`foreign key.`
+							: `Link "${key}" binds to field "${fieldname}", which this doctype does not declare, so it ` +
+								`resolves to null with no error. Declare that field, or set \`fieldname\` to the field ` +
+								`holding the foreign key. (A link's key is its fieldname unless \`fieldname\` overrides it.)`,
 					})
 				}
 			}

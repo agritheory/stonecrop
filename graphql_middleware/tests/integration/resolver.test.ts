@@ -107,6 +107,10 @@ beforeAll(async () => {
 				states: ['Draft', 'Active'],
 				actions: {
 					submit: { label: 'Submit', allowedStates: ['Draft'], nextState: 'Active' },
+					// The self-transition: persists field data in place, and creates the record
+					// when there is none. No `allowedStates` — a save is allowed from any state,
+					// and a record being created is in none.
+					save: { label: 'Save', selfTransition: true },
 					// Stateless commands: no nextState, no selfTransition. Only a registered
 					// `actionHandlers` entry can make one of these do anything.
 					recalculate: { label: 'Recalculate', stateless: true, allowedStates: ['Draft'] },
@@ -236,6 +240,128 @@ beforeAll(async () => {
 				},
 			},
 		},
+		// One-side link fixtures. Both map onto sc_tag (id, label, item_id -> sc_item.id), which
+		// differ only in render mode — the axis the expansion loop has to respect.
+		ScLinkExpand: {
+			name: 'ScLinkExpand',
+			fields: [
+				{ kind: 'field', fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
+				{ kind: 'field', fieldname: 'label', component: 'ATextInput', label: 'Label' },
+				{ kind: 'field', fieldname: 'itemId', component: 'ATextInput', label: 'Item' },
+			],
+			links: {
+				// `component: AForm` makes this expand, so `getSqlColumns` omits item_id from the
+				// payload SELECT — and the expansion still has to find the value somewhere.
+				itemId: {
+					target: 'ScItem',
+					cardinality: 'one' as const,
+					component: 'AForm',
+					fetch: { method: 'sync' as const },
+				},
+			},
+			// Present so the write path can be pointed at an expanding link, whose read value is a
+			// nested record while its column holds a scalar foreign key.
+			workflow: { actions: { save: { label: 'Save', selfTransition: true } } },
+		},
+		ScLinkInline: {
+			name: 'ScLinkInline',
+			fields: [
+				{ kind: 'field', fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
+				{ kind: 'field', fieldname: 'label', component: 'ATextInput', label: 'Label' },
+				// AFormLink is a picker: the field keeps its own id and must survive the read.
+				{ kind: 'field', fieldname: 'itemId', component: 'AFormLink', label: 'Item' },
+			],
+			links: {
+				itemId: { target: 'ScItem', cardinality: 'one' as const, fetch: { method: 'sync' as const } },
+			},
+		},
+		// The declaration names its own `fieldname`, so the map key and the bound field differ —
+		// the one shape where `link.fieldname ?? key` is not a tautology.
+		ScLinkAliased: {
+			name: 'ScLinkAliased',
+			fields: [
+				{ kind: 'field', fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
+				{ kind: 'field', fieldname: 'label', component: 'ATextInput', label: 'Label' },
+				{ kind: 'field', fieldname: 'itemId', component: 'ATextInput', label: 'Item' },
+			],
+			links: {
+				item: {
+					target: 'ScItem',
+					cardinality: 'one' as const,
+					component: 'AForm',
+					fieldname: 'itemId',
+					fetch: { method: 'sync' as const },
+				},
+			},
+		},
+		// No `fetch`, so a one-side link defaults to `lazy` — the only shape that can tell the two
+		// forms of `includeNested` apart.
+		ScLinkLazy: {
+			name: 'ScLinkLazy',
+			fields: [
+				{ kind: 'field', fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
+				{ kind: 'field', fieldname: 'label', component: 'ATextInput', label: 'Label' },
+				{ kind: 'field', fieldname: 'itemId', component: 'ATextInput', label: 'Item' },
+			],
+			links: {
+				itemId: { target: 'ScItem', cardinality: 'one' as const, component: 'AForm' },
+			},
+		},
+		// Row-cap fixtures. Three doctypes over the one 64-child table, differing only in how the
+		// link declares its fetch — which is the axis the cap used to key off by accident.
+		ScBulkChild: {
+			name: 'ScBulkChild',
+			fields: [
+				{ kind: 'field', fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
+				{ kind: 'field', fieldname: 'label', component: 'ATextInput', label: 'Label' },
+				{ kind: 'field', fieldname: 'bulk_id', component: 'ATextInput', label: 'Bulk ID' },
+			],
+		},
+		// Declares no `fetch` at all. A many-side link defaults to `sync`, so this and ScBulkSync
+		// below resolve to the same strategy and must read the same rows.
+		ScBulk: {
+			name: 'ScBulk',
+			fields: [
+				{ kind: 'field', fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
+				{ kind: 'field', fieldname: 'name', component: 'ATextInput', label: 'Name' },
+			],
+			links: {
+				children: { target: 'ScBulkChild', cardinality: 'noneOrMany' as const, backlink: 'bulk_id' },
+			},
+		},
+		ScBulkSync: {
+			name: 'ScBulkSync',
+			fields: [
+				{ kind: 'field', fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
+				{ kind: 'field', fieldname: 'name', component: 'ATextInput', label: 'Name' },
+			],
+			links: {
+				children: {
+					target: 'ScBulkChild',
+					cardinality: 'noneOrMany' as const,
+					backlink: 'bulk_id',
+					fetch: { method: 'sync' as const },
+				},
+			},
+		},
+		// An author-declared cap, under a key that differs from the field it binds — so what the
+		// truncation report names is unambiguous rather than accidentally identical.
+		ScBulkCapped: {
+			name: 'ScBulkCapped',
+			fields: [
+				{ kind: 'field', fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
+				{ kind: 'field', fieldname: 'name', component: 'ATextInput', label: 'Name' },
+			],
+			links: {
+				kids: {
+					target: 'ScBulkChild',
+					cardinality: 'noneOrMany' as const,
+					backlink: 'bulk_id',
+					fieldname: 'children',
+					fetch: { method: 'sync' as const, limit: 10 },
+				},
+			},
+		},
 		ScProduct: {
 			name: 'ScProduct',
 			fields: [
@@ -262,7 +388,21 @@ beforeAll(async () => {
 		extends: [PostGraphileAmberPreset],
 		// Handlers are inert for every action that does not name one, so the transition suites
 		// above and below are unaffected by their presence.
-		plugins: [createStonecropPlugin({ actionHandlers, tables: { ScSurrogate: 'sc_draft', ScAmbiguous: 'sc_note' } })],
+		plugins: [
+			createStonecropPlugin({
+				actionHandlers,
+				tables: {
+					ScSurrogate: 'sc_draft',
+					ScAmbiguous: 'sc_note',
+					ScLinkExpand: 'sc_tag',
+					ScLinkInline: 'sc_tag',
+					ScLinkAliased: 'sc_tag',
+					ScLinkLazy: 'sc_tag',
+					ScBulkSync: 'sc_bulk',
+					ScBulkCapped: 'sc_bulk',
+				},
+			}),
+		],
 		pgServices: [pgService],
 	})
 	schema = result.schema
@@ -608,6 +748,166 @@ describe('lazy link retrieval via stonecropRecords', { tags: ['integration', 'gr
 
 		// The data contents should match
 		expect(syncData?.notes?.map((n: any) => n.body).toSorted()).toEqual(lazyData?.map((n: any) => n.body).toSorted())
+	})
+})
+
+// ===========================================================================
+// Saving and creating — the self-transition write path
+// ===========================================================================
+
+describe('self-transition data write', { tags: ['integration', 'graphql'] }, () => {
+	// The adapter supplied `readState`/`writeState`/`runEffect` and no `writeData` at all, which
+	// `GuardedTransitionIO` documents as how a backend *declines* to write. So the reference
+	// Postgres backend was indistinguishable from a read-only one, and every save answered
+	// "which this backend does not support" — loud, but a lie.
+	it('persists field data for a save against an existing record', async () => {
+		const [action, read] = await runSequence([
+			`mutation { stonecropAction(doctype: "ScItem", action: "save", args: [{ id: "1", data: { name: "Renamed" } }]) { success error data } }`,
+			`query { stonecropRecord(doctype: "ScItem", id: "1") { data } }`,
+		])
+		expect((action as any).data?.stonecropAction?.error).toBeNull()
+		expect((action as any).data?.stonecropAction?.success).toBe(true)
+		// The row itself, not just the echoed payload — the result could be right while nothing landed.
+		expect((read as any).data?.stonecropRecord?.data?.name).toBe('Renamed')
+	})
+
+	// Creating is the same request with no id. There is no create action and no create mutation:
+	// `save` upserts, and the absence of an id is the whole signal.
+	it('creates the record when no id is dispatched', async () => {
+		const [action, list] = await runSequence([
+			`mutation { stonecropAction(doctype: "ScItem", action: "save", args: [{ data: { name: "Minted" } }]) { success error data } }`,
+			`query { stonecropRecords(doctype: "ScItem", filters: { name: "Minted" }) { data } }`,
+		])
+		expect((action as any).data?.stonecropAction?.error).toBeNull()
+		const created = (action as any).data?.stonecropAction?.data
+		expect(created?.name).toBe('Minted')
+		// Identity must come back, or the client files the record nowhere and the create is lost.
+		expect(created?.id).toBeDefined()
+		expect((list as any).data?.stonecropRecords?.data.length).toBe(1)
+	})
+
+	// The client's contract is that an id means update and its absence means create
+	// (`client-action.ts`: `...(isDraft ? {} : { id: recordId })`). The guard's read collapses
+	// "no id dispatched" and "id dispatched, no such row" into the same `null`, so a save against
+	// a record someone else deleted lands on the create branch — minting a *new* row under a new
+	// identity and reporting success. The client then follows the settled id and nobody learns the
+	// original is gone. Silent, and wrong.
+	it('refuses to create when an id was dispatched but matched no row', async () => {
+		const [action, list] = await runSequence([
+			`mutation { stonecropAction(doctype: "ScItem", action: "save", args: [{ id: "9999", data: { name: "Ghost" } }]) { success error } }`,
+			`query { stonecropRecords(doctype: "ScItem", filters: { name: "Ghost" }) { data } }`,
+		])
+		const result = (action as any).data?.stonecropAction
+		expect(result?.success).toBe(false)
+		// Naming the id is the difference between a usable report and "something went wrong".
+		expect(String(result?.error)).toContain('9999')
+		// The oracle that matters: the envelope could say failure while a row was still written.
+		expect((list as any).data?.stonecropRecords?.data.length).toBe(0)
+	})
+
+	// The doctype owns state everywhere except creation, where `transition.ts` says the initial
+	// state is the backend's to set. The column default is the backend setting it — nothing reads
+	// `workflow.states`, which is an unordered array with no initial marker to read.
+	it('takes the initial state from the column default, never from the doctype', async () => {
+		const [action] = await runSequence([
+			`mutation { stonecropAction(doctype: "ScItem", action: "save", args: [{ data: { name: "Defaulted" } }]) { data } }`,
+		])
+		expect((action as any).data?.stonecropAction?.data?.status).toBe('Draft')
+	})
+
+	// A save is a self-transition: it stays in the current state by definition. Letting a patch
+	// carry `status` would let any client bypass `allowedStates` entirely by writing the column
+	// the guard reads.
+	it('refuses to move the workflow state through the data patch', async () => {
+		const [, read] = await runSequence([
+			`mutation { stonecropAction(doctype: "ScItem", action: "save", args: [{ id: "1", data: { name: "Still Draft", status: "Active" } }]) { success droppedFields } }`,
+			`query { stonecropRecord(doctype: "ScItem", id: "1") { data } }`,
+		])
+		const record = (read as any).data?.stonecropRecord?.data
+		expect(record?.name).toBe('Still Draft')
+		expect(record?.status).toBe('Draft')
+	})
+
+	// Column identifiers come from the doctype, never from the request — which is what makes the
+	// patch untrusted input safe to build SQL from. A key naming no column has nowhere to go.
+	it('drops a key that names no column, and says which', async () => {
+		const [action] = await runSequence([
+			`mutation { stonecropAction(doctype: "ScItem", action: "save", args: [{ id: "1", data: { name: "Kept", bogus: "x" } }]) { success droppedFields data } }`,
+		])
+		const result = (action as any).data?.stonecropAction
+		expect(result?.success).toBe(true)
+		expect(result?.data?.name).toBe('Kept')
+		// Silence here is data loss the user is told was saved.
+		expect(result?.droppedFields).toContain('bogus')
+	})
+
+	// The read returns an expanding link as a nested record; the column under it holds a scalar
+	// foreign key. A client that reads, edits and writes back sends the nested form straight into
+	// a uuid column — so the shape is checked, not just the name.
+	it('drops an expanded relation payload but writes the scalar foreign key', async () => {
+		const [expanded, scalar] = await runSequence([
+			`mutation { stonecropAction(doctype: "ScLinkExpand", action: "save", args: [{ id: "1", data: { itemId: { id: 2, name: "Beta" } } }]) { success droppedFields } }`,
+			`mutation { stonecropAction(doctype: "ScLinkExpand", action: "save", args: [{ id: "1", data: { itemId: "2" } }]) { success droppedFields } }`,
+		])
+		expect((expanded as any).data?.stonecropAction?.droppedFields).toContain('itemId')
+		expect((scalar as any).data?.stonecropAction?.success).toBe(true)
+		expect((scalar as any).data?.stonecropAction?.droppedFields).toBeNull()
+	})
+})
+
+// ===========================================================================
+// Many-side link row cap
+// ===========================================================================
+
+describe('many-side link row cap', { tags: ['integration', 'graphql'] }, () => {
+	// The bug this suite exists for: the cap was `fetch?.method === 'sync' ? fetch.limit : isMany ? 50
+	// : undefined`, where `method === 'sync'` is a *type narrowing* (only SyncFetch carries `limit`)
+	// that someone also hung a default off. Writing the word `sync` — the very method a many-side
+	// link already defaults to — therefore removed the cap.
+	it('reads the same rows whether or not the link declares the method it already defaults to', async () => {
+		const [implicit, explicit] = await Promise.all([
+			runQuery(`query { stonecropRecord(doctype: "ScBulk", id: "1") { data } }`),
+			runQuery(`query { stonecropRecord(doctype: "ScBulkSync", id: "1") { data } }`),
+		])
+		const implicitChildren = (implicit as any).data?.stonecropRecord?.data?.children
+		const explicitChildren = (explicit as any).data?.stonecropRecord?.data?.children
+		// Asserted against the fixture's own size, not against each other: two reads that agree on
+		// the wrong number would pass an equality check.
+		expect(implicitChildren?.length).toBe(64)
+		expect(explicitChildren?.length).toBe(64)
+	})
+
+	it('applies the server default row cap to a link and says the link is partial', async () => {
+		const capped = await runQuery(
+			`query { stonecropRecord(doctype: "ScBulk", id: "1") { data truncatedLinks } }`,
+			undefined,
+			{
+				schema: cappedSchema,
+				resolvedPreset: cappedResolvedPreset,
+			}
+		)
+		const record = (capped as any).data?.stonecropRecord
+		expect(record?.data?.children.length).toBe(1)
+		expect(record?.truncatedLinks).toContain('children')
+	})
+
+	// The control. Without it a link that returned everything and reported truncation anyway would
+	// look identical to a working cap from the test above.
+	it('reports no truncation when the whole relation fits under the cap', async () => {
+		const result = await runQuery(`query { stonecropRecord(doctype: "ScBulk", id: "1") { data truncatedLinks } }`)
+		const record = (result as any).data?.stonecropRecord
+		expect(record?.data?.children.length).toBe(64)
+		expect(record?.truncatedLinks).toBeNull()
+	})
+
+	// An author-declared limit truncates just as silently as the old hard-coded one did, so it is
+	// reported the same way. The key is `kids` and the bound field is `children`: the report names
+	// the field, because that is the key the client reads the rows off and guards on.
+	it('reports an author-declared limit that truncates, naming the bound field', async () => {
+		const result = await runQuery(`query { stonecropRecord(doctype: "ScBulkCapped", id: "1") { data truncatedLinks } }`)
+		const record = (result as any).data?.stonecropRecord
+		expect(record?.data?.children.length).toBe(10)
+		expect(record?.truncatedLinks).toEqual(['children'])
 	})
 })
 
@@ -974,6 +1274,116 @@ describe('actionHandlers registration', { tags: ['integration', 'graphql'] }, ()
 // Cross-doctype references — verified at schema build
 // ===========================================================================
 
+// ===========================================================================
+// One-side link expansion — render mode decides whether a link expands at all.
+//
+// `resolveLinkRenderMode` is the single definition of that, consumed by the client resolver and
+// by the SELECT column builder. The expansion loop used to not consult it, which broke both
+// render modes in opposite directions: the expanding one could never resolve (its FK column is
+// deliberately absent from the payload SELECT, so the read found `undefined`), and the inline one
+// was expanded when it should not be, replacing a picker's id with the whole target record.
+//
+// sc_tag row 1 is ('urgent', item_id 1) and sc_item row 1 is 'Alpha'.
+// ===========================================================================
+
+describe('one-side link expansion', { tags: ['integration', 'graphql'] }, () => {
+	it('expands a record-mode link whose FK column the payload SELECT omits', async () => {
+		const result = await runQuery(`query { stonecropRecord(doctype: "ScLinkExpand", id: "1") { data } }`)
+		expect((result as any).errors).toBeUndefined()
+		const data = (result as any).data?.stonecropRecord?.data
+		// Not `null`: the relation exists and item_id is 1. Before the render-mode fix this was
+		// null for every record of every doctype declaring an expanding one-side link.
+		expect(data.itemId).toMatchObject({ id: 1, name: 'Alpha' })
+	})
+
+	it('leaves an inline link as the scalar id the picker needs', async () => {
+		const result = await runQuery(`query { stonecropRecord(doctype: "ScLinkInline", id: "1") { data } }`)
+		expect((result as any).errors).toBeUndefined()
+		const data = (result as any).data?.stonecropRecord?.data
+		// An object here means the picker was handed a record where it expects an id to resolve
+		// display text from.
+		expect(data.itemId).toBe(1)
+	})
+
+	it('binds and returns an aliased link under its declared fieldname, not the map key', async () => {
+		// ScLinkAliased keys the declaration `item` but binds field `itemId`. Both halves of the
+		// one rule are load-bearing here: the FK is read via `fieldname ?? key`, and the result is
+		// written under that same resolved name — which is where the client looks for it.
+		const result = await runQuery(`query { stonecropRecord(doctype: "ScLinkAliased", id: "1") { data } }`)
+		expect((result as any).errors).toBeUndefined()
+		const data = (result as any).data?.stonecropRecord?.data
+		expect(data.itemId).toMatchObject({ id: 1, name: 'Alpha' })
+		// The map key must not become a payload field of its own.
+		expect(data.item).toBeUndefined()
+	})
+
+	it('keeps the internal FK alias out of the payload', async () => {
+		const result = await runQuery(`query { stonecropRecord(doctype: "ScLinkExpand", id: "1") { data } }`)
+		const data = (result as any).data?.stonecropRecord?.data
+		expect(Object.keys(data).filter(k => k.startsWith('__stonecropLinkFk_'))).toEqual([])
+	})
+})
+
+// ===========================================================================
+// includeNested — the boolean and the name list must mean the same thing.
+//
+// `includeNested: true` is the documented form and the one `DataClient` describes, but a lazy link
+// was admitted by the `shouldInclude` gate and then dropped again a few lines later by a second
+// test that only ever consulted the name list — `null` for the boolean form. The result was a
+// partial record with nothing to say so.
+//
+// The three cases below are the whole truth table of that gate.
+// ===========================================================================
+
+describe('includeNested', { tags: ['integration', 'graphql'] }, () => {
+	it('expands a lazy link when asked with the boolean', async () => {
+		const result = await runQuery(
+			`query { stonecropRecord(doctype: "ScLinkLazy", id: "1", options: { includeNested: true }) { data } }`
+		)
+		expect((result as any).errors).toBeUndefined()
+		const data = (result as any).data?.stonecropRecord?.data
+		expect(data.itemId).toMatchObject({ id: 1, name: 'Alpha' })
+	})
+
+	it('expands a lazy link when asked by name', async () => {
+		// The control: this form always worked, which is what made the boolean's silence look like
+		// "there is nothing there" rather than "the request was dropped".
+		const result = await runQuery(
+			`query { stonecropRecord(doctype: "ScLinkLazy", id: "1", options: { includeNested: ["itemId"] }) { data } }`
+		)
+		expect((result as any).errors).toBeUndefined()
+		const data = (result as any).data?.stonecropRecord?.data
+		expect(data.itemId).toMatchObject({ id: 1, name: 'Alpha' })
+	})
+
+	it('leaves a lazy link alone when nothing asked for it', async () => {
+		// The half that must not change: `lazy` means "not in the initial query". Removing the
+		// second guard must widen what an explicit request reaches, not make every link eager.
+		const result = await runQuery(`query { stonecropRecord(doctype: "ScLinkLazy", id: "1") { data } }`)
+		expect((result as any).errors).toBeUndefined()
+		const data = (result as any).data?.stonecropRecord?.data
+		expect(data.itemId).toBeUndefined()
+	})
+})
+
+/** ScColumnless with its link bound to a field that either has a column or, when computed, does not. */
+const columnless = (computed: boolean) => ({
+	ScColumnless: {
+		slug: 'sc-columnless',
+		fields: [
+			{ kind: 'field' as const, fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
+			{
+				kind: 'field' as const,
+				fieldname: 'virtualRef',
+				component: 'ATextInput',
+				label: 'Virtual',
+				...(computed ? { computed: true } : {}),
+			},
+		],
+		links: { virtualRef: { target: 'ScItem', cardinality: 'one' as const } },
+	},
+})
+
 describe('doctype reference resolution', { tags: ['integration', 'graphql'] }, () => {
 	const build = async () => {
 		const pgService = makePgService({ connectionString: inject('testDatabaseUrl') })
@@ -1000,7 +1410,7 @@ describe('doctype reference resolution', { tags: ['integration', 'graphql'] }, (
 			ScDangling: {
 				slug: 'sc-dangling',
 				fields: [],
-				links: { orphan: { target: 'sc-nonesuch', cardinality: 'noneOrMany' } },
+				links: { orphan: { target: 'sc-nonesuch', cardinality: 'noneOrMany', backlink: 'danglingId' } },
 			},
 		})
 		await expect(build()).rejects.toThrow(
@@ -1011,6 +1421,18 @@ describe('doctype reference resolution', { tags: ['integration', 'graphql'] }, (
 		// just failed now builds — and it is also how this case cleans up after itself, since the
 		// registry is shared across the file and there is no removeDoctype.
 		loadDoctypesFromObject({ ScNonesuch: { slug: 'sc-nonesuch', fields: [] } })
+		await expect(build()).resolves.toBeUndefined()
+	})
+
+	it('refuses a link bound to a field with no column, before any read can fail on it', async () => {
+		// Observed directly before this check existed: the read answered `column "virtual_ref" does
+		// not exist` and returned null for the *whole record*, not merely the link — one malformed
+		// declaration took down every read of the doctype, at runtime, with no mention of the link.
+		loadDoctypesFromObject(columnless(true))
+		await expect(build()).rejects.toThrow(/ScColumnless\.links\.virtualRef: .*no database column/)
+
+		// Same name, same link, but the field now has a column — repairs it and cleans up.
+		loadDoctypesFromObject(columnless(false))
 		await expect(build()).resolves.toBeUndefined()
 	})
 })
