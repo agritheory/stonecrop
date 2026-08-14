@@ -2,6 +2,12 @@
   "name": "@stonecrop/rockfoil",
   "entries": [
     {
+      "version": "0.18.0",
+      "tag": "@stonecrop/rockfoil_v0.18.0",
+      "date": "Fri, 14 Aug 2026 08:05:46 GMT",
+      "comments": {}
+    },
+    {
       "version": "0.17.0",
       "tag": "@stonecrop/rockfoil_v0.17.0",
       "date": "Tue, 11 Aug 2026 12:49:04 GMT",

@@ -1,6 +1,18 @@
 # Change Log - @stonecrop/graphql-middleware
 
-This log was last generated on Tue, 11 Aug 2026 12:49:04 GMT and should not be manually modified.
+This log was last generated on Fri, 14 Aug 2026 08:05:46 GMT and should not be manually modified.
+
+## 0.18.0
+Fri, 14 Aug 2026 08:05:46 GMT
+
+### Minor changes
+
+- `includeNested: true` now expands lazy links as the name-list form already did, instead of admitting them and silently dropping each one.
+- Schema build now refuses a one-side link bound to a field with no database column of its own, which previously failed the whole record read on a missing column at runtime.
+- Schema build now refuses a link that binds to nothing — a many-side link with no `backlink`, or a one-side link whose `fieldname ?? key` names no declared field — and the one-side fetch path now honours that same key fallback.
+- Many-side link rows are now capped by defaultRecordLimit instead of a hard-coded 50 that declaring the default fetch method silently removed, and truncation is reported in the new truncatedLinks field.
+- A one-side link now expands only when its render mode says it should: an inline picker keeps its own id instead of being replaced by the target record, and an expanding link resolves instead of always answering null.
+- stonecropAction can now save and create records on the Postgres adapter, writing only the doctype's declared columns and reporting any discarded keys in the new droppedFields field.
 
 ## 0.17.0
 Tue, 11 Aug 2026 12:49:04 GMT
