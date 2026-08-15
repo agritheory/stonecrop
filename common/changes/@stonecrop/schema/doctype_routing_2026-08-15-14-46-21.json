@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Add optional route to DoctypeMeta for declarative URL routing (Vue Router-style path strings).",
+      "type": "minor",
+      "packageName": "@stonecrop/schema"
+    }
+  ],
+  "packageName": "@stonecrop/schema",
+  "email": "tyler@agritheory.com"
+}
