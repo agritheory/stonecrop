@@ -264,6 +264,22 @@ export declare function isActionAllowedInState(action: {
 | action | `{ allowedStates?: string[] \| null; }` |  |
 | currentState | `string` |  |
 
+### linkDisplayFieldname
+
+Build the payload key for a link field's display text (e.g. `customerId__display`).
+
+**Signature:**
+
+```typescript
+export declare function linkDisplayFieldname(fieldname: string): string;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| fieldname | `string` |  |
+
 ### mergeIntrospectedDoctype
 
 Verify an authored doctype against freshly generated output and stamp provenance.
@@ -1310,6 +1326,7 @@ Doctype metadata - complete definition of a doctype
 export const DoctypeMeta: z.ZodObject<{
     name: z.ZodString;
     slug: z.ZodOptional<z.ZodString>;
+    displayField: z.ZodOptional<z.ZodString>;
     fields: z.ZodArray<z.ZodType<import("./field").DoctypeField, unknown, z.core.$ZodTypeInternals<import("./field").DoctypeField, unknown>>>;
     links: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodObject<{
         target: z.ZodString;
@@ -1482,6 +1499,16 @@ Lazy fetch strategy - data is fetched on demand in a separate query.
 export const LazyFetch: z.ZodObject<{
     method: z.ZodLiteral<"lazy">;
 }, z.core.$strip>
+```
+
+### LINK_DISPLAY_SUFFIX
+
+Suffix appended to a link fieldname for its pre-resolved display text in record payloads.
+
+**Type:**
+
+```typescript
+export const LINK_DISPLAY_SUFFIX: 
 ```
 
 ### LinkDeclaration

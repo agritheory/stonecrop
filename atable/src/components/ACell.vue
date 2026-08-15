@@ -26,6 +26,7 @@
 
 <script setup lang="ts">
 import { KeypressHandlers, defaultKeypressHandlers, useKeyboardNav } from '@stonecrop/utilities'
+import { linkDisplayFieldname } from '@stonecrop/schema'
 import { useDebounceFn, useElementBounding } from '@vueuse/core'
 import { computed, type CSSProperties, onMounted, ref, useTemplateRef, nextTick } from 'vue'
 
@@ -72,6 +73,13 @@ const resolvedText = ref<string | null>(null)
 onMounted(() => {
 	if (!column.linkDoctype) return
 	const raw = store.getCellData(colIndex, rowIndex)
+
+	// Pre-resolved display text from the record payload (`fieldname__display`).
+	const preDisplay = row?.[linkDisplayFieldname(column.name)]
+	if (typeof preDisplay === 'string' || typeof preDisplay === 'number') {
+		resolvedText.value = String(preDisplay)
+		return
+	}
 
 	// Pre-resolved AFormLinkValue object — extract display text directly.
 	if (raw !== null && raw !== undefined && typeof raw === 'object') {

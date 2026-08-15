@@ -41,9 +41,45 @@
 // The draft segment comes from @stonecrop/stonecrop rather than being spelled out here: that
 // package guards fetching, field initialization and workflow readiness on the same question, and
 // when the two were written separately they disagreed and every guard over there went dead.
+const LINK_DISPLAY_KEY_SUFFIX = '__display'
+
+function applyLinkDisplayFields(flat: Record<string, any>, fields: DoctypeField[]): void {
+	for (const field of fields) {
+		if (field.kind === 'fieldset') {
+			applyLinkDisplayFields(flat, field.schema)
+			continue
+		}
+		if (field.kind !== 'field' || !field.doctype) continue
+
+		const raw = flat[field.fieldname]
+		const display = flat[linkDisplayFieldname(field.fieldname)]
+		if (
+			raw != null &&
+			(typeof raw === 'string' || typeof raw === 'number') &&
+			display != null &&
+			(typeof display === 'string' || typeof display === 'number')
+		) {
+			flat[field.fieldname] = { id: raw, displayText: String(display) }
+		}
+		delete flat[linkDisplayFieldname(field.fieldname)]
+	}
+}
+
+function normalizeOutboundFieldValue(value: unknown): unknown {
+	if (value !== null && typeof value === 'object' && !Array.isArray(value) && 'id' in value) {
+		return (value as { id: unknown }).id
+	}
+	return value
+}
+
+function isLinkDisplayPayloadKey(key: string): boolean {
+	return key.endsWith(LINK_DISPLAY_KEY_SUFFIX)
+}
+
 import { DRAFT_RECORD_ID, isDraftRecordId, useStonecrop, useValidationStore } from '@stonecrop/stonecrop'
 import { AForm, type AFormLinkNavigator, type ResolvedField, type ResolvedTable } from '@stonecrop/aform'
-import type { ColumnSchema } from '@stonecrop/schema'
+import type { ColumnSchema, DoctypeField } from '@stonecrop/schema'
+import { linkDisplayFieldname } from '@stonecrop/schema'
 import { computed, onMounted, onUnmounted, provide, ref, unref, watch } from 'vue'
 
 import ActionSet from './ActionSet.vue'
@@ -182,6 +218,7 @@ const currentViewData = computed<Record<string, any>>({
 			// so we nest fieldset children here before AForm renders them.
 			const doctype = stonecrop.value.registry.registry[currentDoctype.value]
 			if (doctype) {
+				applyLinkDisplayFields(flat, doctype.getSchemaArray())
 				for (const field of doctype.getSchemaArray()) {
 					if (field.kind === 'fieldset') {
 						const nested: Record<string, any> = {}
@@ -224,6 +261,7 @@ const currentViewData = computed<Record<string, any>>({
 			const flatData: Record<string, any> = {}
 			const fieldsetValues: Record<string, any>[] = []
 			for (const [key, value] of Object.entries(newData)) {
+				if (isLinkDisplayPayloadKey(key)) continue
 				if (fieldsetNames.has(key) && value && typeof value === 'object' && !Array.isArray(value)) {
 					fieldsetValues.push(value)
 				} else {
@@ -243,9 +281,10 @@ const currentViewData = computed<Record<string, any>>({
 				// cached object is what made a draft's edits vanish on any invalidation.
 				const next = { ...draftRecord.value }
 				for (const [fieldname, value] of Object.entries(flatData)) {
-					if (value === undefined) continue
-					if (next[fieldname] !== value) {
-						next[fieldname] = value
+					if (value === undefined || isLinkDisplayPayloadKey(fieldname)) continue
+					const normalized = normalizeOutboundFieldValue(value)
+					if (next[fieldname] !== normalized) {
+						next[fieldname] = normalized
 						changedFields.push(fieldname)
 					}
 				}
@@ -253,11 +292,12 @@ const currentViewData = computed<Record<string, any>>({
 			} else {
 				const hstStore = stonecrop.value.getStore()
 				for (const [fieldname, value] of Object.entries(flatData)) {
-					if (value === undefined) continue
+					if (value === undefined || isLinkDisplayPayloadKey(fieldname)) continue
+					const normalized = normalizeOutboundFieldValue(value)
 					const fieldPath = `${currentDoctype.value}.${currentRecordId.value}.${fieldname}`
 					const currentValue = hstStore.has(fieldPath) ? hstStore.get(fieldPath) : undefined
-					if (currentValue !== value) {
-						hstStore.set(fieldPath, value)
+					if (currentValue !== normalized) {
+						hstStore.set(fieldPath, normalized)
 						changedFields.push(fieldname)
 					}
 				}
@@ -960,23 +1000,29 @@ provide('aformLinkNavigator', {
 	},
 } satisfies AFormLinkNavigator)
 
-function toDisplayString(rec: Record<string, unknown> | undefined): string | undefined {
-	if (!rec) return undefined
-	const val = rec.name ?? rec.title ?? rec.displayText
-	return typeof val === 'string' || typeof val === 'number' ? String(val) : undefined
-}
-
 // Provide a resolver for AFormLink to look up display text by doctype + id.
 // Checks HST first (sync); falls back to an async client fetch if not cached.
+// Uses the target doctype's declared displayField — no heuristic field guessing.
 provide('aformLinkResolver', async (doctypeSlug: string, id: string): Promise<string | undefined> => {
 	if (!stonecrop.value) return undefined
 	try {
+		const meta = await stonecrop.value.getMeta({ path: `/${doctypeSlug}`, segments: [doctypeSlug] })
+		const displayField = meta?.displayField
+		if (!displayField) return undefined
+
+		const readDisplay = (rec: Record<string, unknown> | undefined): string | undefined => {
+			if (!rec) return undefined
+			const val = rec[displayField]
+			return typeof val === 'string' || typeof val === 'number' ? String(val) : undefined
+		}
+
 		const cached = stonecrop.value.getRecordById(doctypeSlug, id)?.get('') as Record<string, unknown> | undefined
-		const cachedDisplay = toDisplayString(cached)
+		const cachedDisplay = readDisplay(cached)
 		if (cachedDisplay != null) return cachedDisplay
+
 		await stonecrop.value.getRecord(doctypeSlug, id)
 		const fetched = stonecrop.value.getRecordById(doctypeSlug, id)?.get('') as Record<string, unknown> | undefined
-		return toDisplayString(fetched)
+		return readDisplay(fetched)
 	} catch {
 		return undefined
 	}

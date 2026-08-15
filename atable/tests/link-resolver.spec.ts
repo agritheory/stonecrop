@@ -154,4 +154,29 @@ describe('ATable linkResolver', { tags: ['component'] }, () => {
 		expect(injectedResolver).toHaveBeenCalledWith('category', '2')
 		expect(wrapper.find('td.atable-cell').text()).toBe('Work')
 	})
+
+	it('uses fieldname__display from the row without calling linkResolver', async () => {
+		const linkResolver = vi.fn().mockResolvedValue('ignored')
+
+		const columns: TableColumn[] = [{ name: 'customer_id', label: 'Customer', linkDoctype: 'party' }]
+
+		const wrapper = mount(ATable, {
+			props: {
+				rows: [{ customer_id: '1', customer_id__display: 'Acme Corp' }],
+				columns,
+				linkResolver,
+				'onUpdate:rows': () => {},
+				config: cfg,
+			},
+			global: {
+				components: { ACell, ARow },
+			},
+		})
+
+		await nextTick()
+		await flushPromises()
+
+		expect(linkResolver).not.toHaveBeenCalled()
+		expect(wrapper.find('td.atable-cell').text()).toBe('Acme Corp')
+	})
 })

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Add displayField to DoctypeMeta for explicit link display text resolution",
+      "type": "none",
+      "packageName": "@stonecrop/stonecrop"
+    }
+  ],
+  "packageName": "@stonecrop/stonecrop",
+  "email": "tyler@agritheory.com"
+}

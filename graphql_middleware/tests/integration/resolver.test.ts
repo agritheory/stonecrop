@@ -378,6 +378,29 @@ beforeAll(async () => {
 				},
 			],
 		},
+		ScParty: {
+			name: 'ScParty',
+			slug: 'sc-party',
+			displayField: 'partyName',
+			fields: [
+				{ kind: 'field', fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
+				{ kind: 'field', fieldname: 'partyName', component: 'ATextInput', label: 'Party Name' },
+			],
+		},
+		ScOrder: {
+			name: 'ScOrder',
+			fields: [
+				{ kind: 'field', fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
+				{
+					kind: 'field',
+					fieldname: 'customerId',
+					component: 'AFormLink',
+					doctype: 'sc-party',
+					label: 'Customer',
+				},
+				{ kind: 'field', fieldname: 'title', component: 'ATextInput', label: 'Title' },
+			],
+		},
 	})
 
 	pool = new Pool({ connectionString: databaseUrl, max: 1 })
@@ -852,6 +875,32 @@ describe('self-transition data write', { tags: ['integration', 'graphql'] }, () 
 		expect((expanded as any).data?.stonecropAction?.droppedFields).toContain('itemId')
 		expect((scalar as any).data?.stonecropAction?.success).toBe(true)
 		expect((scalar as any).data?.stonecropAction?.droppedFields).toBeNull()
+	})
+})
+
+// ===========================================================================
+// Link display text
+// ===========================================================================
+
+describe('link display text', { tags: ['integration', 'graphql'] }, () => {
+	it('includes customerId__display on stonecropRecord when the target declares displayField', async () => {
+		const result = await runQuery(`query { stonecropRecord(doctype: "ScOrder", id: "1") { data } }`)
+		const data = (result as any).data?.stonecropRecord?.data
+		expect(data.customerId).toBe(1)
+		expect(data.customerId__display).toBe('Acme Corp')
+	})
+
+	it('includes customerId__display on each stonecropRecords row', async () => {
+		const result = await runQuery(`query { stonecropRecords(doctype: "ScOrder") { data } }`)
+		const rows = (result as any).data?.stonecropRecords?.data as Array<Record<string, unknown>>
+		expect(rows[0]?.customerId__display).toBe('Acme Corp')
+		expect(rows[1]?.customerId__display).toBe('Globex')
+	})
+
+	it('omits display keys when the target doctype declares no displayField', async () => {
+		const result = await runQuery(`query { stonecropRecord(doctype: "ScItem", id: "1") { data } }`)
+		const data = (result as any).data?.stonecropRecord?.data
+		expect(Object.keys(data).some(key => key.endsWith('__display'))).toBe(false)
 	})
 })
 

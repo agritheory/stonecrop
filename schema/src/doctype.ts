@@ -309,6 +309,13 @@ export const DoctypeMeta = z
 		/** URL-friendly slug (kebab-case) */
 		slug: z.string().min(1).optional(),
 
+		/**
+		 * Field on this doctype used when displaying a reference to one of its records.
+		 * When a record elsewhere holds a foreign key to this doctype, the middleware may
+		 * include `fieldname__display` alongside the raw id, resolved from this field.
+		 */
+		displayField: z.string().min(1).optional(),
+
 		/** Field definitions (a link field is one carrying `doctype`) */
 		fields: z.array(DoctypeFieldSchema),
 
@@ -351,6 +358,17 @@ export const DoctypeMeta = z
 					)}); a record is identified by exactly one field. A composite database key is mapped to a single identity by the adapter, so a doctype never declares its parts`,
 			})
 		}
+
+		if (doctype.displayField) {
+			const hasField = doctype.fields.some(f => f.kind === 'field' && f.fieldname === doctype.displayField)
+			if (!hasField) {
+				ctx.addIssue({
+					code: 'custom',
+					path: ['displayField'],
+					message: `displayField "${doctype.displayField}" is not declared on this doctype`,
+				})
+			}
+		}
 	})
 
 /**
@@ -358,6 +376,20 @@ export const DoctypeMeta = z
  * @public
  */
 export type DoctypeMeta = z.infer<typeof DoctypeMeta>
+
+/**
+ * Suffix appended to a link fieldname for its pre-resolved display text in record payloads.
+ * @public
+ */
+export const LINK_DISPLAY_SUFFIX = '__display'
+
+/**
+ * Build the payload key for a link field's display text (e.g. `customerId__display`).
+ * @public
+ */
+export function linkDisplayFieldname(fieldname: string): string {
+	return `${fieldname}${LINK_DISPLAY_SUFFIX}`
+}
 
 /**
  * Context for identifying what doctype/record we're working with.

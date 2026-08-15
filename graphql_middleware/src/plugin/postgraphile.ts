@@ -7,6 +7,7 @@ import { GraphileConfig } from 'postgraphile/graphile-build'
 import { extendSchema } from 'postgraphile/utils'
 
 import { columnBackedFields, flattenFields } from '../fields'
+import { enrichLinkDisplayFields } from '../link-display'
 import { getFetchHandler } from '../registry/fetchHandlers'
 import { getMeta, getAllMeta, validateReferences } from '../registry/doctypes'
 import { applyGuardedTransition } from '../dispatch/transition'
@@ -347,6 +348,8 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 											}
 
 											const rowData: Record<string, unknown> = { ...row }
+											// oxlint-disable-next-line eslint/no-await-in-loop -- per-row link expansion follows; display lookup is one small batch
+											await enrichLinkDisplayFields(pgClient, meta, [rowData], options.tables, debugSql)
 											// Per record, not per doctype: two records of one doctype can differ in whether
 											// a relation overflowed, and a shared list would report the wrong one truncated.
 											const truncatedLinks: string[] = []
@@ -584,7 +587,9 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 											// a capped page distinguishable from a complete table; trim it before anything
 											// downstream can mistake it for a record.
 											const hasMore = effectiveLimit != null && rows.length > effectiveLimit
-											const data = hasMore ? rows.slice(0, effectiveLimit ?? rows.length) : rows
+											const data = [...(hasMore ? rows.slice(0, effectiveLimit ?? rows.length) : rows)]
+
+											await enrichLinkDisplayFields(pgClient, meta, data, options.tables, debugSql)
 
 											// Total matching the filters, independent of LIMIT/OFFSET, and opt-in.
 											//
