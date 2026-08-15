@@ -5,10 +5,10 @@ import type { PgClient } from '@dataplan/pg'
 import { flattenFields } from './fields'
 import { getMeta } from './registry/doctypes'
 
-type SqlQueryFn = <T>(
+type SqlQueryFn = (
 	pgClient: PgClient,
 	query: { text: string; values?: unknown[] }
-) => Promise<{ rows: readonly T[] }>
+) => Promise<{ rows: readonly Record<string, unknown>[] }>
 
 interface LinkDisplaySpec {
 	fieldname: string
@@ -24,6 +24,16 @@ function resolveTableName(name: string, tables?: Record<string, string>): string
 		return `"${target.slice(0, dotIndex)}"."${target.slice(dotIndex + 1)}"`
 	}
 	return `"${target}"`
+}
+
+/** Normalize a scalar FK cell value to a non-empty string id, or skip objects/null. */
+function fkIdKey(value: unknown): string | undefined {
+	if (value == null || typeof value === 'object') return undefined
+	if (typeof value === 'string') return value === '' ? undefined : value
+	if (typeof value === 'number' || typeof value === 'boolean' || typeof value === 'bigint') {
+		return String(value)
+	}
+	return undefined
 }
 
 function collectLinkDisplaySpecs(meta: DoctypeMeta, tables?: Record<string, string>): LinkDisplaySpec[] {
@@ -67,10 +77,8 @@ export async function enrichLinkDisplayFields(
 	for (const spec of specs) {
 		const ids = new Set<string>()
 		for (const row of rows) {
-			const fkValue = row[spec.fieldname]
-			if (fkValue == null || typeof fkValue === 'object') continue
-			const id = String(fkValue)
-			if (id !== '') ids.add(id)
+			const id = fkIdKey(row[spec.fieldname])
+			if (id !== undefined) ids.add(id)
 		}
 		if (ids.size === 0) continue
 
@@ -80,7 +88,7 @@ export async function enrichLinkDisplayFields(
 			displayColumn !== spec.displayField ? `"${displayColumn}" AS "${spec.displayField}"` : `"${spec.displayField}"`
 
 		// oxlint-disable-next-line eslint/no-await-in-loop -- one lookup batch per FK field; fields are few per doctype
-		const { rows: displayRows } = await debugSql<Record<string, unknown>>(pgClient, {
+		const { rows: displayRows } = await debugSql(pgClient, {
 			text: `SELECT "${pkColumn}" AS "${spec.targetPkFieldname}", ${displayAlias} FROM ${spec.targetTable} WHERE "${pkColumn}"::text = ANY($1::text[])`,
 			values: [Array.from(ids)],
 		})
@@ -91,9 +99,9 @@ export async function enrichLinkDisplayFields(
 		}
 
 		for (const row of rows) {
-			const fkValue = row[spec.fieldname]
-			if (fkValue == null || typeof fkValue === 'object') continue
-			const displayValue = displayById.get(String(fkValue))
+			const id = fkIdKey(row[spec.fieldname])
+			if (id === undefined) continue
+			const displayValue = displayById.get(id)
 			if (displayValue == null || displayValue === '') continue
 			row[linkDisplayFieldname(spec.fieldname)] = displayValue
 		}

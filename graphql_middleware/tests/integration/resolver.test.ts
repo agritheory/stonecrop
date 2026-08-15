@@ -469,10 +469,8 @@ async function runSequenceCapturingSql(
 	const sql: string[] = []
 	const client: PoolClient = await pool.connect()
 	const originalQuery = client.query.bind(client)
-	// oxlint-disable-next-line typescript/no-explicit-any -- pg's query() is heavily overloaded; the spy only records and forwards
 	;(client as any).query = (config: any, ...rest: any[]) => {
 		sql.push(typeof config === 'string' ? config : String(config?.text ?? ''))
-		// oxlint-disable-next-line typescript/no-unsafe-return -- forwarding pg's own return value untouched
 		return (originalQuery as any)(config, ...rest)
 	}
 	await client.query('BEGIN')
