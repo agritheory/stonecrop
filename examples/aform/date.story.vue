@@ -9,7 +9,11 @@
 					title="Military Time" />
 			</template>
 			<div style="width: fit-content">
-				<ADateTime ref="time-date" @get-time="handleTime" :allowMilitaryTime="state.militaryTime" :use-seconds="true" />
+				<ADateTimeInput
+					ref="time-date"
+					@get-time="handleTime"
+					:allowMilitaryTime="state.militaryTime"
+					:use-seconds="true" />
 			</div>
 		</Variant>
 		<Variant title="Date Picker">

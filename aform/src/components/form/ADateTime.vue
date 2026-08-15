@@ -1,285 +1,140 @@
 <template>
-	<div class="adate_time">
-		<div class="adate_time_fields">
+	<div class="aform_form-element">
+		<template v-if="mode === 'display'">
+			<span class="aform_display-value">{{ displayValue }}</span>
+			<label class="aform_field-label">{{ label }}</label>
+		</template>
+
+		<template v-else>
 			<input
-				v-model="timeData.hours"
+				:id="uuid"
+				class="aform_input-field"
 				type="text"
-				inputmode="numeric"
-				@paste="pasteInput($event, true)"
-				@focus="focusInput"
-				@blur="confirmTime"
-				@keydown.enter.prevent="confirmTime"
-				@keydown.up.prevent="tick('hours')"
-				@keydown.down.prevent="tick('hours', -1)" />
-			<span class="colon">:</span>
-			<input
-				v-model="timeData.minutes"
-				type="text"
-				inputmode="numeric"
-				@paste="pasteInput"
-				@focus="focusInput"
-				@blur="confirmTime"
-				@keydown.enter.prevent="confirmTime"
-				@keydown.up.prevent="tick('minutes')"
-				@keydown.down.prevent="tick('minutes', -1)" />
-			<span v-if="useSeconds" class="colon">:</span>
-			<input
-				v-if="useSeconds"
-				v-model="timeData.seconds"
-				type="text"
-				inputmode="numeric"
-				@paste="pasteInput"
-				@focus="focusInput"
-				@blur="confirmTime"
-				@keydown.enter.prevent="confirmTime"
-				@keydown.up.prevent="tick('seconds')"
-				@keydown.down.prevent="tick('seconds', -1)" />
-			<select
-				v-if="!allowMilitaryTime"
-				ref="meridiem-selector"
-				v-model="meridiem"
-				class="aform-select meridiem-selector"
-				@change="confirmTime">
-				<option value="AM">AM</option>
-				<option value="PM">PM</option>
-			</select>
-		</div>
+				:value="datetimeDisplay"
+				placeholder="Select date and time"
+				:disabled="mode === 'read'"
+				readonly
+				@click="openPicker" />
+			<label class="aform_field-label" :for="uuid">{{ label }}</label>
+
+			<p v-show="errorText" class="aform_error" v-html="errorText"></p>
+
+			<ADateSelection
+				v-if="showPicker"
+				ref="pickerRef"
+				class="adatetime-picker"
+				:select-range="false"
+				:show-date="true"
+				:show-time="true"
+				:default-hours="pickerDefaults.hours"
+				:default-minutes="pickerDefaults.minutes"
+				:default-seconds="pickerDefaults.seconds"
+				:default-meridiem="pickerDefaults.meridiem"
+				:allow-military-time="allowMilitaryTime"
+				:use-seconds="useSeconds"
+				@get-date="handleDate"
+				@get-time="handleTime" />
+		</template>
 	</div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, useTemplateRef, watch, onMounted } from 'vue'
+import { ref, computed, watch } from 'vue'
+import { onClickOutside } from '@vueuse/core'
+import ADateSelection from './ADateSelection.vue'
+import type { ComponentProps } from '../../types'
 
 const {
+	label = 'Date & Time',
+	mode,
+	uuid,
+	errors,
+	validation = { errorMessage: '' },
 	allowMilitaryTime = false,
-	defaultHours = 12,
-	defaultMinutes = 0,
-	defaultSeconds = 0,
-	defaultMeridiem = 'AM',
 	useSeconds = true,
-} = defineProps<{
-	allowMilitaryTime?: boolean
-	defaultHours?: number
-	defaultMinutes?: number
-	defaultSeconds?: number
-	defaultMeridiem?: string
-	useSeconds?: boolean
-}>()
+} = defineProps<
+	ComponentProps & {
+		allowMilitaryTime?: boolean
+		useSeconds?: boolean
+	}
+>()
 
-const emit = defineEmits<{
-	'get-time': [{ hours: number; minutes: number; seconds: number; meridiem: string; militaryTime: number }]
-}>()
+const errorText = computed(() => (errors?.length ? errors.join('; ') : (validation.errorMessage ?? '')))
 
-const meridiemSelector = useTemplateRef<HTMLSelectElement>('meridiem-selector')
+const modelValue = defineModel<string | Date>()
 
-const timeData = reactive({
-	hours: String(defaultHours).padStart(2, '0'),
-	minutes: String(defaultMinutes).padStart(2, '0'),
-	seconds: String(defaultSeconds).padStart(2, '0'),
+const currentDateTime = ref<Date>(modelValue.value ? new Date(modelValue.value) : new Date())
+
+const showPicker = ref(false)
+const pickerRef = ref(null)
+onClickOutside(pickerRef, () => (showPicker.value = false))
+
+const openPicker = () => {
+	if (mode !== 'read') showPicker.value = true
+}
+
+const displayValue = computed(() => {
+	if (!modelValue.value) return ''
+	return currentDateTime.value.toLocaleString()
 })
 
-const meridiem = ref(defaultMeridiem == 'AM' ? 'AM' : 'PM')
+const datetimeDisplay = computed(() => displayValue.value)
 
-onMounted(() => {
-	emitTime()
+const pickerDefaults = computed(() => {
+	const d = currentDateTime.value
+	const hours24 = d.getHours()
+	const meridiem = hours24 >= 12 ? 'PM' : 'AM'
+	const hours12 = hours24 % 12 || 12
+	return {
+		hours: allowMilitaryTime ? hours24 : hours12,
+		minutes: d.getMinutes(),
+		seconds: d.getSeconds(),
+		meridiem,
+	}
 })
 
-const confirmTime = () => {
-	const maxHours = allowMilitaryTime ? 23 : 12
-	const minHours = allowMilitaryTime ? 0 : 1
-	let hours = Number(timeData.hours)
-	let minutes = Number(timeData.minutes)
-	let seconds = Number(timeData.seconds)
-
-	if (isNaN(hours) || timeData.hours === '' || hours > maxHours) hours = maxHours
-	if (!allowMilitaryTime && hours < minHours) hours = minHours
-	if (isNaN(minutes) || timeData.minutes === '' || minutes > 59) minutes = 59
-	if (isNaN(seconds) || timeData.seconds === '' || seconds > 59) seconds = 59
-
-	timeData.hours = String(hours).padStart(2, '0')
-	timeData.minutes = String(minutes).padStart(2, '0')
-	timeData.seconds = String(seconds).padStart(2, '0')
-
-	emitTime()
+const emitModel = () => {
+	modelValue.value = currentDateTime.value.toISOString()
 }
 
-const emitTime = () => {
-	const hours = Number(timeData.hours)
-	const minutes = Number(timeData.minutes)
-	const seconds = Number(timeData.seconds)
-	emit('get-time', {
-		hours,
-		minutes,
-		seconds,
-		meridiem: meridiem.value,
-		militaryTime: allowMilitaryTime ? hours : meridiem.value === 'PM' ? (hours === 12 ? 12 : hours + 12) : hours % 12,
-	})
+const handleDate = (data: { selected: Date }) => {
+	const next = new Date(currentDateTime.value)
+	next.setFullYear(data.selected.getFullYear(), data.selected.getMonth(), data.selected.getDate())
+	currentDateTime.value = next
+	emitModel()
 }
 
-const focusInput = (event: FocusEvent) => {
-	const target = event.target
-	if (target instanceof HTMLInputElement) {
-		target.select()
-	}
-}
-
-const tick = (target: 'hours' | 'minutes' | 'seconds', amount = 1) => {
-	const maxHours = allowMilitaryTime ? 23 : 12
-	const minHours = allowMilitaryTime ? 0 : 1
-
-	if (target == 'hours') {
-		const oldHours = Number(timeData.hours)
-		timeData.hours = String(oldHours + amount)
-		if ((oldHours == 11 && Number(timeData.hours) == 12) || (oldHours == 12 && Number(timeData.hours) == 11)) {
-			changeMeridiem()
-		}
-	} else if (target == 'minutes') {
-		timeData.minutes = String(Number(timeData.minutes) + amount)
-	} else if (target == 'seconds') {
-		timeData.seconds = String(Number(timeData.seconds) + amount)
-	}
-
-	const prevHours = Number(timeData.hours)
-
-	if (Number(timeData.seconds) < 0) timeData.minutes = String(Number(timeData.minutes) - 1)
-	else if (Number(timeData.seconds) > 59) timeData.minutes = String(Number(timeData.minutes) + 1)
-
-	if (Number(timeData.minutes) < 0) timeData.hours = String(prevHours - 1)
-	else if (Number(timeData.minutes) > 59) timeData.hours = String(prevHours + 1)
-
-	const newRawHours = Number(timeData.hours)
-	if (!allowMilitaryTime && newRawHours !== prevHours) {
-		if ((prevHours === 11 && newRawHours === 12) || (prevHours === 12 && newRawHours === 11)) {
-			changeMeridiem()
-		}
-	}
-
-	timeData.hours = String(formatTime(Number(timeData.hours), minHours, maxHours)).padStart(2, '0')
-	timeData.minutes = String(formatTime(Number(timeData.minutes), 0, 59)).padStart(2, '0')
-	timeData.seconds = String(formatTime(Number(timeData.seconds), 0, 59)).padStart(2, '0')
+const handleTime = (data: {
+	hours: number
+	minutes: number
+	seconds: number
+	meridiem: string
+	militaryTime?: number
+}) => {
+	const next = new Date(currentDateTime.value)
+	const hours = data.militaryTime ?? data.hours
+	next.setHours(hours, data.minutes, useSeconds ? data.seconds : 0, 0)
+	currentDateTime.value = next
+	emitModel()
+	showPicker.value = false
 }
 
 watch(
-	() => timeData.hours,
-	(newVal, oldVal) => {
-		timeData.hours = Number(newVal) > 99 ? oldVal : newVal
-	}
-)
-watch(
-	() => timeData.minutes,
-	(newVal, oldVal) => {
-		timeData.minutes = Number(newVal) > 99 ? oldVal : newVal
-	}
-)
-watch(
-	() => timeData.seconds,
-	(newVal, oldVal) => {
-		timeData.seconds = Number(newVal) > 99 ? oldVal : newVal
-	}
-)
-
-const formatTime = (target: number, min: number, max: number): number => {
-	if (target > max) return min
-	else if (target < min) return max
-	return target
-}
-
-const changeMeridiem = () => {
-	meridiem.value = meridiem.value == 'PM' ? 'AM' : 'PM'
-	emitTime()
-}
-
-const pasteInput = (event: ClipboardEvent, pasteAllFields = false) => {
-	event.stopPropagation()
-	event.preventDefault()
-
-	const clipboardData = event.clipboardData
-	if (!clipboardData) return
-	let pastedData: string = clipboardData.getData('Text')
-
-	pastedData = pastedData.replace(/[^0-9]/g, '')
-
-	if (pasteAllFields) {
-		if (pastedData.length % 2 != 0) pastedData = '0' + pastedData
-		if (pastedData.length < 3) pastedData += '00'
-		if (pastedData.length < 5) pastedData += '00'
-
-		const timeUnits = pastedData.match(/(..?)/g)
-		if (!timeUnits || timeUnits.length < 3) return
-
-		timeData.seconds = timeUnits[2]
-		timeData.minutes = timeUnits[1]
-		timeData.hours = timeUnits[0]
-		confirmTime()
-		if (!allowMilitaryTime) meridiemSelector.value?.focus()
-	} else {
-		if (pastedData.length > 2) pastedData = pastedData.slice(0, 2)
-		const target = event.target
-		if (target instanceof HTMLInputElement) {
-			target.value = pastedData
-			target.dispatchEvent(new Event('input'))
+	() => modelValue.value,
+	newValue => {
+		if (newValue) {
+			currentDateTime.value = new Date(newValue)
 		}
 	}
-}
+)
 </script>
 
 <style scoped>
-.adate_time {
-	width: auto;
-	padding: 10px;
-	box-sizing: border-box;
-	font-size: 1rem;
-	background: var(--sc-gray-10);
-}
-.adate_time_fields {
-	display: flex;
-	align-items: stretch;
-	gap: 5px;
-	justify-content: flex-start;
-}
-.adate_time_fields > input {
-	min-width: 30px;
-	padding: 2px;
-	text-align: center;
-	display: inline-block;
-	flex-basis: 0;
-}
-.meridiem-selector {
-	cursor: pointer;
-	display: inline-block;
-	flex-basis: 0;
-	padding: 5px;
-	user-select: none;
-}
-.meridiem-selector:focus {
-	outline: 2px solid black;
-	outline-offset: -2px;
-}
-.adate_time_segment {
-	display: flex;
-	flex-direction: column;
-	width: 40px;
-}
-.colon {
-	display: flex;
-	align-items: normal;
-}
-.aform_form-btn {
-	cursor: pointer;
-}
-.aform-select {
-	border-radius: 0px;
-	border: 1px solid rgb(118, 118, 118);
-	font-size: 1rem;
-	padding: 0rem;
-	margin: 0;
-	border-radius: 0;
-	box-sizing: border-box;
-	min-height: auto;
-	position: relative;
-	color: var(--sc-cell-text-color);
-}
-.meridiem-selector {
-	margin-left: 6px;
+.adatetime-picker {
+	position: absolute;
+	top: 100%;
+	left: 0;
+	z-index: 1000;
+	margin-top: 0.25rem;
 }
 </style>

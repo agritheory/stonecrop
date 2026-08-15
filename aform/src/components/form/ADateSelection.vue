@@ -4,7 +4,7 @@
 	<div class="adate-selection">
 		<ADatePicker v-if="showDate" :select-range="selectRange" @get-date="handleDate" />
 
-		<ADateTime
+		<ADateTimeInput
 			v-if="showTime"
 			:allow-military-time="allowMilitaryTime"
 			:default-hours="defaultHours"
@@ -16,7 +16,7 @@
 
 		<template v-if="selectRange && showTime && showEndTime">
 			<div class="adate-selection__end-label">End time</div>
-			<ADateTime
+			<ADateTimeInput
 				:allow-military-time="allowMilitaryTime"
 				:default-hours="defaultHours"
 				:default-minutes="defaultMinutes"
@@ -33,7 +33,7 @@
 <script setup lang="ts">
 import { provide, ref } from 'vue'
 import ADatePicker from './ADatePicker.vue'
-import ADateTime from './ADateTime.vue'
+import ADateTimeInput from './ADateTimeInput.vue'
 
 const {
 	showDate = true,

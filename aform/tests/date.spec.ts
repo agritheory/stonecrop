@@ -4,19 +4,26 @@ import { mount } from '@vue/test-utils'
 import ADate from '../src/components/form/ADate.vue'
 import ADateSelection from '../src/components/form/ADateSelection.vue'
 import ADatePicker from '../src/components/form/ADatePicker.vue'
-import ADateTime from '../src/components/form/ADateTime.vue'
+import ADateTimeInput from '../src/components/form/ADateTimeInput.vue'
 
 const globalComponents = {
 	global: {
 		components: {
 			ADateSelection,
 			ADatePicker,
-			ADateTime,
+			ADateTimeInput,
 		},
 	},
 }
 
 describe('date component', { tags: ['component'] }, () => {
+	it('uses shared form field classes', () => {
+		const wrapper = mount(ADate, globalComponents)
+		expect(wrapper.find('.aform_form-element').exists()).toBe(true)
+		expect(wrapper.find('.aform_input-field').exists()).toBe(true)
+		expect(wrapper.find('.aform_field-label').exists()).toBe(true)
+	})
+
 	it('date input is rendered', async () => {
 		const wrapper = mount(ADate, globalComponents)
 		const $input = wrapper.find('input')
@@ -86,9 +93,9 @@ describe('date component', { tags: ['component'] }, () => {
 	it('toggles custom date picker when input is clicked', async () => {
 		const wrapper = mount(ADate, globalComponents)
 		expect(wrapper.findComponent(ADateSelection).exists()).toBe(false)
-		await wrapper.find('input').trigger('click.prevent')
+		await wrapper.find('input').trigger('click')
 		expect(wrapper.findComponent(ADateSelection).exists()).toBe(true)
-		await wrapper.find('input').trigger('click.prevent')
+		await wrapper.find('input').trigger('click')
 		expect(wrapper.findComponent(ADateSelection).exists()).toBe(false)
 	})
 
@@ -98,7 +105,7 @@ describe('date component', { tags: ['component'] }, () => {
 			...globalComponents,
 			props: { 'onUpdate:modelValue': (v: string | Date) => emitted.push(v) },
 		})
-		await wrapper.find('input').trigger('click.prevent')
+		await wrapper.find('input').trigger('click')
 		const picker = wrapper.findComponent(ADateSelection)
 		await picker.vm.$emit('get-date', { selected: new Date('2023-06-15') })
 		expect(emitted.length).toBeGreaterThan(0)

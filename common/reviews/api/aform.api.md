@@ -11,6 +11,7 @@ import ADatePicker from './components/form/ADatePicker.vue';
 import ADateRange from './components/form/ADateRange.vue';
 import ADateSelection from './components/form/ADateSelection.vue';
 import ADateTime from './components/form/ADateTime.vue';
+import ADateTimeInput from './components/form/ADateTimeInput.vue';
 import ADropdown from './components/form/ADropdown.vue';
 import ADuration from './components/form/ADuration.vue';
 import AFieldset from './components/form/AFieldset.vue';
@@ -43,6 +44,8 @@ export { ADateRange }
 export { ADateSelection }
 
 export { ADateTime }
+
+export { ADateTimeInput }
 
 export { ADropdown }
 
