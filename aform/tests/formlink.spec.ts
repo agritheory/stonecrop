@@ -24,6 +24,18 @@ describe('AFormLink component', { tags: ['component'] }, () => {
 		expect(wrapper.find('input').element.value).toBe('CUST-001')
 	})
 
+	it('resolves display text on mount when modelValue is a bare scalar id string', async () => {
+		const filterFunction = vi.fn(async (id: string) => [{ id, displayText: 'Acme Corp' }])
+		const wrapper = mount(AFormLink, {
+			props: { modelValue: 'CUST-001', filterFunction },
+		})
+
+		await flushPromises()
+
+		expect(filterFunction).toHaveBeenCalledWith('CUST-001')
+		expect(wrapper.find('input').element.value).toBe('Acme Corp')
+	})
+
 	it('resolves display text on mount when id is set but displayText is absent', async () => {
 		const filterFunction = vi.fn(async (_: string) => [{ id: 'PP-001', displayText: 'Q1 2026' }])
 		const wrapper = mount(AFormLink, {

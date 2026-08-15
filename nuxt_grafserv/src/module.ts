@@ -1,6 +1,6 @@
 import { existsSync } from 'node:fs'
 import { createRequire } from 'node:module'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
 import { addServerHandler, addServerPlugin, createResolver, defineNuxtModule, useLogger } from '@nuxt/kit'
 import type { NuxtModule } from '@nuxt/schema'
 
@@ -75,7 +75,9 @@ const module: NuxtModule<ModuleOptions> = defineNuxtModule<ModuleOptions>({
 		const graphiqlEnabled = options.graphiql ?? nuxt.options.dev
 
 		const { resolve } = createResolver(import.meta.url)
-		const require = createRequire(import.meta.url)
+		// Resolve grafast/graphql/grafserv from the host app so linked monorepo copies of this
+		// module do not pull a second instance out of stonecrop/common/temp/node_modules.
+		const require = createRequire(join(nuxt.options.rootDir, 'package.json'))
 
 		// Register configuration in nitro runtime config
 		nuxt.hook('nitro:config', config => {
@@ -305,7 +307,10 @@ const module: NuxtModule<ModuleOptions> = defineNuxtModule<ModuleOptions>({
 					...(config.externals?.external ?? []),
 					'graphql',
 					'grafast',
+					'grafserv',
 					'postgraphile',
+					'postgraphile/graphql',
+					'postgraphile/grafast',
 					'graphile-config',
 					'graphile-build',
 					'@dataplan/pg',
@@ -315,12 +320,20 @@ const module: NuxtModule<ModuleOptions> = defineNuxtModule<ModuleOptions>({
 				],
 			}
 
-			// CRITICAL: Alias grafast to ensure resolver and handler use the same instance
-			// This prevents "Now is not a valid time to call currentLayerPlan" errors
-			// NOTE: We do NOT externalize the resolver file - it must be bundled for alias to work
-			const grafastPath = require.resolve('grafast')
+			// CRITICAL: Alias grafast/graphql/grafserv to the host app's copies so linked
+			// monorepo builds do not pull a second instance out of stonecrop/common/temp.
 			config.alias = config.alias || {}
-			config.alias['grafast'] = grafastPath
+			config.alias['grafast'] = require.resolve('postgraphile/grafast')
+			config.alias['graphql'] = require.resolve('graphql')
+			config.alias['postgraphile/graphql'] = require.resolve('postgraphile/graphql')
+			config.alias['postgraphile/grafast'] = require.resolve('postgraphile/grafast')
+			try {
+				const grafservRoot = dirname(require.resolve('grafserv/package.json'))
+				config.alias['grafserv'] = grafservRoot
+				config.alias['grafserv/h3/v1'] = join(grafservRoot, 'dist/servers/h3/v1/index.js')
+			} catch {
+				// grafserv is optional until the host adds it; handler imports grafserv/h3/v1 at runtime.
+			}
 
 			// Configure TypeScript module resolution for preset files
 			config.typescript = config.typescript || {}
