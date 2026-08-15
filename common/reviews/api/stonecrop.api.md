@@ -145,6 +145,7 @@ export class Doctype {
 export type DoctypeConfig = {
     name: string;
     slug?: string;
+    route?: string;
     fields?: DoctypeField[];
     links?: Record<string, LinkDeclaration>;
     workflow?: UnknownMachineConfig | WorkflowMeta;

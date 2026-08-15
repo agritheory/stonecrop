@@ -1,0 +1,11 @@
+{
+	"name": "TransactionalDoctype",
+	"fields": [
+		{
+			"kind": "field",
+			"fieldname": "form_detail",
+			"label": "Form Detail",
+			"component": "ATextInput"
+		}
+	]
+}

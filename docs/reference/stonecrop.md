@@ -1165,6 +1165,7 @@ Plain object representation of doctype configuration for serialization/API respo
 export type DoctypeConfig = {
     name: string;
     slug?: string;
+    route?: string;
     fields?: DoctypeField[];
     links?: Record<string, LinkDeclaration>;
     workflow?: UnknownMachineConfig | WorkflowMeta;

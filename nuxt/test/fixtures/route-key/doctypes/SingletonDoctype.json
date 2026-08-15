@@ -1,0 +1,12 @@
+{
+	"name": "SingletonDoctype",
+	"route": "/singleton-doctype",
+	"fields": [
+		{
+			"kind": "field",
+			"fieldname": "singleton_setting",
+			"label": "Singleton Setting",
+			"component": "ATextInput"
+		}
+	]
+}

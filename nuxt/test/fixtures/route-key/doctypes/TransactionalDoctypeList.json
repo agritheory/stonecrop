@@ -1,0 +1,12 @@
+{
+	"name": "TransactionalDoctypeList",
+	"route": "/transactional-doctype",
+	"fields": [
+		{
+			"kind": "field",
+			"fieldname": "list_column",
+			"label": "List Column",
+			"component": "ATextInput"
+		}
+	]
+}

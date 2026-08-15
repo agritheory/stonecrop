@@ -6,6 +6,7 @@ const modules = import.meta.glob<DoctypeConfig>('../../doctypes/*.json', {
 })
 
 export const doctypeMap = new Map<string, DoctypeConfig>()
+export const routeToSlugMap = new Map<string, string>()
 
 for (const [path, doctype] of Object.entries(modules)) {
 	const filename = path.split('/').pop()!.replace('.json', '')
@@ -14,6 +15,15 @@ for (const [path, doctype] of Object.entries(modules)) {
 		.replace(/[\s_]+/g, '-')
 		.toLowerCase()
 	doctypeMap.set(slug, doctype)
+
+	if (doctype.route) {
+		routeToSlugMap.set(doctype.route, slug)
+	}
+}
+
+/** Resolve slug from a route path, or return the path without a leading slash (slug fallback) */
+export function resolveSlugFromRoute(routePath: string): string {
+	return resolveSlugFromRouteMap(routePath, routeToSlugMap)
 }
 
 export function useDoctypeConfig(slug: string): DoctypeConfig | undefined {

@@ -22,6 +22,8 @@ export type DoctypeConfig = {
 	name: string
 	/** URL-friendly slug (kebab-case) */
 	slug?: string
+	/** Optional route pattern for custom URL routing (Vue Router style) */
+	route?: string
 	/** Field definitions (a link field is one carrying `doctype`) */
 	fields?: DoctypeField[]
 	/** Relationship links to other doctypes */

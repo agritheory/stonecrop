@@ -1,0 +1,11 @@
+{
+	"name": "Customer",
+	"fields": [
+		{
+			"kind": "field",
+			"fieldname": "customer_name",
+			"label": "Customer Name",
+			"component": "ATextInput"
+		}
+	]
+}

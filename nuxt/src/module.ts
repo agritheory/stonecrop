@@ -278,12 +278,14 @@ export default defineNuxtModule<ModuleOptions>({
 				// Default slug-based routing with user's page component
 				const componentPath = resolve(appDir, options.pageComponent)
 				generatedPages = doctypes.map(({ fileName, data, fields }) => {
+					const route = data.route as string | undefined
 					const slug = (data.slug as string) || fileName.toLowerCase()
+					const path = route || `/${slug}`
 					return {
 						name: `stonecrop-${fileName}`,
-						path: `/${slug}`,
+						path,
 						file: componentPath,
-						meta: { schema: fields, doctype: data },
+						meta: { schema: fields, doctype: data, slug },
 					}
 				})
 			} else {

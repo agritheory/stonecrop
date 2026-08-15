@@ -13,9 +13,18 @@
 import { Desktop } from '@stonecrop/desktop'
 
 import { useFullstackRouteAdapter } from '~/composables/useFullstackRouteAdapter'
-import { doctypeMap } from '~/composables/useDoctypes'
+import { doctypeMap, routeToSlugMap } from '~/composables/useDoctypes'
 
+const route = useRoute()
 const routeAdapter = useFullstackRouteAdapter()
+
+watchEffect(() => {
+	const pathMatch = route.params.pathMatch as string[] | undefined
+	if (!pathMatch?.length) return
+	if (resolveRouteView(pathMatch, routeToSlugMap) === 'notFound') {
+		showError({ statusCode: 404, statusMessage: 'Not Found' })
+	}
+})
 // Shared action executor (auto-imported from @stonecrop/nuxt): runs an action's
 // clientHandler if present, else dispatches to the server handler + writes HST.
 // Bound directly to Desktop's @action — no host-specific wrapper needed.

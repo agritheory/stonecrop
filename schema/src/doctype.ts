@@ -309,6 +309,9 @@ export const DoctypeMeta = z
 		/** URL-friendly slug (kebab-case) */
 		slug: z.string().min(1).optional(),
 
+		/** Optional route pattern for custom URL routing (Vue Router style) */
+		route: z.string().min(1).optional(),
+
 		/** Field definitions (a link field is one carrying `doctype`) */
 		fields: z.array(DoctypeFieldSchema),
 

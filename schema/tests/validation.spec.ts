@@ -618,6 +618,28 @@ describe('Doctype Validation', { tags: ['unit'] }, () => {
 			expect(parsed.fields[0].fieldname).toBe('id')
 		})
 
+		it('should parse an optional route key', () => {
+			const doctype = {
+				name: 'SalesOrderList',
+				slug: 'sales-order-list',
+				route: '/sales-order',
+				fields: [{ kind: 'field', fieldname: 'name', component: 'ATextInput' }],
+			}
+			const parsed = parseDoctype(doctype)
+
+			expect(parsed.route).toBe('/sales-order')
+		})
+
+		it('should reject an empty route key', () => {
+			const doctype = {
+				name: 'SalesOrderList',
+				route: '',
+				fields: [{ kind: 'field', fieldname: 'name', component: 'ATextInput' }],
+			}
+
+			expect(() => parseDoctype(doctype)).toThrow(ZodError)
+		})
+
 		it('should throw ZodError for invalid doctype', () => {
 			const doctype = {
 				// Missing name
