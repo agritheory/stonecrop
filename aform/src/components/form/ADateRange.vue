@@ -35,8 +35,12 @@ import { ref, computed, watch } from 'vue'
 import { onClickOutside } from '@vueuse/core'
 import ADateSelection from './ADateSelection.vue'
 import type { ComponentProps } from '../../types'
+import { parseCalendarDate, toCalendarDateString } from '../../utils/calendar-date'
 
-const fmt = (d: string) => new Date(d).toLocaleDateString()
+const fmt = (d: string) => {
+	const parsed = parseCalendarDate(d)
+	return parsed ? parsed.toLocaleDateString() : ''
+}
 
 const { label = 'Date Range', mode, uuid, errors, validation = { errorMessage: '' } } = defineProps<ComponentProps>()
 
@@ -52,8 +56,8 @@ const modelValue = defineModel<DateRangeValue>({
 	default: () => ({ start_date: null, end_date: null }),
 })
 
-const startDate = ref<Date | null>(modelValue.value.start_date ? new Date(modelValue.value.start_date) : null)
-const endDate = ref<Date | null>(modelValue.value.end_date ? new Date(modelValue.value.end_date) : null)
+const startDate = ref<Date | null>(parseCalendarDate(modelValue.value.start_date))
+const endDate = ref<Date | null>(parseCalendarDate(modelValue.value.end_date))
 
 const showPicker = ref(false)
 const pickerRef = ref(null)
@@ -93,7 +97,7 @@ const ensureOrder = () => {
 	}
 }
 
-const toISODate = (d: Date | null): string | null => (d ? d.toISOString().split('T')[0] : null)
+const toISODate = (d: Date | null): string | null => (d ? toCalendarDateString(d) : null)
 
 const emitModel = () => {
 	modelValue.value = {
@@ -115,8 +119,8 @@ const handlePickerDate = (data: { selected: Date; start?: Date | null; end?: Dat
 watch(
 	() => modelValue.value,
 	newVal => {
-		startDate.value = newVal.start_date ? new Date(newVal.start_date) : null
-		endDate.value = newVal.end_date ? new Date(newVal.end_date) : null
+		startDate.value = parseCalendarDate(newVal.start_date)
+		endDate.value = parseCalendarDate(newVal.end_date)
 	},
 	{ deep: true }
 )

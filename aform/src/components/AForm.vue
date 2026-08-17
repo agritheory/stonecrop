@@ -226,10 +226,9 @@ const childModels = computed(() => childModelsCache.value)
 	font-size: 0.7rem;
 	font-weight: 300;
 	letter-spacing: 0.05rem;
-	background: linear-gradient(var(--sc-form-background) 50%, var(--sc-input-field-background) 50%);
+	background: var(--sc-form-background);
 	width: auto;
 	box-sizing: border-box;
-	background: white;
 	margin: 0;
 	grid-row: 1;
 	top: 0;
@@ -244,11 +243,11 @@ const childModels = computed(() => childModelsCache.value)
 }
 .aform_input-field:disabled + .aform_field-label,
 .aform_checkbox-container:has(.aform_checkbox:disabled) + .aform_field-label {
-	background: linear-gradient(var(--sc-form-background) 50%, var(--sc-input-field-disabled-background) 50%);
+	background: var(--sc-form-background);
 }
 .aform_input-field:disabled ~ p.aform_error,
 .aform_checkbox-container:has(.aform_checkbox:disabled) ~ p.aform_error {
-	background: linear-gradient(var(--sc-form-background) 50%, var(--sc-input-field-disabled-background) 50%);
+	background: var(--sc-form-background);
 }
 .aform_field-label::after {
 	margin: 0;
@@ -261,7 +260,7 @@ p.aform_error {
 	/* v-show toggles visibility per field; base display must be visible (was stuck at `none`,
 	   which overrode v-show and left every field error dormant). */
 	display: inline-block;
-	background: linear-gradient(var(--sc-form-background) 50%, var(--sc-input-field-background) 50%);
+	background: var(--sc-form-background);
 	padding: 0 0.25rem;
 	margin: 0rem;
 	width: auto;
@@ -271,7 +270,6 @@ p.aform_error {
 	right: 0;
 	top: 0;
 	line-height: 0;
-	background: white;
 	padding: 0.25rem;
 	transform: translate(-1rem, -50%);
 	margin: 0;
