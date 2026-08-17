@@ -177,7 +177,7 @@ function handleAction(_label: string, action?: () => void | Promise<void>) {
 .docbuilder-create input {
 	flex: 1;
 	border: 1px solid var(--sc-gray-20, #d1d5db);
-	border-radius: 4px;
+	border-radius: var(--sc-border-radius);
 	padding: 0.5em 0.75em;
 	font: inherit;
 }
@@ -187,7 +187,7 @@ function handleAction(_label: string, action?: () => void | Promise<void>) {
 	background: var(--sc-blue-40, #3b82f6);
 	color: white;
 	border: none;
-	border-radius: 0.4rem;
+	border-radius: var(--sc-border-radius);
 	font-weight: 500;
 	cursor: pointer;
 	white-space: nowrap;

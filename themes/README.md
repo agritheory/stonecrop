@@ -1,21 +1,13 @@
 # Themes
 
-This directory contains various themes that can be used in Stonecrop applications. Each theme is a separate directory that contains the relevant stylesheets.
-
-## Themes
-
-- `agritheory`
-- `dark`
-- `default`
-- `excel`
-- `legal`
-- `verdant`
-- `vue`
+This directory contains the Stonecrop default theme. It provides the `--sc-*` CSS variables, document font, and form control normalization used by Stonecrop component packages.
 
 ## Usage
 
-To use a theme, import the corresponding stylesheet into your application. For example, to use the `dark` theme:
+Import the default theme stylesheet into your application:
 
 ```javascript
-import '@stonecrop/themes/dark.css';
+import '@stonecrop/themes/default.css';
 ```
+
+The Nuxt module loads this theme automatically unless you set `theme: false` or provide a custom stylesheet path.

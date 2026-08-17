@@ -161,7 +161,7 @@ function handleLoadRecord(payload: LoadRecordEventPayload) {
 .view-wrapper :deep(.debug-info) {
 	background: #f3f4f6;
 	padding: 1rem;
-	border-radius: 4px;
+	border-radius: 0;
 	margin-bottom: 2rem;
 	font-size: 0.875rem;
 }
@@ -226,7 +226,7 @@ function handleLoadRecord(payload: LoadRecordEventPayload) {
 	color: white;
 	border: none;
 	padding: 0.75rem 1.25rem;
-	border-radius: 24px;
+	border-radius: 0;
 	font-weight: 600;
 	font-size: 0.875rem;
 	cursor: pointer;
@@ -253,7 +253,7 @@ function handleLoadRecord(payload: LoadRecordEventPayload) {
 /* Table Styles for AForm */
 .view-wrapper :deep(.aform-table) {
 	background: white;
-	border-radius: 8px;
+	border-radius: 0;
 	box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
 	overflow: hidden;
 }
@@ -288,7 +288,7 @@ function handleLoadRecord(payload: LoadRecordEventPayload) {
 	color: white;
 	border: none;
 	padding: 0.75rem 1.5rem;
-	border-radius: 6px;
+	border-radius: 0;
 	cursor: pointer;
 	font-weight: 500;
 	font-size: 0.875rem;
@@ -313,7 +313,7 @@ function handleLoadRecord(payload: LoadRecordEventPayload) {
 	color: #374151;
 	border: 1px solid #d1d5db;
 	padding: 0.75rem 1.5rem;
-	border-radius: 6px;
+	border-radius: 0;
 	cursor: pointer;
 	font-weight: 500;
 	font-size: 0.875rem;
@@ -331,7 +331,7 @@ function handleLoadRecord(payload: LoadRecordEventPayload) {
 	color: white;
 	border: none;
 	padding: 0.75rem 1.5rem;
-	border-radius: 6px;
+	border-radius: 0;
 	cursor: pointer;
 	font-weight: 500;
 	font-size: 0.875rem;
@@ -356,7 +356,7 @@ function handleLoadRecord(payload: LoadRecordEventPayload) {
 	text-align: center;
 	padding: 3rem;
 	background: white;
-	border-radius: 8px;
+	border-radius: 0;
 	border: 1px solid #e5e7eb;
 	box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
 }
@@ -378,7 +378,7 @@ function handleLoadRecord(payload: LoadRecordEventPayload) {
 /* Records Table */
 .view-wrapper :deep(.records-table) {
 	border: 1px solid #e5e7eb;
-	border-radius: 8px;
+	border-radius: 0;
 	overflow: hidden;
 	background: white;
 	box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
@@ -434,7 +434,7 @@ function handleLoadRecord(payload: LoadRecordEventPayload) {
 .view-wrapper :deep(.form-container) {
 	background: white;
 	border: 1px solid #e5e7eb;
-	border-radius: 8px;
+	border-radius: 0;
 	padding: 2rem;
 	box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
 }

@@ -248,13 +248,13 @@ const BlockWorkflowsDemo = defineComponent({
 .fetch-demo {
 	background: #f9f9f9;
 	padding: 1.5rem;
-	border-radius: 8px;
+	border-radius: 0;
 }
 
 .explanation {
 	background: #e8f4f8;
 	padding: 1rem;
-	border-radius: 4px;
+	border-radius: 0;
 	margin-bottom: 1.5rem;
 }
 
@@ -271,7 +271,7 @@ const BlockWorkflowsDemo = defineComponent({
 .demo-panel {
 	background: white;
 	padding: 1rem;
-	border-radius: 8px;
+	border-radius: 0;
 	border: 2px solid #ddd;
 }
 
@@ -302,7 +302,7 @@ const BlockWorkflowsDemo = defineComponent({
 	background: #2c3e50;
 	color: #ecf0f1;
 	padding: 0.75rem;
-	border-radius: 4px;
+	border-radius: 0;
 	font-size: 0.9rem;
 }
 
@@ -319,7 +319,7 @@ const BlockWorkflowsDemo = defineComponent({
 	color: white;
 	border: none;
 	padding: 0.5rem 1rem;
-	border-radius: 4px;
+	border-radius: 0;
 	cursor: pointer;
 }
 
@@ -332,7 +332,7 @@ const BlockWorkflowsDemo = defineComponent({
 	background: #2c3e50;
 	color: #ecf0f1;
 	padding: 0.75rem;
-	border-radius: 4px;
+	border-radius: 0;
 	font-size: 0.9rem;
 }
 
@@ -359,7 +359,7 @@ const BlockWorkflowsDemo = defineComponent({
 	color: white;
 	border: none;
 	padding: 0.75rem 1.5rem;
-	border-radius: 4px;
+	border-radius: 0;
 	cursor: pointer;
 	font-size: 1rem;
 }

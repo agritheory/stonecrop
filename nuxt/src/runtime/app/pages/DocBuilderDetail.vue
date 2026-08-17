@@ -222,7 +222,7 @@ function handleAction(_label: string, action?: () => void | Promise<void>) {
 
 .empty-workflow-form input {
 	border: 1px solid var(--sc-gray-20, #d1d5db);
-	border-radius: 4px;
+	border-radius: var(--sc-border-radius);
 	padding: 0.4em 0.6em;
 	font-size: 0.875rem;
 	font-family: inherit;
@@ -233,7 +233,7 @@ function handleAction(_label: string, action?: () => void | Promise<void>) {
 	background: var(--sc-blue-40, #3b82f6);
 	color: white;
 	border: none;
-	border-radius: 0.4rem;
+	border-radius: var(--sc-border-radius);
 	font-weight: 500;
 	cursor: pointer;
 	font-size: 0.875rem;
@@ -252,7 +252,7 @@ function handleAction(_label: string, action?: () => void | Promise<void>) {
 	padding: 1rem;
 	background: #fee2e2;
 	border: 1px solid #ef4444;
-	border-radius: 6px;
+	border-radius: var(--sc-border-radius);
 	margin-bottom: 0.5rem;
 	color: #991b1b;
 }
@@ -261,7 +261,7 @@ function handleAction(_label: string, action?: () => void | Promise<void>) {
 	padding: 1rem;
 	background: #fef9c3;
 	border: 1px solid #eab308;
-	border-radius: 6px;
+	border-radius: var(--sc-border-radius);
 	color: #713f12;
 }
 
@@ -269,7 +269,7 @@ function handleAction(_label: string, action?: () => void | Promise<void>) {
 	margin-left: 1rem;
 	background: none;
 	border: 1px solid currentColor;
-	border-radius: 3px;
+	border-radius: var(--sc-border-radius);
 	padding: 0.125em 0.5em;
 	cursor: pointer;
 	font-size: 0.75rem;
@@ -287,7 +287,7 @@ function handleAction(_label: string, action?: () => void | Promise<void>) {
 	background: var(--sc-blue-40, #3b82f6);
 	color: white;
 	border: none;
-	border-radius: 0.5rem;
+	border-radius: var(--sc-border-radius);
 	font-weight: 500;
 	cursor: pointer;
 }

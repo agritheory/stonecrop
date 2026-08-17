@@ -339,7 +339,7 @@ const emitElements = () => {
 	padding: 0.4rem 0.5rem;
 	background: rgba(255, 255, 255, 0.92);
 	border: 1px solid #ccc;
-	border-radius: 4px;
+	border-radius: var(--sc-border-radius);
 	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
 }
 
@@ -371,7 +371,7 @@ const emitElements = () => {
 button.button-default {
 	background-color: #ffffff;
 	padding: 1px 12px;
-	border-radius: 3px;
+	border-radius: var(--sc-border-radius);
 	border: 1px solid #ccc;
 	cursor: pointer;
 	white-space: nowrap;

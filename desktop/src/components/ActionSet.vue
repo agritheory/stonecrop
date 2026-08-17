@@ -201,7 +201,7 @@ button.dropdown-item {
 	border: none;
 	background-color: #ffffff;
 	cursor: pointer;
-	border-radius: 5px;
+	border-radius: var(--sc-border-radius);
 	font-size: 1rem;
 }
 

@@ -334,7 +334,7 @@ const open_action_table = reactive({
 	background: #f5f5f5;
 	padding: 0.5rem 1rem;
 	margin-bottom: 1rem;
-	border-radius: 4px;
+	border-radius: 0;
 	font-family: monospace;
 	font-size: 0.875rem;
 }
@@ -348,7 +348,7 @@ const open_action_table = reactive({
 	background: #e0e0e0;
 	padding: 0.125rem 0.5rem;
 	margin: 0.125rem;
-	border-radius: 2px;
+	border-radius: 0;
 }
 
 p {

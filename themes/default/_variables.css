@@ -62,4 +62,10 @@
 	--sc-btn-color: white;
 	--sc-btn-hover: #f2f2f2;
 	--sc-btn-label-color: black;
+
+	/* BORDERS */
+	--sc-border-radius: 0;
+
+	/* FORM LAYOUT */
+	--sc-form-field-max-width: 50ch;
 }

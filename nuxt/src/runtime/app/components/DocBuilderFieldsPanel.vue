@@ -421,7 +421,7 @@ function bool(v: unknown): boolean {
 .fields-panel :deep(select) {
 	width: 100%;
 	border: 1px solid var(--sc-gray-20, #d1d5db);
-	border-radius: 3px;
+	border-radius: var(--sc-border-radius);
 	padding: 0.25em 0.5em;
 	font-size: inherit;
 	font-family: inherit;
@@ -504,7 +504,7 @@ function bool(v: unknown): boolean {
 	background: none;
 	border: 1px dashed var(--sc-gray-20, #d1d5db);
 	color: var(--sc-blue-40, #2563eb);
-	border-radius: 4px;
+	border-radius: var(--sc-border-radius);
 	padding: 0.4em 1em;
 	cursor: pointer;
 	font-size: 0.875rem;

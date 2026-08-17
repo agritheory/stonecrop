@@ -157,7 +157,7 @@ const selectResult = (result: T) => {
 	width: 600px;
 	max-width: 90%;
 	background-color: white;
-	border-radius: 8px;
+	border-radius: var(--sc-border-radius);
 	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
 	overflow: hidden;
 	max-height: 80vh;

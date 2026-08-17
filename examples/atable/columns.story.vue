@@ -131,7 +131,7 @@ const schemaConfig: TableConfig = { view: 'list', fullWidth: true }
 pre {
 	background: #f5f5f5;
 	padding: 10px;
-	border-radius: 4px;
+	border-radius: 0;
 	overflow-x: auto;
 	font-size: 12px;
 }
@@ -141,7 +141,7 @@ button {
 	background: #007acc;
 	color: white;
 	border: none;
-	border-radius: 4px;
+	border-radius: 0;
 	cursor: pointer;
 }
 

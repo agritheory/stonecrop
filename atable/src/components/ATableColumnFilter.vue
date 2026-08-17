@@ -178,7 +178,7 @@ const clearFilter = () => {
 	background-color: var(--sc-form-background) !important;
 	padding: 0.15rem 0.2rem;
 	border: 1px solid var(--sc-form-border);
-	border-radius: 3px;
+	border-radius: var(--sc-border-radius);
 	font-size: 0.875rem;
 	color: var(--sc-text-color);
 	width: 100%;
@@ -226,7 +226,7 @@ const clearFilter = () => {
 .clear-btn {
 	background: var(--sc-gray-10, #f0f0f0);
 	border: 1px solid var(--sc-form-border);
-	border-radius: 3px;
+	border-radius: var(--sc-border-radius);
 	color: var(--sc-gray-70);
 	cursor: pointer;
 	font-size: 1rem;

@@ -15,13 +15,7 @@
 	},
 	"type": "module",
 	"exports": {
-		"./agritheory.css": "./dist/agritheory.css",
-		"./dark.css": "./dist/default.css",
-		"./default.css": "./dist/default.css",
-		"./excel.css": "./dist/default.css",
-		"./legal.css": "./dist/default.css",
-		"./verdant.css": "./dist/default.css",
-		"./vue.css": "./dist/default.css"
+		"./default.css": "./dist/default.css"
 	},
 	"scripts": {
 		"_phase:build": "vite build",

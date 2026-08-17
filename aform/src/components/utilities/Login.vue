@@ -139,7 +139,7 @@ function onSubmit(event: Event) {
 	padding: 0.5rem 0.25rem 0.25rem 0.5rem;
 	outline: 1px solid transparent;
 	border: 1px solid var(--sc-input-border-color);
-	border-radius: 0.25rem;
+	border-radius: var(--sc-border-radius);
 
 	&:focus {
 		border: 1px solid black;

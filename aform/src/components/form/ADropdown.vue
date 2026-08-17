@@ -176,13 +176,13 @@ input {
 	padding: 1ch 0.5ch 0.5ch 1ch;
 	margin: calc(1.15rem / 2) 0 0 0;
 	min-height: 1.15rem;
-	border-radius: 0.25rem;
+	border-radius: var(--sc-border-radius);
 	font-family: var(--sc-font-family);
 }
 
 input:focus {
 	border: 1px solid var(--sc-input-active-border-color);
-	border-radius: 0.25rem 0.25rem 0 0;
+	border-radius: var(--sc-border-radius) var(--sc-border-radius) 0 0;
 	border-bottom: none;
 }
 
@@ -209,7 +209,7 @@ label {
 	margin: 0;
 	color: var(--sc-input-active-border-color);
 	border: 1px solid var(--sc-input-active-border-color);
-	border-radius: 0 0 0.25rem 0.25rem;
+	border-radius: 0 0 var(--sc-border-radius) var(--sc-border-radius);
 	border-top: none;
 	background-color: #fff;
 }

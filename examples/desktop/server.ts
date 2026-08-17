@@ -109,7 +109,7 @@ export function makeServer() {
 							component: 'div',
 							label: 'Todo Details',
 							value:
-								'<h1>Todo Details</h1><p>Edit task information</p><div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 6px; padding: 12px; margin: 16px 0;"><strong>🔄 Field Trigger Demo:</strong> As you edit fields below, watch for real-time notifications in the top-right corner!</div>',
+								'<h1>Todo Details</h1><p>Edit task information</p><div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 0; padding: 12px; margin: 16px 0;"><strong>🔄 Field Trigger Demo:</strong> As you edit fields below, watch for real-time notifications in the top-right corner!</div>',
 						},
 						{
 							kind: 'field',
@@ -233,7 +233,7 @@ export function makeServer() {
 							component: 'div',
 							label: 'Issue Details',
 							value:
-								'<h1>Issue Details</h1><p>Edit issue information</p><div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 6px; padding: 12px; margin: 16px 0;"><strong>🔄 Field Trigger Demo:</strong> Try changing the status to "Resolved" or priority to "Critical" to see special notifications!</div>',
+								'<h1>Issue Details</h1><p>Edit issue information</p><div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 0; padding: 12px; margin: 16px 0;"><strong>🔄 Field Trigger Demo:</strong> Try changing the status to "Resolved" or priority to "Critical" to see special notifications!</div>',
 						},
 						{
 							kind: 'field',

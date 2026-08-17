@@ -421,7 +421,7 @@ const AddressListDemo = defineComponent({
 .nested-form-example {
 	background: #f9f9f9;
 	padding: 1.5rem;
-	border-radius: 8px;
+	border-radius: 0;
 	margin-bottom: 2rem;
 }
 
@@ -435,7 +435,7 @@ const AddressListDemo = defineComponent({
 	padding: 1rem;
 	background: #2c3e50;
 	color: #ecf0f1;
-	border-radius: 4px;
+	border-radius: 0;
 }
 
 .data-preview h4 {
@@ -454,14 +454,14 @@ const AddressListDemo = defineComponent({
 .hst-demo {
 	background: #f9f9f9;
 	padding: 1.5rem;
-	border-radius: 8px;
+	border-radius: 0;
 }
 
 .hst-description {
 	background: #e8f4f8;
 	padding: 1rem;
 	border-left: 4px solid #3498db;
-	border-radius: 4px;
+	border-radius: 0;
 	margin-bottom: 1.5rem;
 	color: #2c3e50;
 }
@@ -482,7 +482,7 @@ const AddressListDemo = defineComponent({
 .hst-form-section {
 	background: white;
 	padding: 1.5rem;
-	border-radius: 8px;
+	border-radius: 0;
 	border: 1px solid #e0e0e0;
 }
 
@@ -498,7 +498,7 @@ const AddressListDemo = defineComponent({
 	background: #2c3e50;
 	color: #ecf0f1;
 	padding: 0.5rem 0.75rem;
-	border-radius: 4px;
+	border-radius: 0;
 	font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
 	font-size: 0.85rem;
 	margin-bottom: 1rem;
@@ -509,7 +509,7 @@ const AddressListDemo = defineComponent({
 	color: white;
 	border: none;
 	padding: 0.75rem 1.5rem;
-	border-radius: 4px;
+	border-radius: 0;
 	cursor: pointer;
 	font-size: 1rem;
 	font-weight: 500;
@@ -524,7 +524,7 @@ const AddressListDemo = defineComponent({
 .hst-state {
 	background: white;
 	padding: 1.5rem;
-	border-radius: 8px;
+	border-radius: 0;
 	border: 2px solid #3498db;
 	overflow-y: auto;
 	max-height: 800px;
@@ -541,7 +541,7 @@ const AddressListDemo = defineComponent({
 .hst-node-card {
 	background: #f8f9fa;
 	border: 2px solid #3498db;
-	border-radius: 8px;
+	border-radius: 0;
 	padding: 1rem;
 	margin-bottom: 1.5rem;
 }
@@ -568,7 +568,7 @@ const AddressListDemo = defineComponent({
 
 .node-status {
 	padding: 0.25rem 0.75rem;
-	border-radius: 12px;
+	border-radius: 0;
 	font-size: 0.85rem;
 	font-weight: 600;
 }
@@ -586,7 +586,7 @@ const AddressListDemo = defineComponent({
 .node-details {
 	background: white;
 	padding: 0.75rem;
-	border-radius: 4px;
+	border-radius: 0;
 	margin-bottom: 0.75rem;
 }
 
@@ -611,7 +611,7 @@ const AddressListDemo = defineComponent({
 	background: #2c3e50;
 	color: #ecf0f1;
 	padding: 0.25rem 0.5rem;
-	border-radius: 3px;
+	border-radius: 0;
 	font-size: 0.85rem;
 	font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
 	flex: 1;
@@ -622,7 +622,7 @@ const AddressListDemo = defineComponent({
 	background: #2c3e50;
 	color: #ecf0f1;
 	padding: 0.75rem;
-	border-radius: 4px;
+	border-radius: 0;
 	font-size: 0.85rem;
 }
 

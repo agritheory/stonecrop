@@ -186,7 +186,7 @@ const formSetup = ({ app }: { app: App }) => {
 	padding: 1rem;
 	background: #2c3e50;
 	color: #ecf0f1;
-	border-radius: 4px;
+	border-radius: 0;
 }
 
 .data-preview h4 {

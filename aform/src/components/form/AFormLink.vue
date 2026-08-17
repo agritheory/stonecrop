@@ -322,7 +322,7 @@ const selectCurrent = () => {
 	list-style: none;
 	border: 1px solid var(--sc-input-active-border-color);
 	border-top: none;
-	border-radius: 0 0 0.25rem 0.25rem;
+	border-radius: 0 0 var(--sc-border-radius) var(--sc-border-radius);
 	background: #fff;
 }
 

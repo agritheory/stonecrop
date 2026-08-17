@@ -51,7 +51,7 @@
 	--vp-sidebar-bg-color: var(--vp-c-bg);
 
 	/* Typography - minimal border radius per design philosophy */
-	--vp-border-radius: 2px;
+	--vp-border-radius: 0;
 
 	/* Custom properties */
 	--st-font-mono: 'JetBrains Mono', 'Fira Code', 'SF Mono', monospace;
@@ -193,7 +193,7 @@
 
 ::-webkit-scrollbar-thumb {
 	background: var(--vp-c-divider);
-	border-radius: 4px;
+	border-radius: 0;
 }
 
 ::-webkit-scrollbar-thumb:hover {

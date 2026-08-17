@@ -79,7 +79,7 @@ const schema = ref<ResolvedField[]>([
 /* Table Styles for AForm */
 .home-wrapper :deep(.aform-table) {
 	background: white;
-	border-radius: 8px;
+	border-radius: 0;
 	box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
 	overflow: hidden;
 }
@@ -115,7 +115,7 @@ const schema = ref<ResolvedField[]>([
 	color: white;
 	border: none;
 	padding: 0.5rem 1rem;
-	border-radius: 6px;
+	border-radius: 0;
 	cursor: pointer;
 	font-weight: 500;
 	font-size: 0.875rem;
