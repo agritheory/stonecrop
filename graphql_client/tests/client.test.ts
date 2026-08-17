@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
 import { StonecropClient } from '../src/client'
-import type { DoctypeRef } from '@stonecrop/schema'
+import type { DoctypeMeta, DoctypeRef } from '@stonecrop/schema'
 
 interface GraphQLRequestBody {
 	query: string

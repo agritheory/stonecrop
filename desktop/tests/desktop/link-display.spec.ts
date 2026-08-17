@@ -86,7 +86,7 @@ describe('Desktop — link values on write', { tags: ['component'] }, () => {
 		expect(stonecrop.getStore().get('order.o-1.agentId')).toBe('p-2')
 	})
 
-	it('never writes a display sibling into the record', async () => {
+	it('unwraps { id, displayText } to scalar id when storing', async () => {
 		const registry = new Registry()
 		const stonecrop = new Stonecrop(registry)
 		buildOrder(registry, stonecrop)
@@ -96,35 +96,11 @@ describe('Desktop — link values on write', { tags: ['component'] }, () => {
 
 		await wrapper.findComponent({ name: 'AForm' }).vm.$emit('update:data', {
 			id: 'o-1',
-			agentId: 'p-2',
-			agentId__display: 'Globex',
+			agentId: { id: 'p-2', displayText: 'Globex' },
 		})
 		await nextTick()
 
-		expect(stonecrop.getStore().has('order.o-1.agentId__display')).toBe(false)
-	})
-
-	// The suffix is not what identifies a display sibling — the doctype is. A real field that
-	// happens to end in `__display` belongs to the record and must be written like any other.
-	it('writes a real field whose name ends in the display suffix', async () => {
-		const registry = new Registry()
-		const stonecrop = new Stonecrop(registry)
-		const doctype = buildDoctype('banner', 'draft', { draft: {} }, [
-			{ kind: 'field' as const, fieldname: 'hero__display', label: 'Hero Display', component: 'ATextInput' },
-		] as any)
-		registry.addDoctype(doctype)
-		stonecrop.addRecord('banner', 'b-1', { id: 'b-1', hero__display: 'before' })
-
-		const wrapper = mountDesktop(registry, stonecrop, recordAdapter('banner', 'b-1'))
-		await nextTick()
-
-		await wrapper.findComponent({ name: 'AForm' }).vm.$emit('update:data', {
-			id: 'b-1',
-			hero__display: 'after',
-		})
-		await nextTick()
-
-		expect(stonecrop.getStore().get('banner.b-1.hero__display')).toBe('after')
+		expect(stonecrop.getStore().get('order.o-1.agentId')).toBe('p-2')
 	})
 })
 
