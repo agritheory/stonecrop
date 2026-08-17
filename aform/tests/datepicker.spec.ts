@@ -107,6 +107,24 @@ describe('datepicker component', { tags: ['component'] }, () => {
 		expect(wrapper.find('.adatepicker').exists()).toBe(false)
 	})
 
+	it('prevents mousedown default on the calendar table to block text selection', async () => {
+		const wrapper = mount(ADatePicker)
+		await wrapper.vm.$nextTick()
+
+		const event = new MouseEvent('mousedown', { bubbles: true, cancelable: true })
+		wrapper.find('table').element.dispatchEvent(event)
+		expect(event.defaultPrevented).toBe(true)
+	})
+
+	it('does not prevent mousedown default on range inputs so they stay typable', async () => {
+		const wrapper = mount(ADatePicker, { props: { selectRange: true } })
+		await wrapper.vm.$nextTick()
+
+		const event = new MouseEvent('mousedown', { bubbles: true, cancelable: true })
+		wrapper.find('input[placeholder="start date"]').element.dispatchEvent(event)
+		expect(event.defaultPrevented).toBe(false)
+	})
+
 	it('focuses today when selected date is outside current month view', async () => {
 		const outOfMonthDate = new Date()
 		outOfMonthDate.setMonth(outOfMonthDate.getMonth() + 2)

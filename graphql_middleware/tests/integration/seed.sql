@@ -116,3 +116,18 @@ CREATE TABLE sc_draft (
 );
 INSERT INTO sc_draft (name, status) VALUES
 	('Stateless Row', NULL);
+
+-- Link display text fixtures
+CREATE TABLE sc_party (
+	id serial PRIMARY KEY,
+	party_name text NOT NULL
+);
+
+CREATE TABLE sc_order (
+	id serial PRIMARY KEY,
+	customer_id integer REFERENCES sc_party(id),
+	title text
+);
+
+INSERT INTO sc_party (party_name) VALUES ('Acme Corp'), ('Globex');
+INSERT INTO sc_order (customer_id, title) VALUES (1, 'Order One'), (2, 'Second Order');

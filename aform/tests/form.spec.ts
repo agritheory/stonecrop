@@ -68,7 +68,13 @@ describe('AForm Component', { tags: ['component'] }, () => {
 		expect(mockTable.props('rows')).toBeUndefined()
 	})
 
-	it('should handle componentProps with rows data for nested tables', () => {
+	// Was two tests differing only in a `rows` key on the *schema*, one empty and one populated.
+	// AForm never reads that key — a table sources its rows from the data model, keyed on `kind`
+	// (AForm.vue) — so the two fixtures were identical as far as the component was concerned, and
+	// `rows` was not on ResolvedField either. What they actually covered is this: a field naming a
+	// table component but carrying no `kind` still mounts. The rows themselves are asserted by the
+	// `kind: table row injection` block below.
+	it('mounts a field that names a table component but declares no kind', () => {
 		const wrapperWithTable = mount(AForm, {
 			props: {
 				schema: [
@@ -76,7 +82,6 @@ describe('AForm Component', { tags: ['component'] }, () => {
 						fieldname: 'items',
 						component: 'ATable',
 						label: 'Items',
-						rows: [],
 					},
 				] as ResolvedField[],
 				data: {
@@ -89,29 +94,6 @@ describe('AForm Component', { tags: ['component'] }, () => {
 		})
 
 		expect(wrapperWithTable.vm).toBeTruthy()
-	})
-
-	it('should handle componentProps when rows is not empty', () => {
-		const wrapperWithData = mount(AForm, {
-			props: {
-				schema: [
-					{
-						fieldname: 'items',
-						component: 'ATable',
-						label: 'Items',
-						rows: [{ id: 1, name: 'Existing' }],
-					},
-				] as ResolvedField[],
-				data: {
-					items: [
-						{ id: 1, name: 'Item 1' },
-						{ id: 2, name: 'Item 2' },
-					],
-				},
-			},
-		})
-
-		expect(wrapperWithData.vm).toBeTruthy()
 	})
 
 	describe('kind: table row injection', () => {

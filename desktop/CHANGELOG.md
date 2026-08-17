@@ -1,6 +1,25 @@
 # Change Log - @stonecrop/desktop
 
-This log was last generated on Fri, 14 Aug 2026 08:05:46 GMT and should not be manually modified.
+This log was last generated on Mon, 17 Aug 2026 19:08:23 GMT and should not be manually modified.
+
+## 0.21.0
+Mon, 17 Aug 2026 19:08:23 GMT
+
+### Patches
+
+- Stop synthesizing fieldname__display siblings; unwrap { id, displayText } link values when storing records.
+
+## 0.20.0
+Mon, 17 Aug 2026 18:41:19 GMT
+
+_Version update only_
+
+## 0.19.0
+Mon, 17 Aug 2026 12:46:25 GMT
+
+### Minor changes
+
+- Show link text from the target doctype's `displayField` instead of guessing at `name` or `title`.
 
 ## 0.18.0
 Fri, 14 Aug 2026 08:05:46 GMT

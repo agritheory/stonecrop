@@ -59,7 +59,7 @@
 import { vOnClickOutside } from '@vueuse/components'
 import { computed, inject, ref, useId, watch } from 'vue'
 
-import type { AFormLinkNavigator, AFormLinkValue, ComponentProps } from '../../types'
+import type { AFormLinkModelValue, AFormLinkNavigator, AFormLinkValue, ComponentProps } from '../../types'
 import { deserializeFunction } from '../../utils/deserialize'
 
 const {
@@ -101,17 +101,15 @@ const {
 // mount so two pickers on one page can't cross-wire their ARIA relationships.
 const listboxId = `${uuid ?? `aform-link-${useId()}`}-listbox`
 
-const modelValue = defineModel<AFormLinkValue>({ default: () => ({ id: '', displayText: '' }) })
+const modelValue = defineModel<AFormLinkModelValue>({ default: () => ({ id: '', displayText: '' }) })
 
-const hasValidId = computed(() => {
-	const id = modelValue.value?.id
-	return id !== null && id !== undefined && id !== ''
-})
+const hasValidId = computed(() => linkId(modelValue.value) !== undefined)
 
 const displayedText = computed(() => {
-	if (!hasValidId.value) return '—'
-	if (formatter) return formatter(modelValue.value)
-	return modelValue.value.displayText ?? String(modelValue.value.id)
+	const id = linkId(modelValue.value)
+	if (id === undefined) return '—'
+	if (formatter) return formatter(asLinkValue(modelValue.value))
+	return linkDisplayText(modelValue.value) ?? id
 })
 
 const searchText = ref(hasValidId.value ? displayedText.value : '')
@@ -126,25 +124,43 @@ type FilterFn = (search: string) => AFormLinkValue[] | Promise<AFormLinkValue[]>
 type ResolverFn = (doctype: string, id: string) => string | undefined | Promise<string | undefined>
 const resolver = inject<ResolverFn | null>('aformLinkResolver', null)
 
-// Records loaded from the DB arrive as scalar UUID strings; normalize to AFormLinkValue
-// so the resolution watch below can pick up the id correctly.
-watch(
-	() => modelValue.value,
-	value => {
-		if (value !== null && value !== undefined && (typeof value === 'string' || typeof value === 'number')) {
-			modelValue.value = { id: value }
-		}
-	},
-	{ immediate: true }
-)
+// A link's value arrives as a bare scalar as often as it does as an AFormLinkValue: a record
+// loaded from the DB carries the raw FK column, and a parent bound to that column coerces every
+// update it receives back to a scalar. So read the value through these three helpers rather than
+// reaching into `modelValue.value` directly.
+//
+// Rejected: normalizing on write — an immediate watch that replaced a scalar model with `{ id }`.
+// It survives only until the parent writes its scalar back, so it fixed a scalar passed once at
+// mount and nothing else, and it emitted an `update:modelValue` the user never made on every
+// mount of a scalar-valued link field.
+function linkId(value: AFormLinkModelValue | null | undefined): string | undefined {
+	if (value == null) return undefined
+	if (typeof value === 'string') return value === '' ? undefined : value
+	if (typeof value === 'number') return String(value)
+	const id = value.id
+	if (id === null || id === undefined || id === '') return undefined
+	return String(id)
+}
+
+function linkDisplayText(value: AFormLinkModelValue | null | undefined): string | undefined {
+	if (value == null || typeof value !== 'object') return undefined
+	const text = value.displayText
+	return typeof text === 'string' || typeof text === 'number' ? String(text) : undefined
+}
+
+function asLinkValue(value: AFormLinkModelValue | null | undefined): AFormLinkValue {
+	if (value != null && typeof value === 'object') return value
+	const id = linkId(value)
+	return id !== undefined ? { id } : { id: '' }
+}
 
 // When the id changes (including on first render), resolve its display text.
 // Tries filterFunction first (returns a list of candidates to search); falls back to the
 // injected resolver (a direct doctype+id lookup). Skips if displayText is already set.
 watch(
-	() => modelValue.value?.id,
+	() => linkId(modelValue.value),
 	async id => {
-		if (!id || modelValue.value.displayText) return
+		if (!id || linkDisplayText(modelValue.value)) return
 		try {
 			let match: AFormLinkValue | undefined
 			let displayText: string | undefined
@@ -168,7 +184,7 @@ watch(
 				// an AFormLinkValue carries are part of the value (ACurrencyInput's `symbol`, which
 				// its formatter renders, is one). `id` is pinned to the value we already hold so a
 				// loosely-typed match (1 vs '1') can't change the FK's type underneath the record.
-				const resolved: AFormLinkValue = { ...modelValue.value, ...match, id: modelValue.value.id, displayText }
+				const resolved: AFormLinkValue = { ...asLinkValue(modelValue.value), ...match, id, displayText }
 				// Format for the same reason selectOption does: the input shows `formatter`'s output
 				// everywhere else (initial render, blur), so assigning the raw displayText here would
 				// make a value that arrived as a bare id render differently from the identical value
@@ -184,8 +200,9 @@ watch(
 )
 
 const handleNavigate = () => {
-	if (navigator && doctype) {
-		navigator.navigate(doctype, modelValue.value.id)
+	const id = linkId(modelValue.value)
+	if (navigator && doctype && id !== undefined) {
+		navigator.navigate(doctype, id)
 	} else if (navigator && !doctype) {
 		console.warn(
 			`[AFormLink] Navigation requested but \`doctype\` prop is missing. ` +

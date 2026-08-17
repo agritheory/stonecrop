@@ -6,7 +6,7 @@
 	</template>
 	<template v-else>
 		<div ref="datepicker" class="adatepicker" tabindex="0">
-			<table>
+			<table @mousedown="preventCellSelection">
 				<tbody>
 					<tr>
 						<td id="previous-month-btn" :tabindex="-1" @click="previousMonth">&lt;</td>
@@ -188,6 +188,15 @@ const hoverDate = (currentIndex: number) => {
 	hoveredDate.value = new Date(currentDates.value[currentIndex])
 }
 
+// browsers (notably Firefox) allow drag-selecting text across table cells even with
+// `user-select: none` on the cells; blocking mousedown is the reliable cross-browser fix.
+// the start/end-date inputs must keep native mousedown behavior so they stay focusable/typable.
+const preventCellSelection = (event: MouseEvent) => {
+	if ((event.target as HTMLElement)?.tagName !== 'INPUT') {
+		event.preventDefault()
+	}
+}
+
 const populateMonth = () => {
 	currentDates.value = []
 	const firstOfMonth = new Date(currentYear.value, currentMonth.value, 1)
@@ -358,6 +367,16 @@ defineExpose({ currentMonth, currentYear, selectedDate })
 </script>
 
 <style scoped>
+.adatepicker,
+.adatepicker table,
+.adatepicker tr,
+.adatepicker td,
+.adatepicker th {
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	user-select: none;
+}
+
 .adatepicker {
 	font-size: var(--sc-table-font-size);
 	display: inline-table;

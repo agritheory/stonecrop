@@ -73,7 +73,7 @@ onMounted(() => {
 	if (!column.linkDoctype) return
 	const raw = store.getCellData(colIndex, rowIndex)
 
-	// Pre-resolved AFormLinkValue object — extract display text directly.
+	// Server returns link fields as { id, displayText } objects.
 	if (raw !== null && raw !== undefined && typeof raw === 'object') {
 		const obj = raw as Record<string, unknown>
 		const display = obj.displayText ?? obj.id

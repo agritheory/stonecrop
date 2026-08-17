@@ -75,7 +75,36 @@ const module: NuxtModule<ModuleOptions> = defineNuxtModule<ModuleOptions>({
 		const graphiqlEnabled = options.graphiql ?? nuxt.options.dev
 
 		const { resolve } = createResolver(import.meta.url)
-		const require = createRequire(import.meta.url)
+
+		// grafast and graphql must be exactly one instance across the preset, the resolvers and the
+		// request handler; two copies produce "Now is not a valid time to call currentLayerPlan".
+		// Bases are tried in this order: PostGraphile, because it is what builds the plan and so its
+		// copy is the one everything else has to match; then the host app, so a linked monorepo
+		// checkout of this module cannot drag in a second copy out of common/temp/node_modules; then
+		// this module's own dependencies, which is what a normally-installed consumer resolves to and
+		// the only base guaranteed to exist in `schema` mode, where PostGraphile need not be installed.
+		const selfRequire = createRequire(import.meta.url)
+		const hostRequire = createRequire(join(nuxt.options.rootDir, 'package.json'))
+		let postgraphileRequire: ReturnType<typeof createRequire> | undefined
+		try {
+			postgraphileRequire = createRequire(hostRequire.resolve('postgraphile'))
+		} catch {
+			// `schema` mode does not require PostGraphile at all.
+		}
+		const resolveOneInstance = (specifier: string): string => {
+			for (const from of [postgraphileRequire, hostRequire, selfRequire]) {
+				if (!from) continue
+				try {
+					return from.resolve(specifier)
+				} catch {
+					// fall through to the next base
+				}
+			}
+			throw new Error(
+				`[@stonecrop/nuxt-grafserv] Could not resolve '${specifier}' from PostGraphile, from the app ` +
+					`at ${nuxt.options.rootDir}, or from this module's own dependencies.`
+			)
+		}
 
 		// Register configuration in nitro runtime config
 		nuxt.hook('nitro:config', config => {
@@ -305,7 +334,10 @@ const module: NuxtModule<ModuleOptions> = defineNuxtModule<ModuleOptions>({
 					...(config.externals?.external ?? []),
 					'graphql',
 					'grafast',
+					'grafserv',
 					'postgraphile',
+					'postgraphile/graphql',
+					'postgraphile/grafast',
 					'graphile-config',
 					'graphile-build',
 					'@dataplan/pg',
@@ -315,12 +347,29 @@ const module: NuxtModule<ModuleOptions> = defineNuxtModule<ModuleOptions>({
 				],
 			}
 
-			// CRITICAL: Alias grafast to ensure resolver and handler use the same instance
-			// This prevents "Now is not a valid time to call currentLayerPlan" errors
-			// NOTE: We do NOT externalize the resolver file - it must be bundled for alias to work
-			const grafastPath = require.resolve('grafast')
+			// CRITICAL: pin grafast and graphql to one file each. PostGraphile re-exports both under
+			// its own name and this repo imports them both ways — graphql_middleware from the
+			// PostGraphile subpath, a scaffolded resolvers.ts from the bare specifier — so every
+			// spelling has to land on the same module.
+			//
+			// Rejected: aliasing to `postgraphile/grafast`. That subpath is a forwarder whose entire
+			// type is `export * from "grafast"`, and Nitro copies every alias into the generated
+			// tsconfig `paths`, which are global — so the forwarder's own specifier is rewritten back
+			// to the forwarder. A module that re-exports itself exports nothing, and vue-tsc reports
+			// every named grafast import in a scaffolded resolvers.ts as missing.
 			config.alias = config.alias || {}
+			const grafastPath = resolveOneInstance('grafast')
+			const graphqlPath = resolveOneInstance('graphql')
 			config.alias['grafast'] = grafastPath
+			config.alias['graphql'] = graphqlPath
+			if (postgraphileRequire) {
+				config.alias['postgraphile/grafast'] = grafastPath
+				config.alias['postgraphile/graphql'] = graphqlPath
+			}
+			// No grafserv alias: it is externalized above, and the previous attempt keyed off
+			// `require.resolve('grafserv/package.json')`, which throws ERR_PACKAGE_PATH_NOT_EXPORTED
+			// even where grafserv is installed — its exports map has no ./package.json entry — so the
+			// aliases were never set on any host.
 
 			// Configure TypeScript module resolution for preset files
 			config.typescript = config.typescript || {}

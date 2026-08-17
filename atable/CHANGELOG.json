@@ -2,6 +2,36 @@
   "name": "@stonecrop/atable",
   "entries": [
     {
+      "version": "0.21.0",
+      "tag": "@stonecrop/atable_v0.21.0",
+      "date": "Mon, 17 Aug 2026 19:08:23 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Render link cells from { id, displayText } objects returned by native queries instead of fieldname__display siblings."
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.20.0",
+      "tag": "@stonecrop/atable_v0.20.0",
+      "date": "Mon, 17 Aug 2026 18:41:19 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.19.0",
+      "tag": "@stonecrop/atable_v0.19.0",
+      "date": "Mon, 17 Aug 2026 12:46:25 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Use a link's pre-resolved display text from the row instead of refetching it."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.18.0",
       "tag": "@stonecrop/atable_v0.18.0",
       "date": "Fri, 14 Aug 2026 08:05:46 GMT",
