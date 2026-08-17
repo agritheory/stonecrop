@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/nuxt",
-	"version": "0.19.0",
+	"version": "0.20.0",
 	"description": "Nuxt module for Stonecrop",
 	"repository": {
 		"type": "git",

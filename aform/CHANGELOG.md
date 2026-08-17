@@ -1,6 +1,18 @@
 # Change Log - @stonecrop/aform
 
-This log was last generated on Mon, 17 Aug 2026 12:46:25 GMT and should not be manually modified.
+This log was last generated on Mon, 17 Aug 2026 18:41:19 GMT and should not be manually modified.
+
+## 0.20.0
+Mon, 17 Aug 2026 18:41:19 GMT
+
+### Minor changes
+
+- AFormLink now resolves and shows the display text for a link whose value is a bare FK scalar, including when the parent writes that scalar back on every update, instead of rendering an empty input with no navigation.
+- AFormLink's v-model now declares the bare FK scalar it already accepted, as the new exported type AFormLinkModelValue, so binding a link straight to its column no longer reports a type error against a component that handles it.
+
+### Updates
+
+- Fixed Date selection in Date Picker
 
 ## 0.19.0
 Mon, 17 Aug 2026 12:46:25 GMT
