@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Stop synthesizing fieldname__display siblings; unwrap { id, displayText } link values when storing records.",
+      "type": "patch",
+      "packageName": "@stonecrop/desktop"
+    }
+  ],
+  "packageName": "@stonecrop/desktop",
+  "email": "tyler@agritheory.com"
+}

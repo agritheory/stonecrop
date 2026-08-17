@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Remove server-side link display enrichment; stonecropRecord and stonecropRecords again return scalar FK values for inline links.",
+      "type": "minor",
+      "packageName": "@stonecrop/graphql-middleware"
+    }
+  ],
+  "packageName": "@stonecrop/graphql-middleware",
+  "email": "tyler@agritheory.com"
+}

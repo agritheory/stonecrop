@@ -384,12 +384,20 @@ export type DoctypeMeta = z.infer<typeof DoctypeMeta>
 
 /**
  * Suffix appended to a link fieldname for its pre-resolved display text in record payloads.
+ *
+ * @deprecated The `__display` suffix pattern is no longer used. Use the native PostGraphile
+ * query methods (`getNativeRecord`/`getNativeRecords`) in `@stonecrop/graphql-client` which
+ * return link fields as `{ id, displayText }` objects directly.
  * @public
  */
 export const LINK_DISPLAY_SUFFIX = '__display'
 
 /**
  * Build the payload key for a link field's display text (e.g. `customerId__display`).
+ *
+ * @deprecated The `__display` suffix pattern is no longer used. Use the native PostGraphile
+ * query methods (`getNativeRecord`/`getNativeRecords`) in `@stonecrop/graphql-client` which
+ * return link fields as `{ id, displayText }` objects directly.
  * @public
  */
 export function linkDisplayFieldname(fieldname: string): string {

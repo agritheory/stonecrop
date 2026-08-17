@@ -380,7 +380,7 @@ export const LazyFetch: z.ZodObject<{
 // @public
 export type LazyFetch = z.infer<typeof LazyFetch>;
 
-// @public
+// @public @deprecated
 export const LINK_DISPLAY_SUFFIX = "__display";
 
 // @public
@@ -410,7 +410,7 @@ export const LinkDeclaration: z.ZodObject<{
 // @public
 export type LinkDeclaration = z.infer<typeof LinkDeclaration>;
 
-// @public
+// @public @deprecated
 export function linkDisplayFieldname(fieldname: string): string;
 
 // @public
