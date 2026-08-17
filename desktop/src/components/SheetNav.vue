@@ -259,7 +259,7 @@ a:focus {
 .searchtab input {
 	outline: none;
 	border: 1px solid var(--sc-input-border-color);
-	border-radius: 0.25rem;
+	border-radius: var(--sc-border-radius);
 	background-color: var(--sc-form-background);
 	color: var(--sc-gray-80);
 	text-align: left;

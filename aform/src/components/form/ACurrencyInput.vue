@@ -275,7 +275,7 @@ const displayText = computed(() => {
 	align-items: stretch;
 	width: 100%;
 	border: 1px solid var(--sc-input-border-color);
-	border-radius: 0.25rem;
+	border-radius: var(--sc-border-radius);
 }
 
 .acurrency__group:focus-within {
@@ -304,7 +304,7 @@ const displayText = computed(() => {
 	outline: none;
 	padding: 0.5ch 1ch;
 	background: transparent;
-	border-radius: 0 0.25rem 0.25rem 0;
+	border-radius: 0 var(--sc-border-radius) var(--sc-border-radius) 0;
 	text-align: right;
 	appearance: textfield;
 	-moz-appearance: textfield;
@@ -328,7 +328,7 @@ const displayText = computed(() => {
 	min-width: 4.5rem;
 	background: var(--sc-gray-5);
 	border-right: 1px solid var(--sc-input-border-color);
-	border-radius: 0.25rem 0 0 0.25rem;
+	border-radius: var(--sc-border-radius) 0 0 var(--sc-border-radius);
 }
 
 .acurrency__base-field {
@@ -337,7 +337,7 @@ const displayText = computed(() => {
 	font-size: 1rem;
 	padding: 0.5ch 1ch;
 	border: 1px solid var(--sc-input-border-color);
-	border-radius: 0.25rem;
+	border-radius: var(--sc-border-radius);
 	outline: none;
 	appearance: textfield;
 	-moz-appearance: textfield;

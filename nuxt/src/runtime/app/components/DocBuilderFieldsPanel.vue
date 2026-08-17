@@ -347,7 +347,7 @@ function bool(v) {
 .fields-panel :deep(input[type='text']),
 .fields-panel :deep(select) {
 	border: 1px solid var(--sc-gray-20, #d1d5db);
-	border-radius: 3px;
+	border-radius: var(--sc-border-radius);
 	font-family: inherit;
 	font-size: inherit;
 	padding: 0.25em 0.5em;
@@ -417,7 +417,7 @@ function bool(v) {
 .btn-add {
 	background: none;
 	border: 1px dashed var(--sc-gray-20, #d1d5db);
-	border-radius: 4px;
+	border-radius: var(--sc-border-radius);
 	color: var(--sc-blue-40, #2563eb);
 	cursor: pointer;
 	font-size: 0.875rem;

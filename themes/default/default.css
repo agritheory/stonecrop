@@ -88,6 +88,7 @@ before all other rules.
 
 		/* TABLE */
 		--sc-border-radius: 0;
+		--sc-form-field-max-width: 50ch;
 		--sc-atable-row-padding: 0.125rem;
 		--sc-atable-row-height: 1.5em;
 		--sc-atable-cell-border-width: 2px;

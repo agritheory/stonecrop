@@ -82,7 +82,7 @@ a {
 code {
 	padding: 0.1rem 0.35rem;
 	background: var(--sc-gray-10);
-	border-radius: 0.25rem;
+	border-radius: 0;
 	font-size: 0.9em;
 }
 </style>
