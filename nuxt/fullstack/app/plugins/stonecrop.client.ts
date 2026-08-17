@@ -1,7 +1,7 @@
 import { StonecropClient } from '@stonecrop/graphql-client'
 import { Doctype } from '@stonecrop/stonecrop'
 
-import { doctypeMap, routeToSlugMap } from '~/composables/useDoctypes'
+import { doctypeMap, doctypeRoutes } from '~/composables/useDoctypes'
 
 export default defineNuxtPlugin({
 	name: 'stonecrop-client',
@@ -17,7 +17,8 @@ export default defineNuxtPlugin({
 
 		registerMeta(async routeContext => {
 			const segments = routeContext.segments ?? []
-			const slug = resolveDoctypeSlugFromSegments(segments, routeToSlugMap)
+			const { slug } = doctypeRoutes.resolve(segments)
+			if (!slug) throw new Error(`No doctype serves the route: /${segments.join('/')}`)
 
 			const localDoctype = doctypeMap.get(slug)
 			if (!localDoctype) throw new Error(`No doctype registered for slug: ${slug}`)

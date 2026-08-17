@@ -1,7 +1,7 @@
 {
   "changes": [
     {
-      "comment": "Resolve doctype routes from an optional route key before slug fallback. Supports transactional list/form splits on one URL, singleton route-only forms, and 404 on singleton record paths. Adds route adapters, registerMeta wiring, and route-key test coverage.",
+      "comment": "Resolve doctype URLs from their `route` and `view` keys.",
       "type": "minor",
       "packageName": "@stonecrop/nuxt"
     }

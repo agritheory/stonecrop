@@ -618,26 +618,49 @@ describe('Doctype Validation', { tags: ['unit'] }, () => {
 			expect(parsed.fields[0].fieldname).toBe('id')
 		})
 
+		const routedDoctype = (extra: Record<string, unknown>) => ({
+			name: 'SalesOrderList',
+			slug: 'sales-order-list',
+			fields: [{ kind: 'field', fieldname: 'name', component: 'ATextInput' }],
+			...extra,
+		})
+
 		it('should parse an optional route key', () => {
-			const doctype = {
-				name: 'SalesOrderList',
-				slug: 'sales-order-list',
-				route: '/sales-order',
-				fields: [{ kind: 'field', fieldname: 'name', component: 'ATextInput' }],
-			}
-			const parsed = parseDoctype(doctype)
+			const parsed = parseDoctype(routedDoctype({ route: '/sales-order' }))
 
 			expect(parsed.route).toBe('/sales-order')
 		})
 
-		it('should reject an empty route key', () => {
-			const doctype = {
-				name: 'SalesOrderList',
-				route: '',
-				fields: [{ kind: 'field', fieldname: 'name', component: 'ATextInput' }],
-			}
+		it('should parse an optional view key', () => {
+			expect(parseDoctype(routedDoctype({ view: 'list' })).view).toBe('list')
+			expect(parseDoctype(routedDoctype({ view: 'form' })).view).toBe('form')
+			expect(parseDoctype(routedDoctype({ view: 'singleton' })).view).toBe('singleton')
+		})
 
-			expect(() => parseDoctype(doctype)).toThrow(ZodError)
+		it('should reject an unknown view key', () => {
+			expect(() => parseDoctype(routedDoctype({ view: 'table' }))).toThrow(ZodError)
+		})
+
+		it('should reject an empty route key', () => {
+			expect(() => parseDoctype(routedDoctype({ route: '' }))).toThrow(ZodError)
+		})
+
+		// The resolver matches a route by equality against one URL segment. Anything it cannot
+		// honor is refused here, because the alternative is a doctype that parses, ships, and is
+		// then unreachable with nothing reporting why.
+		it.each([
+			['a route without a leading slash', 'sales-order'],
+			['the root path', '/'],
+			['a nested path', '/admin/settings'],
+			['a Vue Router id pattern', '/sales-order/:id'],
+			['a route param', '/:doctype'],
+			['a wildcard', '/sales-order*'],
+		])('should reject %s', (_label, route) => {
+			expect(() => parseDoctype(routedDoctype({ route }))).toThrow(ZodError)
+		})
+
+		it('should explain why a rejected route is invalid', () => {
+			expect(() => parseDoctype(routedDoctype({ route: '/sales-order/:id' }))).toThrow(/more than one path segment/)
 		})
 
 		it('should throw ZodError for invalid doctype', () => {

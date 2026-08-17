@@ -1161,6 +1161,7 @@ export type DoctypeConfig = {
     name: string;
     slug?: string;
     route?: string;
+    view?: 'list' | 'form' | 'singleton';
     fields?: DoctypeField[];
     links?: Record<string, LinkDeclaration>;
     workflow?: UnknownMachineConfig | WorkflowMeta;

@@ -1,6 +1,6 @@
 {
 	"name": "SingletonDoctype",
-	"route": "/singleton-doctype",
+	"view": "singleton",
 	"fields": [
 		{
 			"kind": "field",

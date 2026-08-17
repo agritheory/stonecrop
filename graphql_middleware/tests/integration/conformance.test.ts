@@ -110,6 +110,8 @@ function formatMeta(meta: ReturnType<typeof getMeta>) {
 	return {
 		name: meta.name,
 		slug: meta.slug ?? null,
+		route: meta.route ?? null,
+		view: meta.view ?? null,
 		fields: meta.fields,
 		workflow: meta.workflow ? { states: meta.workflow.states ?? null, actions: Object.values(actions ?? {}) } : null,
 		inherits: meta.inherits ?? null,

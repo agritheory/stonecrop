@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fetch a doctype's `route` and `view` with its metadata.",
+      "type": "minor",
+      "packageName": "@stonecrop/graphql-client"
+    }
+  ],
+  "packageName": "@stonecrop/graphql-client",
+  "email": "rohanbansal33@gmail.com"
+}

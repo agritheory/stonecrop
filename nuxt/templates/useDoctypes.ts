@@ -6,7 +6,6 @@ const modules = import.meta.glob<DoctypeConfig>('../../doctypes/*.json', {
 })
 
 export const doctypeMap = new Map<string, DoctypeConfig>()
-export const routeToSlugMap = new Map<string, string>()
 
 for (const [path, doctype] of Object.entries(modules)) {
 	const filename = path.split('/').pop()!.replace('.json', '')
@@ -15,16 +14,16 @@ for (const [path, doctype] of Object.entries(modules)) {
 		.replace(/[\s_]+/g, '-')
 		.toLowerCase()
 	doctypeMap.set(slug, doctype)
-
-	if (doctype.route) {
-		routeToSlugMap.set(doctype.route, slug)
-	}
 }
 
-/** Resolve slug from a route path, or return the path without a leading slash (slug fallback) */
-export function resolveSlugFromRoute(routePath: string): string {
-	return resolveSlugFromRouteMap(routePath, routeToSlugMap)
-}
+/**
+ * URL routing for every doctype in this app, from their `route` and `view` keys.
+ *
+ * Built once from the whole map rather than per lookup: two doctypes claiming one URL role is an
+ * error, and that is only knowable with all of them in hand. Throwing here fails the app at boot
+ * with both doctype names, which is the point — the alternative silently drops one of them.
+ */
+export const doctypeRoutes = buildDoctypeRoutes(doctypeMap)
 
 export function useDoctypeConfig(slug: string): DoctypeConfig | undefined {
 	return doctypeMap.get(slug)

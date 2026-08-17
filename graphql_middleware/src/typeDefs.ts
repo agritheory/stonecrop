@@ -49,6 +49,18 @@ export const typeDefs = gql`
 	type StonecropDoctypeMeta {
 		name: String!
 		slug: String
+		"""
+		URL path this doctype is served at, replacing the slug-based default. Carried alongside
+		slug because routing is the client's decision and a server-sourced doctype would otherwise
+		be unable to state one — the key would parse, ship, and quietly do nothing for every host
+		that does not bundle its doctypes as local JSON.
+		"""
+		route: String
+		"""
+		Which URL shape this doctype answers: list, form or singleton. Null means it answers both
+		its collection and its records, which is the default.
+		"""
+		view: String
 		fields: [StonecropFieldMeta!]!
 		workflow: StonecropWorkflowMeta
 		inherits: String

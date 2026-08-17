@@ -1,14 +1,11 @@
 import { readFileSync, readdirSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 
+import { parseDoctype } from '@stonecrop/schema'
 import type { DoctypeConfig } from '@stonecrop/stonecrop'
 import { describe, it, expect } from 'vitest'
 
-import {
-	buildRouteToSlugMap,
-	resolveDoctypeSlugFromSegments,
-	resolveRouteView,
-} from '../src/runtime/app/composables/useDoctypeRoutes'
+import { buildDoctypeRoutes } from '../src/runtime/app/composables/useDoctypeRoutes'
 
 const FIXTURE_DIR = resolve(__dirname, 'fixtures/route-key/doctypes')
 
@@ -19,88 +16,72 @@ function filenameToSlug(filename: string): string {
 		.toLowerCase()
 }
 
-function loadFixtureDoctypes(): {
-	doctypeMap: Map<string, DoctypeConfig>
-	routeToSlugMap: Map<string, string>
-} {
+/**
+ * Loads the fixture doctypes through the real schema parser, so a `route` the schema would reject
+ * cannot reach the resolver here and pass. The two packages enforce one rule between them, and
+ * this is where they are checked against the same files.
+ */
+function loadFixtureDoctypes() {
 	const doctypeMap = new Map<string, DoctypeConfig>()
-	const routeEntries: Array<[string, Pick<DoctypeConfig, 'route'>]> = []
 
 	for (const file of readdirSync(FIXTURE_DIR).filter(name => name.endsWith('.json'))) {
 		const slug = filenameToSlug(file.replace('.json', ''))
-		const config = JSON.parse(readFileSync(join(FIXTURE_DIR, file), 'utf-8')) as DoctypeConfig
-		doctypeMap.set(slug, config)
-		routeEntries.push([slug, config])
+		const parsed = parseDoctype(JSON.parse(readFileSync(join(FIXTURE_DIR, file), 'utf-8')))
+		doctypeMap.set(slug, parsed as DoctypeConfig)
 	}
 
-	return {
-		doctypeMap,
-		routeToSlugMap: buildRouteToSlugMap(routeEntries),
-	}
+	return { doctypeMap, routes: buildDoctypeRoutes(doctypeMap) }
 }
 
-function resolveMetaSlug(segments: string[], routeToSlugMap: Map<string, string>): string {
-	return resolveDoctypeSlugFromSegments(segments, routeToSlugMap)
-}
+describe('route-key fixtures', { tags: ['unit', 'nuxt'] }, () => {
+	const { doctypeMap, routes } = loadFixtureDoctypes()
 
-function simulateRegisterMeta(
-	segments: string[],
-	doctypeMap: Map<string, DoctypeConfig>,
-	routeToSlugMap: Map<string, string>
-) {
-	const slug = resolveMetaSlug(segments, routeToSlugMap)
-	const localDoctype = doctypeMap.get(slug)
-	if (!localDoctype) {
-		throw new Error(`No doctype registered for slug: ${slug}`)
+	/** What `registerMeta` does with a URL: resolve it, then take that doctype's field labels. */
+	const labelsAt = (segments: string[]) => {
+		const { slug } = routes.resolve(segments)
+		return doctypeMap.get(slug)?.fields?.map(field => field.label) ?? []
 	}
-	return {
-		name: localDoctype.name,
-		fieldLabels: localDoctype.fields?.map(field => field.label).filter(Boolean) ?? [],
-	}
-}
 
-describe('route-key integration fixtures', { tags: ['unit', 'nuxt'] }, () => {
-	const { doctypeMap, routeToSlugMap } = loadFixtureDoctypes()
-
-	it('resolves transactional list schema at the public URL', () => {
-		const doctype = simulateRegisterMeta(['transactional-doctype'], doctypeMap, routeToSlugMap)
-
-		expect(doctype.name).toBe('TransactionalDoctypeList')
-		expect(doctype.fieldLabels).toEqual(['List Column'])
-		expect(resolveRouteView(['transactional-doctype'], routeToSlugMap)).toBe('records')
+	it('serves the curated list schema at the projected URL', () => {
+		expect(routes.resolve(['transactional-doctype'])).toMatchObject({
+			view: 'records',
+			slug: 'transactional-doctype-list',
+		})
+		expect(labelsAt(['transactional-doctype'])).toEqual(['List Column'])
 	})
 
-	it('resolves transactional form schema for record URLs', () => {
-		const doctype = simulateRegisterMeta(['transactional-doctype', '1'], doctypeMap, routeToSlugMap)
-
-		expect(doctype.name).toBe('TransactionalDoctype')
-		expect(doctype.fieldLabels).toEqual(['Form Detail'])
-		expect(resolveRouteView(['transactional-doctype', '1'], routeToSlugMap)).toBe('record')
+	it('serves the full form schema at the record URL of the same path', () => {
+		expect(routes.resolve(['transactional-doctype', '1'])).toMatchObject({
+			view: 'record',
+			slug: 'transactional-doctype',
+			recordId: '1',
+		})
+		expect(labelsAt(['transactional-doctype', '1'])).toEqual(['Form Detail'])
 	})
 
-	it('resolves singleton form schema at the base URL', () => {
-		const doctype = simulateRegisterMeta(['singleton-doctype'], doctypeMap, routeToSlugMap)
-
-		expect(doctype.name).toBe('SingletonDoctype')
-		expect(doctype.fieldLabels).toEqual(['Singleton Setting'])
-		expect(resolveRouteView(['singleton-doctype'], routeToSlugMap)).toBe('record')
+	it('serves a singleton at its base path and nothing below it', () => {
+		expect(routes.resolve(['singleton-doctype'])).toMatchObject({ view: 'record', slug: 'singleton-doctype' })
+		expect(labelsAt(['singleton-doctype'])).toEqual(['Singleton Setting'])
+		expect(routes.resolve(['singleton-doctype', '1']).view).toBe('notFound')
 	})
 
-	it('marks singleton record URLs as notFound', () => {
-		expect(resolveRouteView(['singleton-doctype', '1'], routeToSlugMap)).toBe('notFound')
+	it('serves both views of an aliased doctype under its alias', () => {
+		expect(routes.resolve(['aliased'])).toMatchObject({ view: 'records', slug: 'aliased-doctype' })
+		expect(routes.resolve(['aliased', 'A-1'])).toMatchObject({
+			view: 'record',
+			slug: 'aliased-doctype',
+			recordId: 'A-1',
+		})
+		expect(routes.resolve(['aliased-doctype']).view).toBe('notFound')
 	})
 
-	it('resolves standard slug-based doctypes unchanged', () => {
-		const doctype = simulateRegisterMeta(['customer'], doctypeMap, routeToSlugMap)
-
-		expect(doctype.name).toBe('Customer')
-		expect(resolveRouteView(['customer'], routeToSlugMap)).toBe('records')
-		expect(resolveRouteView(['customer', 'CUST-001'], routeToSlugMap)).toBe('record')
+	it('leaves a doctype declaring neither key on its slug path', () => {
+		expect(routes.resolve(['customer'])).toMatchObject({ view: 'records', slug: 'customer' })
+		expect(routes.resolve(['customer', 'CUST-001'])).toMatchObject({ view: 'record', slug: 'customer' })
 	})
 
-	it('throws when registerMeta cannot resolve a slug', () => {
-		expect(() => simulateRegisterMeta(['missing-doctype'], doctypeMap, routeToSlugMap)).toThrow(
-			'No doctype registered for slug: missing-doctype'
-		)
+	it('404s a URL no fixture declares', () => {
+		expect(routes.resolve(['missing-doctype']).view).toBe('notFound')
+		expect(routes.resolve(['missing-doctype']).slug).toBe('')
 	})
 })

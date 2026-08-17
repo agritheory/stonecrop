@@ -1,7 +1,7 @@
 {
   "changes": [
     {
-      "comment": "Add optional route to DoctypeMeta for declarative URL routing (Vue Router-style path strings).",
+      "comment": "Add optional `route` and `view` keys to doctypes for custom URLs.",
       "type": "minor",
       "packageName": "@stonecrop/schema"
     }

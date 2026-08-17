@@ -277,17 +277,35 @@ export default defineNuxtModule<ModuleOptions>({
 			} else if (options.pageComponent) {
 				// Default slug-based routing with user's page component
 				const componentPath = resolve(appDir, options.pageComponent)
-				generatedPages = doctypes.map(({ fileName, data, fields }) => {
-					const route = data.route as string | undefined
-					const slug = (data.slug as string) || fileName.toLowerCase()
-					const path = route || `/${slug}`
-					return {
-						name: `stonecrop-${fileName}`,
-						path,
-						file: componentPath,
-						meta: { schema: fields, doctype: data, slug },
-					}
-				})
+				generatedPages = doctypes
+					.filter(({ fileName, data }) => {
+						// This branch generates one page per doctype and no `/:id` route, so a doctype
+						// whose declared view only ever appears under a record id has no URL here.
+						// Saying so beats registering it at the collection path, where it would answer
+						// for a list it is not.
+						if ((data.view as string | undefined) === 'form') {
+							logger.warn(
+								`Skipping ${fileName}: it declares view 'form', which is served at ` +
+									`/{route}/:id, and pageComponent routing generates no record routes. ` +
+									`Use routeStrategy to serve record URLs.`
+							)
+							return false
+						}
+						return true
+					})
+					.map(({ fileName, data, fields }) => {
+						const route = data.route as string | undefined
+						const slug = (data.slug as string) || fileName.toLowerCase()
+						const path = route || `/${slug}`
+						return {
+							name: `stonecrop-${fileName}`,
+							path,
+							file: componentPath,
+							// `slug` is carried separately because `route` decouples the two: a page
+							// mounted at `/orders` cannot recover `sales-order` from its own path.
+							meta: { schema: fields, doctype: data, slug },
+						}
+					})
 			} else {
 				logger.warn(
 					'No routeStrategy or pageComponent configured — ' +
