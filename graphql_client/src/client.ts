@@ -9,6 +9,13 @@ import type {
 } from '@stonecrop/schema'
 import type { GetRecordResult } from './types'
 import { GET_META_QUERY, GET_ALL_META_QUERY, RUN_ACTION_MUTATION } from './queries'
+import {
+	buildSingleRecordQuery,
+	buildListRecordQuery,
+	transformNativeRecord,
+	doctypeToSingleQuery,
+	doctypeToListQuery,
+} from './query-builder'
 
 export type { DoctypeContext, DoctypeRef }
 export type { GetRecordResult, GetRecordsResult }
@@ -27,8 +34,8 @@ export interface StonecropClientOptions {
 /**
  * Client for interacting with Stonecrop GraphQL API.
  *
- * Acts as a transport layer — it passes requests to the middleware and returns
- * merged results. Does not construct queries itself.
+ * Acts as a transport layer for stonecropRecord/stonecropRecords/stonecropAction, and
+ * builds native PostGraphile queries for getNativeRecord/getNativeRecords.
  *
  * @public
  */
@@ -198,6 +205,87 @@ export class StonecropClient implements DataClient {
 		// `count` is null unless includeTotal was set. Omitting the key rather than passing null
 		// through keeps "not asked for" and "asked for, and it is zero" distinguishable.
 		return count == null ? { data, hasMore } : { data, hasMore, count }
+	}
+
+	/**
+	 * Get a single record by ID using PostGraphile's native query with relationship expansion.
+	 *
+	 * Unlike `getRecord()` which uses the `stonecropRecord` resolver returning a JSON blob,
+	 * this method builds a native PostGraphile query that leverages the ORM's relationship
+	 * resolution for efficient single-query fetches with JOINs.
+	 *
+	 * Link fields are returned as `{ id, displayText }` objects where `displayText` is
+	 * resolved from the target doctype's `displayField`.
+	 *
+	 * @param doctype - Doctype reference (name and optional slug)
+	 * @param recordId - Record ID to fetch
+	 */
+	async getNativeRecord(doctype: DoctypeRef, recordId: string): Promise<GetRecordResult> {
+		const allMeta = await this.getAllMeta()
+		const meta = allMeta.find(m => m.name === doctype.name || m.slug === doctype.name)
+
+		if (!meta) {
+			return { record: null }
+		}
+
+		const { query, linkFields } = buildSingleRecordQuery(meta, { allMeta })
+		const queryName = doctypeToSingleQuery(meta.name)
+
+		const result = await this.query<Record<string, Record<string, unknown> | null>>(query, { id: recordId })
+
+		const rawRecord = result[queryName]
+		if (!rawRecord) {
+			return { record: null }
+		}
+
+		const record = transformNativeRecord(rawRecord, linkFields, meta, allMeta)
+		return { record }
+	}
+
+	/**
+	 * Get multiple records using PostGraphile's native query with relationship expansion.
+	 *
+	 * Unlike `getRecords()` which uses the `stonecropRecords` resolver returning JSON blobs,
+	 * this method builds a native PostGraphile query that leverages the ORM's relationship
+	 * resolution for efficient single-query fetches with JOINs.
+	 *
+	 * Link fields are returned as `{ id, displayText }` objects where `displayText` is
+	 * resolved from the target doctype's `displayField`.
+	 *
+	 * @param doctype - Doctype reference (name and optional slug)
+	 * @param options - Query options (limit, offset)
+	 */
+	async getNativeRecords(
+		doctype: DoctypeRef,
+		options?: { limit?: number; offset?: number }
+	): Promise<GetRecordsResult> {
+		const allMeta = await this.getAllMeta()
+		const meta = allMeta.find(m => m.name === doctype.name || m.slug === doctype.name)
+
+		if (!meta) {
+			return { data: [], hasMore: false }
+		}
+
+		const { query, linkFields } = buildListRecordQuery(meta, {
+			allMeta,
+			first: options?.limit,
+			offset: options?.offset,
+		})
+		const queryName = doctypeToListQuery(meta.name)
+
+		const variables: Record<string, unknown> = {}
+		if (options?.limit !== undefined) variables.first = options.limit
+		if (options?.offset !== undefined) variables.offset = options.offset
+
+		const result = await this.query<Record<string, { nodes: Record<string, unknown>[] }>>(query, variables)
+
+		const nodes = result[queryName]?.nodes ?? []
+		const data = nodes.map(node => transformNativeRecord(node, linkFields, meta, allMeta))
+
+		return {
+			data,
+			hasMore: nodes.length === options?.limit,
+		}
 	}
 
 	/**

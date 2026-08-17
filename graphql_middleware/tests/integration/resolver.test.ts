@@ -877,28 +877,21 @@ describe('self-transition data write', { tags: ['integration', 'graphql'] }, () 
 })
 
 // ===========================================================================
-// Link display text
+// Link fields via stonecropRecord/stonecropRecords (scalar FKs only)
 // ===========================================================================
 
-describe('link display text', { tags: ['integration', 'graphql'] }, () => {
-	it('includes customerId__display on stonecropRecord when the target declares displayField', async () => {
+describe('link fields (scalar FKs)', { tags: ['integration', 'graphql'] }, () => {
+	it('returns customerId as a scalar FK on stonecropRecord', async () => {
 		const result = await runQuery(`query { stonecropRecord(doctype: "ScOrder", id: "1") { data } }`)
 		const data = (result as any).data?.stonecropRecord?.data
 		expect(data.customerId).toBe(1)
-		expect(data.customerId__display).toBe('Acme Corp')
 	})
 
-	it('includes customerId__display on each stonecropRecords row', async () => {
+	it('returns customerId as a scalar FK on each stonecropRecords row', async () => {
 		const result = await runQuery(`query { stonecropRecords(doctype: "ScOrder") { data } }`)
 		const rows = (result as any).data?.stonecropRecords?.data as Array<Record<string, unknown>>
-		expect(rows[0]?.customerId__display).toBe('Acme Corp')
-		expect(rows[1]?.customerId__display).toBe('Globex')
-	})
-
-	it('omits display keys when the target doctype declares no displayField', async () => {
-		const result = await runQuery(`query { stonecropRecord(doctype: "ScItem", id: "1") { data } }`)
-		const data = (result as any).data?.stonecropRecord?.data
-		expect(Object.keys(data).some(key => key.endsWith('__display'))).toBe(false)
+		expect(rows[0]?.customerId).toBe(1)
+		expect(rows[1]?.customerId).toBe(2)
 	})
 })
 

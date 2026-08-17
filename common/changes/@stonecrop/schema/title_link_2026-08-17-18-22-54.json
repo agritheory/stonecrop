@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Deprecate LINK_DISPLAY_SUFFIX and linkDisplayFieldname in favor of native PostGraphile query link objects.",
+      "type": "patch",
+      "packageName": "@stonecrop/schema"
+    }
+  ],
+  "packageName": "@stonecrop/schema",
+  "email": "tyler@agritheory.com"
+}

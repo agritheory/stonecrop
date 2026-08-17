@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Render link cells from { id, displayText } objects returned by native queries instead of fieldname__display siblings.",
+      "type": "patch",
+      "packageName": "@stonecrop/atable"
+    }
+  ],
+  "packageName": "@stonecrop/atable",
+  "email": "tyler@agritheory.com"
+}

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Add getNativeRecord and getNativeRecords, building PostGraphile-native queries with nested link selections that return { id, displayText } objects.",
+      "type": "minor",
+      "packageName": "@stonecrop/graphql-client"
+    }
+  ],
+  "packageName": "@stonecrop/graphql-client",
+  "email": "tyler@agritheory.com"
+}
