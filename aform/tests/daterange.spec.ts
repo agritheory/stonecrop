@@ -134,7 +134,7 @@ describe('date range component', () => {
 		await wrapper.find('input').trigger('click')
 		await nextTick()
 
-		const start = new Date('2026-03-01')
+		const start = new Date(2026, 2, 1)
 		await wrapper.findComponent(ADateSelection).vm.$emit('get-date', {
 			selected: start,
 			start,
@@ -157,8 +157,8 @@ describe('date range component', () => {
 		await wrapper.find('input').trigger('click')
 		await nextTick()
 
-		const start = new Date('2026-03-01')
-		const end = new Date('2026-03-15')
+		const start = new Date(2026, 2, 1)
+		const end = new Date(2026, 2, 15)
 
 		await wrapper.findComponent(ADateSelection).vm.$emit('get-date', {
 			selected: end,
@@ -185,8 +185,8 @@ describe('date range component', () => {
 		await wrapper.find('input').trigger('click')
 		await nextTick()
 
-		const start = new Date('2026-03-15') // later date passed as start
-		const end = new Date('2026-03-01') // earlier date passed as end
+		const start = new Date(2026, 2, 15) // later date passed as start
+		const end = new Date(2026, 2, 1) // earlier date passed as end
 
 		await wrapper.findComponent(ADateSelection).vm.$emit('get-date', {
 			selected: end,
@@ -237,9 +237,9 @@ describe('date range component', () => {
 		await nextTick()
 
 		await wrapper.findComponent(ADateSelection).vm.$emit('get-date', {
-			selected: new Date('2026-04-01'),
-			start: new Date('2026-04-01'),
-			end: new Date('2026-04-30'),
+			selected: new Date(2026, 3, 1),
+			start: new Date(2026, 3, 1),
+			end: new Date(2026, 3, 30),
 		})
 		await nextTick()
 

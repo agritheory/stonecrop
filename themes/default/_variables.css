@@ -34,8 +34,8 @@
 	--sc-row-number-background-color: #ffffff;
 
 	/* Form Colors */
-	--sc-input-active-border-color: #000000;
-	--sc-input-active-label-color: #000000;
+	--sc-input-active-border-color: var(--sc-gray-80);
+	--sc-input-active-label-color: var(--sc-gray-80);
 	--sc-input-border-color: var(--sc-gray-20);
 	--sc-input-label-color: var(--sc-gray-60);
 	--sc-required-border: #e63c28;

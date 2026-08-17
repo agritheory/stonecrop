@@ -7,14 +7,18 @@
 		<template v-else>
 			<input
 				:id="uuid"
+				ref="date-input"
 				class="aform_input-field"
 				type="text"
-				:value="dateDisplay"
+				:value="inputText"
 				placeholder="Select date"
 				:disabled="mode === 'read'"
 				:required="required"
-				readonly
-				@click="openPicker" />
+				@click="openPicker"
+				@input="onInput"
+				@blur="commitTypedDate"
+				@keydown.enter.prevent="commitTypedDate"
+				@keydown.escape="showPicker = false" />
 			<label class="aform_field-label" :for="uuid">{{ label }}</label>
 			<p v-show="errorText" class="aform_error" v-html="errorText"></p>
 			<ADateSelection
@@ -34,6 +38,7 @@ import { onClickOutside } from '@vueuse/core'
 
 import ADateSelection from './ADateSelection.vue'
 import type { ComponentProps } from '../../types'
+import { parseCalendarDate, toCalendarDateString } from '../../utils/calendar-date'
 
 const {
 	label = 'Date',
@@ -49,29 +54,58 @@ const errorText = computed(() => (errors?.length ? errors.join('; ') : (validati
 
 const modelValue = defineModel<string | Date>()
 
-const currentDate = ref(modelValue.value ? new Date(modelValue.value) : new Date())
+const currentDate = ref(parseCalendarDate(modelValue.value) ?? new Date())
 
 const dateDisplay = computed(() => {
 	if (!modelValue.value) return ''
 	return currentDate.value.toLocaleDateString()
 })
 
-const toISODate = (d: Date) => d.toISOString().split('T')[0]
+const inputText = ref(dateDisplay.value)
+
+const toISODate = (d: Date) => toCalendarDateString(d)
+
+const parseTypedDate = (value: string) => parseCalendarDate(value)
 
 const pickerRef = useTemplateRef<HTMLDivElement>('picker')
+const dateInputRef = useTemplateRef<HTMLInputElement>('date-input')
 const showPicker = ref(false)
 
-onClickOutside(pickerRef, () => (showPicker.value = false))
+onClickOutside(pickerRef, () => (showPicker.value = false), { ignore: [dateInputRef] })
 
 const openPicker = () => {
-	if (mode !== 'read') showPicker.value = !showPicker.value
+	if (mode !== 'read') showPicker.value = true
+}
+
+const onInput = (event: Event) => {
+	const target = event.target
+	if (target instanceof HTMLInputElement) inputText.value = target.value
+}
+
+const commitTypedDate = () => {
+	if (!inputText.value.trim()) {
+		modelValue.value = undefined
+		inputText.value = ''
+		return
+	}
+	const parsed = parseTypedDate(inputText.value)
+	if (!parsed) {
+		inputText.value = dateDisplay.value
+		return
+	}
+	currentDate.value = parsed
+	modelValue.value = toISODate(parsed)
+	inputText.value = parsed.toLocaleDateString()
 }
 
 watch(
 	() => modelValue.value,
 	newValue => {
 		if (newValue) {
-			currentDate.value = new Date(newValue)
+			currentDate.value = parseCalendarDate(newValue) ?? new Date(newValue)
+			inputText.value = currentDate.value.toLocaleDateString()
+		} else {
+			inputText.value = ''
 		}
 	}
 )
@@ -79,6 +113,7 @@ watch(
 const handleDate = (data: { selected: Date }) => {
 	currentDate.value = data.selected
 	modelValue.value = toISODate(data.selected)
+	inputText.value = data.selected.toLocaleDateString()
 	showPicker.value = false
 }
 </script>

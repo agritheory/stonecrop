@@ -25,7 +25,9 @@
 			<ADatePicker @get-date="handleDate" />
 		</Variant>
 		<Variant title="Date Input with Picker">
-			<ADate label="Date" :value="state.dateField" />
+			<div class="adate-story-field">
+				<ADate v-model="state.dateField" label="Date" />
+			</div>
 		</Variant>
 		<Variant title="Date Selection (Date Picker and Time)">
 			<template #controls>
@@ -45,6 +47,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed } from 'vue'
+import { ADate } from '@stonecrop/aform'
 
 const start = ref(new Date())
 const state = reactive({
@@ -71,3 +74,9 @@ const formattedTime = computed(() => {
 	return [state.time.hours, state.time.minutes, state.time.seconds].join(':') + state.time.meridiem
 })
 </script>
+
+<style scoped>
+.adate-story-field {
+	padding: 1rem;
+}
+</style>

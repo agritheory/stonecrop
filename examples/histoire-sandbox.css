@@ -73,25 +73,6 @@
 	text-decoration: none;
 }
 
-/* Reset form elements */
-.histoire-story-render-container button,
-.histoire-story-render-container input,
-.histoire-story-render-container textarea,
-.histoire-story-render-container select {
-	font-family: inherit;
-	font-size: inherit;
-	line-height: inherit;
-	color: inherit;
-	background: initial;
-	border: initial;
-	padding: initial;
-	margin: initial;
-}
-
-.histoire-story-render-container button {
-	cursor: pointer;
-}
-
 /* Reset table */
 .histoire-story-render-container table {
 	border-collapse: collapse;

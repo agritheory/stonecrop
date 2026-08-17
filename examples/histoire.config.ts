@@ -1,6 +1,11 @@
 import { HstVue } from '@histoire/plugin-vue'
 import vue from '@vitejs/plugin-vue'
+import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'histoire'
+
+const aformSrc = fileURLToPath(new URL('../aform/src/index.ts', import.meta.url))
+const aformTypes = fileURLToPath(new URL('../aform/src/types/index.ts', import.meta.url))
+const themesDefault = fileURLToPath(new URL('../themes/default/default.css', import.meta.url))
 
 export default defineConfig({
 	// For static deployment within docs
@@ -70,6 +75,13 @@ export default defineConfig({
 	vite: {
 		plugins: [vue()],
 		base: '/stories/',
+		resolve: {
+			alias: {
+				'@stonecrop/aform/types': aformTypes,
+				'@stonecrop/aform': aformSrc,
+				'@stonecrop/themes/default.css': themesDefault,
+			},
+		},
 	},
 	build: {
 		// Exclude large dependencies from the single vendor chunk
