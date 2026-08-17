@@ -63,4 +63,27 @@ describe('enrichLinkDisplayFields', { tags: ['unit', 'graphql'] }, () => {
 
 		expect(rows[0].customerId__display).toBeUndefined()
 	})
+
+	// Counted, not asserted on the rows: enriching a batch row-by-row produces exactly these rows
+	// while issuing one lookup per row, so the payload cannot tell the two apart. Callers holding a
+	// batch must hand over the whole batch, and this is what says so.
+	it('issues one lookup per link field regardless of how many rows it is given', async () => {
+		const rows = Array.from({ length: 25 }, (_, i) => ({ id: i, customerId: (i % 3) + 10 }))
+		const queries: { text: string; values?: unknown[] }[] = []
+
+		const pgClient = {
+			query: async (query: { text: string; values?: unknown[] }) => {
+				queries.push(query)
+				return { rows: [{ id: 10, partyName: 'Acme Corp' }] }
+			},
+		} as unknown as PgClient
+
+		await enrichLinkDisplayFields(pgClient, getMeta('ScOrder')!, rows, { ScParty: 'sc_party' }, async (client, query) =>
+			client.query(query)
+		)
+
+		expect(queries).toHaveLength(1)
+		// Every distinct id reaches that single lookup — batching must not mean dropping ids.
+		expect(new Set(queries[0]!.values?.[0] as string[])).toEqual(new Set(['10', '11', '12']))
+	})
 })

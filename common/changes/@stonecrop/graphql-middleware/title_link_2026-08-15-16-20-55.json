@@ -1,11 +1,10 @@
 {
   "changes": [
     {
-      "comment": "Add displayField to DoctypeMeta for explicit link display text resolution",
-      "type": "none",
+      "comment": "Include a link's display text alongside its id in record payloads.",
+      "type": "minor",
       "packageName": "@stonecrop/graphql-middleware"
     }
   ],
-  "packageName": "@stonecrop/graphql-middleware",
-  "email": "tyler@agritheory.com"
+  "packageName": "@stonecrop/graphql-middleware"
 }

@@ -288,7 +288,13 @@ export const FieldValidation: z.ZodObject<{
 export type FieldValidation = z.infer<typeof FieldValidation>;
 
 // @public
+export function flattenFields(fields: readonly DoctypeField[]): (ValueField | TableField)[];
+
+// @public
 export function formatDoctypeDrift(drift: DoctypeDrift): string[];
+
+// @public
+export function getDisplayField(fields: readonly DoctypeField[], displayField: string | undefined): ValueField | undefined;
 
 // @public
 export function getPrimaryKeyField(fields: readonly DoctypeField[]): ValueField | undefined;

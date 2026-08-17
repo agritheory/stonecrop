@@ -1,11 +1,10 @@
 {
   "changes": [
     {
-      "comment": "Add displayField to DoctypeMeta for explicit link display text resolution",
-      "type": "none",
+      "comment": "Add optional `displayField` to doctypes, naming the field shown when a link points at them.",
+      "type": "minor",
       "packageName": "@stonecrop/schema"
     }
   ],
-  "packageName": "@stonecrop/schema",
-  "email": "tyler@agritheory.com"
+  "packageName": "@stonecrop/schema"
 }

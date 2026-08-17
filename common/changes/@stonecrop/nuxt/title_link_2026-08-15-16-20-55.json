@@ -1,11 +1,10 @@
 {
   "changes": [
     {
-      "comment": "Add displayField to DoctypeMeta for explicit link display text resolution",
-      "type": "none",
+      "comment": "Pass a doctype's `displayField` through the metadata resolvers.",
+      "type": "minor",
       "packageName": "@stonecrop/nuxt"
     }
   ],
-  "packageName": "@stonecrop/nuxt",
-  "email": "tyler@agritheory.com"
+  "packageName": "@stonecrop/nuxt"
 }

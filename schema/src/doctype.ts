@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-import { DoctypeFieldSchema } from './field'
+import { DoctypeFieldSchema, flattenFields, getDisplayField } from './field'
 
 /**
  * Cardinality for relationship links.
@@ -359,15 +359,20 @@ export const DoctypeMeta = z
 			})
 		}
 
-		if (doctype.displayField) {
-			const hasField = doctype.fields.some(f => f.kind === 'field' && f.fieldname === doctype.displayField)
-			if (!hasField) {
-				ctx.addIssue({
-					code: 'custom',
-					path: ['displayField'],
-					message: `displayField "${doctype.displayField}" is not declared on this doctype`,
-				})
-			}
+		// Through `getDisplayField` rather than a scan written here, because the adapter builds its
+		// SELECT from that same call. The two hand-rolled versions disagreed in both directions at
+		// once: this gate scanned top-level only, so it rejected a fieldset-nested field that would
+		// have worked, while neither side excluded `computed` fields, so a nomination naming one
+		// passed the gate and then failed as a missing column at query time.
+		if (doctype.displayField && !getDisplayField(doctype.fields, doctype.displayField)) {
+			const named = flattenFields(doctype.fields).find(f => f.fieldname === doctype.displayField)
+			ctx.addIssue({
+				code: 'custom',
+				path: ['displayField'],
+				message: named
+					? `displayField "${doctype.displayField}" names a computed field, which has no column to read a display value from`
+					: `displayField "${doctype.displayField}" is not declared on this doctype`,
+			})
 		}
 	})
 

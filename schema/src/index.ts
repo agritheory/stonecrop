@@ -22,6 +22,8 @@ export type { DoctypeField, FieldOptions, FieldValidation, FieldsetField, TableF
 export {
 	DoctypeFieldSchema,
 	FieldsetFieldSchema,
+	flattenFields,
+	getDisplayField,
 	getPrimaryKeyField,
 	getRecordIdentity,
 	getRecordIdField,

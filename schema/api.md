@@ -161,6 +161,26 @@ export declare function defaultIsEntityType(typeName: string, type: GraphQLObjec
 | typeName | `string` | The GraphQL type name |
 | type | `GraphQLObjectType` | The GraphQL object type definition |
 
+### flattenFields
+
+Recursively flatten Fieldset containers into a flat array of non-container fields. Fieldset entries are replaced by their children; all other fields pass through.
+
+A fieldset is a layout grouping, not a scope: every field inside one is a field of the doctype, with a column of its own and a name a link can bind to. Anything asking "what does this doctype declare" must therefore descend, and the two ways to get that wrong point opposite ways — the SELECT builder would omit real columns, while a validator would report a working declaration as broken.
+
+Lives here rather than in the adapter because both sides need it: the middleware builds SQL from it, and `DoctypeMeta`'s own validation asks the same question at the load gate. It sat in the adapter while the validator hand-rolled a top-level-only scan, and that is exactly the second failure this comment names — a `displayField` inside a fieldset was rejected at authoring time and would have worked at runtime.
+
+**Signature:**
+
+```typescript
+export declare function flattenFields(fields: readonly DoctypeField[]): (ValueField | TableField)[];
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| fields | `readonly DoctypeField[]` | the doctype's top-level fields |
+
 ### formatDoctypeDrift
 
 Render a drift report as human-readable lines. Empty when generation agrees with the doctype.
@@ -176,6 +196,27 @@ export declare function formatDoctypeDrift(drift: DoctypeDrift): string[];
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | drift | `DoctypeDrift` | a report from `mergeIntrospectedDoctype` |
+
+### getDisplayField
+
+Resolve the field a doctype nominates as its display text, or `undefined` when the nomination does not name a readable column.
+
+This is the single definition of "is this a usable `displayField`". Both sides depend on it: `DoctypeMeta` refuses a bad nomination at the load gate, and the adapter builds a SELECT from the field it returns. Call this; never re-derive the rule, or the gate and the query will disagree about which nominations are legal — which they did, in both directions at once.
+
+Two things disqualify a nomination, and both are the doctype saying so itself: - it names no field at all, fieldset children included - it names a `computed` field, which is declared precisely to state it has no column, so a SELECT built from it would reference a column the database does not have
+
+**Signature:**
+
+```typescript
+export declare function getDisplayField(fields: readonly DoctypeField[], displayField: string | undefined): ValueField | undefined;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| fields | `readonly DoctypeField[]` | the doctype's top-level fields |
+| displayField | `string \| undefined` | the nominated fieldname |
 
 ### getPrimaryKeyField
 
