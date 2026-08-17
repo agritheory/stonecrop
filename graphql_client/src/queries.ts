@@ -14,6 +14,8 @@ export const GET_META_QUERY = `
 		stonecropMeta(doctype: $doctype) {
 			name
 			slug
+			route
+			view
 			fields {
 				kind
 				fieldname
@@ -78,6 +80,8 @@ export const GET_ALL_META_QUERY = `
 		stonecropAllMeta {
 			name
 			slug
+			route
+			view
 			fields {
 				kind
 				fieldname

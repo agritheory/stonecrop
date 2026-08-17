@@ -1,7 +1,7 @@
 {
   "changes": [
     {
-      "comment": "Add optional route to DoctypeConfig, matching the schema field for serialized doctype definitions.",
+      "comment": "Add optional `route` and `view` keys to `DoctypeConfig`.",
       "type": "patch",
       "packageName": "@stonecrop/stonecrop"
     }

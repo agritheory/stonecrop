@@ -1,6 +1,7 @@
 {
 	"name": "TransactionalDoctypeList",
 	"route": "/transactional-doctype",
+	"view": "list",
 	"fields": [
 		{
 			"kind": "field",

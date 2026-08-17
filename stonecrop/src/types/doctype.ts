@@ -22,8 +22,10 @@ export type DoctypeConfig = {
 	name: string
 	/** URL-friendly slug (kebab-case) */
 	slug?: string
-	/** Optional route pattern for custom URL routing (Vue Router style) */
+	/** URL path this doctype is served at, replacing the `/{slug}` default. One leading-slash segment */
 	route?: string
+	/** Which URL shape this doctype answers; omitted, it answers both `/{route}` and `/{route}/:id` */
+	view?: 'list' | 'form' | 'singleton'
 	/** Field definitions (a link field is one carrying `doctype`) */
 	fields?: DoctypeField[]
 	/** Relationship links to other doctypes */

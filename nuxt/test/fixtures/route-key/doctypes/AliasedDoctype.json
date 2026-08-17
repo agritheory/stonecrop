@@ -1,0 +1,12 @@
+{
+	"name": "AliasedDoctype",
+	"route": "/aliased",
+	"fields": [
+		{
+			"kind": "field",
+			"fieldname": "aliased_value",
+			"label": "Aliased Value",
+			"component": "ATextInput"
+		}
+	]
+}

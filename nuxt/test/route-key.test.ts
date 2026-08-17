@@ -1,179 +1,210 @@
 import { describe, it, expect } from 'vitest'
 
-import {
-	buildRouteToSlugMap,
-	resolveDoctypeSlugFromSegments,
-	resolvePublicUrlSegment,
-	resolveRouteView,
-	resolveSlugFromRouteMap,
-	shouldRejectRecordRoute,
-} from '../src/runtime/app/composables/useDoctypeRoutes'
+import { buildDoctypeRoutes } from '../src/runtime/app/composables/useDoctypeRoutes'
 
-const transactionalRouteMap = buildRouteToSlugMap([
-	['transactional-doctype-list', { route: '/transactional-doctype' }],
-	['transactional-doctype', {}],
-])
+describe('doctype route resolution', { tags: ['unit', 'nuxt'] }, () => {
+	// The regression gate: a doctype declaring neither key routes exactly as it did before
+	// `route`/`view` existed. Every other case in this file is opt-in.
+	describe('doctype declaring neither route nor view', () => {
+		const routes = buildDoctypeRoutes([['customer', {}]])
 
-const singletonRouteMap = buildRouteToSlugMap([['singleton-doctype', { route: '/singleton-doctype' }]])
+		it('serves its collection at /{slug} and its records below', () => {
+			expect(routes.resolve(['customer'])).toEqual({ view: 'records', slug: 'customer', recordId: '' })
+			expect(routes.resolve(['customer', 'CUST-001'])).toEqual({
+				view: 'record',
+				slug: 'customer',
+				recordId: 'CUST-001',
+			})
+		})
 
-describe('route pattern matrix', { tags: ['unit', 'nuxt'] }, () => {
-	describe('standard doctype (no route key)', () => {
-		const routeToSlugMap = buildRouteToSlugMap([['customer', {}]])
-
-		it('uses slug fallback for list and record URLs', () => {
-			expect(resolveDoctypeSlugFromSegments(['customer'], routeToSlugMap)).toBe('customer')
-			expect(resolveDoctypeSlugFromSegments(['customer', 'CUST-001'], routeToSlugMap)).toBe('customer')
-			expect(resolveRouteView(['customer'], routeToSlugMap)).toBe('records')
-			expect(resolveRouteView(['customer', 'CUST-001'], routeToSlugMap)).toBe('record')
+		it('links to itself at its slug', () => {
+			expect(routes.pathFor('customer')).toBe('customer')
 		})
 	})
 
-	describe('transactional list + form split', () => {
-		it('maps list view to the list doctype slug', () => {
-			expect(resolveDoctypeSlugFromSegments(['transactional-doctype'], transactionalRouteMap)).toBe(
-				'transactional-doctype-list'
-			)
-			expect(resolveRouteView(['transactional-doctype'], transactionalRouteMap)).toBe('records')
+	// The case the `-list` suffix broke: a doctype that only wants a different URL.
+	describe('route as a plain alias', () => {
+		const routes = buildDoctypeRoutes([['sales-order', { route: '/orders' }]])
+
+		it('serves both the collection and its records under the alias', () => {
+			expect(routes.resolve(['orders'])).toEqual({ view: 'records', slug: 'sales-order', recordId: '' })
+			expect(routes.resolve(['orders', 'SO-001'])).toEqual({
+				view: 'record',
+				slug: 'sales-order',
+				recordId: 'SO-001',
+			})
 		})
 
-		it('maps record view to the form doctype slug', () => {
-			expect(resolveDoctypeSlugFromSegments(['transactional-doctype', '1'], transactionalRouteMap)).toBe(
-				'transactional-doctype'
-			)
-			expect(resolveRouteView(['transactional-doctype', '1'], transactionalRouteMap)).toBe('record')
+		it('stops serving the default slug path', () => {
+			expect(routes.resolve(['sales-order']).view).toBe('notFound')
 		})
 
-		it('treats /new as a record view on the form doctype', () => {
-			expect(resolveDoctypeSlugFromSegments(['transactional-doctype', 'new'], transactionalRouteMap)).toBe(
-				'transactional-doctype'
-			)
-			expect(resolveRouteView(['transactional-doctype', 'new'], transactionalRouteMap)).toBe('record')
-		})
-
-		it('navigates using the public URL segment, not the internal list slug', () => {
-			expect(resolvePublicUrlSegment('transactional-doctype-list', transactionalRouteMap)).toBe('transactional-doctype')
-			expect(resolvePublicUrlSegment('transactional-doctype', transactionalRouteMap)).toBe('transactional-doctype')
+		it('links through the alias', () => {
+			expect(routes.pathFor('sales-order')).toBe('orders')
 		})
 	})
 
-	describe('singleton route-only form', () => {
-		it('renders record view at the base URL', () => {
-			expect(resolveDoctypeSlugFromSegments(['singleton-doctype'], singletonRouteMap)).toBe('singleton-doctype')
-			expect(resolveRouteView(['singleton-doctype'], singletonRouteMap)).toBe('record')
-		})
-
-		it('404s record URLs for singleton doctypes', () => {
-			expect(resolveRouteView(['singleton-doctype', '1'], singletonRouteMap)).toBe('notFound')
-			expect(shouldRejectRecordRoute(['singleton-doctype', '1'], singletonRouteMap)).toBe(true)
-		})
-	})
-})
-
-describe('doctype route key resolution', { tags: ['unit', 'nuxt'] }, () => {
-	it('maps explicit routes to registry slugs', () => {
-		const routeToSlugMap = buildRouteToSlugMap([
-			['sales-order-list', { route: '/sales-order' }],
+	// The worked example in the ticket: only the list projection is edited. `sales-order` declares
+	// nothing and keeps reaching its records through its own slug path, as it did before.
+	describe('adding a list projection over an existing doctype', () => {
+		const routes = buildDoctypeRoutes([
+			['sales-order-list', { route: '/sales-order', view: 'list' }],
 			['sales-order', {}],
 		])
 
-		expect(routeToSlugMap.get('/sales-order')).toBe('sales-order-list')
+		it('serves the curated list at the URL the projection claims', () => {
+			expect(routes.resolve(['sales-order'])).toEqual({
+				view: 'records',
+				slug: 'sales-order-list',
+				recordId: '',
+			})
+		})
+
+		it('leaves the untouched doctype serving its own records', () => {
+			expect(routes.resolve(['sales-order', 'SO-001'])).toEqual({
+				view: 'record',
+				slug: 'sales-order',
+				recordId: 'SO-001',
+			})
+		})
+
+		it('resolves the same either order the doctypes are read in', () => {
+			const reversed = buildDoctypeRoutes([
+				['sales-order', {}],
+				['sales-order-list', { route: '/sales-order', view: 'list' }],
+			])
+
+			expect(reversed.resolve(['sales-order'])).toEqual(routes.resolve(['sales-order']))
+			expect(reversed.resolve(['sales-order', 'SO-001'])).toEqual(routes.resolve(['sales-order', 'SO-001']))
+		})
 	})
 
-	it('resolveSlugFromRouteMap returns mapped slug for explicit route', () => {
-		const routeToSlugMap = buildRouteToSlugMap([['sales-order-list', { route: '/sales-order' }]])
-
-		expect(resolveSlugFromRouteMap('/sales-order', routeToSlugMap)).toBe('sales-order-list')
-	})
-
-	it('resolveSlugFromRouteMap falls back to path without leading slash', () => {
-		const routeToSlugMap = buildRouteToSlugMap([])
-
-		expect(resolveSlugFromRouteMap('/sales-order', routeToSlugMap)).toBe('sales-order')
-	})
-
-	it('resolveDoctypeSlugFromSegments uses route map for list views', () => {
-		const routeToSlugMap = buildRouteToSlugMap([['sales-order-list', { route: '/sales-order' }]])
-
-		expect(resolveDoctypeSlugFromSegments(['sales-order'], routeToSlugMap)).toBe('sales-order-list')
-	})
-
-	it('resolveDoctypeSlugFromSegments uses slug fallback for record views', () => {
-		const routeToSlugMap = buildRouteToSlugMap([['sales-order-list', { route: '/sales-order' }]])
-
-		expect(resolveDoctypeSlugFromSegments(['sales-order', 'SO-001'], routeToSlugMap)).toBe('sales-order')
-	})
-
-	it('resolveDoctypeSlugFromSegments preserves slug fallback for doctypes without route', () => {
-		const routeToSlugMap = buildRouteToSlugMap([])
-
-		expect(resolveDoctypeSlugFromSegments(['customer'], routeToSlugMap)).toBe('customer')
-		expect(resolveDoctypeSlugFromSegments(['customer', 'CUST-001'], routeToSlugMap)).toBe('customer')
-	})
-
-	it('throws when route context has no path segment', () => {
-		const routeToSlugMap = buildRouteToSlugMap([])
-
-		expect(() => resolveDoctypeSlugFromSegments([], routeToSlugMap)).toThrow(
-			'Cannot resolve doctype from route context'
-		)
-		expect(() => resolveRouteView([], routeToSlugMap)).toThrow('Cannot resolve doctype from route context')
-	})
-
-	it('uses last-wins semantics for conflicting explicit routes', () => {
-		const routeToSlugMap = new Map<string, string>([
-			['/shared-route', 'first-list'],
-			['/shared-route', 'second-list'],
+	describe('list and form split across one route', () => {
+		const routes = buildDoctypeRoutes([
+			['sales-order-list', { route: '/orders', view: 'list' }],
+			['sales-order', { route: '/orders', view: 'form' }],
 		])
 
-		expect(routeToSlugMap.get('/shared-route')).toBe('second-list')
-	})
-})
-
-describe('default module routing with route key', { tags: ['unit', 'nuxt'] }, () => {
-	it('prefers explicit route over slug when generating pages', () => {
-		const doctypes = [
-			{
-				fileName: 'SalesOrderList',
-				data: { name: 'SalesOrderList', slug: 'sales-order-list', route: '/sales-order' },
-				fields: [{ fieldname: 'name' }],
-			},
-		]
-
-		const pages = doctypes.map(({ fileName, data, fields }) => {
-			const route = data.route as string | undefined
-			const slug = (data.slug as string) || fileName.toLowerCase()
-			const path = route || `/${slug}`
-			return {
-				name: `stonecrop-${fileName}`,
-				path,
-				meta: { schema: fields, doctype: data, slug },
-			}
+		it('serves the curated list doctype at the collection URL', () => {
+			expect(routes.resolve(['orders'])).toEqual({ view: 'records', slug: 'sales-order-list', recordId: '' })
 		})
 
-		expect(pages[0]!.path).toBe('/sales-order')
-		expect(pages[0]!.meta).toMatchObject({ slug: 'sales-order-list' })
-	})
-
-	it('falls back to slug-based path when route is absent', () => {
-		const doctypes = [
-			{
-				fileName: 'SalesOrder',
-				data: { name: 'SalesOrder', slug: 'sales-order' },
-				fields: [{ fieldname: 'name' }],
-			},
-		]
-
-		const pages = doctypes.map(({ fileName, data, fields }) => {
-			const route = data.route as string | undefined
-			const slug = (data.slug as string) || fileName.toLowerCase()
-			const path = route || `/${slug}`
-			return {
-				name: `stonecrop-${fileName}`,
-				path,
-				meta: { schema: fields, doctype: data, slug },
-			}
+		it('serves the full form doctype at the record URL', () => {
+			expect(routes.resolve(['orders', 'SO-001'])).toEqual({
+				view: 'record',
+				slug: 'sales-order',
+				recordId: 'SO-001',
+			})
 		})
 
-		expect(pages[0]!.path).toBe('/sales-order')
+		it('treats /new as a record on the form doctype', () => {
+			expect(routes.resolve(['orders', 'new'])).toEqual({ view: 'record', slug: 'sales-order', recordId: 'new' })
+		})
+
+		it('links both doctypes to the shared path, so a list row opens the form URL', () => {
+			expect(routes.pathFor('sales-order-list')).toBe('orders')
+			expect(routes.pathFor('sales-order')).toBe('orders')
+		})
+	})
+
+	describe('singleton', () => {
+		const routes = buildDoctypeRoutes([['settings', { view: 'singleton' }]])
+
+		it('serves its one record at the base path, without a route key', () => {
+			expect(routes.resolve(['settings'])).toEqual({ view: 'record', slug: 'settings', recordId: '' })
+		})
+
+		it('has no addressable records below it', () => {
+			expect(routes.resolve(['settings', '1']).view).toBe('notFound')
+		})
+	})
+
+	// Invariant: no routing decision reads the shape of a name. `Price List` is a real doctype in
+	// this domain and is not a list view of anything.
+	describe('a doctype whose name ends in "List"', () => {
+		const routes = buildDoctypeRoutes([['price-list', {}]])
+
+		it('routes like any other doctype', () => {
+			expect(routes.resolve(['price-list'])).toEqual({ view: 'records', slug: 'price-list', recordId: '' })
+			expect(routes.resolve(['price-list', 'PL-001'])).toEqual({
+				view: 'record',
+				slug: 'price-list',
+				recordId: 'PL-001',
+			})
+		})
+
+		it('links to its own slug rather than a truncation of it', () => {
+			expect(routes.pathFor('price-list')).toBe('price-list')
+		})
+	})
+
+	describe('URLs nothing declares', () => {
+		const routes = buildDoctypeRoutes([['customer', {}]])
+
+		it('resolves the site root to the doctype list', () => {
+			expect(routes.resolve([])).toEqual({ view: 'doctypes', slug: '', recordId: '' })
+		})
+
+		it('404s an unknown first segment', () => {
+			expect(routes.resolve(['nope']).view).toBe('notFound')
+			expect(routes.resolve(['nope', '1']).view).toBe('notFound')
+		})
+
+		it('404s a URL deeper than a record', () => {
+			expect(routes.resolve(['customer', 'CUST-001', 'extra']).view).toBe('notFound')
+		})
+
+		it('404s a route that only declares a form', () => {
+			const formOnly = buildDoctypeRoutes([['sales-order', { route: '/orders', view: 'form' }]])
+			expect(formOnly.resolve(['orders']).view).toBe('notFound')
+			expect(formOnly.resolve(['orders', 'SO-001']).view).toBe('record')
+		})
+	})
+
+	describe('conflicting claims', () => {
+		it('refuses two doctypes serving the same role at one path', () => {
+			expect(() =>
+				buildDoctypeRoutes([
+					['first-list', { route: '/orders', view: 'list' }],
+					['second-list', { route: '/orders', view: 'list' }],
+				])
+			).toThrow(/both serve the list view at '\/orders'/)
+		})
+
+		it('refuses a route that collides with another doctype default path', () => {
+			expect(() =>
+				buildDoctypeRoutes([
+					['orders', {}],
+					['sales-order', { route: '/orders' }],
+				])
+			).toThrow(/both serve the list view at '\/orders'/)
+		})
+
+		it('refuses a singleton sharing its path, in either order', () => {
+			expect(() =>
+				buildDoctypeRoutes([
+					['settings', { view: 'singleton' }],
+					['settings-list', { route: '/settings', view: 'list' }],
+				])
+			).toThrow(/shares\s+that path with nothing/)
+
+			expect(() =>
+				buildDoctypeRoutes([
+					['settings-list', { route: '/settings', view: 'list' }],
+					['settings', { view: 'singleton' }],
+				])
+			).toThrow(/shares\s+that path with nothing/)
+		})
+
+		// A neighbour that merely defaulted onto the path is refused too. Dropping it quietly in
+		// the singleton's favour would take a doctype off the site with nothing said.
+		it('refuses a singleton sharing its path with an undeclared neighbour', () => {
+			expect(() =>
+				buildDoctypeRoutes([
+					['settings', { view: 'singleton' }],
+					['legacy-settings', { route: '/settings' }],
+				])
+			).toThrow(/shares\s+that path with nothing/)
+		})
 	})
 })

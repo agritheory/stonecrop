@@ -13,15 +13,18 @@
 import { Desktop } from '@stonecrop/desktop'
 
 import { useRouteAdapter } from '~/composables/useRouteAdapter'
-import { doctypeMap, routeToSlugMap } from '~/composables/useDoctypes'
+import { doctypeMap, doctypeRoutes } from '~/composables/useDoctypes'
 
 const route = useRoute()
 const routeAdapter = useRouteAdapter()
 
+// The catch-all page matches every URL, so a path no doctype claims arrives here rather than at
+// Nuxt's own 404. This is the only place that turns that into an error: the route adapter reads
+// the same resolution but cannot report it, since `RouteAdapter` has three views and none of them
+// mean "nothing is here".
 watchEffect(() => {
 	const pathMatch = route.params.pathMatch as string[] | undefined
-	if (!pathMatch?.length) return
-	if (resolveRouteView(pathMatch, routeToSlugMap) === 'notFound') {
+	if (doctypeRoutes.resolve(pathMatch ?? []).view === 'notFound') {
 		showError({ statusCode: 404, statusMessage: 'Not Found' })
 	}
 })

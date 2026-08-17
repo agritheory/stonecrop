@@ -309,8 +309,30 @@ export const DoctypeMeta = z
 		/** URL-friendly slug (kebab-case) */
 		slug: z.string().min(1).optional(),
 
-		/** Optional route pattern for custom URL routing (Vue Router style) */
+		/**
+		 * URL path this doctype is served at, replacing the `/{slug}` default.
+		 *
+		 * A single leading-slash segment — `/sales-order`. Not a Vue Router pattern: the client
+		 * matches it by equality against the first URL segment, so a `:param` or a nested path is
+		 * refused here rather than accepted and then silently never matched.
+		 */
 		route: z.string().min(1).optional(),
+
+		/**
+		 * Which URL shape this doctype answers, when it does not answer both.
+		 *
+		 * Omitted, a doctype serves its collection at `/{route}` and a record at `/{route}/:id` —
+		 * the default, and what every doctype without this key keeps doing. Declaring it lets two
+		 * doctypes share one URL: a `list` projection with curated columns at `/{route}`, and the
+		 * full `form` at `/{route}/:id`. `singleton` is the one-record case — the form is the base
+		 * path and `/{route}/:id` does not exist.
+		 *
+		 * This is declared rather than derived from the doctype's name. A naming convention
+		 * (`…List` serves the list) is unstateable in the schema, unvalidatable, and wrong for the
+		 * doctypes that are legitimately named for a list they are not — `Price List`, `Packing
+		 * List`, `Task List`.
+		 */
+		view: z.enum(['list', 'form', 'singleton']).optional(),
 
 		/** Field definitions (a link field is one carrying `doctype`) */
 		fields: z.array(DoctypeFieldSchema),
@@ -354,7 +376,47 @@ export const DoctypeMeta = z
 					)}); a record is identified by exactly one field. A composite database key is mapped to a single identity by the adapter, so a doctype never declares its parts`,
 			})
 		}
+
+		// `route` is matched by equality against one URL segment, so every shape the resolver
+		// cannot honor is refused here. Accepting them costs more than it saves: a doctype
+		// carrying `/sales-order/:id` or `/admin/settings` parses clean, ships, and then never
+		// matches a URL — the doctype is simply unreachable, with nothing anywhere saying why.
+		if (doctype.route !== undefined) {
+			const reason = invalidRouteReason(doctype.route)
+			if (reason) {
+				ctx.addIssue({
+					code: 'custom',
+					path: ['route'],
+					message: `Doctype route '${doctype.route}' is invalid: ${reason}. A route is one leading-slash path segment, e.g. '/sales-order'; it is matched by equality, not as a Vue Router pattern. Use 'view' to say which URL shape this doctype answers`,
+				})
+			}
+		}
 	})
+
+/**
+ * Why a `route` string cannot be honored, or `undefined` when it is well-formed.
+ *
+ * Kept next to the schema rather than in the client: the client resolves routes from an already
+ * validated table, and a rule enforced in one package but not the other is how the two drift.
+ */
+function invalidRouteReason(route: string): string | undefined {
+	if (!route.startsWith('/')) {
+		return 'it must start with "/"'
+	}
+
+	const path = route.slice(1)
+	if (path.length === 0) {
+		return 'the root path has no segment to match'
+	}
+	if (path.includes('/')) {
+		return 'it has more than one path segment, and only the first segment of a URL is matched'
+	}
+	if (/[:*?()]/.test(path)) {
+		return 'it contains route-pattern syntax, which is matched literally rather than as a pattern'
+	}
+
+	return undefined
+}
 
 /**
  * Doctype metadata type inferred from Zod schema

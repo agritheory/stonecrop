@@ -243,12 +243,13 @@ If neither `pageComponent` nor `routeStrategy` is configured the module logs a w
 
 ### Default: slug-based routing
 
-The module scans your `doctypes/` folder and registers one route per JSON file:
+The module scans your `doctypes/` folder and registers one route per JSON file, at the doctype's
+`slug` or, failing that, its lower-cased filename:
 
 ```
 doctypes/
-  ├── task.json        → /task  (if no slug field)
-  ├── user.json        → /user/:id  (if slug is "user/:id")
+  ├── task.json        → /task
+  ├── user.json        → /user
   └── project.json     → /project
 ```
 
@@ -257,7 +258,54 @@ Each route's `meta` contains the parsed doctype:
 ```typescript
 route.meta.schema   // ParsedDoctype['fields']
 route.meta.doctype  // ParsedDoctype['data']
+route.meta.slug     // the doctype's registry slug
 ```
+
+`slug` is carried separately because `route` (below) decouples it from the path: a page mounted at
+`/sales-order` cannot recover `sales-order-list` from its own URL.
+
+### Declarative routes: `route` and `view`
+
+A doctype can state where it lives and which URL shape it answers. Both keys are optional, and a
+doctype declaring neither routes exactly as above.
+
+| Key | Meaning |
+|---|---|
+| `route` | The URL path, replacing the `/{slug}` default. One leading-slash segment — `/sales-order`. |
+| `view` | Which shape this doctype answers: `list`, `form` or `singleton`. Omitted, it answers both its collection and its records. |
+
+**Give a doctype a different URL.** `route` alone is a plain alias — it moves the collection and
+its records together:
+
+```json
+{ "name": "SalesOrder", "route": "/orders" }
+```
+
+`/orders` lists sales orders and `/orders/SO-001` opens one. `/sales-order` no longer resolves.
+
+**Split a curated list from the full form.** Two doctypes share a URL, each declaring the role it
+answers. Only the list projection needs editing; the record doctype is untouched:
+
+```json
+{ "name": "SalesOrderList", "route": "/sales-order", "view": "list" }
+```
+
+`/sales-order` now renders the six curated columns of `SalesOrderList`, while `/sales-order/SO-001`
+still renders the twenty-odd fields of `SalesOrder`.
+
+**Serve a single record with no list.** A `singleton` is the only record at its path:
+
+```json
+{ "name": "Settings", "view": "singleton" }
+```
+
+`/settings` renders the form directly; `/settings/1` is a 404.
+
+Two doctypes claiming the same role at one path is an error raised at startup, naming both — a URL
+role is served by exactly one doctype. A `route` is matched by equality against the first URL
+segment, so it is not a Vue Router pattern: `/sales-order/:id` and `/admin/settings` are rejected
+when the doctype is parsed rather than accepted and then silently never matched. Use `view` to say
+which shape a doctype answers instead of encoding it in the path.
 
 Your page component receives these via `useRoute()`:
 
