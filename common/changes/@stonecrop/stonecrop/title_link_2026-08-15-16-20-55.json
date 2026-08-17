@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "comment": "Carry `displayField` on `Doctype` and `DoctypeConfig`.",
+      "type": "minor",
+      "packageName": "@stonecrop/stonecrop"
+    }
+  ],
+  "packageName": "@stonecrop/stonecrop"
+}

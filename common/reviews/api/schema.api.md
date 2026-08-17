@@ -162,6 +162,7 @@ export const DoctypeFieldSchema: z.ZodType<DoctypeField, unknown, z.core.$ZodTyp
 export const DoctypeMeta: z.ZodObject<{
     name: z.ZodString;
     slug: z.ZodOptional<z.ZodString>;
+    displayField: z.ZodOptional<z.ZodString>;
     fields: z.ZodArray<z.ZodType<DoctypeField, unknown, z.core.$ZodTypeInternals<DoctypeField, unknown>>>;
     links: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodObject<{
         target: z.ZodString;
@@ -287,7 +288,13 @@ export const FieldValidation: z.ZodObject<{
 export type FieldValidation = z.infer<typeof FieldValidation>;
 
 // @public
+export function flattenFields(fields: readonly DoctypeField[]): (ValueField | TableField)[];
+
+// @public
 export function formatDoctypeDrift(drift: DoctypeDrift): string[];
+
+// @public
+export function getDisplayField(fields: readonly DoctypeField[], displayField: string | undefined): ValueField | undefined;
 
 // @public
 export function getPrimaryKeyField(fields: readonly DoctypeField[]): ValueField | undefined;
@@ -374,6 +381,9 @@ export const LazyFetch: z.ZodObject<{
 export type LazyFetch = z.infer<typeof LazyFetch>;
 
 // @public
+export const LINK_DISPLAY_SUFFIX = "__display";
+
+// @public
 export const LinkDeclaration: z.ZodObject<{
     target: z.ZodString;
     cardinality: z.ZodEnum<{
@@ -399,6 +409,9 @@ export const LinkDeclaration: z.ZodObject<{
 
 // @public
 export type LinkDeclaration = z.infer<typeof LinkDeclaration>;
+
+// @public
+export function linkDisplayFieldname(fieldname: string): string;
 
 // @public
 export type LinkExpansion = 'inline' | 'expand';

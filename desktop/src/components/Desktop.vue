@@ -43,7 +43,13 @@
 // when the two were written separately they disagreed and every guard over there went dead.
 import { DRAFT_RECORD_ID, isDraftRecordId, useStonecrop, useValidationStore } from '@stonecrop/stonecrop'
 import { AForm, type AFormLinkNavigator, type ResolvedField, type ResolvedTable } from '@stonecrop/aform'
-import type { ColumnSchema } from '@stonecrop/schema'
+import {
+	type ColumnSchema,
+	componentLinkExpansion,
+	type DoctypeField,
+	flattenFields,
+	linkDisplayFieldname,
+} from '@stonecrop/schema'
 import { computed, onMounted, onUnmounted, provide, ref, unref, watch } from 'vue'
 
 import ActionSet from './ActionSet.vue'
@@ -58,6 +64,77 @@ import type {
 	LoadRecordsEventPayload,
 	LoadRecordEventPayload,
 } from '../types'
+
+/**
+ * The link fields a doctype declares, split by what their value actually holds.
+ *
+ * Both sets come from the doctype rather than from the shape of a key or a value, because neither
+ * shape is decisive. A link's display text arrives as a sibling key (`customerId__display`) in the
+ * same payload the user is editing, so a key ending in `__display` is not necessarily one; and an
+ * *inline* link's value (`{ id, displayText }`) is indistinguishable by inspection from an
+ * *expanded* one (`{ id, ...the whole target record }`).
+ *
+ * `inlineLinks` is the narrower set and the load-bearing one. Only an inline link's value is a
+ * scalar id wearing a label, so only it may be unwrapped back to that id on write. Unwrapping an
+ * expanded link instead replaces the embedded record with its own id — destroying the nested data
+ * and discarding the edit that triggered the write.
+ *
+ * `componentLinkExpansion` is the same rule the adapter reads when it decides which links to
+ * expand, so the two sides agree on what a field's value contains. A component it does not
+ * recognise is left out: an unrecognised link is passed through untouched rather than rewritten on
+ * a guess.
+ */
+function linkFieldSets(fields: DoctypeField[]): { inlineLinks: Set<string>; displayKeys: Set<string> } {
+	const links = flattenFields(fields).filter(field => field.kind === 'field' && Boolean(field.doctype))
+
+	return {
+		inlineLinks: new Set(
+			links.filter(field => componentLinkExpansion(field.component) === 'inline').map(field => field.fieldname)
+		),
+		displayKeys: new Set(links.map(field => linkDisplayFieldname(field.fieldname))),
+	}
+}
+
+/**
+ * Fold a link's pre-resolved `fieldname__display` sibling into the value AForm renders.
+ *
+ * Both this and the record payload are flat — a fieldset is a layout grouping, not a scope — so
+ * the fields come through `flattenFields` rather than a descent written here. `@stonecrop/schema`
+ * owns that descent and the adapter reads the same one, which is what keeps the keys this looks
+ * for and the keys the server writes from drifting apart.
+ */
+function applyLinkDisplayFields(flat: Record<string, any>, fields: DoctypeField[]): void {
+	const { inlineLinks, displayKeys } = linkFieldSets(fields)
+
+	for (const fieldname of inlineLinks) {
+		const raw = flat[fieldname]
+		const display = flat[linkDisplayFieldname(fieldname)]
+		if (
+			raw != null &&
+			(typeof raw === 'string' || typeof raw === 'number') &&
+			display != null &&
+			(typeof display === 'string' || typeof display === 'number')
+		) {
+			flat[fieldname] = { id: raw, displayText: String(display) }
+		}
+	}
+
+	// Dropped for every link, not just the inline ones this folded: the sibling is a delivery
+	// detail of the read and was never a field of the record.
+	for (const key of displayKeys) delete flat[key]
+}
+
+/**
+ * Unwrap an inline link's value back to the id that gets persisted. Applied only to fields in
+ * `inlineLinks` — the display text is a rendering concern and was never part of the record, while
+ * an expanded link's object is the record and must survive the round trip intact.
+ */
+function unwrapLinkValue(value: unknown): unknown {
+	if (value !== null && typeof value === 'object' && !Array.isArray(value) && 'id' in value) {
+		return (value as { id: unknown }).id
+	}
+	return value
+}
 
 const { availableDoctypes = [], routeAdapter } = defineProps<{
 	availableDoctypes?: string[]
@@ -182,6 +259,7 @@ const currentViewData = computed<Record<string, any>>({
 			// so we nest fieldset children here before AForm renders them.
 			const doctype = stonecrop.value.registry.registry[currentDoctype.value]
 			if (doctype) {
+				applyLinkDisplayFields(flat, doctype.getSchemaArray())
 				for (const field of doctype.getSchemaArray()) {
 					if (field.kind === 'fieldset') {
 						const nested: Record<string, any> = {}
@@ -216,6 +294,7 @@ const currentViewData = computed<Record<string, any>>({
 					}
 				}
 			}
+			const { inlineLinks, displayKeys } = linkFieldSets(doctype ? doctype.getSchemaArray() : [])
 
 			// Two-pass flatten: non-fieldset keys first, then fieldset children.
 			// Fieldset children must be applied last — AForm may emit stale flat copies
@@ -224,6 +303,7 @@ const currentViewData = computed<Record<string, any>>({
 			const flatData: Record<string, any> = {}
 			const fieldsetValues: Record<string, any>[] = []
 			for (const [key, value] of Object.entries(newData)) {
+				if (displayKeys.has(key)) continue
 				if (fieldsetNames.has(key) && value && typeof value === 'object' && !Array.isArray(value)) {
 					fieldsetValues.push(value)
 				} else {
@@ -243,9 +323,10 @@ const currentViewData = computed<Record<string, any>>({
 				// cached object is what made a draft's edits vanish on any invalidation.
 				const next = { ...draftRecord.value }
 				for (const [fieldname, value] of Object.entries(flatData)) {
-					if (value === undefined) continue
-					if (next[fieldname] !== value) {
-						next[fieldname] = value
+					if (value === undefined || displayKeys.has(fieldname)) continue
+					const normalized = inlineLinks.has(fieldname) ? unwrapLinkValue(value) : value
+					if (next[fieldname] !== normalized) {
+						next[fieldname] = normalized
 						changedFields.push(fieldname)
 					}
 				}
@@ -253,11 +334,12 @@ const currentViewData = computed<Record<string, any>>({
 			} else {
 				const hstStore = stonecrop.value.getStore()
 				for (const [fieldname, value] of Object.entries(flatData)) {
-					if (value === undefined) continue
+					if (value === undefined || displayKeys.has(fieldname)) continue
+					const normalized = inlineLinks.has(fieldname) ? unwrapLinkValue(value) : value
 					const fieldPath = `${currentDoctype.value}.${currentRecordId.value}.${fieldname}`
 					const currentValue = hstStore.has(fieldPath) ? hstStore.get(fieldPath) : undefined
-					if (currentValue !== value) {
-						hstStore.set(fieldPath, value)
+					if (currentValue !== normalized) {
+						hstStore.set(fieldPath, normalized)
 						changedFields.push(fieldname)
 					}
 				}
@@ -960,23 +1042,29 @@ provide('aformLinkNavigator', {
 	},
 } satisfies AFormLinkNavigator)
 
-function toDisplayString(rec: Record<string, unknown> | undefined): string | undefined {
-	if (!rec) return undefined
-	const val = rec.name ?? rec.title ?? rec.displayText
-	return typeof val === 'string' || typeof val === 'number' ? String(val) : undefined
-}
-
 // Provide a resolver for AFormLink to look up display text by doctype + id.
 // Checks HST first (sync); falls back to an async client fetch if not cached.
+// Uses the target doctype's declared displayField — no heuristic field guessing.
 provide('aformLinkResolver', async (doctypeSlug: string, id: string): Promise<string | undefined> => {
 	if (!stonecrop.value) return undefined
 	try {
+		const meta = await stonecrop.value.getMeta({ path: `/${doctypeSlug}`, segments: [doctypeSlug] })
+		const displayField = meta?.displayField
+		if (!displayField) return undefined
+
+		const readDisplay = (rec: Record<string, unknown> | undefined): string | undefined => {
+			if (!rec) return undefined
+			const val = rec[displayField]
+			return typeof val === 'string' || typeof val === 'number' ? String(val) : undefined
+		}
+
 		const cached = stonecrop.value.getRecordById(doctypeSlug, id)?.get('') as Record<string, unknown> | undefined
-		const cachedDisplay = toDisplayString(cached)
+		const cachedDisplay = readDisplay(cached)
 		if (cachedDisplay != null) return cachedDisplay
+
 		await stonecrop.value.getRecord(doctypeSlug, id)
 		const fetched = stonecrop.value.getRecordById(doctypeSlug, id)?.get('') as Record<string, unknown> | undefined
-		return toDisplayString(fetched)
+		return readDisplay(fetched)
 	} catch {
 		return undefined
 	}

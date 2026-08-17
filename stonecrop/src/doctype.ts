@@ -55,25 +55,35 @@ export default class Doctype {
 	readonly links?: Record<string, LinkDeclaration>
 
 	/**
+	 * Field on this doctype used when displaying a reference to one of its records.
+	 * @public
+	 * @readonly
+	 */
+	readonly displayField?: string
+
+	/**
 	 * Creates a new Doctype instance
 	 * @param doctype - The doctype name
 	 * @param schema - The doctype schema definition
 	 * @param workflow - The doctype workflow configuration (XState machine)
 	 * @param component - Optional Vue component for rendering the doctype
 	 * @param links - Optional relationship links to other doctypes
+	 * @param displayField - Optional field used when displaying references to this doctype
 	 */
 	constructor(
 		doctype: string,
 		schema: ImmutableDoctype['schema'],
 		workflow: ImmutableDoctype['workflow'],
 		component?: Component,
-		links?: Record<string, LinkDeclaration>
+		links?: Record<string, LinkDeclaration>,
+		displayField?: string
 	) {
 		this.doctype = doctype
 		this.schema = schema
 		this.workflow = workflow
 		this.component = component
 		this.links = links
+		this.displayField = displayField
 	}
 
 	/**
@@ -123,7 +133,7 @@ export default class Doctype {
 		const fields = config.fields?.map(normalizeFieldKind) as DoctypeField[] | undefined
 		const schema = fields ? List(fields) : List<DoctypeField>()
 
-		return new Doctype(config.name, schema, config.workflow, undefined, config.links)
+		return new Doctype(config.name, schema, config.workflow, undefined, config.links, config.displayField)
 	}
 
 	/**

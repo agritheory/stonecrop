@@ -126,6 +126,11 @@ describe.each([
 		})
 	})
 
+	it('passes displayField through when declared on the doctype', () => {
+		const out = formatDoctypeMeta({ ...meta, displayField: 'amount' })
+		expect(out.displayField).toBe('amount')
+	})
+
 	it('flattens actions to a named list and passes every action key through', () => {
 		const out = formatDoctypeMeta(meta)
 		expect(Array.isArray(out.workflow?.actions), 'workflow.actions must be a list').toBe(true)

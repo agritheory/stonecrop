@@ -1,5 +1,5 @@
 import type { DoctypeField, DoctypeMeta, LinkDeclaration, ValueField, GetRecordOptions } from '@stonecrop/schema'
-import { camelToSnake, getRecordIdField, pascalToSnake, resolveLinkRenderMode } from '@stonecrop/schema'
+import { camelToSnake, getRecordIdField, resolveLinkRenderMode } from '@stonecrop/schema'
 import { loadOneWithPgClient, sideEffectWithPgClient } from '@dataplan/pg'
 import type { PgClient, PgExecutor } from '@dataplan/pg'
 import { constant, lambda, object } from 'postgraphile/grafast'
@@ -7,6 +7,8 @@ import { GraphileConfig } from 'postgraphile/graphile-build'
 import { extendSchema } from 'postgraphile/utils'
 
 import { columnBackedFields, flattenFields } from '../fields'
+import { enrichLinkDisplayFields } from '../link-display'
+import { resolveTableName } from '../tables'
 import { getFetchHandler } from '../registry/fetchHandlers'
 import { getMeta, getAllMeta, validateReferences } from '../registry/doctypes'
 import { applyGuardedTransition } from '../dispatch/transition'
@@ -337,6 +339,12 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 											)
 										}
 
+										// Collected across the batch so the display lookup runs once for all of them.
+										// Called per row inside this loop it issued one query per record per link field,
+										// which is the N+1 this batched loader exists to avoid — and silently, since the
+										// enriched rows come out identical either way.
+										const enrichedRows: Record<string, unknown>[] = []
+
 										for (const i of indices) {
 											const specId = String(specs[i].id)
 											const row = rowByPk.get(specId)
@@ -347,6 +355,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 											}
 
 											const rowData: Record<string, unknown> = { ...row }
+											enrichedRows.push(rowData)
 											// Per record, not per doctype: two records of one doctype can differ in whether
 											// a relation overflowed, and a shared list would report the wrong one truncated.
 											const truncatedLinks: string[] = []
@@ -482,6 +491,11 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 												truncatedLinks: truncatedLinks.length ? truncatedLinks : undefined,
 											}
 										}
+
+										// After the expansion loop, not before it: a link that expanded has replaced its
+										// scalar FK with an object, and enrichment skips those. Running first stamped a
+										// display value beside a relation that no longer had an id to display.
+										await enrichLinkDisplayFields(pgClient, meta, enrichedRows, options.tables, debugSql)
 									}
 
 									return results
@@ -584,7 +598,9 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 											// a capped page distinguishable from a complete table; trim it before anything
 											// downstream can mistake it for a record.
 											const hasMore = effectiveLimit != null && rows.length > effectiveLimit
-											const data = hasMore ? rows.slice(0, effectiveLimit ?? rows.length) : rows
+											const data = [...(hasMore ? rows.slice(0, effectiveLimit ?? rows.length) : rows)]
+
+											await enrichLinkDisplayFields(pgClient, meta, data, options.tables, debugSql)
 
 											// Total matching the filters, independent of LIMIT/OFFSET, and opt-in.
 											//
@@ -1045,11 +1061,3 @@ function unresolvableIdentityError(doctype: string): Error {
  * Schema-qualified names (e.g. "orpin.plan") are emitted as "schema"."table".
  * Values must be bare identifiers or schema.table pairs — not SQL fragments.
  */
-function resolveTableName(name: string, tables?: Record<string, string>): string {
-	const target = tables?.[name] ?? pascalToSnake(name)
-	const dotIndex = target.indexOf('.')
-	if (dotIndex > 0) {
-		return `"${target.slice(0, dotIndex)}"."${target.slice(dotIndex + 1)}"`
-	}
-	return `"${target}"`
-}
