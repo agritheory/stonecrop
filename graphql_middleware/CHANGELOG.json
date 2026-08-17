@@ -2,6 +2,18 @@
   "name": "@stonecrop/graphql-middleware",
   "entries": [
     {
+      "version": "0.19.0",
+      "tag": "@stonecrop/graphql-middleware_v0.19.0",
+      "date": "Mon, 17 Aug 2026 12:46:25 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Include a link's display text alongside its id in record payloads."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.18.0",
       "tag": "@stonecrop/graphql-middleware_v0.18.0",
       "date": "Fri, 14 Aug 2026 08:05:46 GMT",
