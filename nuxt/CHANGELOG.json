@@ -2,6 +2,18 @@
   "name": "@stonecrop/nuxt",
   "entries": [
     {
+      "version": "0.19.0",
+      "tag": "@stonecrop/nuxt_v0.19.0",
+      "date": "Mon, 17 Aug 2026 12:46:25 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Pass a doctype's `displayField` through the metadata resolvers."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.18.0",
       "tag": "@stonecrop/nuxt_v0.18.0",
       "date": "Fri, 14 Aug 2026 08:05:46 GMT",

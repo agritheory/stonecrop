@@ -2,6 +2,18 @@
   "name": "@stonecrop/atable",
   "entries": [
     {
+      "version": "0.19.0",
+      "tag": "@stonecrop/atable_v0.19.0",
+      "date": "Mon, 17 Aug 2026 12:46:25 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Use a link's pre-resolved display text from the row instead of refetching it."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.18.0",
       "tag": "@stonecrop/atable_v0.18.0",
       "date": "Fri, 14 Aug 2026 08:05:46 GMT",
