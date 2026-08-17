@@ -1,3 +1,4 @@
+import { createRequire } from 'node:module'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { addServerHandler, addServerPlugin } from '@nuxt/kit'
 
@@ -195,6 +196,50 @@ describe('Grafserv Module', { tags: ['unit', 'nuxt', 'graphql'] }, () => {
 			await module(options, mockNuxt)
 
 			expect(nitroConfig.alias['#grafserv-server']).toBe('/test/project/server')
+		})
+
+		// grafast and graphql have to be ONE module instance across the preset, the resolvers and the
+		// request handler; two copies produce "Now is not a valid time to call currentLayerPlan".
+		//
+		// The assertion is a fixed point rather than a literal path, because the way to get this wrong
+		// is to alias a forwarding stub. `postgraphile/grafast` is nothing but `export * from
+		// "grafast"`, so it resolves, imports and behaves like grafast. Nitro copies every alias into
+		// the generated tsconfig `paths`, which are global, so aliasing to the stub rewrites the stub's
+		// own specifier back to itself — a module that re-exports itself, which exports nothing.
+		// Resolving the specifier from the aliased file's own directory is what separates the two:
+		// only the real package comes back to itself.
+		it('aliases grafast and graphql to the real package rather than a forwarding stub', async () => {
+			const options: ModuleOptions = {
+				type: 'schema',
+				schema: 'server/**/*.graphql',
+				resolvers: 'server/resolvers.ts',
+				url: '/graphql/',
+			}
+
+			await module(options, mockNuxt)
+
+			for (const specifier of ['grafast', 'graphql']) {
+				const aliased = nitroConfig.alias[specifier]
+				if (!aliased) throw new Error(`no alias registered for '${specifier}'`)
+				expect(createRequire(aliased).resolve(specifier)).toBe(aliased)
+			}
+		})
+
+		// Both spellings are in live use — graphql_middleware imports from `postgraphile/grafast`, a
+		// scaffolded resolvers.ts from bare `grafast` — so they have to land on the same file for the
+		// single-instance guarantee above to mean anything.
+		it('lands every spelling of grafast and graphql on the same file', async () => {
+			const options: ModuleOptions = {
+				type: 'schema',
+				schema: 'server/**/*.graphql',
+				resolvers: 'server/resolvers.ts',
+				url: '/graphql/',
+			}
+
+			await module(options, mockNuxt)
+
+			expect(nitroConfig.alias['postgraphile/grafast']).toBe(nitroConfig.alias['grafast'])
+			expect(nitroConfig.alias['postgraphile/graphql']).toBe(nitroConfig.alias['graphql'])
 		})
 
 		it('should configure runtime config with schema paths', async () => {

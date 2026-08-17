@@ -1,0 +1,18 @@
+{
+	// Typechecks the test suite alongside src, which nothing did before: the package tsconfig only
+	// includes `src/**`, and the shared options exclude `**/*.spec.ts` outright so heft never
+	// compiles specs into dist. A spec could therefore bind a prop to a value the component's
+	// declared type forbids and stay green forever — which is what happened to AFormLink's
+	// `modelValue`, where the component grew to accept a bare FK scalar while `defineModel` still
+	// said AFormLinkValue and no check could see the contradiction.
+	//
+	// This config exists precisely to compile the specs, so it restores the default `exclude`.
+	"extends": "./tsconfig.json",
+	"compilerOptions": {
+		"noEmit": true,
+		"tsBuildInfoFile": "./dist/aform.typecheck.tsbuildinfo",
+		"types": ["node", "vitest/globals", "vitest/jsdom"]
+	},
+	"include": ["src/**/*.ts", "src/**/*.vue", "tests/**/*.ts"],
+	"exclude": ["node_modules"]
+}
