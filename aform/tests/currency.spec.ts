@@ -18,7 +18,7 @@ const options = {
 // opens on focus), not a native <select> — selecting a currency means focusing the input, then
 // clicking the matching option.
 const pickCurrency = async (wrapper: VueWrapper, value: string) => {
-	const input = wrapper.find('.acurrency__currency input[type="text"]')
+	const input = wrapper.find<HTMLInputElement>('.acurrency__currency input[type="text"]')
 	await input.trigger('focus')
 	await flushPromises()
 	const option = wrapper.findAll('.autocomplete-result').find(li => li.text() === value)
@@ -61,12 +61,12 @@ describe('ACurrencyInput', { tags: ['component'] }, () => {
 			const wrapper = mount(ACurrencyInput, { props: { label: 'Amount', options } })
 			expect(wrapper.find('input[type="number"]').exists()).toBe(true)
 			expect(wrapper.find('select').exists()).toBe(false)
-			expect(wrapper.find('.acurrency__currency input[type="text"]').exists()).toBe(true)
+			expect(wrapper.find<HTMLInputElement>('.acurrency__currency input[type="text"]').exists()).toBe(true)
 		})
 
 		it('shows the currency label as a placeholder instead of a floating label, merged into one group', () => {
 			const wrapper = mount(ACurrencyInput, { props: { label: 'Amount', options } })
-			const currencyInput = wrapper.find('.acurrency__currency input[type="text"]')
+			const currencyInput = wrapper.find<HTMLInputElement>('.acurrency__currency input[type="text"]')
 			expect(currencyInput.attributes('placeholder')).toBe('Currency')
 			expect(wrapper.find('.acurrency__currency label').exists()).toBe(false)
 		})
@@ -118,13 +118,15 @@ describe('ACurrencyInput', { tags: ['component'] }, () => {
 					},
 				},
 			})
-			expect(wrapper.find('.acurrency__currency input[type="text"]').element.value).toBe('Euro')
+			expect(wrapper.find<HTMLInputElement>('.acurrency__currency input[type="text"]').element.value).toBe('Euro')
 		})
 
 		it('is disabled in read mode', () => {
 			const wrapper = mount(ACurrencyInput, { props: { mode: 'read', options } })
 			expect(wrapper.find('input[type="number"]').attributes()).toHaveProperty('disabled')
-			expect(wrapper.find('.acurrency__currency input[type="text"]').attributes()).toHaveProperty('disabled')
+			expect(wrapper.find<HTMLInputElement>('.acurrency__currency input[type="text"]').attributes()).toHaveProperty(
+				'disabled'
+			)
 		})
 
 		it('renders plain text in display mode without inputs', () => {
@@ -463,12 +465,16 @@ describe('ACurrencyInput', { tags: ['component'] }, () => {
 	describe('accessibility', () => {
 		it('gives the currency picker an accessible name, since embedded mode drops its label', () => {
 			const wrapper = mount(ACurrencyInput, { props: { options } })
-			expect(wrapper.find('.acurrency__currency input[type="text"]').attributes('aria-label')).toBe('Currency')
+			expect(wrapper.find<HTMLInputElement>('.acurrency__currency input[type="text"]').attributes('aria-label')).toBe(
+				'Currency'
+			)
 		})
 
 		it('propagates `required` to the currency picker, not just the amount', () => {
 			const wrapper = mount(ACurrencyInput, { props: { options, required: true } })
-			expect(wrapper.find('.acurrency__currency input[type="text"]').attributes()).toHaveProperty('required')
+			expect(wrapper.find<HTMLInputElement>('.acurrency__currency input[type="text"]').attributes()).toHaveProperty(
+				'required'
+			)
 			expect(wrapper.find('input[type="number"]').attributes()).toHaveProperty('required')
 		})
 	})
@@ -484,9 +490,9 @@ describe('ACurrencyInput', { tags: ['component'] }, () => {
 
 		it('displays base currency, base amount, and exchange rate within the same row', () => {
 			const wrapper = mount(ACurrencyInput, { props: { options, modelValue } })
-			expect(wrapper.find('.acurrency__field--base-currency input').element.value).toBe('US Dollar')
-			expect(wrapper.find('.acurrency__field--base-amount input').element.value).toBe('2.2')
-			expect(wrapper.find('.acurrency__field--exchange-rate input').element.value).toBe('1.1')
+			expect(wrapper.find<HTMLInputElement>('.acurrency__field--base-currency input').element.value).toBe('US Dollar')
+			expect(wrapper.find<HTMLInputElement>('.acurrency__field--base-amount input').element.value).toBe('2.2')
+			expect(wrapper.find<HTMLInputElement>('.acurrency__field--exchange-rate input').element.value).toBe('1.1')
 		})
 
 		it('labels each read-only field', () => {
@@ -499,9 +505,15 @@ describe('ACurrencyInput', { tags: ['component'] }, () => {
 
 		it('is always disabled, even in edit mode', () => {
 			const wrapper = mount(ACurrencyInput, { props: { options, modelValue, mode: 'edit' } })
-			expect(wrapper.find('.acurrency__field--base-currency input').attributes()).toHaveProperty('disabled')
-			expect(wrapper.find('.acurrency__field--base-amount input').attributes()).toHaveProperty('disabled')
-			expect(wrapper.find('.acurrency__field--exchange-rate input').attributes()).toHaveProperty('disabled')
+			expect(wrapper.find<HTMLInputElement>('.acurrency__field--base-currency input').attributes()).toHaveProperty(
+				'disabled'
+			)
+			expect(wrapper.find<HTMLInputElement>('.acurrency__field--base-amount input').attributes()).toHaveProperty(
+				'disabled'
+			)
+			expect(wrapper.find<HTMLInputElement>('.acurrency__field--exchange-rate input').attributes()).toHaveProperty(
+				'disabled'
+			)
 		})
 
 		it('updates live as amount/currency change', async () => {
@@ -523,8 +535,8 @@ describe('ACurrencyInput', { tags: ['component'] }, () => {
 			const emitted = wrapper.emitted('update:modelValue')!
 			await wrapper.setProps({ modelValue: emitted[emitted.length - 1][0] as any })
 
-			expect(wrapper.find('.acurrency__field--base-amount input').element.value).toBe('4.4')
-			expect(wrapper.find('.acurrency__field--exchange-rate input').element.value).toBe('1.1')
+			expect(wrapper.find<HTMLInputElement>('.acurrency__field--base-amount input').element.value).toBe('4.4')
+			expect(wrapper.find<HTMLInputElement>('.acurrency__field--exchange-rate input').element.value).toBe('1.1')
 		})
 	})
 
@@ -548,7 +560,9 @@ describe('ACurrencyInput', { tags: ['component'] }, () => {
 			await flushPromises()
 
 			expect(resolver).toHaveBeenCalledWith('currency', 'USD')
-			expect(wrapper.find('.acurrency__field--base-currency input').element.value).toBe('Resolved USD')
+			expect(wrapper.find<HTMLInputElement>('.acurrency__field--base-currency input').element.value).toBe(
+				'Resolved USD'
+			)
 		})
 	})
 
@@ -576,12 +590,12 @@ describe('ACurrencyInput', { tags: ['component'] }, () => {
 					},
 				},
 			})
-			expect(wrapper.find('.acurrency__currency input[type="text"]').element.value).toBe('€')
+			expect(wrapper.find<HTMLInputElement>('.acurrency__currency input[type="text"]').element.value).toBe('€')
 		})
 
 		it('shows the symbol alongside the name in the search dropdown', async () => {
 			const wrapper = mount(ACurrencyInput, { props: { options: optionsWithSymbols } })
-			const input = wrapper.find('.acurrency__currency input[type="text"]')
+			const input = wrapper.find<HTMLInputElement>('.acurrency__currency input[type="text"]')
 			await input.trigger('focus')
 			await flushPromises()
 			const results = wrapper.findAll('.autocomplete-result').map(li => li.text())
@@ -603,13 +617,13 @@ describe('ACurrencyInput', { tags: ['component'] }, () => {
 					},
 				},
 			})
-			expect(wrapper.find('.acurrency__currency input[type="text"]').element.value).toBe('Euro')
+			expect(wrapper.find<HTMLInputElement>('.acurrency__currency input[type="text"]').element.value).toBe('Euro')
 		})
 
 		it('applies the symbol formatter immediately on selection, not just after blur', async () => {
 			const wrapper = mount(ACurrencyInput, { props: { options: optionsWithSymbols } })
 			await pickCurrency(wrapper, '€ — Euro')
-			expect(wrapper.find('.acurrency__currency input[type="text"]').element.value).toBe('€')
+			expect(wrapper.find<HTMLInputElement>('.acurrency__currency input[type="text"]').element.value).toBe('€')
 		})
 
 		it('shows the symbol for a currency that arrived as a bare id and was resolved on mount', async () => {
@@ -628,7 +642,7 @@ describe('ACurrencyInput', { tags: ['component'] }, () => {
 				},
 			})
 			await flushPromises()
-			expect(wrapper.find('.acurrency__currency input[type="text"]').element.value).toBe('€')
+			expect(wrapper.find<HTMLInputElement>('.acurrency__currency input[type="text"]').element.value).toBe('€')
 		})
 	})
 })

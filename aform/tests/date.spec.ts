@@ -93,10 +93,10 @@ describe('date component', { tags: ['component'] }, () => {
 	})
 
 	it('handles date selection from picker', async () => {
-		const emitted: (string | Date)[] = []
+		const emitted: (string | Date | undefined)[] = []
 		const wrapper = mount(ADate, {
 			...globalComponents,
-			props: { 'onUpdate:modelValue': (v: string | Date) => emitted.push(v) },
+			props: { 'onUpdate:modelValue': (v: string | Date | undefined) => emitted.push(v) },
 		})
 		await wrapper.find('input').trigger('click.prevent')
 		const picker = wrapper.findComponent(ADateSelection)
