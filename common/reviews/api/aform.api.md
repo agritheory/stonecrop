@@ -57,6 +57,9 @@ export { AForm }
 export { AFormLink }
 
 // @public
+export type AFormLinkModelValue = AFormLinkValue | string | number;
+
+// @public
 export interface AFormLinkNavigator {
     navigate(doctype: string, id: string | number): void;
 }

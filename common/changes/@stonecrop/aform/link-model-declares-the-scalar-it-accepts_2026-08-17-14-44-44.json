@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "comment": "AFormLink's v-model now declares the bare FK scalar it already accepted, as the new exported type AFormLinkModelValue, so binding a link straight to its column no longer reports a type error against a component that handles it.",
+      "type": "minor",
+      "packageName": "@stonecrop/aform"
+    }
+  ],
+  "packageName": "@stonecrop/aform"
+}

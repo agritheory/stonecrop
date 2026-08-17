@@ -59,7 +59,7 @@
 import { vOnClickOutside } from '@vueuse/components'
 import { computed, inject, ref, useId, watch } from 'vue'
 
-import type { AFormLinkNavigator, AFormLinkValue, ComponentProps } from '../../types'
+import type { AFormLinkModelValue, AFormLinkNavigator, AFormLinkValue, ComponentProps } from '../../types'
 import { deserializeFunction } from '../../utils/deserialize'
 
 const {
@@ -101,7 +101,7 @@ const {
 // mount so two pickers on one page can't cross-wire their ARIA relationships.
 const listboxId = `${uuid ?? `aform-link-${useId()}`}-listbox`
 
-const modelValue = defineModel<AFormLinkValue>({ default: () => ({ id: '', displayText: '' }) })
+const modelValue = defineModel<AFormLinkModelValue>({ default: () => ({ id: '', displayText: '' }) })
 
 const hasValidId = computed(() => linkId(modelValue.value) !== undefined)
 
@@ -133,7 +133,7 @@ const resolver = inject<ResolverFn | null>('aformLinkResolver', null)
 // It survives only until the parent writes its scalar back, so it fixed a scalar passed once at
 // mount and nothing else, and it emitted an `update:modelValue` the user never made on every
 // mount of a scalar-valued link field.
-function linkId(value: AFormLinkValue | string | number | null | undefined): string | undefined {
+function linkId(value: AFormLinkModelValue | null | undefined): string | undefined {
 	if (value == null) return undefined
 	if (typeof value === 'string') return value === '' ? undefined : value
 	if (typeof value === 'number') return String(value)
@@ -142,13 +142,13 @@ function linkId(value: AFormLinkValue | string | number | null | undefined): str
 	return String(id)
 }
 
-function linkDisplayText(value: AFormLinkValue | string | number | null | undefined): string | undefined {
+function linkDisplayText(value: AFormLinkModelValue | null | undefined): string | undefined {
 	if (value == null || typeof value !== 'object') return undefined
 	const text = value.displayText
 	return typeof text === 'string' || typeof text === 'number' ? String(text) : undefined
 }
 
-function asLinkValue(value: AFormLinkValue | string | number | null | undefined): AFormLinkValue {
+function asLinkValue(value: AFormLinkModelValue | null | undefined): AFormLinkValue {
 	if (value != null && typeof value === 'object') return value
 	const id = linkId(value)
 	return id !== undefined ? { id } : { id: '' }
