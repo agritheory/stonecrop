@@ -5,14 +5,14 @@ import { nextTick } from 'vue'
 import ADateRange from '../src/components/form/ADateRange.vue'
 import ADateSelection from '../src/components/form/ADateSelection.vue'
 import ADatePicker from '../src/components/form/ADatePicker.vue'
-import ADateTime from '../src/components/form/ADateTime.vue'
+import ADateTimeInput from '../src/components/form/ADateTimeInput.vue'
 
 const globalComponents = {
 	global: {
 		components: {
 			ADateSelection,
 			ADatePicker,
-			ADateTime,
+			ADateTimeInput,
 		},
 	},
 }

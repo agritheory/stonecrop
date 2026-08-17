@@ -4,6 +4,7 @@ import { mount } from '@vue/test-utils'
 import AForm from '../src/components/AForm.vue'
 import ADate from '../src/components/form/ADate.vue'
 import ADatePicker from '../src/components/form/ADatePicker.vue'
+import ADateTime from '../src/components/form/ADateTime.vue'
 import ADateRange from '../src/components/form/ADateRange.vue'
 import ADropdown from '../src/components/form/ADropdown.vue'
 import ATextInput from '../src/components/form/ATextInput.vue'
@@ -50,44 +51,65 @@ describe('inline field errors', { tags: ['component'] }, () => {
 		})
 	})
 
-	// Date-family field components (non-uniform: ADate/ADateRange own their error <p>; ADatePicker
+	// Date-family field components (non-uniform: ADate/ADateRange/ADateTime own their error <p>; ADatePicker
 	// is a calendar grid). Each must surface the dynamic `errors` prop, preferring it over the
 	// static schema `validation.errorMessage`, and hide the slot when there is no message.
 	describe('field component (ADate)', () => {
 		it('renders a dynamic error from the errors prop', () => {
 			const w = mount(ADate, { props: { label: 'When', errors: ['End before start'] } })
-			const err = w.find('p')
+			const err = w.find('.aform_error')
 			expect(err.text()).toBe('End before start')
 			expect(err.attributes('style') ?? '').not.toContain('display: none')
 		})
 
 		it('hides the error slot when there are no errors', () => {
 			const w = mount(ADate, { props: { label: 'When' } })
-			expect(w.find('p').attributes('style') ?? '').toContain('display: none')
+			expect(w.find('.aform_error').attributes('style') ?? '').toContain('display: none')
 		})
 
 		it('dynamic errors take precedence over a static validation.errorMessage', () => {
 			const w = mount(ADate, { props: { label: 'When', errors: ['dyn'], validation: { errorMessage: 'stat' } } })
-			expect(w.find('p').text()).toBe('dyn')
+			expect(w.find('.aform_error').text()).toBe('dyn')
 		})
 	})
 
 	describe('field component (ADateRange)', () => {
 		it('renders a dynamic error from the errors prop', () => {
 			const w = mount(ADateRange, { props: { label: 'Range', errors: ['End before start'] } })
-			const err = w.find('p')
+			const err = w.find('.aform_error')
 			expect(err.text()).toBe('End before start')
 			expect(err.attributes('style') ?? '').not.toContain('display: none')
 		})
 
 		it('hides the error slot when there are no errors', () => {
 			const w = mount(ADateRange, { props: { label: 'Range' } })
-			expect(w.find('p').attributes('style') ?? '').toContain('display: none')
+			expect(w.find('.aform_error').attributes('style') ?? '').toContain('display: none')
 		})
 
 		it('dynamic errors take precedence over a static validation.errorMessage', () => {
 			const w = mount(ADateRange, { props: { label: 'Range', errors: ['dyn'], validation: { errorMessage: 'stat' } } })
-			expect(w.find('p').text()).toBe('dyn')
+			expect(w.find('.aform_error').text()).toBe('dyn')
+		})
+	})
+
+	describe('field component (ADateTime)', () => {
+		it('renders a dynamic error from the errors prop', () => {
+			const w = mount(ADateTime, { props: { label: 'Created', errors: ['Invalid datetime'] } })
+			const err = w.find('.aform_error')
+			expect(err.text()).toBe('Invalid datetime')
+			expect(err.attributes('style') ?? '').not.toContain('display: none')
+		})
+
+		it('hides the error slot when there are no errors', () => {
+			const w = mount(ADateTime, { props: { label: 'Created' } })
+			expect(w.find('.aform_error').attributes('style') ?? '').toContain('display: none')
+		})
+
+		it('dynamic errors take precedence over a static validation.errorMessage', () => {
+			const w = mount(ADateTime, {
+				props: { label: 'Created', errors: ['dyn'], validation: { errorMessage: 'stat' } },
+			})
+			expect(w.find('.aform_error').text()).toBe('dyn')
 		})
 	})
 

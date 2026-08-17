@@ -1,30 +1,25 @@
 <template>
-	<div>
+	<div class="aform_form-element">
 		<template v-if="mode === 'display'">
 			<span class="aform_display-value">{{ modelValue ? new Date(inputDate).toLocaleDateString() : '' }}</span>
-			<label>{{ label }}</label>
+			<label class="aform_field-label">{{ label }}</label>
 		</template>
 		<template v-else>
 			<input
 				:id="uuid"
 				ref="date"
 				v-model="inputDate"
-				class="adate-input"
-				:value="inputDate"
+				class="aform_input-field"
 				type="date"
 				:disabled="mode === 'read'"
 				:required="required"
-				@click.prevent="
-					() => {
-						showPicker = !showPicker
-					}
-				" />
-			<label :for="uuid">{{ label }}</label>
-			<p v-show="errorText" v-html="errorText"></p>
+				@click="openPicker" />
+			<label class="aform_field-label" :for="uuid">{{ label }}</label>
+			<p v-show="errorText" class="aform_error" v-html="errorText"></p>
 			<ADateSelection
 				v-if="showPicker"
 				ref="picker"
-				class="picker"
+				class="adate-picker"
 				:select-range="false"
 				:show-time="false"
 				@get-date="handleDate" />
@@ -67,6 +62,10 @@ const showPicker = ref(false)
 
 onClickOutside(pickerRef, () => (showPicker.value = false))
 
+const openPicker = () => {
+	if (mode !== 'read') showPicker.value = !showPicker.value
+}
+
 watch(
 	() => modelValue.value,
 	newValue => {
@@ -79,72 +78,16 @@ watch(
 const handleDate = (data: { selected: Date }) => {
 	currentDate.value = data.selected
 	modelValue.value = inputDate.value
+	showPicker.value = false
 }
 </script>
 
 <style scoped>
-.adate-input {
-	overflow: auto;
-}
-div {
-	min-width: 40ch;
-	width: 100%;
-	box-sizing: border-box;
-	border: 1px solid transparent;
-	padding: 0rem;
-	margin: 0rem;
-	margin-right: 1ch;
-}
-
-input {
-	width: calc(100% - 1ch);
-	box-sizing: border-box;
-	outline: 1px solid transparent;
-	border: 1px solid var(--sc-input-border-color);
-	padding: 1ch 0.5ch 0.5ch 1ch;
-	margin: calc(1.15rem / 2) 0 0 0;
-	min-height: 1.15rem;
-	border-radius: 0.25rem;
-}
-
-p,
-label {
-	color: var(--sc-input-label-color);
-	display: block;
-	min-height: 1.15rem;
-	padding: 0rem;
-	margin: 0rem;
-	border: 1px solid transparent;
-	margin-bottom: 0.25rem;
-	box-sizing: border-box;
-}
-
-p {
-	width: 100%;
-	color: red;
-	font-size: 85%;
-	box-sizing: border-box;
-}
-
-label {
-	z-index: 0;
-	font-size: 80%;
+.adate-picker {
 	position: absolute;
-	background: white;
-	margin: calc(-1.5rem - calc(2.15rem / 2)) 0 0 1ch;
-	padding: 0 0.25ch 0 0.25ch;
-	box-sizing: border-box;
-}
-
-input:focus {
-	border: 1px solid var(--sc-input-active-border-color);
-}
-
-input:focus + label {
-	color: var(--sc-input-active-label-color);
-}
-.picker {
-	position: absolute;
-	top: 50px;
+	top: 100%;
+	left: 0;
+	z-index: 1000;
+	margin-top: 0.25rem;
 }
 </style>

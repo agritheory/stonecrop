@@ -1,10 +1,10 @@
-<!-- This serves as a wrapper component for ADatePicker and ADateTime in one component -->
+<!-- This serves as a wrapper component for ADatePicker and ADateTimeInput in one component -->
 
 <template>
 	<div class="adate-selection">
 		<ADatePicker v-if="showDate" :select-range="selectRange" @get-date="handleDate" />
 
-		<ADateTime
+		<ADateTimeInput
 			v-if="showTime"
 			:allow-military-time="allowMilitaryTime"
 			:default-hours="defaultHours"
@@ -16,7 +16,7 @@
 
 		<template v-if="selectRange && showTime && showEndTime">
 			<div class="adate-selection__end-label">End time</div>
-			<ADateTime
+			<ADateTimeInput
 				:allow-military-time="allowMilitaryTime"
 				:default-hours="defaultHours"
 				:default-minutes="defaultMinutes"
@@ -33,7 +33,7 @@
 <script setup lang="ts">
 import { provide, ref } from 'vue'
 import ADatePicker from './ADatePicker.vue'
-import ADateTime from './ADateTime.vue'
+import ADateTimeInput from './ADateTimeInput.vue'
 
 const {
 	showDate = true,
@@ -59,10 +59,14 @@ const {
 	useSeconds?: boolean
 }>()
 
+// `source` is forwarded from ADateTimeInput, which declares it on every `get-time`. It is
+// optional here only because a host or a test may emit these events by hand, and doing so always
+// means a user action — `'init'` is the one case that has to be marked, because it is the widget
+// announcing its start value as it mounts rather than anything the user did.
 const emit = defineEmits<{
 	'get-date': [{ selected: Date; start?: Date | null; end?: Date | null }]
-	'get-time': [{ hours: number; minutes: number; seconds: number; meridiem: string }]
-	'get-range': [{ start: Date; end: Date }]
+	'get-time': [{ hours: number; minutes: number; seconds: number; meridiem: string; source?: 'init' | 'user' }]
+	'get-range': [{ start: Date; end: Date; source?: 'init' | 'user' }]
 }>()
 
 provide('select-range', selectRange)
@@ -96,11 +100,12 @@ const timePayloadToMs = (payload: {
 	return (h * 3600 + payload.minutes * 60 + (payload.seconds ?? 0)) * 1000
 }
 
-const tryEmitRange = () => {
+const tryEmitRange = (source: 'init' | 'user') => {
 	if (!selectRange || !showTime || !showEndTime) return
 	emit('get-range', {
 		start: mergeDateTime(pickerStart.value, startTimeMs.value),
 		end: mergeDateTime(pickerEnd.value, endTimeMs.value),
+		source,
 	})
 }
 
@@ -109,7 +114,8 @@ const handleDate = (data: { start: Date | null; end: Date | null; selected: Date
 	if (selectRange) {
 		pickerStart.value = data.start ?? data.selected
 		pickerEnd.value = data.end ?? data.selected
-		tryEmitRange()
+		// Picking a day on the calendar is unambiguously a user action.
+		tryEmitRange('user')
 	}
 }
 
@@ -119,10 +125,11 @@ const handleStartTime = (data: {
 	seconds: number
 	meridiem: string
 	militaryTime?: number
+	source?: 'init' | 'user'
 }) => {
 	startTimeMs.value = timePayloadToMs(data)
 	if (showEndTime) {
-		tryEmitRange()
+		tryEmitRange(data.source ?? 'user')
 	} else {
 		emit('get-time', data)
 	}
@@ -134,9 +141,10 @@ const handleEndTime = (data: {
 	seconds: number
 	meridiem: string
 	militaryTime?: number
+	source?: 'init' | 'user'
 }) => {
 	endTimeMs.value = timePayloadToMs(data)
-	tryEmitRange()
+	tryEmitRange(data.source ?? 'user')
 }
 </script>
 
