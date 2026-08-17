@@ -28,7 +28,8 @@ describe('date component', { tags: ['component'] }, () => {
 		const wrapper = mount(ADate, globalComponents)
 		const $input = wrapper.find('input')
 		expect($input.exists()).toBe(true)
-		expect($input.attributes('type')).toBe('date')
+		expect($input.attributes('type')).toBe('text')
+		expect($input.attributes()).toHaveProperty('readonly')
 	})
 
 	it('date input is rendered with value', async () => {
@@ -40,7 +41,7 @@ describe('date component', { tags: ['component'] }, () => {
 		})
 
 		const $input = wrapper.find('input')
-		expect($input.element.value).toBe('2021-01-01')
+		expect($input.element.value).toBe(new Date('2021-01-01').toLocaleDateString())
 	})
 
 	it('date input is disabled by default', async () => {
@@ -55,21 +56,11 @@ describe('date component', { tags: ['component'] }, () => {
 		expect($input.attributes()).toHaveProperty('disabled')
 	})
 
-	it('date input is required', async () => {
+	it('shows formatted date after picker selection', async () => {
 		const wrapper = mount(ADate, globalComponents)
-		const $input = wrapper.find('input')
-
-		// TODO: setup environment to test spawning the datepicker
-		await $input.trigger('click')
-		expect($input.element.showPicker).toBeUndefined()
-	})
-
-	it('formats date value on input change', async () => {
-		const wrapper = mount(ADate, globalComponents)
-		const $input = wrapper.find('input')
-		await $input.setValue('2023-06-15')
-		await wrapper.vm.$nextTick()
-		expect(($input.element as HTMLInputElement).value).toBe('2023-06-15')
+		await wrapper.find('input').trigger('click')
+		await wrapper.findComponent(ADateSelection).vm.$emit('get-date', { selected: new Date('2023-06-15') })
+		expect((wrapper.find('input').element as HTMLInputElement).value).toBe(new Date('2023-06-15').toLocaleDateString())
 	})
 
 	it('renders in display mode with formatted date', () => {

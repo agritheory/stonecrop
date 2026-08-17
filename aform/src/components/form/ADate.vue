@@ -1,18 +1,19 @@
 <template>
 	<div class="aform_form-element">
 		<template v-if="mode === 'display'">
-			<span class="aform_display-value">{{ modelValue ? new Date(inputDate).toLocaleDateString() : '' }}</span>
+			<span class="aform_display-value">{{ dateDisplay }}</span>
 			<label class="aform_field-label">{{ label }}</label>
 		</template>
 		<template v-else>
 			<input
 				:id="uuid"
-				ref="date"
-				v-model="inputDate"
 				class="aform_input-field"
-				type="date"
+				type="text"
+				:value="dateDisplay"
+				placeholder="Select date"
 				:disabled="mode === 'read'"
 				:required="required"
+				readonly
 				@click="openPicker" />
 			<label class="aform_field-label" :for="uuid">{{ label }}</label>
 			<p v-show="errorText" class="aform_error" v-html="errorText"></p>
@@ -49,13 +50,13 @@ const errorText = computed(() => (errors?.length ? errors.join('; ') : (validati
 const modelValue = defineModel<string | Date>()
 
 const currentDate = ref(modelValue.value ? new Date(modelValue.value) : new Date())
-const inputDate = computed({
-	get: () => currentDate.value.toISOString().split('T')[0],
-	set: (value: string) => {
-		currentDate.value = new Date(value)
-		modelValue.value = value
-	},
+
+const dateDisplay = computed(() => {
+	if (!modelValue.value) return ''
+	return currentDate.value.toLocaleDateString()
 })
+
+const toISODate = (d: Date) => d.toISOString().split('T')[0]
 
 const pickerRef = useTemplateRef<HTMLDivElement>('picker')
 const showPicker = ref(false)
@@ -77,7 +78,7 @@ watch(
 
 const handleDate = (data: { selected: Date }) => {
 	currentDate.value = data.selected
-	modelValue.value = inputDate.value
+	modelValue.value = toISODate(data.selected)
 	showPicker.value = false
 }
 </script>

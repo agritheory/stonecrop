@@ -2,6 +2,21 @@
   "name": "@stonecrop/aform",
   "entries": [
     {
+      "version": "0.22.0",
+      "tag": "@stonecrop/aform_v0.22.0",
+      "date": "Mon, 17 Aug 2026 19:46:36 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "ADate, ADateRange and ADateTime now use the shared aform input classes, and the time-entry widget formerly exported as ADateTime is now ADateTimeInput."
+          },
+          {
+            "comment": "The datetime picker now stays open while the time is edited, and neither ADateTime nor ADuration writes a value on first render."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.21.0",
       "tag": "@stonecrop/aform_v0.21.0",
       "date": "Mon, 17 Aug 2026 19:08:23 GMT",

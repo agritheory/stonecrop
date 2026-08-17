@@ -66,8 +66,21 @@ const {
 	useSeconds?: boolean
 }>()
 
+// `get-time` carries the widget's CURRENT VALUE, not a commit: it fires once as the widget
+// mounts and again on every blur, Enter, arrow key and meridiem change — five times during one
+// ordinary edit. `source` is what lets a parent tell the start-up announcement apart from a real
+// user edit; without it a parent has nothing to key on and must guess from the value alone.
 const emit = defineEmits<{
-	'get-time': [{ hours: number; minutes: number; seconds: number; meridiem: string; militaryTime: number }]
+	'get-time': [
+		{
+			hours: number
+			minutes: number
+			seconds: number
+			meridiem: string
+			militaryTime: number
+			source: 'init' | 'user'
+		},
+	]
 }>()
 
 const meridiemSelector = useTemplateRef<HTMLSelectElement>('meridiem-selector')
@@ -81,7 +94,7 @@ const timeData = reactive({
 const meridiem = ref(defaultMeridiem == 'AM' ? 'AM' : 'PM')
 
 onMounted(() => {
-	emitTime()
+	emitTime('init')
 })
 
 const confirmTime = () => {
@@ -100,10 +113,10 @@ const confirmTime = () => {
 	timeData.minutes = String(minutes).padStart(2, '0')
 	timeData.seconds = String(seconds).padStart(2, '0')
 
-	emitTime()
+	emitTime('user')
 }
 
-const emitTime = () => {
+const emitTime = (source: 'init' | 'user') => {
 	const hours = Number(timeData.hours)
 	const minutes = Number(timeData.minutes)
 	const seconds = Number(timeData.seconds)
@@ -111,6 +124,7 @@ const emitTime = () => {
 		hours,
 		minutes,
 		seconds,
+		source,
 		meridiem: meridiem.value,
 		militaryTime: allowMilitaryTime ? hours : meridiem.value === 'PM' ? (hours === 12 ? 12 : hours + 12) : hours % 12,
 	})
@@ -186,7 +200,7 @@ const formatTime = (target: number, min: number, max: number): number => {
 
 const changeMeridiem = () => {
 	meridiem.value = meridiem.value == 'PM' ? 'AM' : 'PM'
-	emitTime()
+	emitTime('user')
 }
 
 const pasteInput = (event: ClipboardEvent, pasteAllFields = false) => {
