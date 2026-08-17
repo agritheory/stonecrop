@@ -18,7 +18,7 @@ const formFieldGlobals = {
 
 describe('datetime input component', () => {
 	it('renders time inputs with default values', () => {
-		const wrapper = mount(ADateTime)
+		const wrapper = mount(ADateTimeInput)
 		const inputs = wrapper.findAll<HTMLInputElement>('input[type="text"]')
 		expect(inputs.length).toBe(3) // hours, minutes, seconds
 		expect(inputs[0].element.value).toBe('12')
@@ -77,7 +77,7 @@ describe('datetime input component', () => {
 	})
 
 	it('updates hours and emits on blur', async () => {
-		const wrapper = mount(ADateTime)
+		const wrapper = mount(ADateTimeInput)
 		const hoursInput = wrapper.findAll<HTMLInputElement>('input[type="text"]')[0]
 		await hoursInput.setValue(3)
 		await hoursInput.trigger('blur')
@@ -87,7 +87,7 @@ describe('datetime input component', () => {
 	})
 
 	it('updates minutes and emits on enter key', async () => {
-		const wrapper = mount(ADateTime)
+		const wrapper = mount(ADateTimeInput)
 		const minutesInput = wrapper.findAll<HTMLInputElement>('input[type="text"]')[1]
 		await minutesInput.setValue(45)
 		await minutesInput.trigger('keydown.enter')
@@ -107,35 +107,35 @@ describe('datetime input component', () => {
 	})
 
 	it('increments hours with up arrow', async () => {
-		const wrapper = mount(ADateTime)
+		const wrapper = mount(ADateTimeInput)
 		const hoursInput = wrapper.findAll<HTMLInputElement>('input[type="text"]')[0]
 		await hoursInput.trigger('keydown.up')
 		expect(hoursInput.element.value).toBe('01')
 	})
 
 	it('decrements hours with down arrow', async () => {
-		const wrapper = mount(ADateTime)
+		const wrapper = mount(ADateTimeInput)
 		const hoursInput = wrapper.findAll<HTMLInputElement>('input[type="text"]')[0]
 		await hoursInput.trigger('keydown.down')
 		expect(hoursInput.element.value).toBe('11')
 	})
 
 	it('increments minutes with up arrow', async () => {
-		const wrapper = mount(ADateTime)
+		const wrapper = mount(ADateTimeInput)
 		const minutesInput = wrapper.findAll<HTMLInputElement>('input[type="text"]')[1]
 		await minutesInput.trigger('keydown.up')
 		expect(minutesInput.element.value).toBe('01')
 	})
 
 	it('decrements seconds with down arrow', async () => {
-		const wrapper = mount(ADateTime)
+		const wrapper = mount(ADateTimeInput)
 		const secondsInput = wrapper.findAll<HTMLInputElement>('input[type="text"]')[2]
 		await secondsInput.trigger('keydown.down')
 		expect(secondsInput.element.value).toBe('59')
 	})
 
 	it('wraps hours from 12 to 1 in non-military mode', async () => {
-		const wrapper = mount(ADateTime)
+		const wrapper = mount(ADateTimeInput)
 		const hoursInput = wrapper.findAll<HTMLInputElement>('input[type="text"]')[0]
 		await hoursInput.setValue(12)
 		await hoursInput.trigger('keydown.up')
@@ -143,7 +143,7 @@ describe('datetime input component', () => {
 	})
 
 	it('wraps hours from 1 to 12 in non-military mode', async () => {
-		const wrapper = mount(ADateTime)
+		const wrapper = mount(ADateTimeInput)
 		const hoursInput = wrapper.findAll<HTMLInputElement>('input[type="text"]')[0]
 		await hoursInput.setValue(1)
 		await hoursInput.trigger('keydown.down')
@@ -180,7 +180,7 @@ describe('datetime input component', () => {
 	})
 
 	it('clamps hours to 1 (not 0) in non-military mode on blur', async () => {
-		const wrapper = mount(ADateTime)
+		const wrapper = mount(ADateTimeInput)
 		const hoursInput = wrapper.findAll<HTMLInputElement>('input[type="text"]')[0]
 		await hoursInput.setValue(0)
 		await hoursInput.trigger('blur')
@@ -188,7 +188,7 @@ describe('datetime input component', () => {
 	})
 
 	it('clamps hours to max on blur', async () => {
-		const wrapper = mount(ADateTime)
+		const wrapper = mount(ADateTimeInput)
 		const hoursInput = wrapper.findAll<HTMLInputElement>('input[type="text"]')[0]
 		await hoursInput.setValue(99)
 		await hoursInput.trigger('blur')
@@ -196,7 +196,7 @@ describe('datetime input component', () => {
 	})
 
 	it('clamps minutes to 59 on blur', async () => {
-		const wrapper = mount(ADateTime)
+		const wrapper = mount(ADateTimeInput)
 		const minutesInput = wrapper.findAll<HTMLInputElement>('input[type="text"]')[1]
 		await minutesInput.setValue(99)
 		await minutesInput.trigger('blur')
@@ -204,7 +204,7 @@ describe('datetime input component', () => {
 	})
 
 	it('clamps seconds to 59 on blur', async () => {
-		const wrapper = mount(ADateTime)
+		const wrapper = mount(ADateTimeInput)
 		const secondsInput = wrapper.findAll<HTMLInputElement>('input[type="text"]')[2]
 		await secondsInput.setValue(99)
 		await secondsInput.trigger('blur')
@@ -212,7 +212,7 @@ describe('datetime input component', () => {
 	})
 
 	it('changes meridiem when crossing 11-12 boundary upward', async () => {
-		const wrapper = mount(ADateTime)
+		const wrapper = mount(ADateTimeInput)
 		const hoursInput = wrapper.findAll<HTMLInputElement>('input[type="text"]')[0]
 		await hoursInput.setValue(11)
 		await hoursInput.trigger('keydown.up')
@@ -277,7 +277,7 @@ describe('datetime input component', () => {
 	})
 
 	it('emits correct militaryTime for AM hours', async () => {
-		const wrapper = mount(ADateTime)
+		const wrapper = mount(ADateTimeInput)
 		const hoursInput = wrapper.findAll<HTMLInputElement>('input[type="text"]')[0]
 		await hoursInput.setValue(3)
 		await hoursInput.trigger('blur')
@@ -323,7 +323,7 @@ describe('datetime input component', () => {
 	})
 
 	it('selects input text on focus', async () => {
-		const wrapper = mount(ADateTime)
+		const wrapper = mount(ADateTimeInput)
 		const hoursInput = wrapper.findAll<HTMLInputElement>('input[type="text"]')[0]
 		const selectMock = vi.fn()
 		Object.defineProperty(hoursInput.element, 'select', { value: selectMock })
@@ -332,7 +332,7 @@ describe('datetime input component', () => {
 	})
 
 	it('handles paste on hours field and distributes values', async () => {
-		const wrapper = mount(ADateTime)
+		const wrapper = mount(ADateTimeInput)
 		const hoursInput = wrapper.findAll<HTMLInputElement>('input[type="text"]')[0]
 		const clipboardData = { getData: vi.fn().mockReturnValue('143045') }
 		const event = new Event('paste', { bubbles: true, cancelable: true })
@@ -346,7 +346,7 @@ describe('datetime input component', () => {
 	})
 
 	it('handles single field paste and sets value', async () => {
-		const wrapper = mount(ADateTime)
+		const wrapper = mount(ADateTimeInput)
 		const minutesInput = wrapper.findAll<HTMLInputElement>('input[type="text"]')[1]
 		const clipboardData = { getData: vi.fn().mockReturnValue('55') }
 		const event = new Event('paste', { bubbles: true, cancelable: true })
@@ -358,7 +358,7 @@ describe('datetime input component', () => {
 	})
 
 	it('handles paste with null clipboardData gracefully', async () => {
-		const wrapper = mount(ADateTime)
+		const wrapper = mount(ADateTimeInput)
 		const hoursInput = wrapper.findAll<HTMLInputElement>('input[type="text"]')[0]
 		const event = new Event('paste', { bubbles: true, cancelable: true })
 		Object.defineProperty(event, 'clipboardData', { value: null })
@@ -368,7 +368,7 @@ describe('datetime input component', () => {
 	})
 
 	it('handles paste of non-numeric input without corrupting seconds', async () => {
-		const wrapper = mount(ADateTime)
+		const wrapper = mount(ADateTimeInput)
 		const hoursInput = wrapper.findAll<HTMLInputElement>('input[type="text"]')[0]
 		const clipboardData = { getData: vi.fn().mockReturnValue('a:b:c') }
 		const event = new Event('paste', { bubbles: true, cancelable: true })
@@ -383,7 +383,7 @@ describe('datetime input component', () => {
 	})
 
 	it('pads single digit values on confirm', async () => {
-		const wrapper = mount(ADateTime)
+		const wrapper = mount(ADateTimeInput)
 		const hoursInput = wrapper.findAll<HTMLInputElement>('input[type="text"]')[0]
 		await hoursInput.setValue(3)
 		await hoursInput.trigger('blur')
@@ -391,7 +391,7 @@ describe('datetime input component', () => {
 	})
 
 	it('increments minutes when seconds roll over', async () => {
-		const wrapper = mount(ADateTime)
+		const wrapper = mount(ADateTimeInput)
 		const secondsInput = wrapper.findAll<HTMLInputElement>('input[type="text"]')[2]
 		await secondsInput.setValue(59)
 		await secondsInput.trigger('keydown.up')
@@ -400,7 +400,7 @@ describe('datetime input component', () => {
 	})
 
 	it('decrements minutes when seconds roll under', async () => {
-		const wrapper = mount(ADateTime)
+		const wrapper = mount(ADateTimeInput)
 		const secondsInput = wrapper.findAll<HTMLInputElement>('input[type="text"]')[2]
 		await secondsInput.setValue(0)
 		await secondsInput.trigger('keydown.down')
@@ -409,7 +409,7 @@ describe('datetime input component', () => {
 	})
 
 	it('increments hours when minutes roll over', async () => {
-		const wrapper = mount(ADateTime)
+		const wrapper = mount(ADateTimeInput)
 		const minutesInput = wrapper.findAll<HTMLInputElement>('input[type="text"]')[1]
 		await minutesInput.setValue(59)
 		await minutesInput.trigger('keydown.up')
@@ -418,7 +418,7 @@ describe('datetime input component', () => {
 	})
 
 	it('decrements hours when minutes roll under', async () => {
-		const wrapper = mount(ADateTime)
+		const wrapper = mount(ADateTimeInput)
 		const minutesInput = wrapper.findAll<HTMLInputElement>('input[type="text"]')[1]
 		await minutesInput.setValue(0)
 		await minutesInput.trigger('keydown.down')
@@ -440,7 +440,7 @@ describe('datetime form field component', { tags: ['component'] }, () => {
 			...formFieldGlobals,
 			props: { modelValue: '2023-06-15T14:30:00.000Z', label: 'Created At' },
 		})
-		const input = wrapper.find('.aform_input-field')
+		const input = wrapper.find<HTMLInputElement>('.aform_input-field')
 		expect(input.element.value).toBe(new Date('2023-06-15T14:30:00.000Z').toLocaleString())
 	})
 
@@ -476,14 +476,18 @@ describe('datetime form field component', { tags: ['component'] }, () => {
 		await flushPromises()
 
 		expect(wrapper.emitted('update:modelValue')).toBeUndefined()
-		expect(wrapper.find('.aform_input-field').element.value).toBe('')
+		expect(wrapper.find<HTMLInputElement>('.aform_input-field').element.value).toBe('')
 	})
 
 	it('updates model when date and time are selected', async () => {
-		const emitted: (string | Date)[] = []
+		const emitted: (string | Date | undefined)[] = []
 		const wrapper = mount(ADateTime, {
 			...formFieldGlobals,
-			props: { 'onUpdate:modelValue': (v: string | Date) => emitted.push(v) },
+			props: {
+				'onUpdate:modelValue': (v: string | Date | undefined) => {
+					emitted.push(v)
+				},
+			},
 		})
 		await wrapper.find('input').trigger('click')
 		const picker = wrapper.findComponent(ADateSelection)
