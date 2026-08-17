@@ -155,14 +155,14 @@ describe('ATable linkResolver', { tags: ['component'] }, () => {
 		expect(wrapper.find('td.atable-cell').text()).toBe('Work')
 	})
 
-	it('uses fieldname__display from the row without calling linkResolver', async () => {
+	it('uses { id, displayText } object from the row without calling linkResolver', async () => {
 		const linkResolver = vi.fn().mockResolvedValue('ignored')
 
 		const columns: TableColumn[] = [{ name: 'customer_id', label: 'Customer', linkDoctype: 'party' }]
 
 		const wrapper = mount(ATable, {
 			props: {
-				rows: [{ customer_id: '1', customer_id__display: 'Acme Corp' }],
+				rows: [{ customer_id: { id: '1', displayText: 'Acme Corp' } }],
 				columns,
 				linkResolver,
 				'onUpdate:rows': () => {},
