@@ -53,6 +53,11 @@ describe('typeDefs', { tags: ['unit', 'graphql'] }, () => {
 	// StonecropFieldMeta
 	// -----------------------------------------------------------------------
 
+	it('defines StonecropDoctypeMeta with displayField', () => {
+		const doctypeMetaType = findTypeDefinition(doc, 'StonecropDoctypeMeta')
+		expect(findFieldDefinition(doctypeMetaType, 'displayField')).toBeDefined()
+	})
+
 	it('StonecropFieldMeta fields match ValueFieldSchema shape exactly (drift check)', () => {
 		const fieldMetaType = findTypeDefinition(doc, 'StonecropFieldMeta')
 		expect(fieldMetaType).toBeDefined()

@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-import { DoctypeFieldSchema } from './field'
+import { DoctypeFieldSchema, flattenFields, getDisplayField } from './field'
 
 /**
  * Cardinality for relationship links.
@@ -309,6 +309,13 @@ export const DoctypeMeta = z
 		/** URL-friendly slug (kebab-case) */
 		slug: z.string().min(1).optional(),
 
+		/**
+		 * Field on this doctype used when displaying a reference to one of its records.
+		 * When a record elsewhere holds a foreign key to this doctype, the middleware may
+		 * include `fieldname__display` alongside the raw id, resolved from this field.
+		 */
+		displayField: z.string().min(1).optional(),
+
 		/** Field definitions (a link field is one carrying `doctype`) */
 		fields: z.array(DoctypeFieldSchema),
 
@@ -351,6 +358,22 @@ export const DoctypeMeta = z
 					)}); a record is identified by exactly one field. A composite database key is mapped to a single identity by the adapter, so a doctype never declares its parts`,
 			})
 		}
+
+		// Through `getDisplayField` rather than a scan written here, because the adapter builds its
+		// SELECT from that same call. The two hand-rolled versions disagreed in both directions at
+		// once: this gate scanned top-level only, so it rejected a fieldset-nested field that would
+		// have worked, while neither side excluded `computed` fields, so a nomination naming one
+		// passed the gate and then failed as a missing column at query time.
+		if (doctype.displayField && !getDisplayField(doctype.fields, doctype.displayField)) {
+			const named = flattenFields(doctype.fields).find(f => f.fieldname === doctype.displayField)
+			ctx.addIssue({
+				code: 'custom',
+				path: ['displayField'],
+				message: named
+					? `displayField "${doctype.displayField}" names a computed field, which has no column to read a display value from`
+					: `displayField "${doctype.displayField}" is not declared on this doctype`,
+			})
+		}
 	})
 
 /**
@@ -358,6 +381,20 @@ export const DoctypeMeta = z
  * @public
  */
 export type DoctypeMeta = z.infer<typeof DoctypeMeta>
+
+/**
+ * Suffix appended to a link fieldname for its pre-resolved display text in record payloads.
+ * @public
+ */
+export const LINK_DISPLAY_SUFFIX = '__display'
+
+/**
+ * Build the payload key for a link field's display text (e.g. `customerId__display`).
+ * @public
+ */
+export function linkDisplayFieldname(fieldname: string): string {
+	return `${fieldname}${LINK_DISPLAY_SUFFIX}`
+}
 
 /**
  * Context for identifying what doctype/record we're working with.

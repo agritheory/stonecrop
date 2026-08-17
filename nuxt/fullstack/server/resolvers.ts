@@ -87,6 +87,7 @@ export function formatDoctypeMeta(meta: DoctypeMeta) {
 	return {
 		name: meta.name,
 		slug: meta.slug ?? null,
+		displayField: meta.displayField ?? null,
 		fields: meta.fields,
 		workflow: meta.workflow
 			? {

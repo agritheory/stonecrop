@@ -22,6 +22,8 @@ export type DoctypeConfig = {
 	name: string
 	/** URL-friendly slug (kebab-case) */
 	slug?: string
+	/** Field used when displaying a reference to one of this doctype's records */
+	displayField?: string
 	/** Field definitions (a link field is one carrying `doctype`) */
 	fields?: DoctypeField[]
 	/** Relationship links to other doctypes */

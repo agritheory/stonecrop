@@ -114,8 +114,9 @@ export type CrossTabMessageType = 'operation' | 'undo' | 'redo' | 'sync-request'
 
 // @public
 export class Doctype {
-    constructor(doctype: string, schema: ImmutableDoctype['schema'], workflow: ImmutableDoctype['workflow'], component?: Component, links?: Record<string, LinkDeclaration>);
+    constructor(doctype: string, schema: ImmutableDoctype['schema'], workflow: ImmutableDoctype['workflow'], component?: Component, links?: Record<string, LinkDeclaration>, displayField?: string);
     readonly component?: Component;
+    readonly displayField?: string;
     readonly doctype: string;
     static fromObject(config: DoctypeConfig): Doctype;
     getActionMeta(actionName: string): {
@@ -145,6 +146,7 @@ export class Doctype {
 export type DoctypeConfig = {
     name: string;
     slug?: string;
+    displayField?: string;
     fields?: DoctypeField[];
     links?: Record<string, LinkDeclaration>;
     workflow?: UnknownMachineConfig | WorkflowMeta;

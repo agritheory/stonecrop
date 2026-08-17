@@ -1165,6 +1165,7 @@ Plain object representation of doctype configuration for serialization/API respo
 export type DoctypeConfig = {
     name: string;
     slug?: string;
+    displayField?: string;
     fields?: DoctypeField[];
     links?: Record<string, LinkDeclaration>;
     workflow?: UnknownMachineConfig | WorkflowMeta;
@@ -1399,7 +1400,7 @@ Doctype runtime class with Immutable.js collections for HST change tracking.
 **Constructor:**
 
 ```typescript
-new Doctype(doctype: string, schema: ImmutableDoctype['schema'], workflow: ImmutableDoctype['workflow'], component: Component, links: Record<string, LinkDeclaration>)
+new Doctype(doctype: string, schema: ImmutableDoctype['schema'], workflow: ImmutableDoctype['workflow'], component: Component, links: Record<string, LinkDeclaration>, displayField: string)
 ```
 
 **Parameters:**
@@ -1411,12 +1412,14 @@ new Doctype(doctype: string, schema: ImmutableDoctype['schema'], workflow: Immut
 | workflow | `ImmutableDoctype['workflow']` | The doctype workflow configuration (XState machine) |
 | component | `Component` | Optional Vue component for rendering the doctype |
 | links | `Record<string, LinkDeclaration>` | Optional relationship links to other doctypes |
+| displayField | `string` | Optional field used when displaying references to this doctype |
 
 **Properties:**
 
 | Property | Type | Description |
 |----------|------|-------------|
 | component | `Component` | The doctype component |
+| displayField | `string` | Field on this doctype used when displaying a reference to one of its records. |
 | doctype | `string` | The doctype name |
 | links | `Record<string, LinkDeclaration>` | Relationship links to other doctypes |
 | name | `string` | Alias for doctype (for DoctypeLike interface compatibility) |

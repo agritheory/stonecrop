@@ -198,9 +198,9 @@ describe('AQuantityInput', () => {
 
 		it('displays stock uom, stock qty, and conversion factor within the same box', () => {
 			const wrapper = mount(AQuantityInput, { props: { options, modelValue } })
-			expect(wrapper.find('.aquantity__field--stock-uom input').element.value).toBe('Nos')
-			expect(wrapper.find('.aquantity__field--stock-qty input').element.value).toBe('20')
-			expect(wrapper.find('.aquantity__field--conversion input').element.value).toBe('10')
+			expect(wrapper.find<HTMLInputElement>('.aquantity__field--stock-uom input').element.value).toBe('Nos')
+			expect(wrapper.find<HTMLInputElement>('.aquantity__field--stock-qty input').element.value).toBe('20')
+			expect(wrapper.find<HTMLInputElement>('.aquantity__field--conversion input').element.value).toBe('10')
 		})
 
 		it('labels each read-only field', () => {
@@ -211,9 +211,15 @@ describe('AQuantityInput', () => {
 
 		it('is always disabled, even in edit mode', () => {
 			const wrapper = mount(AQuantityInput, { props: { options, modelValue, mode: 'edit' } })
-			expect(wrapper.find('.aquantity__field--stock-uom input').attributes()).toHaveProperty('disabled')
-			expect(wrapper.find('.aquantity__field--stock-qty input').attributes()).toHaveProperty('disabled')
-			expect(wrapper.find('.aquantity__field--conversion input').attributes()).toHaveProperty('disabled')
+			expect(wrapper.find<HTMLInputElement>('.aquantity__field--stock-uom input').attributes()).toHaveProperty(
+				'disabled'
+			)
+			expect(wrapper.find<HTMLInputElement>('.aquantity__field--stock-qty input').attributes()).toHaveProperty(
+				'disabled'
+			)
+			expect(wrapper.find<HTMLInputElement>('.aquantity__field--conversion input').attributes()).toHaveProperty(
+				'disabled'
+			)
 		})
 
 		it('updates live as qty/uom change', async () => {
@@ -226,8 +232,8 @@ describe('AQuantityInput', () => {
 			const emitted = wrapper.emitted('update:modelValue')!
 			await wrapper.setProps({ modelValue: emitted[emitted.length - 1][0] as any })
 
-			expect(wrapper.find('.aquantity__field--stock-qty input').element.value).toBe('40')
-			expect(wrapper.find('.aquantity__field--conversion input').element.value).toBe('10')
+			expect(wrapper.find<HTMLInputElement>('.aquantity__field--stock-qty input').element.value).toBe('40')
+			expect(wrapper.find<HTMLInputElement>('.aquantity__field--conversion input').element.value).toBe('10')
 		})
 	})
 
