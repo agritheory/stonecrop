@@ -19,7 +19,7 @@
  * @public
  */
 
-import type { DoctypeMeta, DoctypeField, ValueField } from '@stonecrop/schema'
+import type { DoctypeMeta, ValueField } from '@stonecrop/schema'
 import { flattenFields, componentLinkExpansion } from '@stonecrop/schema'
 
 /**
@@ -118,21 +118,13 @@ function resolveDoctype(slug: string, allMeta: DoctypeMeta[]): DoctypeMeta | und
 	return allMeta.find(m => m.slug === slug || m.name === slug)
 }
 
-/**
- * Type guard to check if a field is a ValueField with a doctype (link field).
- */
-function isLinkValueField(field: { kind: string; doctype?: string }): field is ValueField & { doctype: string } {
-	return field.kind === 'field' && typeof field.doctype === 'string'
-}
-
-/**
- * Get the inline link fields from a doctype's fields.
- * Only fields with `doctype` set and component expansion mode 'inline' are included.
- */
-function getInlineLinkFields(fields: DoctypeField[]): ValueField[] {
-	return flattenFields(fields).filter(
-		(field): field is ValueField => isLinkValueField(field) && componentLinkExpansion(field.component) === 'inline'
-	)
+function valueFieldNamed(fields: DoctypeMeta['fields'], fieldname: string): ValueField | undefined {
+	for (const field of flattenFields(fields)) {
+		if (field.kind === 'field' && field.fieldname === fieldname) {
+			return field
+		}
+	}
+	return undefined
 }
 
 /**
@@ -151,27 +143,26 @@ function buildFieldSelection(
 	for (const field of flatFields) {
 		if (field.kind !== 'field') continue
 
-		const valueField = field as ValueField
-		const isLinkField = valueField.doctype && componentLinkExpansion(valueField.component) === 'inline'
+		const isLinkField = field.doctype && componentLinkExpansion(field.component) === 'inline'
 
 		if (isLinkField && depth < maxDepth) {
-			const targetMeta = resolveDoctype(valueField.doctype!, allMeta)
+			const targetMeta = resolveDoctype(field.doctype!, allMeta)
 			if (targetMeta) {
-				const relationshipName = buildRelationshipName(targetMeta.name, valueField.fieldname)
+				const relationshipName = buildRelationshipName(targetMeta.name, field.fieldname)
 				const displayField = targetMeta.displayField
 
 				if (displayField) {
-					selections.push(valueField.fieldname)
+					selections.push(field.fieldname)
 					selections.push(`${relationshipName} { id ${displayField} }`)
-					linkFieldsOut.push(valueField.fieldname)
+					linkFieldsOut.push(field.fieldname)
 				} else {
-					selections.push(valueField.fieldname)
+					selections.push(field.fieldname)
 				}
 			} else {
-				selections.push(valueField.fieldname)
+				selections.push(field.fieldname)
 			}
 		} else {
-			selections.push(valueField.fieldname)
+			selections.push(field.fieldname)
 		}
 	}
 
@@ -260,18 +251,21 @@ export function transformNativeRecord(
 		}
 
 		if (linkFields.includes(key)) {
-			const linkField = flattenFields(meta.fields).find(f => f.kind === 'field' && f.fieldname === key) as
-				ValueField | undefined
+			const linkField = valueFieldNamed(meta.fields, key)
 			if (linkField?.doctype) {
 				const targetMeta = resolveDoctype(linkField.doctype, allMeta)
-				if (targetMeta) {
+				if (targetMeta?.displayField) {
 					const relationshipName = buildRelationshipName(targetMeta.name, key)
-					const nestedRecord = record[relationshipName] as Record<string, unknown> | null
+					const nestedRaw = record[relationshipName]
+					const displayText =
+						nestedRaw !== null && nestedRaw !== undefined && typeof nestedRaw === 'object'
+							? Reflect.get(nestedRaw, targetMeta.displayField)
+							: undefined
 
-					if (nestedRecord && targetMeta.displayField) {
+					if (displayText !== undefined && displayText !== null && displayText !== '') {
 						result[key] = {
 							id: value,
-							displayText: nestedRecord[targetMeta.displayField],
+							displayText,
 						}
 						continue
 					}
