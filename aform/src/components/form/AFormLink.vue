@@ -124,7 +124,15 @@ type FilterFn = (search: string) => AFormLinkValue[] | Promise<AFormLinkValue[]>
 type ResolverFn = (doctype: string, id: string) => string | undefined | Promise<string | undefined>
 const resolver = inject<ResolverFn | null>('aformLinkResolver', null)
 
-/** FK values often arrive as bare scalars; parent forms round-trip them back as scalars after emit. */
+// A link's value arrives as a bare scalar as often as it does as an AFormLinkValue: a record
+// loaded from the DB carries the raw FK column, and a parent bound to that column coerces every
+// update it receives back to a scalar. So read the value through these three helpers rather than
+// reaching into `modelValue.value` directly.
+//
+// Rejected: normalizing on write — an immediate watch that replaced a scalar model with `{ id }`.
+// It survives only until the parent writes its scalar back, so it fixed a scalar passed once at
+// mount and nothing else, and it emitted an `update:modelValue` the user never made on every
+// mount of a scalar-valued link field.
 function linkId(value: AFormLinkValue | string | number | null | undefined): string | undefined {
 	if (value == null) return undefined
 	if (typeof value === 'string') return value === '' ? undefined : value
@@ -145,18 +153,6 @@ function asLinkValue(value: AFormLinkValue | string | number | null | undefined)
 	const id = linkId(value)
 	return id !== undefined ? { id } : { id: '' }
 }
-
-// Records loaded from the DB arrive as scalar UUID strings; normalize to AFormLinkValue
-// so downstream logic can treat the value uniformly.
-watch(
-	() => modelValue.value,
-	value => {
-		if (value !== null && value !== undefined && (typeof value === 'string' || typeof value === 'number')) {
-			modelValue.value = { id: value }
-		}
-	},
-	{ immediate: true }
-)
 
 // When the id changes (including on first render), resolve its display text.
 // Tries filterFunction first (returns a list of candidates to search); falls back to the

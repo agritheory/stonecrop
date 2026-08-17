@@ -1,10 +1,40 @@
 import { describe, it, expect, vi } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
+import { computed, defineComponent, h, ref } from 'vue'
 
 import AFormLink from '../src/components/form/AFormLink.vue'
 import type { AFormLinkValue } from '../src/types'
 
 const idFormatter = (v: AFormLinkValue) => `#${String(v.id)}`
+
+/**
+ * Mount AFormLink under a parent that stores the link as a bare FK scalar — the shape a record
+ * loaded from the DB actually carries — and coerces every `update:modelValue` back to a scalar
+ * before handing it down again. `computed` with a side-effecting setter is the same binding
+ * ACurrencyInput uses, so this is the real host, not a contrived one.
+ */
+function mountScalarHost(filterFunction: (search: string) => Promise<AFormLinkValue[]>) {
+	const raw = ref('CUST-001')
+	const Host = defineComponent({
+		setup() {
+			const model = computed({
+				get: () => raw.value as unknown as AFormLinkValue,
+				set: (value: AFormLinkValue) => {
+					raw.value = value && typeof value === 'object' ? String(value.id) : String(value)
+				},
+			})
+			return () =>
+				h(AFormLink, {
+					modelValue: model.value,
+					'onUpdate:modelValue': (value: AFormLinkValue) => {
+						model.value = value
+					},
+					filterFunction,
+				})
+		},
+	})
+	return { host: mount(Host), raw }
+}
 
 describe('AFormLink component', { tags: ['component'] }, () => {
 	const validValue: AFormLinkValue = { id: 'CUST-001', displayText: 'Acme Corp' }
@@ -24,16 +54,32 @@ describe('AFormLink component', { tags: ['component'] }, () => {
 		expect(wrapper.find('input').element.value).toBe('CUST-001')
 	})
 
-	it('resolves display text on mount when modelValue is a bare scalar id string', async () => {
+	// A link bound straight to its FK column: the parent holds a scalar and coerces every update it
+	// receives back to a scalar, so the component never gets to keep an AFormLinkValue. Mounting with
+	// a bare scalar does NOT cover this — a component that normalizes on write passes that and still
+	// fails here, because the parent's next write undoes the normalization.
+	it('resolves display text when the parent round-trips the FK back as a scalar', async () => {
 		const filterFunction = vi.fn(async (id: string) => [{ id, displayText: 'Acme Corp' }])
-		const wrapper = mount(AFormLink, {
-			props: { modelValue: 'CUST-001', filterFunction },
-		})
+		const { host } = mountScalarHost(filterFunction)
 
 		await flushPromises()
 
 		expect(filterFunction).toHaveBeenCalledWith('CUST-001')
-		expect(wrapper.find('input').element.value).toBe('Acme Corp')
+		expect(host.find('input').element.value).toBe('Acme Corp')
+		expect(host.find('.aform_form-btn').exists()).toBe(true)
+	})
+
+	// Reading a scalar must not rewrite it. An immediate watch that replaced a scalar model with
+	// `{ id }` marked every scalar-valued link field as edited the moment its form rendered.
+	it('emits no update when the value is a bare scalar it has nothing to resolve', async () => {
+		const wrapper = mount(AFormLink, {
+			props: { modelValue: 'CUST-001' as unknown as AFormLinkValue },
+		})
+
+		await flushPromises()
+
+		expect(wrapper.emitted('update:modelValue')).toBeUndefined()
+		expect(wrapper.find('input').element.value).toBe('CUST-001')
 	})
 
 	it('resolves display text on mount when id is set but displayText is absent', async () => {
