@@ -1,6 +1,14 @@
 # Change Log - @stonecrop/aform
 
-This log was last generated on Mon, 17 Aug 2026 19:08:23 GMT and should not be manually modified.
+This log was last generated on Mon, 17 Aug 2026 19:46:36 GMT and should not be manually modified.
+
+## 0.22.0
+Mon, 17 Aug 2026 19:46:36 GMT
+
+### Minor changes
+
+- ADate, ADateRange and ADateTime now use the shared aform input classes, and the time-entry widget formerly exported as ADateTime is now ADateTimeInput.
+- The datetime picker now stays open while the time is edited, and neither ADateTime nor ADuration writes a value on first render.
 
 ## 0.21.0
 Mon, 17 Aug 2026 19:08:23 GMT
