@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { mount } from '@vue/test-utils'
+import { mount, flushPromises } from '@vue/test-utils'
 
 import ADateTimeInput from '../src/components/form/ADateTimeInput.vue'
 import ADateTime from '../src/components/form/ADateTime.vue'
@@ -36,6 +36,22 @@ describe('datetime input component', () => {
 			seconds: 0,
 			meridiem: 'AM',
 		})
+	})
+
+	// `get-time` carries the widget's current value, and it fires on mount as well as on every
+	// edit — so the payload has to say which it is. A parent that cannot tell them apart treats
+	// the start-up announcement as a user selection.
+	it('marks the mount emit as init and a subsequent edit as user', async () => {
+		const wrapper = mount(ADateTimeInput)
+		expect(wrapper.emitted('get-time')![0][0]).toMatchObject({ source: 'init' })
+
+		const hoursInput = wrapper.findAll('input[type="text"]')[0]
+		await hoursInput.setValue(3)
+		await hoursInput.trigger('blur')
+
+		const emitted = wrapper.emitted('get-time')!
+		expect(emitted.length).toBeGreaterThan(1)
+		expect(emitted[emitted.length - 1][0]).toMatchObject({ hours: 3, source: 'user' })
 	})
 
 	it('renders meridiem selector by default', () => {
@@ -428,14 +444,39 @@ describe('datetime form field component', { tags: ['component'] }, () => {
 		expect(input.element.value).toBe(new Date('2023-06-15T14:30:00.000Z').toLocaleString())
 	})
 
-	it('opens picker on click and closes after time selection', async () => {
+	// The picker must survive editing the time. ADateTimeInput emits `get-time` on mount and again
+	// on every blur, arrow key and meridiem change — five times during one ordinary edit — so a
+	// picker that closes on `get-time` closes before it can be used. There is no commit event to
+	// close on, and closing on a date selection would strand the time half of a datetime, so
+	// dismissal is `onClickOutside` alone. That path is NOT covered here: a synthetic click does
+	// not trigger it under jsdom for this component or for ADate, so a test would assert the
+	// environment rather than the code. Checked by hand in Chrome instead — the picker opens on
+	// one click, survives editing the hours and tabbing out, and closes on an outside click.
+	it('opens the picker on click and keeps it open while the time is edited', async () => {
 		const wrapper = mount(ADateTime, formFieldGlobals)
 		expect(wrapper.findComponent(ADateSelection).exists()).toBe(false)
-		await wrapper.find('input').trigger('click')
+
+		await wrapper.find('.aform_input-field').trigger('click')
 		expect(wrapper.findComponent(ADateSelection).exists()).toBe(true)
-		const picker = wrapper.findComponent(ADateSelection)
-		await picker.vm.$emit('get-time', { hours: 3, minutes: 30, seconds: 0, meridiem: 'PM', militaryTime: 15 })
-		expect(wrapper.findComponent(ADateSelection).exists()).toBe(false)
+
+		const hoursInput = wrapper.findAll('input[type="text"]')[1]
+		await hoursInput.setValue(3)
+		await hoursInput.trigger('blur')
+
+		expect(wrapper.findComponent(ADateSelection).exists()).toBe(true)
+	})
+
+	// Opening a picker is not a selection. Before this was guarded, ADateTime seeded the widget
+	// from `new Date()`, the widget echoed those defaults straight back on mount, and the echo was
+	// written to the model — so one click on an empty field silently filled it with "now".
+	it('does not write the model when the picker is only opened', async () => {
+		const wrapper = mount(ADateTime, formFieldGlobals)
+
+		await wrapper.find('.aform_input-field').trigger('click')
+		await flushPromises()
+
+		expect(wrapper.emitted('update:modelValue')).toBeUndefined()
+		expect(wrapper.find('.aform_input-field').element.value).toBe('')
 	})
 
 	it('updates model when date and time are selected', async () => {
@@ -447,7 +488,14 @@ describe('datetime form field component', { tags: ['component'] }, () => {
 		await wrapper.find('input').trigger('click')
 		const picker = wrapper.findComponent(ADateSelection)
 		await picker.vm.$emit('get-date', { selected: new Date('2023-06-15T12:00:00') })
-		await picker.vm.$emit('get-time', { hours: 3, minutes: 30, seconds: 0, meridiem: 'PM', militaryTime: 15 })
+		await picker.vm.$emit('get-time', {
+			hours: 3,
+			minutes: 30,
+			seconds: 0,
+			meridiem: 'PM',
+			militaryTime: 15,
+			source: 'user',
+		})
 		expect(emitted.length).toBeGreaterThan(0)
 		expect(typeof emitted[emitted.length - 1]).toBe('string')
 	})

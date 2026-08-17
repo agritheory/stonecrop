@@ -110,13 +110,22 @@ const handleTime = (data: {
 	seconds: number
 	meridiem: string
 	militaryTime?: number
+	source?: 'init' | 'user'
 }) => {
+	// The widget announces its own starting value as it mounts, and those defaults come from
+	// `pickerDefaults` — i.e. straight back out of this component. Writing that echo to the model
+	// meant one click on an empty field silently filled it with the current date and time.
+	if (data.source === 'init') return
+
 	const next = new Date(currentDateTime.value)
 	const hours = data.militaryTime ?? data.hours
 	next.setHours(hours, data.minutes, useSeconds ? data.seconds : 0, 0)
 	currentDateTime.value = next
 	emitModel()
-	showPicker.value = false
+	// Deliberately does NOT close the picker. `get-time` is the widget's current value, not a
+	// commit — it fires on every blur, arrow key and meridiem change — so closing here shut the
+	// picker as soon as the user tabbed out of the hours field. Dismissal is the click-outside
+	// handler above; closing on `get-date` instead would strand the time half of a datetime.
 }
 
 watch(

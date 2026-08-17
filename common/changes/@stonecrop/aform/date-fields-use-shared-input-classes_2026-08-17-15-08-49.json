@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "comment": "ADate, ADateRange and ADateTime now use the shared aform input classes, and the time-entry widget formerly exported as ADateTime is now ADateTimeInput.",
+      "type": "minor",
+      "packageName": "@stonecrop/aform"
+    }
+  ],
+  "packageName": "@stonecrop/aform"
+}

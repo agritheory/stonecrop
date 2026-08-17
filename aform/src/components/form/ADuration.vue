@@ -57,7 +57,12 @@ watch(duration, newMs => {
 	modelValue.value = newMs
 })
 
-const handleRange = (data: { start: Date; end: Date }) => {
+const handleRange = (data: { start: Date; end: Date; source?: 'init' | 'user' }) => {
+	// Both time widgets announce their starting values as they mount, which ADateSelection turns
+	// into a range. That is not a range the user picked: acting on it wrote a 0ms duration into the
+	// model, and lit the summary strip, on first render.
+	if (data.source === 'init') return
+
 	startDatetime.value = data.start
 	endDatetime.value = data.end
 	modelValue.value = duration.value

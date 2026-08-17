@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "comment": "The datetime picker now stays open while the time is edited, and neither ADateTime nor ADuration writes a value on first render.",
+      "type": "minor",
+      "packageName": "@stonecrop/aform"
+    }
+  ],
+  "packageName": "@stonecrop/aform"
+}
