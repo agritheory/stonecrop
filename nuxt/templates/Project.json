@@ -4,6 +4,7 @@
 	"fields": [
 		{
 			"fieldname": "id",
+			"primaryKey": true,
 			"label": "ID",
 			"component": "ATextInput",
 			"mode": "display"
@@ -38,7 +39,8 @@
 		"actions": {
 			"save": {
 				"label": "Save",
-				"stateless": true
+				"stateless": true,
+				"selfTransition": true
 			},
 			"archive": {
 				"label": "Archive Project",

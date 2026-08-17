@@ -1,6 +1,48 @@
 # Change Log - @stonecrop/nuxt
 
-This log was last generated on Tue, 28 Jul 2026 09:58:37 GMT and should not be manually modified.
+This log was last generated on Fri, 14 Aug 2026 08:05:46 GMT and should not be manually modified.
+
+## 0.18.0
+Fri, 14 Aug 2026 08:05:46 GMT
+
+_Version update only_
+
+## 0.17.0
+Tue, 11 Aug 2026 12:49:04 GMT
+
+### Minor changes
+
+- Add an onError option to useClientAction so a host can route action failures into its own notification system instead of the built-in alert.
+- useClientAction now omits id from the argument envelope for a draft, which is what the write path reads as create. A draft result carrying no identity is no longer stored.
+- BREAKING: remove stonecropCreate, stonecropUpdate and stonecropDelete from the scaffold and playground schemas. stonecropAction is the only write path; saving a record that does not exist creates it
+- useClientAction now writes an action result back under the identity the server settled on and follows the route there, so creating a record from the UI lands on the real record instead of stranding it under a synthetic new- id; the scaffolded page dispatches through it rather than restating the writeback
+
+### Patches
+
+- Fix scaffolded Save actions that could never dispatch, and wire the server-side action effect seam into the scaffold resolvers
+- Re-export useClientAction from @stonecrop/stonecrop so every Vue host can reach it; the Nuxt auto-import and existing @action bindings are unchanged.
+- Update the scaffolded and fullstack resolvers for the records contract: both answer hasMore and withhold the total unless includeTotal is set.
+- Report a missing record from the scaffold and playground action resolvers so a save against one cannot report a false success
+- The scaffolded page keys list rows by the identity the doctype declares rather than a hardcoded `id`, so a natural-keyed doctype no longer has every row silently dropped and its list render empty; the draft-id guard in its load handler is gone now that Desktop does not ask for a draft
+- recordLookupField now calls @stonecrop/schema's getRecordIdField instead of restating the rule. No behaviour change.
+- Create a record when a save targets one that does not exist, resolve action records by the declared primary key, and cover the scaffold resolvers with executed tests
+- Fix templates/plugins.ts, which ships into every scaffolded app. It imported GraphileConfig from graphile-config — an optional peer dependency that is never installed — and the unresolved type degraded both example plugins to any, hiding that they were written against the Web Request API (request.url, request.headers.get) rather than grafserv's RequestDigest (request.path, request.getHeader), and that event.request is optional. Its docblock also showed an inline preset object, which is unsupported; preset is a path to a preset file. templates/ is now type-checked by test:types
+- The scaffolded app no longer binds load-records or load-record and ships no fetch helpers: the registered StonecropClient is its whole data layer.
+- Extract the docbuilder save merge into mergeSavedDoctype and the fields-panel write helpers into docbuilderFields, so the two hops of the unknown-key preservation chain that carried no test now have one. No behavioural change: the save handler and the panel call the extracted helpers verbatim
+
+## 0.16.6
+Tue, 04 Aug 2026 12:14:33 GMT
+
+### Patches
+
+- Resolve records by the declared primaryKey in scaffolded resolvers, and declare a primary key on every doctype
+
+## 0.16.5
+Mon, 03 Aug 2026 11:12:57 GMT
+
+### Patches
+
+- Inline @stonecrop/desktop and @stonecrop/code-editor for SSR, fixing an 'Unknown file extension .css' crash under pnpm installs where a transitively-externalized parent hid atable's stylesheet. DocBuilder now locks introspected identity fields from the shared schema constant, and the playground no longer needs overrides.json.
 
 ## 0.16.4
 Tue, 28 Jul 2026 09:58:37 GMT

@@ -1,6 +1,30 @@
 # Change Log - @stonecrop/nuxt-grafserv
 
-This log was last generated on Tue, 28 Jul 2026 09:58:37 GMT and should not be manually modified.
+This log was last generated on Fri, 14 Aug 2026 08:05:46 GMT and should not be manually modified.
+
+## 0.18.0
+Fri, 14 Aug 2026 08:05:46 GMT
+
+_Version update only_
+
+## 0.17.0
+Tue, 11 Aug 2026 12:49:04 GMT
+
+### Minor changes
+
+- Declare GrafservRuntimeConfig, the resolved shape the module writes into Nitro, and use it in the runtime handler and ruru-static instead of ModuleOptions. The two are not the same — the resolved config carries resolversPath rather than resolvers, and concrete url/graphiql — and conflating them is what forced a @ts-expect-error for resolversPath in the handler. Also adds tsconfig.src.json and tsconfig.test.json so test:types checks this package against the playground's app context, where Nuxt's hook types actually resolve
+
+## 0.16.6
+Tue, 04 Aug 2026 12:14:33 GMT
+
+### Patches
+
+- Fix the test suite failing to collect under vite 7 / rolldown by dropping the Nuxt vitest environment
+
+## 0.16.5
+Mon, 03 Aug 2026 11:12:57 GMT
+
+_Version update only_
 
 ## 0.16.4
 Tue, 28 Jul 2026 09:58:37 GMT

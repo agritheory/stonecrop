@@ -67,9 +67,22 @@ export interface ModuleOptions {
 }
 
 // Stonecrop packages that need to be transpiled (they import CSS in their dist bundles)
-const STONECROP_PACKAGES = [
+//
+// This list must cover every client-side @stonecrop package the app can reach, not just the ones
+// that import CSS themselves. Externalization is transitive: once Nitro treats a package as
+// external, Rollup never traverses into it, so its *dependencies'* CSS imports are left for Node's
+// ESM loader to resolve at runtime — which throws ERR_UNKNOWN_FILE_EXTENSION. `desktop` is the
+// case that bit us: it imports no CSS of its own, but desktop -> aform -> atable reaches
+// `atable/dist/assets/index.css`, and the DocBuilder pages import desktop.
+//
+// Deliberately a list and not a `/@stonecrop[+/]/` pattern: the server-side packages
+// (`graphql-middleware`, `nuxt-grafserv`, `casl-middleware`) pull in postgraphile/@dataplan/pg and
+// must stay external. A blanket pattern would inline them into the Nitro bundle.
+export const STONECROP_PACKAGES = [
 	'@stonecrop/aform',
 	'@stonecrop/atable',
+	'@stonecrop/code-editor',
+	'@stonecrop/desktop',
 	'@stonecrop/stonecrop',
 	'@stonecrop/node-editor',
 	'@stonecrop/utilities',

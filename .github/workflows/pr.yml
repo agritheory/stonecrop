@@ -118,6 +118,16 @@ jobs:
       - name: Oxlint
         run: node common/scripts/install-run-rush.js lint
 
+      # Repo-wide, because the per-package matrix below is paths-filtered and cannot see cross-
+      # package breakage. `heft build` compiles only .ts and `vite build` does not typecheck, so
+      # vue-tsc is the only thing that reads a .vue file — meaning a change confined to schema/**
+      # could break a <script setup> block or a template binding in desktop, aform, atable,
+      # node_editor, code_editor or beam and still merge green. Projects opt in by defining a
+      # `test:types` script, exactly as `lint` works. Runs after Rush Build because vue-tsc needs
+      # dependencies' .d.ts files, and both nuxt builds run `dev:prepare`, so .nuxt exists by now.
+      - name: Typecheck
+        run: node common/scripts/install-run-rush.js test:types
+
       # rush-plugins is required for the rush-sort-package-json plugin to load.
       - name: Install Autoinstallers
         run: node common/scripts/install-run-rush.js install-autoinstaller --name rush-plugins
@@ -204,20 +214,12 @@ jobs:
       - name: Rush Build
         run: node common/scripts/install-run-rush.js build --to ${{ steps.pkg.outputs.name }}
 
-      # Nothing else typechecks single-file components: `heft build` compiles only .ts and
-      # `vite build` does not typecheck, so a type error inside a <script setup> block — or in a
-      # template binding — shipped silently. Only vue-tsc reads .vue, and it needs the dependency
-      # closure built above for cross-package types to resolve.
-      # Packages opt in by defining a `test:types` script, the same way `lint` works.
-      - name: Typecheck
-        working-directory: ./${{ matrix.package }}
-        run: |
-          if node -e "process.exit(require('./package.json').scripts?.['test:types'] ? 0 : 1)"; then
-            node ../common/scripts/install-run-rushx.js test:types
-          else
-            echo "No test:types script for ${{ matrix.package }} — skipping."
-          fi
-
+      # No Typecheck step here on purpose. It used to run per-package, but this matrix is
+      # paths-filtered, so it only ever checked packages whose own files changed — the hole that let
+      # nuxt_grafserv accumulate 28 type errors and shipped a broken plugins.ts into every
+      # scaffolded app. The `Typecheck` step in `pr-checks` now runs `rush test:types` repo-wide
+      # after a full build, which strictly supersedes this. Do not reinstate it here: running
+      # vue-tsc twice for every changed package buys nothing.
       - name: Run Tests
         working-directory: ./${{ matrix.package }}
         run: node ../common/scripts/install-run-rushx.js test:coverage

@@ -4,6 +4,7 @@
 	"fields": [
 		{
 			"fieldname": "id",
+			"primaryKey": true,
 			"label": "ID",
 			"component": "ATextInput",
 			"mode": "display"
@@ -50,6 +51,11 @@
 		"actions": {
 			"save": {
 				"label": "Save",
+				"stateless": true,
+				"selfTransition": true
+			},
+			"snooze": {
+				"label": "Snooze a Week",
 				"stateless": true
 			},
 			"start_task": {

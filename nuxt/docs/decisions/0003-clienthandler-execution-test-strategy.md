@@ -40,4 +40,4 @@ No browser e2e for clientHandler: the execution path is browser-agnostic, so a r
 
 ## More Information
 
-Tests: `stonecrop/tests/core/client-handler.spec.ts` and `nuxt/test/useClientAction.test.ts` (the latter `@vitest-environment node`, with `vi.mock` keeping the real `executeClientHandler` while overriding `useStonecrop`/`useRouter`).
+Tests: `stonecrop/tests/core/client-handler.spec.ts` and `stonecrop/tests/core/client-action.spec.ts` (moved there from `nuxt/test/` when the composable moved — see [0001](0001-clienthandler-execution-host-delegation.md) History; `nuxt/test/useClientAction.test.ts` now only guards the auto-import re-export) (the latter `@vitest-environment node`, with `vi.mock` keeping the real `executeClientHandler` while overriding `useStonecrop`/`useRouter`).

@@ -1,6 +1,31 @@
 # Change Log - @stonecrop/schema
 
-This log was last generated on Tue, 28 Jul 2026 09:58:37 GMT and should not be manually modified.
+This log was last generated on Fri, 14 Aug 2026 08:05:46 GMT and should not be manually modified.
+
+## 0.18.0
+Fri, 14 Aug 2026 08:05:46 GMT
+
+_Version update only_
+
+## 0.17.0
+Tue, 11 Aug 2026 12:49:04 GMT
+
+### Minor changes
+
+- Add getRecordIdField(fields), the single definition of which field identifies a record. DoctypeMeta now rejects a doctype declaring more than one primaryKey; declaring none stays legal and resolves through the id fallback.
+- Return a page from DataClient.getRecords instead of a bare array: the result carries hasMore, so a truncated list is distinguishable from a complete one, plus a count that is opt-in behind the new includeTotal option.
+
+## 0.16.6
+Tue, 04 Aug 2026 12:14:33 GMT
+
+_Version update only_
+
+## 0.16.5
+Mon, 03 Aug 2026 11:12:57 GMT
+
+### Patches
+
+- Add getPrimaryKeyField/getRecordIdentity and INTROSPECTED_IDENTITY_PROPS; generation now verifies an existing doctype and stamps provenance instead of overwriting it, deriving primaryKey only for an unambiguous id. Replaces --overrides/typeOverrides with --names, and adds --check.
 
 ## 0.16.4
 Tue, 28 Jul 2026 09:58:37 GMT

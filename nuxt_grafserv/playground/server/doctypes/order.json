@@ -3,6 +3,7 @@
 	"fields": [
 		{
 			"fieldname": "id",
+			"primaryKey": true,
 			"component": "ATextInput",
 			"label": "ID",
 			"required": true

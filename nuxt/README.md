@@ -125,7 +125,7 @@ export default defineNuxtPlugin(() => {
 })
 ```
 
-This wires `useStonecrop()`'s automatic record loading to your GraphQL (or any other) backend. Without this step, `useStonecrop({ doctype, recordId })` falls back to a REST fetch stub that may not exist in your app.
+This wires record loading to your GraphQL (or any other) backend. It is the seam Desktop reads through as well. There is no fallback: without a registered client, `getRecord` and `getRecords` throw naming `setClient`, and Desktop skips the read and renders empty.
 
 ### Use the Stonecrop Composable
 
@@ -400,7 +400,7 @@ await dispatchAction({ name: 'plan' }, 'SUBMIT', [recordId])
 |-----------------|------|-------------|
 | `registry` | `Registry` | The Registry instance for doctype management. |
 | `stonecrop` | `Stonecrop` | The Stonecrop instance for HST and operation log access. Throws if not initialized. |
-| `setMeta(fn)` | `(fn: (ctx) => Doctype \| Promise<Doctype>) => void` | Sets the `getMeta` function on the Registry. Called by `useStonecrop()` to lazy-load doctype metadata for the current route. `ctx` = `{ path, segments }`. |
+| `setMeta(fn)` | `(fn: (ctx) => Doctype \| Promise<Doctype>) => void` | Sets the `getMeta` function on the Registry. Called by `useStonecrop({ doctype: 'slug' })` to lazy-load that doctype's metadata. `ctx` = `{ path, segments }`. |
 | `setClient(client)` | `(client: DataClient) => void` | Set the data client for record fetching. Throws if stonecrop not available. |
 | `getClient()` | `() => DataClient \| undefined` | Get the currently configured client. |
 | `dispatchAction(doctype, action, args)` | `Promise<{ success, data, error }>` | Dispatch an action via the configured client. Returns error if doctype not found in registry. |

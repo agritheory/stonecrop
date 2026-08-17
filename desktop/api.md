@@ -4,6 +4,14 @@
 
 ## Vue Components
 
+### ActionEventPayload
+
+Vue component exported from @stonecrop/desktop.
+
+```typescript
+import { ActionEventPayload } from '@stonecrop/desktop'
+```
+
 ### ActionSet
 
 Vue component exported from @stonecrop/desktop.
@@ -54,21 +62,6 @@ Superset of all element types in the Action Set
 
 ```typescript
 export type ActionElements = ButtonElement | DropdownElement;
-```
-
-### ActionEventPayload
-
-Payload emitted with the 'action' event when the user triggers an FSM transition
-
-**Definition:**
-
-```typescript
-export type ActionEventPayload = {
-    name: string;
-    doctype: string;
-    recordId: string;
-    data: Record<string, any>;
-};
 ```
 
 ### BaseElement

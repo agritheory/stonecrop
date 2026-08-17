@@ -1,17 +1,30 @@
-import { defineVitestConfig } from '@nuxt/test-utils/config'
+import { defineConfig } from 'vitest/config'
 
-export default defineVitestConfig({
-	// defineVitestConfig automatically sets up the correct environment
-	// Don't override environment here - it breaks the automatic Nuxt environment setup
+export default defineConfig({
+	// This package's tests run in a plain `node` environment, NOT under @nuxt/test-utils'
+	// `defineVitestConfig`. That wrapper installs the Nuxt environment into vitest's Vite
+	// instance, which under vite 7.3.6 / rolldown 1.2.0 fails every file at collection with
+	// `Missing field moduleType` from the `builtin:replace` transform — the whole suite, before
+	// a single test runs. Nothing here needs the Nuxt runtime: the only test that did
+	// (test/e2e/basic.test.ts) is already `describe.skip`ped pending Vue 3.6.
+	//
+	// Losing that environment also loses Nitro's virtual modules, so `nitropack/runtime` is
+	// aliased to a mock below alongside the pre-existing `#internal/grafserv/*` mocks.
+	//
+	// If a test is added that genuinely needs the Nuxt runtime, split this into a projects-based
+	// config and give that test its own `defineVitestProject({ environment: 'nuxt' })`, leaving
+	// these node tests untouched.
 	resolve: {
 		alias: {
 			'#internal/grafserv/resolvers': new URL('./test/mocks/resolvers.ts', import.meta.url).pathname,
 			'#internal/grafserv/middleware': new URL('./test/mocks/middleware.ts', import.meta.url).pathname,
 			'#internal/grafserv/pgl': new URL('./test/mocks/pgl.ts', import.meta.url).pathname,
 			'#build/grafserv-preset': new URL('./test/mocks/preset.ts', import.meta.url).pathname,
+			'nitropack/runtime': new URL('./test/mocks/nitropack-runtime.ts', import.meta.url).pathname,
 		},
 	},
 	test: {
+		environment: 'node',
 		tags: [
 			{ name: 'unit', description: 'Pure logic test — no DOM, network, or framework runtime.' },
 			{ name: 'component', description: 'Vue component test using jsdom + @vue/test-utils.' },

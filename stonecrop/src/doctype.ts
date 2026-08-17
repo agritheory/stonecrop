@@ -1,6 +1,6 @@
 import type { DoctypeField, LinkDeclaration, TriggerDefinition, WorkflowMeta } from '@stonecrop/schema'
-import { isActionAllowedInState, normalizeFieldKind } from '@stonecrop/schema'
-import { List, Map } from 'immutable'
+import { getRecordIdentity, getRecordIdField, isActionAllowedInState, normalizeFieldKind } from '@stonecrop/schema'
+import { List } from 'immutable'
 import { Component } from 'vue'
 
 import type { DoctypeConfig, ImmutableDoctype } from './types/doctype'
@@ -41,13 +41,6 @@ export default class Doctype {
 	readonly workflow: ImmutableDoctype['workflow']
 
 	/**
-	 * The doctype actions and field triggers
-	 * @public
-	 * @readonly
-	 */
-	readonly actions: ImmutableDoctype['actions']
-
-	/**
 	 * The doctype component
 	 * @public
 	 * @readonly
@@ -62,28 +55,35 @@ export default class Doctype {
 	readonly links?: Record<string, LinkDeclaration>
 
 	/**
+	 * Field on this doctype used when displaying a reference to one of its records.
+	 * @public
+	 * @readonly
+	 */
+	readonly displayField?: string
+
+	/**
 	 * Creates a new Doctype instance
 	 * @param doctype - The doctype name
 	 * @param schema - The doctype schema definition
 	 * @param workflow - The doctype workflow configuration (XState machine)
-	 * @param actions - The doctype actions and field triggers
 	 * @param component - Optional Vue component for rendering the doctype
 	 * @param links - Optional relationship links to other doctypes
+	 * @param displayField - Optional field used when displaying references to this doctype
 	 */
 	constructor(
 		doctype: string,
 		schema: ImmutableDoctype['schema'],
 		workflow: ImmutableDoctype['workflow'],
-		actions: ImmutableDoctype['actions'],
 		component?: Component,
-		links?: Record<string, LinkDeclaration>
+		links?: Record<string, LinkDeclaration>,
+		displayField?: string
 	) {
 		this.doctype = doctype
 		this.schema = schema
 		this.workflow = workflow
-		this.actions = actions
 		this.component = component
 		this.links = links
+		this.displayField = displayField
 	}
 
 	/**
@@ -132,9 +132,8 @@ export default class Doctype {
 		// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- normalizeFieldKind only injects the `kind` discriminant; the field shape is otherwise preserved
 		const fields = config.fields?.map(normalizeFieldKind) as DoctypeField[] | undefined
 		const schema = fields ? List(fields) : List<DoctypeField>()
-		const actions = config.actions ? Map(config.actions) : Map<string, string[]>()
 
-		return new Doctype(config.name, schema, config.workflow, actions, undefined, config.links)
+		return new Doctype(config.name, schema, config.workflow, undefined, config.links, config.displayField)
 	}
 
 	/**
@@ -158,16 +157,41 @@ export default class Doctype {
 	}
 
 	/**
-	 * Returns the actions as a plain object for use with components that expect
-	 * plain JavaScript objects.
+	 * Resolve a record's identity using this doctype's declared `primaryKey`, falling back to `id`.
 	 *
-	 * @returns Object mapping action names to field trigger arrays
+	 * Lives here rather than at the call site because the doctype owns its schema — and because the
+	 * rule must match the server's, which builds its SQL identity predicate from the same declared
+	 * field via `@stonecrop/schema`'s `getPrimaryKeyField`.
+	 *
+	 * @param record - the record to read the identity from
+	 * @returns the identity as a string, or `undefined` when neither the declared key nor `id` yields one
 	 *
 	 * @public
 	 */
-	getActionsObject(): Record<string, string[]> {
-		if (!this.actions) return {}
-		return this.actions.toObject()
+	getRecordId(record: Record<string, unknown>): string | undefined {
+		return getRecordIdentity(this.getSchemaArray(), record)
+	}
+
+	/**
+	 * The field a record of this doctype is identified by: the declared `primaryKey`, or `id`
+	 * when nothing is declared.
+	 *
+	 * The client-side twin of the adapters' `recordLookupField`. Both are the same call to
+	 * `@stonecrop/schema`'s `getRecordIdField`, so the field a caller reads an identity out of is
+	 * the same field the adapter builds its lookup predicate on.
+	 *
+	 * Use this to ask whether a record *states* its own identity. `getRecordId` deliberately
+	 * falls back to `id` when the declared key is missing, which is right for resolving a link
+	 * from a record already in hand and wrong for deciding whether a server response settled on
+	 * a new identity: a response that omits a natural key would resolve through that fallback to
+	 * a surrogate the adapter cannot look up.
+	 *
+	 * @returns The identifying fieldname
+	 *
+	 * @public
+	 */
+	get recordIdField(): string {
+		return getRecordIdField(this.getSchemaArray())
 	}
 
 	/**

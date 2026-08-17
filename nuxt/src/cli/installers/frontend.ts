@@ -10,6 +10,7 @@ import consola from 'consola'
 import { addDependencies } from '../utils/package'
 import { updateNuxtConfig } from '../utils/config'
 import { loadTemplate } from '../utils/templates'
+import { STONECROP_PACKAGES } from '../../module'
 
 export interface FrontendInstallerOptions {
 	cwd: string
@@ -60,15 +61,11 @@ export async function installFrontend(options: FrontendInstallerOptions): Promis
 			// This is required because the packages use vite-plugin-lib-inject-css which adds
 			// CSS imports to the JavaScript bundles. Node.js ESM loader doesn't understand .css files,
 			// so we need Nitro to bundle these packages (allowing Vite to process the CSS)
+			// Shares the module's list rather than restating it: the two previously disagreed
+			// (this one had `desktop` but not `themes`; the module's had the reverse), so a
+			// scaffolded app and the module inlined different sets.
 			nitroConfig: {
-				externalsInline: [
-					'@stonecrop/aform',
-					'@stonecrop/atable',
-					'@stonecrop/stonecrop',
-					'@stonecrop/node-editor',
-					'@stonecrop/utilities',
-					'@stonecrop/desktop',
-				],
+				externalsInline: [...STONECROP_PACKAGES],
 			},
 			css: ['@stonecrop/desktop/styles'],
 		})

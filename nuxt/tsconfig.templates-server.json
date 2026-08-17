@@ -1,0 +1,22 @@
+{
+	// Typechecks the Nitro-side scaffold templates. See tsconfig.templates-app.json for why
+	// `templates/` was previously covered by nothing and why fullstack is the reference context.
+	//
+	// This is the pass that mattered: templates/plugins.ts imported `GraphileConfig` from
+	// `graphile-config`, an optional peer dependency that is therefore never installed. The
+	// unresolved type degraded both example plugins to `any`, hiding that they were written against
+	// the Web `Request` API (`request.url`, `request.headers.get()`) rather than grafserv's
+	// RequestDigest (`request.path`, `request.getHeader()`), and that `event.request` is optional.
+	//
+	// Extends the Nitro context, mirroring fullstack/server/tsconfig.json, and lists the base's own
+	// nitro type entries explicitly because `include` replaces rather than extends.
+	"extends": "./fullstack/.nuxt/tsconfig.server.json",
+	"include": [
+		"fullstack/.nuxt/types/nitro-nuxt.d.ts",
+		"fullstack/.nuxt/types/nitro.d.ts",
+		"templates/resolvers.ts",
+		"templates/data.ts",
+		"templates/stonecrop.ts",
+		"templates/plugins.ts"
+	]
+}

@@ -1,11 +1,16 @@
 import { Doctype } from '@stonecrop/stonecrop'
+import { CountriesDataClient } from '~/composables/useCountriesDataClient'
 import { doctypeMap } from '~/composables/useDoctypes'
 
 export default defineNuxtPlugin({
 	name: 'stonecrop-playground',
 	dependsOn: ['stonecrop'],
 	setup() {
-		const { registerMeta, registerDoctype } = useStonecropSetup()
+		const { registerMeta, registerDoctype, registerClient } = useStonecropSetup()
+
+		// Registering a client is what hands the read path to Stonecrop. Without one it fetches
+		// nothing and the page has to do it, which is how the keying rule ended up written per host.
+		registerClient(new CountriesDataClient())
 
 		// Register meta resolver — maps URL slug → Doctype instance
 		registerMeta(routeContext => {

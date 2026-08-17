@@ -1,4 +1,4 @@
-import { List, Map } from 'immutable'
+import { List } from 'immutable'
 import { App } from 'vue'
 import { vi } from 'vitest'
 
@@ -36,6 +36,6 @@ export const buildDoctype = vi.defineHelper(
 			states,
 		}
 
-		return new Doctype(name, schema, workflow, Map({}))
+		return new Doctype(name, schema, workflow)
 	}
 )

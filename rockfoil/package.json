@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/rockfoil",
-	"version": "0.16.4",
+	"version": "0.18.0",
 	"description": "PostGraphile plugin for Stonecrop schema integration",
 	"homepage": "https://github.com/agritheory/rockfoil#readme",
 	"bugs": {
@@ -25,7 +25,6 @@
 			"types": "./dist/rockfoil.d.ts",
 			"import": "./dist/rockfoil.js"
 		},
-		"./styles": "./dist/assets/index.css",
 		"./types": "./dist/src/types/index.d.ts"
 	},
 	"types": "./dist/rockfoil.d.ts",

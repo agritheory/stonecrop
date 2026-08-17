@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-import { DoctypeFieldSchema } from './field'
+import { DoctypeFieldSchema, flattenFields, getDisplayField } from './field'
 
 /**
  * Cardinality for relationship links.
@@ -309,6 +309,13 @@ export const DoctypeMeta = z
 		/** URL-friendly slug (kebab-case) */
 		slug: z.string().min(1).optional(),
 
+		/**
+		 * Field on this doctype used when displaying a reference to one of its records.
+		 * When a record elsewhere holds a foreign key to this doctype, the middleware may
+		 * include `fieldname__display` alongside the raw id, resolved from this field.
+		 */
+		displayField: z.string().min(1).optional(),
+
 		/** Field definitions (a link field is one carrying `doctype`) */
 		fields: z.array(DoctypeFieldSchema),
 
@@ -325,12 +332,69 @@ export const DoctypeMeta = z
 		title: 'DoctypeMeta',
 		description: 'Doctype metadata - complete definition of a doctype',
 	})
+	.superRefine((doctype, ctx) => {
+		// A record is identified by exactly one field here, and that is the design rather than a
+		// limitation awaiting composite support. A doctype describes the **API surface** a client
+		// interacts with, not the table behind it; how a composite database key maps onto a single
+		// identity on that surface is the server's business, and the client neither sees nor
+		// encodes the parts. So there is nothing for a doctype-level composite key to express.
+		//
+		// Declaring several is therefore malformed, and silently so: `getPrimaryKeyField` takes the
+		// first match and the rest are ignored, leaving an adapter to key records on a column that
+		// need not be unique — `stonecropRecord`'s row map then keeps whichever row comes last.
+		// Refusing at the gate is what makes it say so.
+		//
+		// Zero keys stays legal and is not an omission: a surrogate-key doctype declares none and
+		// resolves through `getRecordIdField`'s documented `id` fallback.
+		const declared = doctype.fields.filter(f => f.kind === 'field' && f.primaryKey)
+		if (declared.length > 1) {
+			ctx.addIssue({
+				code: 'custom',
+				path: ['fields'],
+				message: `Doctype declares ${declared.length} primaryKey fields (${declared
+					.map(f => (f.kind === 'field' ? f.fieldname : ''))
+					.join(
+						', '
+					)}); a record is identified by exactly one field. A composite database key is mapped to a single identity by the adapter, so a doctype never declares its parts`,
+			})
+		}
+
+		// Through `getDisplayField` rather than a scan written here, because the adapter builds its
+		// SELECT from that same call. The two hand-rolled versions disagreed in both directions at
+		// once: this gate scanned top-level only, so it rejected a fieldset-nested field that would
+		// have worked, while neither side excluded `computed` fields, so a nomination naming one
+		// passed the gate and then failed as a missing column at query time.
+		if (doctype.displayField && !getDisplayField(doctype.fields, doctype.displayField)) {
+			const named = flattenFields(doctype.fields).find(f => f.fieldname === doctype.displayField)
+			ctx.addIssue({
+				code: 'custom',
+				path: ['displayField'],
+				message: named
+					? `displayField "${doctype.displayField}" names a computed field, which has no column to read a display value from`
+					: `displayField "${doctype.displayField}" is not declared on this doctype`,
+			})
+		}
+	})
 
 /**
  * Doctype metadata type inferred from Zod schema
  * @public
  */
 export type DoctypeMeta = z.infer<typeof DoctypeMeta>
+
+/**
+ * Suffix appended to a link fieldname for its pre-resolved display text in record payloads.
+ * @public
+ */
+export const LINK_DISPLAY_SUFFIX = '__display'
+
+/**
+ * Build the payload key for a link field's display text (e.g. `customerId__display`).
+ * @public
+ */
+export function linkDisplayFieldname(fieldname: string): string {
+	return `${fieldname}${LINK_DISPLAY_SUFFIX}`
+}
 
 /**
  * Context for identifying what doctype/record we're working with.
@@ -391,6 +455,14 @@ export interface GetRecordsOptions {
 	limit?: number
 	/** Number of records to skip */
 	offset?: number
+	/**
+	 * Ask the backend for the total matching the filters as well as the page.
+	 *
+	 * Off by default because it costs a second query — a full scan on Postgres — and knowing
+	 * *whether* more exist (`hasMore`) is what a list view actually needs. Turn it on for a
+	 * "showing 20 of 4,312" style display.
+	 */
+	includeTotal?: boolean
 }
 
 /**
@@ -400,6 +472,28 @@ export interface GetRecordsOptions {
 export interface GetRecordResult {
 	/** The record data, or null if not found */
 	record: Record<string, unknown> | null
+}
+
+/**
+ * Result from getRecords — a page of records, and enough to tell that it is one.
+ *
+ * A bare array used to be returned here, which claimed to be the whole collection. It is not:
+ * a limit always applies, so a caller could not distinguish a complete list from a truncated
+ * one. That is the entire reason this type exists.
+ *
+ * @public
+ */
+export interface GetRecordsResult {
+	/** The records in this page */
+	data: Record<string, unknown>[]
+	/** Whether the backend holds further records beyond this page */
+	hasMore: boolean
+	/**
+	 * Total records matching the filters, ignoring limit/offset. Present only when the caller
+	 * asked for it via {@link GetRecordsOptions.includeTotal} — counting is a full scan on most
+	 * backends, so it is never computed speculatively.
+	 */
+	count?: number
 }
 
 /**
@@ -433,12 +527,12 @@ export interface DataClient<T extends DoctypeRef = DoctypeRef, M = DoctypeMeta> 
 	getRecord(doctype: T, recordId: string, options?: GetRecordOptions): Promise<GetRecordResult>
 
 	/**
-	 * Fetch multiple records
+	 * Fetch a page of records
 	 * @param doctype - Doctype reference (name and optional slug)
 	 * @param options - Query options
-	 * @returns Array of record data
+	 * @returns The page, plus whether more exist and (on request) the total
 	 */
-	getRecords(doctype: T, options?: GetRecordsOptions): Promise<Record<string, unknown>[]>
+	getRecords(doctype: T, options?: GetRecordsOptions): Promise<GetRecordsResult>
 
 	/**
 	 * Execute a doctype action (e.g., SUBMIT, APPROVE, save).

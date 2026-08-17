@@ -135,7 +135,7 @@ Fields with `computed: true` have no backing database column and are excluded fr
 
 ## Actions
 
-Actions are declared per doctype in `workflow.actions` — there is no separate handler registry. Each action names the states it may run from (`allowedStates`) and the state the record moves to (`nextState`):
+Actions are declared per doctype in `workflow.actions`. Each action names the states it may run from (`allowedStates`) and the state the record moves to (`nextState`):
 
 ```json
 "workflow": {
@@ -147,7 +147,19 @@ Actions are declared per doctype in `workflow.actions` — there is no separate 
 }
 ```
 
-The `stonecropAction(doctype, action, args)` mutation dispatches through `applyGuardedTransition`: it reads the record's `status`, rejects the action if the current state is not in `allowedStates` (`isActionAllowedInState`), then writes `nextState`. The record is identified by `args[0].id`. Actions with no `nextState` (stateless commands) and self-transitions have no state target and are rejected by this backend rather than silently succeeding.
+The `stonecropAction(doctype, action, args)` mutation dispatches through `applyGuardedTransition`: it reads the record's `status`, rejects the action if the current state is not in `allowedStates` (`isActionAllowedInState`), then writes `nextState`. The record is identified by `args[0].id`. Self-transitions (`selfTransition: true`) have no state target and no data-write path on this backend, so they are rejected rather than silently succeeding.
+
+An action against a record that does not exist is reported as such, before the guard runs. This depends on the backend distinguishing the two things `undefined` used to mean — `GuardedTransitionIO.readState` returns `null` for a lookup that missed, and `undefined` only for a row that exists with no workflow state. A backend that returns `undefined` for both makes a bad id look like a workflow violation, or, when the action declares no `allowedStates`, makes it look like a success.
+
+### Creating a record
+
+There is no create mutation, no create action, and no separate create write. **Saving a record that does not exist creates it**, because "persist this record's data" is one request whether or not the row is there yet. `GuardedTransitionIO.writeData` is an upsert: it receives an `exists` flag the dispatcher already knows, having read the record's state to run the guard. A backend that omits `writeData` declines both saving and creating, which is the Postgres adapter's position today; the two nuxt hosts implement it.
+
+`allowedStates` is deliberately not consulted on creation — it constrains movement between states, and a record being created is not in one. Its initial state is the backend's to set. Only a self-transition creates: a `nextState` transition against a missing record is a bad id, not a request to create one.
+
+Identity belongs to `writeData`, not the dispatcher. Read the declared `primaryKey` out of the submitted data for a natural-keyed doctype — that value is a field the user filled in — and mint one only when the doctype is surrogate-keyed. The New Record flow dispatches with **no** `id` in the envelope, because an unsaved record has no identity to send; the created record comes back carrying the one the backend assigned.
+
+A `writeData` that only knows how to patch will match no row and return nothing. The dispatcher treats an empty return on the create path as exactly that and fails loudly, rather than letting a save that stored nothing report success.
 
 ## Custom fetch handlers
 

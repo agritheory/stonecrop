@@ -1,12 +1,18 @@
+import { createRequire } from 'node:module'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { addServerHandler, addServerPlugin } from '@nuxt/kit'
 
-import type { ModuleOptions } from '../../src/types'
+import type { GrafservRuntimeConfig, ModuleOptions, SchemaRuntimeConfig } from '../../src/types'
 
 interface MockNitroConfig {
 	alias: Record<string, string>
 	runtimeConfig: {
-		grafserv?: ModuleOptions
+		/**
+		 * What the module *writes*, which is not what it *reads*. Authored `ModuleOptions` are
+		 * resolved during `nitro:config` into the narrower `GrafservRuntimeConfig` — absolute paths,
+		 * `resolversPath` in place of `resolvers`, and concrete `url`/`graphiql`.
+		 */
+		grafserv?: GrafservRuntimeConfig
 	}
 	virtual: Record<string, string>
 	externals: { external?: string[] }
@@ -22,6 +28,19 @@ interface MockNuxt {
 		grafserv?: ModuleOptions
 	}
 	hook: ReturnType<typeof vi.fn>
+}
+
+/**
+ * Narrow the captured runtime config to schema mode.
+ *
+ * `GrafservRuntimeConfig` is a discriminated union and only its schema arm carries `schema`, so the
+ * discriminant is asserted rather than cast past. A module that started writing the PostGraphile
+ * shape here would fail on the `type` expectation instead of silently reading `undefined`.
+ */
+function schemaRuntimeConfig(config: MockNitroConfig): SchemaRuntimeConfig {
+	const written = config.runtimeConfig.grafserv
+	expect(written?.type).toBe('schema')
+	return written as SchemaRuntimeConfig
 }
 
 /**
@@ -179,6 +198,50 @@ describe('Grafserv Module', { tags: ['unit', 'nuxt', 'graphql'] }, () => {
 			expect(nitroConfig.alias['#grafserv-server']).toBe('/test/project/server')
 		})
 
+		// grafast and graphql have to be ONE module instance across the preset, the resolvers and the
+		// request handler; two copies produce "Now is not a valid time to call currentLayerPlan".
+		//
+		// The assertion is a fixed point rather than a literal path, because the way to get this wrong
+		// is to alias a forwarding stub. `postgraphile/grafast` is nothing but `export * from
+		// "grafast"`, so it resolves, imports and behaves like grafast. Nitro copies every alias into
+		// the generated tsconfig `paths`, which are global, so aliasing to the stub rewrites the stub's
+		// own specifier back to itself — a module that re-exports itself, which exports nothing.
+		// Resolving the specifier from the aliased file's own directory is what separates the two:
+		// only the real package comes back to itself.
+		it('aliases grafast and graphql to the real package rather than a forwarding stub', async () => {
+			const options: ModuleOptions = {
+				type: 'schema',
+				schema: 'server/**/*.graphql',
+				resolvers: 'server/resolvers.ts',
+				url: '/graphql/',
+			}
+
+			await module(options, mockNuxt)
+
+			for (const specifier of ['grafast', 'graphql']) {
+				const aliased = nitroConfig.alias[specifier]
+				if (!aliased) throw new Error(`no alias registered for '${specifier}'`)
+				expect(createRequire(aliased).resolve(specifier)).toBe(aliased)
+			}
+		})
+
+		// Both spellings are in live use — graphql_middleware imports from `postgraphile/grafast`, a
+		// scaffolded resolvers.ts from bare `grafast` — so they have to land on the same file for the
+		// single-instance guarantee above to mean anything.
+		it('lands every spelling of grafast and graphql on the same file', async () => {
+			const options: ModuleOptions = {
+				type: 'schema',
+				schema: 'server/**/*.graphql',
+				resolvers: 'server/resolvers.ts',
+				url: '/graphql/',
+			}
+
+			await module(options, mockNuxt)
+
+			expect(nitroConfig.alias['postgraphile/grafast']).toBe(nitroConfig.alias['grafast'])
+			expect(nitroConfig.alias['postgraphile/graphql']).toBe(nitroConfig.alias['graphql'])
+		})
+
 		it('should configure runtime config with schema paths', async () => {
 			const options: ModuleOptions = {
 				type: 'schema',
@@ -190,7 +253,7 @@ describe('Grafserv Module', { tags: ['unit', 'nuxt', 'graphql'] }, () => {
 			await module(options, mockNuxt)
 
 			expect(nitroConfig.runtimeConfig.grafserv).toBeDefined()
-			expect(nitroConfig.runtimeConfig.grafserv?.schema).toBe('/test/project/server/**/*.graphql')
+			expect(schemaRuntimeConfig(nitroConfig).schema).toBe('/test/project/server/**/*.graphql')
 		})
 
 		it('should handle absolute schema paths', async () => {
@@ -203,7 +266,7 @@ describe('Grafserv Module', { tags: ['unit', 'nuxt', 'graphql'] }, () => {
 
 			await module(options, mockNuxt)
 
-			expect(nitroConfig.runtimeConfig.grafserv?.schema).toBe('/absolute/path/schema.graphql')
+			expect(schemaRuntimeConfig(nitroConfig).schema).toBe('/absolute/path/schema.graphql')
 		})
 
 		it('should handle array of schema paths', async () => {
@@ -216,7 +279,7 @@ describe('Grafserv Module', { tags: ['unit', 'nuxt', 'graphql'] }, () => {
 
 			await module(options, mockNuxt)
 
-			expect(nitroConfig.runtimeConfig.grafserv?.schema).toEqual([
+			expect(schemaRuntimeConfig(nitroConfig).schema).toEqual([
 				'/test/project/server/schema1.graphql',
 				'/test/project/server/schema2.graphql',
 			])
@@ -233,7 +296,7 @@ describe('Grafserv Module', { tags: ['unit', 'nuxt', 'graphql'] }, () => {
 
 			await module(options, mockNuxt)
 
-			expect(nitroConfig.runtimeConfig.grafserv?.schema).toBe(schemaFn)
+			expect(schemaRuntimeConfig(nitroConfig).schema).toBe(schemaFn)
 		})
 
 		it('should create virtual module for resolvers', async () => {

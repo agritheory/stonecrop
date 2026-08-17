@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "comment": "Use a link's pre-resolved display text from the row instead of refetching it.",
+      "type": "minor",
+      "packageName": "@stonecrop/atable"
+    }
+  ],
+  "packageName": "@stonecrop/atable"
+}

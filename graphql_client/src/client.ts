@@ -5,12 +5,13 @@ import type {
 	DoctypeRef,
 	GetRecordOptions,
 	GetRecordsOptions,
+	GetRecordsResult,
 } from '@stonecrop/schema'
 import type { GetRecordResult } from './types'
 import { GET_META_QUERY, GET_ALL_META_QUERY, RUN_ACTION_MUTATION } from './queries'
 
 export type { DoctypeContext, DoctypeRef }
-export type { GetRecordResult }
+export type { GetRecordResult, GetRecordsResult }
 
 /**
  * Options for creating a Stonecrop client
@@ -160,9 +161,9 @@ export class StonecropClient implements DataClient {
 	 * @param doctype - Doctype reference (name and optional slug)
 	 * @param options - Query options (filters, orderBy, limit, offset)
 	 */
-	async getRecords(doctype: DoctypeRef, options?: GetRecordsOptions): Promise<Record<string, unknown>[]> {
+	async getRecords(doctype: DoctypeRef, options?: GetRecordsOptions): Promise<GetRecordsResult> {
 		const result = await this.query<{
-			stonecropRecords: { data: Record<string, unknown>[] }
+			stonecropRecords: { data: Record<string, unknown>[]; hasMore: boolean; count: number | null }
 		}>(
 			`
 			query GetRecords(
@@ -171,6 +172,7 @@ export class StonecropClient implements DataClient {
 				$orderBy: String
 				$limit: Int
 				$offset: Int
+				$includeTotal: Boolean
 			) {
 				stonecropRecords(
 					doctype: $doctype
@@ -178,8 +180,10 @@ export class StonecropClient implements DataClient {
 					orderBy: $orderBy
 					limit: $limit
 					offset: $offset
+					includeTotal: $includeTotal
 				) {
 					data
+					hasMore
 					count
 				}
 			}
@@ -190,7 +194,10 @@ export class StonecropClient implements DataClient {
 			}
 		)
 
-		return result.stonecropRecords.data
+		const { data, hasMore, count } = result.stonecropRecords
+		// `count` is null unless includeTotal was set. Omitting the key rather than passing null
+		// through keeps "not asked for" and "asked for, and it is zero" distinguishable.
+		return count == null ? { data, hasMore } : { data, hasMore, count }
 	}
 
 	/**

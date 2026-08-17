@@ -544,18 +544,15 @@ describe('convertGraphQLSchema', { tags: ['unit'] }, () => {
 			expect(names).not.toContain('Comment')
 		})
 
-		it('should apply type overrides', () => {
+		it('should emit a doctype under a remapped name', () => {
 			const doctypes = convertGraphQLSchema(basicSdl, {
-				typeOverrides: {
-					User: {
-						email: { component: 'ATextboxInput', label: 'Email Address' },
-					},
-				},
+				include: ['User'],
+				doctypeNames: { User: 'Person' },
 			})
-			const user = doctypes.find(d => d.name === 'User')!
-			const emailField = user.fields.find(f => f.fieldname === 'email')!
-			expect(emailField.component).toBe('ATextboxInput')
-			expect(emailField.label).toBe('Email Address')
+			expect(doctypes).toHaveLength(1)
+			expect(doctypes[0].name).toBe('Person')
+			// slug follows the doctype name, not the type name — it addresses the file and the route
+			expect(doctypes[0].slug).toBe('person')
 		})
 
 		it('should use custom isEntityType', () => {
@@ -688,19 +685,15 @@ describe('convertGraphQLSchema', { tags: ['unit'] }, () => {
 			}
 		})
 
-		it('should preserve kind: "field" when typeOverrides are applied', () => {
+		it('should preserve kind: "field" under a doctype name remap', () => {
 			const doctypes = convertGraphQLSchema(basicSdl, {
-				typeOverrides: {
-					User: {
-						email: { component: 'AEmailInput' },
-					},
-				},
+				doctypeNames: { User: 'Person' },
 			})
 
-			const user = doctypes.find(d => d.name === 'User')!
-			const emailField = user.fields.find(f => f.fieldname === 'email')
-			expect(emailField?.kind).toBe('field')
-			expect(emailField?.component).toBe('AEmailInput')
+			const person = doctypes.find(d => d.name === 'Person')!
+			for (const field of person.fields) {
+				expect(field.kind).toBe('field')
+			}
 		})
 
 		it('should produce kind: "field" when classifyField hook is used', () => {
@@ -732,19 +725,15 @@ describe('provenance stamping (source: "introspected")', { tags: ['unit'] }, () 
 		}
 	})
 
-	it('preserves the marker when typeOverrides are applied', () => {
+	it('preserves the marker under a doctype name remap', () => {
 		const doctypes = convertGraphQLSchema(basicSdl, {
-			typeOverrides: {
-				User: {
-					email: { label: 'Email Address', component: 'AEmailInput' },
-				},
-			},
+			doctypeNames: { User: 'Person' },
 		})
 
-		const user = doctypes.find(d => d.name === 'User')!
-		const emailField = user.fields.find(f => f.fieldname === 'email')
-		expect(emailField?.label).toBe('Email Address')
-		expect(emailField?.source).toBe('introspected')
+		const person = doctypes.find(d => d.name === 'Person')!
+		for (const field of person.fields) {
+			expect(field.source, `Person.${field.fieldname}`).toBe('introspected')
+		}
 	})
 
 	it('stamps fields produced by the classifyField hook', () => {

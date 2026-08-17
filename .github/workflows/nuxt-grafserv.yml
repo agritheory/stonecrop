@@ -73,6 +73,13 @@ jobs:
         working-directory: nuxt_grafserv/
         run: node ../common/scripts/install-run-rushx.js test
 
+      # Mirrors nuxt.yml. `pr-checks` now runs `rush test:types` repo-wide, but only on
+      # pull_request — this workflow also runs on push to development, where nothing else would
+      # typecheck this package. Its absence is how 28 type errors accumulated here unseen.
+      - name: Type Check
+        working-directory: nuxt_grafserv/
+        run: node ../common/scripts/install-run-rushx.js test:types
+
       - name: Save Rush Build Cache
         if: always()
         uses: actions/cache/save@v5

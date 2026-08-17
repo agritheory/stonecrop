@@ -1,24 +1,24 @@
 import { readFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { describe, it, expect } from 'vitest'
-import { convertGraphQLSchema } from '@stonecrop/schema'
+import { convertGraphQLSchema, mergeIntrospectedDoctype } from '@stonecrop/schema'
 
 /**
- * Reproducibility oracle for the playground's GraphQL-introspected doctypes.
+ * Regeneration oracle for the playground's GraphQL-introspected doctypes.
  *
- * The checked-in doctype JSONs must be exactly what the documented CLI command
- * produces from the checked-in introspection snapshot + overrides file:
+ * Re-running the documented CLI command over the checked-in introspection snapshot must be a
+ * **no-op**:
  *
  *   stonecrop-schema generate -i introspection.json -o doctypes \
- *     --include Country,Continent,Language,State,Subdivision \
- *     --overrides overrides.json
+ *     --include Country,Continent,Language,State,Subdivision
  *
- * If this fails, the fix is to update overrides.json (durable hand-tuning
- * lives there) and re-run the command — never to hand-edit the output files.
+ * That is a stronger property than the byte-identity check this replaced. The old test compared
+ * the files to raw converter output plus an `overrides.json` of hand-tuning; it could only pass if
+ * every durable edit was mirrored in that side file. The doctypes are now the source of truth, so
+ * this asserts what actually matters: generation confirms them and changes nothing.
  *
- * overrides.json deliberately lives at the playground root, NOT inside
- * doctypes/ — the module (docbuilder + route-gen) and the client glob treat
- * every JSON in doctypesDir as a doctype.
+ * If it fails, the doctype and the schema have genuinely diverged — fix whichever is wrong. Do not
+ * "fix" it by pasting generator output over the file; that is what discards curation.
  */
 
 const playgroundDir = resolve(__dirname, '../playground')
@@ -27,25 +27,51 @@ const doctypesDir = join(playgroundDir, 'doctypes')
 const INCLUDE = ['Country', 'Continent', 'Language', 'State', 'Subdivision']
 
 describe('playground doctype generation', { tags: ['unit'] }, () => {
-	it('checked-in doctypes are byte-identical to generator output for the snapshot + overrides', () => {
-		const introspection = JSON.parse(readFileSync(join(playgroundDir, 'introspection.json'), 'utf-8'))
-		const overrides = JSON.parse(readFileSync(join(playgroundDir, 'overrides.json'), 'utf-8'))
+	const introspection = JSON.parse(readFileSync(join(playgroundDir, 'introspection.json'), 'utf-8'))
+	const generated = convertGraphQLSchema(introspection.data ?? introspection, { include: INCLUDE })
 
-		const generated = convertGraphQLSchema(introspection.data ?? introspection, {
-			include: INCLUDE,
-			typeOverrides: overrides,
-		})
-
+	it('converts exactly the included types', () => {
 		expect(generated.map(d => d.name).sort()).toEqual([...INCLUDE].sort())
+	})
 
+	it('regenerating over the checked-in doctypes is a no-op', () => {
 		for (const doctype of generated) {
-			const onDisk = readFileSync(join(doctypesDir, `${doctype.slug}.json`), 'utf-8')
-			// Byte-identity with the CLI's serialization (tab-indented + trailing
-			// newline) — guards content, key order, and formatting drift alike.
+			const path = join(doctypesDir, `${doctype.slug}.json`)
+			const onDisk = readFileSync(path, 'utf-8')
+			const { doctype: merged } = mergeIntrospectedDoctype(JSON.parse(onDisk), doctype)
+
+			// Byte-identity against the CLI's serialization (tab-indented, trailing newline) — this
+			// guards content, key order and formatting alike, so a merge that reordered keys would
+			// be caught even when the data is equivalent.
+			expect(onDisk, `${doctype.slug}.json is not regenerate-stable`).toBe(JSON.stringify(merged, null, '\t') + '\n')
+		}
+	})
+
+	it('declares a natural key the converter must neither derive nor overwrite', () => {
+		// The countries schema has no derivable primary key — every type is keyed on `code`, which
+		// SDL cannot distinguish from any other column, so the converter must abstain. The doctypes
+		// now declare `code` by hand: this is exactly the "natural-key PK left manual" case, where
+		// the merge REPORTS the divergence and must never apply it.
+		//
+		// Two independent failure modes are guarded here. If the converter starts guessing, the
+		// `should derive no primary key` assertion fails. If the merge starts applying generated
+		// identity over authored identity, the authored `code` key disappears — which the
+		// byte-identity check above would catch first, and the surviving-key check below confirms.
+		for (const doctype of generated) {
+			const onDisk = JSON.parse(readFileSync(join(doctypesDir, `${doctype.slug}.json`), 'utf-8'))
+			const { doctype: merged, drift } = mergeIntrospectedDoctype(onDisk, doctype)
+
+			expect(drift.identityDrift, `${doctype.slug} should report exactly the authored key`).toHaveLength(1)
+			expect(drift.identityDrift[0], `${doctype.slug}`).toContain('code.primaryKey')
+
 			expect(
-				onDisk,
-				`${doctype.slug}.json drifted from generator output — update overrides.json and re-run the CLI`
-			).toBe(JSON.stringify(doctype, null, '\t') + '\n')
+				doctype.fields.some(f => f.primaryKey),
+				`${doctype.slug} should derive no primary key`
+			).toBe(false)
+			expect(
+				merged.fields.find(f => f.primaryKey)?.fieldname,
+				`${doctype.slug} authored primary key must survive the merge`
+			).toBe('code')
 		}
 	})
 })

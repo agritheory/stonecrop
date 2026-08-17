@@ -5,6 +5,14 @@ deciders: ['Rohan Bansal']
 ---
 # Document the action-handler casing contract instead of adding a conversion mechanism
 
+> **Still current, but the names moved.** When this was written, handlers came from the global
+> registry removed in 0.14.0. They are now registered on the adapter as
+> `createStonecropPlugin({ actionHandlers })` ([ADR 0009](0009-action-effects-registered-on-the-adapter.md)),
+> and the types are `ActionHandler` / `ActionHandlerContext`. The contract is unchanged: dispatch is
+> still pass-through, the handler's resolved value still becomes `ActionResult.data` verbatim, and
+> the TSDoc still carries the conversion recipes. Read `ActionContext` below as
+> `ActionHandlerContext`.
+
 ## Context and Problem Statement
 
 Action handlers dispatched via `stonecropAction` receive `context.pgClient` and may query the database directly. Rows returned by raw `pgClient.query()` carry snake_case column names, while the middleware's own read paths (`stonecropRecord`, `stonecropRecords`) return camelCase fieldname keys by aliasing columns at the SQL layer (`"display_name" AS "displayName"`, see ADR 0004). A handler that returns raw query rows therefore leaks snake_case keys to the client. The question is where the conversion responsibility lives and whether the framework should add a mechanism.

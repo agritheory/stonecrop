@@ -106,6 +106,35 @@ describe('doctype fixtures', { tags: ['unit'] }, () => {
 		expect(stragglers).toEqual([])
 	})
 
+	it('every doctype declares exactly one primary key', () => {
+		// Declaring none is now legal everywhere — every host resolves the identity field through
+		// `getRecordIdField`, whose `id` fallback the schema documents as load-bearing. This stays a
+		// repo convention rather than a rule: these fixtures are all surrogate- or natural-keyed with
+		// a key worth naming, and saying so keeps the declaration from quietly rotting away.
+		//
+		// More than one is a different matter, and `DoctypeMeta` refuses it at the load gate: identity
+		// is single-valued on the API surface by design, so the extras say nothing, and they would be
+		// silently ignored while the record keyed off whichever field happens to come first.
+		//
+		// `assignment` is the exemption. Its database identity is the pair (user, issue) — both
+		// required links — and a doctype does not declare the parts of a composite key: mapping one
+		// onto a single identity is the adapter's job, and this doctype has no adapter. It is
+		// DocBuilder-only (absent from playground/schema.graphql, linked solely as
+		// /docbuilder/assignment), so nothing fetches it by key. Remove this exemption when it gains a
+		// server that exposes an identity for it.
+		const COMPOSITE_KEY_EXEMPT = new Set(['playground/assignment.json'])
+
+		const offenders: string[] = []
+		for (const { file, doctype } of loadAll()) {
+			if (COMPOSITE_KEY_EXEMPT.has(file)) continue
+			const keys = valueFields(doctype)
+				.filter(f => f.primaryKey === true)
+				.map(f => String(f.fieldname))
+			if (keys.length !== 1) offenders.push(`${file} :: ${keys.length === 0 ? 'none declared' : keys.join(', ')}`)
+		}
+		expect(offenders).toEqual([])
+	})
+
 	it('every link field uses a link-capable component', () => {
 		// Link-ness is carried by `doctype`; the component decides whether the target is expanded, so an
 		// unmapped component on a link silently falls through to the cardinality default.

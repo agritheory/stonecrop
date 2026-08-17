@@ -1,16 +1,15 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
 
 import { Stonecrop } from '../../src/stonecrop'
 import Registry from '../../src/registry'
 import Doctype from '../../src/doctype'
-import { Map, List } from 'immutable'
+import { List } from 'immutable'
 import { useOperationLog } from '../../src/composables/operation-log'
 import { FieldTriggerEngine, getGlobalTriggerEngine } from '../../src/field-triggers'
 
 describe('Operation Log - Action Tracking', { tags: ['unit'] }, () => {
 	let registry: Registry
-	let stonecrop: Stonecrop
 	let mockDoctype: Doctype
 
 	beforeEach(() => {
@@ -34,19 +33,9 @@ describe('Operation Log - Action Tracking', { tags: ['unit'] }, () => {
 		// Create registry
 		registry = new Registry()
 
-		// Create mock doctype with actions
-		const mockActions = Map({
-			print: ['printDocument'],
-			email: ['sendEmail'],
-			archive: ['archiveRecord'],
-		})
-
-		mockDoctype = new Doctype('Task', List([]), undefined, mockActions)
+		mockDoctype = new Doctype('Task', List([]), undefined)
 
 		registry.addDoctype(mockDoctype)
-
-		// Create Stonecrop instance
-		stonecrop = new Stonecrop(registry)
 	})
 
 	describe('logAction', () => {
@@ -119,118 +108,6 @@ describe('Operation Log - Action Tracking', { tags: ['unit'] }, () => {
 
 			const operation = operations.value[operations.value.length - 1]
 			expect(operation.reversible).toBe(false)
-		})
-	})
-
-	describe('runAction integration', () => {
-		it('should log action when runAction is called', () => {
-			const { operations } = useOperationLog()
-
-			const initialCount = operations.value.length
-
-			// Execute action
-			stonecrop.runAction(mockDoctype, 'print', ['TASK-001'])
-
-			// Should have logged the action
-			expect(operations.value.length).toBe(initialCount + 1)
-
-			const operation = operations.value[operations.value.length - 1]
-			expect(operation.type).toBe('action')
-			expect(operation.actionName).toBe('print')
-			expect(operation.actionRecordIds).toEqual(['TASK-001'])
-			expect(operation.actionResult).toBe('success')
-		})
-
-		it('should log action failure when action throws error', () => {
-			const { operations } = useOperationLog()
-
-			// Create doctype with failing action
-			const failingActions = Map({
-				failing: ['failingAction'],
-			})
-
-			const failingDoctype = new Doctype('FailingTask', List([]), undefined, failingActions)
-
-			registry.addDoctype(failingDoctype)
-
-			// Execute failing action
-			stonecrop.runAction(failingDoctype, 'failing', ['TASK-001'])
-
-			const operation = operations.value[operations.value.length - 1]
-			expect(operation.actionResult).toBe('failure')
-			expect(operation.actionError).toContain('Action failed')
-		})
-
-		it('should handle actions without record IDs', () => {
-			const { operations } = useOperationLog()
-
-			stonecrop.runAction(mockDoctype, 'email')
-
-			const operation = operations.value[operations.value.length - 1]
-			expect(operation.actionName).toBe('email')
-			expect(operation.actionRecordIds).toBeUndefined()
-		})
-
-		it('should filter non-string arguments when extracting record IDs', () => {
-			const { operations } = useOperationLog()
-
-			// Call with mixed arguments
-			stonecrop.runAction(mockDoctype, 'print', ['TASK-001', 123, null, 'TASK-002', undefined] as any)
-
-			const operation = operations.value[operations.value.length - 1]
-			// Should only include string arguments
-			expect(operation.actionRecordIds).toEqual(['TASK-001', 'TASK-002'])
-		})
-	})
-
-	describe('runAction FieldChangeContext construction', () => {
-		it('should call the registered handler with a FieldChangeContext', () => {
-			const handler = vi.fn()
-			const engine = getGlobalTriggerEngine()
-			engine.registerAction('contextCheck', handler)
-
-			const contextCheckDoctype = new Doctype('ContextTask', List([]), undefined, Map({ check: ['contextCheck'] }))
-			registry.addDoctype(contextCheckDoctype)
-
-			stonecrop.runAction(contextCheckDoctype, 'check', ['REC-001'])
-
-			expect(handler).toHaveBeenCalledOnce()
-			const ctx = handler.mock.calls[0][0]
-			expect(ctx.path).toBe('context-task.REC-001')
-			expect(ctx.fieldname).toBe('check')
-			expect(ctx.doctype).toBe('ContextTask')
-			expect(ctx.recordId).toBe('REC-001')
-			expect(ctx.afterValue).toEqual(['REC-001'])
-			expect(ctx.operation).toBe('set')
-			expect(ctx.timestamp).toBeInstanceOf(Date)
-		})
-
-		it('should pass undefined recordId when no args supplied', () => {
-			const handler = vi.fn()
-			const engine = getGlobalTriggerEngine()
-			engine.registerAction('noArgCheck', handler)
-
-			const noArgDoctype = new Doctype('NoArgTask', List([]), undefined, Map({ run: ['noArgCheck'] }))
-			registry.addDoctype(noArgDoctype)
-
-			stonecrop.runAction(noArgDoctype, 'run')
-
-			const ctx = handler.mock.calls[0][0]
-			expect(ctx.recordId).toBeUndefined()
-			expect(ctx.afterValue).toBeUndefined()
-		})
-
-		it('should log failure when action name is not registered in FieldTriggerEngine', () => {
-			const { operations } = useOperationLog()
-
-			const ghostDoctype = new Doctype('GhostTask', List([]), undefined, Map({ run: ['nonExistentAction'] }))
-			registry.addDoctype(ghostDoctype)
-
-			stonecrop.runAction(ghostDoctype, 'run', ['REC-001'])
-
-			const operation = operations.value[operations.value.length - 1]
-			expect(operation.actionResult).toBe('failure')
-			expect(operation.actionError).toContain('nonExistentAction')
 		})
 	})
 

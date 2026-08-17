@@ -1,0 +1,14 @@
+{
+	// Nitro's type context. Mirrors playground/server/tsconfig.json.
+	//
+	// The sibling ../tsconfig.json extends .nuxt/tsconfig.json, which is the *app* context — its
+	// `include` covers ../app/**, ../shared/**, and nuxt.config, but NOT ../server/**. Nuxt 4
+	// emits no composite/solution config either (.nuxt/tsconfig.json has no `references`), so a
+	// bare `vue-tsc --noEmit` in this project checks the app and silently skips every Nitro file.
+	// That is how resolvers.ts and mock-executor.ts accumulated errors — including an import of a
+	// `GraphQLExecutor` type the middleware does not export — while `test:types` exited 0.
+	//
+	// `test:types` runs this explicitly with `-p server/tsconfig.json`.
+	// Requires `dev:prepare` to have generated fullstack/.nuxt first, which it does.
+	"extends": "../.nuxt/tsconfig.server.json"
+}

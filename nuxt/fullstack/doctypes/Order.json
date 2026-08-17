@@ -4,6 +4,7 @@
 	"fields": [
 		{
 			"fieldname": "id",
+			"primaryKey": true,
 			"label": "ID",
 			"component": "ATextInput",
 			"mode": "display"
@@ -74,7 +75,16 @@
 		"actions": {
 			"save": {
 				"label": "Save",
+				"stateless": true,
 				"selfTransition": true,
+				"allowedStates": [
+					"DRAFT",
+					"PENDING"
+				]
+			},
+			"recalculateTotal": {
+				"label": "Recalculate Total",
+				"stateless": true,
 				"allowedStates": [
 					"DRAFT",
 					"PENDING"

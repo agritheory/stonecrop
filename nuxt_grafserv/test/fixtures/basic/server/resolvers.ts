@@ -1,4 +1,4 @@
-import { constant, lambda } from 'grafast'
+import { constant, lambda, type Step } from 'grafast'
 
 // Sample data
 const usersData = [
@@ -11,7 +11,9 @@ export default {
 	Query: {
 		plans: {
 			hello: () => constant('Hello, World!'),
-			user: (_$root: any, { $id }: any) =>
+			// `$id` is annotated so `lambda` can infer its callback parameter. Left as `any`, the step
+			// widens to `unknown` and the `(id: string)` callback below stops being assignable.
+			user: (_$root: Step, { $id }: { $id: Step<string> }) =>
 				lambda($id, (id: string) => {
 					return usersData.find(u => u.id === id) || null
 				}),

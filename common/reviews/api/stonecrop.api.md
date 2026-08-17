@@ -9,9 +9,12 @@ import { Component } from 'vue';
 import { ComputedRef } from 'vue';
 import type { DataClient } from '@stonecrop/schema';
 import type { DoctypeField } from '@stonecrop/schema';
+import type { GetRecordOptions } from '@stonecrop/schema';
+import type { GetRecordsOptions } from '@stonecrop/schema';
+import type { GetRecordsResult } from '@stonecrop/schema';
 import type { LinkDeclaration } from '@stonecrop/schema';
 import { List } from 'immutable';
-import { Map as Map_2 } from 'immutable';
+import type { Map as Map_2 } from 'immutable';
 import { Plugin as Plugin_2 } from 'vue';
 import { Ref } from 'vue';
 import type { ResolvedField } from '@stonecrop/aform';
@@ -23,11 +26,45 @@ import type { UnknownMachineConfig } from 'xstate';
 import type { WorkflowMeta } from '@stonecrop/schema';
 
 // @public
+export interface ActionArgsContext {
+    action: string;
+    data: Record<string, unknown>;
+    doctype: string;
+    extra?: Record<string, unknown>;
+    isDraft: boolean;
+    recordId: string;
+}
+
+// @public
+export type ActionDispatchResult = {
+    success: boolean;
+    data: unknown;
+    error: string | null;
+};
+
+// @public
+export type ActionEventPayload = {
+    name: string;
+    doctype: string;
+    recordId: string;
+    data: Record<string, any>;
+};
+
+// @public
 export interface ActionExecutionResult {
     action: FieldAction;
     error?: Error;
     executionTime: number;
     success: boolean;
+}
+
+// @public
+export interface ActionFailure {
+    action: string;
+    cause?: unknown;
+    doctype: string;
+    message: string;
+    recordId: string;
 }
 
 // @public
@@ -77,9 +114,9 @@ export type CrossTabMessageType = 'operation' | 'undo' | 'redo' | 'sync-request'
 
 // @public
 export class Doctype {
-    constructor(doctype: string, schema: ImmutableDoctype['schema'], workflow: ImmutableDoctype['workflow'], actions: ImmutableDoctype['actions'], component?: Component, links?: Record<string, LinkDeclaration>);
-    readonly actions: ImmutableDoctype['actions'];
+    constructor(doctype: string, schema: ImmutableDoctype['schema'], workflow: ImmutableDoctype['workflow'], component?: Component, links?: Record<string, LinkDeclaration>, displayField?: string);
     readonly component?: Component;
+    readonly displayField?: string;
     readonly doctype: string;
     static fromObject(config: DoctypeConfig): Doctype;
     getActionMeta(actionName: string): {
@@ -87,7 +124,6 @@ export class Doctype {
         requiredFields?: string[];
         allowedStates?: string[];
     } | undefined;
-    getActionsObject(): Record<string, string[]>;
     getAvailableCommands(currentState?: string): Array<{
         name: string;
     }>;
@@ -95,10 +131,12 @@ export class Doctype {
         name: string;
         targetState: string;
     }>;
+    getRecordId(record: Record<string, unknown>): string | undefined;
     getSchemaArray(): DoctypeField[];
     getTriggers(): Record<string, TriggerDefinition> | undefined;
     readonly links?: Record<string, LinkDeclaration>;
     get name(): string;
+    get recordIdField(): string;
     readonly schema: ImmutableDoctype['schema'];
     get slug(): string;
     readonly workflow: ImmutableDoctype['workflow'];
@@ -108,12 +146,15 @@ export class Doctype {
 export type DoctypeConfig = {
     name: string;
     slug?: string;
+    displayField?: string;
     fields?: DoctypeField[];
     links?: Record<string, LinkDeclaration>;
     workflow?: UnknownMachineConfig | WorkflowMeta;
-    actions?: Record<string, string[]>;
     inherits?: string;
 };
+
+// @public
+export const DRAFT_RECORD_ID = "new";
 
 // @public
 export function executeClientHandler(code: string, api?: ClientHandlerApi): Promise<unknown>;
@@ -191,10 +232,14 @@ export interface FieldTriggerOptions {
 }
 
 // @public
-export function getGlobalTriggerEngine(options?: FieldTriggerOptions): FieldTriggerEngine;
+export interface FollowRecordContext {
+    doctype: string;
+    previousRecordId: string;
+    recordId: string;
+}
 
 // @public
-export function getStonecrop(): Stonecrop | undefined;
+export function getGlobalTriggerEngine(options?: FieldTriggerOptions): FieldTriggerEngine;
 
 // @public
 export class HST {
@@ -291,7 +336,6 @@ export type HSTStonecropReturn = BaseStonecropReturn & {
 export type ImmutableDoctype = {
     readonly schema?: List<DoctypeField>;
     readonly workflow?: UnknownMachineConfig | AnyStateNodeConfig | WorkflowMeta;
-    readonly actions?: Map_2<string, string[]>;
 };
 
 // @public
@@ -303,6 +347,9 @@ export type InstallOptions = {
     autoInitializeRouter?: boolean;
     onRouterInitialized?: (registry: Registry, stonecrop: Stonecrop) => void | Promise<void>;
 };
+
+// @public
+export function isDraftRecordId(recordId: string | null | undefined): boolean;
 
 // @public
 export type LazyLink = {
@@ -521,7 +568,7 @@ export class Stonecrop {
     getSnapshot: () => OperationLogSnapshot;
     markIrreversible: (operationId: string, reason: string) => void;
     logAction: (doctype: string, actionName: string, recordIds?: string[], result?: "success" | "failure" | "pending", error?: string) => string;
-    }, "operations" | "currentIndex" | "config" | "clientId">, Pick<{
+    }, "config" | "operations" | "clientId" | "currentIndex">, Pick<{
     operations: Ref<    {
     id: string;
     type: HSTOperationType;
@@ -690,10 +737,14 @@ export class Stonecrop {
     markIrreversible: (operationId: string, reason: string) => void;
     logAction: (doctype: string, actionName: string, recordIds?: string[], result?: "success" | "failure" | "pending", error?: string) => string;
     }, "clear" | "undo" | "redo" | "configure" | "addOperation" | "startBatch" | "commitBatch" | "cancelBatch" | "getOperationsFor" | "getSnapshot" | "markIrreversible" | "logAction">>;
-    getRecord(doctype: string | Doctype, recordId: string): Promise<void>;
+    getPageInfo(doctype: string | Doctype): {
+        hasMore: boolean;
+        count?: number;
+    } | undefined;
+    getRecord(doctype: string | Doctype, recordId: string, options?: GetRecordOptions): Promise<void>;
     getRecordById(doctype: string | Doctype, recordId: string): HSTNode | undefined;
     getRecordIds(doctype: string | Doctype): string[];
-    getRecords(doctype: Doctype): Promise<void>;
+    getRecords(doctype: Doctype, options?: GetRecordsOptions): Promise<GetRecordsResult>;
     getRecordState(doctype: string | Doctype, recordId: string): string;
     getStore(): HSTNode;
     initializeNestedData(path: string, doctype: Doctype): void;
@@ -706,7 +757,6 @@ export class Stonecrop {
     removeRecord(doctype: string | Doctype, recordId: string): void;
     // @internal
     static _root: Stonecrop;
-    runAction(doctype: Doctype, action: string, args?: string[]): void;
     setClient(client: DataClient): void;
     setup(doctype: Doctype): void;
 }
@@ -755,6 +805,18 @@ export interface UndoRedoState {
     currentIndex: number;
     redoCount: number;
     undoCount: number;
+}
+
+// @public
+export function useClientAction(options?: UseClientActionOptions): {
+    run: (payload: ActionEventPayload) => Promise<void>;
+};
+
+// @public
+export interface UseClientActionOptions {
+    buildArgs?: (context: ActionArgsContext) => unknown[];
+    followRecord?: (context: FollowRecordContext) => void | Promise<void>;
+    onError?: (failure: ActionFailure) => void;
 }
 
 // @public
@@ -915,7 +977,7 @@ getOperationsFor: (doctype: string, recordId?: string) => HSTOperation[];
 getSnapshot: () => OperationLogSnapshot;
 markIrreversible: (operationId: string, reason: string) => void;
 logAction: (doctype: string, actionName: string, recordIds?: string[], result?: "success" | "failure" | "pending", error?: string) => string;
-}, "operations" | "currentIndex" | "config" | "clientId">, Pick<{
+}, "config" | "operations" | "clientId" | "currentIndex">, Pick<{
 operations: Ref<    {
 id: string;
 type: HSTOperationType;
@@ -1086,7 +1148,7 @@ logAction: (doctype: string, actionName: string, recordIds?: string[], result?: 
 }, "clear" | "undo" | "redo" | "configure" | "addOperation" | "startBatch" | "commitBatch" | "cancelBatch" | "getOperationsFor" | "getSnapshot" | "markIrreversible" | "logAction">>;
 
 // @public
-export function useStonecrop(): BaseStonecropReturn | HSTStonecropReturn;
+export function useStonecrop(): BaseStonecropReturn;
 
 // @public
 export function useStonecrop(options: {

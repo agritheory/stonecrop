@@ -241,6 +241,165 @@ export function normalizeFieldKind(field: unknown): unknown {
 	return injected
 }
 
+/**
+ * The field properties a `source: 'introspected'` marker freezes — the ones the database owns.
+ *
+ * This is the single definition of the identity set. The docbuilder greys these inputs on an
+ * introspected field, and the converter's merge refuses to rewrite them. Stating it twice is how
+ * the two drift, so both read this constant.
+ *
+ * Everything absent from this list is author-owned, `component` most importantly: it chooses the
+ * widget, which is an authoring decision the database has no opinion about.
+ *
+ * @public
+ */
+export const INTROSPECTED_IDENTITY_PROPS = [
+	'fieldname',
+	'primaryKey',
+	'required',
+	'options',
+	'cardinality',
+	'doctype',
+] as const
+
+/**
+ * Find the field a doctype marks as its primary key, or `undefined` when none is marked.
+ *
+ * This is the single definition of "which field identifies a record". Both sides depend on it:
+ * the middleware builds the SQL identity predicate from it, and the client resolves a record's
+ * route/store key from it. Call this; never re-derive the rule at the call site, or the two will
+ * drift and the client will key records by a column the server never queried.
+ *
+ * Two deliberate limits, both matching the shape `primaryKey` actually has:
+ * - Only **top-level** fields are scanned. `primaryKey` is a `ValueField` flag and a fieldset's
+ *   children are not identity columns, so a nested match would be an authoring error, not a PK.
+ * - The **first** match wins. Identity is single-valued by design — a doctype describes the API
+ *   surface, and mapping a composite database key onto one identity there is the adapter's job —
+ *   so a doctype declaring several is malformed rather than composite. `DoctypeMeta` rejects that
+ *   at the load gate; this stays total for callers holding fields that never went through it.
+ *
+ * @param fields - the doctype's top-level fields
+ * @returns the primary-key field, or `undefined` for a PK-less doctype
+ * @public
+ */
+export function getPrimaryKeyField(fields: readonly DoctypeField[]): ValueField | undefined {
+	return fields.find((f): f is ValueField => f.kind === 'field' && Boolean(f.primaryKey))
+}
+
+/**
+ * Recursively flatten Fieldset containers into a flat array of non-container fields.
+ * Fieldset entries are replaced by their children; all other fields pass through.
+ *
+ * A fieldset is a layout grouping, not a scope: every field inside one is a field of the doctype,
+ * with a column of its own and a name a link can bind to. Anything asking "what does this doctype
+ * declare" must therefore descend, and the two ways to get that wrong point opposite ways — the
+ * SELECT builder would omit real columns, while a validator would report a working declaration as
+ * broken.
+ *
+ * Lives here rather than in the adapter because both sides need it: the middleware builds SQL from
+ * it, and `DoctypeMeta`'s own validation asks the same question at the load gate. It sat in the
+ * adapter while the validator hand-rolled a top-level-only scan, and that is exactly the second
+ * failure this comment names — a `displayField` inside a fieldset was rejected at authoring time
+ * and would have worked at runtime.
+ *
+ * @param fields - the doctype's top-level fields
+ * @returns every non-container field, fieldset children included
+ * @public
+ */
+export function flattenFields(fields: readonly DoctypeField[]): (ValueField | TableField)[] {
+	const result: (ValueField | TableField)[] = []
+	for (const f of fields) {
+		if (f.kind === 'fieldset') {
+			result.push(...flattenFields(f.schema))
+		} else {
+			result.push(f)
+		}
+	}
+	return result
+}
+
+/**
+ * Resolve the field a doctype nominates as its display text, or `undefined` when the nomination
+ * does not name a readable column.
+ *
+ * This is the single definition of "is this a usable `displayField`". Both sides depend on it:
+ * `DoctypeMeta` refuses a bad nomination at the load gate, and the adapter builds a SELECT from
+ * the field it returns. Call this; never re-derive the rule, or the gate and the query will
+ * disagree about which nominations are legal — which they did, in both directions at once.
+ *
+ * Two things disqualify a nomination, and both are the doctype saying so itself:
+ * - it names no field at all, fieldset children included
+ * - it names a `computed` field, which is declared precisely to state it has no column, so a
+ *   SELECT built from it would reference a column the database does not have
+ *
+ * @param fields - the doctype's top-level fields
+ * @param displayField - the nominated fieldname
+ * @returns the nominated field, or `undefined` when it is not a readable column
+ * @public
+ */
+export function getDisplayField(
+	fields: readonly DoctypeField[],
+	displayField: string | undefined
+): ValueField | undefined {
+	if (!displayField) return undefined
+	return flattenFields(fields).find(
+		(f): f is ValueField => f.kind === 'field' && !f.computed && f.fieldname === displayField
+	)
+}
+
+/**
+ * The name of the field a record is identified by: the declared `primaryKey`, or `id` when the
+ * doctype declares none.
+ *
+ * The `id` fallback is load-bearing, not defensive — a surrogate-key doctype carries an `id`
+ * column and marks no primary key, so "nothing declared" means `id`, not "no identity".
+ *
+ * This exists because that one-line rule had been restated at four sites — the client's
+ * `Doctype.recordIdField`, both nuxt hosts' `recordLookupField`, and the Postgres adapter — and
+ * the fourth had omitted the fallback, so a doctype the client keyed by `id` was one the adapter
+ * could not look up at all. Call this; a fifth restatement is how they diverge again.
+ *
+ * The returned name is not guaranteed to be a declared field: a doctype that declares no
+ * `primaryKey` and no `id` yields `'id'` regardless. An adapter that must build a SQL predicate
+ * from it has to confirm the field exists and say so when it does not, because selecting a column
+ * the doctype never declared returns nothing rather than failing.
+ *
+ * @param fields - the doctype's top-level fields
+ * @returns the identifying fieldname
+ * @public
+ */
+export function getRecordIdField(fields: readonly DoctypeField[]): string {
+	return getPrimaryKeyField(fields)?.fieldname ?? 'id'
+}
+
+/**
+ * Resolve a record's identity value using the doctype's declared primary key.
+ *
+ * Falls back to `record.id` when the doctype declares no `primaryKey`. That fallback is
+ * load-bearing, not defensive: surrogate-key doctypes carry an `id` column and never mark a
+ * primary key, and PostGraphile renames a single-column `id` PK to `rowId` — so the declared
+ * field and `id` are both real sources, in that order.
+ *
+ * @param fields - the doctype's top-level fields
+ * @param record - the record to read the identity from
+ * @returns the identity as a string, or `undefined` when neither source yields a usable value
+ * @public
+ */
+export function getRecordIdentity(
+	fields: readonly DoctypeField[],
+	record: Record<string, unknown>
+): string | undefined {
+	const pkField = getPrimaryKeyField(fields)
+	const candidates = pkField ? [record[pkField.fieldname], record.id] : [record.id]
+
+	for (const value of candidates) {
+		// Numbers are valid keys (a serial PK); 0 is a legitimate id, so test the type, not truthiness.
+		if (typeof value === 'number') return String(value)
+		if (typeof value === 'string' && value !== '') return value
+	}
+	return undefined
+}
+
 function createDoctypeFieldSchemas() {
 	const ValueFieldSchema = z
 		.object({

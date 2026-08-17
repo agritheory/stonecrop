@@ -1,12 +1,11 @@
-import type { DataClient } from '@stonecrop/schema'
+import type { DataClient, GetRecordOptions, GetRecordsOptions, GetRecordsResult } from '@stonecrop/schema'
 import { reactive } from 'vue'
 
 import Doctype from './doctype'
-import { getGlobalTriggerEngine } from './field-triggers'
+import { isDraftRecordId } from './draft'
 import Registry from './registry'
 import { createHST, type HSTNode } from './stores/hst'
 import { useOperationLogStore } from './stores/operation-log'
-import type { FieldChangeContext } from './types/field-triggers'
 import type { OperationLogConfig } from './types/operation-log'
 import type { RouteContext } from './types/registry'
 import type { StonecropOptions } from './types/stonecrop'
@@ -29,6 +28,12 @@ export class Stonecrop {
 	private _operationLogStore?: ReturnType<typeof useOperationLogStore>
 	private _operationLogConfig?: Partial<OperationLogConfig>
 	private _client?: DataClient
+
+	/**
+	 * Per-doctype page info from the last list read, keyed by slug. Reactive so views tracking
+	 * it update on fetch. Deliberately not in HST — see {@link Stonecrop.getRecords}.
+	 */
+	private pageInfo: Record<string, { hasMore: boolean; count?: number }> = reactive({})
 
 	/** The registry instance containing all doctype definitions */
 	readonly registry!: Registry
@@ -241,72 +246,6 @@ export class Stonecrop {
 	}
 
 	/**
-	 * Run action on doctype
-	 * Executes the action and logs it to the operation log for audit tracking
-	 * @param doctype - The doctype
-	 * @param action - The action to run
-	 * @param args - Action arguments (typically record IDs)
-	 */
-	runAction(doctype: Doctype, action: string, args?: string[]): void {
-		const registry = this.registry.registry[doctype.slug]
-		const actions = registry?.actions?.get(action)
-		const recordIds = Array.isArray(args) ? args.filter((arg): arg is string => typeof arg === 'string') : undefined
-		const recordId = recordIds?.[0]
-
-		// Check if workflow is ready (all blocked links have data)
-		const workflowStatus = recordId ? this.isWorkflowReady(doctype, recordId) : { ready: true }
-		if (!workflowStatus.ready) {
-			const opLogStore = this.getOperationLogStore()
-			opLogStore.logAction(
-				doctype.doctype,
-				action,
-				recordIds,
-				'failure',
-				`BLOCKED: missing data for links: ${workflowStatus.blockedLinks?.join(', ')}`
-			)
-			throw new Error(`Workflow blocked: missing data for links: ${workflowStatus.blockedLinks?.join(', ')}`)
-		}
-
-		// Log action execution start
-		const opLogStore = this.getOperationLogStore()
-		let actionResult: 'success' | 'failure' | 'pending' = 'success'
-		let actionError: string | undefined
-
-		try {
-			// Execute action functions
-			if (actions && actions.length > 0) {
-				const engine = getGlobalTriggerEngine()
-				actions.forEach(actionStr => {
-					try {
-						const actionFn = engine.getAction(actionStr)
-						if (!actionFn) throw new Error(`Action "${actionStr}" is not registered in FieldTriggerEngine`)
-						const context = {
-							path: `${doctype.slug}.${recordIds?.[0] ?? ''}`,
-							fieldname: action,
-							beforeValue: undefined,
-							afterValue: args,
-							operation: 'set',
-							doctype: doctype.doctype,
-							recordId: recordId,
-							timestamp: new Date(),
-						} as FieldChangeContext
-						void actionFn(context)
-					} catch (error) {
-						actionResult = 'failure'
-						actionError = error instanceof Error ? error.message : 'Unknown error'
-						throw error
-					}
-				})
-			}
-		} catch {
-			// Error already set in inner catch
-		} finally {
-			// Log the action execution to operation log
-			opLogStore.logAction(doctype.doctype, action, recordIds, actionResult, actionError)
-		}
-	}
-
-	/**
 	 * Get the effective blockWorkflows value for a link.
 	 * Returns true if blockWorkflows is explicitly true, or if it's absent and fetch method is 'sync'.
 	 * @param link - The link declaration
@@ -331,7 +270,7 @@ export class Stonecrop {
 	 */
 	isWorkflowReady(doctype: Doctype, recordId: string): { ready: boolean; blockedLinks?: string[] } {
 		// New records don't block workflows - they haven't been saved yet
-		if (recordId === 'new') {
+		if (isDraftRecordId(recordId)) {
 			return { ready: true }
 		}
 
@@ -354,11 +293,24 @@ export class Stonecrop {
 	}
 
 	/**
-	 * Get records from server using the configured data client.
+	 * Fetch a doctype's records from the server and store them in HST.
+	 *
+	 * This is the one read path for a list. Every caller shares its keying rule, so a row is
+	 * always stored under the identity its Edit link will later ask for.
+	 *
+	 * Deliberately unguarded, unlike {@link Stonecrop.getRecord}: a list is a view of data that
+	 * changes, so revisiting one must re-read it rather than serve whatever HST happens to hold.
+	 *
+	 * `options` is forwarded to the client untouched — no row limit is invented here, because
+	 * nothing on this side of the wire knows what is safe for an arbitrary backend. A caller that
+	 * passes none gets whatever the server considers a reasonable page.
+	 *
 	 * @param doctype - The doctype
+	 * @param options - Query options (filters, orderBy, limit, offset), forwarded to the client
 	 * @throws Error if no data client has been configured
+	 * @public
 	 */
-	async getRecords(doctype: Doctype): Promise<void> {
+	async getRecords(doctype: Doctype, options?: GetRecordsOptions): Promise<GetRecordsResult> {
 		if (!this._client) {
 			throw new Error(
 				'No data client configured. Call setClient() with a DataClient implementation ' +
@@ -366,26 +318,63 @@ export class Stonecrop {
 			)
 		}
 
-		const records = await this._client.getRecords(doctype)
+		const result = await this._client.getRecords(doctype, options)
+		const records = result.data
 
-		// Store each record in HST
+		// Page info is kept beside HST, not in it. `getRecordIds` reads the raw keys under a
+		// doctype node, so anything filed there becomes a phantom record — the same hazard that
+		// ruled out seeding a draft node.
+		this.pageInfo[doctype.slug] = { hasMore: result.hasMore, count: result.count }
+
+		// Key each record by its declared primary key, falling back to `id`. This used to read
+		// `record.id` only, which silently dropped every row of a natural-keyed doctype (no `id`
+		// column at all) — the records never entered HST, so the list rendered empty and no
+		// downstream id-resolution could recover them.
 		records.forEach(record => {
-			if (typeof record.id === 'string' && record.id) {
-				this.addRecord(doctype, record.id, record)
-			} else if (typeof record.id === 'number') {
-				this.addRecord(doctype, String(record.id), record)
+			const recordId = doctype.getRecordId(record)
+			if (recordId !== undefined) {
+				this.addRecord(doctype, recordId, record)
 			}
 		})
+
+		return result
 	}
 
 	/**
-	 * Get single record from server using the configured data client.
+	 * What the last {@link Stonecrop.getRecords} for this doctype returned about the wider set.
+	 *
+	 * Answers the question HST cannot: HST holds what was fetched, so counting its keys reports
+	 * how much has been seen, never how much exists. Reactive, so a view reading it re-renders
+	 * when a fetch lands.
+	 *
+	 * @param doctype - The doctype slug string or Doctype object
+	 * @returns Page info, or undefined if this doctype's records have not been fetched
+	 * @public
+	 */
+	getPageInfo(doctype: string | Doctype): { hasMore: boolean; count?: number } | undefined {
+		const slug = typeof doctype === 'string' ? doctype : doctype.slug
+		return this.pageInfo[slug]
+	}
+
+	/**
+	 * Fetch a single record from the server and store it in HST.
+	 *
+	 * This is the one read path for a record, and it owns the whole job: deciding whether a fetch
+	 * is warranted, performing it, and writing the result back under the doctype's declared
+	 * identity. Callers ask for a record and get one; they do not re-derive when to ask.
+	 *
+	 * Two cases return without touching the network, because in both the answer is already known:
+	 * a draft does not exist on the server yet, and a record already in HST has been read.
+	 * Refetching the latter would also discard unsaved edits sitting in the store.
+	 *
 	 * @param doctype - The doctype slug string or Doctype object
 	 * @param recordId - The record ID
+	 * @param options - Query options (includeNested, maxDepth), forwarded to the client
 	 * @throws Error if no data client has been configured
 	 * @throws Error if a slug string is given and no matching doctype is found in the registry
+	 * @public
 	 */
-	async getRecord(doctype: string | Doctype, recordId: string): Promise<void> {
+	async getRecord(doctype: string | Doctype, recordId: string, options?: GetRecordOptions): Promise<void> {
 		if (!this._client) {
 			throw new Error(
 				'No data client configured. Call setClient() with a DataClient implementation ' +
@@ -398,7 +387,17 @@ export class Stonecrop {
 			throw new Error(`Doctype not found: ${typeof doctype === 'string' ? doctype : doctype.slug}`)
 		}
 
-		const result = await this._client.getRecord(resolved, recordId)
+		// An unsaved draft has no server record, so a fetch could only ever miss. This guard used
+		// to live in every host, which is how the private draft-id scheme leaked into all of them.
+		if (isDraftRecordId(recordId)) {
+			return
+		}
+
+		if (this.getRecordById(resolved.slug, recordId)) {
+			return
+		}
+
+		const result = await this._client.getRecord(resolved, recordId, options)
 
 		if (result?.record) {
 			this.addRecord(resolved, recordId, result.record)
@@ -406,8 +405,23 @@ export class Stonecrop {
 	}
 
 	/**
-	 * Dispatch an action to the server via the configured data client.
-	 * All state changes flow through this single mutation endpoint.
+	 * Dispatch an action to the server via the configured data client, and file the record it
+	 * returns into HST under the identity the *server* settled on.
+	 *
+	 * The write is the point. For a created record the settled identity is never the one that was
+	 * dispatched, so a caller that stores the result under the id it sent files the record under a
+	 * key nothing can fetch and leaves the next save creating a second one. Every host that
+	 * hand-rolled this got it wrong the same way, so it stops being the caller's job — this is the
+	 * write-side twin of {@link Stonecrop.getRecords}, which keys reads by the same rule.
+	 *
+	 * Two things are deliberately NOT done here, because both need the id that was dispatched and
+	 * that lives inside `args` — an opaque array whose shape is a convention between a host's
+	 * client and its server handlers, not something this layer may parse. Dropping the stale key
+	 * and moving the route therefore stay with `useClientAction`, which knows both ids.
+	 *
+	 * A result that states no identity of its own — a `{ state: 'APPROVED' }` outcome — is left
+	 * alone rather than guessed at, for the same reason `settledRecordId` is strict: a partial
+	 * record must not be able to look like a rename.
 	 *
 	 * @param doctype - The doctype
 	 * @param action - Action name to execute (e.g., 'SUBMIT', 'APPROVE', 'save')
@@ -427,7 +441,23 @@ export class Stonecrop {
 			)
 		}
 
-		return this._client.runAction(doctype, action, args)
+		const result = await this._client.runAction(doctype, action, args)
+
+		if (result.success && result.data && typeof result.data === 'object' && !Array.isArray(result.data)) {
+			// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- the guard above confirms a non-null, non-array object; the action result payload is an opaque JSON scalar
+			const record = result.data as Record<string, unknown>
+			// Require the declared key to be *present* before trusting `getRecordId`, which falls
+			// back to `id`. Without that, a handler returning `{ id, total }` for a natural-keyed
+			// doctype would relocate the record to a key the adapter cannot look up.
+			if (record[doctype.recordIdField] !== undefined) {
+				const settledId = doctype.getRecordId(record)
+				if (settledId !== undefined) {
+					this.addRecord(doctype, settledId, record)
+				}
+			}
+		}
+
+		return result
 	}
 
 	/**
@@ -654,20 +684,6 @@ export class Stonecrop {
 
 		return payload
 	}
-}
-
-/**
- * Returns the global Stonecrop singleton instance, or `undefined` if no
- * instance has been created yet.
- *
- * Use this when you need the Stonecrop instance outside a Vue component
- * context (e.g., in workflow action handlers, plugin setup code, or
- * non-component utilities). Inside a component, prefer `useStonecrop()`.
- *
- * @public
- */
-export function getStonecrop(): Stonecrop | undefined {
-	return Stonecrop._root
 }
 
 /**

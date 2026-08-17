@@ -133,7 +133,7 @@ Get multiple records with optional filtering and pagination.
 Returns flat arrays — the middleware merges connection format ( nodes: [...] ) into plain arrays before returning.
 
 ```typescript
-getRecords(doctype: DoctypeRef, options: GetRecordsOptions): Promise<Record<string, unknown>[]>
+getRecords(doctype: DoctypeRef, options: GetRecordsOptions): Promise<GetRecordsResult>
 ```
 
 **Parameters:**

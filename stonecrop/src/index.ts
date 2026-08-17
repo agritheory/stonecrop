@@ -1,11 +1,13 @@
 export type * from '@stonecrop/aform/types'
 export type * from '@stonecrop/atable/types'
 
+import { useClientAction } from './client-action'
 import { executeClientHandler } from './client-handler'
 import { useLazyLink } from './composables/lazy-link'
 import { useStonecrop } from './composables/stonecrop'
 import { useOperationLog, useUndoRedoShortcuts, withBatch } from './composables/operation-log'
 import Doctype from './doctype'
+import { DRAFT_RECORD_ID, isDraftRecordId } from './draft'
 import {
 	FieldTriggerEngine,
 	getGlobalTriggerEngine,
@@ -17,7 +19,7 @@ import {
 } from './field-triggers'
 import plugin from './plugins'
 import Registry from './registry'
-import { Stonecrop, getStonecrop } from './stonecrop'
+import { Stonecrop } from './stonecrop'
 import { HST, createHST, type HSTNode } from './stores/hst'
 import { useOperationLogStore } from './stores/operation-log'
 import { useValidationStore } from './stores/validation'
@@ -40,10 +42,15 @@ export {
 	Doctype,
 	Registry,
 	Stonecrop,
+	// Unsaved-record identity, shared with the desktop shell
+	DRAFT_RECORD_ID,
+	isDraftRecordId,
 	useLazyLink,
 	useStonecrop,
 	// clientHandler executor
 	executeClientHandler,
+	// The one blessed write path, shared by every Vue host
+	useClientAction,
 	// HST exports for advanced usage
 	HST,
 	createHST,
@@ -68,7 +75,6 @@ export {
 	// Field-validation store
 	useValidationStore,
 	// Utility functions
-	getStonecrop,
 }
 
 // Default export is the Vue plugin

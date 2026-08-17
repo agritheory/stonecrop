@@ -11,7 +11,9 @@ describe('text input component', { tags: ['component'] }, () => {
 				label: 'Phone Number',
 				modelValue: textInputModel,
 				schema: {
+					kind: 'field',
 					fieldname: 'phone',
+					component: 'ATextInput',
 					label: 'Phone Number',
 				},
 			},
@@ -29,7 +31,9 @@ describe('text input component', { tags: ['component'] }, () => {
 				modelValue: textInputModel,
 				mask: '###-###-####',
 				schema: {
+					kind: 'field',
 					fieldname: 'phone',
+					component: 'ATextInput',
 					label: 'Phone Number',
 				},
 			},
@@ -46,7 +50,9 @@ describe('text input component', { tags: ['component'] }, () => {
 				label: 'First Name',
 				modelValue: textInputModel,
 				schema: {
+					kind: 'field',
 					fieldname: 'first_name',
+					component: 'ATextInput',
 					label: 'First Name',
 				},
 			},

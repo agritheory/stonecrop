@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { List, Map } from 'immutable'
+import { List } from 'immutable'
 import { createRouter, createWebHistory } from 'vue-router'
 import type { UnknownMachineConfig } from 'xstate'
 
@@ -17,7 +17,7 @@ const createDoctypeWithLinks = (name: string, links?: Record<string, any>) => {
 		states: { draft: {} },
 	}
 
-	return new Doctype(name, mockSchema as any, mockWorkflow, Map(), undefined, links)
+	return new Doctype(name, mockSchema as any, mockWorkflow, undefined, links)
 }
 
 function createMockDoctype(name: string) {
@@ -45,12 +45,7 @@ function createMockDoctype(name: string) {
 		},
 	}
 
-	const mockActions = Map({
-		load: ['loadData'],
-		save: ['validateData', 'saveData'],
-	})
-
-	return new Doctype(name, mockSchema, mockWorkflow, mockActions)
+	return new Doctype(name, mockSchema, mockWorkflow)
 }
 
 describe('Registry class', { tags: ['unit'] }, () => {
@@ -126,7 +121,6 @@ describe('Registry class', { tags: ['unit'] }, () => {
 			'Task',
 			List([]),
 			{ id: 'task', initial: 'draft', states: { draft: { type: 'final' } } },
-			Map({}),
 			mockComponent
 		)
 
@@ -150,7 +144,6 @@ describe('Registry class', { tags: ['unit'] }, () => {
 			'Task',
 			List([]),
 			{ id: 'task', initial: 'draft', states: { draft: { type: 'final' } } },
-			Map({}),
 			mockComponent
 		)
 
@@ -170,7 +163,6 @@ describe('Registry class', { tags: ['unit'] }, () => {
 			'Task',
 			List([]),
 			{ id: 'task', initial: 'draft', states: { draft: { type: 'final' } } },
-			Map({}),
 			mockComponent
 		)
 
@@ -431,7 +423,7 @@ describe('Registry class', { tags: ['unit'] }, () => {
 				{ kind: 'field' as const, fieldname: 'qty', component: 'ATextInput', label: 'Qty' },
 			])
 			const taskWorkflow = { id: 'task', initial: 'draft', states: { draft: {} } }
-			const task = new Doctype('Task', taskSchema as any, taskWorkflow as any, Map())
+			const task = new Doctype('Task', taskSchema as any, taskWorkflow as any)
 
 			const parentSchema = List([
 				{ kind: 'field' as const, fieldname: 'title', component: 'ATextInput', label: 'Title' },
@@ -444,7 +436,7 @@ describe('Registry class', { tags: ['unit'] }, () => {
 				},
 			])
 			const parentWorkflow = { id: 'parent', initial: 'draft', states: { draft: {} } }
-			const parent = new Doctype('Parent', parentSchema as any, parentWorkflow as any, Map(), undefined, {
+			const parent = new Doctype('Parent', parentSchema as any, parentWorkflow as any, undefined, {
 				tasks: { target: 'task', cardinality: 'noneOrMany', backlink: 'parent' },
 			})
 
@@ -466,7 +458,7 @@ describe('Registry class', { tags: ['unit'] }, () => {
 				{ kind: 'field' as const, fieldname: 'street', component: 'ATextInput', label: 'Street' },
 			])
 			const addressWorkflow = { id: 'address', initial: 'draft', states: { draft: {} } }
-			const address = new Doctype('Address', addressSchema as any, addressWorkflow as any, Map())
+			const address = new Doctype('Address', addressSchema as any, addressWorkflow as any)
 
 			const personSchema = List([
 				{ kind: 'field' as const, fieldname: 'name', component: 'ATextInput', label: 'Name' },
@@ -479,7 +471,7 @@ describe('Registry class', { tags: ['unit'] }, () => {
 				},
 			])
 			const personWorkflow = { id: 'person', initial: 'draft', states: { draft: {} } }
-			const person = new Doctype('Person', personSchema as any, personWorkflow as any, Map(), undefined, {
+			const person = new Doctype('Person', personSchema as any, personWorkflow as any, undefined, {
 				address: { target: 'address', cardinality: 'one', backlink: 'person' },
 			})
 

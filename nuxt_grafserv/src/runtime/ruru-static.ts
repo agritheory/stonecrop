@@ -2,7 +2,7 @@ import { defineEventHandler } from 'h3'
 import { useRuntimeConfig } from 'nitropack/runtime'
 
 import { getGrafservInstance } from './handler'
-import type { ModuleOptions } from '../types'
+import type { GrafservRuntimeConfig } from '../types'
 
 /**
  * Ruru/GraphiQL static assets handler
@@ -10,7 +10,7 @@ import type { ModuleOptions } from '../types'
  */
 export default defineEventHandler(async event => {
 	const config = useRuntimeConfig()
-	const options = config.grafserv as ModuleOptions
+	const options = config.grafserv as GrafservRuntimeConfig
 
 	const serv = await getGrafservInstance(options)
 	return serv.handleGraphiqlStaticEvent(event)
