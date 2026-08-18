@@ -46,9 +46,9 @@ describe('date range component', () => {
 		expect(wrapper.find('input').attributes()).toHaveProperty('disabled')
 	})
 
-	it('trigger input is readonly', () => {
+	it('trigger input is typeable', () => {
 		const wrapper = mount(ADateRange, globalComponents)
-		expect(wrapper.find('input').attributes()).toHaveProperty('readonly')
+		expect(wrapper.find('input').attributes()).not.toHaveProperty('readonly')
 	})
 
 	it('shows placeholder when no value is set', () => {
@@ -281,6 +281,21 @@ describe('date range component', () => {
 		})
 		const text = wrapper.find('.aform_display-value').text()
 		expect(text).toContain('From')
+	})
+
+	it('commits a typed range on blur', async () => {
+		const emitted: object[] = []
+		const wrapper = mount(ADateRange, {
+			...globalComponents,
+			props: { 'onUpdate:modelValue': (v: object) => emitted.push(v) },
+		})
+		const $input = wrapper.find('input')
+		await $input.setValue('2026-03-01 — 2026-03-15')
+		await $input.trigger('blur')
+		const last = emitted[emitted.length - 1] as { start_date: string; end_date: string }
+		expect(last.start_date).toBe('2026-03-01')
+		expect(last.end_date).toBe('2026-03-15')
+		expect(($input.element as HTMLInputElement).value).toContain('—')
 	})
 
 	it('renders "Until ..." in display mode when only end_date is set', () => {

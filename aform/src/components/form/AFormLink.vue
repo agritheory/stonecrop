@@ -351,7 +351,7 @@ const selectCurrent = () => {
 	border: 1px solid var(--sc-input-active-border-color);
 	border-top: none;
 	border-radius: 0 0 var(--sc-border-radius) var(--sc-border-radius);
-	background: #fff;
+	background: var(--sc-overlay-background);
 }
 
 .autocomplete-result {

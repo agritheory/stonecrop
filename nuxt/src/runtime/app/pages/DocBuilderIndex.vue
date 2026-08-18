@@ -100,7 +100,7 @@ function handleAction(_label, action) {
 
 <style scoped>
 .docbuilder-index {
-	background: var(--sc-form-background, #fff);
+	background: var(--sc-form-background);
 	box-sizing: border-box;
 	min-height: 100vh;
 }

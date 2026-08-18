@@ -293,20 +293,20 @@ describe('ATableModal', { tags: ['component'] }, () => {
 		const modalElement = wrapper.find('.amodal')
 		const style = modalElement.attributes('style')
 
-		// Modal should be positioned at cell position + header height
-		expect(style).toContain('left: 100px') // cell offsetLeft
-		expect(style).toContain('top: 80px') // cell offsetTop + header height
+		// Below the cell: offsetTop + header + cell height
+		expect(style).toContain('left: 100px')
+		expect(style).toContain('top: 120px')
 	})
 
-	it('should adjust modal position when it would overflow table bottom', () => {
+	it('stays below the cell even when that overflows the table bottom', () => {
 		const mockTable = {
-			offsetHeight: 200, // Small table height
+			offsetHeight: 200,
 			offsetWidth: 800,
 			querySelector: vi.fn(() => ({ offsetHeight: 30 })),
 		}
 
 		const mockCell = {
-			offsetTop: 150, // Near bottom of table
+			offsetTop: 150,
 			offsetLeft: 100,
 			closest: vi.fn(() => mockTable),
 		} as any
@@ -326,9 +326,8 @@ describe('ATableModal', { tags: ['component'] }, () => {
 		const modalElement = wrapper.find('.amodal')
 		const style = modalElement.attributes('style')
 
-		// Modal Y should be adjusted to prevent overflow
-		// modalY = 180 (cell + header) - (100 modal height + 40 cell height) = 40
-		expect(style).toContain('top: 40px')
+		// 150 + 30 header + 40 cell — never flip above the field
+		expect(style).toContain('top: 220px')
 	})
 
 	it('should adjust modal position when it would overflow table right', () => {
@@ -392,8 +391,8 @@ describe('ATableModal', { tags: ['component'] }, () => {
 		const modalElement = wrapper.find('.amodal')
 		const style = modalElement.attributes('style')
 
-		// Should use 0 for header height
-		expect(style).toContain('top: 50px') // cell offsetTop + 0 header height
+		// No header: offsetTop + cell height
+		expect(style).toContain('top: 90px')
 	})
 
 	it('should have correct CSS classes and attributes', () => {

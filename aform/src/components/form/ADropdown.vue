@@ -203,7 +203,7 @@ const setCurrentResult = () => {
 	border: 1px solid var(--sc-input-active-border-color);
 	border-radius: 0 0 var(--sc-border-radius) var(--sc-border-radius);
 	border-top: none;
-	background-color: var(--sc-input-field-background);
+	background-color: var(--sc-overlay-background);
 	list-style: none;
 }
 

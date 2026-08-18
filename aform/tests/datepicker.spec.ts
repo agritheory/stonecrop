@@ -21,12 +21,71 @@ describe('datepicker component', { tags: ['component'] }, () => {
 		expect(updateEvents![0][0]).toEqual(todaysDate)
 	})
 
-	it('default date is focused', async () => {
+	it('does not steal document focus on mount', async () => {
 		const wrapper = mount(ADatePicker, { attachTo: document.body })
 		await wrapper.vm.$nextTick()
 
-		const $selectedDate = wrapper.find('.selectedDate')
-		expect($selectedDate.element).toBe(document.activeElement)
+		expect(wrapper.find('.todaysDate').element).not.toBe(document.activeElement)
+		wrapper.unmount()
+	})
+
+	it('does not mark a selected date when the model is empty', async () => {
+		const wrapper = mount(ADatePicker)
+		await wrapper.vm.$nextTick()
+		expect(wrapper.find('.selectedDate').exists()).toBe(false)
+	})
+
+	it('opens on the model month for an ISO date string', async () => {
+		const wrapper = mount(ADatePicker, {
+			props: { modelValue: '1990-04-15' },
+		})
+		await wrapper.vm.$nextTick()
+		expect(wrapper.vm.currentMonth).toBe(3)
+		expect(wrapper.vm.currentYear).toBe(1990)
+		expect(wrapper.find('.selectedDate').text()).toBe('15')
+	})
+
+	it('marks the model date as selected', async () => {
+		const wrapper = mount(ADatePicker, {
+			props: { modelValue: new Date(2026, 7, 20) },
+		})
+		await wrapper.vm.$nextTick()
+		const selected = wrapper.find('.selectedDate')
+		expect(selected.exists()).toBe(true)
+		expect(selected.text()).toBe('20')
+	})
+
+	it('marks the table cell date as selected when mounted as a modal', async () => {
+		const store = {
+			getCellData: () => '2025-07-24',
+			setCellData: () => {},
+			modal: { visible: true },
+		}
+		const wrapper = mount(ADatePicker, {
+			props: { store, colIndex: 5, rowIndex: 5 },
+		})
+		await wrapper.vm.$nextTick()
+		const selected = wrapper.find('.selectedDate')
+		expect(selected.exists()).toBe(true)
+		expect(selected.text()).toBe('24')
+	})
+
+	it('writes the picked date back to the table store', async () => {
+		const written: unknown[] = []
+		const store = {
+			getCellData: () => '2025-07-24',
+			setCellData: (_col: number, _row: number, value: unknown) => {
+				written.push(value)
+			},
+			modal: { visible: true },
+		}
+		const wrapper = mount(ADatePicker, {
+			props: { store, colIndex: 5, rowIndex: 5 },
+		})
+		await wrapper.vm.$nextTick()
+		await wrapper.find('.selectedDate').trigger('click')
+		expect(written[written.length - 1]).toBe('2025-07-24')
+		expect(store.modal.visible).toBe(false)
 	})
 
 	it('selected date is focused', async () => {

@@ -29,26 +29,46 @@ The floor wraps its declarations in the `stonecrop.tokens` cascade layer. An unl
 Two rules worth keeping:
 
 - **Keep overrides on `:root`.** Scoping to a container (`.my-app { … }`) makes an ancestor declaration that beats `:root` by inheritance proximity, which changes how the variable resolves for elements outside it.
-- **Derived tokens follow their inputs.** `--sc-badge-success-bg` is a `color-mix()` of `--sc-brand-success`, so overriding the brand token moves the badge with it.
+- **Derived tokens follow their inputs.** `--sc-primary-color` aliases `--sc-color-primary`, and `--sc-badge-success-bg` is a `color-mix()` of `--sc-brand-success`, so overriding the primitive or brand token moves the rest with it.
 
 ## Token reference
 
-### Colors
+The floor is primitive → semantic. Components read the semantic names; hosts usually override a primitive (`--sc-color-primary`, `--sc-gray-5`) and let aliases follow.
+
+### Primitive colors
 
 | Token | Default | Notes |
 |---|---|---|
-| `--sc-primary-color` | `#0098c9` | Primary action color |
-| `--sc-primary-text-color` | `#ffffff` | Text paired with the primary color |
-| `--sc-brand-color` | `#202a44` | Brand color |
-| `--sc-brand-danger` | `#e63c28` | |
-| `--sc-brand-success` | `#155724` | |
-| `--sc-brand-warning` | `#b99d3e` | |
+| `--sc-color-primary` | `#0098c9` | Primary action color |
+| `--sc-color-on-primary` | `#ffffff` | Text paired with the primary color |
+| `--sc-color-brand` | `#202a44` | Brand color |
+| `--sc-color-danger` | `#e63c28` | |
+| `--sc-color-success` | `#155724` | |
+| `--sc-color-warning` | `#b99d3e` | |
+| `--sc-color-gold` | `#e6a92d` | Active-cell outline |
+| `--sc-color-changed` | `#d8edff` | Edited-cell highlight |
+
+`--sc-primary-color`, `--sc-primary-text-color`, `--sc-brand-color`, `--sc-brand-danger`, `--sc-brand-success`, and `--sc-brand-warning` are aliases of those primitives.
 
 ### Grays
 
-`--sc-gray-5` `#f2f2f2` · `--sc-gray-10` `#e6e6e6` · `--sc-gray-20` `#cccccc` · `--sc-gray-50` `#808080` · `--sc-gray-60` `#666666` · `--sc-gray-70` `#4d4d4d` · `--sc-gray-80` `#333333`
+`--sc-gray-2` `#fafafa` · `--sc-gray-5` `#f2f2f2` · `--sc-gray-10` `#e6e6e6` · `--sc-gray-20` `#cccccc` · `--sc-gray-50` `#808080` · `--sc-gray-60` `#666666` · `--sc-gray-70` `#3a3c41` · `--sc-gray-80` `#333333`
 
-The ramp is `token number = 100 − lightness%`.
+The ramp is `token number = 100 − lightness%` (`--sc-gray-70` is the cell-text gray rather than a strict 30% step).
+
+### Surfaces
+
+| Token | Default |
+|---|---|
+| `--sc-page-background` | `var(--sc-gray-2)` |
+| `--sc-form-background` | `var(--sc-gray-2)` |
+| `--sc-input-field-background` | `var(--sc-gray-5)` |
+| `--sc-input-addon-background` | `var(--sc-gray-10)` |
+| `--sc-input-field-disabled-background` | `var(--sc-gray-2)` |
+| `--sc-overlay-background` | `var(--sc-gray-2)` |
+| `--sc-cell-background` | `var(--sc-form-background)` |
+
+The sheet also sets `body` background and color from `--sc-page-background` and `--sc-cell-text-color`.
 
 ### Badges
 
@@ -60,17 +80,22 @@ Each variant (`neutral`, `success`, `warning`, `danger`, `brand`) defines `--sc-
 
 | Token | Default |
 |---|---|
-| `--sc-cell-text-color` | `#3a3c41` |
-| `--sc-cell-changed-color` | `#d8edff` |
-| `--sc-focus-cell-background` | `#ffffff` |
-| `--sc-focus-cell-outline` | `#000000` |
+| `--sc-cell-text-color` | `var(--sc-gray-70)` |
+| `--sc-cell-changed-color` | `var(--sc-color-changed)` |
+| `--sc-active-cell-background` | `var(--sc-input-field-background)` |
+| `--sc-active-cell-outline` | `var(--sc-color-gold)` |
+| `--sc-focus-cell-background` | `var(--sc-input-field-background)` |
+| `--sc-focus-cell-outline` | `var(--sc-gray-80)` |
+| `--sc-cell-border-color` | `var(--sc-form-background)` |
 | `--sc-header-text-color` | `var(--sc-gray-20)` |
+| `--sc-header-border-color` | `var(--sc-form-background)` |
 | `--sc-row-border-color` | `var(--sc-gray-20)` |
-| `--sc-row-color-zebra-dark` | `#dddddd` |
-| `--sc-row-color-zebra-light` | `#eeeeee` |
-| `--sc-row-hover-color` | `#f0f4f8` |
+| `--sc-row-color-zebra-dark` | `var(--sc-gray-5)` |
+| `--sc-row-color-zebra-light` | `var(--sc-form-background)` |
+| `--sc-row-number-background-color` | `var(--sc-form-background)` |
+| `--sc-row-hover-color` | `var(--sc-gray-10)` |
 | `--sc-border-radius` | `0` |
-| `--sc-atable-row-padding` | `0.125rem` |
+| `--sc-atable-row-padding` | `var(--sc-space-1)` |
 | `--sc-atable-row-height` | `1.5em` |
 | `--sc-atable-cell-border-width` | `2px` |
 | `--sc-table-loading-color` | `204, 204, 204` |
@@ -79,27 +104,31 @@ Each variant (`neutral`, `success`, `warning`, `danger`, `brand`) defines `--sc-
 
 | Token | Default |
 |---|---|
-| `--sc-form-background` | `#ffffff` |
-| `--sc-form-border` | `var(--sc-gray-5)` |
-| `--sc-input-active-border-color` | `#000000` |
-| `--sc-input-active-label-color` | `#000000` |
+| `--sc-form-border` | `var(--sc-gray-20)` |
+| `--sc-form-field-max-width` | `50ch` |
+| `--sc-form-label-offset` | `var(--sc-space-2)` |
+| `--sc-input-active-border-color` | `var(--sc-gray-80)` |
+| `--sc-input-active-label-color` | `var(--sc-gray-80)` |
 | `--sc-input-border-color` | `var(--sc-gray-20)` |
 | `--sc-input-label-color` | `var(--sc-gray-60)` |
-| `--sc-input-field-background` | `#ffffff` |
-| `--sc-input-field-disabled-background` | `var(--sc-gray-5)` |
+| `--sc-required-border` | `var(--sc-color-danger)` |
 
 ### Buttons
 
-`--sc-btn-border` `#cccccc` · `--sc-btn-color` `white` · `--sc-btn-hover` `#f2f2f2` · `--sc-btn-label-color` `black`
+`--sc-btn-border` `var(--sc-gray-20)` · `--sc-btn-color` `var(--sc-gray-2)` · `--sc-btn-hover` `var(--sc-gray-5)` · `--sc-btn-label-color` `var(--sc-gray-80)`
 
-### Font
+### Space and type
 
 | Token | Default |
 |---|---|
+| `--sc-space-1` | `0.125rem` |
+| `--sc-space-2` | `0.5rem` |
+| `--sc-space-3` | `1rem` |
 | `--sc-font-family` | `'Arimo', Arial, sans-serif` |
-| `--sc-font-size` | `10px` |
-| `--sc-table-font-size` | `16px` |
-| `--sc-atable-font-family` | `'Arimo', sans-serif` |
+| `--sc-font-size` | `1rem` |
+| `--sc-font-size-table` | `1rem` |
+| `--sc-table-font-size` | `var(--sc-font-size-table)` |
+| `--sc-atable-font-family` | `var(--sc-font-family)` |
 
 The sheet also applies `--sc-font-family` to `body` and normalizes form controls and code elements to inherit it, since browsers otherwise give them their own defaults. The two go together: without the `body` rule, the reset would strip those defaults and leave the controls inheriting the browser's serif.
 

@@ -103,6 +103,28 @@ describe('date component', { tags: ['component'] }, () => {
 		expect(($input.element as HTMLInputElement).value).toBe(new Date(2023, 5, 15).toLocaleDateString())
 	})
 
+	it('highlights the field value as the selected date in the picker', async () => {
+		const wrapper = mount(ADate, {
+			...globalComponents,
+			props: { modelValue: '2026-08-20' },
+		})
+		await wrapper.find('input').trigger('click')
+		await wrapper.vm.$nextTick()
+		const selected = wrapper.find('.selectedDate')
+		expect(selected.exists()).toBe(true)
+		expect(selected.text()).toBe('20')
+	})
+
+	it('keeps focus on the input when the picker opens', async () => {
+		const wrapper = mount(ADate, { ...globalComponents, attachTo: document.body })
+		const input = wrapper.find('input').element as HTMLInputElement
+		input.focus()
+		await wrapper.find('input').trigger('click')
+		await wrapper.vm.$nextTick()
+		expect(document.activeElement).toBe(input)
+		wrapper.unmount()
+	})
+
 	it('handles date selection from picker', async () => {
 		const emitted: (string | Date | undefined)[] = []
 		const wrapper = mount(ADate, {

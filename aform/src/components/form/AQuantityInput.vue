@@ -250,6 +250,7 @@ const displayText = computed(() => {
 	display: flex;
 	align-items: stretch;
 	width: 100%;
+	background: var(--sc-input-field-background);
 	border: 1px solid var(--sc-input-border-color);
 	border-radius: var(--sc-border-radius);
 }
@@ -290,7 +291,7 @@ const displayText = computed(() => {
 	gap: 0.75ch;
 	height: 100%;
 	padding: 0.5ch 1ch;
-	background: var(--sc-gray-5);
+	background: var(--sc-input-addon-background);
 	border: none;
 	border-radius: 0 var(--sc-border-radius) var(--sc-border-radius) 0;
 	white-space: nowrap;

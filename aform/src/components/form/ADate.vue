@@ -25,6 +25,7 @@
 				v-if="showPicker"
 				ref="picker"
 				class="adate-picker"
+				:selected="modelValue ?? null"
 				:select-range="false"
 				:show-time="false"
 				@get-date="handleDate" />
@@ -110,7 +111,8 @@ watch(
 	}
 )
 
-const handleDate = (data: { selected: Date }) => {
+const handleDate = (data: { selected: Date | null }) => {
+	if (!data.selected) return
 	currentDate.value = data.selected
 	modelValue.value = toISODate(data.selected)
 	inputText.value = data.selected.toLocaleDateString()
@@ -123,7 +125,10 @@ const handleDate = (data: { selected: Date }) => {
 	position: absolute;
 	top: 100%;
 	left: 0;
-	z-index: 1000;
+	width: max-content;
+	max-width: 100%;
+	box-sizing: border-box;
+	z-index: 100;
 	margin-top: 0.25rem;
 }
 </style>
