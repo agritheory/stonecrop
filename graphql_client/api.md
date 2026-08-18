@@ -66,7 +66,7 @@ export interface StonecropClientOptions {
 
 Client for interacting with Stonecrop GraphQL API.
 
-Acts as a transport layer — it passes requests to the middleware and returns merged results. Does not construct queries itself.
+Acts as a transport layer for stonecropRecord/stonecropRecords/stonecropAction.
 
 **Constructor:**
 
