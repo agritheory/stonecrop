@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Add Badge component with cell-fill and input-accent presentations for Select fields",
+      "type": "minor",
+      "packageName": "@stonecrop/aform"
+    }
+  ],
+  "packageName": "@stonecrop/aform",
+  "email": "tyler@agritheory.com"
+}

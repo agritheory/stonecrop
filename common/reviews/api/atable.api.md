@@ -15,11 +15,13 @@ import ATableHeader from './components/ATableHeader.vue';
 import ATableLoading from './components/ATableLoading.vue';
 import ATableLoadingBar from './components/ATableLoadingBar.vue';
 import ATableModal from './components/ATableModal.vue';
+import { BadgeDescriptor } from '@stonecrop/schema';
 import type { ColumnSchema } from '@stonecrop/schema';
 import { ComputedRef } from 'vue';
 import { CSSProperties } from 'vue';
 import DeleteIcon from './stonecrop-ui-icon-delete.svg?raw';
 import DuplicateIcon from './stonecrop-ui-icon-duplicate.svg?raw';
+import { FieldOptions } from '@stonecrop/schema';
 import InsertAboveIcon from './stonecrop-ui-icon-insert-above.svg?raw';
 import InsertBelowIcon from './stonecrop-ui-icon-insert-below.svg?raw';
 import MoveIcon from './stonecrop-ui-icon-move.svg?raw';
@@ -123,7 +125,7 @@ export const createTableStore: (initData: {
 }) => Store<`table-${string}`, Pick<{
 columns: Ref<    {
 name: string;
-format?: string | ((value: any, context: CellContext) => string) | undefined;
+format?: string | ((value: any, context: CellContext) => string | BadgeDescriptor) | undefined;
 modalComponent?: string | ((context: CellContext) => string) | undefined;
 mask?: ((value: any) => any) | undefined;
 linkDoctype?: string | undefined;
@@ -144,12 +146,13 @@ filterComponent?: string | undefined;
 cellComponent?: string | undefined;
 cellComponentProps?: Record<string, any> | undefined;
 modalComponentExtraProps?: Record<string, any> | undefined;
+options?: FieldOptions | undefined;
 isGantt?: boolean | undefined;
 ganttComponent?: string | undefined;
 colspan?: number | undefined;
 }[], TableColumn[] | {
 name: string;
-format?: string | ((value: any, context: CellContext) => string) | undefined;
+format?: string | ((value: any, context: CellContext) => string | BadgeDescriptor) | undefined;
 modalComponent?: string | ((context: CellContext) => string) | undefined;
 mask?: ((value: any) => any) | undefined;
 linkDoctype?: string | undefined;
@@ -170,6 +173,7 @@ filterComponent?: string | undefined;
 cellComponent?: string | undefined;
 cellComponentProps?: Record<string, any> | undefined;
 modalComponentExtraProps?: Record<string, any> | undefined;
+options?: FieldOptions | undefined;
 isGantt?: boolean | undefined;
 ganttComponent?: string | undefined;
 colspan?: number | undefined;
@@ -995,7 +999,7 @@ updateRows: (newRows: TableRow[]) => void;
 }, "columns" | "config" | "connectionHandles" | "connectionPaths" | "filterState" | "ganttBars" | "modal" | "rows" | "sortState" | "updates" | "linkResolver">, Pick<{
 columns: Ref<    {
 name: string;
-format?: string | ((value: any, context: CellContext) => string) | undefined;
+format?: string | ((value: any, context: CellContext) => string | BadgeDescriptor) | undefined;
 modalComponent?: string | ((context: CellContext) => string) | undefined;
 mask?: ((value: any) => any) | undefined;
 linkDoctype?: string | undefined;
@@ -1016,12 +1020,13 @@ filterComponent?: string | undefined;
 cellComponent?: string | undefined;
 cellComponentProps?: Record<string, any> | undefined;
 modalComponentExtraProps?: Record<string, any> | undefined;
+options?: FieldOptions | undefined;
 isGantt?: boolean | undefined;
 ganttComponent?: string | undefined;
 colspan?: number | undefined;
 }[], TableColumn[] | {
 name: string;
-format?: string | ((value: any, context: CellContext) => string) | undefined;
+format?: string | ((value: any, context: CellContext) => string | BadgeDescriptor) | undefined;
 modalComponent?: string | ((context: CellContext) => string) | undefined;
 mask?: ((value: any) => any) | undefined;
 linkDoctype?: string | undefined;
@@ -1042,6 +1047,7 @@ filterComponent?: string | undefined;
 cellComponent?: string | undefined;
 cellComponentProps?: Record<string, any> | undefined;
 modalComponentExtraProps?: Record<string, any> | undefined;
+options?: FieldOptions | undefined;
 isGantt?: boolean | undefined;
 ganttComponent?: string | undefined;
 colspan?: number | undefined;
@@ -1867,7 +1873,7 @@ updateRows: (newRows: TableRow[]) => void;
 }, "display" | "table" | "filteredRows" | "hasPinnedColumns" | "isGanttView" | "isTreeView" | "isDependencyGraphEnabled" | "numberedRowWidth" | "zeroColumn">, Pick<{
 columns: Ref<    {
 name: string;
-format?: string | ((value: any, context: CellContext) => string) | undefined;
+format?: string | ((value: any, context: CellContext) => string | BadgeDescriptor) | undefined;
 modalComponent?: string | ((context: CellContext) => string) | undefined;
 mask?: ((value: any) => any) | undefined;
 linkDoctype?: string | undefined;
@@ -1888,12 +1894,13 @@ filterComponent?: string | undefined;
 cellComponent?: string | undefined;
 cellComponentProps?: Record<string, any> | undefined;
 modalComponentExtraProps?: Record<string, any> | undefined;
+options?: FieldOptions | undefined;
 isGantt?: boolean | undefined;
 ganttComponent?: string | undefined;
 colspan?: number | undefined;
 }[], TableColumn[] | {
 name: string;
-format?: string | ((value: any, context: CellContext) => string) | undefined;
+format?: string | ((value: any, context: CellContext) => string | BadgeDescriptor) | undefined;
 modalComponent?: string | ((context: CellContext) => string) | undefined;
 mask?: ((value: any) => any) | undefined;
 linkDoctype?: string | undefined;
@@ -1914,6 +1921,7 @@ filterComponent?: string | undefined;
 cellComponent?: string | undefined;
 cellComponentProps?: Record<string, any> | undefined;
 modalComponentExtraProps?: Record<string, any> | undefined;
+options?: FieldOptions | undefined;
 isGantt?: boolean | undefined;
 ganttComponent?: string | undefined;
 colspan?: number | undefined;
@@ -2897,7 +2905,7 @@ export function schemaToColumns(schema: ColumnSchema[]): TableColumn[];
 
 // @public
 export interface TableColumn extends Omit<ColumnSchema, 'fieldname' | 'hidden' | 'format' | 'modalComponent'> {
-    format?: string | ((value: any, context: CellContext) => string);
+    format?: string | ((value: any, context: CellContext) => string | BadgeDescriptor);
     linkDoctype?: string;
     mask?: (value: any) => any;
     modalComponent?: string | ((context: CellContext) => string);

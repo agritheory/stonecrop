@@ -163,6 +163,66 @@ describe('schemaToColumns', { tags: ['component'] }, () => {
 		})
 	})
 
+	describe('Select badge handling', () => {
+		it('preserves badge options on select fields for ACell rendering', () => {
+			const schema: ColumnSchema[] = [
+				{
+					fieldname: 'status',
+					component: 'ADropdown',
+					label: 'Status',
+					options: {
+						choices: ['Open', 'Closed'],
+						badges: { Open: 'warning', Closed: 'success' },
+					},
+				},
+			]
+			const columns = schemaToColumns(schema)
+			expect(columns[0].options).toEqual(schema[0].options)
+			expect(columns[0].cellComponent).toBeUndefined()
+		})
+
+		it('preserves bare choice maps on select fields', () => {
+			const schema: ColumnSchema[] = [
+				{
+					fieldname: 'status',
+					component: 'ADropdown',
+					label: 'Status',
+					options: { Open: 'warning', Closed: 'neutral' },
+				},
+			]
+			const columns = schemaToColumns(schema)
+			expect(columns[0].options).toEqual(schema[0].options)
+			expect(columns[0].cellComponent).toBeUndefined()
+		})
+
+		it('does not attach ABadge when cellComponent is explicit', () => {
+			const schema: ColumnSchema[] = [
+				{
+					fieldname: 'status',
+					component: 'ADropdown',
+					label: 'Status',
+					options: { Open: 'warning' },
+					cellComponent: 'StatusBadge',
+				},
+			]
+			const columns = schemaToColumns(schema)
+			expect(columns[0].cellComponent).toBe('StatusBadge')
+		})
+
+		it('does not attach ABadge for plain string[] selects', () => {
+			const schema: ColumnSchema[] = [
+				{
+					fieldname: 'status',
+					component: 'ADropdown',
+					label: 'Status',
+					options: ['Open', 'Closed'],
+				},
+			]
+			const columns = schemaToColumns(schema)
+			expect(columns[0].cellComponent).toBeUndefined()
+		})
+	})
+
 	describe('Currency field handling', () => {
 		it('adds a formatCurrency function for currency-category fields without explicit format', () => {
 			const schema: ColumnSchema[] = [{ fieldname: 'total', component: 'ACurrencyInput', label: 'Total' }]

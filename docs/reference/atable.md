@@ -156,7 +156,7 @@ createTableStore: (initData: {
 }) => import("pinia").Store<`table-${string}`, Pick<{
     columns: import("vue").Ref<{
         name: string;
-        format?: string | ((value: any, context: CellContext) => string) | undefined;
+        format?: string | ((value: any, context: CellContext) => string | import("@stonecrop/schema").BadgeDescriptor) | undefined;
         modalComponent?: string | ((context: CellContext) => string) | undefined;
         mask?: ((value: any) => any) | undefined;
         linkDoctype?: string | undefined;
@@ -177,12 +177,13 @@ createTableStore: (initData: {
         cellComponent?: string | undefined;
         cellComponentProps?: Record<string, any> | undefined;
         modalComponentExtraProps?: Record<string, any> | undefined;
+        options?: import("@stonecrop/schema").FieldOptions | undefined;
         isGantt?: boolean | undefined;
         ganttComponent?: string | undefined;
         colspan?: number | undefined;
     }[], TableColumn[] | {
         name: string;
-        format?: string | ((value: any, context: CellContext) => string) | undefined;
+        format?: string | ((value: any, context: CellContext) => string | import("@stonecrop/schema").BadgeDescriptor) | undefined;
         modalComponent?: string | ((context: CellContext) => string) | undefined;
         mask?: ((value: any) => any) | undefined;
         linkDoctype?: string | undefined;
@@ -203,6 +204,7 @@ createTableStore: (initData: {
         cellComponent?: string | undefined;
         cellComponentProps?: Record<string, any> | undefined;
         modalComponentExtraProps?: Record<string, any> | undefined;
+        options?: import("@stonecrop/schema").FieldOptions | undefined;
         isGantt?: boolean | undefined;
         ganttComponent?: string | undefined;
         colspan?: number | undefined;
@@ -1028,7 +1030,7 @@ createTableStore: (initData: {
 }, "columns" | "config" | "connectionHandles" | "connectionPaths" | "filterState" | "ganttBars" | "modal" | "rows" | "sortState" | "updates" | "linkResolver">, Pick<{
     columns: import("vue").Ref<{
         name: string;
-        format?: string | ((value: any, context: CellContext) => string) | undefined;
+        format?: string | ((value: any, context: CellContext) => string | import("@stonecrop/schema").BadgeDescriptor) | undefined;
         modalComponent?: string | ((context: CellContext) => string) | undefined;
         mask?: ((value: any) => any) | undefined;
         linkDoctype?: string | undefined;
@@ -1049,12 +1051,13 @@ createTableStore: (initData: {
         cellComponent?: string | undefined;
         cellComponentProps?: Record<string, any> | undefined;
         modalComponentExtraProps?: Record<string, any> | undefined;
+        options?: import("@stonecrop/schema").FieldOptions | undefined;
         isGantt?: boolean | undefined;
         ganttComponent?: string | undefined;
         colspan?: number | undefined;
     }[], TableColumn[] | {
         name: string;
-        format?: string | ((value: any, context: CellContext) => string) | undefined;
+        format?: string | ((value: any, context: CellContext) => string | import("@stonecrop/schema").BadgeDescriptor) | undefined;
         modalComponent?: string | ((context: CellContext) => string) | undefined;
         mask?: ((value: any) => any) | undefined;
         linkDoctype?: string | undefined;
@@ -1075,6 +1078,7 @@ createTableStore: (initData: {
         cellComponent?: string | undefined;
         cellComponentProps?: Record<string, any> | undefined;
         modalComponentExtraProps?: Record<string, any> | undefined;
+        options?: import("@stonecrop/schema").FieldOptions | undefined;
         isGantt?: boolean | undefined;
         ganttComponent?: string | undefined;
         colspan?: number | undefined;
@@ -1900,7 +1904,7 @@ createTableStore: (initData: {
 }, "display" | "table" | "filteredRows" | "hasPinnedColumns" | "isGanttView" | "isTreeView" | "isDependencyGraphEnabled" | "numberedRowWidth" | "zeroColumn">, Pick<{
     columns: import("vue").Ref<{
         name: string;
-        format?: string | ((value: any, context: CellContext) => string) | undefined;
+        format?: string | ((value: any, context: CellContext) => string | import("@stonecrop/schema").BadgeDescriptor) | undefined;
         modalComponent?: string | ((context: CellContext) => string) | undefined;
         mask?: ((value: any) => any) | undefined;
         linkDoctype?: string | undefined;
@@ -1921,12 +1925,13 @@ createTableStore: (initData: {
         cellComponent?: string | undefined;
         cellComponentProps?: Record<string, any> | undefined;
         modalComponentExtraProps?: Record<string, any> | undefined;
+        options?: import("@stonecrop/schema").FieldOptions | undefined;
         isGantt?: boolean | undefined;
         ganttComponent?: string | undefined;
         colspan?: number | undefined;
     }[], TableColumn[] | {
         name: string;
-        format?: string | ((value: any, context: CellContext) => string) | undefined;
+        format?: string | ((value: any, context: CellContext) => string | import("@stonecrop/schema").BadgeDescriptor) | undefined;
         modalComponent?: string | ((context: CellContext) => string) | undefined;
         mask?: ((value: any) => any) | undefined;
         linkDoctype?: string | undefined;
@@ -1947,6 +1952,7 @@ createTableStore: (initData: {
         cellComponent?: string | undefined;
         cellComponentProps?: Record<string, any> | undefined;
         modalComponentExtraProps?: Record<string, any> | undefined;
+        options?: import("@stonecrop/schema").FieldOptions | undefined;
         isGantt?: boolean | undefined;
         ganttComponent?: string | undefined;
         colspan?: number | undefined;
@@ -3255,7 +3261,7 @@ Schema-based callers should author columns as `ColumnSchema[]` (using `fieldname
 
 ```typescript
 export interface TableColumn {
-  format?: string | ((value: any, context: CellContext) => string);
+  format?: string | ((value: any, context: CellContext) => string | BadgeDescriptor);
   linkDoctype?: string;
   mask?: (value: any) => any;
   modalComponent?: string | ((context: CellContext) => string);
@@ -3268,7 +3274,7 @@ export interface TableColumn {
 
 | Property | Type | Description |
 |----------|------|-------------|
-| format? | `string \| ((value: any, context: CellContext) => string)` | Widens `ColumnSchema.format` (string-only) to also accept a live function at runtime. Serialized string functions are deserialized by the table store's `getFormattedValue`. |
+| format? | `string \| ((value: any, context: CellContext) => string \| BadgeDescriptor)` | Widens `ColumnSchema.format` (string-only) to also accept a live function at runtime. Serialized string functions are deserialized by the table store's `getFormattedValue`. May return a plain string, HTML, or a `BadgeDescriptor`. |
 | linkDoctype? | `string` | For link columns (those carrying `doctype`): the target doctype slug used by the `linkResolver` to look up display text for bare ID values. Set automatically by `schemaToColumns` from the field's `doctype` property. |
 | mask? | `(value: any) => any` | Input mask applied to the cell value before display. Accepts a live function only — masks cannot be serialized to JSON so they are absent from `ColumnSchema`. |
 | modalComponent? | `string \| ((context: CellContext) => string)` | Widens `ColumnSchema.modalComponent` (string-only) to also accept a factory function. When a function is provided it receives the cell context and returns the component name. The cell context exposes: - `row` — the row object for the current cell - `column` — the column object for the current cell - `table` — the table object |

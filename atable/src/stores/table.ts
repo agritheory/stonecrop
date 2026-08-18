@@ -551,7 +551,8 @@ export const createTableStore = (initData: {
 			} else if (typeof format === 'string') {
 				// parse format function from string
 				// oxlint-disable-next-line @typescript-eslint/no-implied-eval
-				const formatFn: (value: any, context?: CellContext) => string = Function(`"use strict";return (${format})`)()
+				const formatFn: (value: any, context?: CellContext) => string | import('@stonecrop/schema').BadgeDescriptor =
+					Function(`"use strict";return (${format})`)()
 				return formatFn(value, { table: table.value, row, column })
 			}
 

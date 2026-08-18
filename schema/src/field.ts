@@ -9,6 +9,7 @@ import { TableViewConfig } from './table'
  *
  * Usage:
  * - Select: array of choices (["Draft", "Submitted", "Cancelled"])
+ * - Select with badges: \{ choices: [...], badges: \{ Open: "warning", ... \} \} or bare map
  * - Decimal: config object (\{ precision: 10, scale: 2 \})
  * - Code: config object (\{ language: "python" \})
  *
@@ -102,9 +103,10 @@ export interface ValueField {
 	edit?: boolean
 	/** Input mask pattern or serialized function */
 	mask?: string
-	/** Serialized `(value) => string` function for display formatting — distinct from `mask` (input).
-	 *  Spreads through `schemaToColumns` to `ColumnSchema.format`; deserialized at render time by
-	 *  ATable's `getFormattedValue`. */
+	/** Serialized display formatter — distinct from `mask` (input). Spreads through
+	 *  `schemaToColumns` to `ColumnSchema.format`; deserialized at render time by ATable's
+	 *  `getFormattedValue`. Returns a plain string, HTML, or a {@link BadgeDescriptor} for badge
+	 *  cells. When a descriptor is returned it wins over any badge map on `options`. */
 	format?: string
 	/** Per-field interaction mode override */
 	mode?: InteractionMode
