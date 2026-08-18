@@ -5,7 +5,7 @@ import { defineConfig } from 'histoire'
 export default defineConfig({
 	// For static deployment within docs
 	routerMode: 'hash',
-	outDir: '../docs/public/stories',
+	outDir: '../nuxt/documentation/public/stories',
 
 	plugins: [HstVue()],
 	setupFile: './histoire.setup.ts',

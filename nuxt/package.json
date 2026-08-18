@@ -45,6 +45,7 @@
 		"dev:full": "rushx dev:prepare:full && nuxi dev fullstack --host",
 		"dev:prepare": "nuxt-module-build build --stub && nuxt-module-build prepare && nuxi prepare playground && nuxi prepare fullstack",
 		"dev:prepare:documentation": "nuxi prepare documentation",
+		"generate:documentation": "nuxi generate documentation",
 		"dev:prepare:full": "nuxt-module-build build --stub && nuxt-module-build prepare && nuxi prepare fullstack",
 		"docs": "echo 'Nuxt modules use custom build system - skipping API docs generation'",
 		"lint": "eslint .",

@@ -30,13 +30,13 @@ echo "✅ Individual package docs generated"
 echo ""
 
 # Step 2: Aggregate all docs
-echo "📚 Step 2: Aggregating all documentation to docs/reference/..."
+echo "📚 Step 2: Aggregating all documentation to nuxt/documentation/content/reference/..."
 bash "$SCRIPT_DIR/run-docs.sh" --aggregate
 
 echo ""
 echo "🎉 Full documentation generation complete!"
 echo ""
 echo "📖 Next steps:"
-echo "   • View aggregated docs: ls -la docs/reference/"
-echo "   • Build VitePress site: cd docs && rushx build"
-echo "   • Preview VitePress site: cd docs && rushx dev"
+echo "   • View aggregated docs: ls -la nuxt/documentation/content/reference/"
+echo "   • Build the docs site: cd nuxt && rushx generate:documentation"
+echo "   • Preview the docs site: cd nuxt && rushx dev:documentation"
