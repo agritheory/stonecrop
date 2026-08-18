@@ -24,6 +24,12 @@ export const ActionDefinition: z.ZodObject<{
 export type ActionDefinition = z.infer<typeof ActionDefinition>;
 
 // @public
+export const AGGREGATE_NAME_SUFFIX = "Aggregate";
+
+// @public
+export function aggregateDoctypeName(doctypeName: string): string;
+
+// @public
 export type AuthoredDoctype = Record<string, unknown>;
 
 // @public
@@ -54,6 +60,9 @@ export interface BadgeSpecObject {
 
 // @public
 export type BadgeVariant = 'neutral' | 'success' | 'warning' | 'danger' | 'brand';
+
+// @public
+export function buildAggregateDoctype(doctype: ConvertedGraphQLDoctype): ConvertedGraphQLDoctype | undefined;
 
 // Warning: (ae-forgotten-export) The symbol "FieldTemplate" needs to be exported by the entry point index.d.ts
 //
@@ -324,6 +333,19 @@ export function flattenFields(fields: readonly DoctypeField[]): (ValueField | Ta
 export function formatDoctypeDrift(drift: DoctypeDrift): string[];
 
 // @public
+export interface GenerationPlanEntry {
+    basis: ConvertedGraphQLDoctype;
+    generated: ConvertedGraphQLDoctype;
+    subset: boolean;
+}
+
+// @public
+export interface GenerationPlanOptions {
+    noAggregates?: boolean;
+    onWarning?: (message: string) => void;
+}
+
+// @public
 export function getDisplayField(fields: readonly DoctypeField[], displayField: string | undefined): ValueField | undefined;
 
 // @public
@@ -465,7 +487,12 @@ export type LinkRenderMode = 'inline' | 'record' | 'table';
 export function lookupBadge(options: FieldOptions | undefined, key: string | undefined): BadgeDescriptor | undefined;
 
 // @public
-export function mergeIntrospectedDoctype(authored: AuthoredDoctype, generated: ConvertedGraphQLDoctype): MergeResult;
+export function mergeIntrospectedDoctype(authored: AuthoredDoctype, generated: ConvertedGraphQLDoctype, options?: MergeOptions): MergeResult;
+
+// @public
+export interface MergeOptions {
+    subset?: boolean;
+}
 
 // @public
 export interface MergeResult {
@@ -484,6 +511,9 @@ export function parseField(data: unknown): DoctypeField;
 
 // @public
 export function pascalToSnake(pascal: string): string;
+
+// @public
+export function planGeneration(entities: readonly ConvertedGraphQLDoctype[], options?: GenerationPlanOptions): GenerationPlanEntry[];
 
 // @public
 export function resolveLinkRenderMode(link: {

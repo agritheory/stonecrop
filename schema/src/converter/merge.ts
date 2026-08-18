@@ -56,6 +56,26 @@ export interface DoctypeDrift {
 	identityDrift: string[]
 }
 
+/**
+ * How to verify the authored doctype against the schema.
+ *
+ * @public
+ */
+export interface MergeOptions {
+	/**
+	 * The authored doctype is a curated **subset** of the schema's columns rather than a model of
+	 * all of them — an aggregate being the case this exists for.
+	 *
+	 * This changes what counts as drift in both directions, so `generated` must be passed the
+	 * *entity's* full field set, not the subset's. A column the author added to an aggregate is
+	 * then confirmed against the real table (so a genuinely dropped column still reports as an
+	 * orphan), while the columns deliberately left out stop reporting as omissions. Without it an
+	 * aggregate reports phantom drift on every run, which both spams `--check` and buries the one
+	 * finding that matters.
+	 */
+	subset?: boolean
+}
+
 /** Outcome of a merge: the doctype to write, plus what generation disagreed with. @public */
 export interface MergeResult {
 	/** The authored doctype with `source` markers added and nothing else changed. */
@@ -89,7 +109,9 @@ function describe(value: unknown): string {
  * Verify an authored doctype against freshly generated output and stamp provenance.
  *
  * @param authored - the doctype as it exists on disk; every key not named below is preserved verbatim
- * @param generated - `convertGraphQLSchema` output for the corresponding GraphQL type
+ * @param generated - `convertGraphQLSchema` output for the corresponding GraphQL type. For a
+ *   `subset` merge this is the **entity**, whose fields are the set the subset is curated from
+ * @param options - see {@link MergeOptions}
  * @returns the doctype to write, plus a drift report
  *
  * @example
@@ -101,7 +123,11 @@ function describe(value: unknown): string {
  *
  * @public
  */
-export function mergeIntrospectedDoctype(authored: AuthoredDoctype, generated: ConvertedGraphQLDoctype): MergeResult {
+export function mergeIntrospectedDoctype(
+	authored: AuthoredDoctype,
+	generated: ConvertedGraphQLDoctype,
+	options: MergeOptions = {}
+): MergeResult {
 	const authoredFields = Array.isArray(authored.fields) ? authored.fields.filter(isRecord) : []
 	const generatedByName = new Map(generated.fields.map(f => [f.fieldname, f]))
 	// Expanding links live in `links`, not `fields`, so a field naming one is modelled, not orphaned.
@@ -159,8 +185,12 @@ export function mergeIntrospectedDoctype(authored: AuthoredDoctype, generated: C
 
 	const merged: AuthoredDoctype = { ...authored, fields: authoredFields.map(tag) }
 
-	const authoredNames = new Set(flattenAuthored(authoredFields).map(f => f.fieldname))
-	drift.omitted = generated.fields.map(f => f.fieldname).filter(n => !authoredNames.has(n))
+	// A curated subset omits columns by definition, so the bucket that reports omissions has
+	// nothing true to say about one.
+	if (!options.subset) {
+		const authoredNames = new Set(flattenAuthored(authoredFields).map(f => f.fieldname))
+		drift.omitted = generated.fields.map(f => f.fieldname).filter(n => !authoredNames.has(n))
+	}
 
 	// Classify identity last, once every field has been compared.
 	const authoredPk = flattenAuthored(authoredFields).find(f => f.primaryKey === true)

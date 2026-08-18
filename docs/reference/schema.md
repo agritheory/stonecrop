@@ -9,6 +9,44 @@ description: Doctype schema definitions and validation
 
 ## Functions
 
+### aggregateDoctypeName
+
+The name an entity's aggregate doctype is generated under.
+
+One definition, because the CLI writes the file under `toSlug` of this and any later caller (a scaffolder, a docs generator) must land on the same name or it silently addresses a different file.
+
+**Signature:**
+
+```typescript
+export declare function aggregateDoctypeName(doctypeName: string): string;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| doctypeName | `string` | the entity doctype's `name` |
+
+### buildAggregateDoctype
+
+Derive the aggregate doctype for a converted entity.
+
+Returns `undefined` when the entity has no identity column to build one from — a natural-key table whose key the converter refuses to guess, or the un-normalized PostGraphile case where `id` is a Relay identifier and no primary key is derivable at all. That is deliberate: an aggregate with an empty `fields` array is a valid doctype that renders a table with no columns, which looks like a data problem rather than a generation one. Emitting nothing and saying so is the loud failure.
+
+Identity resolves the same way `getRecordIdField` resolves it — the declared `primaryKey`, then the conventional `id` — so an aggregate is always keyed on the column the client will later ask for.
+
+**Signature:**
+
+```typescript
+export declare function buildAggregateDoctype(doctype: ConvertedGraphQLDoctype): ConvertedGraphQLDoctype | undefined;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| doctype | `ConvertedGraphQLDoctype` | a converted entity doctype, as returned by `convertGraphQLSchema` |
+
 ### buildScalarMap
 
 Build a merged scalar map from the built-in maps and user-provided custom scalars. Precedence (highest to lowest): customScalars → GQL_SCALAR_MAP → WELL_KNOWN_SCALARS
@@ -409,7 +447,7 @@ Verify an authored doctype against freshly generated output and stamp provenance
 **Signature:**
 
 ```typescript
-export declare function mergeIntrospectedDoctype(authored: AuthoredDoctype, generated: ConvertedGraphQLDoctype): MergeResult;
+export declare function mergeIntrospectedDoctype(authored: AuthoredDoctype, generated: ConvertedGraphQLDoctype, options?: MergeOptions): MergeResult;
 ```
 
 **Parameters:**
@@ -417,7 +455,8 @@ export declare function mergeIntrospectedDoctype(authored: AuthoredDoctype, gene
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | authored | `AuthoredDoctype` | the doctype as it exists on disk; every key not named below is preserved verbatim |
-| generated | `ConvertedGraphQLDoctype` | `convertGraphQLSchema` output for the corresponding GraphQL type |
+| generated | `ConvertedGraphQLDoctype` | `convertGraphQLSchema` output for the corresponding GraphQL type. For a `subset` merge this is the **entity**, whose fields are the set the subset is curated from |
+| options | `MergeOptions` | see `MergeOptions` |
 
 ### normalizeFieldKind
 
@@ -486,6 +525,27 @@ export declare function pascalToSnake(pascal: string): string;
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | pascal | `string` | PascalCase string |
+
+### planGeneration
+
+Expand converted entities into the set of doctype files to write.
+
+Each table yields two: the entity, whose fields carry every column and which backs the record form, and its aggregate — the collection view. They are written as peers, one file each, with no key relating them.
+
+Separate from the CLI because the pairing of a file to its verification basis is the part that is easy to get wrong and impossible to notice: getting it wrong does not throw, it just reports drift that is not there, forever.
+
+**Signature:**
+
+```typescript
+export declare function planGeneration(entities: readonly ConvertedGraphQLDoctype[], options?: GenerationPlanOptions): GenerationPlanEntry[];
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| entities | `readonly ConvertedGraphQLDoctype[]` | `convertGraphQLSchema` output |
+| options | `GenerationPlanOptions` | see `GenerationPlanOptions` |
 
 ### resolveLinkRenderMode
 
@@ -878,6 +938,50 @@ export interface FieldsetField {
 | mode? | `InteractionMode` | Interaction mode for all children inside this fieldset |
 | schema | `DoctypeField[]` | Nested field definitions — resolved recursively by resolveSchema |
 
+### GenerationPlanEntry
+
+One file the generator will write, and what that file is verified against.
+
+`basis` exists because the two are not always the same document. An aggregate is written from its own one-field generation but verified against the **entity**, since its purpose is to carry fewer columns than the table — checking it against itself reports every curated column as one the table had dropped.
+
+**Definition:**
+
+```typescript
+export interface GenerationPlanEntry {
+  basis: ConvertedGraphQLDoctype;
+  generated: ConvertedGraphQLDoctype;
+  subset: boolean;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| basis | `ConvertedGraphQLDoctype` | The doctype whose fields an existing file on disk is verified against. |
+| generated | `ConvertedGraphQLDoctype` | The doctype to write. |
+| subset | `boolean` | Whether the file is a curated subset of `basis` — passed through to `MergeOptions.subset`. |
+
+### GenerationPlanOptions
+
+Options for `planGeneration`.
+
+**Definition:**
+
+```typescript
+export interface GenerationPlanOptions {
+  noAggregates?: boolean;
+  onWarning?: (message: string) => void;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| noAggregates? | `boolean` | Emit only the entity doctypes, skipping their aggregates. Defaults to `false`. |
+| onWarning? | `(message: string) => void` | Called with an advisory message for each entity that yields no aggregate. |
+
 ### GetRecordOptions
 
 Options for fetching a single record
@@ -1021,6 +1125,24 @@ export interface GraphQLConversionOptions {
 | isEntityField? | `(fieldName: string, field: GraphQLField<unknown, unknown>, parentType: GraphQLObjectType) => boolean` | Custom function to filter which fields on an entity type are included. When provided, replaces the default field filter. The default filter excludes `nodeId`, `__typename`, and `clientMutationId`. |
 | isEntityType? | `(typeName: string, type: GraphQLObjectType) => boolean` | Custom function to determine if a GraphQL object type represents an entity (→ doctype). When provided, replaces the default heuristic entirely. The default heuristic excludes types matching synthetic patterns: `*Connection`, `*Edge`, `*Input`, `*Patch`, `*Payload`, `*Condition`, `*Filter`, `*OrderBy`, `*Aggregate`, `Query`, `Mutation`, `Subscription`, `__*`. |
 | onWarning? | `(message: string) => void` | Called with any advisory message raised during conversion — currently only the un-normalized-PostGraphile warning. Left to the caller so the library never writes to the console itself. |
+
+### MergeOptions
+
+How to verify the authored doctype against the schema.
+
+**Definition:**
+
+```typescript
+export interface MergeOptions {
+  subset?: boolean;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| subset? | `boolean` | The authored doctype is a curated **subset** of the schema's columns rather than a model of all of them — an aggregate being the case this exists for. This changes what counts as drift in both directions, so `generated` must be passed the *entity's* full field set, not the subset's. A column the author added to an aggregate is then confirmed against the real table (so a genuinely dropped column still reports as an orphan), while the columns deliberately left out stop reporting as omissions. Without it an aggregate reports phantom drift on every run, which both spams `--check` and buries the one finding that matters. |
 
 ### MergeResult
 
@@ -1476,6 +1598,16 @@ export const ActionDefinition: z.ZodObject<{
     selfTransition: z.ZodOptional<z.ZodBoolean>;
     clientHandler: z.ZodOptional<z.ZodString>;
 }, z.core.$strip>
+```
+
+### AGGREGATE_NAME_SUFFIX
+
+Appended to an entity's doctype name to name its aggregate.
+
+**Type:**
+
+```typescript
+export const AGGREGATE_NAME_SUFFIX: 
 ```
 
 ### CANONICAL_COMPONENTS

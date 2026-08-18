@@ -75,6 +75,9 @@ export {
 
 // GraphQL to Doctype conversion
 export {
+	AGGREGATE_NAME_SUFFIX,
+	aggregateDoctypeName,
+	buildAggregateDoctype,
 	buildScalarMap,
 	classifyFieldType,
 	convertGraphQLSchema,
@@ -84,13 +87,17 @@ export {
 	GQL_SCALAR_MAP,
 	INTERNAL_SCALARS,
 	mergeIntrospectedDoctype,
+	planGeneration,
 	WELL_KNOWN_SCALARS,
 	type AuthoredDoctype,
 	type ConvertedGraphQLDoctype,
 	type DoctypeDrift,
 	type GraphQLConversionFieldMeta,
+	type GenerationPlanEntry,
+	type GenerationPlanOptions,
 	type GraphQLConversionOptions,
 	type IntrospectionSource,
+	type MergeOptions,
 	type MergeResult,
 } from './converter'
 

@@ -19,7 +19,7 @@ import { resolve, join } from 'node:path'
 import { parseArgs } from 'node:util'
 import { getIntrospectionQuery, type IntrospectionQuery } from 'graphql'
 
-import { convertGraphQLSchema, formatDoctypeDrift, mergeIntrospectedDoctype } from './converter/index'
+import { convertGraphQLSchema, formatDoctypeDrift, mergeIntrospectedDoctype, planGeneration } from './converter/index'
 import { validateDoctype } from './validation'
 import type { GraphQLConversionOptions } from './converter/types'
 
@@ -72,6 +72,7 @@ async function main(): Promise<void> {
 			names: { type: 'string' },
 			'custom-scalars': { type: 'string' },
 			'include-unmapped': { type: 'boolean', default: false },
+			'no-aggregates': { type: 'boolean', default: false },
 			check: { type: 'boolean', default: false },
 			help: { type: 'boolean', short: 'h' },
 		},
@@ -148,12 +149,19 @@ async function main(): Promise<void> {
 	}
 
 	// Convert
-	const doctypes = convertGraphQLSchema(source, options)
+	const entities = convertGraphQLSchema(source, options)
 
-	if (doctypes.length === 0) {
+	if (entities.length === 0) {
 		console.warn('No entity types found in the schema. Check your include/exclude filters.')
 		process.exit(0)
 	}
+
+	// Each table yields two doctypes — the entity and its aggregate — written as peers, one file
+	// each, along with what each is verified against. See `planGeneration`.
+	const doctypes = planGeneration(entities, {
+		noAggregates: values['no-aggregates'],
+		onWarning: message => console.warn(`  WARN: ${message}`),
+	})
 
 	// Write output
 	if (!existsSync(outputDir)) {
@@ -165,7 +173,7 @@ async function main(): Promise<void> {
 	let changed = 0
 	const driftLines: string[] = []
 
-	for (const generated of doctypes) {
+	for (const { generated, basis, subset } of doctypes) {
 		const fileName = `${generated.slug}.json`
 		const filePath = join(outputDir, fileName)
 
@@ -177,10 +185,9 @@ async function main(): Promise<void> {
 		// so converter output is written verbatim.
 		let output: object = generated
 		if (existsSync(filePath)) {
-			const { doctype: merged, drift } = mergeIntrospectedDoctype(
-				JSON.parse(readFileSync(filePath, 'utf-8')),
-				generated
-			)
+			const { doctype: merged, drift } = mergeIntrospectedDoctype(JSON.parse(readFileSync(filePath, 'utf-8')), basis, {
+				subset,
+			})
 			output = merged
 			driftLines.push(...formatDoctypeDrift(drift))
 		}
@@ -256,8 +263,13 @@ OPTIONS:
   --names <file>               JSON file mapping GraphQL type name to doctype name
   --custom-scalars <file>      JSON file mapping custom scalar names to field templates
   --include-unmapped           Include _graphqlType metadata on unmapped fields
+  --no-aggregates              Emit only the entity doctype, not its aggregate
   --check                      Report drift and exit non-zero if anything would change; write nothing
   --help, -h                   Show this help message
+
+Each table generates TWO doctypes: the entity (every column, backs the record form) and its
+aggregate (the collection view, identity column only by default) written as '<slug>-aggregate.json'.
+Widen an aggregate by adding fields to it — curation survives regeneration.
 
 NOTE: an existing doctype file is the source of truth. Regeneration verifies it against the
 schema and adds 'source: introspected' markers; it reports disagreements rather than
