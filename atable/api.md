@@ -151,7 +151,7 @@ createTableStore: (initData: {
 }) => import("pinia").Store<`table-${string}`, Pick<{
     columns: import("vue").Ref<{
         name: string;
-        format?: string | ((value: any, context: CellContext) => string | import("@stonecrop/schema").BadgeDescriptor) | undefined;
+        format?: string | ((value: any, context: CellContext) => string | BadgeDescriptor) | undefined;
         modalComponent?: string | ((context: CellContext) => string) | undefined;
         mask?: ((value: any) => any) | undefined;
         linkDoctype?: string | undefined;
@@ -178,7 +178,7 @@ createTableStore: (initData: {
         colspan?: number | undefined;
     }[], TableColumn[] | {
         name: string;
-        format?: string | ((value: any, context: CellContext) => string | import("@stonecrop/schema").BadgeDescriptor) | undefined;
+        format?: string | ((value: any, context: CellContext) => string | BadgeDescriptor) | undefined;
         modalComponent?: string | ((context: CellContext) => string) | undefined;
         mask?: ((value: any) => any) | undefined;
         linkDoctype?: string | undefined;
@@ -1025,7 +1025,7 @@ createTableStore: (initData: {
 }, "columns" | "config" | "connectionHandles" | "connectionPaths" | "filterState" | "ganttBars" | "modal" | "rows" | "sortState" | "updates" | "linkResolver">, Pick<{
     columns: import("vue").Ref<{
         name: string;
-        format?: string | ((value: any, context: CellContext) => string | import("@stonecrop/schema").BadgeDescriptor) | undefined;
+        format?: string | ((value: any, context: CellContext) => string | BadgeDescriptor) | undefined;
         modalComponent?: string | ((context: CellContext) => string) | undefined;
         mask?: ((value: any) => any) | undefined;
         linkDoctype?: string | undefined;
@@ -1052,7 +1052,7 @@ createTableStore: (initData: {
         colspan?: number | undefined;
     }[], TableColumn[] | {
         name: string;
-        format?: string | ((value: any, context: CellContext) => string | import("@stonecrop/schema").BadgeDescriptor) | undefined;
+        format?: string | ((value: any, context: CellContext) => string | BadgeDescriptor) | undefined;
         modalComponent?: string | ((context: CellContext) => string) | undefined;
         mask?: ((value: any) => any) | undefined;
         linkDoctype?: string | undefined;
@@ -1899,7 +1899,7 @@ createTableStore: (initData: {
 }, "display" | "table" | "filteredRows" | "hasPinnedColumns" | "isGanttView" | "isTreeView" | "isDependencyGraphEnabled" | "numberedRowWidth" | "zeroColumn">, Pick<{
     columns: import("vue").Ref<{
         name: string;
-        format?: string | ((value: any, context: CellContext) => string | import("@stonecrop/schema").BadgeDescriptor) | undefined;
+        format?: string | ((value: any, context: CellContext) => string | BadgeDescriptor) | undefined;
         modalComponent?: string | ((context: CellContext) => string) | undefined;
         mask?: ((value: any) => any) | undefined;
         linkDoctype?: string | undefined;
@@ -1926,7 +1926,7 @@ createTableStore: (initData: {
         colspan?: number | undefined;
     }[], TableColumn[] | {
         name: string;
-        format?: string | ((value: any, context: CellContext) => string | import("@stonecrop/schema").BadgeDescriptor) | undefined;
+        format?: string | ((value: any, context: CellContext) => string | BadgeDescriptor) | undefined;
         modalComponent?: string | ((context: CellContext) => string) | undefined;
         mask?: ((value: any) => any) | undefined;
         linkDoctype?: string | undefined;

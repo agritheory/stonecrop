@@ -106,10 +106,6 @@ const componentProps = (componentObj: ResolvedField) => {
 		propsToPass['rows'] = dataModel.value[componentObj.fieldname] || []
 	}
 
-	if (componentObj.kind === 'field') {
-		propsToPass['record'] = dataModel.value
-	}
-
 	return propsToPass
 }
 

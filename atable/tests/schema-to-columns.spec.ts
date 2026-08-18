@@ -164,7 +164,10 @@ describe('schemaToColumns', { tags: ['component'] }, () => {
 	})
 
 	describe('Select badge handling', () => {
-		it('preserves badge options on select fields for ACell rendering', () => {
+		// schemaToColumns does not interpret badge options — it only has to carry `options`
+		// through untouched, because ACell is what reads them. Anything asserting that
+		// schemaToColumns sets `cellComponent` would pass whether or not that code existed.
+		it('carries structured badge options through to the column', () => {
 			const schema: ColumnSchema[] = [
 				{
 					fieldname: 'status',
@@ -178,10 +181,9 @@ describe('schemaToColumns', { tags: ['component'] }, () => {
 			]
 			const columns = schemaToColumns(schema)
 			expect(columns[0].options).toEqual(schema[0].options)
-			expect(columns[0].cellComponent).toBeUndefined()
 		})
 
-		it('preserves bare choice maps on select fields', () => {
+		it('carries bare choice maps through to the column', () => {
 			const schema: ColumnSchema[] = [
 				{
 					fieldname: 'status',
@@ -192,24 +194,9 @@ describe('schemaToColumns', { tags: ['component'] }, () => {
 			]
 			const columns = schemaToColumns(schema)
 			expect(columns[0].options).toEqual(schema[0].options)
-			expect(columns[0].cellComponent).toBeUndefined()
 		})
 
-		it('does not attach ABadge when cellComponent is explicit', () => {
-			const schema: ColumnSchema[] = [
-				{
-					fieldname: 'status',
-					component: 'ADropdown',
-					label: 'Status',
-					options: { Open: 'warning' },
-					cellComponent: 'StatusBadge',
-				},
-			]
-			const columns = schemaToColumns(schema)
-			expect(columns[0].cellComponent).toBe('StatusBadge')
-		})
-
-		it('does not attach ABadge for plain string[] selects', () => {
+		it('carries plain string[] choices through to the column', () => {
 			const schema: ColumnSchema[] = [
 				{
 					fieldname: 'status',
@@ -219,7 +206,7 @@ describe('schemaToColumns', { tags: ['component'] }, () => {
 				},
 			]
 			const columns = schemaToColumns(schema)
-			expect(columns[0].cellComponent).toBeUndefined()
+			expect(columns[0].options).toEqual(['Open', 'Closed'])
 		})
 	})
 

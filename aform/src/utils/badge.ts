@@ -1,4 +1,4 @@
-import type { BadgeDescriptor, BadgeVariant, FieldOptions } from '@stonecrop/schema'
+import type { BadgeDescriptor, FieldOptions } from '@stonecrop/schema'
 import { isBadgeDescriptor, lookupBadge } from '@stonecrop/schema'
 
 import { deserializeFunction } from './deserialize'
@@ -45,12 +45,29 @@ export function resolveFieldBadge(
 		}
 	}
 
-	if (value === null || value === undefined || value === '') return undefined
-	const key = typeof value === 'string' ? value : String(value)
+	const key = badgeLookupKey(value)
+	if (key === undefined) return undefined
 	return lookupBadge(options, key)
 }
 
-const BADGE_VARIANTS: BadgeVariant[] = ['neutral', 'success', 'warning', 'danger', 'brand']
+/**
+ * Stored choice value as an options-map key. Only primitives can match a declared choice, so
+ * anything else yields undefined rather than the '[object Object]' that String() would produce.
+ */
+function badgeLookupKey(value: unknown): string | undefined {
+	switch (typeof value) {
+		case 'string':
+			return value === '' ? undefined : value
+		case 'number':
+		case 'boolean':
+		case 'bigint':
+			return String(value)
+		default:
+			return undefined
+	}
+}
+
+const BADGE_VARIANTS = new Set<string>(['neutral', 'success', 'warning', 'danger', 'brand'])
 
 /**
  * CSS custom properties for input-accent styling on a native input.
@@ -67,7 +84,7 @@ export function badgeInputAccentStyle(descriptor: BadgeDescriptor | undefined): 
 			paddingLeft: 'calc(1ch - 4px)',
 		}
 	}
-	if (!BADGE_VARIANTS.includes(variant)) return undefined
+	if (!BADGE_VARIANTS.has(variant)) return undefined
 	return {
 		borderLeftWidth: '4px',
 		borderLeftStyle: 'solid',

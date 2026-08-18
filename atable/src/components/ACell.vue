@@ -116,7 +116,7 @@ const usesBadgeDisplay = computed(
 const isContentEditable = computed(() => column.edit && !usesBadgeDisplay.value)
 
 const cellComponentBindings = computed(() => {
-	const props = { ...(column.cellComponentProps ?? {}) }
+	const props = { ...column.cellComponentProps }
 	if (column.cellComponent === 'ABadge') {
 		if (isBadgeDescriptor(renderedValue.value)) {
 			return { ...props, ...renderedValue.value }

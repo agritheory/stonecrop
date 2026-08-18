@@ -75,9 +75,12 @@ function isBadgeSpec(value: unknown): value is BadgeSpec {
 	return isBadgeVariant(value) || isBadgeSpecObject(value)
 }
 
-function asSelectOptions(options: Record<string, unknown>): SelectOptions | undefined {
-	if (!('choices' in options) || !Array.isArray(options.choices)) return undefined
-	return options as unknown as SelectOptions
+/**
+ * Narrows an options record to the structured `{ choices, badges }` form. A type predicate rather
+ * than a cast: `SelectOptions` requires `choices`, so asserting into it trips `no-unsafe-type-assertion`.
+ */
+function isStructuredSelectOptions(options: Record<string, unknown>): options is SelectOptions {
+	return Array.isArray(options.choices)
 }
 
 /**
@@ -86,7 +89,9 @@ function asSelectOptions(options: Record<string, unknown>): SelectOptions | unde
  */
 export function isBadgeDescriptor(value: unknown): value is BadgeDescriptor {
 	if (value === null || typeof value !== 'object' || Array.isArray(value)) return false
-	const obj = value as BadgeDescriptor
+	// Partial<> keeps this a widening assertion; asserting into BadgeDescriptor itself (required
+	// `label`) narrows, which `no-unsafe-type-assertion` rejects.
+	const obj = value as Partial<BadgeDescriptor>
 	if (typeof obj.label !== 'string') return false
 	if (obj.variant !== undefined && !isBadgeVariant(obj.variant)) return false
 	if (obj.color !== undefined && typeof obj.color !== 'string') return false
@@ -100,9 +105,8 @@ export function isBadgeDescriptor(value: unknown): value is BadgeDescriptor {
  */
 export function isSelectChoiceMap(options: FieldOptions | undefined): options is Record<string, BadgeSpec> {
 	if (options === undefined || Array.isArray(options) || !isOptionsRecord(options)) return false
-	const structured = asSelectOptions(options)
-	if (structured) {
-		const badges = structured.badges
+	if (isStructuredSelectOptions(options)) {
+		const badges = options.badges
 		if (badges === undefined) return false
 		return Object.values(badges).every(isBadgeSpec)
 	}
@@ -117,7 +121,7 @@ export function isSelectChoiceMap(options: FieldOptions | undefined): options is
  */
 export function isSelectOptions(options: FieldOptions | undefined): options is SelectOptions {
 	if (options === undefined || Array.isArray(options) || !isOptionsRecord(options)) return false
-	return asSelectOptions(options) !== undefined
+	return isStructuredSelectOptions(options)
 }
 
 /**
@@ -128,8 +132,7 @@ export function selectChoices(options: FieldOptions | undefined): string[] {
 	if (options === undefined) return []
 	if (Array.isArray(options)) return options
 	if (!isOptionsRecord(options)) return []
-	const structured = asSelectOptions(options)
-	if (structured) return structured.choices
+	if (isStructuredSelectOptions(options)) return options.choices
 	if (isSelectChoiceMap(options)) return Object.keys(options)
 	return []
 }
@@ -166,8 +169,7 @@ export function lookupBadge(options: FieldOptions | undefined, key: string | und
 	if (options === undefined || key === undefined || key === '') return undefined
 	if (Array.isArray(options)) return undefined
 	if (!isOptionsRecord(options)) return undefined
-	const structured = asSelectOptions(options)
-	if (structured) return lookupFromStructured(structured, key)
+	if (isStructuredSelectOptions(options)) return lookupFromStructured(options, key)
 	if (isSelectChoiceMap(options)) return lookupFromBareMap(options, key)
 	return undefined
 }
@@ -179,7 +181,6 @@ export function lookupBadge(options: FieldOptions | undefined, key: string | und
 export function hasBadgeOptions(options: FieldOptions | undefined): boolean {
 	if (options === undefined || Array.isArray(options)) return false
 	if (!isOptionsRecord(options)) return false
-	const structured = asSelectOptions(options)
-	if (structured) return structured.badges !== undefined && Object.keys(structured.badges).length > 0
+	if (isStructuredSelectOptions(options)) return options.badges !== undefined && Object.keys(options.badges).length > 0
 	return isSelectChoiceMap(options)
 }

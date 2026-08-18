@@ -49,13 +49,14 @@ import { vOnClickOutside } from '@vueuse/components'
 import { computed, reactive, ref, watch } from 'vue'
 
 import type { ComponentProps } from '../../types'
+import type { BadgeFormatFn } from '../../utils/badge'
 import { badgeInputAccentStyle, resolveFieldBadge } from '../../utils/badge'
+import { deserializeFunction } from '../../utils/deserialize'
 
 const {
 	label,
 	options = [],
 	format,
-	record,
 	isAsync = false,
 	filterFunction = undefined,
 	mode,
@@ -65,7 +66,6 @@ const {
 	ComponentProps & {
 		options?: FieldOptions
 		format?: string
-		record?: Record<string, unknown>
 		isAsync?: boolean
 		filterFunction?: (search: string) => string[] | Promise<string[]>
 	}
@@ -73,7 +73,12 @@ const {
 
 const choiceList = computed(() => selectChoices(options))
 
-const badgeDescriptor = computed(() => resolveFieldBadge(search.value, options, format, { record, row: record }))
+// Compile the serialized formatter once per `format` string, not once per keystroke:
+// badgeDescriptor re-evaluates on every input event and deserializeFunction runs the
+// Function constructor.
+const formatFn = computed(() => (format ? deserializeFunction<BadgeFormatFn>(format) : undefined))
+
+const badgeDescriptor = computed(() => resolveFieldBadge(search.value, options, formatFn.value))
 
 const inputAccentStyle = computed(() => badgeInputAccentStyle(badgeDescriptor.value))
 

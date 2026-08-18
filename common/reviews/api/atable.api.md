@@ -15,7 +15,7 @@ import ATableHeader from './components/ATableHeader.vue';
 import ATableLoading from './components/ATableLoading.vue';
 import ATableLoadingBar from './components/ATableLoadingBar.vue';
 import ATableModal from './components/ATableModal.vue';
-import { BadgeDescriptor } from '@stonecrop/schema';
+import type { BadgeDescriptor } from '@stonecrop/schema';
 import type { ColumnSchema } from '@stonecrop/schema';
 import { ComputedRef } from 'vue';
 import { CSSProperties } from 'vue';
