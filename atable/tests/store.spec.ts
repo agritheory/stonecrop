@@ -1488,4 +1488,54 @@ describe('table store', { tags: ['component'] }, () => {
 			expect(unconvertedStore.filteredRows.map(r => r.item)).toEqual(['B', 'A'])
 		})
 	})
+
+	describe('derived filterType from component category', () => {
+		it('filters an ADate column by exact date when filterType is absent', () => {
+			const store = createTableStore({
+				columns: [
+					{ name: 'label', label: 'Label' },
+					{ name: 'when', label: 'When', component: 'ADate', filterable: true },
+				],
+				rows: [
+					{ label: 'A', when: '2024-01-15' },
+					{ label: 'B', when: '2024-02-01' },
+				],
+			})
+			store.setFilter(1, { value: '2024-01-15' })
+			expect(store.filteredRows.map(r => r.label)).toEqual(['A'])
+		})
+
+		it('filters an ANumericInput column by exact number when filterType is absent', () => {
+			const store = createTableStore({
+				columns: [
+					{ name: 'label', label: 'Label' },
+					{ name: 'qty', label: 'Qty', component: 'ANumericInput', filterable: true },
+				],
+				rows: [
+					{ label: 'A', qty: 10 },
+					{ label: 'B', qty: 12 },
+				],
+			})
+			store.setFilter(1, { value: '12' })
+			expect(store.filteredRows.map(r => r.label)).toEqual(['B'])
+		})
+
+		it('filters an AFormLink column by id and displayText from enriched row data', () => {
+			const store = createTableStore({
+				columns: [
+					{ name: 'label', label: 'Label' },
+					{ name: 'customerId', label: 'Customer', component: 'AFormLink', linkDoctype: 'party', filterable: true },
+				],
+				rows: [
+					{ label: 'A', customerId: { id: 'abc', displayText: 'Acme Corp' } },
+					{ label: 'B', customerId: { id: 'def', displayText: 'Globex' } },
+				],
+			})
+			store.setFilter(1, { value: 'acme' })
+			expect(store.filteredRows.map(r => r.label)).toEqual(['A'])
+
+			store.setFilter(1, { value: 'def' })
+			expect(store.filteredRows.map(r => r.label)).toEqual(['B'])
+		})
+	})
 })

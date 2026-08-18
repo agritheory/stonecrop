@@ -8,7 +8,7 @@ import { createHST, type HSTNode } from './stores/hst'
 import { useOperationLogStore } from './stores/operation-log'
 import type { OperationLogConfig } from './types/operation-log'
 import type { RouteContext } from './types/registry'
-import type { StonecropOptions } from './types/stonecrop'
+import type { PageInfo, StonecropOptions } from './types/stonecrop'
 
 /**
  * Main Stonecrop class with HST integration and built-in Operation Log
@@ -33,7 +33,7 @@ export class Stonecrop {
 	 * Per-doctype page info from the last list read, keyed by slug. Reactive so views tracking
 	 * it update on fetch. Deliberately not in HST — see {@link Stonecrop.getRecords}.
 	 */
-	private pageInfo: Record<string, { hasMore: boolean; count?: number }> = reactive({})
+	private pageInfo: Record<string, PageInfo> = reactive({})
 
 	/** The registry instance containing all doctype definitions */
 	readonly registry!: Registry
@@ -305,6 +305,8 @@ export class Stonecrop {
 	 * nothing on this side of the wire knows what is safe for an arbitrary backend. A caller that
 	 * passes none gets whatever the server considers a reasonable page.
 	 *
+	 * `options.offset === 0` (or omitted) replaces the doctype's HST records; `offset > 0` appends.
+	 *
 	 * @param doctype - The doctype
 	 * @param options - Query options (filters, orderBy, limit, offset), forwarded to the client
 	 * @throws Error if no data client has been configured
@@ -320,11 +322,26 @@ export class Stonecrop {
 
 		const result = await this._client.getRecords(doctype, options)
 		const records = result.data
+		const offset = options?.offset ?? 0
 
 		// Page info is kept beside HST, not in it. `getRecordIds` reads the raw keys under a
 		// doctype node, so anything filed there becomes a phantom record — the same hazard that
 		// ruled out seeding a draft node.
-		this.pageInfo[doctype.slug] = { hasMore: result.hasMore, count: result.count }
+		const pageEntry: PageInfo = {
+			hasMore: result.hasMore,
+			offset,
+			limit: records.length,
+		}
+		if (result.count != null) {
+			pageEntry.count = result.count
+		}
+		this.pageInfo[doctype.slug] = pageEntry
+
+		// offset === 0 replaces the doctype's HST records; offset > 0 appends. A failed fetch
+		// must not clear — that happens only after a successful response lands above.
+		if (offset === 0) {
+			this.clearRecords(doctype)
+		}
 
 		// Key each record by its declared primary key, falling back to `id`. This used to read
 		// `record.id` only, which silently dropped every row of a natural-keyed doctype (no `id`
@@ -351,7 +368,7 @@ export class Stonecrop {
 	 * @returns Page info, or undefined if this doctype's records have not been fetched
 	 * @public
 	 */
-	getPageInfo(doctype: string | Doctype): { hasMore: boolean; count?: number } | undefined {
+	getPageInfo(doctype: string | Doctype): PageInfo | undefined {
 		const slug = typeof doctype === 'string' ? doctype : doctype.slug
 		return this.pageInfo[slug]
 	}

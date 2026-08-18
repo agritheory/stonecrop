@@ -1,4 +1,11 @@
-import type { ColumnSchema, FieldValidation, TableViewConfig, ValueField } from '@stonecrop/schema'
+import type {
+	ColumnSchema,
+	FieldValidation,
+	GetRecordsOptions,
+	GetRecordsResult,
+	TableViewConfig,
+	ValueField,
+} from '@stonecrop/schema'
 
 // ---------------------------------------------------------------------------
 // InteractionMode — canonical home is @stonecrop/schema
@@ -106,6 +113,10 @@ export interface ResolvedTable {
 	default?: unknown
 	/** Preserved from the original ValueField or TableField */
 	validation?: FieldValidation
+	/** When set, ATable fetches list pages through this callback (server paging). */
+	getRecords?: (options?: GetRecordsOptions) => Promise<GetRecordsResult>
+	/** When this changes, ATable refetches from offset 0. */
+	sourceKey?: string
 }
 
 /**
