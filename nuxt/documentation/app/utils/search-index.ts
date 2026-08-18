@@ -13,7 +13,11 @@ export interface SearchEntry {
 export const searchIndex: SearchEntry[] = [
 	{ title: 'Stonecrop', description: 'Schema-driven UI framework for business applications', url: '/' },
 
-	{ title: 'Tutorials', description: 'Learning-oriented guides to help you get started with Stonecrop', url: '/tutorials/' },
+	{
+		title: 'Tutorials',
+		description: 'Learning-oriented guides to help you get started with Stonecrop',
+		url: '/tutorials/',
+	},
 
 	{ title: 'Guides', description: 'Task-oriented how-to guides for solving specific problems', url: '/guides/' },
 	{

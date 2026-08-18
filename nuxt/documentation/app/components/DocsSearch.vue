@@ -54,7 +54,12 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 	</button>
 
 	<ClientOnly>
-		<CommandPalette :is-open="isOpen" :search="search" placeholder="Search documentation..." @select="onSelect" @close="close">
+		<CommandPalette
+			:is-open="isOpen"
+			:search="search"
+			placeholder="Search documentation..."
+			@select="onSelect"
+			@close="close">
 			<template #title="{ result }">{{ result.title }}</template>
 			<template #content="{ result }">{{ result.description }}</template>
 			<template #empty>No pages found</template>
