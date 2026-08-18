@@ -91,6 +91,10 @@
       "allowedCategories": [ "prototype" ]
     },
     {
+      "name": "@nuxt/content",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
       "name": "@nuxt/devtools",
       "allowedCategories": [ "production", "prototype" ]
     },

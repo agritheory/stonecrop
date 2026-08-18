@@ -41,8 +41,10 @@
 		"build": "rushx dev:prepare && nuxt-module-build build",
 		"dev": "rushx dev:prepare && nuxi dev playground --host",
 		"dev:build": "nuxi build playground",
+		"dev:documentation": "rushx dev:prepare:documentation && nuxi dev documentation --host",
 		"dev:full": "rushx dev:prepare:full && nuxi dev fullstack --host",
 		"dev:prepare": "nuxt-module-build build --stub && nuxt-module-build prepare && nuxi prepare playground && nuxi prepare fullstack",
+		"dev:prepare:documentation": "nuxi prepare documentation",
 		"dev:prepare:full": "nuxt-module-build build --stub && nuxt-module-build prepare && nuxi prepare fullstack",
 		"docs": "echo 'Nuxt modules use custom build system - skipping API docs generation'",
 		"lint": "eslint .",
@@ -78,6 +80,7 @@
 	},
 	"devDependencies": {
 		"@eslint/js": "^10.0.1",
+		"@nuxt/content": "^3.0.0",
 		"@nuxt/devtools": "^3.2.4",
 		"@nuxt/eslint": "1.16.0",
 		"@nuxt/eslint-config": "^1.16.0",
