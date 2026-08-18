@@ -56,7 +56,7 @@
 				</p>
 				<table style="border-collapse: collapse; width: 100%; margin-bottom: 1rem">
 					<thead>
-						<tr style="text-align: left; border-bottom: 1px solid #ccc">
+						<tr style="text-align: left; border-bottom: 1px solid var(--sc-form-border)">
 							<th style="padding: 0.5rem 1rem">Cardinality</th>
 							<th style="padding: 0.5rem 1rem">Meaning</th>
 							<th style="padding: 0.5rem 1rem">Resolves to</th>

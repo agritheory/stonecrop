@@ -18,6 +18,8 @@
 	--vp-c-brand-1: initial;
 	--vp-c-brand-2: initial;
 	--vp-c-divider: initial;
+	background: var(--sc-page-background);
+	color: var(--sc-cell-text-color);
 }
 
 /* Histoire sandbox container reset */
@@ -35,8 +37,9 @@
 		sans-serif;
 	font-size: 16px;
 	line-height: 1.5;
-	color: #333;
-	background: #fff;
+	/* all: initial clears custom properties; these match --sc-gray-80 / --sc-gray-2 */
+	color: #333333;
+	background: #fafafa;
 	box-sizing: border-box;
 }
 

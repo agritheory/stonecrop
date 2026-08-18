@@ -8,13 +8,18 @@
 		<template v-else>
 			<input
 				:id="uuid"
+				ref="datetime-input"
 				class="aform_input-field"
 				type="text"
-				:value="datetimeDisplay"
+				:value="inputText"
 				placeholder="Select date and time"
 				:disabled="mode === 'read'"
-				readonly
-				@click="openPicker" />
+				:required="required"
+				@click="openPicker"
+				@input="onInput"
+				@blur="commitTypedDateTime"
+				@keydown.enter.prevent="commitTypedDateTime"
+				@keydown.escape="showPicker = false" />
 			<label class="aform_field-label" :for="uuid">{{ label }}</label>
 
 			<p v-show="errorText" class="aform_error" v-html="errorText"></p>
@@ -23,6 +28,7 @@
 				v-if="showPicker"
 				ref="pickerRef"
 				class="adatetime-picker"
+				:selected="modelValue ?? null"
 				:select-range="false"
 				:show-date="true"
 				:show-time="true"
@@ -39,13 +45,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, useTemplateRef } from 'vue'
 import { onClickOutside } from '@vueuse/core'
 import ADateSelection from './ADateSelection.vue'
 import type { ComponentProps } from '../../types'
+import { parseCalendarDate } from '../../utils/calendar-date'
 
 const {
 	label = 'Date & Time',
+	required,
 	mode,
 	uuid,
 	errors,
@@ -65,20 +73,28 @@ const modelValue = defineModel<string | Date>()
 
 const currentDateTime = ref<Date>(modelValue.value ? new Date(modelValue.value) : new Date())
 
+const formatDateTime = (hasValue: boolean, date: Date) => (hasValue ? date.toLocaleString() : '')
+
+const inputText = ref(formatDateTime(Boolean(modelValue.value), currentDateTime.value))
+
 const showPicker = ref(false)
 const pickerRef = ref(null)
-onClickOutside(pickerRef, () => (showPicker.value = false))
+const datetimeInputRef = useTemplateRef<HTMLInputElement>('datetime-input')
+onClickOutside(pickerRef, () => (showPicker.value = false), { ignore: [datetimeInputRef] })
 
 const openPicker = () => {
 	if (mode !== 'read') showPicker.value = true
+}
+
+const onInput = (event: Event) => {
+	const target = event.target
+	if (target instanceof HTMLInputElement) inputText.value = target.value
 }
 
 const displayValue = computed(() => {
 	if (!modelValue.value) return ''
 	return currentDateTime.value.toLocaleString()
 })
-
-const datetimeDisplay = computed(() => displayValue.value)
 
 const pickerDefaults = computed(() => {
 	const d = currentDateTime.value
@@ -95,6 +111,22 @@ const pickerDefaults = computed(() => {
 
 const emitModel = () => {
 	modelValue.value = currentDateTime.value.toISOString()
+}
+
+const commitTypedDateTime = () => {
+	if (!inputText.value.trim()) {
+		modelValue.value = undefined
+		inputText.value = ''
+		return
+	}
+	const parsed = parseCalendarDate(inputText.value)
+	if (!parsed) {
+		inputText.value = formatDateTime(Boolean(modelValue.value), currentDateTime.value)
+		return
+	}
+	currentDateTime.value = parsed
+	emitModel()
+	inputText.value = parsed.toLocaleString()
 }
 
 const handleDate = (data: { selected: Date }) => {
@@ -133,6 +165,9 @@ watch(
 	newValue => {
 		if (newValue) {
 			currentDateTime.value = new Date(newValue)
+			inputText.value = currentDateTime.value.toLocaleString()
+		} else {
+			inputText.value = ''
 		}
 	}
 )
@@ -143,7 +178,10 @@ watch(
 	position: absolute;
 	top: 100%;
 	left: 0;
-	z-index: 1000;
+	width: max-content;
+	max-width: 100%;
+	box-sizing: border-box;
+	z-index: 100;
 	margin-top: 0.25rem;
 }
 </style>

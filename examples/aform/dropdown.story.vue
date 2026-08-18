@@ -79,7 +79,6 @@ function delay(ms: number) {
 	flex-direction: row;
 	align-items: top;
 	margin: 0px;
-	padding-left: 1ch;
-	padding-right: 1ch;
+	padding: 1rem;
 }
 </style>

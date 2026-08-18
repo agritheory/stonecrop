@@ -331,10 +331,9 @@ const open_action_table = reactive({
 
 <style scoped>
 .event-log {
-	background: #f5f5f5;
+	background: var(--sc-input-field-background);
 	padding: 0.5rem 1rem;
 	margin-bottom: 1rem;
-	border-radius: 0;
 	font-family: monospace;
 	font-size: 0.875rem;
 }
@@ -345,14 +344,13 @@ const open_action_table = reactive({
 
 .event-log span {
 	display: inline-block;
-	background: #e0e0e0;
+	background: var(--sc-gray-10);
 	padding: 0.125rem 0.5rem;
 	margin: 0.125rem;
-	border-radius: 0;
 }
 
 p {
-	color: #666;
+	color: var(--sc-input-label-color);
 	margin-bottom: 0.5rem;
 }
 </style>

@@ -92,8 +92,8 @@ const displayValue = computed(() => {
 <style scoped>
 .aduration {
 	position: relative;
-	min-width: 40ch;
-	width: 100%;
+	width: max-content;
+	max-width: 100%;
 }
 
 .aduration__summary {
@@ -110,7 +110,7 @@ const displayValue = computed(() => {
 }
 
 .aduration__value {
-	color: var(--sc-cell-text-color, #000);
+	color: var(--sc-cell-text-color);
 }
 
 .aduration__ms {

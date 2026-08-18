@@ -459,6 +459,27 @@ describe('table component', { tags: ['component'] }, () => {
 		expect(tableStore.modal.visible).toBe(false)
 	})
 
+	it('renders the cell modal outside the table so later rows cannot cover it', async () => {
+		const wrapper = mount(ATable, {
+			props: {
+				rows: getBasicRows(),
+				columns: basicColumns,
+			},
+		})
+
+		wrapper.vm.store.modal.visible = true
+		await nextTick()
+
+		const container = wrapper.find('.atable-container')
+		const table = container.find('table')
+		const modal = container.find('.amodal')
+
+		expect(modal.exists()).toBe(true)
+		expect(table.exists()).toBe(true)
+		expect(table.find('.amodal').exists()).toBe(false)
+		expect(modal.element.parentElement).toBe(container.element)
+	})
+
 	it('should handle connection events correctly', async () => {
 		const ganttColumns: TableColumn[] = [
 			{ name: 'id', label: 'ID', width: '100px', pinned: true },

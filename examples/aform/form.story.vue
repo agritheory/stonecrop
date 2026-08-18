@@ -176,7 +176,7 @@ const formSetup = ({ app }: { app: App }) => {
 
 <style scoped>
 .info-text {
-	color: #555;
+	color: var(--sc-input-label-color);
 	margin-bottom: 1rem;
 	font-size: 0.9rem;
 }
@@ -184,14 +184,13 @@ const formSetup = ({ app }: { app: App }) => {
 .data-preview {
 	margin-top: 1.5rem;
 	padding: 1rem;
-	background: #2c3e50;
-	color: #ecf0f1;
-	border-radius: 0;
+	background: var(--sc-color-brand);
+	color: var(--sc-page-background);
 }
 
 .data-preview h4 {
 	margin: 0 0 0.5rem;
-	color: #3498db;
+	color: var(--sc-primary-color);
 	font-size: 0.85rem;
 }
 

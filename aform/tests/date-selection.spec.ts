@@ -69,6 +69,15 @@ describe('date-selection component', () => {
 		expect(emitted![emitted!.length - 1][0]).toEqual(timeData)
 	})
 
+	it('passes the selected date through to the date picker', () => {
+		const selected = new Date(2026, 7, 20)
+		const wrapper = mount(ADateSelection, {
+			...globalComponents,
+			props: { selected, showTime: false },
+		})
+		expect(wrapper.findComponent(ADatePicker).props('modelValue')).toEqual(selected)
+	})
+
 	it('passes selectRange prop to date picker', () => {
 		const wrapper = mount(ADateSelection, {
 			...globalComponents,

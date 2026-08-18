@@ -21,6 +21,7 @@
 									:value="getStartDate"
 									class="date-input-start aform_input-field"
 									type="text"
+									size="12"
 									placeholder="start date"
 									@blur="enterInputDate()"
 									@keydown="enterDate" />
@@ -30,6 +31,7 @@
 									:value="getEndDate"
 									class="date-input-end aform_input-field"
 									type="text"
+									size="12"
 									placeholder="end date"
 									@blur="enterInputDate()"
 									@keydown="enterDate" />
@@ -79,30 +81,53 @@
 <script setup lang="ts">
 /* removed keyboard nav temportarily since it interfered with user experience navigating input fields */
 // import { defaultKeypressHandlers, useKeyboardNav } from '@stonecrop/utilities'
-import { computed, nextTick, onMounted, ref, useTemplateRef, watch } from 'vue'
+import { computed, onMounted, ref, useTemplateRef, watch } from 'vue'
 
 import type { ComponentProps } from '../../types'
+import { readTableDate, toDate, writeTableDate, type TableDateStore } from '../../utils/calendar-date'
 
 const numberOfRows = 6
 const numberOfColumns = 7
 
-const { mode, label, selectRange = false, errors, validation = { errorMessage: '' } } = defineProps<ComponentProps>()
+const props = defineProps<
+	ComponentProps & {
+		rangeStart?: Date | string | null
+		rangeEnd?: Date | string | null
+		store?: TableDateStore
+		colIndex?: number
+		rowIndex?: number
+	}
+>()
 
-// Dynamic trigger errors take precedence over a static schema errorMessage; empty means the slot hides.
+const { mode, label, selectRange = false, errors, validation = { errorMessage: '' } } = props
+const rangeStart = computed(() => props.rangeStart ?? null)
+const rangeEnd = computed(() => props.rangeEnd ?? null)
+
 const errorText = computed(() => (errors?.length ? errors.join('; ') : (validation.errorMessage ?? '')))
 
-const date = defineModel<number | Date>({ default: () => new Date() })
-const selectedDate = ref(new Date(date.value))
-const currentMonth = ref<number>(selectedDate.value.getMonth())
-const currentYear = ref<number>(selectedDate.value.getFullYear())
+const date = defineModel<number | Date | string | null>({ default: null })
+
+const incomingDate = computed(() => {
+	const fromModel = toDate(date.value)
+	if (fromModel) return fromModel
+	if (props.store != null && props.colIndex != null && props.rowIndex != null) {
+		return readTableDate(props.store, props.colIndex, props.rowIndex)
+	}
+	return null
+})
+
+const selectedDate = ref<Date | null>(incomingDate.value)
+const viewAnchor = selectedDate.value ?? new Date()
+const currentMonth = ref<number>(viewAnchor.getMonth())
+const currentYear = ref<number>(viewAnchor.getFullYear())
 const currentDates = ref<number[]>([])
 
 /* needed for keyboard navigation. uncomment if implementing */
 // const datepickerRef = useTemplateRef<HTMLDivElement>('datepicker')
 
-const hoveredDate = ref(new Date(date.value))
-const start_date = ref<Date | null>(null)
-const end_date = ref<Date | null>(null)
+const hoveredDate = ref(new Date())
+const start_date = ref<Date | null>(toDate(rangeStart.value))
+const end_date = ref<Date | null>(toDate(rangeEnd.value))
 const startDateInput = useTemplateRef<HTMLInputElement>('start-date-input')
 const endDateInput = useTemplateRef<HTMLInputElement>('end-date-input')
 
@@ -149,7 +174,8 @@ const isTodaysDate = (day: string | number | Date): boolean => {
 }
 
 const isSelectedDate = (day: string | number | Date) => {
-	return new Date(day).toDateString() === new Date(selectedDate.value).toDateString()
+	if (!selectedDate.value) return false
+	return new Date(day).toDateString() === selectedDate.value.toDateString()
 }
 
 const isStartDate = (day: string | number | Date) => {
@@ -271,6 +297,9 @@ const selectDate = (currentIndex: number) => {
 		if (endDateInput.value) endDateInput.value.value = parseDateToString(end_date.value) ?? ''
 	}
 	emitData()
+	if (!selectRange && props.store != null && props.colIndex != null && props.rowIndex != null && selectedDate.value) {
+		writeTableDate(props.store, props.colIndex, props.rowIndex, selectedDate.value)
+	}
 }
 
 const testDateOrder = () => {
@@ -319,19 +348,8 @@ const emitData = () => {
 Hooks
 *******************/
 
-onMounted(async () => {
+onMounted(() => {
 	populateMonth()
-	// required to allow the elements to be focused in the next step
-	await nextTick()
-	const $selectedDate = document.getElementsByClassName('selectedDate')
-	if ($selectedDate.length > 0) {
-		;($selectedDate[0] as HTMLElement).focus()
-	} else {
-		const $todaysDate = document.getElementsByClassName('todaysDate')
-		if ($todaysDate.length > 0) {
-			;($todaysDate[0] as HTMLElement).focus()
-		}
-	}
 })
 
 // setup keyboard navigation
@@ -359,6 +377,31 @@ Watchers
 
 watch([currentMonth, currentYear], populateMonth)
 
+watch(
+	incomingDate,
+	parsed => {
+		selectedDate.value = parsed
+		if (parsed) {
+			currentMonth.value = parsed.getMonth()
+			currentYear.value = parsed.getFullYear()
+		}
+	},
+	{ immediate: true }
+)
+
+watch(
+	() => [rangeStart.value, rangeEnd.value] as const,
+	([start, end]) => {
+		start_date.value = toDate(start)
+		end_date.value = toDate(end)
+		const anchor = start_date.value ?? end_date.value
+		if (anchor && !incomingDate.value) {
+			currentMonth.value = anchor.getMonth()
+			currentYear.value = anchor.getFullYear()
+		}
+	}
+)
+
 /*******************
 Expose
 *******************/
@@ -378,13 +421,17 @@ defineExpose({ currentMonth, currentYear, selectedDate })
 }
 
 .adatepicker {
+	width: max-content;
+	max-width: 100%;
 	font-size: var(--sc-table-font-size);
-	display: inline-table;
 	color: var(--sc-cell-text-color);
 	outline: none;
+}
+
+.adatepicker > table {
+	width: 100%;
 	border-collapse: collapse;
 	margin-bottom: 10px;
-	/* width: calc(100% - 4px); */
 }
 
 .adatepicker tr {
@@ -398,7 +445,6 @@ defineExpose({ currentMonth, currentYear, selectedDate })
 	border: 2px solid transparent;
 	outline: 2px solid transparent;
 	min-width: 3ch;
-	max-width: 3ch;
 	cursor: pointer;
 }
 .adatepicker td.date-cell:hover {
@@ -455,6 +501,8 @@ defineExpose({ currentMonth, currentYear, selectedDate })
 }
 .adatepicker .date-input > input {
 	width: 50%;
+	min-width: 0;
+	flex: 1 1 0;
 	padding: 2px;
 }
 

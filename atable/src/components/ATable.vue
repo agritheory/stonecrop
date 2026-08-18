@@ -1,10 +1,10 @@
 <template>
-	<div class="atable-container" style="position: relative">
+	<div class="atable-container" style="position: relative" v-on-click-outside="store.closeModal">
 		<!-- Main table view -->
 		<table
 			ref="table"
-			v-on-click-outside="store.closeModal"
 			class="atable"
+			:class="{ 'atable--zebra': store.config.zebra }"
 			:style="{
 				width: store.config.fullWidth ? '100%' : 'auto',
 			}">
@@ -58,22 +58,24 @@
 			</tbody>
 
 			<slot name="footer" :data="store" />
-
-			<!-- Modal overlay -->
-			<slot name="modal" :data="store">
-				<ATableModal v-show="store.modal.visible" :store="store">
-					<template #default>
-						<component
-							:is="store.modal.component"
-							:key="`${store.modal.rowIndex}:${store.modal.colIndex}`"
-							:col-index="store.modal.colIndex"
-							:row-index="store.modal.rowIndex"
-							:store="store"
-							v-bind="store.modal.componentProps" />
-					</template>
-				</ATableModal>
-			</slot>
 		</table>
+
+		<!-- Sibling of the table so later rows cannot paint over the picker. -->
+		<slot name="modal" :data="store">
+			<ATableModal v-show="store.modal.visible" :store="store">
+				<template #default>
+					<component
+						:is="store.modal.component"
+						:key="`${store.modal.rowIndex}:${store.modal.colIndex}`"
+						:col-index="store.modal.colIndex"
+						:row-index="store.modal.rowIndex"
+						:model-value="modalCellValue"
+						:selected="modalCellValue"
+						:store="store"
+						v-bind="store.modal.componentProps" />
+				</template>
+			</ATableModal>
+		</slot>
 
 		<!-- Connection overlay for gantt connections -->
 		<AGanttConnection
@@ -282,6 +284,13 @@ window.addEventListener('keydown', (event: KeyboardEvent) => {
 	}
 })
 
+const modalCellValue = computed(() => {
+	const colIndex = store.modal.colIndex
+	const rowIndex = store.modal.rowIndex
+	if (colIndex == null || rowIndex == null) return null
+	return store.getCellData(colIndex, rowIndex)
+})
+
 const getProcessedColumnsForRow = (row: TableRow) => {
 	if (!row.gantt || pinnedColumnCount.value === 0) {
 		return store.columns
@@ -432,7 +441,7 @@ td.sticky-index {
 	position: sticky;
 	z-index: 100;
 	order: 0;
-	background: white;
+	background: inherit;
 }
 
 .sticky-column-edge,
@@ -444,6 +453,7 @@ td.sticky-index {
 <style scoped>
 .atable {
 	position: relative;
+	background: var(--sc-cell-background);
 	font-family: var(--sc-atable-font-family);
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;

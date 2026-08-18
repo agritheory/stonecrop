@@ -8,4 +8,6 @@
    inherit it, giving the whole page one font. */
 body {
 	font-family: var(--sc-font-family);
+	background: var(--sc-page-background);
+	color: var(--sc-cell-text-color);
 }

@@ -243,7 +243,7 @@ const pasteInput = (event: ClipboardEvent, pasteAllFields = false) => {
 	padding: 10px;
 	box-sizing: border-box;
 	font-size: 1rem;
-	background: var(--sc-gray-10);
+	background: var(--sc-input-field-background);
 }
 .adate_time_fields {
 	display: flex;
@@ -252,22 +252,34 @@ const pasteInput = (event: ClipboardEvent, pasteAllFields = false) => {
 	justify-content: flex-start;
 }
 .adate_time_fields > input {
-	min-width: 30px;
-	padding: 2px;
+	width: 2.5rem;
+	min-width: 2.5rem;
+	flex: 0 0 auto;
+	padding: 0.25rem 0.15rem;
 	text-align: center;
-	display: inline-block;
-	flex-basis: 0;
+	background: var(--sc-input-field-background);
+	border: 1px solid var(--sc-input-border-color);
+	color: var(--sc-cell-text-color);
+	border-radius: var(--sc-border-radius);
+}
+.adate_time_fields > input:focus,
+.meridiem-selector:focus {
+	outline: 1px solid var(--sc-input-active-border-color);
+	outline-offset: -1px;
 }
 .meridiem-selector {
+	flex: 0 0 auto;
+	width: auto;
+	min-width: 5.5rem;
+	margin-left: 6px;
+	padding: 0.25rem 1.75rem 0.25rem 0.5rem;
 	cursor: pointer;
-	display: inline-block;
-	flex-basis: 0;
-	padding: 5px;
 	user-select: none;
-}
-.meridiem-selector:focus {
-	outline: 2px solid black;
-	outline-offset: -2px;
+	background: var(--sc-input-field-background);
+	border: 1px solid var(--sc-input-border-color);
+	color: var(--sc-cell-text-color);
+	border-radius: var(--sc-border-radius);
+	font-size: 1rem;
 }
 .adate_time_segment {
 	display: flex;
@@ -282,18 +294,7 @@ const pasteInput = (event: ClipboardEvent, pasteAllFields = false) => {
 	cursor: pointer;
 }
 .aform-select {
-	border-radius: 0px;
-	border: 1px solid rgb(118, 118, 118);
-	font-size: 1rem;
-	padding: 0rem;
-	margin: 0;
-	border-radius: 0;
 	box-sizing: border-box;
 	min-height: auto;
-	position: relative;
-	color: var(--sc-cell-text-color);
-}
-.meridiem-selector {
-	margin-left: 6px;
 }
 </style>

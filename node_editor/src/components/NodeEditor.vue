@@ -337,8 +337,8 @@ const emitElements = () => {
 	align-items: flex-start;
 	gap: 0.35rem;
 	padding: 0.4rem 0.5rem;
-	background: rgba(255, 255, 255, 0.92);
-	border: 1px solid #ccc;
+	background: var(--sc-overlay-background);
+	border: 1px solid var(--sc-form-border);
 	border-radius: var(--sc-border-radius);
 	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
 }
@@ -350,41 +350,42 @@ const emitElements = () => {
 .defaultContainerClass {
 	height: 90vh;
 	width: 100%;
-	border: 1px solid #ccc;
+	border: 1px solid var(--sc-form-border);
 }
 
 .default-input-node.vue-flow__node-input,
 .default-output-node.vue-flow__node-output {
-	border-color: #000;
+	border-color: var(--sc-gray-80);
 }
 
 .default-input-node.vue-flow__node-input .vue-flow__handle,
 .default-output-node.vue-flow__node-output .vue-flow__handle {
-	background-color: #000;
+	background-color: var(--sc-gray-80);
 }
 
 .default-input-node.vue-flow__node-input.selected,
 .default-output-node.vue-flow__node-output.selected {
-	box-shadow: 0 0 0 0.5px #000;
+	box-shadow: 0 0 0 0.5px var(--sc-gray-80);
 }
 
 button.button-default {
-	background-color: #ffffff;
+	background-color: var(--sc-btn-color);
 	padding: 1px 12px;
 	border-radius: var(--sc-border-radius);
-	border: 1px solid #ccc;
+	border: 1px solid var(--sc-btn-border);
 	cursor: pointer;
 	white-space: nowrap;
 }
 
 button.button-default:hover {
-	background-color: #f2f2f2;
+	background-color: var(--sc-btn-hover);
 }
 
 .vue-flow {
 	background-size: 40px 40px;
 	background-image:
-		linear-gradient(to right, #ccc 1px, transparent 1px), linear-gradient(to bottom, #ccc 1px, transparent 1px);
+		linear-gradient(to right, var(--sc-gray-20) 1px, transparent 1px),
+		linear-gradient(to bottom, var(--sc-gray-20) 1px, transparent 1px);
 }
 
 input.label-editor {

@@ -2,7 +2,13 @@
 
 <template>
 	<div class="adate-selection">
-		<ADatePicker v-if="showDate" :select-range="selectRange" @get-date="handleDate" />
+		<ADatePicker
+			v-if="showDate"
+			:model-value="selectedDate"
+			:select-range="selectRange"
+			:range-start="start"
+			:range-end="end"
+			@get-date="handleDate" />
 
 		<ADateTimeInput
 			v-if="showTime"
@@ -31,9 +37,30 @@
 </template>
 
 <script setup lang="ts">
-import { provide, ref } from 'vue'
+import { computed, provide, ref } from 'vue'
 import ADatePicker from './ADatePicker.vue'
 import ADateTimeInput from './ADateTimeInput.vue'
+import { toDate, readTableDate, writeTableDate, type TableDateStore } from '../../utils/calendar-date'
+
+const props = defineProps<{
+	showDate?: boolean
+	showTime?: boolean
+	selectRange?: boolean
+	showEndTime?: boolean
+	allowMilitaryTime?: boolean
+	defaultHours?: number
+	defaultMinutes?: number
+	defaultSeconds?: number
+	defaultMeridiem?: string
+	useSeconds?: boolean
+	selected?: Date | string | number | null
+	modelValue?: Date | string | number | null
+	start?: Date | string | null
+	end?: Date | string | null
+	store?: TableDateStore
+	colIndex?: number
+	rowIndex?: number
+}>()
 
 const {
 	showDate = true,
@@ -46,18 +73,19 @@ const {
 	defaultSeconds = 0,
 	defaultMeridiem = 'AM',
 	useSeconds = true,
-} = defineProps<{
-	showDate?: boolean
-	showTime?: boolean
-	selectRange?: boolean
-	showEndTime?: boolean
-	allowMilitaryTime?: boolean
-	defaultHours?: number
-	defaultMinutes?: number
-	defaultSeconds?: number
-	defaultMeridiem?: string
-	useSeconds?: boolean
-}>()
+	start = null,
+	end = null,
+} = props
+
+const selectedDate = computed(() => {
+	return (
+		toDate(props.selected) ??
+		toDate(props.modelValue) ??
+		(props.store != null && props.colIndex != null && props.rowIndex != null
+			? readTableDate(props.store, props.colIndex, props.rowIndex)
+			: null)
+	)
+})
 
 // `source` is forwarded from ADateTimeInput, which declares it on every `get-time`. It is
 // optional here only because a host or a test may emit these events by hand, and doing so always
@@ -117,6 +145,9 @@ const handleDate = (data: { start: Date | null; end: Date | null; selected: Date
 		// Picking a day on the calendar is unambiguously a user action.
 		tryEmitRange('user')
 	}
+	if (props.store != null && props.colIndex != null && props.rowIndex != null && data.selected) {
+		writeTableDate(props.store, props.colIndex, props.rowIndex, data.selected)
+	}
 }
 
 const handleStartTime = (data: {
@@ -151,9 +182,12 @@ const handleEndTime = (data: {
 <style scoped>
 .adate-selection {
 	display: inline-block;
-	border: 1px solid var(--sc-gray-80);
+	width: max-content;
+	max-width: 100%;
+	box-sizing: border-box;
+	border: 1px solid var(--sc-input-border-color);
 	padding: 10px;
-	background: var(--sc-form-background);
+	background: var(--sc-input-field-background);
 }
 
 .adate-selection__end-label {
@@ -166,9 +200,9 @@ const handleEndTime = (data: {
 }
 
 .empty {
-	color: #ccc;
+	color: var(--sc-input-label-color);
 	padding: 10px;
 	text-align: center;
-	border: 1px solid #ccc;
+	border: 1px solid var(--sc-input-border-color);
 }
 </style>

@@ -170,14 +170,14 @@ const formData = ref<Record<string, any>>({
 
 .link-section h4 {
 	margin: 0 0 0.5rem;
-	color: #555;
+	color: var(--sc-input-label-color);
 	font-size: 0.85rem;
 	text-transform: uppercase;
 	letter-spacing: 0.05em;
 }
 
 .info-text {
-	color: #555;
+	color: var(--sc-input-label-color);
 	margin-bottom: 1rem;
 	font-size: 0.9rem;
 }
@@ -185,21 +185,20 @@ const formData = ref<Record<string, any>>({
 .data-note {
 	margin-top: 0.5rem;
 	font-size: 0.85rem;
-	color: #555;
+	color: var(--sc-input-label-color);
 }
 
 .data-preview {
 	margin-top: 1.5rem;
 	padding: 1rem;
-	background: #2c3e50;
-	color: #ecf0f1;
-	border-radius: 0;
+	background: var(--sc-color-brand);
+	color: var(--sc-page-background);
 }
 
 .data-preview h4 {
 	margin-top: 0.75rem;
 	margin-bottom: 0.25rem;
-	color: #3498db;
+	color: var(--sc-primary-color);
 	font-size: 0.85rem;
 }
 

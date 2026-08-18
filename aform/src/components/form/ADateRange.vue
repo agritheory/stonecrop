@@ -8,13 +8,18 @@
 		<template v-else>
 			<input
 				:id="uuid"
+				ref="range-input"
 				class="aform_input-field"
 				type="text"
-				:value="rangeDisplay"
+				:value="inputText"
 				placeholder="Select date range"
 				:disabled="mode === 'read'"
-				readonly
-				@click="openPicker" />
+				:required="required"
+				@click="openPicker"
+				@input="onInput"
+				@blur="commitTypedRange"
+				@keydown.enter.prevent="commitTypedRange"
+				@keydown.escape="showPicker = false" />
 			<label class="aform_field-label" :for="uuid">{{ label }}</label>
 
 			<p v-show="errorText" class="aform_error" v-html="errorText"></p>
@@ -23,6 +28,9 @@
 				v-if="showPicker"
 				ref="pickerRef"
 				class="adaterange-picker"
+				:selected="startDate"
+				:start="startDate"
+				:end="endDate"
 				:select-range="true"
 				:show-time="false"
 				@get-date="handlePickerDate" />
@@ -31,18 +39,25 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, useTemplateRef } from 'vue'
 import { onClickOutside } from '@vueuse/core'
 import ADateSelection from './ADateSelection.vue'
 import type { ComponentProps } from '../../types'
-import { parseCalendarDate, toCalendarDateString } from '../../utils/calendar-date'
+import { parseCalendarDate, parseDateRange, toCalendarDateString } from '../../utils/calendar-date'
 
 const fmt = (d: string) => {
 	const parsed = parseCalendarDate(d)
 	return parsed ? parsed.toLocaleDateString() : ''
 }
 
-const { label = 'Date Range', mode, uuid, errors, validation = { errorMessage: '' } } = defineProps<ComponentProps>()
+const {
+	label = 'Date Range',
+	required,
+	mode,
+	uuid,
+	errors,
+	validation = { errorMessage: '' },
+} = defineProps<ComponentProps>()
 
 // Dynamic trigger errors take precedence over a static schema errorMessage; empty means the slot hides.
 const errorText = computed(() => (errors?.length ? errors.join('; ') : (validation.errorMessage ?? '')))
@@ -59,26 +74,29 @@ const modelValue = defineModel<DateRangeValue>({
 const startDate = ref<Date | null>(parseCalendarDate(modelValue.value.start_date))
 const endDate = ref<Date | null>(parseCalendarDate(modelValue.value.end_date))
 
+const formatRange = (start: Date | null, end: Date | null) => {
+	const startText = start ? start.toLocaleDateString() : ''
+	const endText = end ? end.toLocaleDateString() : ''
+	if (startText && endText) return `${startText} — ${endText}`
+	if (startText) return `${startText} — ...`
+	return ''
+}
+
+const inputText = ref(formatRange(startDate.value, endDate.value))
+
 const showPicker = ref(false)
 const pickerRef = ref(null)
-onClickOutside(pickerRef, () => (showPicker.value = false))
+const rangeInputRef = useTemplateRef<HTMLInputElement>('range-input')
+onClickOutside(pickerRef, () => (showPicker.value = false), { ignore: [rangeInputRef] })
 
 const openPicker = () => {
 	if (mode !== 'read') showPicker.value = true
 }
 
-const formatDate = (d: Date | null): string => {
-	if (!d) return ''
-	return `${d.getMonth() + 1}/${d.getDate()}/${d.getFullYear()}`
+const onInput = (event: Event) => {
+	const target = event.target
+	if (target instanceof HTMLInputElement) inputText.value = target.value
 }
-
-const rangeDisplay = computed(() => {
-	const s = formatDate(startDate.value)
-	const e = formatDate(endDate.value)
-	if (s && e) return `${s} — ${e}`
-	if (s) return `${s} — ...`
-	return ''
-})
 
 const displayValue = computed(() => {
 	const s = modelValue.value.start_date
@@ -106,6 +124,27 @@ const emitModel = () => {
 	}
 }
 
+const commitTypedRange = () => {
+	if (!inputText.value.trim()) {
+		startDate.value = null
+		endDate.value = null
+		inputText.value = ''
+		emitModel()
+		return
+	}
+	const parsed = parseDateRange(inputText.value)
+	if (!parsed) {
+		inputText.value = formatRange(startDate.value, endDate.value)
+		return
+	}
+	startDate.value = parsed.start
+	endDate.value = parsed.end
+	ensureOrder()
+	emitModel()
+	inputText.value = formatRange(startDate.value, endDate.value)
+	if (parsed.start && parsed.end) showPicker.value = false
+}
+
 const handlePickerDate = (data: { selected: Date; start?: Date | null; end?: Date | null }) => {
 	if (data.start) startDate.value = data.start
 	if (data.end) {
@@ -114,6 +153,7 @@ const handlePickerDate = (data: { selected: Date; start?: Date | null; end?: Dat
 		showPicker.value = false
 	}
 	emitModel()
+	inputText.value = formatRange(startDate.value, endDate.value)
 }
 
 watch(
@@ -121,6 +161,7 @@ watch(
 	newVal => {
 		startDate.value = parseCalendarDate(newVal.start_date)
 		endDate.value = parseCalendarDate(newVal.end_date)
+		inputText.value = formatRange(startDate.value, endDate.value)
 	},
 	{ deep: true }
 )
@@ -131,7 +172,10 @@ watch(
 	position: absolute;
 	top: 100%;
 	left: 0;
-	z-index: 1000;
+	width: max-content;
+	max-width: 100%;
+	box-sizing: border-box;
+	z-index: 100;
 	margin-top: 0.25rem;
 }
 </style>

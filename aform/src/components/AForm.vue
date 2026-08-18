@@ -163,7 +163,7 @@ const childModels = computed(() => childModelsCache.value)
 	border: none;
 }
 .aform_form-element {
-	padding: 0;
+	padding: var(--sc-form-label-offset) 0 0;
 	margin: 0;
 	position: relative;
 	box-sizing: border-box;
@@ -211,6 +211,7 @@ const childModels = computed(() => childModelsCache.value)
 	color: var(--sc-input-label-color);
 	display: inline-block;
 	position: absolute;
+	user-select: none;
 	padding: 0 0.25rem;
 	margin: 0rem;
 	z-index: 1;
@@ -227,6 +228,9 @@ const childModels = computed(() => childModelsCache.value)
 	border: none;
 	line-height: 0;
 	transform: translateY(-50%);
+}
+.aform_form-element > .aform_field-label {
+	top: var(--sc-form-label-offset);
 }
 .aform_input-field:disabled,
 .aform_checkbox-container:has(.aform_checkbox:disabled) {
@@ -259,7 +263,7 @@ p.aform_error {
 	font-size: 0.7rem;
 	position: absolute;
 	right: 0;
-	top: 0;
+	top: var(--sc-form-label-offset);
 	line-height: 0;
 	padding: 0.25rem;
 	transform: translate(-1rem, -50%);
@@ -273,6 +277,7 @@ p.aform_error {
 	flex-wrap: wrap;
 	gap: 1rem;
 	padding: 1rem;
+	background: var(--sc-form-background);
 	border: 1px solid var(--sc-form-border);
 	border-left: 4px solid var(--sc-form-border);
 	margin-bottom: 1rem;
@@ -294,7 +299,7 @@ p.aform_error {
 	font-size: 0.9rem;
 	font-weight: 600;
 	margin: 0 0 0.5rem 0;
-	color: var(--sc-input-label-color, #666);
+	color: var(--sc-input-label-color);
 }
 
 .aform-nested-section .aform {

@@ -58,7 +58,7 @@ export interface ModuleOptions {
 	 * Base theme stylesheet loaded into the host app. Provides the `--sc-*` CSS variables,
 	 * applies the document font, and normalizes form controls / code to inherit it. Defaults
 	 * to Stonecrop's default theme. Set to `false` to load no theme (bring your own), or pass
-	 * a different theme's module specifier / path (e.g. `'@stonecrop/themes/dark.css'`).
+	 * a custom stylesheet path.
 	 *
 	 * The Stonecrop component packages are theme-agnostic — they consume `--sc-*` variables
 	 * but never bundle a theme — so the host must supply one; the module does that here.

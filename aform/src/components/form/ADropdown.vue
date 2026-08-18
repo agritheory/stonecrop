@@ -196,7 +196,7 @@ label {
 	z-index: 0;
 	font-size: 80%;
 	position: absolute;
-	background: white;
+	background: var(--sc-input-field-background);
 	margin: calc(-1.5rem - calc(2.15rem / 2)) 0 0 1ch;
 	padding: 0 0.25ch 0 0.25ch;
 }
@@ -211,7 +211,7 @@ label {
 	border: 1px solid var(--sc-input-active-border-color);
 	border-radius: 0 0 var(--sc-border-radius) var(--sc-border-radius);
 	border-top: none;
-	background-color: #fff;
+	background-color: var(--sc-overlay-background);
 }
 
 .autocomplete-result {

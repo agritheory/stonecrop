@@ -140,7 +140,7 @@ ul {
 	justify-content: center;
 	text-decoration: none;
 	color: var(--sc-gray-60, #666);
-	background: var(--sc-btn-color, #ffffff);
+	background: var(--sc-btn-color);
 	border: 1px solid var(--sc-btn-border, #ccc);
 	font-size: 0.85rem;
 	font-family: var(--sc-font-family, system-ui, sans-serif);
@@ -159,7 +159,7 @@ ul {
 	z-index: 3;
 	background: var(--sc-primary-color, #827553) !important;
 	border-color: var(--sc-primary-color, #827553) !important;
-	color: var(--sc-primary-text-color, #fff) !important;
+	color: var(--sc-primary-text-color) !important;
 }
 
 /* Pseudo-elements removed - minimal ornamentation style */
@@ -170,7 +170,7 @@ ul {
 	width: 2.4rem;
 	height: 2.4rem;
 	padding: 0.5rem;
-	background: var(--sc-btn-color, #ffffff);
+	background: var(--sc-btn-color);
 	border: 1px solid var(--sc-btn-border, #ccc);
 	color: var(--sc-gray-60, #666);
 }
@@ -218,7 +218,7 @@ a:focus {
 	width: 2.4rem;
 	height: 2.4rem;
 	padding: 0.5rem;
-	background: var(--sc-btn-color, #ffffff);
+	background: var(--sc-btn-color);
 	border: 1px solid var(--sc-btn-border, #ccc);
 	color: var(--sc-gray-60, #666);
 }
@@ -240,7 +240,7 @@ a:focus {
 	min-width: 2.4rem;
 	height: 2.4rem;
 	padding: 0.5rem;
-	background: var(--sc-btn-color, #ffffff);
+	background: var(--sc-btn-color);
 	border: 1px solid var(--sc-btn-border, #ccc);
 	color: var(--sc-gray-60, #666);
 	overflow: hidden;
@@ -260,7 +260,7 @@ a:focus {
 	outline: none;
 	border: 1px solid var(--sc-input-border-color, #ccc);
 	border-radius: var(--sc-border-radius);
-	background-color: var(--sc-form-background, #ffffff);
+	background-color: var(--sc-form-background);
 	color: var(--sc-gray-80, #333);
 	text-align: left;
 	font-size: 0.875rem;

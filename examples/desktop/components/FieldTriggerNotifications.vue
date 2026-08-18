@@ -72,35 +72,35 @@ onUnmounted(() => {
 	display: flex;
 	align-items: flex-start;
 	gap: 12px;
-	background: white;
+	background: var(--sc-form-background);
 	border-radius: 8px;
 	padding: 16px;
 	margin-bottom: 12px;
 	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-	border-left: 4px solid #e5e7eb;
+	border-left: 4px solid var(--sc-form-border);
 	pointer-events: auto;
 	max-width: 400px;
 	word-wrap: break-word;
 }
 
 .notification-info {
-	border-left-color: #3b82f6;
-	background: #eff6ff;
+	border-left-color: var(--sc-primary-color);
+	background: var(--sc-color-changed);
 }
 
 .notification-success {
-	border-left-color: #10b981;
-	background: #ecfdf5;
+	border-left-color: var(--sc-brand-success);
+	background: var(--sc-form-background);
 }
 
 .notification-warning {
-	border-left-color: #f59e0b;
-	background: #fffbeb;
+	border-left-color: var(--sc-brand-warning);
+	background: var(--sc-form-background);
 }
 
 .notification-error {
-	border-left-color: #ef4444;
-	background: #fef2f2;
+	border-left-color: var(--sc-brand-danger);
+	background: var(--sc-form-background);
 }
 
 .notification-icon {
@@ -118,21 +118,21 @@ onUnmounted(() => {
 	margin: 0 0 4px 0;
 	font-size: 14px;
 	font-weight: 500;
-	color: #1f2937;
+	color: var(--sc-gray-80);
 	line-height: 1.4;
 }
 
 .notification-time {
 	margin: 0;
 	font-size: 12px;
-	color: #6b7280;
+	color: var(--sc-input-label-color);
 }
 
 .notification-close {
 	background: none;
 	border: none;
 	font-size: 18px;
-	color: #9ca3af;
+	color: var(--sc-gray-50);
 	cursor: pointer;
 	padding: 0;
 	width: 20px;
@@ -144,7 +144,7 @@ onUnmounted(() => {
 }
 
 .notification-close:hover {
-	color: #6b7280;
+	color: var(--sc-input-label-color);
 }
 
 /* Transitions */

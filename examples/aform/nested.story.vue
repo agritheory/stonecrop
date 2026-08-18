@@ -419,51 +419,47 @@ const AddressListDemo = defineComponent({
 <style scoped>
 /* Shared */
 .nested-form-example {
-	background: #f9f9f9;
+	background: var(--sc-page-background);
 	padding: 1.5rem;
-	border-radius: 0;
 	margin-bottom: 2rem;
 }
 
 .info-text {
-	color: #555;
+	color: var(--sc-input-label-color);
 	margin-bottom: 1rem;
 }
 
 .data-preview {
 	margin-top: 1.5rem;
 	padding: 1rem;
-	background: #2c3e50;
-	color: #ecf0f1;
-	border-radius: 0;
+	background: var(--sc-color-brand);
+	color: var(--sc-page-background);
 }
 
 .data-preview h4 {
 	margin-top: 0;
-	color: #3498db;
+	color: var(--sc-primary-color);
 }
 
 .data-preview pre {
 	overflow-x: auto;
 	margin: 0;
-	color: #ecf0f1;
+	color: var(--sc-page-background);
 	font-size: 0.85rem;
 }
 
 /* HST Demo */
 .hst-demo {
-	background: #f9f9f9;
+	background: var(--sc-page-background);
 	padding: 1.5rem;
-	border-radius: 0;
 }
 
 .hst-description {
-	background: #e8f4f8;
+	background: var(--sc-color-changed);
 	padding: 1rem;
-	border-left: 4px solid #3498db;
-	border-radius: 0;
+	border-left: 4px solid var(--sc-primary-color);
 	margin-bottom: 1.5rem;
-	color: #2c3e50;
+	color: var(--sc-color-brand);
 }
 
 .hst-layout {
@@ -480,36 +476,33 @@ const AddressListDemo = defineComponent({
 }
 
 .hst-form-section {
-	background: white;
+	background: var(--sc-form-background);
 	padding: 1.5rem;
-	border-radius: 0;
-	border: 1px solid #e0e0e0;
+	border: 1px solid var(--sc-gray-10);
 }
 
 .hst-form-section h4 {
 	margin-top: 0;
-	color: #2c3e50;
-	border-bottom: 2px solid #3498db;
+	color: var(--sc-color-brand);
+	border-bottom: 2px solid var(--sc-primary-color);
 	padding-bottom: 0.5rem;
 	margin-bottom: 1rem;
 }
 
 .path-indicator {
-	background: #2c3e50;
-	color: #ecf0f1;
+	background: var(--sc-color-brand);
+	color: var(--sc-page-background);
 	padding: 0.5rem 0.75rem;
-	border-radius: 0;
 	font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
 	font-size: 0.85rem;
 	margin-bottom: 1rem;
 }
 
 .reset-button {
-	background: #9b59b6;
-	color: white;
+	background: var(--sc-color-brand);
+	color: var(--sc-primary-text-color);
 	border: none;
 	padding: 0.75rem 1.5rem;
-	border-radius: 0;
 	cursor: pointer;
 	font-size: 1rem;
 	font-weight: 500;
@@ -518,36 +511,34 @@ const AddressListDemo = defineComponent({
 }
 
 .reset-button:hover {
-	background: #8e44ad;
+	background: var(--sc-gray-80);
 }
 
 .hst-state {
-	background: white;
+	background: var(--sc-form-background);
 	padding: 1.5rem;
-	border-radius: 0;
-	border: 2px solid #3498db;
+	border: 2px solid var(--sc-primary-color);
 	overflow-y: auto;
 	max-height: 800px;
 }
 
 .hst-state h4 {
 	margin-top: 0;
-	color: #2c3e50;
-	border-bottom: 2px solid #3498db;
+	color: var(--sc-color-brand);
+	border-bottom: 2px solid var(--sc-primary-color);
 	padding-bottom: 0.5rem;
 	margin-bottom: 1rem;
 }
 
 .hst-node-card {
-	background: #f8f9fa;
-	border: 2px solid #3498db;
-	border-radius: 0;
+	background: var(--sc-page-background);
+	border: 2px solid var(--sc-primary-color);
 	padding: 1rem;
 	margin-bottom: 1.5rem;
 }
 
 .hst-node-card.nested {
-	border-left: 4px solid #e67e22;
+	border-left: 4px solid var(--sc-brand-warning);
 	margin-left: 1rem;
 }
 
@@ -557,36 +548,34 @@ const AddressListDemo = defineComponent({
 	align-items: center;
 	margin-bottom: 1rem;
 	padding-bottom: 0.75rem;
-	border-bottom: 2px solid #e0e0e0;
+	border-bottom: 2px solid var(--sc-gray-10);
 }
 
 .node-type {
 	font-weight: bold;
 	font-size: 1.1rem;
-	color: #2c3e50;
+	color: var(--sc-color-brand);
 }
 
 .node-status {
 	padding: 0.25rem 0.75rem;
-	border-radius: 0;
 	font-size: 0.85rem;
 	font-weight: 600;
 }
 
 .node-status.exists {
-	background: #d4edda;
-	color: #155724;
+	background: var(--sc-form-background);
+	color: var(--sc-brand-success);
 }
 
 .node-status.deleted {
-	background: #f8d7da;
-	color: #721c24;
+	background: var(--sc-form-background);
+	color: var(--sc-brand-danger);
 }
 
 .node-details {
-	background: white;
+	background: var(--sc-form-background);
 	padding: 0.75rem;
-	border-radius: 0;
 	margin-bottom: 0.75rem;
 }
 
@@ -603,15 +592,14 @@ const AddressListDemo = defineComponent({
 
 .detail-row strong {
 	min-width: 100px;
-	color: #555;
+	color: var(--sc-input-label-color);
 	font-size: 0.9rem;
 }
 
 .detail-row code {
-	background: #2c3e50;
-	color: #ecf0f1;
+	background: var(--sc-color-brand);
+	color: var(--sc-page-background);
 	padding: 0.25rem 0.5rem;
-	border-radius: 0;
 	font-size: 0.85rem;
 	font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
 	flex: 1;
@@ -619,16 +607,15 @@ const AddressListDemo = defineComponent({
 }
 
 .node-data {
-	background: #2c3e50;
-	color: #ecf0f1;
+	background: var(--sc-color-brand);
+	color: var(--sc-page-background);
 	padding: 0.75rem;
-	border-radius: 0;
 	font-size: 0.85rem;
 }
 
 .node-data strong {
 	display: block;
-	color: #3498db;
+	color: var(--sc-primary-color);
 	margin-bottom: 0.5rem;
 }
 
@@ -639,7 +626,7 @@ const AddressListDemo = defineComponent({
 	line-height: 1.4;
 	white-space: pre-wrap;
 	word-break: break-all;
-	color: #ecf0f1;
+	color: var(--sc-page-background);
 }
 </style>
 

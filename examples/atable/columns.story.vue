@@ -36,7 +36,7 @@
 			<div style="margin-top: 20px">
 				<h4>Schema (source of truth):</h4>
 				<pre>{{ JSON.stringify(schemaFields, null, 2) }}</pre>
-				<p style="font-style: italic; color: #666; margin-top: 8px">
+				<p style="font-style: italic; color: var(--sc-input-label-color); margin-top: 8px">
 					<code>internal_notes</code> has <code>hidden: true</code> and does not appear as a column.
 				</p>
 			</div>
@@ -129,24 +129,22 @@ const schemaConfig: TableConfig = { view: 'list', fullWidth: true }
 
 <style scoped>
 pre {
-	background: #f5f5f5;
+	background: var(--sc-input-field-background);
 	padding: 10px;
-	border-radius: 0;
 	overflow-x: auto;
 	font-size: 12px;
 }
 
 button {
 	padding: 8px 16px;
-	background: #007acc;
-	color: white;
+	background: var(--sc-primary-color);
+	color: var(--sc-primary-text-color);
 	border: none;
-	border-radius: 0;
 	cursor: pointer;
 }
 
 button:hover {
-	background: #005999;
+	background: var(--sc-color-brand);
 }
 
 h3,

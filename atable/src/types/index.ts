@@ -203,6 +203,14 @@ export interface BaseTableConfig {
 	 * Configuration for row-level actions (add, delete, duplicate, etc.).
 	 */
 	rowActions?: RowActionsConfig
+
+	/**
+	 * Alternate row backgrounds using `--sc-row-color-zebra-light` and
+	 * `--sc-row-color-zebra-dark`. Off by default so cells match the field surface.
+	 *
+	 * @defaultValue false
+	 */
+	zebra?: boolean
 }
 
 /**

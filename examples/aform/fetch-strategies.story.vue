@@ -246,15 +246,13 @@ const BlockWorkflowsDemo = defineComponent({
 
 <style scoped>
 .fetch-demo {
-	background: #f9f9f9;
+	background: var(--sc-page-background);
 	padding: 1.5rem;
-	border-radius: 0;
 }
 
 .explanation {
-	background: #e8f4f8;
+	background: var(--sc-color-changed);
 	padding: 1rem;
-	border-radius: 0;
 	margin-bottom: 1.5rem;
 }
 
@@ -269,18 +267,17 @@ const BlockWorkflowsDemo = defineComponent({
 }
 
 .demo-panel {
-	background: white;
+	background: var(--sc-form-background);
 	padding: 1rem;
-	border-radius: 0;
-	border: 2px solid #ddd;
+	border: 2px solid var(--sc-form-border);
 }
 
 .demo-panel.sync {
-	border-color: #27ae60;
+	border-color: var(--sc-brand-success);
 }
 
 .demo-panel.lazy {
-	border-color: #e67e22;
+	border-color: var(--sc-brand-warning);
 }
 
 .demo-panel h4 {
@@ -288,7 +285,7 @@ const BlockWorkflowsDemo = defineComponent({
 }
 
 .strategy-desc {
-	color: #666;
+	color: var(--sc-input-label-color);
 	font-style: italic;
 }
 
@@ -299,15 +296,14 @@ const BlockWorkflowsDemo = defineComponent({
 }
 
 .data-inspector {
-	background: #2c3e50;
-	color: #ecf0f1;
+	background: var(--sc-color-brand);
+	color: var(--sc-page-background);
 	padding: 0.75rem;
-	border-radius: 0;
 	font-size: 0.9rem;
 }
 
 .data-inspector strong {
-	color: #3498db;
+	color: var(--sc-primary-color);
 }
 
 .lazy-controls {
@@ -315,37 +311,35 @@ const BlockWorkflowsDemo = defineComponent({
 }
 
 .load-button {
-	background: #3498db;
-	color: white;
+	background: var(--sc-primary-color);
+	color: var(--sc-primary-text-color);
 	border: none;
 	padding: 0.5rem 1rem;
-	border-radius: 0;
 	cursor: pointer;
 }
 
 .load-button:disabled {
-	background: #95a5a6;
+	background: var(--sc-gray-50);
 	cursor: not-allowed;
 }
 
 .workflow-status {
-	background: #2c3e50;
-	color: #ecf0f1;
+	background: var(--sc-color-brand);
+	color: var(--sc-page-background);
 	padding: 0.75rem;
-	border-radius: 0;
 	font-size: 0.9rem;
 }
 
 .workflow-status strong {
-	color: #3498db;
+	color: var(--sc-primary-color);
 }
 
 .status-ready {
-	color: #2ecc71;
+	color: var(--sc-brand-success);
 }
 
 .status-blocked {
-	color: #e74c3c;
+	color: var(--sc-brand-danger);
 }
 
 .action-buttons {
@@ -355,28 +349,27 @@ const BlockWorkflowsDemo = defineComponent({
 }
 
 .action-button {
-	background: #27ae60;
-	color: white;
+	background: var(--sc-brand-success);
+	color: var(--sc-primary-text-color);
 	border: none;
 	padding: 0.75rem 1.5rem;
-	border-radius: 0;
 	cursor: pointer;
 	font-size: 1rem;
 }
 
 .action-button:disabled {
-	background: #95a5a6;
+	background: var(--sc-gray-50);
 	cursor: not-allowed;
 }
 
 .demo-description {
-	color: #555;
+	color: var(--sc-input-label-color);
 	font-size: 0.95rem;
 	margin-bottom: 1rem;
 }
 
 .demo-description strong {
-	color: #2c3e50;
+	color: var(--sc-color-brand);
 }
 </style>
 

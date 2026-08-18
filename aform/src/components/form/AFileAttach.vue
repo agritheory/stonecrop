@@ -49,13 +49,14 @@ onChange(changedFiles => changedFiles)
 
 <style scoped>
 .aform_file-attach {
-	padding: 1rem;
+	padding: 0.5rem;
 	display: flex;
 	flex-wrap: wrap;
-	gap: 1rem;
+	gap: 0.5rem;
 	flex-direction: row;
-	justify-content: center;
+	justify-content: flex-start;
 	align-items: center;
+	box-sizing: border-box;
 	border: 1px dashed var(--sc-input-border-color);
 	width: 100%;
 }
@@ -83,12 +84,14 @@ onChange(changedFiles => changedFiles)
 }
 
 .aform_form-btn {
-	padding: 0.5rem 2rem;
+	padding: 0 1rem;
 	width: auto;
+	font-size: 1rem;
+	line-height: 1;
 	border: 1px solid var(--sc-input-border-color);
 	color: var(--sc-input-label-color);
 	cursor: pointer;
-	background-color: white;
+	background-color: var(--sc-btn-color);
 }
 
 .aform_form-btn:disabled {

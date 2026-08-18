@@ -153,13 +153,13 @@ function handleLoadRecord(payload: LoadRecordEventPayload) {
 .view-wrapper {
 	min-height: 100vh;
 	box-sizing: border-box; /* Include padding in height calculation */
-	background-color: #f9fafb;
+	background-color: var(--sc-page-background);
 	padding: 2rem;
 	padding-bottom: 4rem; /* Extra padding for SheetNav */
 }
 
 .view-wrapper :deep(.debug-info) {
-	background: #f3f4f6;
+	background: var(--sc-input-field-background);
 	padding: 1rem;
 	border-radius: 0;
 	margin-bottom: 2rem;
@@ -173,7 +173,7 @@ function handleLoadRecord(payload: LoadRecordEventPayload) {
 
 .view-wrapper :deep(.view-header h1) {
 	margin: 0.5rem 0 0 0;
-	color: #1f2937;
+	color: var(--sc-gray-80);
 	font-size: 2rem;
 	font-weight: 700;
 }
@@ -188,11 +188,11 @@ function handleLoadRecord(payload: LoadRecordEventPayload) {
 	gap: 0.5rem;
 	margin-bottom: 0.5rem;
 	font-size: 0.875rem;
-	color: #6b7280;
+	color: var(--sc-input-label-color);
 }
 
 .view-wrapper :deep(.breadcrumbs a) {
-	color: #3b82f6;
+	color: var(--sc-primary-color);
 	text-decoration: none;
 	font-weight: 500;
 }
@@ -202,19 +202,19 @@ function handleLoadRecord(payload: LoadRecordEventPayload) {
 }
 
 .view-wrapper :deep(.separator) {
-	color: #d1d5db;
+	color: var(--sc-form-border);
 	font-weight: 400;
 }
 
 .view-wrapper :deep(.current) {
-	color: #1f2937;
+	color: var(--sc-gray-80);
 	font-weight: 600;
 }
 
 .view-wrapper :deep(.empty-state) {
 	text-align: center;
 	padding: 3rem 1rem;
-	color: #6b7280;
+	color: var(--sc-input-label-color);
 }
 
 /* Operation Log Toggle Button */
@@ -222,8 +222,8 @@ function handleLoadRecord(payload: LoadRecordEventPayload) {
 	position: fixed;
 	bottom: 20px;
 	left: 20px; /* Changed from right to left */
-	background: #3b82f6;
-	color: white;
+	background: var(--sc-primary-color);
+	color: var(--sc-primary-text-color);
 	border: none;
 	padding: 0.75rem 1.25rem;
 	border-radius: 0;
@@ -236,7 +236,7 @@ function handleLoadRecord(payload: LoadRecordEventPayload) {
 }
 
 .operation-log-toggle:hover {
-	background: #2563eb;
+	background: var(--sc-color-brand);
 	box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
 	transform: translateY(-2px);
 }
@@ -252,7 +252,7 @@ function handleLoadRecord(payload: LoadRecordEventPayload) {
 
 /* Table Styles for AForm */
 .view-wrapper :deep(.aform-table) {
-	background: white;
+	background: var(--sc-form-background);
 	border-radius: 0;
 	box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
 	overflow: hidden;
@@ -264,28 +264,28 @@ function handleLoadRecord(payload: LoadRecordEventPayload) {
 }
 
 .view-wrapper :deep(.aform-table th) {
-	background-color: #f9fafb;
+	background-color: var(--sc-page-background);
 	padding: 0.75rem 1rem;
 	text-align: left;
 	font-weight: 600;
-	color: #374151;
-	border-bottom: 1px solid #e5e7eb;
+	color: var(--sc-cell-text-color);
+	border-bottom: 1px solid var(--sc-form-border);
 }
 
 .view-wrapper :deep(.aform-table td) {
 	padding: 0.75rem 1rem;
-	border-bottom: 1px solid #f3f4f6;
-	color: #374151;
+	border-bottom: 1px solid var(--sc-input-field-background);
+	color: var(--sc-cell-text-color);
 }
 
 .view-wrapper :deep(.aform-table tbody tr:hover) {
-	background-color: #f9fafb;
+	background-color: var(--sc-page-background);
 }
 
 /* Button Styles */
 .view-wrapper :deep(.btn-primary) {
-	background: #3b82f6;
-	color: white;
+	background: var(--sc-primary-color);
+	color: var(--sc-primary-text-color);
 	border: none;
 	padding: 0.75rem 1.5rem;
 	border-radius: 0;
@@ -296,7 +296,7 @@ function handleLoadRecord(payload: LoadRecordEventPayload) {
 }
 
 .view-wrapper :deep(.btn-primary:hover:not(:disabled)) {
-	background: #2563eb;
+	background: var(--sc-color-brand);
 	transform: translateY(-1px);
 	box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }
@@ -309,9 +309,9 @@ function handleLoadRecord(payload: LoadRecordEventPayload) {
 }
 
 .view-wrapper :deep(.btn-secondary) {
-	background: #f3f4f6;
-	color: #374151;
-	border: 1px solid #d1d5db;
+	background: var(--sc-input-field-background);
+	color: var(--sc-cell-text-color);
+	border: 1px solid var(--sc-form-border);
 	padding: 0.75rem 1.5rem;
 	border-radius: 0;
 	cursor: pointer;
@@ -321,14 +321,14 @@ function handleLoadRecord(payload: LoadRecordEventPayload) {
 }
 
 .view-wrapper :deep(.btn-secondary:hover) {
-	background: #e5e7eb;
-	border-color: #9ca3af;
+	background: var(--sc-form-border);
+	border-color: var(--sc-gray-50);
 	transform: translateY(-1px);
 }
 
 .view-wrapper :deep(.btn-danger) {
-	background: #ef4444;
-	color: white;
+	background: var(--sc-brand-danger);
+	color: var(--sc-primary-text-color);
 	border: none;
 	padding: 0.75rem 1.5rem;
 	border-radius: 0;
@@ -339,7 +339,7 @@ function handleLoadRecord(payload: LoadRecordEventPayload) {
 }
 
 .view-wrapper :deep(.btn-danger:hover) {
-	background: #dc2626;
+	background: var(--sc-brand-danger);
 	transform: translateY(-1px);
 	box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
 }
@@ -355,52 +355,52 @@ function handleLoadRecord(payload: LoadRecordEventPayload) {
 .view-wrapper :deep(.error-state) {
 	text-align: center;
 	padding: 3rem;
-	background: white;
+	background: var(--sc-form-background);
 	border-radius: 0;
-	border: 1px solid #e5e7eb;
+	border: 1px solid var(--sc-form-border);
 	box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
 }
 
 .view-wrapper :deep(.loading) {
-	color: #6b7280;
+	color: var(--sc-input-label-color);
 }
 
 .view-wrapper :deep(.empty-state p) {
-	color: #6b7280;
+	color: var(--sc-input-label-color);
 	margin-bottom: 1.5rem;
 	font-size: 1rem;
 }
 
 .view-wrapper :deep(.error-state) {
-	color: #ef4444;
+	color: var(--sc-brand-danger);
 }
 
 /* Records Table */
 .view-wrapper :deep(.records-table) {
-	border: 1px solid #e5e7eb;
+	border: 1px solid var(--sc-form-border);
 	border-radius: 0;
 	overflow: hidden;
-	background: white;
+	background: var(--sc-form-background);
 	box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
 }
 
 .view-wrapper :deep(.table-header) {
 	display: flex;
-	background: #f9fafb;
-	border-bottom: 1px solid #e5e7eb;
+	background: var(--sc-page-background);
+	border-bottom: 1px solid var(--sc-form-border);
 	font-weight: 600;
-	color: #374151;
+	color: var(--sc-cell-text-color);
 }
 
 .view-wrapper :deep(.table-row) {
 	display: flex;
-	border-bottom: 1px solid #e5e7eb;
+	border-bottom: 1px solid var(--sc-form-border);
 	cursor: pointer;
 	transition: background-color 0.15s;
 }
 
 .view-wrapper :deep(.table-row:hover) {
-	background: #f9fafb;
+	background: var(--sc-page-background);
 }
 
 .view-wrapper :deep(.table-row:last-child) {
@@ -417,11 +417,11 @@ function handleLoadRecord(payload: LoadRecordEventPayload) {
 
 .view-wrapper :deep(.header-cell) {
 	font-weight: 600;
-	color: #374151;
+	color: var(--sc-cell-text-color);
 }
 
 .view-wrapper :deep(.table-cell) {
-	color: #6b7280;
+	color: var(--sc-input-label-color);
 }
 
 .view-wrapper :deep(.actions-cell) {
@@ -432,8 +432,8 @@ function handleLoadRecord(payload: LoadRecordEventPayload) {
 
 /* Form Container */
 .view-wrapper :deep(.form-container) {
-	background: white;
-	border: 1px solid #e5e7eb;
+	background: var(--sc-form-background);
+	border: 1px solid var(--sc-form-border);
 	border-radius: 0;
 	padding: 2rem;
 	box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
@@ -469,7 +469,7 @@ function handleLoadRecord(payload: LoadRecordEventPayload) {
 	.view-wrapper :deep(.header-cell),
 	.view-wrapper :deep(.table-cell) {
 		padding: 0.75rem;
-		border-bottom: 1px solid #f3f4f6;
+		border-bottom: 1px solid var(--sc-input-field-background);
 	}
 
 	.view-wrapper :deep(.actions-cell) {

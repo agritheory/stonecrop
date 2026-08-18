@@ -52,8 +52,7 @@
 						"modalComponent": "ADatePicker",
 						"align": "center",
 						"edit": true,
-						"width": "25ch",
-						"format": "value => value ? new Date(value).toLocaleDateString('en-US') : '—'"
+						"width": "25ch"
 					}
 				],
 				"config": {

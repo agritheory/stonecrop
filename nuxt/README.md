@@ -221,8 +221,7 @@ export default defineNuxtConfig({
     docbuilder: false,
 
     // The default theme (@stonecrop/themes/default.css) loads automatically.
-    // Override it, or set `false` to bring your own:
-    // theme: '@stonecrop/themes/dark.css',
+    // Override with a custom stylesheet path, or set `false` to bring your own.
   },
 })
 ```

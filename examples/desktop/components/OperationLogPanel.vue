@@ -92,7 +92,7 @@ const formatValue = (value: any): string => {
 	bottom: 80px; /* Position above the button (button height ~40px + 20px bottom + 20px spacing) */
 	width: 400px;
 	max-height: 600px;
-	background: white;
+	background: var(--sc-form-background);
 	border-radius: 8px;
 	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 	overflow: hidden;
@@ -104,15 +104,15 @@ const formatValue = (value: any): string => {
 	justify-content: space-between;
 	align-items: center;
 	padding: 1rem;
-	background: #f3f4f6;
-	border-bottom: 1px solid #e5e7eb;
+	background: var(--sc-input-field-background);
+	border-bottom: 1px solid var(--sc-form-border);
 }
 
 .panel-header h3 {
 	margin: 0;
 	font-size: 1rem;
 	font-weight: 600;
-	color: #1f2937;
+	color: var(--sc-gray-80);
 }
 
 .close-button {
@@ -120,7 +120,7 @@ const formatValue = (value: any): string => {
 	border: none;
 	font-size: 1.25rem;
 	cursor: pointer;
-	color: #6b7280;
+	color: var(--sc-input-label-color);
 	padding: 0;
 	width: 24px;
 	height: 24px;
@@ -130,7 +130,7 @@ const formatValue = (value: any): string => {
 }
 
 .close-button:hover {
-	color: #1f2937;
+	color: var(--sc-gray-80);
 }
 
 .panel-content {
@@ -140,8 +140,8 @@ const formatValue = (value: any): string => {
 
 .log-stats {
 	padding: 1rem;
-	background: #fafafa;
-	border-bottom: 1px solid #e5e7eb;
+	background: var(--sc-page-background);
+	border-bottom: 1px solid var(--sc-form-border);
 }
 
 .stat {
@@ -156,13 +156,13 @@ const formatValue = (value: any): string => {
 
 .stat-label {
 	font-weight: 500;
-	color: #6b7280;
+	color: var(--sc-input-label-color);
 	font-size: 0.875rem;
 }
 
 .stat-value {
 	font-weight: 600;
-	color: #1f2937;
+	color: var(--sc-gray-80);
 	font-size: 0.875rem;
 }
 
@@ -174,13 +174,13 @@ const formatValue = (value: any): string => {
 	padding: 0.75rem;
 	margin-bottom: 0.5rem;
 	border-radius: 4px;
-	border: 1px solid #e5e7eb;
-	background: white;
+	border: 1px solid var(--sc-form-border);
+	background: var(--sc-form-background);
 }
 
 .operation-item.current {
-	border-color: #3b82f6;
-	background: #eff6ff;
+	border-color: var(--sc-primary-color);
+	background: var(--sc-color-changed);
 }
 
 .operation-item.past {
@@ -195,14 +195,14 @@ const formatValue = (value: any): string => {
 
 .operation-type {
 	font-weight: 600;
-	color: #1f2937;
+	color: var(--sc-gray-80);
 	font-size: 0.875rem;
 	text-transform: uppercase;
 }
 
 .operation-time {
 	font-size: 0.75rem;
-	color: #6b7280;
+	color: var(--sc-input-label-color);
 }
 
 .operation-details {
@@ -217,12 +217,12 @@ const formatValue = (value: any): string => {
 
 .detail-label {
 	font-weight: 500;
-	color: #6b7280;
+	color: var(--sc-input-label-color);
 	min-width: 60px;
 }
 
 .detail-value {
-	color: #1f2937;
+	color: var(--sc-gray-80);
 	word-break: break-all;
 }
 </style>

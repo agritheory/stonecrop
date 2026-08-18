@@ -29,6 +29,29 @@ export const formatQuantity = (value: any): string => {
  * can reach formatting through: the `format` that `schemaToColumns` attaches, and the table
  * store's category-based default.
  */
+/**
+ * Format a calendar date for a table cell. `YYYY-MM-DD` is a local day, not UTC midnight —
+ * `new Date('2025-08-05')` is the previous evening in US timezones and shows the wrong day.
+ */
+export const formatCalendarDate = (value: any): string => {
+	if (value === null || value === undefined || value === '') return ''
+	if (typeof value === 'number' || value instanceof Date) {
+		const parsed = new Date(value)
+		return Number.isNaN(parsed.getTime()) ? '' : parsed.toLocaleDateString()
+	}
+
+	const iso = String(value)
+		.trim()
+		.match(/^(\d{4})-(\d{2})-(\d{2})$/)
+	if (iso) {
+		const parsed = new Date(Number(iso[1]), Number(iso[2]) - 1, Number(iso[3]))
+		return Number.isNaN(parsed.getTime()) ? '' : parsed.toLocaleDateString()
+	}
+
+	const parsed = new Date(value)
+	return Number.isNaN(parsed.getTime()) ? '' : parsed.toLocaleDateString()
+}
+
 export const formatCurrency = (value: any): string => {
 	if (value === null || value === undefined) return ''
 	if (typeof value === 'object') {

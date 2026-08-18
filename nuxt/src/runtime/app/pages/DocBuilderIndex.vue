@@ -133,7 +133,7 @@ function handleAction(_label: string, action?: () => void | Promise<void>) {
    over the playground layout's global grey `body` background. Without this, the page shows grey
    (or a grey/white flicker) depending on navigation order. */
 .docbuilder-index {
-	background: var(--sc-form-background, #fff);
+	background: var(--sc-form-background);
 	min-height: 100vh;
 	box-sizing: border-box;
 }

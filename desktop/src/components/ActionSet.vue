@@ -172,7 +172,7 @@ button.button-default {
 .dropdown-header:hover button.button-default,
 .dropdown-header:hover,
 .action-element-header:hover {
-	background-color: #f2f2f2;
+	background-color: var(--sc-btn-hover);
 }
 
 .dropdown-title {
@@ -199,13 +199,13 @@ button.dropdown-item {
 	padding: 5px 12px;
 	text-align: right;
 	border: none;
-	background-color: #ffffff;
+	background-color: var(--sc-overlay-background);
 	cursor: pointer;
 	border-radius: var(--sc-border-radius);
 	font-size: 1rem;
 }
 
 button.dropdown-item:hover {
-	background-color: #f2f2f2;
+	background-color: var(--sc-btn-hover);
 }
 </style>

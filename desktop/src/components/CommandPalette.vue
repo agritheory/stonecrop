@@ -156,7 +156,7 @@ const selectResult = (result: T) => {
 .command-palette {
 	width: 600px;
 	max-width: 90%;
-	background-color: white;
+	background-color: var(--sc-overlay-background);
 	border-radius: var(--sc-border-radius);
 	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
 	overflow: hidden;
@@ -167,7 +167,7 @@ const selectResult = (result: T) => {
 
 .command-palette-header {
 	display: flex;
-	border-bottom: 1px solid #eaeaea;
+	border-bottom: 1px solid var(--sc-gray-10);
 	padding: 12px;
 }
 
@@ -185,12 +185,12 @@ const selectResult = (result: T) => {
 	border: none;
 	font-size: 24px;
 	cursor: pointer;
-	color: #666;
+	color: var(--sc-input-label-color);
 	padding: 0 8px;
 }
 
 .command-palette-close:hover {
-	color: #333;
+	color: var(--sc-gray-80);
 }
 
 .command-palette-results {
@@ -201,27 +201,27 @@ const selectResult = (result: T) => {
 .command-palette-result {
 	padding: 12px 16px;
 	cursor: pointer;
-	border-bottom: 1px solid #f0f0f0;
+	border-bottom: 1px solid var(--sc-gray-10);
 }
 
 .command-palette-result:hover,
 .command-palette-result.selected {
-	background-color: #f5f5f5;
+	background-color: var(--sc-row-hover-color);
 }
 
 .command-palette-result.selected {
-	background-color: rgba(132, 60, 3, 0.1);
+	background-color: var(--sc-color-changed);
 }
 
 .result-title {
 	font-weight: 500;
 	margin-bottom: 4px;
-	color: #333;
+	color: var(--sc-gray-80);
 }
 
 .result-content {
 	font-size: 14px;
-	color: #666;
+	color: var(--sc-input-label-color);
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -230,6 +230,6 @@ const selectResult = (result: T) => {
 .command-palette-no-results {
 	padding: 20px 16px;
 	text-align: center;
-	color: #666;
+	color: var(--sc-input-label-color);
 }
 </style>

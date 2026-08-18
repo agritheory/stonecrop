@@ -188,6 +188,23 @@ describe('schemaToColumns', { tags: ['component'] }, () => {
 		})
 	})
 
+	describe('Date field handling', () => {
+		it('formats YYYY-MM-DD as a local calendar day', () => {
+			const schema: ColumnSchema[] = [{ fieldname: 'ship_date', component: 'ADate', label: 'Ship Date' }]
+			const columns = schemaToColumns(schema)
+			expect(typeof columns[0].format).toBe('function')
+			expect((columns[0].format as Function)('2025-08-05')).toBe(new Date(2025, 7, 5).toLocaleDateString())
+		})
+
+		it('does not override an explicit format on a date field', () => {
+			const schema: ColumnSchema[] = [
+				{ fieldname: 'ship_date', component: 'ADate', label: 'Ship Date', format: '(v) => v' },
+			]
+			const columns = schemaToColumns(schema)
+			expect(columns[0].format).toBe('(v) => v')
+		})
+	})
+
 	it('preserves field order', () => {
 		const schema: ColumnSchema[] = [
 			{ fieldname: 'z', component: 'ATextInput', label: 'Z' },

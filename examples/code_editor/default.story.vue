@@ -37,9 +37,8 @@ type Company = {
 .live-value {
 	margin: 0;
 	padding: 8px 12px;
-	background: #f5f5f5;
-	border: 1px solid #ddd;
-	border-radius: 0;
+	background: var(--sc-input-field-background);
+	border: 1px solid var(--sc-form-border);
 	font-size: 12px;
 	font-family: monospace;
 	white-space: pre-wrap;

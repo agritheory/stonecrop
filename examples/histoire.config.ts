@@ -5,6 +5,8 @@ import { defineConfig } from 'histoire'
 
 const aformSrc = fileURLToPath(new URL('../aform/src/index.ts', import.meta.url))
 const aformTypes = fileURLToPath(new URL('../aform/src/types/index.ts', import.meta.url))
+const atableSrc = fileURLToPath(new URL('../atable/src/index.ts', import.meta.url))
+const atableTypes = fileURLToPath(new URL('../atable/src/types/index.ts', import.meta.url))
 const themesDefault = fileURLToPath(new URL('../themes/default/default.css', import.meta.url))
 
 export default defineConfig({
@@ -79,6 +81,8 @@ export default defineConfig({
 			alias: {
 				'@stonecrop/aform/types': aformTypes,
 				'@stonecrop/aform': aformSrc,
+				'@stonecrop/atable/types': atableTypes,
+				'@stonecrop/atable': atableSrc,
 				'@stonecrop/themes/default.css': themesDefault,
 			},
 		},

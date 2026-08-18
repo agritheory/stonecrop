@@ -69,7 +69,7 @@ export default {
 
 <style>
 .editable-edge-label {
-	background-color: white;
+	background-color: var(--sc-overlay-background);
 	position: relative;
 	font-size: 12px;
 }

@@ -1,71 +1,89 @@
 :root {
-	/* THEME COLORS */
-
-	/* General Colors */
-	--sc-primary-color: #0098c9; /* primary action color, default blue */
-	--sc-primary-text-color: #ffffff; /* text color paired with primary color, default white */
-	--sc-brand-color: #202a44; /* brand color, default navy */
-
-	/* Grays */
+	/* Primitive: gray ramp */
+	--sc-gray-2: #fafafa;
 	--sc-gray-5: #f2f2f2;
 	--sc-gray-10: #e6e6e6;
 	--sc-gray-20: #cccccc;
 	--sc-gray-50: #808080;
 	--sc-gray-60: #666666;
+	--sc-gray-70: #3a3c41;
 	--sc-gray-80: #333333;
 
-	/* Warnings/Alerts/Success */
-	--sc-brand-danger: #e63c28;
-	--sc-brand-success: #155724;
-	--sc-brand-warning: #b99d3e;
+	/* Primitive: color (alerts, brand, on-color text). Not surfaces. */
+	--sc-color-primary: #0098c9;
+	--sc-color-on-primary: #ffffff;
+	--sc-color-brand: #202a44;
+	--sc-color-danger: #e63c28;
+	--sc-color-success: #155724;
+	--sc-color-warning: #b99d3e;
+	--sc-color-gold: #e6a92d;
+	--sc-color-changed: #d8edff;
 
-	/* Table Colors */
-	--sc-active-cell-background: #ffffff;
-	--sc-active-cell-outline: #e6a92d;
-	--sc-cell-border-color: #ffffff;
-	--sc-cell-text-color: #3a3c41;
-	--sc-focus-cell-background: #ffffff;
-	--sc-focus-cell-outline: #000000;
-	--sc-header-border-color: #ffffff;
-	--sc-header-text-color: var(--sc-gray-20);
-	--sc-row-border-color: var(--sc-gray-20);
-	--sc-row-color-zebra-dark: #dddddd;
-	--sc-row-color-zebra-light: #eeeeee;
-	--sc-row-number-background-color: #ffffff;
-
-	/* Form Colors */
-	--sc-input-active-border-color: var(--sc-gray-80);
-	--sc-input-active-label-color: var(--sc-gray-80);
-	--sc-input-border-color: var(--sc-gray-20);
-	--sc-input-label-color: var(--sc-gray-60);
-	--sc-required-border: #e63c28;
-	--sc-cell-changed-color: #d8edff;
-	--sc-form-border: var(--sc-gray-5);
-	--sc-form-background: #ffffff;
-	--sc-input-field-background: #ffffff;
-	--sc-input-field-disabled-background: var(--sc-gray-5);
-
-	/* FONT */
-	--sc-font-size: 10px;
+	/* Primitive: type */
 	--sc-font-family: 'Arimo', Arial, sans-serif;
-	--sc-table-font-size: 16px;
-	--sc-atable-font-family: 'Arimo', sans-serif;
+	--sc-font-size: 1rem;
+	--sc-font-size-table: 1rem;
 
-	/* TABLE */
-	--sc-atable-row-padding: 0.125rem;
+	/* Primitive: space and measure */
+	--sc-space-1: 0.125rem;
+	--sc-space-2: 0.5rem;
+	--sc-space-3: 1rem;
+	--sc-border-radius: 0;
+	--sc-form-field-max-width: 50ch;
+	--sc-form-label-offset: var(--sc-space-2);
+
+	/* Semantic: brand aliases */
+	--sc-primary-color: var(--sc-color-primary);
+	--sc-primary-text-color: var(--sc-color-on-primary);
+	--sc-brand-color: var(--sc-color-brand);
+	--sc-brand-danger: var(--sc-color-danger);
+	--sc-brand-success: var(--sc-color-success);
+	--sc-brand-warning: var(--sc-color-warning);
+
+	/* Semantic: surfaces (gray-on-gray) */
+	--sc-page-background: var(--sc-gray-2);
+	--sc-form-background: var(--sc-gray-2);
+	--sc-input-field-background: var(--sc-gray-5);
+	--sc-input-addon-background: var(--sc-gray-10);
+	--sc-input-field-disabled-background: var(--sc-gray-2);
+	--sc-overlay-background: var(--sc-gray-2);
+	--sc-cell-background: var(--sc-form-background);
+
+	/* Semantic: text */
+	--sc-cell-text-color: var(--sc-gray-70);
+	--sc-input-label-color: var(--sc-gray-60);
+	--sc-input-active-label-color: var(--sc-gray-80);
+	--sc-header-text-color: var(--sc-gray-20);
+
+	/* Semantic: borders */
+	--sc-form-border: var(--sc-gray-20);
+	--sc-input-border-color: var(--sc-gray-20);
+	--sc-input-active-border-color: var(--sc-gray-80);
+	--sc-required-border: var(--sc-color-danger);
+
+	/* Semantic: table */
+	--sc-active-cell-background: var(--sc-input-field-background);
+	--sc-active-cell-outline: var(--sc-color-gold);
+	--sc-focus-cell-background: var(--sc-input-field-background);
+	--sc-focus-cell-outline: var(--sc-gray-80);
+	--sc-cell-border-color: var(--sc-form-background);
+	--sc-header-border-color: var(--sc-form-background);
+	--sc-row-border-color: var(--sc-gray-20);
+	--sc-row-color-zebra-light: var(--sc-form-background);
+	--sc-row-color-zebra-dark: var(--sc-gray-5);
+	--sc-row-number-background-color: var(--sc-form-background);
+	--sc-row-hover-color: var(--sc-gray-10);
+	--sc-cell-changed-color: var(--sc-color-changed);
+	--sc-atable-row-padding: var(--sc-space-1);
 	--sc-atable-row-height: 1.5em;
 	--sc-atable-cell-border-width: 2px;
 	--sc-table-loading-color: 204, 204, 204;
+	--sc-table-font-size: var(--sc-font-size-table);
+	--sc-atable-font-family: var(--sc-font-family);
 
-	/* BTNS */
-	--sc-btn-border: #cccccc;
-	--sc-btn-color: white;
-	--sc-btn-hover: #f2f2f2;
-	--sc-btn-label-color: black;
-
-	/* BORDERS */
-	--sc-border-radius: 0;
-
-	/* FORM LAYOUT */
-	--sc-form-field-max-width: 50ch;
+	/* Semantic: buttons */
+	--sc-btn-border: var(--sc-gray-20);
+	--sc-btn-color: var(--sc-gray-2);
+	--sc-btn-hover: var(--sc-gray-5);
+	--sc-btn-label-color: var(--sc-gray-80);
 }

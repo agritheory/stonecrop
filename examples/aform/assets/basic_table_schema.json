@@ -54,8 +54,7 @@
 				"modalComponent": "ADatePicker",
 				"align": "center",
 				"edit": true,
-				"width": "20ch",
-				"format": "value => value ? new Date(value).toLocaleDateString('en-US') : '—'"
+				"width": "20ch"
 			},
 			{
 				"fieldname": "status",

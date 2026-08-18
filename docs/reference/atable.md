@@ -282,6 +282,7 @@ createTableStore: (initData: {
                 } | undefined;
             } | undefined;
         } | undefined;
+        zebra?: boolean | undefined;
     } | {
         view: "tree";
         defaultTreeExpansion?: "root" | "branch" | "leaf" | undefined;
@@ -358,6 +359,7 @@ createTableStore: (initData: {
                 } | undefined;
             } | undefined;
         } | undefined;
+        zebra?: boolean | undefined;
     } | {
         view: "gantt";
         dependencyGraph?: boolean | undefined;
@@ -434,6 +436,7 @@ createTableStore: (initData: {
                 } | undefined;
             } | undefined;
         } | undefined;
+        zebra?: boolean | undefined;
     } | {
         view: "tree-gantt";
         defaultTreeExpansion?: "root" | "branch" | "leaf" | undefined;
@@ -511,6 +514,7 @@ createTableStore: (initData: {
                 } | undefined;
             } | undefined;
         } | undefined;
+        zebra?: boolean | undefined;
     }, TableConfig | {
         view?: "uncounted" | "list" | "list-expansion" | undefined;
         fullWidth?: boolean | undefined;
@@ -586,6 +590,7 @@ createTableStore: (initData: {
                 } | undefined;
             } | undefined;
         } | undefined;
+        zebra?: boolean | undefined;
     } | {
         view: "tree";
         defaultTreeExpansion?: "root" | "branch" | "leaf" | undefined;
@@ -662,6 +667,7 @@ createTableStore: (initData: {
                 } | undefined;
             } | undefined;
         } | undefined;
+        zebra?: boolean | undefined;
     } | {
         view: "gantt";
         dependencyGraph?: boolean | undefined;
@@ -738,6 +744,7 @@ createTableStore: (initData: {
                 } | undefined;
             } | undefined;
         } | undefined;
+        zebra?: boolean | undefined;
     } | {
         view: "tree-gantt";
         defaultTreeExpansion?: "root" | "branch" | "leaf" | undefined;
@@ -815,6 +822,7 @@ createTableStore: (initData: {
                 } | undefined;
             } | undefined;
         } | undefined;
+        zebra?: boolean | undefined;
     }>;
     connectionHandles: import("vue").Ref<{
         id: string;
@@ -1154,6 +1162,7 @@ createTableStore: (initData: {
                 } | undefined;
             } | undefined;
         } | undefined;
+        zebra?: boolean | undefined;
     } | {
         view: "tree";
         defaultTreeExpansion?: "root" | "branch" | "leaf" | undefined;
@@ -1230,6 +1239,7 @@ createTableStore: (initData: {
                 } | undefined;
             } | undefined;
         } | undefined;
+        zebra?: boolean | undefined;
     } | {
         view: "gantt";
         dependencyGraph?: boolean | undefined;
@@ -1306,6 +1316,7 @@ createTableStore: (initData: {
                 } | undefined;
             } | undefined;
         } | undefined;
+        zebra?: boolean | undefined;
     } | {
         view: "tree-gantt";
         defaultTreeExpansion?: "root" | "branch" | "leaf" | undefined;
@@ -1383,6 +1394,7 @@ createTableStore: (initData: {
                 } | undefined;
             } | undefined;
         } | undefined;
+        zebra?: boolean | undefined;
     }, TableConfig | {
         view?: "uncounted" | "list" | "list-expansion" | undefined;
         fullWidth?: boolean | undefined;
@@ -1458,6 +1470,7 @@ createTableStore: (initData: {
                 } | undefined;
             } | undefined;
         } | undefined;
+        zebra?: boolean | undefined;
     } | {
         view: "tree";
         defaultTreeExpansion?: "root" | "branch" | "leaf" | undefined;
@@ -1534,6 +1547,7 @@ createTableStore: (initData: {
                 } | undefined;
             } | undefined;
         } | undefined;
+        zebra?: boolean | undefined;
     } | {
         view: "gantt";
         dependencyGraph?: boolean | undefined;
@@ -1610,6 +1624,7 @@ createTableStore: (initData: {
                 } | undefined;
             } | undefined;
         } | undefined;
+        zebra?: boolean | undefined;
     } | {
         view: "tree-gantt";
         defaultTreeExpansion?: "root" | "branch" | "leaf" | undefined;
@@ -1687,6 +1702,7 @@ createTableStore: (initData: {
                 } | undefined;
             } | undefined;
         } | undefined;
+        zebra?: boolean | undefined;
     }>;
     connectionHandles: import("vue").Ref<{
         id: string;
@@ -2026,6 +2042,7 @@ createTableStore: (initData: {
                 } | undefined;
             } | undefined;
         } | undefined;
+        zebra?: boolean | undefined;
     } | {
         view: "tree";
         defaultTreeExpansion?: "root" | "branch" | "leaf" | undefined;
@@ -2102,6 +2119,7 @@ createTableStore: (initData: {
                 } | undefined;
             } | undefined;
         } | undefined;
+        zebra?: boolean | undefined;
     } | {
         view: "gantt";
         dependencyGraph?: boolean | undefined;
@@ -2178,6 +2196,7 @@ createTableStore: (initData: {
                 } | undefined;
             } | undefined;
         } | undefined;
+        zebra?: boolean | undefined;
     } | {
         view: "tree-gantt";
         defaultTreeExpansion?: "root" | "branch" | "leaf" | undefined;
@@ -2255,6 +2274,7 @@ createTableStore: (initData: {
                 } | undefined;
             } | undefined;
         } | undefined;
+        zebra?: boolean | undefined;
     }, TableConfig | {
         view?: "uncounted" | "list" | "list-expansion" | undefined;
         fullWidth?: boolean | undefined;
@@ -2330,6 +2350,7 @@ createTableStore: (initData: {
                 } | undefined;
             } | undefined;
         } | undefined;
+        zebra?: boolean | undefined;
     } | {
         view: "tree";
         defaultTreeExpansion?: "root" | "branch" | "leaf" | undefined;
@@ -2406,6 +2427,7 @@ createTableStore: (initData: {
                 } | undefined;
             } | undefined;
         } | undefined;
+        zebra?: boolean | undefined;
     } | {
         view: "gantt";
         dependencyGraph?: boolean | undefined;
@@ -2482,6 +2504,7 @@ createTableStore: (initData: {
                 } | undefined;
             } | undefined;
         } | undefined;
+        zebra?: boolean | undefined;
     } | {
         view: "tree-gantt";
         defaultTreeExpansion?: "root" | "branch" | "leaf" | undefined;
@@ -2559,6 +2582,7 @@ createTableStore: (initData: {
                 } | undefined;
             } | undefined;
         } | undefined;
+        zebra?: boolean | undefined;
     }>;
     connectionHandles: import("vue").Ref<{
         id: string;
@@ -2808,6 +2832,8 @@ For quantity fields — those whose `component` carries the `'quantity'` categor
 
 For currency fields — those whose `component` carries the `'currency'` category — without an explicit `format`, a synchronous `format` is added that renders the `{ amount, currency }` value (see `CurrencyValue` in `@stonecrop/aform`) as `"<amount> <currency>"`.
 
+For date fields — those whose `component` carries the `'date'` category — without an explicit `format`, a synchronous `format` is added that treats `YYYY-MM-DD` as a local calendar day.
+
 **Signature:**
 
 ```typescript
@@ -2833,6 +2859,7 @@ export interface BaseTableConfig {
   clickable?: boolean;
   fullWidth?: boolean;
   rowActions?: RowActionsConfig;
+  zebra?: boolean;
 }
 ```
 
@@ -2843,6 +2870,7 @@ export interface BaseTableConfig {
 | clickable? | `boolean` | When true, rows show a pointer cursor and a hover highlight, signalling they are clickable. Emits `row:click` on every row click. |
 | fullWidth? | `boolean` | Control whether the table should be allowed to use the full width of its container. |
 | rowActions? | `RowActionsConfig` | Configuration for row-level actions (add, delete, duplicate, etc.). |
+| zebra? | `boolean` | Alternate row backgrounds using `--sc-row-color-zebra-light` and `--sc-row-color-zebra-dark`. Off by default so cells match the field surface. |
 
 ### BasicTableConfig
 

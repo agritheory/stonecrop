@@ -174,7 +174,28 @@ if (addNavigation || isListExpansion) {
 
 <style>
 .atable-row {
-	background-color: white;
+	background-color: var(--sc-cell-background);
+}
+
+.atable--zebra tbody .atable-row:nth-child(odd) {
+	background-color: var(--sc-row-color-zebra-light);
+}
+
+.atable--zebra tbody .atable-row:nth-child(even) {
+	background-color: var(--sc-row-color-zebra-dark);
+}
+
+.atable--zebra tbody .atable-row:nth-child(odd) > td {
+	background-color: var(--sc-row-color-zebra-light);
+}
+
+.atable--zebra tbody .atable-row:nth-child(even) > td {
+	background-color: var(--sc-row-color-zebra-dark);
+}
+
+.atable--zebra tbody .atable-row > td:focus,
+.atable--zebra tbody .atable-row > td:focus-within {
+	background-color: var(--sc-focus-cell-background);
 }
 
 .atable-row-clickable {
@@ -182,7 +203,7 @@ if (addNavigation || isListExpansion) {
 }
 
 .atable-row-clickable:hover > td {
-	background-color: var(--sc-row-hover-color, #f0f4f8);
+	background-color: var(--sc-row-hover-color);
 }
 
 .atable-row:last-child > td {
@@ -244,8 +265,8 @@ if (addNavigation || isListExpansion) {
 </style>
 <style scoped>
 .atable-row.changed-row-gradient:has(td.cell-modified) {
-	--cell-color-start: color-mix(in srgb, var(--sc-cell-changed-color), #fff 20%);
-	--cell-color-end: color-mix(in srgb, var(--sc-cell-changed-color), #fff 60%);
+	--cell-color-start: color-mix(in srgb, var(--sc-cell-changed-color), var(--sc-gray-5) 20%);
+	--cell-color-end: color-mix(in srgb, var(--sc-cell-changed-color), var(--sc-gray-5) 60%);
 	background: linear-gradient(90deg, var(--cell-color-start), var(--cell-color-end));
 }
 </style>

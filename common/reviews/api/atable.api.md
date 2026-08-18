@@ -58,6 +58,7 @@ export interface BaseTableConfig {
     clickable?: boolean;
     fullWidth?: boolean;
     rowActions?: RowActionsConfig;
+    zebra?: boolean;
 }
 
 // @public
@@ -249,6 +250,7 @@ disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => bo
 } | undefined;
 } | undefined;
 } | undefined;
+zebra?: boolean | undefined;
 } | {
 view: "tree";
 defaultTreeExpansion?: "root" | "branch" | "leaf" | undefined;
@@ -325,6 +327,7 @@ disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => bo
 } | undefined;
 } | undefined;
 } | undefined;
+zebra?: boolean | undefined;
 } | {
 view: "gantt";
 dependencyGraph?: boolean | undefined;
@@ -401,6 +404,7 @@ disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => bo
 } | undefined;
 } | undefined;
 } | undefined;
+zebra?: boolean | undefined;
 } | {
 view: "tree-gantt";
 defaultTreeExpansion?: "root" | "branch" | "leaf" | undefined;
@@ -478,6 +482,7 @@ disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => bo
 } | undefined;
 } | undefined;
 } | undefined;
+zebra?: boolean | undefined;
 }, TableConfig | {
 view?: "uncounted" | "list" | "list-expansion" | undefined;
 fullWidth?: boolean | undefined;
@@ -553,6 +558,7 @@ disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => bo
 } | undefined;
 } | undefined;
 } | undefined;
+zebra?: boolean | undefined;
 } | {
 view: "tree";
 defaultTreeExpansion?: "root" | "branch" | "leaf" | undefined;
@@ -629,6 +635,7 @@ disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => bo
 } | undefined;
 } | undefined;
 } | undefined;
+zebra?: boolean | undefined;
 } | {
 view: "gantt";
 dependencyGraph?: boolean | undefined;
@@ -705,6 +712,7 @@ disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => bo
 } | undefined;
 } | undefined;
 } | undefined;
+zebra?: boolean | undefined;
 } | {
 view: "tree-gantt";
 defaultTreeExpansion?: "root" | "branch" | "leaf" | undefined;
@@ -782,6 +790,7 @@ disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => bo
 } | undefined;
 } | undefined;
 } | undefined;
+zebra?: boolean | undefined;
 }>;
 connectionHandles: Ref<    {
 id: string;
@@ -1121,6 +1130,7 @@ disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => bo
 } | undefined;
 } | undefined;
 } | undefined;
+zebra?: boolean | undefined;
 } | {
 view: "tree";
 defaultTreeExpansion?: "root" | "branch" | "leaf" | undefined;
@@ -1197,6 +1207,7 @@ disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => bo
 } | undefined;
 } | undefined;
 } | undefined;
+zebra?: boolean | undefined;
 } | {
 view: "gantt";
 dependencyGraph?: boolean | undefined;
@@ -1273,6 +1284,7 @@ disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => bo
 } | undefined;
 } | undefined;
 } | undefined;
+zebra?: boolean | undefined;
 } | {
 view: "tree-gantt";
 defaultTreeExpansion?: "root" | "branch" | "leaf" | undefined;
@@ -1350,6 +1362,7 @@ disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => bo
 } | undefined;
 } | undefined;
 } | undefined;
+zebra?: boolean | undefined;
 }, TableConfig | {
 view?: "uncounted" | "list" | "list-expansion" | undefined;
 fullWidth?: boolean | undefined;
@@ -1425,6 +1438,7 @@ disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => bo
 } | undefined;
 } | undefined;
 } | undefined;
+zebra?: boolean | undefined;
 } | {
 view: "tree";
 defaultTreeExpansion?: "root" | "branch" | "leaf" | undefined;
@@ -1501,6 +1515,7 @@ disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => bo
 } | undefined;
 } | undefined;
 } | undefined;
+zebra?: boolean | undefined;
 } | {
 view: "gantt";
 dependencyGraph?: boolean | undefined;
@@ -1577,6 +1592,7 @@ disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => bo
 } | undefined;
 } | undefined;
 } | undefined;
+zebra?: boolean | undefined;
 } | {
 view: "tree-gantt";
 defaultTreeExpansion?: "root" | "branch" | "leaf" | undefined;
@@ -1654,6 +1670,7 @@ disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => bo
 } | undefined;
 } | undefined;
 } | undefined;
+zebra?: boolean | undefined;
 }>;
 connectionHandles: Ref<    {
 id: string;
@@ -1993,6 +2010,7 @@ disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => bo
 } | undefined;
 } | undefined;
 } | undefined;
+zebra?: boolean | undefined;
 } | {
 view: "tree";
 defaultTreeExpansion?: "root" | "branch" | "leaf" | undefined;
@@ -2069,6 +2087,7 @@ disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => bo
 } | undefined;
 } | undefined;
 } | undefined;
+zebra?: boolean | undefined;
 } | {
 view: "gantt";
 dependencyGraph?: boolean | undefined;
@@ -2145,6 +2164,7 @@ disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => bo
 } | undefined;
 } | undefined;
 } | undefined;
+zebra?: boolean | undefined;
 } | {
 view: "tree-gantt";
 defaultTreeExpansion?: "root" | "branch" | "leaf" | undefined;
@@ -2222,6 +2242,7 @@ disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => bo
 } | undefined;
 } | undefined;
 } | undefined;
+zebra?: boolean | undefined;
 }, TableConfig | {
 view?: "uncounted" | "list" | "list-expansion" | undefined;
 fullWidth?: boolean | undefined;
@@ -2297,6 +2318,7 @@ disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => bo
 } | undefined;
 } | undefined;
 } | undefined;
+zebra?: boolean | undefined;
 } | {
 view: "tree";
 defaultTreeExpansion?: "root" | "branch" | "leaf" | undefined;
@@ -2373,6 +2395,7 @@ disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => bo
 } | undefined;
 } | undefined;
 } | undefined;
+zebra?: boolean | undefined;
 } | {
 view: "gantt";
 dependencyGraph?: boolean | undefined;
@@ -2449,6 +2472,7 @@ disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => bo
 } | undefined;
 } | undefined;
 } | undefined;
+zebra?: boolean | undefined;
 } | {
 view: "tree-gantt";
 defaultTreeExpansion?: "root" | "branch" | "leaf" | undefined;
@@ -2526,6 +2550,7 @@ disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => bo
 } | undefined;
 } | undefined;
 } | undefined;
+zebra?: boolean | undefined;
 }>;
 connectionHandles: Ref<    {
 id: string;

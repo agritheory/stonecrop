@@ -13,7 +13,6 @@
 	border-top: 1px solid var(--sc-row-border-color);
 	border-bottom: 1px solid var(--sc-row-border-color);
 	display: flex;
-	background-color: white;
 	border-left: 4px solid var(--sc-row-border-color);
 	padding-left: 0.5ch !important;
 	padding-right: 0.5ch;

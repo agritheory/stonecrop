@@ -9,7 +9,7 @@
 
 body {
 	margin: 0;
-	background: #fff;
+	background: var(--sc-page-background);
 	font-family: var(--sc-font-family);
 	color: var(--sc-gray-80);
 }

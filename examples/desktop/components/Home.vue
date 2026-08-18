@@ -45,7 +45,7 @@ const schema = ref<ResolvedField[]>([
 .home-wrapper {
 	min-height: 100vh;
 	box-sizing: border-box; /* Include padding in height calculation */
-	background-color: #f9fafb;
+	background-color: var(--sc-page-background);
 	padding: 2rem;
 }
 
@@ -56,7 +56,7 @@ const schema = ref<ResolvedField[]>([
 
 .home-wrapper :deep(.view-header h1) {
 	margin: 0.5rem 0 0 0;
-	color: #1f2937;
+	color: var(--sc-gray-80);
 	font-size: 2rem;
 	font-weight: 700;
 }
@@ -68,7 +68,7 @@ const schema = ref<ResolvedField[]>([
 .home-wrapper :deep(.empty-state) {
 	text-align: center;
 	padding: 3rem 1rem;
-	color: #6b7280;
+	color: var(--sc-input-label-color);
 }
 
 .home-wrapper :deep(.empty-state p) {
@@ -78,7 +78,7 @@ const schema = ref<ResolvedField[]>([
 
 /* Table Styles for AForm */
 .home-wrapper :deep(.aform-table) {
-	background: white;
+	background: var(--sc-form-background);
 	border-radius: 0;
 	box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
 	overflow: hidden;
@@ -90,29 +90,29 @@ const schema = ref<ResolvedField[]>([
 }
 
 .home-wrapper :deep(.aform-table th) {
-	background-color: #f9fafb;
+	background-color: var(--sc-page-background);
 	padding: 0.75rem 1rem;
 	text-align: left;
 	font-weight: 600;
-	color: #374151;
-	border-bottom: 1px solid #e5e7eb;
+	color: var(--sc-cell-text-color);
+	border-bottom: 1px solid var(--sc-form-border);
 }
 
 .home-wrapper :deep(.aform-table td) {
 	padding: 0.75rem 1rem;
-	border-bottom: 1px solid #f3f4f6;
-	color: #374151;
+	border-bottom: 1px solid var(--sc-input-field-background);
+	color: var(--sc-cell-text-color);
 }
 
 .home-wrapper :deep(.aform-table tbody tr:hover) {
-	background-color: #f9fafb;
+	background-color: var(--sc-page-background);
 	cursor: pointer;
 }
 
 /* Button Styles */
 .home-wrapper :deep(.btn-primary) {
-	background: #3b82f6;
-	color: white;
+	background: var(--sc-primary-color);
+	color: var(--sc-primary-text-color);
 	border: none;
 	padding: 0.5rem 1rem;
 	border-radius: 0;
@@ -123,7 +123,7 @@ const schema = ref<ResolvedField[]>([
 }
 
 .home-wrapper :deep(.btn-primary:hover:not(:disabled)) {
-	background: #2563eb;
+	background: var(--sc-color-brand);
 	transform: translateY(-1px);
 	box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }

@@ -17,7 +17,7 @@
 	box-sizing: border-box;
 	position: relative;
 	overflow: hidden;
-	background: var(--sc-input-field-background, #fff);
+	background: var(--sc-input-field-background);
 }
 
 .aform-loading__label {

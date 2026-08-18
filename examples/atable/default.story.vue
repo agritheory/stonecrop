@@ -21,6 +21,10 @@
 				:config="readonly_table.config" />
 		</Variant>
 
+		<Variant title="zebra">
+			<ATable v-model:rows="zebra_table.rows" v-model:columns="zebra_table.columns" :config="zebra_table.config" />
+		</Variant>
+
 		<Variant title="full width">
 			<ATable
 				v-model:rows="full_width_table.rows"
@@ -214,6 +218,12 @@ const resizable_2 = reactive({
 	rows,
 	columns: [...columns].map(column => ({ ...column, resizable: true })),
 	config: { view: 'list' },
+})
+
+const zebra_table = reactive({
+	rows,
+	columns,
+	config: { view: 'list', zebra: true },
 })
 
 const full_width_table = reactive({
