@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
-import type { ModuleOptions } from '../../src/types'
+import type { GrafservRuntimeConfig, SchemaRuntimeConfig } from '../../src/types'
 
 // CRITICAL: Mock virtual modules BEFORE importing types or anything else
 vi.mock('#internal/grafserv/resolvers', () => ({
@@ -69,18 +69,24 @@ describe('Handler Functions', { tags: ['unit', 'nuxt', 'graphql'] }, () => {
 
 			// Virtual module is already mocked in setup.ts with new format
 			// This test verifies the handler can process resolvers
-			const options: ModuleOptions = {
+			// `resolversPath`, not `resolvers`: the module resolves the authored path at build time and
+			// the handler only ever sees the resolved one. Passing `resolvers` here left the resolver
+			// branch unentered, so the `objects` assertion below was matching an empty object.
+			const options: GrafservRuntimeConfig = {
 				type: 'schema',
 				schema: 'test.graphql',
-				resolvers: 'server/resolvers.ts',
+				resolversPath: '/test/project/server/resolvers.ts',
+				url: '/graphql/',
+				graphiql: false,
 			}
 
 			await getGrafservInstance(options)
 
-			// Verify that makeGrafastSchema was called with objects structure
+			// Assert the mocked resolver module actually arrived. `objects: expect.any(Object)` matched
+			// the empty `{}` the handler starts with, so it passed even when no resolver was loaded.
 			expect(makeGrafastSchema).toHaveBeenCalledWith(
 				expect.objectContaining({
-					objects: expect.any(Object),
+					objects: { Query: { plans: { hello: expect.any(Function) } } },
 				})
 			)
 		})
@@ -92,18 +98,24 @@ describe('Handler Functions', { tags: ['unit', 'nuxt', 'graphql'] }, () => {
 			await clearGrafservCache()
 
 			// Virtual module already provides new format in setup.ts
-			const options: ModuleOptions = {
+			// `resolversPath`, not `resolvers`: the module resolves the authored path at build time and
+			// the handler only ever sees the resolved one. Passing `resolvers` here left the resolver
+			// branch unentered, so the `objects` assertion below was matching an empty object.
+			const options: GrafservRuntimeConfig = {
 				type: 'schema',
 				schema: 'test.graphql',
-				resolvers: 'server/resolvers.ts',
+				resolversPath: '/test/project/server/resolvers.ts',
+				url: '/graphql/',
+				graphiql: false,
 			}
 
 			await getGrafservInstance(options)
 
-			// Verify schema was created with objects
+			// Assert the mocked resolver module actually arrived. `objects: expect.any(Object)` matched
+			// the empty `{}` the handler starts with, so it passed even when no resolver was loaded.
 			expect(makeGrafastSchema).toHaveBeenCalledWith(
 				expect.objectContaining({
-					objects: expect.any(Object),
+					objects: { Query: { plans: { hello: expect.any(Function) } } },
 				})
 			)
 		})
@@ -116,9 +128,11 @@ describe('Handler Functions', { tags: ['unit', 'nuxt', 'graphql'] }, () => {
 
 			await clearGrafservCache()
 
-			const options: ModuleOptions = {
+			const options: GrafservRuntimeConfig = {
 				type: 'schema',
 				schema: 'test.graphql',
+				url: '/graphql/',
+				graphiql: false,
 			}
 
 			// First call
@@ -136,9 +150,11 @@ describe('Handler Functions', { tags: ['unit', 'nuxt', 'graphql'] }, () => {
 
 			await clearGrafservCache()
 
-			const options: ModuleOptions = {
+			const options: GrafservRuntimeConfig = {
 				type: 'schema',
 				schema: 'test.graphql',
+				url: '/graphql/',
+				graphiql: false,
 			}
 
 			// First instance
@@ -153,30 +169,30 @@ describe('Handler Functions', { tags: ['unit', 'nuxt', 'graphql'] }, () => {
 			expect(grafserv).toHaveBeenCalledTimes(2)
 		})
 
-		it('should pass schema and preset to grafserv', async () => {
+		// Schema mode builds the schema itself and calls `grafserv({ schema })` — there is no preset to
+		// merge. Inline presets are unsupported by design (see PostGraphileConfig in src/types.ts), so
+		// this pins that grafserv receives the schema and nothing else is smuggled alongside it.
+		it('passes only the schema to grafserv in schema mode', async () => {
 			const { grafserv } = await import('grafserv/h3/v1')
 			const { getGrafservInstance, clearGrafservCache } = await import('../../src/runtime/handler')
 
 			await clearGrafservCache()
 
-			const options: ModuleOptions = {
+			const options: GrafservRuntimeConfig = {
 				type: 'schema',
 				schema: 'test.graphql',
-				preset: {
-					grafserv: {
-						websockets: true,
-					},
-				},
+				url: '/graphql/',
+				graphiql: false,
 			}
 
 			await getGrafservInstance(options)
 
-			// Note: grafserv only receives schema, not preset
 			expect(grafserv).toHaveBeenCalledWith(
 				expect.objectContaining({
 					schema: expect.anything(),
 				})
 			)
+			expect(vi.mocked(grafserv).mock.calls[0]?.[0]).not.toHaveProperty('preset')
 		})
 	})
 
@@ -300,9 +316,11 @@ describe('Handler Functions', { tags: ['unit', 'nuxt', 'graphql'] }, () => {
 
 			await clearGrafservCache()
 
-			const options: ModuleOptions = {
+			const options: GrafservRuntimeConfig = {
 				type: 'schema',
 				schema: 'test.graphql',
+				url: '/graphql/',
+				graphiql: false,
 			}
 
 			// Virtual middleware module is mocked in setup.ts
@@ -315,9 +333,11 @@ describe('Handler Functions', { tags: ['unit', 'nuxt', 'graphql'] }, () => {
 
 			await clearGrafservCache()
 
-			const options: ModuleOptions = {
+			const options: GrafservRuntimeConfig = {
 				type: 'schema',
 				schema: 'test.graphql',
+				url: '/graphql/',
+				graphiql: false,
 			}
 
 			// Should work with mocked middleware from setup.ts
@@ -334,9 +354,11 @@ describe('Handler Functions', { tags: ['unit', 'nuxt', 'graphql'] }, () => {
 			const mockSchema = { _type: 'MockSchema', _source: 'function' }
 			const schemaProvider = vi.fn(async () => mockSchema)
 
-			const options: ModuleOptions = {
+			const options: GrafservRuntimeConfig = {
 				type: 'schema',
-				schema: schemaProvider as unknown as ModuleOptions['schema'],
+				schema: schemaProvider as unknown as SchemaRuntimeConfig['schema'],
+				url: '/graphql/',
+				graphiql: false,
 			}
 
 			await getGrafservInstance(options)

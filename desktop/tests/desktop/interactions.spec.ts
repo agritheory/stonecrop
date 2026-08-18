@@ -95,7 +95,7 @@ describe('Desktop user interactions', { tags: ['component'] }, () => {
 	})
 
 	describe('click handler', () => {
-		it('handles "Edit | Delete" cell click to open a record', async () => {
+		it('handles an "Edit" cell click to open a record', async () => {
 			const registry = new Registry()
 			const stonecrop = new Stonecrop(registry)
 			const navigateFn = vi.fn()
@@ -136,7 +136,7 @@ describe('Desktop user interactions', { tags: ['component'] }, () => {
 			idCell.textContent = 'rec-1'
 			idCell.setAttribute('data-rowindex', '0')
 			const actionCell = row.insertCell()
-			actionCell.textContent = 'Edit | Delete'
+			actionCell.textContent = 'Edit'
 			div.element.appendChild(table)
 
 			const event = new MouseEvent('click', { bubbles: true })
@@ -191,27 +191,31 @@ describe('Desktop user interactions', { tags: ['component'] }, () => {
 			expect(navigateFn).toHaveBeenCalledWith(expect.objectContaining({ view: 'records', doctype: 'task' }))
 		})
 
-		it('handles "Delete" cell click and calls handleDelete', async () => {
+		it('ignores a data cell that merely contains the word "Edit"', async () => {
+			// The handler is bound to the whole desktop and used to substring-match cell text, so
+			// any cell whose *record data* contained an action word was treated as that action —
+			// a record titled "Delete old backups" popped a delete confirmation on click. Matching
+			// exactly is what closes that; the actions cell is now exactly "Edit".
 			const registry = new Registry()
 			const stonecrop = new Stonecrop(registry)
+			const navigateFn = vi.fn()
 
 			const doctype = buildDoctype('task', 'draft', {
-				draft: { on: { DELETE: 'deleted' } },
-				deleted: { type: 'final' },
+				draft: { on: { SUBMIT: 'submitted' } },
+				submitted: { type: 'final' },
 			})
 			registry.addDoctype(doctype)
-			stonecrop.addRecord('task', 'rec-1', { id: 'rec-1', title: 'My Task' })
+			stonecrop.addRecord('task', 'rec-1', { id: 'rec-1', title: 'Edit the onboarding docs' })
 
-			const confirmFn = vi.fn().mockResolvedValue(true)
 			const adapter: RouteAdapter = {
 				getCurrentDoctype: () => 'task',
 				getCurrentRecordId: () => '',
 				getCurrentView: () => 'records',
-				navigate: vi.fn(),
+				navigate: navigateFn,
 			}
 
 			const wrapper = mount(Desktop, {
-				props: { routeAdapter: adapter, confirmFn },
+				props: { routeAdapter: adapter },
 				global: {
 					plugins: [makeStonecropPlugin(registry, stonecrop)],
 					stubs: {
@@ -229,17 +233,15 @@ describe('Desktop user interactions', { tags: ['component'] }, () => {
 			const table = document.createElement('table')
 			const row = table.insertRow()
 			const idCell = row.insertCell()
-			idCell.textContent = 'rec-1'
 			idCell.setAttribute('data-rowindex', '0')
-			const actionCell = row.insertCell()
-			actionCell.textContent = 'Delete'
+			const titleCell = row.insertCell()
+			titleCell.textContent = 'Edit the onboarding docs'
 			div.element.appendChild(table)
 
-			const event = new MouseEvent('click', { bubbles: true })
-			actionCell.dispatchEvent(event)
+			titleCell.dispatchEvent(new MouseEvent('click', { bubbles: true }))
 			await nextTick()
 
-			expect(confirmFn).toHaveBeenCalled()
+			expect(navigateFn).not.toHaveBeenCalled()
 		})
 	})
 
@@ -299,7 +301,10 @@ describe('Desktop user interactions', { tags: ['component'] }, () => {
 			expect(navigateFn).toHaveBeenCalledWith(expect.objectContaining({ recordId: 'rec-2' }))
 		})
 
-		it('respects custom recordIdField prop', async () => {
+		// Edit must navigate to the key the record is stored under, or the record view opens on an
+		// HST path that does not exist. The declared `primaryKey` is what decides that key, and the
+		// surrogate `id` here must not win.
+		it('navigates by the declared primaryKey, not the surrogate id', async () => {
 			const registry = new Registry()
 			const stonecrop = new Stonecrop(registry)
 
@@ -310,10 +315,18 @@ describe('Desktop user interactions', { tags: ['component'] }, () => {
 					draft: { on: { SUBMIT: 'submitted' } },
 					submitted: { type: 'final' },
 				},
-				[{ kind: 'field' as const, fieldname: 'custom_id', label: 'Custom ID', component: 'ATextInput' }]
+				[
+					{
+						kind: 'field' as const,
+						fieldname: 'custom_id',
+						label: 'Custom ID',
+						component: 'ATextInput',
+						primaryKey: true,
+					},
+				]
 			)
 			registry.addDoctype(doctype)
-			stonecrop.addRecord('task', 'rec-1', { id: 'rec-1', custom_id: 'custom-123', title: 'My Task' })
+			stonecrop.addRecord('task', 'custom-123', { id: 'rec-1', custom_id: 'custom-123', title: 'My Task' })
 
 			const navigateFn = vi.fn()
 			const adapter: RouteAdapter = {
@@ -324,7 +337,7 @@ describe('Desktop user interactions', { tags: ['component'] }, () => {
 			}
 
 			const wrapper = mount(Desktop, {
-				props: { routeAdapter: adapter, recordIdField: 'custom_id' },
+				props: { routeAdapter: adapter },
 				global: {
 					plugins: [makeStonecropPlugin(registry, stonecrop)],
 					stubs: {
@@ -455,76 +468,5 @@ describe('Desktop user interactions', { tags: ['component'] }, () => {
 
 			expect(navigateFn).not.toHaveBeenCalled()
 		})
-	})
-})
-
-describe('Desktop – handleDelete edge cases', { tags: ['component'] }, () => {
-	it('returns early when no recordId is available', async () => {
-		const registry = new Registry()
-		const stonecrop = new Stonecrop(registry)
-
-		const adapter: RouteAdapter = {
-			getCurrentDoctype: () => 'task',
-			getCurrentRecordId: () => '',
-			getCurrentView: () => 'records',
-			navigate: vi.fn(),
-		}
-
-		const wrapper = mount(Desktop, {
-			props: { routeAdapter: adapter },
-			global: {
-				plugins: [makeStonecropPlugin(registry, stonecrop)],
-				stubs: { AForm: true, ActionSet: true, SheetNav: true, CommandPalette: true },
-			},
-		})
-
-		await nextTick()
-
-		const methods = (wrapper.vm as any).$.provides?.desktopMethods
-		expect(methods?.handleDelete).toBeDefined()
-		await methods.handleDelete()
-		await nextTick()
-		expect(wrapper.emitted('action')).toBeFalsy()
-	})
-
-	it('uses native confirm when no confirmFn is provided', async () => {
-		const registry = new Registry()
-		const stonecrop = new Stonecrop(registry)
-
-		const doctype = buildDoctype('task', 'draft', {
-			draft: { on: { DELETE: 'deleted' } },
-			deleted: { type: 'final' },
-		})
-		registry.addDoctype(doctype)
-		stonecrop.addRecord('task', 'rec-1', { id: 'rec-1', title: 'T' })
-
-		const adapter: RouteAdapter = {
-			getCurrentDoctype: () => 'task',
-			getCurrentRecordId: () => 'rec-1',
-			getCurrentView: () => 'record',
-			navigate: vi.fn(),
-		}
-
-		// Stub window.confirm to return false
-		const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false)
-
-		const wrapper = mount(Desktop, {
-			props: { routeAdapter: adapter },
-			global: {
-				plugins: [makeStonecropPlugin(registry, stonecrop)],
-				stubs: { AForm: true, ActionSet: true, SheetNav: true, CommandPalette: true },
-			},
-		})
-
-		await nextTick()
-
-		const methods = (wrapper.vm as any).$.provides?.desktopMethods
-		expect(methods?.handleDelete).toBeDefined()
-		await methods.handleDelete('rec-1')
-		await nextTick()
-		expect(confirmSpy).toHaveBeenCalled()
-		expect(wrapper.emitted('action')).toBeFalsy()
-
-		confirmSpy.mockRestore()
 	})
 })

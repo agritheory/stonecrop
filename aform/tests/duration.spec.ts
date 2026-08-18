@@ -1,7 +1,10 @@
 import { describe, it, expect } from 'vitest'
-import { mount } from '@vue/test-utils'
+import { mount, flushPromises } from '@vue/test-utils'
 import { nextTick, defineComponent } from 'vue'
 import ADuration from '../src/components/form/ADuration.vue'
+import ADateSelection from '../src/components/form/ADateSelection.vue'
+import ADatePicker from '../src/components/form/ADatePicker.vue'
+import ADateTimeInput from '../src/components/form/ADateTimeInput.vue'
 
 const ADateSelectionStub = defineComponent({
 	name: 'ADateSelection',
@@ -339,6 +342,20 @@ describe('ADuration', () => {
 			await nextTick()
 
 			expect(emitted[emitted.length - 1]).toBe(2 * 60 * 60 * 1000)
+		})
+
+		// Mounted against the REAL ADateSelection, not the stub above: the defect only exists in the
+		// wiring the stub replaces. Both ADateTimeInput children announce their start value on mount,
+		// ADateSelection turns that pair into a range, and ADuration wrote it — so simply rendering
+		// the field emitted a duration of 0 that the user never entered.
+		it('does not write the model on mount', async () => {
+			const wrapper = mount(ADuration, {
+				global: { components: { ADateSelection, ADatePicker, ADateTimeInput } },
+			})
+
+			await flushPromises()
+
+			expect(wrapper.emitted('update:modelValue')).toBeUndefined()
 		})
 	})
 })

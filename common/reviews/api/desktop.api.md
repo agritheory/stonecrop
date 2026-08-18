@@ -4,6 +4,7 @@
 
 ```ts
 
+import { ActionEventPayload } from '@stonecrop/stonecrop';
 import ActionSet from './components/ActionSet.vue';
 import CommandPalette from './components/CommandPalette.vue';
 import Desktop from './components/Desktop.vue';
@@ -13,13 +14,7 @@ import SheetNav from './components/SheetNav.vue';
 // @public
 export type ActionElements = ButtonElement | DropdownElement;
 
-// @public
-export type ActionEventPayload = {
-    name: string;
-    doctype: string;
-    recordId: string;
-    data: Record<string, any>;
-};
+export { ActionEventPayload }
 
 export { ActionSet }
 

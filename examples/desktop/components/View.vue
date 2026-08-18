@@ -3,8 +3,6 @@
 		<Desktop
 			:available-doctypes="availableDoctypes"
 			:show-debug="showDebug"
-			:confirm-fn="confirmFn"
-			record-id-field="rowId"
 			@action="handleDesktopAction"
 			@navigate="handleDesktopNavigate"
 			@record:open="handleRecordOpen"
@@ -63,10 +61,6 @@ function toggleOperationLog() {
 	showOperationLog.value = !showOperationLog.value
 }
 
-function confirmFn(message: string): boolean {
-	return window.confirm(message)
-}
-
 /**
  * Handle FSM transition actions emitted by Desktop.
  *
@@ -78,6 +72,13 @@ function confirmFn(message: string): boolean {
  */
 async function handleDesktopAction(payload: ActionEventPayload) {
 	if (!stonecrop.value) return
+
+	// 0. Confirm destructive actions. This is the host's call, not Desktop's: only the app
+	// knows which of its actions are destructive, and Desktop deliberately blesses no action
+	// name. It used to own a `confirmFn` prop that it fired for a hardcoded `DELETE`.
+	if (payload.name === 'DELETE' && !window.confirm('Are you sure you want to delete this record?')) {
+		return
+	}
 
 	// 1. Persist form field changes into HST before triggering the transition
 	const existing = stonecrop.value.getRecordById(payload.doctype, payload.recordId)
@@ -104,11 +105,12 @@ async function handleDesktopAction(payload: ActionEventPayload) {
 		return
 	}
 
-	// 4. Sync response back into HST
+	// 4. Report the outcome. The store is NOT written here: `dispatchAction` already filed the
+	// returned record under the identity the server settled on. Writing it again under
+	// `payload.recordId` would file a created record under the draft segment too, leaving a
+	// phantom row named `new` in the list view — which is what this handler used to do.
 	switch (payload.name) {
 		case 'SAVE': {
-			const saved = result.data as Record<string, unknown> | null
-			if (saved) stonecrop.value.addRecord(payload.doctype, payload.recordId, saved)
 			addNotification(`${payload.doctype} record ${payload.recordId} saved`, 'success')
 			break
 		}
@@ -131,27 +133,19 @@ function handleRecordOpen(payload: RecordOpenEventPayload) {
 }
 
 /**
- * Handle load-records event - Desktop needs records for a list view.
- * Desktop has no self-fetch for list views, so the host must populate HST here.
+ * Both load events are notifications, not fetch requests. Stonecrop reads through the registered
+ * RestDataClient for lists and records alike, so a handler here is only for host-side side effects
+ * — analytics, breadcrumb prefetch, a progress indicator.
+ *
+ * This app used to call `stonecrop.getRecords()` from the list handler. That was the closest any
+ * host came to the right shape, and it is now what Desktop does for every host.
  */
-async function handleLoadRecords(payload: LoadRecordsEventPayload) {
-	if (!stonecrop.value) return
-	try {
-		const doctype = stonecrop.value.registry.getDoctype(payload.doctype)
-		if (doctype) await stonecrop.value.getRecords(doctype)
-	} catch (error) {
-		addNotification(`Failed to load ${payload.doctype} records`, 'error')
-		console.error('[example] load-records failed', error)
-	}
+function handleLoadRecords(payload: LoadRecordsEventPayload) {
+	console.debug('[example] load-records', payload)
 }
 
-/**
- * Handle load-record event - Desktop already self-fetches missing records when a
- * client is configured (see Desktop.vue loadRecordData). This handler is reserved
- * for host-side side effects (analytics, breadcrumb prefetch, etc.).
- */
-function handleLoadRecord(_payload: LoadRecordEventPayload) {
-	// no-op — Desktop handles the fetch via its internal loadRecordData()
+function handleLoadRecord(payload: LoadRecordEventPayload) {
+	console.debug('[example] load-record', payload)
 }
 </script>
 

@@ -2,6 +2,78 @@
   "name": "@stonecrop/graphql-client",
   "entries": [
     {
+      "version": "0.23.0",
+      "tag": "@stonecrop/graphql-client_v0.23.0",
+      "date": "Tue, 18 Aug 2026 09:16:50 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.22.0",
+      "tag": "@stonecrop/graphql-client_v0.22.0",
+      "date": "Mon, 17 Aug 2026 19:46:36 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.21.0",
+      "tag": "@stonecrop/graphql-client_v0.21.0",
+      "date": "Mon, 17 Aug 2026 19:08:23 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Add getNativeRecord and getNativeRecords, building PostGraphile-native queries with nested link selections that return { id, displayText } objects."
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.20.0",
+      "tag": "@stonecrop/graphql-client_v0.20.0",
+      "date": "Mon, 17 Aug 2026 18:41:19 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.19.0",
+      "tag": "@stonecrop/graphql-client_v0.19.0",
+      "date": "Mon, 17 Aug 2026 12:46:25 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.18.0",
+      "tag": "@stonecrop/graphql-client_v0.18.0",
+      "date": "Fri, 14 Aug 2026 08:05:46 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.17.0",
+      "tag": "@stonecrop/graphql-client_v0.17.0",
+      "date": "Tue, 11 Aug 2026 12:49:04 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Return the page object from getRecords rather than selecting count over the wire and discarding it, and forward includeTotal so a caller can ask for a total."
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.16.6",
+      "tag": "@stonecrop/graphql-client_v0.16.6",
+      "date": "Tue, 04 Aug 2026 12:14:33 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.16.5",
+      "tag": "@stonecrop/graphql-client_v0.16.5",
+      "date": "Mon, 03 Aug 2026 11:12:57 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Select the seven published meta fields the queries omitted (primaryKey, computed, language, nextState, stateless, selfTransition, clientHandler), so client-handler dispatch and available-command filtering work over the wire."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.16.4",
       "tag": "@stonecrop/graphql-client_v0.16.4",
       "date": "Tue, 28 Jul 2026 09:58:37 GMT",

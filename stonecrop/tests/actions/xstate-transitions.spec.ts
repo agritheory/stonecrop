@@ -12,6 +12,21 @@ import Doctype from '../../src/doctype'
 import Registry from '../../src/registry'
 import { createHST } from '../../src/stores/hst'
 
+/**
+ * Register field triggers the way an application does now: imperatively, on the engine.
+ *
+ * A doctype used to carry this map itself and `registry.addDoctype` forwarded it here. That
+ * declarative route is gone — it could cross neither the Zod gate nor the SDL, so it only ever
+ * worked for a host bypassing both. The engine and everything under it are unchanged; only who
+ * calls `registerDoctypeActions` moved. Registering under name AND slug mirrors what `addDoctype`
+ * did, so these tests drive the same engine state as before.
+ */
+const registerTriggers = (doctype: Doctype, actions: Map<string, string[]>) => {
+	const engine = getGlobalTriggerEngine()
+	engine.registerDoctypeActions(doctype.doctype, actions)
+	if (doctype.slug !== doctype.doctype) engine.registerDoctypeActions(doctype.slug, actions)
+}
+
 describe('XState Transition Integration', { tags: ['unit'] }, () => {
 	let registry: Registry
 
@@ -39,9 +54,10 @@ describe('XState Transition Integration', { tags: ['unit'] }, () => {
 				first_name: ['nameFn'],
 			})
 
-			const doctype = new Doctype('TestDoc', List(), {}, actions)
+			const doctype = new Doctype('TestDoc', List(), {})
 
 			registry.addDoctype(doctype)
+			registerTriggers(doctype, actions)
 
 			const engine = getGlobalTriggerEngine()
 			// Registered under both doctype.doctype and doctype.slug
@@ -64,10 +80,11 @@ describe('XState Transition Integration', { tags: ['unit'] }, () => {
 		})
 
 		it('should handle mixed case and underscores correctly', () => {
-			const doctype = new Doctype(
-				'TestDoc',
-				List(),
-				{},
+			const doctype = new Doctype('TestDoc', List(), {})
+
+			registry.addDoctype(doctype)
+			registerTriggers(
+				doctype,
 				Map({
 					SAVE_DRAFT: ['saveDraftFn'], // Uppercase with underscore = transition
 					CREATE_NEW: ['createFn'], // Uppercase with underscore = transition
@@ -76,8 +93,6 @@ describe('XState Transition Integration', { tags: ['unit'] }, () => {
 					'user.email': ['emailFn'], // Dot notation = field trigger
 				})
 			)
-
-			registry.addDoctype(doctype)
 
 			const engine = getGlobalTriggerEngine()
 			const transitions = (engine as any).doctypeTransitions.get('TestDoc')
@@ -104,16 +119,15 @@ describe('XState Transition Integration', { tags: ['unit'] }, () => {
 				transitionResults.push(context)
 			})
 
-			const doctype = new Doctype(
-				'Todo',
-				List<DoctypeField>(),
-				{},
+			const doctype = new Doctype('Todo', List<DoctypeField>(), {})
+
+			registry.addDoctype(doctype)
+			registerTriggers(
+				doctype,
 				Map({
 					SAVE: ['saveAction'],
 				})
 			)
-
-			registry.addDoctype(doctype)
 
 			// Trigger the transition
 			const results = await triggerTransition('Todo', 'SAVE', {
@@ -151,16 +165,15 @@ describe('XState Transition Integration', { tags: ['unit'] }, () => {
 				executionOrder.push('action3')
 			})
 
-			const doctype = new Doctype(
-				'Todo',
-				List<DoctypeField>(),
-				{},
+			const doctype = new Doctype('Todo', List<DoctypeField>(), {})
+
+			registry.addDoctype(doctype)
+			registerTriggers(
+				doctype,
 				Map({
 					VALIDATE: ['action1', 'action2', 'action3'],
 				})
 			)
-
-			registry.addDoctype(doctype)
 
 			await triggerTransition('Todo', 'VALIDATE')
 
@@ -183,16 +196,15 @@ describe('XState Transition Integration', { tags: ['unit'] }, () => {
 				executionOrder.push('afterFail')
 			})
 
-			const doctype = new Doctype(
-				'Todo',
-				List<DoctypeField>(),
-				{},
+			const doctype = new Doctype('Todo', List<DoctypeField>(), {})
+
+			registry.addDoctype(doctype)
+			registerTriggers(
+				doctype,
 				Map({
 					SUBMIT: ['successAction', 'failAction', 'afterFailAction'],
 				})
 			)
-
-			registry.addDoctype(doctype)
 
 			const results = await triggerTransition('Todo', 'SUBMIT')
 
@@ -211,17 +223,16 @@ describe('XState Transition Integration', { tags: ['unit'] }, () => {
 				sharedActionCalls.push(`called-${context.doctype}`)
 			})
 
-			const doctype = new Doctype(
-				'Todo',
-				List<DoctypeField>(),
-				{},
+			const doctype = new Doctype('Todo', List<DoctypeField>(), {})
+
+			registry.addDoctype(doctype)
+			registerTriggers(
+				doctype,
 				Map({
 					SAVE: ['sharedAction'], // Used in transition
 					title: ['sharedAction'], // Used in field trigger
 				})
 			)
-
-			registry.addDoctype(doctype)
 
 			// Should work for transition
 			await triggerTransition('Todo', 'SAVE')
@@ -237,16 +248,15 @@ describe('XState Transition Integration', { tags: ['unit'] }, () => {
 				transitionCalls.push(`${context.transition}-${context.doctype}-${context.recordId}`)
 			})
 
-			const doctype = new Doctype(
-				'Task',
-				List<DoctypeField>(),
-				{},
+			const doctype = new Doctype('Task', List<DoctypeField>(), {})
+
+			registry.addDoctype(doctype)
+			registerTriggers(
+				doctype,
 				Map({
 					SAVE: ['saveDoc'],
 				})
 			)
-
-			registry.addDoctype(doctype)
 
 			// Create HST store
 			const data = {
@@ -277,16 +287,15 @@ describe('XState Transition Integration', { tags: ['unit'] }, () => {
 				capturedContext = context
 			})
 
-			const doctype = new Doctype(
-				'Todo',
-				List<DoctypeField>(),
-				{},
+			const doctype = new Doctype('Todo', List<DoctypeField>(), {})
+
+			registry.addDoctype(doctype)
+			registerTriggers(
+				doctype,
 				Map({
 					SUBMIT: ['captureContext'],
 				})
 			)
-
-			registry.addDoctype(doctype)
 
 			const data = {
 				Todo: {
@@ -315,7 +324,7 @@ describe('XState Transition Integration', { tags: ['unit'] }, () => {
 
 	describe('Error Handling', () => {
 		it('should handle missing transition actions gracefully', async () => {
-			const doctype = new Doctype('Todo', List(), {}, Map({}))
+			const doctype = new Doctype('Todo', List(), {})
 			registry.addDoctype(doctype)
 
 			// Try to trigger non-existent transition
@@ -325,16 +334,15 @@ describe('XState Transition Integration', { tags: ['unit'] }, () => {
 		})
 
 		it('should handle unregistered transition action functions', async () => {
-			const doctype = new Doctype(
-				'Todo',
-				List<DoctypeField>(),
-				{},
+			const doctype = new Doctype('Todo', List<DoctypeField>(), {})
+
+			registry.addDoctype(doctype)
+			registerTriggers(
+				doctype,
 				Map({
 					SAVE: ['unregisteredAction'],
 				})
 			)
-
-			registry.addDoctype(doctype)
 
 			const results = await triggerTransition('Todo', 'SAVE')
 
@@ -357,17 +365,16 @@ describe('XState Transition Integration', { tags: ['unit'] }, () => {
 				throw new Error('Intentional failure')
 			})
 
-			const doctype = new Doctype(
-				'Todo',
-				List(),
-				{},
+			const doctype = new Doctype('Todo', List(), {})
+
+			// Register directly with engine
+			registry.addDoctype(doctype)
+			registerTriggers(
+				doctype,
 				Map({
 					CANCEL: ['failingAction'],
 				})
 			)
-
-			// Register directly with engine
-			registry.addDoctype(doctype)
 
 			await triggerTransition('Todo', 'CANCEL')
 
@@ -400,10 +407,11 @@ describe('XState Transition Integration', { tags: ['unit'] }, () => {
 				workflowLog.push(`cancel:${ctx.currentState}->${ctx.targetState}`)
 			})
 
-			const doctype = new Doctype(
-				'Document',
-				List<DoctypeField>(),
-				{},
+			const doctype = new Doctype('Document', List<DoctypeField>(), {})
+
+			registry.addDoctype(doctype)
+			registerTriggers(
+				doctype,
 				Map({
 					VALIDATE: ['validateData'],
 					SAVE: ['validateData', 'saveData'],
@@ -411,8 +419,6 @@ describe('XState Transition Integration', { tags: ['unit'] }, () => {
 					CANCEL: ['cancelData'],
 				})
 			)
-
-			registry.addDoctype(doctype)
 
 			// Simulate workflow: create -> validate -> save -> submit
 			await triggerTransition('Document', 'VALIDATE', {

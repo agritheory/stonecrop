@@ -45,7 +45,13 @@
 			//    * will restore these folders from the cache.  The strings are folder names under the project root folder.
 			//    * These folders should not be tracked by Git.  They must not contain symlinks.
 			//    */
-			"outputFolderNames": [".nuxt", "dist"]
+			// `playground/.nuxt` must be listed even though it is nested. `dev:prepare` runs
+			// `nuxi prepare playground`, and both tsconfig.src.json and tsconfig.test.json extend
+			// the tsconfig it generates there. A cache hit skips the script entirely and restores
+			// only what is listed here, so omitting it left `test:types` with an unresolvable
+			// `extends` — which reports TS5083 and then compiles with DEFAULT options, burying the
+			// real cause under ~290 lines of third-party .d.ts errors that skipLibCheck had hidden.
+			"outputFolderNames": [".nuxt", "dist", "playground/.nuxt"]
 			//
 			//   /**
 			//    * Specify a list of glob (minimatch) paths (absolute or relative) pointing to files

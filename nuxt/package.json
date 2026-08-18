@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/nuxt",
-	"version": "0.16.4",
+	"version": "0.23.0",
 	"description": "Nuxt module for Stonecrop",
 	"repository": {
 		"type": "git",
@@ -53,7 +53,7 @@
 		"prepublish": "rushx dev:prepare && nuxt-module-build build",
 		"test": "vitest run",
 		"test:coverage": "vitest run --coverage.enabled --coverage.provider=istanbul",
-		"test:types": "vue-tsc --noEmit -p tsconfig.runtime.json && cd playground && vue-tsc --noEmit && cd ../fullstack && vue-tsc --noEmit",
+		"test:types": "vue-tsc --noEmit -p tsconfig.runtime.json && vue-tsc --noEmit -p tsconfig.templates-app.json && vue-tsc --noEmit -p tsconfig.templates-server.json && cd playground && vue-tsc --noEmit && cd ../fullstack && vue-tsc --noEmit && vue-tsc --noEmit -p server/tsconfig.json",
 		"test:ui": "vitest --ui",
 		"test:watch": "vitest watch"
 	},

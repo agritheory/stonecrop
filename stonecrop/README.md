@@ -29,8 +29,8 @@ app.use(Stonecrop, {
   // Run `onRouterInitialized` once the router is ready (defaults to false).
   autoInitializeRouter: true,
 
-  // Lazy-load doctype metadata from your API given the current route context.
-  // routeContext = { path, segments } — adapt segments to your doctype naming.
+  // Lazy-load doctype metadata from your API. Called with the doctype slug you name in
+  // `useStonecrop({ doctype: 'task' })`, as { path: '/task', segments: ['task'] }.
   getMeta: async ({ segments }) => {
     return await fetchDoctypeMeta(segments[0])
   },
@@ -50,13 +50,22 @@ app.use(Stonecrop, {
 
 ### Accessing Stonecrop Outside Vue Components
 
-Inside a component, use `useStonecrop()`. Outside a component (e.g., workflow action handlers, utilities), use `getStonecrop()`:
+Inside a component, use `useStonecrop()`. Outside a component (e.g., workflow action handlers, utilities), keep the instance the plugin hands you at install time — it is passed to `onRouterInitialized` along with the Registry:
 
 ```typescript
-import { getStonecrop } from '@stonecrop/stonecrop'
+import StonecropPlugin, { type Stonecrop } from '@stonecrop/stonecrop'
+
+export let stonecrop: Stonecrop | undefined
+
+app.use(StonecropPlugin, {
+  router,
+  autoInitializeRouter: true,
+  onRouterInitialized: (_registry, instance) => {
+    stonecrop = instance
+  },
+})
 
 // In a workflow action handler or non-component utility:
-const stonecrop = getStonecrop()
 if (stonecrop) {
   const payload = stonecrop.collectRecordPayload(doctype, recordId)
   // ...
@@ -89,8 +98,8 @@ function buildMetaMap(registry: Registry): Map<string, DoctypeMeta> {
 
 | Option                 | Type                                                 | Description                                                                                   |
 | ---------------------- | ---------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| `router`               | `Router`                                             | Vue Router instance. Required for route-based doctype resolution.                             |
-| `getMeta`              | `(ctx: RouteContext) => Doctype \| Promise<Doctype>` | Lazy-loads doctype metadata for the current route. `ctx` has `path` and `segments`.           |
+| `router`               | `Router`                                             | Vue Router instance. Used to register a route per doctype, and by the desktop shell.          |
+| `getMeta`              | `(ctx: RouteContext) => Doctype \| Promise<Doctype>` | Lazy-loads metadata for a named doctype slug. `ctx` has `path` and `segments`.                |
 | `components`           | `Record<string, Component>`                          | Additional Vue components to register globally.                                               |
 | `autoInitializeRouter` | `boolean`                                            | Call `onRouterInitialized` automatically after mount. Default: `false`.                       |
 | `onRouterInitialized`  | `(registry, stonecrop) => void`                      | Callback invoked after plugin install + mount. Receives the Registry and Stonecrop instances. |
@@ -107,7 +116,6 @@ import {
   Registry,        // Doctype registry (singleton)
   Doctype,         // Doctype definition class
   useStonecrop,    // Vue composable — primary integration point
-  getStonecrop,    // Access singleton outside Vue components
   HST,             // HST store class
   createHST,       // HST factory function
 } from '@stonecrop/stonecrop'

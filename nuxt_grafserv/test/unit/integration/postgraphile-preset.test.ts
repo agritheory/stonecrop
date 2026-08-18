@@ -1,7 +1,16 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { GraphQLSchema, GraphQLObjectType, GraphQLString } from 'graphql'
 
-import type { PostGraphileConfig, SchemaConfig } from '../../../src/types'
+import type { PostGraphileRuntimeConfig, SchemaRuntimeConfig } from '../../../src/types'
+
+/**
+ * Read `schema` off a grafserv instance.
+ *
+ * `getGrafservInstance` is typed against the real `GrafservBase`, whose `schema` is protected, but
+ * the mock above returns a plain object carrying it. This reads the mock's actual shape rather than
+ * reaching through the class's access modifier.
+ */
+const servSchema = (instance: unknown): unknown => (instance as { schema: unknown }).schema
 
 // NOTE: `postgraphile` and `#build/grafserv-preset` are deliberately NOT mocked here. Neither is
 // imported by src/runtime/handler.ts — `postgraphile` appears only inside the virtual-module
@@ -40,7 +49,7 @@ describe('PostGraphile Preset Integration', { tags: ['e2e', 'nuxt', 'graphql'] }
 	})
 
 	describe('PostGraphileConfig', () => {
-		const postgraphileConfig: PostGraphileConfig = { type: 'postgraphile' }
+		const postgraphileConfig: PostGraphileRuntimeConfig = { type: 'postgraphile', url: '/graphql/', graphiql: false }
 
 		it('builds the grafserv instance via pgl.createServ for postgraphile type', async () => {
 			const { getGrafservInstance, pgl, mockPglSchema } = await loadFreshHandler()
@@ -51,8 +60,8 @@ describe('PostGraphile Preset Integration', { tags: ['e2e', 'nuxt', 'graphql'] }
 			// withPgClient/pgSettings/plugin middleware, and the reason the handler does not build
 			// the schema itself.
 			expect(pgl.createServ).toHaveBeenCalledOnce()
-			expect(pgl.createServ.mock.calls[0][0]).toBeTypeOf('function')
-			expect(instance.schema).toBe(mockPglSchema)
+			expect(pgl.createServ.mock.calls[0]?.[0]).toBeTypeOf('function')
+			expect(servSchema(instance)).toBe(mockPglSchema)
 		})
 
 		it('throws a helpful error when the postgraphile package is missing', async () => {
@@ -108,9 +117,11 @@ describe('PostGraphile Preset Integration', { tags: ['e2e', 'nuxt', 'graphql'] }
 
 			const schemaProvider = vi.fn(() => Promise.resolve(mockSchema))
 
-			const config: SchemaConfig = {
+			const config: SchemaRuntimeConfig = {
 				type: 'schema',
 				schema: schemaProvider,
+				url: '/graphql/',
+				graphiql: false,
 			}
 
 			const instance = await getGrafservInstance(config)
@@ -120,7 +131,7 @@ describe('PostGraphile Preset Integration', { tags: ['e2e', 'nuxt', 'graphql'] }
 
 			// Verify grafserv was created with the schema
 			expect(instance).toBeDefined()
-			expect(instance.schema).toBe(mockSchema)
+			expect(servSchema(instance)).toBe(mockSchema)
 		})
 	})
 
@@ -128,7 +139,11 @@ describe('PostGraphile Preset Integration', { tags: ['e2e', 'nuxt', 'graphql'] }
 		it('should handle postgraphile type correctly', async () => {
 			const { getGrafservInstance } = await loadFreshHandler()
 
-			const instance = await getGrafservInstance({ type: 'postgraphile' } as PostGraphileConfig)
+			const instance = await getGrafservInstance({
+				type: 'postgraphile',
+				url: '/graphql/',
+				graphiql: false,
+			} as PostGraphileRuntimeConfig)
 
 			expect(instance).toBeDefined()
 			expect(instance.handleGraphQLEvent).toBeDefined()
@@ -149,9 +164,11 @@ describe('PostGraphile Preset Integration', { tags: ['e2e', 'nuxt', 'graphql'] }
 				}),
 			})
 
-			const config: SchemaConfig = {
+			const config: SchemaRuntimeConfig = {
 				type: 'schema',
 				schema: () => mockSchema,
+				url: '/graphql/',
+				graphiql: false,
 			}
 
 			const instance = await getGrafservInstance(config)
@@ -178,13 +195,17 @@ describe('PostGraphile Preset Integration', { tags: ['e2e', 'nuxt', 'graphql'] }
 			const { getGrafservInstance, mockPglSchema } = await loadFreshHandler()
 			const { grafserv } = await import('grafserv/h3/v1')
 
-			await getGrafservInstance({ type: 'postgraphile' } as PostGraphileConfig)
+			await getGrafservInstance({
+				type: 'postgraphile',
+				url: '/graphql/',
+				graphiql: false,
+			} as PostGraphileRuntimeConfig)
 
 			// The handler hands grafserv to createServ; postgraphile is what calls it, with both the
 			// resolved preset and the schema it built.
 			expect(grafserv).toHaveBeenCalledOnce()
-			expect(vi.mocked(grafserv).mock.calls[0][0]).toMatchObject({ schema: mockPglSchema })
-			expect(vi.mocked(grafserv).mock.calls[0][0]).toHaveProperty('preset')
+			expect(vi.mocked(grafserv).mock.calls[0]?.[0]).toMatchObject({ schema: mockPglSchema })
+			expect(vi.mocked(grafserv).mock.calls[0]?.[0]).toHaveProperty('preset')
 		})
 	})
 })

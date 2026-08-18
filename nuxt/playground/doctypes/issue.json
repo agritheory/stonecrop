@@ -4,6 +4,7 @@
 	"fields": [
 		{
 			"fieldname": "subject",
+			"primaryKey": true,
 			"label": "Subject",
 			"component": "ATextInput",
 			"required": true

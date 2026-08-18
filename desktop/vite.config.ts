@@ -17,7 +17,12 @@ export default defineConfig({
 		rollupOptions: {
 			// Pinia must stay external so this package shares the host app's single Pinia instance
 			// (bundling it gave Desktop its own never-activated Pinia — the field-validation bug).
-			external: ['vue', 'pinia', /^@stonecrop\//],
+			// vue-router is listed pre-emptively and is inert today: nothing under src/ imports it,
+			// because Desktop routes through the `routeAdapter` prop instead. If that ever changes,
+			// this is what makes the mistake loud (an unresolved import) rather than silent (a
+			// second copy of the router bundled in, injecting against its own keys — the Pinia bug
+			// again). It is not a peerDependency, because this package genuinely does not need one.
+			external: ['vue', 'pinia', 'vue-router', /^@stonecrop\//],
 			output: {
 				globals: {
 					vue: 'Vue',

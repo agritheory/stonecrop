@@ -1,5 +1,4 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { Map } from 'immutable'
 
 import Doctype from '../../src/doctype.js'
 import Registry from '../../src/registry.js'
@@ -41,7 +40,7 @@ describe('Stonecrop Stores', { tags: ['unit'] }, () => {
 	})
 
 	describe('HST singleton', () => {
-		const mockDoctype = new Doctype('Task', undefined, undefined, Map())
+		const mockDoctype = new Doctype('Task', undefined, undefined)
 
 		beforeEach(() => {
 			registry.addDoctype(mockDoctype)

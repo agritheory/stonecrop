@@ -1,6 +1,80 @@
 # Change Log - @stonecrop/graphql-middleware
 
-This log was last generated on Tue, 28 Jul 2026 09:58:37 GMT and should not be manually modified.
+This log was last generated on Tue, 18 Aug 2026 09:16:50 GMT and should not be manually modified.
+
+## 0.23.0
+Tue, 18 Aug 2026 09:16:50 GMT
+
+_Version update only_
+
+## 0.22.0
+Mon, 17 Aug 2026 19:46:36 GMT
+
+_Version update only_
+
+## 0.21.0
+Mon, 17 Aug 2026 19:08:23 GMT
+
+### Minor changes
+
+- Remove server-side link display enrichment; stonecropRecord and stonecropRecords again return scalar FK values for inline links.
+
+## 0.20.0
+Mon, 17 Aug 2026 18:41:19 GMT
+
+_Version update only_
+
+## 0.19.0
+Mon, 17 Aug 2026 12:46:25 GMT
+
+### Minor changes
+
+- Include a link's display text alongside its id in record payloads.
+
+## 0.18.0
+Fri, 14 Aug 2026 08:05:46 GMT
+
+### Minor changes
+
+- `includeNested: true` now expands lazy links as the name-list form already did, instead of admitting them and silently dropping each one.
+- Schema build now refuses a one-side link bound to a field with no database column of its own, which previously failed the whole record read on a missing column at runtime.
+- Schema build now refuses a link that binds to nothing — a many-side link with no `backlink`, or a one-side link whose `fieldname ?? key` names no declared field — and the one-side fetch path now honours that same key fallback.
+- Many-side link rows are now capped by defaultRecordLimit instead of a hard-coded 50 that declaring the default fetch method silently removed, and truncation is reported in the new truncatedLinks field.
+- A one-side link now expands only when its render mode says it should: an inline picker keeps its own id instead of being replaced by the target record, and an expanding link resolves instead of always answering null.
+- stonecropAction can now save and create records on the Postgres adapter, writing only the doctype's declared columns and reporting any discarded keys in the new droppedFields field.
+
+## 0.17.0
+Tue, 11 Aug 2026 12:49:04 GMT
+
+### Minor changes
+
+- stonecropAction now runs the guard read, the effect and the state write in one transaction with the guarded row locked FOR UPDATE, so a failed action rolls back its handler's writes instead of leaving them committed.
+- Add server-side action effects via createStonecropPlugin({ actionHandlers }), making stateless commands executable
+- stonecropRecords now applies a default row cap of 200 when the caller names no limit, configurable via createStonecropPlugin({ defaultRecordLimit }), and reports the true total rather than the page size.
+- Answer hasMore on every list query by requesting one row past the limit, and make the total opt-in behind a new includeTotal argument so a full-scan COUNT no longer runs on every list read.
+- Report an action against a nonexistent record as missing instead of guarding around it, which could report success while writing nothing
+- Schema build now refuses a doctype whose link or `inherits` names a doctype nothing registered, instead of silently dropping the relation at fetch time; the unused `validateReferences` export is removed.
+- Resolve a record's identity field through getRecordIdField, so this adapter and the client name the same field — a doctype declaring no primaryKey is now fetchable through the id fallback instead of answering data: null. When no identity can be resolved at all, stonecropRecord and link target lookups throw instead of reporting not-found.
+- Saving a record that does not exist now creates it: GuardedTransitionIO.writeData is an upsert and takes an `exists` flag, so creation goes through stonecropAction rather than a create mutation
+- Verify at schema build that every actionHandlers key names a registered doctype and an action it declares, throwing with every offender listed — an unreachable handler was silently skipped at dispatch. stonecropRecord now also refuses when the declared identity column matches more than one row, instead of returning an arbitrary one.
+
+### Patches
+
+- Correct two public docstrings that promised a transaction the dispatcher never opens: ActionHandlerContext.pgClient claimed it was already inside the mutation's transaction, and GuardedTransitionIO.runEffect claimed a throw meant nothing was written. Dispatch uses sideEffectWithPgClient, so the guard read, the handler and the state write are separate autocommit statements and a handler's own writes are not rolled back
+
+## 0.16.6
+Tue, 04 Aug 2026 12:14:33 GMT
+
+### Patches
+
+- Add a cross-adapter conformance test diffing the Postgres adapter against an in-memory host
+
+## 0.16.5
+Mon, 03 Aug 2026 11:12:57 GMT
+
+### Patches
+
+- Resolve record identity through the shared getPrimaryKeyField helper so the server and client agree on which key a doctype is addressed by.
 
 ## 0.16.4
 Tue, 28 Jul 2026 09:58:37 GMT

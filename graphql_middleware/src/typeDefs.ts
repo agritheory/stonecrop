@@ -49,6 +49,7 @@ export const typeDefs = gql`
 	type StonecropDoctypeMeta {
 		name: String!
 		slug: String
+		displayField: String
 		fields: [StonecropFieldMeta!]!
 		workflow: StonecropWorkflowMeta
 		inherits: String
@@ -58,18 +59,42 @@ export const typeDefs = gql`
 		data: JSON
 		doctype: String!
 		unknownLinks: [String!]
+		"""
+		Fields whose linked rows were cut short by a row cap, so data holds a prefix of the
+		relation rather than all of it. Null when nothing was truncated. A link cannot be paged,
+		so a client that sees a name here must not write that relation back — the rows it never
+		received would be deleted.
+		"""
+		truncatedLinks: [String!]
 	}
 
 	type StonecropRecordsResult {
 		data: [JSON!]!
 		doctype: String!
-		count: Int!
+		"""
+		Whether further records exist beyond this page. Always answered — it is read from the
+		page itself (one extra row is requested and discarded), so it costs no second query.
+		"""
+		hasMore: Boolean!
+		"""
+		Total matching the filters, ignoring limit/offset. Null unless the query asked for it
+		with includeTotal, because counting is a full scan on most backends.
+		"""
+		count: Int
 	}
 
 	type StonecropActionResult {
 		success: Boolean!
 		data: JSON
 		error: String
+		"""
+		Keys the write discarded because the doctype declares no column for them, or because the
+		value was a nested relation rather than a column value. Null when everything sent was
+		stored. The action still succeeded — this is what it did not keep, and a client that
+		reports an unqualified success without checking it tells the user data was saved that
+		was not.
+		"""
+		droppedFields: [String!]
 	}
 
 	extend type Query {
@@ -82,6 +107,7 @@ export const typeDefs = gql`
 			orderBy: String
 			limit: Int
 			offset: Int
+			includeTotal: Boolean
 			options: JSON
 		): StonecropRecordsResult
 	}

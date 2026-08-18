@@ -23,13 +23,25 @@ The `PgExecutor` — the object that provides the database connection — is dis
 
 `stonecropRecord` returns a single record, but records often have related data: line items on an order, an address on a customer, a computed summary across child rows. Rather than always fetching everything (expensive for large trees) or never fetching links (forcing clients to issue many follow-up queries), the middleware gives each link a *fetch strategy* via the `fetch` field in its `LinkDeclaration`.
 
-**`sync`** means linked records are fetched in the same resolver call and merged into the parent record's `data` payload. When the strategy is `sync`, the middleware issues an additional SQL query for that link and attaches the result directly. For `noneOrMany` and `atLeastOne` links (one-to-many), the default strategy is `sync` with a limit of 50 rows. Sync makes sense when the linked data is small and almost always needed.
+**`sync`** means linked records are fetched in the same resolver call and merged into the parent record's `data` payload. When the strategy is `sync`, the middleware issues an additional SQL query for that link and attaches the result directly. For `noneOrMany` and `atLeastOne` links (one-to-many), the default strategy is `sync`. Sync makes sense when the linked data is small and almost always needed.
+
+A many-side link is capped at `fetch.limit` if the declaration names one, and otherwise at the server's `defaultRecordLimit` — the same option that caps `stonecropRecords`, because a link is a list fetched a different way. When a cap cuts a relation short, the field's name appears in `truncatedLinks` on the result. Guard on it: a link cannot be paged, so writing back a relation you only partly received deletes the rest.
 
 **`lazy`** means the link is absent from the response entirely. The client retrieves it separately via `stonecropRecords` with a `filters` argument pointing back at the parent. For `atMostOne` and `one` links (many-to-one or one-to-one), the default strategy is `lazy`. Lazy is appropriate when the linked data is large, rarely needed, or retrieved conditionally.
 
 **`custom`** delegates fetching to a registered handler function. Custom strategies are for cases that neither `sync` nor `lazy` can express cleanly — aggregations, multi-table joins, remote service calls. The handler receives the active `PgClient`, the parent record, and the link declaration, and returns a record or array of records.
 
 The `stonecropRecord` query accepts an `options` argument with an `includeNested` field. Pass `true` to include all links, or pass an array of link names to include only those. When `includeNested` names a link that does not exist on the doctype, that name is returned in `unknownLinks` on the result object. This helps clients detect configuration errors: if `unknownLinks` is non-empty, a requested link name is not declared in the doctype schema.
+
+## Writing records
+
+There is one write path, and it is `stonecropAction`. Saving is a *self-transition* — an action declaring `selfTransition: true` — so there is no create mutation, no update mutation, and no separate create action. The client sends the record's id to update it and **sends no id to create it**; that absence is the entire signal, which is why a draft dispatches without one.
+
+What a write may set comes from the doctype, not from the request. The patch is intersected with the doctype's declared, column-backed fields — the same derivation the read path selects — so what a record exposes is what a record accepts. Keys naming no column are discarded, as are values that arrive as nested objects where the column holds a scalar (the shape a read-modify-write produces for an expanding link). Everything discarded is listed in `droppedFields` on the result. The action still succeeds; report it, because those keys are data the user believes was saved.
+
+Two things a patch can never set. `status` is one: state moves through `nextState`, guarded by `allowedStates`, and a patch that could write the state column would walk straight past the guard. Identity is the other — on create the declared primary key passes through only when the record itself carries it, which is what a natural-keyed doctype's user-entered key looks like; otherwise the column default mints it. The initial workflow state comes from the column default too. Nothing reads `workflow.states` for it: that array is unordered and has no initial marker, and a record being created is in no state for `allowedStates` to constrain.
+
+An id that was dispatched but matched no row is refused rather than created. It means the record went away since the client read it, and creating a replacement under a new identity would report success for a lost update.
 
 ## Why there is no `DataAdapter` base class yet
 

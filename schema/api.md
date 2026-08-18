@@ -161,6 +161,140 @@ export declare function defaultIsEntityType(typeName: string, type: GraphQLObjec
 | typeName | `string` | The GraphQL type name |
 | type | `GraphQLObjectType` | The GraphQL object type definition |
 
+### flattenFields
+
+Recursively flatten Fieldset containers into a flat array of non-container fields. Fieldset entries are replaced by their children; all other fields pass through.
+
+A fieldset is a layout grouping, not a scope: every field inside one is a field of the doctype, with a column of its own and a name a link can bind to. Anything asking "what does this doctype declare" must therefore descend, and the two ways to get that wrong point opposite ways — the SELECT builder would omit real columns, while a validator would report a working declaration as broken.
+
+Lives here rather than in the adapter because both sides need it: the middleware builds SQL from it, and `DoctypeMeta`'s own validation asks the same question at the load gate. It sat in the adapter while the validator hand-rolled a top-level-only scan, and that is exactly the second failure this comment names — a `displayField` inside a fieldset was rejected at authoring time and would have worked at runtime.
+
+**Signature:**
+
+```typescript
+export declare function flattenFields(fields: readonly DoctypeField[]): (ValueField | TableField)[];
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| fields | `readonly DoctypeField[]` | the doctype's top-level fields |
+
+### formatDoctypeDrift
+
+Render a drift report as human-readable lines. Empty when generation agrees with the doctype.
+
+**Signature:**
+
+```typescript
+export declare function formatDoctypeDrift(drift: DoctypeDrift): string[];
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| drift | `DoctypeDrift` | a report from `mergeIntrospectedDoctype` |
+
+### getDisplayField
+
+Resolve the field a doctype nominates as its display text, or `undefined` when the nomination does not name a readable column.
+
+This is the single definition of "is this a usable `displayField`". Both sides depend on it: `DoctypeMeta` refuses a bad nomination at the load gate, and the adapter builds a SELECT from the field it returns. Call this; never re-derive the rule, or the gate and the query will disagree about which nominations are legal — which they did, in both directions at once.
+
+Two things disqualify a nomination, and both are the doctype saying so itself: - it names no field at all, fieldset children included - it names a `computed` field, which is declared precisely to state it has no column, so a SELECT built from it would reference a column the database does not have
+
+**Signature:**
+
+```typescript
+export declare function getDisplayField(fields: readonly DoctypeField[], displayField: string | undefined): ValueField | undefined;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| fields | `readonly DoctypeField[]` | the doctype's top-level fields |
+| displayField | `string \| undefined` | the nominated fieldname |
+
+### getPrimaryKeyField
+
+Find the field a doctype marks as its primary key, or `undefined` when none is marked.
+
+This is the single definition of "which field identifies a record". Both sides depend on it: the middleware builds the SQL identity predicate from it, and the client resolves a record's route/store key from it. Call this; never re-derive the rule at the call site, or the two will drift and the client will key records by a column the server never queried.
+
+Two deliberate limits, both matching the shape `primaryKey` actually has: - Only **top-level** fields are scanned. `primaryKey` is a `ValueField` flag and a fieldset's children are not identity columns, so a nested match would be an authoring error, not a PK. - The **first** match wins. Identity is single-valued by design — a doctype describes the API surface, and mapping a composite database key onto one identity there is the adapter's job — so a doctype declaring several is malformed rather than composite. `DoctypeMeta` rejects that at the load gate; this stays total for callers holding fields that never went through it.
+
+**Signature:**
+
+```typescript
+export declare function getPrimaryKeyField(fields: readonly DoctypeField[]): ValueField | undefined;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| fields | `readonly DoctypeField[]` | the doctype's top-level fields |
+
+### getRecordIdentity
+
+Resolve a record's identity value using the doctype's declared primary key.
+
+Falls back to `record.id` when the doctype declares no `primaryKey`. That fallback is load-bearing, not defensive: surrogate-key doctypes carry an `id` column and never mark a primary key, and PostGraphile renames a single-column `id` PK to `rowId` — so the declared field and `id` are both real sources, in that order.
+
+**Signature:**
+
+```typescript
+export declare function getRecordIdentity(fields: readonly DoctypeField[], record: Record<string, unknown>): string | undefined;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| fields | `readonly DoctypeField[]` | the doctype's top-level fields |
+| record | `Record<string, unknown>` | the record to read the identity from |
+
+### getRecordIdField
+
+The name of the field a record is identified by: the declared `primaryKey`, or `id` when the doctype declares none.
+
+The `id` fallback is load-bearing, not defensive — a surrogate-key doctype carries an `id` column and marks no primary key, so "nothing declared" means `id`, not "no identity".
+
+This exists because that one-line rule had been restated at four sites — the client's `Doctype.recordIdField`, both nuxt hosts' `recordLookupField`, and the Postgres adapter — and the fourth had omitted the fallback, so a doctype the client keyed by `id` was one the adapter could not look up at all. Call this; a fifth restatement is how they diverge again.
+
+The returned name is not guaranteed to be a declared field: a doctype that declares no `primaryKey` and no `id` yields `'id'` regardless. An adapter that must build a SQL predicate from it has to confirm the field exists and say so when it does not, because selecting a column the doctype never declared returns nothing rather than failing.
+
+**Signature:**
+
+```typescript
+export declare function getRecordIdField(fields: readonly DoctypeField[]): string;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| fields | `readonly DoctypeField[]` | the doctype's top-level fields |
+
+### hasBadgeOptions
+
+Whether field options carry any badge mapping.
+
+**Signature:**
+
+```typescript
+export declare function hasBadgeOptions(options: FieldOptions | undefined): boolean;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| options | `FieldOptions \| undefined` |  |
+
 ### isActionAllowedInState
 
 Whether a workflow action may run from `currentState`.
@@ -181,6 +315,104 @@ export declare function isActionAllowedInState(action: {
 |-----------|------|-------------|
 | action | `{ allowedStates?: string[] \| null; }` |  |
 | currentState | `string` |  |
+
+### isBadgeDescriptor
+
+True when `value` is a resolved badge descriptor for ACell / ADropdown.
+
+**Signature:**
+
+```typescript
+export declare function isBadgeDescriptor(value: unknown): value is BadgeDescriptor;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| value | `unknown` |  |
+
+### isSelectChoiceMap
+
+True when `options` is a Select choice map (`{ Open: "warning", ... }` or `{ choices: [...], badges: {...} }`), not a quantity/currency/code config bag.
+
+**Signature:**
+
+```typescript
+export declare function isSelectChoiceMap(options: FieldOptions | undefined): options is Record<string, BadgeSpec>;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| options | `FieldOptions \| undefined` |  |
+
+### isSelectOptions
+
+True when `options` uses the structured SelectOptions shape.
+
+**Signature:**
+
+```typescript
+export declare function isSelectOptions(options: FieldOptions | undefined): options is SelectOptions;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| options | `FieldOptions \| undefined` |  |
+
+### linkDisplayFieldname
+
+Build the payload key for a link field's display text (e.g. `customerId__display`).
+
+**Signature:**
+
+```typescript
+export declare function linkDisplayFieldname(fieldname: string): string;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| fieldname | `string` |  |
+
+### lookupBadge
+
+Resolve a stored choice value to a badge descriptor using field options.
+
+**Signature:**
+
+```typescript
+export declare function lookupBadge(options: FieldOptions | undefined, key: string | undefined): BadgeDescriptor | undefined;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| options | `FieldOptions \| undefined` |  |
+| key | `string \| undefined` |  |
+
+### mergeIntrospectedDoctype
+
+Verify an authored doctype against freshly generated output and stamp provenance.
+
+**Signature:**
+
+```typescript
+export declare function mergeIntrospectedDoctype(authored: AuthoredDoctype, generated: ConvertedGraphQLDoctype): MergeResult;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| authored | `AuthoredDoctype` | the doctype as it exists on disk; every key not named below is preserved verbatim |
+| generated | `ConvertedGraphQLDoctype` | `convertGraphQLSchema` output for the corresponding GraphQL type |
 
 ### normalizeFieldKind
 
@@ -273,6 +505,22 @@ export declare function resolveLinkRenderMode(link: {
 |-----------|------|-------------|
 | link | `{ component?: string; cardinality?: string; }` | the link declaration (only `component` and `cardinality` are consulted) |
 | fieldComponent | `string` | the linked field's own `component`, used when the declaration names none |
+
+### selectChoices
+
+Dropdown / filter choice strings.
+
+**Signature:**
+
+```typescript
+export declare function selectChoices(options: FieldOptions | undefined): string[];
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| options | `FieldOptions \| undefined` |  |
 
 ### snakeToCamel
 
@@ -372,6 +620,50 @@ export declare function validateField(data: unknown): ValidationResult;
 
 ## Interfaces
 
+### BadgeDescriptor
+
+Resolved badge for rendering. Returned by `format` or built from an options map.
+
+**Definition:**
+
+```typescript
+export interface BadgeDescriptor {
+  color?: string;
+  label: string;
+  variant?: BadgeVariant;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| color? | `string` |  |
+| label | `string` |  |
+| variant? | `BadgeVariant` |  |
+
+### BadgeSpecObject
+
+Per-choice badge configuration in a Select options map.
+
+**Definition:**
+
+```typescript
+export interface BadgeSpecObject {
+  color?: string;
+  label?: string;
+  variant?: BadgeVariant;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| color? | `string` |  |
+| label? | `string` |  |
+| variant? | `BadgeVariant` |  |
+
 ### ColumnSchema
 
 Authoring contract for doctype field declarations that can be rendered as table columns. Pass a `ColumnSchema[]` array to ATable's `:schema` prop; `schemaToColumns` converts it to `TableColumn[]` internally — callers working from a doctype schema never need to construct `TableColumn` directly.
@@ -401,6 +693,7 @@ export interface ColumnSchema {
   label?: string;
   modalComponent?: string;
   modalComponentExtraProps?: Record<string, any>;
+  options?: FieldOptions;
   pinned?: boolean;
   resizable?: boolean;
   sortable?: boolean;
@@ -424,13 +717,14 @@ export interface ColumnSchema {
 | filterComponent? | `string` | Registered component name used when `filterType` is `'component'`. |
 | filterOptions? | `any[]` | Static option list for `filterType: 'select'`. When absent, options are derived from the unique values present in the column's rows. |
 | filterType? | `'text' \| 'select' \| 'number' \| 'date' \| 'dateRange' \| 'checkbox' \| 'component'` | The type of filter control to render. When absent, a default is derived from the `component`'s `ComponentCategory` (`boolean` → `checkbox`, `date` → `date`, `datetime` → `dateRange`, `select` → `select`, `number` → `number`, everything else — including an unknown component — → `text`). |
-| format? | `string` | Serialized function string used to format the cell value for display. Deserialized at render time by the table store's `getFormattedValue`. `TableColumn.format` widens this to also accept a live function directly. |
+| format? | `string` | Serialized function string used to format the cell value for display. Deserialized at render time by the table store's `getFormattedValue`. May return a plain string, HTML, or a `BadgeDescriptor`. `TableColumn.format` widens this to also accept a live function. |
 | ganttComponent? | `string` | Registered component name used to render Gantt bars in this column. Only applicable for Gantt tables. |
 | hidden? | `boolean` | When `true`, the field is excluded from the derived columns by `schemaToColumns`. |
 | isGantt? | `boolean` | When `true`, this column is treated as a Gantt bar column. Only applicable for Gantt tables. |
 | label? | `string` | Human-readable column header. When absent, ATable assigns labels alphabetically (A, B, C, …). |
 | modalComponent? | `string` | Registered component name rendered in the cell's modal editor. String-only — functions cannot appear in schema JSON. `TableColumn.modalComponent` widens this to also accept a factory function. The following props are automatically passed to the modal component: - `colIndex` — the column index of the current cell - `rowIndex` — the row index of the current cell - `store` — the table data store |
 | modalComponentExtraProps? | `Record<string, any>` | Extra props passed to `modalComponent` in addition to the standard cell props. Only applicable when `modalComponent` is set. |
+| options? | `FieldOptions` | Type-specific field options — Select choices, badge maps, quantity/currency config, etc. Spreads through `schemaToColumns` to `TableColumn`. |
 | pinned? | `boolean` | When `true`, the column is pinned to the left side of the table. |
 | resizable? | `boolean` | When `true`, the column can be resized by dragging the header edge. |
 | sortable? | `boolean` | When `true`, clicking the column header sorts the table by this column. |
@@ -466,7 +760,7 @@ Interface for data clients that fetch doctype metadata and records. Implemented 
 export interface DataClient {
   getMeta(context: DoctypeContext): Promise<M | null>;
   getRecord(doctype: T, recordId: string, options: GetRecordOptions): Promise<GetRecordResult>;
-  getRecords(doctype: T, options: GetRecordsOptions): Promise<Record<string, unknown>[]>;
+  getRecords(doctype: T, options: GetRecordsOptions): Promise<GetRecordsResult>;
   runAction(doctype: T, action: string, args: unknown[]): Promise<{
         success: boolean;
         data: unknown;
@@ -494,6 +788,40 @@ export interface DoctypeContext {
 |----------|------|-------------|
 | doctype | `string` | Doctype name (e.g., 'Task', 'Customer') |
 | recordId? | `string` | Optional record ID for viewing/editing a specific record |
+
+### DoctypeDrift
+
+What generation found that the authored doctype does not agree with. Every bucket is advisory — nothing here is applied automatically.
+
+**Definition:**
+
+```typescript
+export interface DoctypeDrift {
+  componentDrift: string[];
+  doctype: string;
+  identityDrift: string[];
+  mode: 'clean' | 'partial';
+  omitted: string[];
+  orphan: string[];
+  reason?: string;
+  requiredDrift: string[];
+  tagged: string[];
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| componentDrift | `string[]` | `fieldname: authored=… schema=…` where the chosen component differs from the scalar mapping. |
+| doctype | `string` | The authored doctype's name. |
+| identityDrift | `string[]` | Identity properties that differ. These are the ones a human must adjudicate. |
+| mode | `'clean' \| 'partial'` | `clean` — the authored primary key is the one generation would derive. `partial` — the doctype declares an identity generation cannot derive, so identity was left alone. |
+| omitted | `string[]` | Schema fields absent from the doctype. Usually deliberate curation, occasionally an oversight. |
+| orphan | `string[]` | Authored fields with no matching schema field — app components, fieldsets, or stale entries. |
+| reason? | `string` | Why the mode is `partial`, when it is. |
+| requiredDrift | `string[]` | `fieldname: authored=… schema=…` where nullability disagrees. |
+| tagged | `string[]` | Fieldnames confirmed against the schema and stamped. |
 
 ### DoctypeRef
 
@@ -592,6 +920,7 @@ Options for fetching multiple records
 ```typescript
 export interface GetRecordsOptions {
   filters?: Record<string, unknown>;
+  includeTotal?: boolean;
   limit?: number;
   offset?: number;
   orderBy?: string;
@@ -603,9 +932,34 @@ export interface GetRecordsOptions {
 | Property | Type | Description |
 |----------|------|-------------|
 | filters? | `Record<string, unknown>` | Filter expression (field-value pairs) |
+| includeTotal? | `boolean` | Ask the backend for the total matching the filters as well as the page. Off by default because it costs a second query — a full scan on Postgres — and knowing *whether* more exist (`hasMore`) is what a list view actually needs. Turn it on for a "showing 20 of 4,312" style display. |
 | limit? | `number` | Maximum number of records to return |
 | offset? | `number` | Number of records to skip |
 | orderBy? | `string` | Order by expression (e.g. 'NAME_ASC') |
+
+### GetRecordsResult
+
+Result from getRecords — a page of records, and enough to tell that it is one.
+
+A bare array used to be returned here, which claimed to be the whole collection. It is not: a limit always applies, so a caller could not distinguish a complete list from a truncated one. That is the entire reason this type exists.
+
+**Definition:**
+
+```typescript
+export interface GetRecordsResult {
+  count?: number;
+  data: Record<string, unknown>[];
+  hasMore: boolean;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| count? | `number` | Total records matching the filters, ignoring limit/offset. Present only when the caller asked for it via `includeTotal` — counting is a full scan on most backends, so it is never computed speculatively. |
+| data | `Record<string, unknown>[]` | The records in this page |
+| hasMore | `boolean` | Whether the backend holds further records beyond this page |
 
 ### GraphQLConversionFieldMeta
 
@@ -639,12 +993,13 @@ Options for converting a GraphQL schema to Stonecrop doctype schemas. All hooks 
 export interface GraphQLConversionOptions {
   classifyField?: (fieldName: string, field: GraphQLField<unknown, unknown>, parentType: GraphQLObjectType) => Omit<Partial<ValueField>, 'kind'> | null;
   customScalars?: Record<string, Partial<FieldTemplate>>;
+  doctypeNames?: Record<string, string>;
   exclude?: string[];
   include?: string[];
   includeUnmappedMeta?: boolean;
   isEntityField?: (fieldName: string, field: GraphQLField<unknown, unknown>, parentType: GraphQLObjectType) => boolean;
   isEntityType?: (typeName: string, type: GraphQLObjectType) => boolean;
-  typeOverrides?: Record<string, Record<string, Omit<Partial<ValueField>, 'kind'>>>;
+  onWarning?: (message: string) => void;
 }
 ```
 
@@ -654,12 +1009,53 @@ export interface GraphQLConversionOptions {
 |----------|------|-------------|
 | classifyField? | `(fieldName: string, field: GraphQLField<unknown, unknown>, parentType: GraphQLObjectType) => Omit<Partial<ValueField>, 'kind'> \| null` | Escape hatch: fully override the classification of a specific field. When this returns a non-null value, it is used as the field definition (merged with the field name). Return `null` to fall through to default classification. |
 | customScalars? | `Record<string, Partial<FieldTemplate>>` | Map custom or non-standard GraphQL scalar types to the component that renders them. Merged with the built-in scalar maps (GQL_SCALAR_MAP + WELL_KNOWN_SCALARS). User-provided entries take highest precedence. |
+| doctypeNames? | `Record<string, string>` | Emit a doctype under a different name than its GraphQL type. Key is the GraphQL type name, value is the doctype `name`; `slug` is derived from the value. This exists for the case where a doctype is not one-to-one with a table — a second view over an existing type, say, distinguished only by presentation. Without it the converter can only ever name a doctype after its type. Keep it consistent with the middleware's `tables` option, which maps the resulting doctype name to its SQL target. |
 | exclude? | `string[]` | GraphQL type names to exclude from conversion. Applied after `isEntityType` filtering. |
 | include? | `string[]` | Whitelist of GraphQL type names to convert. When provided, only these types are considered (after `isEntityType` filtering). |
 | includeUnmappedMeta? | `boolean` | Include `_graphqlType` and `_unmapped` metadata on converted fields. Useful for debugging conversions. Defaults to `false`. |
 | isEntityField? | `(fieldName: string, field: GraphQLField<unknown, unknown>, parentType: GraphQLObjectType) => boolean` | Custom function to filter which fields on an entity type are included. When provided, replaces the default field filter. The default filter excludes `nodeId`, `__typename`, and `clientMutationId`. |
 | isEntityType? | `(typeName: string, type: GraphQLObjectType) => boolean` | Custom function to determine if a GraphQL object type represents an entity (→ doctype). When provided, replaces the default heuristic entirely. The default heuristic excludes types matching synthetic patterns: `*Connection`, `*Edge`, `*Input`, `*Patch`, `*Payload`, `*Condition`, `*Filter`, `*OrderBy`, `*Aggregate`, `Query`, `Mutation`, `Subscription`, `__*`. |
-| typeOverrides? | `Record<string, Record<string, Omit<Partial<ValueField>, 'kind'>>>` | Per-type, per-field overrides for the converted field definitions. Outer key is the GraphQL type name, inner key is the field name. |
+| onWarning? | `(message: string) => void` | Called with any advisory message raised during conversion — currently only the un-normalized-PostGraphile warning. Left to the caller so the library never writes to the console itself. |
+
+### MergeResult
+
+Outcome of a merge: the doctype to write, plus what generation disagreed with.
+
+**Definition:**
+
+```typescript
+export interface MergeResult {
+  doctype: AuthoredDoctype;
+  drift: DoctypeDrift;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| doctype | `AuthoredDoctype` | The authored doctype with `source` markers added and nothing else changed. |
+| drift | `DoctypeDrift` | Advisory report. Never applied. |
+
+### SelectOptions
+
+Select field options when choices carry badge colors.
+
+**Definition:**
+
+```typescript
+export interface SelectOptions {
+  badges?: Record<string, BadgeSpec>;
+  choices: string[];
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| badges? | `Record<string, BadgeSpec>` |  |
+| choices | `string[]` |  |
 
 ### TableField
 
@@ -776,7 +1172,7 @@ export interface ValueField {
 | doctype? | `string` | Target doctype slug. Presence is what makes a field a link. How it renders is decided by `component`, not by this: `AFormLink` renders an inline id-picker, while `AForm`/`ATable` expand the target (see `linkRenderMode`). Expansion metadata — backlink, fetch strategy, authoritative cardinality — lives in the doctype's `links` map, which is additive and never required for a plain foreign key. |
 | edit? | `boolean` | Whether the field is editable in table cell context |
 | fieldname | `string` | Unique identifier for this field within its doctype |
-| format? | `string` | Serialized `(value) => string` function for display formatting — distinct from `mask` (input). Spreads through `schemaToColumns` to `ColumnSchema.format`; deserialized at render time by ATable's `getFormattedValue`. |
+| format? | `string` | Serialized display formatter — distinct from `mask` (input). Spreads through `schemaToColumns` to `ColumnSchema.format`; deserialized at render time by ATable's `getFormattedValue`. Returns a plain string, HTML, or a `BadgeDescriptor` for badge cells. When a descriptor is returned it wins over any badge map on `options`. |
 | hidden? | `boolean` | Whether the field is hidden from the UI |
 | kind | `'field'` | Discriminator — identifies this as a value-holding field |
 | label? | `string` | Human-readable label |
@@ -801,6 +1197,46 @@ Action definition type inferred from Zod schema
 
 ```typescript
 export type ActionDefinition = z.infer<typeof ActionDefinition>;
+```
+
+### AuthoredDoctype
+
+A doctype as it exists on disk: a plain object that may carry keys this package does not model (`handler` on an action, `filterFunction` on a field, whatever an app has added). Typing it loosely is what lets the merge round-trip those keys untouched instead of dropping them.
+
+**Definition:**
+
+```typescript
+export type AuthoredDoctype = Record<string, unknown>;
+```
+
+### BadgePresentation
+
+Where ABadge paints the same descriptor.
+
+**Definition:**
+
+```typescript
+export type BadgePresentation = 'cell-fill' | 'input-accent';
+```
+
+### BadgeSpec
+
+Value in a choice→badge map: shorthand variant or object form.
+
+**Definition:**
+
+```typescript
+export type BadgeSpec = BadgeVariant | BadgeSpecObject;
+```
+
+### BadgeVariant
+
+Semantic badge variant. Maps to theme tokens `--sc-badge-{variant}-*`.
+
+**Definition:**
+
+```typescript
+export type BadgeVariant = 'neutral' | 'success' | 'warning' | 'danger' | 'brand';
 ```
 
 ### Cardinality
@@ -1119,6 +1555,7 @@ Doctype metadata - complete definition of a doctype
 export const DoctypeMeta: z.ZodObject<{
     name: z.ZodString;
     slug: z.ZodOptional<z.ZodString>;
+    displayField: z.ZodOptional<z.ZodString>;
     fields: z.ZodArray<z.ZodType<import("./field").DoctypeField, unknown, z.core.$ZodTypeInternals<import("./field").DoctypeField, unknown>>>;
     links: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodObject<{
         target: z.ZodString;
@@ -1203,7 +1640,7 @@ export const FetchStrategy: z.ZodDiscriminatedUnion<[z.ZodObject<{
 
 Field options - flexible bag for type-specific configuration.
 
-Usage: - Select: array of choices (["Draft", "Submitted", "Cancelled"]) - Decimal: config object ( precision: 10, scale: 2 ) - Code: config object ( language: "python" )
+Usage: - Select: array of choices (["Draft", "Submitted", "Cancelled"]) - Select with badges:  choices: [...], badges:  Open: "warning", ...   or bare map - Decimal: config object ( precision: 10, scale: 2 ) - Code: config object ( language: "python" )
 
 Deliberately *not* a bare string: a string once meant "link target", which made the value's shape encode its meaning. That job belongs to `ValueField.doctype`, leaving this a plain choices-or-config bag.
 
@@ -1267,6 +1704,20 @@ Set of scalar type names that are internal to GraphQL servers and should be skip
 export const INTERNAL_SCALARS: Set<string>
 ```
 
+### INTROSPECTED_IDENTITY_PROPS
+
+The field properties a `source: 'introspected'` marker freezes — the ones the database owns.
+
+This is the single definition of the identity set. The docbuilder greys these inputs on an introspected field, and the converter's merge refuses to rewrite them. Stating it twice is how the two drift, so both read this constant.
+
+Everything absent from this list is author-owned, `component` most importantly: it chooses the widget, which is an authoring decision the database has no opinion about.
+
+**Type:**
+
+```typescript
+export const INTROSPECTED_IDENTITY_PROPS: readonly ["fieldname", "primaryKey", "required", "options", "cardinality", "doctype"]
+```
+
 ### LazyFetch
 
 Lazy fetch strategy - data is fetched on demand in a separate query.
@@ -1277,6 +1728,16 @@ Lazy fetch strategy - data is fetched on demand in a separate query.
 export const LazyFetch: z.ZodObject<{
     method: z.ZodLiteral<"lazy">;
 }, z.core.$strip>
+```
+
+### LINK_DISPLAY_SUFFIX
+
+Suffix appended to a link fieldname for its pre-resolved display text in record payloads.
+
+**Type:**
+
+```typescript
+export const LINK_DISPLAY_SUFFIX: 
 ```
 
 ### LinkDeclaration

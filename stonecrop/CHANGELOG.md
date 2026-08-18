@@ -1,6 +1,69 @@
 # Change Log - @stonecrop/stonecrop
 
-This log was last generated on Tue, 28 Jul 2026 09:58:37 GMT and should not be manually modified.
+This log was last generated on Tue, 18 Aug 2026 09:16:50 GMT and should not be manually modified.
+
+## 0.23.0
+Tue, 18 Aug 2026 09:16:50 GMT
+
+_Version update only_
+
+## 0.22.0
+Mon, 17 Aug 2026 19:46:36 GMT
+
+_Version update only_
+
+## 0.21.0
+Mon, 17 Aug 2026 19:08:23 GMT
+
+_Version update only_
+
+## 0.20.0
+Mon, 17 Aug 2026 18:41:19 GMT
+
+_Version update only_
+
+## 0.19.0
+Mon, 17 Aug 2026 12:46:25 GMT
+
+### Minor changes
+
+- Carry `displayField` on `Doctype` and `DoctypeConfig`.
+
+## 0.18.0
+Fri, 14 Aug 2026 08:05:46 GMT
+
+_Version update only_
+
+## 0.17.0
+Tue, 11 Aug 2026 12:49:04 GMT
+
+### Minor changes
+
+- Replace newDraftRecordId() with the DRAFT_RECORD_ID constant and narrow isDraftRecordId to an exact match on it. A draft has no identity to mint — /{doctype}/new is a route segment, not a store key.
+- Add isDraftRecordId and newDraftRecordId as the single definition of an unsaved record's identity, and use them for the guards that previously compared against the literal 'new'. Those guards never matched the ids the desktop shell mints, so an unsaved record was fetched from the server, left without initialized field defaults, and could be reported as blocked by link data it has no way to have
+- Remove the declarative field-trigger path: Doctype.actions and its constructor parameter, Doctype.getActionsObject, Stonecrop.runAction, DoctypeConfig.actions and ImmutableDoctype.actions. It could never cross the wire, so it was always empty under a GraphQL host; register triggers with FieldTriggerEngine.registerDoctypeActions instead.
+- useStonecrop() called with no doctype no longer infers one from the route and now returns just the instance and the operation log, having previously spent a getMeta plus a getRecord per mount to populate refs no such caller read.
+- Move useClientAction into this package so every Vue host shares one write path, and file an action's returned record under the identity the server settled on rather than the id that was dispatched.
+- Return the page from getRecords and record it per doctype, so getPageInfo can answer whether a list was truncated — a question HST cannot, since it holds only what was fetched.
+- Stonecrop.getRecord and getRecords now own the whole read: getRecord declines a draft or a record already in HST, both forward query options to the DataClient, and hosts no longer need a fetch handler.
+- Add Doctype.recordIdField, the field a record is identified by, so a caller can tell an identity a record states from the `id` getRecordId falls back to
+- Remove getStonecrop(): it had no callers anywhere, and non-component code should keep the instance the plugin already hands it via onRouterInitialized rather than reach for a global getter.
+
+### Patches
+
+- Doctype.recordIdField now calls @stonecrop/schema's getRecordIdField instead of restating the rule. No behaviour change.
+
+## 0.16.6
+Tue, 04 Aug 2026 12:14:33 GMT
+
+_Version update only_
+
+## 0.16.5
+Mon, 03 Aug 2026 11:12:57 GMT
+
+### Patches
+
+- Add Doctype.getRecordId and key stored records by it, so rows of a doctype with a natural or renamed primary key are no longer dropped before reaching the store.
 
 ## 0.16.4
 Tue, 28 Jul 2026 09:58:37 GMT

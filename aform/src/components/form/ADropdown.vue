@@ -1,50 +1,62 @@
 <template>
-	<div v-if="mode === 'display'" class="input-wrapper">
-		<span class="aform_display-value">{{ search ?? '' }}</span>
-		<label>{{ label }}</label>
-		<p v-show="errorText" class="aform_error" v-html="errorText"></p>
-	</div>
-	<div v-else v-on-click-outside="onClickOutside" class="autocomplete" :class="{ isOpen: dropdown.open }">
-		<div class="input-wrapper">
-			<input
-				v-model="search"
-				type="text"
-				:disabled="mode === 'read'"
-				@input="filter"
-				@focus="openDropdown"
-				@keydown.down="selectNextResult"
-				@keydown.up="selectPrevResult"
-				@keydown.enter="setCurrentResult"
-				@keydown.esc="onClickOutside"
-				@keydown.tab="onClickOutside" />
+	<div class="aform_form-element">
+		<template v-if="mode === 'display'">
+			<span v-if="badgeDescriptor" class="aform_display-value" :style="displayAccentStyle">{{
+				badgeDescriptor.label
+			}}</span>
+			<span v-else class="aform_display-value">{{ search ?? '' }}</span>
+			<label class="aform_field-label">{{ label }}</label>
+		</template>
+		<template v-else>
+			<div v-on-click-outside="onClickOutside" class="autocomplete" :class="{ isOpen: dropdown.open }">
+				<input
+					v-model="search"
+					type="text"
+					class="aform_input-field"
+					:disabled="mode === 'read'"
+					:style="inputAccentStyle"
+					@input="filter"
+					@focus="openDropdown"
+					@keydown.down="selectNextResult"
+					@keydown.up="selectPrevResult"
+					@keydown.enter="setCurrentResult"
+					@keydown.esc="onClickOutside"
+					@keydown.tab="onClickOutside" />
 
-			<ul v-show="dropdown.open" id="autocomplete-results" class="autocomplete-results">
-				<li v-if="dropdown.loading" class="loading autocomplete-result">Loading results...</li>
-				<li
-					v-for="(result, i) in dropdown.results"
-					v-else
-					:key="result"
-					class="autocomplete-result"
-					:class="{ 'is-active': i === dropdown.activeItemIndex }"
-					@click.stop="setResult(result)">
-					{{ result }}
-				</li>
-			</ul>
-			<label>{{ label }}</label>
-		</div>
-		<p v-show="errorText" class="aform_error" v-html="errorText"></p>
+				<ul v-show="dropdown.open" id="autocomplete-results" class="autocomplete-results">
+					<li v-if="dropdown.loading" class="loading autocomplete-result">Loading results...</li>
+					<li
+						v-for="(result, i) in dropdown.results"
+						v-else
+						:key="result"
+						class="autocomplete-result"
+						:class="{ 'is-active': i === dropdown.activeItemIndex }"
+						@click.stop="setResult(result)">
+						{{ result }}
+					</li>
+				</ul>
+				<label class="aform_field-label">{{ label }}</label>
+			</div>
+			<p v-show="errorText" class="aform_error" v-html="errorText"></p>
+		</template>
 	</div>
 </template>
 
 <script setup lang="ts">
+import type { FieldOptions } from '@stonecrop/schema'
+import { selectChoices } from '@stonecrop/schema'
 import { vOnClickOutside } from '@vueuse/components'
-import { computed, reactive, ref } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
 
 import type { ComponentProps } from '../../types'
+import type { BadgeFormatFn } from '../../utils/badge'
+import { badgeInputAccentStyle, resolveFieldBadge } from '../../utils/badge'
+import { deserializeFunction } from '../../utils/deserialize'
 
 const {
 	label,
 	options = [],
+	format,
 	isAsync = false,
 	filterFunction = undefined,
 	mode,
@@ -52,25 +64,45 @@ const {
 	validation = { errorMessage: '' },
 } = defineProps<
 	ComponentProps & {
-		options?: string[]
+		options?: FieldOptions
+		format?: string
 		isAsync?: boolean
 		filterFunction?: (search: string) => string[] | Promise<string[]>
 	}
 >()
 
-// Dynamic trigger errors take precedence over a static schema errorMessage; empty means the slot hides.
+const choiceList = computed(() => selectChoices(options))
+
+// Compile the serialized formatter once per `format` string, not once per keystroke:
+// badgeDescriptor re-evaluates on every input event and deserializeFunction runs the
+// Function constructor.
+const formatFn = computed(() => (format ? deserializeFunction<BadgeFormatFn>(format) : undefined))
+
+const badgeDescriptor = computed(() => resolveFieldBadge(search.value, options, formatFn.value))
+
+const inputAccentStyle = computed(() => badgeInputAccentStyle(badgeDescriptor.value))
+
+const displayAccentStyle = computed(() => badgeInputAccentStyle(badgeDescriptor.value))
+
 const errorText = computed(() => (errors?.length ? errors.join('; ') : (validation.errorMessage ?? '')))
 const search = defineModel<string>()
 
-// tracks the last explicitly-committed value so outside-click reverts instead of clears
 const committedValue = ref(search.value ?? '')
 
 const dropdown = reactive({
 	activeItemIndex: null as number | null,
 	open: false,
 	loading: false,
-	results: options,
+	results: [] as string[],
 })
+
+watch(
+	choiceList,
+	choices => {
+		dropdown.results = choices
+	},
+	{ immediate: true }
+)
 
 const onClickOutside = () => closeDropdown()
 
@@ -99,26 +131,25 @@ const setResult = (result: string) => {
 }
 
 const openDropdown = () => {
-	const idx = options?.indexOf(search.value ?? '') ?? -1
+	const idx = choiceList.value.indexOf(search.value ?? '')
 	dropdown.activeItemIndex = isAsync ? null : idx >= 0 ? idx : null
 	dropdown.open = true
-	// TODO: this should probably call the async function if it's async
-	dropdown.results = isAsync ? [] : options
+	dropdown.results = isAsync ? [] : choiceList.value
 }
 
 const closeDropdown = (result?: string) => {
 	dropdown.activeItemIndex = null
 	dropdown.open = false
-	if (!options?.includes(result || search.value || '')) {
+	if (!choiceList.value.includes(result || search.value || '')) {
 		search.value = committedValue.value
 	}
 }
 
 const filterResults = () => {
 	if (!search.value) {
-		dropdown.results = options
+		dropdown.results = choiceList.value
 	} else {
-		dropdown.results = options?.filter(item => item.toLowerCase().includes((search.value ?? '').toLowerCase()))
+		dropdown.results = choiceList.value.filter(item => item.toLowerCase().includes((search.value ?? '').toLowerCase()))
 	}
 }
 
@@ -157,65 +188,26 @@ const setCurrentResult = () => {
 </script>
 
 <style scoped>
-/* variables taken from here: https://github.com/frappe/frappe/blob/version-13/frappe/public/scss/common/awesomeplete.scss */
 .autocomplete {
 	position: relative;
 }
 
-.input-wrapper {
-	border: 1px solid transparent;
-	padding: 0rem;
-	margin: 0rem;
-	margin-right: 1ch;
-}
-
-input {
-	width: calc(100% - 1ch);
-	outline: 1px solid transparent;
-	border: 1px solid var(--sc-input-border-color);
-	padding: 1ch 0.5ch 0.5ch 1ch;
-	margin: calc(1.15rem / 2) 0 0 0;
-	min-height: 1.15rem;
-	border-radius: 0.25rem;
-	font-family: var(--sc-font-family);
-}
-
-input:focus {
-	border: 1px solid var(--sc-input-active-border-color);
-	border-radius: 0.25rem 0.25rem 0 0;
-	border-bottom: none;
-}
-
-label {
-	display: block;
-	min-height: 1.15rem;
-	padding: 0rem;
-	margin: 0rem;
-	border: 1px solid transparent;
-	margin-bottom: 0.25rem;
-	z-index: 0;
-	font-size: 80%;
-	position: absolute;
-	background: white;
-	margin: calc(-1.5rem - calc(2.15rem / 2)) 0 0 1ch;
-	padding: 0 0.25ch 0 0.25ch;
-}
-
 .autocomplete-results {
 	position: absolute;
-	width: calc(100% - 1ch + 1.5px);
+	left: 0;
+	right: 0;
 	z-index: 100;
 	padding: 0;
 	margin: 0;
 	color: var(--sc-input-active-border-color);
 	border: 1px solid var(--sc-input-active-border-color);
-	border-radius: 0 0 0.25rem 0.25rem;
+	border-radius: 0;
 	border-top: none;
-	background-color: #fff;
+	background-color: var(--sc-input-field-background, #fff);
+	list-style: none;
 }
 
 .autocomplete-result {
-	list-style: none;
 	text-align: left;
 	padding: 4px 6px;
 	cursor: pointer;
@@ -226,15 +218,5 @@ label {
 .autocomplete-result:hover {
 	background-color: var(--sc-row-color-zebra-light);
 	color: var(--sc-input-active-border-color);
-}
-
-/* Keep the field error in-flow below the control. The shared .aform_error is absolutely
-   positioned against a .aform_form-element anchor, which this component does not use. */
-p.aform_error {
-	position: static;
-	display: block;
-	color: var(--sc-brand-danger, red);
-	font-size: 0.7rem;
-	margin: 0.25rem 0 0;
 }
 </style>

@@ -5,6 +5,14 @@ deciders: ['Tyler Matteson', 'Rohan Bansal']
 ---
 # Create a separate fetch handler registry distinct from the action handler registry
 
+> **Superseded in part.** The action handler registry this ADR contrasts against was removed in
+> 0.14.0 (`4d691c99`, `2873799e`), so `registry/actions.ts`, `registerHandler`/`getHandler` and
+> `clearHandlers()` no longer exist. Server-side action effects came back in a different shape —
+> registered on the adapter and keyed by (doctype, action) rather than by a global name; see
+> [ADR 0009](0009-action-effects-registered-on-the-adapter.md), which reaches the same
+> keep-them-separate conclusion for the same collision reason. The decision below stands: fetch
+> handlers keep their own registry.
+
 ## Context and Problem Statement
 
 Stonecrop's middleware has two kinds of user-supplied callbacks: action handlers (invoked by `stonecropAction` to execute workflow transitions) and fetch handlers (invoked by `stonecropRecord` when a link uses the `custom` fetch strategy). When the `custom` fetch strategy was designed, a decision was needed: should fetch handlers share the existing action handler registry, or have their own?

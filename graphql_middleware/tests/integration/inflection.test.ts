@@ -135,7 +135,7 @@ describe('stonecropRecord with pascalCase field inflection', { tags: ['integrati
 	})
 
 	it('stonecropRecords returns correct data regardless of PostGraphile field casing', async () => {
-		const result = await runQuery(`query { stonecropRecords(doctype: "ScItem") { count data } }`)
+		const result = await runQuery(`query { stonecropRecords(doctype: "ScItem", includeTotal: true) { count data } }`)
 		const records = (result as any).data?.stonecropRecords
 		expect(records?.count).toBe(3)
 		expect(records?.data.length).toBe(3)

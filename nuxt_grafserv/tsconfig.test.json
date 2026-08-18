@@ -1,0 +1,13 @@
+{
+	// Typechecks the test suite. See tsconfig.src.json for why this extends the playground's app
+	// context, why nuxt.d.ts is listed explicitly, and why src and test are two passes not one.
+	//
+	// The `basic` fixture's nuxt.config.ts is excluded. It is a standalone mini Nuxt app that
+	// @nuxt/test-utils builds in its own context, so `defineNuxtConfig` is an auto-import it has and
+	// this program does not. Pulling a nuxt.config into the program also drags in a second
+	// @nuxt/schema, which breaks hook typing for everything else compiled alongside it. The rest of
+	// the fixture — including server/resolvers.ts, which is example code a user may copy — is checked.
+	"extends": "./playground/.nuxt/tsconfig.json",
+	"include": ["playground/.nuxt/nuxt.d.ts", "test/**/*.ts"],
+	"exclude": ["test/fixtures/basic/nuxt.config.ts"]
+}

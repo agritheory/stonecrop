@@ -1,10 +1,12 @@
 import { describe, it, expect } from 'vitest'
-import { List, Map } from 'immutable'
+import { List } from 'immutable'
 import type { UnknownMachineConfig } from 'xstate'
 import type { WorkflowMeta } from '@stonecrop/schema'
 
 import Doctype from '../../src/doctype'
 import type { DoctypeField } from '@stonecrop/schema'
+
+const doctypeWithFields = (fields: DoctypeField[]) => Doctype.fromObject({ name: 'Uom', fields, workflow: undefined })
 
 describe('Doctype class', { tags: ['unit'] }, () => {
 	const mockSchema = List([
@@ -37,75 +39,59 @@ describe('Doctype class', { tags: ['unit'] }, () => {
 		},
 	}
 
-	const mockActions = Map({
-		load: ['loadData'],
-		save: ['validateData', 'saveData'],
-		delete: ['confirmDelete', 'deleteData'],
-	})
-
 	it('creates a Doctype instance with required properties', () => {
-		const doctype = new Doctype('Task', mockSchema, mockWorkflow, mockActions)
+		const doctype = new Doctype('Task', mockSchema, mockWorkflow)
 
 		expect(doctype.doctype).toBe('Task')
 		expect(doctype.schema).toBe(mockSchema)
 		expect(doctype.workflow).toBe(mockWorkflow)
-		expect(doctype.actions).toBe(mockActions)
 		expect(doctype.component).toBeUndefined()
 	})
 
 	it('creates a Doctype instance with optional component', () => {
 		const mockComponent = { name: 'TaskComponent' }
-		const doctype = new Doctype('Task', mockSchema, mockWorkflow, mockActions, mockComponent)
+		const doctype = new Doctype('Task', mockSchema, mockWorkflow, mockComponent)
 
 		expect(doctype.component).toBe(mockComponent)
 	})
 
 	it('generates correct slug for simple doctype names', () => {
-		const doctype = new Doctype('Task', mockSchema, mockWorkflow, mockActions)
+		const doctype = new Doctype('Task', mockSchema, mockWorkflow)
 		expect(doctype.slug).toBe('task')
 	})
 
 	it('generates correct slug for camelCase doctype names', () => {
-		const doctype = new Doctype('taskItem', mockSchema, mockWorkflow, mockActions)
+		const doctype = new Doctype('taskItem', mockSchema, mockWorkflow)
 		expect(doctype.slug).toBe('task-item')
 	})
 
 	it('generates correct slug for PascalCase doctype names', () => {
-		const doctype = new Doctype('UserProfile', mockSchema, mockWorkflow, mockActions)
+		const doctype = new Doctype('UserProfile', mockSchema, mockWorkflow)
 		expect(doctype.slug).toBe('user-profile')
 	})
 
 	it('generates correct slug for names with spaces', () => {
-		const doctype = new Doctype('TaskItem', mockSchema, mockWorkflow, mockActions)
+		const doctype = new Doctype('TaskItem', mockSchema, mockWorkflow)
 		expect(doctype.slug).toBe('task-item')
 	})
 
 	it('generates correct slug for names with underscores', () => {
-		const doctype = new Doctype('task_item', mockSchema, mockWorkflow, mockActions)
+		const doctype = new Doctype('task_item', mockSchema, mockWorkflow)
 		expect(doctype.slug).toBe('task-item')
 	})
 
 	it('handles missing schema', () => {
 		// TODO: should these fail instead during init?
 		const emptySchema = List<DoctypeField>()
-		const doctype = new Doctype('Task', emptySchema, mockWorkflow, mockActions)
+		const doctype = new Doctype('Task', emptySchema, mockWorkflow)
 
 		expect(doctype.schema).toBe(emptySchema)
 		expect(doctype.schema?.size).toBe(0)
 	})
 
-	it('handles missing actions', () => {
-		// TODO: should these fail instead during init?
-		const emptyActions = Map<string, string[]>()
-		const doctype = new Doctype('Task', mockSchema, mockWorkflow, emptyActions)
-
-		expect(doctype.actions).toBe(emptyActions)
-		expect(doctype.actions?.size).toBe(0)
-	})
-
 	describe('getAvailableTransitions', () => {
 		it('returns transitions for a known state', () => {
-			const doctype = new Doctype('Task', mockSchema, mockWorkflow, mockActions)
+			const doctype = new Doctype('Task', mockSchema, mockWorkflow)
 
 			const transitions = doctype.getAvailableTransitions('draft')
 			expect(transitions).toHaveLength(1)
@@ -115,7 +101,7 @@ describe('Doctype class', { tags: ['unit'] }, () => {
 		})
 
 		it('returns multiple transitions when the state has more than one', () => {
-			const doctype = new Doctype('Task', mockSchema, mockWorkflow, mockActions)
+			const doctype = new Doctype('Task', mockSchema, mockWorkflow)
 
 			const transitions = doctype.getAvailableTransitions('pending')
 			expect(transitions).toHaveLength(2)
@@ -127,14 +113,14 @@ describe('Doctype class', { tags: ['unit'] }, () => {
 		})
 
 		it('returns an empty array for a final state with no transitions', () => {
-			const doctype = new Doctype('Task', mockSchema, mockWorkflow, mockActions)
+			const doctype = new Doctype('Task', mockSchema, mockWorkflow)
 
 			const transitions = doctype.getAvailableTransitions('completed')
 			expect(transitions).toEqual([])
 		})
 
 		it('returns an empty array for an unknown state', () => {
-			const doctype = new Doctype('Task', mockSchema, mockWorkflow, mockActions)
+			const doctype = new Doctype('Task', mockSchema, mockWorkflow)
 
 			const transitions = doctype.getAvailableTransitions('nonexistent')
 			expect(transitions).toEqual([])
@@ -145,14 +131,14 @@ describe('Doctype class', { tags: ['unit'] }, () => {
 				id: 'empty',
 				initial: 'draft',
 			}
-			const doctype = new Doctype('Task', mockSchema, noStatesWorkflow, mockActions)
+			const doctype = new Doctype('Task', mockSchema, noStatesWorkflow)
 
 			const transitions = doctype.getAvailableTransitions('draft')
 			expect(transitions).toEqual([])
 		})
 
 		it('returns an empty array when workflow is undefined', () => {
-			const doctype = new Doctype('Task', mockSchema, undefined as any, mockActions)
+			const doctype = new Doctype('Task', mockSchema, undefined as any)
 
 			const transitions = doctype.getAvailableTransitions('draft')
 			expect(transitions).toEqual([])
@@ -169,7 +155,7 @@ describe('Doctype class', { tags: ['unit'] }, () => {
 					running: { type: 'final' },
 				},
 			}
-			const doctype = new Doctype('Task', mockSchema, objectTargetWorkflow, mockActions)
+			const doctype = new Doctype('Task', mockSchema, objectTargetWorkflow)
 
 			const transitions = doctype.getAvailableTransitions('idle')
 			expect(transitions).toHaveLength(1)
@@ -186,7 +172,7 @@ describe('Doctype class', { tags: ['unit'] }, () => {
 					closed: { type: 'final' },
 				},
 			}
-			const doctype = new Doctype('Task', mockSchema, stringTargetWorkflow, mockActions)
+			const doctype = new Doctype('Task', mockSchema, stringTargetWorkflow)
 
 			const transitions = doctype.getAvailableTransitions('open')
 			expect(transitions).toHaveLength(1)
@@ -218,7 +204,7 @@ describe('Doctype class', { tags: ['unit'] }, () => {
 			}
 
 			it('filters actions by allowedStates', () => {
-				const doctype = new Doctype('Plan', mockSchema, workflowMeta, mockActions)
+				const doctype = new Doctype('Plan', mockSchema, workflowMeta)
 
 				const planningTransitions = doctype.getAvailableTransitions('planning')
 				expect(planningTransitions).toHaveLength(4)
@@ -237,7 +223,7 @@ describe('Doctype class', { tags: ['unit'] }, () => {
 			})
 
 			it('includes actions without allowedStates in all states', () => {
-				const doctype = new Doctype('Plan', mockSchema, workflowMeta, mockActions)
+				const doctype = new Doctype('Plan', mockSchema, workflowMeta)
 
 				const planningTransitions = doctype.getAvailableTransitions('planning')
 				expect(planningTransitions.some(t => t.name === 'global')).toBe(true)
@@ -247,7 +233,7 @@ describe('Doctype class', { tags: ['unit'] }, () => {
 			})
 
 			it('returns nextState as targetState for state-transitioning actions', () => {
-				const doctype = new Doctype('Plan', mockSchema, workflowMeta, mockActions)
+				const doctype = new Doctype('Plan', mockSchema, workflowMeta)
 
 				const transitions = doctype.getAvailableTransitions('planning')
 				const submit = transitions.find(t => t.name === 'submit')
@@ -265,7 +251,7 @@ describe('Doctype class', { tags: ['unit'] }, () => {
 			})
 
 			it('falls back to currentState as targetState when nextState is absent', () => {
-				const doctype = new Doctype('Plan', mockSchema, workflowMeta, mockActions)
+				const doctype = new Doctype('Plan', mockSchema, workflowMeta)
 
 				const transitions = doctype.getAvailableTransitions('planning')
 				const save = transitions.find(t => t.name === 'save')
@@ -276,7 +262,7 @@ describe('Doctype class', { tags: ['unit'] }, () => {
 			})
 
 			it('returns empty array for state not in states list', () => {
-				const doctype = new Doctype('Plan', mockSchema, workflowMeta, mockActions)
+				const doctype = new Doctype('Plan', mockSchema, workflowMeta)
 
 				const transitions = doctype.getAvailableTransitions('unknown')
 				expect(transitions).toEqual([])
@@ -284,14 +270,14 @@ describe('Doctype class', { tags: ['unit'] }, () => {
 
 			it('handles empty actions', () => {
 				const noActions: WorkflowMeta = { states: ['draft', 'submitted'] }
-				const doctype = new Doctype('Task', mockSchema, noActions, mockActions)
+				const doctype = new Doctype('Task', mockSchema, noActions)
 
 				expect(doctype.getAvailableTransitions('draft')).toEqual([])
 			})
 
 			it('handles empty states', () => {
 				const noStates: WorkflowMeta = { actions: { save: { label: 'Save', clientHandler: 'save' } } }
-				const doctype = new Doctype('Task', mockSchema, noStates, mockActions)
+				const doctype = new Doctype('Task', mockSchema, noStates)
 
 				expect(doctype.getAvailableTransitions('draft')).toEqual([])
 			})
@@ -312,7 +298,7 @@ describe('Doctype class', { tags: ['unit'] }, () => {
 		}
 
 		it('returns stateless commands, honoring allowedStates', () => {
-			const doctype = new Doctype('Doc', mockSchema, workflowWithCommands, mockActions)
+			const doctype = new Doctype('Doc', mockSchema, workflowWithCommands)
 
 			expect(doctype.getAvailableCommands('draft').map(c => c.name)).toEqual(['print'])
 			expect(
@@ -324,14 +310,14 @@ describe('Doctype class', { tags: ['unit'] }, () => {
 		})
 
 		it('excludes genuine transitions', () => {
-			const doctype = new Doctype('Doc', mockSchema, workflowWithCommands, mockActions)
+			const doctype = new Doctype('Doc', mockSchema, workflowWithCommands)
 
 			expect(doctype.getAvailableCommands('draft').some(c => c.name === 'submit')).toBe(false)
 		})
 
 		it('surfaces global commands even without a states list (commands-only doctype)', () => {
 			const commandsOnly: WorkflowMeta = { actions: { print: { label: 'Print', stateless: true } } }
-			const doctype = new Doctype('Report', mockSchema, commandsOnly, mockActions)
+			const doctype = new Doctype('Report', mockSchema, commandsOnly)
 
 			// No current state passed — a global command is still available.
 			expect(doctype.getAvailableCommands().map(c => c.name)).toEqual(['print'])
@@ -343,26 +329,26 @@ describe('Doctype class', { tags: ['unit'] }, () => {
 				states: ['draft', 'submitted'],
 				actions: { submit: { label: 'Submit', allowedStates: ['draft'], nextState: 'submitted' } },
 			}
-			const doctype = new Doctype('Doc', mockSchema, transitionsOnly, mockActions)
+			const doctype = new Doctype('Doc', mockSchema, transitionsOnly)
 
 			expect(doctype.getAvailableCommands('draft')).toEqual([])
 		})
 
 		it('returns an empty array for XState workflows (no actions map)', () => {
 			const xstate = { id: 'w', initial: 'draft', states: { draft: { on: { SUBMIT: 'submitted' } }, submitted: {} } }
-			const doctype = new Doctype('Doc', mockSchema, xstate as any, mockActions)
+			const doctype = new Doctype('Doc', mockSchema, xstate as any)
 
 			expect(doctype.getAvailableCommands('draft')).toEqual([])
 		})
 
 		it('returns an empty array when workflow is undefined', () => {
-			const doctype = new Doctype('Doc', mockSchema, undefined as any, mockActions)
+			const doctype = new Doctype('Doc', mockSchema, undefined as any)
 
 			expect(doctype.getAvailableCommands('draft')).toEqual([])
 		})
 
 		it('getAvailableTransitions excludes stateless commands', () => {
-			const doctype = new Doctype('Doc', mockSchema, workflowWithCommands, mockActions)
+			const doctype = new Doctype('Doc', mockSchema, workflowWithCommands)
 
 			const draftNames = doctype.getAvailableTransitions('draft').map(t => t.name)
 			expect(draftNames).toContain('submit')
@@ -382,20 +368,20 @@ describe('Doctype class', { tags: ['unit'] }, () => {
 					},
 				},
 			}
-			const doctype = new Doctype('Booking', mockSchema, workflowWithTriggers, mockActions)
+			const doctype = new Doctype('Booking', mockSchema, workflowWithTriggers)
 
 			expect(doctype.getTriggers()).toEqual(workflowWithTriggers.triggers)
 		})
 
 		it('returns undefined when the workflow declares no triggers', () => {
 			const noTriggers: WorkflowMeta = { states: ['draft'], actions: {} }
-			const doctype = new Doctype('Doc', mockSchema, noTriggers, mockActions)
+			const doctype = new Doctype('Doc', mockSchema, noTriggers)
 
 			expect(doctype.getTriggers()).toBeUndefined()
 		})
 
 		it('returns undefined when workflow is undefined', () => {
-			const doctype = new Doctype('Doc', mockSchema, undefined as any, mockActions)
+			const doctype = new Doctype('Doc', mockSchema, undefined as any)
 
 			expect(doctype.getTriggers()).toBeUndefined()
 		})
@@ -414,10 +400,6 @@ describe('Doctype class', { tags: ['unit'] }, () => {
 					initial: 'draft',
 					states: { draft: {}, submitted: {} },
 				},
-				actions: {
-					save: ['validateData', 'saveData'],
-					submit: ['validateData', 'submitData'],
-				},
 			}
 
 			const doctype = Doctype.fromObject(obj)
@@ -427,8 +409,6 @@ describe('Doctype class', { tags: ['unit'] }, () => {
 			expect(doctype.schema?.size).toBe(2)
 			expect(doctype.schema?.first()?.fieldname).toBe('title')
 			expect((doctype.workflow as UnknownMachineConfig)?.id).toBe('plan')
-			expect(doctype.actions?.size).toBe(2)
-			expect(doctype.actions?.get('save')).toEqual(['validateData', 'saveData'])
 		})
 
 		it('creates Doctype from obj object with minimal fields', () => {
@@ -440,7 +420,6 @@ describe('Doctype class', { tags: ['unit'] }, () => {
 
 			expect(doctype.doctype).toBe('Task')
 			expect(doctype.schema?.size).toBe(0)
-			expect(doctype.actions?.size).toBe(0)
 			expect(doctype.workflow).toBeUndefined()
 		})
 
@@ -448,14 +427,12 @@ describe('Doctype class', { tags: ['unit'] }, () => {
 			const obj = {
 				name: 'Empty',
 				fields: [],
-				actions: {},
 			}
 
 			const doctype = Doctype.fromObject(obj)
 
 			expect(doctype.doctype).toBe('Empty')
 			expect(doctype.schema?.size).toBe(0)
-			expect(doctype.actions?.size).toBe(0)
 		})
 
 		it('handles undefined fields gracefully', () => {
@@ -470,18 +447,6 @@ describe('Doctype class', { tags: ['unit'] }, () => {
 			expect(doctype.doctype).toBe('NoFields')
 			expect(doctype.schema?.size).toBe(0)
 			expect((doctype.workflow as UnknownMachineConfig)?.id).toBe('test')
-		})
-
-		it('handles undefined actions gracefully', () => {
-			const obj = {
-				name: 'NoActions',
-				actions: undefined,
-			}
-
-			const doctype = Doctype.fromObject(obj)
-
-			expect(doctype.doctype).toBe('NoActions')
-			expect(doctype.actions?.size).toBe(0)
 		})
 
 		it('preserves workflow configuration', () => {
@@ -556,19 +521,19 @@ describe('Doctype class', { tags: ['unit'] }, () => {
 
 	describe('getSchemaArray', () => {
 		it('returns empty array when schema is undefined', () => {
-			const doctype = new Doctype('Task', undefined as any, mockWorkflow, mockActions)
+			const doctype = new Doctype('Task', undefined as any, mockWorkflow)
 			expect(doctype.getSchemaArray()).toEqual([])
 		})
 
 		it('returns empty array when schema is empty List', () => {
 			const emptySchema = List<DoctypeField>()
-			const doctype = new Doctype('Task', emptySchema, mockWorkflow, mockActions)
+			const doctype = new Doctype('Task', emptySchema, mockWorkflow)
 
 			expect(doctype.getSchemaArray()).toEqual([])
 		})
 
 		it('converts Immutable.List to array', () => {
-			const doctype = new Doctype('Task', mockSchema, mockWorkflow, mockActions)
+			const doctype = new Doctype('Task', mockSchema, mockWorkflow)
 			const schemaArray = doctype.getSchemaArray()
 
 			expect(Array.isArray(schemaArray)).toBe(true)
@@ -594,28 +559,37 @@ describe('Doctype class', { tags: ['unit'] }, () => {
 		})
 	})
 
-	describe('getActionsObject', () => {
-		it('returns empty object when actions is undefined', () => {
-			const doctype = new Doctype('Task', mockSchema, mockWorkflow, undefined as any)
-			expect(doctype.getActionsObject()).toEqual({})
+	describe('recordIdField', () => {
+		it('is the declared primary key', () => {
+			const doctype = doctypeWithFields([
+				{ kind: 'field', fieldname: 'uomName', component: 'ATextInput', primaryKey: true },
+				{ kind: 'field', fieldname: 'id', component: 'ATextInput' },
+			])
+			expect(doctype.recordIdField).toBe('uomName')
 		})
 
-		it('returns empty object when actions is empty Map', () => {
-			const emptyActions = Map<string, string[]>()
-			const doctype = new Doctype('Task', mockSchema, mockWorkflow, emptyActions)
-
-			expect(doctype.getActionsObject()).toEqual({})
+		it('falls back to id when nothing is declared', () => {
+			const doctype = doctypeWithFields([{ kind: 'field', fieldname: 'id', component: 'ATextInput' }])
+			expect(doctype.recordIdField).toBe('id')
 		})
 
-		it('converts Immutable.Map to obj object', () => {
-			const doctype = new Doctype('Task', mockSchema, mockWorkflow, mockActions)
-			const actionsObject = doctype.getActionsObject()
+		it('falls back to id when the doctype has no schema at all', () => {
+			expect(new Doctype('Task', undefined as any, mockWorkflow).recordIdField).toBe('id')
+		})
 
-			expect(actionsObject).toEqual({
-				load: ['loadData'],
-				save: ['validateData', 'saveData'],
-				delete: ['confirmDelete', 'deleteData'],
-			})
+		it('names the field getRecordId reads, so a caller can tell a stated identity from a fallback', () => {
+			// The pair is the point: `getRecordId` answers `id` whether or not the declared key was
+			// present, so anything deciding whether a *response* settled on an identity has to check
+			// the field itself. A natural-keyed record that omits its key resolves to the surrogate.
+			const doctype = doctypeWithFields([
+				{ kind: 'field', fieldname: 'uomName', component: 'ATextInput', primaryKey: true },
+				{ kind: 'field', fieldname: 'id', component: 'ATextInput' },
+			])
+			const partial = { id: '7' }
+
+			expect(doctype.getRecordId(partial)).toBe('7')
+			expect(partial[doctype.recordIdField as keyof typeof partial]).toBeUndefined()
+			expect(doctype.getRecordId({ uomName: 'Kilogram', id: '7' })).toBe('Kilogram')
 		})
 	})
 
@@ -632,7 +606,7 @@ describe('Doctype class', { tags: ['unit'] }, () => {
 					},
 				},
 			}
-			const doctype = new Doctype('Plan', mockSchema, workflowMeta, mockActions)
+			const doctype = new Doctype('Plan', mockSchema, workflowMeta)
 
 			const meta = doctype.getActionMeta('submit')
 			expect(meta).toEqual({
@@ -648,26 +622,26 @@ describe('Doctype class', { tags: ['unit'] }, () => {
 				states: ['draft'],
 				actions: { submit: { label: 'Submit', clientHandler: 'submit' } },
 			}
-			const doctype = new Doctype('Plan', mockSchema, workflowMeta, mockActions)
+			const doctype = new Doctype('Plan', mockSchema, workflowMeta)
 
 			expect(doctype.getActionMeta('unknown')).toBeUndefined()
 		})
 
 		it('returns undefined for XState format workflow', () => {
-			const doctype = new Doctype('Task', mockSchema, mockWorkflow, mockActions)
+			const doctype = new Doctype('Task', mockSchema, mockWorkflow)
 
 			expect(doctype.getActionMeta('load')).toBeUndefined()
 		})
 
 		it('returns undefined when workflow is undefined', () => {
-			const doctype = new Doctype('Task', mockSchema, undefined, mockActions)
+			const doctype = new Doctype('Task', mockSchema, undefined)
 
 			expect(doctype.getActionMeta('submit')).toBeUndefined()
 		})
 
 		it('returns undefined when workflow has no actions', () => {
 			const workflowMeta: WorkflowMeta = { states: ['draft'] }
-			const doctype = new Doctype('Task', mockSchema, workflowMeta, mockActions)
+			const doctype = new Doctype('Task', mockSchema, workflowMeta)
 
 			expect(doctype.getActionMeta('submit')).toBeUndefined()
 		})

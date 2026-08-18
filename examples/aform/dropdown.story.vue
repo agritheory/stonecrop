@@ -78,8 +78,10 @@ function delay(ms: number) {
 	display: flex;
 	flex-direction: row;
 	align-items: top;
+	gap: 1rem;
 	margin: 0px;
-	padding-left: 1ch;
-	padding-right: 1ch;
+	/* .aform_field-label is absolutely positioned at top:0 with translateY(-50%), so a bare
+	   field component needs vertical room from its container the way AForm's padding gives it. */
+	padding: 1rem 1ch 0;
 }
 </style>

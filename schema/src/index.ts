@@ -22,6 +22,12 @@ export type { DoctypeField, FieldOptions, FieldValidation, FieldsetField, TableF
 export {
 	DoctypeFieldSchema,
 	FieldsetFieldSchema,
+	flattenFields,
+	getDisplayField,
+	getPrimaryKeyField,
+	getRecordIdentity,
+	getRecordIdField,
+	INTROSPECTED_IDENTITY_PROPS,
 	normalizeFieldKind,
 	TableFieldSchema,
 	ValueFieldSchema,
@@ -30,7 +36,15 @@ export {
 // Doctype schema
 // ActionDefinition and WorkflowMeta are exported as values (Zod schemas) so consumers can use
 // .safeParse(), .shape, etc. at runtime. TypeScript types are inferred from the same exports.
-export { ActionDefinition, TriggerDefinition, WorkflowLayout, WorkflowMeta, isActionAllowedInState } from './doctype'
+export {
+	ActionDefinition,
+	TriggerDefinition,
+	WorkflowLayout,
+	WorkflowMeta,
+	isActionAllowedInState,
+	LINK_DISPLAY_SUFFIX,
+	linkDisplayFieldname,
+} from './doctype'
 export type {
 	Cardinality,
 	CustomFetch,
@@ -42,6 +56,7 @@ export type {
 	GetRecordOptions,
 	GetRecordResult,
 	GetRecordsOptions,
+	GetRecordsResult,
 	LazyFetch,
 	LinkDeclaration,
 	SerializedFunction,
@@ -65,13 +80,18 @@ export {
 	convertGraphQLSchema,
 	defaultIsEntityField,
 	defaultIsEntityType,
+	formatDoctypeDrift,
 	GQL_SCALAR_MAP,
 	INTERNAL_SCALARS,
+	mergeIntrospectedDoctype,
 	WELL_KNOWN_SCALARS,
+	type AuthoredDoctype,
 	type ConvertedGraphQLDoctype,
+	type DoctypeDrift,
 	type GraphQLConversionFieldMeta,
 	type GraphQLConversionOptions,
 	type IntrospectionSource,
+	type MergeResult,
 } from './converter'
 
 // Naming utilities
@@ -79,3 +99,21 @@ export { toSlug, toPascalCase, pascalToSnake, snakeToCamel, camelToSnake, snakeT
 
 // Schema-to-column field shape
 export type { ColumnSchema } from './column-schema'
+
+// Badge types and helpers
+export type {
+	BadgeDescriptor,
+	BadgePresentation,
+	BadgeSpec,
+	BadgeSpecObject,
+	BadgeVariant,
+	SelectOptions,
+} from './badge'
+export {
+	hasBadgeOptions,
+	isBadgeDescriptor,
+	isSelectChoiceMap,
+	isSelectOptions,
+	lookupBadge,
+	selectChoices,
+} from './badge'

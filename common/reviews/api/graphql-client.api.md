@@ -11,14 +11,50 @@ import type { DoctypeRef } from '@stonecrop/schema';
 import type { GetRecordOptions } from '@stonecrop/schema';
 import type { GetRecordResult as GetRecordResult_2 } from '@stonecrop/schema';
 import type { GetRecordsOptions } from '@stonecrop/schema';
+import type { GetRecordsResult } from '@stonecrop/schema';
+
+// @public
+export function buildListRecordQuery(meta: DoctypeMeta, options: QueryBuilderOptions & {
+    first?: number;
+    offset?: number;
+    orderBy?: string;
+    condition?: Record<string, unknown>;
+}): BuiltQuery;
+
+// @public
+export function buildRelationshipName(targetDoctypeName: string, fkFieldname: string): string;
+
+// @public
+export function buildSingleRecordQuery(meta: DoctypeMeta, options: QueryBuilderOptions): BuiltQuery;
+
+// @public
+export interface BuiltQuery {
+    linkFields: string[];
+    query: string;
+}
 
 export { DoctypeContext }
 
 export { DoctypeMeta }
 
 // @public
+export function doctypeToListQuery(doctypeName: string): string;
+
+// @public
+export function doctypeToQueryName(doctypeName: string): string;
+
+// @public
+export function doctypeToSingleQuery(doctypeName: string): string;
+
+// @public
 export interface GetRecordResult extends GetRecordResult_2 {
     unknownLinks?: string[];
+}
+
+// @public
+export interface QueryBuilderOptions {
+    allMeta: DoctypeMeta[];
+    maxDepth?: number;
 }
 
 // @public
@@ -27,8 +63,13 @@ export class StonecropClient implements DataClient {
     clearMetaCache(): void;
     getAllMeta(): Promise<DoctypeMeta[]>;
     getMeta(context: DoctypeContext): Promise<DoctypeMeta | null>;
+    getNativeRecord(doctype: DoctypeRef, recordId: string): Promise<GetRecordResult>;
+    getNativeRecords(doctype: DoctypeRef, options?: {
+        limit?: number;
+        offset?: number;
+    }): Promise<GetRecordsResult>;
     getRecord(doctype: DoctypeRef, recordId: string, options?: GetRecordOptions): Promise<GetRecordResult>;
-    getRecords(doctype: DoctypeRef, options?: GetRecordsOptions): Promise<Record<string, unknown>[]>;
+    getRecords(doctype: DoctypeRef, options?: GetRecordsOptions): Promise<GetRecordsResult>;
     mutate<T = unknown>(mutation: string, variables?: Record<string, unknown>): Promise<T>;
     query<T = unknown>(query: string, variables?: Record<string, unknown>): Promise<T>;
     runAction(doctype: DoctypeRef, action: string, args?: unknown[]): Promise<{
@@ -43,6 +84,9 @@ export interface StonecropClientOptions {
     endpoint: string;
     headers?: Record<string, string>;
 }
+
+// @public
+export function transformNativeRecord(record: Record<string, unknown>, linkFields: string[], meta: DoctypeMeta, allMeta: DoctypeMeta[]): Record<string, unknown>;
 
 // (No @packageDocumentation comment for this package)
 

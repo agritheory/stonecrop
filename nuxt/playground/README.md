@@ -15,29 +15,34 @@ npm run dev        # prepare + launch on http://localhost:3000
 
 ## How the doctypes were generated (and how to regenerate)
 
-The five GraphQL-backed doctypes (`country`, `continent`, `language`, `state`, `subdivision`) are **generator output, not hand-written files**. From this directory:
+The five GraphQL-backed doctypes (`country`, `continent`, `language`, `state`, `subdivision`) were **scaffolded by the generator and have since been curated**. From this directory:
 
 ```bash
 # from the checked-in snapshot (works offline)
 stonecrop-schema generate -i introspection.json -o doctypes \
-  --include Country,Continent,Language,State,Subdivision \
-  --overrides overrides.json
+  --include Country,Continent,Language,State,Subdivision
 
 # or against the live endpoint
 stonecrop-schema generate -e https://countries.trevorblades.com/graphql -o doctypes \
-  --include Country,Continent,Language,State,Subdivision \
-  --overrides overrides.json
+  --include Country,Continent,Language,State,Subdivision
+
+# report drift without writing — what CI runs
+stonecrop-schema generate -i introspection.json -o doctypes --check \
+  --include Country,Continent,Language,State,Subdivision
 ```
 
-Three files play distinct roles:
+Re-running that command over these files is a **no-op**. Once a doctype exists it is the source of truth: generation verifies each field against the schema, adds `"source": "introspected"` markers, and *reports* anything it disagrees with instead of overwriting it. Hand-tuning survives regeneration, which is why there is no side file of overrides to keep in sync.
+
+Two files play distinct roles:
 
 | File | Role |
 | --- | --- |
 | `introspection.json` | What the API said — a checked-in introspection snapshot, so regeneration is reproducible and offline-capable. |
-| `overrides.json` | What we decided — every durable hand-tuning (labels like "Flag" and "Phone Code", `readOnly` on `code`). Lives at the playground root, **not** in `doctypes/`, because the module treats every JSON in `doctypes/` as a doctype. |
-| `doctypes/*.json` | Pure output. **Never hand-edit the generated ones** — put the tuning in `overrides.json` and re-run the command. |
+| `doctypes/*.json` | The doctypes themselves, curation included. Edit them directly, in the DocBuilder or by hand. |
 
-That equation is enforced in CI: `nuxt/test/playground-doctype-generation.test.ts` fails if the checked-in files aren't byte-identical to generator output for the snapshot + overrides.
+That no-op property is enforced in CI: `nuxt/test/playground-doctype-generation.test.ts` fails if regenerating would change any checked-in file.
+
+The one thing this costs: a **first** generation into an empty directory produces raw output — `"Aws Region"`, not `"AWS Region"`. Generate once, curate, and every run after that preserves the curation.
 
 Why all five types? Introspection follows the schema's relationships: `Country` links to `State` and `Subdivision`, so excluding them would leave dangling link targets. The nav only surfaces the three interesting ones.
 
@@ -45,7 +50,7 @@ Why all five types? Introspection follows the schema's relationships: `Country` 
 
 The generator stamps every emitted field with `"source": "introspected"`. The DocBuilder reads that marker and freezes the field's **identity set** (`fieldname`, `primaryKey`, `required`, `options`, `cardinality`, `doctype`) — `fieldname` is the GraphQL binding, so renaming it would silently break reads, and `doctype` is the link's FK target. Labels, components, and display options stay editable. Fields you add by hand carry no marker and are fully editable.
 
-Builder edits to *generated* doctypes survive only until the next CLI run — durable tuning belongs in `overrides.json`.
+Builder edits survive regeneration. The CLI only ever adds provenance markers to an existing doctype; identity it disagrees with is reported for a human to adjudicate, never rewritten.
 
 ## Sample workflow doctypes
 
@@ -69,7 +74,6 @@ The countries API accepts no mutations, so actions are no-ops here and no server
 playground/
 ├── doctypes/            # all doctypes — module reads this (docbuilder + routes); sibling of app/ by design
 ├── introspection.json   # checked-in introspection snapshot
-├── overrides.json       # durable hand-tuning applied on regeneration
 ├── schema.graphql       # generated — see above
 ├── app/
 │   ├── pages/index.vue          # home dashboard

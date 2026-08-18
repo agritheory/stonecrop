@@ -3,6 +3,7 @@ import { storeToRefs } from 'pinia'
 import { inject, onMounted, Ref, ref, watch, provide, computed } from 'vue'
 
 import Doctype from '../doctype'
+import { isDraftRecordId } from '../draft'
 import Registry from '../registry'
 import { Stonecrop } from '../stonecrop'
 import type { HSTNode } from '../types/hst'
@@ -11,13 +12,15 @@ import type { HSTOperation, OperationLogConfig } from '../types/operation-log'
 import type { RouteContext } from '../types/registry'
 
 /**
- * Unified Stonecrop composable - handles both general operations and HST reactive integration
+ * Unified Stonecrop composable - handles both general operations and HST reactive integration.
  *
- * @param options - Configuration options for the composable
- * @returns Stonecrop instance and optional HST integration utilities
+ * Called with no doctype, it returns the Stonecrop instance and the operation log, and touches
+ * the network not at all. Name a doctype to get the HST surface.
+ *
+ * @returns The Stonecrop instance and the operation log
  * @public
  */
-export function useStonecrop(): BaseStonecropReturn | HSTStonecropReturn
+export function useStonecrop(): BaseStonecropReturn
 /**
  * Unified Stonecrop composable with HST integration for a specific doctype and record.
  *
@@ -28,8 +31,9 @@ export function useStonecrop(): BaseStonecropReturn | HSTStonecropReturn
  * immediately after calling this composable; no `nextTick`, `flushPromises`, or
  * `setTimeout` is required.
  *
- * The only remaining async work in `onMounted` is fetching an existing record from the
- * server when `recordId` is not `'new'`, and lazy-loading a doctype by slug string.
+ * The only async work in `onMounted` is fetching an existing record from the server when
+ * `recordId` is not a draft, and lazy-loading a doctype by slug string. Both need a doctype
+ * named here — nothing is inferred from the route.
  *
  * @param options - Configuration with doctype (string slug or Doctype instance) and optional recordId
  * @returns Stonecrop instance with full HST integration utilities
@@ -56,10 +60,6 @@ export function useStonecrop(options?: {
 	const hstStore = ref<HSTNode>()
 	const formData = ref<Record<string, any>>({})
 
-	// Use refs for router-loaded doctype to maintain reactivity
-	const routerDoctype = ref<Doctype | undefined>()
-	const routerRecordId = ref<string | undefined>()
-
 	// Resolved schema with nested Doctype fields expanded
 	const resolvedSchema = ref<ResolvedField[]>([])
 
@@ -70,7 +70,7 @@ export function useStonecrop(options?: {
 
 	// Workflow readiness computed properties
 	const isWorkflowReady = computed(() => {
-		if (!stonecrop.value || !resolvedDoctype.value || !options.recordId || options.recordId === 'new') {
+		if (!stonecrop.value || !resolvedDoctype.value || !options.recordId || isDraftRecordId(options.recordId)) {
 			return true
 		}
 		const status = stonecrop.value.isWorkflowReady(resolvedDoctype.value, options.recordId)
@@ -78,7 +78,7 @@ export function useStonecrop(options?: {
 	})
 
 	const blockedLinks = computed(() => {
-		if (!stonecrop.value || !resolvedDoctype.value || !options.recordId || options.recordId === 'new') {
+		if (!stonecrop.value || !resolvedDoctype.value || !options.recordId || isDraftRecordId(options.recordId)) {
 			return []
 		}
 		const status = stonecrop.value.isWorkflowReady(resolvedDoctype.value, options.recordId)
@@ -209,7 +209,7 @@ export function useStonecrop(options?: {
 	if (options.doctype && typeof options.doctype !== 'string' && registry && stonecrop.value) {
 		hstStore.value = stonecrop.value.getStore()
 		resolvedSchema.value = registry.resolveSchema(options.doctype)
-		if (!options.recordId || options.recordId === 'new') {
+		if (!options.recordId || isDraftRecordId(options.recordId)) {
 			formData.value = registry.initializeRecord(resolvedSchema.value)
 		}
 		if (hstStore.value) {
@@ -217,71 +217,17 @@ export function useStonecrop(options?: {
 		}
 	}
 
-	// onMounted handles only work that is genuinely async: lazy-loading a doctype
-	// by slug, fetching an existing record from the server, and router-based setup.
+	// onMounted handles only work that is genuinely async: lazy-loading a doctype by slug and
+	// fetching an existing record from the server. Both require the caller to name a doctype.
+	//
+	// Rejected: inferring the doctype from the route when the caller names none. Every output of
+	// that inference landed in refs the no-argument callers never read — all of them wanted the
+	// instance, which is resolved synchronously above — so each paid a getMeta plus a getRecord to
+	// read a value already in hand. It also lowercased the route's record id, which silently missed
+	// any natural key carrying uppercase.
 	onMounted(async () => {
 		if (!registry || !stonecrop.value) {
 			return
-		}
-
-		// Handle router-based setup if no specific doctype provided
-		if (!options.doctype && registry.router) {
-			const route = registry.router.currentRoute.value
-
-			// Parse route path - let the application determine the doctype from the route
-			if (!route.path) return // Early return if no path available
-
-			const pathSegments = route.path.split('/').filter(segment => segment.length > 0)
-			const recordId = pathSegments[1]?.toLowerCase()
-
-			if (pathSegments.length > 0) {
-				// Create route context for getMeta function
-				const routeContext: RouteContext = {
-					path: route.path,
-					segments: pathSegments,
-				}
-
-				const doctype = await registry.getMeta?.(routeContext)
-				if (doctype) {
-					registry.addDoctype(doctype)
-					stonecrop.value.setup(doctype)
-
-					// Set reactive refs for router-based doctype
-					routerDoctype.value = doctype
-					routerRecordId.value = recordId
-					hstStore.value = stonecrop.value.getStore()
-
-					// Resolve schema for router-loaded doctype
-					if (registry) {
-						resolvedSchema.value = registry.resolveSchema(doctype)
-					}
-
-					if (recordId && recordId !== 'new') {
-						const existingRecord = stonecrop.value.getRecordById(doctype, recordId)
-						if (existingRecord) {
-							formData.value = existingRecord.get('') || {}
-						} else {
-							try {
-								await stonecrop.value.getRecord(doctype, recordId)
-								const loadedRecord = stonecrop.value.getRecordById(doctype, recordId)
-								if (loadedRecord) {
-									formData.value = loadedRecord.get('') || {}
-								}
-							} catch {
-								formData.value = registry.initializeRecord(resolvedSchema.value)
-							}
-						}
-					} else {
-						formData.value = registry.initializeRecord(resolvedSchema.value)
-					}
-
-					if (hstStore.value) {
-						setupDeepReactivity(doctype, recordId || 'new', formData, hstStore.value)
-					}
-
-					stonecrop.value.runAction(doctype, 'load', recordId ? [recordId] : undefined)
-				}
-			}
 		}
 
 		// Handle HST integration if doctype is provided explicitly
@@ -326,7 +272,7 @@ export function useStonecrop(options?: {
 
 				resolvedSchema.value = registry.resolveSchema(doctype)
 
-				if (recordId && recordId !== 'new') {
+				if (recordId && !isDraftRecordId(recordId)) {
 					const existingRecord = stonecrop.value.getRecordById(doctype, recordId)
 					if (existingRecord) {
 						formData.value = existingRecord.get('') || {}
@@ -351,7 +297,7 @@ export function useStonecrop(options?: {
 			} else {
 				// Doctype instance — sync init was done during setup().
 				// Only handle the async path: fetching an existing record from the server.
-				if (recordId && recordId !== 'new') {
+				if (recordId && !isDraftRecordId(recordId)) {
 					const doctype = options.doctype
 					const existingRecord = stonecrop.value.getRecordById(doctype, recordId)
 					if (existingRecord) {
@@ -374,15 +320,15 @@ export function useStonecrop(options?: {
 
 	// HST integration functions - always created but only populated when HST is available
 	const provideHSTPath = (fieldname: string, customRecordId?: string): string => {
-		const doctype = resolvedDoctype.value || routerDoctype.value
+		const doctype = resolvedDoctype.value
 		if (!doctype) return ''
 
-		const actualRecordId = customRecordId || options.recordId || routerRecordId.value || 'new'
+		const actualRecordId = customRecordId || options.recordId || 'new'
 		return `${doctype.slug}.${actualRecordId}.${fieldname}`
 	}
 
 	const handleHSTChange = (changeData: HSTChangeData): void => {
-		const doctype = resolvedDoctype.value || routerDoctype.value
+		const doctype = resolvedDoctype.value
 		if (!hstStore.value || !stonecrop.value || !doctype) {
 			return
 		}
@@ -432,7 +378,7 @@ export function useStonecrop(options?: {
 	}
 
 	// Provide injection tokens if HST will be available
-	if (options.doctype || registry?.router) {
+	if (options.doctype) {
 		provide('hstPathProvider', provideHSTPath)
 		provide('hstChangeHandler', handleHSTChange)
 	}
@@ -553,29 +499,9 @@ export function useStonecrop(options?: {
 			isWorkflowReady,
 			blockedLinks,
 		} satisfies HSTStonecropReturn
-	} else if (!options.doctype && registry?.router) {
-		// Router-based - return HST (will be populated after mount)
-		return {
-			stonecrop,
-			operationLog,
-			provideHSTPath,
-			handleHSTChange,
-			hstStore,
-			formData,
-			resolvedSchema,
-			initializeNestedData,
-			fetchNestedData,
-			collectRecordPayload,
-			createNestedContext,
-			isLoading,
-			error,
-			resolvedDoctype,
-			isWorkflowReady,
-			blockedLinks,
-		} satisfies HSTStonecropReturn
 	}
 
-	// No doctype and no router - basic mode
+	// No doctype named: the instance and the operation log are everything this can offer.
 	return {
 		stonecrop,
 		operationLog,

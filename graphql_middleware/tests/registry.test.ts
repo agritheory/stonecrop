@@ -132,21 +132,61 @@ describe('getMeta / getAllMeta / hasMeta / clearRegistry', { tags: ['unit', 'gra
 // registry/doctypes.ts — validateReferences
 // ===========================================================================
 
+/** A doctype with one scalar field, plus whatever links the case under test needs. */
+const withLinks = (links: Record<string, unknown>, fields?: unknown[]) => ({
+	Task: {
+		slug: 'task',
+		fields: fields ?? [{ kind: 'field', fieldname: 'ownerId', component: 'AFormLink', label: 'Owner' }],
+		links,
+	},
+	Owner: { slug: 'owner', fields: [] },
+})
+
 describe('validateReferences', { tags: ['unit', 'graphql'] }, () => {
 	beforeEach(() => clearRegistry())
 
-	it('returns empty array when all references are valid', () => {
+	// A link target is a SLUG and the registry is keyed by NAME. Every fixture here therefore
+	// declares both, because the earlier fixtures declared only a name and targeted it by name —
+	// a shape no real doctype uses, which is why five green tests never caught the check resolving
+	// through the raw Map. Measured against the two in-repo hosts at the time: 12 reported errors,
+	// 12 of them false.
+	it('resolves a link that targets a doctype by slug', () => {
 		loadDoctypesFromObject({
-			User: { fields: [] },
+			User: { slug: 'user', fields: [] },
 			Task: {
+				slug: 'task',
+				fields: [{ kind: 'field', fieldname: 'owner', component: 'AFormLink', label: 'Owner', doctype: 'user' }],
+			},
+		})
+		expect(validateReferences()).toHaveLength(0)
+	})
+
+	it('resolves a link that targets a doctype by name', () => {
+		// `getMeta` accepts either, so a consumer keying by name is not broken by the slug fix.
+		loadDoctypesFromObject({
+			User: { slug: 'user', fields: [] },
+			Task: {
+				slug: 'task',
 				fields: [{ kind: 'field', fieldname: 'owner', component: 'AFormLink', label: 'Owner', doctype: 'User' }],
 			},
 		})
 		expect(validateReferences()).toHaveLength(0)
 	})
 
+	it('resolves a links-map target by slug', () => {
+		loadDoctypesFromObject({
+			Country: { slug: 'country', fields: [] },
+			Continent: {
+				slug: 'continent',
+				fields: [],
+				links: { countries: { target: 'country', cardinality: 'noneOrMany', backlink: 'continentId' } },
+			},
+		})
+		expect(validateReferences()).toHaveLength(0)
+	})
+
 	it('reports error for unknown inherits reference', () => {
-		loadDoctypesFromObject({ Task: { fields: [], inherits: 'BaseTask' } })
+		loadDoctypesFromObject({ Task: { slug: 'task', fields: [], inherits: 'BaseTask' } })
 		const errors = validateReferences()
 		expect(errors.some(e => e.message.includes('BaseTask'))).toBe(true)
 	})
@@ -154,11 +194,24 @@ describe('validateReferences', { tags: ['unit', 'graphql'] }, () => {
 	it('reports error for Link field targeting unknown doctype', () => {
 		loadDoctypesFromObject({
 			Task: {
-				fields: [{ kind: 'field', fieldname: 'owner', component: 'AFormLink', label: 'Owner', doctype: 'User' }],
+				slug: 'task',
+				fields: [{ kind: 'field', fieldname: 'owner', component: 'AFormLink', label: 'Owner', doctype: 'nonesuch' }],
 			},
 		})
 		const errors = validateReferences()
-		expect(errors.some(e => e.message.includes('User'))).toBe(true)
+		expect(errors.some(e => e.message.includes('nonesuch'))).toBe(true)
+	})
+
+	it('reports error for links-map target that nothing declares', () => {
+		loadDoctypesFromObject({
+			Continent: {
+				slug: 'continent',
+				fields: [],
+				links: { countries: { target: 'nonesuch', cardinality: 'noneOrMany', backlink: 'continentId' } },
+			},
+		})
+		const errors = validateReferences()
+		expect(errors.some(e => e.path.includes('links') && e.message.includes('nonesuch'))).toBe(true)
 	})
 
 	it('does not treat a field with options but no doctype as a link', () => {
@@ -166,6 +219,7 @@ describe('validateReferences', { tags: ['unit', 'graphql'] }, () => {
 		// whose choices happen to look like doctype names must not be resolved as a reference.
 		loadDoctypesFromObject({
 			Task: {
+				slug: 'task',
 				fields: [
 					{
 						kind: 'field' as const,
@@ -181,15 +235,107 @@ describe('validateReferences', { tags: ['unit', 'graphql'] }, () => {
 		expect(errors.filter(e => e.path.includes('tag'))).toHaveLength(0)
 	})
 
-	it('returns multiple errors when multiple broken references exist', () => {
+	it('collects every broken reference rather than stopping at the first', () => {
+		// The plugin turns this list into one throw, so a consumer with several fixes them in one pass.
 		loadDoctypesFromObject({
 			Task: {
-				fields: [],
+				slug: 'task',
+				fields: [{ kind: 'field', fieldname: 'owner', component: 'AFormLink', label: 'Owner', doctype: 'nonesuch' }],
 				inherits: 'BaseTask',
+				links: { notes: { target: 'alsonone', cardinality: 'noneOrMany', backlink: 'taskId' } },
 			},
 		})
 		const errors = validateReferences()
-		expect(errors.length).toBeGreaterThanOrEqual(1)
+		expect(errors).toHaveLength(3)
+		expect(errors.map(e => e.message).join(' ')).toContain('BaseTask')
+	})
+
+	// =======================================================================
+	// Link bindings — a link whose target resolves can still name no way to
+	// reach the rows. The reader answers that with `continue` or a `null`,
+	// which on the wire is indistinguishable from an empty relation.
+	// =======================================================================
+
+	it('reports a many-side link that names no backlink', () => {
+		loadDoctypesFromObject(withLinks({ owners: { target: 'owner', cardinality: 'noneOrMany' } }))
+		const errors = validateReferences()
+		expect(errors).toHaveLength(1)
+		expect(errors[0].path).toEqual(['Task', 'links', 'owners', 'backlink'])
+	})
+
+	it('accepts a one-side link bound by the map key alone', () => {
+		// The canonical form: the key IS the fieldname. Requiring an explicit `fieldname` here
+		// would outlaw the shape `getSqlColumns` and the client resolver both already bind.
+		loadDoctypesFromObject(withLinks({ ownerId: { target: 'owner', cardinality: 'one' } }))
+		expect(validateReferences()).toHaveLength(0)
+	})
+
+	it('accepts a one-side link bound by an explicit fieldname', () => {
+		loadDoctypesFromObject(withLinks({ owner: { target: 'owner', cardinality: 'one', fieldname: 'ownerId' } }))
+		expect(validateReferences()).toHaveLength(0)
+	})
+
+	it('reports a one-side link whose resolved fieldname matches no declared field', () => {
+		// FAB's shape before it was cleaned up: neither the key nor a `fieldname` named a field, so
+		// the FK was never read and the link resolved to null on every record, forever.
+		loadDoctypesFromObject(withLinks({ owner: { target: 'owner', cardinality: 'one' } }))
+		const errors = validateReferences()
+		expect(errors).toHaveLength(1)
+		expect(errors[0].message).toContain('binds to field "owner"')
+	})
+
+	it('reports a one-side link bound to a computed field', () => {
+		// `computed` means "no backing DB column", and `getSqlColumns` skips such a field. A link
+		// bound to one has no foreign key to read, so the record read fails on a missing column —
+		// taking the whole record with it, not just the link. Refuse it at load instead.
+		loadDoctypesFromObject(
+			withLinks({ virtualRef: { target: 'owner', cardinality: 'one' } }, [
+				{ kind: 'field', fieldname: 'virtualRef', component: 'ATextInput', computed: true, label: 'Virtual' },
+			])
+		)
+		const errors = validateReferences()
+		expect(errors).toHaveLength(1)
+		expect(errors[0].message).toContain('no database column')
+	})
+
+	it('reports a one-side link bound to a container field', () => {
+		// A table field is a relation, not a column — same absence, different cause.
+		loadDoctypesFromObject(
+			withLinks({ rows: { target: 'owner', cardinality: 'one' } }, [
+				{ kind: 'table', fieldname: 'rows', component: 'ATable', label: 'Rows', columns: [{ fieldname: 'x' }] },
+			])
+		)
+		const errors = validateReferences()
+		expect(errors).toHaveLength(1)
+		expect(errors[0].message).toContain('no database column')
+	})
+
+	it('accepts a one-side link whose field is nested inside a fieldset', () => {
+		// A fieldset is a layout grouping, not a scope — `getSqlColumns` descends into it, so a
+		// checker that did not would report this working declaration as broken.
+		loadDoctypesFromObject(
+			withLinks({ ownerId: { target: 'owner', cardinality: 'one' } }, [
+				{
+					kind: 'fieldset',
+					fieldname: 'details',
+					label: 'Details',
+					schema: [{ kind: 'field', fieldname: 'ownerId', component: 'AFormLink', label: 'Owner' }],
+				},
+			])
+		)
+		expect(validateReferences()).toHaveLength(0)
+	})
+
+	it('exempts a custom fetch strategy from both binding checks', () => {
+		// A custom handler is handed the row and the declaration and finds the target however it
+		// likes; the runtime returns before consulting either binding.
+		loadDoctypesFromObject(
+			withLinks({
+				owners: { target: 'owner', cardinality: 'noneOrMany', fetch: { method: 'custom', handler: 'h' } },
+				absent: { target: 'owner', cardinality: 'one', fetch: { method: 'custom', handler: 'h' } },
+			})
+		)
+		expect(validateReferences()).toHaveLength(0)
 	})
 })
 

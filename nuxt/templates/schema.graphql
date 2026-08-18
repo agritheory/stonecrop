@@ -89,7 +89,10 @@ type RecordResult {
 type RecordsResult {
 	data: [JSON!]!
 	doctype: String!
-	count: Int!
+	"Whether further records exist beyond this page."
+	hasMore: Boolean!
+	"Total matching the filters. Null unless the query asked for it with includeTotal."
+	count: Int
 }
 
 type ActionResult {
@@ -137,6 +140,7 @@ type Query {
 		orderBy: String
 		limit: Int
 		offset: Int
+		includeTotal: Boolean
 		options: JSON
 	): RecordsResult
 }
@@ -150,19 +154,4 @@ type Mutation {
 	Execute a doctype action
 	"""
 	stonecropAction(doctype: String!, action: String!, args: JSON): ActionResult!
-
-	"""
-	Create a new record
-	"""
-	stonecropCreate(doctype: String!, input: JSON!): RecordResult!
-
-	"""
-	Update an existing record
-	"""
-	stonecropUpdate(doctype: String!, id: String!, patch: JSON!): RecordResult
-
-	"""
-	Delete a record
-	"""
-	stonecropDelete(doctype: String!, id: String!): ActionResult!
 }

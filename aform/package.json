@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/aform",
-	"version": "0.16.4",
+	"version": "0.23.0",
 	"description": "Schema-driven form components for Stonecrop",
 	"bugs": {
 		"url": "https://github.com/agritheory/stonecrop/issues"
@@ -43,7 +43,7 @@
 		"preview": "vite preview",
 		"test": "vitest run --coverage.enabled false",
 		"test:coverage": "vitest run --coverage",
-		"test:types": "vue-tsc --noEmit",
+		"test:types": "vue-tsc --noEmit -p tsconfig.typecheck.json",
 		"test:ui": "vitest --ui",
 		"test:watch": "vitest watch"
 	},

@@ -2,6 +2,89 @@
   "name": "@stonecrop/aform",
   "entries": [
     {
+      "version": "0.23.0",
+      "tag": "@stonecrop/aform_v0.23.0",
+      "date": "Tue, 18 Aug 2026 09:16:50 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Add Badge component with cell-fill and input-accent presentations for Select fields"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.22.0",
+      "tag": "@stonecrop/aform_v0.22.0",
+      "date": "Mon, 17 Aug 2026 19:46:36 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "ADate, ADateRange and ADateTime now use the shared aform input classes, and the time-entry widget formerly exported as ADateTime is now ADateTimeInput."
+          },
+          {
+            "comment": "The datetime picker now stays open while the time is edited, and neither ADateTime nor ADuration writes a value on first render."
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.21.0",
+      "tag": "@stonecrop/aform_v0.21.0",
+      "date": "Mon, 17 Aug 2026 19:08:23 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.20.0",
+      "tag": "@stonecrop/aform_v0.20.0",
+      "date": "Mon, 17 Aug 2026 18:41:19 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fixed Date selection in Date Picker"
+          }
+        ],
+        "minor": [
+          {
+            "comment": "AFormLink now resolves and shows the display text for a link whose value is a bare FK scalar, including when the parent writes that scalar back on every update, instead of rendering an empty input with no navigation."
+          },
+          {
+            "comment": "AFormLink's v-model now declares the bare FK scalar it already accepted, as the new exported type AFormLinkModelValue, so binding a link straight to its column no longer reports a type error against a component that handles it."
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.19.0",
+      "tag": "@stonecrop/aform_v0.19.0",
+      "date": "Mon, 17 Aug 2026 12:46:25 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.18.0",
+      "tag": "@stonecrop/aform_v0.18.0",
+      "date": "Fri, 14 Aug 2026 08:05:46 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.17.0",
+      "tag": "@stonecrop/aform_v0.17.0",
+      "date": "Tue, 11 Aug 2026 12:49:04 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.16.6",
+      "tag": "@stonecrop/aform_v0.16.6",
+      "date": "Tue, 04 Aug 2026 12:14:33 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.16.5",
+      "tag": "@stonecrop/aform_v0.16.5",
+      "date": "Mon, 03 Aug 2026 11:12:57 GMT",
+      "comments": {}
+    },
+    {
       "version": "0.16.4",
       "tag": "@stonecrop/aform_v0.16.4",
       "date": "Tue, 28 Jul 2026 09:58:37 GMT",

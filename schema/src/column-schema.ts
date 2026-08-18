@@ -1,3 +1,5 @@
+import type { FieldOptions } from './field'
+
 /**
  * Authoring contract for doctype field declarations that can be rendered as table columns.
  * Pass a `ColumnSchema[]` array to ATable's `:schema` prop; `schemaToColumns` converts it
@@ -144,9 +146,15 @@ export interface ColumnSchema {
 	modalComponentExtraProps?: Record<string, any>
 
 	/**
+	 * Type-specific field options — Select choices, badge maps, quantity/currency config, etc.
+	 * Spreads through `schemaToColumns` to `TableColumn`.
+	 */
+	options?: FieldOptions
+
+	/**
 	 * Serialized function string used to format the cell value for display. Deserialized at
-	 * render time by the table store's `getFormattedValue`. `TableColumn.format` widens this
-	 * to also accept a live function directly.
+	 * render time by the table store's `getFormattedValue`. May return a plain string, HTML, or a
+	 * {@link BadgeDescriptor}. `TableColumn.format` widens this to also accept a live function.
 	 */
 	format?: string
 

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
 import { StonecropClient } from '../src/client'
-import type { DoctypeRef } from '@stonecrop/schema'
+import type { DoctypeMeta, DoctypeRef } from '@stonecrop/schema'
 
 interface GraphQLRequestBody {
 	query: string
@@ -44,6 +44,29 @@ const taskMeta: DoctypeMeta = {
 		{ fieldname: 'title', component: 'ATextInput', label: 'Title' },
 	],
 }
+
+const partyMeta: DoctypeMeta = {
+	name: 'Party',
+	slug: 'party',
+	displayField: 'partyName',
+	fields: [
+		{ kind: 'field', fieldname: 'id', component: 'ATextInput', primaryKey: true },
+		{ kind: 'field', fieldname: 'partyName', component: 'ATextInput' },
+	],
+}
+
+const salesOrderMeta: DoctypeMeta = {
+	name: 'SalesOrder',
+	slug: 'sales-order',
+	fields: [
+		{ kind: 'field', fieldname: 'id', component: 'ATextInput', primaryKey: true },
+		{ kind: 'field', fieldname: 'customerId', component: 'AFormLink', doctype: 'party' },
+	],
+}
+
+const salesOrderRef: DoctypeRef = { name: 'SalesOrder' }
+
+const allMetaFixture = [partyMeta, salesOrderMeta, taskMeta]
 
 // ===========================================================================
 // Constructor
@@ -269,18 +292,48 @@ describe('StonecropClient.getRecord', { tags: ['unit', 'graphql'] }, () => {
 // ===========================================================================
 
 describe('StonecropClient.getRecords', { tags: ['unit', 'graphql'] }, () => {
-	it('returns the records array', async () => {
+	it('returns the page and whether more remain', async () => {
 		const client = new StonecropClient({ endpoint: ENDPOINT })
 		const records = [{ id: '1' }, { id: '2' }]
-		mockFetch.mockReturnValue(makeFetchResponse({ stonecropRecords: { data: records, count: 2 } }))
+		mockFetch.mockReturnValue(makeFetchResponse({ stonecropRecords: { data: records, hasMore: true, count: null } }))
 
 		const result = await client.getRecords(taskRef)
-		expect(result).toHaveLength(2)
+		expect(result.data).toHaveLength(2)
+		expect(result.hasMore).toBe(true)
+	})
+
+	it('omits count entirely when the server did not answer one', async () => {
+		// `count` absent and `count: 0` must stay distinguishable: one means nobody asked, the
+		// other means the set is empty. Passing null straight through would collapse them.
+		const client = new StonecropClient({ endpoint: ENDPOINT })
+		mockFetch.mockReturnValue(makeFetchResponse({ stonecropRecords: { data: [], hasMore: false, count: null } }))
+
+		const result = await client.getRecords(taskRef)
+		expect('count' in result).toBe(false)
+	})
+
+	it('keeps a zero total when one was requested', async () => {
+		const client = new StonecropClient({ endpoint: ENDPOINT })
+		mockFetch.mockReturnValue(makeFetchResponse({ stonecropRecords: { data: [], hasMore: false, count: 0 } }))
+
+		const result = await client.getRecords(taskRef, { includeTotal: true })
+		expect(result.count).toBe(0)
+	})
+
+	it('passes includeTotal to the query', async () => {
+		const client = new StonecropClient({ endpoint: ENDPOINT })
+		mockFetch.mockReturnValue(makeFetchResponse({ stonecropRecords: { data: [], hasMore: false, count: 3 } }))
+
+		await client.getRecords(taskRef, { includeTotal: true })
+
+		const [, options] = mockFetch.mock.calls[0] as [string, RequestInit]
+		const body = JSON.parse(options.body as string) as GraphQLRequestBody
+		expect(body.variables!.includeTotal).toBe(true)
 	})
 
 	it('passes limit, offset, orderBy, filters to the query', async () => {
 		const client = new StonecropClient({ endpoint: ENDPOINT })
-		mockFetch.mockReturnValue(makeFetchResponse({ stonecropRecords: { data: [], count: 0 } }))
+		mockFetch.mockReturnValue(makeFetchResponse({ stonecropRecords: { data: [], hasMore: false, count: null } }))
 
 		await client.getRecords(taskRef, {
 			limit: 10,
@@ -299,9 +352,109 @@ describe('StonecropClient.getRecords', { tags: ['unit', 'graphql'] }, () => {
 
 	it('works with no options (defaults)', async () => {
 		const client = new StonecropClient({ endpoint: ENDPOINT })
-		mockFetch.mockReturnValue(makeFetchResponse({ stonecropRecords: { data: [], count: 0 } }))
+		mockFetch.mockReturnValue(makeFetchResponse({ stonecropRecords: { data: [], hasMore: false, count: null } }))
 		const result = await client.getRecords(taskRef)
-		expect(result).toEqual([])
+		expect(result).toEqual({ data: [], hasMore: false })
+	})
+})
+
+// ===========================================================================
+// getNativeRecord / getNativeRecords
+// ===========================================================================
+
+describe('StonecropClient.getNativeRecord', { tags: ['unit', 'graphql'] }, () => {
+	it('returns a record with link fields as { id, displayText } objects', async () => {
+		const client = new StonecropClient({ endpoint: ENDPOINT })
+		mockFetch.mockReturnValueOnce(makeFetchResponse({ stonecropAllMeta: allMetaFixture })).mockReturnValueOnce(
+			makeFetchResponse({
+				salesOrderById: {
+					id: 'so-1',
+					customerId: 'party-1',
+					partyByCustomerId: { id: 'party-1', partyName: 'Acme Corp' },
+				},
+			})
+		)
+
+		const result = await client.getNativeRecord(salesOrderRef, 'so-1')
+
+		expect(result.record).toEqual({
+			id: 'so-1',
+			customerId: { id: 'party-1', displayText: 'Acme Corp' },
+		})
+		expect(mockFetch).toHaveBeenCalledTimes(2)
+	})
+
+	it('returns null when the doctype is not in metadata', async () => {
+		const client = new StonecropClient({ endpoint: ENDPOINT })
+		mockFetch.mockReturnValueOnce(makeFetchResponse({ stonecropAllMeta: allMetaFixture }))
+
+		const result = await client.getNativeRecord({ name: 'Missing' }, 'so-1')
+
+		expect(result.record).toBeNull()
+		expect(mockFetch).toHaveBeenCalledOnce()
+	})
+
+	it('returns null when PostGraphile finds no row', async () => {
+		const client = new StonecropClient({ endpoint: ENDPOINT })
+		mockFetch
+			.mockReturnValueOnce(makeFetchResponse({ stonecropAllMeta: allMetaFixture }))
+			.mockReturnValueOnce(makeFetchResponse({ salesOrderById: null }))
+
+		const result = await client.getNativeRecord(salesOrderRef, 'missing-id')
+
+		expect(result.record).toBeNull()
+	})
+})
+
+describe('StonecropClient.getNativeRecords', { tags: ['unit', 'graphql'] }, () => {
+	it('returns transformed rows and hasMore when the page is full', async () => {
+		const client = new StonecropClient({ endpoint: ENDPOINT })
+		mockFetch.mockReturnValueOnce(makeFetchResponse({ stonecropAllMeta: allMetaFixture })).mockReturnValueOnce(
+			makeFetchResponse({
+				allSalesOrders: {
+					nodes: [
+						{
+							id: 'so-1',
+							customerId: 'party-1',
+							partyByCustomerId: { id: 'party-1', partyName: 'Acme Corp' },
+						},
+					],
+				},
+			})
+		)
+
+		const result = await client.getNativeRecords(salesOrderRef, { limit: 1 })
+
+		expect(result.data).toEqual([
+			{
+				id: 'so-1',
+				customerId: { id: 'party-1', displayText: 'Acme Corp' },
+			},
+		])
+		expect(result.hasMore).toBe(true)
+	})
+
+	it('returns an empty page when the doctype is not in metadata', async () => {
+		const client = new StonecropClient({ endpoint: ENDPOINT })
+		mockFetch.mockReturnValueOnce(makeFetchResponse({ stonecropAllMeta: allMetaFixture }))
+
+		const result = await client.getNativeRecords({ name: 'Missing' })
+
+		expect(result).toEqual({ data: [], hasMore: false })
+		expect(mockFetch).toHaveBeenCalledOnce()
+	})
+
+	it('passes limit and offset to the native list query', async () => {
+		const client = new StonecropClient({ endpoint: ENDPOINT })
+		mockFetch
+			.mockReturnValueOnce(makeFetchResponse({ stonecropAllMeta: allMetaFixture }))
+			.mockReturnValueOnce(makeFetchResponse({ allSalesOrders: { nodes: [] } }))
+
+		await client.getNativeRecords(salesOrderRef, { limit: 25, offset: 50 })
+
+		const [, options] = mockFetch.mock.calls[1] as [string, RequestInit]
+		const body = JSON.parse(options.body as string) as GraphQLRequestBody
+		expect(body.variables).toEqual({ first: 25, offset: 50 })
 	})
 })
 

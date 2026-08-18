@@ -19,7 +19,7 @@ import { resolve, join } from 'node:path'
 import { parseArgs } from 'node:util'
 import { getIntrospectionQuery, type IntrospectionQuery } from 'graphql'
 
-import { convertGraphQLSchema } from './converter/index'
+import { convertGraphQLSchema, formatDoctypeDrift, mergeIntrospectedDoctype } from './converter/index'
 import { validateDoctype } from './validation'
 import type { GraphQLConversionOptions } from './converter/types'
 
@@ -69,9 +69,10 @@ async function main(): Promise<void> {
 			output: { type: 'string', short: 'o' },
 			include: { type: 'string' },
 			exclude: { type: 'string' },
-			overrides: { type: 'string' },
+			names: { type: 'string' },
 			'custom-scalars': { type: 'string' },
 			'include-unmapped': { type: 'boolean', default: false },
+			check: { type: 'boolean', default: false },
 			help: { type: 'boolean', short: 'h' },
 		},
 	})
@@ -116,11 +117,12 @@ async function main(): Promise<void> {
 		options.exclude = values.exclude.split(',').map(s => s.trim())
 	}
 
-	if (values.overrides) {
-		const overridesPath = resolve(values.overrides)
-		const overridesContent = readFileSync(overridesPath, 'utf-8')
-		options.typeOverrides = JSON.parse(overridesContent)
+	if (values.names) {
+		const namesPath = resolve(values.names)
+		options.doctypeNames = JSON.parse(readFileSync(namesPath, 'utf-8'))
 	}
+
+	options.onWarning = message => console.warn(`  WARN: ${message}`)
 
 	if (values['custom-scalars']) {
 		const scalarsPath = resolve(values['custom-scalars'])
@@ -160,16 +162,42 @@ async function main(): Promise<void> {
 
 	let warnings = 0
 	let errors = 0
+	let changed = 0
+	const driftLines: string[] = []
 
-	for (const doctype of doctypes) {
-		const fileName = `${doctype.slug}.json`
+	for (const generated of doctypes) {
+		const fileName = `${generated.slug}.json`
 		const filePath = join(outputDir, fileName)
-		const json = JSON.stringify(doctype, null, '\t')
 
-		writeFileSync(filePath, json + '\n', 'utf-8')
+		// When a doctype already exists it is the source of truth: generation confirms it and adds
+		// provenance markers, and reports anything it disagrees with rather than applying it. A
+		// doctype legitimately declares identity the schema cannot express — most often a natural
+		// key that is a UNIQUE constraint, not the table's PRIMARY KEY — and overwriting that would
+		// silently re-key the doctype on every run. A first generation has nothing to merge into,
+		// so converter output is written verbatim.
+		let output: object = generated
+		if (existsSync(filePath)) {
+			const { doctype: merged, drift } = mergeIntrospectedDoctype(
+				JSON.parse(readFileSync(filePath, 'utf-8')),
+				generated
+			)
+			output = merged
+			driftLines.push(...formatDoctypeDrift(drift))
+		}
+
+		// Serialize the merged object directly. Never round-trip it through the Zod parser first:
+		// that runs in strip mode and would silently drop every key this package does not model,
+		// `handler` on an action being the one consumers actually rely on.
+		const json = JSON.stringify(output, null, '\t') + '\n'
+		const unchanged = existsSync(filePath) && readFileSync(filePath, 'utf-8') === json
+		if (!unchanged) changed++
+
+		if (!values.check && !unchanged) {
+			writeFileSync(filePath, json, 'utf-8')
+		}
 
 		// Validate the output
-		const validation = validateDoctype(doctype)
+		const validation = validateDoctype(output)
 		if (!validation.success) {
 			errors++
 			console.error(`  ERROR: ${fileName} failed validation:`)
@@ -178,7 +206,7 @@ async function main(): Promise<void> {
 			}
 		} else {
 			// Check for unmapped fields
-			const unmappedFields = doctype.fields.filter((f: any) => f._unmapped)
+			const unmappedFields = generated.fields.filter((f: any) => f._unmapped)
 			if (unmappedFields.length > 0) {
 				warnings++
 				console.warn(
@@ -190,13 +218,19 @@ async function main(): Promise<void> {
 		}
 	}
 
+	if (driftLines.length > 0) {
+		console.log('\nDrift between the authored doctypes and the schema (reported, not applied):')
+		for (const line of driftLines) console.log(line)
+	}
+
 	console.log(
-		`\nGenerated ${doctypes.length} doctype(s) in ${outputDir}` +
+		`\n${values.check ? 'Checked' : 'Generated'} ${doctypes.length} doctype(s) in ${outputDir}` +
+			(changed ? ` (${changed} ${values.check ? 'would change' : 'written'})` : ' (all up to date)') +
 			(warnings ? ` (${warnings} with warnings)` : '') +
 			(errors ? ` (${errors} with errors)` : '')
 	)
 
-	if (errors > 0) {
+	if (errors > 0 || (values.check && changed > 0)) {
 		process.exit(1)
 	}
 }
@@ -219,10 +253,15 @@ OUTPUT:
 OPTIONS:
   --include <types>            Comma-separated list of type names to include
   --exclude <types>            Comma-separated list of type names to exclude
-  --overrides <file>           JSON file with per-type field overrides
+  --names <file>               JSON file mapping GraphQL type name to doctype name
   --custom-scalars <file>      JSON file mapping custom scalar names to field templates
   --include-unmapped           Include _graphqlType metadata on unmapped fields
+  --check                      Report drift and exit non-zero if anything would change; write nothing
   --help, -h                   Show this help message
+
+NOTE: an existing doctype file is the source of truth. Regeneration verifies it against the
+schema and adds 'source: introspected' markers; it reports disagreements rather than
+overwriting them, so hand-curation survives. Use --check in CI.
 
 EXAMPLES:
   # From a live PostGraphile server

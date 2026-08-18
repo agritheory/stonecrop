@@ -57,19 +57,29 @@ export interface GraphQLConversionOptions {
 	include?: string[]
 
 	/**
-	 * Per-type, per-field overrides for the converted field definitions.
-	 * Outer key is the GraphQL type name, inner key is the field name.
+	 * Emit a doctype under a different name than its GraphQL type. Key is the GraphQL type name,
+	 * value is the doctype `name`; `slug` is derived from the value.
+	 *
+	 * This exists for the case where a doctype is not one-to-one with a table — a second view over
+	 * an existing type, say, distinguished only by presentation. Without it the converter can only
+	 * ever name a doctype after its type.
+	 *
+	 * Keep it consistent with the middleware's `tables` option, which maps the resulting doctype
+	 * name to its SQL target.
 	 *
 	 * @example
 	 * ```typescript
-	 * {
-	 *   SalesOrder: {
-	 *     totalAmount: { component: 'ANumericInput', align: 'right' }
-	 *   }
-	 * }
+	 * { Plan: 'Planner' }   // emits a doctype named Planner, slug 'planner', from type Plan
 	 * ```
 	 */
-	typeOverrides?: Record<string, Record<string, Omit<Partial<ValueField>, 'kind'>>>
+	doctypeNames?: Record<string, string>
+
+	/**
+	 * Called with any advisory message raised during conversion — currently only the
+	 * un-normalized-PostGraphile warning. Left to the caller so the library never writes to the
+	 * console itself.
+	 */
+	onWarning?: (message: string) => void
 
 	/**
 	 * Map custom or non-standard GraphQL scalar types to the component that renders them.

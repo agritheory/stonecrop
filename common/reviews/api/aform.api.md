@@ -4,6 +4,7 @@
 
 ```ts
 
+import ABadge from './components/form/ABadge.vue';
 import ACheckbox from './components/form/ACheckbox.vue';
 import ACurrencyInput from './components/form/ACurrencyInput.vue';
 import ADate from './components/form/ADate.vue';
@@ -11,6 +12,7 @@ import ADatePicker from './components/form/ADatePicker.vue';
 import ADateRange from './components/form/ADateRange.vue';
 import ADateSelection from './components/form/ADateSelection.vue';
 import ADateTime from './components/form/ADateTime.vue';
+import ADateTimeInput from './components/form/ADateTimeInput.vue';
 import ADropdown from './components/form/ADropdown.vue';
 import ADuration from './components/form/ADuration.vue';
 import AFieldset from './components/form/AFieldset.vue';
@@ -23,12 +25,16 @@ import type { App } from 'vue';
 import AQuantityInput from './components/form/AQuantityInput.vue';
 import ATextboxInput from './components/form/ATextboxInput.vue';
 import ATextInput from './components/form/ATextInput.vue';
+import type { BadgeDescriptor } from '@stonecrop/schema';
 import type { ColumnSchema } from '@stonecrop/schema';
+import type { FieldOptions } from '@stonecrop/schema';
 import type { FieldValidation } from '@stonecrop/schema';
 import { InteractionMode } from '@stonecrop/schema';
 import Login from './components/utilities/Login.vue';
 import type { TableViewConfig } from '@stonecrop/schema';
 import type { ValueField } from '@stonecrop/schema';
+
+export { ABadge }
 
 export { ACheckbox }
 
@@ -44,6 +50,8 @@ export { ADateSelection }
 
 export { ADateTime }
 
+export { ADateTimeInput }
+
 export { ADropdown }
 
 export { ADuration }
@@ -55,6 +63,9 @@ export { AFileAttach }
 export { AForm }
 
 export { AFormLink }
+
+// @public
+export type AFormLinkModelValue = AFormLinkValue | string | number;
 
 // @public
 export interface AFormLinkNavigator {
@@ -77,6 +88,18 @@ export { AQuantityInput }
 export { ATextboxInput }
 
 export { ATextInput }
+
+// @public
+export type BadgeFormatContext = {
+    record?: Record<string, unknown>;
+    row?: Record<string, unknown>;
+};
+
+// @public
+export type BadgeFormatFn = (value: unknown, context: BadgeFormatContext) => string | BadgeDescriptor;
+
+// @public
+export function badgeInputAccentStyle(descriptor: BadgeDescriptor | undefined): Record<string, string> | undefined;
 
 // @public
 export type ComponentProps = {
@@ -188,6 +211,9 @@ export interface ResolvedTable {
     schema: ColumnSchema[];
     validation?: FieldValidation;
 }
+
+// @public
+export function resolveFieldBadge(value: unknown, options: FieldOptions | undefined, format: string | BadgeFormatFn | undefined, context?: BadgeFormatContext): BadgeDescriptor | undefined;
 
 
 export * from "@stonecrop/atable/types";

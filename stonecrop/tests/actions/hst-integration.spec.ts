@@ -4,7 +4,22 @@ import type { UnknownMachineConfig } from 'xstate'
 import Doctype from '../../src/doctype'
 import Registry from '../../src/registry'
 import { Stonecrop } from '../../src/stonecrop'
-import { registerGlobalAction } from '../../src/field-triggers'
+import { getGlobalTriggerEngine, registerGlobalAction } from '../../src/field-triggers'
+
+/**
+ * Register field triggers the way an application does now: imperatively, on the engine.
+ *
+ * A doctype used to carry this map itself and `registry.addDoctype` forwarded it here. That
+ * declarative route is gone — it could cross neither the Zod gate nor the SDL, so it only ever
+ * worked for a host bypassing both. The engine and everything under it are unchanged; only who
+ * calls `registerDoctypeActions` moved. Registering under name AND slug mirrors what `addDoctype`
+ * did, so these tests drive the same engine state as before.
+ */
+const registerTriggers = (doctype: Doctype, actions: Map<string, string[]>) => {
+	const engine = getGlobalTriggerEngine()
+	engine.registerDoctypeActions(doctype.doctype, actions)
+	if (doctype.slug !== doctype.doctype) engine.registerDoctypeActions(doctype.slug, actions)
+}
 
 describe('Field Trigger Integration', { tags: ['unit'] }, () => {
 	let registry: Registry
@@ -38,10 +53,11 @@ describe('Field Trigger Integration', { tags: ['unit'] }, () => {
 			['saveTask', ['someRegularAction']], // regular action
 		])
 
-		const doctype = new Doctype('Task', schema, workflow, actions, undefined, {
+		const doctype = new Doctype('Task', schema, workflow, undefined, {
 			emailAddress: { target: 'email-address', cardinality: 'noneOrMany' },
 		})
 		registry.addDoctype(doctype)
+		registerTriggers(doctype, actions)
 
 		// Initialize HST store with data
 		const store = stonecrop.getStore()
@@ -89,8 +105,9 @@ describe('Field Trigger Integration', { tags: ['unit'] }, () => {
 			['emailAddress', ['action1', 'action2']], // multiple actions for same field
 		])
 
-		const doctype = new Doctype('Task', schema, workflow, actions)
+		const doctype = new Doctype('Task', schema, workflow)
 		registry.addDoctype(doctype)
+		registerTriggers(doctype, actions)
 
 		const store = stonecrop.getStore()
 		stonecrop.addRecord('task', '123', { emailAddress: 'old@example.com' })
@@ -119,8 +136,9 @@ describe('Field Trigger Integration', { tags: ['unit'] }, () => {
 		}
 		const actions = Map([['profile.name', ['validateName']]])
 
-		const doctype = new Doctype('User', schema, workflow, actions)
+		const doctype = new Doctype('User', schema, workflow)
 		registry.addDoctype(doctype)
+		registerTriggers(doctype, actions)
 
 		const store = stonecrop.getStore()
 		stonecrop.addRecord('user', '123', { profile: { name: 'John Doe' } })
@@ -155,8 +173,9 @@ describe('Field Trigger Integration', { tags: ['unit'] }, () => {
 		}
 		const actions = Map([['title', ['errorAction']]])
 
-		const doctype = new Doctype('Task', schema, workflow, actions)
+		const doctype = new Doctype('Task', schema, workflow)
 		registry.addDoctype(doctype)
+		registerTriggers(doctype, actions)
 
 		const store = stonecrop.getStore()
 		stonecrop.addRecord('task', '123', { title: 'Original Title' })

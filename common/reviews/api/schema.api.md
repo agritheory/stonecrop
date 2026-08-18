@@ -23,6 +23,38 @@ export const ActionDefinition: z.ZodObject<{
 // @public
 export type ActionDefinition = z.infer<typeof ActionDefinition>;
 
+// @public
+export type AuthoredDoctype = Record<string, unknown>;
+
+// @public
+export interface BadgeDescriptor {
+    // (undocumented)
+    color?: string;
+    // (undocumented)
+    label: string;
+    // (undocumented)
+    variant?: BadgeVariant;
+}
+
+// @public
+export type BadgePresentation = 'cell-fill' | 'input-accent';
+
+// @public
+export type BadgeSpec = BadgeVariant | BadgeSpecObject;
+
+// @public
+export interface BadgeSpecObject {
+    // (undocumented)
+    color?: string;
+    // (undocumented)
+    label?: string;
+    // (undocumented)
+    variant?: BadgeVariant;
+}
+
+// @public
+export type BadgeVariant = 'neutral' | 'success' | 'warning' | 'danger' | 'brand';
+
 // Warning: (ae-forgotten-export) The symbol "FieldTemplate" needs to be exported by the entry point index.d.ts
 //
 // @public
@@ -72,6 +104,7 @@ export interface ColumnSchema {
     label?: string;
     modalComponent?: string;
     modalComponentExtraProps?: Record<string, any>;
+    options?: FieldOptions;
     pinned?: boolean;
     resizable?: boolean;
     sortable?: boolean;
@@ -115,7 +148,7 @@ export type CustomFetch = z.infer<typeof CustomFetch>;
 export interface DataClient<T extends DoctypeRef = DoctypeRef, M = DoctypeMeta> {
     getMeta(context: DoctypeContext): Promise<M | null>;
     getRecord(doctype: T, recordId: string, options?: GetRecordOptions): Promise<GetRecordResult>;
-    getRecords(doctype: T, options?: GetRecordsOptions): Promise<Record<string, unknown>[]>;
+    getRecords(doctype: T, options?: GetRecordsOptions): Promise<GetRecordsResult>;
     runAction(doctype: T, action: string, args?: unknown[]): Promise<{
         success: boolean;
         data: unknown;
@@ -137,6 +170,19 @@ export interface DoctypeContext {
 }
 
 // @public
+export interface DoctypeDrift {
+    componentDrift: string[];
+    doctype: string;
+    identityDrift: string[];
+    mode: 'clean' | 'partial';
+    omitted: string[];
+    orphan: string[];
+    reason?: string;
+    requiredDrift: string[];
+    tagged: string[];
+}
+
+// @public
 export type DoctypeField = ValueField | FieldsetField | TableField;
 
 // @public
@@ -146,6 +192,7 @@ export const DoctypeFieldSchema: z.ZodType<DoctypeField, unknown, z.core.$ZodTyp
 export const DoctypeMeta: z.ZodObject<{
     name: z.ZodString;
     slug: z.ZodOptional<z.ZodString>;
+    displayField: z.ZodOptional<z.ZodString>;
     fields: z.ZodArray<z.ZodType<DoctypeField, unknown, z.core.$ZodTypeInternals<DoctypeField, unknown>>>;
     links: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodObject<{
         target: z.ZodString;
@@ -271,6 +318,24 @@ export const FieldValidation: z.ZodObject<{
 export type FieldValidation = z.infer<typeof FieldValidation>;
 
 // @public
+export function flattenFields(fields: readonly DoctypeField[]): (ValueField | TableField)[];
+
+// @public
+export function formatDoctypeDrift(drift: DoctypeDrift): string[];
+
+// @public
+export function getDisplayField(fields: readonly DoctypeField[], displayField: string | undefined): ValueField | undefined;
+
+// @public
+export function getPrimaryKeyField(fields: readonly DoctypeField[]): ValueField | undefined;
+
+// @public
+export function getRecordIdentity(fields: readonly DoctypeField[], record: Record<string, unknown>): string | undefined;
+
+// @public
+export function getRecordIdField(fields: readonly DoctypeField[]): string;
+
+// @public
 export interface GetRecordOptions {
     includeNested?: boolean | string[];
     maxDepth?: number;
@@ -284,9 +349,17 @@ export interface GetRecordResult {
 // @public
 export interface GetRecordsOptions {
     filters?: Record<string, unknown>;
+    includeTotal?: boolean;
     limit?: number;
     offset?: number;
     orderBy?: string;
+}
+
+// @public
+export interface GetRecordsResult {
+    count?: number;
+    data: Record<string, unknown>[];
+    hasMore: boolean;
 }
 
 // @public
@@ -303,19 +376,26 @@ export interface GraphQLConversionFieldMeta extends ValueField {
 export interface GraphQLConversionOptions {
     classifyField?: (fieldName: string, field: GraphQLField<unknown, unknown>, parentType: GraphQLObjectType) => Omit<Partial<ValueField>, 'kind'> | null;
     customScalars?: Record<string, Partial<FieldTemplate>>;
+    doctypeNames?: Record<string, string>;
     exclude?: string[];
     include?: string[];
     includeUnmappedMeta?: boolean;
     isEntityField?: (fieldName: string, field: GraphQLField<unknown, unknown>, parentType: GraphQLObjectType) => boolean;
     isEntityType?: (typeName: string, type: GraphQLObjectType) => boolean;
-    typeOverrides?: Record<string, Record<string, Omit<Partial<ValueField>, 'kind'>>>;
+    onWarning?: (message: string) => void;
 }
+
+// @public
+export function hasBadgeOptions(options: FieldOptions | undefined): boolean;
 
 // @public
 export type InteractionMode = 'edit' | 'read' | 'display';
 
 // @public
 export const INTERNAL_SCALARS: Set<string>;
+
+// @public
+export const INTROSPECTED_IDENTITY_PROPS: readonly ["fieldname", "primaryKey", "required", "options", "cardinality", "doctype"];
 
 // @public
 export type IntrospectionSource = IntrospectionQuery | string;
@@ -326,12 +406,24 @@ export function isActionAllowedInState(action: {
 }, currentState: string): boolean;
 
 // @public
+export function isBadgeDescriptor(value: unknown): value is BadgeDescriptor;
+
+// @public
+export function isSelectChoiceMap(options: FieldOptions | undefined): options is Record<string, BadgeSpec>;
+
+// @public
+export function isSelectOptions(options: FieldOptions | undefined): options is SelectOptions;
+
+// @public
 export const LazyFetch: z.ZodObject<{
     method: z.ZodLiteral<"lazy">;
 }, z.core.$strip>;
 
 // @public
 export type LazyFetch = z.infer<typeof LazyFetch>;
+
+// @public @deprecated
+export const LINK_DISPLAY_SUFFIX = "__display";
 
 // @public
 export const LinkDeclaration: z.ZodObject<{
@@ -360,11 +452,26 @@ export const LinkDeclaration: z.ZodObject<{
 // @public
 export type LinkDeclaration = z.infer<typeof LinkDeclaration>;
 
+// @public @deprecated
+export function linkDisplayFieldname(fieldname: string): string;
+
 // @public
 export type LinkExpansion = 'inline' | 'expand';
 
 // @public
 export type LinkRenderMode = 'inline' | 'record' | 'table';
+
+// @public
+export function lookupBadge(options: FieldOptions | undefined, key: string | undefined): BadgeDescriptor | undefined;
+
+// @public
+export function mergeIntrospectedDoctype(authored: AuthoredDoctype, generated: ConvertedGraphQLDoctype): MergeResult;
+
+// @public
+export interface MergeResult {
+    doctype: AuthoredDoctype;
+    drift: DoctypeDrift;
+}
 
 // @public
 export function normalizeFieldKind(field: unknown): unknown;
@@ -383,6 +490,17 @@ export function resolveLinkRenderMode(link: {
     component?: string;
     cardinality?: string;
 }, fieldComponent?: string): LinkRenderMode;
+
+// @public
+export function selectChoices(options: FieldOptions | undefined): string[];
+
+// @public
+export interface SelectOptions extends Record<string, unknown> {
+    // (undocumented)
+    badges?: Record<string, BadgeSpec>;
+    // (undocumented)
+    choices: string[];
+}
 
 // @public
 export type SerializedFunction = string;

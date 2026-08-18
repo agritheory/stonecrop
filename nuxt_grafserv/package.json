@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/nuxt-grafserv",
-	"version": "0.16.4",
+	"version": "0.23.0",
 	"description": "Pluggable Grafserv GraphQL server as Nuxt Module",
 	"bugs": {
 		"url": "https://github.com/agritheory/stonecrop/issues"
@@ -49,7 +49,7 @@
 		"test:ci": "vitest run --run",
 		"test:coverage": "vitest run --coverage.enabled --coverage.provider=istanbul",
 		"test:e2e": "vitest run test/e2e",
-		"test:types": "vue-tsc --noEmit && cd playground && vue-tsc --noEmit",
+		"test:types": "vue-tsc --noEmit -p tsconfig.src.json && vue-tsc --noEmit -p tsconfig.test.json && cd playground && vue-tsc --noEmit",
 		"test:watch": "vitest watch"
 	},
 	"dependencies": {

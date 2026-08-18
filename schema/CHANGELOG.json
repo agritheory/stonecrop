@@ -2,6 +2,93 @@
   "name": "@stonecrop/schema",
   "entries": [
     {
+      "version": "0.23.0",
+      "tag": "@stonecrop/schema_v0.23.0",
+      "date": "Tue, 18 Aug 2026 09:16:50 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add Badge component with cell-fill and input-accent presentations for Select fields"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.22.0",
+      "tag": "@stonecrop/schema_v0.22.0",
+      "date": "Mon, 17 Aug 2026 19:46:36 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.21.0",
+      "tag": "@stonecrop/schema_v0.21.0",
+      "date": "Mon, 17 Aug 2026 19:08:23 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Deprecate LINK_DISPLAY_SUFFIX and linkDisplayFieldname in favor of native PostGraphile query link objects."
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.20.0",
+      "tag": "@stonecrop/schema_v0.20.0",
+      "date": "Mon, 17 Aug 2026 18:41:19 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.19.0",
+      "tag": "@stonecrop/schema_v0.19.0",
+      "date": "Mon, 17 Aug 2026 12:46:25 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Add optional `displayField` to doctypes, naming the field shown when a link points at them."
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.18.0",
+      "tag": "@stonecrop/schema_v0.18.0",
+      "date": "Fri, 14 Aug 2026 08:05:46 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.17.0",
+      "tag": "@stonecrop/schema_v0.17.0",
+      "date": "Tue, 11 Aug 2026 12:49:04 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Add getRecordIdField(fields), the single definition of which field identifies a record. DoctypeMeta now rejects a doctype declaring more than one primaryKey; declaring none stays legal and resolves through the id fallback."
+          },
+          {
+            "comment": "Return a page from DataClient.getRecords instead of a bare array: the result carries hasMore, so a truncated list is distinguishable from a complete one, plus a count that is opt-in behind the new includeTotal option."
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.16.6",
+      "tag": "@stonecrop/schema_v0.16.6",
+      "date": "Tue, 04 Aug 2026 12:14:33 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.16.5",
+      "tag": "@stonecrop/schema_v0.16.5",
+      "date": "Mon, 03 Aug 2026 11:12:57 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Add getPrimaryKeyField/getRecordIdentity and INTROSPECTED_IDENTITY_PROPS; generation now verifies an existing doctype and stamps provenance instead of overwriting it, deriving primaryKey only for an unambiguous id. Replaces --overrides/typeOverrides with --names, and adds --check."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.16.4",
       "tag": "@stonecrop/schema_v0.16.4",
       "date": "Tue, 28 Jul 2026 09:58:37 GMT",

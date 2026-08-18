@@ -1,5 +1,3 @@
-import { fileURLToPath } from 'node:url'
-
 import { defineConfig } from 'vitest/config'
 
 // This package's tests all run in a plain `node` environment — NOT under @nuxt/test-utils'
@@ -16,11 +14,17 @@ import { defineConfig } from 'vitest/config'
 export default defineConfig({
 	resolve: {
 		alias: {
-			// grafast is not a dependency of this package (it belongs to consumer server
-			// contexts), but the templates/fullstack resolver modules import it at top level.
-			// The stub throws on any call — tests may exercise only the pure formatting helpers
-			// those modules export.
-			grafast: fileURLToPath(new URL('./test/stubs/grafast.ts', import.meta.url)),
+			// The templates/ and fullstack/ resolver modules import bare `grafast`, which is what a
+			// consumer server context provides. This package doesn't depend on it directly, so the
+			// specifier does not resolve here — but `postgraphile` is a devDependency and re-exports
+			// the same module, which is exactly what those consumers get.
+			//
+			// This used to point at a stub that threw on every call, on the grounds that plan
+			// resolvers must not execute in unit tests. That left the shipped scaffold resolvers
+			// verifiable only by reading them. Pointing at the real thing lets templates-host.test.ts
+			// build a schema and execute documents against it, so the code the CLI writes into
+			// consumer apps is covered by the same kind of test as everything else.
+			grafast: 'postgraphile/grafast',
 		},
 	},
 	test: {
