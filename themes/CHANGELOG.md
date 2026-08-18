@@ -1,6 +1,13 @@
 # Change Log - @stonecrop/themes
 
-This log was last generated on Mon, 17 Aug 2026 19:46:36 GMT and should not be manually modified.
+This log was last generated on Tue, 18 Aug 2026 09:16:50 GMT and should not be manually modified.
+
+## 0.23.0
+Tue, 18 Aug 2026 09:16:50 GMT
+
+### Updates
+
+- Add Badge component with cell-fill and input-accent presentations for Select fields
 
 ## 0.22.0
 Mon, 17 Aug 2026 19:46:36 GMT

@@ -1,5 +1,7 @@
 export type * from '@stonecrop/atable/types'
 export { deserializeFunction } from './utils/deserialize'
+export { badgeInputAccentStyle, resolveFieldBadge } from './utils/badge'
+export type { BadgeFormatContext, BadgeFormatFn } from './utils/badge'
 import { install as installATable } from '@stonecrop/atable'
 import type { App } from 'vue'
 
@@ -7,6 +9,7 @@ import ACheckbox from './components/form/ACheckbox.vue'
 import ACurrencyInput from './components/form/ACurrencyInput.vue'
 import ADate from './components/form/ADate.vue'
 import ADropdown from './components/form/ADropdown.vue'
+import ABadge from './components/form/ABadge.vue'
 import ADatePicker from './components/form/ADatePicker.vue'
 import ADateTime from './components/form/ADateTime.vue'
 import ADateTimeInput from './components/form/ADateTimeInput.vue'
@@ -38,6 +41,7 @@ function install(app: App /* options */) {
 	app.component('ACurrencyInput', ACurrencyInput)
 	app.component('ADate', ADate)
 	app.component('ADropdown', ADropdown)
+	app.component('ABadge', ABadge)
 	app.component('ADatePicker', ADatePicker)
 	app.component('ADateTime', ADateTime)
 	app.component('ADateTimeInput', ADateTimeInput)
@@ -60,6 +64,7 @@ export {
 	ACurrencyInput,
 	ADate,
 	ADropdown,
+	ABadge,
 	ADatePicker,
 	ADateRange,
 	ADateSelection,

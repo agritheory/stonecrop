@@ -2,6 +2,18 @@
   "name": "@stonecrop/aform",
   "entries": [
     {
+      "version": "0.23.0",
+      "tag": "@stonecrop/aform_v0.23.0",
+      "date": "Tue, 18 Aug 2026 09:16:50 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Add Badge component with cell-fill and input-accent presentations for Select fields"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.22.0",
       "tag": "@stonecrop/aform_v0.22.0",
       "date": "Mon, 17 Aug 2026 19:46:36 GMT",

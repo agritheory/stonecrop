@@ -284,6 +284,22 @@ export declare function getRecordIdField(fields: readonly DoctypeField[]): strin
 |-----------|------|-------------|
 | fields | `readonly DoctypeField[]` | the doctype's top-level fields |
 
+### hasBadgeOptions
+
+Whether field options carry any badge mapping.
+
+**Signature:**
+
+```typescript
+export declare function hasBadgeOptions(options: FieldOptions | undefined): boolean;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| options | `FieldOptions \| undefined` |  |
+
 ### isActionAllowedInState
 
 Whether a workflow action may run from `currentState`.
@@ -305,6 +321,54 @@ export declare function isActionAllowedInState(action: {
 | action | `{ allowedStates?: string[] \| null; }` |  |
 | currentState | `string` |  |
 
+### isBadgeDescriptor
+
+True when `value` is a resolved badge descriptor for ACell / ADropdown.
+
+**Signature:**
+
+```typescript
+export declare function isBadgeDescriptor(value: unknown): value is BadgeDescriptor;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| value | `unknown` |  |
+
+### isSelectChoiceMap
+
+True when `options` is a Select choice map (`{ Open: "warning", ... }` or `{ choices: [...], badges: {...} }`), not a quantity/currency/code config bag.
+
+**Signature:**
+
+```typescript
+export declare function isSelectChoiceMap(options: FieldOptions | undefined): options is Record<string, BadgeSpec>;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| options | `FieldOptions \| undefined` |  |
+
+### isSelectOptions
+
+True when `options` uses the structured SelectOptions shape.
+
+**Signature:**
+
+```typescript
+export declare function isSelectOptions(options: FieldOptions | undefined): options is SelectOptions;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| options | `FieldOptions \| undefined` |  |
+
 ### linkDisplayFieldname
 
 Build the payload key for a link field's display text (e.g. `customerId__display`).
@@ -320,6 +384,23 @@ export declare function linkDisplayFieldname(fieldname: string): string;
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | fieldname | `string` |  |
+
+### lookupBadge
+
+Resolve a stored choice value to a badge descriptor using field options.
+
+**Signature:**
+
+```typescript
+export declare function lookupBadge(options: FieldOptions | undefined, key: string | undefined): BadgeDescriptor | undefined;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| options | `FieldOptions \| undefined` |  |
+| key | `string \| undefined` |  |
 
 ### mergeIntrospectedDoctype
 
@@ -430,6 +511,22 @@ export declare function resolveLinkRenderMode(link: {
 | link | `{ component?: string; cardinality?: string; }` | the link declaration (only `component` and `cardinality` are consulted) |
 | fieldComponent | `string` | the linked field's own `component`, used when the declaration names none |
 
+### selectChoices
+
+Dropdown / filter choice strings.
+
+**Signature:**
+
+```typescript
+export declare function selectChoices(options: FieldOptions | undefined): string[];
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| options | `FieldOptions \| undefined` |  |
+
 ### snakeToCamel
 
 Converts snake_case to camelCase
@@ -528,6 +625,50 @@ export declare function validateField(data: unknown): ValidationResult;
 
 ## Interfaces
 
+### BadgeDescriptor
+
+Resolved badge for rendering. Returned by `format` or built from an options map.
+
+**Definition:**
+
+```typescript
+export interface BadgeDescriptor {
+  color?: string;
+  label: string;
+  variant?: BadgeVariant;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| color? | `string` |  |
+| label | `string` |  |
+| variant? | `BadgeVariant` |  |
+
+### BadgeSpecObject
+
+Per-choice badge configuration in a Select options map.
+
+**Definition:**
+
+```typescript
+export interface BadgeSpecObject {
+  color?: string;
+  label?: string;
+  variant?: BadgeVariant;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| color? | `string` |  |
+| label? | `string` |  |
+| variant? | `BadgeVariant` |  |
+
 ### ColumnSchema
 
 Authoring contract for doctype field declarations that can be rendered as table columns. Pass a `ColumnSchema[]` array to ATable's `:schema` prop; `schemaToColumns` converts it to `TableColumn[]` internally — callers working from a doctype schema never need to construct `TableColumn` directly.
@@ -557,6 +698,7 @@ export interface ColumnSchema {
   label?: string;
   modalComponent?: string;
   modalComponentExtraProps?: Record<string, any>;
+  options?: FieldOptions;
   pinned?: boolean;
   resizable?: boolean;
   sortable?: boolean;
@@ -580,13 +722,14 @@ export interface ColumnSchema {
 | filterComponent? | `string` | Registered component name used when `filterType` is `'component'`. |
 | filterOptions? | `any[]` | Static option list for `filterType: 'select'`. When absent, options are derived from the unique values present in the column's rows. |
 | filterType? | `'text' \| 'select' \| 'number' \| 'date' \| 'dateRange' \| 'checkbox' \| 'component'` | The type of filter control to render. When absent, a default is derived from the `component`'s `ComponentCategory` (`boolean` → `checkbox`, `date` → `date`, `datetime` → `dateRange`, `select` → `select`, `number` → `number`, everything else — including an unknown component — → `text`). |
-| format? | `string` | Serialized function string used to format the cell value for display. Deserialized at render time by the table store's `getFormattedValue`. `TableColumn.format` widens this to also accept a live function directly. |
+| format? | `string` | Serialized function string used to format the cell value for display. Deserialized at render time by the table store's `getFormattedValue`. May return a plain string, HTML, or a `BadgeDescriptor`. `TableColumn.format` widens this to also accept a live function. |
 | ganttComponent? | `string` | Registered component name used to render Gantt bars in this column. Only applicable for Gantt tables. |
 | hidden? | `boolean` | When `true`, the field is excluded from the derived columns by `schemaToColumns`. |
 | isGantt? | `boolean` | When `true`, this column is treated as a Gantt bar column. Only applicable for Gantt tables. |
 | label? | `string` | Human-readable column header. When absent, ATable assigns labels alphabetically (A, B, C, …). |
 | modalComponent? | `string` | Registered component name rendered in the cell's modal editor. String-only — functions cannot appear in schema JSON. `TableColumn.modalComponent` widens this to also accept a factory function. The following props are automatically passed to the modal component: - `colIndex` — the column index of the current cell - `rowIndex` — the row index of the current cell - `store` — the table data store |
 | modalComponentExtraProps? | `Record<string, any>` | Extra props passed to `modalComponent` in addition to the standard cell props. Only applicable when `modalComponent` is set. |
+| options? | `FieldOptions` | Type-specific field options — Select choices, badge maps, quantity/currency config, etc. Spreads through `schemaToColumns` to `TableColumn`. |
 | pinned? | `boolean` | When `true`, the column is pinned to the left side of the table. |
 | resizable? | `boolean` | When `true`, the column can be resized by dragging the header edge. |
 | sortable? | `boolean` | When `true`, clicking the column header sorts the table by this column. |
@@ -899,6 +1042,26 @@ export interface MergeResult {
 | doctype | `AuthoredDoctype` | The authored doctype with `source` markers added and nothing else changed. |
 | drift | `DoctypeDrift` | Advisory report. Never applied. |
 
+### SelectOptions
+
+Select field options when choices carry badge colors.
+
+**Definition:**
+
+```typescript
+export interface SelectOptions {
+  badges?: Record<string, BadgeSpec>;
+  choices: string[];
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| badges? | `Record<string, BadgeSpec>` |  |
+| choices | `string[]` |  |
+
 ### TableField
 
 An inline table whose columns are defined directly in the schema (no linked doctype). Use when the table data does not warrant a separate doctype.
@@ -1014,7 +1177,7 @@ export interface ValueField {
 | doctype? | `string` | Target doctype slug. Presence is what makes a field a link. How it renders is decided by `component`, not by this: `AFormLink` renders an inline id-picker, while `AForm`/`ATable` expand the target (see `linkRenderMode`). Expansion metadata — backlink, fetch strategy, authoritative cardinality — lives in the doctype's `links` map, which is additive and never required for a plain foreign key. |
 | edit? | `boolean` | Whether the field is editable in table cell context |
 | fieldname | `string` | Unique identifier for this field within its doctype |
-| format? | `string` | Serialized `(value) => string` function for display formatting — distinct from `mask` (input). Spreads through `schemaToColumns` to `ColumnSchema.format`; deserialized at render time by ATable's `getFormattedValue`. |
+| format? | `string` | Serialized display formatter — distinct from `mask` (input). Spreads through `schemaToColumns` to `ColumnSchema.format`; deserialized at render time by ATable's `getFormattedValue`. Returns a plain string, HTML, or a `BadgeDescriptor` for badge cells. When a descriptor is returned it wins over any badge map on `options`. |
 | hidden? | `boolean` | Whether the field is hidden from the UI |
 | kind | `'field'` | Discriminator — identifies this as a value-holding field |
 | label? | `string` | Human-readable label |
@@ -1049,6 +1212,36 @@ A doctype as it exists on disk: a plain object that may carry keys this package 
 
 ```typescript
 export type AuthoredDoctype = Record<string, unknown>;
+```
+
+### BadgePresentation
+
+Where ABadge paints the same descriptor.
+
+**Definition:**
+
+```typescript
+export type BadgePresentation = 'cell-fill' | 'input-accent';
+```
+
+### BadgeSpec
+
+Value in a choice→badge map: shorthand variant or object form.
+
+**Definition:**
+
+```typescript
+export type BadgeSpec = BadgeVariant | BadgeSpecObject;
+```
+
+### BadgeVariant
+
+Semantic badge variant. Maps to theme tokens `--sc-badge-{variant}-*`.
+
+**Definition:**
+
+```typescript
+export type BadgeVariant = 'neutral' | 'success' | 'warning' | 'danger' | 'brand';
 ```
 
 ### Cardinality
@@ -1452,7 +1645,7 @@ export const FetchStrategy: z.ZodDiscriminatedUnion<[z.ZodObject<{
 
 Field options - flexible bag for type-specific configuration.
 
-Usage: - Select: array of choices (["Draft", "Submitted", "Cancelled"]) - Decimal: config object ( precision: 10, scale: 2 ) - Code: config object ( language: "python" )
+Usage: - Select: array of choices (["Draft", "Submitted", "Cancelled"]) - Select with badges:  choices: [...], badges:  Open: "warning", ...   or bare map - Decimal: config object ( precision: 10, scale: 2 ) - Code: config object ( language: "python" )
 
 Deliberately *not* a bare string: a string once meant "link target", which made the value's shape encode its meaning. That job belongs to `ValueField.doctype`, leaving this a plain choices-or-config bag.
 

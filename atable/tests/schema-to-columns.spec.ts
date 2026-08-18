@@ -163,6 +163,53 @@ describe('schemaToColumns', { tags: ['component'] }, () => {
 		})
 	})
 
+	describe('Select badge handling', () => {
+		// schemaToColumns does not interpret badge options — it only has to carry `options`
+		// through untouched, because ACell is what reads them. Anything asserting that
+		// schemaToColumns sets `cellComponent` would pass whether or not that code existed.
+		it('carries structured badge options through to the column', () => {
+			const schema: ColumnSchema[] = [
+				{
+					fieldname: 'status',
+					component: 'ADropdown',
+					label: 'Status',
+					options: {
+						choices: ['Open', 'Closed'],
+						badges: { Open: 'warning', Closed: 'success' },
+					},
+				},
+			]
+			const columns = schemaToColumns(schema)
+			expect(columns[0].options).toEqual(schema[0].options)
+		})
+
+		it('carries bare choice maps through to the column', () => {
+			const schema: ColumnSchema[] = [
+				{
+					fieldname: 'status',
+					component: 'ADropdown',
+					label: 'Status',
+					options: { Open: 'warning', Closed: 'neutral' },
+				},
+			]
+			const columns = schemaToColumns(schema)
+			expect(columns[0].options).toEqual(schema[0].options)
+		})
+
+		it('carries plain string[] choices through to the column', () => {
+			const schema: ColumnSchema[] = [
+				{
+					fieldname: 'status',
+					component: 'ADropdown',
+					label: 'Status',
+					options: ['Open', 'Closed'],
+				},
+			]
+			const columns = schemaToColumns(schema)
+			expect(columns[0].options).toEqual(['Open', 'Closed'])
+		})
+	})
+
 	describe('Currency field handling', () => {
 		it('adds a formatCurrency function for currency-category fields without explicit format', () => {
 			const schema: ColumnSchema[] = [{ fieldname: 'total', component: 'ACurrencyInput', label: 'Total' }]

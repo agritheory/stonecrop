@@ -43,6 +43,20 @@
 		"mask": "(locale) => { if (locale === 'en-US') { return '(###) ###-####' } else if (locale === 'en-IN') { return '####-######'} }"
 	},
 	{
+		"fieldname": "status",
+		"kind": "field",
+		"component": "ADropdown",
+		"label": "Status",
+		"options": {
+			"choices": ["Active", "Suspended", "Pending"],
+			"badges": {
+				"Active": "success",
+				"Suspended": "warning",
+				"Pending": "brand"
+			}
+		}
+	},
+	{
 		"fieldname": "attach_file",
 		"kind": "field",
 		"component": "AFileAttach",

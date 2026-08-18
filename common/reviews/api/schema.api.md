@@ -26,6 +26,35 @@ export type ActionDefinition = z.infer<typeof ActionDefinition>;
 // @public
 export type AuthoredDoctype = Record<string, unknown>;
 
+// @public
+export interface BadgeDescriptor {
+    // (undocumented)
+    color?: string;
+    // (undocumented)
+    label: string;
+    // (undocumented)
+    variant?: BadgeVariant;
+}
+
+// @public
+export type BadgePresentation = 'cell-fill' | 'input-accent';
+
+// @public
+export type BadgeSpec = BadgeVariant | BadgeSpecObject;
+
+// @public
+export interface BadgeSpecObject {
+    // (undocumented)
+    color?: string;
+    // (undocumented)
+    label?: string;
+    // (undocumented)
+    variant?: BadgeVariant;
+}
+
+// @public
+export type BadgeVariant = 'neutral' | 'success' | 'warning' | 'danger' | 'brand';
+
 // Warning: (ae-forgotten-export) The symbol "FieldTemplate" needs to be exported by the entry point index.d.ts
 //
 // @public
@@ -75,6 +104,7 @@ export interface ColumnSchema {
     label?: string;
     modalComponent?: string;
     modalComponentExtraProps?: Record<string, any>;
+    options?: FieldOptions;
     pinned?: boolean;
     resizable?: boolean;
     sortable?: boolean;
@@ -356,6 +386,9 @@ export interface GraphQLConversionOptions {
 }
 
 // @public
+export function hasBadgeOptions(options: FieldOptions | undefined): boolean;
+
+// @public
 export type InteractionMode = 'edit' | 'read' | 'display';
 
 // @public
@@ -371,6 +404,15 @@ export type IntrospectionSource = IntrospectionQuery | string;
 export function isActionAllowedInState(action: {
     allowedStates?: string[] | null;
 }, currentState: string): boolean;
+
+// @public
+export function isBadgeDescriptor(value: unknown): value is BadgeDescriptor;
+
+// @public
+export function isSelectChoiceMap(options: FieldOptions | undefined): options is Record<string, BadgeSpec>;
+
+// @public
+export function isSelectOptions(options: FieldOptions | undefined): options is SelectOptions;
 
 // @public
 export const LazyFetch: z.ZodObject<{
@@ -420,6 +462,9 @@ export type LinkExpansion = 'inline' | 'expand';
 export type LinkRenderMode = 'inline' | 'record' | 'table';
 
 // @public
+export function lookupBadge(options: FieldOptions | undefined, key: string | undefined): BadgeDescriptor | undefined;
+
+// @public
 export function mergeIntrospectedDoctype(authored: AuthoredDoctype, generated: ConvertedGraphQLDoctype): MergeResult;
 
 // @public
@@ -445,6 +490,17 @@ export function resolveLinkRenderMode(link: {
     component?: string;
     cardinality?: string;
 }, fieldComponent?: string): LinkRenderMode;
+
+// @public
+export function selectChoices(options: FieldOptions | undefined): string[];
+
+// @public
+export interface SelectOptions extends Record<string, unknown> {
+    // (undocumented)
+    badges?: Record<string, BadgeSpec>;
+    // (undocumented)
+    choices: string[];
+}
 
 // @public
 export type SerializedFunction = string;

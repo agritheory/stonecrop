@@ -2,6 +2,7 @@ import { useElementBounding } from '@vueuse/core'
 import type { Ref, ShallowRef } from 'vue'
 
 import type { ColumnSchema } from '@stonecrop/schema'
+import type { BadgeDescriptor } from '@stonecrop/schema'
 
 import { createTableStore } from '../stores/table'
 
@@ -25,8 +26,9 @@ export interface TableColumn extends Omit<ColumnSchema, 'fieldname' | 'hidden' |
 	/**
 	 * Widens `ColumnSchema.format` (string-only) to also accept a live function at runtime.
 	 * Serialized string functions are deserialized by the table store's `getFormattedValue`.
+	 * May return a plain string, HTML, or a {@link @stonecrop/schema#BadgeDescriptor}.
 	 */
-	format?: string | ((value: any, context: CellContext) => string)
+	format?: string | ((value: any, context: CellContext) => string | BadgeDescriptor)
 
 	/**
 	 * Widens `ColumnSchema.modalComponent` (string-only) to also accept a factory function.
