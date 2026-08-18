@@ -9,7 +9,9 @@ import { computed, type CSSProperties } from 'vue'
 
 const props = defineProps<
 	Partial<BadgeDescriptor> & {
-		presentation: BadgePresentation
+		/** Defaults to `cell-fill`: every call site fully determines this, so omitting it should
+		 * degrade to the common case rather than rendering an unstyled badge. */
+		presentation?: BadgePresentation
 		/** Stored field value — used with `options` when `label` is omitted. */
 		value?: unknown
 		options?: FieldOptions
@@ -35,7 +37,11 @@ const activeVariant = computed((): BadgeVariant => resolved.value?.variant ?? pr
 
 const activeColor = computed(() => resolved.value?.color ?? props.color)
 
-const classes = computed(() => ['abadge', `abadge--${props.presentation}`, `abadge--${activeVariant.value}`])
+const classes = computed(() => [
+	'abadge',
+	`abadge--${props.presentation ?? 'cell-fill'}`,
+	`abadge--${activeVariant.value}`,
+])
 
 const styleVars = computed((): CSSProperties => {
 	const color = activeColor.value

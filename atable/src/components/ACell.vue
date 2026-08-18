@@ -117,13 +117,20 @@ const isContentEditable = computed(() => column.edit && !usesBadgeDisplay.value)
 
 const cellComponentBindings = computed(() => {
 	const props = { ...column.cellComponentProps }
-	if (column.cellComponent === 'ABadge') {
-		if (isBadgeDescriptor(renderedValue.value)) {
-			return { ...props, ...renderedValue.value }
-		}
+	if (column.cellComponent !== 'ABadge') {
 		return { ...props, value: renderedValue.value }
 	}
-	return { ...props, value: renderedValue.value }
+	if (isBadgeDescriptor(renderedValue.value)) {
+		return { presentation: 'cell-fill' as const, ...props, ...renderedValue.value }
+	}
+	// ABadge resolves its own label, so it needs the badge map as well as the value — and the value
+	// has to be the stored one, because badge maps are keyed on that rather than on formatted text.
+	return {
+		presentation: 'cell-fill' as const,
+		options: column.options,
+		...props,
+		value: store.getCellData(colIndex, rowIndex),
+	}
 })
 
 const isHtmlValue = computed(() => {

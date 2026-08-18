@@ -137,9 +137,15 @@ export function selectChoices(options: FieldOptions | undefined): string[] {
 	return []
 }
 
-function normalizeBadgeSpec(spec: BadgeSpec, key: string): BadgeDescriptor {
+function normalizeBadgeSpec(spec: unknown, key: string): BadgeDescriptor {
 	if (isBadgeVariant(spec)) {
 		return { label: key, variant: spec }
+	}
+	// A malformed spec still names a real choice, so keep the label and drop only the styling.
+	// Reading `.variant`/`.color` off an unvalidated value is what let a misspelt variant reach the
+	// DOM as an unmatched class, and threw outright on null.
+	if (!isBadgeSpecObject(spec)) {
+		return { label: key }
 	}
 	return {
 		label: spec.label ?? key,
