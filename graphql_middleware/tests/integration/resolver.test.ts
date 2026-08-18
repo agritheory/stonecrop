@@ -877,21 +877,21 @@ describe('self-transition data write', { tags: ['integration', 'graphql'] }, () 
 })
 
 // ===========================================================================
-// Link fields via stonecropRecord/stonecropRecords (scalar FKs only)
+// Link fields via stonecropRecord/stonecropRecords ({ id, displayText } enrichment)
 // ===========================================================================
 
-describe('link fields (scalar FKs)', { tags: ['integration', 'graphql'] }, () => {
-	it('returns customerId as a scalar FK on stonecropRecord', async () => {
+describe('link fields ({ id, displayText })', { tags: ['integration', 'graphql'] }, () => {
+	it('returns customerId as { id, displayText } on stonecropRecord', async () => {
 		const result = await runQuery(`query { stonecropRecord(doctype: "ScOrder", id: "1") { data } }`)
 		const data = (result as any).data?.stonecropRecord?.data
-		expect(data.customerId).toBe(1)
+		expect(data.customerId).toEqual({ id: 1, displayText: 'Acme Corp' })
 	})
 
-	it('returns customerId as a scalar FK on each stonecropRecords row', async () => {
+	it('returns customerId as { id, displayText } on each stonecropRecords row', async () => {
 		const result = await runQuery(`query { stonecropRecords(doctype: "ScOrder") { data } }`)
 		const rows = (result as any).data?.stonecropRecords?.data as Array<Record<string, unknown>>
-		expect(rows[0]?.customerId).toBe(1)
-		expect(rows[1]?.customerId).toBe(2)
+		expect(rows[0]?.customerId).toEqual({ id: 1, displayText: 'Acme Corp' })
+		expect(rows[1]?.customerId).toEqual({ id: 2, displayText: 'Globex' })
 	})
 })
 

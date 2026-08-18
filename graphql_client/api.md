@@ -20,154 +20,7 @@ Vue component exported from @stonecrop/graphql_client.
 import { DoctypeMeta } from '@stonecrop/graphql_client'
 ```
 
-## Functions
-
-### buildListRecordQuery
-
-Build a native PostGraphile query for fetching multiple records.
-
-**Signature:**
-
-```typescript
-export declare function buildListRecordQuery(meta: DoctypeMeta, options: QueryBuilderOptions & {
-    first?: number;
-    offset?: number;
-    orderBy?: string;
-    condition?: Record<string, unknown>;
-}): BuiltQuery;
-```
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| meta | `DoctypeMeta` |  |
-| options | `QueryBuilderOptions & { first?: number; offset?: number; orderBy?: string; condition?: Record<string, unknown>; }` |  |
-
-### buildRelationshipName
-
-Build the PostGraphile relationship field name for a foreign key.
-
-PostGraphile names relationships as `targetTypeByFkField` in camelCase.
-
-**Signature:**
-
-```typescript
-export declare function buildRelationshipName(targetDoctypeName: string, fkFieldname: string): string;
-```
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| targetDoctypeName | `string` |  |
-| fkFieldname | `string` |  |
-
-### buildSingleRecordQuery
-
-Build a native PostGraphile query for fetching a single record by ID.
-
-**Signature:**
-
-```typescript
-export declare function buildSingleRecordQuery(meta: DoctypeMeta, options: QueryBuilderOptions): BuiltQuery;
-```
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| meta | `DoctypeMeta` |  |
-| options | `QueryBuilderOptions` |  |
-
-### doctypeToListQuery
-
-Convert a PascalCase doctype name to the PostGraphile list query name.
-
-**Signature:**
-
-```typescript
-export declare function doctypeToListQuery(doctypeName: string): string;
-```
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| doctypeName | `string` |  |
-
-### doctypeToQueryName
-
-Convert a PascalCase doctype name to the camelCase query name PostGraphile uses.
-
-**Signature:**
-
-```typescript
-export declare function doctypeToQueryName(doctypeName: string): string;
-```
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| doctypeName | `string` |  |
-
-### doctypeToSingleQuery
-
-Convert a PascalCase doctype name to the PostGraphile single-record query name.
-
-**Signature:**
-
-```typescript
-export declare function doctypeToSingleQuery(doctypeName: string): string;
-```
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| doctypeName | `string` |  |
-
-### transformNativeRecord
-
-Transform a record fetched via native PostGraphile query to the flat format expected by the Stonecrop client. Link fields become objects with `id` and `displayText`.
-
-**Signature:**
-
-```typescript
-export declare function transformNativeRecord(record: Record<string, unknown>, linkFields: string[], meta: DoctypeMeta, allMeta: DoctypeMeta[]): Record<string, unknown>;
-```
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| record | `Record<string, unknown>` |  |
-| linkFields | `string[]` |  |
-| meta | `DoctypeMeta` |  |
-| allMeta | `DoctypeMeta[]` |  |
-
 ## Interfaces
-
-### BuiltQuery
-
-Result of building a native query
-
-**Definition:**
-
-```typescript
-export interface BuiltQuery {
-  linkFields: string[];
-  query: string;
-}
-```
-
-**Properties:**
-
-| Property | Type | Description |
-|----------|------|-------------|
-| linkFields | `string[]` | Field names that are link fields with nested selections. The consumer can use this to know which fields will have relationship data. |
-| query | `string` | The GraphQL query string |
 
 ### GetRecordResult
 
@@ -186,26 +39,6 @@ export interface GetRecordResult {
 | Property | Type | Description |
 |----------|------|-------------|
 | unknownLinks? | `string[]` | Link names that were requested but don't exist in the doctype schema |
-
-### QueryBuilderOptions
-
-Options for building queries
-
-**Definition:**
-
-```typescript
-export interface QueryBuilderOptions {
-  allMeta: DoctypeMeta[];
-  maxDepth?: number;
-}
-```
-
-**Properties:**
-
-| Property | Type | Description |
-|----------|------|-------------|
-| allMeta | `DoctypeMeta[]` | All available doctype metadata. Used to resolve target doctypes for link fields. |
-| maxDepth? | `number` | Maximum depth for nested link resolution. Defaults to 1 (immediate links only). Set to 0 to disable link expansion. |
 
 ### StonecropClientOptions
 
@@ -233,7 +66,7 @@ export interface StonecropClientOptions {
 
 Client for interacting with Stonecrop GraphQL API.
 
-Acts as a transport layer for stonecropRecord/stonecropRecords/stonecropAction, and builds native PostGraphile queries for getNativeRecord/getNativeRecords.
+Acts as a transport layer — it passes requests to the middleware and returns merged results. Does not construct queries itself.
 
 **Constructor:**
 
@@ -274,47 +107,6 @@ getMeta(context: DoctypeContext): Promise<DoctypeMeta | null>
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | context | `DoctypeContext` | Doctype context containing doctype name |
-
-#### getNativeRecord
-
-Get a single record by ID using PostGraphile's native query with relationship expansion.
-
-Unlike `getRecord()` which uses the `stonecropRecord` resolver returning a JSON blob, this method builds a native PostGraphile query that leverages the ORM's relationship resolution for efficient single-query fetches with JOINs.
-
-Link fields are returned as `{ id, displayText }` objects where `displayText` is resolved from the target doctype's `displayField`.
-
-```typescript
-getNativeRecord(doctype: DoctypeRef, recordId: string): Promise<GetRecordResult>
-```
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| doctype | `DoctypeRef` | Doctype reference (name and optional slug) |
-| recordId | `string` | Record ID to fetch |
-
-#### getNativeRecords
-
-Get multiple records using PostGraphile's native query with relationship expansion.
-
-Unlike `getRecords()` which uses the `stonecropRecords` resolver returning JSON blobs, this method builds a native PostGraphile query that leverages the ORM's relationship resolution for efficient single-query fetches with JOINs.
-
-Link fields are returned as `{ id, displayText }` objects where `displayText` is resolved from the target doctype's `displayField`.
-
-```typescript
-getNativeRecords(doctype: DoctypeRef, options: {
-        limit?: number;
-        offset?: number;
-    }): Promise<GetRecordsResult>
-```
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| doctype | `DoctypeRef` | Doctype reference (name and optional slug) |
-| options | `{ limit?: number; offset?: number; }` | Query options (limit, offset) |
 
 #### getRecord
 
