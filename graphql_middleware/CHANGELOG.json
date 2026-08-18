@@ -2,6 +2,36 @@
   "name": "@stonecrop/graphql-middleware",
   "entries": [
     {
+      "version": "0.23.0",
+      "tag": "@stonecrop/graphql-middleware_v0.23.0",
+      "date": "Tue, 18 Aug 2026 09:16:50 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.22.0",
+      "tag": "@stonecrop/graphql-middleware_v0.22.0",
+      "date": "Mon, 17 Aug 2026 19:46:36 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.21.0",
+      "tag": "@stonecrop/graphql-middleware_v0.21.0",
+      "date": "Mon, 17 Aug 2026 19:08:23 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Remove server-side link display enrichment; stonecropRecord and stonecropRecords again return scalar FK values for inline links."
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.20.0",
+      "tag": "@stonecrop/graphql-middleware_v0.20.0",
+      "date": "Mon, 17 Aug 2026 18:41:19 GMT",
+      "comments": {}
+    },
+    {
       "version": "0.19.0",
       "tag": "@stonecrop/graphql-middleware_v0.19.0",
       "date": "Mon, 17 Aug 2026 12:46:25 GMT",

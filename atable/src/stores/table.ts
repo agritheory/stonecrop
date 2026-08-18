@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { componentCategory } from '@stonecrop/schema'
+import type { BadgeDescriptor } from '@stonecrop/schema'
 import { type CSSProperties, computed, ref } from 'vue'
 
 import type {
@@ -549,9 +550,11 @@ export const createTableStore = (initData: {
 			if (typeof format === 'function') {
 				return format(value, { table: table.value, row, column })
 			} else if (typeof format === 'string') {
-				// parse format function from string
+				// parse format function from string. The alias keeps the declaration on one line so the
+				// disable directive below stays attached to the Function call it covers.
+				type DeserializedFormat = (value: any, context?: CellContext) => string | BadgeDescriptor
 				// oxlint-disable-next-line @typescript-eslint/no-implied-eval
-				const formatFn: (value: any, context?: CellContext) => string = Function(`"use strict";return (${format})`)()
+				const formatFn: DeserializedFormat = Function(`"use strict";return (${format})`)()
 				return formatFn(value, { table: table.value, row, column })
 			}
 

@@ -3,14 +3,14 @@ import { mount } from '@vue/test-utils'
 
 import ADateSelection from '../src/components/form/ADateSelection.vue'
 import ADatePicker from '../src/components/form/ADatePicker.vue'
-import ADateTime from '../src/components/form/ADateTime.vue'
+import ADateTimeInput from '../src/components/form/ADateTimeInput.vue'
 
 describe('date-selection component', () => {
 	const globalComponents = {
 		global: {
 			components: {
 				ADatePicker,
-				ADateTime,
+				ADateTimeInput,
 			},
 		},
 	}
@@ -61,11 +61,11 @@ describe('date-selection component', () => {
 	it('emits get-time when time is selected', async () => {
 		const wrapper = mount(ADateSelection, globalComponents)
 		const timeData = { hours: 3, minutes: 30, seconds: 0, meridiem: 'PM', militaryTime: 15 }
-		const dateTime = wrapper.findComponent(ADateTime)
+		const dateTime = wrapper.findComponent(ADateTimeInput)
 		await dateTime.vm.$emit('get-time', timeData)
 		const emitted = wrapper.emitted('get-time')
 		expect(emitted).toBeTruthy()
-		// ADateTime emits on mount, so our event is the last one
+		// ADateTimeInput emits on mount, so our event is the last one
 		expect(emitted![emitted!.length - 1][0]).toEqual(timeData)
 	})
 
@@ -90,7 +90,7 @@ describe('date-selection component', () => {
 				useSeconds: false,
 			},
 		})
-		const dateTime = wrapper.findComponent(ADateTime)
+		const dateTime = wrapper.findComponent(ADateTimeInput)
 		expect(dateTime.props('allowMilitaryTime')).toBe(true)
 		expect(dateTime.props('defaultHours')).toBe(10)
 		expect(dateTime.props('defaultMinutes')).toBe(30)
@@ -119,7 +119,7 @@ describe('date-selection component', () => {
 			props: { selectRange: true, showTime: true, showEndTime: false },
 		})
 		await wrapper.vm.$nextTick()
-		const dateTime = wrapper.findComponent(ADateTime)
+		const dateTime = wrapper.findComponent(ADateTimeInput)
 		const timeData = { hours: 5, minutes: 15, seconds: 30, meridiem: 'PM', militaryTime: 17 }
 		await dateTime.vm.$emit('get-time', timeData)
 		const rangeEvents = wrapper.emitted('get-range')
@@ -135,7 +135,7 @@ describe('date-selection component', () => {
 			props: { selectRange: true, showTime: true, showEndTime: true },
 		})
 		await wrapper.vm.$nextTick()
-		const dateTimes = wrapper.findAllComponents(ADateTime)
+		const dateTimes = wrapper.findAllComponents(ADateTimeInput)
 		expect(dateTimes.length).toBe(2)
 		const endTime = dateTimes[1]
 		await endTime.vm.$emit('get-time', { hours: 5, minutes: 0, seconds: 0, meridiem: 'PM', militaryTime: 17 })
@@ -148,7 +148,7 @@ describe('date-selection component', () => {
 			...globalComponents,
 			props: { selectRange: true, showTime: true, showEndTime: true },
 		})
-		const dateTimes = wrapper.findAllComponents(ADateTime)
+		const dateTimes = wrapper.findAllComponents(ADateTimeInput)
 		expect(dateTimes.length).toBe(2)
 		expect(wrapper.text()).toContain('End time')
 	})

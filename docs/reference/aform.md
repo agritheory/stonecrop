@@ -9,6 +9,14 @@ description: Schema-driven form components
 
 ## Vue Components
 
+### ABadge
+
+Vue component exported from @stonecrop/aform.
+
+```typescript
+import { ABadge } from '@stonecrop/aform'
+```
+
 ### ACheckbox
 
 Vue component exported from @stonecrop/aform.
@@ -63,6 +71,14 @@ Vue component exported from @stonecrop/aform.
 
 ```typescript
 import { ADateTime } from '@stonecrop/aform'
+```
+
+### ADateTimeInput
+
+Vue component exported from @stonecrop/aform.
+
+```typescript
+import { ADateTimeInput } from '@stonecrop/aform'
 ```
 
 ### ADropdown
@@ -171,6 +187,22 @@ import { Login } from '@stonecrop/aform'
 
 ## Functions
 
+### badgeInputAccentStyle
+
+CSS custom properties for input-accent styling on a native input.
+
+**Signature:**
+
+```typescript
+export declare function badgeInputAccentStyle(descriptor: BadgeDescriptor | undefined): Record<string, string> | undefined;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| descriptor | `BadgeDescriptor \| undefined` |  |
+
 ### deserializeFunction
 
 Deserializes a stringified function expression into a typed callable.
@@ -204,6 +236,25 @@ declare function install(app: App): void;
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | app | `App` | Vue app instance |
+
+### resolveFieldBadge
+
+Resolve a field value to a badge descriptor using format (if present) then options map.
+
+**Signature:**
+
+```typescript
+export declare function resolveFieldBadge(value: unknown, options: FieldOptions | undefined, format: string | BadgeFormatFn | undefined, context?: BadgeFormatContext): BadgeDescriptor | undefined;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| value | `unknown` |  |
+| options | `FieldOptions \| undefined` |  |
+| format | `string \| BadgeFormatFn \| undefined` |  |
+| context | `BadgeFormatContext` |  |
 
 ## Interfaces
 
@@ -467,6 +518,29 @@ Emitting is narrower — AFormLink always writes back an `AFormLinkValue`.
 
 ```typescript
 export type AFormLinkModelValue = AFormLinkValue | string | number;
+```
+
+### BadgeFormatContext
+
+Row context passed to badge `format` functions in form fields.
+
+**Definition:**
+
+```typescript
+export type BadgeFormatContext = {
+    record?: Record<string, unknown>;
+    row?: Record<string, unknown>;
+};
+```
+
+### BadgeFormatFn
+
+Badge-aware field `format` function signature.
+
+**Definition:**
+
+```typescript
+export type BadgeFormatFn = (value: unknown, context: BadgeFormatContext) => string | BadgeDescriptor;
 ```
 
 ### ComponentProps

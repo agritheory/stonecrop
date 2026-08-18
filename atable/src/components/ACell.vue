@@ -4,7 +4,7 @@
 		:data-colindex="colIndex"
 		:data-rowindex="rowIndex"
 		:data-editable="column.edit"
-		:contenteditable="column.edit"
+		:contenteditable="isContentEditable"
 		:tabindex="tabIndex"
 		:spellcheck="false"
 		:style="cellStyle"
@@ -14,11 +14,9 @@
 		@paste="updateCellData"
 		@input="debouncedUpdateCellData"
 		@click="onCellClick">
-		<component
-			:is="column.cellComponent"
-			v-if="column.cellComponent"
-			:value="renderedValue"
-			v-bind="column.cellComponentProps" />
+		<component :is="column.cellComponent" v-if="column.cellComponent" v-bind="cellComponentBindings" />
+		<component :is="'ABadge'" v-else-if="badgeFromFormat" v-bind="badgeFromFormat" presentation="cell-fill" />
+		<component :is="'ABadge'" v-else-if="badgeFromOptions" v-bind="badgeFromOptions" />
 		<span v-else-if="isHtmlValue" v-html="renderedValue" />
 		<span v-else>{{ renderedValue }}</span>
 	</td>
@@ -26,6 +24,7 @@
 
 <script setup lang="ts">
 import { KeypressHandlers, defaultKeypressHandlers, useKeyboardNav } from '@stonecrop/utilities'
+import { isBadgeDescriptor, hasBadgeOptions } from '@stonecrop/schema'
 import { useDebounceFn, useElementBounding } from '@vueuse/core'
 import { computed, type CSSProperties, onMounted, ref, useTemplateRef, nextTick } from 'vue'
 
@@ -94,6 +93,46 @@ onMounted(() => {
 
 const renderedValue = computed(() => resolvedText.value ?? displayValue.value)
 
+const badgeFromFormat = computed(() => {
+	if (column.cellComponent) return undefined
+	const value = renderedValue.value
+	return isBadgeDescriptor(value) ? value : undefined
+})
+
+const badgeFromOptions = computed(() => {
+	if (column.cellComponent || badgeFromFormat.value) return undefined
+	if (!hasBadgeOptions(column.options)) return undefined
+	return {
+		value: store.getCellData(colIndex, rowIndex),
+		options: column.options,
+		presentation: 'cell-fill' as const,
+	}
+})
+
+const usesBadgeDisplay = computed(
+	() => !!column.cellComponent || badgeFromFormat.value !== undefined || hasBadgeOptions(column.options)
+)
+
+const isContentEditable = computed(() => column.edit && !usesBadgeDisplay.value)
+
+const cellComponentBindings = computed(() => {
+	const props = { ...column.cellComponentProps }
+	if (column.cellComponent !== 'ABadge') {
+		return { ...props, value: renderedValue.value }
+	}
+	if (isBadgeDescriptor(renderedValue.value)) {
+		return { presentation: 'cell-fill' as const, ...props, ...renderedValue.value }
+	}
+	// ABadge resolves its own label, so it needs the badge map as well as the value — and the value
+	// has to be the stored one, because badge maps are keyed on that rather than on formatted text.
+	return {
+		presentation: 'cell-fill' as const,
+		options: column.options,
+		...props,
+		value: store.getCellData(colIndex, rowIndex),
+	}
+})
+
 const isHtmlValue = computed(() => {
 	// TODO: check if display value is a native DOM element
 	return typeof renderedValue.value === 'string' ? isHtmlString(renderedValue.value) : false
@@ -112,6 +151,7 @@ const cellClasses = computed(() => {
 	return {
 		'sticky-column': pinned,
 		'cell-modified': cellModified.value,
+		'atable-cell--badge-fill': usesBadgeDisplay.value,
 	}
 })
 
@@ -362,5 +402,9 @@ defineExpose({
 }
 .cell-modified-highlight {
 	background-color: var(--sc-cell-changed-color);
+}
+.atable-cell--badge-fill {
+	padding: 0 !important;
+	margin-left: 0;
 }
 </style>

@@ -99,3 +99,21 @@ export { toSlug, toPascalCase, pascalToSnake, snakeToCamel, camelToSnake, snakeT
 
 // Schema-to-column field shape
 export type { ColumnSchema } from './column-schema'
+
+// Badge types and helpers
+export type {
+	BadgeDescriptor,
+	BadgePresentation,
+	BadgeSpec,
+	BadgeSpecObject,
+	BadgeVariant,
+	SelectOptions,
+} from './badge'
+export {
+	hasBadgeOptions,
+	isBadgeDescriptor,
+	isSelectChoiceMap,
+	isSelectOptions,
+	lookupBadge,
+	selectChoices,
+} from './badge'

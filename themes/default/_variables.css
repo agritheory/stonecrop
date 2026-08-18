@@ -19,6 +19,27 @@
 	--sc-brand-success: #155724;
 	--sc-brand-warning: #b99d3e;
 
+	/* Badge variants — table cell fill (bg/text) and form input accent (left border) */
+	--sc-badge-neutral-bg: var(--sc-gray-10);
+	--sc-badge-neutral-text: var(--sc-gray-80);
+	--sc-badge-neutral-accent: var(--sc-gray-50);
+
+	--sc-badge-success-bg: color-mix(in srgb, var(--sc-brand-success) 14%, white);
+	--sc-badge-success-text: var(--sc-brand-success);
+	--sc-badge-success-accent: var(--sc-brand-success);
+
+	--sc-badge-warning-bg: color-mix(in srgb, var(--sc-brand-warning) 18%, white);
+	--sc-badge-warning-text: color-mix(in srgb, var(--sc-brand-warning) 70%, black);
+	--sc-badge-warning-accent: var(--sc-brand-warning);
+
+	--sc-badge-danger-bg: color-mix(in srgb, var(--sc-brand-danger) 12%, white);
+	--sc-badge-danger-text: var(--sc-brand-danger);
+	--sc-badge-danger-accent: var(--sc-brand-danger);
+
+	--sc-badge-brand-bg: color-mix(in srgb, var(--sc-primary-color) 14%, white);
+	--sc-badge-brand-text: var(--sc-brand-color);
+	--sc-badge-brand-accent: var(--sc-primary-color);
+
 	/* Table Colors */
 	--sc-active-cell-background: #ffffff;
 	--sc-active-cell-outline: #e6a92d;

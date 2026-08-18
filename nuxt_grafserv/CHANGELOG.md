@@ -1,6 +1,28 @@
 # Change Log - @stonecrop/nuxt-grafserv
 
-This log was last generated on Mon, 17 Aug 2026 12:46:25 GMT and should not be manually modified.
+This log was last generated on Tue, 18 Aug 2026 09:16:50 GMT and should not be manually modified.
+
+## 0.23.0
+Tue, 18 Aug 2026 09:16:50 GMT
+
+_Version update only_
+
+## 0.22.0
+Mon, 17 Aug 2026 19:46:36 GMT
+
+_Version update only_
+
+## 0.21.0
+Mon, 17 Aug 2026 19:08:23 GMT
+
+_Version update only_
+
+## 0.20.0
+Mon, 17 Aug 2026 18:41:19 GMT
+
+### Minor changes
+
+- The grafast and graphql Nitro aliases now resolve to the real packages rather than PostGraphile's forwarding subpaths, which pointed back at themselves through the tsconfig paths Nitro generates and broke typechecking of every scaffolded resolvers.ts.
 
 ## 0.19.0
 Mon, 17 Aug 2026 12:46:25 GMT
