@@ -452,6 +452,94 @@ describe('Registry class', { tags: ['unit'] }, () => {
 			expect('columns' in tasksField).toBe(false)
 		})
 
+		it('flattens a fieldset in the child doctype into columns, rather than dropping it', () => {
+			// A child table's columns come from the target's resolved schema. A fieldset there is a
+			// layout grouping with no value of its own, so it is not a column — but its children
+			// are, and losing them renders a table silently missing those columns.
+			registry = new Registry()
+			const lineSchema = List([
+				{ kind: 'field' as const, fieldname: 'item', component: 'ATextInput', label: 'Item' },
+				{
+					kind: 'fieldset' as const,
+					fieldname: 'pricing',
+					component: 'AFieldset',
+					schema: [{ kind: 'field' as const, fieldname: 'rate', component: 'AFloat', label: 'Rate' }],
+				},
+			])
+			const line = new Doctype(
+				'Line',
+				lineSchema as any,
+				{ id: 'line', initial: 'draft', states: { draft: {} } } as any
+			)
+
+			const orderSchema = List([
+				{ kind: 'field' as const, fieldname: 'title', component: 'ATextInput', label: 'Title' },
+				{ kind: 'field' as const, fieldname: 'lines', component: 'ATable', label: 'Lines', cardinality: 'noneOrMany' },
+			])
+			const order = new Doctype(
+				'Order',
+				orderSchema as any,
+				{ id: 'order', initial: 'draft', states: { draft: {} } } as any,
+				undefined,
+				{ lines: { target: 'line', cardinality: 'noneOrMany' } }
+			)
+
+			registry.addDoctype(line)
+			registry.addDoctype(order)
+
+			const linesField = registry.resolveSchema(order).find(f => f.fieldname === 'lines') as any
+			expect(linesField.schema.map((c: any) => c.fieldname)).toEqual(['item', 'rate'])
+		})
+
+		it('omits a nested container from a child table’s columns', () => {
+			// The target of a child table may itself expand a link. That container has no single
+			// value, so it is not a column here either — the same rule, one level down.
+			registry = new Registry()
+			const note = new Doctype(
+				'Note',
+				List([{ kind: 'field' as const, fieldname: 'body', component: 'ATextInput', label: 'Body' }]) as any,
+				{ id: 'note', initial: 'draft', states: { draft: {} } } as any
+			)
+			const line = new Doctype(
+				'Line',
+				List([
+					{ kind: 'field' as const, fieldname: 'item', component: 'ATextInput', label: 'Item' },
+					{
+						kind: 'field' as const,
+						fieldname: 'notes',
+						component: 'ATable',
+						label: 'Notes',
+						cardinality: 'noneOrMany',
+					},
+				]) as any,
+				{ id: 'line', initial: 'draft', states: { draft: {} } } as any,
+				undefined,
+				{ notes: { target: 'note', cardinality: 'noneOrMany' } }
+			)
+			const order = new Doctype(
+				'Order',
+				List([
+					{
+						kind: 'field' as const,
+						fieldname: 'lines',
+						component: 'ATable',
+						label: 'Lines',
+						cardinality: 'noneOrMany',
+					},
+				]) as any,
+				{ id: 'order', initial: 'draft', states: { draft: {} } } as any,
+				undefined,
+				{ lines: { target: 'line', cardinality: 'noneOrMany' } }
+			)
+
+			registry.addDoctype(note)
+			registry.addDoctype(line)
+			registry.addDoctype(order)
+
+			const linesField = registry.resolveSchema(order).find(f => f.fieldname === 'lines') as any
+			expect(linesField.schema.map((c: any) => c.fieldname)).toEqual(['item'])
+		})
+
 		it('resolves a 1:1 link to a ResolvedLink with kind: "link"', () => {
 			registry = new Registry()
 			const addressSchema = List([

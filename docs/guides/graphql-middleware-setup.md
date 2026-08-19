@@ -137,7 +137,7 @@ A doctype with no `primaryKey` field cannot be fetched by id — `stonecropRecor
 
 ### Table name
 
-By default the PostgreSQL `FROM` target is `camelToSnake(doctype.name)`. Override it per doctype with the `tables` option — for a doctype that projects a shared table, or a schema-qualified name:
+By default the PostgreSQL `FROM` target is `pascalToSnake(doctype.name)` — `SalesOrder` becomes `sales_order`. Override it per doctype with the `tables` option — for a doctype that projects a shared table, or a schema-qualified name:
 
 ```typescript
 createStonecropPlugin({ tables: { Planner: 'plan', Invoice: 'billing.invoice' } })

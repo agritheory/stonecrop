@@ -1,6 +1,7 @@
 export type * from '@stonecrop/atable/types'
 export { deserializeFunction } from './utils/deserialize'
 export { badgeInputAccentStyle, resolveFieldBadge } from './utils/badge'
+export { resolvedFieldsToColumns } from './utils/columns'
 export type { BadgeFormatContext, BadgeFormatFn } from './utils/badge'
 import { install as installATable } from '@stonecrop/atable'
 import type { App } from 'vue'

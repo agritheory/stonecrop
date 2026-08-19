@@ -111,3 +111,103 @@ describe('un-normalized PostGraphile Amber', { tags: ['unit'] }, () => {
 		expect(onWarning).not.toHaveBeenCalled()
 	})
 })
+
+describe('a schema that declares Relay’s Node interface', { tags: ['unit'] }, () => {
+	// The node id is an opaque global identifier with no column behind it, so emitting one is not a
+	// cosmetic defect — it becomes a column in the middleware's SELECT and every read fails.
+	//
+	// Which field carries it is a **declaration**, not a name: PostGraphile exposes it through
+	// `nodeIdFieldName`, so it is `id` under the un-overridden Amber preset, `nodeId` under
+	// Stonecrop's, and whatever a foreign host chose under theirs. The interface says which.
+
+	// A foreign PostGraphile server on a natural-key table, un-overridden: Relay takes `id`, and
+	// because there is no `id` column to displace, nothing is renamed to `rowId` — so the
+	// both-`id`-and-`rowId` guard never fires and the node id looks exactly like a surrogate key.
+	const foreignAmberSdl = `
+		interface Node { id: ID! }
+		type Uom implements Node { id: ID! code: String! uomName: String! }
+		type Query { uoms: [Uom!]! node(id: ID!): Node }
+	`
+
+	it('does not emit the node id as a column', () => {
+		const [uom] = convertGraphQLSchema(foreignAmberSdl, { include: ['Uom'] })
+		expect(uom.fields.map(f => f.fieldname)).not.toContain('id')
+		expect(uom.fields.map(f => f.fieldname)).toEqual(['code', 'uomName'])
+	})
+
+	it('derives no primary key from it', () => {
+		// The defect this guards: `id` is non-null and scalar, which is exactly the one shape the
+		// converter *does* derive from — so it stamped `primaryKey: true` on an opaque identifier.
+		const [uom] = convertGraphQLSchema(foreignAmberSdl, { include: ['Uom'] })
+		expect(uom.fields.some(f => f.primaryKey)).toBe(false)
+	})
+
+	it('reads the interface’s own field name, so a renamed identifier is still skipped', () => {
+		// Stonecrop's preset moves it to `nodeId`; a foreign host may pick anything. Both are
+		// covered because the name is read off the interface rather than matched against a list.
+		const [item] = convertGraphQLSchema(
+			`
+				interface Node { globalId: ID! }
+				type Item implements Node { globalId: ID! id: Int! itemName: String! }
+				type Query { items: [Item!]! }
+			`,
+			{ include: ['Item'] }
+		)
+		expect(item.fields.map(f => f.fieldname)).not.toContain('globalId')
+		expect(item.fields.find(f => f.fieldname === 'id')?.primaryKey).toBe(true)
+	})
+
+	it('keeps a real column named `nodeId` when nothing declares it an identifier', () => {
+		// The over-skip direction. A hardcoded name drops this column silently, and the doctype
+		// then omits a field the table really has.
+		const [graph] = convertGraphQLSchema(
+			`
+				type Graph { id: ID! nodeId: String! }
+				type Query { graphs: [Graph!]! }
+			`,
+			{ include: ['Graph'] }
+		)
+		expect(graph.fields.map(f => f.fieldname)).toContain('nodeId')
+	})
+
+	it('leaves a single-field interface called Node alone when that field is not an identifier', () => {
+		// The other half of the marker's shape. `Node` here is a domain interface with one field,
+		// so the field count alone cannot tell it apart — only the declared `ID!` can.
+		const [namedThing] = convertGraphQLSchema(
+			`
+				interface Node { label: String! }
+				type NamedThing implements Node { label: String! id: ID! }
+				type Query { namedThings: [NamedThing!]! }
+			`,
+			{ include: ['NamedThing'] }
+		)
+		expect(namedThing.fields.map(f => f.fieldname)).toContain('label')
+	})
+
+	it('leaves a nullable identifier alone, which Relay’s spec does not permit', () => {
+		const [thing] = convertGraphQLSchema(
+			`
+				interface Node { id: ID }
+				type Thing implements Node { id: ID thingName: String! }
+				type Query { things: [Thing!]! }
+			`,
+			{ include: ['Thing'] }
+		)
+		expect(thing.fields.map(f => f.fieldname)).toContain('id')
+	})
+
+	it('leaves a domain interface that happens to be called Node alone', () => {
+		// Relay's marker declares exactly one field, of type `ID!`, and nothing else. An interface
+		// carrying domain fields is not it, and skipping against it would drop real columns.
+		const [treeNode] = convertGraphQLSchema(
+			`
+				interface Node { id: ID! label: String! }
+				type TreeNode implements Node { id: ID! label: String! depth: Int! }
+				type Query { treeNodes: [TreeNode!]! }
+			`,
+			{ include: ['TreeNode'] }
+		)
+		expect(treeNode.fields.map(f => f.fieldname)).toEqual(['id', 'label', 'depth'])
+		expect(treeNode.fields.find(f => f.fieldname === 'id')?.primaryKey).toBe(true)
+	})
+})

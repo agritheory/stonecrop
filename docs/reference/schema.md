@@ -179,7 +179,7 @@ Default heuristic to filter fields on entity types. Skips internal fields that d
 **Signature:**
 
 ```typescript
-export declare function defaultIsEntityField(fieldName: string, _field: GraphQLField<unknown, unknown>, _parentType: GraphQLObjectType): boolean;
+export declare function defaultIsEntityField(fieldName: string, _field: GraphQLField<unknown, unknown>, parentType: GraphQLObjectType): boolean;
 ```
 
 **Parameters:**
@@ -188,7 +188,7 @@ export declare function defaultIsEntityField(fieldName: string, _field: GraphQLF
 |-----------|------|-------------|
 | fieldName | `string` | The GraphQL field name |
 | _field | `GraphQLField<unknown, unknown>` | The GraphQL field definition (unused in default implementation) |
-| _parentType | `GraphQLObjectType` | The parent entity type (unused in default implementation) |
+| parentType | `GraphQLObjectType` | The parent entity type, whose interfaces declare its Relay identifier |
 
 ### defaultIsEntityType
 

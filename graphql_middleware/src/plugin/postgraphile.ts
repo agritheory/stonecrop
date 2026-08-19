@@ -90,7 +90,9 @@ export interface StonecropPluginOptions {
 	 * Override the PostgreSQL FROM clause target for specific doctypes, keyed by doctype name.
 	 * Values may be a bare table name (`'plan'`) or a schema-qualified name (`'orpin.plan'`).
 	 * SQL fragments and subqueries are not supported.
-	 * When absent for a doctype, the table name is derived as `camelToSnake(doctype.name)`.
+	 * When absent for a doctype, the table name is derived as `pascalToSnake(doctype.name)`, so
+	 * `SalesOrder` becomes `sales_order`. (Not `camelToSnake`, which prefixes a leading underscore on a
+	 * PascalCase name: `camelToSnake('User')` is `_user`.)
 	 */
 	tables?: Record<string, string>
 	/**

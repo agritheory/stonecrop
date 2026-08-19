@@ -163,7 +163,7 @@ export interface DataClient<T extends DoctypeRef = DoctypeRef, M = DoctypeMeta> 
 }
 
 // @public
-export function defaultIsEntityField(fieldName: string, _field: GraphQLField<unknown, unknown>, _parentType: GraphQLObjectType): boolean;
+export function defaultIsEntityField(fieldName: string, _field: GraphQLField<unknown, unknown>, parentType: GraphQLObjectType): boolean;
 
 // @public
 export function defaultIsEntityType(typeName: string, type: GraphQLObjectType): boolean;
