@@ -14,20 +14,27 @@
  * @packageDocumentation
  */
 
+import pluralize from 'pluralize'
+
 import { toSlug } from '../naming'
 import { getPrimaryKeyField } from '../field'
 import type { ValueField } from '../field'
 import type { ConvertedGraphQLDoctype } from './types'
 
-/** Appended to an entity's doctype name to name its aggregate. @public */
-export const AGGREGATE_NAME_SUFFIX = 'Aggregate'
-
 /**
- * The name an entity's aggregate doctype is generated under.
+ * The name an entity's aggregate doctype is generated under: the entity's name, pluralised.
  *
  * One definition, because the CLI writes the file under `toSlug` of this and any later caller
  * (a scaffolder, a docs generator) must land on the same name or it silently addresses a
  * different file.
+ *
+ * `pluralize` rather than appending `s`, because the irregulars are not rare in practice —
+ * measured against a consumer's 41 hand-authored aggregate doctypes, this rule reproduces every
+ * one of their names, slugs and filenames exactly, while `+ 's'` gets five wrong
+ * (`Currencys`, `JournalEntrys`, …).
+ *
+ * The rule is not total: an already-plural name pluralises to itself. Callers must handle that —
+ * see {@link buildAggregateDoctype}.
  *
  * @param doctypeName - the entity doctype's `name`
  * @returns the aggregate doctype's `name`
@@ -35,11 +42,11 @@ export const AGGREGATE_NAME_SUFFIX = 'Aggregate'
  *
  * @example
  * ```typescript
- * aggregateDoctypeName('SalesOrder') // 'SalesOrder Aggregate' -> slug 'sales-order-aggregate'
+ * aggregateDoctypeName('SalesOrder') // 'SalesOrders' -> slug 'sales-orders'
  * ```
  */
 export function aggregateDoctypeName(doctypeName: string): string {
-	return `${doctypeName} ${AGGREGATE_NAME_SUFFIX}`
+	return pluralize.plural(doctypeName)
 }
 
 /**
@@ -64,7 +71,7 @@ export function aggregateDoctypeName(doctypeName: string): string {
  * ```typescript
  * const [order] = convertGraphQLSchema(sdl, { include: ['Order'] })
  * const aggregate = buildAggregateDoctype(order)
- * // { name: 'Order Aggregate', slug: 'order-aggregate', fields: [ the id field ] }
+ * // { name: 'Orders', slug: 'orders', fields: [ the id field ] }
  * ```
  */
 export function buildAggregateDoctype(doctype: ConvertedGraphQLDoctype): ConvertedGraphQLDoctype | undefined {
@@ -72,6 +79,12 @@ export function buildAggregateDoctype(doctype: ConvertedGraphQLDoctype): Convert
 	if (!identity) return undefined
 
 	const name = aggregateDoctypeName(doctype.name)
+	// An already-plural name pluralises to itself, which would give the aggregate the entity's own
+	// `name` *and* its filename. Both write paths are silent about it: the CLI writes the file twice
+	// in one run, and the middleware's registry is a Map keyed by name, so the later read wins in
+	// whatever order `readdirSync` returns. Refusing is the only loud option.
+	if (name === doctype.name) return undefined
+
 	return {
 		name,
 		slug: toSlug(name),
@@ -143,9 +156,33 @@ export function planGeneration(
 	entities: readonly ConvertedGraphQLDoctype[],
 	options: GenerationPlanOptions = {}
 ): GenerationPlanEntry[] {
+	const entityNames = new Set(entities.map(entity => entity.name))
+	const claimed = new Set<string>()
+
 	return entities.flatMap(entity => {
 		const self: GenerationPlanEntry = { generated: entity, basis: entity, subset: false }
 		if (options.noAggregates) return [self]
+
+		// Name collisions are checked here rather than in the builder because only this function
+		// holds the whole set. Reported before the identity check so each refusal names its own
+		// cause — the two are repaired differently.
+		const name = aggregateDoctypeName(entity.name)
+		if (name === entity.name) {
+			options.onWarning?.(
+				`${entity.name} is already plural, so its aggregate would take the same name and the same ` +
+					`file. No aggregate was generated. Rename the doctype to its singular form, or author ` +
+					`${entity.slug}.json's collection view by hand.`
+			)
+			return [self]
+		}
+		if (entityNames.has(name) || claimed.has(name)) {
+			options.onWarning?.(
+				`${entity.name}'s aggregate would be named ${name}, which is already taken by another ` +
+					`doctype in this run. No aggregate was generated — one of the two needs an explicit ` +
+					`name via the doctypeNames option.`
+			)
+			return [self]
+		}
 
 		const aggregate = buildAggregateDoctype(entity)
 		if (!aggregate) {
@@ -155,6 +192,7 @@ export function planGeneration(
 			)
 			return [self]
 		}
+		claimed.add(name)
 
 		// The basis carries the entity's fields under the aggregate's name, so drift lines name the
 		// file the reader has to go and edit.

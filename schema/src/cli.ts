@@ -268,8 +268,10 @@ OPTIONS:
   --help, -h                   Show this help message
 
 Each table generates TWO doctypes: the entity (every column, backs the record form) and its
-aggregate (the collection view, identity column only by default) written as '<slug>-aggregate.json'.
-Widen an aggregate by adding fields to it — curation survives regeneration.
+aggregate (the collection view, identity column only by default), named as simple plurals —
+'task.json' and 'tasks.json'. Widen an aggregate by adding fields to it — curation survives
+regeneration. A doctype whose name is already plural gets no aggregate, because it would claim
+its own name and its own file; the run says so and still writes the entity.
 
 NOTE: an existing doctype file is the source of truth. Regeneration verifies it against the
 schema and adds 'source: introspected' markers; it reports disagreements rather than

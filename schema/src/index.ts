@@ -75,7 +75,6 @@ export {
 
 // GraphQL to Doctype conversion
 export {
-	AGGREGATE_NAME_SUFFIX,
 	aggregateDoctypeName,
 	buildAggregateDoctype,
 	buildScalarMap,

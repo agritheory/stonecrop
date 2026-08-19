@@ -236,7 +236,7 @@ export { GQL_SCALAR_MAP, WELL_KNOWN_SCALARS, INTERNAL_SCALARS, buildScalarMap } 
 export { defaultIsEntityType, defaultIsEntityField, classifyFieldType } from './heuristics'
 
 // Aggregate — the collection-view doctype derived from an entity, emitted as its own file
-export { aggregateDoctypeName, buildAggregateDoctype, planGeneration, AGGREGATE_NAME_SUFFIX } from './aggregate'
+export { aggregateDoctypeName, buildAggregateDoctype, planGeneration } from './aggregate'
 export type { GenerationPlanEntry, GenerationPlanOptions } from './aggregate'
 
 // Merge — verifies an authored doctype against the schema and stamps provenance

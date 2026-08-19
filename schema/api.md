@@ -6,9 +6,13 @@
 
 ### aggregateDoctypeName
 
-The name an entity's aggregate doctype is generated under.
+The name an entity's aggregate doctype is generated under: the entity's name, pluralised.
 
 One definition, because the CLI writes the file under `toSlug` of this and any later caller (a scaffolder, a docs generator) must land on the same name or it silently addresses a different file.
+
+`pluralize` rather than appending `s`, because the irregulars are not rare in practice — measured against a consumer's 41 hand-authored aggregate doctypes, this rule reproduces every one of their names, slugs and filenames exactly, while `+ 's'` gets five wrong (`Currencys`, `JournalEntrys`, …).
+
+The rule is not total: an already-plural name pluralises to itself. Callers must handle that — see `buildAggregateDoctype`.
 
 **Signature:**
 
@@ -1593,16 +1597,6 @@ export const ActionDefinition: z.ZodObject<{
     selfTransition: z.ZodOptional<z.ZodBoolean>;
     clientHandler: z.ZodOptional<z.ZodString>;
 }, z.core.$strip>
-```
-
-### AGGREGATE_NAME_SUFFIX
-
-Appended to an entity's doctype name to name its aggregate.
-
-**Type:**
-
-```typescript
-export const AGGREGATE_NAME_SUFFIX: 
 ```
 
 ### CANONICAL_COMPONENTS

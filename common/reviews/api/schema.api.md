@@ -24,9 +24,6 @@ export const ActionDefinition: z.ZodObject<{
 export type ActionDefinition = z.infer<typeof ActionDefinition>;
 
 // @public
-export const AGGREGATE_NAME_SUFFIX = "Aggregate";
-
-// @public
 export function aggregateDoctypeName(doctypeName: string): string;
 
 // @public

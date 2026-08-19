@@ -44,8 +44,8 @@ describe('buildAggregateDoctype', { tags: ['unit'] }, () => {
 			{ include: ['SalesOrder'] }
 		)
 		const aggregate = buildAggregateDoctype(order)!
-		expect(aggregate.name).toBe('SalesOrder Aggregate')
-		expect(aggregate.slug).toBe('sales-order-aggregate')
+		expect(aggregate.name).toBe('SalesOrders')
+		expect(aggregate.slug).toBe('sales-orders')
 	})
 
 	it('follows the doctype name, not the GraphQL type name', () => {
@@ -57,7 +57,7 @@ describe('buildAggregateDoctype', { tags: ['unit'] }, () => {
 		})
 		const aggregate = buildAggregateDoctype(person)!
 		expect(aggregate.name).toBe(aggregateDoctypeName('Gadget'))
-		expect(aggregate.slug).toBe('gadget-aggregate')
+		expect(aggregate.slug).toBe('gadgets')
 	})
 
 	it('emits a doctype the load gate accepts', () => {
@@ -107,6 +107,74 @@ describe('buildAggregateDoctype', { tags: ['unit'] }, () => {
 	})
 })
 
+describe('aggregate naming — plurals and collisions', { tags: ['unit'] }, () => {
+	const entityNamed = (name: string) =>
+		convertGraphQLSchema(`type ${name} { id: ID! label: String }\ntype Query { q: [${name}!]! }`, {
+			include: [name],
+		})[0]
+
+	// Verified against FAB's 41 hand-authored aggregate doctypes: `pluralize` + `toSlug` reproduces
+	// every one of their names, slugs and filenames exactly, irregulars included. A naive `+ 's'`
+	// gets five of them wrong.
+	it.each([
+		['Currency', 'Currencies', 'currencies'],
+		['JournalEntry', 'JournalEntries', 'journal-entries'],
+		['TaskDependency', 'TaskDependencies', 'task-dependencies'],
+		['DeliveryNote', 'DeliveryNotes', 'delivery-notes'],
+		['Item', 'Items', 'items'],
+	])('pluralises %s to %s', (singular, plural, slug) => {
+		const aggregate = buildAggregateDoctype(entityNamed(singular))!
+		expect(aggregate.name).toBe(plural)
+		expect(aggregate.slug).toBe(slug)
+	})
+
+	// The failure this prevents is silent twice over: the CLI writes `settings.json` once as the
+	// entity and again as the aggregate in the same run, and the middleware registry is a Map keyed
+	// by name, so whichever file `readdirSync` yields last wins. The old `-aggregate` suffix was
+	// accidentally collision-proof; plurals are not.
+	it.each(['Settings', 'Series', 'Data', 'Media', 'News', 'Equipment'])(
+		'refuses to derive an aggregate for %s, whose plural is itself',
+		name => {
+			expect(buildAggregateDoctype(entityNamed(name))).toBeUndefined()
+		}
+	)
+
+	it('refuses when the plural is already another converted doctype', () => {
+		// Two types whose names collide under pluralisation. Only `planGeneration` can see this —
+		// it is the one that holds the whole set — so the check lives there, not in the builder.
+		const entities = convertGraphQLSchema(
+			`
+				type Person { id: ID! name: String }
+				type People { id: ID! headcount: Int }
+				type Query { people: [Person!]! groups: [People!]! }
+			`,
+			{ include: ['Person', 'People'] }
+		)
+		const warnings: string[] = []
+		const plan = planGeneration(entities, { onWarning: m => warnings.push(m) })
+
+		// Both entities still written; neither aggregate, because each would claim a taken name.
+		expect(plan.filter(p => !p.subset)).toHaveLength(2)
+		expect(plan.filter(p => p.subset)).toHaveLength(0)
+		expect(warnings.join(' ')).toContain('People')
+	})
+
+	it('warns, and still writes the entity, when the plural collides with itself', () => {
+		const entities = convertGraphQLSchema(
+			`type Settings { id: ID! theme: String }\ntype Query { settings: [Settings!]! }`,
+			{ include: ['Settings'] }
+		)
+		const warnings: string[] = []
+		const plan = planGeneration(entities, { onWarning: m => warnings.push(m) })
+		expect(plan.map(p => p.generated.slug)).toEqual(['settings'])
+		expect(warnings).toHaveLength(1)
+		// Asserts the *cause*, not just the doctype name. `Settings` appears in the no-identity
+		// warning too, so matching the name alone passed with this branch deleted — verified by
+		// mutation, which is the only way that was going to surface.
+		expect(warnings[0]).toContain('already plural')
+	})
+})
+
 /**
  * Verifying an aggregate against the schema. An aggregate is a curated subset of its entity's
  * columns, so it is merged against the *entity*, not against its own one-field generation — and
@@ -116,8 +184,8 @@ describe('merging a curated aggregate', { tags: ['unit'] }, () => {
 	const entityOf = (sdl: string, name: string) => convertGraphQLSchema(sdl, { include: [name] })[0]
 
 	const widenedAggregate = {
-		name: 'Widget Aggregate',
-		slug: 'widget-aggregate',
+		name: 'Widgets',
+		slug: 'widgets',
 		fields: [
 			{ kind: 'field', fieldname: 'id', component: 'ATextInput', primaryKey: true, required: true },
 			{ kind: 'field', fieldname: 'widgetName', component: 'ATextInput', required: true },
@@ -174,7 +242,7 @@ describe('planGeneration', { tags: ['unit'] }, () => {
 	it('writes an entity and its aggregate as two peer files', () => {
 		const entities = convertGraphQLSchema(surrogateKeySdl, { include: ['Widget'] })
 		const plan = planGeneration(entities)
-		expect(plan.map(p => p.generated.slug)).toEqual(['widget', 'widget-aggregate'])
+		expect(plan.map(p => p.generated.slug)).toEqual(['widget', 'widgets'])
 	})
 
 	it('verifies an aggregate against the entity, not against itself', () => {
@@ -189,7 +257,7 @@ describe('planGeneration', { tags: ['unit'] }, () => {
 	it('names the basis after the aggregate so drift lines name the file to edit', () => {
 		const entities = convertGraphQLSchema(surrogateKeySdl, { include: ['Widget'] })
 		const [, aggregate] = planGeneration(entities)
-		expect(aggregate.basis.name).toBe('Widget Aggregate')
+		expect(aggregate.basis.name).toBe('Widgets')
 	})
 
 	it('verifies an entity against itself, and not as a subset', () => {
