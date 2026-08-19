@@ -3,7 +3,6 @@
 	"slug": "language",
 	"fields": [
 		{
-			"kind": "field",
 			"fieldname": "code",
 			"primaryKey": true,
 			"label": "Code",
@@ -13,7 +12,6 @@
 			"source": "introspected"
 		},
 		{
-			"kind": "field",
 			"fieldname": "name",
 			"label": "Name",
 			"component": "ATextInput",
@@ -21,7 +19,6 @@
 			"source": "introspected"
 		},
 		{
-			"kind": "field",
 			"fieldname": "native",
 			"label": "Native Name",
 			"component": "ATextInput",
@@ -29,7 +26,6 @@
 			"source": "introspected"
 		},
 		{
-			"kind": "field",
 			"fieldname": "rtl",
 			"label": "Right-to-Left",
 			"component": "ACheckbox",

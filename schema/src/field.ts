@@ -272,20 +272,24 @@ export const INTROSPECTED_IDENTITY_PROPS = [
  * route/store key from it. Call this; never re-derive the rule at the call site, or the two will
  * drift and the client will key records by a column the server never queried.
  *
- * Two deliberate limits, both matching the shape `primaryKey` actually has:
- * - Only **top-level** fields are scanned. `primaryKey` is a `ValueField` flag and a fieldset's
- *   children are not identity columns, so a nested match would be an authoring error, not a PK.
- * - The **first** match wins. Identity is single-valued by design — a doctype describes the API
- *   surface, and mapping a composite database key onto one identity there is the adapter's job —
- *   so a doctype declaring several is malformed rather than composite. `DoctypeMeta` rejects that
- *   at the load gate; this stays total for callers holding fields that never went through it.
+ * Two deliberate rules, both matching the shape `primaryKey` actually has:
+ * - Fieldset children are **included**, via {@link flattenFields}. A fieldset is layout, not
+ *   scope: its children are fields of the doctype with columns of their own, which is why the
+ *   adapter's SELECT already descends and why `getDisplayField` does too. Scanning top level only
+ *   did not *refuse* a nested declaration — it ignored one, so an author marked identity and
+ *   nothing honoured it and nothing said so.
+ * - The **first** match in document order wins. Identity is single-valued by design — a doctype
+ *   describes the API surface, and mapping a composite database key onto one identity there is the
+ *   adapter's job — so a doctype declaring several is malformed rather than composite.
+ *   `DoctypeMeta` rejects that at the load gate; this stays total for callers holding fields that
+ *   never went through it.
  *
- * @param fields - the doctype's top-level fields
+ * @param fields - the doctype's fields; fieldset children are descended into
  * @returns the primary-key field, or `undefined` for a PK-less doctype
  * @public
  */
 export function getPrimaryKeyField(fields: readonly DoctypeField[]): ValueField | undefined {
-	return fields.find((f): f is ValueField => f.kind === 'field' && Boolean(f.primaryKey))
+	return flattenFields(fields).find((f): f is ValueField => f.kind === 'field' && Boolean(f.primaryKey))
 }
 
 /**

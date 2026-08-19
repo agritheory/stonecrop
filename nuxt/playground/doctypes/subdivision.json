@@ -3,7 +3,6 @@
 	"slug": "subdivision",
 	"fields": [
 		{
-			"kind": "field",
 			"fieldname": "code",
 			"primaryKey": true,
 			"label": "Code",
@@ -13,14 +12,12 @@
 			"source": "introspected"
 		},
 		{
-			"kind": "field",
 			"fieldname": "emoji",
 			"label": "Emoji",
 			"component": "ATextInput",
 			"source": "introspected"
 		},
 		{
-			"kind": "field",
 			"fieldname": "name",
 			"label": "Name",
 			"component": "ATextInput",

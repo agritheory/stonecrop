@@ -933,14 +933,19 @@ export function getSqlColumns(meta: DoctypeMeta): string {
  * client and refused outright by this adapter, so every fetch answered `null` and looked exactly
  * like a record that does not exist.
  *
- * Returns `undefined` only when the resolved name is not a declared top-level field — a doctype
- * with no `primaryKey` and no `id`. That case cannot be served: `getSqlColumns` selects declared
- * fields only, so the row map would key on a column the SELECT never returned and every lookup
- * would miss silently. Callers must say so rather than answer `null`.
+ * Returns `undefined` only when the resolved name is not a declared field — a doctype with no
+ * `primaryKey` and no `id`. That case cannot be served: `getSqlColumns` selects declared fields
+ * only, so the row map would key on a column the SELECT never returned and every lookup would miss
+ * silently. Callers must say so rather than answer `null`.
+ *
+ * Descends into fieldsets, because both halves of the question already do — `getSqlColumns` selects
+ * a fieldset's children, and `getRecordIdField` resolves a key declared among them. While this
+ * scanned top level only it could refuse a name that helper had just resolved, so a doctype whose
+ * SELECT carried its own key column had no identity to look that column up by.
  */
 function getPkMeta(meta: DoctypeMeta): ValueField | undefined {
 	const fieldname = getRecordIdField(meta.fields)
-	return meta.fields.find((f): f is ValueField => f.kind === 'field' && f.fieldname === fieldname)
+	return flattenFields(meta.fields).find((f): f is ValueField => f.kind === 'field' && f.fieldname === fieldname)
 }
 
 /**

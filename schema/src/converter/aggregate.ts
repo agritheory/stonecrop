@@ -15,6 +15,7 @@
  */
 
 import { toSlug } from '../naming'
+import { getPrimaryKeyField } from '../field'
 import type { ValueField } from '../field'
 import type { ConvertedGraphQLDoctype } from './types'
 
@@ -83,15 +84,16 @@ export function buildAggregateDoctype(doctype: ConvertedGraphQLDoctype): Convert
 /**
  * The field an aggregate is keyed on: the declared primary key, else the conventional `id`.
  *
- * Mirrors `getRecordIdField`'s order rather than re-deriving it. It cannot call that helper
- * directly — this operates on converter output (`ValueField[]`) mid-conversion, before the
- * doctype is a `DoctypeMeta` — but the order must not diverge, or the aggregate would key on a
- * column the client never asks for.
+ * Calls `getPrimaryKeyField` for the first half rather than restating it. The note here used to
+ * claim it could not — that the helper wanted a `DoctypeMeta` while this holds raw converter
+ * output — and that was never true: `ValueField[]` is assignable to the `DoctypeField[]` the
+ * helper takes. The restatement then drifted exactly as a restatement does, staying top-level
+ * while the helper learned to descend into fieldsets.
  *
  * @internal
  */
 function findIdentityField(fields: readonly ValueField[]): ValueField | undefined {
-	return fields.find(field => field.primaryKey) ?? fields.find(field => field.fieldname === 'id')
+	return getPrimaryKeyField(fields) ?? fields.find(field => field.fieldname === 'id')
 }
 
 /**

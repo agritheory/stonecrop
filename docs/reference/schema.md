@@ -267,7 +267,7 @@ Find the field a doctype marks as its primary key, or `undefined` when none is m
 
 This is the single definition of "which field identifies a record". Both sides depend on it: the middleware builds the SQL identity predicate from it, and the client resolves a record's route/store key from it. Call this; never re-derive the rule at the call site, or the two will drift and the client will key records by a column the server never queried.
 
-Two deliberate limits, both matching the shape `primaryKey` actually has: - Only **top-level** fields are scanned. `primaryKey` is a `ValueField` flag and a fieldset's children are not identity columns, so a nested match would be an authoring error, not a PK. - The **first** match wins. Identity is single-valued by design — a doctype describes the API surface, and mapping a composite database key onto one identity there is the adapter's job — so a doctype declaring several is malformed rather than composite. `DoctypeMeta` rejects that at the load gate; this stays total for callers holding fields that never went through it.
+Two deliberate rules, both matching the shape `primaryKey` actually has: - Fieldset children are **included**, via `flattenFields`. A fieldset is layout, not scope: its children are fields of the doctype with columns of their own, which is why the adapter's SELECT already descends and why `getDisplayField` does too. Scanning top level only did not *refuse* a nested declaration — it ignored one, so an author marked identity and nothing honoured it and nothing said so. - The **first** match in document order wins. Identity is single-valued by design — a doctype describes the API surface, and mapping a composite database key onto one identity there is the adapter's job — so a doctype declaring several is malformed rather than composite. `DoctypeMeta` rejects that at the load gate; this stays total for callers holding fields that never went through it.
 
 **Signature:**
 
@@ -279,7 +279,7 @@ export declare function getPrimaryKeyField(fields: readonly DoctypeField[]): Val
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| fields | `readonly DoctypeField[]` | the doctype's top-level fields |
+| fields | `readonly DoctypeField[]` | the doctype's fields; fieldset children are descended into |
 
 ### getRecordIdentity
 

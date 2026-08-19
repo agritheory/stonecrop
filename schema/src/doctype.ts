@@ -344,9 +344,13 @@ export const DoctypeMeta = z
 		// need not be unique — `stonecropRecord`'s row map then keeps whichever row comes last.
 		// Refusing at the gate is what makes it say so.
 		//
+		// Counts the flattened set, because that is the set `getPrimaryKeyField` resolves over. The
+		// two asked different questions while this scanned top level only: a doctype with one key
+		// declared at each level passed the gate and then had one of them silently dropped.
+		//
 		// Zero keys stays legal and is not an omission: a surrogate-key doctype declares none and
 		// resolves through `getRecordIdField`'s documented `id` fallback.
-		const declared = doctype.fields.filter(f => f.kind === 'field' && f.primaryKey)
+		const declared = flattenFields(doctype.fields).filter(f => f.kind === 'field' && f.primaryKey)
 		if (declared.length > 1) {
 			ctx.addIssue({
 				code: 'custom',
