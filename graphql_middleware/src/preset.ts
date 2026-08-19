@@ -12,6 +12,53 @@ import { PostGraphileAmberPreset } from 'postgraphile/presets/amber'
  */
 export type FieldCasing = 'camel' | 'pascal'
 
+/**
+ * Stops Amber taking `id` for Relay's global object identifier.
+ *
+ * Amber points `nodeIdFieldName` at `id`, so `PgAttributesPlugin` renames any real column called
+ * `id` out of the way to `row_id` -> `rowId`. Stonecrop can use neither name: the middleware
+ * resolves columns with raw SQL through `camelToSnake` and never reads the GraphQL surface, so `id`
+ * is an opaque base64 node id with no column behind it, and `rowId` names a `row_id` that does not
+ * exist. A doctype generated from the un-overridden schema is stamped `primaryKey: true` on that
+ * node id and every read of it then fails on a missing column.
+ *
+ * Both inflectors must move together. Undoing the rename alone collides with the Relay field still
+ * sitting on `id`; disabling `NodePlugin` alone removes the Relay field but leaves the column called
+ * `rowId`, which is strictly worse — it drops the one case that used to warn. Moving the identifier
+ * to `nodeId` keeps Relay working and is the name the schema converter already skips.
+ *
+ * Mirrors `postgraphile/presets/v4`, which reverses exactly these two inflectors.
+ */
+const StonecropNaturalIdPlugin: GraphileConfig.Plugin = {
+	name: 'StonecropNaturalIdPlugin',
+	version: '0.0.0',
+	after: ['PgAttributesPlugin'],
+	inflection: {
+		replace: {
+			// Move Relay's global identifier off `id`...
+			nodeIdFieldName() {
+				return 'nodeId'
+			},
+
+			// ...so the real column can keep its own name.
+			_attributeName(previous, options, details) {
+				// `previous` is optional in the inflector signature because a replacement may be the first
+				// implementation. It never is here — `after: ['PgAttributesPlugin']` guarantees Amber's runs
+				// first — but the raw attribute name is the correct identity fallback.
+				const name = previous?.(details) ?? details.attributeName
+				if (!details.skipRowId && name === 'row_id') {
+					const { codec, attributeName } = details
+					const baseName = codec.attributes[attributeName]?.extensions?.tags?.name ?? attributeName
+					if (typeof baseName === 'string' && baseName.toLowerCase() === 'id' && !codec.isAnonymous) {
+						return 'id'
+					}
+				}
+				return name
+			},
+		},
+	},
+}
+
 const StonecropFieldCasingPlugin: GraphileConfig.Plugin = {
 	name: 'StonecropFieldCasingPlugin',
 	version: '0.0.0',
@@ -46,7 +93,10 @@ const StonecropFieldCasingPlugin: GraphileConfig.Plugin = {
  */
 export const createStonecropPreset = (options?: { fieldCasing?: FieldCasing }): GraphileConfig.Preset => ({
 	extends: [PostGraphileAmberPreset],
-	plugins: options?.fieldCasing === 'pascal' ? [StonecropFieldCasingPlugin] : [],
+	plugins:
+		options?.fieldCasing === 'pascal'
+			? [StonecropNaturalIdPlugin, StonecropFieldCasingPlugin]
+			: [StonecropNaturalIdPlugin],
 })
 
 /**
