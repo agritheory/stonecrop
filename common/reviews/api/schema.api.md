@@ -59,7 +59,7 @@ export interface BadgeSpecObject {
 export type BadgeVariant = 'neutral' | 'success' | 'warning' | 'danger' | 'brand';
 
 // @public
-export function buildAggregateDoctype(doctype: ConvertedGraphQLDoctype): ConvertedGraphQLDoctype | undefined;
+export function buildAggregateDoctype(doctype: ConvertedGraphQLDoctype, declaredIdentity?: string): ConvertedGraphQLDoctype | undefined;
 
 // Warning: (ae-forgotten-export) The symbol "FieldTemplate" needs to be exported by the entry point index.d.ts
 //
@@ -338,6 +338,7 @@ export interface GenerationPlanEntry {
 
 // @public
 export interface GenerationPlanOptions {
+    identity?: Record<string, string>;
     noAggregates?: boolean;
     onWarning?: (message: string) => void;
 }

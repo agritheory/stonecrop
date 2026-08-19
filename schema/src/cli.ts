@@ -19,6 +19,7 @@ import { resolve, join } from 'node:path'
 import { parseArgs } from 'node:util'
 import { getIntrospectionQuery, type IntrospectionQuery } from 'graphql'
 
+import { authoredPrimaryKey } from './converter/authored'
 import { convertGraphQLSchema, formatDoctypeDrift, mergeIntrospectedDoctype, planGeneration } from './converter/index'
 import { stripFieldKind } from './field'
 import { validateDoctype } from './validation'
@@ -157,10 +158,25 @@ async function main(): Promise<void> {
 		process.exit(0)
 	}
 
+	// Read the identity each authored doctype declares, before planning rather than during the write
+	// loop below. SDL cannot express which UNIQUE column is a table's key, so for a natural-key
+	// doctype the declaration in the file is the only answer that exists — and planning is what
+	// decides whether the aggregate can be built at all. Reading it 20 lines later, as the loop
+	// does, made the "declare a primaryKey and re-run" warning a dead end: re-running after
+	// declaring one changed nothing.
+	const identity: Record<string, string> = {}
+	for (const entity of entities) {
+		const entityPath = join(outputDir, `${entity.slug}.json`)
+		if (!existsSync(entityPath)) continue
+		const declared = authoredPrimaryKey(JSON.parse(readFileSync(entityPath, 'utf-8')))
+		if (declared !== undefined) identity[entity.name] = declared
+	}
+
 	// Each table yields two doctypes — the entity and its aggregate — written as peers, one file
 	// each, along with what each is verified against. See `planGeneration`.
 	const doctypes = planGeneration(entities, {
 		noAggregates: values['no-aggregates'],
+		identity,
 		onWarning: message => console.warn(`  WARN: ${message}`),
 	})
 
@@ -282,6 +298,10 @@ aggregate (the collection view, identity column only by default), named as simpl
 'task.json' and 'tasks.json'. Widen an aggregate by adding fields to it — curation survives
 regeneration. A doctype whose name is already plural gets no aggregate, because it would claim
 its own name and its own file; the run says so and still writes the entity.
+
+An aggregate needs an identity column. A table keyed on 'id' gives one up; for a natural key,
+declare 'primaryKey' on the field in the entity's own file and re-run — the aggregate is keyed
+on whatever that file declares.
 
 NOTE: an existing doctype file is the source of truth. Regeneration verifies it against the
 schema and adds 'source: introspected' markers; it reports disagreements rather than

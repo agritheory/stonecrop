@@ -35,14 +35,14 @@ export declare function aggregateDoctypeName(doctypeName: string): string;
 
 Derive the aggregate doctype for a converted entity.
 
-Returns `undefined` when the entity has no identity column to build one from — a natural-key table whose key the converter refuses to guess, or the un-normalized PostGraphile case where `id` is a Relay identifier and no primary key is derivable at all. That is deliberate: an aggregate with an empty `fields` array is a valid doctype that renders a table with no columns, which looks like a data problem rather than a generation one. Emitting nothing and saying so is the loud failure.
+Returns `undefined` when no identity column can be found — a natural-key table whose key the converter refuses to guess and whose author has not declared one, or a foreign PostGraphile endpoint that has left the Relay identifier occupying `id` (Stonecrop's own preset moves it to `nodeId`). That is deliberate: an aggregate with an empty `fields` array is a valid doctype that renders a table with no columns, which looks like a data problem rather than a generation one. Emitting nothing and saying so is the loud failure.
 
-Identity resolves the same way `getRecordIdField` resolves it — the declared `primaryKey`, then the conventional `id` — so an aggregate is always keyed on the column the client will later ask for.
+Identity resolves the same way `getRecordIdField` resolves it — the declared `primaryKey`, then the conventional `id` — so an aggregate is always keyed on the column the client will later ask for. `declaredIdentity` overrides both: SDL cannot express which `UNIQUE` column is the key, so for a natural-key table the answer only exists in the authored file, and the caller that read it passes the fieldname back.
 
 **Signature:**
 
 ```typescript
-export declare function buildAggregateDoctype(doctype: ConvertedGraphQLDoctype): ConvertedGraphQLDoctype | undefined;
+export declare function buildAggregateDoctype(doctype: ConvertedGraphQLDoctype, declaredIdentity?: string): ConvertedGraphQLDoctype | undefined;
 ```
 
 **Parameters:**
@@ -50,6 +50,7 @@ export declare function buildAggregateDoctype(doctype: ConvertedGraphQLDoctype):
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | doctype | `ConvertedGraphQLDoctype` | a converted entity doctype, as returned by `convertGraphQLSchema` |
+| declaredIdentity | `string` | fieldname the authored doctype declares as its `primaryKey`, when the caller has read one. Must name a field the converter emitted; the caller checks that, because only it can say whether a missing one is a dropped column or a typo. |
 
 ### buildScalarMap
 
@@ -1018,6 +1019,7 @@ Options for `planGeneration`.
 
 ```typescript
 export interface GenerationPlanOptions {
+  identity?: Record<string, string>;
   noAggregates?: boolean;
   onWarning?: (message: string) => void;
 }
@@ -1027,6 +1029,7 @@ export interface GenerationPlanOptions {
 
 | Property | Type | Description |
 |----------|------|-------------|
+| identity? | `Record<string, string>` | Identity the authored doctype on disk declares, keyed by doctype `name`. SDL cannot say which `UNIQUE` column is a table's key, so for a natural-key table the converter derives nothing and the answer exists only in the file. Without this the aggregate is unreachable: generation says "declare a primaryKey and re-run", and re-running after declaring one changes nothing, because planning never reads the file. Passed in rather than read here so this stays a pure function of its inputs; the CLI owns the IO. The plan is then a function of the schema *and* what is already on disk. |
 | noAggregates? | `boolean` | Emit only the entity doctypes, skipping their aggregates. Defaults to `false`. |
 | onWarning? | `(message: string) => void` | Called with an advisory message for each entity that yields no aggregate. |
 

@@ -15,16 +15,11 @@
  */
 
 import { INTROSPECTED_IDENTITY_PROPS } from '../field'
+import { authoredPrimaryKey, flattenAuthored, isAuthoredRecord } from './authored'
+import type { AuthoredDoctype } from './authored'
 import type { ConvertedGraphQLDoctype } from './types'
 
-/**
- * A doctype as it exists on disk: a plain object that may carry keys this package does not model
- * (`handler` on an action, `filterFunction` on a field, whatever an app has added). Typing it
- * loosely is what lets the merge round-trip those keys untouched instead of dropping them.
- *
- * @public
- */
-export type AuthoredDoctype = Record<string, unknown>
+export type { AuthoredDoctype }
 
 /**
  * What generation found that the authored doctype does not agree with. Every bucket is advisory —
@@ -84,23 +79,6 @@ export interface MergeResult {
 	drift: DoctypeDrift
 }
 
-/** Recursively flatten authored fields, descending into fieldsets. */
-function flattenAuthored(fields: readonly AuthoredDoctype[]): AuthoredDoctype[] {
-	const out: AuthoredDoctype[] = []
-	for (const f of fields) {
-		if (Array.isArray(f.schema)) {
-			out.push(...flattenAuthored(f.schema.filter(isRecord)))
-		} else {
-			out.push(f)
-		}
-	}
-	return out
-}
-
-function isRecord(value: unknown): value is AuthoredDoctype {
-	return typeof value === 'object' && value !== null && !Array.isArray(value)
-}
-
 function describe(value: unknown): string {
 	return value === undefined ? '—' : JSON.stringify(value)
 }
@@ -128,7 +106,7 @@ export function mergeIntrospectedDoctype(
 	generated: ConvertedGraphQLDoctype,
 	options: MergeOptions = {}
 ): MergeResult {
-	const authoredFields = Array.isArray(authored.fields) ? authored.fields.filter(isRecord) : []
+	const authoredFields = Array.isArray(authored.fields) ? authored.fields.filter(isAuthoredRecord) : []
 	const generatedByName = new Map(generated.fields.map(f => [f.fieldname, f]))
 	// Expanding links live in `links`, not `fields`, so a field naming one is modelled, not orphaned.
 	const generatedLinkNames = new Set(Object.keys(generated.links ?? {}))
@@ -147,7 +125,7 @@ export function mergeIntrospectedDoctype(
 	const tag = (field: AuthoredDoctype): AuthoredDoctype => {
 		// Containers have no column of their own; recurse and leave the container itself alone.
 		if (Array.isArray(field.schema)) {
-			return { ...field, schema: field.schema.filter(isRecord).map(tag) }
+			return { ...field, schema: field.schema.filter(isAuthoredRecord).map(tag) }
 		}
 
 		const name = typeof field.fieldname === 'string' ? field.fieldname : ''
@@ -193,14 +171,14 @@ export function mergeIntrospectedDoctype(
 	}
 
 	// Classify identity last, once every field has been compared.
-	const authoredPk = flattenAuthored(authoredFields).find(f => f.primaryKey === true)
+	const authoredPk = authoredPrimaryKey(authored)
 	const generatedPk = generated.fields.find(f => f.primaryKey === true)
-	if (authoredPk && generatedPk && authoredPk.fieldname !== generatedPk.fieldname) {
+	if (authoredPk && generatedPk && authoredPk !== generatedPk.fieldname) {
 		drift.mode = 'partial'
-		drift.reason = `authored primary key '${String(authoredPk.fieldname)}' is not the derivable '${generatedPk.fieldname}' — left as authored`
+		drift.reason = `authored primary key '${authoredPk}' is not the derivable '${generatedPk.fieldname}' — left as authored`
 	} else if (authoredPk && !generatedPk) {
 		drift.mode = 'partial'
-		drift.reason = `authored primary key '${String(authoredPk.fieldname)}' is not derivable from the schema — left as authored`
+		drift.reason = `authored primary key '${authoredPk}' is not derivable from the schema — left as authored`
 	} else if (!authoredPk && generatedPk) {
 		drift.mode = 'partial'
 		drift.reason = `schema suggests '${generatedPk.fieldname}' as primary key but the doctype declares none — not applied`

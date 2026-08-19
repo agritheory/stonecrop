@@ -4,6 +4,7 @@ import {
 	aggregateDoctypeName,
 	buildAggregateDoctype,
 	convertGraphQLSchema,
+	formatDoctypeDrift,
 	mergeIntrospectedDoctype,
 	planGeneration,
 } from '../src/converter/index'
@@ -14,6 +15,11 @@ import { validateDoctype } from '../src/validation'
  * the aggregate that backs its collection view. The aggregate starts at identity alone because the
  * useful default for a collection is the column that opens a row, not all forty.
  */
+
+const naturalKeySdl = `
+	type Uom { code: ID! uomName: String! }
+	type Query { uoms: [Uom!]! }
+`
 
 const surrogateKeySdl = `
 	type Widget {
@@ -254,10 +260,27 @@ describe('planGeneration', { tags: ['unit'] }, () => {
 		expect(aggregate.basis.fields.map(f => f.fieldname)).toEqual(entities[0].fields.map(f => f.fieldname))
 	})
 
-	it('names the basis after the aggregate so drift lines name the file to edit', () => {
+	it('passes the entity through as the basis, unrenamed', () => {
+		// The basis used to be copied under the aggregate's name, on the belief that drift lines read
+		// it. They do not — `mergeIntrospectedDoctype` reads only `fields` and `links` off the basis,
+		// and names the report after the authored file. The copy was inert.
 		const entities = convertGraphQLSchema(surrogateKeySdl, { include: ['Widget'] })
 		const [, aggregate] = planGeneration(entities)
-		expect(aggregate.basis.name).toBe('Widgets')
+		expect(aggregate.basis).toBe(entities[0])
+	})
+
+	it('reports drift against the aggregate file being checked, not against its basis', () => {
+		// The property the inert rename was there to buy, asserted where it actually comes from: a
+		// reader told "Widget" would go looking in widget.json for a finding about widgets.json.
+		const entities = convertGraphQLSchema(surrogateKeySdl, { include: ['Widget'] })
+		const [, aggregate] = planGeneration(entities)
+		const { drift } = mergeIntrospectedDoctype(
+			{ name: 'Widgets', fields: [{ fieldname: 'goneAway', component: 'ATextInput' }] },
+			aggregate.basis,
+			{ subset: true }
+		)
+		expect(drift.doctype).toBe('Widgets')
+		expect(formatDoctypeDrift(drift).join('\n')).toContain('Widgets: authored fields with no schema field: goneAway')
 	})
 
 	it('verifies an entity against itself, and not as a subset', () => {
@@ -272,14 +295,43 @@ describe('planGeneration', { tags: ['unit'] }, () => {
 		expect(planGeneration(entities, { noAggregates: true }).map(p => p.generated.slug)).toEqual(['widget'])
 	})
 
+	it('keys the aggregate on an identity the author declared, which the schema cannot express', () => {
+		// SDL cannot say which UNIQUE column is the key, so the converter derives nothing and the
+		// author declares it in the file. Until the caller passes that declaration back, the
+		// aggregate is unreachable: its warning says "declare a primaryKey and re-run", and re-running
+		// after declaring one changes nothing.
+		const entities = convertGraphQLSchema(naturalKeySdl, { include: ['Uom'] })
+		const plan = planGeneration(entities, { identity: { Uom: 'code' } })
+		expect(plan.map(p => p.generated.slug)).toEqual(['uom', 'uoms'])
+	})
+
+	it('marks the declared identity on the aggregate it copies', () => {
+		// Without the marker `getRecordIdField` falls back to `id`, which an aggregate keyed on `code`
+		// does not have — and every listed row is then silently dropped.
+		const entities = convertGraphQLSchema(naturalKeySdl, { include: ['Uom'] })
+		const [, aggregate] = planGeneration(entities, { identity: { Uom: 'code' } })
+		expect(aggregate.generated.fields).toEqual([expect.objectContaining({ fieldname: 'code', primaryKey: true })])
+	})
+
+	it('refuses, naming the field, when the declared identity is not a column the schema has', () => {
+		// A key naming a dropped column or a computed field. Building an aggregate around a field that
+		// does not exist would produce a collection view whose only column is absent from every row.
+		const entities = convertGraphQLSchema(naturalKeySdl, { include: ['Uom'] })
+		const warnings: string[] = []
+		const plan = planGeneration(entities, { identity: { Uom: 'legacyRef' }, onWarning: m => warnings.push(m) })
+		expect(plan.map(p => p.generated.slug)).toEqual(['uom'])
+		expect(warnings).toHaveLength(1)
+		expect(warnings[0]).toContain('legacyRef')
+	})
+
+	it('leaves an identity declared for another doctype alone', () => {
+		// Keyed by doctype name, so a map covering the whole run does not leak between entries.
+		const entities = convertGraphQLSchema(naturalKeySdl, { include: ['Uom'] })
+		expect(planGeneration(entities, { identity: { Other: 'code' } }).map(p => p.generated.slug)).toEqual(['uom'])
+	})
+
 	it('warns, and still writes the entity, when no aggregate can be derived', () => {
-		const entities = convertGraphQLSchema(
-			`
-				type Uom { code: ID! uomName: String! }
-				type Query { uoms: [Uom!]! }
-			`,
-			{ include: ['Uom'] }
-		)
+		const entities = convertGraphQLSchema(naturalKeySdl, { include: ['Uom'] })
 		const warnings: string[] = []
 		const plan = planGeneration(entities, { onWarning: m => warnings.push(m) })
 		expect(plan.map(p => p.generated.slug)).toEqual(['uom'])

@@ -626,9 +626,6 @@ importers:
       graphql:
         specifier: ^16.14.0
         version: 16.14.2
-      pluralize:
-        specifier: ^8.0.0
-        version: 8.0.0
       postgraphile:
         specifier: ^5.0.3
         version: 5.1.0(@envelop/core@5.5.1)(crossws@0.3.5)(graphql@16.14.2)(h3@1.15.11)(use-sync-external-store@1.6.0)
@@ -645,9 +642,6 @@ importers:
       '@types/pg':
         specifier: ^8.11.0
         version: 8.20.0
-      '@types/pluralize':
-        specifier: ^0.0.33
-        version: 0.0.33
       '@vitest/coverage-istanbul':
         specifier: ^4.1.5
         version: 4.1.10(vitest@4.1.10)

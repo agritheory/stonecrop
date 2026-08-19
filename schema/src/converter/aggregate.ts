@@ -52,18 +52,23 @@ export function aggregateDoctypeName(doctypeName: string): string {
 /**
  * Derive the aggregate doctype for a converted entity.
  *
- * Returns `undefined` when the entity has no identity column to build one from — a natural-key
- * table whose key the converter refuses to guess, or the un-normalized PostGraphile case where
- * `id` is a Relay identifier and no primary key is derivable at all. That is deliberate: an
- * aggregate with an empty `fields` array is a valid doctype that renders a table with no columns,
- * which looks like a data problem rather than a generation one. Emitting nothing and saying so
- * is the loud failure.
+ * Returns `undefined` when no identity column can be found — a natural-key table whose key the
+ * converter refuses to guess and whose author has not declared one, or a foreign PostGraphile
+ * endpoint that has left the Relay identifier occupying `id` (Stonecrop's own preset moves it to
+ * `nodeId`). That is deliberate: an aggregate with an empty `fields` array is a valid doctype that
+ * renders a table with no columns, which looks like a data problem rather than a generation one.
+ * Emitting nothing and saying so is the loud failure.
  *
- * Identity resolves the same way {@link getRecordIdField} resolves it — the declared `primaryKey`,
- * then the conventional `id` — so an aggregate is always keyed on the column the client will
- * later ask for.
+ * Identity resolves the same way `getRecordIdField` resolves it — the declared `primaryKey`, then
+ * the conventional `id` — so an aggregate is always keyed on the column the client will later ask
+ * for. `declaredIdentity` overrides both: SDL cannot express which `UNIQUE` column is the key, so
+ * for a natural-key table the answer only exists in the authored file, and the caller that read it
+ * passes the fieldname back.
  *
  * @param doctype - a converted entity doctype, as returned by `convertGraphQLSchema`
+ * @param declaredIdentity - fieldname the authored doctype declares as its `primaryKey`, when the
+ *   caller has read one. Must name a field the converter emitted; the caller checks that, because
+ *   only it can say whether a missing one is a dropped column or a typo.
  * @returns the aggregate doctype, or `undefined` when no identity column exists
  * @public
  *
@@ -74,8 +79,11 @@ export function aggregateDoctypeName(doctypeName: string): string {
  * // { name: 'Orders', slug: 'orders', fields: [ the id field ] }
  * ```
  */
-export function buildAggregateDoctype(doctype: ConvertedGraphQLDoctype): ConvertedGraphQLDoctype | undefined {
-	const identity = findIdentityField(doctype.fields)
+export function buildAggregateDoctype(
+	doctype: ConvertedGraphQLDoctype,
+	declaredIdentity?: string
+): ConvertedGraphQLDoctype | undefined {
+	const identity = findIdentityField(doctype.fields, declaredIdentity)
 	if (!identity) return undefined
 
 	const name = aggregateDoctypeName(doctype.name)
@@ -85,27 +93,37 @@ export function buildAggregateDoctype(doctype: ConvertedGraphQLDoctype): Convert
 	// whatever order `readdirSync` returns. Refusing is the only loud option.
 	if (name === doctype.name) return undefined
 
+	// `primaryKey` is stamped rather than copied through: a declared identity is not marked on the
+	// converter's own field, and an aggregate whose one column carries no marker resolves identity
+	// through `getRecordIdField`'s `id` fallback — a column it does not have, so every listed row is
+	// silently dropped. Rebuilt with `source` last so the key order matches an entity's identity
+	// field and both files stay byte-stable.
+	//
+	// A copy, not a reference: the two doctypes are written to separate files and an edit to one
+	// must not reach the other.
+	const { source, ...rest } = identity
 	return {
 		name,
 		slug: toSlug(name),
-		// A copy, not a reference: the two doctypes are written to separate files and an edit to
-		// one must not reach the other.
-		fields: [{ ...identity }],
+		fields: [{ ...rest, primaryKey: true, ...(source === undefined ? {} : { source }) }],
 	}
 }
 
 /**
- * The field an aggregate is keyed on: the declared primary key, else the conventional `id`.
+ * The field an aggregate is keyed on: an identity the author declared, else the primary key the
+ * converter derived, else the conventional `id`.
  *
- * Calls `getPrimaryKeyField` for the first half rather than restating it. The note here used to
- * claim it could not — that the helper wanted a `DoctypeMeta` while this holds raw converter
- * output — and that was never true: `ValueField[]` is assignable to the `DoctypeField[]` the
- * helper takes. The restatement then drifted exactly as a restatement does, staying top-level
- * while the helper learned to descend into fieldsets.
+ * The author wins because the authored doctype is the source of truth — generation verifies it and
+ * never overwrites it (see `mergeIntrospectedDoctype`), and the divergence is already reported as
+ * identity drift.
+ *
+ * Calls `getPrimaryKeyField` for the derived half rather than restating it: a restatement drifted
+ * exactly as one does, staying top-level while the helper learned to descend into fieldsets.
  *
  * @internal
  */
-function findIdentityField(fields: readonly ValueField[]): ValueField | undefined {
+function findIdentityField(fields: readonly ValueField[], declared?: string): ValueField | undefined {
+	if (declared !== undefined) return fields.find(field => field.fieldname === declared)
 	return getPrimaryKeyField(fields) ?? fields.find(field => field.fieldname === 'id')
 }
 
@@ -134,6 +152,18 @@ export interface GenerationPlanOptions {
 	noAggregates?: boolean
 	/** Called with an advisory message for each entity that yields no aggregate. */
 	onWarning?: (message: string) => void
+	/**
+	 * Identity the authored doctype on disk declares, keyed by doctype `name`.
+	 *
+	 * SDL cannot say which `UNIQUE` column is a table's key, so for a natural-key table the converter
+	 * derives nothing and the answer exists only in the file. Without this the aggregate is
+	 * unreachable: generation says "declare a primaryKey and re-run", and re-running after declaring
+	 * one changes nothing, because planning never reads the file.
+	 *
+	 * Passed in rather than read here so this stays a pure function of its inputs; the CLI owns the
+	 * IO. The plan is then a function of the schema *and* what is already on disk.
+	 */
+	identity?: Record<string, string>
 }
 
 /**
@@ -184,7 +214,20 @@ export function planGeneration(
 			return [self]
 		}
 
-		const aggregate = buildAggregateDoctype(entity)
+		// Checked here rather than in the builder because only the caller knows whether a name that
+		// matches nothing is a dropped column or a typo — and an aggregate built around a field the
+		// table has no column for renders a collection whose only column is absent from every row.
+		const declared = options.identity?.[entity.name]
+		if (declared !== undefined && !entity.fields.some(field => field.fieldname === declared)) {
+			options.onWarning?.(
+				`${entity.name} declares its primaryKey on '${declared}', which the schema has no column for. ` +
+					`No aggregate was generated — correct the declaration in ${entity.slug}.json, or restore the ` +
+					`column to the table.`
+			)
+			return [self]
+		}
+
+		const aggregate = buildAggregateDoctype(entity, declared)
 		if (!aggregate) {
 			options.onWarning?.(
 				`${entity.name} has no derivable identity column, so no aggregate doctype was generated. ` +
@@ -194,8 +237,9 @@ export function planGeneration(
 		}
 		claimed.add(name)
 
-		// The basis carries the entity's fields under the aggregate's name, so drift lines name the
-		// file the reader has to go and edit.
-		return [self, { generated: aggregate, basis: { ...entity, name: aggregate.name }, subset: true }]
+		// The basis is the entity itself: an aggregate is verified against the table it curates from,
+		// not against its own one-field generation. Drift lines take their name from the authored file
+		// being checked, so they already name the file the reader has to edit.
+		return [self, { generated: aggregate, basis: entity, subset: true }]
 	})
 }
