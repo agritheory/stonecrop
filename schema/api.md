@@ -337,6 +337,28 @@ export declare function hasBadgeOptions(options: FieldOptions | undefined): bool
 |-----------|------|-------------|
 | options | `FieldOptions \| undefined` |  |
 
+### inferFieldKind
+
+Which of the three field shapes an entry has, read from the entry's own structure.
+
+The single definition of that question. It had three copies before this — the parser's `injectKind`, `stripFieldKind`'s agreement check, and the docbuilder's own `isValueField` in another package — each free to drift, and drift here re-types a field rather than throwing: a value field read as a fieldset loses its column, a fieldset read as a value field loses every child.
+
+Deliberately **shape-only**: a declared `kind` is ignored. Two callers depend on that. The stripper compares this against the declaration to decide whether removing it is lossless, which it cannot do if this honours it. The docbuilder reads raw JSON off disk and classifies entries to decide which to render as editable rows — and `kind` is Stonecrop's own discriminant, not something a doctype author writes, so a tool reading a file has no business consulting it.
+
+`injectKind` is the one place a declaration still wins, and only to leave an already-parsed object untouched on its way back through.
+
+**Signature:**
+
+```typescript
+export declare function inferFieldKind(field: unknown): DoctypeField['kind'];
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| field | `unknown` | a field entry, authored or parsed |
+
 ### isActionAllowedInState
 
 Whether a workflow action may run from `currentState`.
@@ -617,6 +639,28 @@ export declare function snakeToLabel(snakeCase: string): string;
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | snakeCase | `string` | Snake case string |
+
+### stripFieldKind
+
+Remove the `kind` discriminant from a field, recursing into a fieldset's children.
+
+The outbound half of the boundary `normalizeFieldKind` owns inbound. `kind` is a discriminated-union tag the parser synthesizes, not something an author writes, so nothing that *writes* a doctype should put it on disk — the generator and the docbuilder's save both call this. Without it the two round-trip asymmetrically: every save adds a key the file never had.
+
+Strips only when `injectKind` would restore exactly what was removed. A fieldset carrying no `schema` re-infers as a plain field, so its `kind` is kept rather than silently re-typing the document; `DoctypeMeta` requires `schema` on a fieldset, so that shape is already invalid and belongs to the load gate, not here.
+
+Table `columns` are `ColumnSchema` entries rather than `DoctypeField`s and never carry an injected `kind`, so they are passed through untouched — the same asymmetry `injectKind` has.
+
+**Signature:**
+
+```typescript
+export declare function stripFieldKind(field: unknown): unknown;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| field | `unknown` | a field object, as held in memory after parsing |
 
 ### toPascalCase
 

@@ -1,3 +1,5 @@
+import { stripFieldKind } from '@stonecrop/schema'
+
 // Pure helpers for the docbuilder save merge. Kept free of `#imports`/h3 so they can be unit-tested
 // outside a Nuxt server context (save.post.ts itself can't be imported in a plain vitest run).
 
@@ -62,7 +64,10 @@ export function mergeSavedDoctype(
 ): Record<string, unknown> {
 	const doctypeData: Record<string, unknown> = {
 		...existing,
-		fields: body.fields,
+		// `kind` is the parser's discriminant, not authored data — the builder holds fields that
+		// went through `normalizeFieldKind`, so it submits one on every field. Writing it back put
+		// a key on disk that no author typed and that `injectKind` re-derives on every read.
+		fields: body.fields.map(stripFieldKind),
 	}
 
 	// A null workflow means "this doctype has no workflow" — omit the key rather than writing

@@ -408,6 +408,9 @@ export interface GraphQLConversionOptions {
 export function hasBadgeOptions(options: FieldOptions | undefined): boolean;
 
 // @public
+export function inferFieldKind(field: unknown): DoctypeField['kind'];
+
+// @public
 export type InteractionMode = 'edit' | 'read' | 'display';
 
 // @public
@@ -537,6 +540,9 @@ export function snakeToCamel(snakeCase: string): string;
 
 // @public
 export function snakeToLabel(snakeCase: string): string;
+
+// @public
+export function stripFieldKind(field: unknown): unknown;
 
 // @public
 export const SyncFetch: z.ZodObject<{

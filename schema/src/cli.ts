@@ -20,6 +20,7 @@ import { parseArgs } from 'node:util'
 import { getIntrospectionQuery, type IntrospectionQuery } from 'graphql'
 
 import { convertGraphQLSchema, formatDoctypeDrift, mergeIntrospectedDoctype, planGeneration } from './converter/index'
+import { stripFieldKind } from './field'
 import { validateDoctype } from './validation'
 import type { GraphQLConversionOptions } from './converter/types'
 
@@ -195,7 +196,16 @@ async function main(): Promise<void> {
 		// Serialize the merged object directly. Never round-trip it through the Zod parser first:
 		// that runs in strip mode and would silently drop every key this package does not model,
 		// `handler` on an action being the one consumers actually rely on.
-		const json = JSON.stringify(output, null, '\t') + '\n'
+		//
+		// `kind` is dropped on the way out because it is the discriminated-union tag the parser
+		// synthesizes, not authored data — `injectKind` puts it back on every read. Writing it made
+		// the generator and the docbuilder disagree with hand-authored files about what a doctype
+		// looks like, and re-added the key on every regeneration.
+		const serializable: Record<string, unknown> = { ...output }
+		if (Array.isArray(serializable.fields)) {
+			serializable.fields = serializable.fields.map(stripFieldKind)
+		}
+		const json = JSON.stringify(serializable, null, '\t') + '\n'
 		const unchanged = existsSync(filePath) && readFileSync(filePath, 'utf-8') === json
 		if (!unchanged) changed++
 

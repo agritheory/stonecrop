@@ -29,6 +29,8 @@ export {
 	getRecordIdField,
 	INTROSPECTED_IDENTITY_PROPS,
 	normalizeFieldKind,
+	inferFieldKind,
+	stripFieldKind,
 	TableFieldSchema,
 	ValueFieldSchema,
 } from './field'
