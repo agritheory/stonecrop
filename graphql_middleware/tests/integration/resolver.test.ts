@@ -663,6 +663,24 @@ describe('stonecropRecords', { tags: ['integration', 'graphql'] }, () => {
 		expect(records?.hasMore).toBe(false)
 	})
 
+	// A limited read is a page, and a page is only meaningful against a fixed order. `stonecropRecords`
+	// emits ORDER BY only when the caller passes `orderBy`, and ATable's pagination footer — with
+	// Desktop's list fetcher behind it — passes none. Two pages over an unordered result set are two
+	// independent scans of heap order, and an UPDATE between them moves that row to the heap tail:
+	// the row it displaced is never shown to the user, and nothing in the payload says so.
+	//
+	// Asserted on the statement rather than by paging twice and diffing the rows: whether the heap
+	// actually shifts depends on page fill, so a behavioural test would pass by luck on a small
+	// fixture while the guarantee stayed missing.
+	it('orders a limited read, so two pages cannot skip or repeat a row', async () => {
+		const { sql } = await runSequenceCapturingSql([
+			`query { stonecropRecords(doctype: "ScItem", limit: 2, offset: 0) { data } }`,
+		])
+		const listQuery = sql.find(text => text.includes('FROM "sc_item"') && text.includes('LIMIT'))
+		expect(listQuery).toBeDefined()
+		expect(listQuery).toContain('ORDER BY')
+	})
+
 	it('respects limit and offset, and reports that more remain', async () => {
 		const result = await runQuery(`query { stonecropRecords(doctype: "ScItem", limit: 1, offset: 1) { hasMore data } }`)
 		const records = (result as any).data?.stonecropRecords

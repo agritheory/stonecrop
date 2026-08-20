@@ -396,6 +396,10 @@ describe('Desktop – currentViewData setter', { tags: ['component'] }, () => {
 
 		await vi.waitFor(() => expect(mockGetRecords).toHaveBeenCalledOnce())
 
+		// Wait on the rendered control, not on the call count: `toHaveBeenCalledOnce` is satisfied the
+		// moment the mock is invoked, which is before its promise resolves and before Vue has
+		// flushed the footer into the DOM — so indexing `findAll` here read an empty list.
+		await vi.waitFor(() => expect(wrapper.findAll('.atable-pagination-btn').length).toBe(2))
 		const loadMore = wrapper.findAll('.atable-pagination-btn')[1]
 		expect(loadMore.exists()).toBe(true)
 		await loadMore.trigger('click')
