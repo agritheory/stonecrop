@@ -144,11 +144,10 @@ ul {
 	border: 1px solid var(--sc-btn-border, #ccc);
 	font-size: 0.85rem;
 	font-family: var(--sc-font-family, system-ui, sans-serif);
-	transition: all 0.15s ease;
-
-	/* Minimal ornamentation - subtle top radius only */
-	border-top-left-radius: 2px;
-	border-top-right-radius: 2px;
+	border-radius: var(--sc-border-radius);
+	transition:
+		background 0.15s ease,
+		border-color 0.15s ease;
 }
 
 .tabs a:hover {
@@ -205,10 +204,13 @@ li > a:focus {
 	z-index: 3;
 }
 
-a:active,
-a:hover,
 a:focus {
-	outline: 2px solid var(--sc-input-active-border-color, black);
+	outline: none;
+}
+
+a:focus-visible {
+	outline: 1px solid var(--sc-input-active-border-color);
+	outline-offset: -1px;
 	z-index: 3;
 }
 
