@@ -17,8 +17,16 @@ interface LinkDisplaySpec {
 	targetTable: string
 }
 
-/** Normalize a scalar FK cell value to a non-empty string id, or skip objects/null. */
-function fkIdKey(value: unknown): string | undefined {
+/**
+ * Normalize a scalar SQL cell value to a non-empty string, or nothing.
+ *
+ * One rule for the three reads that all need it — the FK a lookup keys on, the target's own key
+ * in the result, and the display text stamped into the payload. Rejecting objects is what each
+ * of those wants: an object FK is a link that was already expanded, and an object display column
+ * is the `[object Object]` a bare `String()` would otherwise write into the payload as though it
+ * were the record's name. Falling back to the raw id is visibly unhelpful; that is not.
+ */
+function scalarText(value: unknown): string | undefined {
 	if (value == null || typeof value === 'object') return undefined
 	if (typeof value === 'string') return value === '' ? undefined : value
 	if (typeof value === 'number' || typeof value === 'boolean' || typeof value === 'bigint') {
@@ -75,7 +83,7 @@ export async function enrichLinkDisplayFields(
 		specs.map(async spec => {
 			const ids = new Set<string>()
 			for (const row of rows) {
-				const id = fkIdKey(row[spec.fieldname])
+				const id = scalarText(row[spec.fieldname])
 				if (id !== undefined) ids.add(id)
 			}
 			if (ids.size === 0) return
@@ -90,18 +98,21 @@ export async function enrichLinkDisplayFields(
 				values: [Array.from(ids)],
 			})
 
-			const displayById = new Map<string, unknown>()
+			const displayById = new Map<string, string>()
 			for (const displayRow of displayRows) {
-				displayById.set(String(displayRow[spec.targetPkFieldname]), displayRow[spec.displayField])
+				const key = scalarText(displayRow[spec.targetPkFieldname])
+				const text = scalarText(displayRow[spec.displayField])
+				if (key === undefined || text === undefined) continue
+				displayById.set(key, text)
 			}
 
 			for (const row of rows) {
 				const rawId = row[spec.fieldname]
-				const idKey = fkIdKey(rawId)
+				const idKey = scalarText(rawId)
 				if (idKey === undefined) continue
-				const displayValue = displayById.get(idKey)
-				if (displayValue == null || displayValue === '') continue
-				row[spec.fieldname] = { id: rawId, displayText: String(displayValue) }
+				const displayText = displayById.get(idKey)
+				if (displayText === undefined) continue
+				row[spec.fieldname] = { id: rawId, displayText }
 			}
 		})
 	)

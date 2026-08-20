@@ -29,6 +29,21 @@ describe('enrichLinkDisplayFields', { tags: ['unit', 'graphql'] }, () => {
 					},
 				],
 			},
+			// Same link, declared to expand rather than to render as a picker, and with no `links`
+			// entry — so nothing expands it and its foreign key stays a scalar in the payload,
+			// indistinguishable by inspection from the inline one above.
+			ScInvoice: {
+				name: 'ScInvoice',
+				fields: [
+					{ kind: 'field', fieldname: 'id', component: 'ATextInput', primaryKey: true },
+					{
+						kind: 'field',
+						fieldname: 'customerId',
+						component: 'AForm',
+						doctype: 'sc-party',
+					},
+				],
+			},
 		})
 	})
 
@@ -65,6 +80,32 @@ describe('enrichLinkDisplayFields', { tags: ['unit', 'graphql'] }, () => {
 		expect(rows[0].customerId).toBe(expanded)
 	})
 
+	// `componentLinkExpansion` says this field expands, so the client never unwraps it back to a
+	// scalar on write — `Desktop`'s `inlineLinkFieldnames` admits `AFormLink` and nothing else.
+	// Enriching it therefore hands the write path an object, which `partitionPatch` drops into
+	// `droppedFields`, and the user's edit is not persisted. Only the declaration can answer this:
+	// an unexpanded foreign key is a scalar whether the field is inline or expanding, so the
+	// value's shape cannot tell the two apart.
+	it('leaves a link the doctype does not declare as inline alone', async () => {
+		const rows = [{ id: 1, customerId: 10 }]
+
+		const pgClient = {
+			query: async () => ({
+				rows: [{ id: 10, partyName: 'Acme Corp' }],
+			}),
+		} as unknown as PgClient
+
+		await enrichLinkDisplayFields(
+			pgClient,
+			getMeta('ScInvoice')!,
+			rows,
+			{ ScParty: 'sc_party' },
+			async (client, query) => client.query(query)
+		)
+
+		expect(rows[0].customerId).toBe(10)
+	})
+
 	// Counted, not asserted on the rows: enriching a batch row-by-row produces exactly these rows
 	// while issuing one lookup per row, so the payload cannot tell the two apart. Callers holding a
 	// batch must hand over the whole batch, and this is what says so.
@@ -85,6 +126,6 @@ describe('enrichLinkDisplayFields', { tags: ['unit', 'graphql'] }, () => {
 
 		expect(queries).toHaveLength(1)
 		// Every distinct id reaches that single lookup — batching must not mean dropping ids.
-		expect(new Set(queries[0]!.values?.[0] as string[])).toEqual(new Set(['10', '11', '12']))
+		expect(new Set(queries[0].values?.[0] as string[])).toEqual(new Set(['10', '11', '12']))
 	})
 })

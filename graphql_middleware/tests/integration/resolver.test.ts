@@ -400,6 +400,28 @@ beforeAll(async () => {
 				},
 				{ kind: 'field', fieldname: 'title', component: 'ATextInput', label: 'Title' },
 			],
+			// Present so the read shape and the write shape can be compared on one doctype that
+			// carries an inline link.
+			workflow: { actions: { save: { label: 'Save', selfTransition: true } } },
+		},
+		// Reads sc_party, expanding its orders. The expanded ScOrder rows carry `customerId`,
+		// an inline link — so a nested record is a place enrichment has to reach as well.
+		ScPartyWithOrders: {
+			name: 'ScPartyWithOrders',
+			displayField: 'partyName',
+			fields: [
+				{ kind: 'field', fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
+				{ kind: 'field', fieldname: 'partyName', component: 'ATextInput', label: 'Party Name' },
+			],
+			links: {
+				orders: {
+					target: 'ScOrder',
+					cardinality: 'noneOrMany' as const,
+					backlink: 'customerId',
+					component: 'ATable',
+					fetch: { method: 'sync' as const },
+				},
+			},
 		},
 	})
 
@@ -423,6 +445,7 @@ beforeAll(async () => {
 					ScLinkLazy: 'sc_tag',
 					ScBulkSync: 'sc_bulk',
 					ScBulkCapped: 'sc_bulk',
+					ScPartyWithOrders: 'sc_party',
 				},
 			}),
 		],
@@ -892,6 +915,48 @@ describe('link fields ({ id, displayText })', { tags: ['integration', 'graphql']
 		const rows = (result as any).data?.stonecropRecords?.data as Array<Record<string, unknown>>
 		expect(rows[0]?.customerId).toEqual({ id: 1, displayText: 'Acme Corp' })
 		expect(rows[1]?.customerId).toEqual({ id: 2, displayText: 'Globex' })
+	})
+
+	// A save is a self-transition — a read of the same record through the same doctype — and the
+	// client files its result straight into the store (`Stonecrop.dispatchAction`). So the field it
+	// returns has to have the shape the read path returns, or every write silently reverts the
+	// record to the pre-enrichment shape and the next render pays the per-link client round trip
+	// this enrichment exists to remove.
+	it('returns customerId in the shape a read returns it, after a save', async () => {
+		const [action, read] = await runSequence([
+			`mutation { stonecropAction(doctype: "ScOrder", action: "save", args: [{ id: "1", data: { title: "Renamed" } }]) { success error data } }`,
+			`query { stonecropRecord(doctype: "ScOrder", id: "1") { data } }`,
+		])
+		expect((action as any).data?.stonecropAction?.error).toBeNull()
+		const written = (action as any).data?.stonecropAction?.data
+		const readBack = (read as any).data?.stonecropRecord?.data
+		// The read path is the oracle, asserted separately so a regression there cannot make this
+		// test pass by making both sides equally wrong.
+		expect(readBack.customerId).toEqual({ id: 1, displayText: 'Acme Corp' })
+		expect(written.customerId).toEqual(readBack.customerId)
+	})
+
+	// The create branch is a separate statement with its own RETURNING, so a fix applied only to
+	// the update path leaves this one answering the old shape.
+	it('returns customerId in the shape a read returns it, after a create', async () => {
+		const [action] = await runSequence([
+			`mutation { stonecropAction(doctype: "ScOrder", action: "save", args: [{ data: { customerId: "1", title: "Minted" } }]) { success error data } }`,
+		])
+		expect((action as any).data?.stonecropAction?.error).toBeNull()
+		expect((action as any).data?.stonecropAction?.data?.customerId).toEqual({ id: 1, displayText: 'Acme Corp' })
+	})
+
+	// Enrichment runs over the parent rows a doctype-group read collected, and an expanded child is
+	// not one of them. So a nested record's own link fields come back as bare ids while the very
+	// same doctype, read at the top level, returns them enriched — one payload, two shapes for one
+	// field, decided by nesting depth.
+	it('enriches link fields on expanded child records too', async () => {
+		const result = await runQuery(
+			`query { stonecropRecord(doctype: "ScPartyWithOrders", id: "1", options: { includeNested: true }) { data } }`
+		)
+		const orders = (result as any).data?.stonecropRecord?.data?.orders as Array<Record<string, unknown>>
+		expect(orders?.length).toBeGreaterThan(0)
+		expect(orders[0]?.customerId).toEqual({ id: 1, displayText: 'Acme Corp' })
 	})
 })
 

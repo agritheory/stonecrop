@@ -311,8 +311,8 @@ export const DoctypeMeta = z
 
 		/**
 		 * Field on this doctype used when displaying a reference to one of its records.
-		 * When a record elsewhere holds a foreign key to this doctype, the middleware may
-		 * include `fieldname__display` alongside the raw id, resolved from this field.
+		 * When a record elsewhere holds an inline foreign key to this doctype, the middleware
+		 * returns that field as `{ id, displayText }`, reading `displayText` from this field.
 		 */
 		displayField: z.string().min(1).optional(),
 
