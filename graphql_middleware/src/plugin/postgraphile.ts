@@ -426,6 +426,15 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 														const backlinkCol = camelToSnake(link.backlink)
 														let sql = `SELECT ${targetColumns} FROM ${resolveTableName(targetMeta.name, options.tables)} WHERE "${backlinkCol}"::text = $1`
 														const linkValues: unknown[] = [specId]
+														// Same reason the list path orders: a capped relation without a fixed order
+														// returns an arbitrary subset of the children, and a different one each time
+														// a child row is updated. `truncatedLinks` says the tail was cut; it cannot
+														// say the head kept changing. Skipped when the target declares no identity —
+														// there is no stable key to order by, and inventing one would be a guess.
+														const linkPkMeta = getPkMeta(targetMeta)
+														if (linkPkMeta) {
+															sql += ` ORDER BY "${camelToSnake(linkPkMeta.fieldname)}" ASC`
+														}
 														if (effectiveLimit != null) {
 															// One row more than the cap, same probe the list path uses: its presence
 															// is the whole truncation answer and costs no second query.

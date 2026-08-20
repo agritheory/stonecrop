@@ -1032,6 +1032,20 @@ describe('many-side link row cap', { tags: ['integration', 'graphql'] }, () => {
 		expect(record?.data?.children.length).toBe(10)
 		expect(record?.truncatedLinks).toEqual(['children'])
 	})
+
+	// `truncatedLinks` says the tail was cut. It cannot say the head keeps changing — and without a
+	// fixed order that is exactly what a capped relation does: an arbitrary ten of the children,
+	// re-drawn whenever a child row is updated and moves in the heap. Asserted on the emitted
+	// statement for the same reason the list-order test is: whether the heap actually shifts depends
+	// on page fill, so a behavioural check would pass by luck on a small fixture.
+	it('orders a capped relation, so the children it keeps are always the same ones', async () => {
+		const { sql } = await runSequenceCapturingSql([
+			`query { stonecropRecord(doctype: "ScBulkCapped", id: "1") { data truncatedLinks } }`,
+		])
+		const childQuery = sql.find(text => text.includes('FROM "sc_bulk_child"') && text.includes('LIMIT'))
+		expect(childQuery).toBeDefined()
+		expect(childQuery).toMatch(/ORDER BY .* LIMIT/)
+	})
 })
 
 // ===========================================================================
