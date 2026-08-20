@@ -22,6 +22,9 @@ export type { RouteStrategyFn, ParsedDoctype }
 
 const { resolve } = createResolver(import.meta.url)
 
+/** Dev HMR re-runs module setup while the layout registry keeps the first `home` entry (NUXT_B4014). */
+let homeLayoutRegistered = false
+
 // Define module options interface
 export interface ModuleOptions {
 	/** Enable the DocBuilder feature with /docbuilder routes */
@@ -190,7 +193,10 @@ export default defineNuxtModule<ModuleOptions>({
 
 		// add the base Stonecrop layout from the module
 		const homepage = resolve('runtime/app/layouts/StonecropHome.vue')
-		addLayout(homepage, 'home')
+		if (!homeLayoutRegistered) {
+			addLayout(homepage, 'home')
+			homeLayoutRegistered = true
+		}
 
 		// find doctype schemas in the nuxt application and add them as pages
 		const appDir = nuxt.options.srcDir

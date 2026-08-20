@@ -148,6 +148,14 @@ Vue component exported from @stonecrop/aform.
 import { AQuantityInput } from '@stonecrop/aform'
 ```
 
+### ASegmentedControl
+
+Vue component exported from @stonecrop/aform.
+
+```typescript
+import { ASegmentedControl } from '@stonecrop/aform'
+```
+
 ### ATextboxInput
 
 Vue component exported from @stonecrop/aform.
@@ -162,6 +170,14 @@ Vue component exported from @stonecrop/aform.
 
 ```typescript
 import { ATextInput } from '@stonecrop/aform'
+```
+
+### ExpandButton
+
+Vue component exported from @stonecrop/aform.
+
+```typescript
+import { ExpandButton } from '@stonecrop/aform'
 ```
 
 ### InteractionMode

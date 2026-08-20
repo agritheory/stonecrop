@@ -631,6 +631,7 @@ export interface ValueField {
     edit?: boolean;
     fieldname: string;
     format?: string;
+    height?: string;
     hidden?: boolean;
     kind: 'field';
     label?: string;
@@ -657,6 +658,7 @@ export const ValueFieldSchema: z.ZodObject<{
     doctype: z.ZodOptional<z.ZodString>;
     label: z.ZodOptional<z.ZodString>;
     width: z.ZodOptional<z.ZodString>;
+    height: z.ZodOptional<z.ZodString>;
     align: z.ZodOptional<z.ZodEnum<{
         left: "left";
         right: "right";
