@@ -22,9 +22,11 @@ export default createConfigForNuxt({
 		},
 	})
 	.append({
-		// templates/ contains Nuxt page scaffolding — file names like index.vue are routing
-		// conventions, not registered component names, so multi-word is not applicable here.
-		files: ['templates/**/*.vue'],
+		// templates/ contains Nuxt page scaffolding, and documentation/app/{layouts,pages} are
+		// Nuxt's own layout/routing conventions — file names like index.vue, default.vue,
+		// [...slug].vue are required exact names, not registered component names, so multi-word
+		// is not applicable here.
+		files: ['templates/**/*.vue', 'documentation/app/layouts/**/*.vue', 'documentation/app/pages/**/*.vue'],
 		rules: { 'vue/multi-word-component-names': 'off' },
 	})
 	// Turn off every formatting rule that Prettier owns (e.g. vue/html-self-closing), so eslint
