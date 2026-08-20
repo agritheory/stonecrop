@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Update LINK_DISPLAY_SUFFIX and linkDisplayFieldname deprecation notes to point at middleware { id, displayText } enrichment.",
+      "type": "patch",
+      "packageName": "@stonecrop/schema"
+    }
+  ],
+  "packageName": "@stonecrop/schema",
+  "email": "tyler@agritheory.com"
+}

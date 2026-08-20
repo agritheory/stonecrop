@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Remove native PostGraphile query builder and getNativeRecord/getNativeRecords; link display enrichment stays in graphql-middleware.",
+      "type": "patch",
+      "packageName": "@stonecrop/graphql-client"
+    }
+  ],
+  "packageName": "@stonecrop/graphql-client",
+  "email": "tyler@agritheory.com"
+}

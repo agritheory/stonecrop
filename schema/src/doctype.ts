@@ -311,8 +311,8 @@ export const DoctypeMeta = z
 
 		/**
 		 * Field on this doctype used when displaying a reference to one of its records.
-		 * When a record elsewhere holds a foreign key to this doctype, the middleware may
-		 * include `fieldname__display` alongside the raw id, resolved from this field.
+		 * When a record elsewhere holds an inline foreign key to this doctype, the middleware
+		 * returns that field as `{ id, displayText }`, reading `displayText` from this field.
 		 */
 		displayField: z.string().min(1).optional(),
 
@@ -385,9 +385,9 @@ export type DoctypeMeta = z.infer<typeof DoctypeMeta>
 /**
  * Suffix appended to a link fieldname for its pre-resolved display text in record payloads.
  *
- * @deprecated The `__display` suffix pattern is no longer used. Use the native PostGraphile
- * query methods (`getNativeRecord`/`getNativeRecords`) in `@stonecrop/graphql-client` which
- * return link fields as `{ id, displayText }` objects directly.
+ * @deprecated The `__display` suffix pattern is no longer used. Inline link fields are enriched
+ * server-side by `@stonecrop/graphql-middleware` as `{ id, displayText }` objects on the link
+ * field itself.
  * @public
  */
 export const LINK_DISPLAY_SUFFIX = '__display'
@@ -395,9 +395,9 @@ export const LINK_DISPLAY_SUFFIX = '__display'
 /**
  * Build the payload key for a link field's display text (e.g. `customerId__display`).
  *
- * @deprecated The `__display` suffix pattern is no longer used. Use the native PostGraphile
- * query methods (`getNativeRecord`/`getNativeRecords`) in `@stonecrop/graphql-client` which
- * return link fields as `{ id, displayText }` objects directly.
+ * @deprecated The `__display` suffix pattern is no longer used. Inline link fields are enriched
+ * server-side by `@stonecrop/graphql-middleware` as `{ id, displayText }` objects on the link
+ * field itself.
  * @public
  */
 export function linkDisplayFieldname(fieldname: string): string {
