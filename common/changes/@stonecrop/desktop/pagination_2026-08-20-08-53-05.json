@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Stop fetching the record list and rendering a truncation banner; the records table now fetches its own pages via getRecords.",
+      "type": "minor",
+      "packageName": "@stonecrop/desktop"
+    }
+  ],
+  "packageName": "@stonecrop/desktop",
+  "email": "rohanbansal33@gmail.com"
+}

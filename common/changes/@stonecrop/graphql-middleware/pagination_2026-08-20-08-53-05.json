@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Order a limited stonecropRecords read by the declared identity when the caller names no orderBy, so paging cannot skip or repeat a row.",
+      "type": "minor",
+      "packageName": "@stonecrop/graphql-middleware"
+    }
+  ],
+  "packageName": "@stonecrop/graphql-middleware",
+  "email": "rohanbansal33@gmail.com"
+}
