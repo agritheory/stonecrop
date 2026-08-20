@@ -415,6 +415,14 @@ export interface OperationLogSnapshot {
 // @public
 export type OperationSource = 'user' | 'system' | 'sync' | 'undo' | 'redo';
 
+// @public
+export interface PageInfo {
+    count?: number;
+    hasMore: boolean;
+    limit: number;
+    offset: number;
+}
+
 // @internal
 export interface _PathMatchResult {
     captures: Record<string, string>;
@@ -737,10 +745,7 @@ export class Stonecrop {
     markIrreversible: (operationId: string, reason: string) => void;
     logAction: (doctype: string, actionName: string, recordIds?: string[], result?: "success" | "failure" | "pending", error?: string) => string;
     }, "clear" | "undo" | "redo" | "configure" | "addOperation" | "startBatch" | "commitBatch" | "cancelBatch" | "getOperationsFor" | "getSnapshot" | "markIrreversible" | "logAction">>;
-    getPageInfo(doctype: string | Doctype): {
-        hasMore: boolean;
-        count?: number;
-    } | undefined;
+    getPageInfo(doctype: string | Doctype): PageInfo | undefined;
     getRecord(doctype: string | Doctype, recordId: string, options?: GetRecordOptions): Promise<void>;
     getRecordById(doctype: string | Doctype, recordId: string): HSTNode | undefined;
     getRecordIds(doctype: string | Doctype): string[];

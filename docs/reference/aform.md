@@ -498,6 +498,7 @@ export interface ResolvedTable {
   config: TableViewConfig;
   default?: unknown;
   fieldname: string;
+  getRecords?: (options?: GetRecordsOptions) => Promise<GetRecordsResult>;
   hidden?: boolean;
   kind: 'table';
   label?: string;
@@ -505,6 +506,7 @@ export interface ResolvedTable {
   readOnly?: boolean;
   required?: boolean;
   schema: ColumnSchema[];
+  sourceKey?: string;
   validation?: FieldValidation;
 }
 ```
@@ -517,6 +519,7 @@ export interface ResolvedTable {
 | config | `TableViewConfig` | View configuration — always present; defaults to `{ view: 'list' }` |
 | default? | `unknown` | Preserved from the original ValueField or TableField |
 | fieldname | `string` | Field identifier |
+| getRecords? | `(options?: GetRecordsOptions) => Promise<GetRecordsResult>` | When set, ATable fetches list pages through this callback (server paging). |
 | hidden? | `boolean` | Preserved from the original ValueField or TableField |
 | kind | `'table'` | Discriminator |
 | label? | `string` | Human-readable label |
@@ -524,6 +527,7 @@ export interface ResolvedTable {
 | readOnly? | `boolean` | Preserved from the original ValueField or TableField |
 | required? | `boolean` | Preserved from the original ValueField or TableField |
 | schema | `ColumnSchema[]` | Column definitions — passed to ATable's `:schema` prop |
+| sourceKey? | `string` | When this changes, ATable refetches from offset 0. |
 | validation? | `FieldValidation` | Preserved from the original ValueField or TableField |
 
 ## Type Aliases

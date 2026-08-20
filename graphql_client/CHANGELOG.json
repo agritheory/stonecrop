@@ -2,6 +2,24 @@
   "name": "@stonecrop/graphql-client",
   "entries": [
     {
+      "version": "0.25.0",
+      "tag": "@stonecrop/graphql-client_v0.25.0",
+      "date": "Thu, 20 Aug 2026 09:10:32 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.24.0",
+      "tag": "@stonecrop/graphql-client_v0.24.0",
+      "date": "Thu, 20 Aug 2026 08:19:12 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Remove native PostGraphile query builder and getNativeRecord/getNativeRecords; link display enrichment stays in graphql-middleware."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.23.0",
       "tag": "@stonecrop/graphql-client_v0.23.0",
       "date": "Tue, 18 Aug 2026 09:16:50 GMT",

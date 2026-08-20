@@ -53,7 +53,7 @@
 ### Later versions
 
 - ⬡ Copy / paste
-- ⬡ Pagination
+- ⬢ Pagination
 - ⬡ Collapsible row groups
   - ⬡ Bind an attribute identifying a row to a row group
   - ⬡ Indent/ nest

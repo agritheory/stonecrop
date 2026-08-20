@@ -1,14 +1,29 @@
 import { mount } from '@vue/test-utils'
+import { createPinia } from 'pinia'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { nextTick } from 'vue'
 import { createMemoryHistory, createRouter } from 'vue-router'
 
+import { install as installAForm } from '@stonecrop/aform'
 import { Registry, Stonecrop } from '@stonecrop/stonecrop'
 
 import Desktop from '../../src/components/Desktop.vue'
 import type { RouteAdapter } from '../../src/types'
 
 import { buildDoctype, makeStonecropPlugin } from './desktop.helpers'
+
+const aformPlugin = {
+	install(app: import('vue').App) {
+		installAForm(app)
+	},
+}
+
+/** Mount plugins needed when AForm renders a real ATable (list paging). */
+const listTablePlugins = (registry: Registry, stonecrop: Stonecrop, testRouter?: ReturnType<typeof createRouter>) => {
+	const plugins: unknown[] = [makeStonecropPlugin(registry, stonecrop), createPinia(), aformPlugin]
+	if (testRouter) plugins.push(testRouter)
+	return plugins
+}
 
 afterEach(() => {
 	Registry._root = undefined as any
@@ -162,7 +177,7 @@ describe('Desktop – internal router (no routeAdapter)', { tags: ['component'] 
 			.mockResolvedValue({ record: { id: 'rec-1', title: 'Fetched', status: 'draft' }, unknownLinks: [] })
 		const mockClient = {
 			getRecord: mockGetRecord,
-			getRecords: vi.fn().mockResolvedValue([]),
+			getRecords: vi.fn().mockResolvedValue({ data: [], hasMore: false }),
 			dispatchAction: vi.fn(),
 		}
 
@@ -286,10 +301,9 @@ describe('Desktop – currentViewData setter', { tags: ['component'] }, () => {
 		}).not.toThrow()
 	})
 
-	it('fetches a list through Stonecrop.getRecords, not through the host', async () => {
-		// The list read used to be the host's alone — Desktop only emitted and waited. Three of the
-		// four in-repo hosts then hand-rolled the body of getRecords, and all three keyed rows the
-		// same wrong way at once. This asserts Desktop now asks for the list itself.
+	it('fetches a list through ATable and Stonecrop.getRecords, not through Desktop', async () => {
+		// The list read is wired on the records table. Desktop emits load-records and renders;
+		// ATable owns the unqualified getRecords call on mount.
 		const mockGetRecords = vi.fn().mockResolvedValue({
 			data: [
 				{ id: 'rec-1', title: 'First' },
@@ -309,19 +323,14 @@ describe('Desktop – currentViewData setter', { tags: ['component'] }, () => {
 
 		const wrapper = mount(Desktop, {
 			global: {
-				plugins: [makeStonecropPlugin(registry, stonecrop), testRouter],
-				stubs: { AForm: true, ActionSet: true, SheetNav: true, CommandPalette: true },
+				plugins: listTablePlugins(registry, stonecrop, testRouter),
+				stubs: { ActionSet: true, SheetNav: true, CommandPalette: true },
 			},
 		})
 
-		await nextTick()
-		await nextTick()
-
-		expect(mockGetRecords).toHaveBeenCalledOnce()
-		// No row limit is passed: that is the server's call, not a shell prop's.
+		await vi.waitFor(() => expect(mockGetRecords).toHaveBeenCalledOnce())
 		expect(mockGetRecords).toHaveBeenCalledWith(expect.anything(), undefined)
 		expect(stonecrop.getRecordIds('task')).toEqual(['rec-1', 'rec-2'])
-		// The event survives as a notification, so a host can still hang analytics off it.
 		expect(wrapper.emitted('load-records')).toBeTruthy()
 	})
 
@@ -329,10 +338,6 @@ describe('Desktop – currentViewData setter', { tags: ['component'] }, () => {
 		{ hasMore: true, shown: true, label: 'says so when the backend reports a partial list' },
 		{ hasMore: false, shown: false, label: 'stays silent when the list is complete' },
 	])('$label', async ({ hasMore, shown }) => {
-		// Both directions, because the failure this guards against is a banner that never renders
-		// (truncation stays invisible) *and* one that always renders (every list looks truncated).
-		// No in-repo dataset exceeds the default 200-row cap, so this state is unreachable in a
-		// browser and a test is the only oracle.
 		const mockClient = {
 			getRecord: vi.fn(),
 			getRecords: vi.fn().mockResolvedValue({ data: [{ id: 'rec-1', title: 'First' }], hasMore }),
@@ -349,16 +354,59 @@ describe('Desktop – currentViewData setter', { tags: ['component'] }, () => {
 
 		const wrapper = mount(Desktop, {
 			global: {
-				plugins: [makeStonecropPlugin(registry, stonecrop), testRouter],
-				stubs: { AForm: true, ActionSet: true, SheetNav: true, CommandPalette: true },
+				plugins: listTablePlugins(registry, stonecrop, testRouter),
+				stubs: { ActionSet: true, SheetNav: true, CommandPalette: true },
 			},
 		})
 
-		await nextTick()
-		await nextTick()
-
-		expect(stonecrop.getPageInfo('task')?.hasMore).toBe(hasMore)
+		await vi.waitFor(() => expect(stonecrop.getPageInfo('task')?.hasMore).toBe(hasMore))
 		expect(wrapper.find('.truncation-note').exists()).toBe(shown)
+	})
+
+	it('load more requests the next server offset only', async () => {
+		const mockGetRecords = vi
+			.fn()
+			.mockResolvedValueOnce({
+				data: [
+					{ id: 'rec-1', title: 'First' },
+					{ id: 'rec-2', title: 'Second' },
+				],
+				hasMore: true,
+			})
+			.mockResolvedValueOnce({
+				data: [{ id: 'rec-3', title: 'Third' }],
+				hasMore: false,
+			})
+		const mockClient = { getRecord: vi.fn(), getRecords: mockGetRecords, dispatchAction: vi.fn() }
+
+		const testRouter = createRouter({ history: createMemoryHistory(), routes: routerTestRoutes })
+		const registry = new Registry(testRouter)
+		const stonecrop = new Stonecrop(registry, undefined, { client: mockClient as any })
+		registry.addDoctype(buildDoctype('task', 'draft', { draft: {} }))
+
+		await testRouter.push('/task')
+		await testRouter.isReady()
+
+		const wrapper = mount(Desktop, {
+			global: {
+				plugins: listTablePlugins(registry, stonecrop, testRouter),
+				stubs: { ActionSet: true, SheetNav: true, CommandPalette: true },
+			},
+		})
+
+		await vi.waitFor(() => expect(mockGetRecords).toHaveBeenCalledOnce())
+
+		// Wait on the rendered control, not on the call count: `toHaveBeenCalledOnce` is satisfied the
+		// moment the mock is invoked, which is before its promise resolves and before Vue has
+		// flushed the footer into the DOM — so indexing `findAll` here read an empty list.
+		await vi.waitFor(() => expect(wrapper.findAll('.atable-pagination-btn').length).toBe(2))
+		const loadMore = wrapper.findAll('.atable-pagination-btn')[1]
+		expect(loadMore.exists()).toBe(true)
+		await loadMore.trigger('click')
+		await vi.waitFor(() => expect(mockGetRecords).toHaveBeenCalledTimes(2))
+
+		expect(mockGetRecords).toHaveBeenLastCalledWith(expect.anything(), { offset: 2 })
+		expect(stonecrop.getRecordIds('task')).toEqual(['rec-1', 'rec-2', 'rec-3'])
 	})
 
 	it('reads nothing when no client is configured, leaving a host-populated store alone', async () => {

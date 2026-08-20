@@ -1,24 +1,12 @@
 # @stonecrop/graphql-client
 
-Transport layer for Stonecrop GraphQL APIs. Handles HTTP communication, response parsing, and metadata caching. Optionally builds native PostGraphile queries for efficient link display text resolution.
+Transport layer for Stonecrop GraphQL APIs. Handles HTTP communication, response parsing, and metadata caching.
 
-## Two query paths
+## Why transport-only?
 
-This client offers two approaches for fetching records:
+This client intentionally never constructs GraphQL queries. All query generation — including PostGraphile-specific field naming (inflection), nested link sub-selections, link display enrichment, and fetch strategy dispatch — lives in the server-side middleware (`@stonecrop/graphql-middleware`).
 
-### Standard path (`getRecord`, `getRecords`)
-
-These methods use `stonecropRecord` and `stonecropRecords` resolvers which return JSON blobs. Query construction stays server-side. Use this when you don't need display text for linked records, or when you're using the client-side `aformLinkResolver` fallback.
-
-### Native path (`getNativeRecord`, `getNativeRecords`)
-
-These methods build native PostGraphile queries with nested selections for link fields:
-
-```graphql
-query { salesOrderById(id: $id) { id customerId partyByCustomerId { id partyName } } }
-```
-
-PostGraphile resolves relationships via JOINs in a single database query. Link fields are returned as `{ id, displayText }` objects where `displayText` comes from the target doctype's `displayField`. Use this when you need link display text without N+1 queries.
+This boundary exists because PostGraphile's schema naming is configurable. An application might use `ById` for UUID primary keys, `ByRowId` for `row_id` columns, or entirely custom conventions. If the client hardcoded any of these conventions, it would silently produce wrong queries for non-default setups. The middleware owns the single `StonecropInflectionConfig` — the client only knows how to pass `options.includeNested` through to the `stonecropRecord` resolver and receive pre-merged flat data.
 
 ## Responsibilities
 
@@ -54,17 +42,15 @@ const client = new StonecropClient({
   headers: { Authorization: `Bearer ${token}` }, // optional
 })
 
-// Standard path — uses stonecropRecord resolver
+// Fetch a record
 const result = await client.getRecord({ name: 'SalesOrder' }, 'so-1')
-result.record  // { id: 'so-1', customerId: 'party-uuid', ... }
+result.record  // plain object with the record fields
+result.unknownLinks  // links requested but not found in schema
 
-// Native path — uses PostGraphile's native queries with relationship expansion
-const native = await client.getNativeRecord({ name: 'SalesOrder' }, 'so-1')
-native.record  // { id: 'so-1', customerId: { id: 'party-uuid', displayText: 'Acme Corp' }, ... }
-
-// Native list query
-const list = await client.getNativeRecords({ name: 'SalesOrder' }, { limit: 50 })
-list.data  // Array of records with link fields as { id, displayText } objects
+// Fetch with nested links
+const withNested = await client.getRecord({ name: 'SalesOrder' }, 'so-1', {
+  includeNested: true,
+})
 
 // Custom queries
 const custom = await client.query<{ myData: unknown[] }>(`query { myData { id } }`)
@@ -72,14 +58,8 @@ const custom = await client.query<{ myData: unknown[] }>(`query { myData { id } 
 
 ## Data Shapes
 
-### Standard methods
-
-- `getRecord` returns `{ record: Record<string, unknown> | null, unknownLinks?: string[] }`. The `record` field contains the record's fields with scalar FK values. Nested links are merged when `includeNested` is used.
-- `getRecords` returns `{ data: Record<string, unknown>[], hasMore: boolean, count?: number }` — flat objects with scalar FK values.
-
-### Native methods
-
-- `getNativeRecord` returns `{ record: Record<string, unknown> | null }`. Link fields are `{ id, displayText }` objects where `displayText` is resolved from the target doctype's `displayField`.
-- `getNativeRecords` returns `{ data: Record<string, unknown>[], hasMore: boolean }`. Each record has link fields as `{ id, displayText }` objects.
+- `getRecord` returns `{ record: Record<string, unknown> | null, unknownLinks?: string[] }`. The `record` field contains the record's fields. Nested links are merged into the same object when `includeNested` is used. Inline link fields are enriched by the middleware as `{ id, displayText }` objects where `displayText` comes from the target doctype's `displayField`.
+- `getRecords` returns `{ data: Record<string, unknown>[], hasMore: boolean, count?: number }` — flat objects with the same inline link enrichment.
+- `unknownLinks` will contain link names you requested that don't exist in the doctype schema — useful for catching typos.
 
 See [API Reference](./api.md) for full method signatures.

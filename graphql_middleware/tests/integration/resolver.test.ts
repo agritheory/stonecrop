@@ -420,6 +420,28 @@ beforeAll(async () => {
 				},
 				{ kind: 'field', fieldname: 'title', component: 'ATextInput', label: 'Title' },
 			],
+			// Present so the read shape and the write shape can be compared on one doctype that
+			// carries an inline link.
+			workflow: { actions: { save: { label: 'Save', selfTransition: true } } },
+		},
+		// Reads sc_party, expanding its orders. The expanded ScOrder rows carry `customerId`,
+		// an inline link — so a nested record is a place enrichment has to reach as well.
+		ScPartyWithOrders: {
+			name: 'ScPartyWithOrders',
+			displayField: 'partyName',
+			fields: [
+				{ kind: 'field', fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
+				{ kind: 'field', fieldname: 'partyName', component: 'ATextInput', label: 'Party Name' },
+			],
+			links: {
+				orders: {
+					target: 'ScOrder',
+					cardinality: 'noneOrMany' as const,
+					backlink: 'customerId',
+					component: 'ATable',
+					fetch: { method: 'sync' as const },
+				},
+			},
 		},
 	})
 
@@ -444,6 +466,7 @@ beforeAll(async () => {
 					ScLinkLazy: 'sc_tag',
 					ScBulkSync: 'sc_bulk',
 					ScBulkCapped: 'sc_bulk',
+					ScPartyWithOrders: 'sc_party',
 				},
 			}),
 		],
@@ -696,6 +719,24 @@ describe('stonecropRecords', { tags: ['integration', 'graphql'] }, () => {
 		expect(records?.hasMore).toBe(false)
 	})
 
+	// A limited read is a page, and a page is only meaningful against a fixed order. `stonecropRecords`
+	// emits ORDER BY only when the caller passes `orderBy`, and ATable's pagination footer — with
+	// Desktop's list fetcher behind it — passes none. Two pages over an unordered result set are two
+	// independent scans of heap order, and an UPDATE between them moves that row to the heap tail:
+	// the row it displaced is never shown to the user, and nothing in the payload says so.
+	//
+	// Asserted on the statement rather than by paging twice and diffing the rows: whether the heap
+	// actually shifts depends on page fill, so a behavioural test would pass by luck on a small
+	// fixture while the guarantee stayed missing.
+	it('orders a limited read, so two pages cannot skip or repeat a row', async () => {
+		const { sql } = await runSequenceCapturingSql([
+			`query { stonecropRecords(doctype: "ScItem", limit: 2, offset: 0) { data } }`,
+		])
+		const listQuery = sql.find(text => text.includes('FROM "sc_item"') && text.includes('LIMIT'))
+		expect(listQuery).toBeDefined()
+		expect(listQuery).toContain('ORDER BY')
+	})
+
 	it('respects limit and offset, and reports that more remain', async () => {
 		const result = await runQuery(`query { stonecropRecords(doctype: "ScItem", limit: 1, offset: 1) { hasMore data } }`)
 		const records = (result as any).data?.stonecropRecords
@@ -910,21 +951,63 @@ describe('self-transition data write', { tags: ['integration', 'graphql'] }, () 
 })
 
 // ===========================================================================
-// Link fields via stonecropRecord/stonecropRecords (scalar FKs only)
+// Link fields via stonecropRecord/stonecropRecords ({ id, displayText } enrichment)
 // ===========================================================================
 
-describe('link fields (scalar FKs)', { tags: ['integration', 'graphql'] }, () => {
-	it('returns customerId as a scalar FK on stonecropRecord', async () => {
+describe('link fields ({ id, displayText })', { tags: ['integration', 'graphql'] }, () => {
+	it('returns customerId as { id, displayText } on stonecropRecord', async () => {
 		const result = await runQuery(`query { stonecropRecord(doctype: "ScOrder", id: "1") { data } }`)
 		const data = (result as any).data?.stonecropRecord?.data
-		expect(data.customerId).toBe(1)
+		expect(data.customerId).toEqual({ id: 1, displayText: 'Acme Corp' })
 	})
 
-	it('returns customerId as a scalar FK on each stonecropRecords row', async () => {
+	it('returns customerId as { id, displayText } on each stonecropRecords row', async () => {
 		const result = await runQuery(`query { stonecropRecords(doctype: "ScOrder") { data } }`)
 		const rows = (result as any).data?.stonecropRecords?.data as Array<Record<string, unknown>>
-		expect(rows[0]?.customerId).toBe(1)
-		expect(rows[1]?.customerId).toBe(2)
+		expect(rows[0]?.customerId).toEqual({ id: 1, displayText: 'Acme Corp' })
+		expect(rows[1]?.customerId).toEqual({ id: 2, displayText: 'Globex' })
+	})
+
+	// A save is a self-transition — a read of the same record through the same doctype — and the
+	// client files its result straight into the store (`Stonecrop.dispatchAction`). So the field it
+	// returns has to have the shape the read path returns, or every write silently reverts the
+	// record to the pre-enrichment shape and the next render pays the per-link client round trip
+	// this enrichment exists to remove.
+	it.fails('returns customerId in the shape a read returns it, after a save', async () => {
+		const [action, read] = await runSequence([
+			`mutation { stonecropAction(doctype: "ScOrder", action: "save", args: [{ id: "1", data: { title: "Renamed" } }]) { success error data } }`,
+			`query { stonecropRecord(doctype: "ScOrder", id: "1") { data } }`,
+		])
+		expect((action as any).data?.stonecropAction?.error).toBeNull()
+		const written = (action as any).data?.stonecropAction?.data
+		const readBack = (read as any).data?.stonecropRecord?.data
+		// The read path is the oracle, asserted separately so a regression there cannot make this
+		// test pass by making both sides equally wrong.
+		expect(readBack.customerId).toEqual({ id: 1, displayText: 'Acme Corp' })
+		expect(written.customerId).toEqual(readBack.customerId)
+	})
+
+	// The create branch is a separate statement with its own RETURNING, so a fix applied only to
+	// the update path leaves this one answering the old shape.
+	it.fails('returns customerId in the shape a read returns it, after a create', async () => {
+		const [action] = await runSequence([
+			`mutation { stonecropAction(doctype: "ScOrder", action: "save", args: [{ data: { customerId: "1", title: "Minted" } }]) { success error data } }`,
+		])
+		expect((action as any).data?.stonecropAction?.error).toBeNull()
+		expect((action as any).data?.stonecropAction?.data?.customerId).toEqual({ id: 1, displayText: 'Acme Corp' })
+	})
+
+	// Enrichment runs over the parent rows a doctype-group read collected, and an expanded child is
+	// not one of them. So a nested record's own link fields come back as bare ids while the very
+	// same doctype, read at the top level, returns them enriched — one payload, two shapes for one
+	// field, decided by nesting depth.
+	it.fails('enriches link fields on expanded child records too', async () => {
+		const result = await runQuery(
+			`query { stonecropRecord(doctype: "ScPartyWithOrders", id: "1", options: { includeNested: true }) { data } }`
+		)
+		const orders = (result as any).data?.stonecropRecord?.data?.orders as Array<Record<string, unknown>>
+		expect(orders?.length).toBeGreaterThan(0)
+		expect(orders[0]?.customerId).toEqual({ id: 1, displayText: 'Acme Corp' })
 	})
 })
 
@@ -981,6 +1064,20 @@ describe('many-side link row cap', { tags: ['integration', 'graphql'] }, () => {
 		const record = (result as any).data?.stonecropRecord
 		expect(record?.data?.children.length).toBe(10)
 		expect(record?.truncatedLinks).toEqual(['children'])
+	})
+
+	// `truncatedLinks` says the tail was cut. It cannot say the head keeps changing — and without a
+	// fixed order that is exactly what a capped relation does: an arbitrary ten of the children,
+	// re-drawn whenever a child row is updated and moves in the heap. Asserted on the emitted
+	// statement for the same reason the list-order test is: whether the heap actually shifts depends
+	// on page fill, so a behavioural check would pass by luck on a small fixture.
+	it('orders a capped relation, so the children it keeps are always the same ones', async () => {
+		const { sql } = await runSequenceCapturingSql([
+			`query { stonecropRecord(doctype: "ScBulkCapped", id: "1") { data truncatedLinks } }`,
+		])
+		const childQuery = sql.find(text => text.includes('FROM "sc_bulk_child"') && text.includes('LIMIT'))
+		expect(childQuery).toBeDefined()
+		expect(childQuery).toMatch(/ORDER BY .* LIMIT/)
 	})
 })
 

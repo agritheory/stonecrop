@@ -29,6 +29,8 @@ import type { BadgeDescriptor } from '@stonecrop/schema';
 import type { ColumnSchema } from '@stonecrop/schema';
 import type { FieldOptions } from '@stonecrop/schema';
 import type { FieldValidation } from '@stonecrop/schema';
+import type { GetRecordsOptions } from '@stonecrop/schema';
+import type { GetRecordsResult } from '@stonecrop/schema';
 import { InteractionMode } from '@stonecrop/schema';
 import Login from './components/utilities/Login.vue';
 import type { TableViewConfig } from '@stonecrop/schema';
@@ -205,6 +207,7 @@ export interface ResolvedTable {
     config: TableViewConfig;
     default?: unknown;
     fieldname: string;
+    getRecords?: (options?: GetRecordsOptions) => Promise<GetRecordsResult>;
     hidden?: boolean;
     kind: 'table';
     label?: string;
@@ -212,6 +215,7 @@ export interface ResolvedTable {
     readOnly?: boolean;
     required?: boolean;
     schema: ColumnSchema[];
+    sourceKey?: string;
     validation?: FieldValidation;
 }
 

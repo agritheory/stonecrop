@@ -3,6 +3,7 @@ import { componentCategory } from '@stonecrop/schema'
 import type { BadgeDescriptor } from '@stonecrop/schema'
 import { type CSSProperties, computed, ref } from 'vue'
 
+import { linkSearchableText } from '../linkSearchableText'
 import type {
 	CellContext,
 	ConnectionHandle,
@@ -15,6 +16,7 @@ import type {
 	TableModal,
 	TableRow,
 } from '../types'
+import { resolveFilterType } from '../resolveFilterType'
 import { formatCurrency, formatQuantity, generateHash } from '../utils'
 
 /**
@@ -77,15 +79,16 @@ function isNodeOpen(rowIndex: number, treeDisplay: TableDisplay[]): boolean {
 }
 
 function applyFilter(cellValue: any, filter: FilterState, column: TableColumn): boolean {
-	const filterType = column.filterType || 'text'
+	const filterType = resolveFilterType(column)
 	const value = filter.value
 
 	if (!value && filterType !== 'dateRange' && filterType !== 'checkbox') return true
 
 	switch (filterType) {
 		case 'text': {
-			const searchableText =
-				typeof cellValue === 'object' && cellValue !== null
+			const searchableText = column.linkDoctype
+				? linkSearchableText(cellValue)
+				: typeof cellValue === 'object' && cellValue !== null
 					? Object.values(cellValue).join(' ')
 					: String(cellValue || '')
 			return searchableText.toLowerCase().includes(String(value).toLowerCase())
@@ -360,7 +363,7 @@ export const createTableStore = (initData: {
 					filter.value ||
 					filter.startValue ||
 					filter.endValue ||
-					(column.filterType === 'checkbox' && filter.value !== undefined)
+					(resolveFilterType(column) === 'checkbox' && filter.value !== undefined)
 
 				if (!hasFilterValue) return
 

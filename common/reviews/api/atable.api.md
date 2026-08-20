@@ -15,6 +15,7 @@ import ATableHeader from './components/ATableHeader.vue';
 import ATableLoading from './components/ATableLoading.vue';
 import ATableLoadingBar from './components/ATableLoadingBar.vue';
 import ATableModal from './components/ATableModal.vue';
+import ATablePaginationFooter from './components/ATablePaginationFooter.vue';
 import type { BadgeDescriptor } from '@stonecrop/schema';
 import type { ColumnSchema } from '@stonecrop/schema';
 import { ComputedRef } from 'vue';
@@ -22,8 +23,11 @@ import { CSSProperties } from 'vue';
 import DeleteIcon from './stonecrop-ui-icon-delete.svg?raw';
 import DuplicateIcon from './stonecrop-ui-icon-duplicate.svg?raw';
 import { FieldOptions } from '@stonecrop/schema';
+import type { GetRecordsOptions } from '@stonecrop/schema';
+import type { GetRecordsResult } from '@stonecrop/schema';
 import InsertAboveIcon from './stonecrop-ui-icon-insert-above.svg?raw';
 import InsertBelowIcon from './stonecrop-ui-icon-insert-below.svg?raw';
+import { MaybeRefOrGetter } from 'vue';
 import MoveIcon from './stonecrop-ui-icon-move.svg?raw';
 import OpenIcon from './stonecrop-ui-icon-open.svg?raw';
 import { Ref } from 'vue';
@@ -55,10 +59,13 @@ export { ATableLoadingBar }
 
 export { ATableModal }
 
+export { ATablePaginationFooter }
+
 // @public
 export interface BaseTableConfig {
     clickable?: boolean;
     fullWidth?: boolean;
+    pageSize?: number;
     rowActions?: RowActionsConfig;
 }
 
@@ -253,6 +260,7 @@ disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => bo
 } | undefined;
 } | undefined;
 } | undefined;
+pageSize?: number | undefined;
 } | {
 view: "tree";
 defaultTreeExpansion?: "root" | "branch" | "leaf" | undefined;
@@ -329,6 +337,7 @@ disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => bo
 } | undefined;
 } | undefined;
 } | undefined;
+pageSize?: number | undefined;
 } | {
 view: "gantt";
 dependencyGraph?: boolean | undefined;
@@ -405,6 +414,7 @@ disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => bo
 } | undefined;
 } | undefined;
 } | undefined;
+pageSize?: number | undefined;
 } | {
 view: "tree-gantt";
 defaultTreeExpansion?: "root" | "branch" | "leaf" | undefined;
@@ -482,6 +492,7 @@ disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => bo
 } | undefined;
 } | undefined;
 } | undefined;
+pageSize?: number | undefined;
 }, TableConfig | {
 view?: "uncounted" | "list" | "list-expansion" | undefined;
 fullWidth?: boolean | undefined;
@@ -557,6 +568,7 @@ disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => bo
 } | undefined;
 } | undefined;
 } | undefined;
+pageSize?: number | undefined;
 } | {
 view: "tree";
 defaultTreeExpansion?: "root" | "branch" | "leaf" | undefined;
@@ -633,6 +645,7 @@ disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => bo
 } | undefined;
 } | undefined;
 } | undefined;
+pageSize?: number | undefined;
 } | {
 view: "gantt";
 dependencyGraph?: boolean | undefined;
@@ -709,6 +722,7 @@ disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => bo
 } | undefined;
 } | undefined;
 } | undefined;
+pageSize?: number | undefined;
 } | {
 view: "tree-gantt";
 defaultTreeExpansion?: "root" | "branch" | "leaf" | undefined;
@@ -786,6 +800,7 @@ disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => bo
 } | undefined;
 } | undefined;
 } | undefined;
+pageSize?: number | undefined;
 }>;
 connectionHandles: Ref<    {
 id: string;
@@ -1127,6 +1142,7 @@ disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => bo
 } | undefined;
 } | undefined;
 } | undefined;
+pageSize?: number | undefined;
 } | {
 view: "tree";
 defaultTreeExpansion?: "root" | "branch" | "leaf" | undefined;
@@ -1203,6 +1219,7 @@ disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => bo
 } | undefined;
 } | undefined;
 } | undefined;
+pageSize?: number | undefined;
 } | {
 view: "gantt";
 dependencyGraph?: boolean | undefined;
@@ -1279,6 +1296,7 @@ disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => bo
 } | undefined;
 } | undefined;
 } | undefined;
+pageSize?: number | undefined;
 } | {
 view: "tree-gantt";
 defaultTreeExpansion?: "root" | "branch" | "leaf" | undefined;
@@ -1356,6 +1374,7 @@ disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => bo
 } | undefined;
 } | undefined;
 } | undefined;
+pageSize?: number | undefined;
 }, TableConfig | {
 view?: "uncounted" | "list" | "list-expansion" | undefined;
 fullWidth?: boolean | undefined;
@@ -1431,6 +1450,7 @@ disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => bo
 } | undefined;
 } | undefined;
 } | undefined;
+pageSize?: number | undefined;
 } | {
 view: "tree";
 defaultTreeExpansion?: "root" | "branch" | "leaf" | undefined;
@@ -1507,6 +1527,7 @@ disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => bo
 } | undefined;
 } | undefined;
 } | undefined;
+pageSize?: number | undefined;
 } | {
 view: "gantt";
 dependencyGraph?: boolean | undefined;
@@ -1583,6 +1604,7 @@ disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => bo
 } | undefined;
 } | undefined;
 } | undefined;
+pageSize?: number | undefined;
 } | {
 view: "tree-gantt";
 defaultTreeExpansion?: "root" | "branch" | "leaf" | undefined;
@@ -1660,6 +1682,7 @@ disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => bo
 } | undefined;
 } | undefined;
 } | undefined;
+pageSize?: number | undefined;
 }>;
 connectionHandles: Ref<    {
 id: string;
@@ -2001,6 +2024,7 @@ disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => bo
 } | undefined;
 } | undefined;
 } | undefined;
+pageSize?: number | undefined;
 } | {
 view: "tree";
 defaultTreeExpansion?: "root" | "branch" | "leaf" | undefined;
@@ -2077,6 +2101,7 @@ disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => bo
 } | undefined;
 } | undefined;
 } | undefined;
+pageSize?: number | undefined;
 } | {
 view: "gantt";
 dependencyGraph?: boolean | undefined;
@@ -2153,6 +2178,7 @@ disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => bo
 } | undefined;
 } | undefined;
 } | undefined;
+pageSize?: number | undefined;
 } | {
 view: "tree-gantt";
 defaultTreeExpansion?: "root" | "branch" | "leaf" | undefined;
@@ -2230,6 +2256,7 @@ disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => bo
 } | undefined;
 } | undefined;
 } | undefined;
+pageSize?: number | undefined;
 }, TableConfig | {
 view?: "uncounted" | "list" | "list-expansion" | undefined;
 fullWidth?: boolean | undefined;
@@ -2305,6 +2332,7 @@ disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => bo
 } | undefined;
 } | undefined;
 } | undefined;
+pageSize?: number | undefined;
 } | {
 view: "tree";
 defaultTreeExpansion?: "root" | "branch" | "leaf" | undefined;
@@ -2381,6 +2409,7 @@ disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => bo
 } | undefined;
 } | undefined;
 } | undefined;
+pageSize?: number | undefined;
 } | {
 view: "gantt";
 dependencyGraph?: boolean | undefined;
@@ -2457,6 +2486,7 @@ disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => bo
 } | undefined;
 } | undefined;
 } | undefined;
+pageSize?: number | undefined;
 } | {
 view: "tree-gantt";
 defaultTreeExpansion?: "root" | "branch" | "leaf" | undefined;
@@ -2534,6 +2564,7 @@ disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => bo
 } | undefined;
 } | undefined;
 } | undefined;
+pageSize?: number | undefined;
 }>;
 connectionHandles: Ref<    {
 id: string;
@@ -2751,6 +2782,11 @@ export { DeleteIcon }
 export { DuplicateIcon }
 
 // @public
+export type FilteredTableRow = TableRow & {
+    originalIndex: number;
+};
+
+// @public
 export interface FilterState {
     endValue?: any;
     startValue?: any;
@@ -2952,6 +2988,27 @@ export interface TableModalProps {
 }
 
 // @public
+export interface TablePagination {
+    hasEverHadMore: Ref<boolean>;
+    hasLocalNext: Ref<boolean>;
+    hasMore: Ref<boolean>;
+    // (undocumented)
+    hasNext: Ref<boolean>;
+    // (undocumented)
+    hasPrev: Ref<boolean>;
+    loadedCount: Ref<number>;
+    // (undocumented)
+    loading: Ref<boolean>;
+    // (undocumented)
+    next: () => Promise<void>;
+    // (undocumented)
+    prev: () => void;
+    showFooter: Ref<boolean>;
+    // (undocumented)
+    visibleRows: Ref<FilteredTableRow[]>;
+}
+
+// @public
 export interface TableRow {
     [key: string]: any;
     gantt?: GanttOptions;
@@ -2970,6 +3027,17 @@ export interface TreeGanttTableConfig extends BaseTableConfig {
 export interface TreeTableConfig extends BaseTableConfig {
     defaultTreeExpansion?: 'root' | 'branch' | 'leaf';
     view: 'tree';
+}
+
+// @public
+export function useTablePagination(options: UseTablePaginationOptions): TablePagination;
+
+// @public
+export interface UseTablePaginationOptions {
+    getRecords?: (options?: GetRecordsOptions) => Promise<GetRecordsResult>;
+    pageSize?: MaybeRefOrGetter<number | undefined>;
+    rows: MaybeRefOrGetter<FilteredTableRow[]>;
+    sourceKey?: MaybeRefOrGetter<string | undefined>;
 }
 
 // (No @packageDocumentation comment for this package)
