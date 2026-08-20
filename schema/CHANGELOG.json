@@ -2,6 +2,18 @@
   "name": "@stonecrop/schema",
   "entries": [
     {
+      "version": "0.24.0",
+      "tag": "@stonecrop/schema_v0.24.0",
+      "date": "Thu, 20 Aug 2026 08:19:12 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Update LINK_DISPLAY_SUFFIX and linkDisplayFieldname deprecation notes to point at middleware { id, displayText } enrichment."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.23.0",
       "tag": "@stonecrop/schema_v0.23.0",
       "date": "Tue, 18 Aug 2026 09:16:50 GMT",
