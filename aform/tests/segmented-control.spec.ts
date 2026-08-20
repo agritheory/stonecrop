@@ -126,6 +126,33 @@ describe('ASegmentedControl', { tags: ['component'] }, () => {
 		expect(selected.classes()).toContain('aform_segmented-segment--success')
 	})
 
+	it('toggles multiple values with checkboxes', async () => {
+		const wrapper = mount(ASegmentedControl, {
+			props: {
+				modelValue: ['plan', 'demand'],
+				label: 'Series',
+				uuid: 'series',
+				multiple: true,
+				options: {
+					plan: { label: 'Plan' },
+					capacity: { label: 'Capacity' },
+					demand: { label: 'Demand' },
+					net: { label: 'Net' },
+				},
+			},
+		})
+
+		const group = wrapper.find('[role="group"]')
+		expect(group.exists()).toBe(true)
+		expect(wrapper.find('[role="radiogroup"]').exists()).toBe(false)
+		expect(wrapper.findAll('input[type="checkbox"]')).toHaveLength(4)
+		expect((wrapper.find('input[value="plan"]').element as HTMLInputElement).checked).toBe(true)
+		expect((wrapper.find('input[value="capacity"]').element as HTMLInputElement).checked).toBe(false)
+
+		await wrapper.find('input[value="capacity"]').setValue(true)
+		expect(wrapper.emitted('update:modelValue')?.[0]?.[0]).toEqual(['plan', 'demand', 'capacity'])
+	})
+
 	it('renders ABadge in display mode when options carry badges', () => {
 		const wrapper = mount(ASegmentedControl, {
 			props: {

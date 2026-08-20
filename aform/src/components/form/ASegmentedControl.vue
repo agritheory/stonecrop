@@ -11,7 +11,7 @@
 			<ABadge
 				v-if="displayBadge"
 				class="aform_display-value aform_segmented-display-badge"
-				:value="selected"
+				:value="displayBadgeValue"
 				:options="options"
 				presentation="input-accent" />
 			<span v-else class="aform_display-value">{{ displayText }}</span>
@@ -21,7 +21,7 @@
 				{{ label }}
 			</label>
 			<div
-				role="radiogroup"
+				:role="multiple ? 'group' : 'radiogroup'"
 				class="aform_segmented-track"
 				:aria-labelledby="labelId"
 				:aria-label="hideLabel ? (ariaLabel ?? label) : undefined"
@@ -34,6 +34,15 @@
 					:style="segmentStyle(choice)"
 					:data-segment-value="choice">
 					<input
+						v-if="multiple"
+						v-model="selectedMany"
+						type="checkbox"
+						class="aform_segmented-input"
+						:name="groupName"
+						:value="choice"
+						:disabled="mode === 'read'" />
+					<input
+						v-else
 						v-model="selected"
 						type="radio"
 						class="aform_segmented-input"
@@ -68,6 +77,7 @@ const {
 	hideLabel = false,
 	ariaLabel = undefined,
 	busy = false,
+	multiple = false,
 } = defineProps<
 	ComponentProps & {
 		options?: FieldOptions
@@ -76,10 +86,18 @@ const {
 		hideLabel?: boolean
 		ariaLabel?: string
 		busy?: boolean
+		multiple?: boolean
 	}
 >()
 
-const selected = defineModel<string>({ default: '' })
+const selected = defineModel<string | string[]>({ default: '' })
+
+const selectedMany = computed({
+	get: () => (Array.isArray(selected.value) ? selected.value : []),
+	set: (value: string[]) => {
+		selected.value = value
+	},
+})
 
 const errorText = computed(() => (errors?.length ? errors.join('; ') : (validation.errorMessage ?? '')))
 
@@ -98,17 +116,21 @@ function segmentVariant(choice: string): BadgeVariant {
 	return lookupBadge(options, choice)?.variant ?? 'neutral'
 }
 
+function isChoiceSelected(choice: string): boolean {
+	if (multiple) return selectedMany.value.includes(choice)
+	return selected.value === choice
+}
+
 function segmentClasses(choice: string): Record<string, boolean> {
 	if (!badgeOptions.value) return {}
-	const isSelected = selected.value === choice
 	return {
 		'aform_segmented-segment--badge': true,
-		[`aform_segmented-segment--${segmentVariant(choice)}`]: isSelected,
+		[`aform_segmented-segment--${segmentVariant(choice)}`]: isChoiceSelected(choice),
 	}
 }
 
 function segmentStyle(choice: string): CSSProperties {
-	if (!badgeOptions.value || selected.value !== choice) return {}
+	if (!badgeOptions.value || !isChoiceSelected(choice)) return {}
 	const color = lookupBadge(options, choice)?.color
 	if (!color) return {}
 	return {
@@ -118,12 +140,24 @@ function segmentStyle(choice: string): CSSProperties {
 }
 
 const displayText = computed(() => {
+	if (multiple) {
+		return selectedMany.value.map(segmentLabel).filter(Boolean).join(', ')
+	}
 	const value = selected.value
-	if (value === undefined || value === '') return ''
+	if (typeof value !== 'string' || value === '') return ''
 	return segmentLabel(value)
 })
 
-const displayBadge = computed(() => badgeOptions.value && selected.value !== undefined && selected.value !== '')
+const displayBadge = computed(() => {
+	if (!badgeOptions.value) return false
+	if (multiple) return selectedMany.value.length === 1
+	return typeof selected.value === 'string' && selected.value !== ''
+})
+
+const displayBadgeValue = computed(() => {
+	if (multiple) return selectedMany.value[0] ?? ''
+	return typeof selected.value === 'string' ? selected.value : ''
+})
 </script>
 
 <style scoped>
