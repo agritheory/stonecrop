@@ -566,6 +566,23 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 												orderByClause = ` ORDER BY "${camelToSnake(fieldName)}" ${dir}`
 											}
 
+											// A page is only meaningful against a fixed order, and LIMIT/OFFSET without one
+											// is two independent scans of heap order — an UPDATE between them moves that row
+											// to the tail, so the row it displaced is never returned and nothing in the
+											// payload says a record was skipped. The declared identity is the right default
+											// because it is unique: it gives a total order, which is what makes page 2 start
+											// exactly where page 1 stopped.
+											//
+											// Only when the doctype declares an identity. Without one there is no stable key
+											// to order by, and inventing one here would be a guess; such a doctype cannot be
+											// paged stably by any means.
+											if (orderByClause === '') {
+												const listPkMeta = getPkMeta(meta)
+												if (listPkMeta) {
+													orderByClause = ` ORDER BY "${camelToSnake(listPkMeta.fieldname)}" ASC`
+												}
+											}
+
 											// LIMIT / OFFSET. A caller that names no limit gets the configured default rather
 											// than the whole table: omission is how an unbounded scan used to happen, and the
 											// only guard against it lived in the scaffold's fetch helper, which is neither the

@@ -695,7 +695,7 @@ describe('stonecropRecords', { tags: ['integration', 'graphql'] }, () => {
 	// Asserted on the statement rather than by paging twice and diffing the rows: whether the heap
 	// actually shifts depends on page fill, so a behavioural test would pass by luck on a small
 	// fixture while the guarantee stayed missing.
-	it.fails('orders a limited read, so two pages cannot skip or repeat a row', async () => {
+	it('orders a limited read, so two pages cannot skip or repeat a row', async () => {
 		const { sql } = await runSequenceCapturingSql([
 			`query { stonecropRecords(doctype: "ScItem", limit: 2, offset: 0) { data } }`,
 		])
