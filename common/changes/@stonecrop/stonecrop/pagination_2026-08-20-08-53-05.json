@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "getRecords replaces a doctype's records at offset 0 and appends beyond it, and getPageInfo reports the offset and page length.",
+      "type": "minor",
+      "packageName": "@stonecrop/stonecrop"
+    }
+  ],
+  "packageName": "@stonecrop/stonecrop",
+  "email": "rohanbansal33@gmail.com"
+}

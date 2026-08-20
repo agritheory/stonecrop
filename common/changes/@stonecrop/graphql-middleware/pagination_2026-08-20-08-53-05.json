@@ -1,0 +1,16 @@
+{
+  "changes": [
+    {
+      "comment": "Order a limited stonecropRecords read by the declared identity when the caller names no orderBy, so paging cannot skip or repeat a row.",
+      "type": "minor",
+      "packageName": "@stonecrop/graphql-middleware"
+    },
+    {
+      "comment": "Order a capped many-side relation by the target's declared identity, so a truncated child list keeps the same rows between reads.",
+      "type": "minor",
+      "packageName": "@stonecrop/graphql-middleware"
+    }
+  ],
+  "packageName": "@stonecrop/graphql-middleware",
+  "email": "rohanbansal33@gmail.com"
+}

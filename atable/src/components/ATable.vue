@@ -14,7 +14,7 @@
 			<tbody>
 				<slot name="body" :data="store">
 					<ARow
-						v-for="(row, filteredIndex) in store.filteredRows"
+						v-for="(row, filteredIndex) in visibleRows"
 						:key="`${row.originalIndex}-${filteredIndex}`"
 						:row="row"
 						:row-index="row.originalIndex"
@@ -57,7 +57,20 @@
 				</slot>
 			</tbody>
 
-			<slot name="footer" :data="store" />
+			<slot name="footer" :data="store" :page="pagination">
+				<ATablePaginationFooter
+					:column-count="footerColumnCount"
+					:show-footer="showFooter"
+					:has-more="hasMore"
+					:has-prev="hasPrev"
+					:has-next="hasNext"
+					:has-local-next="hasLocalNext"
+					:has-ever-had-more="hasEverHadMore"
+					:loaded-count="loadedCount"
+					:loading="paginationLoading"
+					:next="paginationNext"
+					:prev="paginationPrev" />
+			</slot>
 
 			<!-- Modal overlay -->
 			<slot name="modal" :data="store">
@@ -92,8 +105,10 @@ import AGanttConnection from './AGanttConnection.vue'
 import ARow from './ARow.vue'
 import ATableHeader from './ATableHeader.vue'
 import ATableModal from './ATableModal.vue'
+import ATablePaginationFooter from './ATablePaginationFooter.vue'
+import { useTablePagination } from '../composables/table-pagination'
 import { createTableStore } from '../stores/table'
-import type { ColumnSchema } from '@stonecrop/schema'
+import type { ColumnSchema, GetRecordsOptions, GetRecordsResult } from '@stonecrop/schema'
 
 import { schemaToColumns } from '../schemaToColumns'
 import type {
@@ -123,11 +138,15 @@ const {
 	config = new Object(),
 	schema = [],
 	linkResolver = undefined,
+	getRecords = undefined,
+	sourceKey = undefined,
 } = defineProps<{
 	id?: string
 	config?: TableConfig
 	schema?: ColumnSchema[]
 	linkResolver?: LinkResolverFn
+	getRecords?: (options?: GetRecordsOptions) => Promise<GetRecordsResult>
+	sourceKey?: string
 }>()
 
 const emit = defineEmits<{
@@ -155,6 +174,29 @@ const store = createTableStore({
 	config,
 	linkResolver: linkResolver ?? injectedLinkResolver,
 })
+
+const pagination = useTablePagination({
+	rows: () => store.filteredRows,
+	pageSize: () => store.config.pageSize,
+	getRecords,
+	sourceKey: () => sourceKey,
+})
+
+const {
+	visibleRows,
+	showFooter,
+	hasMore,
+	hasPrev,
+	hasNext,
+	hasLocalNext,
+	hasEverHadMore,
+	loadedCount,
+	loading: paginationLoading,
+	next: paginationNext,
+	prev: paginationPrev,
+} = pagination
+
+const footerColumnCount = computed(() => store.columns.length + (store.zeroColumn ? 1 : 0))
 
 store.$onAction(({ name, store: storeInstance, args, after }) => {
 	if (name === 'setCellData' || name === 'setCellText') {
@@ -398,6 +440,7 @@ const handleRowAction = (actionType: RowActionType, rowIndex: number, event?: Mo
 
 defineExpose({
 	store,
+	pagination,
 	createConnection: store.createConnection,
 	deleteConnection: store.deleteConnection,
 	getConnectionsForBar: store.getConnectionsForBar,

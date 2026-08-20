@@ -1,0 +1,16 @@
+{
+  "changes": [
+    {
+      "comment": "Add useTablePagination and a default pagination footer, windowing rows after filter and sort, with an optional in-memory page size and server-backed Load more.",
+      "type": "minor",
+      "packageName": "@stonecrop/atable"
+    },
+    {
+      "comment": "Derive a column's filter widget from its component category via resolveFilterType, and search link cells on both id and display text.",
+      "type": "minor",
+      "packageName": "@stonecrop/atable"
+    }
+  ],
+  "packageName": "@stonecrop/atable",
+  "email": "rohanbansal33@gmail.com"
+}

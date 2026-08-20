@@ -205,6 +205,12 @@ export interface BaseTableConfig {
 	 * Configuration for row-level actions (add, delete, duplicate, etc.).
 	 */
 	rowActions?: RowActionsConfig
+
+	/**
+	 * When set, slice the held rows into in-memory windows of this size.
+	 * Omit to show the whole held list as one window (server paging uses the backend cap).
+	 */
+	pageSize?: number
 }
 
 /**
