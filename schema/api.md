@@ -261,6 +261,31 @@ export declare function getDisplayField(fields: readonly DoctypeField[], display
 | fields | `readonly DoctypeField[]` | the doctype's top-level fields |
 | displayField | `string \| undefined` | the nominated fieldname |
 
+### getDoctypeSlug
+
+The one string a doctype is addressed by.
+
+A doctype carries two names — `name` (`OrderItem`) and `slug` (`order-item`) — and every registry must agree on which one keys it. Three implementations had drifted apart: the adapter's registry is keyed by `name` and its `getMeta` also scans for a matching `slug`, so it accepts **either**; the client's registry is keyed by a slug it derives itself and accepts **only** that; and `Doctype.fromObject` dropped an authored `slug` on the floor and re-derived one regardless. The adapter's accepted set was therefore a strict superset of the client's, and a link target written as the Name booted the server, passed its reference check, served rows over GraphQL, and was silently dropped by the client — an expanding child table rendering as one empty text input, with nothing logged.
+
+Resolving through this in both runtimes is what makes the two answers the same answer. It is the derivation only; a *lookup* still belongs to whichever registry owns the corpus, because the two corpora legitimately differ (a client registers lazily, and a client-only host has no adapter at all).
+
+An authored `slug` wins over the derived one because the authored doctype is the source of truth: generation verifies a file and never overwrites it, so a doctype that states its own slug means it. Deriving unconditionally is what `fromObject` did, and it made an authored `slug` a silent no-op on one side of the wire while the other honoured it.
+
+**Signature:**
+
+```typescript
+export declare function getDoctypeSlug(doctype: {
+    name: string;
+    slug?: string;
+}): string;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| doctype | `{ name: string; slug?: string; }` | anything carrying a doctype's `name` and optional authored `slug` |
+
 ### getPrimaryKeyField
 
 Find the field a doctype marks as its primary key, or `undefined` when none is marked.

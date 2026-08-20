@@ -43,6 +43,7 @@ export {
 	TriggerDefinition,
 	WorkflowLayout,
 	WorkflowMeta,
+	getDoctypeSlug,
 	isActionAllowedInState,
 	LINK_DISPLAY_SUFFIX,
 	linkDisplayFieldname,

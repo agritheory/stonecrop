@@ -347,6 +347,12 @@ export interface GenerationPlanOptions {
 export function getDisplayField(fields: readonly DoctypeField[], displayField: string | undefined): ValueField | undefined;
 
 // @public
+export function getDoctypeSlug(doctype: {
+    name: string;
+    slug?: string;
+}): string;
+
+// @public
 export function getPrimaryKeyField(fields: readonly DoctypeField[]): ValueField | undefined;
 
 // @public
