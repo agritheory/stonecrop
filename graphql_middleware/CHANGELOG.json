@@ -2,6 +2,18 @@
   "name": "@stonecrop/graphql-middleware",
   "entries": [
     {
+      "version": "0.24.0",
+      "tag": "@stonecrop/graphql-middleware_v0.24.0",
+      "date": "Thu, 20 Aug 2026 08:19:12 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Restore server-side link display enrichment on stonecropRecord and stonecropRecords; inline link fields return { id, displayText } objects."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.23.0",
       "tag": "@stonecrop/graphql-middleware_v0.23.0",
       "date": "Tue, 18 Aug 2026 09:16:50 GMT",

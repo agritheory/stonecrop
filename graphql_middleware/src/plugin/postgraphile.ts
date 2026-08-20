@@ -7,6 +7,7 @@ import { GraphileConfig } from 'postgraphile/graphile-build'
 import { extendSchema } from 'postgraphile/utils'
 
 import { columnBackedFields, flattenFields } from '../fields'
+import { enrichLinkDisplayFields } from '../link-display'
 import { resolveTableName } from '../tables'
 import { getFetchHandler } from '../registry/fetchHandlers'
 import { getMeta, getAllMeta, validateReferences } from '../registry/doctypes'
@@ -490,6 +491,11 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 												truncatedLinks: truncatedLinks.length ? truncatedLinks : undefined,
 											}
 										}
+
+										// After the expansion loop, not before it: a link that expanded has replaced its
+										// scalar FK with an object, and enrichment skips those. Running first stamped a
+										// display value beside a relation that no longer had an id to display.
+										await enrichLinkDisplayFields(pgClient, meta, enrichedRows, options.tables, debugSql)
 									}
 
 									return results
@@ -593,6 +599,8 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 											// downstream can mistake it for a record.
 											const hasMore = effectiveLimit != null && rows.length > effectiveLimit
 											const data = [...(hasMore ? rows.slice(0, effectiveLimit ?? rows.length) : rows)]
+
+											await enrichLinkDisplayFields(pgClient, meta, data, options.tables, debugSql)
 
 											// Total matching the filters, independent of LIMIT/OFFSET, and opt-in.
 											//
