@@ -1,5 +1,26 @@
 <script setup lang="ts">
+import { SheetNav } from '@stonecrop/desktop'
+
 const route = useRoute()
+
+// Breadcrumb trail for SheetNav's bottom bar — same path-segment-title-casing logic already
+// established in nuxt/fullstack/app/app.vue for the same component.
+const breadcrumbs = computed(() => {
+	const parts = route.path.split('/').filter(Boolean)
+	const crumbs: Array<{ title: string; to: string }> = []
+
+	let currentPath = ''
+	for (const segment of parts) {
+		currentPath += `/${segment}`
+		const title = segment
+			.split('-')
+			.map(word => word.charAt(0).toUpperCase() + word.slice(1))
+			.join(' ')
+		crumbs.push({ title, to: currentPath })
+	}
+
+	return crumbs
+})
 
 // Ported from docs/.vitepress/config.ts's `themeConfig.sidebar` — same four Diátaxis
 // sections (Tutorials/Guides/Reference/Explanation), Components folded into Reference.
@@ -9,7 +30,7 @@ const sidebarSections = [
 		groups: [
 			{ title: 'Components', links: [{ text: 'Overview', to: '/components/' }] },
 			{
-				title: 'Inputs',
+				title: 'Form',
 				links: [
 					{ text: 'Form', to: '/components/form' },
 					{ text: 'Form Loading', to: '/components/form-loading' },
@@ -33,6 +54,27 @@ const sidebarSections = [
 					{ text: 'Collapse Button', to: '/components/collapse-button' },
 				],
 			},
+			{
+				title: 'Tables',
+				links: [
+					{ text: 'Table', to: '/components/table' },
+					{ text: 'Table Loading', to: '/components/table-loading' },
+				],
+			},
+			{
+				title: 'Desktop',
+				links: [
+					{ text: 'Command Palette', to: '/components/command-palette' },
+					{ text: 'Action Set', to: '/components/action-set' },
+				],
+			},
+			{
+				title: 'Editors',
+				links: [
+					{ text: 'Code Editor', to: '/components/code-editor' },
+					{ text: 'Node Editor', to: '/components/node-editor' },
+				],
+			},
 		],
 	},
 	{
@@ -42,8 +84,20 @@ const sidebarSections = [
 	{
 		prefix: '/guides/',
 		groups: [
-			{ title: 'Guides', links: [{ text: 'Overview', to: '/guides/' }] },
-			{ title: 'Examples', links: [{ text: 'Live component stories', to: '/stories/' }] },
+			{
+				title: 'Guides',
+				links: [
+					{ text: 'Overview', to: '/guides/' },
+					{ text: 'Desktop Integration', to: '/guides/desktop-integration' },
+					{ text: 'GraphQL Middleware Setup', to: '/guides/graphql-middleware-setup' },
+					{ text: 'CASL Middleware Setup', to: '/guides/casl-middleware-setup' },
+					{ text: 'Custom Fetch Handlers', to: '/guides/custom-fetch-handlers' },
+				],
+			},
+			{
+				title: 'Examples',
+				links: [{ text: 'App Examples', to: '/guides/app-examples' }],
+			},
 		],
 	},
 	{
@@ -106,6 +160,13 @@ const sidebarSections = [
 				],
 			},
 			{ title: 'Design', links: [{ text: 'Design Philosophy', to: '/explanation/philosophy' }] },
+			{
+				title: 'Middleware',
+				links: [
+					{ text: 'GraphQL Middleware', to: '/explanation/graphql-middleware' },
+					{ text: 'CASL Middleware', to: '/explanation/casl-middleware' },
+				],
+			},
 		],
 	},
 ]
@@ -160,5 +221,9 @@ const sidebarGroups = computed(() => {
 				</div>
 			</aside>
 		</div>
+
+		<ClientOnly>
+			<SheetNav :breadcrumbs="breadcrumbs" />
+		</ClientOnly>
 	</div>
 </template>

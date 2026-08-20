@@ -62,7 +62,12 @@ export default defineNuxtConfig({
 		},
 	},
 
-	css: ['@stonecrop/desktop/styles', '~/assets/css/main.css'],
+	css: [
+		'@stonecrop/desktop/styles',
+		'@stonecrop/atable/styles',
+		'@stonecrop/node-editor/styles',
+		'~/assets/css/main.css',
+	],
 
 	// `global: true` makes these resolvable as bare `:component-name` MDC tags inside markdown
 	// content (@nuxt/content's ContentRenderer only resolves components registered globally).
@@ -92,7 +97,16 @@ export default defineNuxtConfig({
 	// workaround already in nuxt/fullstack/nuxt.config.ts and nuxt/playground/nuxt.config.ts.
 	vite: {
 		optimizeDeps: {
-			include: ['pinia', '@stonecrop/aform', '@stonecrop/schema', '@stonecrop/desktop', '@stonecrop/utilities'],
+			include: [
+				'pinia',
+				'@stonecrop/aform',
+				'@stonecrop/schema',
+				'@stonecrop/desktop',
+				'@stonecrop/utilities',
+				'@stonecrop/atable',
+				'@stonecrop/code-editor',
+				'@stonecrop/node-editor',
+			],
 		},
 		resolve: {
 			// In this pnpm workspace, @stonecrop/* packages can each resolve their own `vue` copy

@@ -5,9 +5,9 @@ description: Live, interactive documentation for Stonecrop's Vue components.
 
 # Components
 
-Interactive documentation for individual Stonecrop components — live demos alongside their source and API reference. This is a companion to the [API Reference](/reference/), which documents every package's full public surface; pages here go deeper on one component at a time, covering every field component in `@stonecrop/aform`.
+Interactive documentation for individual Stonecrop components — live demos alongside their source and API reference. This is a companion to the [API Reference](/reference/), which documents every package's full public surface; pages here go deeper on one component at a time, covering every field component in `@stonecrop/aform`, plus the primary public components of `@stonecrop/atable`, `@stonecrop/desktop`, `@stonecrop/code-editor`, and `@stonecrop/node-editor`.
 
-## Inputs
+## Form
 
 - [Form](./form) — `AForm`, the schema-driven orchestrator that resolves and renders every field below
 - [Form Loading](./form-loading) — `AFormLoading`, a loading-state placeholder
@@ -29,3 +29,18 @@ Interactive documentation for individual Stonecrop components — live demos alo
 - [Quantity Input](./quantity-input) — `AQuantityInput`, a quantity input with unit-of-measure conversion
 - [Login](./login) — `Login`, a standalone email/password sign-in form
 - [Collapse Button](./collapse-button) — `CollapseButton`, the internal toggle glyph used by Fieldset
+
+## Tables
+
+- [Table](./table) — `ATable`, a schema-driven data grid with list, tree, and Gantt views
+- [Table Loading](./table-loading) — `ATableLoading` / `ATableLoadingBar`, loading-state placeholders
+
+## Desktop
+
+- [Command Palette](./command-palette) — `CommandPalette`, a generic keyboard-navigable search overlay
+- [Action Set](./action-set) — `ActionSet`, a floating panel of button and dropdown actions
+
+## Editors
+
+- [Code Editor](./code-editor) — `ACodeEditor`, a Monaco-based code editor
+- [Node Editor](./node-editor) — `StateEditor`, a visual editor for FSM workflows

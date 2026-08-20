@@ -26,6 +26,11 @@ export const searchIndex: SearchEntry[] = [
 		url: '/guides/graphql-middleware-setup',
 	},
 	{
+		title: 'Setting Up the CASL Middleware',
+		description: 'How to configure @stonecrop/casl-middleware for GraphQL authorization',
+		url: '/guides/casl-middleware-setup',
+	},
+	{
 		title: 'HST Data Patterns',
 		description: 'Common patterns for working with the Hierarchical State Tree (HST) in Stonecrop',
 		url: '/guides/hst-patterns',
@@ -122,6 +127,11 @@ export const searchIndex: SearchEntry[] = [
 		title: 'GraphQL Middleware',
 		description: 'Architecture and design of @stonecrop/graphql-middleware',
 		url: '/explanation/graphql-middleware',
+	},
+	{
+		title: 'CASL Middleware',
+		description: 'Architecture and design of @stonecrop/casl-middleware',
+		url: '/explanation/casl-middleware',
 	},
 	{
 		title: 'Design Philosophy',
@@ -231,5 +241,40 @@ export const searchIndex: SearchEntry[] = [
 		url: '/components/collapse-button',
 	},
 
-	{ title: 'Examples', description: 'Live component stories and sandboxes', url: '/stories/' },
+	{
+		title: 'Table',
+		description: 'A schema-driven data grid with list, tree, and Gantt views',
+		url: '/components/table',
+	},
+	{
+		title: 'Table Loading',
+		description: "Loading-state placeholders shown while a table's data is being fetched",
+		url: '/components/table-loading',
+	},
+	{
+		title: 'Command Palette',
+		description: 'A generic keyboard-navigable search overlay for locating and jumping to items',
+		url: '/components/command-palette',
+	},
+	{
+		title: 'Action Set',
+		description: 'A floating panel of button and dropdown actions',
+		url: '/components/action-set',
+	},
+	{
+		title: 'Code Editor',
+		description: 'A Monaco-based code editor with language, theming, and read-only support',
+		url: '/components/code-editor',
+	},
+	{
+		title: 'Node Editor',
+		description: 'A visual, drag-and-drop editor for finite-state-machine workflows',
+		url: '/components/node-editor',
+	},
+
+	{
+		title: 'App Examples',
+		description: 'Full working Nuxt applications demonstrating Stonecrop end-to-end',
+		url: '/guides/app-examples',
+	},
 ]

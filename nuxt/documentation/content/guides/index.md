@@ -30,18 +30,18 @@ Task-oriented how-to guides that help you solve specific problems. Unlike tutori
 > **GraphQL**
 > - Client setup
 > - Schema from doctypes
-> - Authorization with CASL
 > - Nuxt integration
 
 ## Available Guides
 
 - [Integrating Desktop in a Host Application](./desktop-integration) — Route adapters, action handling, and FSM transitions with `@stonecrop/desktop`
 - [Setting Up the GraphQL Middleware](./graphql-middleware-setup) — Configuring `createStonecropPreset`, `createStonecropPlugin`, and `loadDoctypes` in a Nuxt/Node application
+- [Setting Up the CASL Middleware](./casl-middleware-setup) — Configuring `@stonecrop/casl-middleware` for GraphQL authorization
 - [Custom Fetch Handlers](./custom-fetch-handlers) — Implementing and registering `FetchHandler` callbacks for the `custom` fetch strategy
 
 ## Examples
 
-Prefer a working example over a walkthrough? [Browse live component stories and sandboxes](/stories/) — every field component in a range of configurations, editable in place.
+Prefer a working example over a walkthrough? See [App Examples](./app-examples) for full working Nuxt applications built on Stonecrop.
 
 ## Quick Links
 

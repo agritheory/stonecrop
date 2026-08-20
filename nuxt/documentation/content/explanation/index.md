@@ -16,6 +16,7 @@ Understanding-oriented documentation that explains the *why* behind Stonecrop's 
 
 - [**Design Philosophy**](./philosophy) — Visual design principles for business software
 
-## GraphQL Middleware
+## Middleware
 
 - [**GraphQL Middleware**](./graphql-middleware) — Architecture, fetch strategies, and design decisions for `@stonecrop/graphql-middleware`
+- [**CASL Middleware**](./casl-middleware) — Architecture and design decisions for `@stonecrop/casl-middleware`
