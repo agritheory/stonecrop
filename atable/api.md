@@ -84,6 +84,14 @@ Vue component exported from @stonecrop/atable.
 import { ATableModal } from '@stonecrop/atable'
 ```
 
+### ATablePaginationFooter
+
+Vue component exported from @stonecrop/atable.
+
+```typescript
+import { ATablePaginationFooter } from '@stonecrop/atable'
+```
+
 ### DeleteIcon
 
 Vue component exported from @stonecrop/atable.
@@ -279,6 +287,7 @@ createTableStore: (initData: {
                 } | undefined;
             } | undefined;
         } | undefined;
+        pageSize?: number | undefined;
     } | {
         view: "tree";
         defaultTreeExpansion?: "root" | "branch" | "leaf" | undefined;
@@ -355,6 +364,7 @@ createTableStore: (initData: {
                 } | undefined;
             } | undefined;
         } | undefined;
+        pageSize?: number | undefined;
     } | {
         view: "gantt";
         dependencyGraph?: boolean | undefined;
@@ -431,6 +441,7 @@ createTableStore: (initData: {
                 } | undefined;
             } | undefined;
         } | undefined;
+        pageSize?: number | undefined;
     } | {
         view: "tree-gantt";
         defaultTreeExpansion?: "root" | "branch" | "leaf" | undefined;
@@ -508,6 +519,7 @@ createTableStore: (initData: {
                 } | undefined;
             } | undefined;
         } | undefined;
+        pageSize?: number | undefined;
     }, TableConfig | {
         view?: "uncounted" | "list" | "list-expansion" | undefined;
         fullWidth?: boolean | undefined;
@@ -583,6 +595,7 @@ createTableStore: (initData: {
                 } | undefined;
             } | undefined;
         } | undefined;
+        pageSize?: number | undefined;
     } | {
         view: "tree";
         defaultTreeExpansion?: "root" | "branch" | "leaf" | undefined;
@@ -659,6 +672,7 @@ createTableStore: (initData: {
                 } | undefined;
             } | undefined;
         } | undefined;
+        pageSize?: number | undefined;
     } | {
         view: "gantt";
         dependencyGraph?: boolean | undefined;
@@ -735,6 +749,7 @@ createTableStore: (initData: {
                 } | undefined;
             } | undefined;
         } | undefined;
+        pageSize?: number | undefined;
     } | {
         view: "tree-gantt";
         defaultTreeExpansion?: "root" | "branch" | "leaf" | undefined;
@@ -812,6 +827,7 @@ createTableStore: (initData: {
                 } | undefined;
             } | undefined;
         } | undefined;
+        pageSize?: number | undefined;
     }>;
     connectionHandles: import("vue").Ref<{
         id: string;
@@ -1153,6 +1169,7 @@ createTableStore: (initData: {
                 } | undefined;
             } | undefined;
         } | undefined;
+        pageSize?: number | undefined;
     } | {
         view: "tree";
         defaultTreeExpansion?: "root" | "branch" | "leaf" | undefined;
@@ -1229,6 +1246,7 @@ createTableStore: (initData: {
                 } | undefined;
             } | undefined;
         } | undefined;
+        pageSize?: number | undefined;
     } | {
         view: "gantt";
         dependencyGraph?: boolean | undefined;
@@ -1305,6 +1323,7 @@ createTableStore: (initData: {
                 } | undefined;
             } | undefined;
         } | undefined;
+        pageSize?: number | undefined;
     } | {
         view: "tree-gantt";
         defaultTreeExpansion?: "root" | "branch" | "leaf" | undefined;
@@ -1382,6 +1401,7 @@ createTableStore: (initData: {
                 } | undefined;
             } | undefined;
         } | undefined;
+        pageSize?: number | undefined;
     }, TableConfig | {
         view?: "uncounted" | "list" | "list-expansion" | undefined;
         fullWidth?: boolean | undefined;
@@ -1457,6 +1477,7 @@ createTableStore: (initData: {
                 } | undefined;
             } | undefined;
         } | undefined;
+        pageSize?: number | undefined;
     } | {
         view: "tree";
         defaultTreeExpansion?: "root" | "branch" | "leaf" | undefined;
@@ -1533,6 +1554,7 @@ createTableStore: (initData: {
                 } | undefined;
             } | undefined;
         } | undefined;
+        pageSize?: number | undefined;
     } | {
         view: "gantt";
         dependencyGraph?: boolean | undefined;
@@ -1609,6 +1631,7 @@ createTableStore: (initData: {
                 } | undefined;
             } | undefined;
         } | undefined;
+        pageSize?: number | undefined;
     } | {
         view: "tree-gantt";
         defaultTreeExpansion?: "root" | "branch" | "leaf" | undefined;
@@ -1686,6 +1709,7 @@ createTableStore: (initData: {
                 } | undefined;
             } | undefined;
         } | undefined;
+        pageSize?: number | undefined;
     }>;
     connectionHandles: import("vue").Ref<{
         id: string;
@@ -2027,6 +2051,7 @@ createTableStore: (initData: {
                 } | undefined;
             } | undefined;
         } | undefined;
+        pageSize?: number | undefined;
     } | {
         view: "tree";
         defaultTreeExpansion?: "root" | "branch" | "leaf" | undefined;
@@ -2103,6 +2128,7 @@ createTableStore: (initData: {
                 } | undefined;
             } | undefined;
         } | undefined;
+        pageSize?: number | undefined;
     } | {
         view: "gantt";
         dependencyGraph?: boolean | undefined;
@@ -2179,6 +2205,7 @@ createTableStore: (initData: {
                 } | undefined;
             } | undefined;
         } | undefined;
+        pageSize?: number | undefined;
     } | {
         view: "tree-gantt";
         defaultTreeExpansion?: "root" | "branch" | "leaf" | undefined;
@@ -2256,6 +2283,7 @@ createTableStore: (initData: {
                 } | undefined;
             } | undefined;
         } | undefined;
+        pageSize?: number | undefined;
     }, TableConfig | {
         view?: "uncounted" | "list" | "list-expansion" | undefined;
         fullWidth?: boolean | undefined;
@@ -2331,6 +2359,7 @@ createTableStore: (initData: {
                 } | undefined;
             } | undefined;
         } | undefined;
+        pageSize?: number | undefined;
     } | {
         view: "tree";
         defaultTreeExpansion?: "root" | "branch" | "leaf" | undefined;
@@ -2407,6 +2436,7 @@ createTableStore: (initData: {
                 } | undefined;
             } | undefined;
         } | undefined;
+        pageSize?: number | undefined;
     } | {
         view: "gantt";
         dependencyGraph?: boolean | undefined;
@@ -2483,6 +2513,7 @@ createTableStore: (initData: {
                 } | undefined;
             } | undefined;
         } | undefined;
+        pageSize?: number | undefined;
     } | {
         view: "tree-gantt";
         defaultTreeExpansion?: "root" | "branch" | "leaf" | undefined;
@@ -2560,6 +2591,7 @@ createTableStore: (initData: {
                 } | undefined;
             } | undefined;
         } | undefined;
+        pageSize?: number | undefined;
     }>;
     connectionHandles: import("vue").Ref<{
         id: string;
@@ -2821,6 +2853,22 @@ export declare function schemaToColumns(schema: ColumnSchema[]): TableColumn[];
 |-----------|------|-------------|
 | schema | `ColumnSchema[]` |  |
 
+### useTablePagination
+
+Window rows after filter/sort, and optionally walk `GetRecordsOptions` for the next page. Pagination is not a filter — pass already-filtered rows.
+
+**Signature:**
+
+```typescript
+export declare function useTablePagination(options: UseTablePaginationOptions): TablePagination;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| options | `UseTablePaginationOptions` |  |
+
 ## Interfaces
 
 ### BaseTableConfig
@@ -2833,6 +2881,7 @@ Base table configuration properties shared across all view types.
 export interface BaseTableConfig {
   clickable?: boolean;
   fullWidth?: boolean;
+  pageSize?: number;
   rowActions?: RowActionsConfig;
 }
 ```
@@ -2843,6 +2892,7 @@ export interface BaseTableConfig {
 |----------|------|-------------|
 | clickable? | `boolean` | When true, rows show a pointer cursor and a hover highlight, signalling they are clickable. Emits `row:click` on every row click. |
 | fullWidth? | `boolean` | Control whether the table should be allowed to use the full width of its container. |
+| pageSize? | `number` | When set, slice the held rows into in-memory windows of this size. Omit to show the whole held list as one window (server paging uses the backend cap). |
 | rowActions? | `RowActionsConfig` | Configuration for row-level actions (add, delete, duplicate, etc.). |
 
 ### BasicTableConfig
@@ -3368,6 +3418,44 @@ export interface TableModalProps {
 | rowIndex | `number` | The index of the row that the modal is currently being displayed for. |
 | store | `ReturnType<typeof createTableStore>` | The store for managing the current table's state. |
 
+### TablePagination
+
+Pagination state and controls returned by `useTablePagination`.
+
+**Definition:**
+
+```typescript
+export interface TablePagination {
+  hasEverHadMore: Ref<boolean>;
+  hasLocalNext: Ref<boolean>;
+  hasMore: Ref<boolean>;
+  hasNext: Ref<boolean>;
+  hasPrev: Ref<boolean>;
+  loadedCount: Ref<number>;
+  loading: Ref<boolean>;
+  next: () => Promise<void>;
+  prev: () => void;
+  showFooter: Ref<boolean>;
+  visibleRows: Ref<FilteredTableRow[]>;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| hasEverHadMore | `Ref<boolean>` | True once the server reported a further page existed (multi-page fetch). |
+| hasLocalNext | `Ref<boolean>` | Whether another in-memory window exists before asking the server. |
+| hasMore | `Ref<boolean>` | Whether the server reported more records beyond what has been fetched. |
+| hasNext | `Ref<boolean>` |  |
+| hasPrev | `Ref<boolean>` |  |
+| loadedCount | `Ref<number>` | Rows currently held after filter/sort — useful for a completion summary. |
+| loading | `Ref<boolean>` |  |
+| next | `() => Promise<void>` |  |
+| prev | `() => void` |  |
+| showFooter | `Ref<boolean>` | Whether footer chrome should render. |
+| visibleRows | `Ref<FilteredTableRow[]>` |  |
+
 ### TableRow
 
 Table row definition.
@@ -3432,6 +3520,30 @@ export interface TreeTableConfig {
 | defaultTreeExpansion? | `'root' \| 'branch' \| 'leaf'` | `branch` (Shows minimal tree to display all gantt nodes. Expands only the necessary paths to gantt nodes, stops at gantt nodes with no gantt descendants), `leaf` (All nodes are visible (fully expanded)) |
 | view | `'tree'` | The type of view to display the table in. |
 
+### UseTablePaginationOptions
+
+Options for `useTablePagination`.
+
+**Definition:**
+
+```typescript
+export interface UseTablePaginationOptions {
+  getRecords?: (options?: GetRecordsOptions) => Promise<GetRecordsResult>;
+  pageSize?: MaybeRefOrGetter<number | undefined>;
+  rows: MaybeRefOrGetter<FilteredTableRow[]>;
+  sourceKey?: MaybeRefOrGetter<string | undefined>;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| getRecords? | `(options?: GetRecordsOptions) => Promise<GetRecordsResult>` | Fetch the next server page. Typed from schema so ATable need not import Stonecrop. |
+| pageSize? | `MaybeRefOrGetter<number \| undefined>` | When set, slice the held rows into windows of this size. Omit to show the whole held list. |
+| rows | `MaybeRefOrGetter<FilteredTableRow[]>` | Rows after filter and sort — pagination is a window over this list, not part of filtering. |
+| sourceKey? | `MaybeRefOrGetter<string \| undefined>` | When this changes, refetch from offset 0. |
+
 ## Type Aliases
 
 ### ConnectionEvent
@@ -3444,6 +3556,18 @@ Connection event for handling connection creation/deletion.
 export type ConnectionEvent = {
     type: 'create' | 'delete';
     connection: ConnectionPath;
+};
+```
+
+### FilteredTableRow
+
+A table row after filter/sort, with its index in the held row list.
+
+**Definition:**
+
+```typescript
+export type FilteredTableRow = TableRow & {
+    originalIndex: number;
 };
 ```
 

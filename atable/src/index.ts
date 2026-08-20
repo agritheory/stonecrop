@@ -9,7 +9,10 @@ import ATableHeader from './components/ATableHeader.vue'
 import ATableLoading from './components/ATableLoading.vue'
 import ATableLoadingBar from './components/ATableLoadingBar.vue'
 import ATableModal from './components/ATableModal.vue'
+import ATablePaginationFooter from './components/ATablePaginationFooter.vue'
 export { createTableStore } from './stores/table'
+export { useTablePagination } from './composables/table-pagination'
+export type { FilteredTableRow, TablePagination, UseTablePaginationOptions } from './composables/table-pagination'
 export type { FilterState, FilterStateRecord } from './stores/table'
 export type * from './types'
 export { schemaToColumns } from './schemaToColumns'
@@ -41,6 +44,7 @@ function install(app: App /* options */) {
 	app.component('ATableLoading', ATableLoading)
 	app.component('ATableLoadingBar', ATableLoadingBar)
 	app.component('ATableModal', ATableModal)
+	app.component('ATablePaginationFooter', ATablePaginationFooter)
 }
 
 export {
@@ -53,5 +57,6 @@ export {
 	ATableLoading,
 	ATableLoadingBar,
 	ATableModal,
+	ATablePaginationFooter,
 	install,
 }

@@ -1,6 +1,18 @@
 # Change Log - @stonecrop/graphql-client
 
-This log was last generated on Tue, 18 Aug 2026 09:16:50 GMT and should not be manually modified.
+This log was last generated on Thu, 20 Aug 2026 09:10:32 GMT and should not be manually modified.
+
+## 0.25.0
+Thu, 20 Aug 2026 09:10:32 GMT
+
+_Version update only_
+
+## 0.24.0
+Thu, 20 Aug 2026 08:19:12 GMT
+
+### Patches
+
+- Remove native PostGraphile query builder and getNativeRecord/getNativeRecords; link display enrichment stays in graphql-middleware.
 
 ## 0.23.0
 Tue, 18 Aug 2026 09:16:50 GMT

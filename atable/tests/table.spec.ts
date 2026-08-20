@@ -638,6 +638,37 @@ describe('table component', { tags: ['component'] }, () => {
 		expect(wrapper.find('[data-test="custom-modal"]').exists()).toBe(true)
 	})
 
+	it('shows pagination footer when getRecords is provided', async () => {
+		const getRecords = vi.fn().mockResolvedValue({
+			data: [{ id: 1, name: 'John', status: 'active' }],
+			hasMore: true,
+		})
+
+		const wrapper = mount(ATable, {
+			props: {
+				rows: getBasicRows(),
+				columns: basicColumns,
+				getRecords,
+				sourceKey: 'people',
+			},
+		})
+
+		await vi.waitFor(() => expect(getRecords).toHaveBeenCalledWith(undefined))
+		expect(wrapper.find('.atable-pagination').exists()).toBe(true)
+		expect(wrapper.find('.truncation-note').exists()).toBe(true)
+	})
+
+	it('does not show pagination footer without getRecords or pageSize', () => {
+		const wrapper = mount(ATable, {
+			props: {
+				rows: getBasicRows(),
+				columns: basicColumns,
+			},
+		})
+
+		expect(wrapper.find('.atable-pagination').exists()).toBe(false)
+	})
+
 	it('should support columns as model value', async () => {
 		const initialColumns: TableColumn[] = [
 			{ name: 'id', label: 'ID', width: '100px' },

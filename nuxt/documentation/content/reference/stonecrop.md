@@ -847,6 +847,30 @@ export interface OperationLogSnapshot {
 | reversibleOperations | `number` | Number of operations that can be undone |
 | totalOperations | `number` | Total number of operations |
 
+### PageInfo
+
+Pagination metadata from the last `getRecords` for a doctype. Kept beside HST, not in it — see `getPageInfo`.
+
+**Definition:**
+
+```typescript
+export interface PageInfo {
+  count?: number;
+  hasMore: boolean;
+  limit: number;
+  offset: number;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| count? | `number` | Total matching the filters when the caller passed includeTotal |
+| hasMore | `boolean` | Whether the backend holds further records beyond what has been fetched |
+| limit | `number` | Number of rows in the last page (result.data.length) |
+| offset | `number` | Offset of the last fetch |
+
 ### RouteContext
 
 Route context passed to getMeta function
@@ -2009,10 +2033,7 @@ What the last `getRecords` for this doctype returned about the wider set.
 Answers the question HST cannot: HST holds what was fetched, so counting its keys reports how much has been seen, never how much exists. Reactive, so a view reading it re-renders when a fetch lands.
 
 ```typescript
-getPageInfo(doctype: string | Doctype): {
-        hasMore: boolean;
-        count?: number;
-    } | undefined
+getPageInfo(doctype: string | Doctype): PageInfo | undefined
 ```
 
 **Parameters:**
@@ -2079,6 +2100,8 @@ This is the one read path for a list. Every caller shares its keying rule, so a 
 Deliberately unguarded, unlike `getRecord`: a list is a view of data that changes, so revisiting one must re-read it rather than serve whatever HST happens to hold.
 
 `options` is forwarded to the client untouched — no row limit is invented here, because nothing on this side of the wire knows what is safe for an arbitrary backend. A caller that passes none gets whatever the server considers a reasonable page.
+
+`options.offset === 0` (or omitted) replaces the doctype's HST records; `offset > 0` appends.
 
 ```typescript
 getRecords(doctype: Doctype, options: GetRecordsOptions): Promise<GetRecordsResult>

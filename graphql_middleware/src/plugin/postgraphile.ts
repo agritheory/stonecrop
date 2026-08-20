@@ -7,6 +7,7 @@ import { GraphileConfig } from 'postgraphile/graphile-build'
 import { extendSchema } from 'postgraphile/utils'
 
 import { columnBackedFields, flattenFields } from '../fields'
+import { enrichLinkDisplayFields } from '../link-display'
 import { resolveTableName } from '../tables'
 import { getFetchHandler } from '../registry/fetchHandlers'
 import { getMeta, getAllMeta, validateReferences } from '../registry/doctypes'
@@ -425,6 +426,15 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 														const backlinkCol = camelToSnake(link.backlink)
 														let sql = `SELECT ${targetColumns} FROM ${resolveTableName(targetMeta.name, options.tables)} WHERE "${backlinkCol}"::text = $1`
 														const linkValues: unknown[] = [specId]
+														// Same reason the list path orders: a capped relation without a fixed order
+														// returns an arbitrary subset of the children, and a different one each time
+														// a child row is updated. `truncatedLinks` says the tail was cut; it cannot
+														// say the head kept changing. Skipped when the target declares no identity —
+														// there is no stable key to order by, and inventing one would be a guess.
+														const linkPkMeta = getPkMeta(targetMeta)
+														if (linkPkMeta) {
+															sql += ` ORDER BY "${camelToSnake(linkPkMeta.fieldname)}" ASC`
+														}
 														if (effectiveLimit != null) {
 															// One row more than the cap, same probe the list path uses: its presence
 															// is the whole truncation answer and costs no second query.
@@ -490,6 +500,11 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 												truncatedLinks: truncatedLinks.length ? truncatedLinks : undefined,
 											}
 										}
+
+										// After the expansion loop, not before it: a link that expanded has replaced its
+										// scalar FK with an object, and enrichment skips those. Running first stamped a
+										// display value beside a relation that no longer had an id to display.
+										await enrichLinkDisplayFields(pgClient, meta, enrichedRows, options.tables, debugSql)
 									}
 
 									return results
@@ -560,6 +575,23 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 												orderByClause = ` ORDER BY "${camelToSnake(fieldName)}" ${dir}`
 											}
 
+											// A page is only meaningful against a fixed order, and LIMIT/OFFSET without one
+											// is two independent scans of heap order — an UPDATE between them moves that row
+											// to the tail, so the row it displaced is never returned and nothing in the
+											// payload says a record was skipped. The declared identity is the right default
+											// because it is unique: it gives a total order, which is what makes page 2 start
+											// exactly where page 1 stopped.
+											//
+											// Only when the doctype declares an identity. Without one there is no stable key
+											// to order by, and inventing one here would be a guess; such a doctype cannot be
+											// paged stably by any means.
+											if (orderByClause === '') {
+												const listPkMeta = getPkMeta(meta)
+												if (listPkMeta) {
+													orderByClause = ` ORDER BY "${camelToSnake(listPkMeta.fieldname)}" ASC`
+												}
+											}
+
 											// LIMIT / OFFSET. A caller that names no limit gets the configured default rather
 											// than the whole table: omission is how an unbounded scan used to happen, and the
 											// only guard against it lived in the scaffold's fetch helper, which is neither the
@@ -593,6 +625,8 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 											// downstream can mistake it for a record.
 											const hasMore = effectiveLimit != null && rows.length > effectiveLimit
 											const data = [...(hasMore ? rows.slice(0, effectiveLimit ?? rows.length) : rows)]
+
+											await enrichLinkDisplayFields(pgClient, meta, data, options.tables, debugSql)
 
 											// Total matching the filters, independent of LIMIT/OFFSET, and opt-in.
 											//

@@ -14,9 +14,6 @@
 			<p>Loading {{ currentView }} data...</p>
 		</div>
 
-		<!-- No row count and no "of N": Desktop asks for neither, so stating one would be a guess. -->
-		<p v-if="listIsTruncated" class="truncation-note">This is a partial list — more records exist on the server.</p>
-
 		<!-- Sheet Navigation -->
 		<SheetNav :breadcrumbs="navigationBreadcrumbs" />
 
@@ -621,6 +618,18 @@ const executeCommand = (command: Command) => {
 	commandPaletteOpen.value = false
 }
 
+// List reads are wired on the records table; ATable owns the fetch via getRecords.
+const listRecordsFetcher = (options?: import('@stonecrop/schema').GetRecordsOptions) => {
+	if (!stonecrop.value || !currentDoctype.value) {
+		return Promise.resolve({ data: [], hasMore: false })
+	}
+	const doctype = stonecrop.value.registry.getDoctype(currentDoctype.value)
+	if (!doctype) {
+		return Promise.resolve({ data: [], hasMore: false })
+	}
+	return stonecrop.value.getRecords(doctype, options)
+}
+
 // Helper functions - moved here to avoid "before initialization" errors
 const formatDoctypeName = (doctype: string): string => {
 	return doctype
@@ -628,14 +637,6 @@ const formatDoctypeName = (doctype: string): string => {
 		.map(word => word.charAt(0).toUpperCase() + word.slice(1))
 		.join(' ')
 }
-
-// Whether the list on screen is a page rather than the whole set. Read from the backend's own
-// answer, not inferred from how many rows arrived: a page that happens to be exactly the limit
-// is indistinguishable from a complete one by counting.
-const listIsTruncated = computed(() => {
-	if (currentView.value !== 'records' || !currentDoctype.value) return false
-	return stonecrop.value?.getPageInfo(currentDoctype.value)?.hasMore === true
-})
 
 // Internal navigation helper: emits 'navigate', then calls the adapter (if any)
 // or falls back to the registry's Vue Router instance.
@@ -742,6 +743,9 @@ const getRecordsSchema = (): ResolvedField[] => {
 	// If no schema is available, let the template fallback handle the loading state
 	if (schema.length === 0) return []
 
+	const doctypeSlug = currentDoctype.value
+	const clientConfigured = Boolean(stonecrop.value.getClient())
+
 	return [
 		{
 			kind: 'table' as const,
@@ -752,6 +756,7 @@ const getRecordsSchema = (): ResolvedField[] => {
 				{ fieldname: 'actions', label: 'Actions', component: 'ATextInput' },
 			],
 			config: { view: 'list' as const, fullWidth: true },
+			...(clientConfigured ? { getRecords: listRecordsFetcher, sourceKey: doctypeSlug } : {}),
 		} satisfies ResolvedTable,
 	]
 }
@@ -899,25 +904,6 @@ const loadRecordData = async () => {
 	}
 }
 
-const loadRecordsData = async () => {
-	if (!stonecrop.value || !currentDoctype.value || !stonecrop.value.getClient()) return
-
-	const doctype = stonecrop.value.registry.getDoctype(currentDoctype.value)
-	if (!doctype) return
-
-	// No row limit is passed. Desktop cannot know what is safe for the host's backend, and a
-	// single per-shell number could not serve doctypes of wildly different size anyway — the same
-	// reason the `recordIdField` prop was removed. The server decides the page.
-	loading.value = true
-	try {
-		await stonecrop.value.getRecords(doctype)
-	} catch (error) {
-		console.warn('Error fetching records:', error)
-	} finally {
-		loading.value = false
-	}
-}
-
 // Watch for route changes to load appropriate data
 watch(
 	[currentView, currentDoctype, currentRecordId],
@@ -926,7 +912,6 @@ watch(
 		// read so a host can hang analytics or a prefetch off them. The read itself is Stonecrop's.
 		if (currentView.value === 'records' && currentDoctype.value) {
 			emit('load-records', { doctype: currentDoctype.value })
-			void loadRecordsData()
 		} else if (currentView.value === 'record' && currentDoctype.value && currentRecordId.value) {
 			// A draft has nothing to fetch — the record does not exist on the server yet. Desktop
 			// used to emit anyway and leave the host to work it out, which meant every host had to

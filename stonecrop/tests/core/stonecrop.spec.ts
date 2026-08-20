@@ -356,6 +356,56 @@ describe('Stonecrop class with HST integration', { tags: ['unit'] }, () => {
 			expect(mockClient.getRecords).toHaveBeenCalledOnce()
 			expect(stonecrop.getRecordById('task', '1')!.get('title')).toBe('Fresh')
 		})
+
+		it('getRecords at offset 0 replaces HST ids not in the new page', async () => {
+			stonecrop.addRecord(mockDoctype, 'old', { id: 'old', title: 'Leftover' })
+			mockClient.getRecords.mockResolvedValue({
+				data: [{ id: '1', title: 'Only' }],
+				hasMore: false,
+			})
+
+			await stonecrop.getRecords(mockDoctype)
+
+			expect(stonecrop.getRecordIds('task')).toEqual(['1'])
+			expect(stonecrop.getPageInfo('task')).toEqual({ hasMore: false, offset: 0, limit: 1 })
+		})
+
+		it('getRecords at offset greater than 0 appends without clearing prior pages', async () => {
+			mockClient.getRecords.mockResolvedValueOnce({
+				data: [{ id: '1', title: 'Page 1' }],
+				hasMore: true,
+			})
+			await stonecrop.getRecords(mockDoctype)
+
+			mockClient.getRecords.mockResolvedValueOnce({
+				data: [{ id: '2', title: 'Page 2' }],
+				hasMore: false,
+			})
+			await stonecrop.getRecords(mockDoctype, { offset: 1 })
+
+			expect(stonecrop.getRecordIds('task')).toEqual(['1', '2'])
+			expect(stonecrop.getPageInfo('task')).toEqual({ hasMore: false, offset: 1, limit: 1 })
+		})
+
+		it('getRecords records pageInfo offset and limit from the last fetch', async () => {
+			mockClient.getRecords.mockResolvedValue({
+				data: [
+					{ id: 'a', title: 'A' },
+					{ id: 'b', title: 'B' },
+				],
+				hasMore: true,
+				count: 10,
+			})
+
+			await stonecrop.getRecords(mockDoctype, { offset: 4, includeTotal: true })
+
+			expect(stonecrop.getPageInfo('task')).toEqual({
+				hasMore: true,
+				offset: 4,
+				limit: 2,
+				count: 10,
+			})
+		})
 	})
 
 	describe('DataClient integration', () => {
