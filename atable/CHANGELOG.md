@@ -1,6 +1,14 @@
 # Change Log - @stonecrop/atable
 
-This log was last generated on Thu, 20 Aug 2026 08:19:12 GMT and should not be manually modified.
+This log was last generated on Thu, 20 Aug 2026 09:10:32 GMT and should not be manually modified.
+
+## 0.25.0
+Thu, 20 Aug 2026 09:10:32 GMT
+
+### Minor changes
+
+- Add useTablePagination and a default pagination footer, windowing rows after filter and sort, with an optional in-memory page size and server-backed Load more.
+- Derive a column's filter widget from its component category via resolveFilterType, and search link cells on both id and display text.
 
 ## 0.24.0
 Thu, 20 Aug 2026 08:19:12 GMT

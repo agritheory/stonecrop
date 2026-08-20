@@ -2,6 +2,18 @@
   "name": "@stonecrop/aform",
   "entries": [
     {
+      "version": "0.25.0",
+      "tag": "@stonecrop/aform_v0.25.0",
+      "date": "Thu, 20 Aug 2026 09:10:32 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "ResolvedTable accepts getRecords and sourceKey, passed through to list tables so a table can fetch its own pages."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.24.0",
       "tag": "@stonecrop/aform_v0.24.0",
       "date": "Thu, 20 Aug 2026 08:19:12 GMT",

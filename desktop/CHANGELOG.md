@@ -1,6 +1,13 @@
 # Change Log - @stonecrop/desktop
 
-This log was last generated on Thu, 20 Aug 2026 08:19:12 GMT and should not be manually modified.
+This log was last generated on Thu, 20 Aug 2026 09:10:32 GMT and should not be manually modified.
+
+## 0.25.0
+Thu, 20 Aug 2026 09:10:32 GMT
+
+### Minor changes
+
+- Stop fetching the record list and rendering a truncation banner; the records table now fetches its own pages via getRecords.
 
 ## 0.24.0
 Thu, 20 Aug 2026 08:19:12 GMT

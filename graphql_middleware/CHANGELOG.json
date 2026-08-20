@@ -2,6 +2,21 @@
   "name": "@stonecrop/graphql-middleware",
   "entries": [
     {
+      "version": "0.25.0",
+      "tag": "@stonecrop/graphql-middleware_v0.25.0",
+      "date": "Thu, 20 Aug 2026 09:10:32 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Order a limited stonecropRecords read by the declared identity when the caller names no orderBy, so paging cannot skip or repeat a row."
+          },
+          {
+            "comment": "Order a capped many-side relation by the target's declared identity, so a truncated child list keeps the same rows between reads."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.24.0",
       "tag": "@stonecrop/graphql-middleware_v0.24.0",
       "date": "Thu, 20 Aug 2026 08:19:12 GMT",
