@@ -1342,6 +1342,7 @@ export interface ValueField {
   edit?: boolean;
   fieldname: string;
   format?: string;
+  height?: string;
   hidden?: boolean;
   kind: 'field';
   label?: string;
@@ -1371,6 +1372,7 @@ export interface ValueField {
 | edit? | `boolean` | Whether the field is editable in table cell context |
 | fieldname | `string` | Unique identifier for this field within its doctype |
 | format? | `string` | Serialized display formatter — distinct from `mask` (input). Spreads through `schemaToColumns` to `ColumnSchema.format`; deserialized at render time by ATable's `getFormattedValue`. Returns a plain string, HTML, or a `BadgeDescriptor` for badge cells. When a descriptor is returned it wins over any badge map on `options`. |
+| height? | `string` | CSS height (e.g. `"100%"`, `"40vh"`) — used by full-viewport fields such as Planner |
 | hidden? | `boolean` | Whether the field is hidden from the UI |
 | kind | `'field'` | Discriminator — identifies this as a value-holding field |
 | label? | `string` | Human-readable label |
@@ -2086,6 +2088,7 @@ export const ValueFieldSchema: z.ZodObject<{
     doctype: z.ZodOptional<z.ZodString>;
     label: z.ZodOptional<z.ZodString>;
     width: z.ZodOptional<z.ZodString>;
+    height: z.ZodOptional<z.ZodString>;
     align: z.ZodOptional<z.ZodEnum<{
         left: "left";
         right: "right";

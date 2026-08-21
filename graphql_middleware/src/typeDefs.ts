@@ -16,6 +16,7 @@ export const typeDefs = gql`
 		doctype: String
 		label: String
 		width: String
+		height: String
 		align: String
 		edit: Boolean
 		mask: String

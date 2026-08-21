@@ -97,6 +97,8 @@ export interface ValueField {
 	label?: string
 	/** CSS width (e.g. `"40ch"`, `"200px"`) */
 	width?: string
+	/** CSS height (e.g. `"100%"`, `"40vh"`) — used by full-viewport fields such as Planner */
+	height?: string
 	/** Text alignment */
 	align?: 'left' | 'center' | 'right' | 'start' | 'end'
 	/** Whether the field is editable in table cell context */
@@ -484,6 +486,7 @@ function createDoctypeFieldSchemas() {
 			doctype: z.string().min(1).optional(),
 			label: z.string().optional(),
 			width: z.string().optional(),
+			height: z.string().optional(),
 			align: z.enum(['left', 'center', 'right', 'start', 'end']).optional(),
 			edit: z.boolean().optional(),
 			mask: z.string().optional(),

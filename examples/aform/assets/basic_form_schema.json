@@ -57,6 +57,19 @@
 		}
 	},
 	{
+		"fieldname": "priority",
+		"component": "ASegmentedControl",
+		"label": "Priority",
+		"options": {
+			"choices": ["low", "normal", "high"],
+			"badges": {
+				"low": { "label": "Low", "variant": "neutral" },
+				"normal": { "label": "Normal", "variant": "brand" },
+				"high": { "label": "High", "variant": "danger" }
+			}
+		}
+	},
+	{
 		"fieldname": "attach_file",
 		"kind": "field",
 		"component": "AFileAttach",

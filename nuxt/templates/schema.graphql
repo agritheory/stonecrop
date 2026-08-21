@@ -20,6 +20,7 @@ type StonecropField {
 	doctype: String
 	label: String
 	width: String
+	height: String
 	align: String
 	edit: Boolean
 	mask: String

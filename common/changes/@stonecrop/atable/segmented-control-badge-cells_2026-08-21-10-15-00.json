@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "comment": "Cover badge cell rendering for ASegmentedControl columns",
+      "type": "patch",
+      "packageName": "@stonecrop/atable"
+    }
+  ],
+  "packageName": "@stonecrop/atable"
+}

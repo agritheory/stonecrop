@@ -315,6 +315,99 @@ describe('AForm Component', { tags: ['component'] }, () => {
 			expect(field.element.style.width).toBe('')
 		})
 	})
+
+	describe('height schema property', () => {
+		it('applies the height style — and the flex properties that let it take effect — when set', async () => {
+			const MockField = defineComponent({
+				name: 'MockField',
+				props: ['label', 'mode', 'schema', 'data'],
+				template: '<div class="aform_form-element mock-field"></div>',
+			})
+
+			const localWrapper = mount(AForm, {
+				props: {
+					schema: [
+						{
+							kind: 'field' as const,
+							fieldname: 'planner',
+							component: 'MockField',
+							label: 'Planner',
+							height: '40vh',
+						},
+					] as ResolvedField[],
+					data: {},
+				},
+				global: { components: { MockField } },
+			})
+
+			await localWrapper.vm.$nextTick()
+			const field = localWrapper.findComponent(MockField)
+			expect(field.element.style.height).toBe('40vh')
+			// A bare height is inert inside the form's flex row: the wrapper still has to be allowed
+			// to grow and stretch, and to shrink below its content.
+			expect(field.element.style.minHeight).toBe('0px')
+			expect(field.element.style.flexGrow).toBe('1')
+			expect(field.element.style.alignSelf).toBe('stretch')
+		})
+
+		it('does not apply height style when height is absent in schema', async () => {
+			const MockField = defineComponent({
+				name: 'MockField',
+				props: ['label', 'mode', 'schema', 'data'],
+				template: '<div class="aform_form-element mock-field"></div>',
+			})
+
+			const localWrapper = mount(AForm, {
+				props: {
+					schema: [
+						{
+							kind: 'field' as const,
+							fieldname: 'name',
+							component: 'MockField',
+							label: 'Name',
+							width: '20ch',
+						},
+					] as ResolvedField[],
+					data: {},
+				},
+				global: { components: { MockField } },
+			})
+
+			await localWrapper.vm.$nextTick()
+			const field = localWrapper.findComponent(MockField)
+			expect(field.element.style.height).toBe('')
+			expect(field.element.style.alignSelf).toBe('')
+		})
+
+		it('is not forwarded to the field component as a prop', async () => {
+			const MockField = defineComponent({
+				name: 'MockField',
+				props: ['label', 'mode', 'schema', 'data'],
+				template: '<div class="aform_form-element mock-field"></div>',
+			})
+
+			const localWrapper = mount(AForm, {
+				props: {
+					schema: [
+						{
+							kind: 'field' as const,
+							fieldname: 'planner',
+							component: 'MockField',
+							label: 'Planner',
+							height: '100%',
+						},
+					] as ResolvedField[],
+					data: {},
+				},
+				global: { components: { MockField } },
+			})
+
+			await localWrapper.vm.$nextTick()
+			// `height` drives the wrapper style only — leaking it as an attr would stamp a bare
+			// height="100%" onto whatever element the field renders.
+			expect(localWrapper.findComponent(MockField).attributes('height')).toBeUndefined()
+		})
+	})
 })
 
 describe('AForm mode forwarding', { tags: ['component'] }, () => {

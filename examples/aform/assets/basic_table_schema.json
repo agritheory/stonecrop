@@ -60,7 +60,7 @@
 			{
 				"fieldname": "status",
 				"label": "Status",
-				"component": "ABadge",
+				"component": "ASegmentedControl",
 				"align": "center",
 				"edit": true,
 				"width": "14ch",

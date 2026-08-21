@@ -94,7 +94,7 @@ const componentProps = (componentObj: ResolvedField) => {
 	for (const [key, value] of Object.entries(componentObj)) {
 		// 'mode' is excluded here because it is handled by resolvedMode()
 		// and passed explicitly via :mode to avoid conflicting with the form-level defaults.
-		if (!['component', 'primaryKey', 'computed', 'language', 'hidden', 'mode', 'width'].includes(key)) {
+		if (!['component', 'primaryKey', 'computed', 'language', 'hidden', 'mode', 'width', 'height'].includes(key)) {
 			propsToPass[key] = value
 		}
 	}
@@ -111,9 +111,18 @@ const componentProps = (componentObj: ResolvedField) => {
 
 const fieldStyle = (componentObj: ResolvedField): Record<string, string> => {
 	if (componentObj.kind !== 'field') return {}
-	const width = componentObj.width
-	if (!width) return {}
-	return { flexBasis: width, width }
+	const style: Record<string, string> = {}
+	if (componentObj.width) {
+		style.flexBasis = componentObj.width
+		style.width = componentObj.width
+	}
+	if (componentObj.height) {
+		style.height = componentObj.height
+		style.minHeight = '0'
+		style.flexGrow = '1'
+		style.alignSelf = 'stretch'
+	}
+	return style
 }
 
 const effectiveFormMode = computed(() => mode ?? 'edit')
