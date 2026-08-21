@@ -25,6 +25,7 @@ export const GET_META_QUERY = `
 				doctype
 				label
 				width
+				height
 				align
 				edit
 				mask
@@ -90,6 +91,7 @@ export const GET_ALL_META_QUERY = `
 				doctype
 				label
 				width
+				height
 				align
 				edit
 				mask
