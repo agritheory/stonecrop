@@ -29,6 +29,8 @@ export {
 	getRecordIdField,
 	INTROSPECTED_IDENTITY_PROPS,
 	normalizeFieldKind,
+	inferFieldKind,
+	stripFieldKind,
 	TableFieldSchema,
 	ValueFieldSchema,
 } from './field'
@@ -41,6 +43,7 @@ export {
 	TriggerDefinition,
 	WorkflowLayout,
 	WorkflowMeta,
+	getDoctypeSlug,
 	isActionAllowedInState,
 	LINK_DISPLAY_SUFFIX,
 	linkDisplayFieldname,
@@ -75,6 +78,8 @@ export {
 
 // GraphQL to Doctype conversion
 export {
+	aggregateDoctypeName,
+	buildAggregateDoctype,
 	buildScalarMap,
 	classifyFieldType,
 	convertGraphQLSchema,
@@ -84,13 +89,17 @@ export {
 	GQL_SCALAR_MAP,
 	INTERNAL_SCALARS,
 	mergeIntrospectedDoctype,
+	planGeneration,
 	WELL_KNOWN_SCALARS,
 	type AuthoredDoctype,
 	type ConvertedGraphQLDoctype,
 	type DoctypeDrift,
 	type GraphQLConversionFieldMeta,
+	type GenerationPlanEntry,
+	type GenerationPlanOptions,
 	type GraphQLConversionOptions,
 	type IntrospectionSource,
+	type MergeOptions,
 	type MergeResult,
 } from './converter'
 

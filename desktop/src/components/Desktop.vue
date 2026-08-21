@@ -39,8 +39,14 @@
 // package guards fetching, field initialization and workflow readiness on the same question, and
 // when the two were written separately they disagreed and every guard over there went dead.
 import { DRAFT_RECORD_ID, isDraftRecordId, useStonecrop, useValidationStore } from '@stonecrop/stonecrop'
-import { AForm, type AFormLinkNavigator, type ResolvedField, type ResolvedTable } from '@stonecrop/aform'
-import { type ColumnSchema, componentLinkExpansion, type DoctypeField, flattenFields } from '@stonecrop/schema'
+import {
+	AForm,
+	type AFormLinkNavigator,
+	resolvedFieldsToColumns,
+	type ResolvedField,
+	type ResolvedTable,
+} from '@stonecrop/aform'
+import { componentLinkExpansion, type DoctypeField, flattenFields } from '@stonecrop/schema'
 import { computed, onMounted, onUnmounted, provide, ref, unref, watch } from 'vue'
 
 import ActionSet from './ActionSet.vue'
@@ -669,21 +675,6 @@ const createNewRecord = async () => {
 	await doNavigate({ view: 'record', doctype: routeDoctype.value, recordId: DRAFT_RECORD_ID })
 }
 
-// Flatten Fieldset containers into individual columns for list/table views.
-// A Fieldset groups form fields visually but has no DB column; its children are the
-// actual data fields and should appear as flat columns in a list view.
-const flattenFieldsets = (fields: ResolvedField[]): ResolvedField[] => {
-	const result: ResolvedField[] = []
-	for (const field of fields) {
-		if (field.kind === 'fieldset') {
-			result.push(...flattenFieldsets(field.schema))
-		} else {
-			result.push(field)
-		}
-	}
-	return result
-}
-
 // Schema generator functions - moved here to be available to computed properties
 const getDoctypesSchema = (): ResolvedField[] => {
 	if (!availableDoctypes?.length) return []
@@ -751,10 +742,10 @@ const getRecordsSchema = (): ResolvedField[] => {
 			kind: 'table' as const,
 			fieldname: 'records_table',
 			component: 'ATable',
-			schema: [
-				...(flattenFieldsets(schema) as ColumnSchema[]),
-				{ fieldname: 'actions', label: 'Actions', component: 'ATextInput' },
-			],
+			// Which resolved fields a cell can render is answered once, in @stonecrop/aform, and
+			// called by the child-table builder too. Flattening alone is not the rule: it kept the
+			// expanding links, whose value is a nested record or an array of them.
+			schema: [...resolvedFieldsToColumns(schema), { fieldname: 'actions', label: 'Actions', component: 'ATextInput' }],
 			config: { view: 'list' as const, fullWidth: true },
 			...(clientConfigured ? { getRecords: listRecordsFetcher, sourceKey: doctypeSlug } : {}),
 		} satisfies ResolvedTable,

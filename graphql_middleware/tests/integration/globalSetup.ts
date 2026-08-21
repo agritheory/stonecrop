@@ -13,6 +13,7 @@ declare module 'vitest' {
 		camelTestDatabaseUrl: string
 		inflectionTestDatabaseUrl: string
 		conformanceTestDatabaseUrl: string
+		naturalIdTestDatabaseUrl: string
 	}
 }
 
@@ -36,7 +37,8 @@ export async function setup(project: TestProject) {
 	// Each integration test file calls makeSchema(), which triggers heavy PostGraphile
 	// catalog introspection. A single pglite-server can't survive multiple sequential
 	// introspection rounds without corruption. Give each file its own isolated instance.
-	const [resolver, camel, inflection, conformance] = await Promise.all([
+	const [resolver, camel, inflection, conformance, naturalId] = await Promise.all([
+		createTestDb(),
 		createTestDb(),
 		createTestDb(),
 		createTestDb(),
@@ -47,9 +49,10 @@ export async function setup(project: TestProject) {
 	project.provide('camelTestDatabaseUrl', camel.url)
 	project.provide('inflectionTestDatabaseUrl', inflection.url)
 	project.provide('conformanceTestDatabaseUrl', conformance.url)
+	project.provide('naturalIdTestDatabaseUrl', naturalId.url)
 
 	return async () => {
-		for (const { server, db } of [resolver, camel, inflection, conformance]) {
+		for (const { server, db } of [resolver, camel, inflection, conformance, naturalId]) {
 			server.unref()
 			server.close()
 			// oxlint-disable-next-line eslint/no-await-in-loop -- sequential teardown intentional; parallel close risks race conditions on shared DB state

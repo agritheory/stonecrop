@@ -14,8 +14,26 @@
  * `source` x325 — none of which the panel renders, all of which must survive editing a label.
  */
 
+import { inferFieldKind } from '@stonecrop/schema'
+
 /** A doctype field as authored on disk: known keys plus anything the builder does not model. */
 export type Field = Record<string, unknown>
+
+/**
+ * Whether an entry is a value field — the only kind the panel renders as a row. Fieldsets and
+ * inline tables are preserved untouched.
+ *
+ * Classified by shape through `@stonecrop/schema`'s `inferFieldKind`, never by reading `kind`.
+ * `kind` is Stonecrop's own discriminant — the parser synthesizes it and nothing writes it to disk
+ * — so the builder, which reads raw JSON and never parses a doctype, has no business consulting it.
+ * It used to, only because the generator and this very save path were leaking it into the files.
+ *
+ * The rule itself is imported rather than restated: getting it wrong re-types a field silently, and
+ * a fieldset read as a value field renders as an editable row and loses its children on save.
+ */
+export function isValueField(field: Field): boolean {
+	return inferFieldKind(field) === 'field'
+}
 
 /**
  * Set `key` on `field`, or remove it when `val` is `undefined`.

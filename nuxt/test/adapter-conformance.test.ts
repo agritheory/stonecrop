@@ -251,9 +251,12 @@ const IDENTITY_CASES: Array<{ label: string; meta: DoctypeMeta; expected: string
 		expected: 'code',
 	},
 	{
-		label: 'a primary key nested inside a fieldset is not a record key',
-		// getPrimaryKeyField matches only top-level `kind: 'field'` entries. A fieldset child is
-		// presentation structure; treating it as identity would key records by a nested column.
+		label: 'a primary key nested inside a fieldset is the record key',
+		// A fieldset is layout, not scope: `innerCode` has a column of its own, which is why every
+		// adapter's SELECT already includes it. The rule this replaced neither honoured the
+		// declaration nor refused it — it resolved `id` and left the author's `primaryKey: true`
+		// inert, so each host keyed records by a column the doctype had not nominated. Conformance
+		// here is that all hosts descend, not merely that they agree: they agreed before this too.
 		meta: {
 			name: 'Nested',
 			fields: [
@@ -266,7 +269,7 @@ const IDENTITY_CASES: Array<{ label: string; meta: DoctypeMeta; expected: string
 				},
 			],
 		} as unknown as DoctypeMeta,
-		expected: 'id',
+		expected: 'innerCode',
 	},
 ]
 

@@ -211,7 +211,7 @@ export default defineNuxtConfig({
   modules: ['@stonecrop/nuxt'],
 
   stonecrop: {
-    // Point to your own page component for slug-based routing (one route per doctype)
+    // Point to your own page component. Doctypes that declare a `route` get a page.
     pageComponent: 'pages/StonecropPage.vue',
 
     // Or supply a custom strategy for full control
@@ -231,7 +231,7 @@ export default defineNuxtConfig({
 
 | Option | Type | Description |
 |--------|------|-------------|
-| `pageComponent` | `string` | Path (relative to `srcDir`) to your page component. The module registers one route per doctype at `/<slug>`, passing `schema` and `doctype` in `route.meta`. |
+| `pageComponent` | `string` | Path (relative to `srcDir`) to your page component. The module registers a route for each doctype that declares one, at exactly its `route` path, passing `schema` and `doctype` in `route.meta`. |
 | `routeStrategy` | `RouteStrategyFn` | Custom function receiving all parsed doctypes; returns a `NuxtPage[]`. Takes priority over `pageComponent`. |
 | `docbuilder` | `boolean` | Enable the DocBuilder feature at `/docbuilder`. Defaults to `false`. |
 | `doctypesDir` | `string` | Override the doctypes directory path. Defaults to `doctypes/` inside `srcDir`. |
@@ -241,16 +241,24 @@ If neither `pageComponent` nor `routeStrategy` is configured the module logs a w
 
 ## Route Generation
 
-### Default: slug-based routing
+### Default: routes the doctypes declare
 
-The module scans your `doctypes/` folder and registers one route per JSON file:
+The module scans your `doctypes/` folder and registers a route for each doctype carrying a `route`
+key, at exactly that path. A doctype without one gets no page.
 
 ```
 doctypes/
-  ├── task.json        → /task  (if no slug field)
-  ├── user.json        → /user/:id  (if slug is "user/:id")
-  └── project.json     → /project
+  ├── task.json         { "route": "/task/:id" }   → /task/:id   the record
+  ├── tasks.json        { "route": "/task" }       → /task       the collection
+  └── task-comment.json no route                   → no page
 ```
+
+Most doctypes are not meant to be visited. A child table's rows are edited inside their parent and
+a link target is reached through the record pointing at it, so neither needs a URL of its own.
+
+`stonecrop-schema generate` writes these keys for you: an entity and its aggregate share one URL
+segment, and a doctype the schema shows as rows owned by another gets none. The generated file is
+yours after that — add, change or delete a `route` and regeneration leaves it alone.
 
 Each route's `meta` contains the parsed doctype:
 

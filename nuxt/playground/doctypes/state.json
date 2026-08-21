@@ -3,7 +3,6 @@
 	"slug": "state",
 	"fields": [
 		{
-			"kind": "field",
 			"fieldname": "code",
 			"primaryKey": true,
 			"label": "Code",
@@ -12,7 +11,6 @@
 			"source": "introspected"
 		},
 		{
-			"kind": "field",
 			"fieldname": "country",
 			"label": "Country",
 			"component": "AFormLink",
@@ -21,7 +19,6 @@
 			"source": "introspected"
 		},
 		{
-			"kind": "field",
 			"fieldname": "name",
 			"label": "Name",
 			"component": "ATextInput",

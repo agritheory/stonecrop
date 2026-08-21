@@ -1,5 +1,6 @@
 import type { ResolvedField, ResolvedLink, ResolvedScalar, ResolvedTable, ResolvedFieldset } from '@stonecrop/aform'
-import type { ColumnSchema, DoctypeField, LinkDeclaration, TableViewConfig, ValueField } from '@stonecrop/schema'
+import { resolvedFieldsToColumns } from '@stonecrop/aform'
+import type { DoctypeField, LinkDeclaration, TableViewConfig, ValueField } from '@stonecrop/schema'
 import { componentCategory, componentLinkExpansion, resolveLinkRenderMode } from '@stonecrop/schema'
 import { Router } from 'vue-router'
 
@@ -249,14 +250,12 @@ export default class Registry {
 
 	/**
 	 * Build a `ResolvedTable` from a resolved Link field with many cardinality.
-	 * Extracts scalar column definitions from the child schema.
+	 * Columns come from {@link @stonecrop/aform#resolvedFieldsToColumns}, the shared definition of
+	 * which resolved fields a cell can render.
 	 * @internal
 	 */
 	private buildTableConfig(field: ValueField, childSchema: ResolvedField[], component?: string): ResolvedTable {
-		// Only scalar fields become columns; strip kind and cardinality (runtime column spec)
-		const columns: ColumnSchema[] = childSchema
-			.filter((f): f is ResolvedScalar => f.kind === 'field')
-			.map(({ kind: _k, ...col }) => col)
+		const columns = resolvedFieldsToColumns(childSchema)
 
 		const config: TableViewConfig = (field as ValueField & { config?: TableViewConfig }).config ?? { view: 'list' }
 		const { options: _opt, cardinality: _card, ...fieldRest } = field

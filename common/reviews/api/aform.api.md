@@ -179,6 +179,9 @@ export interface ResolvedFieldset {
 }
 
 // @public
+export function resolvedFieldsToColumns(fields: readonly ResolvedField[]): ColumnSchema[];
+
+// @public
 export interface ResolvedLink {
     component: string;
     default?: unknown;

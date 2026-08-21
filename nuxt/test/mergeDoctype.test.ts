@@ -43,6 +43,45 @@ describe('orderKeysByReference', () => {
  * logic lived inside `save.post.ts`, which cannot be imported in a plain vitest run.
  */
 describe('mergeSavedDoctype', () => {
+	// `kind` is the parser's discriminated-union tag. The builder's in-memory fields carry one
+	// because `normalizeFieldKind` put it there, so every save used to write it back — adding a key
+	// to a file no author had typed. Verified against the real merge, not a model of it, because
+	// this function IS what the save handler writes.
+	it('drops the kind discriminant the builder submits', () => {
+		const merged = mergeSavedDoctype(
+			{},
+			{ fields: [{ kind: 'field', fieldname: 'total', component: 'ATextInput' }] },
+			'order'
+		)
+		expect(merged.fields).toEqual([{ fieldname: 'total', component: 'ATextInput' }])
+	})
+
+	it('drops kind inside a fieldset too', () => {
+		const merged = mergeSavedDoctype(
+			{},
+			{ fields: [{ kind: 'fieldset', fieldname: 'g', schema: [{ kind: 'field', fieldname: 'inner' }] }] },
+			'order'
+		)
+		expect(merged.fields).toEqual([{ fieldname: 'g', schema: [{ fieldname: 'inner' }] }])
+	})
+
+	it('leaves every other field key alone', () => {
+		// The regression this file already guards twice over: a hop that enumerates keys instead of
+		// spreading drops the ones it does not model. Stripping `kind` must not become that hop.
+		const field = {
+			kind: 'field',
+			fieldname: 'total',
+			component: 'ANumericInput',
+			primaryKey: true,
+			triggers: ['x'],
+			clientHandler: 'fn',
+		}
+		const merged = mergeSavedDoctype({}, { fields: [field] }, 'order')
+		expect(merged.fields).toEqual([
+			{ fieldname: 'total', component: 'ANumericInput', primaryKey: true, triggers: ['x'], clientHandler: 'fn' },
+		])
+	})
+
 	it('preserves top-level keys the builder never sends', () => {
 		const onDisk = {
 			name: 'Order',

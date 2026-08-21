@@ -139,6 +139,26 @@ beforeAll(async () => {
 				},
 			},
 		},
+		// The primary key is declared INSIDE a fieldset. A fieldset is layout, not scope, so `code`
+		// is a real column of sc_code and `columnBackedFields` already puts it in the SELECT — only
+		// identity resolution stopped at the top level, and it neither honoured the declaration nor
+		// refused it. Backed by sc_code, which is natural-keyed with no `id` column at all, so the
+		// `id` fallback cannot mask which field was actually resolved.
+		ScNestedKey: {
+			name: 'ScNestedKey',
+			fields: [
+				{
+					kind: 'fieldset',
+					fieldname: 'identity_fieldset',
+					component: 'AFieldset',
+					schema: [
+						{ kind: 'field', fieldname: 'code', component: 'ATextInput', primaryKey: true, label: 'Code' },
+						{ kind: 'field', fieldname: 'name', component: 'ATextInput', label: 'Name' },
+						{ kind: 'field', fieldname: 'status', component: 'ATextInput', label: 'Status' },
+					],
+				},
+			],
+		},
 		// Declares no `primaryKey` but carries an `id` field, which is what a surrogate-keyed
 		// doctype looks like — the shape `getRecordIdField`'s `id` fallback exists for. Backed by
 		// sc_draft through the `tables` override so it can be read without a second table.
@@ -438,6 +458,7 @@ beforeAll(async () => {
 				actionHandlers,
 				tables: {
 					ScSurrogate: 'sc_draft',
+					ScNestedKey: 'sc_code',
 					ScAmbiguous: 'sc_note',
 					ScLinkExpand: 'sc_tag',
 					ScLinkInline: 'sc_tag',
@@ -629,6 +650,18 @@ describe('stonecropRecord', { tags: ['integration', 'graphql'] }, () => {
 		const record = (result as any).data?.stonecropRecord
 		expect(record?.doctype).toBe('ScSurrogate')
 		expect(record?.data?.name).toBe('Stateless Row')
+	})
+
+	// The identity declaration sits inside a fieldset. `getRecordIdField` resolves it there, but the
+	// adapter then looked that name up among top-level fields only, found nothing, and could not
+	// resolve an identity at all — the two halves of one question disagreeing, which is the failure
+	// keeping a single definition is meant to prevent.
+	it('fetches a record whose primaryKey is declared inside a fieldset', async () => {
+		const result = await runQuery(`query { stonecropRecord(doctype: "ScNestedKey", id: "ALPHA") { doctype data } }`)
+		const record = (result as any).data?.stonecropRecord
+		expect(record?.doctype).toBe('ScNestedKey')
+		expect(record?.data?.name).toBe('Alpha Region')
+		expect(record?.data?.code).toBe('ALPHA')
 	})
 
 	// A declared key the database does not enforce as unique used to return an arbitrary row —

@@ -243,8 +243,24 @@ describe('defaultIsEntityField', { tags: ['unit'] }, () => {
 		expect(defaultIsEntityField('email', userFields.email, userType)).toBe(true)
 	})
 
-	it('should skip nodeId', () => {
-		expect(defaultIsEntityField('nodeId', userFields.id, userType)).toBe(false)
+	it('should skip the identifier the type’s Node interface declares', () => {
+		// Not a name on a list: `nodeIdFieldName` is a server setting, so the interface is the only
+		// place that says which field is Relay's identifier rather than a column.
+		const relaySchema = buildSchema(`
+			interface Node { globalId: ID! }
+			type Item implements Node { globalId: ID! id: Int! itemName: String! }
+			type Query { items: [Item!]! }
+		`)
+		const itemType = relaySchema.getType('Item') as any
+		const itemFields = itemType.getFields()
+
+		expect(defaultIsEntityField('globalId', itemFields.globalId, itemType)).toBe(false)
+		expect(defaultIsEntityField('id', itemFields.id, itemType)).toBe(true)
+	})
+
+	it('should keep a column called `nodeId` on a type that declares no identifier', () => {
+		// The over-skip direction a hardcoded name causes: the doctype silently omits a real column.
+		expect(defaultIsEntityField('nodeId', userFields.id, userType)).toBe(true)
 	})
 
 	it('should skip __typename', () => {

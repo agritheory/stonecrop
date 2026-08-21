@@ -135,7 +135,7 @@ import { computed, nextTick, ref, useId } from 'vue'
 // (and may carry future ones), so the editor must spread-preserve every field rather than rebuild it.
 // The write helpers live in ./docbuilderFields so that rule is unit-tested rather than only asserted
 // here — see `nuxt/test/docbuilderFields.test.ts`.
-import { updateFieldAt, type Field } from './docbuilderFields'
+import { isValueField, updateFieldAt, type Field } from './docbuilderFields'
 
 interface PropDef {
 	key: string
@@ -229,12 +229,6 @@ const FIELD_CONFIG = {
 const props = defineProps<{ modelValue: Field[] }>()
 const emit = defineEmits<{ 'update:modelValue': [value: Field[]] }>()
 
-// A value field is `kind: 'field'`, or — when `kind` is omitted — anything that is not a
-// fieldset (`schema`) or inline table (`columns`). Nested kinds are never rendered, only preserved.
-function isValueField(f: Field): boolean {
-	if (typeof f.kind === 'string') return f.kind === 'field'
-	return !('schema' in f) && !('columns' in f)
-}
 function isLocked(f: Field): boolean {
 	return f.source === 'introspected'
 }

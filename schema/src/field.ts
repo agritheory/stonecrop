@@ -190,6 +190,35 @@ export type DoctypeField = ValueField | FieldsetField | TableField
 // ---------------------------------------------------------------------------
 
 /**
+ * Which of the three field shapes an entry has, read from the entry's own structure.
+ *
+ * The single definition of that question. It had three copies before this — the parser's
+ * `injectKind`, {@link stripFieldKind}'s agreement check, and the docbuilder's own
+ * `isValueField` in another package — each free to drift, and drift here re-types a field rather
+ * than throwing: a value field read as a fieldset loses its column, a fieldset read as a value
+ * field loses every child.
+ *
+ * Deliberately **shape-only**: a declared `kind` is ignored. Two callers depend on that. The
+ * stripper compares this against the declaration to decide whether removing it is lossless, which
+ * it cannot do if this honours it. The docbuilder reads raw JSON off disk and classifies entries to
+ * decide which to render as editable rows — and `kind` is Stonecrop's own discriminant, not
+ * something a doctype author writes, so a tool reading a file has no business consulting it.
+ *
+ * `injectKind` is the one place a declaration still wins, and only to leave an already-parsed
+ * object untouched on its way back through.
+ *
+ * @param field - a field entry, authored or parsed
+ * @returns the kind its shape implies
+ * @public
+ */
+export function inferFieldKind(field: unknown): DoctypeField['kind'] {
+	if (typeof field !== 'object' || field === null || Array.isArray(field)) return 'field'
+	if ('schema' in field) return 'fieldset'
+	if ('columns' in field) return 'table'
+	return 'field'
+}
+
+/**
  * Infers the `kind` discriminant from the structural properties of a raw field
  * object, then injects it if absent. This allows authored JSON to omit `kind`
  * entirely — a `schema` key means fieldset, `columns` means table, anything else
@@ -211,10 +240,13 @@ function injectKind(data: unknown): unknown {
 	if (typeof data !== 'object' || data === null || Array.isArray(data)) return data
 	// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- safe: non-null, non-array object verified by guards above
 	const obj = data as Record<string, unknown>
+	// An explicit `kind` is left exactly as it was found: this is the one place a declaration still
+	// beats the shape, and only so an already-parsed object survives a second pass unchanged.
+	// Returning `data` itself rather than rebuilding it also preserves identity and key order.
+	// Nothing outside this function shares that precedence — a reader classifying a file on disk
+	// wants `inferFieldKind`, because `kind` is ours and no author writes it.
 	if ('kind' in obj) return data
-	if ('schema' in obj) return { kind: 'fieldset', ...obj }
-	if ('columns' in obj) return { kind: 'table', ...obj }
-	return { kind: 'field', ...obj }
+	return { kind: inferFieldKind(obj), ...obj }
 }
 
 /**
@@ -241,6 +273,40 @@ export function normalizeFieldKind(field: unknown): unknown {
 		return { ...obj, schema: obj.schema.map(normalizeFieldKind) }
 	}
 	return injected
+}
+
+/**
+ * Remove the `kind` discriminant from a field, recursing into a fieldset's children.
+ *
+ * The outbound half of the boundary {@link normalizeFieldKind} owns inbound. `kind` is a
+ * discriminated-union tag the parser synthesizes, not something an author writes, so nothing that
+ * *writes* a doctype should put it on disk — the generator and the docbuilder's save both call
+ * this. Without it the two round-trip asymmetrically: every save adds a key the file never had.
+ *
+ * Strips only when `injectKind` would restore exactly what was removed. A fieldset carrying no
+ * `schema` re-infers as a plain field, so its `kind` is kept rather than silently re-typing the
+ * document; `DoctypeMeta` requires `schema` on a fieldset, so that shape is already invalid and
+ * belongs to the load gate, not here.
+ *
+ * Table `columns` are {@link ColumnSchema} entries rather than `DoctypeField`s and never carry an
+ * injected `kind`, so they are passed through untouched — the same asymmetry `injectKind` has.
+ *
+ * @param field - a field object, as held in memory after parsing
+ * @returns the field without `kind`, safe to serialize
+ * @public
+ */
+export function stripFieldKind(field: unknown): unknown {
+	if (typeof field !== 'object' || field === null || Array.isArray(field)) return field
+	// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- safe: non-null, non-array object verified by the guard above
+	const obj = field as Record<string, unknown>
+
+	if (obj.kind !== undefined && obj.kind !== inferFieldKind(obj)) return field
+
+	const { kind: _kind, ...rest } = obj
+	if (Array.isArray(rest.schema)) {
+		return { ...rest, schema: rest.schema.map(stripFieldKind) }
+	}
+	return rest
 }
 
 /**
@@ -272,20 +338,24 @@ export const INTROSPECTED_IDENTITY_PROPS = [
  * route/store key from it. Call this; never re-derive the rule at the call site, or the two will
  * drift and the client will key records by a column the server never queried.
  *
- * Two deliberate limits, both matching the shape `primaryKey` actually has:
- * - Only **top-level** fields are scanned. `primaryKey` is a `ValueField` flag and a fieldset's
- *   children are not identity columns, so a nested match would be an authoring error, not a PK.
- * - The **first** match wins. Identity is single-valued by design — a doctype describes the API
- *   surface, and mapping a composite database key onto one identity there is the adapter's job —
- *   so a doctype declaring several is malformed rather than composite. `DoctypeMeta` rejects that
- *   at the load gate; this stays total for callers holding fields that never went through it.
+ * Two deliberate rules, both matching the shape `primaryKey` actually has:
+ * - Fieldset children are **included**, via {@link flattenFields}. A fieldset is layout, not
+ *   scope: its children are fields of the doctype with columns of their own, which is why the
+ *   adapter's SELECT already descends and why `getDisplayField` does too. Scanning top level only
+ *   did not *refuse* a nested declaration — it ignored one, so an author marked identity and
+ *   nothing honoured it and nothing said so.
+ * - The **first** match in document order wins. Identity is single-valued by design — a doctype
+ *   describes the API surface, and mapping a composite database key onto one identity there is the
+ *   adapter's job — so a doctype declaring several is malformed rather than composite.
+ *   `DoctypeMeta` rejects that at the load gate; this stays total for callers holding fields that
+ *   never went through it.
  *
- * @param fields - the doctype's top-level fields
+ * @param fields - the doctype's fields; fieldset children are descended into
  * @returns the primary-key field, or `undefined` for a PK-less doctype
  * @public
  */
 export function getPrimaryKeyField(fields: readonly DoctypeField[]): ValueField | undefined {
-	return fields.find((f): f is ValueField => f.kind === 'field' && Boolean(f.primaryKey))
+	return flattenFields(fields).find((f): f is ValueField => f.kind === 'field' && Boolean(f.primaryKey))
 }
 
 /**
