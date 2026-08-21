@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Add `resolvedFieldsToColumns`, the shared rule for which resolved fields a table cell can render",
+      "type": "minor",
+      "packageName": "@stonecrop/aform"
+    }
+  ],
+  "packageName": "@stonecrop/aform",
+  "email": "rohanbansal33@gmail.com"
+}

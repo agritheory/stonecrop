@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Register routes from each doctype's declared `route` rather than its slug; a doctype without one gets no page",
+      "type": "minor",
+      "packageName": "@stonecrop/nuxt"
+    }
+  ],
+  "packageName": "@stonecrop/nuxt",
+  "email": "rohanbansal33@gmail.com"
+}
