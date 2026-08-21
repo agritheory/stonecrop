@@ -1,6 +1,13 @@
 # Change Log - @stonecrop/graphql-middleware
 
-This log was last generated on Fri, 21 Aug 2026 08:57:32 GMT and should not be manually modified.
+This log was last generated on Fri, 21 Aug 2026 09:43:22 GMT and should not be manually modified.
+
+## 0.27.0
+Fri, 21 Aug 2026 09:43:22 GMT
+
+### Minor changes
+
+- Add height to StonecropFieldMeta so the field survives the meta query
 
 ## 0.26.0
 Fri, 21 Aug 2026 08:57:32 GMT

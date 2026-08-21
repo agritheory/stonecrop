@@ -2,6 +2,18 @@
   "name": "@stonecrop/schema",
   "entries": [
     {
+      "version": "0.27.0",
+      "tag": "@stonecrop/schema_v0.27.0",
+      "date": "Fri, 21 Aug 2026 09:43:22 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Add an optional height to ValueField and categorize ASegmentedControl as a select component"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.26.0",
       "tag": "@stonecrop/schema_v0.26.0",
       "date": "Fri, 21 Aug 2026 08:57:32 GMT",
