@@ -7,7 +7,7 @@
 			'aform_segmented-control--equal': equal,
 		}">
 		<template v-if="mode === 'display'">
-			<label class="aform_field-label">{{ label }}</label>
+			<label class="aform_field-label" :class="{ 'aform_segmented-sr-label': hideLabel }">{{ label }}</label>
 			<ABadge
 				v-if="displayBadge"
 				class="aform_display-value aform_segmented-display-badge"
@@ -23,8 +23,8 @@
 			<div
 				:role="multiple ? 'group' : 'radiogroup'"
 				class="aform_segmented-track"
-				:aria-labelledby="labelId"
-				:aria-label="hideLabel ? (ariaLabel ?? label) : undefined"
+				:aria-labelledby="groupAriaLabel ? undefined : labelId"
+				:aria-label="groupAriaLabel"
 				:aria-busy="busy || undefined">
 				<label
 					v-for="choice in choices"
@@ -104,6 +104,11 @@ const errorText = computed(() => (errors?.length ? errors.join('; ') : (validati
 const fallbackId = useId()
 const groupName = computed(() => uuid ?? `aform-segmented-${fallbackId}`)
 const labelId = computed(() => `${groupName.value}-label`)
+
+// aria-labelledby outranks aria-label in the accessible-name algorithm, so the two are mutually
+// exclusive here: emitting both would silently leave `ariaLabel` inert. It only applies while the
+// label element is visually hidden — overriding a *visible* label would break WCAG 2.5.3.
+const groupAriaLabel = computed(() => (hideLabel ? ariaLabel : undefined))
 
 const choices = computed(() => selectChoices(options))
 const badgeOptions = computed(() => hasBadgeOptions(options))

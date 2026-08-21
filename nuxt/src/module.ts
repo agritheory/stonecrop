@@ -22,8 +22,13 @@ export type { RouteStrategyFn, ParsedDoctype }
 
 const { resolve } = createResolver(import.meta.url)
 
-/** Dev HMR re-runs module setup while the layout registry keeps the first `home` entry (NUXT_B4014). */
-let homeLayoutRegistered = false
+/**
+ * Dev HMR re-runs module setup while the layout registry keeps the first `home` entry (NUXT_B4014).
+ * Keyed on the Nuxt instance rather than module scope: the ESM module cache outlives a single Nuxt,
+ * so a plain `let` would leave every later instance in the process (dev restart, multi-app build,
+ * in-process test harness) with no `home` layout at all.
+ */
+const nuxtWithHomeLayout = new WeakSet<Nuxt>()
 
 // Define module options interface
 export interface ModuleOptions {
@@ -193,9 +198,9 @@ export default defineNuxtModule<ModuleOptions>({
 
 		// add the base Stonecrop layout from the module
 		const homepage = resolve('runtime/app/layouts/StonecropHome.vue')
-		if (!homeLayoutRegistered) {
+		if (!nuxtWithHomeLayout.has(nuxt)) {
 			addLayout(homepage, 'home')
-			homeLayoutRegistered = true
+			nuxtWithHomeLayout.add(nuxt)
 		}
 
 		// find doctype schemas in the nuxt application and add them as pages

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "comment": "Add height to StonecropFieldMeta so the field survives the meta query",
+      "type": "minor",
+      "packageName": "@stonecrop/graphql-middleware"
+    }
+  ],
+  "packageName": "@stonecrop/graphql-middleware"
+}

@@ -112,6 +112,38 @@ describe('ASegmentedControl', { tags: ['component'] }, () => {
 		expect(wrapper.classes()).toContain('aform_segmented-control--xs')
 	})
 
+	it('lets ariaLabel override the hidden label as the group name', () => {
+		const wrapper = mount(ASegmentedControl, {
+			props: {
+				modelValue: '1 day',
+				label: 'Time bucket',
+				uuid: 'bucket',
+				hideLabel: true,
+				ariaLabel: 'Chart interval',
+				options: intervalOptions,
+			},
+		})
+
+		// aria-labelledby outranks aria-label in the accessible-name algorithm, so emitting both
+		// leaves `ariaLabel` inert — the group would still be named by the sr-only label element.
+		const group = wrapper.find('[role="radiogroup"]')
+		expect(group.attributes('aria-label')).toBe('Chart interval')
+		expect(group.attributes('aria-labelledby')).toBeUndefined()
+	})
+
+	it('keeps the label visually hidden in display mode when hideLabel is set', () => {
+		const wrapper = mount(ASegmentedControl, {
+			props: {
+				modelValue: '1 day',
+				label: 'Time bucket',
+				mode: 'display',
+				hideLabel: true,
+				options: intervalOptions,
+			},
+		})
+		expect(wrapper.find('.aform_field-label').classes()).toContain('aform_segmented-sr-label')
+	})
+
 	it('applies badge variant class to the selected segment', () => {
 		const wrapper = mount(ASegmentedControl, {
 			props: {
