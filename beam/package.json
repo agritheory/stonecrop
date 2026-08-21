@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/beam",
-	"version": "0.25.0",
+	"version": "0.26.0",
 	"description": "UI component library for Stonecrop",
 	"bugs": {
 		"url": "https://github.com/agritheory/stonecrop/issues"

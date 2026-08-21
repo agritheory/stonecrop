@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/graphql-client",
-	"version": "0.25.0",
+	"version": "0.26.0",
 	"description": "GraphQL client integration for Stonecrop",
 	"bugs": {
 		"url": "https://github.com/agritheory/stonecrop/issues"
