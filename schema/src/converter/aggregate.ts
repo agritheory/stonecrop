@@ -17,7 +17,8 @@
 import pluralize from 'pluralize'
 
 import { toSlug } from '../naming'
-import { getPrimaryKeyField } from '../field'
+import { getDoctypeSlug } from '../doctype'
+import { flattenFields, getPrimaryKeyField } from '../field'
 import type { ValueField } from '../field'
 import type { ConvertedGraphQLDoctype } from './types'
 
@@ -128,6 +129,52 @@ function findIdentityField(fields: readonly ValueField[], declared?: string): Va
 }
 
 /**
+ * The doctypes in a run that get a URL of their own.
+ *
+ * A child table has no page: its rows exist inside a parent and are edited there, so a route for
+ * it is an address nothing can link to. The declaration that says so is the parent's `links` entry
+ * with a to-many cardinality — which the server derives from the foreign keys it treats as owning,
+ * so this reads what the schema states rather than guessing from a name.
+ *
+ * The rule is *listed by something, referenced by nothing*. A single reference wins over any number
+ * of listings, and the asymmetry is deliberate: a doctype that is both a parent's rows and another
+ * doctype's link target — a recipe task, say, embedded in its recipe and pointed at by four other
+ * records — needs somewhere for those links to navigate to. Denying it leaves the arrow on an
+ * `AFormLink` dead, which fails silently; granting it leaves a URL nobody visits, which does not.
+ *
+ * Scoped to one run, so a partial generation sees a partial graph and grants more routes than a
+ * whole one would. That is the safe direction, and the extra routes are deletable — an authored
+ * file's keys survive regeneration untouched.
+ *
+ * @internal
+ */
+function routableDoctypes(entities: readonly ConvertedGraphQLDoctype[]): Set<string> {
+	const listed = new Set<string>()
+	const referenced = new Set<string>()
+
+	for (const entity of entities) {
+		for (const link of Object.values(entity.links ?? {})) {
+			if (link.cardinality === 'noneOrMany' || link.cardinality === 'atLeastOne') listed.add(link.target)
+			else referenced.add(link.target)
+		}
+		// `flattenFields` rather than a top-level scan: a link inside a fieldset is still a reference,
+		// and the two ways to answer this question have already drifted apart once.
+		for (const field of flattenFields(entity.fields)) {
+			if ('doctype' in field && typeof field.doctype === 'string') referenced.add(field.doctype)
+		}
+	}
+
+	return new Set(
+		entities
+			.filter(entity => {
+				const slug = getDoctypeSlug(entity)
+				return referenced.has(slug) || !listed.has(slug)
+			})
+			.map(entity => entity.name)
+	)
+}
+
+/**
  * One file the generator will write, and what that file is verified against.
  *
  * `basis` exists because the two are not always the same document. An aggregate is written from
@@ -188,9 +235,18 @@ export function planGeneration(
 ): GenerationPlanEntry[] {
 	const entityNames = new Set(entities.map(entity => entity.name))
 	const claimed = new Set<string>()
+	const routable = routableDoctypes(entities)
 
 	return entities.flatMap(entity => {
-		const self: GenerationPlanEntry = { generated: entity, basis: entity, subset: false }
+		// Written out in full rather than as a segment the host assembles: the record parameter has
+		// to live somewhere, and a host given `/order` cannot know whether this doctype is the
+		// collection or the record without asking a second question. The pair shares the entity's
+		// slug, so no URL ever carries a plural.
+		const segment = `/${getDoctypeSlug(entity)}`
+		const routed = routable.has(entity.name) ? { ...entity, route: `${segment}/:id` } : entity
+
+		// `basis` is the same object as `generated` for an entity — it is verified against itself.
+		const self: GenerationPlanEntry = { generated: routed, basis: routed, subset: false }
 		if (options.noAggregates) return [self]
 
 		// Name collisions are checked here rather than in the builder because only this function
@@ -240,6 +296,7 @@ export function planGeneration(
 		// The basis is the entity itself: an aggregate is verified against the table it curates from,
 		// not against its own one-field generation. Drift lines take their name from the authored file
 		// being checked, so they already name the file the reader has to edit.
-		return [self, { generated: aggregate, basis: entity, subset: true }]
+		const listed = routable.has(entity.name) ? { ...aggregate, route: segment } : aggregate
+		return [self, { generated: listed, basis: entity, subset: true }]
 	})
 }

@@ -1759,6 +1759,7 @@ export const DoctypeMeta: z.ZodObject<{
     name: z.ZodString;
     slug: z.ZodOptional<z.ZodString>;
     displayField: z.ZodOptional<z.ZodString>;
+    route: z.ZodOptional<z.ZodString>;
     fields: z.ZodArray<z.ZodType<import("./field").DoctypeField, unknown, z.core.$ZodTypeInternals<import("./field").DoctypeField, unknown>>>;
     links: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodObject<{
         target: z.ZodString;

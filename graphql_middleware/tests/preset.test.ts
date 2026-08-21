@@ -32,13 +32,19 @@ describe('createStonecropPreset', { tags: ['unit', 'graphql'] }, () => {
 		}
 	})
 
-	it('default (no options) adds nothing but the natural-id plugin', () => {
-		expect((createStonecropPreset().plugins ?? []).map(p => p.name)).toEqual(['StonecropNaturalIdPlugin'])
+	it('default (no options) adds the two corrective plugins and nothing else', () => {
+		// An exact list rather than two presence checks: the point is to catch a plugin arriving by
+		// accident, and every plugin here changes the schema every consumer serves.
+		expect((createStonecropPreset().plugins ?? []).map(p => p.name)).toEqual([
+			'StonecropNaturalIdPlugin',
+			'StonecropOwnedRelationsPlugin',
+		])
 	})
 
-	it("fieldCasing: 'camel' adds nothing but the natural-id plugin", () => {
+	it("fieldCasing: 'camel' adds the same two, leaving the casing plugin opt-in", () => {
 		expect((createStonecropPreset({ fieldCasing: 'camel' }).plugins ?? []).map(p => p.name)).toEqual([
 			'StonecropNaturalIdPlugin',
+			'StonecropOwnedRelationsPlugin',
 		])
 	})
 

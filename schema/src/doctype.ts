@@ -317,6 +317,17 @@ export const DoctypeMeta = z
 		 */
 		displayField: z.string().min(1).optional(),
 
+		/**
+		 * URL path this doctype registers at, written literally — `/order` for a collection,
+		 * `/order/:id` for a record. Absent means the doctype has no page of its own, which is the
+		 * common case: a child table is reached inside its parent, never at a URL.
+		 *
+		 * A path rather than a segment because the record parameter has to be somewhere, and a host
+		 * that reads a bare segment has to know which kind of doctype it is holding to decide where
+		 * to put it. Writing it out means nothing downstream re-derives it.
+		 */
+		route: z.string().startsWith('/').optional(),
+
 		/** Field definitions (a link field is one carrying `doctype`) */
 		fields: z.array(DoctypeFieldSchema),
 

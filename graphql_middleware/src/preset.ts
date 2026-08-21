@@ -59,6 +59,53 @@ const StonecropNaturalIdPlugin: GraphileConfig.Plugin = {
 	},
 }
 
+/**
+ * Exposes the many side of a foreign key the database declares as owning.
+ *
+ * PostGraphile registers both directions of every foreign key, but Amber gives the many side no
+ * `manyRelation:resource:connection` behavior — for a non-unique relation `PgRelationsPlugin`'s
+ * inferred behavior is `["resource:select", behavior]` and nothing more. So a parent type carries
+ * no field for its children, and a doctype generated from that schema can never contain a child
+ * table. Every one a consumer has is hand-authored.
+ *
+ * `ON DELETE CASCADE` is the discriminator because it is the only place a schema states ownership.
+ * `sc_tag.item_id` cascades: the tags are the item's rows and die with it. `sc_order.customer_id`
+ * does not: an order references a party that outlives it. The two are otherwise the same shape, so
+ * no amount of reading the relation itself can separate them — and turning the many side on for
+ * *every* foreign key would make each referenced table look like somebody's child.
+ *
+ * Read at the gather phase rather than from the built relation: `confdeltype` is on the raw
+ * `pg_constraint` and does not survive into `relation.extensions`, which carries only `isIndexed`.
+ *
+ * Connection only, deliberately. The converter recognises a Connection type through
+ * `getConnectionNodeType`; a list field is not a shape it knows, so `+manyRelation:resource:list`
+ * would add a second field per relation that generation then drops on the floor.
+ *
+ * A global `preset.schema.defaultBehavior` cannot do this. Inferred behaviors are applied after the
+ * global default and take precedence, so `+manyRelation:resource:connection` there is overridden
+ * for every relation — verified, it changes nothing, while `-connection +list` through the same
+ * option visibly rewrites the Query fields.
+ */
+const StonecropOwnedRelationsPlugin: GraphileConfig.Plugin = {
+	name: 'StonecropOwnedRelationsPlugin',
+	version: '0.0.0',
+	gather: {
+		hooks: {
+			pgRelations_relation(_info, event) {
+				const { relation, pgConstraint } = event
+				// The hook fires once per direction of each constraint; only the backwards one has a
+				// many side to expose. `confdeltype` is Postgres' own code: 'c' is CASCADE.
+				if (!relation.isReferencee) return
+				if (pgConstraint.confdeltype !== 'c') return
+
+				relation.extensions ??= {}
+				relation.extensions.tags ??= {}
+				relation.extensions.tags.behavior = '+manyRelation:resource:connection'
+			},
+		},
+	},
+}
+
 const StonecropFieldCasingPlugin: GraphileConfig.Plugin = {
 	name: 'StonecropFieldCasingPlugin',
 	version: '0.0.0',
@@ -95,8 +142,8 @@ export const createStonecropPreset = (options?: { fieldCasing?: FieldCasing }): 
 	extends: [PostGraphileAmberPreset],
 	plugins:
 		options?.fieldCasing === 'pascal'
-			? [StonecropNaturalIdPlugin, StonecropFieldCasingPlugin]
-			: [StonecropNaturalIdPlugin],
+			? [StonecropNaturalIdPlugin, StonecropOwnedRelationsPlugin, StonecropFieldCasingPlugin]
+			: [StonecropNaturalIdPlugin, StonecropOwnedRelationsPlugin],
 })
 
 /**
