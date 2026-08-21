@@ -1,6 +1,19 @@
 # Change Log - @stonecrop/schema
 
-This log was last generated on Thu, 20 Aug 2026 09:10:32 GMT and should not be manually modified.
+This log was last generated on Fri, 21 Aug 2026 08:57:32 GMT and should not be manually modified.
+
+## 0.26.0
+Fri, 21 Aug 2026 08:57:32 GMT
+
+### Minor changes
+
+- Generate an aggregate doctype per table alongside the entity, named as its plural
+- Generate each doctype's `route`, giving a collection and its records one URL segment
+
+### Patches
+
+- Honour an authored `primaryKey`, including one declared inside a fieldset
+- Stop writing the internal `kind` discriminant into generated doctype JSON
 
 ## 0.25.0
 Thu, 20 Aug 2026 09:10:32 GMT
