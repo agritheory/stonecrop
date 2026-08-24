@@ -2,6 +2,30 @@
   "name": "@stonecrop/nuxt",
   "entries": [
     {
+      "version": "0.27.0",
+      "tag": "@stonecrop/nuxt_v0.27.0",
+      "date": "Fri, 21 Aug 2026 09:43:22 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Add height to StonecropField in both host GraphQL schemas and register the home layout once"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.26.0",
+      "tag": "@stonecrop/nuxt_v0.26.0",
+      "date": "Fri, 21 Aug 2026 08:57:32 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Register routes from each doctype's declared `route` rather than its slug; a doctype without one gets no page"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.25.0",
       "tag": "@stonecrop/nuxt_v0.25.0",
       "date": "Thu, 20 Aug 2026 09:10:32 GMT",

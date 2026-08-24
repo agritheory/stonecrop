@@ -74,6 +74,27 @@ loadDoctypesFromObject({
 
 `createStonecropPreset` extends PostGraphile's Amber preset with Stonecrop defaults.
 
+### Identity naming
+
+Amber gives Relay's global object identifier the field name `id`, and moves any real column called
+`id` out of the way to `rowId`. Stonecrop can use neither name: the middleware resolves columns with
+raw SQL, so `id` would be an opaque base64 node id with no column behind it, and `rowId` would name a
+`row_id` column that does not exist.
+
+The preset therefore moves Relay's identifier to `nodeId` and leaves your `id` column named `id`:
+
+```graphql
+type Uom {          # keyed on `code`, no `id` column
+  nodeId: ID!       # Relay's identifier — still available
+  code: String!
+  uomName: String!
+}
+```
+
+This is applied unconditionally — a doctype generated against the un-overridden schema declares
+`primaryKey` on the node id, and every read of it then fails on a missing column. Relay is not
+disabled; `node(nodeId: …)` still resolves.
+
 ### Field casing
 
 By default, PostgreSQL column names are converted to camelCase in GraphQL (`my_column` → `myColumn`). Switch to PascalCase with:
@@ -116,7 +137,7 @@ A doctype with no `primaryKey` field cannot be fetched by id — `stonecropRecor
 
 ### Table name
 
-By default the PostgreSQL `FROM` target is `camelToSnake(doctype.name)`. Override it per doctype with the `tables` option — for a doctype that projects a shared table, or a schema-qualified name:
+By default the PostgreSQL `FROM` target is `pascalToSnake(doctype.name)` — `SalesOrder` becomes `sales_order`. Override it per doctype with the `tables` option — for a doctype that projects a shared table, or a schema-qualified name:
 
 ```typescript
 createStonecropPlugin({ tables: { Planner: 'plan', Invoice: 'billing.invoice' } })

@@ -1,6 +1,7 @@
 import { z } from 'zod'
 
 import { DoctypeFieldSchema, flattenFields, getDisplayField } from './field'
+import { toSlug } from './naming'
 
 /**
  * Cardinality for relationship links.
@@ -316,6 +317,17 @@ export const DoctypeMeta = z
 		 */
 		displayField: z.string().min(1).optional(),
 
+		/**
+		 * URL path this doctype registers at, written literally — `/order` for a collection,
+		 * `/order/:id` for a record. Absent means the doctype has no page of its own, which is the
+		 * common case: a child table is reached inside its parent, never at a URL.
+		 *
+		 * A path rather than a segment because the record parameter has to be somewhere, and a host
+		 * that reads a bare segment has to know which kind of doctype it is holding to decide where
+		 * to put it. Writing it out means nothing downstream re-derives it.
+		 */
+		route: z.string().startsWith('/').optional(),
+
 		/** Field definitions (a link field is one carrying `doctype`) */
 		fields: z.array(DoctypeFieldSchema),
 
@@ -344,9 +356,13 @@ export const DoctypeMeta = z
 		// need not be unique — `stonecropRecord`'s row map then keeps whichever row comes last.
 		// Refusing at the gate is what makes it say so.
 		//
+		// Counts the flattened set, because that is the set `getPrimaryKeyField` resolves over. The
+		// two asked different questions while this scanned top level only: a doctype with one key
+		// declared at each level passed the gate and then had one of them silently dropped.
+		//
 		// Zero keys stays legal and is not an omission: a surrogate-key doctype declares none and
 		// resolves through `getRecordIdField`'s documented `id` fallback.
-		const declared = doctype.fields.filter(f => f.kind === 'field' && f.primaryKey)
+		const declared = flattenFields(doctype.fields).filter(f => f.kind === 'field' && f.primaryKey)
 		if (declared.length > 1) {
 			ctx.addIssue({
 				code: 'custom',
@@ -381,6 +397,46 @@ export const DoctypeMeta = z
  * @public
  */
 export type DoctypeMeta = z.infer<typeof DoctypeMeta>
+
+/**
+ * The one string a doctype is addressed by.
+ *
+ * A doctype carries two names — `name` (`OrderItem`) and `slug` (`order-item`) — and every registry
+ * must agree on which one keys it. Three implementations had drifted apart: the adapter's registry is
+ * keyed by `name` and its `getMeta` also scans for a matching `slug`, so it accepts **either**; the
+ * client's registry is keyed by a slug it derives itself and accepts **only** that; and
+ * `Doctype.fromObject` dropped an authored `slug` on the floor and re-derived one regardless. The
+ * adapter's accepted set was therefore a strict superset of the client's, and a link target written
+ * as the Name booted the server, passed its reference check, served rows over GraphQL, and was
+ * silently dropped by the client — an expanding child table rendering as one empty text input, with
+ * nothing logged.
+ *
+ * Resolving through this in both runtimes is what makes the two answers the same answer. It is the
+ * derivation only; a *lookup* still belongs to whichever registry owns the corpus, because the two
+ * corpora legitimately differ (a client registers lazily, and a client-only host has no adapter at
+ * all).
+ *
+ * An authored `slug` wins over the derived one because the authored doctype is the source of truth:
+ * generation verifies a file and never overwrites it, so a doctype that states its own slug means it.
+ * Deriving unconditionally is what `fromObject` did, and it made an authored `slug` a silent no-op on
+ * one side of the wire while the other honoured it.
+ *
+ * @param doctype - anything carrying a doctype's `name` and optional authored `slug`
+ * @returns the canonical slug
+ * @public
+ *
+ * @example
+ * ```typescript
+ * getDoctypeSlug({ name: 'OrderItem' })                      // 'order-item'
+ * getDoctypeSlug({ name: 'Planner', slug: 'planner-board' }) // 'planner-board'
+ * ```
+ */
+export function getDoctypeSlug(doctype: { name: string; slug?: string }): string {
+	// `||` rather than `??`: an empty authored slug is not a usable registry key, and this is
+	// reachable — `Doctype.fromObject` builds a doctype without going through the Zod gate, which is
+	// where `slug: z.string().min(1)` would have refused it.
+	return doctype.slug || toSlug(doctype.name)
+}
 
 /**
  * Suffix appended to a link fieldname for its pre-resolved display text in record payloads.

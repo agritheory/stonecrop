@@ -1,6 +1,18 @@
 # Change Log - @stonecrop/graphql-client
 
-This log was last generated on Thu, 20 Aug 2026 09:10:32 GMT and should not be manually modified.
+This log was last generated on Fri, 21 Aug 2026 09:43:22 GMT and should not be manually modified.
+
+## 0.27.0
+Fri, 21 Aug 2026 09:43:22 GMT
+
+### Minor changes
+
+- Select height in the meta queries so the field reaches the client
+
+## 0.26.0
+Fri, 21 Aug 2026 08:57:32 GMT
+
+_Version update only_
 
 ## 0.25.0
 Thu, 20 Aug 2026 09:10:32 GMT

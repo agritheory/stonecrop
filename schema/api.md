@@ -4,6 +4,49 @@
 
 ## Functions
 
+### aggregateDoctypeName
+
+The name an entity's aggregate doctype is generated under: the entity's name, pluralised.
+
+One definition, because the CLI writes the file under `toSlug` of this and any later caller (a scaffolder, a docs generator) must land on the same name or it silently addresses a different file.
+
+`pluralize` rather than appending `s`, because the irregulars are not rare in practice — measured against a consumer's 41 hand-authored aggregate doctypes, this rule reproduces every one of their names, slugs and filenames exactly, while `+ 's'` gets five wrong (`Currencys`, `JournalEntrys`, …).
+
+The rule is not total: an already-plural name pluralises to itself. Callers must handle that — see `buildAggregateDoctype`.
+
+**Signature:**
+
+```typescript
+export declare function aggregateDoctypeName(doctypeName: string): string;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| doctypeName | `string` | the entity doctype's `name` |
+
+### buildAggregateDoctype
+
+Derive the aggregate doctype for a converted entity.
+
+Returns `undefined` when no identity column can be found — a natural-key table whose key the converter refuses to guess and whose author has not declared one, or a foreign PostGraphile endpoint that has left the Relay identifier occupying `id` (Stonecrop's own preset moves it to `nodeId`). That is deliberate: an aggregate with an empty `fields` array is a valid doctype that renders a table with no columns, which looks like a data problem rather than a generation one. Emitting nothing and saying so is the loud failure.
+
+Identity resolves the same way `getRecordIdField` resolves it — the declared `primaryKey`, then the conventional `id` — so an aggregate is always keyed on the column the client will later ask for. `declaredIdentity` overrides both: SDL cannot express which `UNIQUE` column is the key, so for a natural-key table the answer only exists in the authored file, and the caller that read it passes the fieldname back.
+
+**Signature:**
+
+```typescript
+export declare function buildAggregateDoctype(doctype: ConvertedGraphQLDoctype, declaredIdentity?: string): ConvertedGraphQLDoctype | undefined;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| doctype | `ConvertedGraphQLDoctype` | a converted entity doctype, as returned by `convertGraphQLSchema` |
+| declaredIdentity | `string` | fieldname the authored doctype declares as its `primaryKey`, when the caller has read one. Must name a field the converter emitted; the caller checks that, because only it can say whether a missing one is a dropped column or a typo. |
+
 ### buildScalarMap
 
 Build a merged scalar map from the built-in maps and user-provided custom scalars. Precedence (highest to lowest): customScalars → GQL_SCALAR_MAP → WELL_KNOWN_SCALARS
@@ -131,7 +174,7 @@ Default heuristic to filter fields on entity types. Skips internal fields that d
 **Signature:**
 
 ```typescript
-export declare function defaultIsEntityField(fieldName: string, _field: GraphQLField<unknown, unknown>, _parentType: GraphQLObjectType): boolean;
+export declare function defaultIsEntityField(fieldName: string, _field: GraphQLField<unknown, unknown>, parentType: GraphQLObjectType): boolean;
 ```
 
 **Parameters:**
@@ -140,7 +183,7 @@ export declare function defaultIsEntityField(fieldName: string, _field: GraphQLF
 |-----------|------|-------------|
 | fieldName | `string` | The GraphQL field name |
 | _field | `GraphQLField<unknown, unknown>` | The GraphQL field definition (unused in default implementation) |
-| _parentType | `GraphQLObjectType` | The parent entity type (unused in default implementation) |
+| parentType | `GraphQLObjectType` | The parent entity type, whose interfaces declare its Relay identifier |
 
 ### defaultIsEntityType
 
@@ -218,13 +261,38 @@ export declare function getDisplayField(fields: readonly DoctypeField[], display
 | fields | `readonly DoctypeField[]` | the doctype's top-level fields |
 | displayField | `string \| undefined` | the nominated fieldname |
 
+### getDoctypeSlug
+
+The one string a doctype is addressed by.
+
+A doctype carries two names — `name` (`OrderItem`) and `slug` (`order-item`) — and every registry must agree on which one keys it. Three implementations had drifted apart: the adapter's registry is keyed by `name` and its `getMeta` also scans for a matching `slug`, so it accepts **either**; the client's registry is keyed by a slug it derives itself and accepts **only** that; and `Doctype.fromObject` dropped an authored `slug` on the floor and re-derived one regardless. The adapter's accepted set was therefore a strict superset of the client's, and a link target written as the Name booted the server, passed its reference check, served rows over GraphQL, and was silently dropped by the client — an expanding child table rendering as one empty text input, with nothing logged.
+
+Resolving through this in both runtimes is what makes the two answers the same answer. It is the derivation only; a *lookup* still belongs to whichever registry owns the corpus, because the two corpora legitimately differ (a client registers lazily, and a client-only host has no adapter at all).
+
+An authored `slug` wins over the derived one because the authored doctype is the source of truth: generation verifies a file and never overwrites it, so a doctype that states its own slug means it. Deriving unconditionally is what `fromObject` did, and it made an authored `slug` a silent no-op on one side of the wire while the other honoured it.
+
+**Signature:**
+
+```typescript
+export declare function getDoctypeSlug(doctype: {
+    name: string;
+    slug?: string;
+}): string;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| doctype | `{ name: string; slug?: string; }` | anything carrying a doctype's `name` and optional authored `slug` |
+
 ### getPrimaryKeyField
 
 Find the field a doctype marks as its primary key, or `undefined` when none is marked.
 
 This is the single definition of "which field identifies a record". Both sides depend on it: the middleware builds the SQL identity predicate from it, and the client resolves a record's route/store key from it. Call this; never re-derive the rule at the call site, or the two will drift and the client will key records by a column the server never queried.
 
-Two deliberate limits, both matching the shape `primaryKey` actually has: - Only **top-level** fields are scanned. `primaryKey` is a `ValueField` flag and a fieldset's children are not identity columns, so a nested match would be an authoring error, not a PK. - The **first** match wins. Identity is single-valued by design — a doctype describes the API surface, and mapping a composite database key onto one identity there is the adapter's job — so a doctype declaring several is malformed rather than composite. `DoctypeMeta` rejects that at the load gate; this stays total for callers holding fields that never went through it.
+Two deliberate rules, both matching the shape `primaryKey` actually has: - Fieldset children are **included**, via `flattenFields`. A fieldset is layout, not scope: its children are fields of the doctype with columns of their own, which is why the adapter's SELECT already descends and why `getDisplayField` does too. Scanning top level only did not *refuse* a nested declaration — it ignored one, so an author marked identity and nothing honoured it and nothing said so. - The **first** match in document order wins. Identity is single-valued by design — a doctype describes the API surface, and mapping a composite database key onto one identity there is the adapter's job — so a doctype declaring several is malformed rather than composite. `DoctypeMeta` rejects that at the load gate; this stays total for callers holding fields that never went through it.
 
 **Signature:**
 
@@ -236,7 +304,7 @@ export declare function getPrimaryKeyField(fields: readonly DoctypeField[]): Val
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| fields | `readonly DoctypeField[]` | the doctype's top-level fields |
+| fields | `readonly DoctypeField[]` | the doctype's fields; fieldset children are descended into |
 
 ### getRecordIdentity
 
@@ -294,6 +362,28 @@ export declare function hasBadgeOptions(options: FieldOptions | undefined): bool
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | options | `FieldOptions \| undefined` |  |
+
+### inferFieldKind
+
+Which of the three field shapes an entry has, read from the entry's own structure.
+
+The single definition of that question. It had three copies before this — the parser's `injectKind`, `stripFieldKind`'s agreement check, and the docbuilder's own `isValueField` in another package — each free to drift, and drift here re-types a field rather than throwing: a value field read as a fieldset loses its column, a fieldset read as a value field loses every child.
+
+Deliberately **shape-only**: a declared `kind` is ignored. Two callers depend on that. The stripper compares this against the declaration to decide whether removing it is lossless, which it cannot do if this honours it. The docbuilder reads raw JSON off disk and classifies entries to decide which to render as editable rows — and `kind` is Stonecrop's own discriminant, not something a doctype author writes, so a tool reading a file has no business consulting it.
+
+`injectKind` is the one place a declaration still wins, and only to leave an already-parsed object untouched on its way back through.
+
+**Signature:**
+
+```typescript
+export declare function inferFieldKind(field: unknown): DoctypeField['kind'];
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| field | `unknown` | a field entry, authored or parsed |
 
 ### isActionAllowedInState
 
@@ -404,7 +494,7 @@ Verify an authored doctype against freshly generated output and stamp provenance
 **Signature:**
 
 ```typescript
-export declare function mergeIntrospectedDoctype(authored: AuthoredDoctype, generated: ConvertedGraphQLDoctype): MergeResult;
+export declare function mergeIntrospectedDoctype(authored: AuthoredDoctype, generated: ConvertedGraphQLDoctype, options?: MergeOptions): MergeResult;
 ```
 
 **Parameters:**
@@ -412,7 +502,8 @@ export declare function mergeIntrospectedDoctype(authored: AuthoredDoctype, gene
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | authored | `AuthoredDoctype` | the doctype as it exists on disk; every key not named below is preserved verbatim |
-| generated | `ConvertedGraphQLDoctype` | `convertGraphQLSchema` output for the corresponding GraphQL type |
+| generated | `ConvertedGraphQLDoctype` | `convertGraphQLSchema` output for the corresponding GraphQL type. For a `subset` merge this is the **entity**, whose fields are the set the subset is curated from |
+| options | `MergeOptions` | see `MergeOptions` |
 
 ### normalizeFieldKind
 
@@ -481,6 +572,27 @@ export declare function pascalToSnake(pascal: string): string;
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | pascal | `string` | PascalCase string |
+
+### planGeneration
+
+Expand converted entities into the set of doctype files to write.
+
+Each table yields two: the entity, whose fields carry every column and which backs the record form, and its aggregate — the collection view. They are written as peers, one file each, with no key relating them.
+
+Separate from the CLI because the pairing of a file to its verification basis is the part that is easy to get wrong and impossible to notice: getting it wrong does not throw, it just reports drift that is not there, forever.
+
+**Signature:**
+
+```typescript
+export declare function planGeneration(entities: readonly ConvertedGraphQLDoctype[], options?: GenerationPlanOptions): GenerationPlanEntry[];
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| entities | `readonly ConvertedGraphQLDoctype[]` | `convertGraphQLSchema` output |
+| options | `GenerationPlanOptions` | see `GenerationPlanOptions` |
 
 ### resolveLinkRenderMode
 
@@ -553,6 +665,28 @@ export declare function snakeToLabel(snakeCase: string): string;
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | snakeCase | `string` | Snake case string |
+
+### stripFieldKind
+
+Remove the `kind` discriminant from a field, recursing into a fieldset's children.
+
+The outbound half of the boundary `normalizeFieldKind` owns inbound. `kind` is a discriminated-union tag the parser synthesizes, not something an author writes, so nothing that *writes* a doctype should put it on disk — the generator and the docbuilder's save both call this. Without it the two round-trip asymmetrically: every save adds a key the file never had.
+
+Strips only when `injectKind` would restore exactly what was removed. A fieldset carrying no `schema` re-infers as a plain field, so its `kind` is kept rather than silently re-typing the document; `DoctypeMeta` requires `schema` on a fieldset, so that shape is already invalid and belongs to the load gate, not here.
+
+Table `columns` are `ColumnSchema` entries rather than `DoctypeField`s and never carry an injected `kind`, so they are passed through untouched — the same asymmetry `injectKind` has.
+
+**Signature:**
+
+```typescript
+export declare function stripFieldKind(field: unknown): unknown;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| field | `unknown` | a field object, as held in memory after parsing |
 
 ### toPascalCase
 
@@ -873,6 +1007,52 @@ export interface FieldsetField {
 | mode? | `InteractionMode` | Interaction mode for all children inside this fieldset |
 | schema | `DoctypeField[]` | Nested field definitions — resolved recursively by resolveSchema |
 
+### GenerationPlanEntry
+
+One file the generator will write, and what that file is verified against.
+
+`basis` exists because the two are not always the same document. An aggregate is written from its own one-field generation but verified against the **entity**, since its purpose is to carry fewer columns than the table — checking it against itself reports every curated column as one the table had dropped.
+
+**Definition:**
+
+```typescript
+export interface GenerationPlanEntry {
+  basis: ConvertedGraphQLDoctype;
+  generated: ConvertedGraphQLDoctype;
+  subset: boolean;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| basis | `ConvertedGraphQLDoctype` | The doctype whose fields an existing file on disk is verified against. |
+| generated | `ConvertedGraphQLDoctype` | The doctype to write. |
+| subset | `boolean` | Whether the file is a curated subset of `basis` — passed through to `MergeOptions.subset`. |
+
+### GenerationPlanOptions
+
+Options for `planGeneration`.
+
+**Definition:**
+
+```typescript
+export interface GenerationPlanOptions {
+  identity?: Record<string, string>;
+  noAggregates?: boolean;
+  onWarning?: (message: string) => void;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| identity? | `Record<string, string>` | Identity the authored doctype on disk declares, keyed by doctype `name`. SDL cannot say which `UNIQUE` column is a table's key, so for a natural-key table the converter derives nothing and the answer exists only in the file. Without this the aggregate is unreachable: generation says "declare a primaryKey and re-run", and re-running after declaring one changes nothing, because planning never reads the file. Passed in rather than read here so this stays a pure function of its inputs; the CLI owns the IO. The plan is then a function of the schema *and* what is already on disk. |
+| noAggregates? | `boolean` | Emit only the entity doctypes, skipping their aggregates. Defaults to `false`. |
+| onWarning? | `(message: string) => void` | Called with an advisory message for each entity that yields no aggregate. |
+
 ### GetRecordOptions
 
 Options for fetching a single record
@@ -1017,6 +1197,24 @@ export interface GraphQLConversionOptions {
 | isEntityType? | `(typeName: string, type: GraphQLObjectType) => boolean` | Custom function to determine if a GraphQL object type represents an entity (→ doctype). When provided, replaces the default heuristic entirely. The default heuristic excludes types matching synthetic patterns: `*Connection`, `*Edge`, `*Input`, `*Patch`, `*Payload`, `*Condition`, `*Filter`, `*OrderBy`, `*Aggregate`, `Query`, `Mutation`, `Subscription`, `__*`. |
 | onWarning? | `(message: string) => void` | Called with any advisory message raised during conversion — currently only the un-normalized-PostGraphile warning. Left to the caller so the library never writes to the console itself. |
 
+### MergeOptions
+
+How to verify the authored doctype against the schema.
+
+**Definition:**
+
+```typescript
+export interface MergeOptions {
+  subset?: boolean;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| subset? | `boolean` | The authored doctype is a curated **subset** of the schema's columns rather than a model of all of them — an aggregate being the case this exists for. This changes what counts as drift in both directions, so `generated` must be passed the *entity's* full field set, not the subset's. A column the author added to an aggregate is then confirmed against the real table (so a genuinely dropped column still reports as an orphan), while the columns deliberately left out stop reporting as omissions. Without it an aggregate reports phantom drift on every run, which both spams `--check` and buries the one finding that matters. |
+
 ### MergeResult
 
 Outcome of a merge: the doctype to write, plus what generation disagreed with.
@@ -1144,6 +1342,7 @@ export interface ValueField {
   edit?: boolean;
   fieldname: string;
   format?: string;
+  height?: string;
   hidden?: boolean;
   kind: 'field';
   label?: string;
@@ -1173,6 +1372,7 @@ export interface ValueField {
 | edit? | `boolean` | Whether the field is editable in table cell context |
 | fieldname | `string` | Unique identifier for this field within its doctype |
 | format? | `string` | Serialized display formatter — distinct from `mask` (input). Spreads through `schemaToColumns` to `ColumnSchema.format`; deserialized at render time by ATable's `getFormattedValue`. Returns a plain string, HTML, or a `BadgeDescriptor` for badge cells. When a descriptor is returned it wins over any badge map on `options`. |
+| height? | `string` | CSS height (e.g. `"100%"`, `"40vh"`) — used by full-viewport fields such as Planner |
 | hidden? | `boolean` | Whether the field is hidden from the UI |
 | kind | `'field'` | Discriminator — identifies this as a value-holding field |
 | label? | `string` | Human-readable label |
@@ -1556,6 +1756,7 @@ export const DoctypeMeta: z.ZodObject<{
     name: z.ZodString;
     slug: z.ZodOptional<z.ZodString>;
     displayField: z.ZodOptional<z.ZodString>;
+    route: z.ZodOptional<z.ZodString>;
     fields: z.ZodArray<z.ZodType<import("./field").DoctypeField, unknown, z.core.$ZodTypeInternals<import("./field").DoctypeField, unknown>>>;
     links: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodObject<{
         target: z.ZodString;
@@ -1887,6 +2088,7 @@ export const ValueFieldSchema: z.ZodObject<{
     doctype: z.ZodOptional<z.ZodString>;
     label: z.ZodOptional<z.ZodString>;
     width: z.ZodOptional<z.ZodString>;
+    height: z.ZodOptional<z.ZodString>;
     align: z.ZodOptional<z.ZodEnum<{
         left: "left";
         right: "right";

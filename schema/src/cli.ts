@@ -19,7 +19,9 @@ import { resolve, join } from 'node:path'
 import { parseArgs } from 'node:util'
 import { getIntrospectionQuery, type IntrospectionQuery } from 'graphql'
 
-import { convertGraphQLSchema, formatDoctypeDrift, mergeIntrospectedDoctype } from './converter/index'
+import { authoredPrimaryKey } from './converter/authored'
+import { convertGraphQLSchema, formatDoctypeDrift, mergeIntrospectedDoctype, planGeneration } from './converter/index'
+import { stripFieldKind } from './field'
 import { validateDoctype } from './validation'
 import type { GraphQLConversionOptions } from './converter/types'
 
@@ -72,6 +74,7 @@ async function main(): Promise<void> {
 			names: { type: 'string' },
 			'custom-scalars': { type: 'string' },
 			'include-unmapped': { type: 'boolean', default: false },
+			'no-aggregates': { type: 'boolean', default: false },
 			check: { type: 'boolean', default: false },
 			help: { type: 'boolean', short: 'h' },
 		},
@@ -148,12 +151,34 @@ async function main(): Promise<void> {
 	}
 
 	// Convert
-	const doctypes = convertGraphQLSchema(source, options)
+	const entities = convertGraphQLSchema(source, options)
 
-	if (doctypes.length === 0) {
+	if (entities.length === 0) {
 		console.warn('No entity types found in the schema. Check your include/exclude filters.')
 		process.exit(0)
 	}
+
+	// Read the identity each authored doctype declares, before planning rather than during the write
+	// loop below. SDL cannot express which UNIQUE column is a table's key, so for a natural-key
+	// doctype the declaration in the file is the only answer that exists — and planning is what
+	// decides whether the aggregate can be built at all. Reading it 20 lines later, as the loop
+	// does, made the "declare a primaryKey and re-run" warning a dead end: re-running after
+	// declaring one changed nothing.
+	const identity: Record<string, string> = {}
+	for (const entity of entities) {
+		const entityPath = join(outputDir, `${entity.slug}.json`)
+		if (!existsSync(entityPath)) continue
+		const declared = authoredPrimaryKey(JSON.parse(readFileSync(entityPath, 'utf-8')))
+		if (declared !== undefined) identity[entity.name] = declared
+	}
+
+	// Each table yields two doctypes — the entity and its aggregate — written as peers, one file
+	// each, along with what each is verified against. See `planGeneration`.
+	const doctypes = planGeneration(entities, {
+		noAggregates: values['no-aggregates'],
+		identity,
+		onWarning: message => console.warn(`  WARN: ${message}`),
+	})
 
 	// Write output
 	if (!existsSync(outputDir)) {
@@ -165,7 +190,7 @@ async function main(): Promise<void> {
 	let changed = 0
 	const driftLines: string[] = []
 
-	for (const generated of doctypes) {
+	for (const { generated, basis, subset } of doctypes) {
 		const fileName = `${generated.slug}.json`
 		const filePath = join(outputDir, fileName)
 
@@ -177,10 +202,9 @@ async function main(): Promise<void> {
 		// so converter output is written verbatim.
 		let output: object = generated
 		if (existsSync(filePath)) {
-			const { doctype: merged, drift } = mergeIntrospectedDoctype(
-				JSON.parse(readFileSync(filePath, 'utf-8')),
-				generated
-			)
+			const { doctype: merged, drift } = mergeIntrospectedDoctype(JSON.parse(readFileSync(filePath, 'utf-8')), basis, {
+				subset,
+			})
 			output = merged
 			driftLines.push(...formatDoctypeDrift(drift))
 		}
@@ -188,7 +212,16 @@ async function main(): Promise<void> {
 		// Serialize the merged object directly. Never round-trip it through the Zod parser first:
 		// that runs in strip mode and would silently drop every key this package does not model,
 		// `handler` on an action being the one consumers actually rely on.
-		const json = JSON.stringify(output, null, '\t') + '\n'
+		//
+		// `kind` is dropped on the way out because it is the discriminated-union tag the parser
+		// synthesizes, not authored data — `injectKind` puts it back on every read. Writing it made
+		// the generator and the docbuilder disagree with hand-authored files about what a doctype
+		// looks like, and re-added the key on every regeneration.
+		const serializable: Record<string, unknown> = { ...output }
+		if (Array.isArray(serializable.fields)) {
+			serializable.fields = serializable.fields.map(stripFieldKind)
+		}
+		const json = JSON.stringify(serializable, null, '\t') + '\n'
 		const unchanged = existsSync(filePath) && readFileSync(filePath, 'utf-8') === json
 		if (!unchanged) changed++
 
@@ -256,8 +289,19 @@ OPTIONS:
   --names <file>               JSON file mapping GraphQL type name to doctype name
   --custom-scalars <file>      JSON file mapping custom scalar names to field templates
   --include-unmapped           Include _graphqlType metadata on unmapped fields
+  --no-aggregates              Emit only the entity doctype, not its aggregate
   --check                      Report drift and exit non-zero if anything would change; write nothing
   --help, -h                   Show this help message
+
+Each table generates TWO doctypes: the entity (every column, backs the record form) and its
+aggregate (the collection view, identity column only by default), named as simple plurals —
+'task.json' and 'tasks.json'. Widen an aggregate by adding fields to it — curation survives
+regeneration. A doctype whose name is already plural gets no aggregate, because it would claim
+its own name and its own file; the run says so and still writes the entity.
+
+An aggregate needs an identity column. A table keyed on 'id' gives one up; for a natural key,
+declare 'primaryKey' on the field in the entity's own file and re-run — the aggregate is keyed
+on whatever that file declares.
 
 NOTE: an existing doctype file is the source of truth. Regeneration verifies it against the
 schema and adds 'source: introspected' markers; it reports disagreements rather than

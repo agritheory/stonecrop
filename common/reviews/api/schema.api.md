@@ -24,6 +24,9 @@ export const ActionDefinition: z.ZodObject<{
 export type ActionDefinition = z.infer<typeof ActionDefinition>;
 
 // @public
+export function aggregateDoctypeName(doctypeName: string): string;
+
+// @public
 export type AuthoredDoctype = Record<string, unknown>;
 
 // @public
@@ -54,6 +57,9 @@ export interface BadgeSpecObject {
 
 // @public
 export type BadgeVariant = 'neutral' | 'success' | 'warning' | 'danger' | 'brand';
+
+// @public
+export function buildAggregateDoctype(doctype: ConvertedGraphQLDoctype, declaredIdentity?: string): ConvertedGraphQLDoctype | undefined;
 
 // Warning: (ae-forgotten-export) The symbol "FieldTemplate" needs to be exported by the entry point index.d.ts
 //
@@ -157,7 +163,7 @@ export interface DataClient<T extends DoctypeRef = DoctypeRef, M = DoctypeMeta> 
 }
 
 // @public
-export function defaultIsEntityField(fieldName: string, _field: GraphQLField<unknown, unknown>, _parentType: GraphQLObjectType): boolean;
+export function defaultIsEntityField(fieldName: string, _field: GraphQLField<unknown, unknown>, parentType: GraphQLObjectType): boolean;
 
 // @public
 export function defaultIsEntityType(typeName: string, type: GraphQLObjectType): boolean;
@@ -193,6 +199,7 @@ export const DoctypeMeta: z.ZodObject<{
     name: z.ZodString;
     slug: z.ZodOptional<z.ZodString>;
     displayField: z.ZodOptional<z.ZodString>;
+    route: z.ZodOptional<z.ZodString>;
     fields: z.ZodArray<z.ZodType<DoctypeField, unknown, z.core.$ZodTypeInternals<DoctypeField, unknown>>>;
     links: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodObject<{
         target: z.ZodString;
@@ -324,7 +331,27 @@ export function flattenFields(fields: readonly DoctypeField[]): (ValueField | Ta
 export function formatDoctypeDrift(drift: DoctypeDrift): string[];
 
 // @public
+export interface GenerationPlanEntry {
+    basis: ConvertedGraphQLDoctype;
+    generated: ConvertedGraphQLDoctype;
+    subset: boolean;
+}
+
+// @public
+export interface GenerationPlanOptions {
+    identity?: Record<string, string>;
+    noAggregates?: boolean;
+    onWarning?: (message: string) => void;
+}
+
+// @public
 export function getDisplayField(fields: readonly DoctypeField[], displayField: string | undefined): ValueField | undefined;
+
+// @public
+export function getDoctypeSlug(doctype: {
+    name: string;
+    slug?: string;
+}): string;
 
 // @public
 export function getPrimaryKeyField(fields: readonly DoctypeField[]): ValueField | undefined;
@@ -387,6 +414,9 @@ export interface GraphQLConversionOptions {
 
 // @public
 export function hasBadgeOptions(options: FieldOptions | undefined): boolean;
+
+// @public
+export function inferFieldKind(field: unknown): DoctypeField['kind'];
 
 // @public
 export type InteractionMode = 'edit' | 'read' | 'display';
@@ -465,7 +495,12 @@ export type LinkRenderMode = 'inline' | 'record' | 'table';
 export function lookupBadge(options: FieldOptions | undefined, key: string | undefined): BadgeDescriptor | undefined;
 
 // @public
-export function mergeIntrospectedDoctype(authored: AuthoredDoctype, generated: ConvertedGraphQLDoctype): MergeResult;
+export function mergeIntrospectedDoctype(authored: AuthoredDoctype, generated: ConvertedGraphQLDoctype, options?: MergeOptions): MergeResult;
+
+// @public
+export interface MergeOptions {
+    subset?: boolean;
+}
 
 // @public
 export interface MergeResult {
@@ -484,6 +519,9 @@ export function parseField(data: unknown): DoctypeField;
 
 // @public
 export function pascalToSnake(pascal: string): string;
+
+// @public
+export function planGeneration(entities: readonly ConvertedGraphQLDoctype[], options?: GenerationPlanOptions): GenerationPlanEntry[];
 
 // @public
 export function resolveLinkRenderMode(link: {
@@ -510,6 +548,9 @@ export function snakeToCamel(snakeCase: string): string;
 
 // @public
 export function snakeToLabel(snakeCase: string): string;
+
+// @public
+export function stripFieldKind(field: unknown): unknown;
 
 // @public
 export const SyncFetch: z.ZodObject<{
@@ -631,6 +672,7 @@ export interface ValueField {
     edit?: boolean;
     fieldname: string;
     format?: string;
+    height?: string;
     hidden?: boolean;
     kind: 'field';
     label?: string;
@@ -657,6 +699,7 @@ export const ValueFieldSchema: z.ZodObject<{
     doctype: z.ZodOptional<z.ZodString>;
     label: z.ZodOptional<z.ZodString>;
     width: z.ZodOptional<z.ZodString>;
+    height: z.ZodOptional<z.ZodString>;
     align: z.ZodOptional<z.ZodEnum<{
         left: "left";
         right: "right";

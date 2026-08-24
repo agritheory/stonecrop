@@ -41,6 +41,17 @@ describe('ACell badge rendering', { tags: ['component'] }, () => {
 		expect(badge.attributes('data-value')).toBe('Open')
 	})
 
+	it('renders a cell-fill badge for ASegmentedControl columns with badge options', () => {
+		const wrapper = mountCell(
+			[{ name: 'status', component: 'ASegmentedControl', options: badgeOptions }],
+			[{ status: 'Closed' }]
+		)
+		const badge = wrapper.find('.badge-stub')
+		expect(badge.exists()).toBe(true)
+		expect(badge.attributes('data-presentation')).toBe('cell-fill')
+		expect(badge.attributes('data-value')).toBe('Closed')
+	})
+
 	it('passes the raw stored value, not the formatted text, for options lookup', () => {
 		const wrapper = mountCell(
 			[{ name: 'status', component: 'ADropdown', options: badgeOptions, format: (v: any) => `<${String(v)}>` }],

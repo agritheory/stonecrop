@@ -28,6 +28,12 @@ const preset: GraphileConfig.Preset = {
 }
 ```
 
+`createStonecropPreset()` makes two corrections to the schema PostGraphile would otherwise build.
+It moves Relay's global identifier to `nodeId` so a real `id` column keeps its own name, and it
+exposes the many side of any foreign key declared `ON DELETE CASCADE` — so a parent type carries a
+collection field for the rows it owns, and `stonecrop-schema generate` can turn that into a child
+table. A foreign key without a cascade is a reference, not ownership, and stays one-directional.
+
 `createStonecropPlugin()` discovers the `PgExecutor` automatically from `pgServices` — no executor argument is needed. An optional `StonecropPluginOptions` object accepts:
 
 | Option | Default | Description |

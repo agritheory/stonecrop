@@ -144,6 +144,7 @@ const data = ref({
 	card: '4111111111111111',
 	phone: '',
 	status: 'Active',
+	priority: 'normal',
 })
 
 // Table variants: rows keyed by fieldname at each nesting level.

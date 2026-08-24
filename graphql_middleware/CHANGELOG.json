@@ -2,6 +2,38 @@
   "name": "@stonecrop/graphql-middleware",
   "entries": [
     {
+      "version": "0.27.0",
+      "tag": "@stonecrop/graphql-middleware_v0.27.0",
+      "date": "Fri, 21 Aug 2026 09:43:22 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Add height to StonecropFieldMeta so the field survives the meta query"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.26.0",
+      "tag": "@stonecrop/graphql-middleware_v0.26.0",
+      "date": "Fri, 21 Aug 2026 08:57:32 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Expose the many side of `ON DELETE CASCADE` foreign keys, so a parent type carries the rows it owns"
+          }
+        ],
+        "patch": [
+          {
+            "comment": "Keep a real `id` column named `id`, moving Relay's identifier to `nodeId`"
+          },
+          {
+            "comment": "Resolve a `primaryKey` declared inside a fieldset instead of refusing the doctype"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.25.0",
       "tag": "@stonecrop/graphql-middleware_v0.25.0",
       "date": "Thu, 20 Aug 2026 09:10:32 GMT",

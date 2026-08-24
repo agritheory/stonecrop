@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { setOrDelete, updateFieldAt, type Field } from '../src/runtime/app/components/docbuilderFields'
+import { setOrDelete, updateFieldAt, type Field, isValueField } from '../src/runtime/app/components/docbuilderFields'
 
 /**
  * Hop 3 of the unknown-key preservation chain — the fields-panel cell edit. Previously untested: the
@@ -104,5 +104,30 @@ describe('updateFieldAt', () => {
 		const fields = [richField()]
 		updateFieldAt(fields, 0, 'label', 'Edited')
 		expect(fields[0]).toEqual(richField())
+	})
+})
+
+describe('isValueField', () => {
+	// Was a private function inside the SFC, duplicating `injectKind`'s rule in another package and
+	// untested. It now reads the one definition; these pin the behaviour that move must preserve.
+	it('agrees with a legacy file that still carries a kind', () => {
+		expect(isValueField({ kind: 'field', fieldname: 'a' })).toBe(true)
+		expect(isValueField({ kind: 'fieldset', fieldname: 'g', schema: [] })).toBe(false)
+		expect(isValueField({ kind: 'table', fieldname: 'r', columns: [] })).toBe(false)
+	})
+
+	it('infers from shape when kind is absent, which is now every generated file', () => {
+		expect(isValueField({ fieldname: 'a', component: 'ATextInput' })).toBe(true)
+		expect(isValueField({ fieldname: 'g', schema: [] })).toBe(false)
+		expect(isValueField({ fieldname: 'r', columns: [] })).toBe(false)
+	})
+
+	it('ignores `kind` entirely, classifying only by shape', () => {
+		// The input that proves `kind` is not consulted: it declares a fieldset but carries no
+		// `schema` to be one. The builder renders it as a row, which is also the better outcome —
+		// a malformed entry the load gate will reject stays visible and fixable in the builder
+		// rather than being silently preserved as an unrenderable container.
+		expect(isValueField({ kind: 'fieldset', fieldname: 'malformed' })).toBe(true)
+		expect(isValueField({ kind: 7, fieldname: 'g', schema: [] })).toBe(false)
 	})
 })

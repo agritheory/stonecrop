@@ -1,6 +1,18 @@
 # Change Log - @stonecrop/desktop
 
-This log was last generated on Thu, 20 Aug 2026 09:10:32 GMT and should not be manually modified.
+This log was last generated on Fri, 21 Aug 2026 09:43:22 GMT and should not be manually modified.
+
+## 0.27.0
+Fri, 21 Aug 2026 09:43:22 GMT
+
+_Version update only_
+
+## 0.26.0
+Fri, 21 Aug 2026 08:57:32 GMT
+
+### Patches
+
+- Build the records list through the shared column rule, so links and child tables no longer stringify into a cell
 
 ## 0.25.0
 Thu, 20 Aug 2026 09:10:32 GMT

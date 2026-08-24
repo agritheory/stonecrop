@@ -27,10 +27,12 @@ describe('getPrimaryKeyField', { tags: ['unit'] }, () => {
 		expect(getPrimaryKeyField(fields)?.fieldname).toBe('a')
 	})
 
-	it('does not descend into fieldsets', () => {
-		// A fieldset's children are not identity columns — a nested match would be an authoring
-		// error, and matching it would make the client key records by a column the server's
-		// identity predicate never uses.
+	it('descends into fieldsets', () => {
+		// A fieldset is layout, not scope: its children are fields of the doctype with columns of
+		// their own, which is why `flattenFields` exists and why the sibling `displayField` gate
+		// already descends. The behaviour this replaced neither descended nor refused — it ignored
+		// an explicit `primaryKey: true`, so the author declared identity and nothing honoured it
+		// and nothing said so.
 		const fields = [
 			{
 				kind: 'fieldset',
@@ -38,7 +40,18 @@ describe('getPrimaryKeyField', { tags: ['unit'] }, () => {
 				schema: [field('inner', { primaryKey: true })],
 			},
 		] as unknown as DoctypeField[]
-		expect(getPrimaryKeyField(fields)).toBeUndefined()
+		expect(getPrimaryKeyField(fields)?.fieldname).toBe('inner')
+	})
+
+	it('prefers a top-level key over a nested one', () => {
+		// Document order across the flattened set decides, and a top-level field precedes the
+		// fieldset that follows it. Stated because the load gate now rejects this shape outright,
+		// so the only callers reaching it hold fields that never went through `DoctypeMeta`.
+		const fields = [
+			field('code', { primaryKey: true }),
+			{ kind: 'fieldset', fieldname: 'group', schema: [field('inner', { primaryKey: true })] },
+		] as unknown as DoctypeField[]
+		expect(getPrimaryKeyField(fields)?.fieldname).toBe('code')
 	})
 
 	it('ignores a table field even if flagged', () => {
@@ -110,12 +123,14 @@ describe('getRecordIdField', { tags: ['unit'] }, () => {
 		expect(getRecordIdField([field('label')])).toBe('id')
 	})
 
-	it('does not descend into fieldsets', () => {
+	it('descends into fieldsets rather than falling back to `id`', () => {
+		// The `id` fallback means "nothing was declared". A nested declaration is a declaration,
+		// so falling back here answered a question the doctype had already answered.
 		const fields = [
 			field('id'),
 			{ kind: 'fieldset', fieldname: 'group', schema: [field('inner', { primaryKey: true })] },
 		] as unknown as DoctypeField[]
-		expect(getRecordIdField(fields)).toBe('id')
+		expect(getRecordIdField(fields)).toBe('inner')
 	})
 })
 
@@ -143,11 +158,25 @@ describe('DoctypeMeta — declared primary keys', { tags: ['unit'] }, () => {
 		expect(result.errors[0].message).toContain('altCode')
 	})
 
-	it('does not count a fieldset-nested key toward the limit', () => {
-		// Consistent with `getPrimaryKeyField`, which never sees them: a nested flag is an authoring
-		// error, and counting it here would reject a doctype whose top-level declaration is fine.
+	it('counts a fieldset-nested key toward the limit', () => {
+		// The gate asks the same question `getPrimaryKeyField` asks, so it has to descend the same
+		// way. Not counting nested keys let a doctype declare two and pass, and the resolution then
+		// took the first and ignored the other — the silent multi-key case this gate exists to stop.
 		const fields = [
 			field('code', { primaryKey: true }),
+			{ kind: 'fieldset', fieldname: 'group', component: 'AFieldset', schema: [field('inner', { primaryKey: true })] },
+		] as unknown as DoctypeField[]
+		const result = validateDoctype(doctype(fields))
+		expect(result.success).toBe(false)
+		expect(result.errors[0].path).toEqual(['fields'])
+		expect(result.errors[0].message).toContain('code')
+		expect(result.errors[0].message).toContain('inner')
+	})
+
+	it('accepts a single key that is nested', () => {
+		// One key is one key wherever it is declared; the limit is on how many, not on where.
+		const fields = [
+			field('name'),
 			{ kind: 'fieldset', fieldname: 'group', component: 'AFieldset', schema: [field('inner', { primaryKey: true })] },
 		] as unknown as DoctypeField[]
 		expect(validateDoctype(doctype(fields)).success).toBe(true)

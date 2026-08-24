@@ -17,6 +17,7 @@ describe('component-meta', { tags: ['unit'] }, () => {
 		expect(componentCategory('ADate')).toBe('date')
 		expect(componentCategory('ADateTime')).toBe('datetime')
 		expect(componentCategory('ADropdown')).toBe('select')
+		expect(componentCategory('ASegmentedControl')).toBe('select')
 		expect(componentCategory('ACodeEditor')).toBe('code')
 		expect(componentCategory('AFormLink')).toBe('link')
 	})

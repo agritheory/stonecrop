@@ -23,10 +23,12 @@ import AFormLoading from './components/AFormLoading.vue';
 import ANumericInput from './components/form/ANumericInput.vue';
 import type { App } from 'vue';
 import AQuantityInput from './components/form/AQuantityInput.vue';
+import ASegmentedControl from './components/form/ASegmentedControl.vue';
 import ATextboxInput from './components/form/ATextboxInput.vue';
 import ATextInput from './components/form/ATextInput.vue';
 import type { BadgeDescriptor } from '@stonecrop/schema';
 import type { ColumnSchema } from '@stonecrop/schema';
+import ExpandButton from './components/base/ExpandButton.vue';
 import type { FieldOptions } from '@stonecrop/schema';
 import type { FieldValidation } from '@stonecrop/schema';
 import type { GetRecordsOptions } from '@stonecrop/schema';
@@ -87,6 +89,8 @@ export { ANumericInput }
 
 export { AQuantityInput }
 
+export { ASegmentedControl }
+
 export { ATextboxInput }
 
 export { ATextInput }
@@ -141,6 +145,8 @@ export interface CurrencyValue {
 // @public
 export function deserializeFunction<T extends (...args: any[]) => any>(source: string): T;
 
+export { ExpandButton }
+
 // @public
 export function install(app: App): void;
 
@@ -177,6 +183,9 @@ export interface ResolvedFieldset {
     mode?: InteractionMode;
     schema: ResolvedField[];
 }
+
+// @public
+export function resolvedFieldsToColumns(fields: readonly ResolvedField[]): ColumnSchema[];
 
 // @public
 export interface ResolvedLink {

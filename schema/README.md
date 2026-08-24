@@ -305,6 +305,29 @@ stonecrop-schema generate -i introspection.json -o ./app/doctypes
 stonecrop-schema generate -s schema.graphql -o ./app/doctypes
 ```
 
+### What it writes
+
+Each table yields two peer doctypes — the entity, carrying every column and backing the record
+form, and its aggregate, the collection view — plus the `route` each one registers at:
+
+```jsonc
+// order.json
+{ "name": "Order", "slug": "order", "route": "/order/:id" }
+// orders.json
+{ "name": "Orders", "slug": "orders", "route": "/order" }
+```
+
+The pair shares one URL segment, taken from the entity, so no URL ever carries a plural.
+
+A doctype the schema shows as rows owned by another gets **no** `route`: it has no page, because
+its records are edited inside their parent. Ownership is read from `ON DELETE CASCADE`, the only
+place a database states it — a foreign key that cascades marks rows belonging to the parent, while
+one that does not marks a reference to something outliving it. A doctype that anything links to
+singly keeps its route regardless, so a link always has somewhere to navigate.
+
+Every key is yours once written. Regeneration verifies an authored file and never overwrites it, so
+a `route` you add, change or delete stays that way.
+
 ### Filtering types
 
 GraphQL schemas (especially PostGraphile) expose many internal types. Use `--include` to

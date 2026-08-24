@@ -29,6 +29,7 @@ export const COMPONENT_CATEGORY: Record<string, ComponentCategory> = {
 	ADuration: 'text',
 	ADateRange: 'date',
 	ADropdown: 'select',
+	ASegmentedControl: 'select',
 	ACodeEditor: 'code',
 	AFormLink: 'link',
 	AFileAttach: 'attach',

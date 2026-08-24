@@ -15,16 +15,11 @@
  */
 
 import { INTROSPECTED_IDENTITY_PROPS } from '../field'
+import { authoredPrimaryKey, flattenAuthored, isAuthoredRecord } from './authored'
+import type { AuthoredDoctype } from './authored'
 import type { ConvertedGraphQLDoctype } from './types'
 
-/**
- * A doctype as it exists on disk: a plain object that may carry keys this package does not model
- * (`handler` on an action, `filterFunction` on a field, whatever an app has added). Typing it
- * loosely is what lets the merge round-trip those keys untouched instead of dropping them.
- *
- * @public
- */
-export type AuthoredDoctype = Record<string, unknown>
+export type { AuthoredDoctype }
 
 /**
  * What generation found that the authored doctype does not agree with. Every bucket is advisory —
@@ -56,29 +51,32 @@ export interface DoctypeDrift {
 	identityDrift: string[]
 }
 
+/**
+ * How to verify the authored doctype against the schema.
+ *
+ * @public
+ */
+export interface MergeOptions {
+	/**
+	 * The authored doctype is a curated **subset** of the schema's columns rather than a model of
+	 * all of them — an aggregate being the case this exists for.
+	 *
+	 * This changes what counts as drift in both directions, so `generated` must be passed the
+	 * *entity's* full field set, not the subset's. A column the author added to an aggregate is
+	 * then confirmed against the real table (so a genuinely dropped column still reports as an
+	 * orphan), while the columns deliberately left out stop reporting as omissions. Without it an
+	 * aggregate reports phantom drift on every run, which both spams `--check` and buries the one
+	 * finding that matters.
+	 */
+	subset?: boolean
+}
+
 /** Outcome of a merge: the doctype to write, plus what generation disagreed with. @public */
 export interface MergeResult {
 	/** The authored doctype with `source` markers added and nothing else changed. */
 	doctype: AuthoredDoctype
 	/** Advisory report. Never applied. */
 	drift: DoctypeDrift
-}
-
-/** Recursively flatten authored fields, descending into fieldsets. */
-function flattenAuthored(fields: readonly AuthoredDoctype[]): AuthoredDoctype[] {
-	const out: AuthoredDoctype[] = []
-	for (const f of fields) {
-		if (Array.isArray(f.schema)) {
-			out.push(...flattenAuthored(f.schema.filter(isRecord)))
-		} else {
-			out.push(f)
-		}
-	}
-	return out
-}
-
-function isRecord(value: unknown): value is AuthoredDoctype {
-	return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
 function describe(value: unknown): string {
@@ -89,7 +87,9 @@ function describe(value: unknown): string {
  * Verify an authored doctype against freshly generated output and stamp provenance.
  *
  * @param authored - the doctype as it exists on disk; every key not named below is preserved verbatim
- * @param generated - `convertGraphQLSchema` output for the corresponding GraphQL type
+ * @param generated - `convertGraphQLSchema` output for the corresponding GraphQL type. For a
+ *   `subset` merge this is the **entity**, whose fields are the set the subset is curated from
+ * @param options - see {@link MergeOptions}
  * @returns the doctype to write, plus a drift report
  *
  * @example
@@ -101,8 +101,12 @@ function describe(value: unknown): string {
  *
  * @public
  */
-export function mergeIntrospectedDoctype(authored: AuthoredDoctype, generated: ConvertedGraphQLDoctype): MergeResult {
-	const authoredFields = Array.isArray(authored.fields) ? authored.fields.filter(isRecord) : []
+export function mergeIntrospectedDoctype(
+	authored: AuthoredDoctype,
+	generated: ConvertedGraphQLDoctype,
+	options: MergeOptions = {}
+): MergeResult {
+	const authoredFields = Array.isArray(authored.fields) ? authored.fields.filter(isAuthoredRecord) : []
 	const generatedByName = new Map(generated.fields.map(f => [f.fieldname, f]))
 	// Expanding links live in `links`, not `fields`, so a field naming one is modelled, not orphaned.
 	const generatedLinkNames = new Set(Object.keys(generated.links ?? {}))
@@ -121,7 +125,7 @@ export function mergeIntrospectedDoctype(authored: AuthoredDoctype, generated: C
 	const tag = (field: AuthoredDoctype): AuthoredDoctype => {
 		// Containers have no column of their own; recurse and leave the container itself alone.
 		if (Array.isArray(field.schema)) {
-			return { ...field, schema: field.schema.filter(isRecord).map(tag) }
+			return { ...field, schema: field.schema.filter(isAuthoredRecord).map(tag) }
 		}
 
 		const name = typeof field.fieldname === 'string' ? field.fieldname : ''
@@ -159,18 +163,22 @@ export function mergeIntrospectedDoctype(authored: AuthoredDoctype, generated: C
 
 	const merged: AuthoredDoctype = { ...authored, fields: authoredFields.map(tag) }
 
-	const authoredNames = new Set(flattenAuthored(authoredFields).map(f => f.fieldname))
-	drift.omitted = generated.fields.map(f => f.fieldname).filter(n => !authoredNames.has(n))
+	// A curated subset omits columns by definition, so the bucket that reports omissions has
+	// nothing true to say about one.
+	if (!options.subset) {
+		const authoredNames = new Set(flattenAuthored(authoredFields).map(f => f.fieldname))
+		drift.omitted = generated.fields.map(f => f.fieldname).filter(n => !authoredNames.has(n))
+	}
 
 	// Classify identity last, once every field has been compared.
-	const authoredPk = flattenAuthored(authoredFields).find(f => f.primaryKey === true)
+	const authoredPk = authoredPrimaryKey(authored)
 	const generatedPk = generated.fields.find(f => f.primaryKey === true)
-	if (authoredPk && generatedPk && authoredPk.fieldname !== generatedPk.fieldname) {
+	if (authoredPk && generatedPk && authoredPk !== generatedPk.fieldname) {
 		drift.mode = 'partial'
-		drift.reason = `authored primary key '${String(authoredPk.fieldname)}' is not the derivable '${generatedPk.fieldname}' — left as authored`
+		drift.reason = `authored primary key '${authoredPk}' is not the derivable '${generatedPk.fieldname}' — left as authored`
 	} else if (authoredPk && !generatedPk) {
 		drift.mode = 'partial'
-		drift.reason = `authored primary key '${String(authoredPk.fieldname)}' is not derivable from the schema — left as authored`
+		drift.reason = `authored primary key '${authoredPk}' is not derivable from the schema — left as authored`
 	} else if (!authoredPk && generatedPk) {
 		drift.mode = 'partial'
 		drift.reason = `schema suggests '${generatedPk.fieldname}' as primary key but the doctype declares none — not applied`

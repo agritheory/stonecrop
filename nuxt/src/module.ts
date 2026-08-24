@@ -15,12 +15,21 @@ import {
 } from '@nuxt/kit'
 import type { Nuxt, NuxtPage } from '@nuxt/schema' // do not remove this import since it causes a build issue
 
+import { declaredRoutePages } from './routes'
 import type { RouteStrategyFn, ParsedDoctype } from './types'
 
 // Re-export strategy types for consumers
 export type { RouteStrategyFn, ParsedDoctype }
 
 const { resolve } = createResolver(import.meta.url)
+
+/**
+ * Dev HMR re-runs module setup while the layout registry keeps the first `home` entry (NUXT_B4014).
+ * Keyed on the Nuxt instance rather than module scope: the ESM module cache outlives a single Nuxt,
+ * so a plain `let` would leave every later instance in the process (dev restart, multi-app build,
+ * in-process test harness) with no `home` layout at all.
+ */
+const nuxtWithHomeLayout = new WeakSet<Nuxt>()
 
 // Define module options interface
 export interface ModuleOptions {
@@ -29,9 +38,11 @@ export interface ModuleOptions {
 	/** Path to doctypes folder relative to the project root (defaults to 'doctypes') */
 	doctypesDir?: string
 	/**
-	 * Path to the page component used for default slug-based routing.
-	 * When `routeStrategy` is not set, one route per doctype is registered
-	 * at `/<slug>` (or `/<fileName>` if no slug) using this component.
+	 * Path to the page component every doctype route renders.
+	 *
+	 * When `routeStrategy` is not set, one route is registered per doctype that **declares** a
+	 * `route`, at exactly that path — `/order` for a collection, `/order/:id` for a record. A
+	 * doctype without one gets no page: most doctypes are not meant to be visited directly.
 	 *
 	 * The path is resolved relative to the application's `srcDir`.
 	 *
@@ -190,7 +201,10 @@ export default defineNuxtModule<ModuleOptions>({
 
 		// add the base Stonecrop layout from the module
 		const homepage = resolve('runtime/app/layouts/StonecropHome.vue')
-		addLayout(homepage, 'home')
+		if (!nuxtWithHomeLayout.has(nuxt)) {
+			addLayout(homepage, 'home')
+			nuxtWithHomeLayout.add(nuxt)
+		}
 
 		// find doctype schemas in the nuxt application and add them as pages
 		const appDir = nuxt.options.srcDir
@@ -268,24 +282,25 @@ export default defineNuxtModule<ModuleOptions>({
 				logger.log('Skipping Stonecrop home page: root page already exists')
 			}
 
-			// Generate routes: custom strategy takes priority, then slug-based default
+			// Generate routes: a custom strategy takes priority, otherwise each doctype's declared `route`
 			let generatedPages: NuxtPage[] = []
 
 			if (options.routeStrategy) {
 				// User-provided strategy has full control
 				generatedPages = options.routeStrategy(doctypes)
 			} else if (options.pageComponent) {
-				// Default slug-based routing with user's page component
+				// Routes come from what each doctype declares, not from its slug — see `declaredRoutePages`.
 				const componentPath = resolve(appDir, options.pageComponent)
-				generatedPages = doctypes.map(({ fileName, data, fields }) => {
-					const slug = (data.slug as string) || fileName.toLowerCase()
-					return {
-						name: `stonecrop-${fileName}`,
-						path: `/${slug}`,
-						file: componentPath,
-						meta: { schema: fields, doctype: data },
-					}
-				})
+				const declared = declaredRoutePages(doctypes, componentPath)
+				generatedPages = declared.pages
+				if (declared.skipped.length > 0) {
+					// Named rather than counted, and logged rather than silent: "no page for this
+					// doctype" and "this doctype declares no route" look identical from the browser.
+					logger.info(
+						`No route declared, so no page registered for: ${declared.skipped.join(', ')}. ` +
+							`Add a "route" to a doctype to give it one.`
+					)
+				}
 			} else {
 				logger.warn(
 					'No routeStrategy or pageComponent configured — ' +

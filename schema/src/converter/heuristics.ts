@@ -105,8 +105,47 @@ export function defaultIsEntityType(typeName: string, type: GraphQLObjectType): 
 /**
  * Fields to skip by default on entity types.
  * These are internal to GraphQL servers and don't represent semantic data.
+ *
+ * Relay's global object identifier is deliberately absent: which field carries it is a
+ * declaration, not a name. See {@link relayNodeIdField}.
  */
-const SKIP_FIELDS = new Set(['nodeId', '__typename', 'clientMutationId'])
+const SKIP_FIELDS = new Set(['__typename', 'clientMutationId'])
+
+/**
+ * The name Relay's Object Identification spec gives its marker interface.
+ */
+const RELAY_NODE_INTERFACE = 'Node'
+
+/**
+ * The field carrying Relay's global object identifier on this type, or `undefined` for a type that
+ * declares none.
+ *
+ * Read off the interface rather than matched against a list of names, because the name is a server
+ * setting: PostGraphile exposes it as `nodeIdFieldName`, which is `id` under the un-overridden
+ * Amber preset, `nodeId` under Stonecrop's, and whatever a foreign host chose under theirs. A
+ * hardcoded name is a snapshot of one of those, and gets it wrong in both directions at once — it
+ * emits an opaque identifier as a column (whose every read then fails on a column that does not
+ * exist), and drops a real column that happens to share the name.
+ *
+ * The interface must be Relay's marker and not a domain interface that shares its name, so it has
+ * to declare exactly one field, a non-null `ID`, and nothing else — anything carrying domain fields
+ * is a different interface, and skipping against it would drop real columns.
+ *
+ * @internal
+ */
+function relayNodeIdField(type: GraphQLObjectType): string | undefined {
+	for (const iface of type.getInterfaces()) {
+		if (iface.name !== RELAY_NODE_INTERFACE) continue
+
+		const declared = Object.values(iface.getFields())
+		if (declared.length !== 1) continue
+
+		const { namedType, required, isList } = unwrapType(declared[0].type)
+		if (required && !isList && namedType.name === 'ID') return declared[0].name
+	}
+
+	return undefined
+}
 
 /**
  * Default heuristic to filter fields on entity types.
@@ -114,16 +153,17 @@ const SKIP_FIELDS = new Set(['nodeId', '__typename', 'clientMutationId'])
  *
  * @param fieldName - The GraphQL field name
  * @param _field - The GraphQL field definition (unused in default implementation)
- * @param _parentType - The parent entity type (unused in default implementation)
+ * @param parentType - The parent entity type, whose interfaces declare its Relay identifier
  * @returns `true` if this field should be included
  * @public
  */
 export function defaultIsEntityField(
 	fieldName: string,
 	_field: GraphQLField<unknown, unknown>,
-	_parentType: GraphQLObjectType
+	parentType: GraphQLObjectType
 ): boolean {
-	return !SKIP_FIELDS.has(fieldName)
+	if (SKIP_FIELDS.has(fieldName)) return false
+	return fieldName !== relayNodeIdField(parentType)
 }
 
 /**
