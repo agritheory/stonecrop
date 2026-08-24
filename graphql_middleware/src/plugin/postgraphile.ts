@@ -911,15 +911,12 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 											// A result that is not a record at all — an effect's `{ state }` — has
 											// no field the doctype declares as an inline link, so it is untouched.
 											if (outcome.success && outcome.data !== null && typeof outcome.data === 'object') {
-												const written = Array.isArray(outcome.data) ? outcome.data : [outcome.data]
-												// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- narrowed to object above; enrichment reads only fields the doctype declares
-												await enrichLinkDisplayFields(
-													tx,
-													meta,
-													written as Record<string, unknown>[],
-													options.tables,
-													debugSql
+												// A predicate rather than an assertion: an element that is not an object has
+												// no field to enrich, so dropping it is the honest answer.
+												const written = (Array.isArray(outcome.data) ? outcome.data : [outcome.data]).filter(
+													(row: unknown): row is Record<string, unknown> => row !== null && typeof row === 'object'
 												)
+												await enrichLinkDisplayFields(tx, meta, written, options.tables, debugSql)
 											}
 
 											// Attached here rather than carried through `applyGuardedTransition`:
