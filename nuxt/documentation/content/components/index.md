@@ -13,6 +13,7 @@ Interactive documentation for individual Stonecrop components — live demos alo
 - [Form Loading](./form-loading) — `AFormLoading`, a loading-state placeholder
 - [Fieldset](./fieldset) — `AFieldset`, a collapsible group of nested fields
 - [Checkbox](./checkbox) — `ACheckbox`, a boolean field component
+- [Badge](./badge) — `ABadge`, a colored status/label chip
 - [Text Input](./text-input) — `ATextInput`, a single-line text field
 - [Textbox Input](./textbox-input) — `ATextboxInput`, a multi-line text field
 - [Numeric Input](./numeric-input) — `ANumericInput`, a plain numeric field

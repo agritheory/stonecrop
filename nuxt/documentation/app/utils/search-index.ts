@@ -150,6 +150,11 @@ export const searchIndex: SearchEntry[] = [
 		url: '/components/checkbox',
 	},
 	{
+		title: 'Badge',
+		description: 'A colored status/label chip, resolvable from a value against an options map',
+		url: '/components/badge',
+	},
+	{
 		title: 'Currency',
 		description: 'A currency amount input with automatic base-currency conversion',
 		url: '/components/currency',

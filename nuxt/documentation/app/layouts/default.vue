@@ -36,6 +36,7 @@ const sidebarSections = [
 					{ text: 'Form Loading', to: '/components/form-loading' },
 					{ text: 'Fieldset', to: '/components/fieldset' },
 					{ text: 'Checkbox', to: '/components/checkbox' },
+					{ text: 'Badge', to: '/components/badge' },
 					{ text: 'Text Input', to: '/components/text-input' },
 					{ text: 'Textbox Input', to: '/components/textbox-input' },
 					{ text: 'Numeric Input', to: '/components/numeric-input' },
