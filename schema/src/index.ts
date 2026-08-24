@@ -22,7 +22,6 @@ export type { DoctypeField, FieldOptions, FieldValidation, FieldsetField, TableF
 export {
 	DoctypeFieldSchema,
 	FieldsetFieldSchema,
-	flattenFields,
 	getDisplayField,
 	getPrimaryKeyField,
 	getRecordIdentity,
@@ -34,6 +33,12 @@ export {
 	TableFieldSchema,
 	ValueFieldSchema,
 } from './field'
+
+// Field descent, kept a leaf so a caller needing only the descent does not take on zod
+export { flattenFields } from './flatten'
+
+// Record shaping — the single definition of what a record looks like on its way to the server
+export { unwrapInlineLinks } from './record'
 
 // Doctype schema
 // ActionDefinition and WorkflowMeta are exported as values (Zod schemas) so consumers can use

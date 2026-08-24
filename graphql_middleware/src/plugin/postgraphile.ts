@@ -1,5 +1,5 @@
 import type { DoctypeField, DoctypeMeta, LinkDeclaration, ValueField, GetRecordOptions } from '@stonecrop/schema'
-import { camelToSnake, getRecordIdField, resolveLinkRenderMode } from '@stonecrop/schema'
+import { camelToSnake, getRecordIdField, resolveLinkRenderMode, unwrapInlineLinks } from '@stonecrop/schema'
 import { loadOneWithPgClient, sideEffectWithPgClient } from '@dataplan/pg'
 import type { PgClient, PgExecutor } from '@dataplan/pg'
 import { constant, lambda, object } from 'postgraphile/grafast'
@@ -701,10 +701,18 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 									}
 									// Record envelope: [{ id, data }] — the transition keys off the record id.
 									// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- spec.actionArgs is a Grafast runtime value; record envelope shape is the dispatch contract
-									const argList = (Array.isArray(spec.actionArgs) ? spec.actionArgs : []) as Array<{
+									const rawArgs = (Array.isArray(spec.actionArgs) ? spec.actionArgs : []) as Array<{
 										id?: string | number
 										data?: Record<string, unknown>
 									}>
+									// An inline link arrives as `{ id, displayText }`; a column takes the id alone.
+									// Reduced here so no client has to know what storage accepts.
+									//
+									// The whole envelope, not just `recordData` below — handlers read `ctx.args`.
+									// Copied, not mutated: `spec.actionArgs` is the request's own value.
+									const argList = rawArgs.map(entry =>
+										entry?.data ? { ...entry, data: unwrapInlineLinks(meta.fields, entry.data) } : entry
+									)
 									const recordId = argList[0]?.id
 									const recordData = argList[0]?.data ?? {}
 
@@ -892,6 +900,28 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 											// what makes the rollback happen; the envelope is carried across so the
 											// caller still gets `success: false` rather than a GraphQL error.
 											if (!outcome.success) throw new ActionRolledBack(outcome)
+											// A record a write returns is a record, so it carries the links a read
+											// resolves. Enriching one path and not the other changes a record's
+											// shape depending on how the client came by it: a link rendered its
+											// display text until the record was saved, and its raw id from then
+											// until the next full fetch. Nothing fails — the field just goes wrong.
+											//
+											// Runs inside the transaction so the lookup sees the row just written,
+											// and only on success, since a rolled-back action returns no record.
+											// A result that is not a record at all — an effect's `{ state }` — has
+											// no field the doctype declares as an inline link, so it is untouched.
+											if (outcome.success && outcome.data !== null && typeof outcome.data === 'object') {
+												const written = Array.isArray(outcome.data) ? outcome.data : [outcome.data]
+												// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- narrowed to object above; enrichment reads only fields the doctype declares
+												await enrichLinkDisplayFields(
+													tx,
+													meta,
+													written as Record<string, unknown>[],
+													options.tables,
+													debugSql
+												)
+											}
+
 											// Attached here rather than carried through `applyGuardedTransition`:
 											// which keys a backend can store is a storage question, and the
 											// dispatcher is deliberately storage-agnostic. A failed action wrote

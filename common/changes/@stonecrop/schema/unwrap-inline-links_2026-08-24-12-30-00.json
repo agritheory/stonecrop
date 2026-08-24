@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "comment": "Add unwrapInlineLinks, which reduces a record's inline link fields to the ids their columns hold",
+      "type": "minor",
+      "packageName": "@stonecrop/schema"
+    }
+  ],
+  "packageName": "@stonecrop/schema"
+}

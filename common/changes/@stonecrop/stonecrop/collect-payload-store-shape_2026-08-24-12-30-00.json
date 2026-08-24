@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "comment": "Return records from collectRecordPayload in the shape the store holds, leaving inline link reduction to the adapter",
+      "type": "patch",
+      "packageName": "@stonecrop/stonecrop"
+    }
+  ],
+  "packageName": "@stonecrop/stonecrop"
+}
