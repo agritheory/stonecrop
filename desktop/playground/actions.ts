@@ -45,13 +45,6 @@ export function addNotification(message: string, type: 'info' | 'success' | 'war
 	}, timeout)
 }
 
-export function removeNotification(id: string) {
-	const index = notifications.findIndex(n => n.id === id)
-	if (index > -1) {
-		notifications.splice(index, 1)
-	}
-}
-
 // ============= NAME VALIDATION ACTIONS =============
 
 registerGlobalAction('validateName', (context: FieldChangeContext) => {

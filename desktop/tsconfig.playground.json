@@ -1,0 +1,33 @@
+{
+	// Typechecks the playground app. Nothing did while it lived under `examples/` — that package
+	// had no `test:types` script at all — and it is now the canonical worked example of a plain-Vue
+	// app on Stonecrop, so it should not be the one surface nobody checks.
+	//
+	// It cannot simply join `tsconfig.json`: that file's `include` is the input to Heft's build,
+	// and adding `playground/**` there would emit the demo app's declarations into `dist/`.
+	//
+	// `include` REPLACES the base's, so `src/shims-vue.d.ts` is listed explicitly — it declares the
+	// `*.vue` module shape, and without it every SFC import below silently degrades to `any`.
+	//
+	// The emit flags are off because the base turns them on for the library build; this config only
+	// ever runs under `--noEmit`, and `composite` is incompatible with that.
+	//
+	// `paths` re-points the package's own name at its source, mirroring the `resolve.alias` in
+	// `playground/vite.config.ts`. Both exist for the same reason: the app consumes the package it
+	// lives inside, so there is no workspace symlink to resolve through. It maps to `src/` rather
+	// than `dist/` so a typecheck does not require a prior build; the two cannot disagree, since
+	// `dist` is generated from exactly these files. Nothing is inherited here — no config in the
+	// chain declares `paths` — so this does not discard a base mapping.
+	"extends": "./tsconfig.json",
+	"compilerOptions": {
+		"composite": false,
+		"declaration": false,
+		"declarationMap": false,
+		"emitDeclarationOnly": false,
+		"noEmit": true,
+		"paths": {
+			"@stonecrop/desktop": ["./src/index.ts"]
+		}
+	},
+	"include": ["playground/**/*.ts", "playground/**/*.vue", "src/shims-vue.d.ts"]
+}

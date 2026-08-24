@@ -42,7 +42,7 @@
 		"prepublishOnly": "heft build --clean && vite build && rushx docs",
 		"test": "vitest run --coverage.enabled false",
 		"test:coverage": "vitest run --coverage",
-		"test:types": "vue-tsc --noEmit",
+		"test:types": "vue-tsc --noEmit && vue-tsc --noEmit -p tsconfig.playground.json",
 		"test:watch": "vitest watch"
 	},
 	"dependencies": {
