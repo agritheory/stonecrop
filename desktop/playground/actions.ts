@@ -72,7 +72,7 @@ registerGlobalAction('validateName', (context: FieldChangeContext) => {
 })
 
 registerGlobalAction('updateFullName', (context: FieldChangeContext) => {
-	const { path, afterValue } = context
+	const { afterValue } = context
 
 	// This would typically update a computed full_name field
 	// For demo purposes, we'll just show a notification
@@ -87,7 +87,7 @@ registerGlobalAction('validatePhoneFormat', (context: FieldChangeContext) => {
 	if (!afterValue) return
 
 	// Simple phone validation - you could use a more sophisticated library
-	const phoneRegex = /^\+?[\d\s\-\(\)]+$/
+	const phoneRegex = /^\+?[\d\s\-()]+$/
 
 	if (!phoneRegex.test(afterValue)) {
 		addNotification('Phone number format is invalid', 'error')

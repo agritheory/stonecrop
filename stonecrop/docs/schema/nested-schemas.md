@@ -352,6 +352,3 @@ if (formData.value && !formData.value.address) {
 </template>
 ```
 
-## Examples
-
-See [examples/aform/nested.story.vue](../../../examples/aform/nested.story.vue) for complete working examples.

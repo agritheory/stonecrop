@@ -18,7 +18,9 @@
 	 * the project folder.  The glob syntax is based on the .gitignore file format.
 	 */
 	"incrementalBuildIgnoredGlobs": [
-		// "etc/api-report/*.md"
+		// The playground is an example app, not a build input. Without this, editing it
+		// invalidates the library's build cache on every change.
+		"playground/**"
 	],
 
 	/**

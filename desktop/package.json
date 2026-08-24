@@ -35,6 +35,7 @@
 	"scripts": {
 		"_phase:build": "heft build --clean && vite build && rushx docs",
 		"build": "heft build --clean && vite build && rushx docs",
+		"dev": "vite --config playground/vite.config.ts playground",
 		"docs": "bash ../common/scripts/run-docs.sh desktop",
 		"lint": "oxlint",
 		"lint:fix": "oxlint --fix",

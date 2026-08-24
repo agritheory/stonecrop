@@ -1,0 +1,25 @@
+{
+	"private": true,
+	"name": "@stonecrop/desktop-playground",
+	"type": "module",
+	"description": "Plain-Vue example app for @stonecrop/desktop, run with `rushx dev` from the package root",
+	"scripts": {
+		"dev": "vite",
+		"build": "vite build"
+	},
+	"dependencies": {
+		"@stonecrop/aform": "workspace:*",
+		"@stonecrop/desktop": "workspace:*",
+		"@stonecrop/schema": "workspace:*",
+		"@stonecrop/stonecrop": "workspace:*",
+		"@stonecrop/themes": "workspace:*",
+		"miragejs": "^0.1.48",
+		"pinia": "^3.0.4",
+		"vue": "^3.5.33",
+		"vue-router": "^5.0.6"
+	},
+	"devDependencies": {
+		"@vitejs/plugin-vue": "^6.0.6",
+		"vite": "^7.3.2"
+	}
+}
