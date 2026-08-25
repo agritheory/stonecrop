@@ -1,6 +1,13 @@
 # Change Log - @stonecrop/stonecrop
 
-This log was last generated on Fri, 21 Aug 2026 09:43:22 GMT and should not be manually modified.
+This log was last generated on Tue, 25 Aug 2026 08:06:54 GMT and should not be manually modified.
+
+## 0.28.0
+Tue, 25 Aug 2026 08:06:54 GMT
+
+### Patches
+
+- Drop the removed example app from the `buildArgs` documentation
 
 ## 0.27.0
 Fri, 21 Aug 2026 09:43:22 GMT

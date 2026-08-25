@@ -2,6 +2,18 @@
   "name": "@stonecrop/nuxt",
   "entries": [
     {
+      "version": "0.28.0",
+      "tag": "@stonecrop/nuxt_v0.28.0",
+      "date": "Tue, 25 Aug 2026 08:06:54 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Drop the removed example app's path from the clientHandler decision record"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.27.0",
       "tag": "@stonecrop/nuxt_v0.27.0",
       "date": "Fri, 21 Aug 2026 09:43:22 GMT",
