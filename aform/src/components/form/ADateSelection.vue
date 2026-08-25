@@ -159,7 +159,7 @@ const handleEndTime = (data: {
 .adate-selection__end-label {
 	font-size: 0.8em;
 	font-weight: bold;
-	color: var(--sc-input-active-label-color, #555);
+	color: var(--sc-input-active-label-color);
 	margin-top: 8px;
 	margin-bottom: 2px;
 	padding-left: 2px;

@@ -182,7 +182,7 @@ if (addNavigation || isListExpansion) {
 }
 
 .atable-row-clickable:hover > td {
-	background-color: var(--sc-row-hover-color, #f0f4f8);
+	background-color: var(--sc-row-hover-color);
 }
 
 .atable-row:last-child > td {

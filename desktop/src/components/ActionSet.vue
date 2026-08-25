@@ -123,7 +123,7 @@ const handleClick = (action: (() => void | Promise<void>) | undefined, label: st
 	position: relative;
 	font-size: 2rem;
 	display: inline-block;
-	color: var(--sc-gray-60, #666);
+	color: var(--sc-gray-60);
 	transition: all 0.2s ease-in-out;
 }
 .action-set.collapsed {
@@ -186,7 +186,7 @@ button.button-default {
 	pointer-events: all;
 	margin-left: 5px;
 	font-family: var(--sc-font-family);
-	color: var(--sc-gray-60, #666);
+	color: var(--sc-gray-60);
 	cursor: pointer;
 	transform: rotate(45deg);
 	user-select: none;

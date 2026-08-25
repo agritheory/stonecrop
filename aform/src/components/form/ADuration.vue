@@ -106,15 +106,15 @@ const displayValue = computed(() => {
 
 .aduration__label {
 	font-weight: bold;
-	color: var(--sc-input-active-label-color, #555);
+	color: var(--sc-input-active-label-color);
 }
 
 .aduration__value {
-	color: var(--sc-cell-text-color, #000);
+	color: var(--sc-cell-text-color);
 }
 
 .aduration__ms {
-	color: var(--sc-gray-50, #888);
+	color: var(--sc-gray-50);
 	font-size: 0.85em;
 }
 

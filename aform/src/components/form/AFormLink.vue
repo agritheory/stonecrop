@@ -320,7 +320,7 @@ const selectCurrent = () => {
 	outline: 1px solid var(--sc-input-border-color);
 	outline-offset: -1px;
 	margin-left: -2px;
-	background: var(--sc-input-field-background, white);
+	background: var(--sc-input-field-background);
 	padding: 0 0.75rem;
 	cursor: pointer;
 }

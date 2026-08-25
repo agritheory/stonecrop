@@ -21,7 +21,7 @@ Stonecrop is a **schema-driven UI framework** that generates forms, tables, and 
 
 - **Route Generation**: Scans your `/doctypes` folder and registers routes using your own page components
 - **Plugin System**: Auto-registers Stonecrop composables and utilities
-- **Theme Support**: Import and customize Stonecrop themes
+- **Styling**: Loads the Stonecrop token floor automatically; restyle by overriding `--sc-*` variables
 - **TypeScript First**: Full type safety and IntelliSense support
 - **Thin Wrapper**: The module is intentionally opinion-free — page rendering, queries, and navigation stay in your application
 
@@ -219,13 +219,11 @@ export default defineNuxtConfig({
 
     // Enable DocBuilder for visual schema editing
     docbuilder: false,
-
-    // The default theme (@stonecrop/themes/default.css) loads automatically.
-    // Override it, or set `false` to bring your own:
-    // theme: '@stonecrop/themes/dark.css',
   },
 })
 ```
+
+The Stonecrop token floor (`@stonecrop/themes/default.css`) is always loaded — see [Theming](#theming).
 
 ### Module Options
 
@@ -235,9 +233,27 @@ export default defineNuxtConfig({
 | `routeStrategy` | `RouteStrategyFn` | Custom function receiving all parsed doctypes; returns a `NuxtPage[]`. Takes priority over `pageComponent`. |
 | `docbuilder` | `boolean` | Enable the DocBuilder feature at `/docbuilder`. Defaults to `false`. |
 | `doctypesDir` | `string` | Override the doctypes directory path. Defaults to `doctypes/` inside `srcDir`. |
-| `theme` | `string \| false` | Base theme stylesheet loaded into the host app (supplies the `--sc-*` CSS variables). Defaults to `'@stonecrop/themes/default.css'`; set `false` to load none and bring your own. |
 
 If neither `pageComponent` nor `routeStrategy` is configured the module logs a warning and skips doctype route registration.
+
+## Theming
+
+The module loads `@stonecrop/themes/default.css` into `nuxt.options.css` unconditionally. There is no option to change or disable it: that sheet is the only definition of the `--sc-*` variables every Stonecrop component reads, so opting out could only produce an unstyled app.
+
+Restyle by overriding the variables in your own CSS:
+
+```css
+/* app/assets/tokens.css */
+:root {
+	--sc-primary-color: #6d28d9;
+	--sc-brand-color: #111827;
+	--sc-font-family: 'IBM Plex Sans', sans-serif;
+}
+```
+
+Your declaration wins. The floor wraps its own in the `stonecrop.tokens` cascade layer, and an unlayered declaration beats a layered one regardless of specificity or source order — so this works no matter where your stylesheet sits in `nuxt.options.css`. Keep the overrides on `:root`; scoping them to a container changes how they resolve outside it.
+
+See the [`@stonecrop/themes` README](../themes/README.md) for the full token list and the rules on adding one.
 
 ## Route Generation
 

@@ -45,14 +45,14 @@ const onNext = () => {
 <style scoped>
 .atable-pagination td {
 	padding: 0.75rem 0.5ch;
-	border-top: 1px solid var(--sc-row-border-color, #e0e0e0);
+	border-top: 1px solid var(--sc-row-border-color);
 }
 
 .truncation-note,
 .completion-note {
 	margin: 0 0 0.5rem;
-	font-size: var(--sc-table-font-size, 0.875rem);
-	color: var(--sc-gray-60, #666);
+	font-size: var(--sc-table-font-size);
+	color: var(--sc-gray-60);
 }
 
 .completion-note {
@@ -69,32 +69,32 @@ const onNext = () => {
 	-webkit-appearance: none;
 	box-sizing: border-box;
 	padding: 0.5rem 1rem;
-	background: var(--sc-btn-color, #fafafa);
-	color: var(--sc-btn-label-color, #333333);
-	border: 1px solid var(--sc-btn-border, #cccccc);
-	border-radius: var(--sc-border-radius, 0);
+	background: var(--sc-btn-color);
+	color: var(--sc-btn-label-color);
+	border: 1px solid var(--sc-btn-border);
+	border-radius: var(--sc-border-radius);
 	cursor: pointer;
-	font-family: var(--sc-font-family, Arial, sans-serif);
-	font-size: var(--sc-table-font-size, 0.875rem);
+	font-family: var(--sc-font-family);
+	font-size: var(--sc-table-font-size);
 	font-weight: 400;
 	line-height: 1.2;
 	transition: background-color 0.15s ease;
 }
 
 .atable-pagination-btn:hover:not(:disabled) {
-	background: var(--sc-btn-hover, #f2f2f2);
+	background: var(--sc-btn-hover);
 }
 
 .atable-pagination-btn:focus-visible {
-	outline: 2px solid var(--sc-input-active-border-color, #333333);
+	outline: 2px solid var(--sc-input-active-border-color);
 	outline-offset: 1px;
 }
 
 .atable-pagination-btn:disabled {
 	cursor: not-allowed;
-	background: var(--sc-gray-5, #f2f2f2);
-	color: var(--sc-gray-50, #808080);
-	border-color: var(--sc-gray-20, #cccccc);
+	background: var(--sc-gray-5);
+	color: var(--sc-gray-50);
+	border-color: var(--sc-gray-20);
 	opacity: 1;
 }
 </style>

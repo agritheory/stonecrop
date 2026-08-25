@@ -139,11 +139,11 @@ ul {
 	align-items: center;
 	justify-content: center;
 	text-decoration: none;
-	color: var(--sc-gray-60, #666);
-	background: var(--sc-btn-color, #ffffff);
-	border: 1px solid var(--sc-btn-border, #ccc);
+	color: var(--sc-gray-60);
+	background: var(--sc-btn-color);
+	border: 1px solid var(--sc-btn-border);
 	font-size: 0.85rem;
-	font-family: var(--sc-font-family, system-ui, sans-serif);
+	font-family: var(--sc-font-family);
 	transition: all 0.15s ease;
 
 	/* Minimal ornamentation - subtle top radius only */
@@ -152,14 +152,14 @@ ul {
 }
 
 .tabs a:hover {
-	background: var(--sc-btn-hover, #f2f2f2);
+	background: var(--sc-btn-hover);
 }
 
 .tabs .router-link-active {
 	z-index: 3;
-	background: var(--sc-primary-color, #827553) !important;
-	border-color: var(--sc-primary-color, #827553) !important;
-	color: var(--sc-primary-text-color, #fff) !important;
+	background: var(--sc-primary-color) !important;
+	border-color: var(--sc-primary-color) !important;
+	color: var(--sc-primary-text-color) !important;
 }
 
 /* Pseudo-elements removed - minimal ornamentation style */
@@ -170,9 +170,9 @@ ul {
 	width: 2.4rem;
 	height: 2.4rem;
 	padding: 0.5rem;
-	background: var(--sc-btn-color, #ffffff);
-	border: 1px solid var(--sc-btn-border, #ccc);
-	color: var(--sc-gray-60, #666);
+	background: var(--sc-btn-color);
+	border: 1px solid var(--sc-btn-border);
+	color: var(--sc-gray-60);
 }
 
 .hidebreadcrumbs a div {
@@ -208,7 +208,7 @@ li > a:focus {
 a:active,
 a:hover,
 a:focus {
-	outline: 2px solid var(--sc-input-active-border-color, black);
+	outline: 2px solid var(--sc-input-active-border-color);
 	z-index: 3;
 }
 
@@ -218,9 +218,9 @@ a:focus {
 	width: 2.4rem;
 	height: 2.4rem;
 	padding: 0.5rem;
-	background: var(--sc-btn-color, #ffffff);
-	border: 1px solid var(--sc-btn-border, #ccc);
-	color: var(--sc-gray-60, #666);
+	background: var(--sc-btn-color);
+	border: 1px solid var(--sc-btn-border);
+	color: var(--sc-gray-60);
 }
 
 /* SVG icon styling */
@@ -240,9 +240,9 @@ a:focus {
 	min-width: 2.4rem;
 	height: 2.4rem;
 	padding: 0.5rem;
-	background: var(--sc-btn-color, #ffffff);
-	border: 1px solid var(--sc-btn-border, #ccc);
-	color: var(--sc-gray-60, #666);
+	background: var(--sc-btn-color);
+	border: 1px solid var(--sc-btn-border);
+	color: var(--sc-gray-60);
 	overflow: hidden;
 	/* Animation for smooth expand/collapse */
 	max-width: 2.4rem;
@@ -258,10 +258,10 @@ a:focus {
 
 .searchtab input {
 	outline: none;
-	border: 1px solid var(--sc-input-border-color, #ccc);
+	border: 1px solid var(--sc-input-border-color);
 	border-radius: 0.25rem;
-	background-color: var(--sc-form-background, #ffffff);
-	color: var(--sc-gray-80, #333);
+	background-color: var(--sc-form-background);
+	color: var(--sc-gray-80);
 	text-align: left;
 	font-size: 0.875rem;
 	padding: 0.25rem 0.5rem;
@@ -274,12 +274,12 @@ a:focus {
 }
 
 .searchtab input:focus {
-	border-color: var(--sc-input-active-border-color, #4f46e5);
+	border-color: var(--sc-input-active-border-color);
 	outline: none;
 }
 
 .searchtab input::placeholder {
-	color: var(--sc-input-label-color, #999);
+	color: var(--sc-input-label-color);
 }
 
 /* Search active state - expanded with animation */

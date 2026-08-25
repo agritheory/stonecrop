@@ -60,6 +60,6 @@ This documentation follows the [Divio documentation framework](https://documenta
 | [@stonecrop/rockfoil](/reference/rockfoil) | Server-side utilities |
 | [@stonecrop/nuxt](/reference/) | Nuxt module integration |
 | [@stonecrop/nuxt-grafserv](/reference/) | Nuxt + Grafserv module |
-| [@stonecrop/themes](/reference/) | CSS themes |
+| [@stonecrop/themes](/reference/themes) | CSS token floor |
 | [@stonecrop/utilities](/reference/utilities) | Shared utility functions |
 
