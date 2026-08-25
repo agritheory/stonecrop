@@ -2,6 +2,18 @@
   "name": "@stonecrop/nuxt",
   "entries": [
     {
+      "version": "0.29.0",
+      "tag": "@stonecrop/nuxt_v0.29.0",
+      "date": "Tue, 25 Aug 2026 08:42:39 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Remove the theme option and always load the token floor, which is the only definition of the --sc-* variables"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.28.0",
       "tag": "@stonecrop/nuxt_v0.28.0",
       "date": "Tue, 25 Aug 2026 08:06:54 GMT",

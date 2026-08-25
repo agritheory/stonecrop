@@ -1,6 +1,13 @@
 # Change Log - @stonecrop/themes
 
-This log was last generated on Tue, 25 Aug 2026 08:06:54 GMT and should not be manually modified.
+This log was last generated on Tue, 25 Aug 2026 08:42:39 GMT and should not be manually modified.
+
+## 0.29.0
+Tue, 25 Aug 2026 08:42:39 GMT
+
+### Minor changes
+
+- Collapse to a single default stylesheet in a stonecrop.tokens cascade layer, dropping the six alias exports and the unused table tokens
 
 ## 0.28.0
 Tue, 25 Aug 2026 08:06:54 GMT

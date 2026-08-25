@@ -2,6 +2,18 @@
   "name": "@stonecrop/code-editor",
   "entries": [
     {
+      "version": "0.29.0",
+      "tag": "@stonecrop/code-editor_v0.29.0",
+      "date": "Tue, 25 Aug 2026 08:42:39 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Drop the unused data-theme stylesheets from the published bundle"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.28.0",
       "tag": "@stonecrop/code-editor_v0.28.0",
       "date": "Tue, 25 Aug 2026 08:06:54 GMT",

@@ -2,6 +2,12 @@
   "name": "@stonecrop/casl-middleware",
   "entries": [
     {
+      "version": "0.29.0",
+      "tag": "@stonecrop/casl-middleware_v0.29.0",
+      "date": "Tue, 25 Aug 2026 08:42:39 GMT",
+      "comments": {}
+    },
+    {
       "version": "0.28.0",
       "tag": "@stonecrop/casl-middleware_v0.28.0",
       "date": "Tue, 25 Aug 2026 08:06:54 GMT",

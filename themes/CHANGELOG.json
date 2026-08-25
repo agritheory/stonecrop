@@ -2,6 +2,18 @@
   "name": "@stonecrop/themes",
   "entries": [
     {
+      "version": "0.29.0",
+      "tag": "@stonecrop/themes_v0.29.0",
+      "date": "Tue, 25 Aug 2026 08:42:39 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Collapse to a single default stylesheet in a stonecrop.tokens cascade layer, dropping the six alias exports and the unused table tokens"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.28.0",
       "tag": "@stonecrop/themes_v0.28.0",
       "date": "Tue, 25 Aug 2026 08:06:54 GMT",
