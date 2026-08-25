@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/atable",
+      "comment": "Give the column filter a defined text colour and remove var() fallbacks that disagreed with the token floor",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/atable"
+}

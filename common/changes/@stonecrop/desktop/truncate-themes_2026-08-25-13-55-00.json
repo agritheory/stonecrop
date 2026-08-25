@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/desktop",
+      "comment": "Remove var() fallbacks that disagreed with the token floor",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/desktop"
+}
