@@ -113,12 +113,6 @@
 			"versionPolicyName": "stonecrop"
 		},
 		{
-			"packageName": "stonecrop-rig",
-			"projectFolder": "rigs/stonecrop-rig",
-			"reviewCategory": "utilities",
-			"shouldPublish": false
-		},
-		{
 			"packageName": "stonecrop-doc-gen",
 			"projectFolder": "tools/doc-gen",
 			"reviewCategory": "utilities",

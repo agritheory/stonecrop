@@ -21,10 +21,10 @@
 		},
 		{
 			// Typechecks every project that opts in by defining a "test:types" script, the same
-			// opt-in convention "lint" uses. 9 of 19 projects define one; the rest are .ts-only and
-			// already covered by `heft build`.
+			// opt-in convention "lint" uses. 9 of 18 projects define one; the rest are .ts-only and
+			// already covered by the build's `tsc -b`.
 			//
-			// This exists because nothing else reads .vue files: `heft build` compiles only .ts and
+			// This exists because nothing else reads .vue files: `tsc -b` compiles only .ts and
 			// `vite build` does not typecheck, so only vue-tsc sees a <script setup> block or a
 			// template binding. That check used to run solely in pr.yml's paths-filtered matrix, so
 			// a change confined to schema/** could break a .vue file in desktop, aform, atable,

@@ -100,7 +100,7 @@ The `_phase:build` script should also call `node --run docs`:
 ```json
 {
   "scripts": {
-    "_phase:build": "heft build && vite build && node --run docs"
+    "_phase:build": "rm -rf dist && tsc -b --force && api-extractor run --local -c config/api-extractor.json && vite build && node --run docs"
   }
 }
 ```

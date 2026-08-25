@@ -2,11 +2,11 @@
 	"extends": "./tsconfig.json",
 	"compilerOptions": {
 		"noEmit": true,
-		"tsBuildInfoFile": "./dist/stonecrop.typecheck.tsbuildinfo",
+		"tsBuildInfoFile": "./temp/stonecrop.typecheck.tsbuildinfo",
 		"types": ["vitest/globals"]
 	},
 	"include": ["src/**/*.ts", "tests/**/*.ts"],
-	// the shared options exclude **/*.spec.ts so heft never compiles specs into dist;
+	// the shared options exclude **/*.spec.ts so the build never compiles specs into dist;
 	// this config exists precisely to typecheck them, so restore the default exclude
 	//
 	// `dist-contract.spec.ts` is the one exception. It reads built output off disk, so it needs the

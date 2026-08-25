@@ -107,6 +107,13 @@ jobs:
       - name: Rush Build
         run: node common/scripts/install-run-rush.js build
 
+      # Each build runs "api-extractor run --local", which rewrites common/reviews/api/ in place, so
+      # drift only ever surfaces as a dirty working tree. Nothing failed on it before: Heft escalated
+      # api-extractor's warnings, but its plugin ran in local mode for any build without --production,
+      # which rush build never passed.
+      - name: Verify API Reports Are Current
+        run: git diff --exit-code -- common/reviews/api/
+
       - name: Save Rush Build Cache
         if: always()
         uses: actions/cache/save@v5
@@ -124,7 +131,7 @@ jobs:
           common/autoinstallers/rush-vite-plus/node_modules/.bin/vp run -r lint
 
       # Repo-wide, because the per-package matrix below is paths-filtered and cannot see cross-
-      # package breakage. `heft build` compiles only .ts and `vite build` does not typecheck, so
+      # package breakage. `tsc -b` compiles only .ts and `vite build` does not typecheck, so
       # vue-tsc is the only thing that reads a .vue file — meaning a change confined to schema/**
       # could break a <script setup> block or a template binding in desktop, aform, atable,
       # node_editor, code_editor or beam and still merge green. Projects opt in by defining a

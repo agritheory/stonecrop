@@ -39,13 +39,13 @@
 		"src/*"
 	],
 	"scripts": {
-		"_phase:build": "heft build --clean && vite build && node --run docs",
-		"build": "heft build --clean && vite build && node --run docs",
+		"_phase:build": "rm -rf dist && tsc -b --force && api-extractor run --local -c config/api-extractor.json && vite build && node --run docs",
+		"build": "rm -rf dist && tsc -b --force && api-extractor run --local -c config/api-extractor.json && vite build && node --run docs",
 		"dev": "vite",
 		"docs": "bash ../common/scripts/run-docs.sh casl_middleware",
 		"lint": "oxlint",
 		"lint:fix": "oxlint --fix",
-		"prepublishOnly": "heft build --clean && vite build && node --run docs",
+		"prepublishOnly": "rm -rf dist && tsc -b --force && api-extractor run --local -c config/api-extractor.json && vite build && node --run docs",
 		"preview": "vite preview",
 		"test": "vitest run --coverage.enabled false",
 		"test:coverage": "vitest run --coverage",
@@ -62,7 +62,7 @@
 		"@graphql-tools/merge": "^9.1.7",
 		"@graphql-tools/schema": "^10.0.31",
 		"@graphql-tools/utils": "^11.0.0",
-		"@rushstack/heft": "^1.2.17",
+		"@microsoft/api-extractor": "^7.58.7",
 		"@types/jsonwebtoken": "~9.0.10",
 		"@types/node": "^24.12.4",
 		"@vitest/coverage-istanbul": "^4.1.5",
@@ -72,7 +72,6 @@
 		"oxlint": "1.67.0",
 		"oxlint-tsgolint": "0.23.0",
 		"postgraphile": "^5.0.3",
-		"stonecrop-rig": "workspace:*",
 		"typescript": "^6.0.3",
 		"vite": "^8.2.2",
 		"vitest": "^4.1.5"

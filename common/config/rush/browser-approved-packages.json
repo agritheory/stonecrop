@@ -72,7 +72,7 @@
     },
     {
       "name": "@microsoft/api-extractor",
-      "allowedCategories": [ "prototype", "utilities" ]
+      "allowedCategories": [ "production", "prototype", "utilities" ]
     },
     {
       "name": "@microsoft/api-extractor-model",
@@ -113,18 +113,6 @@
     {
       "name": "@nuxt/test-utils",
       "allowedCategories": [ "production", "prototype" ]
-    },
-    {
-      "name": "@rushstack/heft",
-      "allowedCategories": [ "production", "prototype", "utilities" ]
-    },
-    {
-      "name": "@rushstack/heft-api-extractor-plugin",
-      "allowedCategories": [ "prototype", "utilities" ]
-    },
-    {
-      "name": "@rushstack/heft-typescript-plugin",
-      "allowedCategories": [ "prototype", "utilities" ]
     },
     {
       "name": "@stonecrop/aform",
@@ -441,10 +429,6 @@
     {
       "name": "search-insights",
       "allowedCategories": [ "documentation" ]
-    },
-    {
-      "name": "stonecrop-rig",
-      "allowedCategories": [ "production", "prototype", "utilities" ]
     },
     {
       "name": "ts-node",

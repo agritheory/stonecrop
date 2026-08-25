@@ -1,9 +1,0 @@
-{
-	"$schema": "https://developer.microsoft.com/json-schemas/api-extractor/v7/api-extractor.schema.json",
-	"extends": "../../common/config/api-extractor-base.json",
-	"mainEntryPointFilePath": "<projectFolder>/dist/module.d.ts",
-	"docModel": {
-		"enabled": true,
-		"projectFolderUrl": "https://github.com/agritheory/stonecrop/tree/development/nuxt"
-	}
-}
