@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@stonecrop/stonecrop",
-      "comment": "Point the `buildArgs` documentation at `desktop/playground` following removal of the examples folder",
+      "comment": "Drop the removed example app from the `buildArgs` documentation",
       "type": "patch"
     }
   ],

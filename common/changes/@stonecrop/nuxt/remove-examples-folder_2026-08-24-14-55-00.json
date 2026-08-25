@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@stonecrop/nuxt",
-      "comment": "Point the clientHandler decision record at `desktop/playground` following removal of the examples folder",
+      "comment": "Drop the removed example app's path from the clientHandler decision record",
       "type": "patch"
     }
   ],

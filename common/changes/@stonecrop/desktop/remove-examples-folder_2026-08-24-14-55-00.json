@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@stonecrop/desktop",
-      "comment": "Move the plain-Vue example app from `examples/desktop` to `desktop/playground`, now typechecked by `test:types`",
+      "comment": "Remove the plain-Vue example app and point the `buildArgs` documentation away from it",
       "type": "patch"
     }
   ],

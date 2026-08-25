@@ -348,7 +348,7 @@ describe('useClientAction host overrides', { tags: ['unit'] }, () => {
 			dispatch: vi.fn(async () => ({ success: true, data: { state: 'assigned' }, error: null })),
 		})
 
-		// The positional shape `desktop/playground` uses end to end.
+		// The positional shape a backend that does not take the default envelope uses end to end.
 		await useClientAction({ buildArgs: ({ recordId, data }) => [recordId, data] }).run(payload('save'))
 
 		expect(mocks.sc.dispatchAction).toHaveBeenCalledWith(mocks.sc.registeredDoctype, 'save', [
