@@ -517,22 +517,4 @@ td.sticky-index {
 .atable th:focus {
 	outline: none;
 }
-
-/* Make sure the vertical indicator doesn't extend into the header */
-.atable:tbody {
-	overflow: hidden; /* This ensures the indicator is clipped */
-	position: relative; /* Create a stacking context */
-}
-
-/* Ensure the indicator stays within the tbody */
-.atable:tbody::before {
-	content: '';
-	position: absolute;
-	top: 0;
-	left: 0;
-	right: 0;
-	height: 1px;
-	background-color: transparent;
-	z-index: 100;
-}
 </style>

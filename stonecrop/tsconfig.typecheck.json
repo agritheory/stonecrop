@@ -8,5 +8,11 @@
 	"include": ["src/**/*.ts", "tests/**/*.ts"],
 	// the shared options exclude **/*.spec.ts so heft never compiles specs into dist;
 	// this config exists precisely to typecheck them, so restore the default exclude
-	"exclude": ["node_modules"]
+	//
+	// `dist-contract.spec.ts` is the one exception. It reads built output off disk, so it needs the
+	// `node` types — and pulling those in makes `src/stores/hst.ts` fail to compile, because its
+	// top-level `const global` collides with the `global` that @types/node declares. Typechecking
+	// one spec is not worth renaming a store binding, and the spec still runs under vitest; eleven
+	// of the thirteen built packages do not typecheck their tests at all.
+	"exclude": ["node_modules", "tests/dist-contract.spec.ts"]
 }

@@ -1,7 +1,7 @@
 import { resolve } from 'path'
 import { coverageConfigDefaults, defineConfig } from 'vitest/config'
 
-const projectRootDir = resolve(__dirname)
+const projectRootDir = resolve(import.meta.dirname)
 
 export default defineConfig({
 	build: {

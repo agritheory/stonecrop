@@ -10,9 +10,14 @@
 	"extends": "./tsconfig.json",
 	"compilerOptions": {
 		"noEmit": true,
+		// `tests/dist-contract.spec.ts` imports the shared build-output oracle from
+		// `common/test-support/`, which sits above this package. The inherited `composite` makes
+		// TypeScript check that every input is under `rootDir`, and that would otherwise be inferred
+		// as this folder — so widen it to the repo root. Safe because this config emits nothing.
+		"rootDir": "..",
 		"tsBuildInfoFile": "./dist/aform.typecheck.tsbuildinfo",
 		"types": ["node", "vitest/globals", "vitest/jsdom"]
 	},
-	"include": ["src/**/*.ts", "src/**/*.vue", "tests/**/*.ts"],
+	"include": ["src/**/*.ts", "src/**/*.vue", "tests/**/*.ts", "../common/test-support/**/*.ts"],
 	"exclude": ["node_modules"]
 }

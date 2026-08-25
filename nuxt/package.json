@@ -99,7 +99,7 @@
 		"postgraphile": "^5.0.3",
 		"typescript": "^6.0.3",
 		"typescript-eslint": "^8.62.1",
-		"vite": "^7.3.2",
+		"vite": "^8.2.2",
 		"vitest": "^4.1.5",
 		"vue": "^3.5.33",
 		"vue-router": "^5.0.6",

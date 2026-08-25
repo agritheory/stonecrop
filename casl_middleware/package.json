@@ -74,7 +74,7 @@
 		"postgraphile": "^5.0.3",
 		"stonecrop-rig": "workspace:*",
 		"typescript": "^6.0.3",
-		"vite": "^7.3.2",
+		"vite": "^8.2.2",
 		"vitest": "^4.1.5"
 	},
 	"peerDependencies": {

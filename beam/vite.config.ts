@@ -3,7 +3,7 @@ import { resolve } from 'path'
 import { libInjectCss } from 'vite-plugin-lib-inject-css'
 import { coverageConfigDefaults, defineConfig } from 'vitest/config'
 
-const projectRootDir = resolve(__dirname)
+const projectRootDir = resolve(import.meta.dirname)
 
 export default defineConfig({
 	plugins: [vue(), libInjectCss()],
