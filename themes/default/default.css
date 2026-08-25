@@ -1,11 +1,130 @@
 @import url('https://fonts.googleapis.com/css2?family=Arimo:ital,wght@0,400..700;1,400..700&display=swap');
-@import url('./_variables.css');
-@import url('./_form.css');
-@import url('../_base.css');
 
-/* Apply the theme font to the document. Lives here (not in each consuming app) so a
-   host gets the font by loading the theme; _base.css then makes form controls and code
-   inherit it, giving the whole page one font. */
-body {
-	font-family: var(--sc-font-family);
+/*
+The Stonecrop token floor: the single definition of every --sc-* variable the
+component packages consume. There is one stylesheet, not a theme to choose between;
+hosts restyle by overriding these names in their own CSS.
+
+Everything lives in the `stonecrop.tokens` cascade layer. An unlayered declaration
+beats a layered one regardless of specificity or source order, so a host's plain
+`:root { --sc-primary-color: … }` always wins without depending on which sheet
+loaded first. Keep the declarations on :root — scoping them to a container would
+out-specify a host's :root and silently break overriding.
+
+The Arimo @import must stay the first rule in this file; CSS requires @import
+before all other rules.
+*/
+
+@layer stonecrop.tokens {
+	:root {
+		/* THEME COLORS */
+
+		/* General Colors */
+		--sc-primary-color: #0098c9; /* primary action color, default blue */
+		--sc-primary-text-color: #ffffff; /* text color paired with primary color, default white */
+		--sc-brand-color: #202a44; /* brand color, default navy */
+
+		/* Grays */
+		--sc-gray-5: #f2f2f2;
+		--sc-gray-10: #e6e6e6;
+		--sc-gray-20: #cccccc;
+		--sc-gray-50: #808080;
+		--sc-gray-60: #666666;
+		--sc-gray-70: #4d4d4d; /* the ramp is token = 100 − lightness%, so 70 → 30% */
+		--sc-gray-80: #333333;
+
+		/* Warnings/Alerts/Success */
+		--sc-brand-danger: #e63c28;
+		--sc-brand-success: #155724;
+		--sc-brand-warning: #b99d3e;
+
+		/* Badge variants — table cell fill (bg/text) and form input accent (left border) */
+		--sc-badge-neutral-bg: var(--sc-gray-10);
+		--sc-badge-neutral-text: var(--sc-gray-80);
+		--sc-badge-neutral-accent: var(--sc-gray-50);
+
+		--sc-badge-success-bg: color-mix(in srgb, var(--sc-brand-success) 14%, white);
+		--sc-badge-success-text: var(--sc-brand-success);
+		--sc-badge-success-accent: var(--sc-brand-success);
+
+		--sc-badge-warning-bg: color-mix(in srgb, var(--sc-brand-warning) 18%, white);
+		--sc-badge-warning-text: color-mix(in srgb, var(--sc-brand-warning) 70%, black);
+		--sc-badge-warning-accent: var(--sc-brand-warning);
+
+		--sc-badge-danger-bg: color-mix(in srgb, var(--sc-brand-danger) 12%, white);
+		--sc-badge-danger-text: var(--sc-brand-danger);
+		--sc-badge-danger-accent: var(--sc-brand-danger);
+
+		--sc-badge-brand-bg: color-mix(in srgb, var(--sc-primary-color) 14%, white);
+		--sc-badge-brand-text: var(--sc-brand-color);
+		--sc-badge-brand-accent: var(--sc-primary-color);
+
+		/* Table Colors */
+		--sc-cell-text-color: #3a3c41;
+		--sc-focus-cell-background: #ffffff;
+		--sc-focus-cell-outline: #000000;
+		--sc-header-text-color: var(--sc-gray-20);
+		--sc-row-border-color: var(--sc-gray-20);
+		--sc-row-color-zebra-dark: #dddddd;
+		--sc-row-color-zebra-light: #eeeeee;
+		--sc-row-hover-color: #f0f4f8;
+
+		/* Form Colors */
+		--sc-input-active-border-color: #000000;
+		--sc-input-active-label-color: #000000;
+		--sc-input-border-color: var(--sc-gray-20);
+		--sc-input-label-color: var(--sc-gray-60);
+		--sc-cell-changed-color: #d8edff;
+		--sc-form-border: var(--sc-gray-5);
+		--sc-form-background: #ffffff;
+		--sc-input-field-background: #ffffff;
+		--sc-input-field-disabled-background: var(--sc-gray-5);
+
+		/* FONT */
+		--sc-font-size: 10px;
+		--sc-font-family: 'Arimo', Arial, sans-serif;
+		--sc-table-font-size: 16px;
+		--sc-atable-font-family: var(--sc-font-family);
+
+		/* TABLE */
+		--sc-border-radius: 0;
+		--sc-atable-row-padding: 0.125rem;
+		--sc-atable-row-height: 1.5em;
+		--sc-atable-cell-border-width: 2px;
+		--sc-table-loading-color: 204, 204, 204;
+
+		/* BTNS */
+		--sc-btn-border: #cccccc;
+		--sc-btn-color: white;
+		--sc-btn-hover: #f2f2f2;
+		--sc-btn-label-color: black;
+	}
+
+	/*
+	Browsers exclude form controls (button/input/select/textarea) and code elements
+	from font inheritance, giving them their own defaults (Arial, monospace) while every
+	other element inherits the document font. Normalizing them to inherit means the font
+	applied below governs the whole page — no per-app or per-component overrides required.
+
+	This pairs with the body rule that follows: the normalization only makes sense because
+	something sets a document font. Remove that rule and these controls inherit the
+	browser's default serif instead of the sensible defaults this strips away.
+	*/
+	button,
+	input,
+	select,
+	textarea,
+	optgroup,
+	code,
+	kbd,
+	samp,
+	pre {
+		font-family: inherit;
+	}
+
+	/* Applies the font to the document here, not in each consuming app, so a host gets it
+	   by loading this sheet. */
+	body {
+		font-family: var(--sc-font-family);
+	}
 }

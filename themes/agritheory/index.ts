@@ -1,1 +1,0 @@
-import './agritheory.css'

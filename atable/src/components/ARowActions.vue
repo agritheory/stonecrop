@@ -276,11 +276,11 @@ const executeAction = (actionType: RowActionType, event?: MouseEvent) => {
 }
 
 .row-action-btn:hover {
-	background-color: var(--sc-gray-10, #e5e5e5);
+	background-color: var(--sc-gray-10);
 }
 
 .row-action-btn:focus {
-	outline: 2px solid var(--sc-focus-cell-outline, #3b82f6);
+	outline: 2px solid var(--sc-focus-cell-outline);
 	outline-offset: 1px;
 }
 
@@ -324,11 +324,11 @@ const executeAction = (actionType: RowActionType, event?: MouseEvent) => {
 }
 
 .row-actions-toggle:hover {
-	background-color: var(--sc-gray-10, #e5e5e5);
+	background-color: var(--sc-gray-10);
 }
 
 .row-actions-toggle:focus {
-	/* outline: 2px solid var(--sc-focus-cell-outline, #3b82f6);
+	/* outline: 2px solid var(--sc-focus-cell-outline);
 	outline-offset: 1px; */
 }
 
@@ -368,12 +368,12 @@ const executeAction = (actionType: RowActionType, event?: MouseEvent) => {
 }
 
 .row-action-menu-item:hover {
-	background-color: var(--sc-gray-10, #f5f5f5);
+	background-color: var(--sc-gray-10);
 }
 
 .row-action-menu-item:focus {
 	outline: none;
-	background-color: var(--sc-gray-10, #f5f5f5);
+	background-color: var(--sc-gray-10);
 }
 
 .row-action-menu-item:disabled,

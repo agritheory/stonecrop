@@ -304,7 +304,7 @@ p.aform_error {
 	font-size: 0.9rem;
 	font-weight: 600;
 	margin: 0 0 0.5rem 0;
-	color: var(--sc-input-label-color, #666);
+	color: var(--sc-input-label-color);
 }
 
 .aform-nested-section .aform {

@@ -16,7 +16,7 @@ defineProps<{
 
 <style scoped>
 .expansion-index {
-	color: var(--sc-header-text-color, #333);
+	color: var(--sc-header-text-color);
 	font-weight: bold;
 	font-size: 11px;
 	line-height: 1;

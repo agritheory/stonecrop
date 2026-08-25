@@ -29,12 +29,18 @@ jobs:
         id: filter
         with:
           filters: |
-            aform: aform/**
-            atable: atable/**
+            aform:
+              - 'aform/**'
+              - 'themes/**'
+            atable:
+              - 'atable/**'
+              - 'themes/**'
             beam: beam/**
             casl_middleware: casl_middleware/**
             code_editor: code_editor/**
-            desktop: desktop/**
+            desktop:
+              - 'desktop/**'
+              - 'themes/**'
             graphql_client: graphql_client/**
             graphql_middleware: graphql_middleware/**
             node_editor: node_editor/**

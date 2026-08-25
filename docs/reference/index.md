@@ -39,7 +39,7 @@ Technical documentation for all packages in the Stonecrop monorepo. API document
 | Package | Description | Status |
 |---------|-------------|--------|
 | [@stonecrop/utilities](./utilities) | Shared utility functions | Utilities |
-| @stonecrop/themes | CSS themes (no TypeScript API) | Prototype |
+| @stonecrop/themes | CSS token floor (no TypeScript API) | Prototype |
 
 ## Nuxt Modules
 
