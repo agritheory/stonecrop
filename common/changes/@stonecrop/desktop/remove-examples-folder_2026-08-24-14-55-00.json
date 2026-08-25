@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@stonecrop/desktop",
-      "comment": "Remove the plain-Vue example app and point the `buildArgs` documentation away from it",
+      "comment": "Remove the plain-Vue example app and the MirageJS dependencies nothing imported",
       "type": "patch"
     }
   ],
