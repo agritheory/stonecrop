@@ -1,0 +1,17 @@
+{
+	"name": "stonecrop-doc-gen",
+	"version": "0.7.0",
+	"private": true,
+	"description": "Renders each package's api.md from its api-extractor model",
+	"license": "MIT",
+	"scripts": {
+		"_phase:build": "",
+		"build": ""
+	},
+	"dependencies": {
+		"@microsoft/api-extractor-model": "^7.33.0"
+	},
+	"engines": {
+		"node": ">=24.0.0"
+	}
+}

@@ -30,13 +30,13 @@
 		"src/*"
 	],
 	"scripts": {
-		"_phase:build": "heft build --clean && vite build && rushx docs",
-		"build": "heft build --clean && vite build && rushx docs",
+		"_phase:build": "heft build --clean && vite build && node --run docs",
+		"build": "heft build --clean && vite build && node --run docs",
 		"dev": "vite",
 		"docs": "bash ../common/scripts/run-docs.sh utilities",
 		"lint": "oxlint",
 		"lint:fix": "oxlint --fix",
-		"prepublishOnly": "heft build --clean && vite build && rushx docs",
+		"prepublishOnly": "heft build --clean && vite build && node --run docs",
 		"preview": "vite preview",
 		"test": "vitest run --coverage.enabled false",
 		"test:coverage": "vitest run --coverage",

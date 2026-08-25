@@ -308,7 +308,7 @@ if (!projectName) {
 const normalizedProjectName = projectName.replace(/_/g, '-')
 
 // Path to the API model files (relative to monorepo root from autoinstaller)
-const rootDir = join(__dirname, '../../..')
+const rootDir = join(__dirname, '../..')
 const apiModelPath = join(rootDir, `${projectName}/temp/${normalizedProjectName}.api.json`)
 const apiMarkdownPath = join(rootDir, `common/reviews/api/${normalizedProjectName}.api.md`)
 const outputPath = join(rootDir, `${projectName}/api.md`)

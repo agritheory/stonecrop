@@ -68,9 +68,7 @@ jobs:
         run: node common/scripts/install-run-rush.js install
 
       - name: Install Autoinstallers
-        run: |
-          node common/scripts/install-run-rush.js install-autoinstaller --name doc-tools
-          node common/scripts/install-run-rush.js install-autoinstaller --name rush-plugins
+        run: node common/scripts/install-run-rush.js install-autoinstaller --name rush-plugins
 
       - name: Rush Build
         run: node common/scripts/install-run-rush.js build

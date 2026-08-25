@@ -80,9 +80,7 @@ jobs:
         run: node common/scripts/install-run-rush.js install
 
       - name: Install Autoinstallers
-        run: |
-          node common/scripts/install-run-rush.js install-autoinstaller --name rush-plugins
-          node common/scripts/install-run-rush.js install-autoinstaller --name doc-tools
+        run: node common/scripts/install-run-rush.js install-autoinstaller --name rush-plugins
 
       # Matrix uses folder names; Rush --to requires the npm package name.
       - name: Resolve Package Name

@@ -19,12 +19,12 @@
 		"dist"
 	],
 	"scripts": {
-		"_phase:build": "heft build --clean && vite build && rushx docs",
-		"build": "heft build --clean && vite build && rushx docs",
+		"_phase:build": "heft build --clean && vite build && node --run docs",
+		"build": "heft build --clean && vite build && node --run docs",
 		"docs": "bash ../common/scripts/run-docs.sh graphql_middleware",
 		"lint": "oxlint",
 		"lint:fix": "oxlint --fix",
-		"prepublishOnly": "heft build --clean && vite build && rushx docs",
+		"prepublishOnly": "heft build --clean && vite build && node --run docs",
 		"test": "vitest run --coverage.enabled false",
 		"test:coverage": "vitest run --coverage",
 		"test:ui": "vitest --ui",

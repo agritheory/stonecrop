@@ -5,8 +5,8 @@
 	"type": "module",
 	"scripts": {
 		"build": "bash ../common/scripts/run-docs.sh --aggregate && vitepress build",
-		"dev": "rushx build && vitepress dev",
-		"preview": "rushx build && vitepress preview"
+		"dev": "node --run build && vitepress dev",
+		"preview": "node --run build && vitepress preview"
 	},
 	"devDependencies": {
 		"mermaid": "^11.12.2",

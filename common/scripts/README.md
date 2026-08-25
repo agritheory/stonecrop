@@ -22,7 +22,7 @@ This script:
 ```bash
 # From repository root
 cd <package-folder>
-rushx docs
+node --run docs
 
 # Or use the script directly
 bash common/scripts/run-docs.sh <package-name>
@@ -38,9 +38,9 @@ bash common/scripts/run-docs.sh --aggregate
 
 ## Tools Overview
 
-### `generate-docs.mjs`
+### `generate-docs.cjs`
 
-Located in `common/autoinstallers/doc-tools/generate-docs.mjs`
+Located in `tools/doc-gen/generate-docs.cjs`
 
 - **Purpose**: Generates API documentation from TypeScript API Extractor models
 - **Input**: `temp/<package-name>.api.json` (created by API Extractor during build)
@@ -95,12 +95,12 @@ Each package should have a `docs` script in `package.json`:
 }
 ```
 
-The `_phase:build` script should also call `rushx docs`:
+The `_phase:build` script should also call `node --run docs`:
 
 ```json
 {
   "scripts": {
-    "_phase:build": "heft build && vite build && rushx docs"
+    "_phase:build": "heft build && vite build && node --run docs"
   }
 }
 ```

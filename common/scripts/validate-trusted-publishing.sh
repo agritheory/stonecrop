@@ -109,7 +109,9 @@ package_is_public() {
 
 # Cross-check that npm still decides provenance the way this script assumes.
 # --force: runs before the bump, so package.json still holds the published version.
-# --ignore-scripts: prepublishOnly needs rushx, absent outside Rush; dist/ is built.
+# --ignore-scripts: prepublishOnly would rebuild the package for nothing; dist/ is already built.
+# (It no longer *needs* skipping — the docs step went from `rushx docs` to `node --run docs`, which
+# resolves outside Rush — but a dry run has no reason to pay for a rebuild.)
 confirm_against_npm_client() {
 	local log
 	log=$(mktemp)

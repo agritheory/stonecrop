@@ -36,9 +36,9 @@
 		"dist"
 	],
 	"scripts": {
-		"_phase:build": "rushx dev:prepare && rushx prepack",
-		"build": "rushx dev:prepare && rushx prepack",
-		"build:module": "rushx dev:prepare && rushx prepack",
+		"_phase:build": "node --run dev:prepare && node --run prepack",
+		"build": "node --run dev:prepare && node --run prepack",
+		"build:module": "node --run dev:prepare && node --run prepack",
 		"dev": "node playground/scripts/bootstrap.mjs && nuxi dev playground --host",
 		"dev:build": "nuxi build playground",
 		"dev:prepare": "nuxt-module-build build --stub && nuxt-module-build prepare && nuxi prepare playground",

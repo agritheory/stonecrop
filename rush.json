@@ -119,6 +119,12 @@
 			"shouldPublish": false
 		},
 		{
+			"packageName": "stonecrop-doc-gen",
+			"projectFolder": "tools/doc-gen",
+			"reviewCategory": "utilities",
+			"shouldPublish": false
+		},
+		{
 			"packageName": "@stonecrop/docs",
 			"projectFolder": "docs",
 			"reviewCategory": "documentation",
