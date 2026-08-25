@@ -1,6 +1,28 @@
 {
 	"name": "stonecrop-monorepo",
 	"private": true,
+	"description": "Workspace root. Rush installs from rush.json; this file exists so Vite+ can enumerate the members and so vp does not write its own devEngines block.",
+	"workspaces": [
+		"aform",
+		"atable",
+		"beam",
+		"casl_middleware",
+		"code_editor",
+		"desktop",
+		"docs",
+		"graphql_client",
+		"graphql_middleware",
+		"node_editor",
+		"nuxt",
+		"nuxt_grafserv",
+		"rigs/stonecrop-rig",
+		"rockfoil",
+		"schema",
+		"stonecrop",
+		"themes",
+		"tools/doc-gen",
+		"utilities"
+	],
 	"devEngines": {
 		"packageManager": {
 			"name": "pnpm",

@@ -5,6 +5,8 @@ export default defineConfig({
 	plugins: [],
 	build: {
 		emptyOutDir: false,
+		// Libraries ship unminified; the consumer's bundler minifies.
+		minify: false,
 		sourcemap: true,
 		lib: {
 			entry: {

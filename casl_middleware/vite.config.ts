@@ -7,6 +7,8 @@ const projectRootDir = resolve(import.meta.dirname)
 export default defineConfig({
 	build: {
 		emptyOutDir: false,
+		// Libraries ship unminified; the consumer's bundler minifies.
+		minify: false,
 		sourcemap: true,
 		// Server-side library - only output ES modules
 		target: 'node18',

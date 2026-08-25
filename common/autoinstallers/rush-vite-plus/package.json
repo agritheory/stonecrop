@@ -1,0 +1,8 @@
+{
+	"name": "rush-vite-plus",
+	"version": "1.0.0",
+	"private": true,
+	"dependencies": {
+		"vite-plus": "0.3.0"
+	}
+}

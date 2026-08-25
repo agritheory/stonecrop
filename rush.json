@@ -125,12 +125,6 @@
 			"shouldPublish": false
 		},
 		{
-			"packageName": "stonecrop-vite-plus",
-			"projectFolder": "tools/vite-plus",
-			"reviewCategory": "utilities",
-			"shouldPublish": false
-		},
-		{
 			"packageName": "@stonecrop/docs",
 			"projectFolder": "docs",
 			"reviewCategory": "documentation",

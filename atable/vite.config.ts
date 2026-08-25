@@ -14,6 +14,8 @@ export default defineConfig({
 	},
 	build: {
 		emptyOutDir: false,
+		// Libraries ship unminified; the consumer's bundler minifies.
+		minify: false,
 		sourcemap: true,
 		lib: {
 			entry: resolve(projectRootDir, 'src/index.ts'),
