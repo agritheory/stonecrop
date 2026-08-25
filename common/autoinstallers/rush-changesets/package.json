@@ -1,0 +1,8 @@
+{
+	"name": "rush-changesets",
+	"version": "1.0.0",
+	"private": true,
+	"dependencies": {
+		"@changesets/cli": "3.0.1"
+	}
+}
