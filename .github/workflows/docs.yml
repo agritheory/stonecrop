@@ -6,7 +6,6 @@ on:
       - development
     paths:
       - 'docs/**'
-      - 'examples/**'
       - '**/api.md'
       - '.github/workflows/docs.yml'
   workflow_dispatch:
@@ -76,9 +75,9 @@ jobs:
       - name: Rush Build
         run: node common/scripts/install-run-rush.js build
 
-      - name: Build Histoire Stories + Vitepress
+      - name: Build Vitepress
         working-directory: ./docs
-        run: node ../common/scripts/install-run-rushx.js build:full
+        run: node ../common/scripts/install-run-rushx.js build
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v5

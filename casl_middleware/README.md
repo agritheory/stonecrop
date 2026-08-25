@@ -108,8 +108,6 @@ pnpm dev:postgraphile
 
 ```
 .
-├── examples/
-│   └── postgraphile/        # Postgraphile example implementation
 ├── src/
 │   ├── middleware/         # Core CASL middleware
 │   ├── types/             # TypeScript types

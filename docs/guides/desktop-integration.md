@@ -68,7 +68,7 @@ const { registerClient } = useStonecropSetup()
 registerClient(new StonecropClient({ endpoint: '/graphql' }))
 ```
 
-Nothing about this seam assumes GraphQL. `examples/desktop` ships a `RestDataClient` over plain `fetch`, and `nuxt/playground` ships one over a third-party API whose schema shares nothing with Stonecrop's.
+Nothing about this seam assumes GraphQL — a `DataClient` over plain `fetch` is as valid. `nuxt/playground` ships one over a third-party API whose schema shares nothing with Stonecrop's.
 
 Register it before Desktop renders. Desktop skips the read entirely when no client is configured, so a missing one shows up as permanently empty lists and blank forms rather than as an error. (`Stonecrop.getRecord` and `getRecords` do throw, naming `setClient`, for a host that calls them directly.)
 
@@ -161,7 +161,7 @@ const { run } = useClientAction({
 })
 ```
 
-`args` is an opaque JSON array. Its shape is a convention agreed between your client and your server handlers, not something the schema validates — the default is `[{ id, data }]`, omitting `id` for a draft, while `examples/desktop` uses positional `[recordId, data]` end to end and supplies `buildArgs` to say so. Pick one and keep both ends of your own stack on it.
+`args` is an opaque JSON array. Its shape is a convention agreed between your client and your server handlers, not something the schema validates — the default is `[{ id, data }]`, omitting `id` for a draft, while a backend taking positional `[recordId, data]` end to end supplies `buildArgs` to say so. Pick one and keep both ends of your own stack on it.
 
 ### What you cannot adjust, and why
 
@@ -174,7 +174,7 @@ For the same reason the write is not the composable's to begin with: `Stonecrop.
 const result = await stonecrop.value.dispatchAction(doctype, payload.name, args)
 ```
 
-What that does *not* do is drop the stale key or move the route, because both need the id you dispatched and it is inside `args`, which that layer must not parse. If you handle `@action` yourself, those two steps are yours. `examples/desktop/components/View.vue` is the worked non-Nuxt example.
+What that does *not* do is drop the stale key or move the route, because both need the id you dispatched and it is inside `args`, which that layer must not parse. If you handle `@action` yourself, those two steps are yours — `useClientAction` in `stonecrop/src/client-action.ts` is what they look like done once.
 
 ### Removal is a workflow outcome, not a blessed action
 

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/stonecrop",
+      "comment": "Drop the removed example app from the `buildArgs` documentation",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/stonecrop"
+}

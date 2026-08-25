@@ -5,10 +5,8 @@
 	"type": "module",
 	"scripts": {
 		"build": "bash ../common/scripts/run-docs.sh --aggregate && vitepress build",
-		"build:full": "rushx build:stories && rushx build",
-		"build:stories": "cd ../examples && rushx build:stories",
-		"dev": "rushx build:full && vitepress dev",
-		"preview": "rushx build:full && vitepress preview"
+		"dev": "rushx build && vitepress dev",
+		"preview": "rushx build && vitepress preview"
 	},
 	"devDependencies": {
 		"mermaid": "^11.12.2",

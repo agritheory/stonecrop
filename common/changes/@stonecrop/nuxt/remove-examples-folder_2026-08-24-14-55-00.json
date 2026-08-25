@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/nuxt",
+      "comment": "Drop the removed example app's path from the clientHandler decision record",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@stonecrop/nuxt"
+}

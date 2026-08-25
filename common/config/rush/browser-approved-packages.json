@@ -67,10 +67,6 @@
       "allowedCategories": [ "production", "prototype" ]
     },
     {
-      "name": "@histoire/plugin-vue",
-      "allowedCategories": [ "prototype", "utilities" ]
-    },
-    {
       "name": "@microsoft/api-documenter",
       "allowedCategories": [ "prototype", "utilities" ]
     },
@@ -239,10 +235,6 @@
       "allowedCategories": [ "prototype" ]
     },
     {
-      "name": "concurrently",
-      "allowedCategories": [ "prototype" ]
-    },
-    {
       "name": "consola",
       "allowedCategories": [ "prototype" ]
     },
@@ -305,10 +297,6 @@
     {
       "name": "happy-dom",
       "allowedCategories": [ "prototype" ]
-    },
-    {
-      "name": "histoire",
-      "allowedCategories": [ "prototype", "utilities" ]
     },
     {
       "name": "immutable",
@@ -425,10 +413,6 @@
     {
       "name": "pluralize",
       "allowedCategories": [ "utilities" ]
-    },
-    {
-      "name": "portal-vue",
-      "allowedCategories": [ "prototype" ]
     },
     {
       "name": "postgraphile",

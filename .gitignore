@@ -142,6 +142,3 @@ tsdoc-metadata.json
 # VitePress build output
 docs/.vitepress/dist/
 docs/.vitepress/cache/
-
-# Histoire build output (generated from examples)
-docs/public/stories/
