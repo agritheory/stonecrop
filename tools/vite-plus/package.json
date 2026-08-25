@@ -1,0 +1,13 @@
+{
+	"name": "stonecrop-vite-plus",
+	"version": "0.7.0",
+	"private": true,
+	"description": "Pins the Vite+ toolchain so `rush install` provides the `vp` binary while Rush is still the installer",
+	"license": "MIT",
+	"dependencies": {
+		"vite-plus": "0.3.0"
+	},
+	"engines": {
+		"node": ">=24.0.0"
+	}
+}

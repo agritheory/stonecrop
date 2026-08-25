@@ -114,12 +114,12 @@ jobs:
           path: common/temp/build-cache
           key: ${{ steps.build-cache-restore.outputs.cache-primary-key }}
 
-      # `rush lint` is a bulk command that invokes each package's `lint` script
-      # (oxlint, defined in package.json). Oxlint uses the per-package
-      # oxlint.config.ts which extends the root config, and oxlint-tsgolint
-      # supplies the type-aware rules via each package's node_modules.
+      # The one step driven by Vite+ instead of Rush, so the runner is exercised in CI while Rush
+      # gates everything else. `vp run -r lint` invokes each package's `lint` script and skips the
+      # 4 members defining none, matching `ignoreMissingScript: true` on Rush's bulk lint command.
+      # The binary is a Rush project dependency, so the install above already provided it.
       - name: Oxlint
-        run: node common/scripts/install-run-rush.js lint
+        run: ./tools/vite-plus/node_modules/.bin/vp run -r lint
 
       # Repo-wide, because the per-package matrix below is paths-filtered and cannot see cross-
       # package breakage. `heft build` compiles only .ts and `vite build` does not typecheck, so

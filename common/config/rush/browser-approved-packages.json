@@ -479,6 +479,10 @@
       "allowedCategories": [ "prototype" ]
     },
     {
+      "name": "vite-plus",
+      "allowedCategories": [ "utilities" ]
+    },
+    {
       "name": "vitepress",
       "allowedCategories": [ "documentation" ]
     },
