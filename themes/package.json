@@ -18,7 +18,6 @@
 		"./default.css": "./dist/default.css"
 	},
 	"scripts": {
-		"_phase:build": "vite build",
 		"build": "vite build",
 		"dev": "vite",
 		"preview": "vite preview",

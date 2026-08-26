@@ -37,7 +37,6 @@
 		"src/cli"
 	],
 	"scripts": {
-		"_phase:build": "node --run dev:prepare && nuxt-module-build build",
 		"build": "node --run dev:prepare && nuxt-module-build build",
 		"dev": "node --run dev:prepare && nuxi dev playground --host",
 		"dev:build": "nuxi build playground",

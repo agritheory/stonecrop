@@ -33,7 +33,6 @@
 		"src/*"
 	],
 	"scripts": {
-		"_phase:build": "rm -rf dist && tsc -b --force && api-extractor run --local -c config/api-extractor.json && vite build && node --run docs",
 		"build": "rm -rf dist && tsc -b --force && api-extractor run --local -c config/api-extractor.json && vite build && node --run docs",
 		"dev": "vite",
 		"docs": "bash ../common/scripts/run-docs.sh aform",

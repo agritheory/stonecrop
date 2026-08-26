@@ -36,7 +36,6 @@
 		"dist"
 	],
 	"scripts": {
-		"_phase:build": "node --run dev:prepare && node --run prepack",
 		"build": "node --run dev:prepare && node --run prepack",
 		"build:module": "node --run dev:prepare && node --run prepack",
 		"dev": "node playground/scripts/bootstrap.mjs && nuxi dev playground --host",

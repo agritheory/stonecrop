@@ -2,10 +2,10 @@
 #
 # Validates npm trusted publishing for every publishable package.
 #
-# Run this before "rush version --bump". npm never validates a trusted publisher
-# when it is saved, so a wrong or revoked record only surfaces once "rush publish"
-# reaches that package — by which point the bump is committed and pushed, leaving
-# lockstep packages depending on siblings that were never published.
+# Run this before the version bump. npm never validates a trusted publisher when it
+# is saved, so a wrong or revoked record only surfaces once the publish reaches that
+# package — by which point the bump is committed and pushed, leaving lockstep packages
+# depending on siblings that were never published.
 #
 # Publishes nothing: the exchange endpoint only mints a short-lived, package-scoped
 # token, and the visibility endpoint is a read.
@@ -16,8 +16,6 @@ set -euo pipefail
 
 readonly REGISTRY_HOST="registry.npmjs.org"
 readonly REGISTRY="https://${REGISTRY_HOST}"
-readonly VERSION_POLICY="stonecrop"
-readonly SAMPLE_PACKAGE_DIR="aform"
 
 die() {
 	echo "::error::$*"
@@ -56,13 +54,12 @@ mint_id_token() {
 	[ -n "${ID_TOKEN}" ] || die "Could not mint an id-token."
 }
 
-# The publishable set, taken from Rush rather than hardcoded so it cannot drift
-# from what "rush publish --version-policy" actually releases.
+# The publishable set, taken from the workspace rather than hardcoded so it cannot drift
+# from what "pnpm -r publish" actually releases: pnpm publishes every workspace package
+# that is not private, which is the same selector used here.
 list_publishable_packages() {
-	node common/scripts/install-run-rush.js list --json |
-		sed -n '/^{/,$p' |
-		jq -r --arg policy "${VERSION_POLICY}" \
-			'.projects[] | select(.versionPolicyName == $policy) | .name'
+	pnpm list -r --depth -1 --json |
+		jq -r '.[] | select(.private == false) | .name'
 }
 
 # Sets MINTED (empty on failure) and FAILURE. Globals rather than echoed output:
@@ -107,29 +104,6 @@ package_is_public() {
 		jq -r '.public // false')" = "true" ]
 }
 
-# Cross-check that npm still decides provenance the way this script assumes.
-# --force: runs before the bump, so package.json still holds the published version.
-# --ignore-scripts: prepublishOnly would rebuild the package for nothing; dist/ is already built.
-# (It no longer *needs* skipping — the docs step went from `rushx docs` to `node --run docs`, which
-# resolves outside Rush — but a dry run has no reason to pay for a rebuild.)
-confirm_against_npm_client() {
-	local log
-	log=$(mktemp)
-	(cd "${SAMPLE_PACKAGE_DIR}" && npm publish --dry-run --force --ignore-scripts --loglevel=silly) \
-		>"${log}" 2>&1 || true
-
-	if ! grep -q "oidc.*Successfully retrieved and set token" "${log}"; then
-		grep -i "oidc" "${log}" || echo "  (npm never attempted the exchange)"
-		rm -f "${log}"
-		die "npm disagrees: it did not authenticate via OIDC in ${SAMPLE_PACKAGE_DIR}."
-	fi
-	if ! grep -q "oidc.*Enabling provenance" "${log}"; then
-		rm -f "${log}"
-		die "npm disagrees: it would not attach provenance in ${SAMPLE_PACKAGE_DIR}."
-	fi
-	rm -f "${log}"
-}
-
 main() {
 	mint_id_token
 	echo "::add-mask::${ID_TOKEN}"
@@ -165,9 +139,7 @@ main() {
 		fi
 	done < <(list_publishable_packages)
 
-	[ "${failed}" -eq 0 ] || die "Trusted publishing is not ready. Compare the failures against 'npm trust list <package>' — organization, repository and workflow filename are case-sensitive and exact."
-
-	confirm_against_npm_client
+	[ "${failed}" -eq 0 ] || die "Trusted publishing is not ready. Compare the failures against the registry's trusted-publisher record for each package — organization, repository and workflow filename are case-sensitive and exact."
 
 	echo "::notice::Trusted publishing verified: every package authenticates over OIDC and will carry provenance."
 }

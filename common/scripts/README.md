@@ -8,14 +8,13 @@ This directory contains tools for generating API documentation from TypeScript s
 
 ```bash
 # From repository root
-bash common/scripts/docs-full.sh
+node --run docs:full
 ```
 
 This script:
-1. Runs `rush docs` to generate `api.md` files for all packages
-2. Aggregates all `api.md` files to `docs/reference/` with VitePress frontmatter
 
-**Note**: This must be run directly as a bash script (not through `rush docs:full`) to avoid Rush lock conflicts.
+1. Runs the repo-wide `docs` script to generate `api.md` files for all packages
+2. Aggregates all `api.md` files to `docs/reference/` with VitePress frontmatter
 
 ### Generate Documentation for Specific Package
 
@@ -78,9 +77,9 @@ Located in `common/scripts/run-docs.sh`
 Located in `common/scripts/docs-full.sh`
 
 - **Purpose**: Complete workflow script that generates all docs and aggregates
-- **Called by**: `rush docs:full` command
+- **Called by**: the root `docs:full` script
 - **Steps**:
-  1. Runs `rush docs` to generate all individual package docs
+  1. Generates all individual package docs
   2. Runs aggregation to copy to `docs/reference/`
 
 ## Package Configuration
@@ -95,21 +94,22 @@ Each package should have a `docs` script in `package.json`:
 }
 ```
 
-The `_phase:build` script should also call `node --run docs`:
+The `build` script should also call `node --run docs`:
 
 ```json
 {
   "scripts": {
-    "_phase:build": "rm -rf dist && tsc -b --force && api-extractor run --local -c config/api-extractor.json && vite build && node --run docs"
+    "build": "rm -rf dist && tsc -b --force && api-extractor run --local -c config/api-extractor.json && vite build && node --run docs"
   }
 }
 ```
 
-## Rush Commands
+## Repo-wide Commands
 
-### `rush docs`
+### `node --run docs`
 
-Bulk command that runs `rushx docs` in each package in parallel.
+Runs `vp run -r docs`, which invokes each package's `docs` script in dependency order and skips
+packages that define none.
 
 **When to use**: Generate docs for all packages (but don't aggregate yet)
 
@@ -118,10 +118,8 @@ Bulk command that runs `rushx docs` in each package in parallel.
 To generate and aggregate all documentation, run:
 
 ```bash
-bash common/scripts/docs-full.sh
+node --run docs:full
 ```
-
-**Note**: This cannot be run as a Rush command due to lock conflicts when calling `rush docs` recursively.
 
 ## Integration with VitePress
 
@@ -129,10 +127,14 @@ The docs are aggregated to `docs/reference/` where VitePress can serve them:
 
 ```bash
 # After generating docs
-cd docs
-rushx build    # Build VitePress site (includes aggregation)
-rushx dev      # Development server with hot reload
+vp -C docs run build:site
+vp -C docs run dev
 ```
+
+The site's build script is named `build:site`, not `build`. A package opts into the repo-wide
+build by defining a `build` script, so naming it `build` would rebuild the whole VitePress site on
+every `node --run build` — including inside the pre-commit hook. Aggregation into `docs/reference/`
+happens inside `build:site`, and the pre-commit hook runs it separately.
 
 ## Workflow Examples
 
@@ -140,13 +142,15 @@ rushx dev      # Development server with hot reload
 
 ```bash
 cd aform
-rushx docs    # Generate api.md for aform only
+node --run docs    # Generate api.md for aform only
 ```
 
 ### Before committing changes
 
+The pre-commit hook aggregates and stages `docs/reference/` automatically. To do it by hand:
+
 ```bash
-bash common/scripts/docs-full.sh    # Ensure all docs are up to date
+node --run docs:full
 git add -u
 git commit -m "Update API documentation"
 ```
@@ -155,12 +159,10 @@ git commit -m "Update API documentation"
 
 ```bash
 # Generate all docs as part of build
-rush build    # This calls rushx docs for each package
+node --run build    # each package's build script runs its own docs step
 
 # Before deploying docs site
-bash common/scripts/docs-full.sh    # Ensure aggregation is current
-cd docs
-rushx build       # Build VitePress site
+vp -C docs run build:site    # aggregates, then builds the VitePress site
 ```
 
 ## Troubleshooting
@@ -168,13 +170,13 @@ rushx build       # Build VitePress site
 ### Docs not generated for a package
 
 1. Ensure the package has a `docs` script in `package.json`
-2. Check that API Extractor ran during build (`rushx build`)
+2. Check that API Extractor ran during build (`node --run build`)
 3. Verify `temp/<package-name>.api.json` exists
 4. Check for TypeScript errors that might prevent API extraction
 
 ### Aggregation not finding api.md files
 
-1. Run `rush docs` first to generate individual files
+1. Run `node --run docs` first to generate individual files
 2. Check package folder names match configuration in `docs-aggregate.mjs`
 3. Look for api.md files in package root directories
 
@@ -194,7 +196,8 @@ The documentation generation is a two-phase process:
 2. **Aggregation Phase**: All `api.md` files are copied to a central location with VitePress frontmatter
 
 This separation allows:
+
 - Fast incremental docs for single packages
-- Parallel generation using Rush's build system
+- Parallel generation across packages
 - Single source of truth (package folder) for API docs
 - Automatic aggregation for documentation site deployment

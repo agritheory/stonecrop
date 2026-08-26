@@ -1,32 +1,32 @@
 {
 	"name": "stonecrop-monorepo",
 	"private": true,
-	"description": "Workspace root. Rush installs from rush.json; this file exists so Vite+ can enumerate the members and so vp does not write its own devEngines block.",
-	"workspaces": [
-		"aform",
-		"atable",
-		"beam",
-		"casl_middleware",
-		"code_editor",
-		"desktop",
-		"docs",
-		"graphql_client",
-		"graphql_middleware",
-		"node_editor",
-		"nuxt",
-		"nuxt_grafserv",
-		"rockfoil",
-		"schema",
-		"stonecrop",
-		"themes",
-		"tools/doc-gen",
-		"utilities"
-	],
+	"description": "Workspace root. pnpm installs the members listed in pnpm-workspace.yaml; Vite+ runs every task.",
+	"type": "module",
+	"scripts": {
+		"build": "vp run -r build",
+		"docs": "vp run -r docs",
+		"docs:full": "bash common/scripts/docs-full.sh",
+		"format": "prettier --write . --cache --log-level warn",
+		"format:check": "prettier --check .",
+		"lint": "vp run -r lint",
+		"prepare": "vp config --no-agent",
+		"sort-package-json": "sort-package-json package.json */package.json tools/*/package.json",
+		"test": "vp run -r test",
+		"test:types": "vp run -r test:types"
+	},
+	"devDependencies": {
+		"@changesets/cli": "3.0.1",
+		"prettier": "^3.9.5",
+		"sort-package-json": "1.54.0",
+		"vite-plus": "0.3.0"
+	},
 	"devEngines": {
 		"packageManager": {
 			"name": "pnpm",
 			"version": "11.13.1",
 			"onFail": "download"
 		}
-	}
+	},
+	"packageManager": "pnpm@11.13.1"
 }

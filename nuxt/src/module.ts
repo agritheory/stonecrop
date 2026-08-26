@@ -175,8 +175,8 @@ export default defineNuxtModule<ModuleOptions>({
 		})
 
 		// Allow Vite to serve symlinked packages during development. Their real paths live outside
-		// the app root, and in a Rush repo Vite can't auto-detect the workspace root (no
-		// pnpm-workspace.yaml at the monorepo root), so add them to fs.allow explicitly.
+		// the app root, and a consumer app that links these packages has no workspace root for Vite
+		// to auto-detect, so add them to fs.allow explicitly.
 		if (nuxt.options.dev) {
 			const allowPaths = new Set<string>()
 			for (const pkg of ['@stonecrop/nuxt', ...STONECROP_PACKAGES]) {

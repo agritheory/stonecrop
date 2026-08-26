@@ -1,0 +1,25 @@
+#!/bin/sh
+# Installed by "vp hooks enable", which the root "prepare" script runs after every install.
+# Set VP_GIT_HOOKS=0 to skip every hook in a shell that commits without a working checkout.
+
+# Sort package.json before formatting, so prettier formats the reordered output.
+# CI enforces this ordering with "git diff --exit-code"; doing it here keeps a
+# forgotten sort from turning into a failed build.
+node --run sort-package-json || exit $?
+
+# Format all files (not just staged ones) so the tree never drifts from CI.
+# Using --cache means only files whose content changed since the last run are
+# re-checked, keeping this fast after the first invocation.
+node --run format || exit $?
+git add -u
+
+# No version-consistency step. Rush's "rush check" enforced one SemVer range per dependency across
+# every project, and nothing in pnpm or Vite+ replaces it; pnpm catalogs are the intended successor.
+node --run build || exit $?
+
+# Aggregate API docs into docs/reference/ and stage any updated files.
+# Each package's build script already runs "node --run docs" to generate its own
+# api.md, so by this point all individual docs are current. This step collects
+# them into the VitePress docs site so the aggregated output is never stale.
+bash common/scripts/run-docs.sh --aggregate || exit $?
+git add docs/reference/

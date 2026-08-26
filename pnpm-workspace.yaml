@@ -1,0 +1,44 @@
+packages:
+  - aform
+  - atable
+  - beam
+  - casl_middleware
+  - code_editor
+  - desktop
+  - docs
+  - graphql_client
+  - graphql_middleware
+  - node_editor
+  - nuxt
+  - nuxt_grafserv
+  - rockfoil
+  - schema
+  - stonecrop
+  - themes
+  - tools/doc-gen
+  - utilities
+
+# Members are listed one by one rather than globbed. `nuxt/playground`, `nuxt/fullstack` and the
+# three `*/test/fixtures/*` apps carry a package.json but are not members: they resolve by walking
+# up into their parent package's node_modules, which is what they did under Rush. A `*/*` glob
+# would adopt them and give each its own node_modules, changing how every one of them resolves
+# `nuxt` and `vue`.
+resolutionMode: time-based
+autoInstallPeers: false
+
+overrides:
+  # docs still depends on vitepress ^1.6.4, which pulls vite 5.
+  vite@5: 6.4.3
+
+peerDependencyRules:
+  ignoreMissing:
+    - react
+    - react-dom
+
+# pnpm 11 fails an install for any dependency shipping a lifecycle script that is not listed here.
+# All four are false, preserving the behavior this repo had under pnpm 10, where none of them ran.
+allowBuilds:
+  '@parcel/watcher': false
+  esbuild: false
+  unrs-resolver: false
+  vue-demi: false

@@ -10,6 +10,9 @@ on:
 permissions:
   contents: read
 
+env:
+  VP_GIT_HOOKS: 0
+
 jobs:
   publish-npm:
     if: github.event.pull_request.merged == true
@@ -26,51 +29,34 @@ jobs:
       - uses: actions/checkout@v6
         name: Checkout
 
-      # No registry-url: it exports NPM_CONFIG_USERCONFIG, which shadows the .npmrc
-      # that "rush publish" installs in common/temp/publish-home.
+      # No registry-url: it exports NPM_CONFIG_USERCONFIG, which shadows the repo's own .npmrc.
       - uses: actions/setup-node@v6
         name: Install Node.js
         with:
           node-version: 24
           package-manager-cache: false
 
+      # Supplies the pnpm pinned by the root package.json's "packageManager" field.
+      - name: Enable Corepack
+        run: corepack enable
+
       - name: Set Git User
         run: |
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git config user.name "github-actions[bot]"
 
-      - name: Restore Rush Build Cache
-        id: cache-restore
-        uses: actions/cache/restore@v5
-        with:
-          path: common/temp/build-cache
-          key: rush-build-cache-release-${{ hashFiles('common/config/rush/pnpm-lock.yaml') }}-${{ github.run_id }}
-          restore-keys: |
-            rush-build-cache-release-${{ hashFiles('common/config/rush/pnpm-lock.yaml') }}-
-            rush-build-cache-release-
-            rush-build-cache-
-
-      # actions/setup-node's `cache: 'pnpm'` calls `pnpm store path` during
-      # setup — before Rush has installed its own managed pnpm binary at ~/.rush/.
-      # We cache ~/.rush (the binary) and ~/.local/share/pnpm/store (the package
-      # store) explicitly so that rush install can skip downloading all packages.
-      - name: Cache Rush pnpm Store
+      - name: Cache pnpm Store
         uses: actions/cache@v5
         with:
-          path: |
-            ~/.rush
-            ~/.local/share/pnpm/store
-          key: rush-pnpm-${{ runner.os }}-${{ hashFiles('common/config/rush/pnpm-lock.yaml') }}
-          restore-keys: rush-pnpm-${{ runner.os }}-
+          path: ~/.local/share/pnpm/store
+          key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: pnpm-${{ runner.os }}-
 
-      - name: Install Rush
-        run: node common/scripts/install-run-rush.js install
-
-      - name: Install Autoinstallers
-        run: node common/scripts/install-run-rush.js install-autoinstaller --name rush-plugins
+      - name: Install
+        run: pnpm install --frozen-lockfile
 
       - name: Build Stonecrop
-        run: node common/scripts/install-run-rush.js rebuild
+        run: pnpm run build
 
       # Must run before the version bump: a bad trusted publisher only surfaces
       # mid-publish, after the bump is pushed, leaving lockstep packages depending on
@@ -78,17 +64,21 @@ jobs:
       - name: Validate Trusted Publishing
         run: bash common/scripts/validate-trusted-publishing.sh
 
+      # Rewrites every package.json version and CHANGELOG.md and consumes the changeset files.
+      # `commit: false` in .changeset/config.json means this leaves the result in the working
+      # tree, so the commit below is what records it.
       - name: Bump Version for Packages
-        run: node common/scripts/install-run-rush.js version --bump --target-branch development --ignore-git-hooks
+        run: pnpm exec changeset version
+
+      - name: Commit Version Bump
+        run: |
+          git add -A
+          git commit -m "Bump versions [skip ci]"
+          git push origin HEAD:development
 
       # No auth token: pnpm exchanges the job's id-token for a registry credential.
       # Each package needs a trusted publisher on npmjs.com naming this workflow.
-      - name: Publish Packages via Rush
-        run: node common/scripts/install-run-rush.js publish --apply --publish --include-all --version-policy stonecrop --target-branch development --add-commit-details --set-access-level=public
-
-      - name: Save Rush Build Cache
-        if: always()
-        uses: actions/cache/save@v5
-        with:
-          path: common/temp/build-cache
-          key: ${{ steps.cache-restore.outputs.cache-primary-key }}
+      # pnpm publishes every workspace package that is not private, rewriting `workspace:*`
+      # ranges to the versions just bumped.
+      - name: Publish Packages
+        run: pnpm -r publish --access public --no-git-checks

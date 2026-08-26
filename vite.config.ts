@@ -1,15 +1,13 @@
 import { defineConfig } from 'vite-plus'
 
-// The Vite+ workspace root. Rush still installs and still gates CI; `vp` only runs scripts.
-//
-// Members come from `package.json#workspaces`, which pnpm ignores. Do not restate them in a root
-// `pnpm-workspace.yaml` while `common/autoinstallers/` exists: autoinstallers run pnpm from their
-// own folder, which has no workspace file, so pnpm walks up, adopts the whole repo and relinks
-// every project away from Rush's store. `rush check`/`list`/`update`/`rebuild` stay green through
-// it; only a cold `install-autoinstaller` fails, which is what CI runs.
+// The Vite+ workspace root. Members come from `pnpm-workspace.yaml`, which both pnpm and `vp` read.
 //
 // `cache: true` looks equivalent but caches nothing — its `tasks` half covers only entries in a
 // `tasks` map, and every task here is a package.json script, which `scripts` governs.
+//
+// No `run.tasks` block: `vp run -r <script>` already orders packages by the workspace dependency
+// graph declared in each package.json, which is what Rush's `upstream` phase dependency did, and
+// automatic tracking already fingerprints each script's real inputs and outputs.
 export default defineConfig({
 	run: {
 		cache: {

@@ -4,10 +4,6 @@
 	"private": true,
 	"description": "Renders each package's api.md from its api-extractor model",
 	"license": "MIT",
-	"scripts": {
-		"_phase:build": "",
-		"build": ""
-	},
 	"dependencies": {
 		"@microsoft/api-extractor-model": "^7.33.0"
 	},

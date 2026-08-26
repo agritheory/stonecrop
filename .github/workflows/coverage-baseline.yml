@@ -18,6 +18,9 @@ concurrency:
 permissions:
   contents: read
 
+env:
+  VP_GIT_HOOKS: 0
+
 jobs:
   coverage:
     name: ${{ matrix.package }}
@@ -49,52 +52,38 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: 24
-          cache-dependency-path: '**/config/rush/pnpm-lock.yaml'
           registry-url: https://registry.npmjs.org/
 
-      - name: Restore Rush Build Cache
-        id: cache-restore
-        uses: actions/cache/restore@v5
-        with:
-          path: common/temp/build-cache
-          key: rush-build-cache-${{ matrix.package }}-${{ hashFiles('common/config/rush/pnpm-lock.yaml') }}-${{ github.run_id }}
-          restore-keys: |
-            rush-build-cache-${{ matrix.package }}-${{ hashFiles('common/config/rush/pnpm-lock.yaml') }}-
-            rush-build-cache-${{ matrix.package }}-
-            rush-build-cache-
+      # Supplies the pnpm pinned by the root package.json's "packageManager" field.
+      - name: Enable Corepack
+        run: corepack enable
 
-      # actions/setup-node's `cache: 'pnpm'` calls `pnpm store path` during
-      # setup — before Rush has installed its own managed pnpm binary at ~/.rush/.
-      # We cache ~/.rush (the binary) and ~/.local/share/pnpm/store (the package
-      # store) explicitly so that rush install can skip downloading all packages.
-      - name: Cache Rush pnpm Store
+      # pnpm's global content-addressable store. Cached explicitly rather than through
+      # setup-node's `cache: pnpm`, which runs `pnpm store path` during setup — before corepack
+      # has materialized the pinned pnpm.
+      - name: Cache pnpm Store
         uses: actions/cache@v5
         with:
-          path: |
-            ~/.rush
-            ~/.local/share/pnpm/store
-          key: rush-pnpm-${{ runner.os }}-${{ hashFiles('common/config/rush/pnpm-lock.yaml') }}
-          restore-keys: rush-pnpm-${{ runner.os }}-
+          path: ~/.local/share/pnpm/store
+          key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: pnpm-${{ runner.os }}-
 
-      - name: Rush Install
-        run: node common/scripts/install-run-rush.js install
+      - name: Install
+        run: pnpm install --frozen-lockfile
 
-      - name: Install Autoinstallers
-        run: node common/scripts/install-run-rush.js install-autoinstaller --name rush-plugins
-
-      # Matrix uses folder names; Rush --to requires the npm package name.
+      # The matrix holds folder names and `vp run -t` needs the package name, so read it off the
+      # package itself. It must be the name: `--filter './<dir>...'` accepts the directory form but
+      # silently drops the `...`, building that one package and none of its dependencies.
       - name: Resolve Package Name
         id: pkg
-        run: |
-          NAME=$(node -e "const r=require('./rush.json');console.log(r.projects.find(p=>p.projectFolder==='${{ matrix.package }}').packageName)")
-          echo "name=${NAME}" >> $GITHUB_OUTPUT
+        run: echo "name=$(node -p "require('./${{ matrix.package }}/package.json').name")" >> $GITHUB_OUTPUT
 
-      - name: Rush Build
-        run: node common/scripts/install-run-rush.js build --to ${{ steps.pkg.outputs.name }}
+      - name: Build
+        run: pnpm exec vp run -t '${{ steps.pkg.outputs.name }}#build'
 
       - name: Run Tests
         working-directory: ./${{ matrix.package }}
-        run: node ../common/scripts/install-run-rushx.js test:coverage
+        run: pnpm run test:coverage
 
       - name: Upload Coverage
         if: always()
@@ -103,10 +92,3 @@ jobs:
           name: coverage-${{ matrix.package }}-development
           path: ./${{ matrix.package }}/coverage
           retention-days: 30
-
-      - name: Save Rush Build Cache
-        if: always()
-        uses: actions/cache/save@v5
-        with:
-          path: common/temp/build-cache
-          key: ${{ steps.cache-restore.outputs.cache-primary-key }}

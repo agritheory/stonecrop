@@ -18,5 +18,5 @@ To generate API documentation, ensure the package has been built:
 
 ```bash
 cd nuxt_grafserv
-rushx build
+node --run build
 ```
