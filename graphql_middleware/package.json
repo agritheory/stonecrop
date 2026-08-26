@@ -7,17 +7,17 @@
 		"url": "https://github.com/agritheory/stonecrop",
 		"directory": "graphql_middleware"
 	},
+	"files": [
+		"dist"
+	],
 	"type": "module",
+	"types": "./dist/graphql-middleware.d.ts",
 	"exports": {
 		".": {
 			"types": "./dist/graphql-middleware.d.ts",
 			"import": "./dist/index.js"
 		}
 	},
-	"types": "./dist/graphql-middleware.d.ts",
-	"files": [
-		"dist"
-	],
 	"scripts": {
 		"build": "rm -rf dist && tsc -b --force && api-extractor run --local -c config/api-extractor.json && vite build && node --run docs",
 		"docs": "bash ../common/scripts/run-docs.sh graphql_middleware",

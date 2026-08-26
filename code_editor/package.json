@@ -5,32 +5,35 @@
 	"bugs": {
 		"url": "https://github.com/agritheory/stonecrop/issues"
 	},
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/agritheory/stonecrop",
-		"directory": "code_editor"
-	},
 	"license": "MIT",
 	"author": {
 		"name": "Tyler Matteson",
 		"email": "tyler@agritheory.com"
 	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/agritheory/stonecrop",
+		"directory": "code_editor"
+	},
+	"files": [
+		"dist/*",
+		"src/*"
+	],
+	"type": "module",
 	"sideEffects": [
 		"**/*.vue",
 		"**/*.css"
 	],
-	"type": "module",
+	"types": "./dist/code-editor.d.ts",
 	"exports": {
 		".": {
 			"types": "./dist/code-editor.d.ts",
 			"import": "./dist/code-editor.js"
 		}
 	},
-	"types": "./dist/code-editor.d.ts",
-	"files": [
-		"dist/*",
-		"src/*"
-	],
+	"publishConfig": {
+		"access": "public"
+	},
 	"scripts": {
 		"build": "rm -rf dist && tsc -b --force && api-extractor run --local -c config/api-extractor.json && vite build && node --run docs",
 		"dev": "vite",
@@ -73,8 +76,5 @@
 	},
 	"engines": {
 		"node": ">=24.0.0"
-	},
-	"publishConfig": {
-		"access": "public"
 	}
 }

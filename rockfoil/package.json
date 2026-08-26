@@ -6,20 +6,25 @@
 	"bugs": {
 		"url": "https://github.com/agritheory/stonecrop/issues"
 	},
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/agritheory/stonecrop",
-		"directory": "rockfoil"
-	},
 	"license": "MIT",
 	"author": {
 		"name": "Tyler Matteson",
 		"email": "tyler@agritheory.com"
 	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/agritheory/stonecrop",
+		"directory": "rockfoil"
+	},
+	"files": [
+		"dist/*",
+		"src/*"
+	],
+	"type": "module",
 	"sideEffects": [
 		"**/*.css"
 	],
-	"type": "module",
+	"types": "./dist/rockfoil.d.ts",
 	"exports": {
 		".": {
 			"types": "./dist/rockfoil.d.ts",
@@ -27,11 +32,6 @@
 		},
 		"./types": "./dist/src/types/index.d.ts"
 	},
-	"types": "./dist/rockfoil.d.ts",
-	"files": [
-		"dist/*",
-		"src/*"
-	],
 	"scripts": {
 		"build": "rm -rf dist && tsc -b --force && api-extractor run --local -c config/api-extractor.json && vite build && node --run docs",
 		"dev": "vite",

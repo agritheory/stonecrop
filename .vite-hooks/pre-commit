@@ -21,14 +21,9 @@ step() {
 	fi
 }
 
-# Sort package.json before formatting, so prettier formats the reordered output.
-# CI enforces this ordering with "git diff --exit-code"; doing it here keeps a
-# forgotten sort from turning into a failed build.
-step 'sort package.json' node --run sort-package-json
-
-# Format all files (not just staged ones) so the tree never drifts from CI.
-# Using --cache means only files whose content changed since the last run are
-# re-checked, keeping this fast after the first invocation.
+# Format all files, not just staged ones, so the tree never drifts from CI. Oxfmt also sorts
+# package.json, which is why there is no separate sort step: running one alongside it would mean
+# two tools with incompatible orderings undoing each other on every commit.
 step 'format' node --run format
 git add -u
 

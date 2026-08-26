@@ -1,6 +1,6 @@
 {
-	"private": true,
 	"name": "@stonecrop/nuxt-grafserv-playground",
+	"private": true,
 	"type": "module",
 	"scripts": {
 		"bootstrap": "node scripts/bootstrap.mjs",

@@ -5,20 +5,25 @@
 	"bugs": {
 		"url": "https://github.com/agritheory/stonecrop/issues"
 	},
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/agritheory/stonecrop",
-		"directory": "aform"
-	},
 	"license": "MIT",
 	"author": {
 		"name": "Tyler Matteson",
 		"email": "tyler@agritheory.com"
 	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/agritheory/stonecrop",
+		"directory": "aform"
+	},
+	"files": [
+		"dist/*",
+		"src/*"
+	],
+	"type": "module",
 	"sideEffects": [
 		"**/*.css"
 	],
-	"type": "module",
+	"types": "./dist/aform.d.ts",
 	"exports": {
 		".": {
 			"types": "./dist/aform.d.ts",
@@ -27,11 +32,9 @@
 		"./styles": "./dist/assets/index.css",
 		"./types": "./dist/src/types/index.d.ts"
 	},
-	"types": "./dist/aform.d.ts",
-	"files": [
-		"dist/*",
-		"src/*"
-	],
+	"publishConfig": {
+		"access": "public"
+	},
 	"scripts": {
 		"build": "rm -rf dist && tsc -b --force && api-extractor run --local -c config/api-extractor.json && vite build && node --run docs",
 		"dev": "vite",
@@ -80,8 +83,5 @@
 	},
 	"engines": {
 		"node": ">=24.0.0"
-	},
-	"publishConfig": {
-		"access": "public"
 	}
 }

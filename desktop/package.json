@@ -5,20 +5,25 @@
 	"bugs": {
 		"url": "https://github.com/agritheory/stonecrop/issues"
 	},
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/agritheory/stonecrop",
-		"directory": "desktop"
-	},
 	"license": "MIT",
 	"author": {
 		"name": "Tyler Matteson",
 		"email": "tyler@agritheory.com"
 	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/agritheory/stonecrop",
+		"directory": "desktop"
+	},
+	"files": [
+		"dist/*",
+		"src/*"
+	],
+	"type": "module",
 	"sideEffects": [
 		"**/*.css"
 	],
-	"type": "module",
+	"types": "./dist/desktop.d.ts",
 	"exports": {
 		".": {
 			"types": "./dist/desktop.d.ts",
@@ -27,11 +32,9 @@
 		"./styles": "./dist/desktop.css",
 		"./types": "./dist/src/types/index.d.ts"
 	},
-	"types": "./dist/desktop.d.ts",
-	"files": [
-		"dist/*",
-		"src/*"
-	],
+	"publishConfig": {
+		"access": "public"
+	},
 	"scripts": {
 		"build": "rm -rf dist && tsc -b --force && api-extractor run --local -c config/api-extractor.json && vite build && node --run docs",
 		"docs": "bash ../common/scripts/run-docs.sh desktop",
@@ -74,8 +77,5 @@
 	},
 	"engines": {
 		"node": ">=24.0.0"
-	},
-	"publishConfig": {
-		"access": "public"
 	}
 }

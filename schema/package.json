@@ -7,21 +7,21 @@
 		"url": "https://github.com/agritheory/stonecrop",
 		"directory": "schema"
 	},
-	"sideEffects": false,
-	"type": "module",
-	"exports": {
-		".": {
-			"types": "./dist/schema.d.ts",
-			"import": "./dist/index.js"
-		}
-	},
-	"types": "./dist/schema.d.ts",
 	"bin": {
 		"stonecrop-schema": "./dist/cli.js"
 	},
 	"files": [
 		"dist"
 	],
+	"type": "module",
+	"sideEffects": false,
+	"types": "./dist/schema.d.ts",
+	"exports": {
+		".": {
+			"types": "./dist/schema.d.ts",
+			"import": "./dist/index.js"
+		}
+	},
 	"scripts": {
 		"build": "rm -rf dist && tsc -b --force && api-extractor run --local -c config/api-extractor.json && vite build && node --run docs",
 		"docs": "bash ../common/scripts/run-docs.sh schema",

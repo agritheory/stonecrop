@@ -7,18 +7,15 @@
 		"build": "vp run -r build",
 		"docs": "vp run -r docs",
 		"docs:full": "bash common/scripts/docs-full.sh",
-		"format": "prettier --write . --cache --log-level warn",
-		"format:check": "prettier --check .",
+		"format": "vp fmt",
+		"format:check": "vp fmt --check",
 		"lint": "vp run -r lint",
 		"prepare": "vp config --no-agent",
-		"sort-package-json": "sort-package-json package.json */package.json tools/*/package.json",
 		"test": "vp run -r test",
 		"test:types": "vp run -r test:types"
 	},
 	"devDependencies": {
 		"@changesets/cli": "3.0.1",
-		"prettier": "^3.9.5",
-		"sort-package-json": "1.54.0",
 		"vite-plus": "0.3.0"
 	},
 	"devEngines": {

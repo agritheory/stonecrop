@@ -14,4 +14,56 @@ export default defineConfig({
 			scripts: true,
 		},
 	},
+
+	// Oxfmt reads this block, not `.oxfmtrc.json` — Vite+ recommends against that file and does not
+	// look for it. Every style option below is carried over from `.prettierrc.cjs` unchanged, so the
+	// reformat is attributable to Oxfmt alone. Prettier's `insertPragma` and `requirePragma` have no
+	// equivalent; both were `false`, which is the default either way.
+	fmt: {
+		arrowParens: 'avoid',
+		bracketSameLine: true,
+		bracketSpacing: true,
+		embeddedLanguageFormatting: 'auto',
+		htmlWhitespaceSensitivity: 'css',
+		jsxSingleQuote: false,
+		printWidth: 120,
+		proseWrap: 'preserve',
+		quoteProps: 'as-needed',
+		semi: false,
+		singleQuote: true,
+		tabWidth: 2,
+		trailingComma: 'es5',
+		useTabs: true,
+		vueIndentScriptAndStyle: false,
+
+		// `sortPackageJson` stays at its default of true, which is what retires `sort-package-json`.
+		// Running both is not an option: the two orderings are documented as incompatible, so each
+		// tool would undo the other on every commit.
+
+		// Oxfmt reads `.gitignore` on its own, so these are only what `.prettierignore` added on top
+		// of it — the other 129 lines of that file were a hand-synced copy of `.gitignore`.
+		ignorePatterns: [
+			'common/reviews/**',
+			'common/scripts/**',
+			'**/CHANGELOG.*',
+			'pnpm-lock.yaml',
+			'yarn.lock',
+			'package-lock.json',
+			'shrinkwrap.json',
+			'.github/**',
+
+			// Markdown stays unformatted: a formatter rewrites fenced code blocks, and this repo's
+			// markdown is end-user documentation.
+			'**/*.md',
+
+			// Rewritten by nuxt-graphql-middleware (downloadSchema) on every dev boot, so the
+			// downloaded formatting is the canonical one.
+			'nuxt/playground/schema.graphql',
+
+			// Machine-written by the schema CLI (`generate`) and the DocBuilder Save handler, both as
+			// `JSON.stringify(_, null, '\t')` — the exact bytes the generation oracle asserts. A
+			// formatter would re-inline short arrays and fight both writers on every save.
+			'**/doctypes/*.json',
+		],
+	},
 })

@@ -5,24 +5,20 @@
 	"bugs": {
 		"url": "https://github.com/agritheory/stonecrop/issues"
 	},
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/agritheory/stonecrop",
-		"directory": "nuxt_grafserv"
-	},
 	"license": "MIT",
 	"author": {
 		"name": "Tyler Matteson",
 		"email": "tyler@agritheory.com"
 	},
-	"type": "module",
-	"exports": {
-		".": {
-			"import": "./dist/module.mjs",
-			"types": "./dist/module.d.mts"
-		},
-		"./runtime/*": "./dist/runtime/*"
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/agritheory/stonecrop",
+		"directory": "nuxt_grafserv"
 	},
+	"files": [
+		"dist"
+	],
+	"type": "module",
 	"main": "./dist/module.mjs",
 	"types": "./dist/module.d.mts",
 	"typesVersions": {
@@ -32,9 +28,13 @@
 			]
 		}
 	},
-	"files": [
-		"dist"
-	],
+	"exports": {
+		".": {
+			"import": "./dist/module.mjs",
+			"types": "./dist/module.d.mts"
+		},
+		"./runtime/*": "./dist/runtime/*"
+	},
 	"scripts": {
 		"build": "node --run dev:prepare && node --run prepack",
 		"build:module": "node --run dev:prepare && node --run prepack",

@@ -4,18 +4,21 @@
 	"bugs": {
 		"url": "https://github.com/agritheory/stonecrop/issues"
 	},
+	"author": {
+		"name": "Tyler Matteson",
+		"email": "tyler@agritheory.com"
+	},
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/agritheory/stonecrop",
 		"directory": "themes"
 	},
-	"author": {
-		"name": "Tyler Matteson",
-		"email": "tyler@agritheory.com"
-	},
 	"type": "module",
 	"exports": {
 		"./default.css": "./dist/default.css"
+	},
+	"publishConfig": {
+		"access": "public"
 	},
 	"scripts": {
 		"build": "vite build",
@@ -28,8 +31,5 @@
 	},
 	"engines": {
 		"node": ">=24.0.0"
-	},
-	"publishConfig": {
-		"access": "public"
 	}
 }

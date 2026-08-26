@@ -87,7 +87,9 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile
 
-      - name: Prettier Check
+      # Oxfmt sorts package.json as part of formatting, so this is also the gate that a committed
+      # package.json is in canonical key order.
+      - name: Format Check
         run: pnpm run format:check
 
       # Type-aware oxlint (oxlint-tsgolint) requires compiled .d.ts files from dependency packages
@@ -120,18 +122,6 @@ jobs:
       # dependencies' .d.ts files, and both nuxt builds run `dev:prepare`, so .nuxt exists by now.
       - name: Typecheck
         run: pnpm run test:types
-
-      # "sort-package-json" rewrites the files in place, so on its own it only sorts a throwaway
-      # checkout and discards the result. The "git diff" below is what actually enforces the
-      # convention: it fails the build when a committed package.json is not in sorted order. Run
-      # "pnpm run sort-package-json" locally and commit the result to resolve a failure here.
-      - name: Sort package.json
-        run: pnpm run sort-package-json
-
-      # Scoped to package.json so an unrelated file touched by an earlier step
-      # cannot fail this check with a misleading message.
-      - name: Verify package.json Is Sorted
-        run: git diff --exit-code -- '*package.json'
 
       # Unlike the three-dot diff this replaces, --since reads the working tree, so a changeset
       # added in the PR counts before it is merged.
