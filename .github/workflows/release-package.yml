@@ -6,6 +6,10 @@ on:
       - development
     types:
       - closed
+  # Runs the rehearsal below against whichever branch is selected. GitHub registers this
+  # trigger from the default branch only, so it has to exist on development before a
+  # branch can be dispatched — the branch's own copy is what actually runs.
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -14,8 +18,10 @@ env:
   VP_GIT_HOOKS: 0
 
 jobs:
+  # Guarded on the event as well as the merge, so a manual dispatch can only ever reach
+  # the rehearsal job.
   publish-npm:
-    if: github.event.pull_request.merged == true
+    if: github.event_name == 'pull_request' && github.event.pull_request.merged == true
     runs-on: ubuntu-latest
 
     permissions:
@@ -82,3 +88,71 @@ jobs:
       # ranges to the versions just bumped.
       - name: Publish Packages
         run: pnpm -r publish --access public --no-git-checks
+
+  # A rehearsal of publish-npm that stops one step short of the registry, and the only way
+  # to exercise the release path before merging: publish-npm runs on merge to development
+  # and never on a pull request, so without this the first real release is the first test.
+  #
+  # It lives in this file rather than its own because npm matches a trusted publisher on
+  # the workflow filename. A separate file authenticates as nothing and reports it as a 404.
+  release-dry-run:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+
+    permissions:
+      # The OIDC exchange is the half of the release that cannot be rehearsed locally, so
+      # this job needs the same job-level id-token the real publish does.
+      id-token: write
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v6
+        name: Checkout
+
+      - uses: actions/setup-node@v6
+        name: Install Node.js
+        with:
+          node-version: 24
+          package-manager-cache: false
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Cache pnpm Store
+        uses: actions/cache@v5
+        with:
+          path: ~/.local/share/pnpm/store
+          key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: pnpm-${{ runner.os }}-
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Build Stonecrop
+        run: pnpm run build
+
+      - name: Validate Trusted Publishing
+        run: bash common/scripts/validate-trusted-publishing.sh
+
+      - name: Bump Version for Packages
+        run: pnpm exec changeset version
+
+      # The bump is the step with no local equivalent worth trusting, so assert its result
+      # rather than printing it: every publishable package belongs to one "fixed" group in
+      # .changeset/config.json, and a split group publishes siblings that cannot resolve
+      # each other.
+      - name: Check the Lockstep Group Landed on One Version
+        run: |
+          versions=$(pnpm list -r --depth -1 --json | jq -r '.[] | select(.private == false) | .version' | sort -u)
+          if [ "$(printf '%s\n' "$versions" | wc -l)" -ne 1 ]; then
+            echo "::error::the lockstep group split across: $(printf '%s' "$versions" | tr '\n' ' ')"
+            exit 1
+          fi
+          echo "::notice::every publishable package is at ${versions}"
+          git --no-pager diff --stat
+
+      # Nothing above this point was committed or pushed, so the bump exists only in the
+      # runner's tree. --dry-run still runs each package's prepublishOnly, which is the
+      # clean-and-rebuild the real publish performs, so this covers everything but the PUT.
+      - name: Publish Packages (Dry Run)
+        run: pnpm -r publish --access public --no-git-checks --dry-run

@@ -1,7 +1,5 @@
 # Change Log - @stonecrop/rockfoil
 
-This log was last generated on Tue, 25 Aug 2026 08:42:39 GMT and should not be manually modified.
-
 ## 0.29.0
 Tue, 25 Aug 2026 08:42:39 GMT
 
