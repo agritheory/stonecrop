@@ -172,17 +172,13 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile
 
-      # Build only the dependency closure for this package, not the whole repo. The matrix holds
-      # folder names and `vp run -t` needs the package name, so read it off the package itself.
+      # Build only the dependency closure for this package, not the whole repo.
       #
-      # It must be the name: `--filter './<dir>...'` accepts the directory form but silently drops
-      # the `...`, building that one package and none of its dependencies.
-      - name: Resolve Package Name
-        id: pkg
-        run: echo "name=$(node -p "require('./${{ matrix.package }}/package.json').name")" >> $GITHUB_OUTPUT
-
+      # `{dir}` is the directory filter that keeps its traversal suffix. The other directory form,
+      # `./dir`, silently drops the `...` and builds that one package and none of its dependencies.
+      # --fail-if-no-match matters as much: a filter matching nothing otherwise exits 0.
       - name: Build
-        run: pnpm exec vp run -t '${{ steps.pkg.outputs.name }}#build'
+        run: pnpm exec vp run --filter '{${{ matrix.package }}}...' --fail-if-no-match build
 
       # No Typecheck step here on purpose. It used to run per-package, but this matrix is
       # paths-filtered, so it only ever checked packages whose own files changed — the hole that let
