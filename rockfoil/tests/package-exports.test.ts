@@ -44,7 +44,7 @@ describe('package exports', { tags: ['unit'] }, () => {
 			missing,
 			`These export targets do not exist. Either the build no longer emits them or the ` +
 				`subpath was copied from a package that does. If this fails on a clean checkout, ` +
-				`run \`rushx build\` first — this test reads dist/ on purpose.\n  ${missing.join('\n  ')}`
+				`run \`pnpm run build\` first — this test reads dist/ on purpose.\n  ${missing.join('\n  ')}`
 		).toEqual([])
 	})
 

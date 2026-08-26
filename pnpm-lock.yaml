@@ -203,6 +203,111 @@ settings:
   autoInstallPeers: false
   excludeLinksFromLockfile: false
 
+catalogs:
+  default:
+    '@eslint/js':
+      specifier: ^10.0.1
+      version: 10.0.1
+    '@microsoft/api-extractor':
+      specifier: ^7.58.7
+      version: 7.59.0
+    '@nuxt/devtools':
+      specifier: ^3.2.4
+      version: 3.4.2
+    '@nuxt/eslint-config':
+      specifier: ^1.16.0
+      version: 1.17.0
+    '@nuxt/kit':
+      specifier: ^4.4.4
+      version: 4.5.2
+    '@nuxt/module-builder':
+      specifier: ^1.0.2
+      version: 1.0.3
+    '@nuxt/schema':
+      specifier: ^4.4.8
+      version: 4.5.2
+    '@nuxt/test-utils':
+      specifier: ^4.0.3
+      version: 4.1.0
+    '@types/node':
+      specifier: ^24.12.4
+      version: 24.13.3
+    '@vitejs/plugin-vue':
+      specifier: ^6.0.6
+      version: 6.0.8
+    '@vitest/coverage-istanbul':
+      specifier: ^4.1.5
+      version: 4.1.10
+    '@vitest/ui':
+      specifier: ^4.1.5
+      version: 4.1.10
+    '@vue/test-utils':
+      specifier: ^2.4.10
+      version: 2.4.11
+    '@vueuse/components':
+      specifier: ^14.2.1
+      version: 14.4.0
+    '@vueuse/core':
+      specifier: ^14.2.1
+      version: 14.4.0
+    eslint:
+      specifier: ^10.6.0
+      version: 10.9.1
+    graphql:
+      specifier: ^16.14.0
+      version: 16.14.2
+    graphql-yoga:
+      specifier: ^5.18.0
+      version: 5.22.0
+    h3:
+      specifier: ^1.15.11
+      version: 1.15.11
+    immutable:
+      specifier: ^5.1.4
+      version: 5.1.9
+    jsdom:
+      specifier: ^29.1.1
+      version: 29.1.1
+    monaco-editor:
+      specifier: ^0.55.1
+      version: 0.55.1
+    nuxt:
+      specifier: ^4.4.8
+      version: 4.5.2
+    oxlint:
+      specifier: 1.67.0
+      version: 1.67.0
+    oxlint-tsgolint:
+      specifier: 0.23.0
+      version: 0.23.0
+    pinia:
+      specifier: ^3.0.4
+      version: 3.0.4
+    postgraphile:
+      specifier: ^5.0.3
+      version: 5.1.4
+    typescript:
+      specifier: ^6.0.3
+      version: 6.0.3
+    vite:
+      specifier: ^8.2.2
+      version: 8.2.2
+    vite-plugin-lib-inject-css:
+      specifier: ^2.2.2
+      version: 2.2.2
+    vitest:
+      specifier: ^4.1.5
+      version: 4.1.11
+    vue:
+      specifier: ^3.5.33
+      version: 3.5.41
+    vue-router:
+      specifier: ^5.0.6
+      version: 5.2.0
+    vue-tsc:
+      specifier: ^3.3.6
+      version: 3.3.11
+
 overrides:
   vite@5: 6.4.3
 
@@ -232,65 +337,62 @@ importers:
         specifier: workspace:*
         version: link:../utilities
       '@vueuse/components':
-        specifier: ^14.2.1
+        specifier: 'catalog:'
         version: 14.4.0(vue@3.5.41(typescript@6.0.3))
       '@vueuse/core':
-        specifier: ^14.2.1
+        specifier: 'catalog:'
         version: 14.4.0(vue@3.5.41(typescript@6.0.3))
     devDependencies:
-      '@microsoft/api-documenter':
-        specifier: ^7.30.5
-        version: 7.30.13(@types/node@24.13.3)
       '@microsoft/api-extractor':
-        specifier: ^7.58.7
+        specifier: 'catalog:'
         version: 7.59.0(@types/node@24.13.3)
       '@types/node':
-        specifier: ^24.12.4
+        specifier: 'catalog:'
         version: 24.13.3
       '@vitejs/plugin-vue':
-        specifier: ^6.0.6
+        specifier: 'catalog:'
         version: 6.0.8(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0))(vue@3.5.41(typescript@6.0.3))
       '@vitest/coverage-istanbul':
-        specifier: ^4.1.5
+        specifier: 'catalog:'
         version: 4.1.10(vitest@4.1.11)
       '@vitest/ui':
-        specifier: ^4.1.5
+        specifier: 'catalog:'
         version: 4.1.10(vitest@4.1.11)
       '@vue/test-utils':
-        specifier: ^2.4.10
+        specifier: 'catalog:'
         version: 2.4.11(@vue/compiler-dom@3.5.41)(@vue/server-renderer@3.5.41)(vue@3.5.41(typescript@6.0.3))
       jsdom:
-        specifier: ^29.1.1
+        specifier: 'catalog:'
         version: 29.1.1
       oxlint:
-        specifier: 1.67.0
+        specifier: 'catalog:'
         version: 1.67.0(oxlint-tsgolint@0.23.0)(vite-plus@0.3.0(@types/node@24.13.3)(@vitest/coverage-istanbul@4.1.10)(@vitest/ui@4.1.10)(esbuild@0.28.2)(jiti@2.7.0)(jsdom@29.1.1)(sass@1.103.1)(terser@5.50.0)(typescript@6.0.3)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0))(yaml@2.9.0))
       oxlint-tsgolint:
-        specifier: 0.23.0
+        specifier: 'catalog:'
         version: 0.23.0
       pinia:
-        specifier: ^3.0.4
+        specifier: 'catalog:'
         version: 3.0.4(typescript@6.0.3)(vue@3.5.41(typescript@6.0.3))
       typescript:
-        specifier: ^6.0.3
+        specifier: 'catalog:'
         version: 6.0.3
       vite:
-        specifier: ^8.2.2
+        specifier: 'catalog:'
         version: 8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0)
       vite-plugin-lib-inject-css:
-        specifier: ^2.2.2
+        specifier: 'catalog:'
         version: 2.2.2(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0))
       vitest:
-        specifier: ^4.1.5
+        specifier: 'catalog:'
         version: 4.1.11(@types/node@24.13.3)(@vitest/browser-preview@4.1.11)(@vitest/coverage-istanbul@4.1.10)(@vitest/ui@4.1.10)(jsdom@29.1.1)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0))
       vue:
-        specifier: ^3.5.33
+        specifier: 'catalog:'
         version: 3.5.41(typescript@6.0.3)
       vue-router:
-        specifier: ^5.0.6
+        specifier: 'catalog:'
         version: 5.2.0(@vue/compiler-sfc@3.5.41)(esbuild@0.28.2)(pinia@3.0.4(typescript@6.0.3)(vue@3.5.41(typescript@6.0.3)))(rolldown@1.2.5)(rollup@4.62.5)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0))(vue@3.5.41(typescript@6.0.3))
       vue-tsc:
-        specifier: ^3.3.6
+        specifier: 'catalog:'
         version: 3.3.11(typescript@6.0.3)
 
   atable:
@@ -305,74 +407,71 @@ importers:
         specifier: workspace:*
         version: link:../utilities
       '@vueuse/components':
-        specifier: ^14.2.1
+        specifier: 'catalog:'
         version: 14.4.0(vue@3.5.41(typescript@6.0.3))
       '@vueuse/core':
-        specifier: ^14.2.1
+        specifier: 'catalog:'
         version: 14.4.0(vue@3.5.41(typescript@6.0.3))
     devDependencies:
-      '@microsoft/api-documenter':
-        specifier: ^7.30.5
-        version: 7.30.13(@types/node@24.13.3)
       '@microsoft/api-extractor':
-        specifier: ^7.58.7
+        specifier: 'catalog:'
         version: 7.59.0(@types/node@24.13.3)
       '@types/node':
-        specifier: ^24.12.4
+        specifier: 'catalog:'
         version: 24.13.3
       '@vitejs/plugin-vue':
-        specifier: ^6.0.6
+        specifier: 'catalog:'
         version: 6.0.8(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0))(vue@3.5.41(typescript@6.0.3))
       '@vitest/coverage-istanbul':
-        specifier: ^4.1.5
+        specifier: 'catalog:'
         version: 4.1.10(vitest@4.1.11)
       '@vitest/ui':
-        specifier: ^4.1.5
+        specifier: 'catalog:'
         version: 4.1.10(vitest@4.1.11)
       '@vue/test-utils':
-        specifier: ^2.4.10
+        specifier: 'catalog:'
         version: 2.4.11(@vue/compiler-dom@3.5.41)(@vue/server-renderer@3.5.41)(vue@3.5.41(typescript@6.0.3))
       jsdom:
-        specifier: ^29.1.1
+        specifier: 'catalog:'
         version: 29.1.1
       oxlint:
-        specifier: 1.67.0
+        specifier: 'catalog:'
         version: 1.67.0(oxlint-tsgolint@0.23.0)(vite-plus@0.3.0(@types/node@24.13.3)(@vitest/coverage-istanbul@4.1.10)(@vitest/ui@4.1.10)(esbuild@0.28.2)(jiti@2.7.0)(jsdom@29.1.1)(sass@1.103.1)(terser@5.50.0)(typescript@6.0.3)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0))(yaml@2.9.0))
       oxlint-tsgolint:
-        specifier: 0.23.0
+        specifier: 'catalog:'
         version: 0.23.0
       pinia:
-        specifier: ^3.0.4
+        specifier: 'catalog:'
         version: 3.0.4(typescript@6.0.3)(vue@3.5.41(typescript@6.0.3))
       typescript:
-        specifier: ^6.0.3
+        specifier: 'catalog:'
         version: 6.0.3
       vite:
-        specifier: ^8.2.2
+        specifier: 'catalog:'
         version: 8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0)
       vite-plugin-lib-inject-css:
-        specifier: ^2.2.2
+        specifier: 'catalog:'
         version: 2.2.2(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0))
       vitest:
-        specifier: ^4.1.5
+        specifier: 'catalog:'
         version: 4.1.11(@types/node@24.13.3)(@vitest/browser-preview@4.1.11)(@vitest/coverage-istanbul@4.1.10)(@vitest/ui@4.1.10)(jsdom@29.1.1)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0))
       vue:
-        specifier: ^3.5.33
+        specifier: 'catalog:'
         version: 3.5.41(typescript@6.0.3)
       vue-router:
-        specifier: ^5.0.6
+        specifier: 'catalog:'
         version: 5.2.0(@vue/compiler-sfc@3.5.41)(esbuild@0.28.2)(pinia@3.0.4(typescript@6.0.3)(vue@3.5.41(typescript@6.0.3)))(rolldown@1.2.5)(rollup@4.62.5)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0))(vue@3.5.41(typescript@6.0.3))
       vue-tsc:
-        specifier: ^3.3.6
+        specifier: 'catalog:'
         version: 3.3.11(typescript@6.0.3)
 
   beam:
     dependencies:
       '@vueuse/components':
-        specifier: ^14.2.1
+        specifier: 'catalog:'
         version: 14.4.0(vue@3.5.41(typescript@6.0.3))
       '@vueuse/core':
-        specifier: ^14.2.1
+        specifier: 'catalog:'
         version: 14.4.0(vue@3.5.41(typescript@6.0.3))
       mqtt:
         specifier: ^5.14.1
@@ -381,56 +480,53 @@ importers:
         specifier: ^1.5.2
         version: 1.5.2
     devDependencies:
-      '@microsoft/api-documenter':
-        specifier: ^7.30.5
-        version: 7.30.13(@types/node@24.13.3)
       '@microsoft/api-extractor':
-        specifier: ^7.58.7
+        specifier: 'catalog:'
         version: 7.59.0(@types/node@24.13.3)
       '@types/node':
-        specifier: ^24.12.4
+        specifier: 'catalog:'
         version: 24.13.3
       '@vitejs/plugin-vue':
-        specifier: ^6.0.6
+        specifier: 'catalog:'
         version: 6.0.8(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0))(vue@3.5.41(typescript@6.0.3))
       '@vitest/coverage-istanbul':
-        specifier: ^4.1.5
+        specifier: 'catalog:'
         version: 4.1.10(vitest@4.1.11)
       '@vitest/ui':
-        specifier: ^4.1.5
+        specifier: 'catalog:'
         version: 4.1.10(vitest@4.1.11)
       '@vue/test-utils':
-        specifier: ^2.4.10
+        specifier: 'catalog:'
         version: 2.4.11(@vue/compiler-dom@3.5.41)(@vue/server-renderer@3.5.41)(vue@3.5.41(typescript@6.0.3))
       oxlint:
-        specifier: 1.67.0
+        specifier: 'catalog:'
         version: 1.67.0(oxlint-tsgolint@0.23.0)(vite-plus@0.3.0(@types/node@24.13.3)(@vitest/coverage-istanbul@4.1.10)(@vitest/ui@4.1.10)(esbuild@0.28.2)(jiti@2.7.0)(jsdom@29.1.1)(sass@1.103.1)(terser@5.50.0)(typescript@6.0.3)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0))(yaml@2.9.0))
       oxlint-tsgolint:
-        specifier: 0.23.0
+        specifier: 'catalog:'
         version: 0.23.0
       sass:
         specifier: ^1.97.2
         version: 1.103.1
       typescript:
-        specifier: ^6.0.3
+        specifier: 'catalog:'
         version: 6.0.3
       vite:
-        specifier: ^8.2.2
+        specifier: 'catalog:'
         version: 8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0)
       vite-plugin-lib-inject-css:
-        specifier: ^2.2.2
+        specifier: 'catalog:'
         version: 2.2.2(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0))
       vitest:
-        specifier: ^4.1.5
+        specifier: 'catalog:'
         version: 4.1.11(@types/node@24.13.3)(@vitest/browser-preview@4.1.11)(@vitest/coverage-istanbul@4.1.10)(@vitest/ui@4.1.10)(jsdom@29.1.1)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0))
       vue:
-        specifier: ^3.5.33
+        specifier: 'catalog:'
         version: 3.5.41(typescript@6.0.3)
       vue-router:
-        specifier: ^5.0.6
+        specifier: 'catalog:'
         version: 5.2.0(@vue/compiler-sfc@3.5.41)(esbuild@0.28.2)(pinia@3.0.4(typescript@6.0.3)(vue@3.5.41(typescript@6.0.3)))(rolldown@1.2.5)(rollup@4.62.5)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0))(vue@3.5.41(typescript@6.0.3))
       vue-tsc:
-        specifier: ^3.3.6
+        specifier: 'catalog:'
         version: 3.3.11(typescript@6.0.3)
 
   casl_middleware:
@@ -439,7 +535,7 @@ importers:
         specifier: ^6.8.0
         version: 6.8.1
       graphql:
-        specifier: ^16.14.0
+        specifier: 'catalog:'
         version: 16.14.2
       graphql-tag:
         specifier: ^2.12.6
@@ -458,43 +554,43 @@ importers:
         specifier: ^11.0.0
         version: 11.2.2(graphql@16.14.2)
       '@microsoft/api-extractor':
-        specifier: ^7.58.7
+        specifier: 'catalog:'
         version: 7.59.0(@types/node@24.13.3)
       '@types/jsonwebtoken':
         specifier: ~9.0.10
         version: 9.0.10
       '@types/node':
-        specifier: ^24.12.4
+        specifier: 'catalog:'
         version: 24.13.3
       '@vitest/coverage-istanbul':
-        specifier: ^4.1.5
+        specifier: 'catalog:'
         version: 4.1.10(vitest@4.1.11)
       graphql-middleware:
         specifier: ^6.1.35
         version: 6.1.35(graphql@16.14.2)
       graphql-yoga:
-        specifier: ^5.18.0
+        specifier: 'catalog:'
         version: 5.22.0(graphql@16.14.2)
       jsdom:
-        specifier: ^29.1.1
+        specifier: 'catalog:'
         version: 29.1.1
       oxlint:
-        specifier: 1.67.0
+        specifier: 'catalog:'
         version: 1.67.0(oxlint-tsgolint@0.23.0)(vite-plus@0.3.0(@types/node@24.13.3)(@vitest/coverage-istanbul@4.1.10)(esbuild@0.28.2)(jiti@2.7.0)(jsdom@29.1.1)(sass@1.103.1)(terser@5.50.0)(typescript@6.0.3)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0))(yaml@2.9.0))
       oxlint-tsgolint:
-        specifier: 0.23.0
+        specifier: 'catalog:'
         version: 0.23.0
       postgraphile:
-        specifier: ^5.0.3
+        specifier: 'catalog:'
         version: 5.1.4(@envelop/core@5.6.0)(crossws@0.3.5)(graphql@16.14.2)(h3@1.15.11)(use-sync-external-store@1.6.0)
       typescript:
-        specifier: ^6.0.3
+        specifier: 'catalog:'
         version: 6.0.3
       vite:
-        specifier: ^8.2.2
+        specifier: 'catalog:'
         version: 8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0)
       vitest:
-        specifier: ^4.1.5
+        specifier: 'catalog:'
         version: 4.1.11(@types/node@24.13.3)(@vitest/browser-preview@4.1.11)(@vitest/coverage-istanbul@4.1.10)(@vitest/ui@4.1.10)(jsdom@29.1.1)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0))
 
   code_editor:
@@ -503,62 +599,44 @@ importers:
         specifier: ^1.7.0
         version: 1.7.0
       monaco-editor:
-        specifier: ^0.55.1
+        specifier: 'catalog:'
         version: 0.55.1
     devDependencies:
-      '@microsoft/api-documenter':
-        specifier: ^7.30.5
-        version: 7.30.13(@types/node@24.13.3)
       '@microsoft/api-extractor':
-        specifier: ^7.58.7
+        specifier: 'catalog:'
         version: 7.59.0(@types/node@24.13.3)
       '@vitejs/plugin-vue':
-        specifier: ^6.0.6
+        specifier: 'catalog:'
         version: 6.0.8(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0))(vue@3.5.41(typescript@6.0.3))
       '@vue/test-utils':
-        specifier: ^2.4.10
+        specifier: 'catalog:'
         version: 2.4.11(@vue/compiler-dom@3.5.41)(@vue/server-renderer@3.5.41)(vue@3.5.41(typescript@6.0.3))
-      eslint:
-        specifier: ^10.6.0
-        version: 10.9.1(jiti@2.7.0)
-      eslint-config-prettier:
-        specifier: ^10.1.8
-        version: 10.1.8(eslint@10.9.1(jiti@2.7.0))
-      eslint-plugin-vue:
-        specifier: ^10.9.2
-        version: 10.10.0(@stylistic/eslint-plugin@5.10.0(eslint@10.9.1(jiti@2.7.0)))(@typescript-eslint/parser@8.68.0(eslint@10.9.1(jiti@2.7.0))(typescript@6.0.3))(eslint@10.9.1(jiti@2.7.0))(vue-eslint-parser@10.4.1(eslint@10.9.1(jiti@2.7.0)))
-      globals:
-        specifier: ^17.6.0
-        version: 17.11.0
       jsdom:
-        specifier: ^29.1.1
+        specifier: 'catalog:'
         version: 29.1.1
       oxlint:
-        specifier: 1.67.0
+        specifier: 'catalog:'
         version: 1.67.0(oxlint-tsgolint@0.23.0)(vite-plus@0.3.0(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(jsdom@29.1.1)(sass@1.103.1)(terser@5.50.0)(typescript@6.0.3)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0))(yaml@2.9.0))
       oxlint-tsgolint:
-        specifier: 0.23.0
+        specifier: 'catalog:'
         version: 0.23.0
       typescript:
-        specifier: ^6.0.3
+        specifier: 'catalog:'
         version: 6.0.3
-      typescript-eslint:
-        specifier: ^8.62.1
-        version: 8.68.0(eslint@10.9.1(jiti@2.7.0))(typescript@6.0.3)
       vite:
-        specifier: ^8.2.2
+        specifier: 'catalog:'
         version: 8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0)
       vitest:
-        specifier: ^4.1.5
+        specifier: 'catalog:'
         version: 4.1.11(@types/node@24.13.3)(@vitest/browser-preview@4.1.11)(@vitest/coverage-istanbul@4.1.10)(@vitest/ui@4.1.10)(jsdom@29.1.1)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0))
       vue:
-        specifier: ^3.5.33
+        specifier: 'catalog:'
         version: 3.5.41(typescript@6.0.3)
       vue-router:
-        specifier: ^5.0.6
+        specifier: 'catalog:'
         version: 5.2.0(@vue/compiler-sfc@3.5.41)(esbuild@0.28.2)(pinia@3.0.4(typescript@6.0.3)(vue@3.5.41(typescript@6.0.3)))(rolldown@1.2.5)(rollup@4.62.5)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0))(vue@3.5.41(typescript@6.0.3))
       vue-tsc:
-        specifier: ^3.3.6
+        specifier: 'catalog:'
         version: 3.3.11(typescript@6.0.3)
 
   desktop:
@@ -579,53 +657,50 @@ importers:
         specifier: workspace:*
         version: link:../themes
     devDependencies:
-      '@microsoft/api-documenter':
-        specifier: ^7.30.5
-        version: 7.30.13(@types/node@24.13.3)
       '@microsoft/api-extractor':
-        specifier: ^7.58.7
+        specifier: 'catalog:'
         version: 7.59.0(@types/node@24.13.3)
       '@vitejs/plugin-vue':
-        specifier: ^6.0.6
+        specifier: 'catalog:'
         version: 6.0.8(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0))(vue@3.5.41(typescript@6.0.3))
       '@vitest/coverage-istanbul':
-        specifier: ^4.1.5
+        specifier: 'catalog:'
         version: 4.1.10(vitest@4.1.11)
       '@vue/test-utils':
-        specifier: ^2.4.10
+        specifier: 'catalog:'
         version: 2.4.11(@vue/compiler-dom@3.5.41)(@vue/server-renderer@3.5.41)(vue@3.5.41(typescript@6.0.3))
       immutable:
-        specifier: ^5.1.4
+        specifier: 'catalog:'
         version: 5.1.9
       jsdom:
-        specifier: ^29.1.1
+        specifier: 'catalog:'
         version: 29.1.1
       oxlint:
-        specifier: 1.67.0
+        specifier: 'catalog:'
         version: 1.67.0(oxlint-tsgolint@0.23.0)(vite-plus@0.3.0(@types/node@24.13.3)(@vitest/coverage-istanbul@4.1.10)(esbuild@0.28.2)(jiti@2.7.0)(jsdom@29.1.1)(sass@1.103.1)(terser@5.50.0)(typescript@6.0.3)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0))(yaml@2.9.0))
       oxlint-tsgolint:
-        specifier: 0.23.0
+        specifier: 'catalog:'
         version: 0.23.0
       pinia:
-        specifier: ^3.0.4
+        specifier: 'catalog:'
         version: 3.0.4(typescript@6.0.3)(vue@3.5.41(typescript@6.0.3))
       typescript:
-        specifier: ^6.0.3
+        specifier: 'catalog:'
         version: 6.0.3
       vite:
-        specifier: ^8.2.2
+        specifier: 'catalog:'
         version: 8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0)
       vitest:
-        specifier: ^4.1.5
+        specifier: 'catalog:'
         version: 4.1.11(@types/node@24.13.3)(@vitest/browser-preview@4.1.11)(@vitest/coverage-istanbul@4.1.10)(@vitest/ui@4.1.10)(jsdom@29.1.1)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0))
       vue:
-        specifier: ^3.5.33
+        specifier: 'catalog:'
         version: 3.5.41(typescript@6.0.3)
       vue-router:
-        specifier: ^5.0.6
+        specifier: 'catalog:'
         version: 5.2.0(@vue/compiler-sfc@3.5.41)(esbuild@0.28.2)(pinia@3.0.4(typescript@6.0.3)(vue@3.5.41(typescript@6.0.3)))(rolldown@1.2.5)(rollup@4.62.5)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0))(vue@3.5.41(typescript@6.0.3))
       vue-tsc:
-        specifier: ^3.3.6
+        specifier: 'catalog:'
         version: 3.3.11(typescript@6.0.3)
 
   docs:
@@ -649,11 +724,8 @@ importers:
         specifier: workspace:*
         version: link:../schema
     devDependencies:
-      '@microsoft/api-documenter':
-        specifier: ^7.30.5
-        version: 7.30.13(@types/node@24.13.3)
       '@microsoft/api-extractor':
-        specifier: ^7.58.7
+        specifier: 'catalog:'
         version: 7.59.0(@types/node@24.13.3)
       '@miragejs/graphql':
         specifier: ^0.1.13
@@ -662,40 +734,40 @@ importers:
         specifier: workspace:*
         version: link:../graphql_middleware
       '@types/node':
-        specifier: ^24.12.4
+        specifier: 'catalog:'
         version: 24.13.3
       '@vitejs/plugin-vue':
-        specifier: ^6.0.6
+        specifier: 'catalog:'
         version: 6.0.8(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0))(vue@3.5.41(typescript@6.0.3))
       '@vitest/coverage-istanbul':
-        specifier: ^4.1.5
+        specifier: 'catalog:'
         version: 4.1.10(vitest@4.1.11)
       graphql:
-        specifier: ^16.14.0
+        specifier: 'catalog:'
         version: 16.14.2
       miragejs:
         specifier: ^0.1.48
         version: 0.1.48
       oxlint:
-        specifier: 1.67.0
+        specifier: 'catalog:'
         version: 1.67.0(oxlint-tsgolint@0.23.0)(vite-plus@0.3.0(@types/node@24.13.3)(@vitest/coverage-istanbul@4.1.10)(esbuild@0.28.2)(jiti@2.7.0)(jsdom@29.1.1)(sass@1.103.1)(terser@5.50.0)(typescript@6.0.3)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0))(yaml@2.9.0))
       oxlint-tsgolint:
-        specifier: 0.23.0
+        specifier: 'catalog:'
         version: 0.23.0
       typescript:
-        specifier: ^6.0.3
+        specifier: 'catalog:'
         version: 6.0.3
       vite:
-        specifier: ^8.2.2
+        specifier: 'catalog:'
         version: 8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0)
       vitest:
-        specifier: ^4.1.5
+        specifier: 'catalog:'
         version: 4.1.11(@types/node@24.13.3)(@vitest/browser-preview@4.1.11)(@vitest/coverage-istanbul@4.1.10)(@vitest/ui@4.1.10)(jsdom@29.1.1)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0))
       vue:
-        specifier: ^3.5.33
+        specifier: 'catalog:'
         version: 3.5.41(typescript@6.0.3)
       vue-router:
-        specifier: ^5.0.6
+        specifier: 'catalog:'
         version: 5.2.0(@vue/compiler-sfc@3.5.41)(esbuild@0.28.2)(pinia@3.0.4(typescript@6.0.3)(vue@3.5.41(typescript@6.0.3)))(rolldown@1.2.5)(rollup@4.62.5)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0))(vue@3.5.41(typescript@6.0.3))
 
   graphql_middleware:
@@ -707,35 +779,35 @@ importers:
         specifier: workspace:*
         version: link:../schema
       graphql:
-        specifier: ^16.14.0
+        specifier: 'catalog:'
         version: 16.14.2
       postgraphile:
-        specifier: ^5.0.3
+        specifier: 'catalog:'
         version: 5.1.4(@envelop/core@5.6.0)(crossws@0.3.5)(graphql@16.14.2)(h3@1.15.11)(use-sync-external-store@1.6.0)
     devDependencies:
       '@electric-sql/pglite':
         specifier: ^0.4.5
         version: 0.4.6
       '@microsoft/api-extractor':
-        specifier: ^7.58.7
+        specifier: 'catalog:'
         version: 7.59.0(@types/node@24.13.3)
       '@types/node':
-        specifier: ^24.12.4
+        specifier: 'catalog:'
         version: 24.13.3
       '@types/pg':
         specifier: ^8.11.0
         version: 8.23.1
       '@vitest/coverage-istanbul':
-        specifier: ^4.1.5
+        specifier: 'catalog:'
         version: 4.1.10(vitest@4.1.11)
       '@vitest/ui':
-        specifier: ^4.1.5
+        specifier: 'catalog:'
         version: 4.1.10(vitest@4.1.11)
       oxlint:
-        specifier: 1.67.0
+        specifier: 'catalog:'
         version: 1.67.0(oxlint-tsgolint@0.23.0)(vite-plus@0.3.0(@types/node@24.13.3)(@vitest/coverage-istanbul@4.1.10)(@vitest/ui@4.1.10)(esbuild@0.28.2)(jiti@2.7.0)(jsdom@29.1.1)(sass@1.103.1)(terser@5.50.0)(typescript@6.0.3)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0))(yaml@2.9.0))
       oxlint-tsgolint:
-        specifier: 0.23.0
+        specifier: 'catalog:'
         version: 0.23.0
       pg:
         specifier: ^8.20.0
@@ -744,13 +816,13 @@ importers:
         specifier: ^0.1.5
         version: 0.1.5(@electric-sql/pglite@0.4.6)
       typescript:
-        specifier: ^6.0.3
+        specifier: 'catalog:'
         version: 6.0.3
       vite:
-        specifier: ^8.2.2
+        specifier: 'catalog:'
         version: 8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0)
       vitest:
-        specifier: ^4.1.5
+        specifier: 'catalog:'
         version: 4.1.11(@types/node@24.13.3)(@vitest/browser-preview@4.1.11)(@vitest/coverage-istanbul@4.1.10)(@vitest/ui@4.1.10)(jsdom@29.1.1)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0))
 
   node_editor:
@@ -765,47 +837,44 @@ importers:
         specifier: ^1.48.1
         version: 1.48.2(vue@3.5.41(typescript@6.0.3))
     devDependencies:
-      '@microsoft/api-documenter':
-        specifier: ^7.30.5
-        version: 7.30.13(@types/node@24.13.3)
       '@microsoft/api-extractor':
-        specifier: ^7.58.7
+        specifier: 'catalog:'
         version: 7.59.0(@types/node@24.13.3)
       '@vitejs/plugin-vue':
-        specifier: ^6.0.6
+        specifier: 'catalog:'
         version: 6.0.8(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0))(vue@3.5.41(typescript@6.0.3))
       '@vitest/coverage-istanbul':
-        specifier: ^4.1.5
+        specifier: 'catalog:'
         version: 4.1.10(vitest@4.1.11)
       oxlint:
-        specifier: 1.67.0
+        specifier: 'catalog:'
         version: 1.67.0(oxlint-tsgolint@0.23.0)(vite-plus@0.3.0(@types/node@24.13.3)(@vitest/coverage-istanbul@4.1.10)(esbuild@0.28.2)(jiti@2.7.0)(jsdom@29.1.1)(sass@1.103.1)(terser@5.50.0)(typescript@6.0.3)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0))(yaml@2.9.0))
       oxlint-tsgolint:
-        specifier: 0.23.0
+        specifier: 'catalog:'
         version: 0.23.0
       typescript:
-        specifier: ^6.0.3
+        specifier: 'catalog:'
         version: 6.0.3
       vite:
-        specifier: ^8.2.2
+        specifier: 'catalog:'
         version: 8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0)
       vitest:
-        specifier: ^4.1.5
+        specifier: 'catalog:'
         version: 4.1.11(@types/node@24.13.3)(@vitest/browser-preview@4.1.11)(@vitest/coverage-istanbul@4.1.10)(@vitest/ui@4.1.10)(jsdom@29.1.1)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0))
       vue:
-        specifier: ^3.5.33
+        specifier: 'catalog:'
         version: 3.5.41(typescript@6.0.3)
       vue-router:
-        specifier: ^5.0.6
+        specifier: 'catalog:'
         version: 5.2.0(@vue/compiler-sfc@3.5.41)(esbuild@0.28.2)(pinia@3.0.4(typescript@6.0.3)(vue@3.5.41(typescript@6.0.3)))(rolldown@1.2.5)(rollup@4.62.5)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0))(vue@3.5.41(typescript@6.0.3))
       vue-tsc:
-        specifier: ^3.3.6
+        specifier: 'catalog:'
         version: 3.3.11(typescript@6.0.3)
 
   nuxt:
     dependencies:
       '@nuxt/kit':
-        specifier: ^4.4.4
+        specifier: 'catalog:'
         version: 4.5.2(magic-string@1.2.2)(magicast@0.5.4)(rolldown@1.2.5)(unplugin@3.3.0(esbuild@0.28.2)(rolldown@1.2.5)(rollup@4.62.5)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0)))
       '@stonecrop/aform':
         specifier: workspace:*
@@ -850,7 +919,7 @@ importers:
         specifier: ^3.4.2
         version: 3.4.2
       h3:
-        specifier: ^1.15.11
+        specifier: 'catalog:'
         version: 1.15.11
       jiti:
         specifier: ^2.7.0
@@ -859,38 +928,38 @@ importers:
         specifier: ^2.0.3
         version: 2.0.3
       pinia:
-        specifier: ^3.0.4
+        specifier: 'catalog:'
         version: 3.0.4(typescript@6.0.3)(vue@3.5.41(typescript@6.0.3))
       prompts:
         specifier: ^2.4.2
         version: 2.4.2
     devDependencies:
       '@eslint/js':
-        specifier: ^10.0.1
+        specifier: 'catalog:'
         version: 10.0.1(eslint@10.9.1(jiti@2.7.0))
       '@nuxt/devtools':
-        specifier: ^3.2.4
+        specifier: 'catalog:'
         version: 3.4.2(db0@0.3.4(@electric-sql/pglite@0.4.6))(ioredis@5.11.1)(magic-string@1.2.2)(rolldown@1.2.5)(unplugin@3.3.0(esbuild@0.28.2)(rolldown@1.2.5)(rollup@4.62.5)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0)))(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0))(vue@3.5.41(typescript@6.0.3))
       '@nuxt/eslint':
         specifier: 1.16.0
         version: 1.16.0(@typescript-eslint/utils@8.68.0(eslint@10.9.1(jiti@2.7.0))(typescript@6.0.3))(@vue/compiler-sfc@3.5.41)(esbuild@0.28.2)(eslint@10.9.1(jiti@2.7.0))(magic-string@1.2.2)(magicast@0.5.4)(rolldown@1.2.5)(rollup@4.62.5)(srvx@0.12.7)(typescript@6.0.3)(unplugin@3.3.0(esbuild@0.28.2)(rolldown@1.2.5)(rollup@4.62.5)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0)))(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0))
       '@nuxt/eslint-config':
-        specifier: ^1.16.0
+        specifier: 'catalog:'
         version: 1.17.0(@typescript-eslint/utils@8.68.0(eslint@10.9.1(jiti@2.7.0))(typescript@6.0.3))(@vue/compiler-sfc@3.5.41)(eslint@10.9.1(jiti@2.7.0))(typescript@6.0.3)
       '@nuxt/module-builder':
-        specifier: ^1.0.2
+        specifier: 'catalog:'
         version: 1.0.3(@nuxt/cli@3.37.0(@nuxt/schema@4.5.2)(@parcel/watcher@2.6.0)(magicast@0.5.4))(@volar/typescript@2.4.28)(@vue/compiler-core@3.5.41)(@vue/language-core@3.3.11)(esbuild@0.28.2)(rolldown@1.2.5)(rollup@4.62.5)(sass@1.103.1)(typescript@6.0.3)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0))(vue-tsc@3.3.11(typescript@6.0.3))(vue@3.5.41(typescript@6.0.3))
       '@nuxt/schema':
-        specifier: ^4.4.8
+        specifier: 'catalog:'
         version: 4.5.2
       '@nuxt/test-utils':
-        specifier: ^4.0.3
+        specifier: 'catalog:'
         version: 4.1.0(@vue/test-utils@2.4.11(@vue/compiler-dom@3.5.41)(@vue/server-renderer@3.5.41)(vue@3.5.41(typescript@6.0.3)))(esbuild@0.28.2)(jsdom@29.1.1)(magicast@0.5.4)(rolldown@1.2.5)(rollup@4.62.5)(typescript@6.0.3)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0))(vitest@4.1.11)
       '@types/prompts':
         specifier: ^2.4.9
         version: 2.4.9
       '@vitest/coverage-istanbul':
-        specifier: ^4.1.5
+        specifier: 'catalog:'
         version: 4.1.10(vitest@4.1.11)
       baseline-browser-mapping:
         specifier: latest
@@ -899,7 +968,7 @@ importers:
         specifier: latest
         version: 4.28.8
       eslint:
-        specifier: ^10.6.0
+        specifier: 'catalog:'
         version: 10.9.1(jiti@2.7.0)
       eslint-config-prettier:
         specifier: ^10.1.8
@@ -911,40 +980,40 @@ importers:
         specifier: ^17.6.0
         version: 17.11.0
       graphql:
-        specifier: ^16.14.0
+        specifier: 'catalog:'
         version: 16.14.2
       monaco-editor:
-        specifier: ^0.55.1
+        specifier: 'catalog:'
         version: 0.55.1
       nuxt:
-        specifier: ^4.4.8
+        specifier: 'catalog:'
         version: 4.5.2(43d0e23c88c25016b61bae6e874ed6bb)
       nuxt-graphql-middleware:
         specifier: ^5.4.0
         version: 5.4.0(@parcel/watcher@2.6.0)(@types/node@24.13.3)(crossws@0.3.5)(graphql@16.14.2)(magic-string@1.2.2)(magicast@0.5.4)(rolldown@1.2.5)(typescript@6.0.3)(unplugin@3.3.0(esbuild@0.28.2)(rolldown@1.2.5)(rollup@4.62.5)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0)))(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0))(zod@4.4.3)
       postgraphile:
-        specifier: ^5.0.3
+        specifier: 'catalog:'
         version: 5.1.4(@envelop/core@5.6.0)(crossws@0.3.5)(graphql@16.14.2)(h3@1.15.11)(use-sync-external-store@1.6.0)
       typescript:
-        specifier: ^6.0.3
+        specifier: 'catalog:'
         version: 6.0.3
       typescript-eslint:
         specifier: ^8.62.1
         version: 8.68.0(eslint@10.9.1(jiti@2.7.0))(typescript@6.0.3)
       vite:
-        specifier: ^8.2.2
+        specifier: 'catalog:'
         version: 8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0)
       vitest:
-        specifier: ^4.1.5
+        specifier: 'catalog:'
         version: 4.1.11(@types/node@24.13.3)(@vitest/browser-preview@4.1.11)(@vitest/coverage-istanbul@4.1.10)(@vitest/ui@4.1.10)(jsdom@29.1.1)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0))
       vue:
-        specifier: ^3.5.33
+        specifier: 'catalog:'
         version: 3.5.41(typescript@6.0.3)
       vue-router:
-        specifier: ^5.0.6
+        specifier: 'catalog:'
         version: 5.2.0(@vue/compiler-sfc@3.5.41)(esbuild@0.28.2)(pinia@3.0.4(typescript@6.0.3)(vue@3.5.41(typescript@6.0.3)))(rolldown@1.2.5)(rollup@4.62.5)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0))(vue@3.5.41(typescript@6.0.3))
       vue-tsc:
-        specifier: ^3.3.6
+        specifier: 'catalog:'
         version: 3.3.11(typescript@6.0.3)
 
   nuxt_grafserv:
@@ -971,126 +1040,126 @@ importers:
         specifier: ^1.0.0
         version: 1.0.1(@envelop/core@5.6.0)(@types/node@24.13.3)(crossws@0.3.5)(grafast@1.1.2(@envelop/core@5.6.0)(graphql@16.14.2))(graphql@16.14.2)(h3@1.15.11)(use-sync-external-store@1.6.0)(ws@8.21.3)
       graphql:
-        specifier: ^16.14.0
+        specifier: 'catalog:'
         version: 16.14.2
       postgraphile:
-        specifier: ^5.0.3
+        specifier: 'catalog:'
         version: 5.1.4(@envelop/core@5.6.0)(crossws@0.3.5)(graphql@16.14.2)(h3@1.15.11)(use-sync-external-store@1.6.0)
     devDependencies:
       '@eslint/js':
-        specifier: ^10.0.1
+        specifier: 'catalog:'
         version: 10.0.1(eslint@10.9.1(jiti@2.7.0))
       '@nuxt/devtools':
-        specifier: ^3.2.4
+        specifier: 'catalog:'
         version: 3.4.2(db0@0.3.4(@electric-sql/pglite@0.4.6))(ioredis@5.11.1)(magic-string@1.2.2)(rolldown@1.2.5)(unplugin@3.3.0(esbuild@0.28.2)(rolldown@1.2.5)(rollup@4.62.5)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0)))(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0))(vue@3.5.41(typescript@6.0.3))
       '@nuxt/eslint-config':
-        specifier: ^1.16.0
+        specifier: 'catalog:'
         version: 1.17.0(@typescript-eslint/utils@8.68.0(eslint@10.9.1(jiti@2.7.0))(typescript@6.0.3))(@vue/compiler-sfc@3.5.41)(eslint@10.9.1(jiti@2.7.0))(typescript@6.0.3)
       '@nuxt/kit':
-        specifier: ^4.4.4
+        specifier: 'catalog:'
         version: 4.5.2(magic-string@1.2.2)(magicast@0.5.4)(rolldown@1.2.5)(unplugin@3.3.0(esbuild@0.28.2)(rolldown@1.2.5)(rollup@4.62.5)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0)))
       '@nuxt/module-builder':
-        specifier: ^1.0.2
+        specifier: 'catalog:'
         version: 1.0.3(@nuxt/cli@3.37.0(@nuxt/schema@4.5.2)(@parcel/watcher@2.6.0)(magicast@0.5.4))(@volar/typescript@2.4.28)(@vue/compiler-core@3.5.41)(@vue/language-core@3.3.11)(esbuild@0.28.2)(rolldown@1.2.5)(rollup@4.62.5)(sass@1.103.1)(typescript@6.0.3)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0))(vue-tsc@3.3.11(typescript@6.0.3))(vue@3.5.41(typescript@6.0.3))
       '@nuxt/schema':
-        specifier: ^4.4.8
+        specifier: 'catalog:'
         version: 4.5.2
       '@nuxt/test-utils':
-        specifier: ^4.0.3
+        specifier: 'catalog:'
         version: 4.1.0(@vue/test-utils@2.4.11(@vue/compiler-dom@3.5.41)(@vue/server-renderer@3.5.41)(vue@3.5.41(typescript@6.0.3)))(esbuild@0.28.2)(jsdom@29.1.1)(magicast@0.5.4)(rolldown@1.2.5)(rollup@4.62.5)(typescript@6.0.3)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0))(vitest@4.1.11)
       '@types/node':
-        specifier: ^24.12.4
+        specifier: 'catalog:'
         version: 24.13.3
       '@vitest/coverage-istanbul':
-        specifier: ^4.1.5
+        specifier: 'catalog:'
         version: 4.1.10(vitest@4.1.11)
       changelogen:
         specifier: ^0.6.2
         version: 0.6.2(magicast@0.5.4)
       eslint:
-        specifier: ^10.6.0
+        specifier: 'catalog:'
         version: 10.9.1(jiti@2.7.0)
       h3:
-        specifier: ^1.15.11
+        specifier: 'catalog:'
         version: 1.15.11
       jsdom:
-        specifier: ^29.1.1
+        specifier: 'catalog:'
         version: 29.1.1
       nitropack:
         specifier: ^2.13.1
         version: 2.13.4(@electric-sql/pglite@0.4.6)(@parcel/watcher@2.6.0)(rolldown@1.2.5)(srvx@0.12.7)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0))
       nuxt:
-        specifier: ^4.4.8
+        specifier: 'catalog:'
         version: 4.5.2(43d0e23c88c25016b61bae6e874ed6bb)
       typescript:
-        specifier: ^6.0.3
+        specifier: 'catalog:'
         version: 6.0.3
       vite:
-        specifier: ^8.2.2
+        specifier: 'catalog:'
         version: 8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0)
       vitest:
-        specifier: ^4.1.5
+        specifier: 'catalog:'
         version: 4.1.11(@types/node@24.13.3)(@vitest/browser-preview@4.1.11)(@vitest/coverage-istanbul@4.1.10)(@vitest/ui@4.1.10)(jsdom@29.1.1)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0))
       vue:
-        specifier: ^3.5.33
+        specifier: 'catalog:'
         version: 3.5.41(typescript@6.0.3)
       vue-router:
-        specifier: ^5.0.6
+        specifier: 'catalog:'
         version: 5.2.0(@vue/compiler-sfc@3.5.41)(esbuild@0.28.2)(pinia@3.0.4(typescript@6.0.3)(vue@3.5.41(typescript@6.0.3)))(rolldown@1.2.5)(rollup@4.62.5)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0))(vue@3.5.41(typescript@6.0.3))
       vue-tsc:
-        specifier: ^3.3.6
+        specifier: 'catalog:'
         version: 3.3.11(typescript@6.0.3)
 
   rockfoil:
     dependencies:
       graphql:
-        specifier: ^16.14.0
+        specifier: 'catalog:'
         version: 16.14.2
       postgraphile:
-        specifier: ^5.0.3
+        specifier: 'catalog:'
         version: 5.1.4(@envelop/core@5.6.0)(crossws@0.3.5)(graphql@16.14.2)(h3@1.15.11)(use-sync-external-store@1.6.0)
     devDependencies:
       '@microsoft/api-extractor':
-        specifier: ^7.58.7
+        specifier: 'catalog:'
         version: 7.59.0(@types/node@24.13.3)
       '@types/node':
-        specifier: ^24.12.4
+        specifier: 'catalog:'
         version: 24.13.3
       '@vitest/coverage-istanbul':
-        specifier: ^4.1.5
+        specifier: 'catalog:'
         version: 4.1.10(vitest@4.1.11)
       '@vitest/ui':
-        specifier: ^4.1.5
+        specifier: 'catalog:'
         version: 4.1.10(vitest@4.1.11)
       graphile-build:
         specifier: ^5.0.0
         version: 5.1.1(grafast@1.1.2(@envelop/core@5.6.0)(graphql@16.14.2))(graphql@16.14.2)
       jsdom:
-        specifier: ^29.1.1
+        specifier: 'catalog:'
         version: 29.1.1
       madr:
         specifier: ^4.0.0
         version: 4.0.0
       oxlint:
-        specifier: 1.67.0
+        specifier: 'catalog:'
         version: 1.67.0(oxlint-tsgolint@0.23.0)(vite-plus@0.3.0(@types/node@24.13.3)(@vitest/coverage-istanbul@4.1.10)(@vitest/ui@4.1.10)(esbuild@0.28.2)(jiti@2.7.0)(jsdom@29.1.1)(sass@1.103.1)(terser@5.50.0)(typescript@6.0.3)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0))(yaml@2.9.0))
       oxlint-tsgolint:
-        specifier: 0.23.0
+        specifier: 'catalog:'
         version: 0.23.0
       typescript:
-        specifier: ^6.0.3
+        specifier: 'catalog:'
         version: 6.0.3
       vite:
-        specifier: ^8.2.2
+        specifier: 'catalog:'
         version: 8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0)
       vitest:
-        specifier: ^4.1.5
+        specifier: 'catalog:'
         version: 4.1.11(@types/node@24.13.3)(@vitest/browser-preview@4.1.11)(@vitest/coverage-istanbul@4.1.10)(@vitest/ui@4.1.10)(jsdom@29.1.1)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0))
 
   schema:
     dependencies:
       graphql:
-        specifier: ^16.14.0
+        specifier: 'catalog:'
         version: 16.14.2
       pluralize:
         specifier: ^8.0.0
@@ -1099,38 +1168,35 @@ importers:
         specifier: ^4.3.6
         version: 4.4.3
     devDependencies:
-      '@microsoft/api-documenter':
-        specifier: ^7.30.5
-        version: 7.30.13(@types/node@24.13.3)
       '@microsoft/api-extractor':
-        specifier: ^7.58.7
+        specifier: 'catalog:'
         version: 7.59.0(@types/node@24.13.3)
       '@types/node':
-        specifier: ^24.12.4
+        specifier: 'catalog:'
         version: 24.13.3
       '@types/pluralize':
         specifier: ^0.0.33
         version: 0.0.33
       '@vitest/coverage-istanbul':
-        specifier: ^4.1.5
+        specifier: 'catalog:'
         version: 4.1.10(vitest@4.1.11)
       jsdom:
-        specifier: ^29.1.1
+        specifier: 'catalog:'
         version: 29.1.1
       oxlint:
-        specifier: 1.67.0
+        specifier: 'catalog:'
         version: 1.67.0(oxlint-tsgolint@0.23.0)(vite-plus@0.3.0(@types/node@24.13.3)(@vitest/coverage-istanbul@4.1.10)(esbuild@0.28.2)(jiti@2.7.0)(jsdom@29.1.1)(sass@1.103.1)(terser@5.50.0)(typescript@6.0.3)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0))(yaml@2.9.0))
       oxlint-tsgolint:
-        specifier: 0.23.0
+        specifier: 'catalog:'
         version: 0.23.0
       typescript:
-        specifier: ^6.0.3
+        specifier: 'catalog:'
         version: 6.0.3
       vite:
-        specifier: ^8.2.2
+        specifier: 'catalog:'
         version: 8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0)
       vitest:
-        specifier: ^4.1.5
+        specifier: 'catalog:'
         version: 4.1.11(@types/node@24.13.3)(@vitest/browser-preview@4.1.11)(@vitest/coverage-istanbul@4.1.10)(@vitest/ui@4.1.10)(jsdom@29.1.1)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0))
 
   stonecrop:
@@ -1145,10 +1211,10 @@ importers:
         specifier: workspace:*
         version: link:../schema
       '@vueuse/core':
-        specifier: ^14.2.1
+        specifier: 'catalog:'
         version: 14.4.0(vue@3.5.41(typescript@6.0.3))
       immutable:
-        specifier: ^5.1.4
+        specifier: 'catalog:'
         version: 5.1.9
       pinia-shared-state:
         specifier: ^1.0.1
@@ -1157,53 +1223,50 @@ importers:
         specifier: ^5.25.0
         version: 5.32.5
     devDependencies:
-      '@microsoft/api-documenter':
-        specifier: ^7.30.5
-        version: 7.30.13(@types/node@24.13.3)
       '@microsoft/api-extractor':
-        specifier: ^7.58.7
+        specifier: 'catalog:'
         version: 7.59.0(@types/node@24.13.3)
       '@vitejs/plugin-vue':
-        specifier: ^6.0.6
+        specifier: 'catalog:'
         version: 6.0.8(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0))(vue@3.5.41(typescript@6.0.3))
       '@vitest/coverage-istanbul':
-        specifier: ^4.1.5
+        specifier: 'catalog:'
         version: 4.1.10(vitest@4.1.11)
       '@vue/test-utils':
-        specifier: ^2.4.10
+        specifier: 'catalog:'
         version: 2.4.11(@vue/compiler-dom@3.5.41)(@vue/server-renderer@3.5.41)(vue@3.5.41(typescript@6.0.3))
       jsdom:
-        specifier: ^29.1.1
+        specifier: 'catalog:'
         version: 29.1.1
       oxlint:
-        specifier: 1.67.0
+        specifier: 'catalog:'
         version: 1.67.0(oxlint-tsgolint@0.23.0)(vite-plus@0.3.0(@types/node@24.13.3)(@vitest/coverage-istanbul@4.1.10)(esbuild@0.28.2)(jiti@2.7.0)(jsdom@29.1.1)(sass@1.103.1)(terser@5.50.0)(typescript@6.0.3)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0))(yaml@2.9.0))
       oxlint-tsgolint:
-        specifier: 0.23.0
+        specifier: 'catalog:'
         version: 0.23.0
       pinia:
-        specifier: ^3.0.4
+        specifier: 'catalog:'
         version: 3.0.4(typescript@6.0.3)(vue@3.5.41(typescript@6.0.3))
       typescript:
-        specifier: ^6.0.3
+        specifier: 'catalog:'
         version: 6.0.3
       vite:
-        specifier: ^8.2.2
+        specifier: 'catalog:'
         version: 8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0)
       vitest:
-        specifier: ^4.1.5
+        specifier: 'catalog:'
         version: 4.1.11(@types/node@24.13.3)(@vitest/browser-preview@4.1.11)(@vitest/coverage-istanbul@4.1.10)(@vitest/ui@4.1.10)(jsdom@29.1.1)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0))
       vue:
-        specifier: ^3.5.33
+        specifier: 'catalog:'
         version: 3.5.41(typescript@6.0.3)
       vue-router:
-        specifier: ^5.0.6
+        specifier: 'catalog:'
         version: 5.2.0(@vue/compiler-sfc@3.5.41)(esbuild@0.28.2)(pinia@3.0.4(typescript@6.0.3)(vue@3.5.41(typescript@6.0.3)))(rolldown@1.2.5)(rollup@4.62.5)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0))(vue@3.5.41(typescript@6.0.3))
 
   themes:
     devDependencies:
       vite:
-        specifier: ^8.2.2
+        specifier: 'catalog:'
         version: 8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0)
 
   tools/doc-gen:
@@ -1215,47 +1278,44 @@ importers:
   utilities:
     dependencies:
       '@vueuse/core':
-        specifier: ^14.2.1
+        specifier: 'catalog:'
         version: 14.4.0(vue@3.5.41(typescript@6.0.3))
     devDependencies:
-      '@microsoft/api-documenter':
-        specifier: ^7.30.5
-        version: 7.30.13(@types/node@24.13.3)
       '@microsoft/api-extractor':
-        specifier: ^7.58.7
+        specifier: 'catalog:'
         version: 7.59.0(@types/node@24.13.3)
       '@vitejs/plugin-vue':
-        specifier: ^6.0.6
+        specifier: 'catalog:'
         version: 6.0.8(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0))(vue@3.5.41(typescript@6.0.3))
       '@vitest/coverage-istanbul':
-        specifier: ^4.1.5
+        specifier: 'catalog:'
         version: 4.1.10(vitest@4.1.11)
       '@vue/test-utils':
-        specifier: ^2.4.10
+        specifier: 'catalog:'
         version: 2.4.11(@vue/compiler-dom@3.5.41)(@vue/server-renderer@3.5.41)(vue@3.5.41(typescript@6.0.3))
       jsdom:
-        specifier: ^29.1.1
+        specifier: 'catalog:'
         version: 29.1.1
       oxlint:
-        specifier: 1.67.0
+        specifier: 'catalog:'
         version: 1.67.0(oxlint-tsgolint@0.23.0)(vite-plus@0.3.0(@types/node@24.13.3)(@vitest/coverage-istanbul@4.1.10)(esbuild@0.28.2)(jiti@2.7.0)(jsdom@29.1.1)(sass@1.103.1)(terser@5.50.0)(typescript@6.0.3)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0))(yaml@2.9.0))
       oxlint-tsgolint:
-        specifier: 0.23.0
+        specifier: 'catalog:'
         version: 0.23.0
       typescript:
-        specifier: ^6.0.3
+        specifier: 'catalog:'
         version: 6.0.3
       vite:
-        specifier: ^8.2.2
+        specifier: 'catalog:'
         version: 8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0)
       vitest:
-        specifier: ^4.1.5
+        specifier: 'catalog:'
         version: 4.1.11(@types/node@24.13.3)(@vitest/browser-preview@4.1.11)(@vitest/coverage-istanbul@4.1.10)(@vitest/ui@4.1.10)(jsdom@29.1.1)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0))
       vue:
-        specifier: ^3.5.33
+        specifier: 'catalog:'
         version: 3.5.41(typescript@6.0.3)
       vue-router:
-        specifier: ^5.0.6
+        specifier: 'catalog:'
         version: 5.2.0(@vue/compiler-sfc@3.5.41)(esbuild@0.28.2)(pinia@3.0.4(typescript@6.0.3)(vue@3.5.41(typescript@6.0.3)))(rolldown@1.2.5)(rollup@4.62.5)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0))(vue@3.5.41(typescript@6.0.3))
 
 packages:
@@ -2822,11 +2882,6 @@ packages:
 
   '@mermaid-js/parser@1.2.1':
     resolution: {integrity: sha512-n12NohV3mrUyUL2o93IgG/ifeW9FTyeJn3zDxkhwa8MJ9Fxg3HQMlA3RiGmD/3UnJvheztkjjQAjA2T4LmUcpw==}
-
-  '@microsoft/api-documenter@7.30.13':
-    resolution: {integrity: sha512-MfmPn/0pPy7PS2kwSgTNcpjGw6BK60uCj5hp3UXgBiQ0FAlwaQPtvUgbcupBIfkKiNI2bND03i1LzQRcgZma1A==}
-    engines: {node: '>=20.9.0'}
-    hasBin: true
 
   '@microsoft/api-extractor-model@7.33.11':
     resolution: {integrity: sha512-iDu1AtuRC2Z8XVs2SieZieVavF1FXPBX1C9pMexJh8Dx/Dd/3ZZ4nRQp/PU2Vk2rUHWuBz1wOyL4DcuhVnBXwg==}
@@ -7295,10 +7350,6 @@ packages:
   js-tokens@4.0.0:
     resolution: {integrity: sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==}
 
-  js-yaml@4.1.1:
-    resolution: {integrity: sha512-qQKT4zQxXl8lLwBtHMWwaTcGfFOZviOJet3Oy/xmGk2gZH677CJM9EvtfdSkgWcATZhj/55JZ0rmy3myCT5lsA==}
-    hasBin: true
-
   js-yaml@4.3.1:
     resolution: {integrity: sha512-CY6crGq313MX8GkwvB7tzgp99vjQxY1++5y10/BKN/GUfHqWaOGQMNZkBvqSzsZKWk/ijwHlWzzkLulsGHhjWQ==}
     hasBin: true
@@ -11621,7 +11672,7 @@ snapshots:
       '@graphql-tools/utils': 8.9.0(graphql@16.14.2)
       dataloader: 2.1.0
       graphql: 16.14.2
-      tslib: 2.4.1
+      tslib: 2.8.1
       value-or-promise: 1.0.11
 
   '@graphql-tools/code-file-loader@8.1.37(graphql@16.14.2)':
@@ -11904,7 +11955,7 @@ snapshots:
   '@graphql-tools/utils@8.9.0(graphql@16.14.2)':
     dependencies:
       graphql: 16.14.2
-      tslib: 2.4.1
+      tslib: 2.8.1
 
   '@graphql-tools/wrap@11.1.21(graphql@16.14.2)':
     dependencies:
@@ -12199,18 +12250,6 @@ snapshots:
   '@mermaid-js/parser@1.2.1':
     dependencies:
       '@chevrotain/types': 11.1.2
-
-  '@microsoft/api-documenter@7.30.13(@types/node@24.13.3)':
-    dependencies:
-      '@microsoft/api-extractor-model': 7.33.11(@types/node@24.13.3)
-      '@microsoft/tsdoc': 0.16.0
-      '@rushstack/node-core-library': 5.24.0(@types/node@24.13.3)
-      '@rushstack/terminal': 0.24.3(@types/node@24.13.3)
-      '@rushstack/ts-command-line': 5.3.13(@types/node@24.13.3)
-      js-yaml: 4.1.1
-      resolve: 1.22.12
-    transitivePeerDependencies:
-      - '@types/node'
 
   '@microsoft/api-extractor-model@7.33.11(@types/node@24.13.3)':
     dependencies:
@@ -16813,10 +16852,6 @@ snapshots:
 
   js-tokens@4.0.0: {}
 
-  js-yaml@4.1.1:
-    dependencies:
-      argparse: 2.0.1
-
   js-yaml@4.3.1:
     dependencies:
       argparse: 2.0.1
@@ -20544,7 +20579,6 @@ time:
   '@graphql-tools/stitch@10.2.2': '2026-07-27T15:23:40.294Z'
   '@graphql-tools/utils@11.2.2': '2026-07-17T21:46:49.706Z'
   '@graphql-tools/wrap@11.1.21': '2026-07-27T15:23:50.810Z'
-  '@microsoft/api-documenter@7.30.13': '2026-08-21T15:17:38.475Z'
   '@microsoft/api-extractor-model@7.33.11': '2026-08-20T00:22:55.436Z'
   '@microsoft/api-extractor@7.59.0': '2026-08-21T15:20:49.135Z'
   '@miragejs/graphql@0.1.13': '2021-07-30T12:00:33.273Z'

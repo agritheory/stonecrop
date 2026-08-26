@@ -64,8 +64,8 @@ jobs:
         run: pnpm run build
 
       # The docs site is deliberately not part of the repo-wide build: its script is named
-      # "build:site" so that `vp run -r build` skips it, exactly as Rush's phased build did.
-      # Aggregation into docs/reference/ happens inside this script.
+      # "build:site" so that `vp run -r build` skips it. Aggregation into docs/reference/ happens
+      # inside this script.
       - name: Build Vitepress
         working-directory: ./docs
         run: pnpm run build:site

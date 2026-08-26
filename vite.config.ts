@@ -6,8 +6,8 @@ import { defineConfig } from 'vite-plus'
 // `tasks` map, and every task here is a package.json script, which `scripts` governs.
 //
 // No `run.tasks` block: `vp run -r <script>` already orders packages by the workspace dependency
-// graph declared in each package.json, which is what Rush's `upstream` phase dependency did, and
-// automatic tracking already fingerprints each script's real inputs and outputs.
+// graph declared in each package.json, and automatic tracking already fingerprints each script's
+// real inputs and outputs.
 export default defineConfig({
 	run: {
 		cache: {
@@ -43,8 +43,8 @@ export default defineConfig({
 		// Oxfmt reads `.gitignore` on its own, so these are only what `.prettierignore` added on top
 		// of it — the other 129 lines of that file were a hand-synced copy of `.gitignore`.
 		ignorePatterns: [
+			// api-extractor writes these and a `git diff --exit-code` asserts them byte-for-byte.
 			'common/reviews/**',
-			'common/scripts/**',
 			'**/CHANGELOG.*',
 			'pnpm-lock.yaml',
 			'yarn.lock',

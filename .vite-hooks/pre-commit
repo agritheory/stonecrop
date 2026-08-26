@@ -27,8 +27,10 @@ step() {
 step 'format' node --run format
 git add -u
 
-# No version-consistency step. Rush's "rush check" enforced one SemVer range per dependency across
-# every project, and nothing in pnpm or Vite+ replaces it; pnpm catalogs are the intended successor.
+# Runs before the build because it is instant and the fix is a hand edit: a dependency that drifted
+# is better reported now than after waiting for a full build.
+step 'dependency ranges' node --run check:deps
+
 step 'build' node --run build
 
 # Aggregate API docs into docs/reference/ and stage any updated files.

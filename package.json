@@ -5,6 +5,7 @@
 	"type": "module",
 	"scripts": {
 		"build": "vp run -r build",
+		"check:deps": "node common/scripts/check-dependency-consistency.mjs",
 		"docs": "vp run -r docs",
 		"docs:full": "bash common/scripts/docs-full.sh",
 		"format": "vp fmt",

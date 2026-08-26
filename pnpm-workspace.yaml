@@ -20,11 +20,59 @@ packages:
 
 # Members are listed one by one rather than globbed. `nuxt/playground`, `nuxt/fullstack` and the
 # three `*/test/fixtures/*` apps carry a package.json but are not members: they resolve by walking
-# up into their parent package's node_modules, which is what they did under Rush. A `*/*` glob
+# up into their parent package's node_modules. A `*/*` glob
 # would adopt them and give each its own node_modules, changing how every one of them resolves
 # `nuxt` and `vue`.
 resolutionMode: time-based
 autoInstallPeers: false
+
+# One range per dependency across every package, which is what `rush check` enforced and nothing in
+# pnpm or Vite+ replaced. Every dependency declared by two or more packages is listed here and
+# referenced as `catalog:`, so the range cannot diverge between them.
+#
+# `peerDependencies` deliberately keep literal ranges. A peer range states what a consumer may pair
+# this package with, not what we build against, so tying it to the catalog would narrow it silently
+# every time a dev dependency is bumped.
+#
+# `prefer` means `pnpm add` reuses a catalog entry when one exists but does not fail without one; the
+# repo-wide check in common/scripts/check-dependency-consistency.mjs is what catches a dependency
+# that lands in two packages without joining the catalog.
+catalogMode: prefer
+catalog:
+  '@eslint/js': '^10.0.1'
+  '@microsoft/api-extractor': '^7.58.7'
+  '@nuxt/devtools': '^3.2.4'
+  '@nuxt/eslint-config': '^1.16.0'
+  '@nuxt/kit': '^4.4.4'
+  '@nuxt/module-builder': '^1.0.2'
+  '@nuxt/schema': '^4.4.8'
+  '@nuxt/test-utils': '^4.0.3'
+  '@types/node': '^24.12.4'
+  '@vitejs/plugin-vue': '^6.0.6'
+  '@vitest/coverage-istanbul': '^4.1.5'
+  '@vitest/ui': '^4.1.5'
+  '@vue/test-utils': '^2.4.10'
+  '@vueuse/components': '^14.2.1'
+  '@vueuse/core': '^14.2.1'
+  eslint: '^10.6.0'
+  graphql: '^16.14.0'
+  graphql-yoga: '^5.18.0'
+  h3: '^1.15.11'
+  immutable: '^5.1.4'
+  jsdom: '^29.1.1'
+  monaco-editor: '^0.55.1'
+  nuxt: '^4.4.8'
+  oxlint: '1.67.0'
+  oxlint-tsgolint: '0.23.0'
+  pinia: '^3.0.4'
+  postgraphile: '^5.0.3'
+  typescript: '^6.0.3'
+  vite: '^8.2.2'
+  vite-plugin-lib-inject-css: '^2.2.2'
+  vitest: '^4.1.5'
+  vue: '^3.5.33'
+  vue-router: '^5.0.6'
+  vue-tsc: '^3.3.6'
 
 overrides:
   # docs still depends on vitepress ^1.6.4, which pulls vite 5.

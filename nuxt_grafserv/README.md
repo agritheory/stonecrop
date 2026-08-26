@@ -545,31 +545,31 @@ See [Grafast Standard Steps](https://grafast.org/grafast/standard-steps) for the
 
 ## Development
 
-This package lives inside the Stonecrop Rush monorepo. Use `rushx` instead of `pnpm run` to invoke scripts.
+This package lives inside the Stonecrop pnpm workspace, so its scripts run with `pnpm run` from this directory.
 
 ```bash
 # Install all monorepo dependencies (run from the repo root)
-rush install
+pnpm install
 
 # Generate type stubs
-rushx dev:prepare
+pnpm run dev:prepare
 
 # Develop with the playground (from nuxt_grafserv/).
 # Starts + migrates the Postgres container (Docker required), then runs Nuxt.
-rushx dev
+pnpm run dev
 
 # Build the module
-rushx build
+pnpm run build
 
 # Run ESLint
-rushx lint
+pnpm run lint
 
 # Run tests
-rushx test
-rushx test:watch
+pnpm run test
+pnpm run test:watch
 ```
 
-The playground runs against a PostgreSQL container managed by Docker Compose. `rushx dev` starts the container and applies migrations automatically (via `playground/scripts/bootstrap.mjs`) before launching Nuxt, so Docker must be running; both steps are idempotent, so this is a fast no-op once the container exists (it persists via a named volume). To manage the database on its own, run `pnpm db:up` / `pnpm db:down` (or `node scripts/bootstrap.mjs` to recreate and migrate) from `playground/`.
+The playground runs against a PostgreSQL container managed by Docker Compose. `pnpm run dev` starts the container and applies migrations automatically (via `playground/scripts/bootstrap.mjs`) before launching Nuxt, so Docker must be running; both steps are idempotent, so this is a fast no-op once the container exists (it persists via a named volume). To manage the database on its own, run `pnpm db:up` / `pnpm db:down` (or `node scripts/bootstrap.mjs` to recreate and migrate) from `playground/`.
 
 <!-- Badges -->
 [npm-version-src]: https://img.shields.io/npm/v/@stonecrop/nuxt-grafserv/latest.svg?style=flat&colorA=020420&colorB=00DC82

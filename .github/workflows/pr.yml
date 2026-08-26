@@ -92,6 +92,11 @@ jobs:
       - name: Format Check
         run: pnpm run format:check
 
+      # The catalog in pnpm-workspace.yaml makes divergence impossible for what it already lists;
+      # this catches a dependency added to a second package without joining it.
+      - name: Dependency Consistency
+        run: pnpm run check:deps
+
       # Type-aware oxlint (oxlint-tsgolint) requires compiled .d.ts files from dependency packages
       # to exist before lint runs; without this build step, unresolvable imports appear as
       # "error typed" and trigger false positives.

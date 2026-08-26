@@ -50,29 +50,28 @@
 		"test:watch": "vitest watch"
 	},
 	"dependencies": {
-		"@vueuse/components": "^14.2.1",
-		"@vueuse/core": "^14.2.1",
+		"@vueuse/components": "catalog:",
+		"@vueuse/core": "catalog:",
 		"mqtt": "^5.14.1",
 		"onscan.js": "^1.5.2"
 	},
 	"devDependencies": {
-		"@microsoft/api-documenter": "^7.30.5",
-		"@microsoft/api-extractor": "^7.58.7",
-		"@types/node": "^24.12.4",
-		"@vitejs/plugin-vue": "^6.0.6",
-		"@vitest/coverage-istanbul": "^4.1.5",
-		"@vitest/ui": "^4.1.5",
-		"@vue/test-utils": "^2.4.10",
-		"oxlint": "1.67.0",
-		"oxlint-tsgolint": "0.23.0",
+		"@microsoft/api-extractor": "catalog:",
+		"@types/node": "catalog:",
+		"@vitejs/plugin-vue": "catalog:",
+		"@vitest/coverage-istanbul": "catalog:",
+		"@vitest/ui": "catalog:",
+		"@vue/test-utils": "catalog:",
+		"oxlint": "catalog:",
+		"oxlint-tsgolint": "catalog:",
 		"sass": "^1.97.2",
-		"typescript": "^6.0.3",
-		"vite": "^8.2.2",
-		"vite-plugin-lib-inject-css": "^2.2.2",
-		"vitest": "^4.1.5",
-		"vue": "^3.5.33",
-		"vue-router": "^5.0.6",
-		"vue-tsc": "^3.3.6"
+		"typescript": "catalog:",
+		"vite": "catalog:",
+		"vite-plugin-lib-inject-css": "catalog:",
+		"vitest": "catalog:",
+		"vue": "catalog:",
+		"vue-router": "catalog:",
+		"vue-tsc": "catalog:"
 	},
 	"peerDependencies": {
 		"vue": "^3.5.33"

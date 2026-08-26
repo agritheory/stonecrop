@@ -27,7 +27,7 @@
 		"prepublish": "vite build"
 	},
 	"devDependencies": {
-		"vite": "^8.2.2"
+		"vite": "catalog:"
 	},
 	"engines": {
 		"node": ">=24.0.0"

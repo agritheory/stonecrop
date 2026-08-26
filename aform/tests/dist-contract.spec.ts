@@ -22,7 +22,7 @@ describe('dist contract', { tags: ['unit'] }, () => {
 			.filter(({ target }) => !existsSync(resolve(packageRoot, target)))
 			.map(({ label, target }) => `${label} -> ${target}`)
 
-		expect(missing, `Export targets missing from dist. Run \`rushx build\` first.`).toEqual([])
+		expect(missing, `Export targets missing from dist. Run \`pnpm run build\` first.`).toEqual([])
 	})
 
 	it('leaves exactly the expected dependencies external', () => {
