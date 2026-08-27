@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "comment": "Return resolved link display text from stonecropAction, and reduce inline links to their column values before an action reaches its guard or handler",
+      "type": "minor",
+      "packageName": "@stonecrop/graphql-middleware"
+    }
+  ],
+  "packageName": "@stonecrop/graphql-middleware"
+}

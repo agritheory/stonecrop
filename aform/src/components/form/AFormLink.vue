@@ -160,7 +160,18 @@ function asLinkValue(value: AFormLinkModelValue | null | undefined): AFormLinkVa
 watch(
 	() => linkId(modelValue.value),
 	async id => {
-		if (!id || linkDisplayText(modelValue.value)) return
+		// Already carries its text: nothing to resolve, but the input still has to show it.
+		// `searchText` is assigned at setup and then only by the branches below, by `selectOption`
+		// and by `closeDropdown` — and at setup a record's value has not arrived yet. So a link the
+		// server resolved for us (the middleware returns `{ id, displayText }` for an inline link)
+		// rendered blank, while a bare id rendered fine because it took the resolve branch.
+		if (id && linkDisplayText(modelValue.value)) {
+			// Through `displayedText` rather than the raw text, for the reason the resolve branch
+			// formats too: the same value must not render differently depending on how it arrived.
+			searchText.value = displayedText.value
+			return
+		}
+		if (!id) return
 		try {
 			let match: AFormLinkValue | undefined
 			let displayText: string | undefined

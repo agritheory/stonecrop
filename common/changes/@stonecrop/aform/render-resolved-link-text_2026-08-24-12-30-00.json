@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "comment": "Render a link's display text in AFormLink when the server already resolved it, instead of leaving the input blank",
+      "type": "patch",
+      "packageName": "@stonecrop/aform"
+    }
+  ],
+  "packageName": "@stonecrop/aform"
+}

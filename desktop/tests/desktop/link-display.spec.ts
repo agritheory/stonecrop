@@ -1,8 +1,9 @@
+import { List } from 'immutable'
 import { mount } from '@vue/test-utils'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { nextTick } from 'vue'
 
-import { Registry, Stonecrop } from '@stonecrop/stonecrop'
+import { Doctype, Registry, Stonecrop } from '@stonecrop/stonecrop'
 
 import Desktop from '../../src/components/Desktop.vue'
 import type { RouteAdapter } from '../../src/types'
@@ -69,7 +70,10 @@ describe('Desktop — link values on write', { tags: ['component'] }, () => {
 		expect(stonecrop.getStore().get('order.o-1.customer')).toEqual({ id: 'p-1', partyName: 'Acme Corp EDITED' })
 	})
 
-	it('unwraps an inline link back to the id that gets persisted', async () => {
+	// The store keeps what the adapter returned, because nothing else holds the display text: the
+	// field, the list cell and a later read all need it. Reducing it here is what left a form
+	// rendering raw ids the moment anything edited it.
+	it('keeps an inline link resolved in the store', async () => {
 		const registry = new Registry()
 		const stonecrop = new Stonecrop(registry)
 		buildOrder(registry, stonecrop)
@@ -83,24 +87,129 @@ describe('Desktop — link values on write', { tags: ['component'] }, () => {
 		})
 		await nextTick()
 
-		expect(stonecrop.getStore().get('order.o-1.agentId')).toBe('p-2')
+		expect(stonecrop.getStore().get('order.o-1.agentId')).toEqual({ id: 'p-2', displayText: 'Globex' })
 	})
 
-	it('unwraps { id, displayText } to scalar id when storing', async () => {
+	// The regression: editing `title` used to rewrite every inline link on the record as a bare id,
+	// so a link resolved by the adapter went blank on the first keystroke in an unrelated field.
+	it('leaves a link the edit never touched exactly as it was', async () => {
 		const registry = new Registry()
 		const stonecrop = new Stonecrop(registry)
 		buildOrder(registry, stonecrop)
+		stonecrop.getStore().set('order.o-1.agentId', { id: 'p-2', displayText: 'Globex' })
 
 		const wrapper = mountDesktop(registry, stonecrop, recordAdapter('order', 'o-1'))
 		await nextTick()
 
 		await wrapper.findComponent({ name: 'AForm' }).vm.$emit('update:data', {
 			id: 'o-1',
+			title: 'Order One EDITED',
 			agentId: { id: 'p-2', displayText: 'Globex' },
 		})
 		await nextTick()
 
-		expect(stonecrop.getStore().get('order.o-1.agentId')).toBe('p-2')
+		expect(stonecrop.getStore().get('order.o-1.agentId')).toEqual({ id: 'p-2', displayText: 'Globex' })
+	})
+
+	// The Actions dropdown is the path a user clicks; `emitAction` below is slot convenience.
+	// Three call sites emit `action`, so a reduction added back at one would hide behind the others.
+	it('emits the store shape on a transition fired from the Actions menu', async () => {
+		const registry = new Registry()
+		const stonecrop = new Stonecrop(registry)
+		const doctype = buildDoctype(
+			'order',
+			'draft',
+			{ draft: { on: { SUBMIT: 'submitted' } }, submitted: { type: 'final' } },
+			[
+				{ kind: 'field' as const, fieldname: 'customer', label: 'Customer', component: 'AForm', doctype: 'party' },
+				{ kind: 'field' as const, fieldname: 'agentId', label: 'Agent', component: 'AFormLink', doctype: 'party' },
+			] as any
+		)
+		registry.addDoctype(doctype)
+		stonecrop.addRecord('order', 'o-1', {
+			id: 'o-1',
+			status: 'draft',
+			customer: { id: 'p-1', partyName: 'Acme Corp' },
+			agentId: { id: 'p-2', displayText: 'Globex' },
+		})
+
+		// ActionSet unstubbed, so the transition is read off what Desktop actually rendered.
+		const wrapper = mount(Desktop, {
+			props: { routeAdapter: recordAdapter('order', 'o-1') },
+			global: {
+				plugins: [makeStonecropPlugin(registry, stonecrop)],
+				stubs: { AForm: true, SheetNav: true, CommandPalette: true },
+			},
+		})
+		await nextTick()
+
+		const elements = wrapper.findComponent({ name: 'ActionSet' }).props('elements') as any[]
+		const dropdown = elements?.find(e => e.type === 'dropdown')
+		expect(dropdown?.actions?.length).toBeGreaterThan(0)
+		dropdown.actions[0].action()
+		await nextTick()
+
+		const [payload] = wrapper.emitted('action')![0] as [{ data: Record<string, any> }]
+		// Both shapes cross untouched — reducing the inline one is the adapter's job.
+		expect(payload.data.agentId).toEqual({ id: 'p-2', displayText: 'Globex' })
+		expect(payload.data.customer).toEqual({ id: 'p-1', partyName: 'Acme Corp' })
+	})
+
+	// A third emit site, built by `getAvailableCommands` — a guard over transitions cannot see it.
+	it('emits the store shape on a stateless Command', async () => {
+		const registry = new Registry()
+		const stonecrop = new Stonecrop(registry)
+		const schema = List([
+			{ kind: 'field' as const, fieldname: 'id', label: 'ID', component: 'ATextInput' },
+			{ kind: 'field' as const, fieldname: 'status', label: 'Status', component: 'ATextInput' },
+			{ kind: 'field' as const, fieldname: 'agentId', label: 'Agent', component: 'AFormLink', doctype: 'party' },
+		] as any)
+		const workflow = { states: ['PROCESSING'], actions: { print: { label: 'Print', stateless: true } } }
+		registry.addDoctype(new Doctype('order', schema, workflow))
+		stonecrop.addRecord('order', 'o-1', {
+			id: 'o-1',
+			status: 'PROCESSING',
+			agentId: { id: 'p-2', displayText: 'Globex' },
+		})
+
+		const wrapper = mount(Desktop, {
+			props: { routeAdapter: recordAdapter('order', 'o-1') },
+			global: {
+				plugins: [makeStonecropPlugin(registry, stonecrop)],
+				stubs: { AForm: true, SheetNav: true, CommandPalette: true },
+			},
+		})
+		await nextTick()
+
+		const elements = wrapper.findComponent({ name: 'ActionSet' }).props('elements') as any[]
+		const command = elements?.find(e => e.type === 'dropdown')?.actions?.find((a: any) => a.label === 'Print')
+		expect(command).toBeDefined()
+		command.action()
+		await nextTick()
+
+		const [payload] = wrapper.emitted('action')![0] as [{ data: Record<string, any> }]
+		expect(payload.data.agentId).toEqual({ id: 'p-2', displayText: 'Globex' })
+	})
+
+	it('emits the store shape on the action it emits', async () => {
+		const registry = new Registry()
+		const stonecrop = new Stonecrop(registry)
+		buildOrder(registry, stonecrop)
+		stonecrop.getStore().set('order.o-1.agentId', { id: 'p-2', displayText: 'Globex' })
+
+		const wrapper = mountDesktop(registry, stonecrop, recordAdapter('order', 'o-1'))
+		await nextTick()
+
+		const { emitAction } = wrapper.vm.$.provides['desktopMethods'] as {
+			emitAction: (name: string, data?: Record<string, any>) => void
+		}
+		emitAction('save')
+		await nextTick()
+
+		const [payload] = wrapper.emitted('action')![0] as [{ data: Record<string, any> }]
+		expect(payload.data.agentId).toEqual({ id: 'p-2', displayText: 'Globex' })
+		// An expanded link crosses the wire whole — it is the record, not a reference to one.
+		expect(payload.data.customer).toEqual({ id: 'p-1', partyName: 'Acme Corp' })
 	})
 })
 

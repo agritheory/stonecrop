@@ -217,6 +217,8 @@ A fieldset is a layout grouping, not a scope: every field inside one is a field 
 
 Lives here rather than in the adapter because both sides need it: the middleware builds SQL from it, and `DoctypeMeta`'s own validation asks the same question at the load gate. It sat in the adapter while the validator hand-rolled a top-level-only scan, and that is exactly the second failure this comment names — a `displayField` inside a fieldset was rejected at authoring time and would have worked at runtime.
 
+A module of its own, importing nothing at runtime, because callers need the descent without needing the rest of `field.ts` — which defines the Zod schemas, so a runtime edge to it is a runtime edge to Zod. Zod reaching a Nitro SSR entry collides with the `process` Nitro imports there and takes the server down with a `SyntaxError` per request, which no build reports. `field.ts` still calls this and `index.ts` still exports it, so nothing outside moves.
+
 **Signature:**
 
 ```typescript
@@ -724,6 +726,31 @@ export declare function toSlug(name: string): string;
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | name | `string` | Name to convert |
+
+### unwrapInlineLinks
+
+Reduce a record's *inline* link values to the ids that get persisted.
+
+The adapter returns an inline link as `{ id, displayText }`, so that is what a record holds everywhere it is read — the store, a list row, a form field. A column takes the id alone, so this is the single definition of the shape a record leaves in, and it belongs at the boundary a record crosses on its way to the server, never on the way into the store.
+
+Doing it on the way in destroys the text the adapter looked up: nothing else holds it, so the field that resolved a moment ago renders its raw id, and the same record then renders differently depending on whether anything had edited the form yet. That is the bug this exists to prevent, and its damage is a wrong render, not a throw.
+
+Only *inline* links may be reduced. An inline link's value is indistinguishable by inspection from an expanded one (`{ id, ...the whole target record }`), so `component` — which states which of the two a field is — is what tells them apart, via `componentLinkExpansion`. Reducing an expanded link would send the id in place of the record.
+
+Fieldsets are descended into in both shapes a record appears in: flat, as the store and the server hold it, and nested under the fieldset's own key, as a form emits it.
+
+**Signature:**
+
+```typescript
+export declare function unwrapInlineLinks(fields: readonly DoctypeField[], record: Record<string, any>): Record<string, any>;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| fields | `readonly DoctypeField[]` | the doctype's top-level fields |
+| record | `Record<string, any>` | the record to reduce; not mutated |
 
 ### validateDoctype
 
