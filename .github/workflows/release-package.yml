@@ -87,18 +87,23 @@ jobs:
       - name: Bump Version for Packages
         run: pnpm exec changeset version
 
+      # Before the push, not after. A publish that dies partway leaves development untouched,
+      # so a re-run replays the same bump and pnpm skips whatever already landed. Pushing
+      # first strands the re-run: the push below then fails non-fast-forward.
+      #
+      # No auth token: pnpm exchanges the job's id-token for a registry credential.
+      # Each package needs a trusted publisher on npmjs.com naming this workflow.
+      - name: Publish Packages
+        run: pnpm -r publish --access public --no-git-checks
+
+      # `pnpm -r publish` does not tag, where Rush did, so a release would otherwise land
+      # untagged with nothing reporting it.
       - name: Commit Version Bump
         run: |
           git add -A
           git commit -m "Bump versions [skip ci]"
-          git push origin HEAD:development
-
-      # No auth token: pnpm exchanges the job's id-token for a registry credential.
-      # Each package needs a trusted publisher on npmjs.com naming this workflow.
-      # pnpm publishes every workspace package that is not private, rewriting `workspace:*`
-      # ranges to the versions just bumped.
-      - name: Publish Packages
-        run: pnpm -r publish --access public --no-git-checks
+          pnpm exec changeset git-tag
+          git push --follow-tags origin HEAD:development
 
   # A rehearsal of publish-npm that stops one step short of the registry. It runs on every
   # open pull request, so the path is exercised before the merge that would publish it:
@@ -154,10 +159,9 @@ jobs:
       - name: Bump Version for Packages
         run: pnpm exec changeset version
 
-      # The bump is the step with no local equivalent worth trusting, so assert its result
-      # rather than printing it: every publishable package belongs to one "fixed" group in
-      # .changeset/config.json, and a split group publishes siblings that cannot resolve
-      # each other.
+      # Asserts the "fixed" group in .changeset/config.json held. A convention check, not a
+      # safety one: pnpm rewrites `workspace:*` to the version a sibling actually carries, so
+      # a split still resolves.
       - name: Check the Lockstep Group Landed on One Version
         run: |
           versions=$(pnpm list -r --depth -1 --json | jq -r '.[] | select(.private == false) | .version' | sort -u)
@@ -173,3 +177,14 @@ jobs:
       # clean-and-rebuild the real publish performs, so this covers everything but the PUT.
       - name: Publish Packages (Dry Run)
         run: pnpm -r publish --access public --no-git-checks --dry-run
+
+      # Rehearses the tagging publish-npm does, so it cannot regress unnoticed until a release
+      # depends on it. The tags stay in the runner's tree; this job has no push.
+      - name: Tag Release (Dry Run)
+        run: |
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          pnpm exec changeset git-tag
+          count=$(git tag --list --points-at HEAD | wc -l)
+          echo "::notice::tagged ${count} packages"
+          [ "${count}" -gt 0 ]
