@@ -16,76 +16,32 @@ const { dirname, join, relative, resolve } = require('path')
 const ts = require('typescript')
 
 /**
- * Resolve every component the entry point re-exports, as `exportedName -> absolute .vue path`.
+ * Read the package's public surface off its emitted entry declaration, in one pass.
  *
- * The binding between a name and a file is something the author writes (`import ABadge from
- * './components/form/ABadge.vue'`), so it is read back off the emitted entry declaration rather than
- * guessed from the filename — a component whose export name differs from its file, or which is
- * defined but deliberately not exported, both come out right.
- */
-function resolveExportedComponents(packageDir) {
-	const entryDeclaration = join(packageDir, 'dist/src/index.d.ts')
-	if (!existsSync(entryDeclaration)) return new Map()
-
-	const source = ts.createSourceFile(
-		entryDeclaration,
-		readFileSync(entryDeclaration, 'utf8'),
-		ts.ScriptTarget.Latest,
-		/* setParentNodes */ false
-	)
-
-	// `./components/ABadge.vue` is relative to dist/src/, and the SFC it names lives at the matching
-	// path under src/. Nothing emits a .vue file into dist, so the declaration's own folder is not
-	// where the source is.
-	const sourceRoot = join(packageDir, 'src')
-	const localToFile = new Map()
-	const exported = new Set()
-
-	for (const statement of source.statements) {
-		if (ts.isImportDeclaration(statement) && ts.isStringLiteral(statement.moduleSpecifier)) {
-			const specifier = statement.moduleSpecifier.text
-			const defaultImport = statement.importClause?.name
-			if (!defaultImport || !specifier.endsWith('.vue')) continue
-			localToFile.set(defaultImport.text, resolve(sourceRoot, specifier))
-			continue
-		}
-
-		if (ts.isExportDeclaration(statement) && statement.exportClause && ts.isNamedExports(statement.exportClause)) {
-			// A re-export (`export { x } from './y'`) names a module, so it cannot be a local .vue
-			// import; only a bare `export { … }` can be.
-			if (statement.moduleSpecifier) continue
-			for (const element of statement.exportClause.elements) {
-				if (statement.isTypeOnly || element.isTypeOnly) continue
-				exported.add({ exportedAs: element.name.text, local: (element.propertyName ?? element.name).text })
-			}
-		}
-	}
-
-	const components = new Map()
-	for (const { exportedAs, local } of exported) {
-		const file = localToFile.get(local)
-		if (file && existsSync(file)) components.set(exportedAs, file)
-	}
-	return components
-}
-
-/**
- * Every name the entry point exports, as `name -> module it came from`.
- *
- * The doc model only carries what a package *declares*; a name it re-exports from a sibling reaches
- * consumers just the same but has no member to render. The old generator caught a few of these by
- * accident, by matching `export { Name }` in the report — which is why `ActionEventPayload` and
- * `InteractionMode` were documented as Vue components. Listing them explicitly means a re-export
- * cannot silently drop out of the docs.
+ * Answers the two questions the generator needs, which are the same question asked of the same
+ * statements: for every exported name, where did it come from — and where a name came from a `.vue`
+ * file, which file. Both bindings are things the author wrote (`import ABadge from
+ * './components/form/ABadge.vue'`), read back rather than guessed from the filename, so a component
+ * whose export name differs from its file and one that is defined but never exported both come out
+ * right.
  *
  * A relative `export * from './x'` is followed into the module it names, because that is how a name
  * declared in `src/types/` reaches the entry point. A bare-specifier star (`export type * from
  * '@stonecrop/atable/types'`) is not: it names another package, which documents those exports
  * itself, and enumerating them here would restate a definition that lives elsewhere.
+ *
+ * @returns `{ names, components }` — every export as `name -> source module`, and the subset that
+ * resolves to an SFC as `name -> absolute .vue path`.
  */
-function resolveExportedNames(packageDir) {
-	const exported = new Map()
+function readEntrySurface(packageDir) {
+	const names = new Map()
+	const components = new Map()
 	const visited = new Set()
+
+	// `./components/ABadge.vue` is relative to dist/src/, and the SFC it names lives at the matching
+	// path under src/. Nothing emits a .vue file into dist, so the declaration's own folder is not
+	// where the source is.
+	const sourceRoot = join(packageDir, 'src')
 
 	const readDeclaration = specifier => {
 		for (const candidate of [`${specifier}.d.ts`, join(specifier, 'index.d.ts')]) {
@@ -106,11 +62,16 @@ function resolveExportedNames(packageDir) {
 		)
 		const declarationDir = dirname(declarationPath)
 		const localToModule = new Map()
+		const localToFile = new Map()
 
 		for (const statement of source.statements) {
 			if (!ts.isImportDeclaration(statement) || !ts.isStringLiteral(statement.moduleSpecifier)) continue
 			const specifier = statement.moduleSpecifier.text
-			if (statement.importClause?.name) localToModule.set(statement.importClause.name.text, specifier)
+			const defaultImport = statement.importClause?.name
+			if (defaultImport) {
+				localToModule.set(defaultImport.text, specifier)
+				if (specifier.endsWith('.vue')) localToFile.set(defaultImport.text, resolve(sourceRoot, specifier))
+			}
 			const bindings = statement.importClause?.namedBindings
 			if (bindings && ts.isNamedImports(bindings)) {
 				for (const element of bindings.elements) localToModule.set(element.name.text, specifier)
@@ -133,15 +94,22 @@ function resolveExportedNames(packageDir) {
 
 			if (!ts.isNamedExports(statement.exportClause)) continue
 			for (const element of statement.exportClause.elements) {
+				const exportedAs = element.name.text
 				const local = (element.propertyName ?? element.name).text
-				exported.set(element.name.text, specifier ?? localToModule.get(local) ?? null)
+				names.set(exportedAs, specifier ?? localToModule.get(local) ?? null)
+
+				// A re-export (`export { x } from './y'`) names a module, so it cannot be a local .vue
+				// import; only a bare `export { … }` can be.
+				if (specifier || statement.isTypeOnly || element.isTypeOnly) continue
+				const file = localToFile.get(local)
+				if (file && existsSync(file)) components.set(exportedAs, file)
 			}
 		}
 	}
 
 	const entryDeclaration = join(packageDir, 'dist/src/index.d.ts')
 	if (existsSync(entryDeclaration)) walk(entryDeclaration)
-	return exported
+	return { names, components }
 }
 
 function normalizeCell(text) {
@@ -172,7 +140,7 @@ function ownProps(props) {
  * the caller does not need its own list of which packages are component libraries.
  */
 function collectComponents(packageDir) {
-	const exportedComponents = resolveExportedComponents(packageDir)
+	const { components: exportedComponents } = readEntrySurface(packageDir)
 	if (exportedComponents.size === 0) return []
 
 	const tsconfig = join(packageDir, 'tsconfig.json')
@@ -343,5 +311,5 @@ module.exports = {
 	renderComponentDocs,
 	renderComponentReport,
 	renderReExports,
-	resolveExportedNames,
+	readEntrySurface,
 }

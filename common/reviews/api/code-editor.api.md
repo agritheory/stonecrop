@@ -11,8 +11,6 @@ import { DefineComponent } from 'vue';
 import type { editor } from 'monaco-editor';
 import { PublicProps } from 'vue';
 
-// Warning: (ae-forgotten-export) The symbol "__VLS_export" needs to be exported by the entry point index.d.ts
-//
 // @public (undocumented)
 export const ACodeEditor: typeof __VLS_export;
 

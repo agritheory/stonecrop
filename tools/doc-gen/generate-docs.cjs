@@ -10,7 +10,7 @@ const {
 	renderComponentDocs,
 	renderComponentReport,
 	renderReExports,
-	resolveExportedNames,
+	readEntrySurface,
 } = require('./component-meta.cjs')
 
 // Load the raw JSON to access docComment fields (for future enhancement)
@@ -693,7 +693,7 @@ try {
 			member => member.displayName
 		),
 	])
-	const reExports = [...resolveExportedNames(join(rootDir, projectName))]
+	const reExports = [...readEntrySurface(join(rootDir, projectName)).names]
 		.filter(([name]) => !documented.has(name))
 		.map(([name, from]) => ({ name, from }))
 	if (reExports.length > 0) {
