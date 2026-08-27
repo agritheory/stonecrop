@@ -39,11 +39,13 @@ describe('dist contract', { tags: ['unit'] }, () => {
 		).toEqual(['@vueuse/core', 'vue'])
 	})
 
+	// Builds a whole TypeScript program over the emitted declarations, so this costs seconds, not
+	// milliseconds. The default 5s timeout passes locally and times out on CI's slower runners.
 	it('ships declarations a consumer can resolve', () => {
 		expect(
 			readTypesDefects(packageRoot).filter(defect => TYPE_ERASING_CODES.has(defect.code)),
 			`The published types do not typecheck on their own. A consumer with skipLibCheck on — the ` +
 				`common default — sees no error and silently gets \`any\` for the affected exports.`
 		).toEqual([])
-	})
+	}, 60_000)
 })

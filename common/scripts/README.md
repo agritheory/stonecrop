@@ -48,7 +48,7 @@ Located in `tools/doc-gen/generate-docs.cjs`
   - Extracts TSDoc comments with proper formatting
   - Generates markdown tables for functions, interfaces, types, etc.
   - Handles Vue components, classes, enums, and more
-  - Graceful handling of packages without API exports
+  - Fails loudly when the API model is missing, rather than overwriting `api.md` with a placeholder
 
 ### `docs-aggregate.mjs`
 
