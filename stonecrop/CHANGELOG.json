@@ -2,6 +2,18 @@
   "name": "@stonecrop/stonecrop",
   "entries": [
     {
+      "version": "0.30.0",
+      "tag": "@stonecrop/stonecrop_v0.30.0",
+      "date": "Thu, 27 Aug 2026 12:30:32 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Return records from collectRecordPayload in the shape the store holds, leaving inline link reduction to the adapter"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.29.0",
       "tag": "@stonecrop/stonecrop_v0.29.0",
       "date": "Tue, 25 Aug 2026 08:42:39 GMT",

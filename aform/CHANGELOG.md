@@ -1,6 +1,13 @@
 # Change Log - @stonecrop/aform
 
-This log was last generated on Tue, 25 Aug 2026 08:42:39 GMT and should not be manually modified.
+This log was last generated on Thu, 27 Aug 2026 12:30:32 GMT and should not be manually modified.
+
+## 0.30.0
+Thu, 27 Aug 2026 12:30:32 GMT
+
+### Patches
+
+- Render a link's display text in AFormLink when the server already resolved it, instead of leaving the input blank
 
 ## 0.29.0
 Tue, 25 Aug 2026 08:42:39 GMT

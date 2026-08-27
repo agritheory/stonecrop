@@ -2,6 +2,18 @@
   "name": "@stonecrop/schema",
   "entries": [
     {
+      "version": "0.30.0",
+      "tag": "@stonecrop/schema_v0.30.0",
+      "date": "Thu, 27 Aug 2026 12:30:32 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Add unwrapInlineLinks, which reduces a record's inline link fields to the ids their columns hold"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.29.0",
       "tag": "@stonecrop/schema_v0.29.0",
       "date": "Tue, 25 Aug 2026 08:42:39 GMT",

@@ -2,6 +2,18 @@
   "name": "@stonecrop/desktop",
   "entries": [
     {
+      "version": "0.30.0",
+      "tag": "@stonecrop/desktop_v0.30.0",
+      "date": "Thu, 27 Aug 2026 12:30:32 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Stop discarding a link's display text when a form emits an update, which left resolved link fields rendering raw ids after the first edit"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.29.0",
       "tag": "@stonecrop/desktop_v0.29.0",
       "date": "Tue, 25 Aug 2026 08:42:39 GMT",

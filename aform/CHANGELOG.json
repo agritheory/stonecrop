@@ -2,6 +2,18 @@
   "name": "@stonecrop/aform",
   "entries": [
     {
+      "version": "0.30.0",
+      "tag": "@stonecrop/aform_v0.30.0",
+      "date": "Thu, 27 Aug 2026 12:30:32 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Render a link's display text in AFormLink when the server already resolved it, instead of leaving the input blank"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.29.0",
       "tag": "@stonecrop/aform_v0.29.0",
       "date": "Tue, 25 Aug 2026 08:42:39 GMT",

@@ -2,6 +2,18 @@
   "name": "@stonecrop/graphql-middleware",
   "entries": [
     {
+      "version": "0.30.0",
+      "tag": "@stonecrop/graphql-middleware_v0.30.0",
+      "date": "Thu, 27 Aug 2026 12:30:32 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Return resolved link display text from stonecropAction, and reduce inline links to their column values before an action reaches its guard or handler"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.29.0",
       "tag": "@stonecrop/graphql-middleware_v0.29.0",
       "date": "Tue, 25 Aug 2026 08:42:39 GMT",
