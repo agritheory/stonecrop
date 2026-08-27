@@ -3,7 +3,7 @@
 'use strict'
 
 const { ApiModel } = require('@microsoft/api-extractor-model')
-const { readFileSync, writeFileSync, existsSync, mkdirSync } = require('fs')
+const { writeFileSync } = require('fs')
 const { join } = require('path')
 const {
 	collectComponents,
@@ -12,67 +12,6 @@ const {
 	renderReExports,
 	readEntrySurface,
 } = require('./component-meta.cjs')
-
-// Load the raw JSON to access docComment fields (for future enhancement)
-let rawApiData = null
-
-// Helper function to extract text from TSDoc nodes with better formatting
-function extractTextFromTSDocNode(node) {
-	if (!node) return ''
-
-	// Handle different node types with appropriate formatting
-	switch (node.constructor.name) {
-		case 'DocPlainText':
-			return node.text || ''
-
-		case 'DocCodeSpan':
-			// Use the code getter method to get the content
-			const codeContent = node.code || ''
-			return `\`${codeContent}\``
-
-		case 'DocLinkTag': {
-			const displayText =
-				node.linkText || node.codeDestination?.memberReferences?.slice(-1)?.[0]?.memberIdentifier?.identifier || ''
-			return displayText ? `\`${displayText}\`` : ''
-		}
-
-		case 'DocSoftBreak':
-			return ' ' // Convert soft breaks to spaces in inline contexts
-
-		case 'DocParagraph':
-		case 'DocSection':
-			// For containers, recurse through children
-			if (node.nodes && Array.isArray(node.nodes)) {
-				return node.nodes.map(extractTextFromTSDocNode).join('')
-			}
-			if (node._nodes && Array.isArray(node._nodes)) {
-				return node._nodes.map(extractTextFromTSDocNode).join('')
-			}
-			break
-
-		default:
-			// For unknown node types, try common properties
-			if (node.text !== undefined) {
-				return node.text
-			}
-			if (node.content !== undefined) {
-				return node.content
-			}
-			if (node.value !== undefined) {
-				return node.value
-			}
-
-			// Recurse through child nodes if available
-			if (node.nodes && Array.isArray(node.nodes)) {
-				return node.nodes.map(extractTextFromTSDocNode).join('')
-			}
-			if (node._nodes && Array.isArray(node._nodes)) {
-				return node._nodes.map(extractTextFromTSDocNode).join('')
-			}
-	}
-
-	return ''
-}
 
 // Helper function to extract TSDoc summary text with better formatting
 function extractTSDocSummary(tsdocComment, inlineMode = false) {
@@ -320,26 +259,10 @@ const apiModelPath = join(rootDir, `${projectName}/temp/${normalizedProjectName}
 const componentReportPath = join(rootDir, `common/reviews/api/${normalizedProjectName}.components.api.md`)
 const outputPath = join(rootDir, `${projectName}/api.md`)
 
-// Check if the required files exist
-if (!existsSync(apiModelPath)) {
-	console.log(`ℹ️  No API model found for "${projectName}" - skipping documentation generation`)
-	console.log(`   (This is normal for projects that don't export public APIs or haven't been built yet)`)
-
-	// Create a minimal placeholder documentation file
-	const displayName = projectName.charAt(0).toUpperCase() + projectName.slice(1)
-	const placeholderMarkdown = `# ${displayName} API Reference\n\n> No API documentation available - this project may not export public APIs or hasn't been built with API Extractor yet.\n\nTo generate documentation, ensure the project has been built:\n\n\`\`\`bash\nvp run -t ${projectName}#build\n\`\`\`\n`
-
-	// Ensure the output directory exists
-	mkdirSync(dirname(outputPath), { recursive: true })
-	writeFileSync(outputPath, placeholderMarkdown, 'utf8')
-	console.log(`📝 Created placeholder documentation at: ${outputPath}`)
-	process.exit(0)
-}
-
+// A missing api.json means the build stopped before API Extractor. Guarding that case wrote a "no
+// API documentation available" placeholder over `api.md`, replacing a committed file with less than
+// it held; loadPackage below throws instead, which is the loud failure it deserves.
 try {
-	// Load the raw API data to access docComment fields (for future enhancement)
-	rawApiData = JSON.parse(readFileSync(apiModelPath, 'utf-8'))
-
 	// Load the API model
 	const apiModel = new ApiModel()
 	const apiPackage = apiModel.loadPackage(apiModelPath)
@@ -355,13 +278,6 @@ try {
 	const displayName = projectName.charAt(0).toUpperCase() + projectName.slice(1)
 	let markdown = `# ${displayName} API Reference\n\n`
 	markdown += `> This documentation is automatically generated from the TypeScript API.\n\n`
-
-	// Package description (for future enhancement)
-	// const packageDoc = extractDocComment(findDocComment(apiPackage.canonicalReference));
-	// if (packageDoc) {
-	//   markdown += `## Overview\n\n`;
-	//   markdown += `${packageDoc}\n\n`;
-	// }
 
 	// Get all entry points
 	const entryPoint = apiPackage.entryPoints[0]
@@ -416,11 +332,6 @@ try {
 		markdown += `## Other Components\n\n`
 		components.forEach(component => {
 			markdown += `### ${component.displayName}\n\n`
-			// Component description (for future enhancement)
-			// const componentDoc = extractDocComment(findDocComment(component.canonicalReference));
-			// if (componentDoc) {
-			//   markdown += `${componentDoc}\n\n`;
-			// }
 			markdown += `\`\`\`typescript\n`
 			markdown += `export { ${component.displayName} }\n`
 			markdown += `\`\`\`\n\n`
