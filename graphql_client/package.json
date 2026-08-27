@@ -40,12 +40,11 @@
 		"access": "public"
 	},
 	"scripts": {
-		"build": "rm -rf dist && tsc -b --force && api-extractor run --local -c config/api-extractor.json && vite build --logLevel warn && node --run docs",
 		"dev": "vite",
 		"docs": "bash ../common/scripts/run-docs.sh graphql_client",
 		"lint": "oxlint",
 		"lint:fix": "oxlint --fix",
-		"prepublishOnly": "rm -rf dist && tsc -b --force && api-extractor run --local -c config/api-extractor.json && vite build --logLevel warn && node --run docs",
+		"prepublishOnly": "vp run build",
 		"preview": "vite preview",
 		"test": "vitest run --coverage.enabled false",
 		"test:coverage": "vitest run --coverage",

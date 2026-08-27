@@ -99,7 +99,7 @@ To generate API documentation, ensure the package has been built:
 
 \`\`\`bash
 cd ${pkg.folder}
-node --run build
+pnpm exec vp run build
 \`\`\`
 `
 

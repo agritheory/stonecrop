@@ -132,8 +132,9 @@ vp -C docs run dev
 ```
 
 The site's build script is named `build:site`, not `build`. A package opts into the repo-wide
-build by defining a `build` script, so naming it `build` would rebuild the whole VitePress site on
-every `node --run build` — including inside the pre-commit hook. Aggregation into `docs/reference/`
+build by defining `build` — as a `vite.config.ts` task in the libraries, or a package.json script
+in the Nuxt modules — so naming it `build` would rebuild the whole VitePress site on every
+`node --run build`, including inside the pre-commit hook. Aggregation into `docs/reference/`
 happens inside `build:site`, and the pre-commit hook runs it separately.
 
 ## Workflow Examples
@@ -159,7 +160,7 @@ git commit -m "Update API documentation"
 
 ```bash
 # Generate all docs as part of build
-node --run build    # each package's build script runs its own docs step
+node --run build    # from the repo root; each package's build runs its own docs step
 
 # Before deploying docs site
 vp -C docs run build:site    # aggregates, then builds the VitePress site
@@ -170,7 +171,7 @@ vp -C docs run build:site    # aggregates, then builds the VitePress site
 ### Docs not generated for a package
 
 1. Ensure the package has a `docs` script in `package.json`
-2. Check that API Extractor ran during build (`node --run build`)
+2. Check that API Extractor ran during build (`pnpm exec vp run build` in the package)
 3. Verify `temp/<package-name>.api.json` exists
 4. Check for TypeScript errors that might prevent API extraction
 

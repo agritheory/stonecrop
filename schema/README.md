@@ -440,8 +440,8 @@ This package provides the type system used throughout Stonecrop:
 # Install dependencies (from the repo root)
 pnpm install
 
-# Build
-pnpm run build
+# Build (a Vite+ task, so `pnpm run build` does not resolve it)
+pnpm exec vp run build
 
 # Run tests
 pnpm run test

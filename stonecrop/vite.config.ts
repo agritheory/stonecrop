@@ -5,6 +5,19 @@ import { coverageConfigDefaults, defineConfig } from 'vitest/config'
 const projectRootDir = resolve(import.meta.dirname)
 
 export default defineConfig({
+	run: {
+		tasks: {
+			// A task rather than a package.json script so `input` can exclude dist. The steps write
+			// into dist and later ones read it, so tracking it as an input self-invalidates the cache
+			// on every run.
+			build: {
+				command:
+					'rm -rf dist && tsc -b --force && api-extractor run --local -c config/api-extractor.json && vite build --logLevel warn && node --run docs',
+				input: [{ auto: true }, '!dist/**'],
+				output: ['dist/**'],
+			},
+		},
+	},
 	plugins: [vue()],
 	optimizeDeps: { exclude: ['@stonecrop/atable', '@stonecrop/aform'] },
 	build: {
