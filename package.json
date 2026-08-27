@@ -4,7 +4,7 @@
 	"description": "Workspace root. pnpm installs the members listed in pnpm-workspace.yaml; Vite+ runs every task.",
 	"type": "module",
 	"scripts": {
-		"build": "vp run -r build",
+		"build": "vp run -r build && bash common/scripts/run-docs.sh --aggregate",
 		"check:deps": "node common/scripts/check-dependency-consistency.mjs",
 		"docs": "vp run -r docs",
 		"docs:full": "bash common/scripts/docs-full.sh",

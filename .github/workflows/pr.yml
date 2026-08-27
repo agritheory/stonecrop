@@ -111,9 +111,11 @@ jobs:
         run: pnpm run build
 
       # Each build runs "api-extractor run --local", which rewrites common/reviews/api/ in place, so
-      # drift only ever surfaces as a dirty working tree.
-      - name: Verify API Reports Are Current
-        run: git diff --exit-code -- common/reviews/api/
+      # drift only ever surfaces as a dirty working tree. The same holds for the generated docs: the
+      # root build regenerates every api.md and aggregates them into docs/reference/, and all three
+      # are committed, so a stale one is invisible without this.
+      - name: Verify API Reports And Docs Are Current
+        run: git diff --exit-code -- common/reviews/api/ docs/reference/ '*/api.md'
 
       - name: Oxlint
         run: pnpm run lint
