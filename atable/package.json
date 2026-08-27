@@ -31,10 +31,10 @@
 	"sideEffects": [
 		"**/*.css"
 	],
-	"types": "./dist/atable.d.ts",
+	"types": "./dist/src/index.d.ts",
 	"exports": {
 		".": {
-			"types": "./dist/atable.d.ts",
+			"types": "./dist/src/index.d.ts",
 			"import": "./dist/atable.js"
 		},
 		"./styles": "./dist/assets/index.css",
@@ -80,6 +80,7 @@
 		"vite-plugin-lib-inject-css": "catalog:",
 		"vitest": "catalog:",
 		"vue": "catalog:",
+		"vue-component-meta": "catalog:",
 		"vue-router": "catalog:",
 		"vue-tsc": "catalog:"
 	},

@@ -11,19 +11,47 @@ description: Visual FSM workflow editor
 
 ### NodeEditor
 
-Vue component exported from @stonecrop/node_editor.
+Vue component exported from @stonecrop/node-editor.
 
 ```typescript
-import { NodeEditor } from '@stonecrop/node_editor'
+import { NodeEditor } from '@stonecrop/node-editor'
 ```
+
+**Props:**
+
+| Prop | Type | Required | Default | Description |
+|------|------|----------|---------|-------------|
+| modelValue | `FlowElements` | yes |  |  |
+| nodeContainerClass | `ClassValue` | no | `""` |  |
+
+**Events:**
+
+| Event | Payload | Description |
+|-------|---------|-------------|
+| update:modelValue | `any[]` |  |
 
 ### StateEditor
 
-Vue component exported from @stonecrop/node_editor.
+Vue component exported from @stonecrop/node-editor.
 
 ```typescript
-import { StateEditor } from '@stonecrop/node_editor'
+import { StateEditor } from '@stonecrop/node-editor'
 ```
+
+**Props:**
+
+| Prop | Type | Required | Default | Description |
+|------|------|----------|---------|-------------|
+| nodeContainerClass | `ClassValue` | no | `""` |  |
+| modelValue | `{ states?: string[] \| undefined; actions?: Record<string, { label: string; requiredFields?: string[] \| undefined; allowedStates?: string[] \| undefined; nextState?: string \| undefined; stateless?: boolean \| undefined; selfTransition?: boolean \| undefined; clientHandler?: string \| undefined; }> \| undefined; triggers?: Record<string, { on: string[]; clientHandler: string; label?: string \| undefined; }> \| undefined; layout?: Record<string, { position?: { x: number; y: number; } \| undefined; targetPosition?: "left" \| "right" \| "top" \| "bottom" \| undefined; sourcePosition?: "left" \| "right" \| "top" \| "bottom" \| undefined; }> \| undefined; } \| undefined` | no |  |  |
+| layout | `Layout \| undefined` | no |  |  |
+
+**Events:**
+
+| Event | Payload | Description |
+|-------|---------|-------------|
+| update:modelValue | `[value: { states?: string[] \| undefined; actions?: Record<string, { label: string; requiredFields?: string[] \| undefined; allowedStates?: string[] \| undefined; nextState?: string \| undefined; stateless?: boolean \| undefined; selfTransition?: boolean \| undefined; clientHandler?: string \| undefined; }> \| undefined; triggers?: Record<string, { on: string[]; clientHandler: string; label?: string \| undefined; }> \| undefined; layout?: Record<string, { position?: { x: number; y: number; } \| undefined; targetPosition?: "left" \| "right" \| "top" \| "bottom" \| undefined; sourcePosition?: "left" \| "right" \| "top" \| "bottom" \| undefined; }> \| undefined; } \| undefined]` |  |
+| update:layout | `[value: Layout \| undefined]` |  |
 
 ## Functions
 
@@ -93,5 +121,23 @@ export type Layout = {
         sourcePosition?: Position;
     };
 };
+```
+
+## Variables
+
+### NodeEditor
+
+**Type:**
+
+```typescript
+export const NodeEditor: typeof __VLS_export
+```
+
+### StateEditor
+
+**Type:**
+
+```typescript
+export const StateEditor: typeof __VLS_export
 ```
 

@@ -7,24 +7,6 @@ description: PostGraphile middleware for Stonecrop
 
 > This documentation is automatically generated from the TypeScript API.
 
-## Vue Components
-
-### DoctypeMeta
-
-Vue component exported from @stonecrop/graphql_middleware.
-
-```typescript
-import { DoctypeMeta } from '@stonecrop/graphql_middleware'
-```
-
-### ValidationError
-
-Vue component exported from @stonecrop/graphql_middleware.
-
-```typescript
-import { ValidationError } from '@stonecrop/graphql_middleware'
-```
-
 ## Functions
 
 ### applyGuardedTransition
@@ -451,4 +433,14 @@ GraphQL type definitions for Stonecrop's middleware API. Includes stonecropMeta,
 ```typescript
 export const typeDefs: import("graphql").DocumentNode
 ```
+
+## Re-exported
+
+Declared elsewhere and re-exported by this package.
+
+| Name | From |
+|------|------|
+| DoctypeMeta | `@stonecrop/schema` |
+| ValidationError | `@stonecrop/schema` |
+| makePgService | `postgraphile/adaptors/pg` |
 

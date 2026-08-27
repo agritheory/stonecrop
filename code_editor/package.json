@@ -31,10 +31,10 @@
 		"**/*.vue",
 		"**/*.css"
 	],
-	"types": "./dist/code-editor.d.ts",
+	"types": "./dist/src/index.d.ts",
 	"exports": {
 		".": {
-			"types": "./dist/code-editor.d.ts",
+			"types": "./dist/src/index.d.ts",
 			"import": "./dist/code-editor.js"
 		},
 		"./styles": "./dist/code-editor.css",
@@ -70,6 +70,7 @@
 		"vite": "catalog:",
 		"vitest": "catalog:",
 		"vue": "catalog:",
+		"vue-component-meta": "catalog:",
 		"vue-router": "catalog:",
 		"vue-tsc": "catalog:"
 	},

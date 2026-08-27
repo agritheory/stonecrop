@@ -5,6 +5,13 @@
 const { ApiModel } = require('@microsoft/api-extractor-model')
 const { readFileSync, writeFileSync, existsSync, mkdirSync } = require('fs')
 const { join } = require('path')
+const {
+	collectComponents,
+	renderComponentDocs,
+	renderComponentReport,
+	renderReExports,
+	resolveExportedNames,
+} = require('./component-meta.cjs')
 
 // Load the raw JSON to access docComment fields (for future enhancement)
 let rawApiData = null
@@ -310,7 +317,7 @@ const normalizedProjectName = projectName.replace(/_/g, '-')
 // Path to the API model files (relative to monorepo root from autoinstaller)
 const rootDir = join(__dirname, '../..')
 const apiModelPath = join(rootDir, `${projectName}/temp/${normalizedProjectName}.api.json`)
-const apiMarkdownPath = join(rootDir, `common/reviews/api/${normalizedProjectName}.api.md`)
+const componentReportPath = join(rootDir, `common/reviews/api/${normalizedProjectName}.components.api.md`)
 const outputPath = join(rootDir, `${projectName}/api.md`)
 
 // Check if the required files exist
@@ -329,11 +336,6 @@ if (!existsSync(apiModelPath)) {
 	process.exit(0)
 }
 
-if (!existsSync(apiMarkdownPath)) {
-	console.warn(`⚠️  API markdown file not found: ${apiMarkdownPath}`)
-	console.warn('   Component imports will be extracted from API model only')
-}
-
 try {
 	// Load the raw API data to access docComment fields (for future enhancement)
 	rawApiData = JSON.parse(readFileSync(apiModelPath, 'utf-8'))
@@ -342,24 +344,12 @@ try {
 	const apiModel = new ApiModel()
 	const apiPackage = apiModel.loadPackage(apiModelPath)
 
-	// Extract Vue component exports from the markdown if available
-	const componentExports = []
-	if (existsSync(apiMarkdownPath)) {
-		const apiMarkdown = readFileSync(apiMarkdownPath, 'utf8')
-		const exportMatches = apiMarkdown.match(/export \{ ([A-Z][a-zA-Z]*) \}/g)
-		if (exportMatches) {
-			exportMatches.forEach(match => {
-				const componentName = match.match(/export \{ ([A-Z][a-zA-Z]*) \}/)[1]
-				// Look for Vue components (typically start with capital letter)
-				if (componentName.match(/^[A-Z]/)) {
-					componentExports.push({
-						name: componentName,
-						displayName: componentName,
-					})
-				}
-			})
-		}
-	}
+	// The component surface comes from vue-component-meta, which reads the SFCs themselves. This
+	// used to regex `export { Name }` out of the API report and call every PascalCase match a
+	// component, which put 7 raw SVG strings and 2 re-exported types under "Vue Components" with an
+	// import example that does not describe them. Resolving each name to a `.vue` file answers the
+	// question the regex was standing in for.
+	const componentExports = collectComponents(join(rootDir, projectName))
 
 	// Start building the consolidated documentation
 	const displayName = projectName.charAt(0).toUpperCase() + projectName.slice(1)
@@ -419,14 +409,7 @@ try {
 
 	// Generate sections
 	if (componentExports.length > 0) {
-		markdown += `## Vue Components\n\n`
-		componentExports.forEach(component => {
-			markdown += `### ${component.displayName}\n\n`
-			markdown += `Vue component exported from @stonecrop/${projectName}.\n\n`
-			markdown += `\`\`\`typescript\n`
-			markdown += `import { ${component.displayName} } from '@stonecrop/${projectName}'\n`
-			markdown += `\`\`\`\n\n`
-		})
+		markdown += renderComponentDocs(componentExports, normalizedProjectName)
 	}
 
 	if (components.length > 0) {
@@ -701,8 +684,31 @@ try {
 		})
 	}
 
+	// Anything the entry point exports that no section above rendered is declared in another package
+	// and has no member in this one's doc model. Computed last, against what was actually written, so
+	// a name cannot fall between two sections.
+	const documented = new Set([
+		...componentExports.map(component => component.name),
+		...[...components, ...functions, ...interfaces, ...types, ...variables, ...enums, ...classes].map(
+			member => member.displayName
+		),
+	])
+	const reExports = [...resolveExportedNames(join(rootDir, projectName))]
+		.filter(([name]) => !documented.has(name))
+		.map(([name, from]) => ({ name, from }))
+	if (reExports.length > 0) {
+		markdown += renderReExports(reExports)
+	}
+
 	// Write the consolidated documentation
 	writeFileSync(outputPath, markdown, 'utf8')
+
+	// Sits beside the API Extractor report and is covered by the same `git diff --exit-code` gate, so
+	// a changed prop type or a dropped emit surfaces on the pull request that causes it. The
+	// Extractor report cannot show that: it renders a component as `typeof __VLS_export`.
+	if (componentExports.length > 0) {
+		writeFileSync(componentReportPath, renderComponentReport(componentExports, normalizedProjectName), 'utf8')
+	}
 
 	// One line, because `vp run` already prints which package is running this and the counts are
 	// only ever read when one looks wrong. Anything abnormal above still prints in full.

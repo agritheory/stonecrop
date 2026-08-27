@@ -31,10 +31,10 @@
 	"sideEffects": [
 		"**/*.css"
 	],
-	"types": "./dist/node-editor.d.ts",
+	"types": "./dist/src/index.d.ts",
 	"exports": {
 		".": {
-			"types": "./dist/node-editor.d.ts",
+			"types": "./dist/src/index.d.ts",
 			"import": "./dist/node-editor.js"
 		},
 		"./styles": "./dist/node-editor.css",
@@ -71,6 +71,7 @@
 		"vite": "catalog:",
 		"vitest": "catalog:",
 		"vue": "catalog:",
+		"vue-component-meta": "catalog:",
 		"vue-router": "catalog:",
 		"vue-tsc": "catalog:"
 	},

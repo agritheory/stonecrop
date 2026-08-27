@@ -4,62 +4,62 @@
 
 ```ts
 
-import ACell from './components/ACell.vue';
-import AddIcon from './stonecrop-ui-icon-add.svg?raw';
-import AGanttCell from './components/AGanttCell.vue';
 import { App } from 'vue';
-import ARow from './components/ARow.vue';
-import ARowActions from './components/ARowActions.vue';
-import ATable from './components/ATable.vue';
-import ATableHeader from './components/ATableHeader.vue';
-import ATableLoading from './components/ATableLoading.vue';
-import ATableLoadingBar from './components/ATableLoadingBar.vue';
-import ATableModal from './components/ATableModal.vue';
-import ATablePaginationFooter from './components/ATablePaginationFooter.vue';
-import type { BadgeDescriptor } from '@stonecrop/schema';
+import { BadgeDescriptor } from '@stonecrop/schema';
 import type { ColumnSchema } from '@stonecrop/schema';
+import { ComponentOptionsMixin } from 'vue';
+import { ComponentProvideOptions } from 'vue';
 import { ComputedRef } from 'vue';
 import { CSSProperties } from 'vue';
-import DeleteIcon from './stonecrop-ui-icon-delete.svg?raw';
-import DuplicateIcon from './stonecrop-ui-icon-duplicate.svg?raw';
+import { DefineComponent } from 'vue';
 import { FieldOptions } from '@stonecrop/schema';
 import type { GetRecordsOptions } from '@stonecrop/schema';
 import type { GetRecordsResult } from '@stonecrop/schema';
-import InsertAboveIcon from './stonecrop-ui-icon-insert-above.svg?raw';
-import InsertBelowIcon from './stonecrop-ui-icon-insert-below.svg?raw';
+import { KeypressHandlers } from '@stonecrop/utilities';
 import { MaybeRefOrGetter } from 'vue';
-import MoveIcon from './stonecrop-ui-icon-move.svg?raw';
-import OpenIcon from './stonecrop-ui-icon-open.svg?raw';
+import { PublicProps } from 'vue';
 import { Ref } from 'vue';
 import type { ShallowRef } from 'vue';
 import { Store } from 'pinia';
+import { StyleValue } from 'vue';
 import { useElementBounding } from '@vueuse/core';
 import { WritableComputedRef } from 'vue';
 
-export { ACell }
+// @public (undocumented)
+export const ACell: typeof __VLS_export;
 
 // @public
 export const actionIcons: Record<string, string>;
 
-export { AddIcon }
+// @public
+export const AddIcon: string;
 
-export { AGanttCell }
+// @public (undocumented)
+export const AGanttCell: typeof __VLS_export_2;
 
-export { ARow }
+// @public (undocumented)
+export const ARow: typeof __VLS_export_3;
 
-export { ARowActions }
+// @public (undocumented)
+export const ARowActions: typeof __VLS_export_4;
 
-export { ATable }
+// @public (undocumented)
+export const ATable: typeof __VLS_export_5;
 
-export { ATableHeader }
+// @public (undocumented)
+export const ATableHeader: typeof __VLS_export_6;
 
-export { ATableLoading }
+// @public (undocumented)
+export const ATableLoading: typeof __VLS_export_7;
 
-export { ATableLoadingBar }
+// @public (undocumented)
+export const ATableLoadingBar: typeof __VLS_export_8;
 
-export { ATableModal }
+// @public (undocumented)
+export const ATableModal: typeof __VLS_export_9;
 
-export { ATablePaginationFooter }
+// @public (undocumented)
+export const ATablePaginationFooter: typeof __VLS_export_10;
 
 // @public
 export interface BaseTableConfig {
@@ -2777,9 +2777,11 @@ updateGanttBar: (event: GanttDragEvent) => void;
 updateRows: (newRows: TableRow[]) => void;
 }, "addRow" | "clearFilter" | "closeModal" | "createConnection" | "deleteConnection" | "deleteRow" | "duplicateRow" | "getCellData" | "getCellDisplayValue" | "getConnectionsForBar" | "getFormattedValue" | "getHandlesForBar" | "getHeaderCellStyle" | "getRowExpandSymbol" | "insertRowAbove" | "insertRowBelow" | "isRowGantt" | "isRowVisible" | "moveRow" | "registerConnectionHandle" | "registerGanttBar" | "resizeColumn" | "setCellData" | "setCellText" | "setFilter" | "sortByColumn" | "toggleRowExpand" | "unregisterConnectionHandle" | "unregisterGanttBar" | "updateGanttBar" | "updateRows">>;
 
-export { DeleteIcon }
+// @public (undocumented)
+export const DeleteIcon: string;
 
-export { DuplicateIcon }
+// @public (undocumented)
+export const DuplicateIcon: string;
 
 // @public
 export type FilteredTableRow = TableRow & {
@@ -2855,16 +2857,20 @@ export interface GanttTableConfig extends BaseTableConfig {
     view: 'gantt';
 }
 
-export { InsertAboveIcon }
+// @public (undocumented)
+export const InsertAboveIcon: string;
 
-export { InsertBelowIcon }
+// @public (undocumented)
+export const InsertBelowIcon: string;
 
 // @public
 export function install(app: App): void;
 
-export { MoveIcon }
+// @public (undocumented)
+export const MoveIcon: string;
 
-export { OpenIcon }
+// @public (undocumented)
+export const OpenIcon: string;
 
 // @public
 export interface RowActionOptions {

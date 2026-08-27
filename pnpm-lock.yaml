@@ -301,6 +301,9 @@ catalogs:
     vue:
       specifier: ^3.5.33
       version: 3.5.41
+    vue-component-meta:
+      specifier: ^3.3.11
+      version: 3.3.11
     vue-router:
       specifier: ^5.0.6
       version: 5.2.0
@@ -318,6 +321,9 @@ importers:
       '@changesets/cli':
         specifier: 3.0.1
         version: 3.0.1
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.3
       vite-plus:
         specifier: 0.3.0
         version: 0.3.0(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(jsdom@29.1.1)(sass@1.103.1)(terser@5.50.0)(typescript@6.0.3)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0))(yaml@2.9.0)
@@ -388,6 +394,9 @@ importers:
       vue:
         specifier: 'catalog:'
         version: 3.5.41(typescript@6.0.3)
+      vue-component-meta:
+        specifier: 'catalog:'
+        version: 3.3.11(typescript@6.0.3)
       vue-router:
         specifier: 'catalog:'
         version: 5.2.0(@vue/compiler-sfc@3.5.41)(esbuild@0.28.2)(pinia@3.0.4(typescript@6.0.3)(vue@3.5.41(typescript@6.0.3)))(rolldown@1.2.5)(rollup@4.62.5)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0))(vue@3.5.41(typescript@6.0.3))
@@ -458,6 +467,9 @@ importers:
       vue:
         specifier: 'catalog:'
         version: 3.5.41(typescript@6.0.3)
+      vue-component-meta:
+        specifier: 'catalog:'
+        version: 3.3.11(typescript@6.0.3)
       vue-router:
         specifier: 'catalog:'
         version: 5.2.0(@vue/compiler-sfc@3.5.41)(esbuild@0.28.2)(pinia@3.0.4(typescript@6.0.3)(vue@3.5.41(typescript@6.0.3)))(rolldown@1.2.5)(rollup@4.62.5)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0))(vue@3.5.41(typescript@6.0.3))
@@ -522,6 +534,9 @@ importers:
       vue:
         specifier: 'catalog:'
         version: 3.5.41(typescript@6.0.3)
+      vue-component-meta:
+        specifier: 'catalog:'
+        version: 3.3.11(typescript@6.0.3)
       vue-router:
         specifier: 'catalog:'
         version: 5.2.0(@vue/compiler-sfc@3.5.41)(esbuild@0.28.2)(pinia@3.0.4(typescript@6.0.3)(vue@3.5.41(typescript@6.0.3)))(rolldown@1.2.5)(rollup@4.62.5)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0))(vue@3.5.41(typescript@6.0.3))
@@ -632,6 +647,9 @@ importers:
       vue:
         specifier: 'catalog:'
         version: 3.5.41(typescript@6.0.3)
+      vue-component-meta:
+        specifier: 'catalog:'
+        version: 3.3.11(typescript@6.0.3)
       vue-router:
         specifier: 'catalog:'
         version: 5.2.0(@vue/compiler-sfc@3.5.41)(esbuild@0.28.2)(pinia@3.0.4(typescript@6.0.3)(vue@3.5.41(typescript@6.0.3)))(rolldown@1.2.5)(rollup@4.62.5)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0))(vue@3.5.41(typescript@6.0.3))
@@ -696,6 +714,9 @@ importers:
       vue:
         specifier: 'catalog:'
         version: 3.5.41(typescript@6.0.3)
+      vue-component-meta:
+        specifier: 'catalog:'
+        version: 3.3.11(typescript@6.0.3)
       vue-router:
         specifier: 'catalog:'
         version: 5.2.0(@vue/compiler-sfc@3.5.41)(esbuild@0.28.2)(pinia@3.0.4(typescript@6.0.3)(vue@3.5.41(typescript@6.0.3)))(rolldown@1.2.5)(rollup@4.62.5)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0))(vue@3.5.41(typescript@6.0.3))
@@ -864,6 +885,9 @@ importers:
       vue:
         specifier: 'catalog:'
         version: 3.5.41(typescript@6.0.3)
+      vue-component-meta:
+        specifier: 'catalog:'
+        version: 3.3.11(typescript@6.0.3)
       vue-router:
         specifier: 'catalog:'
         version: 5.2.0(@vue/compiler-sfc@3.5.41)(esbuild@0.28.2)(pinia@3.0.4(typescript@6.0.3)(vue@3.5.41(typescript@6.0.3)))(rolldown@1.2.5)(rollup@4.62.5)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0))(vue@3.5.41(typescript@6.0.3))
@@ -1274,6 +1298,12 @@ importers:
       '@microsoft/api-extractor-model':
         specifier: ^7.33.0
         version: 7.33.11(@types/node@24.13.3)
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.3
+      vue-component-meta:
+        specifier: 'catalog:'
+        version: 3.3.11(typescript@6.0.3)
 
   utilities:
     dependencies:
@@ -10104,6 +10134,14 @@ packages:
 
   vue-bundle-renderer@2.3.2:
     resolution: {integrity: sha512-BtazFw0lm3N/ZE4+tre2g8G+c5wolfizu+e5jxZAcao0gcy5KJei9Yopl1svDato2poeFldVLfmLMk57Sg8rLg==}
+
+  vue-component-meta@3.3.11:
+    resolution: {integrity: sha512-fskQZaIFOifwB4x+/J24795yvezOJ1TKaqn97/4PHybyvXpDNdcKn3oTcPrw6HnNoZWe343A+TiCFOcFv1/SuQ==}
+    peerDependencies:
+      typescript: '*'
+    peerDependenciesMeta:
+      typescript:
+        optional: true
 
   vue-component-type-helpers@3.3.11:
     resolution: {integrity: sha512-LwcxzeliO9fkQcpJG0PoX8X5kmAhKmH9wkpDLxNabwzkQ9Zeib2YVHwFV4pcWmMLfXVfjr/dSV+DaJ3cIPgSNA==}
@@ -20268,6 +20306,14 @@ snapshots:
     dependencies:
       ufo: 1.6.4
 
+  vue-component-meta@3.3.11(typescript@6.0.3):
+    dependencies:
+      '@volar/typescript': 2.4.28
+      '@vue/language-core': 3.3.11
+      path-browserify: 1.0.1
+    optionalDependencies:
+      typescript: 6.0.3
+
   vue-component-type-helpers@3.3.11: {}
 
   vue-demi@0.14.10(vue@3.5.41(typescript@6.0.3)):
@@ -20652,6 +20698,7 @@ time:
   vitepress-plugin-mermaid@2.0.17: '2024-09-24T01:33:41.160Z'
   vitepress@1.6.4: '2025-08-05T13:40:31.197Z'
   vitest@4.1.11: '2026-08-18T14:27:07.240Z'
+  vue-component-meta@3.3.11: '2026-08-21T10:07:18.989Z'
   vue-router@5.2.0: '2026-07-15T10:08:16.829Z'
   vue-tsc@3.3.11: '2026-08-21T10:11:21.360Z'
   vue@3.5.41: '2026-08-05T07:01:07.139Z'

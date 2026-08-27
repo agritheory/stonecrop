@@ -10,9 +10,13 @@ export default defineConfig({
 			// A task rather than a package.json script so `input` can exclude dist. The steps write
 			// into dist and later ones read it, so tracking it as an input self-invalidates the cache
 			// on every run.
+			//
+			// `vue-tsc`, not `tsc`: plain tsc resolves an SFC through the ambient `*.vue` shim and
+			// emits no declaration for it, so every component shipped as `ComponentOptions` — `any`
+			// to a consumer, with the rollup importing `.vue` paths absent from the tarball.
 			build: {
 				command:
-					'rm -rf dist && tsc -b --force && api-extractor run --local -c config/api-extractor.json && vite build --logLevel warn && node --run docs',
+					'rm -rf dist && vue-tsc -b --force && api-extractor run --local -c config/api-extractor.json && vite build --logLevel warn && node --run docs',
 				input: [{ auto: true }, '!dist/**'],
 				output: ['dist/**'],
 			},

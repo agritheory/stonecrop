@@ -3,7 +3,12 @@ import { resolve } from 'node:path'
 
 import { describe, expect, it } from 'vitest'
 
-import { collectExportTargets, readDistContract } from '../../common/test-support/dist-contract'
+import {
+	collectExportTargets,
+	readDistContract,
+	readTypesDefects,
+	TYPE_ERASING_CODES,
+} from '../../common/test-support/dist-contract'
 
 const packageRoot = resolve(__dirname, '..')
 
@@ -36,5 +41,13 @@ describe('dist contract', { tags: ['unit'] }, () => {
 			`The set of externals changed. Pinia and Vue must stay external so this package shares ` +
 				`the host app's single instance of each.`
 		).toEqual(['@stonecrop/aform', '@stonecrop/schema', '@stonecrop/stonecrop', 'vue'])
+	})
+
+	it('ships declarations a consumer can resolve', () => {
+		expect(
+			readTypesDefects(packageRoot).filter(defect => TYPE_ERASING_CODES.has(defect.code)),
+			`The published types do not typecheck on their own. A consumer with skipLibCheck on — the ` +
+				`common default — sees no error and silently gets \`any\` for the affected exports.`
+		).toEqual([])
 	})
 })

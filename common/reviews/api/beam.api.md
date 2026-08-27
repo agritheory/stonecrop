@@ -4,46 +4,34 @@
 
 ```ts
 
-import ActionFooter from './components/ActionFooter.vue';
 import { App } from 'vue';
-import BeamArrow from './components/BeamArrow.vue';
-import BeamBtn from './components/BeamBtn.vue';
-import BeamDayDivider from './components/BeamDayDivider.vue';
-import BeamFilter from './components/BeamFilter.vue';
-import BeamFilterOption from './components/BeamFilterOption.vue';
-import BeamHeading from './components/BeamHeading.vue';
-import BeamMetadata from './components/BeamMetadata.vue';
-import BeamModal from './components/BeamModal.vue';
-import BeamModalOutlet from './components/BeamModalOutlet.vue';
-import BeamProgress from './components/BeamProgress.vue';
-import Confirm from './components/Confirm.vue';
+import { ComponentOptionsMixin } from 'vue';
+import { ComponentProvideOptions } from 'vue';
 import { CSSProperties } from 'vue';
-import FixedTop from './components/FixedTop.vue';
+import { DefineComponent } from 'vue';
+import { HTMLAttributes } from 'vue';
 import type { IClientOptions } from 'mqtt';
-import ItemCheck from './components/ItemCheck.vue';
-import ItemCount from './components/ItemCount.vue';
-import ListAnchor from './components/ListAnchor.vue';
-import ListItem from './components/ListItem.vue';
-import ListView from './components/ListView.vue';
-import Navbar from './components/Navbar.vue';
+import type { OnScan } from 'onscan.js';
+import { PublicProps } from 'vue';
 import { Ref } from 'vue';
-import ScanInput from './components/ScanInput.vue';
-import SegmentedDisplay from './components/SegmentedDisplay.vue';
-import SplitColumn from './components/SplitColumn.vue';
-import ToggleArrow from './components/ToggleArrow.vue';
 
-export { ActionFooter }
+// @public (undocumented)
+export const ActionFooter: typeof __VLS_export;
 
-export { BeamArrow }
+// @public (undocumented)
+export const BeamArrow: typeof __VLS_export_2;
 
-export { BeamBtn }
+// @public (undocumented)
+export const BeamBtn: typeof __VLS_export_3;
 
 // @public
 export type BeamColor = RGB | RGBA | HEX | HSL | HSLA | CSSProperties['color'];
 
-export { BeamDayDivider }
+// @public (undocumented)
+export const BeamDayDivider: typeof __VLS_export_4;
 
-export { BeamFilter }
+// @public (undocumented)
+export const BeamFilter: typeof __VLS_export_5;
 
 // @public
 export type BeamFilterChoice = {
@@ -51,21 +39,29 @@ export type BeamFilterChoice = {
     value: string;
 };
 
-export { BeamFilterOption }
+// @public (undocumented)
+export const BeamFilterOption: typeof __VLS_export_6;
 
-export { BeamHeading }
+// @public (undocumented)
+export const BeamHeading: typeof __VLS_export_7;
 
-export { BeamMetadata }
+// @public (undocumented)
+export const BeamMetadata: typeof __VLS_export_8;
 
-export { BeamModal }
+// @public (undocumented)
+export const BeamModal: typeof __VLS_export_9;
 
-export { BeamModalOutlet }
+// @public (undocumented)
+export const BeamModalOutlet: typeof __VLS_export_10;
 
-export { BeamProgress }
+// @public (undocumented)
+export const BeamProgress: typeof __VLS_export_11;
 
-export { Confirm }
+// @public (undocumented)
+export const Confirm: typeof __VLS_export_12;
 
-export { FixedTop }
+// @public (undocumented)
+export const FixedTop: typeof __VLS_export_13;
 
 // @public
 export type HEX = `#${string}`;
@@ -84,15 +80,20 @@ export interface IMqttStream extends IClientOptions {
 // @public
 export function install(app: App): void;
 
-export { ItemCheck }
+// @public (undocumented)
+export const ItemCheck: typeof __VLS_export_14;
 
-export { ItemCount }
+// @public (undocumented)
+export const ItemCount: typeof __VLS_export_15;
 
-export { ListAnchor }
+// @public (undocumented)
+export const ListAnchor: typeof __VLS_export_16;
 
-export { ListItem }
+// @public (undocumented)
+export const ListItem: typeof __VLS_export_17;
 
-export { ListView }
+// @public (undocumented)
+export const ListView: typeof __VLS_export_18;
 
 // @public
 export type ListViewItem = {
@@ -112,7 +113,8 @@ export type ListViewItem = {
     route?: string;
 };
 
-export { Navbar }
+// @public (undocumented)
+export const Navbar: typeof __VLS_export_19;
 
 // @public
 export type RGB = `rgb(${number}, ${number}, ${number})`;
@@ -120,13 +122,17 @@ export type RGB = `rgb(${number}, ${number}, ${number})`;
 // @public
 export type RGBA = `rgba(${number}, ${number}, ${number}, ${number})`;
 
-export { ScanInput }
+// @public (undocumented)
+export const ScanInput: typeof __VLS_export_20;
 
-export { SegmentedDisplay }
+// @public (undocumented)
+export const SegmentedDisplay: typeof __VLS_export_21;
 
-export { SplitColumn }
+// @public (undocumented)
+export const SplitColumn: typeof __VLS_export_22;
 
-export { ToggleArrow }
+// @public (undocumented)
+export const ToggleArrow: typeof __VLS_export_23;
 
 // @beta
 export const useMqttStream: (options: IMqttStream) => Promise<{

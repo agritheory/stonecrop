@@ -4,13 +4,24 @@
  * @packageDocumentation
  */
 
-import AddIcon from './stonecrop-ui-icon-add.svg?raw'
-import DeleteIcon from './stonecrop-ui-icon-delete.svg?raw'
-import DuplicateIcon from './stonecrop-ui-icon-duplicate.svg?raw'
-import InsertAboveIcon from './stonecrop-ui-icon-insert-above.svg?raw'
-import InsertBelowIcon from './stonecrop-ui-icon-insert-below.svg?raw'
-import MoveIcon from './stonecrop-ui-icon-move.svg?raw'
-import OpenIcon from './stonecrop-ui-icon-open.svg?raw'
+import rawAddIcon from './stonecrop-ui-icon-add.svg?raw'
+import rawDeleteIcon from './stonecrop-ui-icon-delete.svg?raw'
+import rawDuplicateIcon from './stonecrop-ui-icon-duplicate.svg?raw'
+import rawInsertAboveIcon from './stonecrop-ui-icon-insert-above.svg?raw'
+import rawInsertBelowIcon from './stonecrop-ui-icon-insert-below.svg?raw'
+import rawMoveIcon from './stonecrop-ui-icon-move.svg?raw'
+import rawOpenIcon from './stonecrop-ui-icon-open.svg?raw'
+
+// Annotated rather than re-exported directly. `?raw` is a Vite import and the .svg files are inlined
+// at build time, so a declaration that infers its type from the import re-states that specifier — and
+// the emitted `dist/src/icons/index.d.ts` then names seven modules the tarball does not contain.
+const AddIcon: string = rawAddIcon
+const DeleteIcon: string = rawDeleteIcon
+const DuplicateIcon: string = rawDuplicateIcon
+const InsertAboveIcon: string = rawInsertAboveIcon
+const InsertBelowIcon: string = rawInsertBelowIcon
+const MoveIcon: string = rawMoveIcon
+const OpenIcon: string = rawOpenIcon
 
 // Directional move icons are inline (no dedicated SVG asset): simple up/down chevrons.
 const MoveUpIcon =
