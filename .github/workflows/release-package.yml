@@ -4,12 +4,23 @@ on:
   pull_request:
     branches:
       - development
+    # The open-PR actions reach the rehearsal below; `closed` reaches the publish. A pull
+    # request runs its own head's copy of this file, so the rehearsal needs nothing merged
+    # first — which is the whole reason it is not on workflow_dispatch alone.
     types:
+      - opened
+      - synchronize
+      - reopened
       - closed
-  # Runs the rehearsal below against whichever branch is selected. GitHub registers this
-  # trigger from the default branch only, so it has to exist on development before a
-  # branch can be dispatched — the branch's own copy is what actually runs.
+  # Kept for rehearsing a branch with no open PR. GitHub registers this trigger from the
+  # default branch only, so it does nothing until it has reached development.
   workflow_dispatch:
+
+# Supersedes a rehearsal when the PR is pushed again. Closed runs sit in their own group
+# and never set cancel-in-progress, so a merge can never cancel or be cancelled by one.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}-${{ github.event.action == 'closed' }}
+  cancel-in-progress: ${{ github.event.action != 'closed' }}
 
 permissions:
   contents: read
@@ -18,8 +29,8 @@ env:
   VP_GIT_HOOKS: 0
 
 jobs:
-  # Guarded on the event as well as the merge, so a manual dispatch can only ever reach
-  # the rehearsal job.
+  # Unchanged by the open-PR triggers above: an open pull request carries merged: false and
+  # a dispatch carries no pull_request at all, so neither can reach the registry.
   publish-npm:
     if: github.event_name == 'pull_request' && github.event.pull_request.merged == true
     runs-on: ubuntu-latest
@@ -89,14 +100,20 @@ jobs:
       - name: Publish Packages
         run: pnpm -r publish --access public --no-git-checks
 
-  # A rehearsal of publish-npm that stops one step short of the registry, and the only way
-  # to exercise the release path before merging: publish-npm runs on merge to development
-  # and never on a pull request, so without this the first real release is the first test.
+  # A rehearsal of publish-npm that stops one step short of the registry. It runs on every
+  # open pull request, so the path is exercised before the merge that would publish it:
+  # publish-npm runs only on merge, which would make the first real release the first test.
   #
   # It lives in this file rather than its own because npm matches a trusted publisher on
   # the workflow filename. A separate file authenticates as nothing and reports it as a 404.
+  #
+  # Skipped for a fork PR, which is issued no id-token, so Validate Trusted Publishing
+  # would fail there on the contribution's origin rather than on anything being wrong.
   release-dry-run:
-    if: github.event_name == 'workflow_dispatch'
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.action != 'closed' &&
+      github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: ubuntu-latest
 
     permissions:
