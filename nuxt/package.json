@@ -2,6 +2,16 @@
 	"name": "@stonecrop/nuxt",
 	"version": "0.29.0",
 	"description": "Nuxt module for Stonecrop",
+	"keywords": [
+		"nuxt",
+		"nuxt-module",
+		"stonecrop",
+		"vue"
+	],
+	"homepage": "https://github.com/agritheory/stonecrop#readme",
+	"bugs": {
+		"url": "https://github.com/agritheory/stonecrop/issues"
+	},
 	"license": "MIT",
 	"author": {
 		"name": "Tyler Matteson",
@@ -22,6 +32,10 @@
 		"src/cli"
 	],
 	"type": "module",
+	"sideEffects": [
+		"**/*.vue",
+		"**/*.css"
+	],
 	"main": "./dist/module.mjs",
 	"typesVersions": {
 		"*": {
@@ -34,7 +48,8 @@
 		".": {
 			"types": "./dist/types.d.mts",
 			"import": "./dist/module.mjs"
-		}
+		},
+		"./package.json": "./package.json"
 	},
 	"scripts": {
 		"build": "node --run dev:prepare && nuxt-module-build build",

@@ -1,6 +1,14 @@
 {
 	"name": "@stonecrop/themes",
 	"version": "0.29.0",
+	"description": "Design tokens and the default theme for Stonecrop",
+	"keywords": [
+		"css",
+		"design-tokens",
+		"stonecrop",
+		"theme"
+	],
+	"homepage": "https://github.com/agritheory/stonecrop#readme",
 	"bugs": {
 		"url": "https://github.com/agritheory/stonecrop/issues"
 	},
@@ -13,9 +21,16 @@
 		"url": "https://github.com/agritheory/stonecrop",
 		"directory": "themes"
 	},
+	"files": [
+		"dist"
+	],
 	"type": "module",
+	"sideEffects": [
+		"**/*.css"
+	],
 	"exports": {
-		"./default.css": "./dist/default.css"
+		"./default.css": "./dist/default.css",
+		"./package.json": "./package.json"
 	},
 	"publishConfig": {
 		"access": "public"

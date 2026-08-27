@@ -2,6 +2,14 @@
 	"name": "@stonecrop/desktop",
 	"version": "0.29.0",
 	"description": "Desktop-specific components for Stonecrop UI",
+	"keywords": [
+		"components",
+		"desktop",
+		"shell",
+		"stonecrop",
+		"vue"
+	],
+	"homepage": "https://github.com/agritheory/stonecrop#readme",
 	"bugs": {
 		"url": "https://github.com/agritheory/stonecrop/issues"
 	},
@@ -16,8 +24,7 @@
 		"directory": "desktop"
 	},
 	"files": [
-		"dist/*",
-		"src/*"
+		"dist"
 	],
 	"type": "module",
 	"sideEffects": [
@@ -30,7 +37,8 @@
 			"import": "./dist/desktop.js"
 		},
 		"./styles": "./dist/desktop.css",
-		"./types": "./dist/src/types/index.d.ts"
+		"./types": "./dist/src/types/index.d.ts",
+		"./package.json": "./package.json"
 	},
 	"publishConfig": {
 		"access": "public"

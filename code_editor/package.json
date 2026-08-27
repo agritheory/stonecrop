@@ -2,6 +2,14 @@
 	"name": "@stonecrop/code-editor",
 	"version": "0.29.0",
 	"description": "Monaco-based code editor component for Stonecrop",
+	"keywords": [
+		"code-editor",
+		"components",
+		"monaco",
+		"stonecrop",
+		"vue"
+	],
+	"homepage": "https://github.com/agritheory/stonecrop#readme",
 	"bugs": {
 		"url": "https://github.com/agritheory/stonecrop/issues"
 	},
@@ -16,8 +24,7 @@
 		"directory": "code_editor"
 	},
 	"files": [
-		"dist/*",
-		"src/*"
+		"dist"
 	],
 	"type": "module",
 	"sideEffects": [
@@ -29,7 +36,9 @@
 		".": {
 			"types": "./dist/code-editor.d.ts",
 			"import": "./dist/code-editor.js"
-		}
+		},
+		"./styles": "./dist/code-editor.css",
+		"./package.json": "./package.json"
 	},
 	"publishConfig": {
 		"access": "public"

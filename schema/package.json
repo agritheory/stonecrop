@@ -2,6 +2,20 @@
 	"name": "@stonecrop/schema",
 	"version": "0.29.0",
 	"description": "Stonecrop schema definitions and validation tooling",
+	"keywords": [
+		"doctype",
+		"schema",
+		"stonecrop",
+		"validation"
+	],
+	"homepage": "https://github.com/agritheory/stonecrop#readme",
+	"bugs": {
+		"url": "https://github.com/agritheory/stonecrop/issues"
+	},
+	"author": {
+		"name": "Tyler Matteson",
+		"email": "tyler@agritheory.com"
+	},
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/agritheory/stonecrop",
@@ -20,7 +34,8 @@
 		".": {
 			"types": "./dist/schema.d.ts",
 			"import": "./dist/index.js"
-		}
+		},
+		"./package.json": "./package.json"
 	},
 	"scripts": {
 		"build": "rm -rf dist && tsc -b --force && api-extractor run --local -c config/api-extractor.json && vite build && node --run docs",
@@ -50,5 +65,8 @@
 		"typescript": "catalog:",
 		"vite": "catalog:",
 		"vitest": "catalog:"
+	},
+	"engines": {
+		"node": ">=24.0.0"
 	}
 }
