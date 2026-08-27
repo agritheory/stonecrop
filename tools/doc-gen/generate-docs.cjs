@@ -335,17 +335,12 @@ if (!existsSync(apiMarkdownPath)) {
 }
 
 try {
-	console.log(`📖 Generating documentation for: ${projectName}`)
-	console.log(`📄 Loading API model from: ${apiModelPath}`)
-
 	// Load the raw API data to access docComment fields (for future enhancement)
 	rawApiData = JSON.parse(readFileSync(apiModelPath, 'utf-8'))
 
 	// Load the API model
 	const apiModel = new ApiModel()
 	const apiPackage = apiModel.loadPackage(apiModelPath)
-
-	console.log(`📦 Package loaded: ${apiPackage.displayName}`)
 
 	// Extract Vue component exports from the markdown if available
 	const componentExports = []
@@ -709,16 +704,22 @@ try {
 	// Write the consolidated documentation
 	writeFileSync(outputPath, markdown, 'utf8')
 
-	console.log(`\n✅ Consolidated ${displayName} documentation written to: ${outputPath}`)
-	console.log(`📊 Documentation includes:`)
-	console.log(`   - ${componentExports.length} Vue components`)
-	console.log(`   - ${components.length} other components`)
-	console.log(`   - ${functions.length} functions`)
-	console.log(`   - ${interfaces.length} interfaces`)
-	console.log(`   - ${types.length} type aliases`)
-	console.log(`   - ${classes.length} classes`)
-	console.log(`   - ${variables.length} variables`)
-	console.log(`   - ${enums.length} enums`)
+	// One line, because `vp run` already prints which package is running this and the counts are
+	// only ever read when one looks wrong. Anything abnormal above still prints in full.
+	const tally = [
+		[componentExports.length, 'components'],
+		[components.length, 'other'],
+		[functions.length, 'functions'],
+		[interfaces.length, 'interfaces'],
+		[types.length, 'types'],
+		[classes.length, 'classes'],
+		[variables.length, 'variables'],
+		[enums.length, 'enums'],
+	]
+		.filter(([n]) => n > 0)
+		.map(([n, label]) => `${n} ${label}`)
+		.join(', ')
+	console.log(`${displayName} api.md: ${tally || 'no documented exports'}`)
 } catch (error) {
 	console.error(`❌ Error consolidating ${projectName} documentation:`, error.message)
 	process.exit(1)

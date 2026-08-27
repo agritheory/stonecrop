@@ -36,7 +36,7 @@
 		"access": "public"
 	},
 	"scripts": {
-		"build": "vite build",
+		"build": "vite build --logLevel warn",
 		"dev": "vite",
 		"preview": "vite preview",
 		"prepublish": "vite build"

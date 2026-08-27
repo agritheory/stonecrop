@@ -44,12 +44,12 @@
 		"access": "public"
 	},
 	"scripts": {
-		"build": "rm -rf dist && tsc -b --force && api-extractor run --local -c config/api-extractor.json && vite build && node --run docs",
+		"build": "rm -rf dist && tsc -b --force && api-extractor run --local -c config/api-extractor.json && vite build --logLevel warn && node --run docs",
 		"dev": "vite",
 		"docs": "bash ../common/scripts/run-docs.sh code_editor",
 		"lint": "oxlint",
 		"lint:fix": "oxlint --fix",
-		"prepublishOnly": "rm -rf dist && tsc -b --force && api-extractor run --local -c config/api-extractor.json && vite build && node --run docs",
+		"prepublishOnly": "rm -rf dist && tsc -b --force && api-extractor run --local -c config/api-extractor.json && vite build --logLevel warn && node --run docs",
 		"preview": "vite preview",
 		"test": "vitest run",
 		"test:coverage": "vitest run --coverage",

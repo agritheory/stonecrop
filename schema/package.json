@@ -38,11 +38,11 @@
 		"./package.json": "./package.json"
 	},
 	"scripts": {
-		"build": "rm -rf dist && tsc -b --force && api-extractor run --local -c config/api-extractor.json && vite build && node --run docs",
+		"build": "rm -rf dist && tsc -b --force && api-extractor run --local -c config/api-extractor.json && vite build --logLevel warn && node --run docs",
 		"docs": "bash ../common/scripts/run-docs.sh schema",
 		"lint": "oxlint",
 		"lint:fix": "oxlint --fix",
-		"prepublishOnly": "rm -rf dist && tsc -b --force && api-extractor run --local -c config/api-extractor.json && vite build && node --run docs",
+		"prepublishOnly": "rm -rf dist && tsc -b --force && api-extractor run --local -c config/api-extractor.json && vite build --logLevel warn && node --run docs",
 		"preview": "vite preview",
 		"test": "vitest run --coverage.enabled false",
 		"test:coverage": "vitest run --coverage",
