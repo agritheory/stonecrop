@@ -5,7 +5,7 @@ on:
     branches:
       - development
     paths:
-      - 'docs/**'
+      - 'nuxt/documentation/**'
       - '**/api.md'
       - '.github/workflows/docs.yml'
   workflow_dispatch:
@@ -75,14 +75,14 @@ jobs:
       - name: Rush Build
         run: node common/scripts/install-run-rush.js build
 
-      - name: Build Vitepress
-        working-directory: ./docs
-        run: node ../common/scripts/install-run-rushx.js build
+      - name: Generate Docs Site
+        working-directory: ./nuxt
+        run: node ../common/scripts/install-run-rushx.js generate:documentation
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v5
         with:
-          path: docs/.vitepress/dist
+          path: nuxt/documentation/.output/public
 
       - name: Save Rush Build Cache
         if: always()

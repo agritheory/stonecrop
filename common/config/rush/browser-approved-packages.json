@@ -87,6 +87,10 @@
       "allowedCategories": [ "prototype" ]
     },
     {
+      "name": "@nuxt/content",
+      "allowedCategories": [ "prototype" ]
+    },
+    {
       "name": "@nuxt/devtools",
       "allowedCategories": [ "production", "prototype" ]
     },
@@ -128,7 +132,7 @@
     },
     {
       "name": "@stonecrop/aform",
-      "allowedCategories": [ "prototype" ]
+      "allowedCategories": [ "documentation", "prototype" ]
     },
     {
       "name": "@stonecrop/atable",
@@ -148,7 +152,7 @@
     },
     {
       "name": "@stonecrop/desktop",
-      "allowedCategories": [ "prototype" ]
+      "allowedCategories": [ "documentation", "prototype" ]
     },
     {
       "name": "@stonecrop/graphql-client",
@@ -180,7 +184,7 @@
     },
     {
       "name": "@stonecrop/themes",
-      "allowedCategories": [ "prototype" ]
+      "allowedCategories": [ "documentation", "prototype" ]
     },
     {
       "name": "@stonecrop/utilities",
@@ -400,7 +404,7 @@
     },
     {
       "name": "pinia",
-      "allowedCategories": [ "prototype" ]
+      "allowedCategories": [ "documentation", "prototype" ]
     },
     {
       "name": "pinia-shared-state",
@@ -492,7 +496,7 @@
     },
     {
       "name": "vue",
-      "allowedCategories": [ "production", "prototype", "utilities" ]
+      "allowedCategories": [ "documentation", "production", "prototype", "utilities" ]
     },
     {
       "name": "vue-router",

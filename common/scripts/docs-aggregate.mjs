@@ -3,8 +3,8 @@
 /**
  * API Documentation Aggregation Script
  *
- * Copies api.md files from package directories to docs/reference/
- * and adds VitePress frontmatter for proper rendering.
+ * Copies api.md files from package directories to nuxt/documentation/content/reference/
+ * and adds frontmatter (title/description) for proper rendering by @nuxt/content.
  */
 
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs'
@@ -15,7 +15,7 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
 const rootDir = join(__dirname, '../..')
-const referenceDir = join(rootDir, 'docs/reference')
+const referenceDir = join(rootDir, 'nuxt/documentation/content/reference')
 
 // Package configurations
 const packages = [
@@ -112,7 +112,7 @@ rushx build
 		// Read the source API markdown
 		let content = readFileSync(sourcePath, 'utf8')
 
-		// Add VitePress frontmatter if not already present
+		// Add frontmatter if not already present
 		if (!content.startsWith('---')) {
 			const frontmatter = `---
 title: ${pkg.title} API Reference
@@ -125,7 +125,7 @@ description: ${pkg.description}
 
 		// Write to reference directory
 		writeFileSync(destPath, content, 'utf8')
-		console.log(`✅ ${pkg.title}: Copied to docs/reference/${pkg.name}.md`)
+		console.log(`✅ ${pkg.title}: Copied to nuxt/documentation/content/reference/${pkg.name}.md`)
 		processed++
 	} catch (error) {
 		console.error(`❌ Error processing ${pkg.title}:`, error.message)
