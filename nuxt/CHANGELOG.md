@@ -1,6 +1,25 @@
 # Change Log - @stonecrop/nuxt
 
-This log was last generated on Fri, 21 Aug 2026 09:43:22 GMT and should not be manually modified.
+This log was last generated on Thu, 27 Aug 2026 12:30:32 GMT and should not be manually modified.
+
+## 0.30.0
+Thu, 27 Aug 2026 12:30:32 GMT
+
+_Version update only_
+
+## 0.29.0
+Tue, 25 Aug 2026 08:42:39 GMT
+
+### Minor changes
+
+- Remove the theme option and always load the token floor, which is the only definition of the --sc-* variables
+
+## 0.28.0
+Tue, 25 Aug 2026 08:06:54 GMT
+
+### Patches
+
+- Drop the removed example app's path from the clientHandler decision record
 
 ## 0.27.0
 Fri, 21 Aug 2026 09:43:22 GMT

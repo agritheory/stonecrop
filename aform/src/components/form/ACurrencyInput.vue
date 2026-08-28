@@ -344,7 +344,7 @@ const displayText = computed(() => {
 }
 
 .acurrency__base-field:disabled {
-	color: var(--sc-gray-50, #888);
+	color: var(--sc-gray-50);
 }
 
 /* Base Amount and Exchange Rate are read-only — the number spinner offers nothing here. */

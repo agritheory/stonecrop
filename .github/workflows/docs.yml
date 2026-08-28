@@ -6,7 +6,6 @@ on:
       - development
     paths:
       - 'nuxt/documentation/**'
-      - 'examples/**'
       - '**/api.md'
       - '.github/workflows/docs.yml'
   workflow_dispatch:
@@ -75,10 +74,6 @@ jobs:
 
       - name: Rush Build
         run: node common/scripts/install-run-rush.js build
-
-      - name: Build Histoire Stories
-        working-directory: ./examples
-        run: node ../common/scripts/install-run-rushx.js build:stories
 
       - name: Generate Docs Site
         working-directory: ./nuxt

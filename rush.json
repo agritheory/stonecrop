@@ -53,12 +53,6 @@
 			"versionPolicyName": "stonecrop"
 		},
 		{
-			"packageName": "@stonecrop/examples",
-			"projectFolder": "examples",
-			"reviewCategory": "prototype",
-			"shouldPublish": false
-		},
-		{
 			"packageName": "@stonecrop/graphql-client",
 			"projectFolder": "graphql_client",
 			"reviewCategory": "utilities",

@@ -644,6 +644,9 @@ export const TriggerDefinition: z.ZodObject<{
 export type TriggerDefinition = z.infer<typeof TriggerDefinition>;
 
 // @public
+export function unwrapInlineLinks(fields: readonly DoctypeField[], record: Record<string, any>): Record<string, any>;
+
+// @public
 export function validateDoctype(data: unknown): ValidationResult;
 
 // @public

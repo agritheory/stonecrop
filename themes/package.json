@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/themes",
-	"version": "0.27.0",
+	"version": "0.30.0",
 	"bugs": {
 		"url": "https://github.com/agritheory/stonecrop/issues"
 	},
@@ -15,13 +15,7 @@
 	},
 	"type": "module",
 	"exports": {
-		"./agritheory.css": "./dist/agritheory.css",
-		"./dark.css": "./dist/default.css",
-		"./default.css": "./dist/default.css",
-		"./excel.css": "./dist/default.css",
-		"./legal.css": "./dist/default.css",
-		"./verdant.css": "./dist/default.css",
-		"./vue.css": "./dist/default.css"
+		"./default.css": "./dist/default.css"
 	},
 	"scripts": {
 		"_phase:build": "vite build",

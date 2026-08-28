@@ -100,9 +100,9 @@ export interface UseClientActionOptions {
 	 * Build the opaque argument array handed to `DataClient.runAction`.
 	 *
 	 * The default is `[{ id, data }]`, omitting `id` entirely for a draft — the envelope every
-	 * in-repo server handler destructures. Supply this when your backend expects another shape;
-	 * `examples/desktop` uses positional `[recordId, data]`, for instance. Nothing validates the
-	 * array, so both ends of your own stack have to agree on it.
+	 * in-repo server handler destructures. Supply this when your backend expects another shape —
+	 * positional `[recordId, data]`, for instance. Nothing validates the array, so both ends of
+	 * your own stack have to agree on it.
 	 *
 	 * Whatever you return is sent verbatim. It does not affect how the *result* is stored — that
 	 * is keyed off the returned record's declared identity, not off what was sent.

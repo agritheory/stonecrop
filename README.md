@@ -56,5 +56,5 @@ rushx lint
 - [`@stonecrop/rockfoil`](./rockfoil/CHANGELOG.md) — GraphQL authorization server
 - [`@stonecrop/schema`](./schema/README.md) — Doctype and field schema definitions, naming utilities, and GraphQL → doctype converter
 - [`@stonecrop/stonecrop`](./stonecrop/README.md) — Core orchestration: Registry, HST state management, and workflow engine
-- [`@stonecrop/themes`](./themes/README.md) — Shared CSS tokens and design system themes
+- [`@stonecrop/themes`](./themes/README.md) — The shared `--sc-*` CSS token floor
 - [`@stonecrop/utilities`](./utilities/README.md) — Shared helper functions and type utilities

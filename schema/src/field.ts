@@ -1,8 +1,13 @@
 import { z } from 'zod'
 
 import type { ColumnSchema } from './column-schema'
+import { flattenFields } from './flatten'
 import type { InteractionMode } from './mode'
 import { TableViewConfig } from './table'
+
+// Re-exported so callers already on this module keep one import; `flatten.ts` says why the
+// definition itself sits off to the side.
+export { flattenFields }
 
 /**
  * Field options - flexible bag for type-specific configuration.
@@ -358,38 +363,6 @@ export const INTROSPECTED_IDENTITY_PROPS = [
  */
 export function getPrimaryKeyField(fields: readonly DoctypeField[]): ValueField | undefined {
 	return flattenFields(fields).find((f): f is ValueField => f.kind === 'field' && Boolean(f.primaryKey))
-}
-
-/**
- * Recursively flatten Fieldset containers into a flat array of non-container fields.
- * Fieldset entries are replaced by their children; all other fields pass through.
- *
- * A fieldset is a layout grouping, not a scope: every field inside one is a field of the doctype,
- * with a column of its own and a name a link can bind to. Anything asking "what does this doctype
- * declare" must therefore descend, and the two ways to get that wrong point opposite ways — the
- * SELECT builder would omit real columns, while a validator would report a working declaration as
- * broken.
- *
- * Lives here rather than in the adapter because both sides need it: the middleware builds SQL from
- * it, and `DoctypeMeta`'s own validation asks the same question at the load gate. It sat in the
- * adapter while the validator hand-rolled a top-level-only scan, and that is exactly the second
- * failure this comment names — a `displayField` inside a fieldset was rejected at authoring time
- * and would have worked at runtime.
- *
- * @param fields - the doctype's top-level fields
- * @returns every non-container field, fieldset children included
- * @public
- */
-export function flattenFields(fields: readonly DoctypeField[]): (ValueField | TableField)[] {
-	const result: (ValueField | TableField)[] = []
-	for (const f of fields) {
-		if (f.kind === 'fieldset') {
-			result.push(...flattenFields(f.schema))
-		} else {
-			result.push(f)
-		}
-	}
-	return result
 }
 
 /**

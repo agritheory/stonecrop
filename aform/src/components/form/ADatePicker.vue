@@ -463,7 +463,7 @@ defineExpose({ currentMonth, currentYear, selectedDate })
 p.aform_error {
 	position: static;
 	display: block;
-	color: var(--sc-brand-danger, red);
+	color: var(--sc-brand-danger);
 	font-size: 0.7rem;
 	margin: 0.25rem 0 0;
 }

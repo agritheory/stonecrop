@@ -1,6 +1,27 @@
 # Change Log - @stonecrop/desktop
 
-This log was last generated on Fri, 21 Aug 2026 09:43:22 GMT and should not be manually modified.
+This log was last generated on Thu, 27 Aug 2026 12:30:32 GMT and should not be manually modified.
+
+## 0.30.0
+Thu, 27 Aug 2026 12:30:32 GMT
+
+### Patches
+
+- Stop discarding a link's display text when a form emits an update, which left resolved link fields rendering raw ids after the first edit
+
+## 0.29.0
+Tue, 25 Aug 2026 08:42:39 GMT
+
+### Patches
+
+- Remove var() fallbacks that disagreed with the token floor
+
+## 0.28.0
+Tue, 25 Aug 2026 08:06:54 GMT
+
+### Patches
+
+- Remove the plain-Vue example app and the MirageJS dependencies nothing imported
 
 ## 0.27.0
 Fri, 21 Aug 2026 09:43:22 GMT

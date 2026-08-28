@@ -142,7 +142,7 @@ Three things are adjustable, for the cases that genuinely differ between applica
 | `onError` | a blocking `window.alert` | your own notification system |
 
 `args` is an opaque JSON array: nothing validates it, so both ends of your own stack have to agree.
-`examples/desktop` uses positional `[recordId, data]` and supplies `buildArgs` to say so.
+A backend taking positional `[recordId, data]` supplies `buildArgs` to say so.
 
 Resolving a record's identity and keying it into HST are deliberately **not** adjustable. That rule
 is declared on the doctype and re-derived server-side by the adapter, and every host that re-derived

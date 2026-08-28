@@ -71,8 +71,8 @@ export type { BadgePresentation, BadgeVariant }
 	display: block;
 	box-sizing: border-box;
 	width: 100%;
-	min-height: calc(var(--sc-atable-row-height, 1.5em) + 2 * var(--sc-atable-row-padding, 0.125rem));
-	line-height: calc(var(--sc-atable-row-height, 1.5em) + 2 * var(--sc-atable-row-padding, 0.125rem));
+	min-height: calc(var(--sc-atable-row-height) + 2 * var(--sc-atable-row-padding));
+	line-height: calc(var(--sc-atable-row-height) + 2 * var(--sc-atable-row-padding));
 	margin: 0;
 	padding: 0 0.5ch;
 	border-radius: 0;
@@ -107,7 +107,7 @@ export type { BadgePresentation, BadgeVariant }
 }
 
 .abadge--input-accent {
-	background: var(--sc-input-field-background, #ffffff);
+	background: var(--sc-input-field-background);
 	color: inherit;
 	border-left: 4px solid var(--sc-badge-accent);
 	padding-left: calc(1ch - 4px);

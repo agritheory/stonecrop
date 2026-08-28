@@ -146,6 +146,3 @@ nuxt/documentation/public/stories/
 # VitePress build output
 docs/.vitepress/dist/
 docs/.vitepress/cache/
-
-# Histoire build output (generated from examples)
-docs/public/stories/

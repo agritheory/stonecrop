@@ -41,7 +41,7 @@ Looking for a specific `aform` field's props and a live demo rather than a packa
 | Package | Description | Status |
 |---------|-------------|--------|
 | [@stonecrop/utilities](./utilities) | Shared utility functions | Utilities |
-| @stonecrop/themes | CSS themes (no TypeScript API) | Prototype |
+| @stonecrop/themes | CSS token floor (no TypeScript API) | Prototype |
 
 ## Nuxt Modules
 

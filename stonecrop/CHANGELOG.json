@@ -2,6 +2,36 @@
   "name": "@stonecrop/stonecrop",
   "entries": [
     {
+      "version": "0.30.0",
+      "tag": "@stonecrop/stonecrop_v0.30.0",
+      "date": "Thu, 27 Aug 2026 12:30:32 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Return records from collectRecordPayload in the shape the store holds, leaving inline link reduction to the adapter"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.29.0",
+      "tag": "@stonecrop/stonecrop_v0.29.0",
+      "date": "Tue, 25 Aug 2026 08:42:39 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.28.0",
+      "tag": "@stonecrop/stonecrop_v0.28.0",
+      "date": "Tue, 25 Aug 2026 08:06:54 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Drop the removed example app from the `buildArgs` documentation"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.27.0",
       "tag": "@stonecrop/stonecrop_v0.27.0",
       "date": "Fri, 21 Aug 2026 09:43:22 GMT",

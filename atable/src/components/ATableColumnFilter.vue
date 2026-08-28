@@ -159,7 +159,7 @@ const clearFilter = () => {
 	border: 1px solid var(--sc-form-border);
 	border-radius: 3px;
 	font-size: 0.875rem;
-	color: var(--sc-text-color);
+	color: var(--sc-cell-text-color);
 	width: 100%;
 	box-sizing: border-box;
 }
@@ -175,7 +175,7 @@ const clearFilter = () => {
 	align-items: center;
 	gap: 0.25rem;
 	font-size: 0.875rem;
-	color: var(--sc-text-color);
+	color: var(--sc-cell-text-color);
 	cursor: pointer;
 }
 
@@ -203,7 +203,7 @@ const clearFilter = () => {
 }
 
 .clear-btn {
-	background: var(--sc-gray-10, #f0f0f0);
+	background: var(--sc-gray-10);
 	border: 1px solid var(--sc-form-border);
 	border-radius: 3px;
 	color: var(--sc-gray-70);

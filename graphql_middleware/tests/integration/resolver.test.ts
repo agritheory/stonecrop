@@ -22,6 +22,13 @@ import { loadDoctypesFromObject, clearRegistry } from '../../src/registry/doctyp
 const publishCalls: string[] = []
 
 const actionHandlers: Record<string, Record<string, ActionHandler>> = {
+	ScOrder: {
+		// Reports `ctx.args`, not `ctx.data` — the way every FAB handler reads its payload.
+		echoLink({ args }) {
+			const first = (args as Array<{ data?: Record<string, unknown> }>)[0]
+			return Promise.resolve({ seenCustomerId: first?.data?.customerId, seenTitle: first?.data?.title })
+		},
+	},
 	ScItem: {
 		// Real SQL through the request's client, so it runs inside the test's rolled-back
 		// transaction like every other write in this file.
@@ -421,8 +428,11 @@ beforeAll(async () => {
 				{ kind: 'field', fieldname: 'title', component: 'ATextInput', label: 'Title' },
 			],
 			// Present so the read shape and the write shape can be compared on one doctype that
-			// carries an inline link.
-			workflow: { actions: { save: { label: 'Save', selfTransition: true } } },
+			// carries an inline link. `echoLink` is a stateless command, so it reaches its handler
+			// without writing — the only way to see what the envelope handed the handler.
+			workflow: {
+				actions: { save: { label: 'Save', selfTransition: true }, echoLink: { label: 'Echo Link' } },
+			},
 		},
 		// Reads sc_party, expanding its orders. The expanded ScOrder rows carry `customerId`,
 		// an inline link — so a nested record is a place enrichment has to reach as well.
@@ -973,7 +983,7 @@ describe('link fields ({ id, displayText })', { tags: ['integration', 'graphql']
 	// returns has to have the shape the read path returns, or every write silently reverts the
 	// record to the pre-enrichment shape and the next render pays the per-link client round trip
 	// this enrichment exists to remove.
-	it.fails('returns customerId in the shape a read returns it, after a save', async () => {
+	it('returns customerId in the shape a read returns it, after a save', async () => {
 		const [action, read] = await runSequence([
 			`mutation { stonecropAction(doctype: "ScOrder", action: "save", args: [{ id: "1", data: { title: "Renamed" } }]) { success error data } }`,
 			`query { stonecropRecord(doctype: "ScOrder", id: "1") { data } }`,
@@ -989,12 +999,45 @@ describe('link fields ({ id, displayText })', { tags: ['integration', 'graphql']
 
 	// The create branch is a separate statement with its own RETURNING, so a fix applied only to
 	// the update path leaves this one answering the old shape.
-	it.fails('returns customerId in the shape a read returns it, after a create', async () => {
+	it('returns customerId in the shape a read returns it, after a create', async () => {
 		const [action] = await runSequence([
 			`mutation { stonecropAction(doctype: "ScOrder", action: "save", args: [{ data: { customerId: "1", title: "Minted" } }]) { success error data } }`,
 		])
 		expect((action as any).data?.stonecropAction?.error).toBeNull()
 		expect((action as any).data?.stonecropAction?.data?.customerId).toEqual({ id: 1, displayText: 'Acme Corp' })
+	})
+
+	// The client holds an inline link as `{ id, displayText }` and sends it back that way. The
+	// reduction to a column value happens at dispatch, so no client needs to know the column.
+	it('writes the id when a save sends an inline link as the object the read returned', async () => {
+		const [action, read] = await runSequence([
+			`mutation { stonecropAction(doctype: "ScOrder", action: "save", args: [{ id: "1", data: { customerId: { id: "2", displayText: "STALE" } } }]) { success error } }`,
+			`query { stonecropRecord(doctype: "ScOrder", id: "1") { data } }`,
+		])
+		expect((action as any).data?.stonecropAction?.error).toBeNull()
+		// The row, not the echo. Unreduced, `partitionPatch` drops the object and the column keeps 1.
+		// `displayText` is re-derived, so the stale text the client sent cannot reach storage.
+		expect((read as any).data?.stonecropRecord?.data?.customerId).toEqual({ id: 2, displayText: 'Globex' })
+	})
+
+	// The path FAB takes: 82 of its handlers read `ctx.args`, and none read `ctx.data`.
+	it('hands a registered handler the reduced envelope, not the object the client sent', async () => {
+		const result = await runQuery(
+			`mutation { stonecropAction(doctype: "ScOrder", action: "echoLink", args: [{ id: "1", data: { customerId: { id: "2", displayText: "STALE" } } }]) { success error data } }`
+		)
+		const action = (result as any).data?.stonecropAction
+		expect(action?.error).toBeNull()
+		expect(action?.data?.seenCustomerId).toBe('2')
+	})
+
+	// Keyed on the doctype's declaration, never on the value looking like `{ id, ... }`.
+	it('leaves an object alone on a field the doctype does not declare as a link', async () => {
+		const result = await runQuery(
+			`mutation { stonecropAction(doctype: "ScOrder", action: "echoLink", args: [{ id: "1", data: { title: { id: "not-a-link" } } }]) { success error data } }`
+		)
+		const action = (result as any).data?.stonecropAction
+		expect(action?.error).toBeNull()
+		expect(action?.data?.seenTitle).toEqual({ id: 'not-a-link' })
 	})
 
 	// Enrichment runs over the parent rows a doctype-group read collected, and an expanded child is

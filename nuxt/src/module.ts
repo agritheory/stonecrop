@@ -65,16 +65,6 @@ export interface ModuleOptions {
 	 * ```
 	 */
 	routeStrategy?: RouteStrategyFn
-	/**
-	 * Base theme stylesheet loaded into the host app. Provides the `--sc-*` CSS variables,
-	 * applies the document font, and normalizes form controls / code to inherit it. Defaults
-	 * to Stonecrop's default theme. Set to `false` to load no theme (bring your own), or pass
-	 * a different theme's module specifier / path (e.g. `'@stonecrop/themes/dark.css'`).
-	 *
-	 * The Stonecrop component packages are theme-agnostic — they consume `--sc-*` variables
-	 * but never bundle a theme — so the host must supply one; the module does that here.
-	 */
-	theme?: string | false
 }
 
 // Stonecrop packages that need to be transpiled (they import CSS in their dist bundles)
@@ -100,6 +90,12 @@ export const STONECROP_PACKAGES = [
 	'@stonecrop/themes',
 ]
 
+/**
+ * The Stonecrop token floor — the single definition of every `--sc-*` variable the component
+ * packages consume. Named once here so the specifier lives in one place.
+ */
+export const STONECROP_TOKENS = '@stonecrop/themes/default.css'
+
 export default defineNuxtModule<ModuleOptions>({
 	meta: {
 		name: '@stonecrop/nuxt',
@@ -110,7 +106,6 @@ export default defineNuxtModule<ModuleOptions>({
 		return {
 			docbuilder: false,
 			doctypesDir: 'doctypes',
-			theme: '@stonecrop/themes/default.css',
 		}
 	},
 
@@ -149,14 +144,19 @@ export default defineNuxtModule<ModuleOptions>({
 			}
 		}
 
-		// Supply the base theme to the host app: the --sc-* variables, the document font, and
+		// Supply the token floor to the host app: the --sc-* variables, the document font, and
 		// the control/code font-inheritance reset. Loaded here rather than bundled into the
-		// component packages, so the components stay theme-agnostic and any Nuxt host gets a
-		// theme just by using the module. unshift keeps it at the base of the cascade; opt out
-		// or swap themes with the `theme` option.
-		if (options.theme && !nuxt.options.css.includes(options.theme)) {
-			nuxt.options.css.unshift(options.theme)
-			logger.log(`Added Stonecrop theme to app CSS: ${options.theme}`)
+		// component packages, so the components stay theme-agnostic and any Nuxt host gets the
+		// tokens just by using the module.
+		//
+		// Unconditional by design. The floor is the only definition of --sc-*, so opting out
+		// could only produce an unstyled app; hosts restyle by overriding the variables in
+		// their own CSS instead. The sheet wraps its declarations in the `stonecrop.tokens`
+		// cascade layer, so an unlayered host declaration wins regardless of load order —
+		// unshift keeps it at the base of the cascade as well, belt and braces.
+		if (!nuxt.options.css.includes(STONECROP_TOKENS)) {
+			nuxt.options.css.unshift(STONECROP_TOKENS)
+			logger.log(`Added Stonecrop tokens to app CSS: ${STONECROP_TOKENS}`)
 		}
 
 		// Configure Nitro to bundle Stonecrop packages instead of treating them as external

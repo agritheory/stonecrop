@@ -297,7 +297,7 @@ const displayText = computed(() => {
 
 .aquantity__uom-toggle:disabled {
 	cursor: not-allowed;
-	color: var(--sc-gray-50, #888);
+	color: var(--sc-gray-50);
 }
 
 .aquantity__caret {
@@ -318,7 +318,7 @@ const displayText = computed(() => {
 	margin: 0.15rem 0 0 0;
 	padding: 0.25rem 0;
 	list-style: none;
-	background: var(--sc-input-field-background, #fff);
+	background: var(--sc-input-field-background);
 	border: 1px solid var(--sc-input-active-border-color);
 	border-radius: 0.25rem;
 }
@@ -344,6 +344,6 @@ const displayText = computed(() => {
 }
 
 .aquantity__stock-field:disabled {
-	color: var(--sc-gray-50, #888);
+	color: var(--sc-gray-50);
 }
 </style>

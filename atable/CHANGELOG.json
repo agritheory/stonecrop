@@ -2,6 +2,30 @@
   "name": "@stonecrop/atable",
   "entries": [
     {
+      "version": "0.30.0",
+      "tag": "@stonecrop/atable_v0.30.0",
+      "date": "Thu, 27 Aug 2026 12:30:32 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.29.0",
+      "tag": "@stonecrop/atable_v0.29.0",
+      "date": "Tue, 25 Aug 2026 08:42:39 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Give the column filter a defined text colour and remove var() fallbacks that disagreed with the token floor"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.28.0",
+      "tag": "@stonecrop/atable_v0.28.0",
+      "date": "Tue, 25 Aug 2026 08:06:54 GMT",
+      "comments": {}
+    },
+    {
       "version": "0.27.0",
       "tag": "@stonecrop/atable_v0.27.0",
       "date": "Fri, 21 Aug 2026 09:43:22 GMT",

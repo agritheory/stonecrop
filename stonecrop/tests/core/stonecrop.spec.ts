@@ -894,6 +894,45 @@ describe('Stonecrop class with HST integration', { tags: ['unit'] }, () => {
 			expect(payload.status).toBe('open')
 		})
 
+		// The payload leaves in the shape the store holds. Reducing an inline link to the id a
+		// column takes is the adapter's job at dispatch, so a client-side reduction here would be
+		// an opinion about storage this layer cannot see — and a second, drifting definition of it.
+		it('hands an inline link over exactly as the store holds it', () => {
+			const orderDoctype = createDoctype('Order', [
+				{ kind: 'field', fieldname: 'title', component: 'ATextInput' },
+				{ kind: 'field', fieldname: 'agentId', component: 'AFormLink', doctype: 'party' },
+			] as DoctypeField[])
+			localRegistry.addDoctype(orderDoctype)
+
+			localStonecrop.addRecord('order', 'order-9', {
+				title: 'My Order',
+				agentId: { id: 'p-2', displayText: 'Globex' },
+			})
+
+			expect(localStonecrop.collectRecordPayload(orderDoctype, 'order-9').agentId).toEqual({
+				id: 'p-2',
+				displayText: 'Globex',
+			})
+		})
+
+		it('sends an expanded link whole — it is the record, not a reference to one', () => {
+			const orderDoctype = createDoctype('Order', [
+				{ kind: 'field', fieldname: 'title', component: 'ATextInput' },
+				{ kind: 'field', fieldname: 'customer', component: 'AForm', doctype: 'party' },
+			] as DoctypeField[])
+			localRegistry.addDoctype(orderDoctype)
+
+			localStonecrop.addRecord('order', 'order-10', {
+				title: 'My Order',
+				customer: { id: 'p-1', partyName: 'Acme Corp' },
+			})
+
+			expect(localStonecrop.collectRecordPayload(orderDoctype, 'order-10').customer).toEqual({
+				id: 'p-1',
+				partyName: 'Acme Corp',
+			})
+		})
+
 		it('collects array data for cardinality: many fields', () => {
 			const itemDoctype = createDoctype('Item', [
 				{ kind: 'field', fieldname: 'name', component: 'ATextInput' },
