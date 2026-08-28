@@ -108,15 +108,13 @@ const sidebarSections = [
 			{ title: 'Components', links: [{ text: 'Live component docs', to: '/components/' }] },
 			{
 				title: 'Core Packages',
-				links: [
-					{ text: 'stonecrop', to: '/reference/stonecrop' },
-					{ text: 'aform', to: '/reference/aform' },
-					{ text: 'atable', to: '/reference/atable' },
-				],
+				links: [{ text: 'stonecrop', to: '/reference/stonecrop' }],
 			},
 			{
 				title: 'UI Components',
 				links: [
+					{ text: 'aform', to: '/reference/aform' },
+					{ text: 'atable', to: '/reference/atable' },
 					{ text: 'beam', to: '/reference/beam' },
 					{ text: 'desktop', to: '/reference/desktop' },
 					{ text: 'node-editor', to: '/reference/node-editor' },

@@ -4,9 +4,9 @@ withDefaults(
 		href: string
 		title: string
 		description: string
-		color?: 'blue' | 'purple' | 'teal' | 'amber' | 'rose' | 'indigo'
+		color?: 'blue' | 'purple' | 'teal' | 'amber' | 'rose' | 'indigo' | 'green'
 	}>(),
-	{ color: 'blue' }
+	{ color: 'green' }
 )
 </script>
 

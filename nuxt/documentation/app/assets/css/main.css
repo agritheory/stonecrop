@@ -349,6 +349,10 @@ a {
 .card-grid-item--indigo {
 	--card-accent: #4f46e5;
 }
+.card-grid-item--green {
+	/* Same green as the rest of the site — --doc-c-brand-1 (links, headings, blockquote accent). */
+	--card-accent: var(--doc-c-brand-1);
+}
 
 /* Site chrome: top nav + right sidebar */
 .doc-nav {
