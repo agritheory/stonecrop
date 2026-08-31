@@ -19,6 +19,26 @@ export interface AbilityResponse {
 }
 
 // @public
+export interface AbilityRule {
+    // (undocumented)
+    action: string | string[];
+    // (undocumented)
+    conditions?: any;
+    // (undocumented)
+    fields?: string[];
+    // (undocumented)
+    id?: string;
+    // (undocumented)
+    inverted?: boolean;
+    // (undocumented)
+    roleId?: string;
+    // (undocumented)
+    subject: string;
+    // (undocumented)
+    userId?: string;
+}
+
+// @public
 export type AppAbility = PureAbility<[string, any], any>;
 
 // @public

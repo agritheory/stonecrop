@@ -23,7 +23,8 @@
 		"directory": "graphql_client"
 	},
 	"files": [
-		"dist"
+		"dist",
+		"!dist/src"
 	],
 	"type": "module",
 	"sideEffects": false,
@@ -33,7 +34,7 @@
 			"types": "./dist/graphql-client.d.ts",
 			"import": "./dist/graphql-client.js"
 		},
-		"./types": "./dist/src/types/index.d.ts",
+		"./types": "./dist/graphql-client.d.ts",
 		"./package.json": "./package.json"
 	},
 	"publishConfig": {

@@ -24,7 +24,8 @@
 		"directory": "rockfoil"
 	},
 	"files": [
-		"dist"
+		"dist",
+		"!dist/src"
 	],
 	"type": "module",
 	"sideEffects": [
@@ -36,7 +37,7 @@
 			"types": "./dist/rockfoil.d.ts",
 			"import": "./dist/rockfoil.js"
 		},
-		"./types": "./dist/src/types/index.d.ts",
+		"./types": "./dist/rockfoil.d.ts",
 		"./package.json": "./package.json"
 	},
 	"scripts": {

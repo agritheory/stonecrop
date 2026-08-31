@@ -25,7 +25,8 @@
 		"stonecrop-schema": "./dist/cli.js"
 	},
 	"files": [
-		"dist"
+		"dist",
+		"!dist/src"
 	],
 	"type": "module",
 	"sideEffects": false,

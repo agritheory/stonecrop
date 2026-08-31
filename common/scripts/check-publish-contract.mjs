@@ -27,8 +27,6 @@ const ATTW_EXPECTED_FAILURES = new Map([
 	['@stonecrop/code-editor', 'ships .vue specifiers in its declarations; bundler-only by construction'],
 	['@stonecrop/desktop', 'ships .vue specifiers in its declarations; bundler-only by construction'],
 	['@stonecrop/node-editor', 'ships .vue specifiers in its declarations; bundler-only by construction'],
-	['@stonecrop/casl-middleware', 'extensionless relative imports in the ./types subpath fail node16 ESM'],
-	['@stonecrop/stonecrop', 'extensionless relative imports in the ./types subpath fail node16 ESM'],
 ])
 
 const readJson = path => JSON.parse(readFileSync(path, 'utf8'))

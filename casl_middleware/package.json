@@ -25,7 +25,8 @@
 		"directory": "casl_middleware"
 	},
 	"files": [
-		"dist"
+		"dist",
+		"!dist/src"
 	],
 	"type": "module",
 	"sideEffects": false,
@@ -35,7 +36,7 @@
 			"types": "./dist/casl-middleware.d.ts",
 			"import": "./dist/casl-middleware.js"
 		},
-		"./types": "./dist/src/types/index.d.ts",
+		"./types": "./dist/casl-middleware.d.ts",
 		"./package.json": "./package.json"
 	},
 	"scripts": {

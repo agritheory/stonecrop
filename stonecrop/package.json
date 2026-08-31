@@ -24,7 +24,8 @@
 		"directory": "stonecrop"
 	},
 	"files": [
-		"dist"
+		"dist",
+		"!dist/src"
 	],
 	"type": "module",
 	"sideEffects": false,
@@ -34,7 +35,7 @@
 			"types": "./dist/stonecrop.d.ts",
 			"import": "./dist/stonecrop.js"
 		},
-		"./types": "./dist/src/types/index.d.ts",
+		"./types": "./dist/stonecrop.d.ts",
 		"./package.json": "./package.json"
 	},
 	"publishConfig": {

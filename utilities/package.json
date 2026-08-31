@@ -22,7 +22,8 @@
 		"directory": "utilities"
 	},
 	"files": [
-		"dist"
+		"dist",
+		"!dist/src"
 	],
 	"type": "module",
 	"sideEffects": false,
@@ -32,7 +33,7 @@
 			"types": "./dist/utilities.d.ts",
 			"import": "./dist/utilities.js"
 		},
-		"./types": "./dist/src/types/index.d.ts",
+		"./types": "./dist/utilities.d.ts",
 		"./package.json": "./package.json"
 	},
 	"publishConfig": {

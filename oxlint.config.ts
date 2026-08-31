@@ -61,6 +61,12 @@ const config: OxlintConfig = {
 		{
 			files: ['**/tests/**', '**/*.{test,spec}.{ts,tsx,js,mjs}'],
 			rules: {
+				// A fixture built beside its cases is clearer than one hoisted away from it, and a
+				// test's collections are small enough that the lookup cost is not real.
+				// `no-await-in-loop` is deliberately not here: the sequential sites each carry a
+				// reason, and turning it off orphans those and stops the rule catching new ones.
+				'unicorn/consistent-function-scoping': 'off',
+				'unicorn/prefer-set-has': 'off',
 				'no-console': 'off',
 				'typescript/no-unsafe-type-assertion': 'off',
 				'typescript/unbound-method': 'off',

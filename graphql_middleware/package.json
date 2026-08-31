@@ -23,7 +23,8 @@
 		"directory": "graphql_middleware"
 	},
 	"files": [
-		"dist"
+		"dist",
+		"!dist/src"
 	],
 	"type": "module",
 	"sideEffects": false,
