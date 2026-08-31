@@ -3811,7 +3811,7 @@ export const actionIcons: Record<string, string>
 
 ### AddIcon
 
-Icon exports for ATable row actions. Icons are exported as raw SVG strings for flexibility in rendering.
+Raw SVG for the add-row action.
 
 **Type:**
 
@@ -3893,6 +3893,8 @@ export const ATablePaginationFooter: typeof __VLS_export
 
 ### DeleteIcon
 
+Raw SVG for the delete-row action.
+
 **Type:**
 
 ```typescript
@@ -3900,6 +3902,8 @@ export const DeleteIcon: string
 ```
 
 ### DuplicateIcon
+
+Raw SVG for the duplicate-row action.
 
 **Type:**
 
@@ -3909,6 +3913,8 @@ export const DuplicateIcon: string
 
 ### InsertAboveIcon
 
+Raw SVG for the insert-above action.
+
 **Type:**
 
 ```typescript
@@ -3916,6 +3922,8 @@ export const InsertAboveIcon: string
 ```
 
 ### InsertBelowIcon
+
+Raw SVG for the insert-below action.
 
 **Type:**
 
@@ -3925,6 +3933,8 @@ export const InsertBelowIcon: string
 
 ### MoveIcon
 
+Raw SVG for the move action.
+
 **Type:**
 
 ```typescript
@@ -3932,6 +3942,8 @@ export const MoveIcon: string
 ```
 
 ### OpenIcon
+
+Raw SVG for the open-record action.
 
 **Type:**
 

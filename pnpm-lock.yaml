@@ -668,9 +668,6 @@ importers:
       '@stonecrop/aform':
         specifier: workspace:*
         version: link:../aform
-      '@stonecrop/atable':
-        specifier: workspace:*
-        version: link:../atable
       '@stonecrop/schema':
         specifier: workspace:*
         version: link:../schema

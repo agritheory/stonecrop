@@ -2,7 +2,8 @@ import vue from '@vitejs/plugin-vue'
 import { resolve } from 'path'
 import { coverageConfigDefaults, defineConfig } from 'vitest/config'
 
-import { buildTask } from '../common/vite/build-task'
+import { buildTask } from '../common/vite/build-task.ts'
+import { testTags } from '../common/vite/test-tags.ts'
 
 const projectRootDir = resolve(import.meta.dirname)
 
@@ -30,10 +31,7 @@ export default defineConfig({
 	},
 	test: {
 		globals: true,
-		tags: [
-			{ name: 'unit', description: 'Pure logic test — no DOM, network, or framework runtime.' },
-			{ name: 'component', description: 'Vue component test using jsdom + @vue/test-utils.' },
-		],
+		tags: testTags,
 		environment: 'jsdom',
 		coverage: {
 			enabled: true,

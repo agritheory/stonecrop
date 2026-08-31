@@ -2,7 +2,8 @@ import vue from '@vitejs/plugin-vue'
 import { resolve } from 'path'
 import { coverageConfigDefaults, defineConfig } from 'vitest/config'
 
-import { buildTask } from '../common/vite/build-task'
+import { buildTask } from '../common/vite/build-task.ts'
+import { testTags } from '../common/vite/test-tags.ts'
 
 const projectRootDir = resolve(import.meta.dirname)
 
@@ -47,21 +48,7 @@ export default defineConfig({
 	},
 	test: {
 		globals: true,
-		tags: [
-			{ name: 'unit', description: 'Pure logic test — no DOM, network, or framework runtime.' },
-			{ name: 'component', description: 'Vue component test using jsdom + @vue/test-utils.' },
-			{
-				name: 'e2e',
-				timeout: 30_000,
-				description: 'Spins up a real server or Nuxt runtime. Run in integration gate only.',
-			},
-			{
-				name: 'nuxt',
-				timeout: 30_000,
-				description: 'Involves the Nuxt module, plugin, composables, or @nuxt/test-utils.',
-			},
-			{ name: 'graphql', description: 'Involves GraphQL schema, queries, resolvers, or PostGraphile.' },
-		],
+		tags: testTags,
 		environment: 'jsdom',
 		setupFiles: ['./tests/setup.ts'],
 		coverage: {

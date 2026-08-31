@@ -15,12 +15,19 @@ import rawOpenIcon from './stonecrop-ui-icon-open.svg?raw'
 // Annotated rather than re-exported directly. `?raw` is a Vite import and the .svg files are inlined
 // at build time, so a declaration that infers its type from the import re-states that specifier — and
 // the emitted `dist/src/icons/index.d.ts` then names seven modules the tarball does not contain.
+/** Raw SVG for the add-row action. @public */
 const AddIcon: string = rawAddIcon
+/** Raw SVG for the delete-row action. @public */
 const DeleteIcon: string = rawDeleteIcon
+/** Raw SVG for the duplicate-row action. @public */
 const DuplicateIcon: string = rawDuplicateIcon
+/** Raw SVG for the insert-above action. @public */
 const InsertAboveIcon: string = rawInsertAboveIcon
+/** Raw SVG for the insert-below action. @public */
 const InsertBelowIcon: string = rawInsertBelowIcon
+/** Raw SVG for the move action. @public */
 const MoveIcon: string = rawMoveIcon
+/** Raw SVG for the open-record action. @public */
 const OpenIcon: string = rawOpenIcon
 
 // Directional move icons are inline (no dedicated SVG asset): simple up/down chevrons.

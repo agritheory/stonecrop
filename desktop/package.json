@@ -55,7 +55,6 @@
 	},
 	"dependencies": {
 		"@stonecrop/aform": "workspace:*",
-		"@stonecrop/atable": "workspace:*",
 		"@stonecrop/schema": "workspace:*",
 		"@stonecrop/stonecrop": "workspace:*",
 		"@stonecrop/themes": "workspace:*"

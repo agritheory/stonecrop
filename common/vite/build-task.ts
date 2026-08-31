@@ -14,6 +14,34 @@ import type { UserConfig } from 'vitest/config'
  * `ComponentOptions` — `any` to a consumer, with the rollup importing `.vue` paths absent from the
  * tarball.
  */
+/**
+ * The `build` task for the two Nuxt module packages, which have no `dist` rollup and drive
+ * `nuxt-module-build` instead.
+ *
+ * They were the only uncached tasks in a warm build: `nuxt-module-build` and `nuxi prepare` both
+ * read and write `dist/` and each app's `.nuxt/`, so automatic tracking saw every run modify its
+ * own inputs. `generatedTrees` names the per-app `.nuxt` directories to exclude, which differ
+ * between the two packages.
+ */
+export function nuxtModuleBuildTask(
+	command: string,
+	generatedTrees: string[]
+): NonNullable<UserConfig['run']>['tasks'] {
+	return {
+		build: {
+			command,
+			input: [
+				{ auto: true },
+				{ pattern: 'common/vite/**', base: 'workspace' },
+				'!dist/**',
+				'!.nuxt/**',
+				...generatedTrees.map(tree => `!${tree}`),
+			],
+			output: ['dist/**'],
+		},
+	}
+}
+
 export function buildTask(declarations: 'tsc' | 'vue-tsc'): NonNullable<UserConfig['run']>['tasks'] {
 	return {
 		build: {

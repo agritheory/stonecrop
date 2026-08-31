@@ -2777,10 +2777,10 @@ updateGanttBar: (event: GanttDragEvent) => void;
 updateRows: (newRows: TableRow[]) => void;
 }, "addRow" | "clearFilter" | "closeModal" | "createConnection" | "deleteConnection" | "deleteRow" | "duplicateRow" | "getCellData" | "getCellDisplayValue" | "getConnectionsForBar" | "getFormattedValue" | "getHandlesForBar" | "getHeaderCellStyle" | "getRowExpandSymbol" | "insertRowAbove" | "insertRowBelow" | "isRowGantt" | "isRowVisible" | "moveRow" | "registerConnectionHandle" | "registerGanttBar" | "resizeColumn" | "setCellData" | "setCellText" | "setFilter" | "sortByColumn" | "toggleRowExpand" | "unregisterConnectionHandle" | "unregisterGanttBar" | "updateGanttBar" | "updateRows">>;
 
-// @public (undocumented)
+// @public
 export const DeleteIcon: string;
 
-// @public (undocumented)
+// @public
 export const DuplicateIcon: string;
 
 // @public
@@ -2857,19 +2857,19 @@ export interface GanttTableConfig extends BaseTableConfig {
     view: 'gantt';
 }
 
-// @public (undocumented)
+// @public
 export const InsertAboveIcon: string;
 
-// @public (undocumented)
+// @public
 export const InsertBelowIcon: string;
 
 // @public
 export function install(app: App): void;
 
-// @public (undocumented)
+// @public
 export const MoveIcon: string;
 
-// @public (undocumented)
+// @public
 export const OpenIcon: string;
 
 // @public
