@@ -327,15 +327,6 @@ export default defineNuxtModule<ModuleOptions>({
 			nuxt.options.css.push('@vue-flow/core/dist/style.css')
 			nuxt.options.css.push('@vue-flow/core/dist/theme-default.css')
 
-			// node-editor ships its component styles as a separate dist file (the `./styles` export)
-			// and its JS only imports VueFlow's base CSS — so its own styles (custom nodes, edge
-			// labels, chart controls, wrapper) are never loaded unless the consumer imports them.
-			nuxt.options.css.push('@stonecrop/node-editor/styles')
-
-			// desktop ships its styles separately too; the docbuilder renders desktop's ActionSet and
-			// must load them, or the control renders unstyled in non-playground hosts.
-			nuxt.options.css.push('@stonecrop/desktop/styles')
-
 			// Pre-bundle the docbuilder's client deps at startup: discovering them on the first
 			// doctype load forces a mid-session re-optimization that has broken the client before
 			// (auto-import collision in code-editor; browserHash bump invalidating in-flight chunks

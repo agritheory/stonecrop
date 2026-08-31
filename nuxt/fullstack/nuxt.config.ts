@@ -5,8 +5,6 @@ import NuxtGrafserv, { type ModuleOptions as GrafservOptions } from '@stonecrop/
 
 import NuxtStonecrop from '../src/module'
 
-const desktopStyles = resolve(__dirname, '../../desktop/dist/desktop.css')
-
 export default defineNuxtConfig({
 	compatibilityDate: '2026-01-01',
 
@@ -30,8 +28,6 @@ export default defineNuxtConfig({
 		url: '/graphql/',
 		graphiql: true,
 	} as GrafservOptions,
-
-	css: [desktopStyles],
 
 	vite: {
 		optimizeDeps: {

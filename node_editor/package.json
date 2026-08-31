@@ -37,7 +37,7 @@
 			"types": "./dist/src/index.d.ts",
 			"import": "./dist/node-editor.js"
 		},
-		"./styles": "./dist/node-editor.css",
+		"./styles": "./dist/assets/index.css",
 		"./types": "./dist/src/types/index.d.ts",
 		"./package.json": "./package.json"
 	},
@@ -69,6 +69,7 @@
 		"oxlint-tsgolint": "catalog:",
 		"typescript": "catalog:",
 		"vite": "catalog:",
+		"vite-plugin-lib-inject-css": "catalog:",
 		"vitest": "catalog:",
 		"vue": "catalog:",
 		"vue-component-meta": "catalog:",

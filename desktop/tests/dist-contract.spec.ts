@@ -7,9 +7,10 @@ import { readDistContract } from '../../common/test-support/dist-contract'
 const packageRoot = resolve(__dirname, '..')
 
 /**
- * desktop declares `./styles` but does not use `libInjectCss`: its stylesheet is emitted as
- * `dist/desktop.css` for the host to import explicitly, so there is deliberately no
- * side-effect-import assertion. publint checks the file behind `./styles` exists.
+ * desktop keeps Vue, Pinia and its `@stonecrop/*` siblings external, and relies on
+ * `vite-plugin-lib-inject-css` to make the entry pull in its own stylesheet. Both are asserted
+ * against a written-down expectation rather than re-derived from `vite.config.ts`, so a change to
+ * either shows up as a diff a reviewer has to approve.
  *
  * `vue-router` is externalised in the config but absent from the built entry, so it is not in the
  * expectation below — this records what the bundle actually imports, not what it may import.
@@ -26,5 +27,15 @@ describe('dist contract', { tags: ['unit'] }, () => {
 			`The set of externals changed. Vue must stay external so this package shares the host ` +
 				`app's single instance of it.`
 		).toEqual(['@stonecrop/aform', '@stonecrop/stonecrop', 'vue'])
+	})
+
+	it('side-effect-imports its stylesheet from the entry', () => {
+		const { css } = readDistContract(packageRoot)
+
+		expect(
+			css,
+			`libInjectCss no longer injects the stylesheet import. Consumers that import the package ` +
+				`without also importing '@stonecrop/desktop/styles' render unstyled, with no error.`
+		).toEqual(['./assets/index.css'])
 	})
 })

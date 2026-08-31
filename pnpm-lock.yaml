@@ -647,6 +647,9 @@ importers:
       vite:
         specifier: 'catalog:'
         version: 8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0)
+      vite-plugin-lib-inject-css:
+        specifier: 'catalog:'
+        version: 2.2.2(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0))
       vitest:
         specifier: 'catalog:'
         version: 4.1.11(@types/node@24.13.3)(@vitest/browser-preview@4.1.11)(@vitest/coverage-istanbul@4.1.10)(@vitest/ui@4.1.10)(jsdom@29.1.1)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0))
@@ -711,6 +714,9 @@ importers:
       vite:
         specifier: 'catalog:'
         version: 8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0)
+      vite-plugin-lib-inject-css:
+        specifier: 'catalog:'
+        version: 2.2.2(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0))
       vitest:
         specifier: 'catalog:'
         version: 4.1.11(@types/node@24.13.3)(@vitest/browser-preview@4.1.11)(@vitest/coverage-istanbul@4.1.10)(@vitest/ui@4.1.10)(jsdom@29.1.1)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0))
@@ -882,6 +888,9 @@ importers:
       vite:
         specifier: 'catalog:'
         version: 8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0)
+      vite-plugin-lib-inject-css:
+        specifier: 'catalog:'
+        version: 2.2.2(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0))
       vitest:
         specifier: 'catalog:'
         version: 4.1.11(@types/node@24.13.3)(@vitest/browser-preview@4.1.11)(@vitest/coverage-istanbul@4.1.10)(@vitest/ui@4.1.10)(jsdom@29.1.1)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.103.1)(terser@5.50.0)(yaml@2.9.0))

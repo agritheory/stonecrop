@@ -23,4 +23,14 @@ describe('dist contract', { tags: ['unit'] }, () => {
 				`which breaks consumers that do not install it themselves.`
 		).toEqual(['vue'])
 	})
+
+	it('side-effect-imports its stylesheet from the entry', () => {
+		const { css } = readDistContract(packageRoot)
+
+		expect(
+			css,
+			`libInjectCss no longer injects the stylesheet import. Consumers that import the package ` +
+				`without also importing '@stonecrop/code-editor/styles' render unstyled, with no error.`
+		).toEqual(['./assets/index.css'])
+	})
 })

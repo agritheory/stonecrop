@@ -36,7 +36,7 @@
 			"types": "./dist/src/index.d.ts",
 			"import": "./dist/desktop.js"
 		},
-		"./styles": "./dist/desktop.css",
+		"./styles": "./dist/assets/index.css",
 		"./types": "./dist/src/types/index.d.ts",
 		"./package.json": "./package.json"
 	},
@@ -71,6 +71,7 @@
 		"pinia": "catalog:",
 		"typescript": "catalog:",
 		"vite": "catalog:",
+		"vite-plugin-lib-inject-css": "catalog:",
 		"vitest": "catalog:",
 		"vue": "catalog:",
 		"vue-component-meta": "catalog:",

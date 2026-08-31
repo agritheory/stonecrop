@@ -1,5 +1,6 @@
 import vue from '@vitejs/plugin-vue'
 import { resolve } from 'path'
+import { libInjectCss } from 'vite-plugin-lib-inject-css'
 import { coverageConfigDefaults, defineConfig } from 'vitest/config'
 
 import { buildTask } from '../common/vite/build-task.ts'
@@ -9,7 +10,7 @@ const projectRootDir = resolve(import.meta.dirname)
 
 export default defineConfig({
 	run: { tasks: buildTask('vue-tsc') },
-	plugins: [vue()],
+	plugins: [vue(), libInjectCss()],
 	build: {
 		emptyOutDir: true,
 		// Libraries ship unminified; the consumer's bundler minifies.
@@ -30,6 +31,7 @@ export default defineConfig({
 			// again). It is not a peerDependency, because this package genuinely does not need one.
 			external: ['vue', 'pinia', 'vue-router', /^@stonecrop\//],
 			output: {
+				assetFileNames: 'assets/[name].[ext]',
 				globals: {
 					vue: 'Vue',
 					pinia: 'Pinia',

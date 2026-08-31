@@ -37,7 +37,7 @@
 			"types": "./dist/src/index.d.ts",
 			"import": "./dist/code-editor.js"
 		},
-		"./styles": "./dist/code-editor.css",
+		"./styles": "./dist/assets/index.css",
 		"./package.json": "./package.json"
 	},
 	"publishConfig": {
@@ -68,6 +68,7 @@
 		"oxlint-tsgolint": "catalog:",
 		"typescript": "catalog:",
 		"vite": "catalog:",
+		"vite-plugin-lib-inject-css": "catalog:",
 		"vitest": "catalog:",
 		"vue": "catalog:",
 		"vue-component-meta": "catalog:",
