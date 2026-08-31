@@ -9,7 +9,38 @@ Desktop reads through Stonecrop — on navigating to a list or a record it calls
 - **Three-view layout**: doctypes → records → record form, navigated by route or adapter
 - **ActionSet toolbar**: FSM transitions become action buttons/dropdowns automatically from the doctype workflow
 - **CommandPalette**: `Ctrl+K` / `Cmd+K` search across doctypes and records
-- **SheetNav**: tabbed navigation between open records
+- **SheetNav**: tabbed navigation between open records; optional `#sheetnav-toolbar` slot (or Teleport target) for page-level controls in the footer row
+
+## Preview: SheetNav toolbar slot
+
+The `dev/` app demonstrates teleporting controls into `#sheetnav-toolbar` — the same pattern FAB uses for planner toolbars.
+
+```bash
+cd desktop
+pnpm dev
+```
+
+Opens the linked URL (default port 5174). Navigate between routes — toolbar controls sit just left of the tabs, with the cluster anchored bottom-right like the original SheetNav.
+
+In **@stonecrop/nuxt**, run the playground (`pnpm dev` from the nuxt package), open a country record (e.g. **`/country/US`**), and use the **Country Explorer** field — its controls teleport into SheetNav.
+
+Direct slot usage (no Teleport) also works when the controls are a child of `SheetNav` or `Desktop`:
+
+```vue
+<Desktop>
+  <template #sheetnav-toolbar>
+    <MyToolbar />
+  </template>
+</Desktop>
+```
+
+For controls deep in the page tree, Teleport to the anchor:
+
+```vue
+<Teleport to="#sheetnav-toolbar">
+  <MyToolbar />
+</Teleport>
+```
 - **Event-driven**: all significant interactions emit typed events for the host to respond to
 
 ## Installation
