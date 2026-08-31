@@ -584,6 +584,8 @@ export class Stonecrop {
 			}
 		}
 
+		// The store's shape, inline links included. Reducing them to what a column takes is the
+		// adapter's job at dispatch — storage is behind the API.
 		return payload
 	}
 

@@ -1,5 +1,12 @@
 # Change Log - @stonecrop/schema
 
+## 0.30.0
+Thu, 27 Aug 2026 12:30:32 GMT
+
+### Minor changes
+
+- Add unwrapInlineLinks, which reduces a record's inline link fields to the ids their columns hold
+
 ## 0.29.0
 Tue, 25 Aug 2026 08:42:39 GMT
 

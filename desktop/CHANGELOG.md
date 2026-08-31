@@ -1,5 +1,12 @@
 # Change Log - @stonecrop/desktop
 
+## 0.30.0
+Thu, 27 Aug 2026 12:30:32 GMT
+
+### Patches
+
+- Stop discarding a link's display text when a form emits an update, which left resolved link fields rendering raw ids after the first edit
+
 ## 0.29.0
 Tue, 25 Aug 2026 08:42:39 GMT
 

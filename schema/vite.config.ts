@@ -25,6 +25,13 @@ export default defineConfig({
 			entry: {
 				index: resolve(import.meta.dirname, 'src/index.ts'),
 				cli: resolve(import.meta.dirname, 'src/cli.ts'),
+				// A third entry so rollup chunks by entry-reachability: `record.ts` and the field
+				// descent it calls end up in chunks the Zod-bearing modules are not in. Consumers
+				// still import from the package root — this only decides which file the code lands
+				// in, and that decides whether pulling `unwrapInlineLinks` into a server bundle
+				// drags Zod along with it. It does not, and must not: Zod in a Nitro SSR entry
+				// collides with the `process` Nitro imports there and 500s every request.
+				record: resolve(import.meta.dirname, 'src/record.ts'),
 			},
 			name: '@stonecrop/schema',
 			formats: ['es'],

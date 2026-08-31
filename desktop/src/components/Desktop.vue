@@ -46,7 +46,6 @@ import {
 	type ResolvedField,
 	type ResolvedTable,
 } from '@stonecrop/aform'
-import { componentLinkExpansion, type DoctypeField, flattenFields } from '@stonecrop/schema'
 import { computed, onMounted, onUnmounted, provide, ref, unref, watch } from 'vue'
 
 import ActionSet from './ActionSet.vue'
@@ -61,37 +60,6 @@ import type {
 	LoadRecordsEventPayload,
 	LoadRecordEventPayload,
 } from '../types'
-
-/**
- * Inline link fields on a doctype — only these may be unwrapped back to a scalar id on write.
- *
- * Both the component and the doctype declaration decide what a field's value holds. An
- * *inline* link's value (`{ id, displayText }`) is indistinguishable by inspection from an
- * *expanded* one (`{ id, ...the whole target record }`), so the component is what tells them
- * apart.
- *
- * `componentLinkExpansion` is the same rule the adapter reads when it decides which links to
- * expand, so the two sides agree on what a field's value contains.
- */
-function inlineLinkFieldnames(fields: DoctypeField[]): Set<string> {
-	const links = flattenFields(fields).filter(field => field.kind === 'field' && Boolean(field.doctype))
-
-	return new Set(
-		links.filter(field => componentLinkExpansion(field.component) === 'inline').map(field => field.fieldname)
-	)
-}
-
-/**
- * Unwrap an inline link's value back to the id that gets persisted. Applied only to fields in
- * `inlineLinks` — the display text is a rendering concern and was never part of the record, while
- * an expanded link's object is the record and must survive the round trip intact.
- */
-function unwrapLinkValue(value: unknown): unknown {
-	if (value !== null && typeof value === 'object' && !Array.isArray(value) && 'id' in value) {
-		return (value as { id: unknown }).id
-	}
-	return value
-}
 
 const { availableDoctypes = [], routeAdapter } = defineProps<{
 	availableDoctypes?: string[]
@@ -251,8 +219,6 @@ const currentViewData = computed<Record<string, any>>({
 					}
 				}
 			}
-			const inlineLinks = inlineLinkFieldnames(doctype ? doctype.getSchemaArray() : [])
-
 			// Two-pass flatten: non-fieldset keys first, then fieldset children.
 			// Fieldset children must be applied last — AForm may emit stale flat copies
 			// of fieldset children alongside the updated nested value, and the nested
@@ -280,9 +246,8 @@ const currentViewData = computed<Record<string, any>>({
 				const next = { ...draftRecord.value }
 				for (const [fieldname, value] of Object.entries(flatData)) {
 					if (value === undefined) continue
-					const normalized = inlineLinks.has(fieldname) ? unwrapLinkValue(value) : value
-					if (next[fieldname] !== normalized) {
-						next[fieldname] = normalized
+					if (next[fieldname] !== value) {
+						next[fieldname] = value
 						changedFields.push(fieldname)
 					}
 				}
@@ -291,11 +256,10 @@ const currentViewData = computed<Record<string, any>>({
 				const hstStore = stonecrop.value.getStore()
 				for (const [fieldname, value] of Object.entries(flatData)) {
 					if (value === undefined) continue
-					const normalized = inlineLinks.has(fieldname) ? unwrapLinkValue(value) : value
 					const fieldPath = `${currentDoctype.value}.${currentRecordId.value}.${fieldname}`
 					const currentValue = hstStore.has(fieldPath) ? hstStore.get(fieldPath) : undefined
-					if (currentValue !== normalized) {
-						hstStore.set(fieldPath, normalized)
+					if (currentValue !== value) {
+						hstStore.set(fieldPath, value)
 						changedFields.push(fieldname)
 					}
 				}

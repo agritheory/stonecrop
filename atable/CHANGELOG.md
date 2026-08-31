@@ -1,5 +1,10 @@
 # Change Log - @stonecrop/atable
 
+## 0.30.0
+Thu, 27 Aug 2026 12:30:32 GMT
+
+_Version update only_
+
 ## 0.29.0
 Tue, 25 Aug 2026 08:42:39 GMT
 

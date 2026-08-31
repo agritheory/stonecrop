@@ -47,6 +47,33 @@ describe('AFormLink component', { tags: ['component'] }, () => {
 		expect(wrapper.find('input').element.value).toBe('Acme Corp')
 	})
 
+	it('shows the display text of a value that arrives already resolved, after mount', async () => {
+		// The shape a real record takes: the field mounts empty, and the row lands a tick later
+		// carrying `{ id, displayText }` — which is what the middleware returns for an inline link.
+		// The resolve-on-id watcher deliberately skips a value that already has its text, so nothing
+		// was left to put that text on screen and the field rendered blank. A bare id was fine,
+		// because it took the resolve branch, which is why this only ever showed up for the links
+		// the server had already done the work for.
+		const wrapper = mount(AFormLink, { props: { modelValue: { id: '', displayText: '' } } })
+		expect(wrapper.find('input').element.value).toBe('')
+
+		await wrapper.setProps({ modelValue: { id: 'CUST-001', displayText: 'Acme Corp' } })
+		await flushPromises()
+		expect(wrapper.find('input').element.value).toBe('Acme Corp')
+	})
+
+	it('formats an already-resolved value that arrives after mount', async () => {
+		// Same path, but proving it goes through `formatter` like every other assignment to the
+		// input does — otherwise a pre-resolved value renders differently from the identical value
+		// picked by hand.
+		const wrapper = mount(AFormLink, {
+			props: { modelValue: { id: '', displayText: '' }, formatter: idFormatter },
+		})
+		await wrapper.setProps({ modelValue: { id: 'CUST-001', displayText: 'Acme Corp' } })
+		await flushPromises()
+		expect(wrapper.find('input').element.value).toBe('#CUST-001')
+	})
+
 	it('falls back to id when displayText is omitted and no filterFunction is provided', () => {
 		const wrapper = mount(AFormLink, {
 			props: { modelValue: { id: 'CUST-001' } },

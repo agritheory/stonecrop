@@ -1,5 +1,12 @@
 # Change Log - @stonecrop/graphql-middleware
 
+## 0.30.0
+Thu, 27 Aug 2026 12:30:32 GMT
+
+### Minor changes
+
+- Return resolved link display text from stonecropAction, and reduce inline links to their column values before an action reaches its guard or handler
+
 ## 0.29.0
 Tue, 25 Aug 2026 08:42:39 GMT
 

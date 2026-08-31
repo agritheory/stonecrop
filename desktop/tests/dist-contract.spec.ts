@@ -36,11 +36,14 @@ describe('dist contract', { tags: ['unit'] }, () => {
 		const { chunks, bare } = readDistContract(packageRoot)
 		expect(chunks).toBeGreaterThan(0)
 
+		// `@stonecrop/schema` is absent because Desktop.vue's last reference to it is a type
+		// position, which erases at build. It stays a declared dependency, so a value import added
+		// back lands here rather than failing anywhere else.
 		expect(
 			bare,
-			`The set of externals changed. Pinia and Vue must stay external so this package shares ` +
-				`the host app's single instance of each.`
-		).toEqual(['@stonecrop/aform', '@stonecrop/schema', '@stonecrop/stonecrop', 'vue'])
+			`The set of externals changed. Vue must stay external so this package shares the host ` +
+				`app's single instance of it.`
+		).toEqual(['@stonecrop/aform', '@stonecrop/stonecrop', 'vue'])
 	})
 
 	// Builds a whole TypeScript program over the emitted declarations, so this costs seconds, not
