@@ -1,26 +1,13 @@
 import { resolve } from 'path'
 import { coverageConfigDefaults, defineConfig } from 'vitest/config'
 
+import { buildTask } from '../common/vite/build-task'
+
 const projectRootDir = resolve(import.meta.dirname)
 
 // https://vitejs.dev/config/
 export default defineConfig({
-	run: {
-		tasks: {
-			// A task rather than a package.json script so `input` can exclude dist. The steps write
-			// into dist and later ones read it, so tracking it as an input self-invalidates the cache
-			// on every run.
-			//
-			// Vite runs first so `emptyOutDir` clears dist. A leading `rm -rf dist` is its own cached
-			// sub-task, and a cache hit replays a snapshot instead of deleting, so stale chunks shipped.
-			build: {
-				command:
-					'vite build --logLevel warn && tsc -b --force && api-extractor run --local -c config/api-extractor.json && node --run docs',
-				input: [{ auto: true }, '!dist/**'],
-				output: ['dist/**'],
-			},
-		},
-	},
+	run: { tasks: buildTask('tsc') },
 	build: {
 		emptyOutDir: true,
 		// Libraries ship unminified; the consumer's bundler minifies.
