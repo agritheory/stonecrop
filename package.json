@@ -6,6 +6,7 @@
 	"scripts": {
 		"build": "vp run -r build && bash common/scripts/run-docs.sh --aggregate",
 		"check:deps": "node common/scripts/check-dependency-consistency.mjs",
+		"check:publish": "node common/scripts/check-publish-contract.mjs",
 		"docs": "vp run -r docs",
 		"docs:full": "bash common/scripts/docs-full.sh",
 		"format": "vp fmt",
@@ -16,7 +17,9 @@
 		"test:types": "vp run -r test:types"
 	},
 	"devDependencies": {
+		"@arethetypeswrong/cli": "0.18.5",
 		"@changesets/cli": "3.0.1",
+		"publint": "0.3.24",
 		"typescript": "catalog:",
 		"vite-plus": "0.3.0"
 	},

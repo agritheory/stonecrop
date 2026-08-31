@@ -14,9 +14,12 @@ export default defineConfig({
 			// `vue-tsc`, not `tsc`: plain tsc resolves an SFC through the ambient `*.vue` shim and
 			// emits no declaration for it, so every component shipped as `ComponentOptions` — `any`
 			// to a consumer, with the rollup importing `.vue` paths absent from the tarball.
+			//
+			// Vite runs first so `emptyOutDir` clears dist. A leading `rm -rf dist` is its own cached
+			// sub-task, and a cache hit replays a snapshot instead of deleting, so stale chunks shipped.
 			build: {
 				command:
-					'rm -rf dist && vue-tsc -b --force && api-extractor run --local -c config/api-extractor.json && vite build --logLevel warn && node --run docs',
+					'vite build --logLevel warn && vue-tsc -b --force && api-extractor run --local -c config/api-extractor.json && node --run docs',
 				input: [{ auto: true }, '!dist/**'],
 				output: ['dist/**'],
 			},
@@ -24,7 +27,7 @@ export default defineConfig({
 	},
 	plugins: [vue()],
 	build: {
-		emptyOutDir: false,
+		emptyOutDir: true,
 		// Libraries ship unminified; the consumer's bundler minifies.
 		minify: false,
 		sourcemap: true,

@@ -1,8 +1,5 @@
 import { existsSync, readFileSync } from 'node:fs'
-import { createRequire } from 'node:module'
 import { dirname, relative, resolve } from 'node:path'
-
-import type ts from 'typescript'
 
 /**
  * The part of a built package that a bundler swap can silently change.
@@ -73,32 +70,6 @@ function readManifest(packageDir: string): { exports?: Record<string, unknown> }
 }
 
 /**
- * Flatten an `exports` map into `[label, target]` pairs.
- *
- * Wildcard subpaths are dropped: the target is a pattern rather than a path, so `existsSync` on the
- * literal string reports a miss for a directory that is present.
- */
-export function collectExportTargets(packageDir: string): { label: string; target: string }[] {
-	const found: { label: string; target: string }[] = []
-
-	const walk = (node: unknown, label: string): void => {
-		if (typeof node === 'string') {
-			if (!node.includes('*')) found.push({ label, target: node })
-			return
-		}
-		if (node && typeof node === 'object') {
-			for (const [condition, child] of Object.entries(node)) walk(child, `${label} [${condition}]`)
-		}
-	}
-
-	for (const [subpath, node] of Object.entries(readManifest(packageDir).exports ?? {})) {
-		if (!subpath.includes('*')) walk(node, subpath)
-	}
-
-	return found
-}
-
-/**
  * Walk the relative-import closure of a built package, starting from its declared JS exports.
  *
  * Reads `dist/`, so it fails on an unbuilt checkout. That is deliberate, and the same call this
@@ -150,89 +121,6 @@ export function readDistContract(packageDir: string): DistContract {
 }
 
 /**
- * The diagnostic codes that mean a public export silently loses its type.
- *
- * - **2307** — the declarations import a module the tarball does not contain. Every export whose
- *   type comes through that module becomes `any`.
- * - **2304** — the declarations reference a name they never declare, which has the same effect.
- *
- * Deliberately not every diagnostic. A stylesheet side-effect import that does not resolve (2882)
- * and a dependency that ships no typings (7016) both fire under `skipLibCheck: false`, but neither
- * changes the type of anything this package exports, so gating on them would fail the build for a
- * reason no consumer can observe through the public API.
+ * The declaration typechecker that stood here resolved as a bundler only and missed two node16
+ * failures attw catches. attw runs repo-wide from `check:publish`; do not reinstate a copy here.
  */
-export const TYPE_ERASING_CODES: ReadonlySet<number> = new Set([2307, 2304])
-
-/** A diagnostic raised inside the package's own shipped declarations. */
-export interface TypesDefect {
-	/** Package-relative path of the declaration file the diagnostic points at. */
-	file: string
-	/** TypeScript's numeric code, e.g. 2307 for an unresolvable module. */
-	code: number
-	message: string
-}
-
-/**
- * Typecheck the declarations a consumer actually resolves, as a consumer resolves them.
- *
- * This is the check that was missing while every component in six packages shipped as `any`. The
- * build was green throughout: `tsc -b` read each SFC through the ambient `*.vue` shim, emitted no
- * declaration for it, and the rollup imported `./components/…/X.vue` paths that are not in the
- * tarball. A consumer on the common `skipLibCheck: true` saw no error and got `any`; one without it
- * got 24 unresolvable modules. Nothing in the build, the unit tests or the API report could see it,
- * because none of them reads the published entry the way an installing consumer does.
- *
- * Two diagnostic classes matter and both are returned:
- *
- * - **2307**, a module the declarations import but the package does not ship;
- * - **2304**, a name they reference but never declare — which is what an API Extractor rollup
- *   produces from a component with a scoped slot, by keeping the emitted `typeof __VLS_6` while
- *   dropping the `declare var __VLS_6` that vue-tsc emitted beside it.
- *
- * Diagnostics from `node_modules` are dropped: a third-party package's own declaration errors are
- * not this package's contract, and including them makes the check fail for unrelated reasons.
- *
- * Returns every diagnostic found in the package's own declarations; callers gate on
- * {@link TYPE_ERASING_CODES}, so a new class of defect shows up in the failure message rather than
- * being filtered out before anyone sees it.
- */
-export function readTypesDefects(packageDir: string): TypesDefect[] {
-	const entries = collectExportTargets(packageDir)
-		.filter(({ label, target }) => label.includes('[types]') || target.endsWith('.d.ts'))
-		.map(({ target }) => resolve(packageDir, target))
-		.filter(existsSync)
-
-	if (entries.length === 0) return []
-
-	// Resolved from the package rather than imported at the top: `common/test-support/` is a bare
-	// folder, not a workspace member, so it has no node_modules of its own to resolve from. Taking it
-	// from the package under test also means the check runs on the compiler that package builds with.
-	const compiler: typeof ts = createRequire(resolve(packageDir, 'package.json'))('typescript')
-
-	const program = compiler.createProgram([...new Set(entries)], {
-		noEmit: true,
-		// The point of the check: `true` is what hides an unresolvable module in a .d.ts.
-		skipLibCheck: false,
-		strict: true,
-		target: compiler.ScriptTarget.ESNext,
-		module: compiler.ModuleKind.ESNext,
-		moduleResolution: compiler.ModuleResolutionKind.Bundler,
-		// A consumer's DOM globals are theirs, not this package's contract; without these, third-party
-		// declarations report missing DOM names that say nothing about what is shipped here.
-		lib: ['lib.esnext.d.ts', 'lib.dom.d.ts', 'lib.dom.iterable.d.ts'],
-	})
-
-	const distDir = resolve(packageDir, 'dist')
-	return compiler
-		.getPreEmitDiagnostics(program)
-		.filter(diagnostic => {
-			const file = diagnostic.file?.fileName
-			if (!file) return false
-			return file.startsWith(distDir) && !file.includes('node_modules')
-		})
-		.map(diagnostic => ({
-			file: relative(packageDir, diagnostic.file!.fileName),
-			code: diagnostic.code,
-			message: compiler.flattenDiagnosticMessageText(diagnostic.messageText, ' '),
-		}))
-}

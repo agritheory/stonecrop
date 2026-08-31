@@ -117,6 +117,10 @@ jobs:
       - name: Verify API Reports And Docs Are Current
         run: git diff --exit-code -- common/reviews/api/ docs/reference/ '*/api.md'
 
+      # Reads each package's packed tarball, so it must follow Build.
+      - name: Verify Publish Contract
+        run: pnpm run check:publish
+
       - name: Oxlint
         run: pnpm run lint
 
