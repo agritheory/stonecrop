@@ -1,35 +1,11 @@
 <script setup lang="ts">
 // Fullstack playground demonstrating @stonecrop/nuxt + nuxt-grafserv
-import SheetNav from '../../../desktop/src/components/SheetNav.vue'
-
 const route = useRoute()
 
 // Nav section highlighting: a link stays lit while you're anywhere under its path
 // (e.g. Orders stays active on /order/2). Home ('/') matches only the exact root.
 const isSection = (base: string) =>
 	base === '/' ? route.path === '/' : route.path === base || route.path.startsWith(`${base}/`)
-
-const breadcrumbs = computed(() => {
-	const path = route.path
-	const parts = path.split('/').filter(Boolean)
-	const crumbs: Array<{ title: string; to: string }> = []
-
-	if (parts.length === 0) return crumbs
-
-	let currentPath = ''
-	for (const segment of parts) {
-		currentPath += `/${segment}`
-
-		const title = segment
-			.split('-')
-			.map(word => word.charAt(0).toUpperCase() + word.slice(1))
-			.join(' ')
-
-		crumbs.push({ title, to: currentPath })
-	}
-
-	return crumbs
-})
 </script>
 
 <template>
@@ -45,13 +21,6 @@ const breadcrumbs = computed(() => {
 		<main class="app-main">
 			<NuxtPage />
 		</main>
-
-		<ClientOnly>
-			<SheetNav :breadcrumbs="breadcrumbs" />
-			<template #fallback>
-				<div class="sheetnav-placeholder" />
-			</template>
-		</ClientOnly>
 	</div>
 </template>
 
@@ -96,15 +65,7 @@ body {
 
 .app-main {
 	flex: 1;
-	padding: 2rem;
+	padding: 2rem 2rem 4.4rem;
 	background: var(--sc-form-background);
-}
-
-.sheetnav-placeholder {
-	position: fixed;
-	bottom: 0;
-	right: 0;
-	height: 2.4rem;
-	width: 180px;
 }
 </style>

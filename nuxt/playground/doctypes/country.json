@@ -86,6 +86,13 @@
 			"component": "ATextInput",
 			"required": true,
 			"source": "introspected"
+		},
+		{
+			"fieldname": "countryExplorer",
+			"label": "Country Explorer",
+			"component": "CountryExplorer",
+			"height": "8rem",
+			"readOnly": true
 		}
 	],
 	"links": {

@@ -51,7 +51,7 @@ describe('SheetNav', { tags: ['component'] }, () => {
 		})
 
 		const hometab = wrapper.find('.hometab')
-		expect(hometab.attributes('style')).toContain('display: block')
+		expect(hometab.attributes('style')).toContain('display: flex')
 
 		// Click the hide/show toggle
 		await wrapper.find('.hidebreadcrumbs').trigger('click')
@@ -60,7 +60,7 @@ describe('SheetNav', { tags: ['component'] }, () => {
 
 		// Click again to restore
 		await wrapper.find('.hidebreadcrumbs').trigger('click')
-		expect(wrapper.find('.hometab').attributes('style')).toContain('display: block')
+		expect(wrapper.find('.hometab').attributes('style')).toContain('display: flex')
 	})
 
 	it('changes the rotate class when breadcrumbs are hidden', async () => {
@@ -83,7 +83,7 @@ describe('SheetNav', { tags: ['component'] }, () => {
 		})
 
 		const hometabBefore = wrapper.find('.hometab').attributes('style')
-		expect(hometabBefore).toContain('display: block')
+		expect(hometabBefore).toContain('display: flex')
 
 		await wrapper.find('.hidebreadcrumbs').trigger('keydown.enter')
 		expect(wrapper.find('.hometab').attributes('style')).toContain('display: none')
@@ -171,5 +171,46 @@ describe('SheetNav', { tags: ['component'] }, () => {
 		// navigateHome is a no-op — just verify no errors
 		await wrapper.find('.hometab').trigger('click')
 		expect(wrapper.find('footer').exists()).toBe(true)
+	})
+
+	it('renders toolbar slot content inside #sheetnav-toolbar', () => {
+		const wrapper = mount(SheetNav, {
+			slots: {
+				toolbar: '<div class="test-toolbar">Plan controls</div>',
+			},
+			global: globalConfig,
+		})
+
+		const toolbar = wrapper.find('#sheetnav-toolbar')
+		expect(toolbar.exists()).toBe(true)
+		expect(toolbar.text()).toContain('Plan controls')
+		expect(wrapper.find('.tabs').exists()).toBe(true)
+	})
+
+	it('accepts teleported toolbar content in #sheetnav-toolbar', async () => {
+		mount(SheetNav, {
+			props: {
+				breadcrumbs: [{ title: 'Plan', to: '/plan' }],
+			},
+			global: globalConfig,
+			attachTo: document.body,
+		})
+		await nextTick()
+
+		mount(
+			{
+				template: `
+					<Teleport to="#sheetnav-toolbar">
+						<div class="teleported-toolbar">Teleported controls</div>
+					</Teleport>
+				`,
+			},
+			{ attachTo: document.body }
+		)
+		await nextTick()
+
+		const toolbar = document.querySelector('#sheetnav-toolbar')
+		expect(toolbar).not.toBeNull()
+		expect(toolbar?.textContent).toContain('Teleported controls')
 	})
 })
