@@ -96,6 +96,12 @@ export const STONECROP_PACKAGES = [
  */
 export const STONECROP_TOKENS = '@stonecrop/themes/default.css'
 
+// Client-side singletons the component packages declare as peers and Nuxt does not already
+// dedupe. `vue-router` belongs to that same class but is deliberately absent: Nuxt's pages module
+// pushes it onto this very array, and this module always calls extendPages, so listing it here
+// only duplicates the entry.
+const STONECROP_SINGLETONS = ['pinia']
+
 export default defineNuxtModule<ModuleOptions>({
 	meta: {
 		name: '@stonecrop/nuxt',
@@ -122,6 +128,17 @@ export default defineNuxtModule<ModuleOptions>({
 			}
 		}
 		logger.log('Added Stonecrop packages to build.transpile for SSR CSS handling')
+
+		// A package reached by `link:` sits outside the app, so its peers resolve from its own tree
+		// rather than the consumer's. Two Pinia copies each hold their own inject keys, which
+		// surfaces as a store that never activates — no error, just undefined.
+		nuxt.options.vite.resolve = nuxt.options.vite.resolve || {}
+		nuxt.options.vite.resolve.dedupe = nuxt.options.vite.resolve.dedupe || []
+		for (const dep of STONECROP_SINGLETONS) {
+			if (!nuxt.options.vite.resolve.dedupe.includes(dep)) {
+				nuxt.options.vite.resolve.dedupe.push(dep)
+			}
+		}
 
 		// Keep Nuxt's auto-import transform away from the prebuilt dists. Its node_modules guard
 		// checks resolved paths, and pnpm symlinks resolve these dists to paths outside
