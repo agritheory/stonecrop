@@ -101,12 +101,14 @@ jobs:
       # to exist before lint runs; without this build step, unresolvable imports appear as
       # "error typed" and trigger false positives.
       #
-      # No cross-run task cache. Vite Task's cache lives in node_modules/.vite/task-cache and
-      # restoring it across runs is documented as experimental, with the precondition that an
-      # immediate second run reports a cache hit. It does not here: each `&&` step of a package's
-      # build writes into dist/, which is also tracked as that build's input, so two consecutive
-      # identical runs still miss roughly half the sub-tasks. A cold full build is ~16s, so there
-      # is nothing to buy back.
+      # No cross-run task cache, deliberately. Restoring node_modules/.vite/task-cache across runs
+      # meets its documented precondition — an immediate second run is now a full hit, since
+      # `!dist/**` left the tracked inputs — so this is a choice rather than a blocker.
+      #
+      # The reason is that replay is additive: it restores an output snapshot without first
+      # deleting what is there, so anything that once reached dist/ survives every warm build. A
+      # cold runner is the only place that property cannot bite, and a full build is short enough
+      # that keeping it is worth more than the seconds a warm one would save.
       - name: Build
         run: pnpm run build
 
