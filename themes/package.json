@@ -1,36 +1,50 @@
 {
 	"name": "@stonecrop/themes",
 	"version": "0.30.0",
+	"description": "Design tokens and the default theme for Stonecrop",
+	"keywords": [
+		"css",
+		"design-tokens",
+		"stonecrop",
+		"theme"
+	],
+	"homepage": "https://github.com/agritheory/stonecrop#readme",
 	"bugs": {
 		"url": "https://github.com/agritheory/stonecrop/issues"
+	},
+	"author": {
+		"name": "Tyler Matteson",
+		"email": "tyler@agritheory.com"
 	},
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/agritheory/stonecrop",
 		"directory": "themes"
 	},
-	"author": {
-		"name": "Tyler Matteson",
-		"email": "tyler@agritheory.com"
-	},
+	"files": [
+		"dist"
+	],
 	"type": "module",
+	"sideEffects": [
+		"**/*.css"
+	],
 	"exports": {
-		"./default.css": "./dist/default.css"
+		"./default.css": "./dist/default.css",
+		"./package.json": "./package.json"
+	},
+	"publishConfig": {
+		"access": "public"
 	},
 	"scripts": {
-		"_phase:build": "vite build",
-		"build": "vite build",
+		"build": "vite build --logLevel warn",
 		"dev": "vite",
 		"preview": "vite preview",
 		"prepublish": "vite build"
 	},
 	"devDependencies": {
-		"vite": "^7.3.2"
+		"vite": "catalog:"
 	},
 	"engines": {
 		"node": ">=24.0.0"
-	},
-	"publishConfig": {
-		"access": "public"
 	}
 }

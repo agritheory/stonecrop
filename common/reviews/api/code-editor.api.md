@@ -4,10 +4,15 @@
 
 ```ts
 
-import ACodeEditor from './components/ACodeEditor.vue';
 import { App } from 'vue';
+import { ComponentOptionsMixin } from 'vue';
+import { ComponentProvideOptions } from 'vue';
+import { DefineComponent } from 'vue';
+import type { editor } from 'monaco-editor';
+import { PublicProps } from 'vue';
 
-export { ACodeEditor }
+// @public (undocumented)
+export const ACodeEditor: typeof __VLS_export;
 
 // @public
 export function install(app: App): void;

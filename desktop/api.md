@@ -4,14 +4,6 @@
 
 ## Vue Components
 
-### ActionEventPayload
-
-Vue component exported from @stonecrop/desktop.
-
-```typescript
-import { ActionEventPayload } from '@stonecrop/desktop'
-```
-
 ### ActionSet
 
 Vue component exported from @stonecrop/desktop.
@@ -19,6 +11,18 @@ Vue component exported from @stonecrop/desktop.
 ```typescript
 import { ActionSet } from '@stonecrop/desktop'
 ```
+
+**Props:**
+
+| Prop | Type | Required | Default | Description |
+|------|------|----------|---------|-------------|
+| elements | `ActionElements[] \| undefined` | no | `[]` |  |
+
+**Events:**
+
+| Event | Payload | Description |
+|-------|---------|-------------|
+| actionClick | `[label: string, action: (() => void \| Promise<void>) \| undefined]` |  |
 
 ### CommandPalette
 
@@ -28,6 +32,30 @@ Vue component exported from @stonecrop/desktop.
 import { CommandPalette } from '@stonecrop/desktop'
 ```
 
+**Props:**
+
+| Prop | Type | Required | Default | Description |
+|------|------|----------|---------|-------------|
+| search | `(query: string) => T[]` | yes |  |  |
+| isOpen | `boolean \| undefined` | no | `false` |  |
+| placeholder | `string \| undefined` | no | `"Type a command or search..."` |  |
+| maxResults | `number \| undefined` | no | `10` |  |
+
+**Events:**
+
+| Event | Payload | Description |
+|-------|---------|-------------|
+| select | `[T]` |  |
+| close | `[]` |  |
+
+**Slots:**
+
+| Slot | Props | Description |
+|------|-------|-------------|
+| title | `any` |  |
+| content | `any` |  |
+| empty | `any` |  |
+
 ### Desktop
 
 Vue component exported from @stonecrop/desktop.
@@ -36,6 +64,23 @@ Vue component exported from @stonecrop/desktop.
 import { Desktop } from '@stonecrop/desktop'
 ```
 
+**Props:**
+
+| Prop | Type | Required | Default | Description |
+|------|------|----------|---------|-------------|
+| availableDoctypes | `string[] \| undefined` | no | `[]` |  |
+| routeAdapter | `RouteAdapter \| undefined` | no |  | Pluggable router adapter. When provided, Desktop uses these functions for all routing instead of reaching into the registry's internal Vue Router instance. Nuxt hosts (or any host with custom route conventions) should supply this. |
+
+**Events:**
+
+| Event | Payload | Description |
+|-------|---------|-------------|
+| action | `[payload: ActionEventPayload]` |  |
+| navigate | `[target: NavigationTarget]` |  |
+| record:open | `[payload: RecordOpenEventPayload]` |  |
+| load-records | `[payload: LoadRecordsEventPayload]` |  |
+| load-record | `[payload: LoadRecordEventPayload]` |  |
+
 ### SheetNav
 
 Vue component exported from @stonecrop/desktop.
@@ -43,6 +88,12 @@ Vue component exported from @stonecrop/desktop.
 ```typescript
 import { SheetNav } from '@stonecrop/desktop'
 ```
+
+**Props:**
+
+| Prop | Type | Required | Default | Description |
+|------|------|----------|---------|-------------|
+| breadcrumbs | `{ title: string; to: string; }[] \| undefined` | no | `[]` |  |
 
 ## Other Components
 
@@ -182,4 +233,46 @@ export type RouteAdapter = {
     navigate: (target: NavigationTarget) => void | Promise<void>;
 };
 ```
+
+## Variables
+
+### ActionSet
+
+**Type:**
+
+```typescript
+export const ActionSet: typeof __VLS_export
+```
+
+### CommandPalette
+
+**Type:**
+
+```typescript
+export const CommandPalette: typeof __VLS_export
+```
+
+### Desktop
+
+**Type:**
+
+```typescript
+export const Desktop: typeof __VLS_export
+```
+
+### SheetNav
+
+**Type:**
+
+```typescript
+export const SheetNav: typeof __VLS_export
+```
+
+## Re-exported
+
+Declared elsewhere and re-exported by this package.
+
+| Name | From |
+|------|------|
+| ActionEventPayload | `./types` |
 

@@ -98,12 +98,8 @@ jspm_packages/
 !.vscode/tasks.json
 !.vscode/launch.json
 
-# Rush temporary files
-common/deploy/
-common/temp/
-common/autoinstallers/*/.npmrc
-**/.rush/temp/
-*.lock
+# Vite+ generated git hook dispatcher; the hook scripts beside it are committed
+.vite-hooks/_/
 
 # Common toolchain intermediate files
 temp/
@@ -118,9 +114,8 @@ dist-storybook/
 tsdoc-metadata.json
 *.tsbuildinfo
 
-# Heft temporary files
+# Tool caches
 .cache/
-.heft/
 
 # Vitest output files
 .vite/

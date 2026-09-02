@@ -19,7 +19,9 @@
 				</div>
 			</div>
 
-			<AFieldset label="Workflow" :collapsible="true">
+			<!-- `schema` is empty on purpose: AFieldset renders an AForm from it only as slot fallback,
+			     and each of these fieldsets fills the slot with its own panel. -->
+			<AFieldset label="Workflow" :schema="[]" :collapsible="true">
 				<div class="builder-workflow">
 					<StateEditor
 						v-if="workflowConfig && workflowConfig.states && workflowConfig.states.length > 0"
@@ -38,11 +40,11 @@
 				</div>
 			</AFieldset>
 
-			<AFieldset label="Actions" :collapsible="true">
+			<AFieldset label="Actions" :schema="[]" :collapsible="true">
 				<DocBuilderActionsPanel v-model="workflowConfig" />
 			</AFieldset>
 
-			<AFieldset label="Schema" :collapsible="true">
+			<AFieldset label="Schema" :schema="[]" :collapsible="true">
 				<DocBuilderFieldsPanel v-model="fields" />
 			</AFieldset>
 

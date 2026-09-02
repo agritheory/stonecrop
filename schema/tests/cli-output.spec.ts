@@ -12,7 +12,7 @@ import { validateDoctype } from '../src/index'
  * Spawns `dist/cli.js` rather than reassembling its serialization, because the defect this guards
  * lives in the write path itself: a helper can strip `kind` perfectly while the caller forgets to
  * call it, and a test that stringifies the merge result on its own behalf would pass either way.
- * `rush build` runs before `rush test` in CI, so dist is present; a missing one fails loudly here
+ * The build runs before the tests in CI, so dist is present; a missing one fails loudly here
  * rather than skipping, since a skipped guard reports the same green as a passing one.
  */
 

@@ -2,12 +2,18 @@ import vue from '@vitejs/plugin-vue'
 import { resolve } from 'path'
 import { coverageConfigDefaults, defineConfig } from 'vitest/config'
 
-const projectRootDir = resolve(__dirname)
+import { buildTask } from '../common/vite/build-task.ts'
+import { testTags } from '../common/vite/test-tags.ts'
+
+const projectRootDir = resolve(import.meta.dirname)
 
 export default defineConfig({
+	run: { tasks: buildTask('tsc') },
 	plugins: [vue()],
 	build: {
-		emptyOutDir: false,
+		emptyOutDir: true,
+		// Libraries ship unminified; the consumer's bundler minifies.
+		minify: false,
 		sourcemap: true,
 		lib: {
 			entry: resolve(projectRootDir, 'src/index.ts'),
@@ -25,10 +31,7 @@ export default defineConfig({
 	},
 	test: {
 		globals: true,
-		tags: [
-			{ name: 'unit', description: 'Pure logic test — no DOM, network, or framework runtime.' },
-			{ name: 'component', description: 'Vue component test using jsdom + @vue/test-utils.' },
-		],
+		tags: testTags,
 		environment: 'jsdom',
 		coverage: {
 			enabled: true,

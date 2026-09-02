@@ -3,9 +3,9 @@
 	"version": "0.30.0",
 	"description": "CASL authorization middleware for GraphQL servers",
 	"keywords": [
+		"authorization",
 		"casl",
 		"graphql",
-		"authorization",
 		"middleware",
 		"postgraphile",
 		"rockfoil"
@@ -14,38 +14,37 @@
 	"bugs": {
 		"url": "https://github.com/agritheory/stonecrop/issues"
 	},
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/agritheory/stonecrop",
-		"directory": "casl_middleware"
-	},
 	"license": "MIT",
 	"author": {
 		"name": "Tyler Matteson",
 		"email": "support@agritheory.dev"
 	},
-	"sideEffects": false,
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/agritheory/stonecrop",
+		"directory": "casl_middleware"
+	},
+	"files": [
+		"dist",
+		"!dist/src"
+	],
 	"type": "module",
+	"sideEffects": false,
+	"types": "./dist/casl-middleware.d.ts",
 	"exports": {
 		".": {
 			"types": "./dist/casl-middleware.d.ts",
 			"import": "./dist/casl-middleware.js"
 		},
-		"./types": "./dist/src/types/index.d.ts"
+		"./types": "./dist/casl-middleware.d.ts",
+		"./package.json": "./package.json"
 	},
-	"types": "./dist/casl-middleware.d.ts",
-	"files": [
-		"dist/*",
-		"src/*"
-	],
 	"scripts": {
-		"_phase:build": "heft build --clean && vite build && rushx docs",
-		"build": "heft build --clean && vite build && rushx docs",
 		"dev": "vite",
 		"docs": "bash ../common/scripts/run-docs.sh casl_middleware",
 		"lint": "oxlint",
 		"lint:fix": "oxlint --fix",
-		"prepublishOnly": "heft build --clean && vite build && rushx docs",
+		"prepublishOnly": "vp run build",
 		"preview": "vite preview",
 		"test": "vitest run --coverage.enabled false",
 		"test:coverage": "vitest run --coverage",
@@ -54,7 +53,7 @@
 	},
 	"dependencies": {
 		"@casl/ability": "^6.8.0",
-		"graphql": "^16.14.0",
+		"graphql": "catalog:",
 		"graphql-tag": "^2.12.6",
 		"jsonwebtoken": "^9.0.3"
 	},
@@ -62,20 +61,19 @@
 		"@graphql-tools/merge": "^9.1.7",
 		"@graphql-tools/schema": "^10.0.31",
 		"@graphql-tools/utils": "^11.0.0",
-		"@rushstack/heft": "^1.2.17",
+		"@microsoft/api-extractor": "catalog:",
 		"@types/jsonwebtoken": "~9.0.10",
-		"@types/node": "^24.12.4",
-		"@vitest/coverage-istanbul": "^4.1.5",
+		"@types/node": "catalog:",
+		"@vitest/coverage-istanbul": "catalog:",
 		"graphql-middleware": "^6.1.35",
-		"graphql-yoga": "^5.18.0",
-		"jsdom": "^29.1.1",
-		"oxlint": "1.67.0",
-		"oxlint-tsgolint": "0.23.0",
-		"postgraphile": "^5.0.3",
-		"stonecrop-rig": "workspace:*",
-		"typescript": "^6.0.3",
-		"vite": "^7.3.2",
-		"vitest": "^4.1.5"
+		"graphql-yoga": "catalog:",
+		"jsdom": "catalog:",
+		"oxlint": "catalog:",
+		"oxlint-tsgolint": "catalog:",
+		"postgraphile": "catalog:",
+		"typescript": "catalog:",
+		"vite": "catalog:",
+		"vitest": "catalog:"
 	},
 	"peerDependencies": {
 		"graphql-yoga": "^5.18.0",
@@ -85,5 +83,8 @@
 		"postgraphile": {
 			"optional": true
 		}
+	},
+	"engines": {
+		"node": ">=24.0.0"
 	}
 }

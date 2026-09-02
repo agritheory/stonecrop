@@ -2,40 +2,50 @@
 	"name": "@stonecrop/stonecrop",
 	"version": "0.30.0",
 	"description": "Schema-driven framework with XState workflows and HST state management",
+	"keywords": [
+		"framework",
+		"schema-driven",
+		"stonecrop",
+		"ui",
+		"vue"
+	],
+	"homepage": "https://github.com/agritheory/stonecrop#readme",
 	"bugs": {
 		"url": "https://github.com/agritheory/stonecrop/issues"
-	},
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/agritheory/stonecrop",
-		"directory": "stonecrop"
 	},
 	"license": "MIT",
 	"author": {
 		"name": "Tyler Matteson",
 		"email": "tyler@agritheory.com"
 	},
-	"sideEffects": false,
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/agritheory/stonecrop",
+		"directory": "stonecrop"
+	},
+	"files": [
+		"dist",
+		"!dist/src"
+	],
 	"type": "module",
+	"sideEffects": false,
+	"types": "./dist/stonecrop.d.ts",
 	"exports": {
 		".": {
 			"types": "./dist/stonecrop.d.ts",
 			"import": "./dist/stonecrop.js"
 		},
-		"./types": "./dist/src/types/index.d.ts"
+		"./types": "./dist/stonecrop.d.ts",
+		"./package.json": "./package.json"
 	},
-	"types": "./dist/stonecrop.d.ts",
-	"files": [
-		"dist/*",
-		"src/*"
-	],
+	"publishConfig": {
+		"access": "public"
+	},
 	"scripts": {
-		"_phase:build": "heft build --clean && vite build && rushx docs",
-		"build": "heft build --clean && vite build && rushx docs",
 		"docs": "bash ../common/scripts/run-docs.sh stonecrop",
 		"lint": "oxlint",
 		"lint:fix": "oxlint --fix",
-		"prepublishOnly": "heft build --clean && vite build && rushx docs",
+		"prepublishOnly": "vp run build",
 		"preview": "vite preview",
 		"test": "vitest run --coverage.enabled false",
 		"test:coverage": "vitest run --coverage",
@@ -47,27 +57,25 @@
 		"@stonecrop/aform": "workspace:*",
 		"@stonecrop/atable": "workspace:*",
 		"@stonecrop/schema": "workspace:*",
-		"@vueuse/core": "^14.2.1",
-		"immutable": "^5.1.4",
+		"@vueuse/core": "catalog:",
+		"immutable": "catalog:",
 		"pinia-shared-state": "^1.0.1",
 		"xstate": "^5.25.0"
 	},
 	"devDependencies": {
-		"@microsoft/api-documenter": "^7.30.5",
-		"@rushstack/heft": "^1.2.17",
-		"@vitejs/plugin-vue": "^6.0.6",
-		"@vitest/coverage-istanbul": "^4.1.5",
-		"@vue/test-utils": "^2.4.10",
-		"jsdom": "^29.1.1",
-		"oxlint": "1.67.0",
-		"oxlint-tsgolint": "0.23.0",
-		"pinia": "^3.0.4",
-		"stonecrop-rig": "workspace:*",
-		"typescript": "^6.0.3",
-		"vite": "^7.3.2",
-		"vitest": "^4.1.5",
-		"vue": "^3.5.33",
-		"vue-router": "^5.0.6"
+		"@microsoft/api-extractor": "catalog:",
+		"@vitejs/plugin-vue": "catalog:",
+		"@vitest/coverage-istanbul": "catalog:",
+		"@vue/test-utils": "catalog:",
+		"jsdom": "catalog:",
+		"oxlint": "catalog:",
+		"oxlint-tsgolint": "catalog:",
+		"pinia": "catalog:",
+		"typescript": "catalog:",
+		"vite": "catalog:",
+		"vitest": "catalog:",
+		"vue": "catalog:",
+		"vue-router": "catalog:"
 	},
 	"peerDependencies": {
 		"pinia": "^3.0.4",
@@ -76,8 +84,5 @@
 	},
 	"engines": {
 		"node": ">=24.0.0"
-	},
-	"publishConfig": {
-		"access": "public"
 	}
 }

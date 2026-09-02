@@ -2,24 +2,6 @@
 
 > This documentation is automatically generated from the TypeScript API.
 
-## Vue Components
-
-### DoctypeContext
-
-Vue component exported from @stonecrop/graphql_client.
-
-```typescript
-import { DoctypeContext } from '@stonecrop/graphql_client'
-```
-
-### DoctypeMeta
-
-Vue component exported from @stonecrop/graphql_client.
-
-```typescript
-import { DoctypeMeta } from '@stonecrop/graphql_client'
-```
-
 ## Interfaces
 
 ### GetRecordResult
@@ -192,4 +174,13 @@ runAction(doctype: DoctypeRef, action: string, args: unknown[]): Promise<{
 | doctype | `DoctypeRef` | Doctype reference (name and optional slug) |
 | action | `string` | Action name to execute |
 | args | `unknown[]` | Action arguments |
+
+## Re-exported
+
+Declared elsewhere and re-exported by this package.
+
+| Name | From |
+|------|------|
+| DoctypeMeta | `@stonecrop/schema` |
+| DoctypeContext | `./client` |
 

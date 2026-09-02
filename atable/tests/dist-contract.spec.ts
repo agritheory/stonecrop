@@ -1,0 +1,34 @@
+import { resolve } from 'node:path'
+
+import { describe, expect, it } from 'vitest'
+
+import { readDistContract } from '../../common/test-support/dist-contract'
+
+const packageRoot = resolve(__dirname, '..')
+
+/**
+ * atable is the only Vue package that imports Pinia at runtime rather than only declaring it as a
+ * peer, so an externals regression here ships a second store instance into every consumer app.
+ */
+describe('dist contract', { tags: ['unit'] }, () => {
+	it('leaves exactly the expected dependencies external', () => {
+		const { chunks, bare } = readDistContract(packageRoot)
+		expect(chunks).toBeGreaterThan(0)
+
+		expect(
+			bare,
+			`The set of externals changed. A specifier that disappeared is now bundled into dist — ` +
+				`for vue or pinia that ships a second copy into every consumer app.`
+		).toEqual(['@stonecrop/schema', '@stonecrop/utilities', '@vueuse/components', '@vueuse/core', 'pinia', 'vue'])
+	})
+
+	it('side-effect-imports its stylesheet from the entry', () => {
+		const { css } = readDistContract(packageRoot)
+
+		expect(
+			css,
+			`libInjectCss no longer injects the stylesheet import. Consumers that import the package ` +
+				`without also importing '@stonecrop/atable/styles' render unstyled.`
+		).toEqual(['./assets/index.css'])
+	})
+})

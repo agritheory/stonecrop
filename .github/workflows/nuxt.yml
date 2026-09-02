@@ -12,6 +12,9 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  VP_GIT_HOOKS: 0
+
 jobs:
   test:
     name: nuxt
@@ -24,66 +27,40 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Enable Corepack
-        run: corepack enable
-
       - name: Install Node
         uses: actions/setup-node@v6
         with:
           node-version: 24
-          cache-dependency-path: '**/config/rush/pnpm-lock.yaml'
           registry-url: https://registry.npmjs.org/
 
-      - name: Restore Rush Build Cache
-        id: cache-restore
-        uses: actions/cache/restore@v5
-        with:
-          path: common/temp/build-cache
-          key: rush-build-cache-nuxt-${{ hashFiles('common/config/rush/pnpm-lock.yaml') }}-${{ github.run_id }}
-          restore-keys: |
-            rush-build-cache-nuxt-${{ hashFiles('common/config/rush/pnpm-lock.yaml') }}-
-            rush-build-cache-nuxt-
-            rush-build-cache-
+      # Supplies the pnpm pinned by the root package.json's "packageManager" field.
+      - name: Enable Corepack
+        run: corepack enable
 
-      # actions/setup-node's `cache: 'pnpm'` calls `pnpm store path` during
-      # setup — before Rush has installed its own managed pnpm binary at ~/.rush/.
-      # We cache ~/.rush (the binary) and ~/.local/share/pnpm/store (the package
-      # store) explicitly so that rush install can skip downloading all packages.
-      - name: Cache Rush pnpm Store
+      # pnpm's global content-addressable store. Cached explicitly rather than through
+      # setup-node's `cache: pnpm`, which runs `pnpm store path` during setup — before corepack
+      # has materialized the pinned pnpm.
+      - name: Cache pnpm Store
         uses: actions/cache@v5
         with:
-          path: |
-            ~/.rush
-            ~/.local/share/pnpm/store
-          key: rush-pnpm-${{ runner.os }}-${{ hashFiles('common/config/rush/pnpm-lock.yaml') }}
-          restore-keys: rush-pnpm-${{ runner.os }}-
+          path: ~/.local/share/pnpm/store
+          key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: pnpm-${{ runner.os }}-
 
-      - name: Rush Install
-        run: node common/scripts/install-run-rush.js install
+      - name: Install
+        run: pnpm install --frozen-lockfile
 
-      - name: Install Autoinstallers
-        run: |
-          node common/scripts/install-run-rush.js install-autoinstaller --name rush-plugins
-          node common/scripts/install-run-rush.js install-autoinstaller --name doc-tools
-
-      - name: Rush Build
-        run: node common/scripts/install-run-rush.js build --to @stonecrop/nuxt
+      - name: Build
+        run: pnpm exec vp run -t '@stonecrop/nuxt#build'
 
       - name: Prepare Playground
         working-directory: nuxt/
-        run: node ../common/scripts/install-run-rushx.js dev:prepare
+        run: pnpm run dev:prepare
 
       - name: Run Tests
         working-directory: nuxt/
-        run: node ../common/scripts/install-run-rushx.js test
+        run: pnpm run test
 
       - name: Type Check
         working-directory: nuxt/
-        run: node ../common/scripts/install-run-rushx.js test:types
-
-      - name: Save Rush Build Cache
-        if: always()
-        uses: actions/cache/save@v5
-        with:
-          path: common/temp/build-cache
-          key: ${{ steps.cache-restore.outputs.cache-primary-key }}
+        run: pnpm run test:types

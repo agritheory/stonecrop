@@ -4,15 +4,35 @@ on:
   pull_request:
     branches:
       - development
+    # The open-PR actions reach the rehearsal below; `closed` reaches the publish. A pull
+    # request runs its own head's copy of this file, so the rehearsal needs nothing merged
+    # first — which is the whole reason it is not on workflow_dispatch alone.
     types:
+      - opened
+      - synchronize
+      - reopened
       - closed
+  # Kept for rehearsing a branch with no open PR. GitHub registers this trigger from the
+  # default branch only, so it does nothing until it has reached development.
+  workflow_dispatch:
+
+# Supersedes a rehearsal when the PR is pushed again. Closed runs sit in their own group
+# and never set cancel-in-progress, so a merge can never cancel or be cancelled by one.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}-${{ github.event.action == 'closed' }}
+  cancel-in-progress: ${{ github.event.action != 'closed' }}
 
 permissions:
   contents: read
 
+env:
+  VP_GIT_HOOKS: 0
+
 jobs:
+  # Unchanged by the open-PR triggers above: an open pull request carries merged: false and
+  # a dispatch carries no pull_request at all, so neither can reach the registry.
   publish-npm:
-    if: github.event.pull_request.merged == true
+    if: github.event_name == 'pull_request' && github.event.pull_request.merged == true
     runs-on: ubuntu-latest
 
     permissions:
@@ -26,53 +46,34 @@ jobs:
       - uses: actions/checkout@v6
         name: Checkout
 
-      # No registry-url: it exports NPM_CONFIG_USERCONFIG, which shadows the .npmrc
-      # that "rush publish" installs in common/temp/publish-home.
+      # No registry-url: it exports NPM_CONFIG_USERCONFIG, which shadows the repo's own .npmrc.
       - uses: actions/setup-node@v6
         name: Install Node.js
         with:
           node-version: 24
           package-manager-cache: false
 
+      # Supplies the pnpm pinned by the root package.json's "packageManager" field.
+      - name: Enable Corepack
+        run: corepack enable
+
       - name: Set Git User
         run: |
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git config user.name "github-actions[bot]"
 
-      - name: Restore Rush Build Cache
-        id: cache-restore
-        uses: actions/cache/restore@v5
-        with:
-          path: common/temp/build-cache
-          key: rush-build-cache-release-${{ hashFiles('common/config/rush/pnpm-lock.yaml') }}-${{ github.run_id }}
-          restore-keys: |
-            rush-build-cache-release-${{ hashFiles('common/config/rush/pnpm-lock.yaml') }}-
-            rush-build-cache-release-
-            rush-build-cache-
-
-      # actions/setup-node's `cache: 'pnpm'` calls `pnpm store path` during
-      # setup — before Rush has installed its own managed pnpm binary at ~/.rush/.
-      # We cache ~/.rush (the binary) and ~/.local/share/pnpm/store (the package
-      # store) explicitly so that rush install can skip downloading all packages.
-      - name: Cache Rush pnpm Store
+      - name: Cache pnpm Store
         uses: actions/cache@v5
         with:
-          path: |
-            ~/.rush
-            ~/.local/share/pnpm/store
-          key: rush-pnpm-${{ runner.os }}-${{ hashFiles('common/config/rush/pnpm-lock.yaml') }}
-          restore-keys: rush-pnpm-${{ runner.os }}-
+          path: ~/.local/share/pnpm/store
+          key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: pnpm-${{ runner.os }}-
 
-      - name: Install Rush
-        run: node common/scripts/install-run-rush.js install
-
-      - name: Install Autoinstallers
-        run: |
-          node common/scripts/install-run-rush.js install-autoinstaller --name doc-tools
-          node common/scripts/install-run-rush.js install-autoinstaller --name rush-plugins
+      - name: Install
+        run: pnpm install --frozen-lockfile
 
       - name: Build Stonecrop
-        run: node common/scripts/install-run-rush.js rebuild
+        run: pnpm run build
 
       # Must run before the version bump: a bad trusted publisher only surfaces
       # mid-publish, after the bump is pushed, leaving lockstep packages depending on
@@ -80,17 +81,110 @@ jobs:
       - name: Validate Trusted Publishing
         run: bash common/scripts/validate-trusted-publishing.sh
 
+      # Rewrites every package.json version and CHANGELOG.md and consumes the changeset files.
+      # `commit: false` in .changeset/config.json means this leaves the result in the working
+      # tree, so the commit below is what records it.
       - name: Bump Version for Packages
-        run: node common/scripts/install-run-rush.js version --bump --target-branch development --ignore-git-hooks
+        run: pnpm exec changeset version
 
+      # Before the push, not after. A publish that dies partway leaves development untouched,
+      # so a re-run replays the same bump and pnpm skips whatever already landed. Pushing
+      # first strands the re-run: the push below then fails non-fast-forward.
+      #
       # No auth token: pnpm exchanges the job's id-token for a registry credential.
       # Each package needs a trusted publisher on npmjs.com naming this workflow.
-      - name: Publish Packages via Rush
-        run: node common/scripts/install-run-rush.js publish --apply --publish --include-all --version-policy stonecrop --target-branch development --add-commit-details --set-access-level=public
+      - name: Publish Packages
+        run: pnpm -r publish --access public --no-git-checks
 
-      - name: Save Rush Build Cache
-        if: always()
-        uses: actions/cache/save@v5
+      # `pnpm -r publish` does not tag, where Rush did, so a release would otherwise land
+      # untagged with nothing reporting it.
+      - name: Commit Version Bump
+        run: |
+          git add -A
+          git commit -m "Bump versions [skip ci]"
+          pnpm exec changeset git-tag
+          git push --follow-tags origin HEAD:development
+
+  # A rehearsal of publish-npm that stops one step short of the registry. It runs on every
+  # open pull request, so the path is exercised before the merge that would publish it:
+  # publish-npm runs only on merge, which would make the first real release the first test.
+  #
+  # It lives in this file rather than its own because npm matches a trusted publisher on
+  # the workflow filename. A separate file authenticates as nothing and reports it as a 404.
+  #
+  # Skipped for a fork PR, which is issued no id-token, so Validate Trusted Publishing
+  # would fail there on the contribution's origin rather than on anything being wrong.
+  release-dry-run:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.action != 'closed' &&
+      github.event.pull_request.head.repo.full_name == github.repository)
+    runs-on: ubuntu-latest
+
+    permissions:
+      # The OIDC exchange is the half of the release that cannot be rehearsed locally, so
+      # this job needs the same job-level id-token the real publish does.
+      id-token: write
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v6
+        name: Checkout
+
+      - uses: actions/setup-node@v6
+        name: Install Node.js
         with:
-          path: common/temp/build-cache
-          key: ${{ steps.cache-restore.outputs.cache-primary-key }}
+          node-version: 24
+          package-manager-cache: false
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Cache pnpm Store
+        uses: actions/cache@v5
+        with:
+          path: ~/.local/share/pnpm/store
+          key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: pnpm-${{ runner.os }}-
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Build Stonecrop
+        run: pnpm run build
+
+      - name: Validate Trusted Publishing
+        run: bash common/scripts/validate-trusted-publishing.sh
+
+      - name: Bump Version for Packages
+        run: pnpm exec changeset version
+
+      # Asserts the "fixed" group in .changeset/config.json held. A convention check, not a
+      # safety one: pnpm rewrites `workspace:*` to the version a sibling actually carries, so
+      # a split still resolves.
+      - name: Check the Lockstep Group Landed on One Version
+        run: |
+          versions=$(pnpm list -r --depth -1 --json | jq -r '.[] | select(.private == false) | .version' | sort -u)
+          if [ "$(printf '%s\n' "$versions" | wc -l)" -ne 1 ]; then
+            echo "::error::the lockstep group split across: $(printf '%s' "$versions" | tr '\n' ' ')"
+            exit 1
+          fi
+          echo "::notice::every publishable package is at ${versions}"
+          git --no-pager diff --stat
+
+      # Nothing above this point was committed or pushed, so the bump exists only in the
+      # runner's tree. --dry-run still runs each package's prepublishOnly, which is the
+      # clean-and-rebuild the real publish performs, so this covers everything but the PUT.
+      - name: Publish Packages (Dry Run)
+        run: pnpm -r publish --access public --no-git-checks --dry-run
+
+      # Rehearses the tagging publish-npm does, so it cannot regress unnoticed until a release
+      # depends on it. The tags stay in the runner's tree; this job has no push.
+      - name: Tag Release (Dry Run)
+        run: |
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          pnpm exec changeset git-tag
+          count=$(git tag --list --points-at HEAD | wc -l)
+          echo "::notice::tagged ${count} packages"
+          [ "${count}" -gt 0 ]

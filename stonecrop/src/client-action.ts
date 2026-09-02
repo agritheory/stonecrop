@@ -183,7 +183,8 @@ export function useClientAction(options: UseClientActionOptions = {}) {
 				query<T = unknown>(query: string, variables?: Record<string, unknown>): Promise<T> {
 					// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- probing DataClient for the GraphQL transport's `query`, which the abstract interface deliberately does not declare
 					const client = sc.getClient() as unknown as
-						{ query?: <R>(q: string, v?: Record<string, unknown>) => Promise<R> } | undefined
+						| { query?: <R>(q: string, v?: Record<string, unknown>) => Promise<R> }
+						| undefined
 					if (!client?.query) {
 						return Promise.reject(new Error('The configured data client does not support graphql.query'))
 					}

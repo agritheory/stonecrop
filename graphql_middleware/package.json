@@ -2,29 +2,45 @@
 	"name": "@stonecrop/graphql-middleware",
 	"version": "0.30.0",
 	"description": "GraphQL middleware for PostGraphile and Stonecrop schema",
+	"keywords": [
+		"graphql",
+		"middleware",
+		"postgraphile",
+		"schema",
+		"stonecrop"
+	],
+	"homepage": "https://github.com/agritheory/stonecrop#readme",
+	"bugs": {
+		"url": "https://github.com/agritheory/stonecrop/issues"
+	},
+	"author": {
+		"name": "Tyler Matteson",
+		"email": "tyler@agritheory.com"
+	},
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/agritheory/stonecrop",
 		"directory": "graphql_middleware"
 	},
+	"files": [
+		"dist",
+		"!dist/src"
+	],
 	"type": "module",
+	"sideEffects": false,
+	"types": "./dist/graphql-middleware.d.ts",
 	"exports": {
 		".": {
 			"types": "./dist/graphql-middleware.d.ts",
 			"import": "./dist/index.js"
-		}
+		},
+		"./package.json": "./package.json"
 	},
-	"types": "./dist/graphql-middleware.d.ts",
-	"files": [
-		"dist"
-	],
 	"scripts": {
-		"_phase:build": "heft build --clean && vite build && rushx docs",
-		"build": "heft build --clean && vite build && rushx docs",
 		"docs": "bash ../common/scripts/run-docs.sh graphql_middleware",
 		"lint": "oxlint",
 		"lint:fix": "oxlint --fix",
-		"prepublishOnly": "heft build --clean && vite build && rushx docs",
+		"prepublishOnly": "vp run build",
 		"test": "vitest run --coverage.enabled false",
 		"test:coverage": "vitest run --coverage",
 		"test:ui": "vitest --ui",
@@ -33,23 +49,25 @@
 	"dependencies": {
 		"@dataplan/pg": "^1.0.3",
 		"@stonecrop/schema": "workspace:*",
-		"graphql": "^16.14.0",
-		"postgraphile": "^5.0.3"
+		"graphql": "catalog:",
+		"postgraphile": "catalog:"
 	},
 	"devDependencies": {
 		"@electric-sql/pglite": "^0.4.5",
-		"@rushstack/heft": "^1.2.17",
-		"@types/node": "^24.12.4",
+		"@microsoft/api-extractor": "catalog:",
+		"@types/node": "catalog:",
 		"@types/pg": "^8.11.0",
-		"@vitest/coverage-istanbul": "^4.1.5",
-		"@vitest/ui": "^4.1.5",
-		"oxlint": "1.67.0",
-		"oxlint-tsgolint": "0.23.0",
+		"@vitest/coverage-istanbul": "catalog:",
+		"@vitest/ui": "catalog:",
+		"oxlint": "catalog:",
+		"oxlint-tsgolint": "catalog:",
 		"pg": "^8.20.0",
 		"pglite-server": "^0.1.5",
-		"stonecrop-rig": "workspace:*",
-		"typescript": "^6.0.3",
-		"vite": "^7.3.2",
-		"vitest": "^4.1.5"
+		"typescript": "catalog:",
+		"vite": "catalog:",
+		"vitest": "catalog:"
+	},
+	"engines": {
+		"node": ">=24.0.0"
 	}
 }

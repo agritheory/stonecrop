@@ -1,11 +1,15 @@
 ---
-status: accepted
+status: superseded
 date: "2022-12-17"
 deciders: ['Tyler Matteson']
 consulted: ['Rohan Bansal']
+superseded_by: "[ADR-0003](0003-replace-rush-with-vite-plus.md) — Rush replaced by a pnpm workspace driven by Vite+"
 ---
 
 # Use Rush
+
+> **Superseded.** Rush was removed in 2026; the repo is a plain pnpm workspace whose tasks run under
+> Vite+. See [ADR-0003](0003-replace-rush-with-vite-plus.md). Nothing below still describes the build.
 
 ## Context and Problem Statement
 

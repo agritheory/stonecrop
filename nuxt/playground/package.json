@@ -1,6 +1,6 @@
 {
-	"private": true,
 	"name": "@stonecrop/nuxt-playground",
+	"private": true,
 	"type": "module",
 	"scripts": {
 		"dev": "nuxi dev --host",

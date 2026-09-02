@@ -79,7 +79,7 @@ describe('Desktop field-validation wiring', { tags: ['component'] }, () => {
 
 		// Simulate AForm editing the two dates into an invalid order (end before start).
 		const aform = wrapper.findComponent(AForm)
-		await aform.vm.$emit('update:data', { start_date: '2020-01-02', end_date: '2020-01-01' })
+		aform.vm.$emit('update:data', { start_date: '2020-01-02', end_date: '2020-01-01' })
 		await flushPromises()
 
 		const validation = useValidationStore()
@@ -92,7 +92,7 @@ describe('Desktop field-validation wiring', { tags: ['component'] }, () => {
 		await nextTick()
 
 		const aform = wrapper.findComponent(AForm)
-		await aform.vm.$emit('update:data', { start_date: '2020-01-02', end_date: '2020-01-01' })
+		aform.vm.$emit('update:data', { start_date: '2020-01-02', end_date: '2020-01-01' })
 		await flushPromises()
 		await nextTick()
 
@@ -104,12 +104,12 @@ describe('Desktop field-validation wiring', { tags: ['component'] }, () => {
 		await nextTick()
 		const aform = wrapper.findComponent(AForm)
 
-		await aform.vm.$emit('update:data', { start_date: '2020-01-02', end_date: '2020-01-01' })
+		aform.vm.$emit('update:data', { start_date: '2020-01-02', end_date: '2020-01-01' })
 		await flushPromises()
 		expect(useValidationStore().isValid).toBe(false)
 
 		// User fixes the end date back to a valid order.
-		await aform.vm.$emit('update:data', { start_date: '2020-01-02', end_date: '2020-01-03' })
+		aform.vm.$emit('update:data', { start_date: '2020-01-02', end_date: '2020-01-03' })
 		await flushPromises()
 		expect(useValidationStore().isValid).toBe(true)
 	})

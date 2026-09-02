@@ -1,13 +1,20 @@
 import vue from '@vitejs/plugin-vue'
 import { resolve } from 'path'
+import { libInjectCss } from 'vite-plugin-lib-inject-css'
 import { coverageConfigDefaults, defineConfig } from 'vitest/config'
 
-const projectRootDir = resolve(__dirname)
+import { buildTask } from '../common/vite/build-task.ts'
+import { testTags } from '../common/vite/test-tags.ts'
+
+const projectRootDir = resolve(import.meta.dirname)
 
 export default defineConfig({
-	plugins: [vue()],
+	run: { tasks: buildTask('vue-tsc') },
+	plugins: [vue(), libInjectCss()],
 	build: {
-		emptyOutDir: false,
+		emptyOutDir: true,
+		// Libraries ship unminified; the consumer's bundler minifies.
+		minify: false,
 		sourcemap: true,
 		lib: {
 			entry: resolve(projectRootDir, 'src/index.ts'),
@@ -17,6 +24,7 @@ export default defineConfig({
 		rollupOptions: {
 			external: ['vue'],
 			output: {
+				assetFileNames: 'assets/[name].[ext]',
 				globals: {
 					vue: 'Vue',
 				},
@@ -25,10 +33,7 @@ export default defineConfig({
 	},
 	test: {
 		globals: true,
-		tags: [
-			{ name: 'unit', description: 'Pure logic test — no DOM, network, or framework runtime.' },
-			{ name: 'component', description: 'Vue component test using jsdom + @vue/test-utils.' },
-		],
+		tags: testTags,
 		environment: 'jsdom',
 		coverage: {
 			enabled: true,

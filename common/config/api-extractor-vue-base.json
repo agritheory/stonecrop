@@ -1,0 +1,39 @@
+/**
+ * API Extractor settings for the packages that export Vue components.
+ *
+ * API Extractor cannot represent an SFC. `vue-tsc` emits a correct declaration per component —
+ * props, emits, slots and exposes, with TSDoc carried through — but the rollup flattens each one to
+ * `export const X: typeof __VLS_export_N`, and drops the `declare var __VLS_N` that the emitted slot
+ * types reference. The rollup therefore ships dangling names where the per-file output does not, so
+ * these packages point `types` at the `dist/src/` tree directly and skip the rollup.
+ *
+ * The report and doc model stay on: they still cover every non-component export, and the component
+ * surface they cannot see is covered by `<name>.components.api.md`, generated from vue-component-meta
+ * beside this one.
+ */
+{
+	"$schema": "https://developer.microsoft.com/json-schemas/api-extractor/v7/api-extractor.schema.json",
+	"extends": "./api-extractor-base.json",
+
+	"dtsRollup": {
+		"enabled": false
+	},
+
+	"messages": {
+		"extractorMessageReporting": {
+			/**
+			 * `__VLS_export` is a compiler-internal alias vue-tsc generates per component. It is not
+			 * something an author can export, so the advice this message gives cannot be taken — it
+			 * would otherwise fire once per component, 63 times across these six packages.
+			 */
+			"ae-forgotten-export": {
+				"logLevel": "none",
+				/**
+				 * Separate from `logLevel`, and the one that matters here: a suppressed message is
+				 * still written into the report unless this is off too.
+				 */
+				"addToApiReportFile": false
+			}
+		}
+	}
+}

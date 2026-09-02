@@ -5,11 +5,15 @@
 ```ts
 
 import { App } from 'vue';
+import { ComponentOptionsMixin } from 'vue';
+import { ComponentProvideOptions } from 'vue';
+import { DefineComponent } from 'vue';
 import { Element as Element_2 } from '@vue-flow/core';
 import { Elements } from '@vue-flow/core';
-import NodeEditor from './components/NodeEditor.vue';
+import { HTMLAttributes } from 'vue';
 import { Position } from '@vue-flow/core';
-import StateEditor from './components/StateEditor.vue';
+import { PublicProps } from 'vue';
+import type { WorkflowMeta } from '@stonecrop/schema';
 import { XYPosition } from '@vue-flow/core';
 
 // @public
@@ -44,9 +48,11 @@ export type Layout = {
     };
 };
 
-export { NodeEditor }
+// @public (undocumented)
+export const NodeEditor: typeof __VLS_export;
 
-export { StateEditor }
+// @public (undocumented)
+export const StateEditor: typeof __VLS_export_2;
 
 // (No @packageDocumentation comment for this package)
 

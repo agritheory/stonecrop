@@ -3,12 +3,18 @@ import { resolve } from 'path'
 import { libInjectCss } from 'vite-plugin-lib-inject-css'
 import { coverageConfigDefaults, defineConfig } from 'vitest/config'
 
-const projectRootDir = resolve(__dirname)
+import { buildTask } from '../common/vite/build-task.ts'
+import { testTags } from '../common/vite/test-tags.ts'
+
+const projectRootDir = resolve(import.meta.dirname)
 
 export default defineConfig({
+	run: { tasks: buildTask('vue-tsc') },
 	plugins: [vue(), libInjectCss()],
 	build: {
-		emptyOutDir: false,
+		emptyOutDir: true,
+		// Libraries ship unminified; the consumer's bundler minifies.
+		minify: false,
 		sourcemap: true,
 		lib: {
 			entry: resolve(projectRootDir, 'src/index.ts'),
@@ -29,21 +35,7 @@ export default defineConfig({
 	},
 	test: {
 		globals: true,
-		tags: [
-			{ name: 'unit', description: 'Pure logic test — no DOM, network, or framework runtime.' },
-			{ name: 'component', description: 'Vue component test using jsdom + @vue/test-utils.' },
-			{
-				name: 'e2e',
-				timeout: 30_000,
-				description: 'Spins up a real server or Nuxt runtime. Run in integration gate only.',
-			},
-			{
-				name: 'nuxt',
-				timeout: 30_000,
-				description: 'Involves the Nuxt module, plugin, composables, or @nuxt/test-utils.',
-			},
-			{ name: 'graphql', description: 'Involves GraphQL schema, queries, resolvers, or PostGraphile.' },
-		],
+		tags: testTags,
 		environment: 'jsdom',
 		coverage: {
 			enabled: true,

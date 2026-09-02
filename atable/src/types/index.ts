@@ -86,7 +86,15 @@ export interface CellContext {
  * @public
  */
 export type RowActionType =
-	'open' | 'add' | 'delete' | 'duplicate' | 'insertAbove' | 'insertBelow' | 'move' | 'moveUp' | 'moveDown'
+	| 'open'
+	| 'add'
+	| 'delete'
+	| 'duplicate'
+	| 'insertAbove'
+	| 'insertBelow'
+	| 'move'
+	| 'moveUp'
+	| 'moveDown'
 
 /**
  * Options for configuring individual row actions.

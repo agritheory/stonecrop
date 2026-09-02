@@ -2,44 +2,53 @@
 	"name": "@stonecrop/beam",
 	"version": "0.30.0",
 	"description": "UI component library for Stonecrop",
+	"keywords": [
+		"components",
+		"design-system",
+		"stonecrop",
+		"ui",
+		"vue"
+	],
+	"homepage": "https://github.com/agritheory/stonecrop#readme",
 	"bugs": {
 		"url": "https://github.com/agritheory/stonecrop/issues"
-	},
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/agritheory/stonecrop",
-		"directory": "beam"
 	},
 	"license": "MIT",
 	"author": {
 		"name": "Tyler Matteson",
 		"email": "tyler@agritheory.com"
 	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/agritheory/stonecrop",
+		"directory": "beam"
+	},
+	"files": [
+		"dist"
+	],
+	"type": "module",
 	"sideEffects": [
 		"**/*.css"
 	],
-	"type": "module",
+	"types": "./dist/src/index.d.ts",
 	"exports": {
 		".": {
-			"types": "./dist/beam.d.ts",
+			"types": "./dist/src/index.d.ts",
 			"import": "./dist/beam.js"
 		},
 		"./styles": "./dist/assets/index.css",
-		"./types": "./dist/src/types/index.d.ts"
+		"./types": "./dist/src/types/index.d.ts",
+		"./package.json": "./package.json"
 	},
-	"types": "./dist/beam.d.ts",
-	"files": [
-		"dist/*",
-		"src/*"
-	],
+	"publishConfig": {
+		"access": "public"
+	},
 	"scripts": {
-		"_phase:build": "heft build --clean && vite build && rushx docs",
-		"build": "heft build --clean && vite build && rushx docs",
 		"dev": "vite",
 		"docs": "bash ../common/scripts/run-docs.sh beam",
 		"lint": "oxlint",
 		"lint:fix": "oxlint --fix",
-		"prepublishOnly": "heft build --clean && vite build && rushx docs",
+		"prepublishOnly": "vp run build",
 		"preview": "vite preview",
 		"test": "vitest run --coverage.enabled false",
 		"test:coverage": "vitest run --coverage",
@@ -48,38 +57,34 @@
 		"test:watch": "vitest watch"
 	},
 	"dependencies": {
-		"@vueuse/components": "^14.2.1",
-		"@vueuse/core": "^14.2.1",
+		"@vueuse/components": "catalog:",
+		"@vueuse/core": "catalog:",
 		"mqtt": "^5.14.1",
 		"onscan.js": "^1.5.2"
 	},
 	"devDependencies": {
-		"@microsoft/api-documenter": "^7.30.5",
-		"@rushstack/heft": "^1.2.17",
-		"@types/node": "^24.12.4",
-		"@vitejs/plugin-vue": "^6.0.6",
-		"@vitest/coverage-istanbul": "^4.1.5",
-		"@vitest/ui": "^4.1.5",
-		"@vue/test-utils": "^2.4.10",
-		"oxlint": "1.67.0",
-		"oxlint-tsgolint": "0.23.0",
+		"@microsoft/api-extractor": "catalog:",
+		"@types/node": "catalog:",
+		"@vitejs/plugin-vue": "catalog:",
+		"@vitest/coverage-istanbul": "catalog:",
+		"@vitest/ui": "catalog:",
+		"@vue/test-utils": "catalog:",
+		"oxlint": "catalog:",
+		"oxlint-tsgolint": "catalog:",
 		"sass": "^1.97.2",
-		"stonecrop-rig": "workspace:*",
-		"typescript": "^6.0.3",
-		"vite": "^7.3.2",
-		"vite-plugin-lib-inject-css": "^2.2.2",
-		"vitest": "^4.1.5",
-		"vue": "^3.5.33",
-		"vue-router": "^5.0.6",
-		"vue-tsc": "^3.3.6"
+		"typescript": "catalog:",
+		"vite": "catalog:",
+		"vite-plugin-lib-inject-css": "catalog:",
+		"vitest": "catalog:",
+		"vue": "catalog:",
+		"vue-component-meta": "catalog:",
+		"vue-router": "catalog:",
+		"vue-tsc": "catalog:"
 	},
 	"peerDependencies": {
 		"vue": "^3.5.33"
 	},
 	"engines": {
 		"node": ">=24.0.0"
-	},
-	"publishConfig": {
-		"access": "public"
 	}
 }

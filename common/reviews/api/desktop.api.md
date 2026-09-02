@@ -5,18 +5,20 @@
 ```ts
 
 import { ActionEventPayload } from '@stonecrop/stonecrop';
-import ActionSet from './components/ActionSet.vue';
-import CommandPalette from './components/CommandPalette.vue';
-import Desktop from './components/Desktop.vue';
+import { ComponentOptionsMixin } from 'vue';
+import { ComponentProvideOptions } from 'vue';
+import { DefineComponent } from 'vue';
 import { Plugin as Plugin_2 } from 'vue';
-import SheetNav from './components/SheetNav.vue';
+import { PublicProps } from 'vue';
+import { VNode } from 'vue';
 
 // @public
 export type ActionElements = ButtonElement | DropdownElement;
 
 export { ActionEventPayload }
 
-export { ActionSet }
+// @public (undocumented)
+export const ActionSet: typeof __VLS_export;
 
 // @public
 export type BaseElement = {
@@ -30,9 +32,11 @@ export type ButtonElement = BaseElement & ElementAction & {
     disabled?: boolean;
 };
 
-export { CommandPalette }
+// @public (undocumented)
+export const CommandPalette: typeof __VLS_export_2;
 
-export { Desktop }
+// @public (undocumented)
+export const Desktop: typeof __VLS_export_3;
 
 // @public
 export type DropdownElement = BaseElement & {
@@ -78,7 +82,8 @@ export type RouteAdapter = {
     navigate: (target: NavigationTarget) => void | Promise<void>;
 };
 
-export { SheetNav }
+// @public (undocumented)
+export const SheetNav: typeof __VLS_export_4;
 
 // @public
 export const StonecropDesktop: Plugin_2;

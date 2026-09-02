@@ -1491,7 +1491,7 @@ describe('table store', { tags: ['component'] }, () => {
 
 	describe('derived filterType from component category', () => {
 		it('filters an ADate column by exact date when filterType is absent', () => {
-			const store = createTableStore({
+			const dateStore = createTableStore({
 				columns: [
 					{ name: 'label', label: 'Label' },
 					{ name: 'when', label: 'When', component: 'ADate', filterable: true },
@@ -1501,12 +1501,12 @@ describe('table store', { tags: ['component'] }, () => {
 					{ label: 'B', when: '2024-02-01' },
 				],
 			})
-			store.setFilter(1, { value: '2024-01-15' })
-			expect(store.filteredRows.map(r => r.label)).toEqual(['A'])
+			dateStore.setFilter(1, { value: '2024-01-15' })
+			expect(dateStore.filteredRows.map(r => r.label)).toEqual(['A'])
 		})
 
 		it('filters an ANumericInput column by exact number when filterType is absent', () => {
-			const store = createTableStore({
+			const numericStore = createTableStore({
 				columns: [
 					{ name: 'label', label: 'Label' },
 					{ name: 'qty', label: 'Qty', component: 'ANumericInput', filterable: true },
@@ -1516,12 +1516,12 @@ describe('table store', { tags: ['component'] }, () => {
 					{ label: 'B', qty: 12 },
 				],
 			})
-			store.setFilter(1, { value: '12' })
-			expect(store.filteredRows.map(r => r.label)).toEqual(['B'])
+			numericStore.setFilter(1, { value: '12' })
+			expect(numericStore.filteredRows.map(r => r.label)).toEqual(['B'])
 		})
 
 		it('filters an AFormLink column by id and displayText from enriched row data', () => {
-			const store = createTableStore({
+			const linkStore = createTableStore({
 				columns: [
 					{ name: 'label', label: 'Label' },
 					{ name: 'customerId', label: 'Customer', component: 'AFormLink', linkDoctype: 'party', filterable: true },
@@ -1531,11 +1531,11 @@ describe('table store', { tags: ['component'] }, () => {
 					{ label: 'B', customerId: { id: 'def', displayText: 'Globex' } },
 				],
 			})
-			store.setFilter(1, { value: 'acme' })
-			expect(store.filteredRows.map(r => r.label)).toEqual(['A'])
+			linkStore.setFilter(1, { value: 'acme' })
+			expect(linkStore.filteredRows.map(r => r.label)).toEqual(['A'])
 
-			store.setFilter(1, { value: 'def' })
-			expect(store.filteredRows.map(r => r.label)).toEqual(['B'])
+			linkStore.setFilter(1, { value: 'def' })
+			expect(linkStore.filteredRows.map(r => r.label)).toEqual(['B'])
 		})
 	})
 })

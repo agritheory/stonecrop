@@ -7,7 +7,7 @@ import { STONECROP_PACKAGES } from '../src/module'
 // Guards the completeness of STONECROP_PACKAGES (src/module.ts), the list Nitro inlines instead
 // of externalizing.
 //
-// Why this shape and not an SSR test: externalization behaves differently in this Rush workspace
+// Why this shape and not an SSR test: externalization behaves differently in this workspace
 // than in a real consumer install. Here `nuxt/node_modules/@stonecrop/*` are direct `../../<dir>`
 // symlinks whose realpaths contain no `node_modules/` segment, so an SSR fixture renders happily
 // even with packages missing from the list — measured, not assumed. A booted-Nuxt test therefore

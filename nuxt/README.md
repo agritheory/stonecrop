@@ -516,8 +516,8 @@ To test the `npx @stonecrop/nuxt init` command from another directory outside th
 
 ```bash
 cd /path/to/stonecrop
-rush update
-rush build
+pnpm install
+pnpm run build
 ```
 
 **2. Create a test Nuxt project (in a separate directory):**

@@ -2,27 +2,33 @@
 	"name": "@stonecrop/nuxt-grafserv",
 	"version": "0.30.0",
 	"description": "Pluggable Grafserv GraphQL server as Nuxt Module",
+	"keywords": [
+		"grafserv",
+		"graphql",
+		"nuxt",
+		"nuxt-module",
+		"postgraphile",
+		"stonecrop"
+	],
+	"homepage": "https://github.com/agritheory/stonecrop#readme",
 	"bugs": {
 		"url": "https://github.com/agritheory/stonecrop/issues"
-	},
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/agritheory/stonecrop",
-		"directory": "nuxt_grafserv"
 	},
 	"license": "MIT",
 	"author": {
 		"name": "Tyler Matteson",
 		"email": "tyler@agritheory.com"
 	},
-	"type": "module",
-	"exports": {
-		".": {
-			"import": "./dist/module.mjs",
-			"types": "./dist/module.d.mts"
-		},
-		"./runtime/*": "./dist/runtime/*"
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/agritheory/stonecrop",
+		"directory": "nuxt_grafserv"
 	},
+	"files": [
+		"dist"
+	],
+	"type": "module",
+	"sideEffects": false,
 	"main": "./dist/module.mjs",
 	"types": "./dist/module.d.mts",
 	"typesVersions": {
@@ -32,13 +38,16 @@
 			]
 		}
 	},
-	"files": [
-		"dist"
-	],
+	"exports": {
+		".": {
+			"types": "./dist/module.d.mts",
+			"import": "./dist/module.mjs"
+		},
+		"./runtime/*": "./dist/runtime/*",
+		"./package.json": "./package.json"
+	},
 	"scripts": {
-		"_phase:build": "rushx dev:prepare && rushx prepack",
-		"build": "rushx dev:prepare && rushx prepack",
-		"build:module": "rushx dev:prepare && rushx prepack",
+		"build:module": "node --run dev:prepare && node --run prepack",
 		"dev": "node playground/scripts/bootstrap.mjs && nuxi dev playground --host",
 		"dev:build": "nuxi build playground",
 		"dev:prepare": "nuxt-module-build build --stub && nuxt-module-build prepare && nuxi prepare playground",
@@ -60,32 +69,32 @@
 		"@stonecrop/graphql-middleware": "workspace:*",
 		"grafast": "^1.0.2",
 		"grafserv": "^1.0.0",
-		"graphql": "^16.14.0",
-		"postgraphile": "^5.0.3"
+		"graphql": "catalog:",
+		"postgraphile": "catalog:"
 	},
 	"devDependencies": {
-		"@eslint/js": "^10.0.1",
-		"@nuxt/devtools": "^3.2.4",
-		"@nuxt/eslint-config": "^1.16.0",
-		"@nuxt/kit": "^4.4.4",
-		"@nuxt/module-builder": "^1.0.2",
-		"@nuxt/schema": "^4.4.8",
-		"@nuxt/test-utils": "^4.0.3",
-		"@types/node": "^24.12.4",
-		"@vitest/coverage-istanbul": "^4.1.5",
+		"@eslint/js": "catalog:",
+		"@nuxt/devtools": "catalog:",
+		"@nuxt/eslint-config": "catalog:",
+		"@nuxt/kit": "catalog:",
+		"@nuxt/module-builder": "catalog:",
+		"@nuxt/schema": "catalog:",
+		"@nuxt/test-utils": "catalog:",
+		"@types/node": "catalog:",
+		"@vitest/coverage-istanbul": "catalog:",
 		"changelogen": "^0.6.2",
-		"eslint": "^10.6.0",
-		"h3": "^1.15.11",
-		"jsdom": "^29.1.1",
+		"eslint": "catalog:",
+		"h3": "catalog:",
+		"jsdom": "catalog:",
 		"nitropack": "^2.13.1",
-		"nuxt": "^4.4.8",
-		"postgraphile": "^5.0.3",
-		"typescript": "^6.0.3",
-		"vite": "^7.3.2",
-		"vitest": "^4.1.5",
-		"vue": "^3.5.33",
-		"vue-router": "^5.0.6",
-		"vue-tsc": "^3.3.6"
+		"nuxt": "catalog:",
+		"postgraphile": "catalog:",
+		"typescript": "catalog:",
+		"vite": "catalog:",
+		"vitest": "catalog:",
+		"vue": "catalog:",
+		"vue-router": "catalog:",
+		"vue-tsc": "catalog:"
 	},
 	"peerDependencies": {
 		"@stonecrop/casl-middleware": "*",
@@ -102,5 +111,8 @@
 		"graphile-config": {
 			"optional": true
 		}
+	},
+	"engines": {
+		"node": ">=24.0.0"
 	}
 }

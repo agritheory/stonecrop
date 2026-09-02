@@ -1,6 +1,6 @@
 {
 	// Typechecks the test suite alongside src, which nothing did before: the package tsconfig only
-	// includes `src/**`, and the shared options exclude `**/*.spec.ts` outright so heft never
+	// includes `src/**`, and the shared options exclude `**/*.spec.ts` outright so the build never
 	// compiles specs into dist. A spec could therefore bind a prop to a value the component's
 	// declared type forbids and stay green forever — which is what happened to AFormLink's
 	// `modelValue`, where the component grew to accept a bare FK scalar while `defineModel` still
@@ -10,9 +10,14 @@
 	"extends": "./tsconfig.json",
 	"compilerOptions": {
 		"noEmit": true,
-		"tsBuildInfoFile": "./dist/aform.typecheck.tsbuildinfo",
+		// `tests/dist-contract.spec.ts` imports the shared build-output oracle from
+		// `common/test-support/`, which sits above this package. The inherited `composite` makes
+		// TypeScript check that every input is under `rootDir`, and that would otherwise be inferred
+		// as this folder — so widen it to the repo root. Safe because this config emits nothing.
+		"rootDir": "..",
+		"tsBuildInfoFile": "./temp/aform.typecheck.tsbuildinfo",
 		"types": ["node", "vitest/globals", "vitest/jsdom"]
 	},
-	"include": ["src/**/*.ts", "src/**/*.vue", "tests/**/*.ts"],
+	"include": ["src/**/*.ts", "src/**/*.vue", "tests/**/*.ts", "../common/test-support/**/*.ts"],
 	"exclude": ["node_modules"]
 }

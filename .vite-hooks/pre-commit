@@ -1,0 +1,41 @@
+#!/bin/sh
+# Installed by "vp hooks enable", which the root "prepare" script runs after every install.
+# Set VP_GIT_HOOKS=0 to skip every hook in a shell that commits without a working checkout.
+set -e
+
+log=$(mktemp)
+trap 'rm -f "$log"' EXIT
+
+# Each step is silent while it succeeds and dumps its whole log when it does not. A passing commit
+# is the common case and used to print ~660 lines of build output, which buried anything worth
+# reading; a failing one still gets everything.
+step() {
+	printf '  %-22s' "$1…"
+	shift
+	if "$@" >"$log" 2>&1; then
+		echo 'ok'
+	else
+		echo 'FAILED'
+		cat "$log"
+		exit 1
+	fi
+}
+
+# Format all files, not just staged ones, so the tree never drifts from CI. Oxfmt also sorts
+# package.json, which is why there is no separate sort step: running one alongside it would mean
+# two tools with incompatible orderings undoing each other on every commit.
+step 'format' node --run format
+git add -u
+
+# Runs before the build because it is instant and the fix is a hand edit: a dependency that drifted
+# is better reported now than after waiting for a full build.
+step 'dependency ranges' node --run check:deps
+
+step 'build' node --run build
+
+# Aggregate API docs into docs/reference/ and stage any updated files.
+# Each package's build script already runs "node --run docs" to generate its own
+# api.md, so by this point all individual docs are current. This step collects
+# them into the VitePress docs site so the aggregated output is never stale.
+step 'aggregate docs' bash common/scripts/run-docs.sh --aggregate
+git add docs/reference/

@@ -1,8 +1,8 @@
 # Stonecrop
 
-![Test Status](https://github.com/agritheory/stonecrop/actions/workflows/tests.yml/badge.svg) ![Lint Status](https://github.com/agritheory/stonecrop/actions/workflows/lint.yml/badge.svg)
+![PR Checks](https://github.com/agritheory/stonecrop/actions/workflows/pr.yml/badge.svg)
 
-This repository contains all the packages used in the Stonecrop project. It is managed with [Rush](https://rushjs.io).
+This repository contains all the packages used in the Stonecrop project. It is a [pnpm](https://pnpm.io/) workspace whose tasks are run by [Vite+](https://viteplus.dev).
 
 ### What is it?
 
@@ -12,9 +12,9 @@ These packages in combination create an application that creates a schema driven
 
 This project has the following system dependencies:
 
-- [`pnpm`](https://pnpm.io/) (using yarn or npm will break packages)
-- [`rush`](https://rushjs.io/)
-- Node v22 LTS ([installation instructions](https://nodejs.org/en/download/package-manager))
+- [`pnpm`](https://pnpm.io/) (using yarn or npm will break packages). The version is pinned in the root
+  `package.json`, so `corepack enable` is enough to get the right one.
+- Node 24 or newer ([installation instructions](https://nodejs.org/en/download/package-manager))
 
 ```bash
 git clone stonecrop
@@ -23,21 +23,23 @@ git pull
 
 # install dependencies
 cd stonecrop
-rush update
-rush rebuild
+pnpm install
+pnpm run build
 
 # Work on aform, for example
 cd aform
+pnpm run test
 
 # sometimes, when changing branches or updating dependencies you may have issues
-# this command removes and re-links all dependencies
-rush purge && rush update && rush rebuild
+# this removes and re-links all dependencies
+pnpm install --force
 
-# Provide changelog for release
-rush change
+# Describe a release-worthy change; one file per reason, since its body becomes the changelog entry
+pnpm exec changeset
 
-# Stage changes and run linters
-rushx lint
+# Lint and format the whole workspace
+pnpm run lint
+pnpm run format
 ```
 
 ### Projects

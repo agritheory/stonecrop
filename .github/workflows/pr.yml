@@ -13,6 +13,11 @@ permissions:
   pull-requests: write
   actions: read
 
+# The root "prepare" script runs "vp config", which installs the Git hook dispatcher. A CI
+# checkout never commits, so skip it everywhere rather than per job.
+env:
+  VP_GIT_HOOKS: 0
+
 jobs:
   changes:
     name: Detect Changes
@@ -63,96 +68,78 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: 24
-          cache-dependency-path: '**/config/rush/pnpm-lock.yaml'
           registry-url: https://registry.npmjs.org/
 
-      # The rush-prettier autoinstaller provides the pinned prettier binary.
-      # prettier --check exits 1 and prints the offending files if any are unformatted.
-      # Note: .bin/prettier is a pnpm shell-script shim — do NOT prefix with `node`.
-      - name: Prettier Check
-        run: |
-          node common/scripts/install-run-rush.js install-autoinstaller --name rush-prettier
-          common/autoinstallers/rush-prettier/node_modules/.bin/prettier --check .
+      # Supplies the pnpm pinned by the root package.json's "packageManager" field.
+      - name: Enable Corepack
+        run: corepack enable
 
-      # actions/setup-node's `cache: 'pnpm'` calls `pnpm store path` during
-      # setup — before Rush has installed its own managed pnpm binary at ~/.rush/.
-      # We cache ~/.rush (the binary) and ~/.local/share/pnpm/store (the package
-      # store) explicitly so that rush install can skip downloading all packages.
-      - name: Cache Rush pnpm Store
+      # pnpm's global content-addressable store. Cached explicitly rather than through
+      # setup-node's `cache: pnpm`, which runs `pnpm store path` during setup — before corepack
+      # has materialized the pinned pnpm.
+      - name: Cache pnpm Store
         uses: actions/cache@v5
         with:
-          path: |
-            ~/.rush
-            ~/.local/share/pnpm/store
-          key: rush-pnpm-${{ runner.os }}-${{ hashFiles('common/config/rush/pnpm-lock.yaml') }}
-          restore-keys: rush-pnpm-${{ runner.os }}-
+          path: ~/.local/share/pnpm/store
+          key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: pnpm-${{ runner.os }}-
 
-      - name: Rush Install
-        run: node common/scripts/install-run-rush.js install
+      - name: Install
+        run: pnpm install --frozen-lockfile
 
-      - name: Install Doc Tools Autoinstaller
-        run: node common/scripts/install-run-rush.js install-autoinstaller --name doc-tools
+      # Oxfmt sorts package.json as part of formatting, so this is also the gate that a committed
+      # package.json is in canonical key order.
+      - name: Format Check
+        run: pnpm run format:check
 
-      # Restore per-repo build cache so Rush skips unchanged packages.
-      # Type-aware oxlint (oxlint-tsgolint) requires compiled .d.ts files from
-      # dependency packages to exist before lint runs; without this build step,
-      # unresolvable imports appear as "error typed" and trigger false positives.
-      - name: Restore Rush Build Cache
-        id: build-cache-restore
-        uses: actions/cache/restore@v5
-        with:
-          path: common/temp/build-cache
-          key: rush-build-cache-all-${{ runner.os }}-${{ hashFiles('common/config/rush/pnpm-lock.yaml') }}-${{ github.run_id }}
-          restore-keys: |
-            rush-build-cache-all-${{ runner.os }}-${{ hashFiles('common/config/rush/pnpm-lock.yaml') }}-
-            rush-build-cache-all-${{ runner.os }}-
+      # The catalog in pnpm-workspace.yaml makes divergence impossible for what it already lists;
+      # this catches a dependency added to a second package without joining it.
+      - name: Dependency Consistency
+        run: pnpm run check:deps
 
-      - name: Rush Build
-        run: node common/scripts/install-run-rush.js build
+      # Type-aware oxlint (oxlint-tsgolint) requires compiled .d.ts files from dependency packages
+      # to exist before lint runs; without this build step, unresolvable imports appear as
+      # "error typed" and trigger false positives.
+      #
+      # No cross-run task cache, deliberately. Restoring node_modules/.vite/task-cache across runs
+      # meets its documented precondition — an immediate second run is now a full hit, since
+      # `!dist/**` left the tracked inputs — so this is a choice rather than a blocker.
+      #
+      # The reason is that replay is additive: it restores an output snapshot without first
+      # deleting what is there, so anything that once reached dist/ survives every warm build. A
+      # cold runner is the only place that property cannot bite, and a full build is short enough
+      # that keeping it is worth more than the seconds a warm one would save.
+      - name: Build
+        run: pnpm run build
 
-      - name: Save Rush Build Cache
-        if: always()
-        uses: actions/cache/save@v5
-        with:
-          path: common/temp/build-cache
-          key: ${{ steps.build-cache-restore.outputs.cache-primary-key }}
+      # Each build runs "api-extractor run --local", which rewrites common/reviews/api/ in place, so
+      # drift only ever surfaces as a dirty working tree. The same holds for the generated docs: the
+      # root build regenerates every api.md and aggregates them into docs/reference/, and all three
+      # are committed, so a stale one is invisible without this.
+      - name: Verify API Reports And Docs Are Current
+        run: git diff --exit-code -- common/reviews/api/ docs/reference/ '*/api.md'
 
-      # `rush lint` is a bulk command that invokes each package's `lint` script
-      # (oxlint, defined in package.json). Oxlint uses the per-package
-      # oxlint.config.ts which extends the root config, and oxlint-tsgolint
-      # supplies the type-aware rules via each package's node_modules.
+      # Reads each package's packed tarball, so it must follow Build.
+      - name: Verify Publish Contract
+        run: pnpm run check:publish
+
       - name: Oxlint
-        run: node common/scripts/install-run-rush.js lint
+        run: pnpm run lint
 
       # Repo-wide, because the per-package matrix below is paths-filtered and cannot see cross-
-      # package breakage. `heft build` compiles only .ts and `vite build` does not typecheck, so
+      # package breakage. `tsc -b` compiles only .ts and `vite build` does not typecheck, so
       # vue-tsc is the only thing that reads a .vue file — meaning a change confined to schema/**
       # could break a <script setup> block or a template binding in desktop, aform, atable,
       # node_editor, code_editor or beam and still merge green. Projects opt in by defining a
-      # `test:types` script, exactly as `lint` works. Runs after Rush Build because vue-tsc needs
+      # `test:types` script, exactly as `lint` works. Runs after Build because vue-tsc needs
       # dependencies' .d.ts files, and both nuxt builds run `dev:prepare`, so .nuxt exists by now.
       - name: Typecheck
-        run: node common/scripts/install-run-rush.js test:types
+        run: pnpm run test:types
 
-      # rush-plugins is required for the rush-sort-package-json plugin to load.
-      - name: Install Autoinstallers
-        run: node common/scripts/install-run-rush.js install-autoinstaller --name rush-plugins
-
-      # "rush sort-package-json" rewrites the files in place, so on its own it only
-      # sorts a throwaway checkout and discards the result.  The "git diff" below is
-      # what actually enforces the convention: it fails the build when a committed
-      # package.json is not in sorted order.  Run "rush sort-package-json" locally
-      # and commit the result to resolve a failure here.
-      - name: Sort package.json
-        run: node common/scripts/install-run-rush.js sort-package-json
-
-      # Scoped to package.json so an unrelated file touched by an earlier step
-      # cannot fail this check with a misleading message.
-      - name: Verify package.json Is Sorted
-        run: git diff --exit-code -- '*package.json'
-
-      - name: Verify Change Files
-        run: node common/scripts/install-run-rush.js change --verify
+      # Unlike the three-dot diff this replaces, --since reads the working tree, so a changeset
+      # added in the PR counts before it is merged.
+      - name: Verify Changesets
+        run: pnpm exec changeset status --since=origin/${{ github.base_ref }}
 
   test-and-coverage:
     name: ${{ matrix.package }}
@@ -173,62 +160,38 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: 24
-          cache-dependency-path: '**/config/rush/pnpm-lock.yaml'
           registry-url: https://registry.npmjs.org/
 
-      # Package-specific cache key so parallel matrix jobs don't overwrite each other.
-      - name: Restore Rush Build Cache
-        id: cache-restore
-        uses: actions/cache/restore@v5
-        with:
-          path: common/temp/build-cache
-          key: rush-build-cache-${{ matrix.package }}-${{ hashFiles('common/config/rush/pnpm-lock.yaml') }}-${{ github.run_id }}
-          restore-keys: |
-            rush-build-cache-${{ matrix.package }}-${{ hashFiles('common/config/rush/pnpm-lock.yaml') }}-
-            rush-build-cache-${{ matrix.package }}-
-            rush-build-cache-
+      - name: Enable Corepack
+        run: corepack enable
 
-      # actions/setup-node's `cache: 'pnpm'` calls `pnpm store path` during
-      # setup — before Rush has installed its own managed pnpm binary at ~/.rush/.
-      # We cache ~/.rush (the binary) and ~/.local/share/pnpm/store (the package
-      # store) explicitly so that rush install can skip downloading all packages.
-      - name: Cache Rush pnpm Store
+      - name: Cache pnpm Store
         uses: actions/cache@v5
         with:
-          path: |
-            ~/.rush
-            ~/.local/share/pnpm/store
-          key: rush-pnpm-${{ runner.os }}-${{ hashFiles('common/config/rush/pnpm-lock.yaml') }}
-          restore-keys: rush-pnpm-${{ runner.os }}-
+          path: ~/.local/share/pnpm/store
+          key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: pnpm-${{ runner.os }}-
 
-      - name: Rush Install
-        run: node common/scripts/install-run-rush.js install
-
-      - name: Install Autoinstallers
-        run: |
-          node common/scripts/install-run-rush.js install-autoinstaller --name rush-plugins
-          node common/scripts/install-run-rush.js install-autoinstaller --name doc-tools
+      - name: Install
+        run: pnpm install --frozen-lockfile
 
       # Build only the dependency closure for this package, not the whole repo.
-      # Matrix uses folder names; Rush --to requires the npm package name.
-      - name: Resolve Package Name
-        id: pkg
-        run: |
-          NAME=$(node -e "const r=require('./rush.json');console.log(r.projects.find(p=>p.projectFolder==='${{ matrix.package }}').packageName)")
-          echo "name=${NAME}" >> $GITHUB_OUTPUT
-
-      - name: Rush Build
-        run: node common/scripts/install-run-rush.js build --to ${{ steps.pkg.outputs.name }}
+      #
+      # `{dir}` is the directory filter that keeps its traversal suffix. The other directory form,
+      # `./dir`, silently drops the `...` and builds that one package and none of its dependencies.
+      # --fail-if-no-match matters as much: a filter matching nothing otherwise exits 0.
+      - name: Build
+        run: pnpm exec vp run --filter '{${{ matrix.package }}}...' --fail-if-no-match build
 
       # No Typecheck step here on purpose. It used to run per-package, but this matrix is
       # paths-filtered, so it only ever checked packages whose own files changed — the hole that let
       # nuxt_grafserv accumulate 28 type errors and shipped a broken plugins.ts into every
-      # scaffolded app. The `Typecheck` step in `pr-checks` now runs `rush test:types` repo-wide
+      # scaffolded app. The `Typecheck` step in `pr-checks` now runs test:types repo-wide
       # after a full build, which strictly supersedes this. Do not reinstate it here: running
       # vue-tsc twice for every changed package buys nothing.
       - name: Run Tests
         working-directory: ./${{ matrix.package }}
-        run: node ../common/scripts/install-run-rushx.js test:coverage
+        run: pnpm run test:coverage
 
       - name: Resolve Baseline Run ID
         id: baseline-run
@@ -272,10 +235,3 @@ jobs:
           name: ${{ matrix.package }}
           json-summary-path: ./${{ matrix.package }}/coverage/coverage-summary.json
           json-final-path: ./${{ matrix.package }}/coverage/coverage-final.json
-
-      - name: Save Rush Build Cache
-        if: always()
-        uses: actions/cache/save@v5
-        with:
-          path: common/temp/build-cache
-          key: ${{ steps.cache-restore.outputs.cache-primary-key }}

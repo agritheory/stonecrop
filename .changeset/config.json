@@ -1,0 +1,29 @@
+{
+	"$schema": "https://unpkg.com/@changesets/config@4.0.0/schema.json",
+	"changelog": "@changesets/cli/changelog",
+	"commit": false,
+	"access": "public",
+	"baseBranch": "development",
+	"updateInternalDependencies": "patch",
+	"ignore": [],
+	"fixed": [
+		[
+			"@stonecrop/aform",
+			"@stonecrop/atable",
+			"@stonecrop/beam",
+			"@stonecrop/casl-middleware",
+			"@stonecrop/code-editor",
+			"@stonecrop/desktop",
+			"@stonecrop/graphql-client",
+			"@stonecrop/graphql-middleware",
+			"@stonecrop/node-editor",
+			"@stonecrop/nuxt",
+			"@stonecrop/nuxt-grafserv",
+			"@stonecrop/rockfoil",
+			"@stonecrop/schema",
+			"@stonecrop/stonecrop",
+			"@stonecrop/themes",
+			"@stonecrop/utilities"
+		]
+	]
+}

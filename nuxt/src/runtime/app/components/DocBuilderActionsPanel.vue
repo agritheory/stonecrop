@@ -7,7 +7,7 @@
 				— ATable never calls setCellData/handleRowAction, so it never mutates the projection it renders.
 			-->
 			<template #body="{ data: store }">
-				<ARow v-for="row in store.filteredRows" :key="String(row.__key)" :row-index="row.originalIndex" :store="store">
+				<ARow v-for="row in actionRows(store)" :key="String(row.__key)" :row-index="row.originalIndex" :store="store">
 					<template #default>
 						<td>
 							<!-- A Transition is named on its edge in the graph (single source of truth), so its
@@ -92,7 +92,7 @@
 
 <script setup lang="ts">
 import { ATable, ARow } from '@stonecrop/atable'
-import type { TableColumn } from '@stonecrop/atable'
+import type { TableColumn, TableRow } from '@stonecrop/atable'
 import { ACodeEditor } from '@stonecrop/code-editor'
 import type { WorkflowMeta } from '@stonecrop/schema'
 import { computed, reactive } from 'vue'
@@ -108,6 +108,15 @@ import {
 	writeTriggerField,
 	type ActionRow,
 } from './docbuilderActions'
+
+/**
+ * ATable's store types every row as its own `TableRow`, so the `ActionRow[]` this panel passes in
+ * comes back widened — the store carries values, not the row type. Narrowed once here rather than at
+ * each of the handler call sites below, all of which are reached only from this `v-for`.
+ */
+function actionRows(store: { filteredRows: TableRow[] }): (ActionRow & { originalIndex: number })[] {
+	return store.filteredRows as unknown as (ActionRow & { originalIndex: number })[]
+}
 
 // A Transition's name is edited on its edge in the graph (the single source of truth for its
 // identity), so the panel shows it read-only and points the author there.

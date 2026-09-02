@@ -2,41 +2,50 @@
 	"name": "@stonecrop/graphql-client",
 	"version": "0.30.0",
 	"description": "GraphQL client integration for Stonecrop",
+	"keywords": [
+		"client",
+		"graphql",
+		"stonecrop",
+		"vue"
+	],
+	"homepage": "https://github.com/agritheory/stonecrop#readme",
 	"bugs": {
 		"url": "https://github.com/agritheory/stonecrop/issues"
-	},
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/agritheory/stonecrop",
-		"directory": "graphql_client"
 	},
 	"license": "MIT",
 	"author": {
 		"name": "Tyler Matteson",
 		"email": "tyler@agritheory.com"
 	},
-	"sideEffects": false,
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/agritheory/stonecrop",
+		"directory": "graphql_client"
+	},
+	"files": [
+		"dist",
+		"!dist/src"
+	],
 	"type": "module",
+	"sideEffects": false,
+	"types": "./dist/graphql-client.d.ts",
 	"exports": {
 		".": {
 			"types": "./dist/graphql-client.d.ts",
 			"import": "./dist/graphql-client.js"
 		},
-		"./types": "./dist/src/types/index.d.ts"
+		"./types": "./dist/graphql-client.d.ts",
+		"./package.json": "./package.json"
 	},
-	"types": "./dist/graphql-client.d.ts",
-	"files": [
-		"dist/*",
-		"src/*"
-	],
+	"publishConfig": {
+		"access": "public"
+	},
 	"scripts": {
-		"_phase:build": "heft build --clean && vite build && rushx docs",
-		"build": "heft build --clean && vite build && rushx docs",
 		"dev": "vite",
 		"docs": "bash ../common/scripts/run-docs.sh graphql_client",
 		"lint": "oxlint",
 		"lint:fix": "oxlint --fix",
-		"prepublishOnly": "heft build --clean && vite build && rushx docs",
+		"prepublishOnly": "vp run build",
 		"preview": "vite preview",
 		"test": "vitest run --coverage.enabled false",
 		"test:coverage": "vitest run --coverage",
@@ -46,28 +55,23 @@
 		"@stonecrop/schema": "workspace:*"
 	},
 	"devDependencies": {
-		"@microsoft/api-documenter": "^7.30.5",
+		"@microsoft/api-extractor": "catalog:",
 		"@miragejs/graphql": "^0.1.13",
-		"@rushstack/heft": "^1.2.17",
 		"@stonecrop/graphql-middleware": "workspace:*",
-		"@types/node": "^24.12.4",
-		"@vitejs/plugin-vue": "^6.0.6",
-		"@vitest/coverage-istanbul": "^4.1.5",
-		"graphql": "^16.14.0",
+		"@types/node": "catalog:",
+		"@vitejs/plugin-vue": "catalog:",
+		"@vitest/coverage-istanbul": "catalog:",
+		"graphql": "catalog:",
 		"miragejs": "^0.1.48",
-		"oxlint": "1.67.0",
-		"oxlint-tsgolint": "0.23.0",
-		"stonecrop-rig": "workspace:*",
-		"typescript": "^6.0.3",
-		"vite": "^7.3.2",
-		"vitest": "^4.1.5",
-		"vue": "^3.5.33",
-		"vue-router": "^5.0.6"
+		"oxlint": "catalog:",
+		"oxlint-tsgolint": "catalog:",
+		"typescript": "catalog:",
+		"vite": "catalog:",
+		"vitest": "catalog:",
+		"vue": "catalog:",
+		"vue-router": "catalog:"
 	},
 	"engines": {
 		"node": ">=24.0.0"
-	},
-	"publishConfig": {
-		"access": "public"
 	}
 }

@@ -96,6 +96,12 @@ export const STONECROP_PACKAGES = [
  */
 export const STONECROP_TOKENS = '@stonecrop/themes/default.css'
 
+// Client-side singletons the component packages declare as peers and Nuxt does not already
+// dedupe. `vue-router` belongs to that same class but is deliberately absent: Nuxt's pages module
+// pushes it onto this very array, and this module always calls extendPages, so listing it here
+// only duplicates the entry.
+const STONECROP_SINGLETONS = ['pinia']
+
 export default defineNuxtModule<ModuleOptions>({
 	meta: {
 		name: '@stonecrop/nuxt',
@@ -122,6 +128,17 @@ export default defineNuxtModule<ModuleOptions>({
 			}
 		}
 		logger.log('Added Stonecrop packages to build.transpile for SSR CSS handling')
+
+		// A package reached by `link:` sits outside the app, so its peers resolve from its own tree
+		// rather than the consumer's. Two Pinia copies each hold their own inject keys, which
+		// surfaces as a store that never activates — no error, just undefined.
+		nuxt.options.vite.resolve = nuxt.options.vite.resolve || {}
+		nuxt.options.vite.resolve.dedupe = nuxt.options.vite.resolve.dedupe || []
+		for (const dep of STONECROP_SINGLETONS) {
+			if (!nuxt.options.vite.resolve.dedupe.includes(dep)) {
+				nuxt.options.vite.resolve.dedupe.push(dep)
+			}
+		}
 
 		// Keep Nuxt's auto-import transform away from the prebuilt dists. Its node_modules guard
 		// checks resolved paths, and pnpm symlinks resolve these dists to paths outside
@@ -175,8 +192,8 @@ export default defineNuxtModule<ModuleOptions>({
 		})
 
 		// Allow Vite to serve symlinked packages during development. Their real paths live outside
-		// the app root, and in a Rush repo Vite can't auto-detect the workspace root (no
-		// pnpm-workspace.yaml at the monorepo root), so add them to fs.allow explicitly.
+		// the app root, and a consumer app that links these packages has no workspace root for Vite
+		// to auto-detect, so add them to fs.allow explicitly.
 		if (nuxt.options.dev) {
 			const allowPaths = new Set<string>()
 			for (const pkg of ['@stonecrop/nuxt', ...STONECROP_PACKAGES]) {
@@ -326,15 +343,6 @@ export default defineNuxtModule<ModuleOptions>({
 			// VueFlow CSS must be at document level — component @import lands too late for VueFlow's init check
 			nuxt.options.css.push('@vue-flow/core/dist/style.css')
 			nuxt.options.css.push('@vue-flow/core/dist/theme-default.css')
-
-			// node-editor ships its component styles as a separate dist file (the `./styles` export)
-			// and its JS only imports VueFlow's base CSS — so its own styles (custom nodes, edge
-			// labels, chart controls, wrapper) are never loaded unless the consumer imports them.
-			nuxt.options.css.push('@stonecrop/node-editor/styles')
-
-			// desktop ships its styles separately too; the docbuilder renders desktop's ActionSet and
-			// must load them, or the control renders unstyled in non-playground hosts.
-			nuxt.options.css.push('@stonecrop/desktop/styles')
 
 			// Pre-bundle the docbuilder's client deps at startup: discovering them on the first
 			// doctype load forces a mid-session re-optimization that has broken the client before
