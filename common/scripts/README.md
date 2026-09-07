@@ -13,7 +13,7 @@ bash common/scripts/docs-full.sh
 
 This script:
 1. Runs `rush docs` to generate `api.md` files for all packages
-2. Aggregates all `api.md` files to `docs/reference/` with VitePress frontmatter
+2. Aggregates all `api.md` files to `nuxt/documentation/content/reference/` with frontmatter
 
 **Note**: This must be run directly as a bash script (not through `rush docs:full`) to avoid Rush lock conflicts.
 
@@ -55,9 +55,9 @@ Located in `common/autoinstallers/doc-tools/generate-docs.mjs`
 
 Located in `common/scripts/docs-aggregate.mjs`
 
-- **Purpose**: Aggregates all package `api.md` files to `docs/reference/`
+- **Purpose**: Aggregates all package `api.md` files to `nuxt/documentation/content/reference/`
 - **Features**:
-  - Adds VitePress frontmatter automatically
+  - Adds frontmatter (title/description) automatically
   - Creates placeholders for packages without docs
   - Handles package name normalization (underscore to hyphen)
 
@@ -81,7 +81,7 @@ Located in `common/scripts/docs-full.sh`
 - **Called by**: `rush docs:full` command
 - **Steps**:
   1. Runs `rush docs` to generate all individual package docs
-  2. Runs aggregation to copy to `docs/reference/`
+  2. Runs aggregation to copy to `nuxt/documentation/content/reference/`
 
 ## Package Configuration
 
@@ -123,15 +123,16 @@ bash common/scripts/docs-full.sh
 
 **Note**: This cannot be run as a Rush command due to lock conflicts when calling `rush docs` recursively.
 
-## Integration with VitePress
+## Integration with the Docs Site
 
-The docs are aggregated to `docs/reference/` where VitePress can serve them:
+The docs are aggregated to `nuxt/documentation/content/reference/`, where the Nuxt + @nuxt/content
+docs site (`nuxt/documentation/`) serves them:
 
 ```bash
 # After generating docs
-cd docs
-rushx build    # Build VitePress site (includes aggregation)
-rushx dev      # Development server with hot reload
+cd nuxt
+rushx generate:documentation    # Static-build the docs site
+rushx dev:documentation         # Development server with hot reload
 ```
 
 ## Workflow Examples
@@ -159,8 +160,8 @@ rush build    # This calls rushx docs for each package
 
 # Before deploying docs site
 bash common/scripts/docs-full.sh    # Ensure aggregation is current
-cd docs
-rushx build       # Build VitePress site
+cd nuxt
+rushx generate:documentation        # Build the docs site
 ```
 
 ## Troubleshooting
@@ -180,7 +181,7 @@ rushx build       # Build VitePress site
 
 ### Frontmatter not added correctly
 
-The aggregation script automatically adds VitePress frontmatter. If you see issues:
+The aggregation script automatically adds frontmatter (title/description). If you see issues:
 
 1. Check `docs-aggregate.mjs` for the package configuration
 2. Verify the package is listed in the `packages` array
@@ -191,7 +192,7 @@ The aggregation script automatically adds VitePress frontmatter. If you see issu
 The documentation generation is a two-phase process:
 
 1. **Generation Phase**: Each package independently generates its `api.md` from TypeScript source during build
-2. **Aggregation Phase**: All `api.md` files are copied to a central location with VitePress frontmatter
+2. **Aggregation Phase**: All `api.md` files are copied to a central location with frontmatter
 
 This separation allows:
 - Fast incremental docs for single packages

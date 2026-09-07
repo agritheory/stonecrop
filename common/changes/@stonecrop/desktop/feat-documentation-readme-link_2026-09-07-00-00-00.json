@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/desktop",
+      "comment": "Point the host integration guide link at the documentation site's new location",
+      "type": "none"
+    }
+  ],
+  "packageName": "@stonecrop/desktop"
+}

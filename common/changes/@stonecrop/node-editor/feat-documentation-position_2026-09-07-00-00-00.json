@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/node-editor",
+      "comment": "Re-export vue-flow's Position enum, which Layout's handle placement requires and consumers could not otherwise name",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@stonecrop/node-editor"
+}

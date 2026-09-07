@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@stonecrop/nuxt",
+      "comment": "Adding documentation for Stonecrop",
+      "type": "none"
+    }
+  ],
+  "packageName": "@stonecrop/nuxt"
+}

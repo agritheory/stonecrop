@@ -4,7 +4,7 @@
 #
 # Usage:
 #   run-docs.sh <package-name>              # Generate docs for single package
-#   run-docs.sh --aggregate                 # Aggregate all docs to docs/reference/
+#   run-docs.sh --aggregate                 # Aggregate all docs to nuxt/documentation/content/reference/
 #   run-docs.sh <package-name> --aggregate  # Generate single package and aggregate all
 #   RUSH_DOCS_AGGREGATE=1 run-docs.sh <pkg> # Used by rush docs command
 

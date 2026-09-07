@@ -12,6 +12,14 @@ Vue component exported from @stonecrop/node_editor.
 import { NodeEditor } from '@stonecrop/node_editor'
 ```
 
+### Position
+
+Vue component exported from @stonecrop/node_editor.
+
+```typescript
+import { Position } from '@stonecrop/node_editor'
+```
+
 ### StateEditor
 
 Vue component exported from @stonecrop/node_editor.
