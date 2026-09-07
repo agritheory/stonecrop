@@ -1,8 +1,7 @@
 /**
- * Static page index for DocsSearch. Ported from docs/.vitepress/theme/search-index.ts —
- * kept hand-written rather than generated from the content collection, same rationale as the
- * VitePress version: fine for a page count that doesn't change daily; add an entry here
- * alongside adding a page. URLs updated to this site's routes (no trailing `.html`).
+ * Static page index for DocsSearch, hand-written rather than generated from the content
+ * collection: fine for a page count that does not change daily, as long as adding a page also
+ * adds an entry here. `nuxt/test/docs-registries.test.ts` is what makes a missed one go red.
  */
 export interface SearchEntry {
 	title: string

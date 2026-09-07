@@ -113,7 +113,7 @@ rows:
   - ['`options`', '[`QuantityOptions`](#options)', '`{}`', 'Type-specific configuration — available UOMs, stock UOM, conversion factors.']
   - ['`required`', '`boolean`', '`false`', 'Marks the quantity input as required (`edit` mode only).']
   - ['`mode`', "`'edit' | 'read' | 'display'`", "`'edit'`", 'See [Modes](#modes) below.']
-  - ['`uuid`', '`string`', 'auto-generated', "`id`/`for` pair linking the quantity input to its label, and root for the UOM dropdown's element ids."]
+  - ['`uuid`', '`string`', 'none', "`id`/`for` pair linking the quantity input to its label, and root for the UOM dropdown's element ids. Nothing generates one, so the pairing exists only when you pass it."]
   - ['`uomLabel`', '`string`', "`'UOM'`", "Label for the embedded unit-of-measure dropdown."]
   - ['`stockUomLabel`', '`string`', "`'Stock UOM'`", "Label for the read-only stock UOM field."]
   - ['`stockQtyLabel`', '`string`', "`'Stock Qty'`", "Label for the read-only derived stock quantity field."]

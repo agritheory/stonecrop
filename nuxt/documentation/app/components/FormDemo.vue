@@ -6,13 +6,12 @@ import type { ResolvedField } from '@stonecrop/aform'
 // Uses <AForm :schema="..."> (string component names, e.g. 'ATextInput'), which relies on
 // Vue's dynamic-component registry. That registry is only populated once @stonecrop/aform's
 // `install` plugin is registered on the app instance — done centrally in
-// docs/.vitepress/theme/index.ts (`app.use(installAform)`). Every other component's demo page
+// app/plugins/stonecrop-aform.ts (`app.use(installAform)`). Every other component's demo page
 // imports its field directly instead, to avoid depending on that registration; this page's
 // whole point is showing AForm's orchestration, so it uses the real thing.
 
-// Schema adapted from examples/aform/form.story.vue (text + checkbox fields) and
-// examples/aform/currency.story.vue (the currency field + its options shape) — three distinct
-// field kinds resolved and rendered together by a single AForm.
+// Three distinct field kinds (text, checkbox, currency) resolved and rendered together by a
+// single AForm, which is what this page exists to show.
 const CURRENCIES = [
 	{ id: 'USD', displayText: 'US Dollar', symbol: '$' },
 	{ id: 'EUR', displayText: 'Euro', symbol: '€' },

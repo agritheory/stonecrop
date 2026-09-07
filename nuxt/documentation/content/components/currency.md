@@ -129,7 +129,7 @@ rows:
   - ['`options`', '[`CurrencyOptions`](#options)', '`{}`', 'Type-specific configuration — base currency, exchange rates, precision, currency search.']
   - ['`required`', '`boolean`', '`false`', 'Marks the amount and currency inputs as required (`edit` mode only).']
   - ['`mode`', "`'edit' | 'read' | 'display'`", "`'edit'`", 'See [Modes](#modes) below.']
-  - ['`uuid`', '`string`', 'auto-generated', "`id`/`for` pair linking the amount input to its label."]
+  - ['`uuid`', '`string`', 'none', "`id`/`for` pair linking the amount input to its label. Nothing generates one, so the pairing exists only when you pass it."]
   - ['`currencyLabel`', '`string`', "`'Currency'`", "Label for the embedded currency picker."]
   - ['`baseCurrencyLabel`', '`string`', "`'Base Currency'`", "Label for the read-only base currency field."]
   - ['`baseAmountLabel`', '`string`', "`'Base Amount'`", "Label for the read-only derived base amount field."]

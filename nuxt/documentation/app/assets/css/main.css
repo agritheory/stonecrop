@@ -57,6 +57,13 @@ a {
 	color: var(--doc-c-brand-1);
 }
 
+/* MDC injects an anchor link into every h2-h4, so the bare `a` rule above turns each heading into
+   coloured underlined link text. Headings keep their own colour; the anchor is still clickable. */
+.doc-content :is(h1, h2, h3, h4) a {
+	color: inherit;
+	text-decoration: none;
+}
+
 /* Page prose */
 .doc-content h1,
 .doc-content h2,
@@ -166,59 +173,15 @@ a {
 	color: var(--doc-c-brand-1);
 }
 
-/* Scoped Stonecrop design tokens for live component demos — mirrors
-   @stonecrop/themes' default.css, scoped so it doesn't leak into the rest of the site. */
+/* The --sc-* tokens these demos read come from @stonecrop/themes' default.css, loaded in
+   nuxt.config. Do not restate them here: a copy scoped to this class out-specifies the :root
+   the sheet declares them on, so it silently wins and any token it omits resolves to nothing.
+   That is how the badge variants rendered with no accent colour at all. */
 .stonecrop-demo {
-	--sc-primary-color: #0098c9;
-	--sc-primary-text-color: #ffffff;
-	--sc-brand-color: #202a44;
-	--sc-gray-5: #f2f2f2;
-	--sc-gray-10: #e6e6e6;
-	--sc-gray-20: #cccccc;
-	--sc-gray-50: #808080;
-	--sc-gray-60: #666666;
-	--sc-gray-80: #333333;
-	--sc-brand-danger: #e63c28;
-	--sc-brand-success: #155724;
-	--sc-brand-warning: #b99d3e;
-	--sc-active-cell-background: #ffffff;
-	--sc-active-cell-outline: #e6a92d;
-	--sc-cell-border-color: #ffffff;
-	--sc-cell-text-color: #3a3c41;
-	--sc-focus-cell-background: #ffffff;
-	--sc-focus-cell-outline: #000000;
-	--sc-header-border-color: #ffffff;
-	--sc-header-text-color: var(--sc-gray-20);
-	--sc-row-border-color: var(--sc-gray-20);
-	--sc-row-color-zebra-dark: #dddddd;
-	--sc-row-color-zebra-light: #eeeeee;
-	--sc-row-number-background-color: #ffffff;
-	--sc-input-active-border-color: #000000;
-	--sc-input-active-label-color: #000000;
-	--sc-input-border-color: var(--sc-gray-20);
-	--sc-input-label-color: var(--sc-gray-60);
-	--sc-required-border: #e63c28;
-	--sc-cell-changed-color: #d8edff;
-	--sc-form-border: var(--sc-gray-5);
-	--sc-form-background: #ffffff;
-	--sc-input-field-background: #ffffff;
-	--sc-input-field-disabled-background: var(--sc-gray-5);
-	--sc-font-family: 'Arimo', Arial, sans-serif;
-	--sc-table-font-size: 16px;
-	--sc-atable-font-family: Arial, sans-serif;
-	--sc-atable-row-padding: 0.125rem;
-	--sc-atable-row-height: 1.5em;
-	--sc-atable-cell-border-width: 2px;
-	--sc-table-loading-color: 204, 204, 204;
-	--sc-btn-border: #cccccc;
-	--sc-btn-color: white;
-	--sc-btn-hover: #f2f2f2;
-	--sc-btn-label-color: black;
-
 	display: block;
 	width: 100%;
 	background: var(--sc-form-background);
-	color: var(--sc-cell-text-color, #3a3c41);
+	color: var(--sc-cell-text-color);
 	font-family: var(--sc-font-family);
 }
 

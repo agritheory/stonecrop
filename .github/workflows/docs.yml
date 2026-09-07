@@ -8,6 +8,11 @@ on:
       - 'nuxt/documentation/**'
       - '**/api.md'
       - '.github/workflows/docs.yml'
+      # The site embeds live components, so a source change alters what it renders even when it
+      # leaves every api.md untouched. Globbed rather than listing the packages that supply a
+      # demo, which is a set that goes stale silently the next time one is added.
+      - '*/src/**'
+      - 'themes/**'
   workflow_dispatch:
 
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
@@ -74,6 +79,12 @@ jobs:
 
       - name: Rush Build
         run: node common/scripts/install-run-rush.js build
+
+      # Each package's build writes its own api.md; this collects them into the content tree the
+      # site renders. Without it an api.md change triggers this workflow and then deploys a site
+      # that does not contain it, which the old docs/package.json ran as part of its build.
+      - name: Aggregate API Reference
+        run: bash common/scripts/run-docs.sh --aggregate
 
       - name: Generate Docs Site
         working-directory: ./nuxt

@@ -39,7 +39,7 @@ Stonecrop pairs AForm's schema-driven fields with ATable's advanced grid, backed
 | [@stonecrop/graphql-middleware](/reference/graphql-middleware) | PostGraphile middleware |
 | [@stonecrop/casl-middleware](/reference/casl-middleware) | CASL authorization for GraphQL |
 | [@stonecrop/rockfoil](/reference/rockfoil) | Server-side utilities |
-| [@stonecrop/nuxt](/reference/) | Nuxt module integration |
-| [@stonecrop/nuxt-grafserv](/reference/) | Nuxt + Grafserv module |
-| [@stonecrop/themes](/reference/) | CSS themes |
+| [@stonecrop/nuxt](/reference/nuxt) | Nuxt module integration |
+| [@stonecrop/nuxt-grafserv](/reference/nuxt-grafserv) | Nuxt + Grafserv module |
+| [@stonecrop/themes](/reference/themes) | CSS themes |
 | [@stonecrop/utilities](/reference/utilities) | Shared utility functions |

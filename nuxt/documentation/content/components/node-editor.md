@@ -26,23 +26,23 @@ import { StateEditor } from '@stonecrop/node-editor'
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue'
-import { StateEditor, type Layout } from '@stonecrop/node-editor'
+import { Position, StateEditor, type Layout } from '@stonecrop/node-editor'
 import type { WorkflowMeta } from '@stonecrop/schema'
 
 const layout: Layout = {
 	idle: { position: { x: 50, y: 50 } },
 	loading: { position: { x: 300, y: 50 } },
-	failure: { position: { x: 300, y: 200 }, targetPosition: 'right', sourcePosition: 'left' },
+	failure: { position: { x: 300, y: 200 }, targetPosition: Position.Right, sourcePosition: Position.Left },
 	success: { position: { x: 550, y: 50 } },
 }
 
 const fetchWorkflow = ref<WorkflowMeta>({
 	states: ['idle', 'loading', 'success', 'failure'],
 	actions: {
-		FETCH: { label: 'FETCH', handler: '', allowedStates: ['idle'], nextState: 'loading' },
-		RESOLVE: { label: 'RESOLVE', handler: '', allowedStates: ['loading'], nextState: 'success' },
-		REJECT: { label: 'REJECT', handler: '', allowedStates: ['loading'], nextState: 'failure' },
-		RETRY: { label: 'RETRY', handler: '', allowedStates: ['failure'], nextState: 'loading' },
+		FETCH: { label: 'FETCH', allowedStates: ['idle'], nextState: 'loading' },
+		RESOLVE: { label: 'RESOLVE', allowedStates: ['loading'], nextState: 'success' },
+		REJECT: { label: 'REJECT', allowedStates: ['loading'], nextState: 'failure' },
+		RETRY: { label: 'RETRY', allowedStates: ['failure'], nextState: 'loading' },
 	},
 })
 </script>

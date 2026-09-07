@@ -144,12 +144,13 @@ const columns = ref<TableColumn[]>([
 import { ref } from 'vue'
 import { ATable, type TableColumn, type TableRow } from '@stonecrop/atable'
 
+// `indent` is what shifts the cell; `parent` alone leaves every level flush.
 const rows = ref<TableRow[]>([
-	{ id: '1', account: 'Assets', parent: null },
-	{ id: '2', account: 'Current Assets', parent: 0 },
-	{ id: '3', account: 'Cash', parent: 1 },
-	{ id: '4', account: 'Accounts Receivable', parent: 1 },
-	{ id: '5', account: 'Liabilities', parent: null },
+	{ id: '1', account: 'Assets', indent: 0 },
+	{ id: '2', account: 'Current Assets', parent: 0, indent: 2 },
+	{ id: '3', account: 'Cash', parent: 1, indent: 4 },
+	{ id: '4', account: 'Accounts Receivable', parent: 1, indent: 4 },
+	{ id: '5', account: 'Liabilities', indent: 0 },
 ])
 
 const columns = ref<TableColumn[]>([{ label: 'Account', name: 'account', align: 'left', edit: false, width: '30ch' }])
@@ -207,7 +208,7 @@ headers: ['Name', 'Type', 'Default', 'Description']
 rows:
   - ['`rows`', '`TableRow[]`', '— (required)', 'The grid data, `v-model:rows`-bound.']
   - ['`columns`', '`TableColumn[]`', '—', 'Column definitions, `v-model:columns`-bound.']
-  - ['`id`', '`string`', "`''`", 'DOM id applied to the root element.']
+  - ['`id`', '`string`', 'generated hash', "Identity of the table's Pinia store (`table-<id>`), not a DOM id. Pass one to address the same store from outside; nothing is written to the markup."]
   - ['`config`', '`TableConfig`', '`{}`', "View settings — `view` (`'list'`, `'uncounted'`, `'list-expansion'`, `'tree'`, `'gantt'`, `'tree-gantt'`), `fullWidth`, `clickable`, `rowActions`, `defaultTreeExpansion`, `dependencyGraph`."]
   - ['`schema`', '`ColumnSchema[]`', '`[]`', 'Optional doctype-derived schema, converted to columns via `schemaToColumns`.']
   - ['`linkResolver`', '`(doctype, id) => Promise<string | undefined>`', '—', 'Resolves a link-type cell value to a display string.']
@@ -222,7 +223,7 @@ headers: ['Name', 'Payload', 'Description']
 rows:
   - ['`cellUpdate`', '`{ colIndex, rowIndex, newValue, oldValue }`', 'An editable cell was changed.']
   - ['`row:click`', '`RowClickEvent`', 'A row was clicked (only when `config.clickable` is set).']
-  - ['`row:open`', '`RowClickEvent`', 'A row was opened (e.g. double-click).']
+  - ['`row:open`', '`RowClickEvent`', "Emitted from the row-actions menu's Open entry. There is no double-click binding."]
   - ['`row:add`', '`RowAddEvent`', 'The add-row action was used.']
   - ['`row:delete`', '`RowDeleteEvent`', 'The delete-row action was used.']
   - ['`row:duplicate`', '`RowDuplicateEvent`', 'The duplicate-row action was used.']

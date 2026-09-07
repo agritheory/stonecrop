@@ -46,6 +46,8 @@ export type Layout = {
 
 export { NodeEditor }
 
+export { Position }
+
 export { StateEditor }
 
 // (No @packageDocumentation comment for this package)

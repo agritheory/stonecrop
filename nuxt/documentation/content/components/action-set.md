@@ -43,10 +43,20 @@ const elements: ActionElements[] = [
 		],
 	},
 ]
+
+// ActionSet never invokes an element's `action`; it emits the label alongside it and leaves the
+// call to the host. Wiring this is what makes `action` above run at all.
+function onActionClick(label: string, action?: () => void | Promise<void>) {
+	if (action) {
+		void action()
+	} else {
+		lastAction.value = label
+	}
+}
 </script>
 
 <template>
-	<ActionSet :elements="elements" @action-click="label => (lastAction = label)" />
+	<ActionSet :elements="elements" @action-click="onActionClick" />
 </template>
 ```
 ::
@@ -69,9 +79,9 @@ rows:
 ---
 headers: ['Name', 'Shape', 'Description']
 rows:
-  - ['`ButtonElement`', "`{ type: 'button', label, show?, disabled?, link?, action? }`", 'A single clickable action. Set `link` for a plain anchor, or `action` for a callback.']
-  - ['`DropdownElement`', "`{ type: 'dropdown', label, show?, actions: ElementAction[] }`", 'A button that toggles a nested list of actions.']
-  - ['`ElementAction`', '`{ label, show?, link?, action? }`', 'One entry inside a dropdown — same `link`/`action` choice as a button.']
+  - ['`ButtonElement`', "`{ type: 'button', label, show?, disabled?, link?, action? }`", "Always renders a `<button>`. `link` is inherited from `ElementAction` and is not read here; `show` is declared but read nowhere, so neither hides nor links a button."]
+  - ['`DropdownElement`', "`{ type: 'dropdown', label, show?, actions: ElementAction[] }`", 'A button that toggles a nested list of actions. `show` is not read.']
+  - ['`ElementAction`', '`{ label, show?, link?, action? }`', "One entry inside a dropdown. This is the only place `link` has an effect: an entry with an `action` renders a `<button>`, one with only a `link` renders an `<a>`. `show` is not read."]
 ---
 ::
 
@@ -81,7 +91,7 @@ rows:
 ---
 headers: ['Name', 'Payload', 'Description']
 rows:
-  - ['`actionClick`', '`[label: string, action: (() => void | Promise<void>) | undefined]`', "Fires when any button/dropdown-item with an `action` (not a `link`) is clicked."]
+  - ['`actionClick`', '`[label: string, action: (() => void | Promise<void>) | undefined]`', "Fires on every button click, and on a dropdown entry that has an `action`. ActionSet never calls the callback itself: it passes it here and the host decides, so an element's `action` runs only if you invoke it."]
 ---
 ::
 

@@ -15,7 +15,7 @@ import { AFormLink } from '@stonecrop/aform'
 
 ## Basic
 
-`v-model` binds to an [`AFormLinkValue`](#afformlinkvalue). Type into the box to filter the list below it — try "eu" or "am".
+`v-model` binds to an [`AFormLinkValue`](#aformlinkvalue). Type into the box to filter the list below it — try "eu" or "am".
 
 ::demo-panel
 :::client-only
@@ -109,7 +109,7 @@ const data = ref({ territory: { id: '', displayText: '' } })
 ---
 headers: ['Name', 'Type', 'Default', 'Description']
 rows:
-  - ['`v-model`', '[`AFormLinkValue`](#afformlinkvalue)', "`{ id: '', displayText: '' }`", 'The selected linked record.']
+  - ['`v-model`', '[`AFormLinkValue`](#aformlinkvalue)', "`{ id: '', displayText: '' }`", 'The selected linked record.']
   - ['`label`', '`string`', '—', 'Label text rendered below the input. Suppressed when `embedded` is `true` (see [Accessibility](#accessibility)).']
   - ['`doctype`', '`string`', '—', 'Target doctype slug. Used for FK display-text resolution (via the injected `aformLinkResolver`) and for navigation.']
   - ['`filterFunction`', '`(search: string) => AFormLinkValue[] | Promise<AFormLinkValue[]>`', '—', 'Search function backing the autocomplete dropdown. Without it, the dropdown never opens.']
@@ -122,7 +122,7 @@ rows:
   - ['`ariaLabel`', '`string`', '—', 'Accessible name for the input. Effectively required when `embedded` is `true`, since the visible `label` is suppressed there.']
   - ['`required`', '`boolean`', '`false`', "Sets the native `required` attribute on the input (`edit` mode only)."]
   - ['`mode`', "`'edit' | 'read' | 'display'`", "`'edit'`", 'See [Modes](#modes) below.']
-  - ['`uuid`', '`string`', 'auto-generated', "Used to build the autocomplete listbox's id, wired to the input via `aria-controls`/`aria-activedescendant`."]
+  - ['`uuid`', '`string`', 'none', "Used to build the autocomplete listbox's id, wired to the input via `aria-controls`/`aria-activedescendant`. Nothing generates one, so pass it for those attributes to resolve."]
 ---
 ::
 

@@ -1,6 +1,9 @@
 // @stonecrop/nuxt documentation site
 // Nuxt + @nuxt/content proof-of-migration app (ported from the VitePress site in docs/)
+import { readdirSync } from 'node:fs'
 import { createRequire } from 'node:module'
+import { join, relative, sep } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 // @nuxtjs/mdc's remark/rehype pipeline (behind @nuxt/content) depends on a chain of small CJS
 // utilities — remark-gfm, remark-emoji, remark-mdc, remark-rehype, rehype-raw, parse5,
@@ -34,10 +37,41 @@ const mdcTransitiveDeps = [
 ]
 const mdcDepAliases = Object.fromEntries(mdcTransitiveDeps.map(name => [name, mdcRequire.resolve(name)]))
 
+// Prerendering is otherwise driven entirely by link crawling, so a page nothing links to never
+// reaches the static output and resolves only through the client-side fallback: a direct hit or a
+// search result lands on a 404 from the CDN. Enumerating the collection is what makes the built
+// site independent of whether the sidebar happens to mention a page.
+const contentRoot = fileURLToPath(new URL('./content', import.meta.url))
+
+function contentRoutes(directory: string = contentRoot): string[] {
+	return readdirSync(directory, { withFileTypes: true }).flatMap(entry => {
+		const fullPath = join(directory, entry.name)
+		if (entry.isDirectory()) {
+			return contentRoutes(fullPath)
+		}
+		if (!entry.name.endsWith('.md')) {
+			return []
+		}
+		const slug = relative(contentRoot, fullPath).slice(0, -'.md'.length).split(sep).join('/')
+		// The trailing slash on a directory index is load-bearing: content pages link to siblings
+		// as `./name`, which resolves against the parent when the current URL lacks one, turning
+		// every such link into a 404 at prerender time.
+		return [`/${slug.replace(/(^|\/)index$/, '$1')}`]
+	})
+}
+
 export default defineNuxtConfig({
 	compatibilityDate: '2026-01-01',
 
 	modules: ['@nuxt/content'],
+
+	app: {
+		head: {
+			htmlAttrs: { lang: 'en' },
+			titleTemplate: '%s | Stonecrop',
+			link: [{ rel: 'icon', type: 'image/svg+xml', href: '/assets/stonecrop-logo-solid.svg' }],
+		},
+	},
 
 	// Nuxt's auto-import transform excludes `node_modules` by checking for a literal
 	// `node_modules` path segment — but pnpm workspace packages (this whole monorepo) resolve
@@ -60,9 +94,22 @@ export default defineNuxtConfig({
 			// Avoids a native better-sqlite3 dependency in the Rush/pnpm workspace; Node >= 22.5 ships this built in.
 			sqliteConnector: 'native',
 		},
+		build: {
+			markdown: {
+				highlight: {
+					// Supplying this REPLACES the default language set rather than extending it, so the
+					// defaults are repeated here. Dropping one silently unhighlights every fence using it,
+					// which is how the graphql blocks in the middleware guide lost their colours.
+					langs: ['js', 'jsx', 'json', 'ts', 'tsx', 'vue', 'css', 'html', 'bash', 'md', 'mdc', 'yaml', 'graphql'],
+				},
+			},
+		},
 	},
 
+	// The token floor comes first: it declares every --sc-* the component sheets below read, and
+	// its own declarations sit in a cascade layer, so this site's unlayered rules still win.
 	css: [
+		'@stonecrop/themes/default.css',
 		'@stonecrop/desktop/styles',
 		'@stonecrop/atable/styles',
 		'@stonecrop/node-editor/styles',
@@ -80,13 +127,9 @@ export default defineNuxtConfig({
 		host: 'localhost',
 	},
 
-	// /stories/ is a static prebuilt Histoire bundle served from public/stories/ (not a Nuxt
-	// route) — Nitro's prerender link-crawler discovers it from guides pages' links and tries
-	// to render it as an app route, 404ing and failing the whole generate. It's still copied
-	// into .output/public/stories/ as a static asset regardless; just skip crawling it as a route.
 	nitro: {
 		prerender: {
-			ignore: ['/stories/', '/stories'],
+			routes: contentRoutes(),
 		},
 	},
 

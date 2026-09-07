@@ -16,6 +16,16 @@ const elements: ActionElements[] = [
 		],
 	},
 ]
+
+// ActionSet never invokes an element's `action`; it emits the label alongside it and leaves the
+// call to the host. Wiring this is what makes `action` above run at all.
+function onActionClick(label: string, action?: () => void | Promise<void>) {
+	if (action) {
+		void action()
+	} else {
+		lastAction.value = label
+	}
+}
 </script>
 
 <template>
@@ -28,7 +38,7 @@ const elements: ActionElements[] = [
 		box's height — overridden below to a small offset that actually fits inside the frame.
 	-->
 	<div class="stonecrop-demo action-set-demo-frame">
-		<ActionSet :elements="elements" @action-click="label => (lastAction = label)" />
+		<ActionSet :elements="elements" @action-click="onActionClick" />
 		<p v-if="lastAction" class="action-set-demo-result">
 			Last action: <strong>{{ lastAction }}</strong>
 		</p>

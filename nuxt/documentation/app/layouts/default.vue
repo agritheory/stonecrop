@@ -93,6 +93,7 @@ const sidebarSections = [
 					{ text: 'GraphQL Middleware Setup', to: '/guides/graphql-middleware-setup' },
 					{ text: 'CASL Middleware Setup', to: '/guides/casl-middleware-setup' },
 					{ text: 'Custom Fetch Handlers', to: '/guides/custom-fetch-handlers' },
+					{ text: 'HST Data Patterns', to: '/guides/hst-patterns' },
 				],
 			},
 			{
