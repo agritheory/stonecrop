@@ -1,5 +1,12 @@
 # Change Log - @stonecrop/aform
 
+## 0.31.0
+Mon, 07 Sep 2026 08:46:18 GMT
+
+### Updates
+
+- [AForm] Fix ADatePicker allowing text selection when dragging across calendar cells
+
 ## 0.30.0
 Thu, 27 Aug 2026 12:30:32 GMT
 

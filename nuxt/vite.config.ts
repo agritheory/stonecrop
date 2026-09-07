@@ -8,9 +8,6 @@ import { nuxtModuleBuildTask } from '../common/vite/build-task.ts'
  */
 export default defineConfig({
 	run: {
-		tasks: nuxtModuleBuildTask('node --run dev:prepare && nuxt-module-build build', [
-			'playground/.nuxt/**',
-			'fullstack/.nuxt/**',
-		]),
+		tasks: nuxtModuleBuildTask('node --run dev:prepare && nuxt-module-build build', import.meta.url),
 	},
 })

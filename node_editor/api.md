@@ -136,3 +136,11 @@ export const NodeEditor: typeof __VLS_export
 export const StateEditor: typeof __VLS_export
 ```
 
+## Re-exported
+
+Declared elsewhere and re-exported by this package.
+
+| Name | From |
+|------|------|
+| Position | `@vue-flow/core` |
+

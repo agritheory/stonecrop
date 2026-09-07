@@ -5,9 +5,14 @@ on:
     branches:
       - development
     paths:
-      - 'docs/**'
+      - 'nuxt/documentation/**'
       - '**/api.md'
       - '.github/workflows/docs.yml'
+      # The site embeds live components, so a source change alters what it renders even when it
+      # leaves every api.md untouched. Globbed rather than listing the packages that supply a
+      # demo, which is a set that goes stale silently the next time one is added.
+      - '*/src/**'
+      - 'themes/**'
   workflow_dispatch:
 
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
@@ -59,21 +64,21 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile
 
-      # Generates every package's api.md, which the site aggregates below.
+      # The root build ends in `run-docs.sh --aggregate`, which collects every package's api.md into
+      # the content tree the site renders. Without that an api.md change would trigger this workflow
+      # and then deploy a site that does not contain it.
       - name: Build
         run: pnpm run build
 
-      # The docs site is deliberately not part of the repo-wide build: its script is named
-      # "build:site" so that `vp run -r build` skips it. Aggregation into docs/reference/ happens
-      # inside this script.
-      - name: Build Vitepress
-        working-directory: ./docs
-        run: pnpm run build:site
+      # The site is deliberately outside the repo-wide build: its script is named "generate:documentation"
+      # rather than "build" so that `vp run -r build` does not render it on every package build.
+      - name: Generate Docs Site
+        run: pnpm --filter @stonecrop/nuxt run generate:documentation
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v5
         with:
-          path: docs/.vitepress/dist
+          path: nuxt/documentation/.output/public
 
   deploy:
     needs: build

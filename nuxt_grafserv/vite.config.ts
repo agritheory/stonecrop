@@ -7,5 +7,5 @@ import { nuxtModuleBuildTask } from '../common/vite/build-task.ts'
  * `configFile: false`, and vitest resolves `vitest.config.ts` ahead of this file.
  */
 export default defineConfig({
-	run: { tasks: nuxtModuleBuildTask('node --run dev:prepare && node --run prepack', ['playground/.nuxt/**']) },
+	run: { tasks: nuxtModuleBuildTask('node --run dev:prepare && node --run prepack', import.meta.url) },
 })

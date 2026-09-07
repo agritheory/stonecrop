@@ -1,5 +1,12 @@
 # Change Log - @stonecrop/node-editor
 
+## 0.31.0
+Mon, 07 Sep 2026 08:46:18 GMT
+
+### Minor changes
+
+- Re-export vue-flow's Position enum, which Layout's handle placement requires and consumers could not otherwise name
+
 ## 0.30.0
 Thu, 27 Aug 2026 12:30:32 GMT
 

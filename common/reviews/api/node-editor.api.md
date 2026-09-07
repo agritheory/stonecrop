@@ -51,6 +51,8 @@ export type Layout = {
 // @public (undocumented)
 export const NodeEditor: typeof __VLS_export;
 
+export { Position }
+
 // @public (undocumented)
 export const StateEditor: typeof __VLS_export_2;
 

@@ -111,6 +111,11 @@ lib-commonjs/
 lib-shim/
 dist/
 dist-storybook/
+
+# `nuxi generate` leaves this as a SYMLINK to .output/public, and the `dist/` pattern above only
+# matches directories, so it stays untracked. Rush then fails every later build in the whole repo
+# with "fatal: Unable to hash nuxt/documentation/dist" while computing repo state.
+nuxt/documentation/dist
 tsdoc-metadata.json
 *.tsbuildinfo
 
@@ -133,7 +138,3 @@ tsdoc-metadata.json
 
 # AI agent instruction files (local only)
 **/AGENTS.md
-
-# VitePress build output
-docs/.vitepress/dist/
-docs/.vitepress/cache/

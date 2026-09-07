@@ -3,13 +3,13 @@
 #
 # Usage:
 #   run-docs.sh <package-name>              # Generate docs for single package
-#   run-docs.sh --aggregate                 # Aggregate all docs to docs/reference/
+#   run-docs.sh --aggregate                 # Aggregate all docs to nuxt/documentation/content/reference/
 #   run-docs.sh <package-name> --aggregate  # Generate single package and aggregate all
 #   DOCS_AGGREGATE=1 run-docs.sh <pkg>      # Same as --aggregate, for callers that cannot pass a flag
 #
 # Note: the repo-wide `docs` script generates api.md per package and does NOT aggregate — it sets no
-# environment variable and passes no flag. docs/reference/ is written only by `--aggregate`, which
-# reaches it through `docs-full.sh` or the docs package's own build script.
+# environment variable and passes no flag. The reference tree is written only by `--aggregate`,
+# which reaches it through the root `build` or `docs-full.sh`.
 
 set -e
 

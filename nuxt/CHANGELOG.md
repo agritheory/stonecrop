@@ -1,5 +1,12 @@
 # Change Log - @stonecrop/nuxt
 
+## 0.31.0
+Mon, 07 Sep 2026 08:46:18 GMT
+
+### Updates
+
+- Adding documentation for Stonecrop
+
 ## 0.30.0
 Thu, 27 Aug 2026 12:30:32 GMT
 

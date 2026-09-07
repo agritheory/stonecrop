@@ -23,7 +23,7 @@
 								type="text"
 								:value="row.label"
 								placeholder="Name"
-								@input="onFieldInput(row, 'label', ($event.target as HTMLInputElement).value)" />
+								@input="onFieldInput(row, 'label', $event.target.value)" />
 						</td>
 						<td>
 							<span class="badge" :class="`badge-${row.kind}`">
@@ -40,7 +40,7 @@
 									type="text"
 									:value="onDisplay(row)"
 									placeholder="fields, comma-separated"
-									@input="onOnInput(row, ($event.target as HTMLInputElement).value)" />
+									@input="onOnInput(row, $event.target.value)" />
 							</div>
 							<template v-else>
 								<div class="detail-field">
@@ -90,13 +90,10 @@
 	</div>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { ATable, ARow } from '@stonecrop/atable'
-import type { TableColumn, TableRow } from '@stonecrop/atable'
 import { ACodeEditor } from '@stonecrop/code-editor'
-import type { WorkflowMeta } from '@stonecrop/schema'
 import { computed, reactive } from 'vue'
-
 import {
 	addCommand,
 	addTrigger,
@@ -106,26 +103,11 @@ import {
 	removeTrigger,
 	writeActionField,
 	writeTriggerField,
-	type ActionRow,
 } from './docbuilderActions'
-
-/**
- * ATable's store types every row as its own `TableRow`, so the `ActionRow[]` this panel passes in
- * comes back widened — the store carries values, not the row type. Narrowed once here rather than at
- * each of the handler call sites below, all of which are reached only from this `v-for`.
- */
-function actionRows(store: { filteredRows: TableRow[] }): (ActionRow & { originalIndex: number })[] {
-	return store.filteredRows as unknown as (ActionRow & { originalIndex: number })[]
+function actionRows(store) {
+	return store.filteredRows
 }
-
-// A Transition's name is edited on its edge in the graph (the single source of truth for its
-// identity), so the panel shows it read-only and points the author there.
 const TRANSITION_NAME_HINT = 'Rename this transition on its edge in the workflow graph above'
-
-// Type stubs for the API surface injected into an *action* clientHandler at runtime.
-// Keep in sync with the capability map assembled in the `useClientAction` composable
-// (@stonecrop/nuxt). Note: only read-only `graphql.query` is injected — there is
-// no `graphql.mutation` (a raw mutation would bypass the dispatch and leave HST stale).
 const INJECTED_API_STUBS = `
 declare const router: {
   push(to: string | object): Promise<void>
@@ -139,59 +121,30 @@ declare const graphql: {
 }
 declare const record: Record<string, unknown>
 `
-
-// Type stubs for a *trigger* clientHandler — a different, narrower surface than an action's.
-// The validation engine (@stonecrop/stonecrop) runs a trigger with { record, value, setError }
-// only; router/runAction/graphql are NOT injected, so surfacing them here would mislead authors
-// into writing handlers that throw at runtime.
 const TRIGGER_API_STUBS = `
 declare const record: Record<string, unknown>
 declare const value: unknown
 declare function setError(field: string, message: string): void
 `
-
-// Path to locally-served Monaco AMD build (served via Nitro publicAssets in module.ts).
-// Falls back to CDN when running outside the docbuilder context.
 const VS_PATH = '/stonecrop-monaco/vs'
-
 const EDITOR_OPTIONS = {
 	placeholder: "e.g.  await runAction('Submit');  router.push(`/issue/${record.id}`)",
 }
 const TRIGGER_EDITOR_OPTIONS = {
 	placeholder: "e.g.  if (value < 0) setError('amount', 'Must be positive')",
 }
-
-// Restrict the handler editor's language service to the ES built-ins only — no DOM/browser
-// globals. Authors get JS essentials (Promise, Array, JSON, …) plus the injected Stonecrop
-// capability surface (the stubs above) in autocomplete, and nothing else.
 const EDITOR_LIBS = ['es2020']
-
-// The collapsed row shows only the columns common to every kind — Label and Type. The type-specific
-// columns (on / allowedStates / nextState) moved into the per-row expansion. `sortable: false`
-// suppresses click-to-sort (row order is the keyed object's order); `filterable` on Type opts it into
-// the header filter row so the table can be narrowed to just Transitions/Commands/Triggers.
-const ACTION_COLUMNS: TableColumn[] = [
+const ACTION_COLUMNS = [
 	{ name: 'label', label: 'Label', sortable: false },
 	{ name: 'type', label: 'Type', sortable: false, filterable: true, filterType: 'select' },
 ]
-
-const props = defineProps<{
-	modelValue: WorkflowMeta | undefined
-}>()
-
-const emit = defineEmits<{
-	'update:modelValue': [value: WorkflowMeta]
-}>()
-
-// One-way projection of both sibling maps (`actions` + `triggers`) into ATable rows. Each row
-// carries the column-named display scalars (so the header filters and rendered cells read row[name])
-// plus `__key`/`__kind`/`__action`/`__trigger` backrefs the cells and handler editor write through.
-// See ./docbuilderActions (pure + unit-tested; the SFC can't mount in the DOM-less test env).
+const props = defineProps({
+	modelValue: { type: null, required: true },
+})
+const emit = defineEmits(['update:modelValue'])
 const rows = computed(() => projectWorkflowRows(props.modelValue))
 const hasRows = computed(() => rows.value.length > 0)
-
-/** Route a label/clientHandler edit back to whichever sibling map the row came from. */
-function onFieldInput(row: ActionRow, field: string, value: unknown) {
+function onFieldInput(row, field, value) {
 	if (!props.modelValue) return
 	const next =
 		row.kind === 'trigger'
@@ -199,45 +152,25 @@ function onFieldInput(row: ActionRow, field: string, value: unknown) {
 			: writeActionField(props.modelValue, row.__key, field, value)
 	emit('update:modelValue', next)
 }
-
-// Verbatim buffer for each Trigger's `on` text input, keyed by trigger key. The model stores `on`
-// as a string[], but re-deriving the input's display from that array on every keystroke normalizes
-// away in-progress separators — typing "a, b" would round-trip to "ab" before the comma+space could
-// land. So the input renders this raw buffer while editing; the model stays synced (parsed) per
-// keystroke, so Save always has the current value.
-const onDrafts = reactive<Record<string, string | undefined>>({})
-
-/** What the `on` input shows: the raw edit buffer if the user has touched it, else the model value.
- * A `''` draft (user cleared the field) is kept verbatim; only `undefined` falls back to the model. */
-function onDisplay(row: ActionRow): string {
+const onDrafts = reactive({})
+function onDisplay(row) {
 	const draft = onDrafts[row.__key]
 	return draft ?? row.on
 }
-
-/** Keep the verbatim buffer for display and the parsed fire-set array in the model both in sync. */
-function onOnInput(row: ActionRow, value: string) {
+function onOnInput(row, value) {
 	if (!props.modelValue) return
 	onDrafts[row.__key] = value
 	emit('update:modelValue', writeTriggerField(props.modelValue, row.__key, 'on', parseOnInput(value)))
 }
-
-/** Append an empty trigger (seeds the workflow if there is none yet — states/actions are optional). */
 function onAddTrigger() {
 	emit('update:modelValue', addTrigger(props.modelValue))
 }
-
-/** Append a stateless Command (seeds the workflow if there is none yet). */
 function onAddCommand() {
 	emit('update:modelValue', addCommand(props.modelValue))
 }
-
-/** Remove a Command or Trigger, routed to the correct sibling map by kind. Transitions never reach
- *  here — their Remove button is not rendered (they are deleted from the graph). */
-function onRemoveRow(row: ActionRow) {
+function onRemoveRow(row) {
 	if (!props.modelValue) return
-	// Clear any stale draft so a later row that reuses this key (keygen fills the lowest free slot)
-	// doesn't inherit it — undefined falls back to the model in onDisplay.
-	onDrafts[row.__key] = undefined
+	onDrafts[row.__key] = void 0
 	const next =
 		row.kind === 'trigger' ? removeTrigger(props.modelValue, row.__key) : removeAction(props.modelValue, row.__key)
 	emit('update:modelValue', next)
@@ -248,136 +181,113 @@ function onRemoveRow(row: ActionRow) {
 .actions-panel {
 	padding: 0.5em 1em;
 }
-
-/* The body cells are our own <td>s (not ACell), so reproduce ATable's row separator
-   (ACell's only gridline is a top border) and its padding. */
 .actions-panel :deep(.atable-row > td) {
+	border-top: 1px solid var(--sc-row-border-color, #e5e7eb);
 	padding: var(--sc-atable-row-padding, 0.25rem) 0.75em;
 	vertical-align: middle;
-	border-top: 1px solid var(--sc-row-border-color, #e5e7eb);
 }
-
 .actions-panel :deep(input[type='text']) {
-	width: 100%;
 	border: 1px solid var(--sc-gray-20, #d1d5db);
 	border-radius: 3px;
-	padding: 0.25em 0.5em;
-	font-size: inherit;
 	font-family: inherit;
+	font-size: inherit;
+	padding: 0.25em 0.5em;
+	width: 100%;
 }
-
 .actions-panel :deep(input[type='text']:focus) {
-	outline: none;
 	border-color: var(--sc-blue-40, #3b82f6);
+	outline: none;
 }
-
-/* A Transition's name is read-only in the panel (edited on its graph edge); render it as static
-   text, visually distinct from the editable Command/Trigger name inputs. */
 .cell-readonly {
 	color: var(--sc-gray-60, #4b5563);
 	cursor: default;
 }
-
 .badge {
-	display: inline-block;
-	padding: 0.125em 0.5em;
 	border-radius: 9999px;
+	display: inline-block;
 	font-size: 0.75rem;
 	font-weight: 500;
+	padding: 0.125em 0.5em;
 }
-
 .badge-transition {
 	background: #dbeafe;
 	color: #1e40af;
 }
-
 .badge-self-transition {
 	background: #fef3c7;
 	color: #92400e;
 }
-
 .badge-command {
 	background: #f3e8ff;
 	color: #6b21a8;
 }
-
 .badge-trigger {
 	background: #dcfce7;
 	color: #166534;
 }
-
 .actions-empty {
 	color: #9ca3af;
 	font-style: italic;
 	padding: 1rem 0;
 	text-align: center;
 }
-
 .panel-footer {
 	display: flex;
 	gap: 0.5rem;
 	padding: 0.75rem 0 0.25rem;
 }
-
 .add-row {
-	padding: 0.4em 0.9em;
 	background: var(--sc-blue-40, #3b82f6);
-	color: white;
 	border: none;
 	border-radius: 0.4rem;
-	font-weight: 500;
+	color: #fff;
 	cursor: pointer;
 	font-size: 0.8125rem;
+	font-weight: 500;
+	padding: 0.4em 0.9em;
 }
-
-/* Expansion detail: type-specific fields (on / states) above the handler editor. */
+.row-detail {
+	gap: 0.75rem;
+}
+.detail-field,
 .row-detail {
 	display: flex;
 	flex-direction: column;
-	gap: 0.75rem;
 }
-
 .detail-field {
-	display: flex;
-	flex-direction: column;
 	gap: 0.25rem;
 }
-
 .detail-label {
+	color: var(--sc-header-text-color, #374151);
 	font-size: 0.75rem;
 	font-weight: 600;
-	color: var(--sc-header-text-color, #374151);
-	text-transform: uppercase;
 	letter-spacing: 0.05em;
+	text-transform: uppercase;
 }
-
 .detail-value {
-	font-size: 0.8125rem;
 	color: var(--sc-gray-60, #4b5563);
+	font-size: 0.8125rem;
 }
-
 .client-handler-editor {
 	display: flex;
 	flex-direction: column;
 	gap: 0.5rem;
 }
-
 .handler-label {
+	color: var(--sc-header-text-color, #374151);
 	font-size: 0.75rem;
 	font-weight: 600;
-	color: var(--sc-header-text-color, #374151);
-	text-transform: uppercase;
 	letter-spacing: 0.05em;
+	text-transform: uppercase;
 }
-
 .remove-row {
 	align-self: flex-start;
-	padding: 0.3em 0.75em;
 	background: none;
-	color: #b91c1c;
 	border: 1px solid #fca5a5;
 	border-radius: 0.3rem;
+	color: #b91c1c;
 	cursor: pointer;
 	font-size: 0.75rem;
+	padding: 0.3em 0.75em;
 }
 </style>

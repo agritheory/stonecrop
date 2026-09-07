@@ -5,7 +5,6 @@ packages:
   - casl_middleware
   - code_editor
   - desktop
-  - docs
   - graphql_client
   - graphql_middleware
   - node_editor
@@ -74,10 +73,6 @@ catalog:
   vue-component-meta: ^3.3.11
   vue-router: '^5.0.6'
   vue-tsc: '^3.3.6'
-
-overrides:
-  # docs still depends on vitepress ^1.6.4, which pulls vite 5.
-  vite@5: 6.4.3
 
 peerDependencyRules:
   ignoreMissing:

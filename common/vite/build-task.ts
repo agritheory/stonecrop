@@ -1,3 +1,7 @@
+import { existsSync, readdirSync } from 'node:fs'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
+
 import type { UserConfig } from 'vitest/config'
 
 /**
@@ -15,18 +19,40 @@ import type { UserConfig } from 'vitest/config'
  * tarball.
  */
 /**
+ * The Nuxt apps in a module package, derived from the presence of a nuxt.config.ts.
+ *
+ * Read from the same signal as nuxt/scripts/nuxt-apps.sh, which is what `dev:prepare` and
+ * `test:types` walk. A hand-written list beside a derived one goes stale silently the next time
+ * an app is added, and the resulting cache miss is invisible: the build simply stops caching.
+ */
+function nuxtApps(configUrl: string): string[] {
+	const packageDir = dirname(fileURLToPath(configUrl))
+	const apps = readdirSync(packageDir, { withFileTypes: true })
+		.filter(entry => entry.isDirectory() && existsSync(join(packageDir, entry.name, 'nuxt.config.ts')))
+		.map(entry => entry.name)
+
+	if (apps.length === 0) {
+		throw new Error(`nuxtModuleBuildTask: no app with a nuxt.config.ts under ${packageDir}`)
+	}
+	return apps
+}
+
+/**
  * The `build` task for the two Nuxt module packages, which have no `dist` rollup and drive
  * `nuxt-module-build` instead.
  *
  * They were the only uncached tasks in a warm build: `nuxt-module-build` and `nuxi prepare` both
  * read and write `dist/` and each app's `.nuxt/`, so automatic tracking saw every run modify its
- * own inputs. `generatedTrees` names the per-app `.nuxt` directories to exclude, which differ
- * between the two packages.
+ * own inputs. Excluding each app's `.nuxt` is what makes the task cacheable at all, which is why
+ * the app set is derived rather than listed: an app missing from the exclusions never caches, and
+ * a build that silently stopped caching looks exactly like one that works.
+ *
+ * `.nuxt` is deliberately not an `output`. Vite+ reports a removed generated directory as a miss
+ * and re-runs the command, so declaring it would only snapshot the tree into the cache to restore
+ * something the command rebuilds anyway.
  */
-export function nuxtModuleBuildTask(
-	command: string,
-	generatedTrees: string[]
-): NonNullable<UserConfig['run']>['tasks'] {
+export function nuxtModuleBuildTask(command: string, configUrl: string): NonNullable<UserConfig['run']>['tasks'] {
+	const generatedTrees = nuxtApps(configUrl).map(app => `${app}/.nuxt/**`)
 	return {
 		build: {
 			command,

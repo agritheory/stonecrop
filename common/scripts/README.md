@@ -14,7 +14,7 @@ node --run docs:full
 This script:
 
 1. Runs the repo-wide `docs` script to generate `api.md` files for all packages
-2. Aggregates all `api.md` files to `docs/reference/` with VitePress frontmatter
+2. Aggregates all `api.md` files to `nuxt/documentation/content/reference/` with frontmatter
 
 ### Generate Documentation for Specific Package
 
@@ -54,9 +54,9 @@ Located in `tools/doc-gen/generate-docs.cjs`
 
 Located in `common/scripts/docs-aggregate.mjs`
 
-- **Purpose**: Aggregates all package `api.md` files to `docs/reference/`
+- **Purpose**: Aggregates all package `api.md` files to `nuxt/documentation/content/reference/`
 - **Features**:
-  - Adds VitePress frontmatter automatically
+  - Adds frontmatter (title/description) automatically
   - Creates placeholders for packages without docs
   - Handles package name normalization (underscore to hyphen)
 
@@ -80,7 +80,7 @@ Located in `common/scripts/docs-full.sh`
 - **Called by**: the root `docs:full` script
 - **Steps**:
   1. Generates all individual package docs
-  2. Runs aggregation to copy to `docs/reference/`
+  2. Runs aggregation to copy to `nuxt/documentation/content/reference/`
 
 ## Package Configuration
 
@@ -121,21 +121,22 @@ To generate and aggregate all documentation, run:
 node --run docs:full
 ```
 
-## Integration with VitePress
+## Integration with the Docs Site
 
-The docs are aggregated to `docs/reference/` where VitePress can serve them:
+The docs are aggregated to `nuxt/documentation/content/reference/`, where the Nuxt + @nuxt/content
+docs site (`nuxt/documentation/`) serves them:
 
 ```bash
 # After generating docs
-vp -C docs run build:site
-vp -C docs run dev
+pnpm --filter @stonecrop/nuxt run generate:documentation    # Static-build the docs site
+pnpm --filter @stonecrop/nuxt run dev:documentation         # Development server with hot reload
 ```
 
-The site's build script is named `build:site`, not `build`. A package opts into the repo-wide
-build by defining `build` — as a `vite.config.ts` task in the libraries, or a package.json script
-in the Nuxt modules — so naming it `build` would rebuild the whole VitePress site on every
-`node --run build`, including inside the pre-commit hook. Aggregation into `docs/reference/`
-happens inside `build:site`, and the pre-commit hook runs it separately.
+The site's script is named `generate:documentation`, not `build`. A package opts into the repo-wide
+build by defining `build` (as a `vite.config.ts` task in the libraries, or a package.json script
+in the Nuxt modules), so naming it `build` would render the whole site on every `node --run build`,
+including inside the pre-commit hook. Aggregation is the last step of the root `build` instead, so
+the reference tree is current without the site being rendered.
 
 ## Workflow Examples
 
@@ -148,7 +149,7 @@ node --run docs    # Generate api.md for aform only
 
 ### Before committing changes
 
-The pre-commit hook aggregates and stages `docs/reference/` automatically. To do it by hand:
+The pre-commit hook builds and stages `nuxt/documentation/content/reference/` automatically. To do it by hand:
 
 ```bash
 node --run docs:full
@@ -163,7 +164,7 @@ git commit -m "Update API documentation"
 node --run build    # from the repo root; each package's build runs its own docs step
 
 # Before deploying docs site
-vp -C docs run build:site    # aggregates, then builds the VitePress site
+pnpm --filter @stonecrop/nuxt run generate:documentation    # the build above already aggregated
 ```
 
 ## Troubleshooting
@@ -183,7 +184,7 @@ vp -C docs run build:site    # aggregates, then builds the VitePress site
 
 ### Frontmatter not added correctly
 
-The aggregation script automatically adds VitePress frontmatter. If you see issues:
+The aggregation script automatically adds frontmatter (title/description). If you see issues:
 
 1. Check `docs-aggregate.mjs` for the package configuration
 2. Verify the package is listed in the `packages` array
@@ -194,7 +195,7 @@ The aggregation script automatically adds VitePress frontmatter. If you see issu
 The documentation generation is a two-phase process:
 
 1. **Generation Phase**: Each package independently generates its `api.md` from TypeScript source during build
-2. **Aggregation Phase**: All `api.md` files are copied to a central location with VitePress frontmatter
+2. **Aggregation Phase**: All `api.md` files are copied to a central location with frontmatter
 
 This separation allows:
 

@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/nuxt",
-	"version": "0.30.0",
+	"version": "0.31.0",
 	"description": "Nuxt module for Stonecrop",
 	"keywords": [
 		"nuxt",
@@ -54,16 +54,19 @@
 	"scripts": {
 		"dev": "node --run dev:prepare && nuxi dev playground --host",
 		"dev:build": "nuxi build playground",
+		"dev:documentation": "node --run dev:prepare:documentation && nuxi dev documentation --host",
 		"dev:full": "node --run dev:prepare:full && nuxi dev fullstack --host",
-		"dev:prepare": "nuxt-module-build build --stub && nuxt-module-build prepare && nuxi prepare playground && nuxi prepare fullstack",
+		"dev:prepare": "nuxt-module-build build --stub && nuxt-module-build prepare && sh scripts/nuxt-apps.sh prepare",
+		"dev:prepare:documentation": "nuxi prepare documentation",
 		"dev:prepare:full": "nuxt-module-build build --stub && nuxt-module-build prepare && nuxi prepare fullstack",
 		"docs": "echo 'Nuxt modules use custom build system - skipping API docs generation'",
+		"generate:documentation": "nuxi generate documentation",
 		"lint": "eslint .",
 		"prepack": "node --run dev:prepare && nuxt-module-build build",
 		"prepublish": "node --run dev:prepare && nuxt-module-build build",
 		"test": "vitest run",
 		"test:coverage": "vitest run --coverage.enabled --coverage.provider=istanbul",
-		"test:types": "vue-tsc --noEmit -p tsconfig.runtime.json && vue-tsc --noEmit -p tsconfig.templates-app.json && vue-tsc --noEmit -p tsconfig.templates-server.json && cd playground && vue-tsc --noEmit && cd ../fullstack && vue-tsc --noEmit && vue-tsc --noEmit -p server/tsconfig.json",
+		"test:types": "vue-tsc --noEmit -p tsconfig.runtime.json && vue-tsc --noEmit -p tsconfig.templates-app.json && vue-tsc --noEmit -p tsconfig.templates-server.json && sh scripts/nuxt-apps.sh typecheck",
 		"test:ui": "vitest --ui",
 		"test:watch": "vitest watch"
 	},
@@ -91,6 +94,7 @@
 	},
 	"devDependencies": {
 		"@eslint/js": "catalog:",
+		"@nuxt/content": "^3.0.0",
 		"@nuxt/devtools": "catalog:",
 		"@nuxt/eslint": "1.16.0",
 		"@nuxt/eslint-config": "catalog:",

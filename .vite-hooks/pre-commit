@@ -31,11 +31,7 @@ git add -u
 # is better reported now than after waiting for a full build.
 step 'dependency ranges' node --run check:deps
 
+# The root build ends in "run-docs.sh --aggregate", so the aggregated tree is current by the time
+# this returns and only needs staging.
 step 'build' node --run build
-
-# Aggregate API docs into docs/reference/ and stage any updated files.
-# Each package's build script already runs "node --run docs" to generate its own
-# api.md, so by this point all individual docs are current. This step collects
-# them into the VitePress docs site so the aggregated output is never stale.
-step 'aggregate docs' bash common/scripts/run-docs.sh --aggregate
-git add docs/reference/
+git add nuxt/documentation/content/reference/
