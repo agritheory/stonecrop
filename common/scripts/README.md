@@ -113,6 +113,22 @@ packages that define none.
 
 **When to use**: Generate docs for all packages (but don't aggregate yet)
 
+### Why the root `build` filters instead of using `-r`
+
+The workspace root is itself a member, and it has a script named `build`, so `vp run -r build`
+selects the root and runs the root's own `build` script a second time. The inner `vp run` plans no
+tasks, but the `&& run-docs.sh --aggregate` after it still executes: aggregation ran twice per
+build, once part-way through against the previous run's `api.md` files.
+
+`--filter '!stonecrop-monorepo'` selects the same packages without the root. Do not "simplify" it
+back to `-r`, and note that the two cannot be combined. If the root package is ever renamed the
+filter stops excluding anything, which is not merely a return to the old behaviour: `-r` has a
+recursion guard that `--filter` does not, so the root's script re-runs the whole workspace and the
+task count goes from 57 to 115.
+
+The same collision exists for `docs`, `lint`, `test` and `test:types`, where it costs one no-op
+process rather than duplicated work, because none of them chain a second command.
+
 ### Full Documentation Generation
 
 To generate and aggregate all documentation, run:

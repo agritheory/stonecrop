@@ -4,17 +4,17 @@
 	"description": "Workspace root. pnpm installs the members listed in pnpm-workspace.yaml; Vite+ runs every task.",
 	"type": "module",
 	"scripts": {
-		"build": "vp run -r build && bash common/scripts/run-docs.sh --aggregate",
+		"build": "vp run --log labeled --filter '!stonecrop-monorepo' build && bash common/scripts/run-docs.sh --aggregate",
 		"check:deps": "node common/scripts/check-dependency-consistency.mjs",
 		"check:publish": "node common/scripts/check-publish-contract.mjs",
-		"docs": "vp run -r docs",
+		"docs": "vp run --log labeled -r docs",
 		"docs:full": "bash common/scripts/docs-full.sh",
 		"format": "vp fmt",
 		"format:check": "vp fmt --check",
-		"lint": "vp run -r lint",
+		"lint": "vp run --log labeled -r lint",
 		"prepare": "vp config --no-agent",
-		"test": "vp run -r test",
-		"test:types": "vp run -r test:types"
+		"test": "vp run --log labeled -r test",
+		"test:types": "vp run --log labeled -r test:types"
 	},
 	"devDependencies": {
 		"@arethetypeswrong/cli": "0.18.5",
