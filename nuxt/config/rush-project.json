@@ -45,11 +45,14 @@
 			//    * will restore these folders from the cache.  The strings are folder names under the project root folder.
 			//    * These folders should not be tracked by Git.  They must not contain symlinks.
 			//    */
-			// The two nested entries must be listed. `dev:prepare` runs `nuxi prepare` for both
-			// apps, and `test:types` type-checks from inside each one, so each needs its generated
-			// tsconfig present. A cache hit skips the script and restores only what is listed here.
+			// Every app's nested entry must be listed. `dev:prepare` runs `nuxi prepare` for each
+			// app scripts/nuxt-apps.sh finds, and `test:types` type-checks from inside each one, so
+			// each needs its generated tsconfig present. A cache hit skips the script and restores
+			// only what is listed here, so an app missing below fails on a warm CI run and passes
+			// on every cold one. Adding an app means adding its line here; that is the whole reason
+			// this list cannot be derived the way nuxt-apps.sh derives its own.
 			// See nuxt_grafserv/config/rush-project.json for what the resulting failure looks like.
-			"outputFolderNames": [".nuxt", "dist", "playground/.nuxt", "fullstack/.nuxt"]
+			"outputFolderNames": [".nuxt", "dist", "documentation/.nuxt", "playground/.nuxt", "fullstack/.nuxt"]
 			//
 			//   /**
 			//    * Specify a list of glob (minimatch) paths (absolute or relative) pointing to files
