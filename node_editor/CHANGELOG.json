@@ -2,6 +2,18 @@
   "name": "@stonecrop/node-editor",
   "entries": [
     {
+      "version": "0.31.0",
+      "tag": "@stonecrop/node-editor_v0.31.0",
+      "date": "Mon, 07 Sep 2026 08:46:18 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Re-export vue-flow's Position enum, which Layout's handle placement requires and consumers could not otherwise name"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.30.0",
       "tag": "@stonecrop/node-editor_v0.30.0",
       "date": "Thu, 27 Aug 2026 12:30:32 GMT",
