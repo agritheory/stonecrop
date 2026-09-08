@@ -64,9 +64,9 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile
 
-      # The root build ends in `run-docs.sh --aggregate`, which collects every package's api.md into
-      # the content tree the site renders. Without that an api.md change would trigger this workflow
-      # and then deploy a site that does not contain it.
+      # The build's last task collects every package's api.md into the content tree the site
+      # renders. Without it an api.md change would trigger this workflow and then deploy a site
+      # that does not contain it.
       - name: Build
         run: pnpm run build
 

@@ -31,7 +31,7 @@ git add -u
 # is better reported now than after waiting for a full build.
 step 'dependency ranges' node --run check:deps
 
-# The root build ends in "run-docs.sh --aggregate", so the aggregated tree is current by the time
-# this returns and only needs staging.
+# The build's last task aggregates every api.md into the reference tree, so it is current by the
+# time this returns and only needs staging.
 step 'build' node --run build
 git add nuxt/documentation/content/reference/

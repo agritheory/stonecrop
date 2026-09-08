@@ -40,7 +40,7 @@
 		"access": "public"
 	},
 	"scripts": {
-		"dev": "vite",
+		"dev": "vite build --watch",
 		"docs": "bash ../common/scripts/run-docs.sh utilities",
 		"lint": "oxlint",
 		"lint:fix": "oxlint --fix",

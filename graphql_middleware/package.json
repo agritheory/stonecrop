@@ -37,6 +37,7 @@
 		"./package.json": "./package.json"
 	},
 	"scripts": {
+		"dev": "vite build --watch",
 		"docs": "bash ../common/scripts/run-docs.sh graphql_middleware",
 		"lint": "oxlint",
 		"lint:fix": "oxlint --fix",

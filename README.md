@@ -29,6 +29,31 @@ pnpm run build
 # Work on aform, for example
 cd aform
 pnpm run test
+```
+
+The Nuxt apps import each package's built `dist`, so editing a package's `src` while a dev server
+runs changes nothing on screen. Rebuild the package instead and the open page updates itself; there
+is no need to restart the server.
+
+```bash
+# One terminal: serve the playground
+pnpm --filter @stonecrop/nuxt run dev
+
+# Another: rebuild on every save, which the running server picks up. Name only the packages you
+# are editing; `--parallel` is required, or several filters run one after another and you silently
+# get just the last one.
+pnpm --parallel --filter @stonecrop/aform run dev
+```
+
+A dependency never needs its own watcher: the packages are rollup externals to each other, so
+editing `schema` means rebuilding `schema` alone even though `aform` and `desktop` use it. Starting
+all of them at once is worse than useless, because they clear each other's `dist` on startup and a
+package that resolves types from a sibling fails to compile.
+
+`dev` reruns only the bundle step, not `vue-tsc`, API Extractor or `api.md`. The app sees your
+changes, but declarations stay stale until a full `pnpm run build`.
+
+```bash
 
 # sometimes, when changing branches or updating dependencies you may have issues
 # this removes and re-links all dependencies

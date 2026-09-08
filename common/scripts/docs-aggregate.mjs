@@ -11,72 +11,31 @@ import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs'
 import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
 
+import { docPackages } from './doc-packages.mjs'
+
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
 const rootDir = join(__dirname, '../..')
 const referenceDir = join(rootDir, 'nuxt/documentation/content/reference')
 
-// Package configurations
-const packages = [
-	{ folder: 'aform', name: 'aform', title: 'AForm', description: 'Schema-driven form components' },
-	{ folder: 'atable', name: 'atable', title: 'ATable', description: 'Advanced table with tree and Gantt views' },
-	{ folder: 'beam', name: 'beam', title: 'Beam', description: 'Mobile-first scanning and MQTT' },
-	{ folder: 'desktop', name: 'desktop', title: 'Desktop', description: 'Desktop navigation and command palette' },
-	{
-		folder: 'stonecrop',
-		name: 'stonecrop',
-		title: 'Stonecrop',
-		description: 'Core orchestration with Registry, HST, and composables',
-	},
-	{ folder: 'schema', name: 'schema', title: 'Schema', description: 'Doctype schema definitions and validation' },
-	{
-		folder: 'graphql_client',
-		name: 'graphql-client',
-		title: 'GraphQL Client',
-		description: 'GraphQL client utilities',
-	},
-	{
-		folder: 'graphql_middleware',
-		name: 'graphql-middleware',
-		title: 'GraphQL Middleware',
-		description: 'PostGraphile middleware for Stonecrop',
-	},
-	{
-		folder: 'casl_middleware',
-		name: 'casl-middleware',
-		title: 'CASL Middleware',
-		description: 'CASL authorization for GraphQL',
-	},
-	{ folder: 'rockfoil', name: 'rockfoil', title: 'Rockfoil', description: 'Server-side utilities' },
-	{ folder: 'node_editor', name: 'node-editor', title: 'Node Editor', description: 'Visual FSM workflow editor' },
-	{ folder: 'code_editor', name: 'code-editor', title: 'Code Editor', description: 'Monaco-based code editor' },
-	{ folder: 'utilities', name: 'utilities', title: 'Utilities', description: 'Shared utility functions' },
-	{ folder: 'nuxt', name: 'nuxt', title: 'Nuxt', description: 'Nuxt module for Stonecrop integration' },
-	{
-		folder: 'nuxt_grafserv',
-		name: 'nuxt-grafserv',
-		title: 'Nuxt Grafserv',
-		description: 'Pluggable Grafserv GraphQL server as Nuxt Module',
-	},
-]
+const packages = docPackages
 
 // Ensure reference directory exists
 if (!existsSync(referenceDir)) {
 	mkdirSync(referenceDir, { recursive: true })
 }
 
-console.log('📚 Aggregating API documentation...\n')
-
 let processed = 0
-let skipped = 0
+const placeholders = []
+const failures = []
 
 for (const pkg of packages) {
 	const sourcePath = join(rootDir, pkg.folder, 'api.md')
 	const destPath = join(referenceDir, `${pkg.name}.md`)
 
 	if (!existsSync(sourcePath)) {
-		console.log(`⏭️  ${pkg.title}: No api.md found, creating placeholder`)
+		placeholders.push(pkg.title)
 
 		// Create a placeholder for packages without API docs yet
 		const placeholder = `---
@@ -104,7 +63,6 @@ pnpm exec vp run build
 `
 
 		writeFileSync(destPath, placeholder, 'utf8')
-		skipped++
 		continue
 	}
 
@@ -125,16 +83,20 @@ description: ${pkg.description}
 
 		// Write to reference directory
 		writeFileSync(destPath, content, 'utf8')
-		console.log(`✅ ${pkg.title}: Copied to nuxt/documentation/content/reference/${pkg.name}.md`)
 		processed++
 	} catch (error) {
-		console.error(`❌ Error processing ${pkg.title}:`, error.message)
-		skipped++
+		failures.push(`${pkg.title}: ${error.message}`)
 	}
 }
 
-console.log(`\n📊 Summary:`)
-console.log(`   ✅ Processed: ${processed}`)
-console.log(`   ⏭️  Skipped: ${skipped}`)
-console.log(`   📁 Total: ${packages.length}`)
-console.log(`\n✨ API documentation aggregation complete!`)
+// A failure used to be counted alongside the placeholders and exit 0, which left the previous
+// run's file in place for the drift gate to compare against and find unchanged.
+if (failures.length > 0) {
+	for (const failure of failures) {
+		console.error(`aggregate failed for ${failure}`)
+	}
+	process.exit(1)
+}
+
+const placeholderNote = placeholders.length > 0 ? `, placeholders for ${placeholders.join(', ')}` : ''
+console.log(`Aggregated ${processed} api.md into content/reference${placeholderNote}`)

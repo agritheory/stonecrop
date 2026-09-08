@@ -113,21 +113,25 @@ packages that define none.
 
 **When to use**: Generate docs for all packages (but don't aggregate yet)
 
-### Why the root `build` filters instead of using `-r`
+### Why the root build guards on `VP_RUN`, and aggregation is a task
 
-The workspace root is itself a member, and it has a script named `build`, so `vp run -r build`
-selects the root and runs the root's own `build` script a second time. The inner `vp run` plans no
-tasks, but the `&& run-docs.sh --aggregate` after it still executes: aggregation ran twice per
-build, once part-way through against the previous run's `api.md` files.
+The workspace root is itself a member, so a root script sharing a name with a per-package task
+gets selected by `vp run -r <name>` and runs itself again. A bare `vp run` recognises the nesting
+and plans nothing, which is why `docs`, `lint`, `test` and `test:types` can keep their names. Two
+things break that:
 
-`--filter '!stonecrop-monorepo'` selects the same packages without the root. Do not "simplify" it
-back to `-r`, and note that the two cannot be combined. If the root package is ever renamed the
-filter stops excluding anything, which is not merely a return to the old behaviour: `-r` has a
-recursion guard that `--filter` does not, so the root's script re-runs the whole workspace and the
-task count goes from 57 to 115.
+- Anything chained after the inner run with `&&` executes twice. Aggregation was chained that way
+  and ran twice per build, the first time part-way through against the previous run's `api.md`.
+- Anything that is not a `vp run` gets no such recognition. A wrapper script re-entered as a task
+  starts a second run inside the first, which planned 19 of the 58 tasks and killed four of them
+  with "Failed to spawn process: Invalid argument".
 
-The same collision exists for `docs`, `lint`, `test` and `test:types`, where it costs one no-op
-process rather than duplicated work, because none of them chain a second command.
+So `run-build.mjs` exits immediately when `VP_RUN` is set, which Vite+ exports into every task's
+environment alongside the IPC socket path the nested run would otherwise inherit. Any future
+wrapper on a colliding script name needs the same first line.
+
+Aggregation is a task in `tools/doc-gen` that `dependsOn` every package supplying an `api.md`. The
+graph orders it after them, it caches on those files, and it runs exactly once.
 
 ### Full Documentation Generation
 
@@ -150,9 +154,9 @@ pnpm --filter @stonecrop/nuxt run dev:documentation         # Development server
 
 The site's script is named `generate:documentation`, not `build`. A package opts into the repo-wide
 build by defining `build` (as a `vite.config.ts` task in the libraries, or a package.json script
-in the Nuxt modules), so naming it `build` would render the whole site on every `node --run build`,
-including inside the pre-commit hook. Aggregation is the last step of the root `build` instead, so
-the reference tree is current without the site being rendered.
+in `themes`), so naming it `build` would render the whole site on every `node --run build`,
+including inside the pre-commit hook. Aggregation is doc-gen's own task instead, so the reference
+tree is current without the site being rendered.
 
 ## Workflow Examples
 

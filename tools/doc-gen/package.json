@@ -9,6 +9,9 @@
 		"typescript": "catalog:",
 		"vue-component-meta": "catalog:"
 	},
+	"devDependencies": {
+		"vite": "catalog:"
+	},
 	"engines": {
 		"node": ">=24.0.0"
 	}

@@ -559,7 +559,7 @@ pnpm run dev:prepare
 pnpm run dev
 
 # Build the module
-pnpm run build
+pnpm run build:module
 
 # Run ESLint
 pnpm run lint

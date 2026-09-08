@@ -42,6 +42,7 @@
 		"access": "public"
 	},
 	"scripts": {
+		"dev": "vite build --watch",
 		"docs": "bash ../common/scripts/run-docs.sh stonecrop",
 		"lint": "oxlint",
 		"lint:fix": "oxlint --fix",

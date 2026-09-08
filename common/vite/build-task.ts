@@ -74,7 +74,7 @@ export function buildTask(declarations: 'tsc' | 'vue-tsc'): NonNullable<UserConf
 			command: [
 				'vite build --logLevel warn',
 				`${declarations} -b --force`,
-				'api-extractor run --local -c config/api-extractor.json',
+				'node ../common/scripts/run-api-extractor.mjs run --local -c config/api-extractor.json',
 				'node --run docs',
 			].join(' && '),
 			// This file must be tracked explicitly. `{ auto: true }` records what each sub-task read,
