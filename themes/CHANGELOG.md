@@ -1,5 +1,11 @@
 # Change Log - @stonecrop/themes
 
+## 0.32.0
+
+### Minor Changes
+
+- a859205: Packages no longer ship their `src` tree, because every sourcemap already embeds the sources it names and no exports path reached it.
+
 ## 0.31.0
 Mon, 07 Sep 2026 08:46:18 GMT
 

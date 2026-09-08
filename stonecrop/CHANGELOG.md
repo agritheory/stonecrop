@@ -1,5 +1,23 @@
 # Change Log - @stonecrop/stonecrop
 
+## 0.32.0
+
+### Minor Changes
+
+- a859205: Packages no longer ship their `src` tree, because every sourcemap already embeds the sources it names and no exports path reached it.
+- a859205: Libraries now ship unminified so the consumer's bundler minifies them, and the unbundled `dist/src/**/*.js` tree is no longer published because every package's exports map already blocked it.
+
+### Patch Changes
+
+- a859205: Point the `./types` subpath at the bundled declarations so it resolves under node16 ESM.
+- Updated dependencies [a859205]
+- Updated dependencies [a859205]
+- Updated dependencies [a859205]
+- Updated dependencies [a859205]
+  - @stonecrop/atable@0.32.0
+  - @stonecrop/aform@0.32.0
+  - @stonecrop/schema@0.32.0
+
 ## 0.31.0
 Mon, 07 Sep 2026 08:46:18 GMT
 
