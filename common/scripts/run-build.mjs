@@ -13,7 +13,7 @@
  */
 
 import { spawn } from 'node:child_process'
-import { mkdirSync, writeFileSync } from 'node:fs'
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -48,6 +48,11 @@ const RUN_SUMMARY = /^vp run: \d+\/\d+ cache hit/
 const TASK_LINE = /^\[([^#\]]+)#[^\]]*\]\s+~\/\S*\$ /
 const CACHE_HIT = '◉ cache hit'
 
+// The same prefix on any line, not only a task header, so a warning can name the package that
+// raised it. `body` strips this before matching, which is why it is read from the raw line.
+const LINE_SOURCE = /^\[([^#\]]+)#/
+
+// eslint-disable-next-line no-control-regex -- the ANSI introducer is a control character by definition
 const strip = line => line.replace(/\x1b\[[0-9;]*m/g, '')
 const body = line =>
 	strip(line)
@@ -60,13 +65,39 @@ const green = text => paint('32', text)
 const yellow = text => paint('33', text)
 const dim = text => paint('2', text)
 
+// The denominator for the progress line. Only the list under `packages:`, because taking every
+// `- name` in the file also collects the entries under `peerDependencyRules`, which are dependency
+// names rather than members.
+function workspaceMemberCount() {
+	const lines = readFileSync(join(rootDir, 'pnpm-workspace.yaml'), 'utf8').split('\n')
+	let members = 0
+	for (const line of lines.slice(lines.findIndex(entry => entry.startsWith('packages:')) + 1)) {
+		if (/^\S/.test(line)) break
+		if (/^\s*-\s+\S/.test(line)) members += 1
+	}
+	return members
+}
+
+// A progress display must never be why a build fails, so a list this cannot read costs the
+// denominator and nothing else.
+let memberCount = 0
+try {
+	memberCount = workspaceMemberCount()
+} catch {
+	memberCount = 0
+}
+
 // Resolved rather than taken off PATH so no shell is involved: passing an argument array with
 // `shell: true` is deprecated, and the shell would be quoting these for no reason.
 const requireFromRoot = createRequire(join(rootDir, 'package.json'))
 const viteplusManifest = requireFromRoot.resolve('vite-plus/package.json')
 const vpBin = join(dirname(viteplusManifest), requireFromRoot(viteplusManifest).bin.vp)
 
-const child = spawn(process.execPath, [vpBin, 'run', '--log', 'labeled', '-r', 'build'], {
+// Ahead of the task specifier, because vp appends anything following it to the task's own command:
+// `-r build --no-cache` runs `vite build --no-cache`, which clears dist and then fails.
+const forwardedFlags = process.argv.slice(2)
+
+const child = spawn(process.execPath, [vpBin, 'run', '--log', 'labeled', ...forwardedFlags, '-r', 'build'], {
 	cwd: rootDir,
 	stdio: ['inherit', 'pipe', 'pipe'],
 })
@@ -74,8 +105,38 @@ const child = spawn(process.execPath, [vpBin, 'run', '--log', 'labeled', '-r', '
 const transcript = []
 const seen = new Map()
 const packages = new Map()
-let cacheLine = ''
 const startedAt = Date.now()
+
+// Held back for a moment so a fully cached build, which finishes in well under a second, prints
+// its summary and nothing else.
+const QUIET_MS = 1000
+const FRAMES = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏']
+const progress = process.stdout.isTTY
+let frame = 0
+let current = ''
+let statusShown = false
+
+const renderStatus = () => {
+	if (!progress || Date.now() - startedAt < QUIET_MS) return
+	const counted = memberCount > 0 ? `${packages.size}/${memberCount}` : `${packages.size}`
+	const text = `${FRAMES[frame % FRAMES.length]} ${current} · ${counted}`
+	// Truncated while still plain, then painted whole. Measuring a string that already carries
+	// colour codes counts them as width, and the line wraps on a narrow terminal after all.
+	//
+	// `||`, not `??`: a terminal that reports no size gives 0 rather than undefined, and the
+	// resulting `slice(0, -1)` quietly drops the last character of every line.
+	process.stdout.write(`\r${dim(text.slice(0, (process.stdout.columns || 80) - 1))}\x1b[K`)
+	statusShown = true
+}
+
+const ticker = progress ? setInterval(() => ((frame += 1), renderStatus()), 100) : null
+ticker?.unref()
+
+const clearStatus = () => {
+	if (ticker) clearInterval(ticker)
+	if (statusShown) process.stdout.write('\r\x1b[K')
+	statusShown = false
+}
 
 const consume = stream => {
 	let pending = ''
@@ -94,36 +155,41 @@ const consume = stream => {
 function handle(line) {
 	transcript.push(line)
 	const text = body(line)
-	if (RUN_SUMMARY.test(text)) {
-		cacheLine = text.replace(/\s*\(Run .*$/, '').replace(/\.\s*$/, '')
-		return
-	}
+	if (RUN_SUMMARY.test(text)) return
 
 	const plain = strip(line)
 	const task = TASK_LINE.exec(plain)
 	if (task) {
+		const known = packages.has(task[1])
 		const entry = packages.get(task[1]) ?? { tasks: 0, ran: 0 }
 		entry.tasks += 1
 		if (!plain.includes(CACHE_HIT)) entry.ran += 1
 		packages.set(task[1], entry)
+		if (!known) {
+			current = task[1]
+			renderStatus()
+		}
 	}
 
 	if (!text || TASK_HEADER.test(text)) return
 	if (!INTERESTING_WORD.test(text) && !INTERESTING_MARK.test(text)) return
 
-	// The compiler-mismatch notice is one fact repeated once per package; count it instead.
+	// One notice is often the same fact raised by many packages, so it is recorded once against
+	// every package that raised it. Counting alone left a single package's warning naming nothing.
+	const source = LINE_SOURCE.exec(plain)?.[1]
 	const previous = seen.get(text)
 	if (previous) {
-		previous.count += 1
+		if (source) previous.sources.add(source)
 		return
 	}
-	seen.set(text, { count: 1, line: strip(line), text })
+	seen.set(text, { sources: new Set(source ? [source] : []), text })
 }
 
 consume(child.stdout)
 consume(child.stderr)
 
 child.on('close', code => {
+	clearStatus()
 	mkdirSync(dirname(logPath), { recursive: true })
 	writeFileSync(logPath, `${transcript.join('\n')}\n`, 'utf8')
 
@@ -134,20 +200,30 @@ child.on('close', code => {
 	}
 
 	const built = [...packages].filter(([, entry]) => entry.ran > 0)
-	const cached = packages.size - built.length
-	const width = Math.max(0, ...built.map(([name]) => name.length))
-	for (const [name, entry] of built) {
-		const tasks = `${entry.ran} ${entry.ran === 1 ? 'task' : 'tasks'}`
-		process.stdout.write(`${green('✓')} ${name.padEnd(width)}  ${dim(tasks)}\n`)
+
+	if (built.length > 0) {
+		const width = Math.max(...built.map(([name]) => name.length))
+		for (const [name, entry] of built) {
+			const tasks = `${entry.ran} ${entry.ran === 1 ? 'task' : 'tasks'}`
+			process.stdout.write(`${green('✓')} ${name.padEnd(width)}  ${dim(tasks)}\n`)
+		}
 	}
 
-	for (const { count, line, text } of seen.values()) {
-		// A notice raised by several packages belongs to none of them, so the prefix would name an
-		// arbitrary one of the thirteen.
-		process.stdout.write(yellow(count > 1 ? `! ${text} (in ${count} packages)` : `! ${body(line)}`) + '\n')
+	const notices = [...seen.values()].map(({ sources, text }) => ({
+		label: sources.size === 1 ? [...sources][0] : sources.size === 0 ? '' : `${sources.size} packages`,
+		text,
+	}))
+	const labelWidth = Math.max(0, ...notices.map(notice => notice.label.length))
+	for (const { label, text } of notices) {
+		process.stdout.write(yellow(`! ${label.padEnd(labelWidth)}  ${text}`) + '\n')
 	}
 
 	const seconds = ((Date.now() - startedAt) / 1000).toFixed(1)
-	const unchanged = cached > 0 ? `, ${cached} unchanged` : ''
-	process.stdout.write(`${green('Build ok')} in ${seconds}s${unchanged}. ${dim(`Full log: ${logPath}`)}\n`)
+	const outcome =
+		built.length === 0
+			? `Build ok in ${seconds}s, nothing changed`
+			: built.length === packages.size
+				? `Built all ${packages.size} packages in ${seconds}s`
+				: `Rebuilt ${built.length} of ${packages.size} packages in ${seconds}s`
+	process.stdout.write(`${green(outcome)}. ${dim(`Full log: ${logPath}`)}\n`)
 })

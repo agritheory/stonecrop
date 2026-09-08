@@ -59,6 +59,12 @@ changes, but declarations stay stale until a full `pnpm run build`.
 # this removes and re-links all dependencies
 pnpm install --force
 
+# Rebuild everything, ignoring the task cache
+pnpm run build --no-cache
+
+# When a cached result is itself wrong; --no-cache skips the cache, it does not repair it
+pnpm exec vp cache clean
+
 # Describe a release-worthy change; one file per reason, since its body becomes the changelog entry
 pnpm exec changeset
 
