@@ -31,47 +31,7 @@ cd aform
 pnpm run test
 ```
 
-The Nuxt apps import each package's built `dist`, so editing a package's `src` while a dev server
-runs changes nothing on screen. Rebuild the package instead and the open page updates itself; there
-is no need to restart the server.
-
-```bash
-# One terminal: serve the playground
-pnpm --filter @stonecrop/nuxt run dev
-
-# Another: rebuild on every save, which the running server picks up. Name only the packages you
-# are editing; `--parallel` is required, or several filters run one after another and you silently
-# get just the last one.
-pnpm --parallel --filter @stonecrop/aform run dev
-```
-
-A dependency never needs its own watcher: the packages are rollup externals to each other, so
-editing `schema` means rebuilding `schema` alone even though `aform` and `desktop` use it. Starting
-all of them at once is worse than useless, because they clear each other's `dist` on startup and a
-package that resolves types from a sibling fails to compile.
-
-`dev` reruns only the bundle step, not `vue-tsc`, API Extractor or `api.md`. The app sees your
-changes, but declarations stay stale until a full `pnpm run build`.
-
-```bash
-
-# sometimes, when changing branches or updating dependencies you may have issues
-# this removes and re-links all dependencies
-pnpm install --force
-
-# Rebuild everything, ignoring the task cache
-pnpm run build --no-cache
-
-# When a cached result is itself wrong; --no-cache skips the cache, it does not repair it
-pnpm exec vp cache clean
-
-# Describe a release-worthy change; one file per reason, since its body becomes the changelog entry
-pnpm exec changeset
-
-# Lint and format the whole workspace
-pnpm run lint
-pnpm run format
-```
+[CONTRIBUTING.md](./CONTRIBUTING.md) covers the rest: the two-terminal dev loop and why editing a package's `src` alone changes nothing on screen, the lint, format and cache commands, how to write a changeset, and what a release does.
 
 ### Projects
 
