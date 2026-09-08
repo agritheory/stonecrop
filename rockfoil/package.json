@@ -42,7 +42,7 @@
 	},
 	"scripts": {
 		"dev": "vite build --watch",
-		"docs": "bash ../common/scripts/run-docs.sh rockfoil",
+		"docs": "bash ../tools/scripts/run-docs.sh rockfoil",
 		"lint": "oxlint",
 		"lint:fix": "oxlint --fix",
 		"prepublishOnly": "vp run build",

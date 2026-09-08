@@ -1,6 +1,6 @@
-# Documentation Generation
+# Workspace scripts
 
-This directory contains tools for generating API documentation from TypeScript source code.
+This directory holds the scripts the workspace runs outside any one package: the build wrapper, the dependency, publish and trusted-publishing checks, and the documentation pipeline. The rest of this file covers the documentation pipeline, which generates API reference from TypeScript source.
 
 ## Quick Start
 
@@ -24,7 +24,7 @@ cd <package-folder>
 node --run docs
 
 # Or use the script directly
-bash common/scripts/run-docs.sh <package-name>
+bash tools/scripts/run-docs.sh <package-name>
 ```
 
 ### Aggregate Only (Skip Generation)
@@ -32,7 +32,7 @@ bash common/scripts/run-docs.sh <package-name>
 If you've already generated individual package docs and just want to aggregate:
 
 ```bash
-bash common/scripts/run-docs.sh --aggregate
+bash tools/scripts/run-docs.sh --aggregate
 ```
 
 ## Tools Overview
@@ -52,7 +52,7 @@ Located in `tools/doc-gen/generate-docs.cjs`
 
 ### `docs-aggregate.mjs`
 
-Located in `common/scripts/docs-aggregate.mjs`
+Located in `tools/scripts/docs-aggregate.mjs`
 
 - **Purpose**: Aggregates all package `api.md` files to `nuxt/documentation/content/reference/`
 - **Features**:
@@ -62,7 +62,7 @@ Located in `common/scripts/docs-aggregate.mjs`
 
 ### `run-docs.sh`
 
-Located in `common/scripts/run-docs.sh`
+Located in `tools/scripts/run-docs.sh`
 
 - **Purpose**: Wrapper script that orchestrates documentation generation
 - **Usage**:
@@ -74,7 +74,7 @@ Located in `common/scripts/run-docs.sh`
 
 ### `docs-full.sh`
 
-Located in `common/scripts/docs-full.sh`
+Located in `tools/scripts/docs-full.sh`
 
 - **Purpose**: Complete workflow script that generates all docs and aggregates
 - **Called by**: the root `docs:full` script
@@ -89,7 +89,7 @@ Each package should have a `docs` script in `package.json`:
 ```json
 {
   "scripts": {
-    "docs": "bash ../common/scripts/run-docs.sh <package-folder-name>"
+    "docs": "bash ../tools/scripts/run-docs.sh <package-folder-name>"
   }
 }
 ```

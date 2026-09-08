@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite'
 
-import { nuxtModuleBuildTask } from '../common/vite/build-task.ts'
+import { nuxtModuleBuildTask } from '../tools/vite/build-task.ts'
 
 /**
  * Vite+ reads this file for the `run` block only. Nuxt never does: `@nuxt/vite-builder` sets

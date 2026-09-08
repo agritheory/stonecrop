@@ -9,12 +9,12 @@
  * decide something: what the live demo looks like, what prose to write, what the honest
  * accessibility notes are. It does not write the demo or the prose — only structure and
  * whatever is mechanically true from the component's own source, which is the same split
- * this monorepo already draws between `rushx docs`-generated API reference pages (mechanical)
+ * this monorepo already draws between the generated API reference pages (mechanical)
  * and the hand-authored component pages (judgment).
  *
  * Usage:
- *   node common/scripts/scaffold-component-docs.mjs            # dry run — report only
- *   node common/scripts/scaffold-component-docs.mjs --write     # actually create stub files
+ *   node tools/scripts/scaffold-component-docs.mjs            # dry run — report only
+ *   node tools/scripts/scaffold-component-docs.mjs --write     # actually create stub files
  */
 
 import { createRequire } from 'node:module'
@@ -28,7 +28,7 @@ const WRITE = process.argv.includes('--write')
 const ONLY = process.argv.find(a => a.startsWith('--only='))?.slice('--only='.length)
 
 // Resolved from nuxt/'s own dependencies — this script has no package.json of its own, and
-// pnpm's strict isolation means these aren't resolvable via plain `import` from common/scripts/.
+// pnpm's strict isolation means these aren't resolvable via plain `import` from tools/scripts/.
 const req = createRequire(join(rootDir, 'nuxt/package.json'))
 const { parse: parseSFC } = req('vue/compiler-sfc')
 const ts = req('typescript')

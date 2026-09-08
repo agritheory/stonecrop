@@ -14,7 +14,7 @@ These are full, runnable Nuxt applications wiring several Stonecrop packages tog
 > - **Playground** (`nuxt/playground/`) — doctypes introspected from a live GraphQL API, browsed through the generic Desktop shell, and refined in the built-in DocBuilder. Covers the `stonecrop-schema generate` CLI, the DocBuilder workflow, and `@stonecrop/nuxt`'s generic `routeStrategy` list/detail pages.
 > - **Fullstack** (`nuxt/fullstack/`) — `nuxt-grafserv` wired up with every middleware package (`@stonecrop/graphql-middleware`, `@stonecrop/casl-middleware`) alongside the Stonecrop frontend, as a complete users/orders application.
 >
-> Until then, both apps can be run directly from the `nuxt/` package root — `rushx dev` for Playground, `rushx dev:full` for Fullstack.
+> Until then, both apps can be run from the repository root: `pnpm --filter @stonecrop/nuxt run dev` for Playground, `pnpm --filter @stonecrop/nuxt run dev:full` for Fullstack.
 
 ## Related Documentation
 

@@ -112,7 +112,7 @@ jobs:
       - name: Build
         run: pnpm run build
 
-      # Each build runs "api-extractor run --local", which rewrites common/reviews/api/ in place, so
+      # Each build runs "api-extractor run --local", which rewrites tools/reviews/api/ in place, so
       # drift only ever surfaces as a dirty working tree. The same holds for the generated docs: the
       # root build regenerates every api.md and aggregates them into the reference tree, and all
       # three are committed, so a stale one is invisible without this.
@@ -120,7 +120,7 @@ jobs:
       # A pathspec matching nothing exits 0, so a path that moves without this list following it
       # turns the gate green rather than red.
       - name: Verify API Reports And Docs Are Current
-        run: git diff --exit-code -- common/reviews/api/ nuxt/documentation/content/reference/ '*/api.md'
+        run: git diff --exit-code -- tools/reviews/api/ nuxt/documentation/content/reference/ '*/api.md'
 
       # Reads each package's packed tarball, so it must follow Build.
       - name: Verify Publish Contract

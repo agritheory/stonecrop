@@ -2,7 +2,7 @@ import { resolve } from 'node:path'
 
 import { describe, expect, it } from 'vitest'
 
-import { readDistContract } from '../../common/test-support/dist-contract'
+import { readDistContract } from '../../tools/test-support/dist-contract'
 
 /**
  * The export-target walk this file used to carry is publint's now. Do not reinstate it: the walk

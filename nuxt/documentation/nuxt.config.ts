@@ -91,7 +91,7 @@ export default defineNuxtConfig({
 
 	content: {
 		experimental: {
-			// Avoids a native better-sqlite3 dependency in the Rush/pnpm workspace; Node >= 22.5 ships this built in.
+			// Avoids a native better-sqlite3 dependency in the workspace; Node >= 22.5 ships this built in.
 			sqliteConnector: 'native',
 		},
 		build: {

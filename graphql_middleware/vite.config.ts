@@ -2,8 +2,8 @@ import { resolve, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { coverageConfigDefaults, defineConfig } from 'vitest/config'
 
-import { buildTask } from '../common/vite/build-task.ts'
-import { testTags } from '../common/vite/test-tags.ts'
+import { buildTask } from '../tools/vite/build-task.ts'
+import { testTags } from '../tools/vite/test-tags.ts'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 

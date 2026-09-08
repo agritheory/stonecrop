@@ -113,8 +113,7 @@ dist/
 dist-storybook/
 
 # `nuxi generate` leaves this as a SYMLINK to .output/public, and the `dist/` pattern above only
-# matches directories, so it stays untracked. Rush then fails every later build in the whole repo
-# with "fatal: Unable to hash nuxt/documentation/dist" while computing repo state.
+# matches directories, so it needs its own entry to stay untracked.
 nuxt/documentation/dist
 tsdoc-metadata.json
 *.tsbuildinfo

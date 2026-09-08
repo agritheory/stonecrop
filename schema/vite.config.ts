@@ -1,8 +1,8 @@
 import { resolve } from 'node:path'
 import { coverageConfigDefaults, defineConfig } from 'vitest/config'
 
-import { buildTask } from '../common/vite/build-task.ts'
-import { testTags } from '../common/vite/test-tags.ts'
+import { buildTask } from '../tools/vite/build-task.ts'
+import { testTags } from '../tools/vite/test-tags.ts'
 
 export default defineConfig({
 	plugins: [],

@@ -34,7 +34,7 @@ autoInstallPeers: false
 # every time a dev dependency is bumped.
 #
 # `prefer` means `pnpm add` reuses a catalog entry when one exists but does not fail without one; the
-# repo-wide check in common/scripts/check-dependency-consistency.mjs is what catches a dependency
+# repo-wide check in tools/scripts/check-dependency-consistency.mjs is what catches a dependency
 # that lands in two packages without joining the catalog.
 catalogMode: prefer
 catalog:

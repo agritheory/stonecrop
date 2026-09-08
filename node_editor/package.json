@@ -46,7 +46,7 @@
 	},
 	"scripts": {
 		"dev": "vite build --watch",
-		"docs": "bash ../common/scripts/run-docs.sh node_editor",
+		"docs": "bash ../tools/scripts/run-docs.sh node_editor",
 		"lint": "oxlint",
 		"lint:fix": "oxlint --fix",
 		"prepublishOnly": "vp run build",

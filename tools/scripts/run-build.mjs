@@ -13,7 +13,7 @@
  */
 
 import { spawn } from 'node:child_process'
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { lstatSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -39,8 +39,16 @@ const TASK_HEADER = /^~\/\S*\$ /
 const INTERESTING_WORD = /\b(warning|warn|error|failed|failure|deprecated|deprecation)\b/i
 const INTERESTING_MARK = /^\*\*\*|✗|✖|\[[A-Z][A-Z_]{2,}\]/
 
-// vp's own closing line, which the summary below restates.
-const RUN_SUMMARY = /^vp run: \d+\/\d+ cache hit/
+// A thrown exception's name is one word, so `\berror\b` does not match inside `TypeError` and the
+// line that says why a task died was the one line not collected. Supplementary only: which task
+// failed comes from vp below, so a crash phrased without one of these still names its package.
+const ERROR_NAME = /\b[A-Z]\w*Error\b/
+
+// `--verbose` appends a summary block naming every task and its status, which is the only place vp
+// states which task failed rather than merely how many did. Its lines carry no `[package#task]`
+// prefix, so the banner is what separates them from task output.
+const SUMMARY_BANNER = /Vite\+ Task Runner/
+const FAILED_TASK = /^\s*\[\d+\]\s+(\S+?):\s.*✗ \(exit code: (\d+)\)/
 
 // `[package#task] ~/package$ command ◉ cache hit, replaying`, the only place the stream says which
 // package a task belongs to and whether it ran. There is no matching completion line, so a package
@@ -63,29 +71,49 @@ const colour = process.stdout.isTTY && !process.env.NO_COLOR
 const paint = (code, text) => (colour ? `\x1b[${code}m${text}\x1b[0m` : text)
 const green = text => paint('32', text)
 const yellow = text => paint('33', text)
+const red = text => paint('31', text)
 const dim = text => paint('2', text)
 
-// The denominator for the progress line. Only the list under `packages:`, because taking every
-// `- name` in the file also collects the entries under `peerDependencyRules`, which are dependency
-// names rather than members.
-function workspaceMemberCount() {
+// Only the list under `packages:`, because taking every `- name` in the file also collects the
+// entries under `peerDependencyRules`, which are dependency names rather than members.
+function workspaceMembers() {
 	const lines = readFileSync(join(rootDir, 'pnpm-workspace.yaml'), 'utf8').split('\n')
-	let members = 0
+	const members = []
 	for (const line of lines.slice(lines.findIndex(entry => entry.startsWith('packages:')) + 1)) {
 		if (/^\S/.test(line)) break
-		if (/^\s*-\s+\S/.test(line)) members += 1
+		const member = /^\s*-\s+(\S+)/.exec(line)
+		if (member) members.push(member[1])
 	}
 	return members
 }
 
-// A progress display must never be why a build fails, so a list this cannot read costs the
-// denominator and nothing else.
-let memberCount = 0
-try {
-	memberCount = workspaceMemberCount()
-} catch {
-	memberCount = 0
+/**
+ * Removes any `dist/runtime` left as a symlink into `src/runtime`.
+ *
+ * `nuxt-module-build build --stub`, which `dev:prepare` runs, points `dist/runtime` at the sources
+ * so a dev server serves them live. The cache archive for that task holds real files under
+ * `dist/runtime/`, and replaying it while the symlink is in place writes every one of them through
+ * into `src/runtime`: generated `.js` and `.d.ts` appear beside the sources, and the `.vue` files
+ * are overwritten with mkdist's transformed output. Measured as 0 strays, one replay, 32 strays.
+ *
+ * It has to happen here because replay precedes the task's own command, so nothing the task runs
+ * can prevent it. A build that needs the directory rebuilds it; only the symlink is removed.
+ */
+function unlinkStubbedRuntimes(members) {
+	for (const member of members) {
+		const runtime = join(rootDir, member, 'dist/runtime')
+		if (lstatSync(runtime, { throwIfNoEntry: false })?.isSymbolicLink()) {
+			rmSync(runtime)
+		}
+	}
 }
+
+// Deliberately unguarded. The member list drives the symlink check below, which is what keeps the
+// cache out of tracked sources, so failing to read it has to stop the build rather than skip it.
+const members = workspaceMembers()
+const memberCount = members.length
+
+unlinkStubbedRuntimes(members)
 
 // Resolved rather than taken off PATH so no shell is involved: passing an argument array with
 // `shell: true` is deprecated, and the shell would be quoting these for no reason.
@@ -97,14 +125,20 @@ const vpBin = join(dirname(viteplusManifest), requireFromRoot(viteplusManifest).
 // `-r build --no-cache` runs `vite build --no-cache`, which clears dist and then fails.
 const forwardedFlags = process.argv.slice(2)
 
-const child = spawn(process.execPath, [vpBin, 'run', '--log', 'labeled', ...forwardedFlags, '-r', 'build'], {
-	cwd: rootDir,
-	stdio: ['inherit', 'pipe', 'pipe'],
-})
+const child = spawn(
+	process.execPath,
+	[vpBin, 'run', '--log', 'labeled', '--verbose', ...forwardedFlags, '-r', 'build'],
+	{
+		cwd: rootDir,
+		stdio: ['inherit', 'pipe', 'pipe'],
+	}
+)
 
 const transcript = []
 const seen = new Map()
 const packages = new Map()
+const failedTasks = []
+let inSummary = false
 const startedAt = Date.now()
 
 // Held back for a moment so a fully cached build, which finishes in well under a second, prints
@@ -155,7 +189,13 @@ const consume = stream => {
 function handle(line) {
 	transcript.push(line)
 	const text = body(line)
-	if (RUN_SUMMARY.test(text)) return
+
+	if (SUMMARY_BANNER.test(text)) inSummary = true
+	if (inSummary) {
+		const failed = FAILED_TASK.exec(strip(line))
+		if (failed) failedTasks.push({ task: failed[1], exit: failed[2] })
+		return
+	}
 
 	const plain = strip(line)
 	const task = TASK_LINE.exec(plain)
@@ -172,7 +212,7 @@ function handle(line) {
 	}
 
 	if (!text || TASK_HEADER.test(text)) return
-	if (!INTERESTING_WORD.test(text) && !INTERESTING_MARK.test(text)) return
+	if (!INTERESTING_WORD.test(text) && !INTERESTING_MARK.test(text) && !ERROR_NAME.test(text)) return
 
 	// One notice is often the same fact raised by many packages, so it is recorded once against
 	// every package that raised it. Counting alone left a single package's warning naming nothing.
@@ -193,8 +233,29 @@ child.on('close', code => {
 	mkdirSync(dirname(logPath), { recursive: true })
 	writeFileSync(logPath, `${transcript.join('\n')}\n`, 'utf8')
 
+	const notices = [...seen.values()]
+		.map(({ sources, text }) => ({
+			label: sources.size === 1 ? [...sources][0] : sources.size === 0 ? '' : `${sources.size} packages`,
+			failing: ERROR_NAME.test(text),
+			text,
+		}))
+		.sort((first, second) => Number(second.failing) - Number(first.failing))
+	const labelWidth = Math.max(0, ...notices.map(notice => notice.label.length))
+	const writeNotices = stream => {
+		for (const { label, failing, text } of notices) {
+			const line = `${failing ? '✗' : '!'} ${label.padEnd(labelWidth)}  ${text}`
+			stream.write((failing ? red(line) : yellow(line)) + '\n')
+		}
+	}
+
+	// After the transcript rather than before it, so the package that died is the last thing on
+	// screen. Buried above three hundred lines of task output, it may as well not be printed.
 	if (code !== 0) {
-		process.stdout.write(`${transcript.join('\n')}\n`)
+		process.stdout.write(`${transcript.join('\n')}\n\n`)
+		for (const { task, exit } of failedTasks) {
+			process.stderr.write(red(`✗ ${task}  exit code ${exit}`) + '\n')
+		}
+		writeNotices(process.stderr)
 		process.stderr.write(`\nBuild failed. Full log: ${logPath}\n`)
 		process.exit(code ?? 1)
 	}
@@ -209,14 +270,7 @@ child.on('close', code => {
 		}
 	}
 
-	const notices = [...seen.values()].map(({ sources, text }) => ({
-		label: sources.size === 1 ? [...sources][0] : sources.size === 0 ? '' : `${sources.size} packages`,
-		text,
-	}))
-	const labelWidth = Math.max(0, ...notices.map(notice => notice.label.length))
-	for (const { label, text } of notices) {
-		process.stdout.write(yellow(`! ${label.padEnd(labelWidth)}  ${text}`) + '\n')
-	}
+	writeNotices(process.stdout)
 
 	const seconds = ((Date.now() - startedAt) / 1000).toFixed(1)
 	const outcome =

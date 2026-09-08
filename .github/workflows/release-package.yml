@@ -79,7 +79,7 @@ jobs:
       # mid-publish, after the bump is pushed, leaving lockstep packages depending on
       # siblings that were never published. Publishes nothing.
       - name: Validate Trusted Publishing
-        run: bash common/scripts/validate-trusted-publishing.sh
+        run: bash tools/scripts/validate-trusted-publishing.sh
 
       # Rewrites every package.json version and CHANGELOG.md and consumes the changeset files.
       # `commit: false` in .changeset/config.json means this leaves the result in the working
@@ -154,7 +154,7 @@ jobs:
         run: pnpm run build
 
       - name: Validate Trusted Publishing
-        run: bash common/scripts/validate-trusted-publishing.sh
+        run: bash tools/scripts/validate-trusted-publishing.sh
 
       - name: Bump Version for Packages
         run: pnpm exec changeset version

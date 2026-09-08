@@ -253,10 +253,10 @@ if (!projectName) {
 // Package folders may use underscores (casl_middleware) but API Extractor uses hyphens (casl-middleware)
 const normalizedProjectName = projectName.replace(/_/g, '-')
 
-// Path to the API model files (relative to monorepo root from autoinstaller)
+// Path to the API model files, relative to the workspace root
 const rootDir = join(__dirname, '../..')
 const apiModelPath = join(rootDir, `${projectName}/temp/${normalizedProjectName}.api.json`)
-const componentReportPath = join(rootDir, `common/reviews/api/${normalizedProjectName}.components.api.md`)
+const componentReportPath = join(rootDir, `tools/reviews/api/${normalizedProjectName}.components.api.md`)
 const outputPath = join(rootDir, `${projectName}/api.md`)
 
 // A missing api.json means the build stopped before API Extractor. Guarding that case wrote a "no

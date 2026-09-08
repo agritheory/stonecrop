@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite'
 
-import { docPackages } from '../../common/scripts/doc-packages.mjs'
+import { docPackages } from '../../tools/scripts/doc-packages.mjs'
 
 /**
  * Aggregation as an ordinary task, so the graph orders it after every package that supplies an
@@ -16,11 +16,14 @@ export default defineConfig({
 	run: {
 		tasks: {
 			build: {
-				command: 'node ../../common/scripts/docs-aggregate.mjs',
+				command: 'node ../../tools/scripts/docs-aggregate.mjs',
 				dependsOn: docPackages.map(pkg => `@stonecrop/${pkg.name}#build`),
+				// The two scripts the command actually reads, rather than all of `tools/scripts`:
+				// widened back, every edit to an unrelated build or check script re-runs aggregation.
 				input: [
 					{ pattern: '*/api.md', base: 'workspace' },
-					{ pattern: 'common/scripts/**', base: 'workspace' },
+					{ pattern: 'tools/scripts/docs-aggregate.mjs', base: 'workspace' },
+					{ pattern: 'tools/scripts/doc-packages.mjs', base: 'workspace' },
 				],
 				output: [{ pattern: 'nuxt/documentation/content/reference/**', base: 'workspace' }],
 			},

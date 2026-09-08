@@ -131,7 +131,7 @@ if (newlyFailing.length > 0) {
 if (nowPassing.length > 0) {
 	problems.push(
 		`attw now passes for ${nowPassing.join(', ')}, which ATTW_EXPECTED_FAILURES still lists as ` +
-			`broken. Delete those entries in common/scripts/check-publish-contract.mjs — an exemption ` +
+			`broken. Delete those entries in tools/scripts/check-publish-contract.mjs — an exemption ` +
 			`kept past its defect hides the next real one.`
 	)
 }

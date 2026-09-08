@@ -58,7 +58,7 @@ export function nuxtModuleBuildTask(command: string, configUrl: string): NonNull
 			command,
 			input: [
 				{ auto: true },
-				{ pattern: 'common/vite/**', base: 'workspace' },
+				{ pattern: 'tools/vite/**', base: 'workspace' },
 				'!dist/**',
 				'!.nuxt/**',
 				...generatedTrees.map(tree => `!${tree}`),
@@ -74,14 +74,14 @@ export function buildTask(declarations: 'tsc' | 'vue-tsc'): NonNullable<UserConf
 			command: [
 				'vite build --logLevel warn',
 				`${declarations} -b --force`,
-				'node ../common/scripts/run-api-extractor.mjs run --local -c config/api-extractor.json',
+				'node ../tools/scripts/run-api-extractor.mjs run --local -c config/api-extractor.json',
 				'node --run docs',
 			].join(' && '),
 			// This file must be tracked explicitly. `{ auto: true }` records what each sub-task read,
 			// and only `vite build` reads the config — so editing this file re-ran vite and then let
 			// the other three replay a `dist/**` snapshot over its fresh output. Measured: flipping
 			// `minify` here rebuilt, reported a 75% cache hit, exited 0, and shipped the old bundle.
-			input: [{ auto: true }, { pattern: 'common/vite/**', base: 'workspace' }, '!dist/**'],
+			input: [{ auto: true }, { pattern: 'tools/vite/**', base: 'workspace' }, '!dist/**'],
 			output: ['dist/**'],
 		},
 	}

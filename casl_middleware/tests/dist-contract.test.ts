@@ -2,7 +2,7 @@ import { resolve } from 'node:path'
 
 import { describe, expect, it } from 'vitest'
 
-import { readDistContract } from '../../common/test-support/dist-contract'
+import { readDistContract } from '../../tools/test-support/dist-contract'
 
 const packageRoot = resolve(__dirname, '..')
 
