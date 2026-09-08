@@ -5,18 +5,7 @@ description: Nuxt module for Stonecrop integration
 
 # Nuxt API Reference
 
-> API documentation for `@stonecrop/nuxt` is not yet available.
-
-This package may not export public APIs, or documentation hasn't been generated yet.
-
-## Package Information
+`@stonecrop/nuxt` publishes no generated API report. It is a Nuxt module, so its public surface is its module options, its runtime components and its server handlers, all documented in the package README rather than extracted from declarations.
 
 - **Package**: `@stonecrop/nuxt`
-- **Source**: [GitHub](https://github.com/agritheory/stonecrop/tree/development/nuxt)
-
-To generate API documentation, ensure the package has been built:
-
-```bash
-cd nuxt
-pnpm exec vp run build
-```
+- **README**: [nuxt/README.md](https://github.com/agritheory/stonecrop/blob/development/nuxt/README.md)

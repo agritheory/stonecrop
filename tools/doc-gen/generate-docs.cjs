@@ -256,7 +256,7 @@ const normalizedProjectName = projectName.replace(/_/g, '-')
 // Path to the API model files, relative to the workspace root
 const rootDir = join(__dirname, '../..')
 const apiModelPath = join(rootDir, `${projectName}/temp/${normalizedProjectName}.api.json`)
-const componentReportPath = join(rootDir, `tools/reviews/api/${normalizedProjectName}.components.api.md`)
+const componentReportPath = join(rootDir, `tools/api-reports/${normalizedProjectName}.components.api.md`)
 const outputPath = join(rootDir, `${projectName}/api.md`)
 
 // A missing api.json means the build stopped before API Extractor. Guarding that case wrote a "no

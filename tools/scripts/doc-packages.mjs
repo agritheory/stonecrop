@@ -4,6 +4,10 @@
  * Read by both the aggregation script and the aggregation task's `dependsOn`. Two copies would
  * disagree the first time a package is added: the task would aggregate before the new package
  * built, and the drift gate would then fail on a page nobody edited.
+ *
+ * `apiReport: false` declares that a package never produces an `api.md`, which the Nuxt modules do
+ * not because they build through `nuxt-module-build` and run no api-extractor step. Declared rather
+ * than inferred from a missing file, so a build that failed to generate one still reads as missing.
  */
 export const docPackages = [
 	{ folder: 'aform', name: 'aform', title: 'AForm', description: 'Schema-driven form components' },
@@ -39,11 +43,18 @@ export const docPackages = [
 	{ folder: 'node_editor', name: 'node-editor', title: 'Node Editor', description: 'Visual FSM workflow editor' },
 	{ folder: 'code_editor', name: 'code-editor', title: 'Code Editor', description: 'Monaco-based code editor' },
 	{ folder: 'utilities', name: 'utilities', title: 'Utilities', description: 'Shared utility functions' },
-	{ folder: 'nuxt', name: 'nuxt', title: 'Nuxt', description: 'Nuxt module for Stonecrop integration' },
+	{
+		folder: 'nuxt',
+		name: 'nuxt',
+		title: 'Nuxt',
+		description: 'Nuxt module for Stonecrop integration',
+		apiReport: false,
+	},
 	{
 		folder: 'nuxt_grafserv',
 		name: 'nuxt-grafserv',
 		title: 'Nuxt Grafserv',
 		description: 'Pluggable Grafserv GraphQL server as Nuxt Module',
+		apiReport: false,
 	},
 ]

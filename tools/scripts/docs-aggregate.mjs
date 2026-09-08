@@ -34,6 +34,28 @@ for (const pkg of packages) {
 	const sourcePath = join(rootDir, pkg.folder, 'api.md')
 	const destPath = join(referenceDir, `${pkg.name}.md`)
 
+	// A package declaring `apiReport: false` has no api-extractor step, so telling the reader to
+	// build it would send them after a file the build never writes.
+	if (pkg.apiReport === false) {
+		writeFileSync(
+			destPath,
+			`---
+title: ${pkg.title} API Reference
+description: ${pkg.description}
+---
+
+# ${pkg.title} API Reference
+
+\`@stonecrop/${pkg.name}\` publishes no generated API report. It is a Nuxt module, so its public surface is its module options, its runtime components and its server handlers, all documented in the package README rather than extracted from declarations.
+
+- **Package**: \`@stonecrop/${pkg.name}\`
+- **README**: [${pkg.folder}/README.md](https://github.com/agritheory/stonecrop/blob/development/${pkg.folder}/README.md)
+`,
+			'utf8'
+		)
+		continue
+	}
+
 	if (!existsSync(sourcePath)) {
 		placeholders.push(pkg.title)
 

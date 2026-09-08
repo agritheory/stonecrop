@@ -94,15 +94,18 @@ Each package should have a `docs` script in `package.json`:
 }
 ```
 
-The `build` script should also call `node --run docs`:
+Generating `api.md` is the last step of each package's `build`, which is a Vite+ task rather than a
+package.json script. `buildTask()` in `tools/vite/build-task.ts` defines it for every package, so a
+new package inherits the step by calling that helper from its `vite.config.ts`:
 
-```json
-{
-  "scripts": {
-    "build": "rm -rf dist && tsc -b --force && api-extractor run --local -c config/api-extractor.json && vite build && node --run docs"
-  }
-}
+```ts
+export default defineConfig({
+  run: { tasks: buildTask('vue-tsc') },
+})
 ```
+
+`vite build` runs first so `emptyOutDir` clears `dist`. A leading `rm -rf dist` is its own cached
+sub-task, and a cache hit replays a snapshot instead of deleting, which ships stale chunks.
 
 ## Repo-wide Commands
 
@@ -199,15 +202,15 @@ pnpm --filter @stonecrop/nuxt run generate:documentation    # the build above al
 ### Aggregation not finding api.md files
 
 1. Run `node --run docs` first to generate individual files
-2. Check package folder names match configuration in `docs-aggregate.mjs`
+2. Check package folder names match the entries in `doc-packages.mjs`
 3. Look for api.md files in package root directories
 
 ### Frontmatter not added correctly
 
 The aggregation script automatically adds frontmatter (title/description). If you see issues:
 
-1. Check `docs-aggregate.mjs` for the package configuration
-2. Verify the package is listed in the `packages` array
+1. Check `doc-packages.mjs` for the package configuration
+2. Verify the package is listed in the `docPackages` array
 3. Ensure title and description are correct
 
 ## Architecture Notes

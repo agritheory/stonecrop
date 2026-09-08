@@ -481,31 +481,34 @@ const taskMachine = createMachine({
 
 ## Examples
 
-- **[playground](./playground)** — the default example: doctypes introspected from a live public GraphQL API with the `stonecrop-schema generate` CLI, browsed through the Desktop shell, and refined in the built-in DocBuilder (provenance-locked introspected fields, plus hand-authored workflow fixtures for the graph editor). `npm run dev` runs it.
-- **[fullstack](./fullstack)** — the middleware core on the app's own GraphQL server (grafserv + guarded workflow transitions over in-memory storage, no database). `npm run dev:full` runs it.
+- **[playground](./playground)** — the default example: doctypes introspected from a live public GraphQL API with the `stonecrop-schema generate` CLI, browsed through the Desktop shell, and refined in the built-in DocBuilder (provenance-locked introspected fields, plus hand-authored workflow fixtures for the graph editor). `pnpm run dev` runs it.
+- **[fullstack](./fullstack)** — the middleware core on the app's own GraphQL server (grafserv + guarded workflow transitions over in-memory storage, no database). `pnpm run dev:full` runs it.
 
 
 ## Contribution
 
+This package is a workspace member, so its dependencies resolve only under pnpm. Run these from the
+repository root, or from `nuxt/` for the scripts below.
+
 ```bash
-# Install dependencies
-npm install
+# Install dependencies, from the repository root
+pnpm install
 
 # Generate type stubs
-npm run dev:prepare
+pnpm run dev:prepare
 
 # Develop with the playground
-npm run dev
+pnpm run dev
 
 # Build the playground
-npm run dev:build
+pnpm run dev:build
 
 # Run ESLint
-npm run lint
+pnpm run lint
 
 # Run Vitest
-npm run test
-npm run test:watch
+pnpm run test
+pnpm run test:watch
 ```
 
 ### Testing the CLI Locally

@@ -98,11 +98,8 @@ jobs:
 
       # `pnpm -r publish` does not tag, where Rush did, so a release would otherwise land
       # untagged with nothing reporting it.
-      #
-      # The empty check is what lets a merge carrying no changeset through, which the PR's changeset
-      # gate permits for a tooling-only change. `changeset version` then rewrites nothing, and
-      # `git commit` on an empty index exits non-zero, which under this step's `bash -e` fails the
-      # job after the publish above has already run.
+      # The empty check lets a merge with no changeset through: `git commit` on an empty index
+      # exits non-zero, which under `bash -e` fails the job after the publish has already run.
       - name: Commit Version Bump
         run: |
           git add -A
@@ -171,10 +168,18 @@ jobs:
       # Asserts the "fixed" group in .changeset/config.json held. A convention check, not a
       # safety one: pnpm rewrites `workspace:*` to the version a sibling actually carries, so
       # a split still resolves.
+      # Counted with grep, not `wc -l`, which reports one line for an empty string. `pipefail` or
+      # the status is `sort`'s and a dead pnpm or jq passes.
       - name: Check the Lockstep Group Landed on One Version
         run: |
+          set -o pipefail
           versions=$(pnpm list -r --depth -1 --json | jq -r '.[] | select(.private == false) | .version' | sort -u)
-          if [ "$(printf '%s\n' "$versions" | wc -l)" -ne 1 ]; then
+          distinct=$(printf '%s' "$versions" | grep -c . || true)
+          if [ "$distinct" -eq 0 ]; then
+            echo "::error::listed no publishable packages, so the lockstep group was never checked"
+            exit 1
+          fi
+          if [ "$distinct" -ne 1 ]; then
             echo "::error::the lockstep group split across: $(printf '%s' "$versions" | tr '\n' ' ')"
             exit 1
           fi

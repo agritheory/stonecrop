@@ -72,8 +72,9 @@ jobs:
 
       # The site is deliberately outside the repo-wide build: its script is named "generate:documentation"
       # rather than "build" so that `vp run -r build` does not render it on every package build.
+      # --fail-if-no-match, or a filter matching nothing exits zero and the site is never generated.
       - name: Generate Docs Site
-        run: pnpm --filter @stonecrop/nuxt run generate:documentation
+        run: pnpm --filter @stonecrop/nuxt --fail-if-no-match run generate:documentation
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v5

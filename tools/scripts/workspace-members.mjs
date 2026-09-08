@@ -23,7 +23,7 @@ export function workspaceMembers() {
 	let inPackages = false
 
 	for (const line of readFileSync(join(rootDir, 'pnpm-workspace.yaml'), 'utf8').split('\n')) {
-		if (/^packages:/.test(line)) {
+		if (line.startsWith('packages:')) {
 			inPackages = true
 			continue
 		}

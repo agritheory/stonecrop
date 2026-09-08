@@ -5,18 +5,7 @@ description: Pluggable Grafserv GraphQL server as Nuxt Module
 
 # Nuxt Grafserv API Reference
 
-> API documentation for `@stonecrop/nuxt-grafserv` is not yet available.
-
-This package may not export public APIs, or documentation hasn't been generated yet.
-
-## Package Information
+`@stonecrop/nuxt-grafserv` publishes no generated API report. It is a Nuxt module, so its public surface is its module options, its runtime components and its server handlers, all documented in the package README rather than extracted from declarations.
 
 - **Package**: `@stonecrop/nuxt-grafserv`
-- **Source**: [GitHub](https://github.com/agritheory/stonecrop/tree/development/nuxt_grafserv)
-
-To generate API documentation, ensure the package has been built:
-
-```bash
-cd nuxt_grafserv
-pnpm exec vp run build
-```
+- **README**: [nuxt_grafserv/README.md](https://github.com/agritheory/stonecrop/blob/development/nuxt_grafserv/README.md)

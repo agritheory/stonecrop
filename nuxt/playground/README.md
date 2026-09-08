@@ -4,7 +4,7 @@ The default example for `@stonecrop/nuxt`: doctypes **introspected from a live G
 
 ```bash
 # from the nuxt/ package root
-npm run dev        # prepare + launch on http://localhost:3000
+pnpm run dev        # prepare + launch on http://localhost:3000
 ```
 
 ## The story this example tells
@@ -66,7 +66,7 @@ The countries API accepts no mutations, so actions are no-ops here and no server
 ## Generated artifacts
 
 - `schema.graphql` — rewritten by `nuxt-graphql-middleware` (`downloadSchema: 'dev-only'`) on every dev boot; excluded from formatting, its downloaded formatting is canonical.
-- `.nuxt/` — Nuxt's generated types; `npm run dev:prepare` (package root) refreshes it.
+- `.nuxt/` — Nuxt's generated types; `pnpm run dev:prepare` (package root) refreshes it.
 
 ## Layout
 

@@ -46,8 +46,10 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile
 
+      # `{dir}` keeps the traversal suffix that `./dir` drops, so this builds the dependency closure.
+      # --fail-if-no-match, or a filter matching nothing exits zero.
       - name: Build
-        run: pnpm exec vp run -t '@stonecrop/nuxt-grafserv#build'
+        run: pnpm exec vp run --filter '{nuxt_grafserv}...' --fail-if-no-match build
 
       - name: Prepare Playground
         working-directory: nuxt_grafserv/

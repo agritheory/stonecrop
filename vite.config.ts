@@ -44,7 +44,7 @@ export default defineConfig({
 		// of it — the other 129 lines of that file were a hand-synced copy of `.gitignore`.
 		ignorePatterns: [
 			// api-extractor writes these and a `git diff --exit-code` asserts them byte-for-byte.
-			'tools/reviews/**',
+			'tools/api-reports/**',
 			'**/CHANGELOG.*',
 			'pnpm-lock.yaml',
 			'yarn.lock',

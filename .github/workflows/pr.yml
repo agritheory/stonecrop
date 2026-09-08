@@ -30,11 +30,8 @@ jobs:
       packages: ${{ steps.filter.outputs.changes }}
 
     steps:
-      # Every entry carries the two shared trees as well as its own. `tools/vite` supplies each
-      # package's build task and its vitest tags, and `tools/test-support` is imported directly by
-      # the dist-contract specs, so a PR touching only those selects no package and skips every
-      # suite that reads them. Narrower than `tools/**` on purpose: the committed api reports under
-      # `tools/reviews` change on any build, which would select all packages on most PRs.
+      # Every entry carries the two shared trees, or a PR touching only those selects no package.
+      # Narrower than `tools/**`: the reports under `tools/api-reports` change on any build.
       - uses: dorny/paths-filter@v4
         id: filter
         with:
@@ -153,15 +150,26 @@ jobs:
       - name: Build
         run: pnpm run build
 
-      # Each build runs "api-extractor run --local", which rewrites tools/reviews/api/ in place, so
+      # Each build runs "api-extractor run --local", which rewrites tools/api-reports/ in place, so
       # drift only ever surfaces as a dirty working tree. The same holds for the generated docs: the
       # root build regenerates every api.md and aggregates them into the reference tree, and all
       # three are committed, so a stale one is invisible without this.
       #
-      # A pathspec matching nothing exits 0, so a path that moves without this list following it
-      # turns the gate green rather than red.
+      # `git status`, not `git diff`: a report generated for the first time is untracked, and diff
+      # reports only tracked modifications. The loop catches a pathspec that has gone dead.
       - name: Verify API Reports And Docs Are Current
-        run: git diff --exit-code -- tools/reviews/api/ nuxt/documentation/content/reference/ '*/api.md'
+        run: |
+          specs=(tools/api-reports/ nuxt/documentation/content/reference/ '*/api.md')
+          for spec in "${specs[@]}"; do
+            [ -n "$(git ls-files -- "$spec")" ] || { echo "::error::the pathspec $spec matches no tracked file, so this gate is watching nothing"; exit 1; }
+          done
+          drift=$(git status --porcelain --untracked-files=all -- "${specs[@]}")
+          if [ -n "$drift" ]; then
+            echo "::error::generated reports or docs are not current; rebuild and commit them"
+            printf '%s\n' "$drift"
+            git --no-pager diff -- "${specs[@]}"
+            exit 1
+          fi
 
       # Reads each package's packed tarball, so it must follow Build.
       - name: Verify Publish Contract
@@ -169,6 +177,11 @@ jobs:
 
       - name: Oxlint
         run: pnpm run lint
+
+      # `pnpm run lint` is `vp run -r lint`, which reaches workspace members only, and nothing under
+      # tools/ except doc-gen is one. `vp lint` resolves paths from the cwd, so this runs at the root.
+      - name: Oxlint Shared Tooling
+        run: pnpm exec vp lint tools
 
       # Repo-wide, because the per-package matrix below is paths-filtered and cannot see cross-
       # package breakage. `tsc -b` compiles only .ts and `vite build` does not typecheck, so
