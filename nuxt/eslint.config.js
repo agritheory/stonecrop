@@ -29,6 +29,7 @@ export default createConfigForNuxt({
 		files: ['templates/**/*.vue', 'documentation/app/layouts/**/*.vue', 'documentation/app/pages/**/*.vue'],
 		rules: { 'vue/multi-word-component-names': 'off' },
 	})
-	// Turn off every formatting rule that Prettier owns (e.g. vue/html-self-closing), so eslint
-	// and Prettier stop fighting over style. Must stay LAST so it overrides the presets above.
+	// Turn off every formatting rule the formatter owns (e.g. vue/html-self-closing), so eslint and
+	// Oxfmt stop fighting over style. The package is named for Prettier but is just a list of rules
+	// to disable, which Oxfmt needs disabled too. Must stay LAST so it overrides the presets above.
 	.append(prettier)

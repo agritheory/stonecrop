@@ -29,7 +29,7 @@ Chosen option: "Option 2". Remove `ActionDefinition.args` across all nine sites:
 ### Consequences
 
 * Good, because the schema no longer advertises a configurable field that has no effect.
-* Bad, because it is a breaking public-API change (Zod schema, GraphQL SDL, and the client query shape), requiring a pre-stable version bump and Rush change files.
+* Bad, because it is a breaking public-API change (Zod schema, GraphQL SDL, and the client query shape), requiring a pre-stable version bump and a changeset.
 * Neutral, because if a genuine static-config need emerges it can be re-added deliberately, with a runtime consumer this time.
 
 ## Validation

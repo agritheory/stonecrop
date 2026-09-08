@@ -82,6 +82,38 @@ export interface AbilityResponse {
 | message | `string` | Success or error message |
 | success | `boolean` | Whether the ability was created successfully |
 
+### AbilityRule
+
+Rule definition for database storage
+
+**Definition:**
+
+```typescript
+export interface AbilityRule {
+  action: string | string[];
+  conditions?: any;
+  fields?: string[];
+  id?: string;
+  inverted?: boolean;
+  roleId?: string;
+  subject: string;
+  userId?: string;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| action | `string \| string[]` |  |
+| conditions? | `any` |  |
+| fields? | `string[]` |  |
+| id? | `string` |  |
+| inverted? | `boolean` |  |
+| roleId? | `string` |  |
+| subject | `string` |  |
+| userId? | `string` |  |
+
 ### Context
 
 GraphQL context with CASL ability and user information

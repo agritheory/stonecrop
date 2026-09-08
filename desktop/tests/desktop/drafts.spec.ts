@@ -65,7 +65,7 @@ describe('Desktop draft records', { tags: ['component'] }, () => {
 		await nextTick()
 
 		const aform = wrapper.findComponent(AForm)
-		await aform.vm.$emit('update:data', { title: 'Buy milk' })
+		aform.vm.$emit('update:data', { title: 'Buy milk' })
 		await flushPromises()
 
 		stonecrop.addRecord('task', '999', { id: '999', title: 'unrelated' })
@@ -86,7 +86,7 @@ describe('Desktop draft records', { tags: ['component'] }, () => {
 		await nextTick()
 
 		const aform = wrapper.findComponent(AForm)
-		await aform.vm.$emit('update:data', { title: 'Buy milk' })
+		aform.vm.$emit('update:data', { title: 'Buy milk' })
 		await flushPromises()
 
 		expect(stonecrop.getRecordById('task', 'new')).toBeUndefined()
@@ -99,7 +99,7 @@ describe('Desktop draft records', { tags: ['component'] }, () => {
 		// New Record pre-filled with the abandoned one.
 		const first = mountAt('new')
 		await nextTick()
-		await first.findComponent(AForm).vm.$emit('update:data', { title: 'Abandoned' })
+		first.findComponent(AForm).vm.$emit('update:data', { title: 'Abandoned' })
 		await flushPromises()
 		first.unmount()
 

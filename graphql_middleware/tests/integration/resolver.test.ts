@@ -532,6 +532,7 @@ async function runSequenceCapturingSql(
 	try {
 		const withPgClient = makeWithPgClientViaPgClientAlreadyInTransaction(client, true)
 		for (const query of queries) {
+			// oxlint-disable-next-line eslint/no-await-in-loop -- one pooled client in one transaction; concurrent queries are impossible
 			const args = await hookArgs({
 				schema,
 				document: parse(query),
@@ -541,6 +542,7 @@ async function runSequenceCapturingSql(
 				requestContext: {},
 			})
 			args.contextValue.withPgClient = withPgClient
+			// oxlint-disable-next-line eslint/no-await-in-loop -- the assertions read the captured SQL in order
 			results.push((await execute(args)) as Record<string, unknown>)
 		}
 	} finally {
@@ -561,6 +563,7 @@ async function runSequence(queries: string[]): Promise<Record<string, unknown>[]
 	try {
 		const withPgClient = makeWithPgClientViaPgClientAlreadyInTransaction(client, true)
 		for (const query of queries) {
+			// oxlint-disable-next-line eslint/no-await-in-loop -- one pooled client in one transaction; concurrent queries are impossible
 			const args = await hookArgs({
 				schema,
 				document: parse(query),
@@ -570,6 +573,7 @@ async function runSequence(queries: string[]): Promise<Record<string, unknown>[]
 				requestContext: {},
 			})
 			args.contextValue.withPgClient = withPgClient
+			// oxlint-disable-next-line eslint/no-await-in-loop -- the assertions read the captured SQL in order
 			results.push((await execute(args)) as Record<string, unknown>)
 		}
 	} finally {

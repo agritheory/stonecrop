@@ -80,7 +80,7 @@ const module: NuxtModule<ModuleOptions> = defineNuxtModule<ModuleOptions>({
 		// request handler; two copies produce "Now is not a valid time to call currentLayerPlan".
 		// Bases are tried in this order: PostGraphile, because it is what builds the plan and so its
 		// copy is the one everything else has to match; then the host app, so a linked monorepo
-		// checkout of this module cannot drag in a second copy out of common/temp/node_modules; then
+		// checkout of this module cannot drag in a second copy out of the workspace store; then
 		// this module's own dependencies, which is what a normally-installed consumer resolves to and
 		// the only base guaranteed to exist in `schema` mode, where PostGraphile need not be installed.
 		const selfRequire = createRequire(import.meta.url)

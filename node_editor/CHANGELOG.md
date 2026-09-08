@@ -1,7 +1,5 @@
 # Change Log - @stonecrop/node-editor
 
-This log was last generated on Mon, 07 Sep 2026 08:46:18 GMT and should not be manually modified.
-
 ## 0.31.0
 Mon, 07 Sep 2026 08:46:18 GMT
 

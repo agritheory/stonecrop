@@ -173,7 +173,8 @@ const currentViewData = computed<Record<string, any>>({
 			const source = isNewRecord.value
 				? draftRecord.value
 				: (stonecrop.value.getRecordById(currentDoctype.value, currentRecordId.value)?.get('') as
-						Record<string, any> | undefined)
+						| Record<string, any>
+						| undefined)
 			// Return a plain shallow copy so AForm mutations don't propagate directly into
 			// the HST reactive object, which would bypass field-trigger diffing and cause
 			// setupDeepReactivity to fire triggers for all fields on every keystroke.
