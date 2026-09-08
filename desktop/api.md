@@ -52,6 +52,18 @@ import { SheetNav } from '@stonecrop/desktop'
 export { StonecropDesktop }
 ```
 
+## Functions
+
+### useDocumentRail
+
+Consumes the document rail provided by Desktop. Slot panels use this to request the 50% preview surface via `present({ view })`.
+
+**Signature:**
+
+```typescript
+export declare function useDocumentRail(): DocumentRail;
+```
+
 ## Type Aliases
 
 ### ActionElements
@@ -65,8 +77,6 @@ export type ActionElements = ButtonElement | DropdownElement;
 ```
 
 ### BaseElement
-
-Base type for elements in the Action Set
 
 **Definition:**
 
@@ -88,6 +98,50 @@ export type ButtonElement = BaseElement & ElementAction & {
     type: 'button';
     disabled?: boolean;
 };
+```
+
+### DocumentRail
+
+Instance-scoped rail API provided by Desktop to slot content.
+
+**Definition:**
+
+```typescript
+export type DocumentRail = {
+    doctype: ComputedRef<string>;
+    recordId: ComputedRef<string>;
+    activeSlotId: ComputedRef<DocumentRailSlotId | null>;
+    present: (subject: RailSubject) => void;
+    closePreview: () => void;
+    close: () => void;
+};
+```
+
+### DocumentRailSlot
+
+Host-declared drawer slot on the document right rail.
+
+**Definition:**
+
+```typescript
+export type DocumentRailSlot = {
+    id: DocumentRailSlotId;
+    label: string;
+    icon?: Component;
+    component?: Component;
+    badge?: MaybeRef<number>;
+    show?: boolean;
+};
+```
+
+### DocumentRailSlotId
+
+Host-chosen identifier for a document-rail slot.
+
+**Definition:**
+
+```typescript
+export type DocumentRailSlotId = string;
 ```
 
 ### DropdownElement
@@ -152,6 +206,20 @@ export type NavigationTarget = {
     view: 'doctypes' | 'records' | 'record';
     doctype?: string;
     recordId?: string;
+};
+```
+
+### RailSubject
+
+A presented subject occupies the compressed-document (50%) surface.
+
+**Definition:**
+
+```typescript
+export type RailSubject = {
+    id?: string;
+    view: Component;
+    props?: Record<string, unknown>;
 };
 ```
 

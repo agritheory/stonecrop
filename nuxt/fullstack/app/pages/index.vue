@@ -1,6 +1,10 @@
 <template>
 	<ClientOnly>
-		<Desktop :available-doctypes="availableDoctypes" :route-adapter="routeAdapter" @action="run" />
+		<Desktop
+			:available-doctypes="availableDoctypes"
+			:route-adapter="routeAdapter"
+			:rail-slots="railSlots"
+			@action="run" />
 		<template #fallback>
 			<div class="loading">
 				<p>Loading...</p>
@@ -13,9 +17,11 @@
 import { Desktop } from '@stonecrop/desktop'
 
 import { useFullstackRouteAdapter } from '~/composables/useFullstackRouteAdapter'
+import { useFullstackRailSlots } from '~/composables/useFullstackRailSlots'
 import { doctypeMap } from '~/composables/useDoctypes'
 
 const routeAdapter = useFullstackRouteAdapter()
+const railSlots = useFullstackRailSlots()
 // Shared action executor (auto-imported from @stonecrop/nuxt): runs an action's
 // clientHandler if present, else dispatches to the server handler + writes HST.
 // Bound directly to Desktop's @action — no host-specific wrapper needed.
@@ -34,5 +40,10 @@ const availableDoctypes = computed(() => Array.from(doctypeMap.keys()))
 	justify-content: center;
 	min-height: 50vh;
 	color: #666;
+}
+
+.desktop {
+	min-height: calc(100vh - 8rem);
+	height: 100%;
 }
 </style>

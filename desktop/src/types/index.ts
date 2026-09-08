@@ -2,6 +2,8 @@
  * Base type for elements in the Action Set
  * @public
  */
+import type { Component, ComputedRef, MaybeRef } from 'vue'
+
 export type BaseElement = {
 	label: string
 	show?: boolean
@@ -104,4 +106,51 @@ export type LoadRecordsEventPayload = {
 export type LoadRecordEventPayload = {
 	doctype: string
 	recordId: string
+}
+
+/**
+ * Host-chosen identifier for a document-rail slot.
+ * @public
+ */
+export type DocumentRailSlotId = string
+
+/**
+ * Host-declared drawer slot on the document right rail.
+ * @public
+ */
+export type DocumentRailSlot = {
+	id: DocumentRailSlotId
+	label: string
+	/** Implementer choice; omit for a generic trigger mark. */
+	icon?: Component
+	/** Omit for an empty drawer body (shippable chrome). */
+	component?: Component
+	/** Host-owned count; omit or 0 hides the badge. */
+	badge?: MaybeRef<number>
+	/** Per-doctype visibility; host computes the array passed to Desktop. */
+	show?: boolean
+}
+
+/**
+ * A presented subject occupies the compressed-document (50%) surface.
+ * @public
+ */
+export type RailSubject = {
+	/** Same id presented twice is a no-op. */
+	id?: string
+	view: Component
+	props?: Record<string, unknown>
+}
+
+/**
+ * Instance-scoped rail API provided by Desktop to slot content.
+ * @public
+ */
+export type DocumentRail = {
+	doctype: ComputedRef<string>
+	recordId: ComputedRef<string>
+	activeSlotId: ComputedRef<DocumentRailSlotId | null>
+	present: (subject: RailSubject) => void
+	closePreview: () => void
+	close: () => void
 }

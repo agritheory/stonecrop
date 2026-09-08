@@ -1,18 +1,43 @@
 <template>
-	<div class="desktop" @click="handleClick">
-		<!-- Action Set -->
-		<ActionSet :elements="actionElements" @action-click="handleActionClick" />
+	<div
+		class="desktop"
+		:class="{
+			'desktop--rail-open': railDrawerOpen,
+			'desktop--preview-open': railPreviewOpen,
+		}"
+		@click="handleClick">
+		<div class="desktop__workspace">
+			<div class="desktop__main">
+				<AForm
+					v-if="currentViewSchema.length > 0"
+					v-model:data="currentViewData"
+					:schema="currentViewSchema"
+					:errors="fieldErrors" />
+				<div v-else-if="!stonecrop" class="loading"><p>Initializing Stonecrop...</p></div>
+				<div v-else class="loading">
+					<p>Loading {{ currentView }} data...</p>
+				</div>
+			</div>
 
-		<!-- Main content using AForm -->
-		<AForm
-			v-if="currentViewSchema.length > 0"
-			v-model:data="currentViewData"
-			:schema="currentViewSchema"
-			:errors="fieldErrors" />
-		<div v-else-if="!stonecrop" class="loading"><p>Initializing Stonecrop...</p></div>
-		<div v-else class="loading">
-			<p>Loading {{ currentView }} data...</p>
+			<aside v-if="railPreviewOpen && railPreviewSubject" class="desktop__preview">
+				<header class="desktop__preview-header">
+					<button type="button" class="desktop__preview-close" aria-label="Close preview" @click="closeRailPreview">
+						×
+					</button>
+				</header>
+				<div class="desktop__preview-body">
+					<component :is="railPreviewSubject.view" v-bind="railPreviewSubject.props ?? {}" />
+				</div>
+			</aside>
 		</div>
+
+		<DocumentRail
+			v-if="hasDocumentRail && documentRailController"
+			:slots="visibleRailSlots"
+			:elements="actionElements"
+			:rail="documentRailController"
+			@action-click="handleActionClick" />
+		<ActionSet v-else :elements="actionElements" @action-click="handleActionClick" />
 
 		<!-- Sheet Navigation -->
 		<SheetNav :breadcrumbs="navigationBreadcrumbs" />
@@ -46,11 +71,13 @@ import {
 	type ResolvedField,
 	type ResolvedTable,
 } from '@stonecrop/aform'
-import { computed, onMounted, onUnmounted, provide, ref, unref, watch } from 'vue'
+import { computed, markRaw, onMounted, onUnmounted, provide, ref, shallowRef, unref, watch } from 'vue'
 
 import ActionSet from './ActionSet.vue'
+import DocumentRail from './DocumentRail.vue'
 import SheetNav from './SheetNav.vue'
 import CommandPalette from './CommandPalette.vue'
+import { createDocumentRail, documentRailKey, type DocumentRailController } from '../composables/useDocumentRail'
 import type {
 	ActionElements,
 	RouteAdapter,
@@ -59,9 +86,14 @@ import type {
 	RecordOpenEventPayload,
 	LoadRecordsEventPayload,
 	LoadRecordEventPayload,
+	DocumentRailSlot,
 } from '../types'
 
-const { availableDoctypes = [], routeAdapter } = defineProps<{
+const {
+	availableDoctypes = [],
+	routeAdapter,
+	railSlots,
+} = defineProps<{
 	availableDoctypes?: string[]
 	/**
 	 * Pluggable router adapter. When provided, Desktop uses these functions for all
@@ -69,6 +101,11 @@ const { availableDoctypes = [], routeAdapter } = defineProps<{
 	 * Nuxt hosts (or any host with custom route conventions) should supply this.
 	 */
 	routeAdapter?: RouteAdapter
+	/**
+	 * Optional document-rail drawer slots. When omitted, Desktop renders Actions-only
+	 * ActionSet chrome. When provided, hosts register icon triggers and drawer bodies.
+	 */
+	railSlots?: DocumentRailSlot[]
 }>()
 
 const emit = defineEmits<{
@@ -967,9 +1004,88 @@ const handleKeydown = (event: KeyboardEvent) => {
 		event.preventDefault()
 		commandPaletteOpen.value = true
 	}
-	if (event.key === 'Escape' && commandPaletteOpen.value) {
-		commandPaletteOpen.value = false
+	if (event.key === 'Escape') {
+		if (commandPaletteOpen.value) {
+			commandPaletteOpen.value = false
+			return
+		}
+		if (documentRailController.value?.isPreviewOpen.value) {
+			documentRailController.value.closePreview()
+			return
+		}
+		if (documentRailController.value?.activeSlotId.value) {
+			documentRailController.value.close()
+		}
 	}
+}
+
+const hasDocumentRail = computed(() => (railSlots?.length ?? 0) > 0)
+
+const visibleRailSlots = computed(() =>
+	(railSlots ?? [])
+		.filter(slot => slot.show !== false)
+		.map(slot => ({
+			...slot,
+			icon: slot.icon ? markRaw(slot.icon) : undefined,
+			component: slot.component ? markRaw(slot.component) : undefined,
+		}))
+)
+
+const railDrawerOpen = ref(false)
+const railPreviewOpen = ref(false)
+
+const documentRailController = shallowRef<DocumentRailController | null>(null)
+
+function ensureDocumentRailController() {
+	if (!hasDocumentRail.value || documentRailController.value) {
+		return
+	}
+	documentRailController.value = createDocumentRail({
+		doctype: currentDoctype,
+		recordId: currentRecordId,
+		onDrawerChange: open => {
+			railDrawerOpen.value = open
+		},
+		onPreviewChange: open => {
+			railPreviewOpen.value = open
+		},
+	})
+}
+
+watch(
+	hasDocumentRail,
+	ready => {
+		if (ready) {
+			ensureDocumentRailController()
+		} else {
+			documentRailController.value?.reset()
+			documentRailController.value = null
+			railDrawerOpen.value = false
+			railPreviewOpen.value = false
+		}
+	},
+	{ immediate: true }
+)
+
+if (hasDocumentRail.value) {
+	ensureDocumentRailController()
+}
+
+if (documentRailController.value) {
+	provide(documentRailKey, documentRailController.value)
+}
+
+const railPreviewSubject = computed(() => documentRailController.value?.previewSubject.value ?? null)
+
+watch(
+	() => [currentDoctype.value, currentRecordId.value] as const,
+	() => {
+		documentRailController.value?.reset()
+	}
+)
+
+function closeRailPreview() {
+	documentRailController.value?.closePreview()
 }
 
 onMounted(() => {
@@ -980,3 +1096,84 @@ onUnmounted(() => {
 	document.removeEventListener('keydown', handleKeydown)
 })
 </script>
+
+<style scoped>
+.desktop {
+	position: relative;
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+	min-height: 0;
+	overflow: hidden;
+}
+
+.desktop__workspace {
+	display: flex;
+	flex: 1;
+	min-height: 0;
+	min-width: 0;
+	margin-right: 0;
+	transition: margin-right 0.25s ease-out;
+}
+
+.desktop--rail-open .desktop__workspace {
+	margin-right: var(--sc-rail-drawer-width, 380px);
+}
+
+.desktop__main {
+	flex: 1;
+	min-width: 0;
+	min-height: 0;
+	overflow: auto;
+}
+
+.desktop--preview-open .desktop__main {
+	flex: 0 0 calc(50% - 10px);
+	max-width: calc(50% - 10px);
+}
+
+.desktop__preview {
+	flex: 0 0 50%;
+	max-width: 50%;
+	min-width: 0;
+	min-height: 0;
+	display: flex;
+	flex-direction: column;
+	border-left: 1px solid var(--sc-gray-20);
+	background: var(--sc-form-background);
+	overflow: hidden;
+}
+
+.desktop__preview-header {
+	display: flex;
+	justify-content: flex-end;
+	align-items: center;
+	height: 40px;
+	padding: 0 8px;
+	border-bottom: 1px solid var(--sc-gray-20);
+	flex-shrink: 0;
+}
+
+.desktop__preview-close {
+	border: none;
+	background: transparent;
+	font-size: 1.25rem;
+	line-height: 1;
+	cursor: pointer;
+	color: var(--sc-gray-60);
+}
+
+.desktop__preview-body {
+	flex: 1;
+	min-height: 0;
+	overflow: auto;
+}
+
+.loading {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 50vh;
+	color: var(--sc-gray-60);
+}
+</style>

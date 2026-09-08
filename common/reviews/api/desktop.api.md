@@ -7,7 +7,10 @@
 import { ActionEventPayload } from '@stonecrop/stonecrop';
 import ActionSet from './components/ActionSet.vue';
 import CommandPalette from './components/CommandPalette.vue';
+import type { Component } from 'vue';
+import type { ComputedRef } from 'vue';
 import Desktop from './components/Desktop.vue';
+import type { MaybeRef } from 'vue';
 import { Plugin as Plugin_2 } from 'vue';
 import SheetNav from './components/SheetNav.vue';
 
@@ -18,7 +21,7 @@ export { ActionEventPayload }
 
 export { ActionSet }
 
-// @public
+// @public (undocumented)
 export type BaseElement = {
     label: string;
     show?: boolean;
@@ -33,6 +36,29 @@ export type ButtonElement = BaseElement & ElementAction & {
 export { CommandPalette }
 
 export { Desktop }
+
+// @public
+export type DocumentRail = {
+    doctype: ComputedRef<string>;
+    recordId: ComputedRef<string>;
+    activeSlotId: ComputedRef<DocumentRailSlotId | null>;
+    present: (subject: RailSubject) => void;
+    closePreview: () => void;
+    close: () => void;
+};
+
+// @public
+export type DocumentRailSlot = {
+    id: DocumentRailSlotId;
+    label: string;
+    icon?: Component;
+    component?: Component;
+    badge?: MaybeRef<number>;
+    show?: boolean;
+};
+
+// @public
+export type DocumentRailSlotId = string;
 
 // @public
 export type DropdownElement = BaseElement & {
@@ -65,6 +91,13 @@ export type NavigationTarget = {
 };
 
 // @public
+export type RailSubject = {
+    id?: string;
+    view: Component;
+    props?: Record<string, unknown>;
+};
+
+// @public
 export type RecordOpenEventPayload = {
     doctype: string;
     recordId: string;
@@ -82,6 +115,9 @@ export { SheetNav }
 
 // @public
 export const StonecropDesktop: Plugin_2;
+
+// @public
+export function useDocumentRail(): DocumentRail;
 
 // (No @packageDocumentation comment for this package)
 
