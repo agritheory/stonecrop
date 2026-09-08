@@ -38,6 +38,8 @@ pnpm install --force
 
 Flags go before the task name in a `vp run`. Anything after it is passed to the task itself, so `vp run -r build --no-cache` runs `vite build --no-cache`, which clears every `dist` and then fails.
 
+Always build through `pnpm run build`, never `vp run -r build` directly. `dev:prepare` leaves `nuxt/dist/runtime` as a symlink into `nuxt/src/runtime`, and a warm cache replays real files through it, overwriting tracked sources with generated output. `pnpm run build` removes that symlink first; a bare `vp run` does not, and the damage looks like an unexplained diff across several `.vue` files.
+
 ## Changesets
 
 A changeset is a short note describing a change worth releasing. Add one in the same commit as the change it describes.

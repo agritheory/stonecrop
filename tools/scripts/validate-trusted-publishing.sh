@@ -116,10 +116,11 @@ main() {
 		die "Repository visibility is '${repo_visibility}', so npm will not attach provenance to any package."
 	fi
 
-	local failed=0 pkg
+	local failed=0 checked=0 pkg
 	printf '  %-34s %-8s %s\n' "PACKAGE" "AUTH" "PROVENANCE"
 
 	while read -r pkg; do
+		checked=$((checked + 1))
 		exchange_token "${pkg}"
 
 		if [ -z "${MINTED}" ]; then
@@ -138,6 +139,11 @@ main() {
 			failed=1
 		fi
 	done < <(list_publishable_packages)
+
+	# A process substitution's failure never reaches "set -e", so a producer that lists nothing runs
+	# the loop body zero times and leaves every counter clean. Without this the gate announces that
+	# every package will carry provenance having inspected none of them.
+	[ "${checked}" -gt 0 ] || die "Listed no publishable packages, so nothing was validated. Check the pnpm and jq selector in list_publishable_packages."
 
 	[ "${failed}" -eq 0 ] || die "Trusted publishing is not ready. Compare the failures against the registry's trusted-publisher record for each package — organization, repository and workflow filename are case-sensitive and exact."
 
