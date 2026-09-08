@@ -13,10 +13,12 @@
  */
 
 import { spawn } from 'node:child_process'
-import { lstatSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { lstatSync, mkdirSync, rmSync, writeFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+
+import { workspaceMembers } from './workspace-members.mjs'
 
 const rootDir = join(dirname(fileURLToPath(import.meta.url)), '../..')
 const logPath = join(rootDir, 'node_modules/.vite/last-build.log')
@@ -74,19 +76,6 @@ const yellow = text => paint('33', text)
 const red = text => paint('31', text)
 const dim = text => paint('2', text)
 
-// Only the list under `packages:`, because taking every `- name` in the file also collects the
-// entries under `peerDependencyRules`, which are dependency names rather than members.
-function workspaceMembers() {
-	const lines = readFileSync(join(rootDir, 'pnpm-workspace.yaml'), 'utf8').split('\n')
-	const members = []
-	for (const line of lines.slice(lines.findIndex(entry => entry.startsWith('packages:')) + 1)) {
-		if (/^\S/.test(line)) break
-		const member = /^\s*-\s+(\S+)/.exec(line)
-		if (member) members.push(member[1])
-	}
-	return members
-}
-
 /**
  * Removes any `dist/runtime` left as a symlink into `src/runtime`.
  *
@@ -109,7 +98,8 @@ function unlinkStubbedRuntimes(members) {
 }
 
 // Deliberately unguarded. The member list drives the symlink check below, which is what keeps the
-// cache out of tracked sources, so failing to read it has to stop the build rather than skip it.
+// cache out of tracked sources, so a list this cannot read has to stop the build rather than leave
+// the check iterating nothing. `workspaceMembers` throws rather than returning an empty list.
 const members = workspaceMembers()
 const memberCount = members.length
 

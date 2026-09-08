@@ -13,6 +13,8 @@ import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
+import { workspaceMembers } from './workspace-members.mjs'
+
 const rootDir = join(dirname(fileURLToPath(import.meta.url)), '../..')
 
 /**
@@ -30,26 +32,6 @@ const ATTW_EXPECTED_FAILURES = new Map([
 ])
 
 const readJson = path => JSON.parse(readFileSync(path, 'utf8'))
-
-/** Workspace members, read from the file that defines them so a new one is covered automatically. */
-function workspaceMembers() {
-	const raw = readFileSync(join(rootDir, 'pnpm-workspace.yaml'), 'utf8')
-	const members = []
-	let inPackages = false
-	for (const line of raw.split('\n')) {
-		if (/^packages:/.test(line)) {
-			inPackages = true
-			continue
-		}
-		if (inPackages) {
-			const entry = line.match(/^\s+-\s+(\S+)\s*$/)
-			if (entry) members.push(entry[1])
-			else if (line.trim() !== '' && !line.trimStart().startsWith('#')) break
-		}
-	}
-	if (members.length === 0) throw new Error('Parsed no members from pnpm-workspace.yaml')
-	return members
-}
 
 function run(command, args, cwd) {
 	try {

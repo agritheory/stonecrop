@@ -30,6 +30,11 @@ jobs:
       packages: ${{ steps.filter.outputs.changes }}
 
     steps:
+      # Every entry carries the two shared trees as well as its own. `tools/vite` supplies each
+      # package's build task and its vitest tags, and `tools/test-support` is imported directly by
+      # the dist-contract specs, so a PR touching only those selects no package and skips every
+      # suite that reads them. Narrower than `tools/**` on purpose: the committed api reports under
+      # `tools/reviews` change on any build, which would select all packages on most PRs.
       - uses: dorny/paths-filter@v4
         id: filter
         with:
@@ -37,22 +42,58 @@ jobs:
             aform:
               - 'aform/**'
               - 'themes/**'
+              - 'tools/vite/**'
+              - 'tools/test-support/**'
             atable:
               - 'atable/**'
               - 'themes/**'
-            beam: beam/**
-            casl_middleware: casl_middleware/**
-            code_editor: code_editor/**
+              - 'tools/vite/**'
+              - 'tools/test-support/**'
+            beam:
+              - 'beam/**'
+              - 'tools/vite/**'
+              - 'tools/test-support/**'
+            casl_middleware:
+              - 'casl_middleware/**'
+              - 'tools/vite/**'
+              - 'tools/test-support/**'
+            code_editor:
+              - 'code_editor/**'
+              - 'tools/vite/**'
+              - 'tools/test-support/**'
             desktop:
               - 'desktop/**'
               - 'themes/**'
-            graphql_client: graphql_client/**
-            graphql_middleware: graphql_middleware/**
-            node_editor: node_editor/**
-            rockfoil: rockfoil/**
-            schema: schema/**
-            stonecrop: stonecrop/**
-            utilities: utilities/**
+              - 'tools/vite/**'
+              - 'tools/test-support/**'
+            graphql_client:
+              - 'graphql_client/**'
+              - 'tools/vite/**'
+              - 'tools/test-support/**'
+            graphql_middleware:
+              - 'graphql_middleware/**'
+              - 'tools/vite/**'
+              - 'tools/test-support/**'
+            node_editor:
+              - 'node_editor/**'
+              - 'tools/vite/**'
+              - 'tools/test-support/**'
+            rockfoil:
+              - 'rockfoil/**'
+              - 'tools/vite/**'
+              - 'tools/test-support/**'
+            schema:
+              - 'schema/**'
+              - 'tools/vite/**'
+              - 'tools/test-support/**'
+            stonecrop:
+              - 'stonecrop/**'
+              - 'tools/vite/**'
+              - 'tools/test-support/**'
+            utilities:
+              - 'utilities/**'
+              - 'tools/vite/**'
+              - 'tools/test-support/**'
 
   pr-checks:
     name: Lint & Change Verify

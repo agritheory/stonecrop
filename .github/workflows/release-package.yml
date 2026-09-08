@@ -98,9 +98,18 @@ jobs:
 
       # `pnpm -r publish` does not tag, where Rush did, so a release would otherwise land
       # untagged with nothing reporting it.
+      #
+      # The empty check is what lets a merge carrying no changeset through, which the PR's changeset
+      # gate permits for a tooling-only change. `changeset version` then rewrites nothing, and
+      # `git commit` on an empty index exits non-zero, which under this step's `bash -e` fails the
+      # job after the publish above has already run.
       - name: Commit Version Bump
         run: |
           git add -A
+          if git diff --cached --quiet; then
+            echo "::notice::no version bump to commit, so nothing to tag or push"
+            exit 0
+          fi
           git commit -m "Bump versions [skip ci]"
           pnpm exec changeset git-tag
           git push --follow-tags origin HEAD:development
