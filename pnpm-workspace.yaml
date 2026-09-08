@@ -15,6 +15,7 @@ packages:
   - stonecrop
   - themes
   - tools/doc-gen
+  - tools/scripts
   - utilities
 
 # Members are listed one by one rather than globbed. `nuxt/playground`, `nuxt/fullstack` and the

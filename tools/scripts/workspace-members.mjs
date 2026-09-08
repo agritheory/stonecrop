@@ -5,8 +5,7 @@ import { fileURLToPath } from 'node:url'
 const rootDir = join(dirname(fileURLToPath(import.meta.url)), '../..')
 
 /**
- * The workspace members, read from the file that defines them so a new one is covered
- * automatically.
+ * The members declared in the text of pnpm-workspace.yaml.
  *
  * Scoped to the block under `packages:`, because every `- name` in the file also collects the
  * entries under `peerDependencyRules`, which are dependency names rather than members.
@@ -17,12 +16,15 @@ const rootDir = join(dirname(fileURLToPath(import.meta.url)), '../..')
  *
  * Throws rather than returning nothing. A caller reads an empty list as no work to do, so a parse
  * that silently found none passes the caller's check having inspected nothing.
+ *
+ * Split from the reader below so a spec can drive all three rules. The real file exercises only
+ * the first: its own comment sits after the last member, and it is never empty.
  */
-export function workspaceMembers() {
+export function parseWorkspaceMembers(yaml) {
 	const members = []
 	let inPackages = false
 
-	for (const line of readFileSync(join(rootDir, 'pnpm-workspace.yaml'), 'utf8').split('\n')) {
+	for (const line of yaml.split('\n')) {
 		if (line.startsWith('packages:')) {
 			inPackages = true
 			continue
@@ -36,4 +38,12 @@ export function workspaceMembers() {
 
 	if (members.length === 0) throw new Error('Parsed no members from pnpm-workspace.yaml')
 	return members
+}
+
+/**
+ * The workspace members, read from the file that defines them so a new one is covered
+ * automatically.
+ */
+export function workspaceMembers() {
+	return parseWorkspaceMembers(readFileSync(join(rootDir, 'pnpm-workspace.yaml'), 'utf8'))
 }

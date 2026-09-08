@@ -178,10 +178,15 @@ jobs:
       - name: Oxlint
         run: pnpm run lint
 
-      # `pnpm run lint` is `vp run -r lint`, which reaches workspace members only, and nothing under
-      # tools/ except doc-gen is one. `vp lint` resolves paths from the cwd, so this runs at the root.
+      # `pnpm run lint` is `vp run -r lint`, which runs each member's own lint script, and no member
+      # under tools/ declares one. `vp lint` resolves paths from the cwd, so this runs at the root.
       - name: Oxlint Shared Tooling
         run: pnpm exec vp lint tools
+
+      # The package matrix below is paths-filtered and coverage-gated, so it neither reaches this
+      # member nor suits it.
+      - name: Test Shared Tooling
+        run: pnpm exec vp run --filter stonecrop-scripts --fail-if-no-match test
 
       # Repo-wide, because the per-package matrix below is paths-filtered and cannot see cross-
       # package breakage. `tsc -b` compiles only .ts and `vite build` does not typecheck, so
