@@ -1,8 +1,9 @@
 import { mount } from '@vue/test-utils'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { nextTick } from 'vue'
 
 import SheetNav from '../src/components/SheetNav.vue'
+import { SHEET_NAV_TOOLBAR_SELECTOR } from '../src/sheet-nav-toolbar'
 
 // Stub router-link since SheetNav uses it but we don't want a full router in tests
 const RouterLinkStub = {
@@ -51,7 +52,7 @@ describe('SheetNav', { tags: ['component'] }, () => {
 		})
 
 		const hometab = wrapper.find('.hometab')
-		expect(hometab.attributes('style')).toContain('display: block')
+		expect(hometab.attributes('style')).toContain('display: flex')
 
 		// Click the hide/show toggle
 		await wrapper.find('.hidebreadcrumbs').trigger('click')
@@ -60,7 +61,7 @@ describe('SheetNav', { tags: ['component'] }, () => {
 
 		// Click again to restore
 		await wrapper.find('.hidebreadcrumbs').trigger('click')
-		expect(wrapper.find('.hometab').attributes('style')).toContain('display: block')
+		expect(wrapper.find('.hometab').attributes('style')).toContain('display: flex')
 	})
 
 	it('changes the rotate class when breadcrumbs are hidden', async () => {
@@ -83,7 +84,7 @@ describe('SheetNav', { tags: ['component'] }, () => {
 		})
 
 		const hometabBefore = wrapper.find('.hometab').attributes('style')
-		expect(hometabBefore).toContain('display: block')
+		expect(hometabBefore).toContain('display: flex')
 
 		await wrapper.find('.hidebreadcrumbs').trigger('keydown.enter')
 		expect(wrapper.find('.hometab').attributes('style')).toContain('display: none')
@@ -171,5 +172,73 @@ describe('SheetNav', { tags: ['component'] }, () => {
 		// navigateHome is a no-op — just verify no errors
 		await wrapper.find('.hometab').trigger('click')
 		expect(wrapper.find('footer').exists()).toBe(true)
+	})
+
+	it('renders toolbar slot content inside the exported toolbar selector', () => {
+		const wrapper = mount(SheetNav, {
+			slots: {
+				toolbar: '<div class="test-toolbar">Plan controls</div>',
+			},
+			global: globalConfig,
+		})
+
+		const toolbar = wrapper.find(SHEET_NAV_TOOLBAR_SELECTOR)
+		expect(toolbar.exists()).toBe(true)
+		expect(toolbar.text()).toContain('Plan controls')
+		expect(wrapper.find('.tabs').exists()).toBe(true)
+	})
+
+	it('accepts content teleported to the exported toolbar selector', async () => {
+		const sheetNav = mount(SheetNav, {
+			props: {
+				breadcrumbs: [{ title: 'Plan', to: '/plan' }],
+			},
+			global: globalConfig,
+			attachTo: document.body,
+		})
+		await nextTick()
+
+		const teleporter = mount(
+			{
+				template: `
+					<Teleport :to="selector">
+						<div class="teleported-toolbar">Teleported controls</div>
+					</Teleport>
+				`,
+				data: () => ({ selector: SHEET_NAV_TOOLBAR_SELECTOR }),
+			},
+			{ attachTo: document.body }
+		)
+		await nextTick()
+
+		expect(document.querySelector(SHEET_NAV_TOOLBAR_SELECTOR)?.textContent).toContain('Teleported controls')
+
+		teleporter.unmount()
+		sheetNav.unmount()
+	})
+
+	describe('toolbar anchor uniqueness', () => {
+		it('does not warn when one SheetNav is mounted', () => {
+			const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+			const only = mount(SheetNav, { global: globalConfig, attachTo: document.body })
+
+			expect(warn).not.toHaveBeenCalled()
+
+			only.unmount()
+			warn.mockRestore()
+		})
+
+		it('warns when a second SheetNav mounts, since teleported content lands in the first', () => {
+			const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+			const first = mount(SheetNav, { global: globalConfig, attachTo: document.body })
+			const second = mount(SheetNav, { global: globalConfig, attachTo: document.body })
+
+			expect(warn).toHaveBeenCalledTimes(1)
+			expect(warn.mock.calls[0][0]).toContain(SHEET_NAV_TOOLBAR_SELECTOR)
+
+			second.unmount()
+			first.unmount()
+			warn.mockRestore()
+		})
 	})
 })

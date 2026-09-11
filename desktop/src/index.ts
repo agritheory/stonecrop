@@ -3,6 +3,7 @@ import CommandPalette from './components/CommandPalette.vue'
 import Desktop from './components/Desktop.vue'
 import SheetNav from './components/SheetNav.vue'
 import StonecropDesktop from './plugins'
+export { SHEET_NAV_TOOLBAR_SELECTOR } from './sheet-nav-toolbar'
 export type * from './types'
 export type { RouteAdapter, NavigationTarget, ActionEventPayload, RecordOpenEventPayload } from './types'
 

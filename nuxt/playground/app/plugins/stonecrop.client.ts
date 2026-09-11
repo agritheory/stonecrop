@@ -1,11 +1,16 @@
 import { Doctype } from '@stonecrop/stonecrop'
 import { CountriesDataClient } from '~/composables/useCountriesDataClient'
 import { doctypeMap } from '~/composables/useDoctypes'
+import { hostComponents } from '~/host-components'
 
 export default defineNuxtPlugin({
 	name: 'stonecrop-playground',
 	dependsOn: ['stonecrop'],
-	setup() {
+	setup(nuxtApp) {
+		for (const [name, component] of Object.entries(hostComponents)) {
+			nuxtApp.vueApp.component(name, component)
+		}
+
 		const { registerMeta, registerDoctype, registerClient } = useStonecropSetup()
 
 		// Registering a client is what hands the read path to Stonecrop. Without one it fetches
