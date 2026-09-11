@@ -1,7 +1,7 @@
 import { resolve } from 'path'
 import { defineConfig } from 'vite'
 
-const projectRootDir = resolve(__dirname)
+const projectRootDir = resolve(import.meta.dirname)
 
 export default defineConfig({
 	build: {

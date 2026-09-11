@@ -120,7 +120,10 @@ export interface CreateAbilityInput {
 	roles: string[]
 }
 
-// Rule definition for database storage
+/**
+ * Rule definition for database storage
+ * @public
+ */
 export interface AbilityRule {
 	id?: string
 	roleId?: string

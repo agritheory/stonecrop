@@ -67,7 +67,6 @@ export async function installFrontend(options: FrontendInstallerOptions): Promis
 			nitroConfig: {
 				externalsInline: [...STONECROP_PACKAGES],
 			},
-			css: ['@stonecrop/desktop/styles'],
 		})
 
 		// Scaffold app/composables/useDoctypes.ts, app/composables/useRouteAdapter.ts,

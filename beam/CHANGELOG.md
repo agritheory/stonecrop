@@ -1,6 +1,17 @@
 # Change Log - @stonecrop/beam
 
-This log was last generated on Thu, 27 Aug 2026 12:30:32 GMT and should not be manually modified.
+## 0.32.0
+
+### Minor Changes
+
+- a859205: Vue components now ship their real types — props, emits, slots and exposes — where every one of them previously resolved to `any`.
+- a859205: Packages no longer ship their `src` tree, because every sourcemap already embeds the sources it names and no exports path reached it.
+- a859205: Libraries now ship unminified so the consumer's bundler minifies them, and the unbundled `dist/src/**/*.js` tree is no longer published because every package's exports map already blocked it.
+
+## 0.31.0
+Mon, 07 Sep 2026 08:46:18 GMT
+
+_Version update only_
 
 ## 0.30.0
 Thu, 27 Aug 2026 12:30:32 GMT

@@ -292,7 +292,7 @@ const executeAction = (actionType: RowActionType, event?: MouseEvent) => {
 	height: 1rem;
 }
 
-.row-action-btn .action-icon :deep(svg) {
+.row-action-btn .action-icon svg {
 	width: 100%;
 	height: 100%;
 }
@@ -396,7 +396,7 @@ const executeAction = (actionType: RowActionType, event?: MouseEvent) => {
 	flex-shrink: 0;
 }
 
-.row-action-menu-item .action-icon :deep(svg) {
+.row-action-menu-item .action-icon svg {
 	width: 100%;
 	height: 100%;
 }

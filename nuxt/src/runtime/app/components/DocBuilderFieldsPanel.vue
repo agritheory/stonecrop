@@ -34,7 +34,7 @@
 							<input
 								type="text"
 								:value="row.label"
-								@input="update(row.__realIndex, 'label', value($event) || undefined)" />
+								@input="update(row.__realIndex, 'label', value($event) || void 0)" />
 						</td>
 						<td>
 							<!--
@@ -48,14 +48,14 @@
 								type="text"
 								:value="row.component"
 								:list="componentListId"
-								@input="update(row.__realIndex, 'component', value($event) || undefined)" />
+								@input="update(row.__realIndex, 'component', value($event) || void 0)" />
 						</td>
 						<td class="center">
 							<input
 								type="checkbox"
 								:checked="bool(row.required)"
 								:disabled="isLocked(row.__field)"
-								@change="update(row.__realIndex, 'required', checked($event) || undefined)" />
+								@change="update(row.__realIndex, 'required', checked($event) || void 0)" />
 						</td>
 						<td>
 							<span class="badge" :class="isLocked(row.__field) ? 'badge-introspected' : 'badge-manual'">
@@ -71,14 +71,14 @@
 									type="text"
 									:value="str(row.__field[p.key])"
 									:disabled="isIdentity(p.key) && isLocked(row.__field)"
-									@input="update(row.__realIndex, p.key, value($event) || undefined)" />
+									@input="update(row.__realIndex, p.key, value($event) || void 0)" />
 							</label>
 							<label v-for="p in SELECT_PROPS" :key="p.key" class="field-prop">
 								<span>{{ p.label }}</span>
 								<select
 									:value="str(row.__field[p.key])"
 									:disabled="isIdentity(p.key) && isLocked(row.__field)"
-									@change="update(row.__realIndex, p.key, value($event) || undefined)">
+									@change="update(row.__realIndex, p.key, value($event) || void 0)">
 									<option value="">—</option>
 									<option v-for="o in p.options" :key="o" :value="o">{{ o }}</option>
 								</select>
@@ -88,7 +88,7 @@
 									type="checkbox"
 									:checked="bool(row.__field[p.key])"
 									:disabled="isIdentity(p.key) && isLocked(row.__field)"
-									@change="update(row.__realIndex, p.key, checked($event) || undefined)" />
+									@change="update(row.__realIndex, p.key, checked($event) || void 0)" />
 								<span>{{ p.label }}</span>
 							</label>
 							<label v-for="p in JSON_PROPS" :key="p.key" class="field-prop field-prop-wide">
@@ -125,46 +125,22 @@
 	</div>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { ATable, ARow } from '@stonecrop/atable'
-import type { TableColumn, TableConfig } from '@stonecrop/atable'
 import { CANONICAL_COMPONENTS, INTROSPECTED_IDENTITY_PROPS } from '@stonecrop/schema'
 import { computed, nextTick, ref, useId } from 'vue'
-
-// Fields are edited as loose objects: the doctype JSON carries keys the builder doesn't display
-// (and may carry future ones), so the editor must spread-preserve every field rather than rebuild it.
-// The write helpers live in ./docbuilderFields so that rule is unit-tested rather than only asserted
-// here — see `nuxt/test/docbuilderFields.test.ts`.
-import { isValueField, updateFieldAt, type Field } from './docbuilderFields'
-
-interface PropDef {
-	key: string
-	label: string
-}
-
-interface SelectPropDef extends PropDef {
-	options: string[]
-}
-
-// Which props the database owns is decided once, in @stonecrop/schema, and read here. The
-// converter's merge reads the same constant, so the panel cannot grey a different set than
-// regeneration refuses to overwrite.
-const IDENTITY_PROPS = new Set<string>(INTROSPECTED_IDENTITY_PROPS)
-const isIdentity = (key: string) => IDENTITY_PROPS.has(key)
-
+import { isValueField, updateFieldAt } from './docbuilderFields'
+const IDENTITY_PROPS = new Set(INTROSPECTED_IDENTITY_PROPS)
+const isIdentity = key => IDENTITY_PROPS.has(key)
 const componentListId = useId()
-
-// `doctype` is what makes a field a link, and it names the target — so it is a plain text input,
-// not a JSON one. As `options` (the legacy carrier) a link target had to be typed *with quotes*
-// or the JSON parse failed and the value was silently dropped.
-const TEXT_PROPS: PropDef[] = [
+const TEXT_PROPS = [
 	{ key: 'doctype', label: 'Link target' },
 	{ key: 'width', label: 'Width' },
 	{ key: 'mask', label: 'Mask' },
 	{ key: 'format', label: 'Format' },
 	{ key: 'language', label: 'Code language' },
 ]
-const SELECT_PROPS: SelectPropDef[] = [
+const SELECT_PROPS = [
 	{ key: 'align', label: 'Align', options: ['left', 'center', 'right', 'start', 'end'] },
 	{ key: 'mode', label: 'Mode', options: ['edit', 'read', 'display'] },
 	{
@@ -173,33 +149,24 @@ const SELECT_PROPS: SelectPropDef[] = [
 		options: ['atMostOne', 'one', 'noneOrMany', 'atLeastOne'],
 	},
 ]
-const BOOL_PROPS: PropDef[] = [
+const BOOL_PROPS = [
 	{ key: 'readOnly', label: 'Read only' },
 	{ key: 'hidden', label: 'Hidden' },
 	{ key: 'edit', label: 'Editable in table' },
 	{ key: 'primaryKey', label: 'Primary key' },
 	{ key: 'computed', label: 'Computed (no DB column)' },
 ]
-const JSON_PROPS: PropDef[] = [
+const JSON_PROPS = [
 	{ key: 'options', label: 'Options' },
 	{ key: 'default', label: 'Default' },
 ]
-
-// `sortable: false` suppresses the click-to-sort affordance (row order here is the field array's
-// order, not a view concern). The enumerable columns (component, source) use `filterType: 'select'`
-// so the header filter is a dropdown auto-populated from the values in use, not a free-text box.
-const FIELD_COLUMNS: TableColumn[] = [
+const FIELD_COLUMNS = [
 	{ name: 'fieldname', label: 'ID', sortable: false, filterable: true },
 	{ name: 'label', label: 'Label', sortable: false },
 	{ name: 'component', label: 'Component', sortable: false, filterable: true, filterType: 'select' },
 	{ name: 'required', label: 'Required', sortable: false, align: 'center' },
 	{ name: 'source', label: 'Source', sortable: false, filterable: true, filterType: 'select' },
 ]
-
-// Every row action lives in the start-of-row `⋮` menu (forceDropdown). ATable's per-row `disabled`
-// predicate greys move-at-the-ends and delete-for-introspected — the per-row state the global config
-// couldn't express. ATable wires these to its own handleRowAction, but we override #body, so
-// `@row:action` routes to onRowAction below and ATable never mutates the projection.
 const FIELD_CONFIG = {
 	view: 'list-expansion',
 	fullWidth: true,
@@ -224,27 +191,22 @@ const FIELD_CONFIG = {
 			},
 		},
 	},
-} satisfies TableConfig
-
-const props = defineProps<{ modelValue: Field[] }>()
-const emit = defineEmits<{ 'update:modelValue': [value: Field[]] }>()
-
-function isLocked(f: Field): boolean {
+}
+const props = defineProps({
+	modelValue: { type: Array, required: true },
+})
+const emit = defineEmits(['update:modelValue'])
+function isLocked(f) {
 	return f.source === 'introspected'
 }
-
 const valueFieldRows = computed(() => {
-	const out: { field: Field; realIndex: number; rowIndex: number }[] = []
+	const out = []
 	props.modelValue.forEach((f, realIndex) => {
 		if (isValueField(f)) out.push({ field: f, realIndex, rowIndex: out.length })
 	})
 	return out
 })
 const hasFields = computed(() => valueFieldRows.value.length > 0)
-
-// One-way projection of the value fields into ATable rows. Column-named scalars drive the header
-// filters and rendered cells; `__realIndex`/`__field` are backrefs the cells + property form write
-// through. `source` is projected as its display label so a Source filter matches the badge text.
 const fieldProjection = computed(() =>
 	valueFieldRows.value.map(r => ({
 		fieldname: str(r.field.fieldname),
@@ -256,15 +218,7 @@ const fieldProjection = computed(() =>
 		__field: r.field,
 	}))
 )
-
-// ATable exposes its internal store; we reach in only to collapse expanded rows after a structural
-// edit (the expand map is index-keyed, so a reorder/delete would otherwise leave the wrong row open).
-// Filter state lives on the same store and is deliberately left untouched.
-type ATableExpose = {
-	store?: { display: { expanded?: boolean }[]; toggleRowExpand: (rowIndex: number) => void }
-}
-const tableRef = ref<ATableExpose>()
-
+const tableRef = ref()
 function collapseAllRows() {
 	const store = tableRef.value?.store
 	if (!store) return
@@ -272,62 +226,51 @@ function collapseAllRows() {
 		if (d.expanded) store.toggleRowExpand(i)
 	})
 }
-
-// Every mutation rebuilds the FULL array by real index — nested fields at other indices are
-// untouched, and order is preserved. This is the field-level "spread, never enumerate" rule.
-function update(realIndex: number, key: string, val: unknown) {
+function update(realIndex, key, val) {
 	emit('update:modelValue', updateFieldAt(props.modelValue, realIndex, key, val))
 }
-
-const jsonErrors = ref<Record<string, boolean>>({})
-function jsonStr(v: unknown): string {
-	return v === undefined ? '' : JSON.stringify(v)
+const jsonErrors = ref({})
+function jsonStr(v) {
+	return v === void 0 ? '' : JSON.stringify(v)
 }
-function updateJson(realIndex: number, key: string, raw: string) {
+function updateJson(realIndex, key, raw) {
 	const errKey = `${realIndex}:${key}`
 	if (raw.trim() === '') {
 		jsonErrors.value[errKey] = false
-		update(realIndex, key, undefined)
+		update(realIndex, key, void 0)
 		return
 	}
 	try {
-		const parsed: unknown = JSON.parse(raw)
+		const parsed = JSON.parse(raw)
 		jsonErrors.value[errKey] = false
 		update(realIndex, key, parsed)
 	} catch {
 		jsonErrors.value[errKey] = true
 	}
 }
-
-function validationMessage(field: Field): string {
+function validationMessage(field) {
 	const v = field.validation
-	if (v && typeof v === 'object' && 'errorMessage' in v)
-		return String((v as Record<string, unknown>).errorMessage ?? '')
+	if (v && typeof v === 'object' && 'errorMessage' in v) return String(v.errorMessage ?? '')
 	return ''
 }
-function updateValidation(realIndex: number, message: string) {
-	update(realIndex, 'validation', message ? { errorMessage: message } : undefined)
+function updateValidation(realIndex, message) {
+	update(realIndex, 'validation', message ? { errorMessage: message } : void 0)
 }
-
 function addField() {
-	const base: Field = { kind: 'field', fieldname: uniqueName(), component: 'ATextInput', label: 'New Field' }
+	const base = { kind: 'field', fieldname: uniqueName(), component: 'ATextInput', label: 'New Field' }
 	emit('update:modelValue', [...props.modelValue, base])
 	void nextTick(collapseAllRows)
 }
-// Insert a blank field at a real-array position (menu insert-above/below). Splices, so nested
-// fieldsets at other indices are untouched.
-function insertField(at: number) {
-	const base: Field = { kind: 'field', fieldname: uniqueName(), component: 'ATextInput', label: 'New Field' }
+function insertField(at) {
+	const base = { kind: 'field', fieldname: uniqueName(), component: 'ATextInput', label: 'New Field' }
 	const next = props.modelValue.slice()
 	next.splice(at, 0, base)
 	emit('update:modelValue', next)
 	void nextTick(collapseAllRows)
 }
-// Row context-menu (⋮) actions. rowIndex is the projection index (originalIndex); map it to the
-// real-array index, then route to the existing mutators. up/down are NOT here — they stay inline.
-function onRowAction(type: string, rowIndex: number) {
+function onRowAction(type, rowIndex) {
 	const realIndex = fieldProjection.value[rowIndex]?.__realIndex
-	if (realIndex === undefined) return
+	if (realIndex === void 0) return
 	if (type === 'moveUp') moveField(realIndex, -1)
 	else if (type === 'moveDown') moveField(realIndex, 1)
 	else if (type === 'duplicate') duplicateField(realIndex)
@@ -335,24 +278,21 @@ function onRowAction(type: string, rowIndex: number) {
 	else if (type === 'insertAbove') insertField(realIndex)
 	else if (type === 'insertBelow') insertField(realIndex + 1)
 }
-function uniqueName(): string {
+function uniqueName() {
 	const existing = new Set(props.modelValue.map(f => String(f.fieldname ?? '')))
 	let name = 'new_field'
 	let n = 1
 	while (existing.has(name)) name = `new_field_${++n}`
 	return name
 }
-function removeField(realIndex: number) {
+function removeField(realIndex) {
 	emit(
 		'update:modelValue',
 		props.modelValue.filter((_, i) => i !== realIndex)
 	)
 	void nextTick(collapseAllRows)
 }
-
-// A duplicate is a brand-new manual field: drop `source` so an introspected row's copy isn't
-// frozen (only the converter ever stamps provenance), and uniquify the fieldname.
-function duplicateField(realIndex: number) {
+function duplicateField(realIndex) {
 	const original = props.modelValue[realIndex]
 	if (!original) return
 	const { source: _source, ...rest } = original
@@ -361,15 +301,13 @@ function duplicateField(realIndex: number) {
 	let fieldname = baseName
 	let n = 1
 	while (existing.has(fieldname)) fieldname = `${baseName}_${++n}`
-	const clone: Field = { ...rest, fieldname }
+	const clone = { ...rest, fieldname }
 	const next = props.modelValue.slice()
 	next.splice(realIndex + 1, 0, clone)
 	emit('update:modelValue', next)
 	void nextTick(collapseAllRows)
 }
-// Reorder by swapping the two value fields' REAL positions. Any nested fieldset/table sitting
-// between them in the array stays put — the field-level "spread, never enumerate" invariant.
-function moveField(realIndex: number, dir: -1 | 1) {
+function moveField(realIndex, dir) {
 	const rows = valueFieldRows.value
 	const pos = rows.findIndex(r => r.realIndex === realIndex)
 	const target = rows[pos + dir]
@@ -377,23 +315,22 @@ function moveField(realIndex: number, dir: -1 | 1) {
 	const next = props.modelValue.slice()
 	const a = next[realIndex]
 	const b = next[target.realIndex]
-	if (a === undefined || b === undefined) return
+	if (a === void 0 || b === void 0) return
 	next[realIndex] = b
 	next[target.realIndex] = a
 	emit('update:modelValue', next)
 	void nextTick(collapseAllRows)
 }
-
-function value(e: Event): string {
-	return (e.target as HTMLInputElement | HTMLSelectElement).value
+function value(e) {
+	return e.target.value
 }
-function checked(e: Event): boolean {
-	return (e.target as HTMLInputElement).checked
+function checked(e) {
+	return e.target.checked
 }
-function str(v: unknown): string {
+function str(v) {
 	return v == null ? '' : String(v)
 }
-function bool(v: unknown): boolean {
+function bool(v) {
 	return v === true
 }
 </script>
@@ -402,109 +339,91 @@ function bool(v: unknown): boolean {
 .fields-panel {
 	padding: 0.5em 1em;
 }
-
-/* The body cells are our own <td>s (not ACell), so reproduce ATable's row separator
-   (ACell's only gridline is a top border) and its padding. */
 .fields-panel :deep(.atable-row > td) {
+	border-top: 1px solid var(--sc-row-border-color, #e5e7eb);
 	padding: var(--sc-atable-row-padding, 0.125rem) 0.75em;
 	vertical-align: middle;
-	border-top: 1px solid var(--sc-row-border-color, #e5e7eb);
 }
-
 .fields-panel :deep(input[type='text']),
 .fields-panel :deep(select) {
-	width: 100%;
 	border: 1px solid var(--sc-gray-20, #d1d5db);
 	border-radius: 3px;
-	padding: 0.25em 0.5em;
-	font-size: inherit;
 	font-family: inherit;
+	font-size: inherit;
+	padding: 0.25em 0.5em;
+	width: 100%;
 }
-
 .fields-panel :deep(input.locked),
 .fields-panel :deep(select.locked) {
 	background: var(--sc-gray-10, #f3f4f6);
 	color: #6b7280;
 	cursor: not-allowed;
 }
-
 .fields-panel :deep(input.json-invalid) {
-	border-color: #f87171;
 	background: #fef2f2;
+	border-color: #f87171;
 }
-
 .center {
 	text-align: center;
 }
-
 .badge {
-	display: inline-block;
-	padding: 0.125em 0.5em;
 	border-radius: 9999px;
+	display: inline-block;
 	font-size: 0.75rem;
 	font-weight: 500;
+	padding: 0.125em 0.5em;
 }
-
 .badge-manual {
 	background: #dcfce7;
 	color: #166534;
 }
-
 .badge-introspected {
 	background: #e0e7ff;
 	color: #3730a3;
 }
-
 .field-detail {
 	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
 	gap: 0.75rem 1rem;
+	grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
 	padding: 0.75rem 1rem;
 }
-
 .field-prop {
+	color: var(--sc-header-text-color, #374151);
 	display: flex;
 	flex-direction: column;
-	gap: 0.25rem;
 	font-size: 0.75rem;
-	color: var(--sc-header-text-color, #374151);
+	gap: 0.25rem;
 }
-
 .field-prop-inline {
-	flex-direction: row;
 	align-items: center;
+	flex-direction: row;
 	gap: 0.5rem;
 }
-
 .field-prop-wide {
-	grid-column: 1 / -1;
+	grid-column: 1/-1;
 }
-
 .field-detail-actions {
-	display: flex;
 	align-items: center;
-	justify-content: space-between;
+	display: flex;
 	gap: 1rem;
+	justify-content: space-between;
 	padding: 0 1rem 0.75rem;
 }
-
 .locked-note {
-	font-size: 0.75rem;
 	color: #6b7280;
+	font-size: 0.75rem;
 	font-style: italic;
 }
-
 .btn-add {
 	background: none;
 	border: 1px dashed var(--sc-gray-20, #d1d5db);
-	color: var(--sc-blue-40, #2563eb);
 	border-radius: 4px;
-	padding: 0.4em 1em;
+	color: var(--sc-blue-40, #2563eb);
 	cursor: pointer;
 	font-size: 0.875rem;
 	margin-top: 0.5rem;
+	padding: 0.4em 1em;
 }
-
 .fields-empty {
 	color: #9ca3af;
 	font-style: italic;

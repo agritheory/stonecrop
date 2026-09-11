@@ -185,7 +185,7 @@ route-follow, which need the id you dispatched.
 Do not copy form data into HST before dispatching. Desktop already hands you the current form
 snapshot in `payload.data`, and an unsaved record has no HST node to write to.
 
-See the [host integration guide](../docs/guides/desktop-integration.md) for the full wiring.
+See the [host integration guide](../nuxt/documentation/content/guides/desktop-integration.md) for the full wiring.
 
 ## Provide / Inject
 

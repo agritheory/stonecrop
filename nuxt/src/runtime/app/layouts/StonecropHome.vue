@@ -2,8 +2,7 @@
 	<pre>{{ stonecrop }}</pre>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { useStonecrop } from '@stonecrop/stonecrop'
-
 const { stonecrop } = useStonecrop()
 </script>

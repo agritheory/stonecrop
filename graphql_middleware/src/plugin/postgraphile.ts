@@ -506,6 +506,10 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 										// After the expansion loop, not before it: a link that expanded has replaced its
 										// scalar FK with an object, and enrichment skips those. Running first stamped a
 										// display value beside a relation that no longer had an id to display.
+										//
+										// Sequential per doctype group because `pgClient` is one checked-out connection,
+										// so awaiting these together would only queue them inside the driver.
+										// oxlint-disable-next-line eslint/no-await-in-loop
 										await enrichLinkDisplayFields(pgClient, meta, enrichedRows, options.tables, debugSql)
 									}
 
@@ -710,6 +714,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 									//
 									// The whole envelope, not just `recordData` below — handlers read `ctx.args`.
 									// Copied, not mutated: `spec.actionArgs` is the request's own value.
+									// oxlint-disable-next-line oxc/no-map-spread
 									const argList = rawArgs.map(entry =>
 										entry?.data ? { ...entry, data: unwrapInlineLinks(meta.fields, entry.data) } : entry
 									)

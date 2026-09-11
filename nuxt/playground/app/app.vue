@@ -5,8 +5,6 @@
 </template>
 
 <style>
-@import '@stonecrop/desktop/styles';
-
 body {
 	margin: 0;
 	background: #fff;

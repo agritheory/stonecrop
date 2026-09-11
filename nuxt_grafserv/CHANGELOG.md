@@ -1,6 +1,25 @@
 # Change Log - @stonecrop/nuxt-grafserv
 
-This log was last generated on Thu, 27 Aug 2026 12:30:32 GMT and should not be manually modified.
+## 0.32.0
+
+### Minor Changes
+
+- a859205: Packages no longer ship their `src` tree, because every sourcemap already embeds the sources it names and no exports path reached it.
+
+### Patch Changes
+
+- Updated dependencies [a859205]
+- Updated dependencies [a859205]
+- Updated dependencies [a859205]
+- Updated dependencies [a859205]
+  - @stonecrop/graphql-middleware@0.32.0
+  - @stonecrop/casl-middleware@0.32.0
+  - @stonecrop/rockfoil@0.32.0
+
+## 0.31.0
+Mon, 07 Sep 2026 08:46:18 GMT
+
+_Version update only_
 
 ## 0.30.0
 Thu, 27 Aug 2026 12:30:32 GMT

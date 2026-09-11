@@ -74,7 +74,7 @@ describe('route generation', { tags: ['unit'] }, () => {
 		// Not `/orders` for the collection: a URL never carries a plural, so the aggregate borrows
 		// the entity's slug rather than using its own.
 		const r = routes()
-		expect(r['Orders']).toBe(`/${'order'}`)
+		expect(r['Orders']).toBe('/order')
 		expect(r['Order']?.startsWith('/order/')).toBe(true)
 	})
 

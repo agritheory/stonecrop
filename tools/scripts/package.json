@@ -1,0 +1,18 @@
+{
+	"name": "stonecrop-scripts",
+	"version": "0.7.0",
+	"private": true,
+	"description": "Build, docs and publish-check scripts shared by every package",
+	"license": "MIT",
+	"type": "module",
+	"scripts": {
+		"test": "vitest run",
+		"test:watch": "vitest watch"
+	},
+	"devDependencies": {
+		"vitest": "catalog:"
+	},
+	"engines": {
+		"node": ">=24.0.0"
+	}
+}

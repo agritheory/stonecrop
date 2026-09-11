@@ -1,4 +1,4 @@
 {
-	"private": true,
-	"name": "nuxt-grafserv-fixture-basic"
+	"name": "nuxt-grafserv-fixture-basic",
+	"private": true
 }

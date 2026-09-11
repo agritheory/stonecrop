@@ -98,12 +98,8 @@ jspm_packages/
 !.vscode/tasks.json
 !.vscode/launch.json
 
-# Rush temporary files
-common/deploy/
-common/temp/
-common/autoinstallers/*/.npmrc
-**/.rush/temp/
-*.lock
+# Vite+ generated git hook dispatcher; the hook scripts beside it are committed
+.vite-hooks/_/
 
 # Common toolchain intermediate files
 temp/
@@ -115,12 +111,15 @@ lib-commonjs/
 lib-shim/
 dist/
 dist-storybook/
+
+# `nuxi generate` leaves this as a SYMLINK to .output/public, and the `dist/` pattern above only
+# matches directories, so it needs its own entry to stay untracked.
+nuxt/documentation/dist
 tsdoc-metadata.json
 *.tsbuildinfo
 
-# Heft temporary files
+# Tool caches
 .cache/
-.heft/
 
 # Vitest output files
 .vite/
@@ -138,7 +137,3 @@ tsdoc-metadata.json
 
 # AI agent instruction files (local only)
 **/AGENTS.md
-
-# VitePress build output
-docs/.vitepress/dist/
-docs/.vitepress/cache/

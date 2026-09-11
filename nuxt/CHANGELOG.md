@@ -1,6 +1,41 @@
 # Change Log - @stonecrop/nuxt
 
-This log was last generated on Thu, 27 Aug 2026 12:30:32 GMT and should not be manually modified.
+## 0.32.0
+
+### Minor Changes
+
+- a859205: Packages no longer ship their `src` tree, because every sourcemap already embeds the sources it names and no exports path reached it.
+
+### Patch Changes
+
+- a859205: Dedupe `pinia` so a linked consumer resolves a single Pinia instance instead of one per package.
+- a859205: Stop pushing the desktop and node-editor stylesheets, which those packages now import themselves.
+- Updated dependencies [a859205]
+- Updated dependencies [a859205]
+- Updated dependencies [a859205]
+- Updated dependencies [a859205]
+- Updated dependencies [a859205]
+- Updated dependencies [a859205]
+- Updated dependencies [a859205]
+  - @stonecrop/code-editor@0.32.0
+  - @stonecrop/node-editor@0.32.0
+  - @stonecrop/desktop@0.32.0
+  - @stonecrop/atable@0.32.0
+  - @stonecrop/aform@0.32.0
+  - @stonecrop/graphql-middleware@0.32.0
+  - @stonecrop/casl-middleware@0.32.0
+  - @stonecrop/graphql-client@0.32.0
+  - @stonecrop/nuxt-grafserv@0.32.0
+  - @stonecrop/stonecrop@0.32.0
+  - @stonecrop/schema@0.32.0
+  - @stonecrop/themes@0.32.0
+
+## 0.31.0
+Mon, 07 Sep 2026 08:46:18 GMT
+
+### Updates
+
+- Adding documentation for Stonecrop
 
 ## 0.30.0
 Thu, 27 Aug 2026 12:30:32 GMT

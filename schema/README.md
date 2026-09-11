@@ -17,10 +17,10 @@ This package is schema-only and has no UI dependencies - it can be used in both 
 ## Installation
 
 ```bash
-# From the monorepo root
-rush update
+# From the monorepo root, which links the workspace copy
+pnpm install
 
-# Or with pnpm
+# Or, in a consuming project
 pnpm add @stonecrop/schema
 ```
 
@@ -437,20 +437,20 @@ This package provides the type system used throughout Stonecrop:
 ## Development
 
 ```bash
-# Install dependencies
-rush update
+# Install dependencies (from the repo root)
+pnpm install
 
-# Build
-rushx build
+# Build (a Vite+ task, so `pnpm run build` does not resolve it)
+pnpm exec vp run build
 
 # Run tests
-rushx test
+pnpm run test
 
 # Watch mode
-rushx test:watch
+pnpm run test:watch
 
 # Generate API documentation
-rushx docs
+pnpm run docs
 ```
 
 ## TypeScript Support
