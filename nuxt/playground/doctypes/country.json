@@ -91,6 +91,7 @@
 			"fieldname": "countryExplorer",
 			"label": "Country Explorer",
 			"component": "CountryExplorer",
+			"computed": true,
 			"height": "8rem",
 			"readOnly": true
 		}

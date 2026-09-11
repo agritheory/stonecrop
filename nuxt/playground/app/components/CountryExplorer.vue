@@ -1,7 +1,6 @@
 <!--
-	Custom AForm field for the playground country doctype.
-	When a country record is open, view controls teleport into Desktop's SheetNav toolbar —
-	the same pattern FAB uses for Planner on plan records.
+	Custom AForm field for the playground country doctype, registered through host-components.ts.
+	Its view controls teleport into Desktop's SheetNav toolbar while a country record is open.
 -->
 <script setup lang="ts">
 import { ref, computed } from 'vue'
@@ -9,16 +8,10 @@ import { useRoute } from 'nuxt/app'
 import { useStonecrop } from '@stonecrop/stonecrop'
 
 import { ASegmentedControl } from '@stonecrop/aform'
+import { SHEET_NAV_TOOLBAR_SELECTOR } from '@stonecrop/desktop'
 
+// Two root nodes (the field and the teleport), so AForm's field style is bound by hand.
 defineOptions({ inheritAttrs: false })
-
-const attrs = useAttrs()
-const rootStyle = computed(() => {
-	const style = { ...(attrs.style as Record<string, string> | undefined) }
-	const height = attrs.height
-	if (typeof height === 'string' && height && !style.height) style.height = height
-	return style
-})
 
 const route = useRoute()
 const { stonecrop } = useStonecrop()
@@ -42,17 +35,17 @@ const countryName = computed(() => String(countryRecord.value?.name ?? countryCo
 </script>
 
 <template>
-	<div class="country-explorer" :style="rootStyle">
+	<div class="country-explorer" :style="$attrs.style">
 		<p class="country-explorer-lead">
 			<strong>{{ countryName }}</strong> ({{ countryCode }}) — {{ view }} view
 		</p>
 		<p class="country-explorer-hint">
-			View controls are in the SheetNav footer via <code>Teleport</code> to <code>#sheetnav-toolbar</code>.
+			View controls teleport into <code>{{ SHEET_NAV_TOOLBAR_SELECTOR }}</code> in the SheetNav footer.
 		</p>
 	</div>
 
 	<ClientOnly>
-		<Teleport to="#sheetnav-toolbar">
+		<Teleport :to="SHEET_NAV_TOOLBAR_SELECTOR">
 			<div class="country-explorer-toolbar">
 				<ASegmentedControl
 					:model-value="view"

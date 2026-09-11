@@ -1,7 +1,7 @@
 <template>
 	<footer>
 		<div class="sheetnav-footer-cluster">
-			<div id="sheetnav-toolbar" class="sheetnav-toolbar">
+			<div :id="SHEET_NAV_TOOLBAR_ID" class="sheetnav-toolbar">
 				<slot name="toolbar" />
 			</div>
 			<ul class="tabs">
@@ -63,9 +63,19 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, ref, useTemplateRef } from 'vue'
+import { computed, nextTick, onMounted, ref, useTemplateRef } from 'vue'
+
+import { SHEET_NAV_TOOLBAR_ID, SHEET_NAV_TOOLBAR_SELECTOR } from '../sheet-nav-toolbar'
 
 const { breadcrumbs = [] } = defineProps<{ breadcrumbs?: { title: string; to: string }[] }>()
+
+onMounted(() => {
+	if (document.querySelectorAll(SHEET_NAV_TOOLBAR_SELECTOR).length > 1) {
+		console.warn(
+			`More than one SheetNav is mounted: content teleported to ${SHEET_NAV_TOOLBAR_SELECTOR} lands in the first one only.`
+		)
+	}
+})
 
 const breadcrumbsVisibile = ref(true)
 const searchVisible = ref(false)
@@ -104,45 +114,53 @@ const navigateHome = (/* event: MouseEvent | KeyboardEvent */) => {
 </script>
 
 <style scoped>
+/* Pinned to both edges: without `left`, a fixed box takes its container's offset and overflows the
+   viewport. Only the toolbar and the tabs take pointer events; the empty strip passes clicks through. */
 footer {
 	position: fixed;
-	bottom: 0px;
-	width: 100%;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	pointer-events: none;
 	background-color: transparent;
-	height: 2.4rem;
 	z-index: 100;
 	text-align: left;
 	font-size: 100%;
 	display: flex;
 	justify-content: flex-end;
-	align-items: stretch;
+	align-items: flex-end;
 	padding: 0 0.75rem 0 0;
 	box-sizing: border-box;
 }
 
+/* When the toolbar and the tabs do not fit on one row, the toolbar wraps onto its own row above. */
 .sheetnav-footer-cluster {
 	display: flex;
-	align-items: stretch;
+	flex-wrap: wrap;
+	justify-content: flex-end;
+	align-items: flex-end;
+	column-gap: 0.5rem;
 	max-width: 100%;
 	min-width: 0;
 }
 
 .sheetnav-toolbar {
-	flex: 0 1 auto;
+	pointer-events: auto;
 	min-width: 0;
-	height: 100%;
+	min-height: 2.4rem;
 	display: flex;
+	flex-wrap: wrap;
+	justify-content: flex-end;
 	align-items: center;
-	overflow: hidden;
-	padding-right: 0.5rem;
 }
 
 .tabs {
+	pointer-events: auto;
 	flex: 0 0 auto;
 	display: flex;
 	flex-direction: row-reverse;
 	align-items: stretch;
-	height: 100%;
+	height: 2.4rem;
 	margin: 0;
 	padding: 0;
 	list-style: none;

@@ -81,6 +81,12 @@ import { Desktop } from '@stonecrop/desktop'
 | load-records | `[payload: LoadRecordsEventPayload]` |  |
 | load-record | `[payload: LoadRecordEventPayload]` |  |
 
+**Slots:**
+
+| Slot | Props | Description |
+|------|-------|-------------|
+| sheetnav-toolbar | `{}` |  |
+
 ### SheetNav
 
 Vue component exported from @stonecrop/desktop.
@@ -94,6 +100,12 @@ import { SheetNav } from '@stonecrop/desktop'
 | Prop | Type | Required | Default | Description |
 |------|------|----------|---------|-------------|
 | breadcrumbs | `{ title: string; to: string; }[] \| undefined` | no | `[]` |  |
+
+**Slots:**
+
+| Slot | Props | Description |
+|------|-------|-------------|
+| toolbar | `{}` |  |
 
 ## Other Components
 
@@ -258,6 +270,16 @@ export const CommandPalette: typeof __VLS_export
 
 ```typescript
 export const Desktop: typeof __VLS_export
+```
+
+### SHEET_NAV_TOOLBAR_SELECTOR
+
+Teleport target for footer controls rendered anywhere on the page: `<Teleport :to="SHEET_NAV_TOOLBAR_SELECTOR">`.
+
+**Type:**
+
+```typescript
+export const SHEET_NAV_TOOLBAR_SELECTOR: 
 ```
 
 ### SheetNav

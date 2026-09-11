@@ -1,13 +1,15 @@
 import { Doctype } from '@stonecrop/stonecrop'
-import CountryExplorer from '~/components/CountryExplorer.vue'
 import { CountriesDataClient } from '~/composables/useCountriesDataClient'
 import { doctypeMap } from '~/composables/useDoctypes'
+import { hostComponents } from '~/host-components'
 
 export default defineNuxtPlugin({
 	name: 'stonecrop-playground',
 	dependsOn: ['stonecrop'],
 	setup(nuxtApp) {
-		nuxtApp.vueApp.component('CountryExplorer', CountryExplorer)
+		for (const [name, component] of Object.entries(hostComponents)) {
+			nuxtApp.vueApp.component(name, component)
+		}
 
 		const { registerMeta, registerDoctype, registerClient } = useStonecropSetup()
 
