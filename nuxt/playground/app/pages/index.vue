@@ -16,7 +16,10 @@
 		<section>
 			<h2>Browse (GraphQL-introspected doctypes)</h2>
 			<ul>
-				<li><NuxtLink to="/country">Countries</NuxtLink> — list + detail over the live API</li>
+				<li>
+					<NuxtLink to="/country">Countries</NuxtLink> — list + detail over the live API; open a record (e.g.
+					<NuxtLink to="/country/US">/country/US</NuxtLink>) for the SheetNav toolbar specimen
+				</li>
 				<li><NuxtLink to="/continent">Continents</NuxtLink></li>
 				<li><NuxtLink to="/language">Languages</NuxtLink></li>
 			</ul>

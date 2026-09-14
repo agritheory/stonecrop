@@ -82,6 +82,9 @@ export type RouteAdapter = {
     navigate: (target: NavigationTarget) => void | Promise<void>;
 };
 
+// @public
+export const SHEET_NAV_TOOLBAR_SELECTOR = "#sheetnav-toolbar";
+
 // @public (undocumented)
 export const SheetNav: typeof __VLS_export_4;
 

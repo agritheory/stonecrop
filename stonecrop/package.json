@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/stonecrop",
-	"version": "0.32.0",
+	"version": "0.33.0",
 	"description": "Schema-driven framework with XState workflows and HST state management",
 	"keywords": [
 		"framework",

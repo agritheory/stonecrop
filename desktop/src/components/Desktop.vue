@@ -15,7 +15,11 @@
 		</div>
 
 		<!-- Sheet Navigation -->
-		<SheetNav :breadcrumbs="navigationBreadcrumbs" />
+		<SheetNav :breadcrumbs="navigationBreadcrumbs">
+			<template #toolbar>
+				<slot name="sheetnav-toolbar" />
+			</template>
+		</SheetNav>
 
 		<!-- Command Palette -->
 		<CommandPalette

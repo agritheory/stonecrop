@@ -1,5 +1,19 @@
 # Change Log - @stonecrop/desktop
 
+## 0.33.0
+
+### Minor Changes
+
+- 6e215d2: SheetNav gains a `toolbar` slot, which Desktop forwards as `sheetnav-toolbar`, and exports `SHEET_NAV_TOOLBAR_SELECTOR` so controls anywhere on the page can teleport into it.
+
+### Patch Changes
+
+- 6e215d2: SheetNav's footer is pinned to both viewport edges and passes clicks through its empty area, where it inherited its container's offset and swallowed clicks meant for the page beneath.
+- @stonecrop/aform@0.33.0
+  - @stonecrop/schema@0.33.0
+  - @stonecrop/stonecrop@0.33.0
+  - @stonecrop/themes@0.33.0
+
 ## 0.32.0
 
 ### Minor Changes
