@@ -3,7 +3,17 @@ import CommandPalette from './components/CommandPalette.vue'
 import Desktop from './components/Desktop.vue'
 import SheetNav from './components/SheetNav.vue'
 import StonecropDesktop from './plugins'
+export { useDocumentRail } from './composables/useDocumentRail'
 export type * from './types'
-export type { RouteAdapter, NavigationTarget, ActionEventPayload, RecordOpenEventPayload } from './types'
+export type {
+	RouteAdapter,
+	NavigationTarget,
+	ActionEventPayload,
+	RecordOpenEventPayload,
+	DocumentRail,
+	DocumentRailSlot,
+	DocumentRailSlotId,
+	RailSubject,
+} from './types'
 
 export { ActionSet, CommandPalette, Desktop, SheetNav, StonecropDesktop }

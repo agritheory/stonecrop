@@ -183,4 +183,38 @@ describe('ActionSet', { tags: ['component'] }, () => {
 		await cross.trigger('click')
 		expect(wrapper.find('.action-set').classes()).not.toContain('collapsed')
 	})
+
+	it('renders a rail slot between the collapse handle and the actions', () => {
+		const wrapper = mount(ActionSet, {
+			props: {
+				embedded: true,
+				elements: [{ type: 'button', label: 'Save', action: () => {} }],
+			},
+			slots: {
+				rail: '<button class="rail-slot-probe" type="button">A</button>',
+			},
+		})
+
+		expect(wrapper.find('.action-set').classes()).toContain('action-set--rail')
+		expect(wrapper.find('.action-set__rail .rail-slot-probe').exists()).toBe(true)
+	})
+
+	it('keeps rail slot content visible when collapsed in embedded mode', async () => {
+		const wrapper = mount(ActionSet, {
+			props: {
+				embedded: true,
+				elements: [{ type: 'button', label: 'Save', action: () => {} }],
+			},
+			slots: {
+				rail: '<button class="rail-slot-probe" type="button">A</button>',
+			},
+		})
+
+		await wrapper.find('#cross').trigger('click')
+
+		expect(wrapper.find('.action-set').classes()).toContain('collapsed')
+		expect(wrapper.find('.action-set').classes()).toContain('action-set--rail')
+		expect(wrapper.find('.rail-slot-probe').exists()).toBe(true)
+		expect(wrapper.find('.action-element').exists()).toBe(false)
+	})
 })
