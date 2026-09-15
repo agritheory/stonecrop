@@ -116,6 +116,66 @@ import { SheetNav } from '@stonecrop/desktop'
 
 ## Other Components
 
+### RailIconActions
+
+```typescript
+export { RailIconActions }
+```
+
+### RailIconApprovals
+
+```typescript
+export { RailIconApprovals }
+```
+
+### RailIconChat
+
+```typescript
+export { RailIconChat }
+```
+
+### RailIconEmail
+
+```typescript
+export { RailIconEmail }
+```
+
+### RailIconFiles
+
+```typescript
+export { RailIconFiles }
+```
+
+### RailIconHelp
+
+```typescript
+export { RailIconHelp }
+```
+
+### RailIconPrint
+
+```typescript
+export { RailIconPrint }
+```
+
+### RailIconReports
+
+```typescript
+export { RailIconReports }
+```
+
+### RailIconSearch
+
+```typescript
+export { RailIconSearch }
+```
+
+### RailIconSettings
+
+```typescript
+export { RailIconSettings }
+```
+
 ### StonecropDesktop
 
 ```typescript

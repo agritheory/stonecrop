@@ -75,7 +75,7 @@ describe('Desktop document rail', { tags: ['component'] }, () => {
 		expect(wrapper.find('.document-rail__toggle').exists()).toBe(true)
 	})
 
-	it('shows slot icons and Actions in the tile when expanded', async () => {
+	it('shows Search, slot icons, and Actions in the tile when expanded', async () => {
 		const wrapper = mountDesktop([
 			{ id: 'files', label: 'Files' },
 			{ id: 'collaboration', label: 'Collaboration' },
@@ -83,11 +83,14 @@ describe('Desktop document rail', { tags: ['component'] }, () => {
 		await nextTick()
 
 		const items = wrapper.findAll('.document-rail__item')
-		// Files, Collaboration, and Actions (A)
-		expect(items.length).toBe(3)
-		expect(items[0].attributes('aria-label')).toBe('Files')
-		expect(items[1].attributes('aria-label')).toBe('Collaboration')
-		expect(items[2].attributes('aria-label')).toBe('Actions')
+		expect(items.length).toBe(4)
+		expect(items[0].attributes('aria-label')).toBe('Search')
+		expect(items[1].attributes('aria-label')).toBe('Files')
+		expect(items[2].attributes('aria-label')).toBe('Collaboration')
+		expect(items[3].attributes('aria-label')).toBe('Actions')
+		expect(items[0].find('.document-rail__item-icon').exists()).toBe(true)
+		expect(items[3].find('.document-rail__item-icon').exists()).toBe(true)
+		expect(items[3].find('.document-rail__item-fallback').exists()).toBe(false)
 	})
 
 	it('collapses and expands with the + toggle', async () => {
@@ -114,17 +117,18 @@ describe('Desktop document rail', { tags: ['component'] }, () => {
 		])
 		await nextTick()
 
-		await wrapper.findAll('.document-rail__item')[0].trigger('click')
+		const filesItem = wrapper.findAll('.document-rail__item').find(i => i.attributes('aria-label') === 'Files')
+		await filesItem!.trigger('click')
 		await nextTick()
 
 		expect(wrapper.find('.document-rail__drawer').exists()).toBe(true)
 		expect(wrapper.find('.desktop').classes()).toContain('desktop--rail-open')
 
 		const tabs = wrapper.findAll('.document-rail__tab')
-		// Files, Collaboration, Actions
-		expect(tabs).toHaveLength(3)
-		expect(tabs[0].classes()).toContain('document-rail__tab--active')
-		expect(tabs[2].attributes('aria-label')).toBe('Actions')
+		expect(tabs).toHaveLength(4)
+		expect(tabs[0].attributes('aria-label')).toBe('Search')
+		expect(tabs[1].classes()).toContain('document-rail__tab--active')
+		expect(tabs[3].attributes('aria-label')).toBe('Actions')
 	})
 
 	it('shows actions list in drawer body when Actions tab is clicked', async () => {
@@ -145,8 +149,8 @@ describe('Desktop document rail', { tags: ['component'] }, () => {
 		const wrapper = mountDesktop([{ id: 'files', label: 'Files' }])
 		await nextTick()
 
-		// Open Files drawer
-		await wrapper.findAll('.document-rail__item')[0].trigger('click')
+		const filesItem = wrapper.findAll('.document-rail__item').find(i => i.attributes('aria-label') === 'Files')
+		await filesItem!.trigger('click')
 		await nextTick()
 
 		// Click Actions tab
@@ -190,7 +194,8 @@ describe('Desktop document rail', { tags: ['component'] }, () => {
 		const wrapper = mountDesktop([{ id: 'files', label: 'Files', component: PreviewSlot }])
 		await nextTick()
 
-		await wrapper.findAll('.document-rail__item')[0].trigger('click')
+		const filesItem = wrapper.findAll('.document-rail__item').find(i => i.attributes('aria-label') === 'Files')
+		await filesItem!.trigger('click')
 		await nextTick()
 		await wrapper.find('.open-preview').trigger('click')
 		await nextTick()
@@ -215,8 +220,49 @@ describe('Desktop document rail', { tags: ['component'] }, () => {
 		const items = wrapper.findAll('.document-rail__item')
 		const labels = items.map(i => i.attributes('aria-label'))
 		expect(labels).not.toContain('Files')
+		expect(labels).toContain('Search')
 		expect(labels).toContain('Email')
 		expect(labels).toContain('Actions')
+	})
+
+	it('opens the command palette when the Search tile is clicked', async () => {
+		const CommandPaletteStub = defineComponent({
+			name: 'CommandPalette',
+			props: { isOpen: { type: Boolean, default: false } },
+			template: '<div class="command-palette-stub" v-if="isOpen" />',
+		})
+
+		const registry = new Registry()
+		const stonecrop = new Stonecrop(registry)
+		const doctype = buildDoctype('task', 'draft', {
+			draft: { on: { SUBMIT: 'submitted' } },
+			submitted: { type: 'final' },
+		})
+		registry.addDoctype(doctype)
+		stonecrop.addRecord('task', 'rec-1', { id: 'rec-1', title: 'My Task', status: 'draft' })
+
+		const wrapper = mount(Desktop, {
+			props: {
+				routeAdapter: recordAdapter(),
+				railSlots: [{ id: 'files', label: 'Files' }],
+			},
+			global: {
+				plugins: [makeStonecropPlugin(registry, stonecrop)],
+				stubs: {
+					AForm: true,
+					SheetNav: true,
+					CommandPalette: CommandPaletteStub,
+				},
+			},
+		})
+		await nextTick()
+
+		const searchItem = wrapper.findAll('.document-rail__item').find(i => i.attributes('aria-label') === 'Search')
+		await searchItem!.trigger('click')
+		await nextTick()
+
+		expect(wrapper.find('.command-palette-stub').exists()).toBe(true)
+		expect(wrapper.find('.document-rail__drawer').exists()).toBe(false)
 	})
 
 	it('throws when useDocumentRail is called outside Desktop', () => {

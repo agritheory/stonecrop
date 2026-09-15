@@ -93,12 +93,14 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, unref, type Component } from 'vue'
+import { computed, markRaw, ref, unref, type Component } from 'vue'
 
 import type { DocumentRailController } from '../composables/useDocumentRail'
+import { RailIconActions, RailIconSearch } from '../icons'
 import type { ActionElements, DocumentRailSlot, DocumentRailSlotId } from '../types'
 
 const ACTIONS_TAB_ID = '__actions__'
+const SEARCH_TAB_ID = '__search__'
 
 type Tab = {
 	id: string
@@ -120,6 +122,7 @@ const {
 const emit = defineEmits<{
 	actionClick: [label: string, action: (() => void | Promise<void>) | undefined]
 	drawerChange: [open: boolean]
+	search: []
 }>()
 
 const isExpanded = ref(true)
@@ -137,18 +140,28 @@ const activeTabId = computed(() => {
 const drawerOpen = computed(() => activeTabId.value !== null)
 
 const allTabs = computed<Tab[]>(() => {
-	const tabs: Tab[] = slots.map(slot => ({
-		id: slot.id,
-		label: slot.label,
-		icon: slot.icon,
-		badge: slot.badge !== undefined ? unref(slot.badge) : undefined,
-	}))
+	const tabs: Tab[] = [
+		{
+			id: SEARCH_TAB_ID,
+			label: 'Search',
+			icon: markRaw(RailIconSearch),
+		},
+	]
+
+	for (const slot of slots) {
+		tabs.push({
+			id: slot.id,
+			label: slot.label,
+			icon: slot.icon,
+			badge: slot.badge !== undefined ? unref(slot.badge) : undefined,
+		})
+	}
 
 	if (hasActions.value) {
 		tabs.push({
 			id: ACTIONS_TAB_ID,
 			label: 'Actions',
-			badge: undefined,
+			icon: markRaw(RailIconActions),
 		})
 	}
 
@@ -171,6 +184,10 @@ function onToggle() {
 }
 
 function onTileClick(tabId: string) {
+	if (tabId === SEARCH_TAB_ID) {
+		emit('search')
+		return
+	}
 	if (tabId === ACTIONS_TAB_ID) {
 		actionsTabOpen.value = true
 		emit('drawerChange', true)
@@ -181,6 +198,10 @@ function onTileClick(tabId: string) {
 }
 
 function onTabClick(tabId: string) {
+	if (tabId === SEARCH_TAB_ID) {
+		emit('search')
+		return
+	}
 	if (tabId === ACTIONS_TAB_ID) {
 		actionsTabOpen.value = true
 		rail.close()
@@ -275,8 +296,10 @@ function onDropdownItemClick(item: { label: string; action?: () => void }) {
 }
 
 .document-rail__item-icon {
+	display: block;
 	width: 1rem;
 	height: 1rem;
+	flex-shrink: 0;
 }
 
 .document-rail__item-fallback {

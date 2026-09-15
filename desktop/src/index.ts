@@ -4,6 +4,18 @@ import Desktop from './components/Desktop.vue'
 import SheetNav from './components/SheetNav.vue'
 import StonecropDesktop from './plugins'
 export { useDocumentRail } from './composables/useDocumentRail'
+export {
+	RailIconActions,
+	RailIconApprovals,
+	RailIconChat,
+	RailIconEmail,
+	RailIconFiles,
+	RailIconHelp,
+	RailIconPrint,
+	RailIconReports,
+	RailIconSearch,
+	RailIconSettings,
+} from './icons'
 export type * from './types'
 export type {
 	RouteAdapter,

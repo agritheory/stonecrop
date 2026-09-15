@@ -5,7 +5,7 @@
 ```ts
 
 import { ActionEventPayload } from '@stonecrop/stonecrop';
-import type { Component } from 'vue';
+import { Component } from 'vue';
 import { ComponentOptionsMixin } from 'vue';
 import { ComponentProvideOptions } from 'vue';
 import type { ComputedRef } from 'vue';
@@ -93,6 +93,36 @@ export type NavigationTarget = {
     doctype?: string;
     recordId?: string;
 };
+
+// @public
+export const RailIconActions: Component;
+
+// @public
+export const RailIconApprovals: Component;
+
+// @public
+export const RailIconChat: Component;
+
+// @public
+export const RailIconEmail: Component;
+
+// @public
+export const RailIconFiles: Component;
+
+// @public
+export const RailIconHelp: Component;
+
+// @public
+export const RailIconPrint: Component;
+
+// @public
+export const RailIconReports: Component;
+
+// @public
+export const RailIconSearch: Component;
+
+// @public
+export const RailIconSettings: Component;
 
 // @public
 export type RailSubject = {

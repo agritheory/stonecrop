@@ -14,9 +14,20 @@
 </template>
 
 <script setup lang="ts">
-import { Desktop, type DocumentRailSlot } from '@stonecrop/desktop'
+import {
+	Desktop,
+	RailIconApprovals,
+	RailIconChat,
+	RailIconEmail,
+	RailIconFiles,
+	RailIconReports,
+	type DocumentRailSlot,
+} from '@stonecrop/desktop'
+import ApprovalsPanel from '~/components/rail/ApprovalsPanel.vue'
 import AttachmentsPanel from '~/components/rail/AttachmentsPanel.vue'
+import ChatPanel from '~/components/rail/ChatPanel.vue'
 import CollaborationPanel from '~/components/rail/CollaborationPanel.vue'
+import ReportsPanel from '~/components/rail/ReportsPanel.vue'
 import { useFullstackRouteAdapter } from '~/composables/useFullstackRouteAdapter'
 import { doctypeMap } from '~/composables/useDoctypes'
 
@@ -36,8 +47,17 @@ const onOrderRecord = computed(
 )
 
 const railSlots = computed<DocumentRailSlot[]>(() => [
-	{ id: 'files', label: 'Files', component: AttachmentsPanel, show: onOrderRecord.value },
-	{ id: 'collaboration', label: 'Email', component: CollaborationPanel, show: onOrderRecord.value },
+	{ id: 'chat', label: 'Chat', icon: RailIconChat, component: ChatPanel, show: onOrderRecord.value },
+	{ id: 'email', label: 'Email', icon: RailIconEmail, component: CollaborationPanel, show: onOrderRecord.value },
+	{ id: 'files', label: 'Files', icon: RailIconFiles, component: AttachmentsPanel, show: onOrderRecord.value },
+	{
+		id: 'approvals',
+		label: 'Approvals',
+		icon: RailIconApprovals,
+		component: ApprovalsPanel,
+		show: onOrderRecord.value,
+	},
+	{ id: 'reports', label: 'Reports', icon: RailIconReports, component: ReportsPanel, show: onOrderRecord.value },
 ])
 </script>
 

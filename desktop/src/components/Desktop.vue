@@ -37,7 +37,8 @@
 			:elements="actionElements"
 			:rail="documentRailController"
 			@action-click="handleActionClick"
-			@drawer-change="railDrawerOpen = $event" />
+			@drawer-change="railDrawerOpen = $event"
+			@search="commandPaletteOpen = true" />
 
 		<SheetNav :breadcrumbs="navigationBreadcrumbs" />
 
