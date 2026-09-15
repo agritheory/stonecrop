@@ -204,6 +204,7 @@ import { ADateSelection } from '@stonecrop/aform'
 
 | Prop | Type | Required | Default | Description |
 |------|------|----------|---------|-------------|
+| id | `string \| undefined` | no |  |  |
 | showDate | `boolean \| undefined` | no |  |  |
 | showTime | `boolean \| undefined` | no |  |  |
 | selectRange | `boolean \| undefined` | no |  |  |

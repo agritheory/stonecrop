@@ -12,6 +12,18 @@ import type { ResolvedField } from '../src/types'
 
 describe('inline field errors', { tags: ['component'] }, () => {
 	describe('field component (ATextInput)', () => {
+		it('wires aria-invalid and aria-describedby when an error is present', () => {
+			const w = mount(ATextInput, {
+				props: { uuid: 'end_date', label: 'End date', modelValue: '', errors: ['End before start'] },
+			})
+			const input = w.find('input')
+			const err = w.find('.aform_error')
+			expect(input.attributes('aria-invalid')).toBe('true')
+			expect(input.attributes('aria-describedby')).toBe('end_date-error')
+			expect(err.attributes('id')).toBe('end_date-error')
+			expect(err.attributes('role')).toBe('alert')
+		})
+
 		it('renders a dynamic error message from the errors prop', () => {
 			const w = mount(ATextInput, {
 				props: { label: 'End date', modelValue: '2020-01-01', errors: ['End before start'] },

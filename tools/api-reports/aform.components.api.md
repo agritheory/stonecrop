@@ -149,6 +149,7 @@ slots: {}
 ```ts
 // src/components/form/ADateSelection.vue
 props: {
+  id?: string \| undefined
   showDate?: boolean \| undefined
   showTime?: boolean \| undefined
   selectRange?: boolean \| undefined

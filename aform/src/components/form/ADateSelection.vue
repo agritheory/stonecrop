@@ -1,7 +1,7 @@
 <!-- This serves as a wrapper component for ADatePicker and ADateTimeInput in one component -->
 
 <template>
-	<div class="adate-selection">
+	<div :id="id" class="adate-selection">
 		<ADatePicker
 			v-if="showDate"
 			:model-value="selectedDate"
@@ -43,6 +43,7 @@ import ADateTimeInput from './ADateTimeInput.vue'
 import { toDate, readTableDate, writeTableDate, type TableDateStore } from '../../utils/calendar-date'
 
 const props = defineProps<{
+	id?: string
 	showDate?: boolean
 	showTime?: boolean
 	selectRange?: boolean

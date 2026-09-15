@@ -28,10 +28,10 @@ before all other rules.
 		--sc-gray-80: #333333;
 
 		/* Primitive: color (alerts, brand, on-color text). Not surfaces. */
-		--sc-color-primary: #0098c9;
+		--sc-color-primary: var(--sc-gray-80);
 		--sc-color-on-primary: #ffffff;
-		--sc-color-brand: #202a44;
-		--sc-color-danger: #e63c28;
+		--sc-color-brand: var(--sc-gray-80);
+		--sc-color-danger: #c02718;
 		--sc-color-success: #155724;
 		--sc-color-warning: #b99d3e;
 		--sc-color-gold: #e6a92d;
@@ -92,22 +92,22 @@ before all other rules.
 		--sc-cell-text-color: var(--sc-gray-70);
 		--sc-input-label-color: var(--sc-gray-60);
 		--sc-input-active-label-color: var(--sc-gray-80);
-		--sc-header-text-color: var(--sc-gray-20);
+		--sc-header-text-color: var(--sc-gray-60);
 
 		/* Semantic: borders */
-		--sc-form-border: var(--sc-gray-20);
-		--sc-input-border-color: var(--sc-gray-20);
+		--sc-form-border: var(--sc-gray-50);
+		--sc-input-border-color: var(--sc-gray-50);
 		--sc-input-active-border-color: var(--sc-gray-80);
 		--sc-required-border: var(--sc-color-danger);
 
 		/* Semantic: table */
 		--sc-active-cell-background: var(--sc-input-field-background);
-		--sc-active-cell-outline: var(--sc-color-gold);
+		--sc-active-cell-outline: var(--sc-focus-cell-outline);
 		--sc-focus-cell-background: var(--sc-input-field-background);
 		--sc-focus-cell-outline: var(--sc-gray-80);
 		--sc-cell-border-color: var(--sc-form-background);
 		--sc-header-border-color: var(--sc-form-background);
-		--sc-row-border-color: var(--sc-gray-20);
+		--sc-row-border-color: var(--sc-gray-50);
 		--sc-row-color-zebra-light: var(--sc-form-background);
 		--sc-row-color-zebra-dark: var(--sc-gray-5);
 		--sc-row-number-background-color: var(--sc-form-background);
@@ -121,7 +121,7 @@ before all other rules.
 		--sc-atable-font-family: var(--sc-font-family);
 
 		/* Semantic: buttons */
-		--sc-btn-border: var(--sc-gray-20);
+		--sc-btn-border: var(--sc-gray-50);
 		--sc-btn-color: var(--sc-gray-2);
 		--sc-btn-hover: var(--sc-gray-5);
 		--sc-btn-label-color: var(--sc-gray-80);

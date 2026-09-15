@@ -15,17 +15,24 @@
 				placeholder="Select date range"
 				:disabled="mode === 'read'"
 				:required="required"
+				:aria-expanded="showPicker"
+				aria-haspopup="dialog"
+				:aria-controls="showPicker ? pickerId : undefined"
+				:aria-invalid="invalid"
+				:aria-describedby="describedBy"
 				@click="openPicker"
 				@input="onInput"
 				@blur="commitTypedRange"
 				@keydown.enter.prevent="commitTypedRange"
-				@keydown.escape="showPicker = false" />
+				@keydown.escape="showPicker = false"
+				@keydown.down="onInputKeydown" />
 			<label class="aform_field-label" :for="uuid">{{ label }}</label>
 
-			<p v-show="errorText" class="aform_error" v-html="errorText"></p>
+			<p v-show="errorText" :id="errorId" class="aform_error" role="alert">{{ errorText }}</p>
 
 			<ADateSelection
 				v-if="showPicker"
+				:id="pickerId"
 				ref="pickerRef"
 				class="adaterange-picker"
 				:selected="startDate"
@@ -42,6 +49,7 @@
 import { ref, computed, watch, useTemplateRef } from 'vue'
 import { onClickOutside } from '@vueuse/core'
 import ADateSelection from './ADateSelection.vue'
+import { fieldErrorA11y } from '../../composables/fieldErrorA11y'
 import type { ComponentProps } from '../../types'
 import { parseCalendarDate, parseDateRange, toCalendarDateString } from '../../utils/calendar-date'
 
@@ -59,8 +67,9 @@ const {
 	validation = { errorMessage: '' },
 } = defineProps<ComponentProps>()
 
-// Dynamic trigger errors take precedence over a static schema errorMessage; empty means the slot hides.
 const errorText = computed(() => (errors?.length ? errors.join('; ') : (validation.errorMessage ?? '')))
+const { errorId, describedBy, invalid } = fieldErrorA11y(uuid, errorText)
+const pickerId = computed(() => (uuid ? `${uuid}-picker` : undefined))
 
 export interface DateRangeValue {
 	start_date: string | null
@@ -91,6 +100,13 @@ onClickOutside(pickerRef, () => (showPicker.value = false), { ignore: [rangeInpu
 
 const openPicker = () => {
 	if (mode !== 'read') showPicker.value = true
+}
+
+const onInputKeydown = (event: KeyboardEvent) => {
+	if (event.key === 'ArrowDown' && !showPicker.value && mode !== 'read') {
+		event.preventDefault()
+		showPicker.value = true
+	}
 }
 
 const onInput = (event: Event) => {

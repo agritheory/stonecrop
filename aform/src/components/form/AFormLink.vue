@@ -357,7 +357,7 @@ const selectCurrent = () => {
 .autocomplete-result {
 	padding: 4px 6px;
 	cursor: pointer;
-	border-bottom: 0.5px solid lightgray;
+	border-bottom: 0.5px solid var(--sc-input-border-color);
 }
 
 .autocomplete-result.is-active,

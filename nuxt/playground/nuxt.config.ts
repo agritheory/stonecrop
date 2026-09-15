@@ -28,8 +28,8 @@ export default defineNuxtConfig({
 		downloadSchema: 'dev-only',
 		autoImportPatterns: ['./app/graphql/**/*.graphql'],
 	},
-	// The @stonecrop/nuxt module supplies the base theme; only app-specific styles here.
-	css: ['~/assets/styles/common.css'],
+	// The @stonecrop/nuxt module supplies the base theme; example-host restyles for this specimen.
+	css: [resolve(__dirname, '../example-host.css'), '~/assets/styles/common.css'],
 	vite: {
 		optimizeDeps: {
 			include: ['pinia', '@stonecrop/desktop', '@stonecrop/stonecrop'],

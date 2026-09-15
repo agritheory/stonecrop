@@ -29,6 +29,24 @@ describe('datepicker component', { tags: ['component'] }, () => {
 		wrapper.unmount()
 	})
 
+	it('uses roving tabindex so only one date cell is in the tab order', async () => {
+		const wrapper = mount(ADatePicker)
+		await wrapper.vm.$nextTick()
+		const tabbable = wrapper.findAll('.date-cell').filter(c => c.attributes('tabindex') === '0')
+		expect(tabbable).toHaveLength(1)
+	})
+
+	it('moves focus with arrow keys without putting every cell in the tab order', async () => {
+		const wrapper = mount(ADatePicker)
+		await wrapper.vm.$nextTick()
+		const focused = wrapper.find('.date-cell[tabindex="0"]')
+		await focused.trigger('keydown', { key: 'ArrowRight' })
+		await nextTick()
+		expect(wrapper.findAll('.date-cell[tabindex="0"]')).toHaveLength(1)
+		const nextFocused = wrapper.find('.date-cell[tabindex="0"]')
+		expect(nextFocused.element).not.toBe(focused.element)
+	})
+
 	it('does not mark a selected date when the model is empty', async () => {
 		const wrapper = mount(ADatePicker)
 		await wrapper.vm.$nextTick()

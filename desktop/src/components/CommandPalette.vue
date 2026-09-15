@@ -2,7 +2,7 @@
 	<Teleport to="body">
 		<Transition name="fade">
 			<div v-if="isOpen" class="command-palette-overlay" @click="closeModal">
-				<div class="command-palette" @click.stop>
+				<div class="command-palette" role="dialog" aria-modal="true" aria-label="Command palette" @click.stop>
 					<div class="command-palette-header">
 						<input
 							ref="input"
@@ -10,15 +10,28 @@
 							type="text"
 							class="command-palette-input"
 							:placeholder="placeholder"
+							aria-label="Search commands"
+							:aria-activedescendant="
+								results.length && selectedIndex >= 0 ? `${listboxId}-opt-${selectedIndex}` : undefined
+							"
+							aria-controls="command-palette-results"
 							autofocus
 							@keydown="handleKeydown" />
 					</div>
 
-					<div v-if="results.length" class="command-palette-results">
+					<div
+						v-if="results.length"
+						id="command-palette-results"
+						class="command-palette-results"
+						role="listbox"
+						aria-label="Command results">
 						<div
 							v-for="(result, index) in results"
+							:id="`${listboxId}-opt-${index}`"
 							:key="index"
 							class="command-palette-result"
+							role="option"
+							:aria-selected="index === selectedIndex"
 							:class="{ selected: index === selectedIndex }"
 							@click="selectResult(result)"
 							@mouseover="selectedIndex = index">
@@ -30,7 +43,7 @@
 							</div>
 						</div>
 					</div>
-					<div v-else-if="query && !results.length" class="command-palette-no-results">
+					<div v-else-if="query && !results.length" class="command-palette-no-results" role="status" aria-live="polite">
 						<slot name="empty"> No results found for "{{ query }}" </slot>
 					</div>
 				</div>
@@ -40,7 +53,7 @@
 </template>
 
 <script setup lang="ts" generic="T">
-import { ref, computed, watch, nextTick, useTemplateRef } from 'vue'
+import { ref, computed, watch, nextTick, useTemplateRef, useId } from 'vue'
 
 defineSlots<{
 	title?: { result: T }
@@ -65,6 +78,7 @@ const emit = defineEmits<{
 	close: []
 }>()
 
+const listboxId = useId()
 const query = ref('')
 const selectedIndex = ref(0)
 const inputRef = useTemplateRef('input')
@@ -75,7 +89,6 @@ const results = computed(() => {
 	return searchResults.slice(0, maxResults)
 })
 
-// reset search query when modal opens
 watch(
 	() => isOpen,
 	async open => {
@@ -88,7 +101,6 @@ watch(
 	}
 )
 
-// reset selected index when results change
 watch(results, () => {
 	selectedIndex.value = 0
 })

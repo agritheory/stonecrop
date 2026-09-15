@@ -2,16 +2,22 @@
 	<template v-if="mode === 'display' || mode === 'read'">
 		<span class="aform_display-value">{{ date ? new Date(date).toLocaleDateString() : '' }}</span>
 		<label v-if="label">{{ label }}</label>
-		<p v-show="errorText" class="aform_error" v-html="errorText"></p>
+		<p v-show="errorText" :id="errorId" class="aform_error" role="alert">{{ errorText }}</p>
 	</template>
 	<template v-else>
-		<div ref="datepicker" class="adatepicker" tabindex="0">
-			<table @mousedown="preventCellSelection">
+		<div ref="datepicker" class="adatepicker">
+			<table role="grid" :aria-label="label || 'Calendar'" @mousedown="preventCellSelection">
 				<tbody>
 					<tr>
-						<td id="previous-month-btn" :tabindex="-1" @click="previousMonth">&lt;</td>
-						<th colspan="5" :tabindex="-1">{{ monthAndYear }}</th>
-						<td id="next-month-btn" :tabindex="-1" @click="nextMonth">&gt;</td>
+						<td>
+							<button type="button" class="month-nav-btn" aria-label="Previous month" @click="previousMonth">
+								&lt;
+							</button>
+						</td>
+						<th colspan="5">{{ monthAndYear }}</th>
+						<td>
+							<button type="button" class="month-nav-btn" aria-label="Next month" @click="nextMonth">&gt;</button>
+						</td>
 					</tr>
 					<tr v-if="selectRange">
 						<td colspan="7">
@@ -36,7 +42,6 @@
 									@blur="enterInputDate()"
 									@keydown="enterDate" />
 							</div>
-							<!-- {{ formattedDateRange }} -->
 						</td>
 					</tr>
 					<tr class="days-header">
@@ -48,25 +53,28 @@
 						<td>S</td>
 						<td>S</td>
 					</tr>
-					<tr v-for="rowNo in numberOfRows" :key="rowNo">
-						<!-- the 'ref' key is currently only used for test references -->
+					<tr v-for="rowNo in numberOfRows" :key="rowNo" role="row">
 						<td
 							v-for="colNo in numberOfColumns"
 							ref="celldate"
 							:key="getCurrentCell(rowNo, colNo)"
+							role="gridcell"
 							class="date-cell"
 							:contenteditable="false"
 							:spellcheck="false"
-							:tabindex="0"
+							:tabindex="cellTabindex(rowNo, colNo)"
+							:aria-selected="isSelectedDate(getCurrentDate(rowNo, colNo))"
 							:class="{
 								todaysDate: isTodaysDate(getCurrentDate(rowNo, colNo)),
 								selectedDate: isSelectedDate(getCurrentDate(rowNo, colNo)),
 								withinRange: selectRange ? isInDateRange(getCurrentDate(rowNo, colNo)) : false,
 								startDate: selectRange ? isStartDate(getCurrentDate(rowNo, colNo)) : false,
 								endDate: selectRange ? isEndDate(getCurrentDate(rowNo, colNo)) : false,
+								'prev-date': isOutsideCurrentMonth(getCurrentDate(rowNo, colNo)),
 							}"
 							@click.prevent.stop="selectDate(getCurrentCell(rowNo, colNo))"
-							@keydown.enter="selectDate(getCurrentCell(rowNo, colNo))"
+							@keydown="onCellKeydown($event, getCurrentCell(rowNo, colNo))"
+							@focus="focusedCellIndex = getCurrentCell(rowNo, colNo)"
 							@mouseover="hoverDate(getCurrentCell(rowNo, colNo))">
 							{{ new Date(getCurrentDate(rowNo, colNo)).getDate() }}
 						</td>
@@ -74,15 +82,14 @@
 				</tbody>
 			</table>
 		</div>
-		<p v-show="errorText" class="aform_error" v-html="errorText"></p>
+		<p v-show="errorText" :id="errorId" class="aform_error" role="alert">{{ errorText }}</p>
 	</template>
 </template>
 
 <script setup lang="ts">
-/* removed keyboard nav temportarily since it interfered with user experience navigating input fields */
-// import { defaultKeypressHandlers, useKeyboardNav } from '@stonecrop/utilities'
-import { computed, onMounted, ref, useTemplateRef, watch } from 'vue'
+import { computed, nextTick, onMounted, ref, useTemplateRef, watch } from 'vue'
 
+import { fieldErrorA11y } from '../../composables/fieldErrorA11y'
 import type { ComponentProps } from '../../types'
 import { readTableDate, toDate, writeTableDate, type TableDateStore } from '../../utils/calendar-date'
 
@@ -99,11 +106,12 @@ const props = defineProps<
 	}
 >()
 
-const { mode, label, selectRange = false, errors, validation = { errorMessage: '' } } = props
+const { mode, label, selectRange = false, errors, validation = { errorMessage: '' }, uuid } = props
 const rangeStart = computed(() => props.rangeStart ?? null)
 const rangeEnd = computed(() => props.rangeEnd ?? null)
 
 const errorText = computed(() => (errors?.length ? errors.join('; ') : (validation.errorMessage ?? '')))
+const { errorId } = fieldErrorA11y(uuid, errorText)
 
 const date = defineModel<number | Date | string | null>({ default: null })
 
@@ -121,9 +129,8 @@ const viewAnchor = selectedDate.value ?? new Date()
 const currentMonth = ref<number>(viewAnchor.getMonth())
 const currentYear = ref<number>(viewAnchor.getFullYear())
 const currentDates = ref<number[]>([])
-
-/* needed for keyboard navigation. uncomment if implementing */
-// const datepickerRef = useTemplateRef<HTMLDivElement>('datepicker')
+const focusedCellIndex = ref(0)
+const cellRefs = useTemplateRef<HTMLTableCellElement[]>('celldate')
 
 const hoveredDate = ref(new Date())
 const start_date = ref<Date | null>(toDate(rangeStart.value))
@@ -131,17 +138,9 @@ const end_date = ref<Date | null>(toDate(rangeEnd.value))
 const startDateInput = useTemplateRef<HTMLInputElement>('start-date-input')
 const endDateInput = useTemplateRef<HTMLInputElement>('end-date-input')
 
-/*******************
-Emits
-*******************/
-
 const emit = defineEmits<{
 	'get-date': [{ start: Date | null; end: Date | null; selected: Date | null }]
 }>()
-
-/*******************
-Computed
-*******************/
 
 const monthAndYear = computed(() => {
 	return new Date(currentYear.value, currentMonth.value, 1).toLocaleDateString(undefined, {
@@ -157,10 +156,6 @@ const getStartDate = computed(() => {
 const getEndDate = computed(() => {
 	return end_date.value != null ? parseDateToString(end_date.value) : ''
 })
-
-/*******************
-Functions
-*******************/
 
 const parseDateToString = (dateValue: Date | null) => {
 	if (!validateDate(dateValue)) return ''
@@ -190,8 +185,38 @@ const isEndDate = (day: string | number | Date) => {
 	return new Date(day).toDateString() === end.toDateString()
 }
 
+const isOutsideCurrentMonth = (day: string | number | Date) => {
+	return new Date(day).getMonth() !== currentMonth.value
+}
+
 const getCurrentCell = (rowNo: number, colNo: number) => {
 	return (rowNo - 1) * numberOfColumns + colNo
+}
+
+const cellTabindex = (rowNo: number, colNo: number) => {
+	return getCurrentCell(rowNo, colNo) === focusedCellIndex.value ? 0 : -1
+}
+
+const findFocusIndex = (): number => {
+	if (selectedDate.value) {
+		const idx = currentDates.value.findIndex(d => new Date(d).toDateString() === selectedDate.value!.toDateString())
+		if (idx >= 0) return idx
+	}
+	const today = new Date()
+	const todayIdx = currentDates.value.findIndex(d => new Date(d).toDateString() === today.toDateString())
+	if (todayIdx >= 0) return todayIdx
+	return 0
+}
+
+const focusCell = (index: number) => {
+	const clamped = Math.max(0, Math.min(currentDates.value.length - 1, index))
+	focusedCellIndex.value = clamped
+	nextTick(() => {
+		const cells = cellRefs.value
+		if (Array.isArray(cells)) {
+			cells[clamped]?.focus()
+		}
+	})
 }
 
 const isInDateRange = (day: string | number | Date) => {
@@ -199,7 +224,6 @@ const isInDateRange = (day: string | number | Date) => {
 	if (!validateDate(start)) return false
 	const this_date = new Date(day)
 
-	//the end is either the selected end date or wherever the user is hovering
 	const end = end_date.value
 	const temp_end_date = validateDate(end) ? end : new Date(hoveredDate.value)
 
@@ -214,9 +238,6 @@ const hoverDate = (currentIndex: number) => {
 	hoveredDate.value = new Date(currentDates.value[currentIndex])
 }
 
-// browsers (notably Firefox) allow drag-selecting text across table cells even with
-// `user-select: none` on the cells; blocking mousedown is the reliable cross-browser fix.
-// the start/end-date inputs must keep native mousedown behavior so they stay focusable/typable.
 const preventCellSelection = (event: MouseEvent) => {
 	if ((event.target as HTMLElement)?.tagName !== 'INPUT') {
 		event.preventDefault()
@@ -229,13 +250,17 @@ const populateMonth = () => {
 	const monthStartWeekday = firstOfMonth.getDay()
 	const calendarStartDay = firstOfMonth.setDate(firstOfMonth.getDate() - monthStartWeekday)
 
-	// assume midnight for all dates while building the calendar
 	for (const dayIndex of Array(43).keys()) {
 		currentDates.value.push(calendarStartDay + dayIndex * 86400000)
 	}
 }
-const previousYear = () => (currentYear.value -= 1)
-const nextYear = () => (currentYear.value += 1)
+
+const previousYear = () => {
+	currentYear.value -= 1
+}
+const nextYear = () => {
+	currentYear.value += 1
+}
 
 const previousMonth = () => {
 	if (currentMonth.value == 0) {
@@ -259,28 +284,50 @@ const enterDate = (event: KeyboardEvent) => {
 	if (event.key === 'Enter') enterInputDate()
 }
 
-// useKeyboardNav([
-// 	{
-// 		parent: datepickerRef,
-// 		selectors: 'td',
-// 		handlers: {
-// 			...defaultKeypressHandlers,
-// 			...{
-// 				'keydown.pageup': previousMonth,
-// 				'keydown.shift.pageup': previousYear,
-// 				'keydown.pagedown': nextMonth,
-// 				'keydown.shift.pagedown': nextYear,
-// 				// TODO: this is a hack to override the stonecrop enter handler;
-// 				// store context inside the component so that handlers can be setup consistently
-// 				// eslint-disable-next-line @typescript-eslint/no-empty-function
-// 				'keydown.enter': () => {}, // select this date
-// 			},
-// 		},
-// 	},
-// ])
+const onCellKeydown = (event: KeyboardEvent, cellIndex: number) => {
+	const navigationKeys = ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Enter', ' ']
+	if (!navigationKeys.includes(event.key)) return
+
+	event.stopPropagation()
+
+	switch (event.key) {
+		case 'ArrowLeft':
+			event.preventDefault()
+			focusCell(cellIndex - 1)
+			break
+		case 'ArrowRight':
+			event.preventDefault()
+			focusCell(cellIndex + 1)
+			break
+		case 'ArrowUp':
+			event.preventDefault()
+			focusCell(cellIndex - numberOfColumns)
+			break
+		case 'ArrowDown':
+			event.preventDefault()
+			focusCell(cellIndex + numberOfColumns)
+			break
+		case 'PageUp':
+			event.preventDefault()
+			if (event.shiftKey) previousYear()
+			else previousMonth()
+			break
+		case 'PageDown':
+			event.preventDefault()
+			if (event.shiftKey) nextYear()
+			else nextMonth()
+			break
+		case 'Enter':
+		case ' ':
+			event.preventDefault()
+			selectDate(cellIndex)
+			break
+	}
+}
 
 const selectDate = (currentIndex: number) => {
 	date.value = selectedDate.value = new Date(currentDates.value[currentIndex])
+	focusedCellIndex.value = currentIndex
 
 	if (selectRange) {
 		const start = start_date.value
@@ -344,38 +391,17 @@ const emitData = () => {
 	})
 }
 
-/*******************
-Hooks
-*******************/
-
 onMounted(() => {
 	populateMonth()
+	focusedCellIndex.value = findFocusIndex()
 })
 
-// setup keyboard navigation
-// useKeyboardNav([
-// 	{
-// 		parent: datepickerRef,
-// 		selectors: 'td',
-// 		handlers: {
-// 			...defaultKeypressHandlers,
-// 			'keydown.pageup': previousMonth,
-// 			'keydown.shift.pageup': previousYear,
-// 			'keydown.pagedown': nextMonth,
-// 			'keydown.shift.pagedown': nextYear,
-// 			// TODO: this is a hack to override the stonecrop enter handler;
-// 			// store context inside the component so that handlers can be setup consistently
-
-// 			'keydown.enter': () => {}, // select this date
-// 		},
-// 	},
-// ])
-
-/*******************
-Watchers
-*******************/
-
-watch([currentMonth, currentYear], populateMonth)
+watch([currentMonth, currentYear], () => {
+	populateMonth()
+	nextTick(() => {
+		focusedCellIndex.value = findFocusIndex()
+	})
+})
 
 watch(
 	incomingDate,
@@ -402,10 +428,6 @@ watch(
 	}
 )
 
-/*******************
-Expose
-*******************/
-
 defineExpose({ currentMonth, currentYear, selectedDate })
 </script>
 
@@ -425,7 +447,6 @@ defineExpose({ currentMonth, currentYear, selectedDate })
 	max-width: 100%;
 	font-size: var(--sc-table-font-size);
 	color: var(--sc-cell-text-color);
-	outline: none;
 }
 
 .adatepicker > table {
@@ -435,62 +456,74 @@ defineExpose({ currentMonth, currentYear, selectedDate })
 }
 
 .adatepicker tr {
-	height: 1.15rem;
-	height: 1.15rem;
 	text-align: center;
 	vertical-align: middle;
 }
 
 .adatepicker td {
 	border: 2px solid transparent;
-	outline: 2px solid transparent;
-	min-width: 3ch;
+	min-width: 24px;
+	min-height: 24px;
 	cursor: pointer;
 }
+
 .adatepicker td.date-cell:hover {
 	background: var(--sc-gray-10);
 }
 
-.adatepicker td:focus,
-.adatepicker td:focus-within {
-	/* outline: 1px dashed black; */
-	box-shadow: none;
-	overflow: hidden;
-	min-height: 1.15em;
-	max-height: 1.15em;
-	overflow: hidden;
+.adatepicker td.date-cell:focus {
+	outline: 2px solid var(--sc-focus-cell-outline);
+	outline-offset: -2px;
 }
+
+.month-nav-btn {
+	border: none;
+	background: transparent;
+	color: var(--sc-cell-text-color);
+	cursor: pointer;
+	font: inherit;
+	padding: 0.25rem 0.5rem;
+	min-width: 24px;
+	min-height: 24px;
+}
+
+.month-nav-btn:focus-visible {
+	outline: 2px solid var(--sc-focus-cell-outline);
+	outline-offset: -2px;
+}
+
 .adatepicker .selectedDate,
 .adatepicker .startDate,
 .adatepicker .endDate {
-	/* outline: 1px solid black; */
 	background: var(--sc-gray-20);
 	font-weight: bolder;
 }
+
 .adatepicker .startDate {
-	/* border-radius: 5px 0px 0px 5px; */
 	border-left: 1px solid var(--sc-gray-50);
 	background: var(--sc-gray-20) !important;
 }
+
 .adatepicker .endDate {
 	border-right: 1px solid var(--sc-gray-50);
-	/* border-radius: 0px 5px 5px 0px; */
 	background: var(--sc-gray-20) !important;
 }
+
 .adatepicker .withinRange {
 	background: var(--sc-gray-5);
 }
 
 .adatepicker .todaysDate {
 	font-weight: bolder;
-	/* text-decoration: underline; */
-	color: black;
+	color: var(--sc-cell-text-color);
 }
+
 .days-header > td {
 	font-weight: bold;
 }
+
 .prev-date {
-	color: var(--sc-gray-20);
+	color: var(--sc-gray-50);
 }
 
 .adatepicker .date-input {
@@ -499,6 +532,7 @@ defineExpose({ currentMonth, currentYear, selectedDate })
 	gap: 5px;
 	align-items: center;
 }
+
 .adatepicker .date-input > input {
 	width: 50%;
 	min-width: 0;
@@ -506,8 +540,6 @@ defineExpose({ currentMonth, currentYear, selectedDate })
 	padding: 2px;
 }
 
-/* Keep the field error in-flow below the calendar. The shared .aform_error is absolutely
-   positioned against a .aform_form-element anchor, which this grid component does not use. */
 p.aform_error {
 	position: static;
 	display: block;
