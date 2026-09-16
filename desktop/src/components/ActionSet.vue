@@ -1,9 +1,18 @@
 <template>
-	<div :class="{ collapsed: !isOpen }" class="action-set">
+	<div
+		:class="{
+			collapsed: !isOpen,
+			'action-set--embedded': embedded,
+			'action-set--rail': hasRail,
+		}"
+		class="action-set">
 		<div class="action-menu-icon">
 			<div id="cross" :class="{ rotated: isOpen }" @click="onClick">×</div>
 		</div>
-		<div style="margin-right: 30px"></div>
+		<div v-if="hasRail" class="action-set__rail">
+			<slot name="rail" />
+		</div>
+		<div v-if="!embedded" style="margin-right: 30px"></div>
 		<div v-for="(el, index) in elements" :key="el.label" class="action-element">
 			<div class="action-element-header">
 				<button
@@ -39,14 +48,20 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref, useSlots } from 'vue'
 
 import type { ActionElements } from '../types'
 
-const { elements = [] } = defineProps<{ elements?: ActionElements[] }>()
+const { elements = [], embedded = false } = defineProps<{
+	elements?: ActionElements[]
+	embedded?: boolean
+}>()
 const emit = defineEmits<{
 	actionClick: [label: string, action: (() => void | Promise<void>) | undefined]
 }>()
+
+const vueSlots = useSlots()
+const hasRail = computed(() => typeof vueSlots.rail === 'function')
 
 // Track dropdown open state separately (index -> boolean)
 const dropdownStates = ref<Record<number, boolean>>({})
@@ -58,14 +73,17 @@ onMounted(() => {
 	closeDropdowns()
 })
 
-const closeDropdowns = () => {
+function closeDropdowns() {
 	dropdownStates.value = {}
 	dropdownOpen.value = []
 }
 
-const onClick = () => {
+function onClick() {
 	isOpen.value = !isOpen.value
+	closeDropdowns()
 }
+
+defineExpose({ closeDropdowns })
 
 const toggleDropdown = (index: number) => {
 	const showDropdown = !dropdownStates.value[index]
@@ -119,6 +137,25 @@ const handleClick = (action: (() => void | Promise<void>) | undefined, label: st
 	-o-transition: all 0.5s ease-in-out;
 	transition: all 0.5s ease-in-out;
 }
+.action-set.action-set--embedded {
+	position: relative;
+	top: auto;
+	right: auto;
+	width: 100%;
+	align-items: center;
+	overflow: visible;
+	z-index: auto;
+}
+.action-set.action-set--embedded:not(.collapsed) {
+	min-width: max-content;
+	align-items: flex-end;
+}
+.action-set__rail {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	width: 100%;
+}
 .action-menu-icon {
 	position: relative;
 	font-size: 2rem;
@@ -126,10 +163,18 @@ const handleClick = (action: (() => void | Promise<void>) | undefined, label: st
 	color: var(--sc-gray-60);
 	transition: all 0.2s ease-in-out;
 }
-.action-set.collapsed {
+.action-set.action-set--embedded .action-menu-icon {
+	font-size: 1.5rem;
+}
+.action-set.collapsed:not(.action-set--rail) {
 	max-width: 46px;
 	max-height: 40px;
 	overflow: hidden;
+}
+.action-set.collapsed.action-set--rail {
+	max-width: 100%;
+	max-height: none;
+	overflow: visible;
 }
 .action-set.collapsed .action-element {
 	opacity: 0;
@@ -137,6 +182,9 @@ const handleClick = (action: (() => void | Promise<void>) | undefined, label: st
 	-moz-transition: opacity 0.25s ease-in-out;
 	-o-transition: opacity 0.25s ease-in-out;
 	transition: opacity 0.25s ease-in-out;
+}
+.action-set.collapsed.action-set--rail .action-element {
+	display: none;
 }
 
 .action-element {

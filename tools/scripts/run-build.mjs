@@ -13,7 +13,7 @@
  */
 
 import { spawn } from 'node:child_process'
-import { lstatSync, mkdirSync, rmSync, writeFileSync } from 'node:fs'
+import { lstatSync, mkdirSync, rmSync, unlinkSync, writeFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -92,7 +92,7 @@ function unlinkStubbedRuntimes(members) {
 	for (const member of members) {
 		const runtime = join(rootDir, member, 'dist/runtime')
 		if (lstatSync(runtime, { throwIfNoEntry: false })?.isSymbolicLink()) {
-			rmSync(runtime)
+			unlinkSync(runtime)
 		}
 	}
 }

@@ -8,11 +8,17 @@
 // src/components/ActionSet.vue
 props: {
   elements?: ActionElements[] \| undefined
+  embedded?: boolean \| undefined
 }
 emits: {
   actionClick: [label: string, action: (() => void \| Promise<void>) \| undefined]
 }
-slots: {}
+slots: {
+  rail: {}
+}
+exposed: {
+  closeDropdowns: () => void
+}
 ```
 
 ### CommandPalette
@@ -43,6 +49,7 @@ slots: {
 props: {
   availableDoctypes?: string[] \| undefined
   routeAdapter?: RouteAdapter \| undefined
+  railSlots?: DocumentRailSlot[] \| undefined
 }
 emits: {
   action: [payload: ActionEventPayload]

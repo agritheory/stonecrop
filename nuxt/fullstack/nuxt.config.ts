@@ -29,6 +29,8 @@ export default defineNuxtConfig({
 		graphiql: true,
 	} as GrafservOptions,
 
+	// The @stonecrop/nuxt module supplies the token floor; host overrides live here.
+	css: ['~/assets/styles/common.css'],
 	vite: {
 		optimizeDeps: {
 			include: ['@stonecrop/schema', 'pinia'],

@@ -2,49 +2,26 @@ import type { NavigationTarget, RouteAdapter } from '@stonecrop/desktop'
 
 import { navigateTo, useRoute } from 'nuxt/app'
 
+function getPathSegments(pathMatch: string | string[] | undefined): string[] {
+	if (!pathMatch) return []
+	if (Array.isArray(pathMatch)) return pathMatch.filter(Boolean)
+	return pathMatch.split('/').filter(Boolean)
+}
+
 export function useFullstackRouteAdapter(): RouteAdapter {
 	const route = useRoute()
 
-	const getCurrentDoctype = (): string => {
-		const slug = route.meta?.slug as string | undefined
-		if (slug) return slug
+	const segments = (): string[] => getPathSegments(route.params.pathMatch as string | string[] | undefined)
 
-		const pathMatch = route.params.pathMatch as string[] | undefined
-		if (pathMatch && pathMatch.length > 0) {
-			return pathMatch[0] ?? ''
-		}
+	const getCurrentDoctype = (): string => segments()[0] ?? ''
 
-		return ''
-	}
-
-	const getCurrentRecordId = (): string => {
-		const id = route.params.id as string | undefined
-		if (id) return id
-
-		const pathMatch = route.params.pathMatch as string[] | undefined
-		if (pathMatch && pathMatch.length > 1) {
-			return pathMatch[1] ?? ''
-		}
-
-		return ''
-	}
+	const getCurrentRecordId = (): string => segments()[1] ?? ''
 
 	const getCurrentView = (): 'doctypes' | 'records' | 'record' => {
-		if (route.path === '/' || route.name === 'index') {
-			return 'doctypes'
-		}
-
-		const recordId = getCurrentRecordId()
-		if (recordId) {
-			return 'record'
-		}
-
-		const doctype = getCurrentDoctype()
-		if (doctype) {
-			return 'records'
-		}
-
-		return 'doctypes'
+		const pathSegments = segments()
+		if (!pathSegments.length) return 'doctypes'
+		if (pathSegments.length > 1) return 'record'
+		return 'records'
 	}
 
 	const navigate = async (target: NavigationTarget): Promise<void> => {
