@@ -40,7 +40,11 @@
 			@drawer-change="railDrawerOpen = $event"
 			@search="commandPaletteOpen = true" />
 
-		<SheetNav :breadcrumbs="navigationBreadcrumbs" />
+		<SheetNav :breadcrumbs="navigationBreadcrumbs">
+			<template #toolbar>
+				<slot name="sheetnav-toolbar" />
+			</template>
+		</SheetNav>
 
 		<CommandPalette
 			:is-open="commandPaletteOpen"

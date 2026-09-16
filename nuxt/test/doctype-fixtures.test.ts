@@ -3,6 +3,8 @@ import { join, resolve } from 'node:path'
 import { describe, it, expect } from 'vitest'
 import { CANONICAL_COMPONENTS, componentLinkExpansion, validateDoctype } from '@stonecrop/schema'
 
+import { hostComponents as playgroundHostComponents } from '../playground/app/host-components'
+
 /**
  * Content-integrity gate for every doctype fixture folder this package ships.
  *
@@ -12,10 +14,15 @@ import { CANONICAL_COMPONENTS, componentLinkExpansion, validateDoctype } from '@
  * silently at runtime with nothing failing.
  */
 
+/** `hostComponents` are the custom components the folder's app registers, read from its own registry. */
 const FIXTURE_DIRS = [
-	{ name: 'fullstack', dir: resolve(__dirname, '../fullstack/doctypes') },
-	{ name: 'templates', dir: resolve(__dirname, '../templates') },
-	{ name: 'playground', dir: resolve(__dirname, '../playground/doctypes') },
+	{ name: 'fullstack', dir: resolve(__dirname, '../fullstack/doctypes'), hostComponents: [] },
+	{ name: 'templates', dir: resolve(__dirname, '../templates'), hostComponents: [] },
+	{
+		name: 'playground',
+		dir: resolve(__dirname, '../playground/doctypes'),
+		hostComponents: Object.keys(playgroundHostComponents),
+	},
 ]
 
 /** Component names Stonecrop knows — schema owns the list; the docbuilder suggests the same one. */
@@ -24,11 +31,12 @@ const KNOWN_COMPONENTS = new Set(CANONICAL_COMPONENTS)
 type Field = Record<string, unknown>
 
 const loadAll = () =>
-	FIXTURE_DIRS.flatMap(({ name, dir }) =>
+	FIXTURE_DIRS.flatMap(({ name, dir, hostComponents }) =>
 		readdirSync(dir)
 			.filter(f => f.endsWith('.json'))
 			.map(file => ({
 				file: `${name}/${file}`,
+				hostComponents: new Set<string>(hostComponents),
 				doctype: JSON.parse(readFileSync(join(dir, file), 'utf-8')) as Record<string, unknown>,
 			}))
 	)
@@ -68,13 +76,13 @@ describe('doctype fixtures', { tags: ['unit'] }, () => {
 		}
 	})
 
-	it('every authored component is a component Stonecrop knows', () => {
+	it('every authored component is one Stonecrop ships or the fixture app registers', () => {
 		// This catches names Vue cannot resolve, which render nothing at all: the fixtures carried
 		// `ACombobox` and `ADatepicker`, neither of which was registered anywhere.
 		const unknown: string[] = []
-		for (const { file, doctype } of loadAll()) {
+		for (const { file, hostComponents, doctype } of loadAll()) {
 			for (const f of valueFields(doctype)) {
-				if (typeof f.component === 'string' && !KNOWN_COMPONENTS.has(f.component)) {
+				if (typeof f.component === 'string' && !KNOWN_COMPONENTS.has(f.component) && !hostComponents.has(f.component)) {
 					unknown.push(`${file} :: ${String(f.fieldname)} → ${f.component}`)
 				}
 			}

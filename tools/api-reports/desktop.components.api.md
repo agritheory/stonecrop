@@ -58,7 +58,9 @@ emits: {
   load-records: [payload: LoadRecordsEventPayload]
   load-record: [payload: LoadRecordEventPayload]
 }
-slots: {}
+slots: {
+  sheetnav-toolbar: {}
+}
 ```
 
 ### SheetNav
@@ -69,6 +71,8 @@ props: {
   breadcrumbs?: { title: string; to: string; }[] \| undefined
 }
 emits: {}
-slots: {}
+slots: {
+  toolbar: {}
+}
 ```
 

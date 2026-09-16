@@ -16,6 +16,7 @@ export {
 	RailIconSearch,
 	RailIconSettings,
 } from './icons'
+export { SHEET_NAV_TOOLBAR_SELECTOR } from './sheet-nav-toolbar'
 export type * from './types'
 export type {
 	RouteAdapter,

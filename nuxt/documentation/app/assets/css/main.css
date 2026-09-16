@@ -365,8 +365,8 @@ a {
 .doc-main {
 	flex: 1;
 	min-width: 0;
-	/* Extra bottom padding clears SheetNav's fixed bottom bar (min-height: 2.4rem) so page
-	   content never renders underneath it. */
+	/* Extra bottom padding clears SheetNav's fixed bottom bar so page content never renders
+	   underneath it. */
 	padding: 2rem 3rem 4.5rem;
 }
 
