@@ -927,12 +927,7 @@ export interface DataClient {
   getMeta(context: DoctypeContext): Promise<M | null>;
   getRecord(doctype: T, recordId: string, options: GetRecordOptions): Promise<GetRecordResult>;
   getRecords(doctype: T, options: GetRecordsOptions): Promise<GetRecordsResult>;
-  runAction(doctype: T, action: string, args: unknown[]): Promise<{
-        success: boolean;
-        data: unknown;
-        error: string | null;
-        record: Record<string, unknown> | null;
-    }>;
+  runAction(doctype: T, action: string, args: unknown[]): Promise<ActionDispatchResult>;
 }
 ```
 
@@ -1432,6 +1427,22 @@ Action definition type inferred from Zod schema
 
 ```typescript
 export type ActionDefinition = z.infer<typeof ActionDefinition>;
+```
+
+### ActionDispatchResult
+
+Result of dispatching an action to its server handler.
+
+**Definition:**
+
+```typescript
+export type ActionDispatchResult = {
+    success: boolean;
+    data: unknown;
+    error: string | null;
+    record: Record<string, unknown> | null;
+    droppedFields?: string[] | null;
+};
 ```
 
 ### AuthoredDoctype

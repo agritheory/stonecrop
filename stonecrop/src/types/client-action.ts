@@ -17,17 +17,7 @@ export type ActionEventPayload = {
 	data: Record<string, any>
 }
 
-/**
- * Result of dispatching an action to its server handler.
- * @public
- */
-export type ActionDispatchResult = {
-	success: boolean
-	data: unknown
-	error: string | null
-	/** The record as a read returns it after the action; null when it failed or targets no record. */
-	record: Record<string, unknown> | null
-}
+export type { ActionDispatchResult } from '@stonecrop/schema'
 
 /**
  * An action that did not complete, described well enough for a host to render it.

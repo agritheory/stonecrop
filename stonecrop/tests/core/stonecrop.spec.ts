@@ -543,6 +543,26 @@ describe('Stonecrop class with HST integration', { tags: ['unit'] }, () => {
 			expect(result).toEqual(mockResult)
 		})
 
+		it('dispatchAction hands back the keys the write discarded', async () => {
+			const mockClient = {
+				getMeta: vi.fn(),
+				getRecord: vi.fn(),
+				getRecords: vi.fn(),
+				runAction: vi.fn().mockResolvedValue({
+					success: true,
+					data: { id: '1' },
+					error: null,
+					record: { id: '1' },
+					droppedFields: ['tags'],
+				}),
+			}
+			const localStonecrop = new Stonecrop(registry, undefined, { client: mockClient })
+
+			const result = await localStonecrop.dispatchAction(mockDoctype, 'save', [{ id: '1', data: { tags: [] } }])
+
+			expect(result.droppedFields).toEqual(['tags'])
+		})
+
 		// The write half. It is here rather than in the composable because a host that never adopts
 		// `useClientAction` still dispatches through this method, and filing a created record under
 		// the id that was *sent* is the mistake every hand-rolled handler made — the record lands

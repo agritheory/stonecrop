@@ -54,6 +54,7 @@ export {
 	linkDisplayFieldname,
 } from './doctype'
 export type {
+	ActionDispatchResult,
 	Cardinality,
 	CustomFetch,
 	DataClient,

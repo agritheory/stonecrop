@@ -4,6 +4,7 @@
 
 ```ts
 
+import type { ActionDispatchResult } from '@stonecrop/schema';
 import type { DataClient } from '@stonecrop/schema';
 import type { DoctypeContext } from '@stonecrop/schema';
 import { DoctypeMeta } from '@stonecrop/schema';
@@ -32,12 +33,7 @@ export class StonecropClient implements DataClient {
     getRecords(doctype: DoctypeRef, options?: GetRecordsOptions): Promise<GetRecordsResult>;
     mutate<T = unknown>(mutation: string, variables?: Record<string, unknown>): Promise<T>;
     query<T = unknown>(query: string, variables?: Record<string, unknown>): Promise<T>;
-    runAction(doctype: DoctypeRef, action: string, args?: unknown[]): Promise<{
-        success: boolean;
-        data: unknown;
-        error: string | null;
-        record: Record<string, unknown> | null;
-    }>;
+    runAction(doctype: DoctypeRef, action: string, args?: unknown[]): Promise<ActionDispatchResult>;
 }
 
 // @public

@@ -115,7 +115,7 @@ declare const router: {
   back(): void
   forward(): void
 }
-declare function runAction(action: string, args?: Record<string, unknown>): Promise<{ success: boolean; data: unknown; error: string | null }>
+declare function runAction(action: string, args?: Record<string, unknown>): Promise<{ success: boolean; data: unknown; error: string | null; record: Record<string, unknown> | null; droppedFields?: string[] | null }>
 declare const graphql: {
   query(query: string, variables?: Record<string, unknown>): Promise<unknown>
 }

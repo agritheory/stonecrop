@@ -1115,21 +1115,6 @@ export interface ValidatorOptions {
 
 ## Type Aliases
 
-### ActionDispatchResult
-
-Result of dispatching an action to its server handler.
-
-**Definition:**
-
-```typescript
-export type ActionDispatchResult = {
-    success: boolean;
-    data: unknown;
-    error: string | null;
-    record: Record<string, unknown> | null;
-};
-```
-
 ### ActionEventPayload
 
 Payload emitted with the 'action' event when the user triggers a declared action — an FSM transition or a stateless Command.
@@ -2597,4 +2582,12 @@ export enum ValidationSeverity {
   WARNING = "warning",
 }
 ```
+
+## Re-exported
+
+Declared elsewhere and re-exported by this package.
+
+| Name | From |
+|------|------|
+| ActionDispatchResult | `@stonecrop/schema` |
 
