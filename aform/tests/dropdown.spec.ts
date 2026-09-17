@@ -38,7 +38,7 @@ describe('dropdown input component', { tags: ['component'] }, () => {
 
 		const liElements = wrapper.findAll('li')
 		const firstLiElement = liElements.at(0)
-		await firstLiElement!.trigger('click')
+		await firstLiElement!.trigger('mousedown')
 		await wrapper.vm.$nextTick()
 
 		updateEvents = wrapper.emitted('update:modelValue')
@@ -116,7 +116,7 @@ describe('dropdown input component', { tags: ['component'] }, () => {
 
 		const liElements = wrapper.findAll('li')
 		const firstLiElement = liElements.at(0)
-		await firstLiElement!.trigger('click')
+		await firstLiElement!.trigger('mousedown')
 		await wrapper.vm.$nextTick()
 
 		valueUpdateEvents = wrapper.emitted('update:modelValue')

@@ -42,7 +42,26 @@ import ADatePicker from './ADatePicker.vue'
 import ADateTimeInput from './ADateTimeInput.vue'
 import { toDate, readTableDate, writeTableDate, type TableDateStore } from '../../utils/calendar-date'
 
-const props = defineProps<{
+const {
+	id,
+	showDate = true,
+	showTime = true,
+	selectRange = true,
+	showEndTime = false,
+	allowMilitaryTime = false,
+	defaultHours = 12,
+	defaultMinutes = 0,
+	defaultSeconds = 0,
+	defaultMeridiem = 'AM',
+	useSeconds = true,
+	selected,
+	modelValue,
+	start = null,
+	end = null,
+	store,
+	colIndex,
+	rowIndex,
+} = defineProps<{
 	id?: string
 	showDate?: boolean
 	showTime?: boolean
@@ -63,28 +82,11 @@ const props = defineProps<{
 	rowIndex?: number
 }>()
 
-const {
-	showDate = true,
-	showTime = true,
-	selectRange = true,
-	showEndTime = false,
-	allowMilitaryTime = false,
-	defaultHours = 12,
-	defaultMinutes = 0,
-	defaultSeconds = 0,
-	defaultMeridiem = 'AM',
-	useSeconds = true,
-	start = null,
-	end = null,
-} = props
-
 const selectedDate = computed(() => {
 	return (
-		toDate(props.selected) ??
-		toDate(props.modelValue) ??
-		(props.store != null && props.colIndex != null && props.rowIndex != null
-			? readTableDate(props.store, props.colIndex, props.rowIndex)
-			: null)
+		toDate(selected) ??
+		toDate(modelValue) ??
+		(store != null && colIndex != null && rowIndex != null ? readTableDate(store, colIndex, rowIndex) : null)
 	)
 })
 
@@ -146,8 +148,8 @@ const handleDate = (data: { start: Date | null; end: Date | null; selected: Date
 		// Picking a day on the calendar is unambiguously a user action.
 		tryEmitRange('user')
 	}
-	if (props.store != null && props.colIndex != null && props.rowIndex != null && data.selected) {
-		writeTableDate(props.store, props.colIndex, props.rowIndex, data.selected)
+	if (store != null && colIndex != null && rowIndex != null && data.selected) {
+		writeTableDate(store, colIndex, rowIndex, data.selected)
 	}
 }
 

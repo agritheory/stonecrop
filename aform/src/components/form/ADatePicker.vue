@@ -10,13 +10,25 @@
 				<tbody>
 					<tr>
 						<td>
-							<button type="button" class="month-nav-btn" aria-label="Previous month" @click="previousMonth">
+							<button
+								id="previous-month-btn"
+								type="button"
+								class="month-nav-btn"
+								aria-label="Previous month"
+								@click="previousMonth">
 								&lt;
 							</button>
 						</td>
 						<th colspan="5">{{ monthAndYear }}</th>
 						<td>
-							<button type="button" class="month-nav-btn" aria-label="Next month" @click="nextMonth">&gt;</button>
+							<button
+								id="next-month-btn"
+								type="button"
+								class="month-nav-btn"
+								aria-label="Next month"
+								@click="nextMonth">
+								&gt;
+							</button>
 						</td>
 					</tr>
 					<tr v-if="selectRange">
@@ -407,7 +419,9 @@ watch(
 	incomingDate,
 	parsed => {
 		selectedDate.value = parsed
-		if (parsed) {
+		if (!parsed) return
+		const visible = currentDates.value.some(d => new Date(d).toDateString() === parsed.toDateString())
+		if (!visible) {
 			currentMonth.value = parsed.getMonth()
 			currentYear.value = parsed.getFullYear()
 		}

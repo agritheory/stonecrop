@@ -24,12 +24,11 @@ describe('login component', { tags: ['component'] }, () => {
 		const wrapper = mount(Login)
 		await wrapper.vm.$nextTick()
 
-		const $submitBtn = wrapper.find('button[type="submit"]')
 		const emailInput = wrapper.find('input[type="email"]')
 		const passwordInput = wrapper.find('input[type="password"]')
 		await emailInput.setValue('support@agritheory.dev')
 		await passwordInput.setValue('password')
-		await $submitBtn.trigger('click')
+		await wrapper.find('form').trigger('submit')
 
 		const loginEvents = wrapper.emitted('loginSuccess')
 		expect(loginEvents).toBeTruthy()

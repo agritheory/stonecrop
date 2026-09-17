@@ -90,10 +90,11 @@ describe('SheetNav', { tags: ['component'] }, () => {
 			global: globalConfig,
 		})
 
-		const hometabBefore = wrapper.find('.hometab').attributes('style')
-		expect(hometabBefore).toContain('display: flex')
+		const btn = wrapper.find('.hidebreadcrumbs-btn')
+		expect(btn.element.tagName).toBe('BUTTON')
+		expect(wrapper.find('.hometab').attributes('style')).toContain('display: flex')
 
-		await wrapper.find('.hidebreadcrumbs-btn').trigger('keydown.enter')
+		await btn.trigger('click')
 		expect(wrapper.find('.hometab').attributes('style')).toContain('display: none')
 	})
 
