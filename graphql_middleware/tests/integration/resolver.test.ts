@@ -6,7 +6,7 @@ import { makeSchema } from 'postgraphile'
 import { PostGraphileAmberPreset } from 'postgraphile/presets/amber'
 import { execute, hookArgs } from 'postgraphile/grafast'
 import { makePgService, makeWithPgClientViaPgClientAlreadyInTransaction } from 'postgraphile/adaptors/pg'
-import { describe, it, expect, beforeAll, afterAll, inject } from 'vitest'
+import { describe, it, expect, beforeAll, afterAll, afterEach, beforeEach, inject, vi } from 'vitest'
 
 import { createStonecropPlugin } from '../../src/plugin/postgraphile'
 import type { ActionHandler } from '../../src/plugin/postgraphile'
@@ -277,7 +277,7 @@ beforeAll(async () => {
 				{ kind: 'field', fieldname: 'itemId', component: 'ATextInput', label: 'Item' },
 			],
 			links: {
-				// `component: AForm` makes this expand, so `getSqlColumns` omits item_id from the
+				// `component: AForm` makes this expand, so `getColumnSelections` omits item_id from the
 				// payload SELECT — and the expansion still has to find the value somewhere.
 				itemId: {
 					target: 'ScItem',
@@ -434,6 +434,56 @@ beforeAll(async () => {
 				actions: { save: { label: 'Save', selfTransition: true }, echoLink: { label: 'Echo Link' } },
 			},
 		},
+		// Temporal fixtures. A period is named by the day it starts, so a link to one displays a date.
+		ScPeriod: {
+			name: 'ScPeriod',
+			displayField: 'startsOn',
+			fields: [
+				{ kind: 'field', fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
+				{ kind: 'field', fieldname: 'name', component: 'ATextInput', label: 'Name' },
+				{ kind: 'field', fieldname: 'startsOn', component: 'ADate', label: 'Starts On' },
+				{ kind: 'field', fieldname: 'openedAt', component: 'ADateTime', label: 'Opened At' },
+			],
+			workflow: { actions: { save: { label: 'Save', selfTransition: true } } },
+		},
+		ScPeriodEntry: {
+			name: 'ScPeriodEntry',
+			fields: [
+				{ kind: 'field', fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
+				{ kind: 'field', fieldname: 'periodId', component: 'AFormLink', doctype: 'ScPeriod', label: 'Period' },
+				{ kind: 'field', fieldname: 'bookedOn', component: 'ADate', label: 'Booked On' },
+			],
+		},
+		ScPeriodWithEntries: {
+			name: 'ScPeriodWithEntries',
+			fields: [
+				{ kind: 'field', fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
+				{ kind: 'field', fieldname: 'startsOn', component: 'ADate', label: 'Starts On' },
+			],
+			links: {
+				entries: {
+					target: 'ScPeriodEntry',
+					cardinality: 'noneOrMany' as const,
+					backlink: 'periodId',
+					fetch: { method: 'sync' as const },
+				},
+			},
+		},
+		ScPeriodEntryWithPeriod: {
+			name: 'ScPeriodEntryWithPeriod',
+			fields: [
+				{ kind: 'field', fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
+				{ kind: 'field', fieldname: 'periodId', component: 'ATextInput', label: 'Period' },
+			],
+			links: {
+				periodId: {
+					target: 'ScPeriod',
+					cardinality: 'one' as const,
+					component: 'AForm',
+					fetch: { method: 'sync' as const },
+				},
+			},
+		},
 		// Reads sc_party, expanding its orders. The expanded ScOrder rows carry `customerId`,
 		// an inline link — so a nested record is a place enrichment has to reach as well.
 		ScPartyWithOrders: {
@@ -477,6 +527,8 @@ beforeAll(async () => {
 					ScBulkSync: 'sc_bulk',
 					ScBulkCapped: 'sc_bulk',
 					ScPartyWithOrders: 'sc_party',
+					ScPeriodWithEntries: 'sc_period',
+					ScPeriodEntryWithPeriod: 'sc_period_entry',
 				},
 			}),
 		],
@@ -961,6 +1013,108 @@ describe('self-transition data write', { tags: ['integration', 'graphql'] }, () 
 		expect((expanded as any).data?.stonecropAction?.droppedFields).toContain('itemId')
 		expect((scalar as any).data?.stonecropAction?.success).toBe(true)
 		expect((scalar as any).data?.stonecropAction?.droppedFields).toBeNull()
+	})
+})
+
+// ===========================================================================
+// Temporal columns
+// ===========================================================================
+
+describe('temporal columns', { tags: ['integration', 'graphql'] }, () => {
+	const hostRead = `query { scPeriodByRowId(rowId: 1) { rowId name startsOn openedAt } }`
+	const readHost = async () => ((await runQuery(hostRead)) as any).data.scPeriodByRowId
+
+	// Serialized, because the client receives JSON and a result object can still hold a Date.
+	const serialize = (result: unknown): any => JSON.parse(JSON.stringify(result))
+	const readRecord = async (doctype: string) =>
+		serialize(await runQuery(`query { stonecropRecord(doctype: "${doctype}", id: "1") { data } }`)).data.stonecropRecord
+			.data
+
+	// A period record in the host's vocabulary. The id is compared too: it is text until decoded, so it
+	// is what shows a read path that skips decoding, where a date reads the same either way.
+	const asHost = (period: { id: unknown; name: unknown; startsOn: unknown; openedAt: unknown }) => ({
+		rowId: period.id,
+		name: period.name,
+		startsOn: period.startsOn,
+		openedAt: period.openedAt,
+	})
+
+	// Pinned zones, because `pg` parses into the reading process's own zone and CI runs in UTC.
+	describe.each(['Asia/Kolkata', 'America/New_York'])('read in %s', zone => {
+		beforeEach(() => vi.stubEnv('TZ', zone))
+		afterEach(() => vi.unstubAllEnvs())
+
+		it('reads a date column as the day it holds', async () => {
+			expect((await readRecord('ScPeriod')).startsOn).toBe('2026-01-01')
+		})
+
+		it('reads the values PostGraphile serves for the same row', async () => {
+			expect(asHost(await readRecord('ScPeriod'))).toEqual(await readHost())
+		})
+
+		it('lists the values PostGraphile serves for the same row', async () => {
+			const list = serialize(await runQuery(`query { stonecropRecords(doctype: "ScPeriod") { data } }`))
+			expect(list.data.stonecropRecords.data.map(asHost)).toEqual([await readHost()])
+		})
+
+		it('replies to a save with the values PostGraphile serves', async () => {
+			const [save, host] = await runSequence([
+				`mutation { stonecropAction(doctype: "ScPeriod", action: "save", args: [{ id: "1", data: { name: "Renamed" } }]) { data } }`,
+				hostRead,
+			])
+			expect(asHost(serialize(save).data.stonecropAction.data)).toEqual((host as any).data.scPeriodByRowId)
+		})
+
+		// A save whose every key is dropped writes nothing and reads the record back instead.
+		it('replies to a save with nothing to write with the values PostGraphile serves', async () => {
+			const [save] = await runSequence([
+				`mutation { stonecropAction(doctype: "ScPeriod", action: "save", args: [{ id: "1", data: { undeclared: "x" } }]) { data } }`,
+			])
+			expect(asHost(serialize(save).data.stonecropAction.data)).toEqual(await readHost())
+		})
+
+		it('replies to a create with the values PostGraphile serves', async () => {
+			const [create, host] = await runSequence([
+				`mutation { stonecropAction(doctype: "ScPeriod", action: "save", args: [{ data: { name: "Q2", startsOn: "2026-04-01", openedAt: "2026-04-01T09:00:00.000000" } }]) { data } }`,
+				`query { allScPeriods { nodes { rowId name startsOn openedAt } } }`,
+			])
+			const hostCreated = (host as any).data.allScPeriods.nodes.filter((node: { name: string }) => node.name === 'Q2')
+			expect([asHost(serialize(create).data.stonecropAction.data)]).toEqual(hostCreated)
+		})
+
+		it('reads child rows with the values PostGraphile serves', async () => {
+			const hostEntry = ((await runQuery(`query { scPeriodEntryByRowId(rowId: 1) { rowId bookedOn } }`)) as any).data
+				.scPeriodEntryByRowId
+			const period = await readRecord('ScPeriodWithEntries')
+			expect(
+				period.entries.map((entry: { id: unknown; bookedOn: unknown }) => ({
+					rowId: entry.id,
+					bookedOn: entry.bookedOn,
+				}))
+			).toEqual([hostEntry])
+		})
+
+		it('reads an expanded link with the values PostGraphile serves', async () => {
+			expect(asHost((await readRecord('ScPeriodEntryWithPeriod')).periodId)).toEqual(await readHost())
+		})
+
+		it('leaves the row unchanged when a read is saved back as it came', async () => {
+			const before = await readHost()
+			const period = await readRecord('ScPeriod')
+			const [save, after] = await runSequence([
+				`mutation { stonecropAction(doctype: "ScPeriod", action: "save", args: [{ id: "1", data: { startsOn: ${JSON.stringify(period.startsOn)}, openedAt: ${JSON.stringify(period.openedAt)} } }]) { success error } }`,
+				hostRead,
+			])
+			expect((save as any).data?.stonecropAction?.success).toBe(true)
+			expect((after as any).data.scPeriodByRowId).toEqual(before)
+		})
+	})
+
+	// Fails in every zone: a date display column reaches the lookup as a Date, which is not text.
+	it('displays a link by a date display field as PostGraphile serves it', async () => {
+		const host = await readHost()
+		const entry = await readRecord('ScPeriodEntry')
+		expect(entry.periodId).toEqual({ id: host.rowId, displayText: host.startsOn })
 	})
 })
 

@@ -1,8 +1,19 @@
 import type { PgClient } from '@dataplan/pg'
 import { describe, it, expect, beforeEach } from 'vitest'
 
+import type { ColumnReader } from '../src/columns'
 import { enrichLinkDisplayFields } from '../src/link-display'
 import { clearRegistry, getMeta, loadDoctypesFromObject } from '../src/registry/doctypes'
+
+// Selects each column bare and decodes nothing, so these tests see only the enrichment's own rules.
+// Reading a column through its codec is covered against a real database in the integration suite.
+const columns: ColumnReader = {
+	select: (_doctype, selections) => ({
+		table: '"sc_party"',
+		list: selections.map(({ column, alias }) => `"${column}" AS "${alias}"`).join(', '),
+		decodeRows: () => {},
+	}),
+}
 
 describe('enrichLinkDisplayFields', { tags: ['unit', 'graphql'] }, () => {
 	beforeEach(() => {
@@ -56,7 +67,32 @@ describe('enrichLinkDisplayFields', { tags: ['unit', 'graphql'] }, () => {
 			}),
 		} as unknown as PgClient
 
-		await enrichLinkDisplayFields(pgClient, getMeta('ScOrder')!, rows, { ScParty: 'sc_party' }, async (client, query) =>
+		await enrichLinkDisplayFields(pgClient, getMeta('ScOrder')!, rows, columns, async (client, query) =>
+			client.query(query)
+		)
+
+		expect(rows[0].customerId).toEqual({ id: 10, displayText: 'Acme Corp' })
+	})
+
+	// A decode that changes the value, because a date or a number reads the same before and after.
+	it('displays the display column as the reader decodes it', async () => {
+		const rows = [{ id: 1, customerId: 10 }]
+
+		const pgClient = {
+			query: async () => ({
+				rows: [{ id: '10', partyName: 'undecoded' }],
+			}),
+		} as unknown as PgClient
+		const decodingColumns: ColumnReader = {
+			select: (doctype, selections) => ({
+				...columns.select(doctype, selections),
+				decodeRows: decodedRows => {
+					for (const row of decodedRows) row.partyName = 'Acme Corp'
+				},
+			}),
+		}
+
+		await enrichLinkDisplayFields(pgClient, getMeta('ScOrder')!, rows, decodingColumns, async (client, query) =>
 			client.query(query)
 		)
 
@@ -73,7 +109,7 @@ describe('enrichLinkDisplayFields', { tags: ['unit', 'graphql'] }, () => {
 			},
 		} as unknown as PgClient
 
-		await enrichLinkDisplayFields(pgClient, getMeta('ScOrder')!, rows, undefined, async (client, query) =>
+		await enrichLinkDisplayFields(pgClient, getMeta('ScOrder')!, rows, columns, async (client, query) =>
 			client.query(query)
 		)
 
@@ -95,12 +131,8 @@ describe('enrichLinkDisplayFields', { tags: ['unit', 'graphql'] }, () => {
 			}),
 		} as unknown as PgClient
 
-		await enrichLinkDisplayFields(
-			pgClient,
-			getMeta('ScInvoice')!,
-			rows,
-			{ ScParty: 'sc_party' },
-			async (client, query) => client.query(query)
+		await enrichLinkDisplayFields(pgClient, getMeta('ScInvoice')!, rows, columns, async (client, query) =>
+			client.query(query)
 		)
 
 		expect(rows[0].customerId).toBe(10)
@@ -120,7 +152,7 @@ describe('enrichLinkDisplayFields', { tags: ['unit', 'graphql'] }, () => {
 			},
 		} as unknown as PgClient
 
-		await enrichLinkDisplayFields(pgClient, getMeta('ScOrder')!, rows, { ScParty: 'sc_party' }, async (client, query) =>
+		await enrichLinkDisplayFields(pgClient, getMeta('ScOrder')!, rows, columns, async (client, query) =>
 			client.query(query)
 		)
 
