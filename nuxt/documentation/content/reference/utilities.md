@@ -9,6 +9,22 @@ description: Shared utility functions
 
 ## Functions
 
+### fromISODate
+
+Reads a `YYYY-MM-DD` day as its local midnight, the Date a calendar shows as that day. Anything that is not a real day written that way reads as an invalid Date.
+
+**Signature:**
+
+```typescript
+export declare function fromISODate(day: string): Date;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| day | `string` | The day, as `YYYY-MM-DD` |
+
 ### install
 
 Install all utility components
@@ -24,6 +40,22 @@ declare function install(_app: App): void;
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | _app | `App` | Vue app instance |
+
+### toISODate
+
+Writes a Date as the `YYYY-MM-DD` day it falls on in local time, the day a calendar showed for it. Not `toISOString()`, which gives the UTC day: a day early east of UTC.
+
+**Signature:**
+
+```typescript
+export declare function toISODate(date: Date): string;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| date | `Date` | The Date to write |
 
 ### useKeyboardNav
 

@@ -12,6 +12,9 @@ import { Ref } from 'vue';
 export const defaultKeypressHandlers: KeypressHandlers;
 
 // @public
+export function fromISODate(day: string): Date;
+
+// @public
 export function install(_app: App): void;
 
 // @public
@@ -25,6 +28,9 @@ export type KeyboardNavigationOptions = {
 export type KeypressHandlers = {
     [key: string]: (ev: KeyboardEvent) => any;
 };
+
+// @public
+export function toISODate(date: Date): string;
 
 // @public
 export function useKeyboardNav(options: KeyboardNavigationOptions[]): void;

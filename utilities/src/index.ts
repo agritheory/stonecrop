@@ -1,6 +1,7 @@
 import { App } from 'vue'
 
 import { defaultKeypressHandlers, useKeyboardNav } from './composables/keyboard'
+import { fromISODate, toISODate } from './dates'
 export type * from './types'
 
 /**
@@ -10,4 +11,4 @@ export type * from './types'
  */
 function install(_app: App /* options */) {}
 
-export { defaultKeypressHandlers, install, useKeyboardNav }
+export { defaultKeypressHandlers, fromISODate, install, toISODate, useKeyboardNav }
