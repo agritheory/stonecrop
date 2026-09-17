@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { componentCategory } from '@stonecrop/schema'
 import type { BadgeDescriptor } from '@stonecrop/schema'
+import { fromISODate } from '@stonecrop/utilities'
 import { type CSSProperties, computed, ref } from 'vue'
 
 import { linkSearchableText } from '../linkSearchableText'
@@ -543,7 +544,7 @@ export const createTableStore = (initData: {
 				// opinion (including an unknown component) renders the raw value.
 				const category = componentCategory(column.component)
 				if (category === 'boolean') return value ? '✓' : '✗'
-				if (category === 'date') return value != null ? new Date(String(value)).toLocaleDateString() : value
+				if (category === 'date') return value != null ? fromISODate(String(value)).toLocaleDateString() : value
 				if (category === 'datetime') return value != null ? new Date(String(value)).toLocaleString() : value
 				if (category === 'quantity') return formatQuantity(value)
 				if (category === 'currency') return formatCurrency(value)

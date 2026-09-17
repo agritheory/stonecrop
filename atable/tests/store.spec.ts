@@ -1,5 +1,5 @@
 import { createPinia, setActivePinia } from 'pinia'
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { afterEach, describe, it, expect, beforeEach, vi } from 'vitest'
 
 import { createTableStore, getIndent } from '../src/stores/table'
 import type { TableColumn, TableRow, GanttBarInfo, ConnectionHandle } from '../src/types'
@@ -217,11 +217,15 @@ describe('table store', { tags: ['component'] }, () => {
 				expect(store.getFormattedValue(0, 0, false)).toBe('✗')
 			})
 
-			it('formats Date string as locale date', () => {
-				store.columns[0] = { name: 'id', component: 'ADate' }
-				const input = '2024-06-15'
-				const result = store.getFormattedValue(0, 0, input)
-				expect(result).toBe(new Date(input).toLocaleDateString())
+			// Pinned zones, because a day read as UTC midnight only shifts outside UTC, and CI runs in UTC.
+			describe.each(['Asia/Kolkata', 'America/New_York'])('in %s', zone => {
+				beforeEach(() => vi.stubEnv('TZ', zone))
+				afterEach(() => vi.unstubAllEnvs())
+
+				it('formats Date string as locale date', () => {
+					store.columns[0] = { name: 'id', component: 'ADate' }
+					expect(store.getFormattedValue(0, 0, '2024-06-15')).toBe(new Date(2024, 5, 15).toLocaleDateString())
+				})
 			})
 
 			it('returns null for Date when value is null', () => {
