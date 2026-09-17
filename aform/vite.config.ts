@@ -1,7 +1,8 @@
 import vue from '@vitejs/plugin-vue'
+import { playwright } from '@vitest/browser-playwright'
 import { resolve } from 'path'
 import { libInjectCss } from 'vite-plugin-lib-inject-css'
-import { coverageConfigDefaults, defineConfig } from 'vitest/config'
+import { configDefaults, coverageConfigDefaults, defineConfig } from 'vitest/config'
 
 import { buildTask } from '../tools/vite/build-task.ts'
 import { testTags } from '../tools/vite/test-tags.ts'
@@ -36,7 +37,32 @@ export default defineConfig({
 	test: {
 		globals: true,
 		tags: testTags,
-		environment: 'jsdom',
+		projects: [
+			{
+				extends: true,
+				test: {
+					name: 'jsdom',
+					environment: 'jsdom',
+					exclude: [...configDefaults.exclude, '**/*.browser.spec.ts'],
+				},
+			},
+			// jsdom has no native date input: no calendar of its own, and no real focus or typing.
+			{
+				extends: true,
+				test: {
+					name: 'browser',
+					include: ['tests/**/*.browser.spec.ts'],
+					browser: {
+						enabled: true,
+						headless: true,
+						// The installed Google Chrome, so neither CI nor a checkout downloads a browser. The
+						// locale fixes the order of a date input's segments, which typing depends on.
+						provider: playwright({ launchOptions: { channel: 'chrome' }, contextOptions: { locale: 'en-US' } }),
+						instances: [{ browser: 'chromium' }],
+					},
+				},
+			},
+		],
 		coverage: {
 			enabled: true,
 			provider: 'istanbul',
