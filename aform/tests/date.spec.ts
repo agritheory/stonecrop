@@ -134,6 +134,19 @@ describe('date component', { tags: ['component'] }, () => {
 		expect(emitted).toEqual([''])
 	})
 
+	it('opens the calendar on the month of the field value', async () => {
+		const wrapper = mount(ADate, { ...globalComponents, props: { modelValue: '2024-03-15' } })
+		await wrapper.find('input').trigger('click')
+		const picker = wrapper.findComponent(ADatePicker)
+		expect([picker.vm.currentYear, picker.vm.currentMonth]).toEqual([2024, 2])
+	})
+
+	it('marks the day the field holds as picked', async () => {
+		const wrapper = mount(ADate, { ...globalComponents, props: { modelValue: '2024-03-15' } })
+		await wrapper.find('input').trigger('click')
+		expect(wrapper.findAll('td.selectedDate').map(cell => cell.text())).toEqual(['15'])
+	})
+
 	// Pinned zones, because the runner's own zone hides these: CI runs in UTC, where both pass.
 	describe.each(['Asia/Kolkata', 'America/New_York'])('in %s', zone => {
 		beforeEach(() => {

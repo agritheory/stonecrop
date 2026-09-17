@@ -106,6 +106,7 @@ rows:
   - ['`selectRange`', '`boolean`', '`true`', 'Whether the calendar allows selecting a start/end date range, rather than a single date.']
   - ['`showEndTime`', '`boolean`', '`false`', 'When `selectRange` and `showTime` are both `true`, also renders a second `ADateTimeInput`, labeled "End time", for the end of the range.']
   - ['`allowMilitaryTime`', '`boolean`', '`false`', 'Passed through to the `ADateTimeInput` segment(s); renders 24-hour input instead of a 12-hour segment plus AM/PM selector.']
+  - ['`defaultDate`', '`Date`', 'today', 'The date the `ADatePicker` calendar opens on and marks as selected.']
   - ['`defaultHours`', '`number`', '`12`', 'Initial hours value passed to the `ADateTimeInput` segment(s).']
   - ['`defaultMinutes`', '`number`', '`0`', 'Initial minutes value passed to the `ADateTimeInput` segment(s).']
   - ['`defaultSeconds`', '`number`', '`0`', 'Initial seconds value passed to the `ADateTimeInput` segment(s).']

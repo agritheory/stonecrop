@@ -199,6 +199,7 @@ import { ADateSelection } from '@stonecrop/aform'
 | selectRange | `boolean \| undefined` | no | `true` |  |
 | showEndTime | `boolean \| undefined` | no | `false` |  |
 | allowMilitaryTime | `boolean \| undefined` | no | `false` |  |
+| defaultDate | `Date \| undefined` | no |  |  |
 | defaultHours | `number \| undefined` | no | `12` |  |
 | defaultMinutes | `number \| undefined` | no | `0` |  |
 | defaultSeconds | `number \| undefined` | no | `0` |  |

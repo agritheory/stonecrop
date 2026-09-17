@@ -20,6 +20,7 @@
 				v-if="showPicker"
 				ref="picker"
 				class="adate-picker"
+				:default-date="modelValue ? fromISODate(modelValue) : undefined"
 				:select-range="false"
 				:show-time="false"
 				@get-date="handleDate" />

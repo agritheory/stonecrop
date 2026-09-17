@@ -26,6 +26,7 @@
 				:select-range="false"
 				:show-date="true"
 				:show-time="true"
+				:default-date="currentDateTime"
 				:default-hours="pickerDefaults.hours"
 				:default-minutes="pickerDefaults.minutes"
 				:default-seconds="pickerDefaults.seconds"

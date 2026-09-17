@@ -504,6 +504,14 @@ describe('datetime form field component', { tags: ['component'] }, () => {
 		expect(typeof emitted[emitted.length - 1]).toBe('string')
 	})
 
+	it('opens the calendar on the day the field holds', async () => {
+		const wrapper = mount(ADateTime, { ...formFieldGlobals, props: { modelValue: '2024-03-15T10:00:00' } })
+		await wrapper.find('.aform_input-field').trigger('click')
+		const picker = wrapper.findComponent(ADatePicker)
+		expect([picker.vm.currentYear, picker.vm.currentMonth]).toEqual([2024, 2])
+		expect(wrapper.findAll('td.selectedDate').map(cell => cell.text())).toEqual(['15'])
+	})
+
 	it('renders in display mode with formatted datetime', () => {
 		const wrapper = mount(ADateTime, {
 			...formFieldGlobals,

@@ -2,7 +2,7 @@
 
 <template>
 	<div class="adate-selection">
-		<ADatePicker v-if="showDate" :select-range="selectRange" @get-date="handleDate" />
+		<ADatePicker v-if="showDate" :model-value="defaultDate" :select-range="selectRange" @get-date="handleDate" />
 
 		<ADateTimeInput
 			v-if="showTime"
@@ -41,6 +41,7 @@ const {
 	selectRange = true,
 	showEndTime = false,
 	allowMilitaryTime = false,
+	defaultDate,
 	defaultHours = 12,
 	defaultMinutes = 0,
 	defaultSeconds = 0,
@@ -52,6 +53,7 @@ const {
 	selectRange?: boolean
 	showEndTime?: boolean
 	allowMilitaryTime?: boolean
+	defaultDate?: Date
 	defaultHours?: number
 	defaultMinutes?: number
 	defaultSeconds?: number

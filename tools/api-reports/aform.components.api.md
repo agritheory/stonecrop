@@ -149,6 +149,7 @@ props: {
   selectRange?: boolean \| undefined
   showEndTime?: boolean \| undefined
   allowMilitaryTime?: boolean \| undefined
+  defaultDate?: Date \| undefined
   defaultHours?: number \| undefined
   defaultMinutes?: number \| undefined
   defaultSeconds?: number \| undefined
