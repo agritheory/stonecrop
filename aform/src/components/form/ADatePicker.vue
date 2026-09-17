@@ -165,7 +165,7 @@ const isEndDate = (day: string | number | Date) => {
 }
 
 const getCurrentCell = (rowNo: number, colNo: number) => {
-	return (rowNo - 1) * numberOfColumns + colNo
+	return (rowNo - 1) * numberOfColumns + colNo - 1
 }
 
 const isInDateRange = (day: string | number | Date) => {
@@ -198,15 +198,13 @@ const preventCellSelection = (event: MouseEvent) => {
 }
 
 const populateMonth = () => {
-	currentDates.value = []
-	const firstOfMonth = new Date(currentYear.value, currentMonth.value, 1)
-	const monthStartWeekday = firstOfMonth.getDay()
-	const calendarStartDay = firstOfMonth.setDate(firstOfMonth.getDate() - monthStartWeekday)
+	// The grid starts on the Monday on or before the 1st, matching the header's first column.
+	const daysSinceMonday = (new Date(currentYear.value, currentMonth.value, 1).getDay() + 6) % 7
 
-	// assume midnight for all dates while building the calendar
-	for (const dayIndex of Array(43).keys()) {
-		currentDates.value.push(calendarStartDay + dayIndex * 86400000)
-	}
+	// Each cell is its own local midnight, not a 24-hour step: the day a clock changes is not 24 hours long.
+	currentDates.value = Array.from({ length: numberOfRows * numberOfColumns }, (_, cellIndex) =>
+		new Date(currentYear.value, currentMonth.value, 1 - daysSinceMonday + cellIndex).getTime()
+	)
 }
 const previousYear = () => (currentYear.value -= 1)
 const nextYear = () => (currentYear.value += 1)

@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { afterEach, describe, it, expect, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { nextTick } from 'vue'
 
@@ -321,6 +321,34 @@ describe('datepicker component', { tags: ['component'] }, () => {
 			await wrapper.vm.$nextTick()
 			expect(wrapper.find('.startDate').exists()).toBe(false)
 			expect(wrapper.find('.endDate').exists()).toBe(false)
+		})
+	})
+
+	describe('month grid', () => {
+		const days = (first: number, last: number) => Array.from({ length: last - first + 1 }, (_, index) => first + index)
+
+		const gridFor = async (zone: string, today: [number, number, number]) => {
+			vi.stubEnv('TZ', zone)
+			vi.useFakeTimers({ toFake: ['Date'] })
+			vi.setSystemTime(new Date(...today, 12))
+			const wrapper = mount(ADatePicker)
+			await nextTick()
+			return wrapper.findAll('td.date-cell').map(cell => Number(cell.text()))
+		}
+
+		afterEach(() => {
+			vi.useRealTimers()
+			vi.unstubAllEnvs()
+		})
+
+		it('starts on the Monday before a month that begins on a Sunday', async () => {
+			// February 2026 begins on a Sunday.
+			expect(await gridFor('UTC', [2026, 1, 15])).toEqual([...days(26, 31), ...days(1, 28), ...days(1, 8)])
+		})
+
+		it('numbers each day once across a daylight saving change', async () => {
+			// October 2026's grid runs to 8 November, and New York leaves daylight saving on 1 November.
+			expect(await gridFor('America/New_York', [2026, 9, 15])).toEqual([...days(28, 30), ...days(1, 31), ...days(1, 8)])
 		})
 	})
 })
