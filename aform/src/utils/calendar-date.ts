@@ -20,13 +20,14 @@ export function parseCalendarDate(value: string | Date | null | undefined): Date
 }
 
 /** Coerce a cell or field value (ISO string, locale string, timestamp, or Date) to a Date. */
-export function toDate(value: number | Date | string | null | undefined): Date | null {
+export function toDate(value: unknown): Date | null {
 	if (value == null || value === '') return null
 	if (typeof value === 'number') {
 		const parsed = new Date(value)
 		return Number.isNaN(parsed.getTime()) ? null : parsed
 	}
-	return parseCalendarDate(value)
+	if (typeof value === 'string' || value instanceof Date) return parseCalendarDate(value)
+	return null
 }
 
 /** Minimal table-store surface used when a date widget is mounted as a cell modal. */
@@ -48,7 +49,7 @@ export function readTableCell(store: TableDateStore, colIndex: number, rowIndex:
 }
 
 export function readTableDate(store: TableDateStore, colIndex: number, rowIndex: number): Date | null {
-	return toDate(readTableCell(store, colIndex, rowIndex) as number | Date | string | null)
+	return toDate(readTableCell(store, colIndex, rowIndex))
 }
 
 export function writeTableDate(store: TableDateStore, colIndex: number, rowIndex: number, value: Date) {
