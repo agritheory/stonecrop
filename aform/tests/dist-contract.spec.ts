@@ -23,7 +23,14 @@ describe('dist contract', { tags: ['unit'] }, () => {
 			bare,
 			`The set of externals changed. A specifier that disappeared is now bundled into dist — ` +
 				`for vue or pinia that ships a second copy into every consumer app.`
-		).toEqual(['@stonecrop/atable', '@stonecrop/schema', '@vueuse/components', '@vueuse/core', 'vue'])
+		).toEqual([
+			'@stonecrop/atable',
+			'@stonecrop/schema',
+			'@stonecrop/utilities',
+			'@vueuse/components',
+			'@vueuse/core',
+			'vue',
+		])
 	})
 
 	it('side-effect-imports its stylesheet from the entry', () => {

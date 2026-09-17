@@ -107,13 +107,13 @@ import { ADate } from '@stonecrop/aform'
 | uuid | `string \| undefined` | no |  | Set a unique identifier for elements inside the component |
 | validation | `{ [key: string]: any; errorMessage: string; } \| undefined` | no | `{ errorMessage: "" }` | Validation options for elements inside the component |
 | errors | `string[] \| undefined` | no |  | Inline validation error messages to display on this field. Fed by the host (e.g. mapped from the core validation store) — the renderer stays dumb and just shows what it is given. Takes precedence over the static `validation.errorMessage`. |
-| modelValue | `string \| Date \| undefined` | no |  |  |
+| modelValue | `string \| undefined` | no |  |  |
 
 **Events:**
 
 | Event | Payload | Description |
 |-------|---------|-------------|
-| update:modelValue | `[value: string \| Date \| undefined]` |  |
+| update:modelValue | `[value: string \| undefined]` |  |
 
 ### ADatePicker
 

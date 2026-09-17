@@ -81,10 +81,10 @@ props: {
   uuid?: string \| undefined
   validation?: { [key: string]: any; errorMessage: string; } \| undefined
   errors?: string[] \| undefined
-  modelValue?: string \| Date \| undefined
+  modelValue?: string \| undefined
 }
 emits: {
-  update:modelValue: [value: string \| Date \| undefined]
+  update:modelValue: [value: string \| undefined]
 }
 slots: {}
 ```
