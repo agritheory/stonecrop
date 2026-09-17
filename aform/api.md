@@ -200,20 +200,20 @@ import { ADateSelection } from '@stonecrop/aform'
 | Prop | Type | Required | Default | Description |
 |------|------|----------|---------|-------------|
 | id | `string \| undefined` | no |  |  |
-| showDate | `boolean \| undefined` | no |  |  |
-| showTime | `boolean \| undefined` | no |  |  |
-| selectRange | `boolean \| undefined` | no |  |  |
-| showEndTime | `boolean \| undefined` | no |  |  |
-| allowMilitaryTime | `boolean \| undefined` | no |  |  |
-| defaultHours | `number \| undefined` | no |  |  |
-| defaultMinutes | `number \| undefined` | no |  |  |
-| defaultSeconds | `number \| undefined` | no |  |  |
-| defaultMeridiem | `string \| undefined` | no |  |  |
-| useSeconds | `boolean \| undefined` | no |  |  |
+| showDate | `boolean \| undefined` | no | `true` |  |
+| showTime | `boolean \| undefined` | no | `true` |  |
+| selectRange | `boolean \| undefined` | no | `true` |  |
+| showEndTime | `boolean \| undefined` | no | `false` |  |
+| allowMilitaryTime | `boolean \| undefined` | no | `false` |  |
+| defaultHours | `number \| undefined` | no | `12` |  |
+| defaultMinutes | `number \| undefined` | no | `0` |  |
+| defaultSeconds | `number \| undefined` | no | `0` |  |
+| defaultMeridiem | `string \| undefined` | no | `"AM"` |  |
+| useSeconds | `boolean \| undefined` | no | `true` |  |
 | selected | `string \| number \| Date \| null \| undefined` | no |  |  |
 | modelValue | `string \| number \| Date \| null \| undefined` | no |  |  |
-| start | `string \| Date \| null \| undefined` | no |  |  |
-| end | `string \| Date \| null \| undefined` | no |  |  |
+| start | `string \| Date \| null \| undefined` | no | `null` |  |
+| end | `string \| Date \| null \| undefined` | no | `null` |  |
 | store | `TableDateStore \| undefined` | no |  |  |
 | colIndex | `number \| undefined` | no |  |  |
 | rowIndex | `number \| undefined` | no |  |  |
