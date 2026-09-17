@@ -51,8 +51,8 @@
 								</li>
 							</ul>
 						</div>
+						<label class="aform_field-label" :for="uuid">{{ label }}</label>
 					</div>
-					<label class="aform_field-label" :for="uuid">{{ label }}</label>
 				</div>
 			</div>
 			<div class="aquantity__row aquantity__row--stock">
@@ -246,11 +246,13 @@ const displayText = computed(() => {
 }
 
 .aquantity__group {
+	position: relative;
 	display: flex;
 	align-items: stretch;
 	width: 100%;
+	background: var(--sc-input-field-background);
 	border: 1px solid var(--sc-input-border-color);
-	border-radius: 0.25rem;
+	border-radius: var(--sc-border-radius);
 }
 
 .aquantity__group:focus-within {
@@ -263,8 +265,9 @@ const displayText = computed(() => {
 	border: none;
 	outline: none;
 	padding: 0.5ch 1ch;
+	font-size: 1rem;
 	background: transparent;
-	border-radius: 0.25rem 0 0 0.25rem;
+	border-radius: var(--sc-border-radius) 0 0 var(--sc-border-radius);
 	appearance: textfield;
 	-moz-appearance: textfield;
 }
@@ -288,9 +291,9 @@ const displayText = computed(() => {
 	gap: 0.75ch;
 	height: 100%;
 	padding: 0.5ch 1ch;
-	background: var(--sc-gray-5);
+	background: var(--sc-input-addon-background);
 	border: none;
-	border-radius: 0 0.25rem 0.25rem 0;
+	border-radius: 0 var(--sc-border-radius) var(--sc-border-radius) 0;
 	white-space: nowrap;
 	cursor: pointer;
 }
@@ -320,7 +323,7 @@ const displayText = computed(() => {
 	list-style: none;
 	background: var(--sc-input-field-background);
 	border: 1px solid var(--sc-input-active-border-color);
-	border-radius: 0.25rem;
+	border-radius: var(--sc-border-radius);
 }
 
 .aquantity__uom-option {
@@ -339,7 +342,7 @@ const displayText = computed(() => {
 	font-size: 1rem;
 	padding: 0.5ch 1ch;
 	border: 1px solid var(--sc-input-border-color);
-	border-radius: 0.25rem;
+	border-radius: var(--sc-border-radius);
 	outline: none;
 }
 

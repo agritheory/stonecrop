@@ -188,7 +188,7 @@ function onRemoveRow(row) {
 }
 .actions-panel :deep(input[type='text']) {
 	border: 1px solid var(--sc-gray-20, #d1d5db);
-	border-radius: 3px;
+	border-radius: var(--sc-border-radius);
 	font-family: inherit;
 	font-size: inherit;
 	padding: 0.25em 0.5em;
@@ -239,7 +239,7 @@ function onRemoveRow(row) {
 .add-row {
 	background: var(--sc-blue-40, #3b82f6);
 	border: none;
-	border-radius: 0.4rem;
+	border-radius: var(--sc-border-radius);
 	color: #fff;
 	cursor: pointer;
 	font-size: 0.8125rem;
@@ -284,7 +284,7 @@ function onRemoveRow(row) {
 	align-self: flex-start;
 	background: none;
 	border: 1px solid #fca5a5;
-	border-radius: 0.3rem;
+	border-radius: var(--sc-border-radius);
 	color: #b91c1c;
 	cursor: pointer;
 	font-size: 0.75rem;

@@ -245,7 +245,7 @@ const executeAction = (actionType: RowActionType, event?: MouseEvent) => {
 	vertical-align: middle;
 	white-space: nowrap;
 	border-top: 1px solid var(--sc-row-border-color);
-	background: white;
+	background: inherit;
 	user-select: none;
 	position: relative;
 }
@@ -341,7 +341,7 @@ const executeAction = (actionType: RowActionType, event?: MouseEvent) => {
 	z-index: 100;
 	min-width: 10rem;
 	padding: 0.25rem 0;
-	background: white;
+	background: var(--sc-overlay-background);
 	border: 1px solid var(--sc-row-border-color);
 	border-left: 4px solid var(--sc-row-border-color);
 	border-radius: 0;

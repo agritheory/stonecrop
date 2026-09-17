@@ -18,9 +18,9 @@
 								name="email"
 								placeholder="name@example.com"
 								type="email"
-								auto-capitalize="none"
-								auto-complete="email"
-								auto-correct="off"
+								autocomplete="email"
+								autocapitalize="none"
+								autocorrect="off"
 								:disabled="isLoading" />
 						</div>
 
@@ -32,17 +32,18 @@
 								class="aform_input-field"
 								name="password"
 								type="password"
+								autocomplete="current-password"
 								:disabled="isLoading" />
 						</div>
 
-						<button class="btn" :disabled="isLoading || !email || !password" @click="onSubmit">
+						<button type="submit" class="btn" :disabled="isLoading || !email || !password">
 							<span v-if="isLoading" class="material-symbols-outlined loading-icon">progress_activity</span>
 							<span id="login-form-button">Login</span>
 						</button>
 					</div>
 				</form>
 
-				<button class="btn">
+				<button type="button" class="btn">
 					<span id="forgot-password-button">Forgot password?</span>
 				</button>
 			</div>
@@ -135,17 +136,6 @@ function onSubmit(event: Event) {
 	margin: 0.5rem 0;
 	position: relative;
 }
-.login-field {
-	padding: 0.5rem 0.25rem 0.25rem 0.5rem;
-	outline: 1px solid transparent;
-	border: 1px solid var(--sc-input-border-color);
-	border-radius: 0.25rem;
-
-	&:focus {
-		border: 1px solid black;
-	}
-}
-
 .btn {
 	background-color: var(--sc-btn-color);
 	color: var(--sc-btn-label-color);

@@ -35,3 +35,6 @@ step 'dependency ranges' node --run check:deps
 # time this returns and only needs staging.
 step 'build' node --run build
 git add nuxt/documentation/content/reference/
+
+# After the build: type-aware oxlint reads the sibling .d.ts files that step just wrote.
+step 'lint' node --run lint

@@ -100,7 +100,7 @@ function handleAction(_label, action) {
 
 <style scoped>
 .docbuilder-index {
-	background: var(--sc-form-background, #fff);
+	background: var(--sc-form-background);
 	box-sizing: border-box;
 	min-height: 100vh;
 }
@@ -136,7 +136,7 @@ function handleAction(_label, action) {
 }
 .docbuilder-create input {
 	border: 1px solid var(--sc-gray-20, #d1d5db);
-	border-radius: 4px;
+	border-radius: var(--sc-border-radius);
 	flex: 1;
 	font: inherit;
 	padding: 0.5em 0.75em;
@@ -144,7 +144,7 @@ function handleAction(_label, action) {
 .btn-create {
 	background: var(--sc-blue-40, #3b82f6);
 	border: none;
-	border-radius: 0.4rem;
+	border-radius: var(--sc-border-radius);
 	color: #fff;
 	cursor: pointer;
 	font-weight: 500;

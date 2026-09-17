@@ -2,7 +2,7 @@ import { componentCategory } from '@stonecrop/schema'
 import type { ColumnSchema } from '@stonecrop/schema'
 
 import type { TableColumn } from './types'
-import { formatCurrency, formatQuantity } from './utils'
+import { formatCalendarDate, formatCurrency, formatQuantity } from './utils'
 
 /**
  * Convert an array of doctype field descriptors into ATable column definitions.
@@ -26,6 +26,9 @@ import { formatCurrency, formatQuantity } from './utils'
  * For currency fields — those whose `component` carries the `'currency'` category — without an
  * explicit `format`, a synchronous `format` is added that renders the `{ amount, currency }` value
  * (see `CurrencyValue` in `@stonecrop/aform`) as `"<amount> <currency>"`.
+ *
+ * For date fields — those whose `component` carries the `'date'` category — without an explicit
+ * `format`, a synchronous `format` is added that treats `YYYY-MM-DD` as a local calendar day.
  *
  * @public
  */
@@ -60,6 +63,12 @@ export function schemaToColumns(schema: ColumnSchema[]): TableColumn[] {
 			// Currency fields: render the composite { amount, currency } value as "<amount> <currency>".
 			if (componentCategory(rest.component) === 'currency' && !rest.format) {
 				col.format = formatCurrency
+			}
+
+			// Date fields: YYYY-MM-DD is a local calendar day. The JS Date constructor treats that
+			// string as UTC midnight, which shifts the displayed day west of UTC.
+			if (componentCategory(rest.component) === 'date' && !rest.format) {
+				col.format = formatCalendarDate
 			}
 
 			return col

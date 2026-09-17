@@ -120,7 +120,7 @@ When `selectRange` is `true`, clicking a day sets the range's start date; the ne
 ---
 headers: ['Event', 'Payload', 'Description']
 rows:
-  - ['`get-date`', '`{ start: Date | null; end: Date | null; selected: Date }`', "Emitted whenever a date is selected on the grid or entered into the start/end inputs. `start`/`end` are always `null` unless `selectRange` is `true`."]
+  - ['`get-date`', '`{ start: Date | null; end: Date | null; selected: Date | null }`', "Emitted whenever a date is selected on the grid or entered into the start/end inputs. `start`/`end` are always `null` unless `selectRange` is `true`."]
 ---
 ::
 

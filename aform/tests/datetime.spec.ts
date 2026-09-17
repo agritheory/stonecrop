@@ -428,10 +428,11 @@ describe('datetime input component', () => {
 })
 
 describe('datetime form field component', { tags: ['component'] }, () => {
-	it('renders a readonly input with shared form field classes', () => {
+	it('renders a typeable input with shared form field classes', () => {
 		const wrapper = mount(ADateTime, formFieldGlobals)
 		expect(wrapper.find('.aform_form-element').exists()).toBe(true)
 		expect(wrapper.find('.aform_input-field').exists()).toBe(true)
+		expect(wrapper.find('.aform_input-field').attributes()).not.toHaveProperty('readonly')
 		expect(wrapper.find('.aform_field-label').text()).toBe('Date & Time')
 	})
 
@@ -519,5 +520,20 @@ describe('datetime form field component', { tags: ['component'] }, () => {
 			props: { mode: 'read' },
 		})
 		expect(wrapper.find('input').attributes('disabled')).toBeDefined()
+	})
+
+	it('commits a typed datetime on blur', async () => {
+		const emitted: (string | Date | undefined)[] = []
+		const wrapper = mount(ADateTime, {
+			...formFieldGlobals,
+			props: { 'onUpdate:modelValue': (v: string | Date | undefined) => emitted.push(v) },
+		})
+		const $input = wrapper.find('.aform_input-field')
+		await $input.setValue('2023-06-15T14:30:00')
+		await $input.trigger('blur')
+		expect(emitted.length).toBeGreaterThan(0)
+		const parsed = new Date('2023-06-15T14:30:00')
+		expect(emitted[emitted.length - 1]).toBe(parsed.toISOString())
+		expect(($input.element as HTMLInputElement).value).toBe(parsed.toLocaleString())
 	})
 })

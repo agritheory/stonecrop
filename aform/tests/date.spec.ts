@@ -28,7 +28,8 @@ describe('date component', { tags: ['component'] }, () => {
 		const wrapper = mount(ADate, globalComponents)
 		const $input = wrapper.find('input')
 		expect($input.exists()).toBe(true)
-		expect($input.attributes('type')).toBe('date')
+		expect($input.attributes('type')).toBe('text')
+		expect($input.attributes()).not.toHaveProperty('readonly')
 	})
 
 	it('date input is rendered with value', async () => {
@@ -40,7 +41,7 @@ describe('date component', { tags: ['component'] }, () => {
 		})
 
 		const $input = wrapper.find('input')
-		expect($input.element.value).toBe('2021-01-01')
+		expect($input.element.value).toBe(new Date(2021, 0, 1).toLocaleDateString())
 	})
 
 	it('date input is disabled by default', async () => {
@@ -55,21 +56,11 @@ describe('date component', { tags: ['component'] }, () => {
 		expect($input.attributes()).toHaveProperty('disabled')
 	})
 
-	it('date input is required', async () => {
+	it('shows formatted date after picker selection', async () => {
 		const wrapper = mount(ADate, globalComponents)
-		const $input = wrapper.find('input')
-
-		// TODO: setup environment to test spawning the datepicker
-		await $input.trigger('click')
-		expect($input.element.showPicker).toBeUndefined()
-	})
-
-	it('formats date value on input change', async () => {
-		const wrapper = mount(ADate, globalComponents)
-		const $input = wrapper.find('input')
-		await $input.setValue('2023-06-15')
-		await wrapper.vm.$nextTick()
-		expect(($input.element as HTMLInputElement).value).toBe('2023-06-15')
+		await wrapper.find('input').trigger('click')
+		await wrapper.findComponent(ADateSelection).vm.$emit('get-date', { selected: new Date(2023, 5, 15) })
+		expect((wrapper.find('input').element as HTMLInputElement).value).toBe(new Date(2023, 5, 15).toLocaleDateString())
 	})
 
 	it('renders in display mode with formatted date', () => {
@@ -90,13 +81,48 @@ describe('date component', { tags: ['component'] }, () => {
 		expect(wrapper.find('.aform_display-value').text()).toBe('')
 	})
 
-	it('toggles custom date picker when input is clicked', async () => {
+	it('opens the custom date picker when the input is clicked', async () => {
 		const wrapper = mount(ADate, globalComponents)
 		expect(wrapper.findComponent(ADateSelection).exists()).toBe(false)
 		await wrapper.find('input').trigger('click')
 		expect(wrapper.findComponent(ADateSelection).exists()).toBe(true)
 		await wrapper.find('input').trigger('click')
-		expect(wrapper.findComponent(ADateSelection).exists()).toBe(false)
+		expect(wrapper.findComponent(ADateSelection).exists()).toBe(true)
+	})
+
+	it('commits a typed date on blur', async () => {
+		const emitted: (string | Date | undefined)[] = []
+		const wrapper = mount(ADate, {
+			...globalComponents,
+			props: { 'onUpdate:modelValue': (v: string | Date | undefined) => emitted.push(v) },
+		})
+		const $input = wrapper.find('input')
+		await $input.setValue('2023-06-15')
+		await $input.trigger('blur')
+		expect(emitted.length).toBeGreaterThan(0)
+		expect(($input.element as HTMLInputElement).value).toBe(new Date(2023, 5, 15).toLocaleDateString())
+	})
+
+	it('highlights the field value as the selected date in the picker', async () => {
+		const wrapper = mount(ADate, {
+			...globalComponents,
+			props: { modelValue: '2026-08-20' },
+		})
+		await wrapper.find('input').trigger('click')
+		await wrapper.vm.$nextTick()
+		const selected = wrapper.find('.selectedDate')
+		expect(selected.exists()).toBe(true)
+		expect(selected.text()).toBe('20')
+	})
+
+	it('keeps focus on the input when the picker opens', async () => {
+		const wrapper = mount(ADate, { ...globalComponents, attachTo: document.body })
+		const input = wrapper.find('input').element as HTMLInputElement
+		input.focus()
+		await wrapper.find('input').trigger('click')
+		await wrapper.vm.$nextTick()
+		expect(document.activeElement).toBe(input)
+		wrapper.unmount()
 	})
 
 	it('handles date selection from picker', async () => {
@@ -107,7 +133,7 @@ describe('date component', { tags: ['component'] }, () => {
 		})
 		await wrapper.find('input').trigger('click')
 		const picker = wrapper.findComponent(ADateSelection)
-		await picker.vm.$emit('get-date', { selected: new Date('2023-06-15') })
+		await picker.vm.$emit('get-date', { selected: new Date(2023, 5, 15) })
 		expect(emitted.length).toBeGreaterThan(0)
 	})
 })

@@ -350,14 +350,14 @@ const selectCurrent = () => {
 	list-style: none;
 	border: 1px solid var(--sc-input-active-border-color);
 	border-top: none;
-	border-radius: 0 0 0.25rem 0.25rem;
-	background: #fff;
+	border-radius: 0 0 var(--sc-border-radius) var(--sc-border-radius);
+	background: var(--sc-overlay-background);
 }
 
 .autocomplete-result {
 	padding: 4px 6px;
 	cursor: pointer;
-	border-bottom: 0.5px solid lightgray;
+	border-bottom: 0.5px solid var(--sc-input-border-color);
 }
 
 .autocomplete-result.is-active,

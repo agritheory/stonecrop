@@ -14,14 +14,31 @@ import type { ListViewItem } from '../types'
 defineSlots<{ default(): any }>()
 const { item } = defineProps<{ item: ListViewItem }>()
 
-const date = computed(() => {
-	if (!item.date || isNaN(Date.parse(item.date))) {
-		return item.date
+const ISO_DATE = /^(\d{4})-(\d{2})-(\d{2})$/
+
+// Date-only ISO is UTC midnight under `new Date(...)`, so toDateString() in US timezones
+// prints the previous calendar day. Build that case from local Y/M/D instead.
+const parseItemDate = (value: string): Date | null => {
+	const iso = value.trim().match(ISO_DATE)
+	if (iso) {
+		const year = Number(iso[1])
+		const month = Number(iso[2])
+		const day = Number(iso[3])
+		const parsed = new Date(year, month - 1, day)
+		if (parsed.getFullYear() !== year || parsed.getMonth() !== month - 1 || parsed.getDate() !== day) return null
+		return parsed
 	}
+	const parsed = new Date(value)
+	return Number.isNaN(parsed.getTime()) ? null : parsed
+}
+
+const date = computed(() => {
+	if (!item.date) return item.date
+	const dateObj = parseItemDate(item.date)
+	if (!dateObj) return item.date
 
 	// if needed, the user can specify a Date format flag that will dictate how the output is formatted,
 	// defaults to toDateString(); using switch/case here in case more values wanted to be added
-	const dateObj = new Date(item.date)
 	if (item.dateFormat) {
 		switch (item.dateFormat.toLowerCase()) {
 			case 'iso':

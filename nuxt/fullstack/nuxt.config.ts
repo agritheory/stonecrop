@@ -52,4 +52,7 @@ export default defineNuxtConfig({
 		port: 3001,
 		host: 'localhost',
 	},
+
+	// Specimen restyle: sage green host override on the gray token floor.
+	css: [resolve(__dirname, '../example-host.css')],
 })

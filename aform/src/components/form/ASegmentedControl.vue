@@ -25,7 +25,9 @@
 				class="aform_segmented-track"
 				:aria-labelledby="groupAriaLabel ? undefined : labelId"
 				:aria-label="groupAriaLabel"
-				:aria-busy="busy || undefined">
+				:aria-busy="busy || undefined"
+				:aria-invalid="invalid"
+				:aria-describedby="describedBy">
 				<label
 					v-for="choice in choices"
 					:key="choice"
@@ -52,7 +54,7 @@
 					<span class="aform_segmented-label">{{ segmentLabel(choice) }}</span>
 				</label>
 			</div>
-			<p v-show="errorText" class="aform_error" v-html="errorText"></p>
+			<p v-show="errorText" :id="errorId" class="aform_error" role="alert">{{ errorText }}</p>
 		</template>
 	</div>
 </template>
@@ -62,6 +64,7 @@ import type { BadgeVariant, FieldOptions } from '@stonecrop/schema'
 import { hasBadgeOptions, lookupBadge, selectChoices } from '@stonecrop/schema'
 import { computed, useId, type CSSProperties } from 'vue'
 
+import { fieldErrorA11y } from '../../composables/fieldErrorA11y'
 import type { ComponentProps } from '../../types'
 import ABadge from './ABadge.vue'
 
@@ -100,6 +103,7 @@ const selectedMany = computed({
 })
 
 const errorText = computed(() => (errors?.length ? errors.join('; ') : (validation.errorMessage ?? '')))
+const { errorId, describedBy, invalid } = fieldErrorA11y(uuid, errorText)
 
 const fallbackId = useId()
 const groupName = computed(() => uuid ?? `aform-segmented-${fallbackId}`)

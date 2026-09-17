@@ -103,17 +103,22 @@ props: {
   uuid?: string \| undefined
   validation?: { [key: string]: any; errorMessage: string; } \| undefined
   errors?: string[] \| undefined
-  modelValue?: number \| Date \| undefined
+  rangeStart?: string \| Date \| null \| undefined
+  rangeEnd?: string \| Date \| null \| undefined
+  store?: TableDateStore \| undefined
+  colIndex?: number \| undefined
+  rowIndex?: number \| undefined
+  modelValue?: string \| number \| Date \| null \| undefined
 }
 emits: {
-  update:modelValue: [value: number \| Date]
-  get-date: [{ start: Date \| null; end: Date \| null; selected: Date; }]
+  update:modelValue: [value: string \| number \| Date \| null]
+  get-date: [{ start: Date \| null; end: Date \| null; selected: Date \| null; }]
 }
 slots: {}
 exposed: {
   currentMonth: number
   currentYear: number
-  selectedDate: Date
+  selectedDate: Date \| null
 }
 ```
 
@@ -144,6 +149,7 @@ slots: {}
 ```ts
 // src/components/form/ADateSelection.vue
 props: {
+  id?: string \| undefined
   showDate?: boolean \| undefined
   showTime?: boolean \| undefined
   selectRange?: boolean \| undefined
@@ -154,9 +160,16 @@ props: {
   defaultSeconds?: number \| undefined
   defaultMeridiem?: string \| undefined
   useSeconds?: boolean \| undefined
+  selected?: string \| number \| Date \| null \| undefined
+  modelValue?: string \| number \| Date \| null \| undefined
+  start?: string \| Date \| null \| undefined
+  end?: string \| Date \| null \| undefined
+  store?: TableDateStore \| undefined
+  colIndex?: number \| undefined
+  rowIndex?: number \| undefined
 }
 emits: {
-  get-date: [{ selected: Date; start?: Date \| null \| undefined; end?: Date \| null \| undefined; }]
+  get-date: [{ selected: Date \| null; start?: Date \| null \| undefined; end?: Date \| null \| undefined; }]
   get-time: [{ hours: number; minutes: number; seconds: number; meridiem: string; source?: "init" \| "user" \| undefined; }]
   get-range: [{ start: Date; end: Date; source?: "init" \| "user" \| undefined; }]
 }

@@ -160,7 +160,7 @@ function handleAction(_label, action) {
 
 <style scoped>
 .docbuilder-page {
-	background: var(--sc-form-background, #fff);
+	background: var(--sc-form-background);
 	box-sizing: border-box;
 	min-height: 100vh;
 	padding: 2rem;
@@ -189,7 +189,7 @@ function handleAction(_label, action) {
 }
 .empty-workflow-form input {
 	border: 1px solid var(--sc-gray-20, #d1d5db);
-	border-radius: 4px;
+	border-radius: var(--sc-border-radius);
 	font-family: inherit;
 	font-size: 0.875rem;
 	padding: 0.4em 0.6em;
@@ -197,7 +197,7 @@ function handleAction(_label, action) {
 .btn-seed {
 	background: var(--sc-blue-40, #3b82f6);
 	border: none;
-	border-radius: 0.4rem;
+	border-radius: var(--sc-border-radius);
 	color: #fff;
 	cursor: pointer;
 	font-size: 0.875rem;
@@ -214,7 +214,7 @@ function handleAction(_label, action) {
 .validation-errors {
 	background: #fee2e2;
 	border: 1px solid #ef4444;
-	border-radius: 6px;
+	border-radius: var(--sc-border-radius);
 	color: #991b1b;
 	margin-bottom: 0.5rem;
 	padding: 1rem;
@@ -222,14 +222,14 @@ function handleAction(_label, action) {
 .validation-warnings {
 	background: #fef9c3;
 	border: 1px solid #eab308;
-	border-radius: 6px;
+	border-radius: var(--sc-border-radius);
 	color: #713f12;
 	padding: 1rem;
 }
 .dismiss-button {
 	background: none;
-	border: 1px solid;
-	border-radius: 3px;
+	border: 1px solid currentColor;
+	border-radius: var(--sc-border-radius);
 	cursor: pointer;
 	font-size: 0.75rem;
 	margin-left: 1rem;
@@ -244,7 +244,7 @@ function handleAction(_label, action) {
 .btn-primary {
 	background: var(--sc-blue-40, #3b82f6);
 	border: none;
-	border-radius: 0.5rem;
+	border-radius: var(--sc-border-radius);
 	color: #fff;
 	cursor: pointer;
 	font-weight: 500;
