@@ -2,4 +2,4 @@
 '@stonecrop/utilities': minor
 ---
 
-Adds `fromISODate` and `toISODate`, which convert between a `YYYY-MM-DD` day and its local midnight.
+Adds `fromISODate`, which reads a `YYYY-MM-DD` day as a `Temporal.PlainDate` and any other text as no day.

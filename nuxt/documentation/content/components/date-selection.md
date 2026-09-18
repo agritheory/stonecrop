@@ -31,10 +31,10 @@ import { ADateSelection } from '@stonecrop/aform'
 // Direct import, not via AForm — AForm resolves schema fields by string name through Vue's
 // dynamic component registry, which needs @stonecrop/aform's `install` plugin registered on
 // the app instance first. Direct imports skip that requirement, same as CheckboxDemo.vue.
-const selectedDate = ref<Date | null>(null)
+const selectedDate = ref<string | null>(null)
 const selectedTime = ref<{ hours: number; minutes: number; seconds: number; meridiem: string } | null>(null)
 
-const handleDate = (data: { selected: Date; start?: Date | null; end?: Date | null }) => {
+const handleDate = (data: { selected: string; start?: string | null; end?: string | null }) => {
 	selectedDate.value = data.selected
 }
 
@@ -47,7 +47,7 @@ const handleTime = (data: { hours: number; minutes: number; seconds: number; mer
 	<div class="stonecrop-demo">
 		<ADateSelection :select-range="false" @get-date="handleDate" @get-time="handleTime" />
 		<p class="stonecrop-demo__state">
-			Selected date: <strong>{{ selectedDate?.toLocaleDateString() }}</strong
+			Selected date: <strong>{{ selectedDate }}</strong
 			><br />
 			Selected time: <strong>{{ selectedTime }}</strong>
 		</p>
@@ -106,7 +106,7 @@ rows:
   - ['`selectRange`', '`boolean`', '`true`', 'Whether the calendar allows selecting a start/end date range, rather than a single date.']
   - ['`showEndTime`', '`boolean`', '`false`', 'When `selectRange` and `showTime` are both `true`, also renders a second `ADateTimeInput`, labeled "End time", for the end of the range.']
   - ['`allowMilitaryTime`', '`boolean`', '`false`', 'Passed through to the `ADateTimeInput` segment(s); renders 24-hour input instead of a 12-hour segment plus AM/PM selector.']
-  - ['`defaultDate`', '`Date`', 'today', 'The date the `ADatePicker` calendar opens on and marks as selected.']
+  - ['`defaultDate`', '`string`', 'today', 'The day the `ADatePicker` calendar opens on and marks as selected, as `YYYY-MM-DD`.']
   - ['`defaultHours`', '`number`', '`12`', 'Initial hours value passed to the `ADateTimeInput` segment(s).']
   - ['`defaultMinutes`', '`number`', '`0`', 'Initial minutes value passed to the `ADateTimeInput` segment(s).']
   - ['`defaultSeconds`', '`number`', '`0`', 'Initial seconds value passed to the `ADateTimeInput` segment(s).']
@@ -121,7 +121,7 @@ rows:
 ---
 headers: ['Name', 'Payload', 'Description']
 rows:
-  - ['`get-date`', '`{ selected: Date; start?: Date | null; end?: Date | null }`', 'Re-emitted from the underlying `ADatePicker` whenever a date (or range endpoint) is picked.']
+  - ['`get-date`', '`{ selected: string; start?: string | null; end?: string | null }`', 'Re-emitted from the underlying `ADatePicker` whenever a day (or range endpoint) is picked, each as `YYYY-MM-DD`.']
   - ['`get-time`', '`{ hours: number; minutes: number; seconds: number; meridiem: string }`', 'Re-emitted from the start `ADateTimeInput` whenever its value changes — unless `selectRange` and `showEndTime` are both `true`, in which case time changes feed into `get-range` instead.']
   - ['`get-range`', '`{ start: Date; end: Date }`', 'Emitted only when `selectRange`, `showTime`, and `showEndTime` are all `true`. Merges the picked date range with both time segments into a start/end `Date` pair whenever either time segment changes.']
 ---

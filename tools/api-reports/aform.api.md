@@ -10,6 +10,7 @@ import type { BadgePresentation } from '@stonecrop/schema';
 import type { ColumnSchema } from '@stonecrop/schema';
 import { ComponentOptionsMixin } from 'vue';
 import { ComponentProvideOptions } from 'vue';
+import { ComputedRef } from 'vue';
 import { DefineComponent } from 'vue';
 import type { FieldOptions } from '@stonecrop/schema';
 import type { FieldValidation } from '@stonecrop/schema';

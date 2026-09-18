@@ -7,12 +7,13 @@
 import { App } from 'vue';
 import { ComponentPublicInstance } from 'vue';
 import { Ref } from 'vue';
+import { Temporal } from 'temporal-polyfill';
 
 // @public
 export const defaultKeypressHandlers: KeypressHandlers;
 
 // @public
-export function fromISODate(day: string): Date;
+export function fromISODate(day: string): Temporal.PlainDate | undefined;
 
 // @public
 export function install(_app: App): void;
@@ -28,9 +29,6 @@ export type KeyboardNavigationOptions = {
 export type KeypressHandlers = {
     [key: string]: (ev: KeyboardEvent) => any;
 };
-
-// @public
-export function toISODate(date: Date): string;
 
 // @public
 export function useKeyboardNav(options: KeyboardNavigationOptions[]): void;

@@ -6,12 +6,14 @@
 
 ### fromISODate
 
-Reads a `YYYY-MM-DD` day as its local midnight, the Date a calendar shows as that day. Anything that is not a real day written that way reads as an invalid Date.
+Reads a `YYYY-MM-DD` day. Anything that is not a real day written exactly that way reads as no day.
+
+Not `Temporal.PlainDate.from` alone: it also takes the day out of a date-time, which would show a day field over a date-time column as a day instead of as the mismatch it is.
 
 **Signature:**
 
 ```typescript
-export declare function fromISODate(day: string): Date;
+export declare function fromISODate(day: string): Temporal.PlainDate | undefined;
 ```
 
 **Parameters:**
@@ -35,22 +37,6 @@ declare function install(_app: App): void;
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | _app | `App` | Vue app instance |
-
-### toISODate
-
-Writes a Date as the `YYYY-MM-DD` day it falls on in local time, the day a calendar showed for it. Not `toISOString()`, which gives the UTC day: a day early east of UTC.
-
-**Signature:**
-
-```typescript
-export declare function toISODate(date: Date): string;
-```
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| date | `Date` | The Date to write |
 
 ### useKeyboardNav
 

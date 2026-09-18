@@ -29,6 +29,7 @@ describe('dist contract', { tags: ['unit'] }, () => {
 			'@stonecrop/utilities',
 			'@vueuse/components',
 			'@vueuse/core',
+			'temporal-polyfill',
 			'vue',
 		])
 	})

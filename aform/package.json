@@ -62,7 +62,8 @@
 		"@stonecrop/themes": "workspace:*",
 		"@stonecrop/utilities": "workspace:*",
 		"@vueuse/components": "catalog:",
-		"@vueuse/core": "catalog:"
+		"@vueuse/core": "catalog:",
+		"temporal-polyfill": "catalog:"
 	},
 	"devDependencies": {
 		"@microsoft/api-extractor": "catalog:",

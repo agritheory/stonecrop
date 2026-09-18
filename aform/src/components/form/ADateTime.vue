@@ -26,7 +26,7 @@
 				:select-range="false"
 				:show-date="true"
 				:show-time="true"
-				:default-date="currentDateTime"
+				:default-date="currentDateTime?.toPlainDate().toString()"
 				:default-hours="pickerDefaults.hours"
 				:default-minutes="pickerDefaults.minutes"
 				:default-seconds="pickerDefaults.seconds"
@@ -42,6 +42,8 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { onClickOutside } from '@vueuse/core'
+import { fromISODate } from '@stonecrop/utilities'
+import { Temporal } from 'temporal-polyfill'
 import ADateSelection from './ADateSelection.vue'
 import type { ComponentProps } from '../../types'
 
@@ -64,7 +66,16 @@ const errorText = computed(() => (errors?.length ? errors.join('; ') : (validati
 
 const modelValue = defineModel<string | Date>()
 
-const currentDateTime = ref<Date>(modelValue.value ? new Date(modelValue.value) : new Date())
+const now = () => Temporal.Now.zonedDateTimeISO()
+
+/** The field's moment on the user's clock, or null when the value names no moment. */
+const readMoment = (value: string | Date): Temporal.ZonedDateTime | null => {
+	const epochMilliseconds = new Date(value).getTime()
+	if (isNaN(epochMilliseconds)) return null
+	return Temporal.Instant.fromEpochMilliseconds(epochMilliseconds).toZonedDateTimeISO(Temporal.Now.timeZoneId())
+}
+
+const currentDateTime = ref<Temporal.ZonedDateTime | null>(modelValue.value ? readMoment(modelValue.value) : now())
 
 const showPicker = ref(false)
 const pickerRef = ref(null)
@@ -76,33 +87,34 @@ const openPicker = () => {
 
 const displayValue = computed(() => {
 	if (!modelValue.value) return ''
-	return currentDateTime.value.toLocaleString()
+	// The wall-clock time alone: a `ZonedDateTime`'s own `toLocaleString` also names the zone.
+	return currentDateTime.value?.toPlainDateTime().toLocaleString() ?? 'Invalid Date'
 })
 
 const datetimeDisplay = computed(() => displayValue.value)
 
 const pickerDefaults = computed(() => {
-	const d = currentDateTime.value
-	const hours24 = d.getHours()
+	const d = currentDateTime.value ?? now()
+	const hours24 = d.hour
 	const meridiem = hours24 >= 12 ? 'PM' : 'AM'
 	const hours12 = hours24 % 12 || 12
 	return {
 		hours: allowMilitaryTime ? hours24 : hours12,
-		minutes: d.getMinutes(),
-		seconds: d.getSeconds(),
+		minutes: d.minute,
+		seconds: d.second,
 		meridiem,
 	}
 })
 
-const emitModel = () => {
-	modelValue.value = currentDateTime.value.toISOString()
+const setMoment = (moment: Temporal.ZonedDateTime) => {
+	currentDateTime.value = moment
+	modelValue.value = moment.toInstant().toString({ fractionalSecondDigits: 3 })
 }
 
-const handleDate = (data: { selected: Date }) => {
-	const next = new Date(currentDateTime.value)
-	next.setFullYear(data.selected.getFullYear(), data.selected.getMonth(), data.selected.getDate())
-	currentDateTime.value = next
-	emitModel()
+const handleDate = (data: { selected: string }) => {
+	const day = fromISODate(data.selected)
+	if (!day) return
+	setMoment((currentDateTime.value ?? now()).with({ year: day.year, month: day.month, day: day.day }))
 }
 
 const handleTime = (data: {
@@ -118,11 +130,17 @@ const handleTime = (data: {
 	// meant one click on an empty field silently filled it with the current date and time.
 	if (data.source === 'init') return
 
-	const next = new Date(currentDateTime.value)
 	const hours = data.militaryTime ?? data.hours
-	next.setHours(hours, data.minutes, useSeconds ? data.seconds : 0, 0)
-	currentDateTime.value = next
-	emitModel()
+	setMoment(
+		(currentDateTime.value ?? now()).with({
+			hour: hours,
+			minute: data.minutes,
+			second: useSeconds ? data.seconds : 0,
+			millisecond: 0,
+			microsecond: 0,
+			nanosecond: 0,
+		})
+	)
 	// Deliberately does NOT close the picker. `get-time` is the widget's current value, not a
 	// commit — it fires on every blur, arrow key and meridiem change — so closing here shut the
 	// picker as soon as the user tabbed out of the hours field. Dismissal is the click-outside
@@ -133,7 +151,7 @@ watch(
 	() => modelValue.value,
 	newValue => {
 		if (newValue) {
-			currentDateTime.value = new Date(newValue)
+			currentDateTime.value = readMoment(newValue)
 		}
 	}
 )

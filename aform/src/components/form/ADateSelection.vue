@@ -31,6 +31,8 @@
 </template>
 
 <script setup lang="ts">
+import { fromISODate } from '@stonecrop/utilities'
+import { Temporal } from 'temporal-polyfill'
 import { provide, ref } from 'vue'
 import ADatePicker from './ADatePicker.vue'
 import ADateTimeInput from './ADateTimeInput.vue'
@@ -53,7 +55,8 @@ const {
 	selectRange?: boolean
 	showEndTime?: boolean
 	allowMilitaryTime?: boolean
-	defaultDate?: Date
+	/** The day the calendar opens on, as `YYYY-MM-DD` */
+	defaultDate?: string
 	defaultHours?: number
 	defaultMinutes?: number
 	defaultSeconds?: number
@@ -66,23 +69,22 @@ const {
 // means a user action — `'init'` is the one case that has to be marked, because it is the widget
 // announcing its start value as it mounts rather than anything the user did.
 const emit = defineEmits<{
-	'get-date': [{ selected: Date; start?: Date | null; end?: Date | null }]
+	'get-date': [{ selected: string; start?: string | null; end?: string | null }]
 	'get-time': [{ hours: number; minutes: number; seconds: number; meridiem: string; source?: 'init' | 'user' }]
 	'get-range': [{ start: Date; end: Date; source?: 'init' | 'user' }]
 }>()
 
 provide('select-range', selectRange)
 
-const today = new Date()
-const pickerStart = ref<Date>(today)
-const pickerEnd = ref<Date>(today)
+const today = Temporal.Now.plainDateISO()
+const pickerStart = ref<Temporal.PlainDate>(today)
+const pickerEnd = ref<Temporal.PlainDate>(today)
 const startTimeMs = ref<number>(0)
 const endTimeMs = ref<number>(0)
 
-const mergeDateTime = (date: Date, timeMs: number): Date => {
-	const d = new Date(date)
-	d.setHours(0, 0, 0, 0)
-	return new Date(d.getTime() + timeMs)
+const mergeDateTime = (day: Temporal.PlainDate, timeMs: number): Date => {
+	const midnight = day.toZonedDateTime(Temporal.Now.timeZoneId())
+	return new Date(midnight.epochMilliseconds + timeMs)
 }
 
 const timePayloadToMs = (payload: {
@@ -111,11 +113,11 @@ const tryEmitRange = (source: 'init' | 'user') => {
 	})
 }
 
-const handleDate = (data: { start: Date | null; end: Date | null; selected: Date }) => {
+const handleDate = (data: { start: string | null; end: string | null; selected: string }) => {
 	emit('get-date', data)
 	if (selectRange) {
-		pickerStart.value = data.start ?? data.selected
-		pickerEnd.value = data.end ?? data.selected
+		pickerStart.value = fromISODate(data.start ?? data.selected) ?? today
+		pickerEnd.value = fromISODate(data.end ?? data.selected) ?? today
 		// Picking a day on the calendar is unambiguously a user action.
 		tryEmitRange('user')
 	}

@@ -107,8 +107,17 @@ describe('date component', { tags: ['component'] }, () => {
 		})
 		await wrapper.find('input').trigger('click')
 		const picker = wrapper.findComponent(ADateSelection)
-		await picker.vm.$emit('get-date', { selected: new Date('2023-06-15') })
-		expect(emitted.length).toBeGreaterThan(0)
+		await picker.vm.$emit('get-date', { selected: '2023-06-15' })
+		expect(emitted).toEqual(['2023-06-15'])
+	})
+
+	// A day field over a date-time column must show its mismatch rather than a day read out of the moment.
+	it('shows a value that is not a day as an invalid date', () => {
+		const wrapper = mount(ADate, {
+			...globalComponents,
+			props: { modelValue: '2026-01-10T09:00:00+00:00', mode: 'display' },
+		})
+		expect(wrapper.find('.aform_display-value').text()).toBe('Invalid Date')
 	})
 
 	it('shows an empty input when the field has no value', () => {

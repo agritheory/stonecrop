@@ -228,6 +228,12 @@ describe('table store', { tags: ['component'] }, () => {
 				})
 			})
 
+			// A day column over a date-time must show its mismatch rather than a day read out of the moment.
+			it('shows a Date value that is not a day as an invalid date', () => {
+				store.columns[0] = { name: 'id', component: 'ADate' }
+				expect(store.getFormattedValue(0, 0, '2024-06-15T10:00:00+00:00')).toBe('Invalid Date')
+			})
+
 			it('returns null for Date when value is null', () => {
 				store.columns[0] = { name: 'id', component: 'ADate' }
 				expect(store.getFormattedValue(0, 0, null)).toBeNull()

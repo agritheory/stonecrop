@@ -51,7 +51,8 @@
 		"test:watch": "vitest watch"
 	},
 	"dependencies": {
-		"@vueuse/core": "catalog:"
+		"@vueuse/core": "catalog:",
+		"temporal-polyfill": "catalog:"
 	},
 	"devDependencies": {
 		"@microsoft/api-extractor": "catalog:",

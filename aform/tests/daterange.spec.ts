@@ -122,15 +122,13 @@ describe('date range component', () => {
 		await nextTick()
 
 		await wrapper.findComponent(ADateSelection).vm.$emit('get-date', {
-			selected: new Date('2026-04-01'),
-			start: new Date('2026-04-01'),
-			end: new Date('2026-04-30'),
+			selected: '2026-04-30',
+			start: '2026-04-01',
+			end: '2026-04-30',
 		})
 		await nextTick()
 
-		const last = emitted[emitted.length - 1] as any
-		expect(last).toHaveProperty('start_date')
-		expect(last).toHaveProperty('end_date')
+		expect(emitted.at(-1)).toEqual({ start_date: '2026-04-01', end_date: '2026-04-30' })
 	})
 
 	it('shows placeholder when both dates are null', () => {
@@ -163,7 +161,6 @@ describe('date range component', () => {
 	})
 
 	// Pinned zones, because the runner's own zone hides these: CI runs in UTC, where all of them pass.
-	// Hand-emitted days are local midnight, which is what ADatePicker emits.
 	describe.each(['Asia/Kolkata', 'America/New_York'])('in %s', zone => {
 		beforeEach(() => {
 			vi.stubEnv('TZ', zone)
@@ -209,10 +206,9 @@ describe('date range component', () => {
 			await wrapper.find('input').trigger('click')
 			await nextTick()
 
-			const start = new Date(2026, 2, 1)
 			await wrapper.findComponent(ADateSelection).vm.$emit('get-date', {
-				selected: start,
-				start,
+				selected: '2026-03-01',
+				start: '2026-03-01',
 				end: null,
 			})
 			await nextTick()
@@ -230,12 +226,10 @@ describe('date range component', () => {
 			await wrapper.find('input').trigger('click')
 			await nextTick()
 
-			const start = new Date(2026, 2, 15)
-			const end = new Date(2026, 2, 1)
 			await wrapper.findComponent(ADateSelection).vm.$emit('get-date', {
-				selected: end,
-				start,
-				end,
+				selected: '2026-03-01',
+				start: '2026-03-15',
+				end: '2026-03-01',
 			})
 			await nextTick()
 

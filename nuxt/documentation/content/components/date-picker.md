@@ -15,7 +15,7 @@ import { ADatePicker } from '@stonecrop/aform'
 
 ## Basic
 
-`v-model` binds to the selected date, as a JS `Date` (or an epoch-millisecond number). Click a day to select it, or use the previous/next month arrows to navigate.
+`v-model` binds to the selected day, as a `YYYY-MM-DD` string. Click a day to select it, or use the previous/next month arrows to navigate.
 
 ::demo-panel
 :::client-only
@@ -30,7 +30,7 @@ import { ADatePicker } from '@stonecrop/aform'
 
 // ADatePicker's `edit` mode renders only the calendar grid — the `label` prop is only
 // used in `read`/`display` mode, so it's omitted here.
-const selected = ref(new Date())
+const selected = ref<string>()
 </script>
 
 <template>
@@ -71,7 +71,7 @@ const schema = [
 import { ref } from 'vue'
 import { AForm } from '@stonecrop/aform'
 
-const data = ref({ orderDate: new Date() })
+const data = ref({ orderDate: '2026-01-15' })
 </script>
 
 <template>
@@ -87,7 +87,7 @@ const data = ref({ orderDate: new Date() })
 ---
 headers: ['Name', 'Type', 'Default', 'Description']
 rows:
-  - ['`v-model`', '`Date | number`', '`new Date()`', 'The selected date. Accepts a `Date` object or an epoch-millisecond timestamp.']
+  - ['`v-model`', '`string`', '`undefined`', 'The selected day, as `YYYY-MM-DD`. Unset, or not a day, the calendar opens on today.']
   - ['`label`', '`string`', '—', "Label text. Only rendered in `read`/`display` mode, next to the static value — `edit` mode's calendar grid has no label."]
   - ['`selectRange`', '`boolean`', '`false`', 'When `true`, renders start/end date text inputs above the calendar and switches day selection to range mode. See below.']
   - ['`mode`', "`'edit' | 'read' | 'display'`", "`'edit'`", 'See [Modes](#modes) below.']
@@ -106,7 +106,7 @@ headers: ['Mode', 'Rendering']
 rows:
   - ['`edit`', 'Interactive calendar grid with previous/next month navigation. If `selectRange` is set, also renders editable start/end date text inputs above the grid.']
   - ['`read`', 'Static text — same rendering as `display`. There is no separate disabled-but-visible calendar.']
-  - ['`display`', "Static text: the selected date's `toLocaleDateString()` value (empty string if unset), followed by `label` if one was given."]
+  - ['`display`', "Static text: the selected day in the user's locale format (empty string if unset, `Invalid Date` if not a `YYYY-MM-DD` day), followed by `label` if one was given."]
 ---
 ::
 
@@ -120,7 +120,7 @@ When `selectRange` is `true`, clicking a day sets the range's start date; the ne
 ---
 headers: ['Event', 'Payload', 'Description']
 rows:
-  - ['`get-date`', '`{ start: Date | null; end: Date | null; selected: Date }`', "Emitted whenever a date is selected on the grid or entered into the start/end inputs. `start`/`end` are always `null` unless `selectRange` is `true`."]
+  - ['`get-date`', '`{ start: string | null; end: string | null; selected: string }`', "Emitted whenever a date is selected on the grid or entered into the start/end inputs, each day as `YYYY-MM-DD`. `start`/`end` are always `null` unless `selectRange` is `true`."]
 ---
 ::
 

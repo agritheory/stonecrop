@@ -1,7 +1,8 @@
 import { defineStore } from 'pinia'
 import { componentCategory } from '@stonecrop/schema'
 import type { BadgeDescriptor } from '@stonecrop/schema'
-import { fromISODate, toISODate } from '@stonecrop/utilities'
+import { fromISODate } from '@stonecrop/utilities'
+import { Temporal } from 'temporal-polyfill'
 import { type CSSProperties, computed, ref } from 'vue'
 
 import { linkSearchableText } from '../linkSearchableText'
@@ -86,11 +87,13 @@ function isNodeOpen(rowIndex: number, treeDisplay: TableDisplay[]): boolean {
  */
 function dayOfCell(cellValue: unknown, column: TableColumn): string | undefined {
 	const category = componentCategory(column.component)
-	const date = category === 'date' ? fromISODate(String(cellValue)) : new Date(String(cellValue))
-	if (isNaN(date.getTime())) return undefined
-	if (category === 'date' || category === 'datetime') return toISODate(date)
-	// Not `toISODate`: an undeclared bare `YYYY-MM-DD` parses as UTC midnight, a day early west of UTC.
-	return date.toISOString().slice(0, 10)
+	if (category === 'date') return fromISODate(String(cellValue))?.toString()
+
+	const epochMilliseconds = new Date(String(cellValue)).getTime()
+	if (isNaN(epochMilliseconds)) return undefined
+	// Not the user's zone for an undeclared value: a bare `YYYY-MM-DD` parses as UTC midnight, a day early west of UTC.
+	const zone = category === 'datetime' ? Temporal.Now.timeZoneId() : 'UTC'
+	return Temporal.Instant.fromEpochMilliseconds(epochMilliseconds).toZonedDateTimeISO(zone).toPlainDate().toString()
 }
 
 function applyFilter(cellValue: any, filter: FilterState, column: TableColumn): boolean {
@@ -133,7 +136,11 @@ function applyFilter(cellValue: any, filter: FilterState, column: TableColumn): 
 				// Apply the same year transformation as in the format function
 				const originalDate = new Date(cellValue)
 				const currentYear = new Date().getFullYear()
-				cellDay = toISODate(new Date(currentYear, originalDate.getMonth(), originalDate.getDate()))
+				cellDay = Temporal.PlainDate.from({
+					year: currentYear,
+					month: originalDate.getMonth() + 1,
+					day: originalDate.getDate(),
+				}).toString()
 			} else {
 				cellDay = dayOfCell(cellValue, column)
 			}
@@ -151,7 +158,11 @@ function applyFilter(cellValue: any, filter: FilterState, column: TableColumn): 
 				// Apply the same year transformation as in the format function
 				const originalDate = new Date(cellValue)
 				const currentYear = new Date().getFullYear()
-				cellDay = toISODate(new Date(currentYear, originalDate.getMonth(), originalDate.getDate()))
+				cellDay = Temporal.PlainDate.from({
+					year: currentYear,
+					month: originalDate.getMonth() + 1,
+					day: originalDate.getDate(),
+				}).toString()
 			} else {
 				cellDay = dayOfCell(cellValue, column)
 			}
@@ -559,7 +570,9 @@ export const createTableStore = (initData: {
 				// opinion (including an unknown component) renders the raw value.
 				const category = componentCategory(column.component)
 				if (category === 'boolean') return value ? '✓' : '✗'
-				if (category === 'date') return value != null ? fromISODate(String(value)).toLocaleDateString() : value
+				if (category === 'date') {
+					return value != null ? (fromISODate(String(value))?.toLocaleString() ?? 'Invalid Date') : value
+				}
 				if (category === 'datetime') return value != null ? new Date(String(value)).toLocaleString() : value
 				if (category === 'quantity') return formatQuantity(value)
 				if (category === 'currency') return formatCurrency(value)

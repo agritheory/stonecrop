@@ -1,6 +1,7 @@
+import { Temporal } from 'temporal-polyfill'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { fromISODate, toISODate } from '../src/dates'
+import { fromISODate } from '../src/dates'
 
 describe('ISO dates', { tags: ['unit'] }, () => {
 	// Pinned zones, because the runner's own zone hides these: CI runs in UTC, where a UTC reading passes.
@@ -8,23 +9,26 @@ describe('ISO dates', { tags: ['unit'] }, () => {
 		beforeEach(() => vi.stubEnv('TZ', zone))
 		afterEach(() => vi.unstubAllEnvs())
 
-		it('reads a day as its local midnight', () => {
-			expect(fromISODate('2026-01-10')).toEqual(new Date(2026, 0, 10))
-		})
-
-		it('writes the local day at either end of it', () => {
-			expect([toISODate(new Date(2026, 0, 10)), toISODate(new Date(2026, 0, 10, 23, 59))]).toEqual([
-				'2026-01-10',
-				'2026-01-10',
-			])
+		it('reads a day as that day', () => {
+			expect(fromISODate('2026-01-10')?.equals(Temporal.PlainDate.from({ year: 2026, month: 1, day: 10 }))).toBe(true)
 		})
 	})
 
 	it('keeps a year below 100', () => {
-		expect(toISODate(fromISODate('0099-03-01'))).toBe('0099-03-01')
+		expect(fromISODate('0099-03-01')?.toString()).toBe('0099-03-01')
 	})
 
-	it.each(['', '2026-01-10T00:00:00Z', '2026-02-30', '10/01/2026'])('reads %j as an invalid date', value => {
-		expect(fromISODate(value).getTime()).toBeNaN()
+	// Temporal's own reader accepts the last four, taking a day out of a moment's text.
+	it.each([
+		'',
+		'2026-02-30',
+		'10/01/2026',
+		'2026-01-10T00:00:00Z',
+		'2026-01-10T09:00:00+05:30',
+		'2026-01-10T09:00',
+		'20260110',
+		'+002026-01-10',
+	])('reads %j as no day', value => {
+		expect(fromISODate(value)).toBeUndefined()
 	})
 })
