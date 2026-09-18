@@ -50,12 +50,19 @@ function nuxtApps(configUrl: string): string[] {
  * `.nuxt` is deliberately not an `output`. Vite+ reports a removed generated directory as a miss
  * and re-runs the command, so declaring it would only snapshot the tree into the cache to restore
  * something the command rebuilds anyway.
+ *
+ * Not `dev:prepare`: its `--stub` build makes `dist/runtime` a symlink into `src/runtime`, and each
+ * step here is cached on its own, so a build step replayed after a fresh stub wrote its compiled
+ * files through the symlink, beside the sources.
  */
-export function nuxtModuleBuildTask(command: string, configUrl: string): NonNullable<UserConfig['run']>['tasks'] {
-	const generatedTrees = nuxtApps(configUrl).map(app => `${app}/.nuxt/**`)
+export function nuxtModuleBuildTask(configUrl: string): NonNullable<UserConfig['run']>['tasks'] {
+	const apps = nuxtApps(configUrl).toSorted()
+	const generatedTrees = apps.map(app => `${app}/.nuxt/**`)
 	return {
 		build: {
-			command,
+			command: ['nuxt-module-build prepare', ...apps.map(app => `nuxi prepare ${app}`), 'nuxt-module-build build'].join(
+				' && '
+			),
 			input: [
 				{ auto: true },
 				{ pattern: 'tools/vite/**', base: 'workspace' },

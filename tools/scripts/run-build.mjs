@@ -18,6 +18,7 @@ import { createRequire } from 'node:module'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
+import { compiledBesideSources } from './compiled-beside-sources.mjs'
 import { workspaceMembers } from './workspace-members.mjs'
 
 const rootDir = join(dirname(fileURLToPath(import.meta.url)), '../..')
@@ -248,6 +249,20 @@ child.on('close', code => {
 		writeNotices(process.stderr)
 		process.stderr.write(`\nBuild failed. Full log: ${logPath}\n`)
 		process.exit(code ?? 1)
+	}
+
+	// After the build rather than before it, so it also catches what this run replayed into a source tree.
+	const strays = members.flatMap(member =>
+		compiledBesideSources(join(rootDir, member, 'src/runtime')).map(file => join(member, 'src/runtime', file))
+	)
+	if (strays.length > 0) {
+		writeNotices(process.stderr)
+		for (const stray of strays) process.stderr.write(red(`✗ ${stray}`) + '\n')
+		process.stderr.write(
+			'\nBuild output sits beside the sources it came from, and tests and builds read it instead of them. ' +
+				'Delete these files and build again; a `dist/runtime` symlink left by `dev:prepare` is the usual cause.\n'
+		)
+		process.exit(1)
 	}
 
 	const built = [...packages].filter(([, entry]) => entry.ran > 0)
