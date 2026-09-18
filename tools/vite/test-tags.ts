@@ -9,6 +9,7 @@
 export const testTags = [
 	{ name: 'unit', description: 'Pure logic test — no DOM, network, or framework runtime.' },
 	{ name: 'component', description: 'Vue component test using jsdom + @vue/test-utils.' },
+	{ name: 'browser', description: 'Vue component test in real Chrome through Vitest browser mode.' },
 	{
 		name: 'e2e',
 		timeout: 30_000,

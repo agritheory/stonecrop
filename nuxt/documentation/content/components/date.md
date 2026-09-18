@@ -85,7 +85,7 @@ const data = ref({ delivery_date: '2026-08-05' })
 ---
 headers: ['Name', 'Type', 'Default', 'Description']
 rows:
-  - ['`v-model`', '`string | Date | undefined`', '—', 'The selected date. Read back as an ISO `YYYY-MM-DD` string once the field has been used.']
+  - ['`v-model`', '`string | undefined`', '—', 'The selected date, as an ISO `YYYY-MM-DD` string.']
   - ['`label`', '`string`', "`'Date'`", 'Label rendered next to the input.']
   - ['`required`', '`boolean`', '`false`', 'Marks the input as required (`edit` mode only).']
   - ['`mode`', "`'edit' | 'read' | 'display'`", "`'edit'`", 'See [Modes](#modes) below.']

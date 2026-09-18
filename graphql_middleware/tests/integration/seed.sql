@@ -131,3 +131,21 @@ CREATE TABLE sc_order (
 
 INSERT INTO sc_party (party_name) VALUES ('Acme Corp'), ('Globex');
 INSERT INTO sc_order (customer_id, title) VALUES (1, 'Order One'), (2, 'Second Order');
+
+-- Zone-free temporal columns. A value read through `pg` shifts only when the reading process runs
+-- outside UTC, so the tests over this table pin the zone.
+CREATE TABLE sc_period (
+	id serial PRIMARY KEY,
+	name text NOT NULL,
+	starts_on date NOT NULL,
+	opened_at timestamp NOT NULL,
+	reviewed_at timestamp[]
+);
+INSERT INTO sc_period (name, starts_on, opened_at, reviewed_at)
+	VALUES ('Q1', '2026-01-01', '2026-01-01 09:00:00', ARRAY['2026-01-02 10:30:00', '2026-01-03 17:45:00']::timestamp[]);
+CREATE TABLE sc_period_entry (
+	id serial PRIMARY KEY,
+	period_id integer REFERENCES sc_period(id),
+	booked_on date NOT NULL
+);
+INSERT INTO sc_period_entry (period_id, booked_on) VALUES (1, '2026-01-01');

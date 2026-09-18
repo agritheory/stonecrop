@@ -33,10 +33,12 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { onClickOutside } from '@vueuse/core'
+import { fromISODate } from '@stonecrop/utilities'
+import { Temporal } from 'temporal-polyfill'
 import ADateSelection from './ADateSelection.vue'
 import type { ComponentProps } from '../../types'
 
-const fmt = (d: string) => new Date(d).toLocaleDateString()
+const fmt = (d: string) => fromISODate(d)?.toLocaleString() ?? 'Invalid Date'
 
 const { label = 'Date Range', mode, uuid, errors, validation = { errorMessage: '' } } = defineProps<ComponentProps>()
 
@@ -52,8 +54,10 @@ const modelValue = defineModel<DateRangeValue>({
 	default: () => ({ start_date: null, end_date: null }),
 })
 
-const startDate = ref<Date | null>(modelValue.value.start_date ? new Date(modelValue.value.start_date) : null)
-const endDate = ref<Date | null>(modelValue.value.end_date ? new Date(modelValue.value.end_date) : null)
+const readDay = (day: string | null | undefined) => (day ? (fromISODate(day) ?? null) : null)
+
+const startDate = ref<Temporal.PlainDate | null>(readDay(modelValue.value.start_date))
+const endDate = ref<Temporal.PlainDate | null>(readDay(modelValue.value.end_date))
 
 const showPicker = ref(false)
 const pickerRef = ref(null)
@@ -63,9 +67,9 @@ const openPicker = () => {
 	if (mode !== 'read') showPicker.value = true
 }
 
-const formatDate = (d: Date | null): string => {
+const formatDate = (d: Temporal.PlainDate | null): string => {
 	if (!d) return ''
-	return `${d.getMonth() + 1}/${d.getDate()}/${d.getFullYear()}`
+	return `${d.month}/${d.day}/${d.year}`
 }
 
 const rangeDisplay = computed(() => {
@@ -88,24 +92,22 @@ const displayValue = computed(() => {
 const ensureOrder = () => {
 	const s = startDate.value
 	const e = endDate.value
-	if (s && e && e.getTime() < s.getTime()) {
+	if (s && e && Temporal.PlainDate.compare(e, s) < 0) {
 		;[startDate.value, endDate.value] = [e, s]
 	}
 }
 
-const toISODate = (d: Date | null): string | null => (d ? d.toISOString().split('T')[0] : null)
-
 const emitModel = () => {
 	modelValue.value = {
-		start_date: toISODate(startDate.value),
-		end_date: toISODate(endDate.value),
+		start_date: startDate.value?.toString() ?? null,
+		end_date: endDate.value?.toString() ?? null,
 	}
 }
 
-const handlePickerDate = (data: { selected: Date; start?: Date | null; end?: Date | null }) => {
-	if (data.start) startDate.value = data.start
+const handlePickerDate = (data: { selected: string; start?: string | null; end?: string | null }) => {
+	if (data.start) startDate.value = readDay(data.start)
 	if (data.end) {
-		endDate.value = data.end
+		endDate.value = readDay(data.end)
 		ensureOrder()
 		showPicker.value = false
 	}
@@ -115,8 +117,8 @@ const handlePickerDate = (data: { selected: Date; start?: Date | null; end?: Dat
 watch(
 	() => modelValue.value,
 	newVal => {
-		startDate.value = newVal.start_date ? new Date(newVal.start_date) : null
-		endDate.value = newVal.end_date ? new Date(newVal.end_date) : null
+		startDate.value = readDay(newVal.start_date)
+		endDate.value = readDay(newVal.end_date)
 	},
 	{ deep: true }
 )

@@ -1,6 +1,8 @@
 import { defineStore } from 'pinia'
 import { componentCategory } from '@stonecrop/schema'
 import type { BadgeDescriptor } from '@stonecrop/schema'
+import { fromISODate } from '@stonecrop/utilities'
+import { Temporal } from 'temporal-polyfill'
 import { type CSSProperties, computed, ref } from 'vue'
 
 import { linkSearchableText } from '../linkSearchableText'
@@ -78,6 +80,22 @@ function isNodeOpen(rowIndex: number, treeDisplay: TableDisplay[]): boolean {
 	return (parent.childrenOpen || false) && isNodeOpen(parentIndex, treeDisplay)
 }
 
+/**
+ * The `YYYY-MM-DD` day a date cell shows as: a day column's day, a date-time's day in the user's zone,
+ * and for a column declaring no date component, the UTC day its value parses to. Undefined when the
+ * cell holds no date.
+ */
+function dayOfCell(cellValue: unknown, column: TableColumn): string | undefined {
+	const category = componentCategory(column.component)
+	if (category === 'date') return fromISODate(String(cellValue))?.toString()
+
+	const epochMilliseconds = new Date(String(cellValue)).getTime()
+	if (isNaN(epochMilliseconds)) return undefined
+	// Not the user's zone for an undeclared value: a bare `YYYY-MM-DD` parses as UTC midnight, a day early west of UTC.
+	const zone = category === 'datetime' ? Temporal.Now.timeZoneId() : 'UTC'
+	return Temporal.Instant.fromEpochMilliseconds(epochMilliseconds).toZonedDateTimeISO(zone).toPlainDate().toString()
+}
+
 function applyFilter(cellValue: any, filter: FilterState, column: TableColumn): boolean {
 	const filterType = resolveFilterType(column)
 	const value = filter.value
@@ -113,17 +131,20 @@ function applyFilter(cellValue: any, filter: FilterState, column: TableColumn): 
 
 		case 'date': {
 			// Handle both timestamp numbers and date strings
-			let cellDate: Date
+			let cellDay: string | undefined
 			if (typeof cellValue === 'number') {
 				// Apply the same year transformation as in the format function
 				const originalDate = new Date(cellValue)
 				const currentYear = new Date().getFullYear()
-				cellDate = new Date(currentYear, originalDate.getMonth(), originalDate.getDate())
+				cellDay = Temporal.PlainDate.from({
+					year: currentYear,
+					month: originalDate.getMonth() + 1,
+					day: originalDate.getDate(),
+				}).toString()
 			} else {
-				cellDate = new Date(String(cellValue))
+				cellDay = dayOfCell(cellValue, column)
 			}
-			const filterDate = new Date(String(value))
-			return cellDate.toDateString() === filterDate.toDateString()
+			return cellDay === String(value)
 		}
 
 		case 'dateRange': {
@@ -132,17 +153,23 @@ function applyFilter(cellValue: any, filter: FilterState, column: TableColumn): 
 			if (!startValue && !endValue) return true
 
 			// Handle both timestamp numbers and date strings
-			let cellDateRange: Date
+			let cellDay: string | undefined
 			if (typeof cellValue === 'number') {
 				// Apply the same year transformation as in the format function
 				const originalDate = new Date(cellValue)
 				const currentYear = new Date().getFullYear()
-				cellDateRange = new Date(currentYear, originalDate.getMonth(), originalDate.getDate())
+				cellDay = Temporal.PlainDate.from({
+					year: currentYear,
+					month: originalDate.getMonth() + 1,
+					day: originalDate.getDate(),
+				}).toString()
 			} else {
-				cellDateRange = new Date(String(cellValue))
+				cellDay = dayOfCell(cellValue, column)
 			}
-			if (startValue && cellDateRange < new Date(String(startValue))) return false
-			if (endValue && cellDateRange > new Date(String(endValue))) return false
+			if (cellDay === undefined) return false
+			// `YYYY-MM-DD` days compare in date order as strings, and both ends are included.
+			if (startValue && cellDay < String(startValue)) return false
+			if (endValue && cellDay > String(endValue)) return false
 
 			return true
 		}
@@ -543,7 +570,9 @@ export const createTableStore = (initData: {
 				// opinion (including an unknown component) renders the raw value.
 				const category = componentCategory(column.component)
 				if (category === 'boolean') return value ? '✓' : '✗'
-				if (category === 'date') return value != null ? new Date(String(value)).toLocaleDateString() : value
+				if (category === 'date') {
+					return value != null ? (fromISODate(String(value))?.toLocaleString() ?? 'Invalid Date') : value
+				}
 				if (category === 'datetime') return value != null ? new Date(String(value)).toLocaleString() : value
 				if (category === 'quantity') return formatQuantity(value)
 				if (category === 'currency') return formatCurrency(value)

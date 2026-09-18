@@ -1,11 +1,13 @@
 import type { DoctypeField, DoctypeMeta, LinkDeclaration, ValueField, GetRecordOptions } from '@stonecrop/schema'
 import { camelToSnake, getRecordIdField, resolveLinkRenderMode, unwrapInlineLinks } from '@stonecrop/schema'
 import { loadOneWithPgClient, sideEffectWithPgClient } from '@dataplan/pg'
-import type { PgClient, PgExecutor } from '@dataplan/pg'
+import type { PgClient, PgCodec, PgExecutor } from '@dataplan/pg'
 import { constant, lambda, object } from 'postgraphile/grafast'
 import { GraphileConfig } from 'postgraphile/graphile-build'
 import { extendSchema } from 'postgraphile/utils'
 
+import { createColumnReader } from '../columns'
+import type { ColumnSelection } from '../columns'
 import { columnBackedFields, flattenFields } from '../fields'
 import { enrichLinkDisplayFields } from '../link-display'
 import { resolveTableName } from '../tables'
@@ -176,7 +178,7 @@ class ActionRolledBack extends Error {
 
 /**
  * Column-alias prefix for a foreign key the record SELECT carries only so the link expansion can
- * read it. An *expanding* link is a relation in the payload rather than a scalar, so `getSqlColumns`
+ * read it. An *expanding* link is a relation in the payload rather than a scalar, so `getColumnSelections`
  * omits its FK column by design — but the expansion needs the value to find the target. Aliasing
  * keeps that need from changing the payload: every alias is stripped before the record is returned.
  */
@@ -224,11 +226,14 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 	return extendSchema(build => {
 		// Obtain the PgExecutor from pgExecutors — one entry exists per configured pgService.
 		// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- build.input.pgRegistry is a PostGraphile internal not in the public Build type
-		const pgExecutors = (build as any).input?.pgRegistry?.pgExecutors as Record<string, PgExecutor> | undefined
-		const executor = pgExecutors ? Object.values(pgExecutors)[0] : undefined
+		const pgRegistry = (build as any).input?.pgRegistry as
+			| { pgExecutors?: Record<string, PgExecutor>; pgCodecs?: Record<string, PgCodec> }
+			| undefined
+		const executor = pgRegistry?.pgExecutors ? Object.values(pgRegistry.pgExecutors)[0] : undefined
 		if (!executor) {
 			throw new Error('StonecropPlugin: no pgExecutors found — ensure pgServices is configured')
 		}
+		const columns = createColumnReader(pgRegistry?.pgCodecs ?? {}, executor, options.tables)
 
 		// Schema build is the one point where both the registry and the plugin's options are in
 		// hand, so it is where a stale registration can be caught before it silently no-ops.
@@ -284,7 +289,6 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 										const pkMeta = getPkMeta(meta)
 										if (!pkMeta) throw unresolvableIdentityError(doctype)
 										const pkColumn = camelToSnake(pkMeta.fieldname)
-										const columns = getSqlColumns(meta)
 										const ids = indices.map(i => String(specs[i].id))
 
 										// Resolved once per doctype: how each link renders, and which foreign keys the
@@ -292,7 +296,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 										//
 										// `resolveLinkRenderMode` needs the linked field's own component, so the fields
 										// are indexed by name — flattened, because a link's field may sit inside a
-										// fieldset and `getSqlColumns` already descends to select it.
+										// fieldset and `getColumnSelections` already descends to select it.
 										const fieldByName = new Map(flattenFields(meta.fields).map(f => [f.fieldname, f]))
 										const linkFkAliases: Array<{ fieldname: string; alias: string }> = []
 										for (const [linkName, link] of Object.entries(meta.links ?? {})) {
@@ -300,25 +304,24 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 											// link reads a foreign key off this row.
 											if (link.cardinality === 'noneOrMany' || link.cardinality === 'atLeastOne') continue
 											const fieldname = link.fieldname ?? linkName
-											// An inline link keeps its FK as a scalar, so `getSqlColumns` already selected
+											// An inline link keeps its FK as a scalar, so `getColumnSelections` already selected
 											// it under its own name and no alias is needed.
 											if (resolveLinkRenderMode(link, fieldByName.get(fieldname)?.component) === 'inline') continue
 											linkFkAliases.push({ fieldname, alias: `${LINK_FK_ALIAS}${fieldname}` })
 										}
-										const selectList = [
-											columns,
-											...linkFkAliases.map(({ fieldname, alias }) => `"${camelToSnake(fieldname)}" AS "${alias}"`),
-										]
-											.filter(Boolean)
-											.join(', ')
+										const select = columns.select(meta.name, [
+											...getColumnSelections(meta),
+											...linkFkAliases.map(({ fieldname, alias }) => ({ column: camelToSnake(fieldname), alias })),
+										])
 
 										// TODO(perf): queries per doctype group could be parallelized with Promise.all across doctype groups;
 										// requires refactoring the grouped-by-doctype loop to collect promises before resolving results
 										// oxlint-disable-next-line eslint/no-await-in-loop -- sequential per-doctype SQL; see TODO above
 										const { rows } = await debugSql<Record<string, unknown>>(pgClient, {
-											text: `SELECT ${selectList} FROM ${resolveTableName(meta.name, options.tables)} WHERE "${pkColumn}"::text = ANY($1::text[])`,
+											text: `SELECT ${select.list} FROM ${select.table} WHERE "${pkColumn}"::text = ANY($1::text[])`,
 											values: [ids],
 										})
+										select.decodeRows(rows)
 
 										// Use String() so integer PKs (e.g. serial) match the string ids from GraphQL
 										const rowByPk = new Map(rows.map(r => [String(r[pkMeta.fieldname]), r]))
@@ -421,12 +424,12 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 													const targetMeta = getMeta(link.target)
 													if (!targetMeta) continue
 
-													const targetColumns = getSqlColumns(targetMeta)
+													const targetSelect = columns.select(targetMeta.name, getColumnSelections(targetMeta))
 
 													if (isMany) {
 														if (!link.backlink) continue
 														const backlinkCol = camelToSnake(link.backlink)
-														let sql = `SELECT ${targetColumns} FROM ${resolveTableName(targetMeta.name, options.tables)} WHERE "${backlinkCol}"::text = $1`
+														let sql = `SELECT ${targetSelect.list} FROM ${targetSelect.table} WHERE "${backlinkCol}"::text = $1`
 														const linkValues: unknown[] = [specId]
 														// Same reason the list path orders: a capped relation without a fixed order
 														// returns an arbitrary subset of the children, and a different one each time
@@ -449,6 +452,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 															text: sql,
 															values: linkValues,
 														})
+														targetSelect.decodeRows(linked)
 														// A truncated relation that says nothing is how a read-modify-write deletes
 														// the tail: the client cannot tell 50 rows from all of them, so it writes
 														// back what it was given. Reported for every source of truncation, the
@@ -461,7 +465,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 														}
 													} else {
 														// Read from the reserved alias, never the fieldname: an expanding link's FK
-														// column is deliberately absent from `getSqlColumns`, so the plain read found
+														// column is deliberately absent from `getColumnSelections`, so the plain read found
 														// `undefined` on every record and answered `null` — a relation that looked
 														// permanently empty rather than one nobody had asked the right question for.
 														const fkValue = rowData[`${LINK_FK_ALIAS}${fieldname}`]
@@ -478,9 +482,10 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 														// TODO(perf): one-side link FK lookups per row could be parallelized; needs collecting across links before await
 														// oxlint-disable-next-line eslint/no-await-in-loop -- one FK lookup per link per row; see TODO above
 														const { rows: linked } = await debugSql<Record<string, unknown>>(pgClient, {
-															text: `SELECT ${targetColumns} FROM ${resolveTableName(targetMeta.name, options.tables)} WHERE "${targetPkColumn}" = $1`,
+															text: `SELECT ${targetSelect.list} FROM ${targetSelect.table} WHERE "${targetPkColumn}" = $1`,
 															values: [fkValue],
 														})
+														targetSelect.decodeRows(linked)
 														rowData[fieldname] = linked[0] ?? null
 													}
 												}
@@ -510,7 +515,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 										// Sequential per doctype group because `pgClient` is one checked-out connection,
 										// so awaiting these together would only queue them inside the driver.
 										// oxlint-disable-next-line eslint/no-await-in-loop
-										await enrichLinkDisplayFields(pgClient, meta, enrichedRows, options.tables, debugSql)
+										await enrichLinkDisplayFields(pgClient, meta, enrichedRows, columns, debugSql)
 									}
 
 									return results
@@ -543,10 +548,11 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 											}
 
 											const knownFields = new Set(flattenFields(meta.fields).map(f => f.fieldname))
-											const columns = getSqlColumns(meta)
-											const values: unknown[] = []
+											const select = columns.select(meta.name, getColumnSelections(meta))
 
-											// WHERE from filters (parameterised — safe against SQL injection)
+											// WHERE from filters (parameterised — safe against SQL injection). Built once for
+											// the page and its total, which must count the rows the page is drawn from.
+											const filterValues: unknown[] = []
 											const whereClauses: string[] = []
 											if (spec.filters != null) {
 												// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- spec.filters is a Grafast runtime value; shape guaranteed by GraphQL schema
@@ -554,11 +560,15 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 													if (!knownFields.has(field)) {
 														throw new Error(`Unknown filter field: ${field} for doctype ${meta.name}`)
 													}
-													values.push(value)
-													whereClauses.push(`"${camelToSnake(field)}" = $${values.length}`)
+													filterValues.push(value)
+													const column = camelToSnake(field)
+													whereClauses.push(
+														`"${column}" = ${columns.bind(meta.name, column, `$${filterValues.length}`)}`
+													)
 												}
 											}
 											const whereClause = whereClauses.length > 0 ? ` WHERE ${whereClauses.join(' AND ')}` : ''
+											const values: unknown[] = [...filterValues]
 
 											// ORDER BY (field name whitelisted — column names cannot be parameterised)
 											let orderByClause = ''
@@ -622,9 +632,10 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 											}
 
 											const { rows } = await debugSql<Record<string, unknown>>(pgClient, {
-												text: `SELECT ${columns} FROM ${resolveTableName(meta.name, options.tables)}${whereClause}${orderByClause}${pagingClause}`,
+												text: `SELECT ${select.list} FROM ${select.table}${whereClause}${orderByClause}${pagingClause}`,
 												values,
 											})
+											select.decodeRows(rows)
 
 											// The extra row requested above is a probe, not data. Its presence is what makes
 											// a capped page distinguishable from a complete table; trim it before anything
@@ -632,7 +643,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 											const hasMore = effectiveLimit != null && rows.length > effectiveLimit
 											const data = [...(hasMore ? rows.slice(0, effectiveLimit ?? rows.length) : rows)]
 
-											await enrichLinkDisplayFields(pgClient, meta, data, options.tables, debugSql)
+											await enrichLinkDisplayFields(pgClient, meta, data, columns, debugSql)
 
 											// Total matching the filters, independent of LIMIT/OFFSET, and opt-in.
 											//
@@ -642,20 +653,9 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 											// against. An argument also puts the cost in the query the client wrote.
 											let count: number | null = null
 											if (spec.includeTotal === true) {
-												const countValues: unknown[] = []
-												const countWhere: string[] = []
-												if (spec.filters != null) {
-													// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- spec.filters is a Grafast runtime value; shape guaranteed by GraphQL schema
-													for (const [field, value] of Object.entries(spec.filters as Record<string, unknown>)) {
-														if (!knownFields.has(field)) continue
-														countValues.push(value)
-														countWhere.push(`"${camelToSnake(field)}" = $${countValues.length}`)
-													}
-												}
-												const countWhereClause = countWhere.length > 0 ? ` WHERE ${countWhere.join(' AND ')}` : ''
 												const { rows: countRows } = await debugSql<{ row_count: string }>(pgClient, {
-													text: `SELECT COUNT(*) AS row_count FROM ${resolveTableName(meta.name, options.tables)}${countWhereClause}`,
-													values: countValues,
+													text: `SELECT COUNT(*) AS row_count FROM ${resolveTableName(meta.name, options.tables)}${whereClause}`,
+													values: filterValues,
 												})
 												count = parseInt(countRows[0]?.row_count ?? '0', 10)
 											}
@@ -826,7 +826,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 													// shipped and patched downstream.
 													writeData: async (patch: Record<string, unknown>, exists: boolean) => {
 														const { cols, values } = partitionPatch(patch)
-														const returning = getSqlColumns(meta)
+														const returning = columns.select(meta.name, getColumnSelections(meta))
 
 														if (!exists) {
 															// Creating is what the *absence* of an id means. An id that was
@@ -852,9 +852,10 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 															// column default supplies it. Either way the row states its
 															// own identity back.
 															const text = cols.length
-																? `INSERT INTO ${table} (${cols.map(c => `"${c}"`).join(', ')}) VALUES (${cols.map((_col, i) => `$${i + 1}`).join(', ')}) RETURNING ${returning}`
-																: `INSERT INTO ${table} DEFAULT VALUES RETURNING ${returning}`
+																? `INSERT INTO ${table} (${cols.map(c => `"${c}"`).join(', ')}) VALUES (${cols.map((c, i) => columns.bind(meta.name, c, `$${i + 1}`)).join(', ')}) RETURNING ${returning.list}`
+																: `INSERT INTO ${table} DEFAULT VALUES RETURNING ${returning.list}`
 															const { rows } = await debugSql<Record<string, unknown>>(tx, { text, values })
+															returning.decodeRows(rows)
 															return rows[0] ?? {}
 														}
 
@@ -865,17 +866,21 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 														// nothing changed.
 														if (cols.length === 0) {
 															const { rows } = await debugSql<Record<string, unknown>>(tx, {
-																text: `SELECT ${returning} FROM ${table} WHERE "${pkColumn()}"::text = $1`,
+																text: `SELECT ${returning.list} FROM ${table} WHERE "${pkColumn()}"::text = $1`,
 																values: [String(recordId)],
 															})
+															returning.decodeRows(rows)
 															return rows[0] ?? {}
 														}
 
-														const assignments = cols.map((c, i) => `"${c}" = $${i + 1}`).join(', ')
+														const assignments = cols
+															.map((c, i) => `"${c}" = ${columns.bind(meta.name, c, `$${i + 1}`)}`)
+															.join(', ')
 														const { rows } = await debugSql<Record<string, unknown>>(tx, {
-															text: `UPDATE ${table} SET ${assignments} WHERE "${pkColumn()}"::text = $${cols.length + 1} RETURNING ${returning}`,
+															text: `UPDATE ${table} SET ${assignments} WHERE "${pkColumn()}"::text = $${cols.length + 1} RETURNING ${returning.list}`,
 															values: [...values, String(recordId)],
 														})
+														returning.decodeRows(rows)
 														return rows[0] ?? {}
 													},
 													runEffect: handler
@@ -921,7 +926,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 												const written = (Array.isArray(outcome.data) ? outcome.data : [outcome.data]).filter(
 													(row: unknown): row is Record<string, unknown> => row !== null && typeof row === 'object'
 												)
-												await enrichLinkDisplayFields(tx, meta, written, options.tables, debugSql)
+												await enrichLinkDisplayFields(tx, meta, written, columns, debugSql)
 											}
 
 											// Attached here rather than carried through `applyGuardedTransition`:
@@ -953,43 +958,42 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 // ===========================================================================
 
 /**
- * Derive quoted SQL column entries from a flat field array.
+ * Derive column selections from a flat field array.
  * Skips non-scalar fields (kind !== 'field'), `computed` fields
  * (no backing DB column), and *expanding* links
  * (relations fetched separately, not scalar columns on this table).
  */
-function collectColumns(fields: DoctypeField[], links: Map<string, LinkDeclaration>): string[] {
-	const columns: string[] = []
+function collectColumns(fields: DoctypeField[], links: Map<string, LinkDeclaration>): ColumnSelection[] {
+	const columns: ColumnSelection[] = []
 	for (const f of columnBackedFields(fields)) {
 		// Only an *expanding* link is a relation rather than a column. An inline link (a picker)
 		// keeps its FK on this table and must still be selected — `resolveLinkRenderMode` is the
 		// shared rule, also used by the client resolver; never re-derive it here.
 		const link = links.get(f.fieldname)
 		if (link && resolveLinkRenderMode(link, f.component) !== 'inline') continue
-		const col = camelToSnake(f.fieldname)
-		columns.push(col !== f.fieldname ? `"${col}" AS "${f.fieldname}"` : `"${f.fieldname}"`)
+		columns.push({ column: camelToSnake(f.fieldname), alias: f.fieldname })
 	}
 	return columns
 }
 
 /**
- * Derive a quoted SQL column list from doctype field definitions.
- * Applies camelToSnake to each fieldname to get the DB column name, then
- * aliases it back to the fieldname so result rows carry API-layer keys.
+ * Derive the columns a record payload selects from doctype field definitions.
+ * Applies camelToSnake to each fieldname to get the DB column name, and keeps
+ * the fieldname as its alias so result rows carry API-layer keys.
  * Excludes `computed` fields (no backing DB column), Fieldset
  * containers (recursing into their children instead), and *expanding* links
  * (relations fetched separately). An inline link keeps its FK column here.
  *
  * Exported for unit testing (not re-exported from the package index).
  */
-export function getSqlColumns(meta: DoctypeMeta): string {
+export function getColumnSelections(meta: DoctypeMeta): ColumnSelection[] {
 	const links = new Map<string, LinkDeclaration>()
 	if (meta.links) {
 		for (const [key, link] of Object.entries(meta.links)) {
 			links.set(link.fieldname ?? key, link)
 		}
 	}
-	return collectColumns(meta.fields, links).join(', ')
+	return collectColumns(meta.fields, links)
 }
 
 /**
@@ -1002,11 +1006,11 @@ export function getSqlColumns(meta: DoctypeMeta): string {
  * like a record that does not exist.
  *
  * Returns `undefined` only when the resolved name is not a declared field — a doctype with no
- * `primaryKey` and no `id`. That case cannot be served: `getSqlColumns` selects declared fields
+ * `primaryKey` and no `id`. That case cannot be served: `getColumnSelections` selects declared fields
  * only, so the row map would key on a column the SELECT never returned and every lookup would miss
  * silently. Callers must say so rather than answer `null`.
  *
- * Descends into fieldsets, because both halves of the question already do — `getSqlColumns` selects
+ * Descends into fieldsets, because both halves of the question already do — `getColumnSelections` selects
  * a fieldset's children, and `getRecordIdField` resolves a key declared among them. While this
  * scanned top level only it could refuse a name that helper had just resolved, so a doctype whose
  * SELECT carried its own key column had no identity to look that column up by.

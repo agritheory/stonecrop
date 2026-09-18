@@ -62,12 +62,14 @@
 		"@stonecrop/themes": "workspace:*",
 		"@stonecrop/utilities": "workspace:*",
 		"@vueuse/components": "catalog:",
-		"@vueuse/core": "catalog:"
+		"@vueuse/core": "catalog:",
+		"temporal-polyfill": "catalog:"
 	},
 	"devDependencies": {
 		"@microsoft/api-extractor": "catalog:",
 		"@types/node": "catalog:",
 		"@vitejs/plugin-vue": "catalog:",
+		"@vitest/browser-playwright": "catalog:",
 		"@vitest/coverage-istanbul": "catalog:",
 		"@vitest/ui": "catalog:",
 		"@vue/test-utils": "catalog:",
@@ -75,6 +77,7 @@
 		"oxlint": "catalog:",
 		"oxlint-tsgolint": "catalog:",
 		"pinia": "catalog:",
+		"playwright": "catalog:",
 		"typescript": "catalog:",
 		"vite": "catalog:",
 		"vite-plugin-lib-inject-css": "catalog:",

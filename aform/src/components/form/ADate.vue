@@ -1,14 +1,14 @@
 <template>
 	<div class="aform_form-element">
 		<template v-if="mode === 'display'">
-			<span class="aform_display-value">{{ modelValue ? new Date(inputDate).toLocaleDateString() : '' }}</span>
+			<span class="aform_display-value">{{ displayValue }}</span>
 			<label class="aform_field-label">{{ label }}</label>
 		</template>
 		<template v-else>
 			<input
 				:id="uuid"
 				ref="date"
-				v-model="inputDate"
+				v-model="modelValue"
 				class="aform_input-field"
 				type="date"
 				:disabled="mode === 'read'"
@@ -20,6 +20,7 @@
 				v-if="showPicker"
 				ref="picker"
 				class="adate-picker"
+				:default-date="modelValue || undefined"
 				:select-range="false"
 				:show-time="false"
 				@get-date="handleDate" />
@@ -28,8 +29,9 @@
 </template>
 
 <script setup lang="ts">
-import { useTemplateRef, ref, computed, watch } from 'vue'
+import { useTemplateRef, ref, computed } from 'vue'
 import { onClickOutside } from '@vueuse/core'
+import { fromISODate } from '@stonecrop/utilities'
 
 import ADateSelection from './ADateSelection.vue'
 import type { ComponentProps } from '../../types'
@@ -46,16 +48,12 @@ const {
 // Dynamic trigger errors take precedence over a static schema errorMessage; empty means the slot hides.
 const errorText = computed(() => (errors?.length ? errors.join('; ') : (validation.errorMessage ?? '')))
 
-const modelValue = defineModel<string | Date>()
+// The field holds a `YYYY-MM-DD` day, which is also the date input's own value; a Date would be an instant.
+const modelValue = defineModel<string>()
 
-const currentDate = ref(modelValue.value ? new Date(modelValue.value) : new Date())
-const inputDate = computed({
-	get: () => currentDate.value.toISOString().split('T')[0],
-	set: (value: string) => {
-		currentDate.value = new Date(value)
-		modelValue.value = value
-	},
-})
+const displayValue = computed(() =>
+	modelValue.value ? (fromISODate(modelValue.value)?.toLocaleString() ?? 'Invalid Date') : ''
+)
 
 const pickerRef = useTemplateRef<HTMLDivElement>('picker')
 const showPicker = ref(false)
@@ -66,18 +64,8 @@ const openPicker = () => {
 	if (mode !== 'read') showPicker.value = !showPicker.value
 }
 
-watch(
-	() => modelValue.value,
-	newValue => {
-		if (newValue) {
-			currentDate.value = new Date(newValue)
-		}
-	}
-)
-
-const handleDate = (data: { selected: Date }) => {
-	currentDate.value = data.selected
-	modelValue.value = inputDate.value
+const handleDate = (data: { selected: string }) => {
+	modelValue.value = data.selected
 	showPicker.value = false
 }
 </script>

@@ -8,7 +8,7 @@ const packageRoot = resolve(__dirname, '..')
 
 /**
  * The widest external surface in the repo, and the one most sensitive to how a bundler classifies
- * specifiers: four `postgraphile/*` subpaths, two `node:` builtins, and two plain packages. The
+ * specifiers: five `postgraphile/*` subpaths, two `node:` builtins, and two plain packages. The
  * `node:` entries matter on their own — a bundler that stopped treating them as external would try
  * to bundle `fs`, which fails at runtime rather than at build time.
  */
@@ -28,6 +28,7 @@ describe('dist contract', { tags: ['unit'] }, () => {
 			'node:path',
 			'postgraphile/adaptors/pg',
 			'postgraphile/grafast',
+			'postgraphile/pg-sql2',
 			'postgraphile/presets/amber',
 			'postgraphile/utils',
 		])

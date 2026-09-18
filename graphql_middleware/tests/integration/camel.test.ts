@@ -94,12 +94,15 @@ async function runQuery(query: string, variables?: Record<string, unknown>): Pro
 		args.contextValue.withPgClient = withPgClient
 		queryResult = (await execute(args)) as Record<string, unknown>
 	} finally {
+		// A connection whose ROLLBACK failed is in an unknown state, so it is discarded, not pooled.
+		// One release either way: pg-pool throws on a second, which would hide the first failure.
+		let discardReason: Error | undefined
 		try {
 			await client.query('ROLLBACK')
 		} catch {
-			client.release(new Error('rollback failed'))
+			discardReason = new Error('rollback failed')
 		}
-		client.release()
+		client.release(discardReason)
 	}
 	return queryResult
 }
@@ -134,7 +137,7 @@ describe('stonecropRecord — camelCase fieldnames', { tags: ['integration', 'gr
 	it('errors when the doctype declares neither a primaryKey nor an `id` field', async () => {
 		// This used to answer `data: null` — the same shape as a record that does not exist. It is
 		// the sharpest case for why that was wrong: `sc_note` *does* have an `id` column, but the
-		// doctype never declares it, so `getSqlColumns` would not select it and every lookup would
+		// doctype never declares it, so `getColumnSelections` would not select it and every lookup would
 		// miss against a column that was right there. Declaring `id`, or a `primaryKey`, is the fix,
 		// and the error has to say so.
 		const result = await runQuery(`query { stonecropRecord(doctype: "ScNoPk", id: "1") { doctype data } }`)

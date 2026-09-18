@@ -491,7 +491,7 @@ describe('datetime form field component', { tags: ['component'] }, () => {
 		})
 		await wrapper.find('input').trigger('click')
 		const picker = wrapper.findComponent(ADateSelection)
-		await picker.vm.$emit('get-date', { selected: new Date('2023-06-15T12:00:00') })
+		await picker.vm.$emit('get-date', { selected: '2023-06-15' })
 		await picker.vm.$emit('get-time', {
 			hours: 3,
 			minutes: 30,
@@ -500,8 +500,15 @@ describe('datetime form field component', { tags: ['component'] }, () => {
 			militaryTime: 15,
 			source: 'user',
 		})
-		expect(emitted.length).toBeGreaterThan(0)
-		expect(typeof emitted[emitted.length - 1]).toBe('string')
+		expect(emitted.at(-1)).toBe(new Date(2023, 5, 15, 15, 30).toISOString())
+	})
+
+	it('opens the calendar on the day the field holds', async () => {
+		const wrapper = mount(ADateTime, { ...formFieldGlobals, props: { modelValue: '2024-03-15T10:00:00' } })
+		await wrapper.find('.aform_input-field').trigger('click')
+		const picker = wrapper.findComponent(ADatePicker)
+		expect([picker.vm.currentYear, picker.vm.currentMonth]).toEqual([2024, 2])
+		expect(wrapper.findAll('td.selectedDate').map(cell => cell.text())).toEqual(['15'])
 	})
 
 	it('renders in display mode with formatted datetime', () => {

@@ -81,10 +81,10 @@ props: {
   uuid?: string \| undefined
   validation?: { [key: string]: any; errorMessage: string; } \| undefined
   errors?: string[] \| undefined
-  modelValue?: string \| Date \| undefined
+  modelValue?: string \| undefined
 }
 emits: {
-  update:modelValue: [value: string \| Date \| undefined]
+  update:modelValue: [value: string \| undefined]
 }
 slots: {}
 ```
@@ -103,17 +103,17 @@ props: {
   uuid?: string \| undefined
   validation?: { [key: string]: any; errorMessage: string; } \| undefined
   errors?: string[] \| undefined
-  modelValue?: number \| Date \| undefined
+  modelValue?: string \| undefined
 }
 emits: {
-  update:modelValue: [value: number \| Date]
-  get-date: [{ start: Date \| null; end: Date \| null; selected: Date; }]
+  update:modelValue: [value: string \| undefined]
+  get-date: [{ start: string \| null; end: string \| null; selected: string; }]
 }
 slots: {}
 exposed: {
   currentMonth: number
   currentYear: number
-  selectedDate: Date
+  selectedDate: string
 }
 ```
 
@@ -149,6 +149,7 @@ props: {
   selectRange?: boolean \| undefined
   showEndTime?: boolean \| undefined
   allowMilitaryTime?: boolean \| undefined
+  defaultDate?: string \| undefined
   defaultHours?: number \| undefined
   defaultMinutes?: number \| undefined
   defaultSeconds?: number \| undefined
@@ -156,7 +157,7 @@ props: {
   useSeconds?: boolean \| undefined
 }
 emits: {
-  get-date: [{ selected: Date; start?: Date \| null \| undefined; end?: Date \| null \| undefined; }]
+  get-date: [{ selected: string; start?: string \| null \| undefined; end?: string \| null \| undefined; }]
   get-time: [{ hours: number; minutes: number; seconds: number; meridiem: string; source?: "init" \| "user" \| undefined; }]
   get-range: [{ start: Date; end: Date; source?: "init" \| "user" \| undefined; }]
 }
