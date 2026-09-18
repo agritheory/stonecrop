@@ -446,6 +446,14 @@ beforeAll(async () => {
 			],
 			workflow: { actions: { save: { label: 'Save', selfTransition: true } } },
 		},
+		// Reads sc_period's list of zone-free timestamps, which no other period fixture declares.
+		ScPeriodReviews: {
+			name: 'ScPeriodReviews',
+			fields: [
+				{ kind: 'field', fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
+				{ kind: 'field', fieldname: 'reviewedAt', component: 'ATextInput', label: 'Reviewed At' },
+			],
+		},
 		ScPeriodEntry: {
 			name: 'ScPeriodEntry',
 			fields: [
@@ -528,6 +536,7 @@ beforeAll(async () => {
 					ScBulkCapped: 'sc_bulk',
 					ScPartyWithOrders: 'sc_party',
 					ScPeriodWithEntries: 'sc_period',
+					ScPeriodReviews: 'sc_period',
 					ScPeriodEntryWithPeriod: 'sc_period_entry',
 				},
 			}),
@@ -598,12 +607,15 @@ async function runSequenceCapturingSql(
 			results.push((await execute(args)) as Record<string, unknown>)
 		}
 	} finally {
+		// A connection whose ROLLBACK failed is in an unknown state, so it is discarded, not pooled.
+		// One release either way: pg-pool throws on a second, which would hide the first failure.
+		let discardReason: Error | undefined
 		try {
 			await client.query('ROLLBACK')
 		} catch {
-			client.release(new Error('rollback failed'))
+			discardReason = new Error('rollback failed')
 		}
-		client.release()
+		client.release(discardReason)
 	}
 	return { results, sql }
 }
@@ -629,14 +641,63 @@ async function runSequence(queries: string[]): Promise<Record<string, unknown>[]
 			results.push((await execute(args)) as Record<string, unknown>)
 		}
 	} finally {
+		// A connection whose ROLLBACK failed is in an unknown state, so it is discarded, not pooled.
+		// One release either way: pg-pool throws on a second, which would hide the first failure.
+		let discardReason: Error | undefined
 		try {
 			await client.query('ROLLBACK')
 		} catch {
-			client.release(new Error('rollback failed'))
+			discardReason = new Error('rollback failed')
 		}
-		client.release()
+		client.release(discardReason)
 	}
 	return results
+}
+
+/**
+ * Like `runSequence`, with the connection's time zone set first and, optionally, one SQL read on the
+ * same connection after the documents. A zone-free column converts through that setting, so a test
+ * of the conversion needs a database zone unlike both UTC and the reader's.
+ */
+async function runSequenceInDatabaseZone(
+	databaseZone: string,
+	queries: string[],
+	sqlAfter?: string
+): Promise<{ results: Record<string, unknown>[]; rows: Record<string, unknown>[] }> {
+	const client: PoolClient = await pool.connect()
+	await client.query('BEGIN')
+	// Transaction-local, so the pooled connection goes back in its own zone.
+	await client.query(`SELECT set_config('TimeZone', $1, true)`, [databaseZone])
+	const results: Record<string, unknown>[] = []
+	try {
+		const withPgClient = makeWithPgClientViaPgClientAlreadyInTransaction(client, true)
+		for (const query of queries) {
+			// oxlint-disable-next-line eslint/no-await-in-loop -- one pooled client in one transaction; concurrent queries are impossible
+			const args = await hookArgs({
+				schema,
+				document: parse(query),
+				variableValues: {},
+				contextValue: Object.create(null) as Record<string, unknown>,
+				resolvedPreset,
+				requestContext: {},
+			})
+			args.contextValue.withPgClient = withPgClient
+			// oxlint-disable-next-line eslint/no-await-in-loop -- the SQL read after these must see every write
+			results.push((await execute(args)) as Record<string, unknown>)
+		}
+		const { rows } = sqlAfter ? await client.query(sqlAfter) : { rows: [] }
+		return { results, rows }
+	} finally {
+		// A connection whose ROLLBACK failed is in an unknown state, so it is discarded, not pooled.
+		// One release either way: pg-pool throws on a second, which would hide the first failure.
+		let discardReason: Error | undefined
+		try {
+			await client.query('ROLLBACK')
+		} catch {
+			discardReason = new Error('rollback failed')
+		}
+		client.release(discardReason)
+	}
 }
 
 async function runQuery(
@@ -662,14 +723,16 @@ async function runQuery(
 		args.contextValue.withPgClient = withPgClient
 		queryResult = (await execute(args)) as Record<string, unknown>
 	} finally {
+		// A connection whose ROLLBACK failed is in an unknown state, so it is discarded, not pooled,
+		// and the already-fetched result is still returned. One release either way: pg-pool throws
+		// on a second, which would lose that result.
+		let discardReason: Error | undefined
 		try {
 			await client.query('ROLLBACK')
 		} catch {
-			// If ROLLBACK itself fails the connection is in an unknown state; discard it.
-			// Return the already-fetched result rather than losing it.
-			client.release(new Error('rollback failed'))
+			discardReason = new Error('rollback failed')
 		}
-		client.release()
+		client.release(discardReason)
 	}
 	return queryResult
 }
@@ -1022,7 +1085,21 @@ describe('self-transition data write', { tags: ['integration', 'graphql'] }, () 
 
 describe('temporal columns', { tags: ['integration', 'graphql'] }, () => {
 	const hostRead = `query { scPeriodByRowId(rowId: 1) { rowId name startsOn openedAt } }`
-	const readHost = async () => ((await runQuery(hostRead)) as any).data.scPeriodByRowId
+	// PostGraphile serves a zone-free `timestamp` as bare clock text. Stonecrop serves the moment that
+	// text names in the database's zone, which is UTC here (globalSetup pins it; checked below).
+	const inDatabaseZone = (host: { openedAt: string }) => ({ ...host, openedAt: `${host.openedAt}+00:00` })
+	const readHost = async () => inDatabaseZone(((await runQuery(hostRead)) as any).data.scPeriodByRowId)
+
+	// A date-time as a browser reads it, with `new Date`, written back as the UTC moment it names.
+	const momentOf = (value: unknown) => {
+		const date = value instanceof Date ? value : new Date(String(value))
+		return Number.isNaN(date.getTime()) ? `unreadable: ${String(value)}` : date.toISOString()
+	}
+
+	it('runs the fixture database in UTC', async () => {
+		const { rows } = await pool.query(`SELECT current_setting('TimeZone') AS zone`)
+		expect(rows[0].zone).toBe('UTC')
+	})
 
 	// Serialized, because the client receives JSON and a result object can still hold a Date.
 	const serialize = (result: unknown): any => JSON.parse(JSON.stringify(result))
@@ -1062,7 +1139,9 @@ describe('temporal columns', { tags: ['integration', 'graphql'] }, () => {
 				`mutation { stonecropAction(doctype: "ScPeriod", action: "save", args: [{ id: "1", data: { name: "Renamed" } }]) { data } }`,
 				hostRead,
 			])
-			expect(asHost(serialize(save).data.stonecropAction.data)).toEqual((host as any).data.scPeriodByRowId)
+			expect(asHost(serialize(save).data.stonecropAction.data)).toEqual(
+				inDatabaseZone((host as any).data.scPeriodByRowId)
+			)
 		})
 
 		// A save whose every key is dropped writes nothing and reads the record back instead.
@@ -1079,7 +1158,7 @@ describe('temporal columns', { tags: ['integration', 'graphql'] }, () => {
 				`query { allScPeriods { nodes { rowId name startsOn openedAt } } }`,
 			])
 			const hostCreated = (host as any).data.allScPeriods.nodes.filter((node: { name: string }) => node.name === 'Q2')
-			expect([asHost(serialize(create).data.stonecropAction.data)]).toEqual(hostCreated)
+			expect([asHost(serialize(create).data.stonecropAction.data)]).toEqual(hostCreated.map(inDatabaseZone))
 		})
 
 		it('reads child rows with the values PostGraphile serves', async () => {
@@ -1106,11 +1185,97 @@ describe('temporal columns', { tags: ['integration', 'graphql'] }, () => {
 				hostRead,
 			])
 			expect((save as any).data?.stonecropAction?.success).toBe(true)
-			expect((after as any).data.scPeriodByRowId).toEqual(before)
+			expect(inDatabaseZone((after as any).data.scPeriodByRowId)).toEqual(before)
+		})
+
+		// `opened_at` is a zone-free `timestamp`. ADateTime sends the moment the user picked, in UTC,
+		// and reads a value back with `new Date`, in the user's zone; the save must keep that moment.
+		const picked = () => new Date(2026, 0, 1, 9, 0, 0).toISOString()
+
+		it('reads a saved date-time back as the moment the user picked', async () => {
+			const sent = picked()
+			const [save, read] = await runSequence([
+				`mutation { stonecropAction(doctype: "ScPeriod", action: "save", args: [{ id: "1", data: { openedAt: "${sent}" } }]) { data } }`,
+				`query { stonecropRecord(doctype: "ScPeriod", id: "1") { data } }`,
+			])
+			expect(momentOf(serialize(save).data.stonecropAction.data.openedAt)).toBe(sent)
+			expect(momentOf(serialize(read).data.stonecropRecord.data.openedAt)).toBe(sent)
+		})
+
+		it('reads a created date-time back as the moment the user picked', async () => {
+			const sent = picked()
+			const [create, list] = await runSequence([
+				`mutation { stonecropAction(doctype: "ScPeriod", action: "save", args: [{ data: { name: "Q2", startsOn: "2026-04-01", openedAt: "${sent}" } }]) { data } }`,
+				`query { stonecropRecords(doctype: "ScPeriod") { data } }`,
+			])
+			const created = serialize(list).data.stonecropRecords.data.filter((row: { name: string }) => row.name === 'Q2')
+			expect(created).toHaveLength(1)
+			expect(momentOf(serialize(create).data.stonecropAction.data.openedAt)).toBe(sent)
+			expect(momentOf(created[0].openedAt)).toBe(sent)
+		})
+
+		// Postgres's own cast between `timestamp` and `timestamptz` goes through the database's zone.
+		// Tokyo is neither UTC nor the reader's zone, so converting through either of those fails here.
+		it('stores a date-time as Postgres converts it through the database zone', async () => {
+			const sent = picked()
+			const {
+				results: [save, read],
+				rows: [stored],
+			} = await runSequenceInDatabaseZone(
+				'Asia/Tokyo',
+				[
+					`mutation { stonecropAction(doctype: "ScPeriod", action: "save", args: [{ id: "1", data: { openedAt: "${sent}" } }]) { success error } }`,
+					`query { stonecropRecord(doctype: "ScPeriod", id: "1") { data } }`,
+				],
+				`SELECT opened_at::timestamptz AS moment FROM sc_period WHERE id = 1`
+			)
+			expect((save as any).data.stonecropAction).toEqual({ success: true, error: null })
+			expect(momentOf(stored.moment)).toBe(sent)
+			expect(momentOf(serialize(read).data.stonecropRecord.data.openedAt)).toBe(sent)
+		})
+
+		it('creates a date-time as Postgres converts it through the database zone', async () => {
+			const sent = picked()
+			const {
+				results: [create],
+				rows: [stored],
+			} = await runSequenceInDatabaseZone(
+				'Asia/Tokyo',
+				[
+					`mutation { stonecropAction(doctype: "ScPeriod", action: "save", args: [{ data: { name: "Q2", startsOn: "2026-04-01", openedAt: "${sent}" } }]) { success error data } }`,
+				],
+				`SELECT opened_at::timestamptz AS moment FROM sc_period WHERE name = 'Q2'`
+			)
+			expect((create as any).data.stonecropAction).toMatchObject({ success: true, error: null })
+			expect(momentOf(stored.moment)).toBe(sent)
+			expect(momentOf(serialize(create).data.stonecropAction.data.openedAt)).toBe(sent)
 		})
 	})
 
-	// Fails in every zone: a date display column reaches the lookup as a Date, which is not text.
+	it('reads a list of zone-free timestamps as the moments Postgres converts them to', async () => {
+		const {
+			results: [read],
+			rows: [stored],
+		} = await runSequenceInDatabaseZone(
+			'Asia/Tokyo',
+			[`query { stonecropRecord(doctype: "ScPeriodReviews", id: "1") { data } }`],
+			`SELECT reviewed_at::timestamptz[] AS moments FROM sc_period WHERE id = 1`
+		)
+		const expected = (stored.moments as Date[]).map(moment => moment.toISOString())
+		expect(expected).toHaveLength(2)
+		expect(serialize(read).data.stonecropRecord.data.reviewedAt.map(momentOf)).toEqual(expected)
+	})
+
+	// The seeded `2026-01-01 09:00`, read in Tokyo (+09:00, no daylight saving), names this moment.
+	it('filters a date-time by the moment it names in the database zone', async () => {
+		const {
+			results: [list],
+		} = await runSequenceInDatabaseZone('Asia/Tokyo', [
+			`query { stonecropRecords(doctype: "ScPeriod", filters: { openedAt: "2026-01-01T00:00:00.000Z" }) { data } }`,
+		])
+		expect(serialize(list).data.stonecropRecords.data.map((row: { id: unknown }) => row.id)).toEqual([1])
+	})
+
 	it('displays a link by a date display field as PostGraphile serves it', async () => {
 		const host = await readHost()
 		const entry = await readRecord('ScPeriodEntry')

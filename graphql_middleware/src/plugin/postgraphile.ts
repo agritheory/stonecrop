@@ -549,9 +549,10 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 
 											const knownFields = new Set(flattenFields(meta.fields).map(f => f.fieldname))
 											const select = columns.select(meta.name, getColumnSelections(meta))
-											const values: unknown[] = []
 
-											// WHERE from filters (parameterised — safe against SQL injection)
+											// WHERE from filters (parameterised — safe against SQL injection). Built once for
+											// the page and its total, which must count the rows the page is drawn from.
+											const filterValues: unknown[] = []
 											const whereClauses: string[] = []
 											if (spec.filters != null) {
 												// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- spec.filters is a Grafast runtime value; shape guaranteed by GraphQL schema
@@ -559,11 +560,15 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 													if (!knownFields.has(field)) {
 														throw new Error(`Unknown filter field: ${field} for doctype ${meta.name}`)
 													}
-													values.push(value)
-													whereClauses.push(`"${camelToSnake(field)}" = $${values.length}`)
+													filterValues.push(value)
+													const column = camelToSnake(field)
+													whereClauses.push(
+														`"${column}" = ${columns.bind(meta.name, column, `$${filterValues.length}`)}`
+													)
 												}
 											}
 											const whereClause = whereClauses.length > 0 ? ` WHERE ${whereClauses.join(' AND ')}` : ''
+											const values: unknown[] = [...filterValues]
 
 											// ORDER BY (field name whitelisted — column names cannot be parameterised)
 											let orderByClause = ''
@@ -648,20 +653,9 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 											// against. An argument also puts the cost in the query the client wrote.
 											let count: number | null = null
 											if (spec.includeTotal === true) {
-												const countValues: unknown[] = []
-												const countWhere: string[] = []
-												if (spec.filters != null) {
-													// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- spec.filters is a Grafast runtime value; shape guaranteed by GraphQL schema
-													for (const [field, value] of Object.entries(spec.filters as Record<string, unknown>)) {
-														if (!knownFields.has(field)) continue
-														countValues.push(value)
-														countWhere.push(`"${camelToSnake(field)}" = $${countValues.length}`)
-													}
-												}
-												const countWhereClause = countWhere.length > 0 ? ` WHERE ${countWhere.join(' AND ')}` : ''
 												const { rows: countRows } = await debugSql<{ row_count: string }>(pgClient, {
-													text: `SELECT COUNT(*) AS row_count FROM ${resolveTableName(meta.name, options.tables)}${countWhereClause}`,
-													values: countValues,
+													text: `SELECT COUNT(*) AS row_count FROM ${resolveTableName(meta.name, options.tables)}${whereClause}`,
+													values: filterValues,
 												})
 												count = parseInt(countRows[0]?.row_count ?? '0', 10)
 											}
@@ -858,7 +852,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 															// column default supplies it. Either way the row states its
 															// own identity back.
 															const text = cols.length
-																? `INSERT INTO ${table} (${cols.map(c => `"${c}"`).join(', ')}) VALUES (${cols.map((_col, i) => `$${i + 1}`).join(', ')}) RETURNING ${returning.list}`
+																? `INSERT INTO ${table} (${cols.map(c => `"${c}"`).join(', ')}) VALUES (${cols.map((c, i) => columns.bind(meta.name, c, `$${i + 1}`)).join(', ')}) RETURNING ${returning.list}`
 																: `INSERT INTO ${table} DEFAULT VALUES RETURNING ${returning.list}`
 															const { rows } = await debugSql<Record<string, unknown>>(tx, { text, values })
 															returning.decodeRows(rows)
@@ -879,7 +873,9 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 															return rows[0] ?? {}
 														}
 
-														const assignments = cols.map((c, i) => `"${c}" = $${i + 1}`).join(', ')
+														const assignments = cols
+															.map((c, i) => `"${c}" = ${columns.bind(meta.name, c, `$${i + 1}`)}`)
+															.join(', ')
 														const { rows } = await debugSql<Record<string, unknown>>(tx, {
 															text: `UPDATE ${table} SET ${assignments} WHERE "${pkColumn()}"::text = $${cols.length + 1} RETURNING ${returning.list}`,
 															values: [...values, String(recordId)],

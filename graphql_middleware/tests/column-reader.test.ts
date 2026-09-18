@@ -1,5 +1,5 @@
 import type { PgCodec, PgExecutor } from '@dataplan/pg'
-import { TYPES } from '@dataplan/pg'
+import { LIST_TYPES, TYPES, domainOfCodec, listOfCodec } from '@dataplan/pg'
 import { sql } from 'postgraphile/pg-sql2'
 import { describe, it, expect } from 'vitest'
 
@@ -94,6 +94,71 @@ describe('createColumnReader', { tags: ['unit', 'graphql'] }, () => {
 		expect(() =>
 			createColumnReader({ period }, fakeExecutor).select('ScPeriod', [{ column: 'ends_on', alias: 'endsOn' }])
 		).toThrow('Doctype "ScPeriod" declares a field for column "ends_on", which "sc_period" does not have.')
+	})
+
+	describe('a zone-free timestamp column', () => {
+		const stamp = domainOfCodec(TYPES.timestamp, 'stamp', sql.identifier('public', 'stamp'))
+		const log = tableCodec('public', 'sc_log', {
+			id: TYPES.int,
+			opened_at: TYPES.timestamp,
+			closed_at: stamp,
+			seen_at: TYPES.timestamptz,
+			reviewed_at: LIST_TYPES.timestamp,
+			audited_at: listOfCodec(stamp),
+			noted_at: LIST_TYPES.timestamptz,
+		})
+		const reader = createColumnReader({ log }, fakeExecutor)
+		const asMoment = (column: string) => `to_char(${column}, 'YYYY-MM-DD"T"HH24:MI:SS.USTZH:TZM'::text)`
+
+		it('reads a timestamp, or a domain over one, as the moment it names in the database zone', () => {
+			const select = reader.select('ScLog', [
+				{ column: 'opened_at', alias: 'openedAt' },
+				{ column: 'closed_at', alias: 'closedAt' },
+				{ column: 'seen_at', alias: 'seenAt' },
+			])
+			expect(select.list).toBe(
+				`${asMoment('"opened_at"::timestamptz')} AS "openedAt", ${asMoment('"closed_at"::timestamptz')} AS "closedAt", ` +
+					`${asMoment('"seen_at"')} AS "seenAt"`
+			)
+		})
+
+		it('binds a value to a timestamp, or a domain over one, through the database zone', () => {
+			expect(reader.bind('ScLog', 'opened_at', '$1')).toBe('$1::timestamptz')
+			expect(reader.bind('ScLog', 'closed_at', '$2')).toBe('$2::timestamptz')
+			expect(reader.bind('ScLog', 'seen_at', '$3')).toBe('$3')
+			expect(reader.bind('ScLog', 'id', '$4')).toBe('$4')
+		})
+
+		// PostGraphile's own list cast, with each element read as the moment it names.
+		it('reads a list of timestamps, or of a domain over one, as the moments they name', () => {
+			const select = reader.select('ScLog', [
+				{ column: 'reviewed_at', alias: 'reviewedAt' },
+				{ column: 'audited_at', alias: 'auditedAt' },
+				{ column: 'noted_at', alias: 'notedAt' },
+			])
+			const momentList = (column: string) =>
+				`(case when (${column}) is not distinct from null then null::text else array(select ` +
+				`to_char(__entry__, 'YYYY-MM-DD"T"HH24:MI:SS.USTZH:TZM'::text)\nfrom unnest(${column}) __entry__)::text end)`
+			expect(select.list).toBe(
+				`${momentList('"reviewed_at"::timestamptz[]')} AS "reviewedAt", ` +
+					`${momentList('"audited_at"::timestamptz[]')} AS "auditedAt", ${momentList('"noted_at"')} AS "notedAt"`
+			)
+			const rows = [{ reviewedAt: '{"2026-01-02T10:30:00.000000+00:00"}', auditedAt: null, notedAt: '{}' }]
+			select.decodeRows(rows)
+			expect(rows).toEqual([{ reviewedAt: ['2026-01-02T10:30:00.000000+00:00'], auditedAt: null, notedAt: [] }])
+		})
+
+		it('binds a list of timestamps, or of a domain over one, through the database zone', () => {
+			expect(reader.bind('ScLog', 'reviewed_at', '$1')).toBe('$1::timestamptz[]')
+			expect(reader.bind('ScLog', 'audited_at', '$2')).toBe('$2::timestamptz[]')
+			expect(reader.bind('ScLog', 'noted_at', '$3')).toBe('$3')
+		})
+
+		it('refuses to bind a column the table does not have', () => {
+			expect(() => reader.bind('ScLog', 'closes_at', '$1')).toThrow(
+				'Doctype "ScLog" declares a field for column "closes_at", which "sc_log" does not have.'
+			)
+		})
 	})
 
 	// The list is spliced into SQL whose placeholders the caller numbers.

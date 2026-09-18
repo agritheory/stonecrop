@@ -138,9 +138,11 @@ CREATE TABLE sc_period (
 	id serial PRIMARY KEY,
 	name text NOT NULL,
 	starts_on date NOT NULL,
-	opened_at timestamp NOT NULL
+	opened_at timestamp NOT NULL,
+	reviewed_at timestamp[]
 );
-INSERT INTO sc_period (name, starts_on, opened_at) VALUES ('Q1', '2026-01-01', '2026-01-01 09:00:00');
+INSERT INTO sc_period (name, starts_on, opened_at, reviewed_at)
+	VALUES ('Q1', '2026-01-01', '2026-01-01 09:00:00', ARRAY['2026-01-02 10:30:00', '2026-01-03 17:45:00']::timestamp[]);
 CREATE TABLE sc_period_entry (
 	id serial PRIMARY KEY,
 	period_id integer REFERENCES sc_period(id),

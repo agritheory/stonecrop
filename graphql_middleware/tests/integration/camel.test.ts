@@ -94,12 +94,15 @@ async function runQuery(query: string, variables?: Record<string, unknown>): Pro
 		args.contextValue.withPgClient = withPgClient
 		queryResult = (await execute(args)) as Record<string, unknown>
 	} finally {
+		// A connection whose ROLLBACK failed is in an unknown state, so it is discarded, not pooled.
+		// One release either way: pg-pool throws on a second, which would hide the first failure.
+		let discardReason: Error | undefined
 		try {
 			await client.query('ROLLBACK')
 		} catch {
-			client.release(new Error('rollback failed'))
+			discardReason = new Error('rollback failed')
 		}
-		client.release()
+		client.release(discardReason)
 	}
 	return queryResult
 }

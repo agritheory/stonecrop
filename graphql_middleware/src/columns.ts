@@ -1,5 +1,7 @@
+import { LIST_TYPES, TYPES } from '@dataplan/pg'
 import type { PgCodec, PgExecutor } from '@dataplan/pg'
 import { sql } from 'postgraphile/pg-sql2'
+import type { SQL } from 'postgraphile/pg-sql2'
 
 import { resolveTable, resolveTableName } from './tables'
 
@@ -19,15 +21,49 @@ export interface ColumnSelect {
 	decodeRows(rows: readonly Record<string, unknown>[]): void
 }
 
-/** Builds the select list for a doctype's columns. */
+/** Builds the select list for a doctype's columns, and the SQL that binds a value to one. */
 export interface ColumnReader {
 	select(doctype: string, selections: readonly ColumnSelection[]): ColumnSelect
+	/** `placeholder` as the value for `column`, cast where the column needs its value converted. */
+	bind(doctype: string, column: string, placeholder: string): string
+}
+
+/** A domain's underlying type, through any domains stacked on it. */
+const baseCodec = (codec: PgCodec): PgCodec => (codec.domainOfCodec ? baseCodec(codec.domainOfCodec) : codec)
+
+/** How a column whose values carry no zone is converted into the moments they name. */
+interface MomentConversion {
+	/** The type Postgres converts it to, through the database's zone. */
+	type: 'timestamptz' | 'timestamptz[]'
+	castSql: SQL
+	/** Reads the converted value as PostGraphile reads that type. */
+	codec: PgCodec
+}
+
+/**
+ * The conversion for a `timestamp` column, or a list of them: a clock reading with no zone, which
+ * names no moment until a zone is chosen. It is read and bound through `timestamptz`, the cast
+ * Postgres itself makes through the database's zone, so a value leaves as a moment and a moment
+ * comes back to the same reading. Every other column needs none.
+ *
+ * Not PostGraphile's own text for it: that carries no zone, so a browser reads it in its own zone
+ * and sends back UTC, and every save moved the stored time by the user's offset.
+ */
+const momentConversion = (codec: PgCodec): MomentConversion | undefined => {
+	if (baseCodec(codec) === TYPES.timestamp) {
+		return { type: 'timestamptz', castSql: sql`::timestamptz`, codec: TYPES.timestamptz }
+	}
+	if (codec.arrayOfCodec && baseCodec(codec.arrayOfCodec) === TYPES.timestamp) {
+		return { type: 'timestamptz[]', castSql: sql`::timestamptz[]`, codec: LIST_TYPES.timestamptz }
+	}
+	return undefined
 }
 
 /**
  * Reads a doctype's columns through the codecs PostGraphile introspected for its table, so each
- * value is the one PostGraphile's own query serves for that row: a `date` is `2026-01-01` and a
- * `timestamp` is `2026-01-01T09:00:00.000000`, in any server zone.
+ * value is the one PostGraphile's own query serves for that row, in any server zone: a `date` is
+ * `2026-01-01`. The exception is a `timestamp`, or a list of them, served as the moment each names in
+ * the database's zone (`2026-01-01T09:00:00.000000+00:00`); see `momentConversion`.
  *
  * Not `pg`'s type parsers: they turn `date` and `timestamp` into a Date at the server's local time,
  * which names another day or hour outside UTC, and a save writes that shifted value back. Not a
@@ -66,22 +102,29 @@ export function createColumnReader(
 		)
 	}
 
+	const findColumnCodec = (doctype: string, tableCodec: PgCodec, column: string): PgCodec => {
+		const attribute = tableCodec.attributes?.[column]
+		if (!attribute) {
+			throw new Error(
+				`Doctype "${doctype}" declares a field for column "${column}", which ${resolveTableName(doctype, tables)} does not have.`
+			)
+		}
+		return attribute.codec
+	}
+
 	return {
 		select(doctype, selections) {
-			const codec = findTableCodec(doctype)
+			const tableCodec = findTableCodec(doctype)
 			const table = resolveTableName(doctype, tables)
 			// Keyed by alias, so a column selected twice under one key is decoded once, as `pg` keeps one.
 			const decoders = new Map<string, (value: string) => unknown>()
 			const list = selections
 				.map(({ column, alias }) => {
-					const attribute = codec.attributes?.[column]
-					if (!attribute) {
-						throw new Error(
-							`Doctype "${doctype}" declares a field for column "${column}", which ${table} does not have.`
-						)
-					}
-					const columnSql = sql.identifier(column)
-					const cast = attribute.codec.castFromPg?.(columnSql) ?? sql`${columnSql}::text`
+					const columnCodec = findColumnCodec(doctype, tableCodec, column)
+					const conversion = momentConversion(columnCodec)
+					const readCodec = conversion?.codec ?? columnCodec
+					const columnSql = conversion ? sql`${sql.identifier(column)}${conversion.castSql}` : sql.identifier(column)
+					const cast = readCodec.castFromPg?.(columnSql) ?? sql`${columnSql}::text`
 					const compiled = sql.compile(sql`${cast} AS ${sql.identifier(alias)}`)
 					// This list is spliced into SQL whose placeholders the caller numbers, so a cast carrying
 					// its own `$1` would silently bind the caller's first value.
@@ -90,7 +133,7 @@ export function createColumnReader(
 							`The codec for ${table}."${column}" casts with a bound value, which this adapter cannot select.`
 						)
 					}
-					decoders.set(alias, attribute.codec.fromPg)
+					decoders.set(alias, readCodec.fromPg)
 					return compiled.text
 				})
 				.join(', ')
@@ -113,6 +156,11 @@ export function createColumnReader(
 					}
 				},
 			}
+		},
+
+		bind(doctype, column, placeholder) {
+			const conversion = momentConversion(findColumnCodec(doctype, findTableCodec(doctype), column))
+			return conversion ? `${placeholder}::${conversion.type}` : placeholder
 		},
 	}
 }
