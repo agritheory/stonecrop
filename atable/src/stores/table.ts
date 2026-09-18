@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { componentCategory } from '@stonecrop/schema'
 import type { BadgeDescriptor } from '@stonecrop/schema'
-import { fromISODate } from '@stonecrop/utilities'
+import { fromISODate, toISODate } from '@stonecrop/utilities'
 import { type CSSProperties, computed, ref } from 'vue'
 
 import { linkSearchableText } from '../linkSearchableText'
@@ -79,6 +79,20 @@ function isNodeOpen(rowIndex: number, treeDisplay: TableDisplay[]): boolean {
 	return (parent.childrenOpen || false) && isNodeOpen(parentIndex, treeDisplay)
 }
 
+/**
+ * The `YYYY-MM-DD` day a date cell shows as: a day column's day, a date-time's day in the user's zone,
+ * and for a column declaring no date component, the UTC day its value parses to. Undefined when the
+ * cell holds no date.
+ */
+function dayOfCell(cellValue: unknown, column: TableColumn): string | undefined {
+	const category = componentCategory(column.component)
+	const date = category === 'date' ? fromISODate(String(cellValue)) : new Date(String(cellValue))
+	if (isNaN(date.getTime())) return undefined
+	if (category === 'date' || category === 'datetime') return toISODate(date)
+	// Not `toISODate`: an undeclared bare `YYYY-MM-DD` parses as UTC midnight, a day early west of UTC.
+	return date.toISOString().slice(0, 10)
+}
+
 function applyFilter(cellValue: any, filter: FilterState, column: TableColumn): boolean {
 	const filterType = resolveFilterType(column)
 	const value = filter.value
@@ -114,17 +128,16 @@ function applyFilter(cellValue: any, filter: FilterState, column: TableColumn): 
 
 		case 'date': {
 			// Handle both timestamp numbers and date strings
-			let cellDate: Date
+			let cellDay: string | undefined
 			if (typeof cellValue === 'number') {
 				// Apply the same year transformation as in the format function
 				const originalDate = new Date(cellValue)
 				const currentYear = new Date().getFullYear()
-				cellDate = new Date(currentYear, originalDate.getMonth(), originalDate.getDate())
+				cellDay = toISODate(new Date(currentYear, originalDate.getMonth(), originalDate.getDate()))
 			} else {
-				cellDate = new Date(String(cellValue))
+				cellDay = dayOfCell(cellValue, column)
 			}
-			const filterDate = new Date(String(value))
-			return cellDate.toDateString() === filterDate.toDateString()
+			return cellDay === String(value)
 		}
 
 		case 'dateRange': {
@@ -133,17 +146,19 @@ function applyFilter(cellValue: any, filter: FilterState, column: TableColumn): 
 			if (!startValue && !endValue) return true
 
 			// Handle both timestamp numbers and date strings
-			let cellDateRange: Date
+			let cellDay: string | undefined
 			if (typeof cellValue === 'number') {
 				// Apply the same year transformation as in the format function
 				const originalDate = new Date(cellValue)
 				const currentYear = new Date().getFullYear()
-				cellDateRange = new Date(currentYear, originalDate.getMonth(), originalDate.getDate())
+				cellDay = toISODate(new Date(currentYear, originalDate.getMonth(), originalDate.getDate()))
 			} else {
-				cellDateRange = new Date(String(cellValue))
+				cellDay = dayOfCell(cellValue, column)
 			}
-			if (startValue && cellDateRange < new Date(String(startValue))) return false
-			if (endValue && cellDateRange > new Date(String(endValue))) return false
+			if (cellDay === undefined) return false
+			// `YYYY-MM-DD` days compare in date order as strings, and both ends are included.
+			if (startValue && cellDay < String(startValue)) return false
+			if (endValue && cellDay > String(endValue)) return false
 
 			return true
 		}

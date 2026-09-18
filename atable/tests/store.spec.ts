@@ -1542,4 +1542,93 @@ describe('table store', { tags: ['component'] }, () => {
 			expect(linkStore.filteredRows.map(r => r.label)).toEqual(['B'])
 		})
 	})
+
+	describe('date filters compare the days the table shows', () => {
+		// Pinned zones, because a day read as UTC midnight only shifts outside UTC, and CI runs in UTC.
+		describe.each(['Asia/Kolkata', 'America/New_York'])('in %s', zone => {
+			beforeEach(() => vi.stubEnv('TZ', zone))
+			afterEach(() => vi.unstubAllEnvs())
+
+			// Called inside a test, after the zone is pinned, so each moment is that local time there.
+			const momentRows = () => [
+				{ label: 'before', at: new Date(2026, 0, 31, 23, 30).toISOString() },
+				{ label: 'early', at: new Date(2026, 1, 1, 0, 30).toISOString() },
+				{ label: 'afternoon', at: new Date(2026, 1, 1, 15, 0).toISOString() },
+				{ label: 'late', at: new Date(2026, 1, 1, 23, 30).toISOString() },
+				{ label: 'after', at: new Date(2026, 1, 2, 0, 30).toISOString() },
+			]
+
+			it('keeps every time on the days a date-time range covers', () => {
+				const momentStore = createTableStore({
+					columns: [
+						{ name: 'label', label: 'Label' },
+						{ name: 'at', label: 'At', component: 'ADateTime', filterable: true },
+					],
+					rows: momentRows(),
+				})
+				momentStore.setFilter(1, { value: null, startValue: '2026-02-01', endValue: '2026-02-01' })
+				expect(momentStore.filteredRows.map(r => r.label)).toEqual(['early', 'afternoon', 'late'])
+			})
+
+			it('matches a date-time to the day an exact date filter picks', () => {
+				const momentStore = createTableStore({
+					columns: [
+						{ name: 'label', label: 'Label' },
+						{ name: 'at', label: 'At', component: 'ADateTime', filterable: true, filterType: 'date' },
+					],
+					rows: momentRows(),
+				})
+				momentStore.setFilter(1, { value: '2026-02-01' })
+				expect(momentStore.filteredRows.map(r => r.label)).toEqual(['early', 'afternoon', 'late'])
+			})
+
+			it('keeps the days a range covers in a day column', () => {
+				const dayStore = createTableStore({
+					columns: [
+						{ name: 'label', label: 'Label' },
+						{ name: 'on', label: 'On', component: 'ADate', filterable: true, filterType: 'dateRange' },
+					],
+					rows: [
+						{ label: 'before', on: '2026-01-31' },
+						{ label: 'first', on: '2026-02-01' },
+						{ label: 'after', on: '2026-02-02' },
+					],
+				})
+				dayStore.setFilter(1, { value: null, startValue: '2026-02-01', endValue: '2026-02-01' })
+				expect(dayStore.filteredRows.map(r => r.label)).toEqual(['first'])
+			})
+
+			it('compares a column declaring no date component on the UTC day its value names', () => {
+				const undeclaredStore = createTableStore({
+					columns: [
+						{ name: 'label', label: 'Label' },
+						{ name: 'at', label: 'At', filterable: true, filterType: 'dateRange' },
+					],
+					rows: [
+						{ label: 'previous day', at: '2026-01-31' },
+						{ label: 'day', at: '2026-02-01' },
+						{ label: 'moment', at: '2026-02-01T15:00:00.000Z' },
+						{ label: 'next moment', at: '2026-02-02T00:30:00.000Z' },
+					],
+				})
+				undeclaredStore.setFilter(1, { value: null, startValue: '2026-02-01', endValue: '2026-02-01' })
+				expect(undeclaredStore.filteredRows.map(r => r.label)).toEqual(['day', 'moment'])
+			})
+
+			it('leaves out a row with no date once a range is set', () => {
+				const momentStore = createTableStore({
+					columns: [
+						{ name: 'label', label: 'Label' },
+						{ name: 'at', label: 'At', component: 'ADateTime', filterable: true },
+					],
+					rows: [
+						{ label: 'dated', at: new Date(2026, 1, 1, 12, 0).toISOString() },
+						{ label: 'undated', at: null },
+					],
+				})
+				momentStore.setFilter(1, { value: null, startValue: '2026-01-31', endValue: '2026-02-02' })
+				expect(momentStore.filteredRows.map(r => r.label)).toEqual(['dated'])
+			})
+		})
+	})
 })
