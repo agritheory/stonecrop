@@ -17,6 +17,7 @@ function buildTaskDoctype() {
 		{ kind: 'field' as const, fieldname: 'id', label: 'ID', component: 'ATextInput', primaryKey: true },
 		{ kind: 'field' as const, fieldname: 'title', label: 'Title', component: 'ATextInput' },
 		{ kind: 'field' as const, fieldname: 'status', label: 'Status', component: 'ATextInput', default: 'draft' },
+		{ kind: 'field' as const, fieldname: 'estimate', label: 'Estimate', component: 'ANumericInput' },
 	])
 	const workflow = { states: ['draft'], actions: { save: { label: 'Save', selfTransition: true } } }
 	return new Doctype('task', fields as any, workflow as any)
@@ -72,6 +73,24 @@ describe('Desktop draft records', { tags: ['component'] }, () => {
 		await nextTick()
 
 		expect(aform.props('data')).toMatchObject({ title: 'Buy milk' })
+	})
+
+	it('sends no value on create for a field nobody filled in', async () => {
+		// A create leaves an absent column to its database default. `0` in an identity column
+		// creates a row keyed 0, and `''` in one fails the insert.
+		const wrapper = mountAt('new')
+		await nextTick()
+		wrapper.findComponent(AForm).vm.$emit('update:data', { title: 'Buy milk' })
+		await flushPromises()
+
+		const elements = wrapper.findComponent({ name: 'ActionSet' }).props('elements') as any[]
+		const save = elements.find(element => element.type === 'dropdown')?.actions.find((a: any) => a.label === 'Save')
+		save.action()
+		await nextTick()
+
+		const [payload] = wrapper.emitted('action')!.at(-1) as [{ data: Record<string, unknown> }]
+		expect(payload.data).toMatchObject({ title: 'Buy milk' })
+		expect(Object.entries(payload.data).filter(([key]) => ['id', 'estimate'].includes(key))).toEqual([])
 	})
 
 	it('seeds a draft with the doctype declared defaults', async () => {

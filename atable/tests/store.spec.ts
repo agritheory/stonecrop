@@ -1196,6 +1196,20 @@ describe('table store', { tags: ['component'] }, () => {
 			expect(testStore.rows[newIndex].status).toBe('')
 		})
 
+		it('renders the date cells of a new row empty', () => {
+			const testStore = createTableStore({
+				columns: [
+					{ name: 'due', label: 'Due', component: 'ADate' },
+					{ name: 'stamped', label: 'Stamped', component: 'ADateTime' },
+				],
+				rows: [],
+			})
+			const newIndex = testStore.addRow()
+
+			const rendered = [testStore.getCellDisplayValue(0, newIndex), testStore.getCellDisplayValue(1, newIndex)]
+			expect(rendered.map(value => value ?? '')).toEqual(['', ''])
+		})
+
 		it('should delete a row and return the deleted row', () => {
 			const testStore = createTableStore({ columns: mockColumns, rows: [...mockRows] })
 			const initialLength = testStore.rows.length
