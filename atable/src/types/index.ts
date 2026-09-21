@@ -800,3 +800,34 @@ export interface RowClickEvent {
 	 */
 	event?: MouseEvent
 }
+
+/**
+ * Currency metadata for the document a table represents — resolved once per table via
+ * `createTableStore`'s `resolveCurrencyMeta` and shared by every currency cell/editor through
+ * `store.getCurrencyMeta()`, since currency is a document-level choice rather than a per-row one.
+ * @public
+ */
+export interface CurrencyMeta {
+	/** The document's currency code (e.g. "USD"). */
+	currencyCode: string
+	/** The currency's display name. */
+	currencyName: string
+	/** The currency's symbol (e.g. "$"). */
+	currencySymbol: string
+	/** Decimal places to round base-currency amounts to. Omit to use the input's own default. */
+	precision?: number
+	/** Multiplier from the document's currency to its base currency. */
+	exchangeRate: number
+}
+
+/**
+ * Stock unit-of-measure metadata for a single item — resolved per `itemId` via
+ * `createTableStore`'s `resolveItemUomMeta` and cached per item through `store.getItemUomMeta()`.
+ * @public
+ */
+export interface ItemUomMeta {
+	/** The item's base/stock unit of measure. */
+	stockUom: string
+	/** Conversion factor lookup for each non-stock UOM, relative to `stockUom` (implicitly `1`). */
+	conversionFactors: Record<string, number>
+}

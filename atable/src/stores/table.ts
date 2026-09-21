@@ -8,8 +8,10 @@ import type {
 	CellContext,
 	ConnectionHandle,
 	ConnectionPath,
+	CurrencyMeta,
 	GanttBarInfo,
 	GanttDragEvent,
+	ItemUomMeta,
 	TableColumn,
 	TableConfig,
 	TableDisplay,
@@ -178,9 +180,32 @@ export const createTableStore = (initData: {
 	config?: TableConfig
 	modal?: TableModal
 	linkResolver?: ((doctype: string, id: string) => Promise<string | undefined>) | null
+	resolveCurrencyMeta?: (() => Promise<CurrencyMeta | undefined>) | null
+	resolveItemUomMeta?: ((itemId: string) => Promise<ItemUomMeta | undefined>) | null
 }) => {
 	const id = initData.id || generateHash()
 	const linkResolver = initData.linkResolver ?? null
+
+	// Currency is a document-level choice — one per table — so `resolveCurrencyMeta` is called at
+	// most once per store instance and every cell/editor that needs it shares the same promise,
+	// rather than each one triggering its own fetch.
+	const resolveCurrencyMeta = initData.resolveCurrencyMeta ?? null
+	let currencyMetaPromise: Promise<CurrencyMeta | undefined> | null = null
+	const getCurrencyMeta = (): Promise<CurrencyMeta | undefined> => {
+		if (!resolveCurrencyMeta) return Promise.resolve(undefined)
+		if (!currencyMetaPromise) currencyMetaPromise = resolveCurrencyMeta()
+		return currencyMetaPromise
+	}
+
+	// Stock UOM/conversion metadata varies per item, so results are cached per `itemId` instead.
+	const resolveItemUomMeta = initData.resolveItemUomMeta ?? null
+	const itemUomMetaCache = new Map<string, Promise<ItemUomMeta | undefined>>()
+	const getItemUomMeta = (itemId: string): Promise<ItemUomMeta | undefined> => {
+		if (!resolveItemUomMeta) return Promise.resolve(undefined)
+		if (!itemUomMetaCache.has(itemId)) itemUomMetaCache.set(itemId, resolveItemUomMeta(itemId))
+		return itemUomMetaCache.get(itemId)!
+	}
+
 	const createStore = defineStore(`table-${id}`, () => {
 		const createDisplayObject = () => {
 			const defaultDisplay: TableDisplay[] = [Object.assign({}, { rowModified: false })]
@@ -936,8 +961,10 @@ export const createTableStore = (initData: {
 			numberedRowWidth,
 			zeroColumn,
 
-			// resolver
+			// resolvers
 			linkResolver,
+			getCurrencyMeta,
+			getItemUomMeta,
 
 			// actions
 			addRow,

@@ -10,6 +10,8 @@ import ATableLoading from './components/ATableLoading.vue'
 import ATableLoadingBar from './components/ATableLoadingBar.vue'
 import ATableModal from './components/ATableModal.vue'
 import ATablePaginationFooter from './components/ATablePaginationFooter.vue'
+import CurrencyValueCell from './components/CurrencyValueCell.vue'
+import ItemsTableSection from './components/ItemsTableSection.vue'
 export { createTableStore } from './stores/table'
 export { useTablePagination } from './composables/table-pagination'
 export type { FilteredTableRow, TablePagination, UseTablePaginationOptions } from './composables/table-pagination'
@@ -45,6 +47,8 @@ function install(app: App /* options */) {
 	app.component('ATableLoadingBar', ATableLoadingBar)
 	app.component('ATableModal', ATableModal)
 	app.component('ATablePaginationFooter', ATablePaginationFooter)
+	app.component('CurrencyValueCell', CurrencyValueCell)
+	app.component('ItemsTableSection', ItemsTableSection)
 }
 
 export {
@@ -58,5 +62,7 @@ export {
 	ATableLoadingBar,
 	ATableModal,
 	ATablePaginationFooter,
+	CurrencyValueCell,
+	ItemsTableSection,
 	install,
 }
