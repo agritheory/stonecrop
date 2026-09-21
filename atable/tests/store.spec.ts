@@ -1636,5 +1636,42 @@ describe('table store', { tags: ['component'] }, () => {
 				expect(momentStore.filteredRows.map(r => r.label)).toEqual(['dated'])
 			})
 		})
+
+		describe('a number in a date column', () => {
+			beforeEach(() => {
+				vi.useFakeTimers({ toFake: ['Date'] })
+				vi.setSystemTime(new Date(2026, 5, 15, 12))
+			})
+
+			afterEach(() => vi.useRealTimers())
+
+			const exactDay = { value: '2026-02-04' }
+			const oneDayRange = { value: null, startValue: '2026-02-04', endValue: '2026-02-04' }
+
+			it.each([
+				{ component: 'ADate', filterType: 'date' as const, filter: exactDay },
+				{ component: 'ADate', filterType: 'dateRange' as const, filter: oneDayRange },
+				{ component: 'ADateTime', filterType: 'date' as const, filter: exactDay },
+				{ component: 'ADateTime', filterType: 'dateRange' as const, filter: oneDayRange },
+			])(
+				'matches no day through a $filterType filter on an $component column, as the cell shows none',
+				({ component, filterType, filter }) => {
+					const dateStore = createTableStore({
+						columns: [
+							{ name: 'label', label: 'Label' },
+							{ name: 'on', label: 'On', component, filterable: true, filterType },
+						],
+						rows: [
+							{ label: 'number', on: new Date(2020, 1, 4, 12).getTime() },
+							{ label: 'day', on: component === 'ADate' ? '2026-02-04' : new Date(2026, 1, 4, 12).toISOString() },
+						],
+					})
+					expect(dateStore.getCellDisplayValue(1, 0)).toBe('Invalid Date')
+
+					dateStore.setFilter(1, filter)
+					expect(dateStore.filteredRows.map(r => r.label)).toEqual(['day'])
+				}
+			)
+		})
 	})
 })

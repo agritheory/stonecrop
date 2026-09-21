@@ -129,43 +129,15 @@ function applyFilter(cellValue: any, filter: FilterState, column: TableColumn): 
 			}
 			return true
 
-		case 'date': {
-			// Handle both timestamp numbers and date strings
-			let cellDay: string | undefined
-			if (typeof cellValue === 'number') {
-				// Apply the same year transformation as in the format function
-				const originalDate = new Date(cellValue)
-				const currentYear = new Date().getFullYear()
-				cellDay = Temporal.PlainDate.from({
-					year: currentYear,
-					month: originalDate.getMonth() + 1,
-					day: originalDate.getDate(),
-				}).toString()
-			} else {
-				cellDay = dayOfCell(cellValue, column)
-			}
-			return cellDay === String(value)
-		}
+		case 'date':
+			return dayOfCell(cellValue, column) === String(value)
 
 		case 'dateRange': {
 			const startValue = filter.startValue
 			const endValue = filter.endValue
 			if (!startValue && !endValue) return true
 
-			// Handle both timestamp numbers and date strings
-			let cellDay: string | undefined
-			if (typeof cellValue === 'number') {
-				// Apply the same year transformation as in the format function
-				const originalDate = new Date(cellValue)
-				const currentYear = new Date().getFullYear()
-				cellDay = Temporal.PlainDate.from({
-					year: currentYear,
-					month: originalDate.getMonth() + 1,
-					day: originalDate.getDate(),
-				}).toString()
-			} else {
-				cellDay = dayOfCell(cellValue, column)
-			}
+			const cellDay = dayOfCell(cellValue, column)
 			if (cellDay === undefined) return false
 			// `YYYY-MM-DD` days compare in date order as strings, and both ends are included.
 			if (startValue && cellDay < String(startValue)) return false
