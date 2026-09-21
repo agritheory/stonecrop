@@ -87,7 +87,7 @@ const data = ref({ orderDate: '2026-01-15' })
 ---
 headers: ['Name', 'Type', 'Default', 'Description']
 rows:
-  - ['`v-model`', '`string | null`', '`undefined`', 'The selected day, as `YYYY-MM-DD`. Unset, `null`, or not a day, the calendar opens on today.']
+  - ['`v-model`', '`string | null`', '`undefined`', 'The selected day, as `YYYY-MM-DD`. Unset, `null`, or not a day, the calendar opens on today. A day set from outside moves the calendar to its month and marks it.']
   - ['`label`', '`string`', '—', "Label text. Only rendered in `read`/`display` mode, next to the static value — `edit` mode's calendar grid has no label."]
   - ['`selectRange`', '`boolean`', '`false`', 'When `true`, renders start/end date text inputs above the calendar and switches day selection to range mode. See below.']
   - ['`mode`', "`'edit' | 'read' | 'display'`", "`'edit'`", 'See [Modes](#modes) below.']
@@ -126,6 +126,6 @@ rows:
 
 ## Accessibility
 
-Each day cell is a native `td` with `tabindex="0"`, so the grid is keyboard-focusable cell by cell via <kbd>Tab</kbd>, and <kbd>Enter</kbd> on a focused cell selects that date (mirroring a click). On mount, the component moves focus to the currently selected date's cell, falling back to today's date if nothing is selected. Note that dedicated arrow-key navigation between days and month/year paging shortcuts exist in the source but are currently commented out, so day-to-day movement still relies on <kbd>Tab</kbd> order rather than arrow keys.
+Each day cell is a native `td` with `tabindex="0"`, so the grid is keyboard-focusable cell by cell via <kbd>Tab</kbd>, and <kbd>Enter</kbd> on a focused cell selects that date (mirroring a click). The calendar takes no focus when it appears, so a field that opens it keeps focus in its own box. Note that dedicated arrow-key navigation between days and month/year paging shortcuts exist in the source but are currently commented out, so day-to-day movement still relies on <kbd>Tab</kbd> order rather than arrow keys.
 
 Source: [`aform/src/components/form/ADatePicker.vue`](https://github.com/agritheory/stonecrop/blob/development/aform/src/components/form/ADatePicker.vue)

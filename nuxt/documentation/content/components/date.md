@@ -5,7 +5,7 @@ description: A single-date field with a text input and an inline calendar picker
 
 # Date
 
-`ADate` renders a single date field — a native-styled text input paired with a floating label, with an inline calendar (`ADatePicker`) that toggles open when the input is clicked and closes again on an outside click or on selection. Use it for any single-date field — due dates, birth dates, effective dates — either standalone or as a field inside an [AForm](/reference/aform) schema.
+`ADate` renders a single date field: the browser's date input with a floating label, and an inline calendar (`ADatePicker`) that toggles open when the input is clicked. The calendar closes on selection, on an outside click, or when focus leaves the field, and the browser's own calendar is kept shut. Use it for any single-date field, such as due dates, birth dates or effective dates, either standalone or as a field inside an [AForm](/reference/aform) schema.
 
 ## Import
 
@@ -15,7 +15,7 @@ import { ADate } from '@stonecrop/aform'
 
 ## Basic
 
-`v-model` binds to the selected date as an ISO `YYYY-MM-DD` string, and to `null` once the field is cleared. Click the field to toggle the inline calendar; picking a date there also updates `v-model`.
+`v-model` binds to the selected date as an ISO `YYYY-MM-DD` string, and to `null` once the field is cleared. Click the field to toggle the inline calendar: picking a date there also updates `v-model`, focus stays in the input so a date can still be typed, and a date typed while the calendar is open moves it to that day.
 
 ::demo-panel
 :::client-only
@@ -101,14 +101,14 @@ rows:
 ---
 headers: ['Mode', 'Rendering']
 rows:
-  - ['`edit`', "Interactive text input; clicking it opens an inline calendar for date selection."]
-  - ['`read`', "Same text input, disabled — the calendar does not open, since disabled inputs don't fire clicks."]
+  - ['`edit`', "Interactive date input; clicking it opens an inline calendar for date selection."]
+  - ['`read`', "Same input, disabled: the calendar does not open, since disabled inputs don't fire clicks."]
   - ['`display`', "Static text showing the day in the user's locale format (`Invalid Date` if not a `YYYY-MM-DD` day), with the label rendered below it."]
 ---
 ::
 
 ## Accessibility
 
-The input and its label are linked via `id`/`for` (backed by `uuid`), so the label is announced by screen readers on focus. `required` sets the native `required` attribute, so unsupported submission is caught by the browser's built-in validation UI in addition to any schema-level validation. The inline calendar is opened only by a mouse/pointer click on the input — there is no keyboard shortcut to open it — and it closes automatically on an outside click.
+The input and its label are linked via `id`/`for` (backed by `uuid`), so the label is announced by screen readers on focus. `required` sets the native `required` attribute, so unsupported submission is caught by the browser's built-in validation UI in addition to any schema-level validation. The inline calendar opens only on a click, with focus staying in the input so a date can still be typed. The keys that open the browser's own calendar (Space, F4 and Alt+Down in Chrome) are blocked, and no key opens the inline calendar yet. It closes on an outside click, on selection, or when focus leaves the field.
 
 Source: [`aform/src/components/form/ADate.vue`](https://github.com/agritheory/stonecrop/blob/development/aform/src/components/form/ADate.vue)

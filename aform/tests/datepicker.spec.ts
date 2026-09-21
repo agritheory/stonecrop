@@ -28,12 +28,18 @@ describe('datepicker component', { tags: ['component'] }, () => {
 		expect(updateEvents![0][0]).toBe(localDay(new Date()))
 	})
 
-	it('default date is focused', async () => {
+	// A field that opens the calendar keeps focus in its box, and a form showing one inline keeps focus where it was.
+	it('leaves focus where it was when it appears', async () => {
+		const box = document.createElement('input')
+		document.body.append(box)
+		box.focus()
 		const wrapper = mount(ADatePicker, { attachTo: document.body })
-		await wrapper.vm.$nextTick()
+		await nextTick()
+		await nextTick()
 
-		const $selectedDate = wrapper.find('.selectedDate')
-		expect($selectedDate.element).toBe(document.activeElement)
+		expect(document.activeElement).toBe(box)
+		wrapper.unmount()
+		box.remove()
 	})
 
 	it('selected date is focused', async () => {
@@ -48,6 +54,38 @@ describe('datepicker component', { tags: ['component'] }, () => {
 
 		// TODO: check if the selected date is focused
 		// expect($randomDate.element).toBe(document.activeElement)
+	})
+
+	it('moves to a day handed to it, and marks it', async () => {
+		const wrapper = mount(ADatePicker, { props: { modelValue: '2026-03-10' } })
+		await wrapper.setProps({ modelValue: '2026-05-24' })
+		expect([
+			wrapper.vm.currentYear,
+			wrapper.vm.currentMonth,
+			wrapper.findAll('td.selectedDate').map(cell => cell.text()),
+		]).toEqual([2026, 4, ['24']])
+	})
+
+	it('stays where it was when handed no day', async () => {
+		const wrapper = mount(ADatePicker, { props: { modelValue: '2026-03-10' } })
+		await wrapper.setProps({ modelValue: null })
+		expect([
+			wrapper.vm.currentYear,
+			wrapper.vm.currentMonth,
+			wrapper.findAll('td.selectedDate').map(cell => cell.text()),
+		]).toEqual([2026, 2, ['10']])
+	})
+
+	// March 2026's grid runs from Monday 23 February to Sunday 5 April.
+	it('stays on the month shown when a day of the next month is picked in it', async () => {
+		const wrapper = mount(ADatePicker, {
+			props: {
+				modelValue: '2026-03-10',
+				'onUpdate:modelValue': (day: string | null | undefined) => wrapper.setProps({ modelValue: day }),
+			},
+		})
+		await wrapper.findAll('td.date-cell').at(-1)!.trigger('click')
+		expect([wrapper.props('modelValue'), wrapper.vm.currentMonth]).toEqual(['2026-04-05', 2])
 	})
 
 	it('select previous month', async () => {
@@ -129,19 +167,6 @@ describe('datepicker component', { tags: ['component'] }, () => {
 		const event = new MouseEvent('mousedown', { bubbles: true, cancelable: true })
 		wrapper.find('input[placeholder="start date"]').element.dispatchEvent(event)
 		expect(event.defaultPrevented).toBe(false)
-	})
-
-	it('focuses today when selected date is outside current month view', async () => {
-		const outOfMonthDate = new Date()
-		outOfMonthDate.setMonth(outOfMonthDate.getMonth() + 2)
-		const wrapper = mount(ADatePicker, {
-			attachTo: document.body,
-			props: { modelValue: localDay(outOfMonthDate) },
-		})
-		await wrapper.vm.$nextTick()
-		// calendar shows future month; neither selectedDate nor todaysDate branches fire —
-		// just verify the component mounts without error
-		expect(wrapper.vm).toBeTruthy()
 	})
 
 	describe('range mode', () => {

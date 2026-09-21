@@ -75,7 +75,7 @@
 // import { defaultKeypressHandlers, useKeyboardNav } from '@stonecrop/utilities'
 import { fromISODate } from '@stonecrop/utilities'
 import { Temporal } from 'temporal-polyfill'
-import { computed, nextTick, onMounted, ref, useTemplateRef, watch } from 'vue'
+import { computed, ref, useTemplateRef, watch } from 'vue'
 
 import type { ComponentProps } from '../../types'
 import { readTypedDay, writeTypedDay } from '../../utils/typedDay'
@@ -304,21 +304,8 @@ const emitData = () => {
 Hooks
 *******************/
 
+// The calendar takes no focus when it appears: a field opening it keeps focus in its box, where typing goes.
 populateMonth()
-
-onMounted(async () => {
-	// required to allow the elements to be focused in the next step
-	await nextTick()
-	const $selectedDate = document.getElementsByClassName('selectedDate')
-	if ($selectedDate.length > 0) {
-		;($selectedDate[0] as HTMLElement).focus()
-	} else {
-		const $todaysDate = document.getElementsByClassName('todaysDate')
-		if ($todaysDate.length > 0) {
-			;($todaysDate[0] as HTMLElement).focus()
-		}
-	}
-})
 
 // setup keyboard navigation
 // useKeyboardNav([
@@ -344,6 +331,16 @@ Watchers
 *******************/
 
 watch([currentMonth, currentYear], populateMonth)
+
+// A day handed in, such as one typed into the field while the calendar is open. A pick here sets
+// `selectedDate` first, so picking a day of the next month in this grid leaves the month shown.
+watch(date, value => {
+	const day = fromISODate(value ?? '')
+	if (!day || day.equals(selectedDate.value)) return
+	selectedDate.value = day
+	currentMonth.value = day.month - 1
+	currentYear.value = day.year
+})
 
 /*******************
 Expose

@@ -1,10 +1,11 @@
 <template>
-	<div class="aform_form-element">
+	<div class="aform_form-element" @focusout="closeWhenFocusLeaves">
 		<template v-if="mode === 'display'">
 			<span class="aform_display-value">{{ displayValue }}</span>
 			<label class="aform_field-label">{{ label }}</label>
 		</template>
 		<template v-else>
+			<!-- `.prevent` and the key block keep the browser's own calendar shut: aform's is the only one this field opens. -->
 			<input
 				:id="uuid"
 				ref="date"
@@ -13,7 +14,8 @@
 				type="date"
 				:disabled="mode === 'read'"
 				:required="required"
-				@click="openPicker" />
+				@click.prevent="openPicker"
+				@keydown="blockBrowserCalendar" />
 			<label class="aform_field-label" :for="uuid">{{ label }}</label>
 			<p v-show="errorText" class="aform_error" v-html="errorText"></p>
 			<ADateSelection
@@ -65,6 +67,16 @@ const pickerRef = useTemplateRef<HTMLDivElement>('picker')
 const showPicker = ref(false)
 
 onClickOutside(pickerRef, () => (showPicker.value = false))
+
+const closeWhenFocusLeaves = (event: FocusEvent) => {
+	const field = event.currentTarget as HTMLElement
+	if (!(event.relatedTarget instanceof Node && field.contains(event.relatedTarget))) showPicker.value = false
+}
+
+// The keys a date input opens the browser's calendar on, as Chrome has them.
+const blockBrowserCalendar = (event: KeyboardEvent) => {
+	if (event.key === ' ' || event.key === 'F4' || (event.altKey && event.key === 'ArrowDown')) event.preventDefault()
+}
 
 const openPicker = () => {
 	if (mode !== 'read') showPicker.value = !showPicker.value

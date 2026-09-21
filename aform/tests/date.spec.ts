@@ -150,6 +150,19 @@ describe('date component', { tags: ['component'] }, () => {
 		expect([picker.vm.currentYear, picker.vm.currentMonth]).toEqual([2024, 2])
 	})
 
+	it('marks a day typed while the calendar is open, on its month', async () => {
+		const wrapper = mount(ADate, { ...globalComponents, props: { modelValue: '2024-03-15' } })
+		const $input = wrapper.find('input')
+		await $input.trigger('click')
+		await $input.setValue('2024-05-20')
+		const picker = wrapper.findComponent(ADatePicker)
+		expect([
+			picker.vm.currentYear,
+			picker.vm.currentMonth,
+			wrapper.findAll('td.selectedDate').map(cell => cell.text()),
+		]).toEqual([2024, 4, ['20']])
+	})
+
 	it('marks the day the field holds as picked', async () => {
 		const wrapper = mount(ADate, { ...globalComponents, props: { modelValue: '2024-03-15' } })
 		await wrapper.find('input').trigger('click')
