@@ -75,7 +75,10 @@ const readMoment = (value: string | Date): Temporal.ZonedDateTime | null => {
 	return Temporal.Instant.fromEpochMilliseconds(epochMilliseconds).toZonedDateTimeISO(Temporal.Now.timeZoneId())
 }
 
-const currentDateTime = ref<Temporal.ZonedDateTime | null>(modelValue.value ? readMoment(modelValue.value) : now())
+/** What the field holds for a value: its moment, or now for an empty field, where the picker starts. */
+const heldMoment = (value: string | Date | null | undefined) => (value ? readMoment(value) : now())
+
+const currentDateTime = ref<Temporal.ZonedDateTime | null>(heldMoment(modelValue.value))
 
 const showPicker = ref(false)
 const pickerRef = ref(null)
@@ -147,13 +150,10 @@ const handleTime = (data: {
 	// handler above; closing on `get-date` instead would strand the time half of a datetime.
 }
 
+// An empty value resets it too: skipping one kept the cleared moment, which the next pick wrote back.
 watch(
 	() => modelValue.value,
-	newValue => {
-		if (newValue) {
-			currentDateTime.value = readMoment(newValue)
-		}
-	}
+	newValue => (currentDateTime.value = heldMoment(newValue))
 )
 </script>
 

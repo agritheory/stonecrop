@@ -1,10 +1,12 @@
-import { describe, it, expect, vi } from 'vitest'
+import { afterEach, beforeEach, describe, it, expect, vi } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
 
+import AForm from '../src/components/AForm.vue'
 import ADateTimeInput from '../src/components/form/ADateTimeInput.vue'
 import ADateTime from '../src/components/form/ADateTime.vue'
 import ADateSelection from '../src/components/form/ADateSelection.vue'
 import ADatePicker from '../src/components/form/ADatePicker.vue'
+import type { ResolvedField } from '../src/types'
 
 const formFieldGlobals = {
 	global: {
@@ -526,5 +528,54 @@ describe('datetime form field component', { tags: ['component'] }, () => {
 			props: { mode: 'read' },
 		})
 		expect(wrapper.find('input').attributes('disabled')).toBeDefined()
+	})
+
+	// Pinned zones, because the runner's own zone hides a moment read or written on the wrong clock: CI runs in UTC.
+	describe.each(['Asia/Kolkata', 'America/New_York'])('in %s', zone => {
+		beforeEach(() => {
+			vi.stubEnv('TZ', zone)
+			vi.useFakeTimers({ toFake: ['Date'] })
+			vi.setSystemTime(new Date(2026, 0, 15, 12))
+		})
+
+		afterEach(() => {
+			vi.useRealTimers()
+			vi.unstubAllEnvs()
+		})
+
+		// Cleared through the form, as a record clears it: an empty date reaches the field as null.
+		const mountCleared = async () => {
+			const wrapper = mount(AForm, {
+				global: { components: { ...formFieldGlobals.global.components, ADateTime } },
+				props: {
+					schema: [{ kind: 'field', fieldname: 'due', component: 'ADateTime', label: 'Due' }] satisfies ResolvedField[],
+					data: { due: '2024-03-15T10:00:00.000Z' },
+				},
+			})
+			await wrapper.setProps({ data: { due: null } })
+			await wrapper.find('.aform_input-field').trigger('click')
+			return wrapper
+		}
+
+		it('opens the calendar on today once its value is cleared from outside', async () => {
+			const wrapper = await mountCleared()
+			const calendar = wrapper.findComponent(ADatePicker)
+			expect([calendar.vm.currentYear, calendar.vm.currentMonth]).toEqual([2026, 0])
+		})
+
+		it('writes a time picked after its value is cleared from outside on today', async () => {
+			const wrapper = await mountCleared()
+			await wrapper.findComponent(ADateSelection).vm.$emit('get-time', {
+				hours: 3,
+				minutes: 30,
+				seconds: 0,
+				meridiem: 'PM',
+				militaryTime: 15,
+				source: 'user',
+			})
+			expect(wrapper.emitted<[Record<string, unknown>]>('update:data')?.at(-1)?.[0].due).toBe(
+				new Date(2026, 0, 15, 15, 30).toISOString()
+			)
+		})
 	})
 })
