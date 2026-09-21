@@ -7,18 +7,16 @@
 ```ts
 // src/components/ActionSet.vue
 props: {
+  slots?: ActionSetSlot[] \| undefined
   elements?: ActionElements[] \| undefined
-  embedded?: boolean \| undefined
+  controller: ActionSetController
 }
 emits: {
   actionClick: [label: string, action: (() => void \| Promise<void>) \| undefined]
+  drawerChange: [open: boolean]
+  search: []
 }
-slots: {
-  rail: {}
-}
-exposed: {
-  closeDropdowns: () => void
-}
+slots: {}
 ```
 
 ### CommandPalette
@@ -49,7 +47,8 @@ slots: {
 props: {
   availableDoctypes?: string[] \| undefined
   routeAdapter?: RouteAdapter \| undefined
-  railSlots?: DocumentRailSlot[] \| undefined
+  actionSetSlots?: ActionSetSlot[] \| undefined
+  hostActions?: ActionElements[] \| undefined
 }
 emits: {
   action: [payload: ActionEventPayload]
@@ -59,6 +58,7 @@ emits: {
   load-record: [payload: LoadRecordEventPayload]
 }
 slots: {
+  default: {}
   sheetnav-toolbar: {}
 }
 ```

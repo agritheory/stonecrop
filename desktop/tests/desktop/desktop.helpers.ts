@@ -1,5 +1,6 @@
+import { mount, type VueWrapper } from '@vue/test-utils'
 import { List } from 'immutable'
-import { App } from 'vue'
+import { App, nextTick } from 'vue'
 import { vi } from 'vitest'
 
 import type { DoctypeField } from '@stonecrop/schema'
@@ -39,3 +40,13 @@ export const buildDoctype = vi.defineHelper(
 		return new Doctype(name, schema, workflow)
 	}
 )
+
+export function findActionSet(wrapper: VueWrapper) {
+	return wrapper.findComponent({ name: 'ActionSet' })
+}
+
+export async function openActionsDrawer(wrapper: VueWrapper) {
+	const actionsItem = wrapper.findAll('.action-set__item').find(i => i.attributes('aria-label') === 'Actions')
+	await actionsItem!.trigger('click')
+	await nextTick()
+}

@@ -8,7 +8,7 @@ import { ActionEventPayload } from '@stonecrop/stonecrop';
 import { Component } from 'vue';
 import { ComponentOptionsMixin } from 'vue';
 import { ComponentProvideOptions } from 'vue';
-import type { ComputedRef } from 'vue';
+import { ComputedRef } from 'vue';
 import { DefineComponent } from 'vue';
 import type { MaybeRef } from 'vue';
 import { Plugin as Plugin_2 } from 'vue';
@@ -22,6 +22,66 @@ export { ActionEventPayload }
 
 // @public (undocumented)
 export const ActionSet: typeof __VLS_export;
+
+// @public
+export type ActionSetContext = {
+    doctype: ComputedRef<string>;
+    recordId: ComputedRef<string>;
+    activeSlotId: ComputedRef<ActionSetSlotId | null>;
+    present: (subject: ActionSetPreview) => void;
+    closePreview: () => void;
+    close: () => void;
+};
+
+// @public
+export const ActionSetIconActions: Component;
+
+// @public
+export const ActionSetIconApprovals: Component;
+
+// @public
+export const ActionSetIconChat: Component;
+
+// @public
+export const ActionSetIconEmail: Component;
+
+// @public
+export const ActionSetIconFiles: Component;
+
+// @public
+export const ActionSetIconHelp: Component;
+
+// @public
+export const ActionSetIconPrint: Component;
+
+// @public
+export const ActionSetIconReports: Component;
+
+// @public
+export const ActionSetIconSearch: Component;
+
+// @public
+export const ActionSetIconSettings: Component;
+
+// @public
+export type ActionSetPreview = {
+    id?: string;
+    view: Component;
+    props?: Record<string, unknown>;
+};
+
+// @public
+export type ActionSetSlot = {
+    id: ActionSetSlotId;
+    label: string;
+    icon?: Component;
+    component?: Component;
+    badge?: MaybeRef<number>;
+    show?: boolean;
+};
+
+// @public
+export type ActionSetSlotId = string;
 
 // @public (undocumented)
 export type BaseElement = {
@@ -40,29 +100,6 @@ export const CommandPalette: typeof __VLS_export_2;
 
 // @public (undocumented)
 export const Desktop: typeof __VLS_export_3;
-
-// @public
-export type DocumentRail = {
-    doctype: ComputedRef<string>;
-    recordId: ComputedRef<string>;
-    activeSlotId: ComputedRef<DocumentRailSlotId | null>;
-    present: (subject: RailSubject) => void;
-    closePreview: () => void;
-    close: () => void;
-};
-
-// @public
-export type DocumentRailSlot = {
-    id: DocumentRailSlotId;
-    label: string;
-    icon?: Component;
-    component?: Component;
-    badge?: MaybeRef<number>;
-    show?: boolean;
-};
-
-// @public
-export type DocumentRailSlotId = string;
 
 // @public
 export type DropdownElement = BaseElement & {
@@ -95,43 +132,6 @@ export type NavigationTarget = {
 };
 
 // @public
-export const RailIconActions: Component;
-
-// @public
-export const RailIconApprovals: Component;
-
-// @public
-export const RailIconChat: Component;
-
-// @public
-export const RailIconEmail: Component;
-
-// @public
-export const RailIconFiles: Component;
-
-// @public
-export const RailIconHelp: Component;
-
-// @public
-export const RailIconPrint: Component;
-
-// @public
-export const RailIconReports: Component;
-
-// @public
-export const RailIconSearch: Component;
-
-// @public
-export const RailIconSettings: Component;
-
-// @public
-export type RailSubject = {
-    id?: string;
-    view: Component;
-    props?: Record<string, unknown>;
-};
-
-// @public
 export type RecordOpenEventPayload = {
     doctype: string;
     recordId: string;
@@ -155,7 +155,7 @@ export const SheetNav: typeof __VLS_export_4;
 export const StonecropDesktop: Plugin_2;
 
 // @public (undocumented)
-export function useDocumentRail(): DocumentRail;
+export function useActionSet(): ActionSetContext;
 
 // (No @packageDocumentation comment for this package)
 

@@ -21,26 +21,23 @@ import { ActionSet } from '@stonecrop/desktop'
 
 | Prop | Type | Required | Default | Description |
 |------|------|----------|---------|-------------|
+| slots | `ActionSetSlot[] \| undefined` | no | `[]` |  |
 | elements | `ActionElements[] \| undefined` | no | `[]` |  |
-| embedded | `boolean \| undefined` | no | `false` |  |
+| controller | `ActionSetController` | yes |  |  |
 
 **Events:**
 
 | Event | Payload | Description |
 |-------|---------|-------------|
 | actionClick | `[label: string, action: (() => void \| Promise<void>) \| undefined]` |  |
-
-**Slots:**
-
-| Slot | Props | Description |
-|------|-------|-------------|
-| rail | `{}` |  |
+| drawerChange | `[open: boolean]` |  |
+| search | `[]` |  |
 
 **Exposed:**
 
 | Name | Type |
 |------|------|
-| closeDropdowns | `() => void` |
+| closeDrawer | `() => void` |
 
 ### CommandPalette
 
@@ -88,7 +85,8 @@ import { Desktop } from '@stonecrop/desktop'
 |------|------|----------|---------|-------------|
 | availableDoctypes | `string[] \| undefined` | no | `[]` |  |
 | routeAdapter | `RouteAdapter \| undefined` | no |  |  |
-| railSlots | `DocumentRailSlot[] \| undefined` | no |  |  |
+| actionSetSlots | `ActionSetSlot[] \| undefined` | no |  |  |
+| hostActions | `ActionElements[] \| undefined` | no |  |  |
 
 **Events:**
 
@@ -104,6 +102,7 @@ import { Desktop } from '@stonecrop/desktop'
 
 | Slot | Props | Description |
 |------|-------|-------------|
+| default | `{}` |  |
 | sheetnav-toolbar | `{}` |  |
 
 ### SheetNav
@@ -128,64 +127,64 @@ import { SheetNav } from '@stonecrop/desktop'
 
 ## Other Components
 
-### RailIconActions
+### ActionSetIconActions
 
 ```typescript
-export { RailIconActions }
+export { ActionSetIconActions }
 ```
 
-### RailIconApprovals
+### ActionSetIconApprovals
 
 ```typescript
-export { RailIconApprovals }
+export { ActionSetIconApprovals }
 ```
 
-### RailIconChat
+### ActionSetIconChat
 
 ```typescript
-export { RailIconChat }
+export { ActionSetIconChat }
 ```
 
-### RailIconEmail
+### ActionSetIconEmail
 
 ```typescript
-export { RailIconEmail }
+export { ActionSetIconEmail }
 ```
 
-### RailIconFiles
+### ActionSetIconFiles
 
 ```typescript
-export { RailIconFiles }
+export { ActionSetIconFiles }
 ```
 
-### RailIconHelp
+### ActionSetIconHelp
 
 ```typescript
-export { RailIconHelp }
+export { ActionSetIconHelp }
 ```
 
-### RailIconPrint
+### ActionSetIconPrint
 
 ```typescript
-export { RailIconPrint }
+export { ActionSetIconPrint }
 ```
 
-### RailIconReports
+### ActionSetIconReports
 
 ```typescript
-export { RailIconReports }
+export { ActionSetIconReports }
 ```
 
-### RailIconSearch
+### ActionSetIconSearch
 
 ```typescript
-export { RailIconSearch }
+export { ActionSetIconSearch }
 ```
 
-### RailIconSettings
+### ActionSetIconSettings
 
 ```typescript
-export { RailIconSettings }
+export { ActionSetIconSettings }
 ```
 
 ### StonecropDesktop
@@ -196,12 +195,12 @@ export { StonecropDesktop }
 
 ## Functions
 
-### useDocumentRail
+### useActionSet
 
 **Signature:**
 
 ```typescript
-export declare function useDocumentRail(): DocumentRail;
+export declare function useActionSet(): ActionSetContext;
 ```
 
 ## Type Aliases
@@ -214,6 +213,64 @@ Superset of all element types in the Action Set
 
 ```typescript
 export type ActionElements = ButtonElement | DropdownElement;
+```
+
+### ActionSetContext
+
+Instance-scoped ActionSet API provided by Desktop to slot content.
+
+**Definition:**
+
+```typescript
+export type ActionSetContext = {
+    doctype: ComputedRef<string>;
+    recordId: ComputedRef<string>;
+    activeSlotId: ComputedRef<ActionSetSlotId | null>;
+    present: (subject: ActionSetPreview) => void;
+    closePreview: () => void;
+    close: () => void;
+};
+```
+
+### ActionSetPreview
+
+A presented subject occupies the compressed-document (50%) surface.
+
+**Definition:**
+
+```typescript
+export type ActionSetPreview = {
+    id?: string;
+    view: Component;
+    props?: Record<string, unknown>;
+};
+```
+
+### ActionSetSlot
+
+Host-declared drawer slot on the ActionSet tile column.
+
+**Definition:**
+
+```typescript
+export type ActionSetSlot = {
+    id: ActionSetSlotId;
+    label: string;
+    icon?: Component;
+    component?: Component;
+    badge?: MaybeRef<number>;
+    show?: boolean;
+};
+```
+
+### ActionSetSlotId
+
+Host-chosen identifier for an ActionSet slot.
+
+**Definition:**
+
+```typescript
+export type ActionSetSlotId = string;
 ```
 
 ### BaseElement
@@ -238,50 +295,6 @@ export type ButtonElement = BaseElement & ElementAction & {
     type: 'button';
     disabled?: boolean;
 };
-```
-
-### DocumentRail
-
-Instance-scoped rail API provided by Desktop to slot content.
-
-**Definition:**
-
-```typescript
-export type DocumentRail = {
-    doctype: ComputedRef<string>;
-    recordId: ComputedRef<string>;
-    activeSlotId: ComputedRef<DocumentRailSlotId | null>;
-    present: (subject: RailSubject) => void;
-    closePreview: () => void;
-    close: () => void;
-};
-```
-
-### DocumentRailSlot
-
-Host-declared drawer slot on the document right rail.
-
-**Definition:**
-
-```typescript
-export type DocumentRailSlot = {
-    id: DocumentRailSlotId;
-    label: string;
-    icon?: Component;
-    component?: Component;
-    badge?: MaybeRef<number>;
-    show?: boolean;
-};
-```
-
-### DocumentRailSlotId
-
-Host-chosen identifier for a document-rail slot.
-
-**Definition:**
-
-```typescript
-export type DocumentRailSlotId = string;
 ```
 
 ### DropdownElement
@@ -346,20 +359,6 @@ export type NavigationTarget = {
     view: 'doctypes' | 'records' | 'record';
     doctype?: string;
     recordId?: string;
-};
-```
-
-### RailSubject
-
-A presented subject occupies the compressed-document (50%) surface.
-
-**Definition:**
-
-```typescript
-export type RailSubject = {
-    id?: string;
-    view: Component;
-    props?: Record<string, unknown>;
 };
 ```
 

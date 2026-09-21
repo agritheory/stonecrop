@@ -1,32 +1,32 @@
 import { computed, inject, markRaw, ref, shallowRef, type ComputedRef, type InjectionKey, type ShallowRef } from 'vue'
 
-import type { DocumentRail, DocumentRailSlotId, RailSubject } from '../types'
+import type { ActionSetContext, ActionSetPreview, ActionSetSlotId } from '../types'
 
-export type CreateDocumentRailOptions = {
+export type CreateActionSetOptions = {
 	doctype: ComputedRef<string>
 	recordId: ComputedRef<string>
 	onDrawerChange?: (open: boolean) => void
 	onPreviewChange?: (open: boolean) => void
 }
 
-export type DocumentRailController = DocumentRail & {
-	previewSubject: ComputedRef<RailSubject | null>
+export type ActionSetController = ActionSetContext & {
+	previewSubject: ComputedRef<ActionSetPreview | null>
 	isPreviewOpen: ComputedRef<boolean>
-	openSlot: (slotId: DocumentRailSlotId) => void
-	toggleSlot: (slotId: DocumentRailSlotId) => void
+	openSlot: (slotId: ActionSetSlotId) => void
+	toggleSlot: (slotId: ActionSetSlotId) => void
 	reset: () => void
 }
 
-export const documentRailKey: InjectionKey<ShallowRef<DocumentRailController | null>> = Symbol('documentRail')
+export const actionSetKey: InjectionKey<ShallowRef<ActionSetController | null>> = Symbol('actionSet')
 
-export function createDocumentRail(options: CreateDocumentRailOptions): DocumentRailController {
-	const activeSlotId = ref<DocumentRailSlotId | null>(null)
-	const previewSubject = shallowRef<RailSubject | null>(null)
+export function createActionSet(options: CreateActionSetOptions): ActionSetController {
+	const activeSlotId = ref<ActionSetSlotId | null>(null)
+	const previewSubject = shallowRef<ActionSetPreview | null>(null)
 	const previewId = ref<string | undefined>(undefined)
 
 	const isPreviewOpen = computed(() => previewSubject.value !== null)
 
-	function openSlot(slotId: DocumentRailSlotId) {
+	function openSlot(slotId: ActionSetSlotId) {
 		if (activeSlotId.value === slotId) {
 			return
 		}
@@ -35,7 +35,7 @@ export function createDocumentRail(options: CreateDocumentRailOptions): Document
 		options.onDrawerChange?.(true)
 	}
 
-	function toggleSlot(slotId: DocumentRailSlotId) {
+	function toggleSlot(slotId: ActionSetSlotId) {
 		if (activeSlotId.value === slotId) {
 			close()
 			return
@@ -43,7 +43,7 @@ export function createDocumentRail(options: CreateDocumentRailOptions): Document
 		openSlot(slotId)
 	}
 
-	function present(subject: RailSubject) {
+	function present(subject: ActionSetPreview) {
 		if (subject.id !== undefined && subject.id === previewId.value) {
 			return
 		}
@@ -83,11 +83,11 @@ export function createDocumentRail(options: CreateDocumentRailOptions): Document
 }
 
 /** @public */
-export function useDocumentRail(): DocumentRail {
-	const railRef = inject(documentRailKey, null)
-	const rail = railRef?.value
-	if (!rail) {
-		throw new Error('useDocumentRail() must be called inside Desktop with railSlots configured')
+export function useActionSet(): ActionSetContext {
+	const actionSetRef = inject(actionSetKey, null)
+	const actionSet = actionSetRef?.value
+	if (!actionSet) {
+		throw new Error('useActionSet() must be called inside Desktop with actionSetSlots configured')
 	}
-	return rail
+	return actionSet
 }

@@ -2,14 +2,15 @@
 	<div
 		class="desktop"
 		:class="{
-			'desktop--rail-open': railDrawerOpen,
-			'desktop--preview-open': railPreviewOpen,
+			'desktop--action-set-open': actionSetDrawerOpen,
+			'desktop--preview-open': actionSetPreviewOpen,
 		}"
 		@click="handleClick">
 		<div class="desktop__workspace">
 			<div class="desktop__main">
+				<slot v-if="$slots.default" />
 				<AForm
-					v-if="currentViewSchema.length > 0"
+					v-else-if="currentViewSchema.length > 0"
 					v-model:data="currentViewData"
 					:schema="currentViewSchema"
 					:errors="fieldErrors" />
@@ -19,25 +20,30 @@
 				</div>
 			</div>
 
-			<aside v-if="railPreviewOpen && railPreviewSubject" class="desktop__preview">
+			<aside v-if="actionSetPreviewOpen && actionSetPreviewSubject" class="desktop__preview">
 				<header class="desktop__preview-header">
-					<button type="button" class="desktop__preview-close" aria-label="Close preview" @click="closeRailPreview">
+					<button
+						type="button"
+						class="desktop__preview-close"
+						aria-label="Close preview"
+						@click="closeActionSetPreview">
 						×
 					</button>
 				</header>
 				<div class="desktop__preview-body">
-					<component :is="railPreviewSubject.view" v-bind="railPreviewSubject.props ?? {}" />
+					<component :is="actionSetPreviewSubject.view" v-bind="actionSetPreviewSubject.props ?? {}" />
 				</div>
 			</aside>
 		</div>
 
-		<DocumentRail
-			v-if="documentRailController"
-			:slots="visibleRailSlots"
+		<ActionSet
+			v-if="actionSetController"
+			ref="actionSetRef"
+			:slots="visibleActionSetSlots"
 			:elements="actionElements"
-			:rail="documentRailController"
+			:controller="actionSetController"
 			@action-click="handleActionClick"
-			@drawer-change="railDrawerOpen = $event"
+			@drawer-change="actionSetDrawerOpen = $event"
 			@search="commandPaletteOpen = true" />
 
 		<SheetNav :breadcrumbs="navigationBreadcrumbs">
@@ -74,12 +80,12 @@ import {
 	type ResolvedField,
 	type ResolvedTable,
 } from '@stonecrop/aform'
-import { computed, markRaw, onMounted, onUnmounted, provide, ref, shallowRef, unref, watch } from 'vue'
+import { computed, markRaw, onMounted, onUnmounted, provide, ref, shallowRef, unref, useSlots, watch } from 'vue'
 
-import DocumentRail from './DocumentRail.vue'
+import ActionSet from './ActionSet.vue'
 import SheetNav from './SheetNav.vue'
 import CommandPalette from './CommandPalette.vue'
-import { createDocumentRail, documentRailKey, type DocumentRailController } from '../composables/useDocumentRail'
+import { createActionSet, actionSetKey, type ActionSetController } from '../composables/useActionSet'
 import type {
 	ActionElements,
 	RouteAdapter,
@@ -88,18 +94,22 @@ import type {
 	RecordOpenEventPayload,
 	LoadRecordsEventPayload,
 	LoadRecordEventPayload,
-	DocumentRailSlot,
+	ActionSetSlot,
 } from '../types'
 
 const {
 	availableDoctypes = [],
 	routeAdapter,
-	railSlots,
+	actionSetSlots,
+	hostActions,
 } = defineProps<{
 	availableDoctypes?: string[]
 	routeAdapter?: RouteAdapter
-	railSlots?: DocumentRailSlot[]
+	actionSetSlots?: ActionSetSlot[]
+	hostActions?: ActionElements[]
 }>()
+
+const slots = useSlots()
 
 const emit = defineEmits<{
 	/**
@@ -509,6 +519,10 @@ const getAvailableCommands = () => {
 }
 
 const actionElements = computed(() => {
+	if (slots.default && hostActions?.length) {
+		return hostActions
+	}
+
 	const elements: ActionElements[] = []
 
 	switch (currentView.value) {
@@ -1003,18 +1017,22 @@ const handleKeydown = (event: KeyboardEvent) => {
 			commandPaletteOpen.value = false
 			return
 		}
-		if (documentRailController.value?.isPreviewOpen.value) {
-			documentRailController.value.closePreview()
+		if (actionSetController.value?.isPreviewOpen.value) {
+			actionSetController.value.closePreview()
 			return
 		}
-		if (documentRailController.value?.activeSlotId.value) {
-			documentRailController.value.close()
+		if (actionSetDrawerOpen.value) {
+			actionSetRef.value?.closeDrawer()
+			return
+		}
+		if (actionSetController.value?.activeSlotId.value) {
+			actionSetController.value.close()
 		}
 	}
 }
 
-const visibleRailSlots = computed(() =>
-	(railSlots ?? [])
+const visibleActionSetSlots = computed(() =>
+	(actionSetSlots ?? [])
 		.filter(slot => slot.show !== false)
 		.map(slot => ({
 			...slot,
@@ -1023,41 +1041,42 @@ const visibleRailSlots = computed(() =>
 		}))
 )
 
-const railDrawerOpen = ref(false)
-const railPreviewOpen = ref(false)
-const documentRailController = shallowRef<DocumentRailController | null>(null)
+const actionSetRef = ref<{ closeDrawer: () => void } | null>(null)
+const actionSetDrawerOpen = ref(false)
+const actionSetPreviewOpen = ref(false)
+const actionSetController = shallowRef<ActionSetController | null>(null)
 
-function ensureDocumentRailController() {
-	if (documentRailController.value) {
+function ensureActionSetController() {
+	if (actionSetController.value) {
 		return
 	}
-	documentRailController.value = createDocumentRail({
+	actionSetController.value = createActionSet({
 		doctype: currentDoctype,
 		recordId: currentRecordId,
 		onDrawerChange: open => {
-			railDrawerOpen.value = open
+			actionSetDrawerOpen.value = open
 		},
 		onPreviewChange: open => {
-			railPreviewOpen.value = open
+			actionSetPreviewOpen.value = open
 		},
 	})
 }
 
-ensureDocumentRailController()
+ensureActionSetController()
 
-provide(documentRailKey, documentRailController)
+provide(actionSetKey, actionSetController)
 
-const railPreviewSubject = computed(() => documentRailController.value?.previewSubject.value ?? null)
+const actionSetPreviewSubject = computed(() => actionSetController.value?.previewSubject.value ?? null)
 
 watch(
 	() => [currentDoctype.value, currentRecordId.value] as const,
 	() => {
-		documentRailController.value?.reset()
+		actionSetController.value?.reset()
 	}
 )
 
-function closeRailPreview() {
-	documentRailController.value?.closePreview()
+function closeActionSetPreview() {
+	actionSetController.value?.closePreview()
 }
 
 onMounted(() => {
@@ -1088,8 +1107,8 @@ onUnmounted(() => {
 	transition: margin-right 0.25s ease-out;
 }
 
-.desktop--rail-open .desktop__workspace {
-	margin-right: var(--sc-rail-drawer-width, 380px);
+.desktop--action-set-open .desktop__workspace {
+	margin-right: var(--sc-action-set-drawer-width, 380px);
 }
 
 .desktop__main {

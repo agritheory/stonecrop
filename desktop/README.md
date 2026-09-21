@@ -7,7 +7,7 @@ Desktop reads through Stonecrop: on navigating to a list or a record it calls `S
 ## Features
 
 - **Three-view layout**: doctypes → records → record form, navigated by route or adapter
-- **ActionSet toolbar**: FSM transitions become action buttons/dropdowns automatically from the doctype workflow
+- **ActionSet tile column**: expandable tile UI with Search, host slots, and an Actions drawer; FSM transitions populate the actions list automatically from the doctype workflow
 - **CommandPalette**: `Ctrl+K` / `Cmd+K` search across doctypes and records
 - **SheetNav**: tabbed navigation between open records, with a toolbar for host controls in the footer (see [Slots](#slots))
 - **Event-driven**: all significant interactions emit typed events for the host to respond to

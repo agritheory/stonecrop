@@ -108,12 +108,12 @@ export type LoadRecordEventPayload = {
 	recordId: string
 }
 
-/** Host-chosen identifier for a document-rail slot. @public */
-export type DocumentRailSlotId = string
+/** Host-chosen identifier for an ActionSet slot. @public */
+export type ActionSetSlotId = string
 
-/** Host-declared drawer slot on the document right rail. @public */
-export type DocumentRailSlot = {
-	id: DocumentRailSlotId
+/** Host-declared drawer slot on the ActionSet tile column. @public */
+export type ActionSetSlot = {
+	id: ActionSetSlotId
 	label: string
 	icon?: Component
 	component?: Component
@@ -122,18 +122,18 @@ export type DocumentRailSlot = {
 }
 
 /** A presented subject occupies the compressed-document (50%) surface. @public */
-export type RailSubject = {
+export type ActionSetPreview = {
 	id?: string
 	view: Component
 	props?: Record<string, unknown>
 }
 
-/** Instance-scoped rail API provided by Desktop to slot content. @public */
-export type DocumentRail = {
+/** Instance-scoped ActionSet API provided by Desktop to slot content. @public */
+export type ActionSetContext = {
 	doctype: ComputedRef<string>
 	recordId: ComputedRef<string>
-	activeSlotId: ComputedRef<DocumentRailSlotId | null>
-	present: (subject: RailSubject) => void
+	activeSlotId: ComputedRef<ActionSetSlotId | null>
+	present: (subject: ActionSetPreview) => void
 	closePreview: () => void
 	close: () => void
 }

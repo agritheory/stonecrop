@@ -12,11 +12,11 @@
 </template>
 
 <script setup lang="ts">
-import { useDocumentRail } from '@stonecrop/desktop'
+import { useActionSet } from '@stonecrop/desktop'
 
 import StubPreview from './StubPreview.vue'
 
-const rail = useDocumentRail()
+const actionSet = useActionSet()
 
 const items = [
 	{ id: 'att-invoice', name: 'Invoice-1042.pdf' },
@@ -24,7 +24,7 @@ const items = [
 ]
 
 function open(item: (typeof items)[number]) {
-	rail.present({
+	actionSet.present({
 		id: item.id,
 		view: StubPreview,
 		props: { title: item.name, body: `Attachment preview for ${item.name}.` },

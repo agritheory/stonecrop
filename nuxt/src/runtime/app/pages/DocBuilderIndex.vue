@@ -1,38 +1,38 @@
 <template>
-	<div class="docbuilder-index">
-		<div class="docbuilder-index-inner">
-			<div class="docbuilder-header">
-				<h1>DocType Builder</h1>
-				<p class="subtitle">Select a DocType to view and edit its schema</p>
-			</div>
-			<div class="docbuilder-create">
-				<input
-					v-model="newName"
-					type="text"
-					placeholder="New doctype name (e.g. Invoice)"
-					:disabled="creating"
-					@keyup.enter="createDoctype" />
-				<button type="button" class="btn-create" :disabled="creating || !newName.trim()" @click="createDoctype">
-					{{ creating ? 'Creating\u2026' : '+ New DocType' }}
-				</button>
-			</div>
-			<p v-if="createError" class="create-error">{{ createError }}</p>
-			<ClientOnly>
+	<ClientOnly>
+		<Desktop class="docbuilder-desktop" :route-adapter="routeAdapter" :host-actions="indexActions">
+			<div class="docbuilder-index-inner">
+				<div class="docbuilder-header">
+					<h1>DocType Builder</h1>
+					<p class="subtitle">Select a DocType to view and edit its schema</p>
+				</div>
+				<div class="docbuilder-create">
+					<input
+						v-model="newName"
+						type="text"
+						placeholder="New doctype name (e.g. Invoice)"
+						:disabled="creating"
+						@keyup.enter="createDoctype" />
+					<button type="button" class="btn-create" :disabled="creating || !newName.trim()" @click="createDoctype">
+						{{ creating ? 'Creating\u2026' : '+ New DocType' }}
+					</button>
+				</div>
+				<p v-if="createError" class="create-error">{{ createError }}</p>
 				<div v-if="loading" class="loading">Loading doctypes...</div>
 				<p v-else-if="!doctypes.length" class="empty">No doctypes yet — create one above.</p>
 				<ATable v-else :columns="columns" :rows="doctypes" :config="config" @row:click="handleRowClick" />
-			</ClientOnly>
-		</div>
-
-		<ActionSet :elements="indexActions" @action-click="handleAction" />
-	</div>
+			</div>
+		</Desktop>
+	</ClientOnly>
 </template>
 
 <script setup>
-import { ActionSet } from '@stonecrop/desktop'
+import { Desktop } from '@stonecrop/desktop'
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'nuxt/app'
+
 const router = useRouter()
+const routeAdapter = useDocBuilderRouteAdapter()
 const doctypes = ref([])
 const loading = ref(true)
 async function loadDoctypes() {
@@ -93,47 +93,49 @@ async function createDoctype() {
 	}
 }
 const indexActions = computed(() => [{ type: 'button', label: 'Home', action: () => void router.push('/') }])
-function handleAction(_label, action) {
-	if (action) void action()
-}
 </script>
 
 <style scoped>
-.docbuilder-index {
-	background: var(--sc-form-background, #fff);
-	box-sizing: border-box;
-	min-height: 100vh;
+.docbuilder-desktop {
+	height: 100vh;
 }
+
 .docbuilder-index-inner {
 	margin: 0 auto;
 	max-width: 1200px;
 	padding: 2rem;
 }
+
 .docbuilder-header {
 	padding: 2rem 0 3rem;
 	text-align: center;
 }
+
 .docbuilder-header h1 {
 	font-size: 2.5rem;
 	font-weight: 700;
 	margin: 0 0 1rem;
 }
+
 .subtitle {
 	color: #6b7280;
 	font-size: 1.125rem;
 	margin: 0;
 }
+
 .empty,
 .loading {
 	color: #6b7280;
 	padding: 2rem;
 	text-align: center;
 }
+
 .docbuilder-create {
 	display: flex;
 	gap: 0.5rem;
 	margin-bottom: 1rem;
 }
+
 .docbuilder-create input {
 	border: 1px solid var(--sc-gray-20, #d1d5db);
 	border-radius: 4px;
@@ -141,6 +143,7 @@ function handleAction(_label, action) {
 	font: inherit;
 	padding: 0.5em 0.75em;
 }
+
 .btn-create {
 	background: var(--sc-blue-40, #3b82f6);
 	border: none;
@@ -151,10 +154,12 @@ function handleAction(_label, action) {
 	padding: 0.5em 1.25em;
 	white-space: nowrap;
 }
+
 .btn-create:disabled {
 	cursor: not-allowed;
 	opacity: 0.5;
 }
+
 .create-error {
 	color: #b91c1c;
 	font-size: 0.875rem;

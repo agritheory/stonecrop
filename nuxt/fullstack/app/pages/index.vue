@@ -3,7 +3,7 @@
 		<Desktop
 			:available-doctypes="availableDoctypes"
 			:route-adapter="routeAdapter"
-			:rail-slots="railSlots"
+			:action-set-slots="actionSetSlots"
 			@action="run" />
 		<template #fallback>
 			<div class="loading">
@@ -16,12 +16,12 @@
 <script setup lang="ts">
 import {
 	Desktop,
-	RailIconApprovals,
-	RailIconChat,
-	RailIconEmail,
-	RailIconFiles,
-	RailIconReports,
-	type DocumentRailSlot,
+	ActionSetIconApprovals,
+	ActionSetIconChat,
+	ActionSetIconEmail,
+	ActionSetIconFiles,
+	ActionSetIconReports,
+	type ActionSetSlot,
 } from '@stonecrop/desktop'
 import ApprovalsPanel from '~/components/rail/ApprovalsPanel.vue'
 import AttachmentsPanel from '~/components/rail/AttachmentsPanel.vue'
@@ -46,18 +46,18 @@ const onOrderRecord = computed(
 	() => routeAdapter.getCurrentDoctype() === 'order' && Boolean(routeAdapter.getCurrentRecordId())
 )
 
-const railSlots = computed<DocumentRailSlot[]>(() => [
-	{ id: 'chat', label: 'Chat', icon: RailIconChat, component: ChatPanel, show: onOrderRecord.value },
-	{ id: 'email', label: 'Email', icon: RailIconEmail, component: CollaborationPanel, show: onOrderRecord.value },
-	{ id: 'files', label: 'Files', icon: RailIconFiles, component: AttachmentsPanel, show: onOrderRecord.value },
+const actionSetSlots = computed<ActionSetSlot[]>(() => [
+	{ id: 'chat', label: 'Chat', icon: ActionSetIconChat, component: ChatPanel, show: onOrderRecord.value },
+	{ id: 'email', label: 'Email', icon: ActionSetIconEmail, component: CollaborationPanel, show: onOrderRecord.value },
+	{ id: 'files', label: 'Files', icon: ActionSetIconFiles, component: AttachmentsPanel, show: onOrderRecord.value },
 	{
 		id: 'approvals',
 		label: 'Approvals',
-		icon: RailIconApprovals,
+		icon: ActionSetIconApprovals,
 		component: ApprovalsPanel,
 		show: onOrderRecord.value,
 	},
-	{ id: 'reports', label: 'Reports', icon: RailIconReports, component: ReportsPanel, show: onOrderRecord.value },
+	{ id: 'reports', label: 'Reports', icon: ActionSetIconReports, component: ReportsPanel, show: onOrderRecord.value },
 ])
 </script>
 
