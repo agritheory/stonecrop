@@ -247,7 +247,8 @@ describe('datepicker component', { tags: ['component'] }, () => {
 			})
 			await wrapper.vm.$nextTick()
 			const firstCell = wrapper.findAll('.date-cell')[0]
-			await firstCell.trigger('keydown.enter')
+			// A browser's `key`, which `trigger('keydown.enter')` does not give.
+			await firstCell.trigger('keydown', { key: 'Enter' })
 			const emitted = wrapper.emitted('get-date')
 			expect(emitted).toBeTruthy()
 		})

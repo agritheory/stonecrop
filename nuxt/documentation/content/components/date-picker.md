@@ -15,7 +15,7 @@ import { ADatePicker } from '@stonecrop/aform'
 
 ## Basic
 
-`v-model` binds to the selected day, as a `YYYY-MM-DD` string. Click a day to select it, or use the previous/next month arrows to navigate.
+`v-model` binds to the selected day, as a `YYYY-MM-DD` string. Click a day to select it, or use the previous/next month arrows to navigate. The keyboard can do both (see [Accessibility](#accessibility)).
 
 ::demo-panel
 :::client-only
@@ -126,6 +126,15 @@ rows:
 
 ## Accessibility
 
-Each day cell is a native `td` with `tabindex="0"`, so the grid is keyboard-focusable cell by cell via <kbd>Tab</kbd>, and <kbd>Enter</kbd> on a focused cell selects that date (mirroring a click). The calendar takes no focus when it appears, so a field that opens it keeps focus in its own box. Note that dedicated arrow-key navigation between days and month/year paging shortcuts exist in the source but are currently commented out, so day-to-day movement still relies on <kbd>Tab</kbd> order rather than arrow keys.
+The grid is one <kbd>Tab</kbd> stop, on the picked day (or today). From there:
+
+- the arrow keys move a day or a week, crossing into the next or previous month;
+- <kbd>Page Up</kbd> and <kbd>Page Down</kbd> move a month, and with <kbd>Shift</kbd> a year;
+- <kbd>Home</kbd> and <kbd>End</kbd> go to the week's Monday and Sunday;
+- <kbd>Enter</kbd> or <kbd>Space</kbd> picks the focused day.
+
+The previous/next month arrows are for the mouse, and carry the <kbd>Tab</kbd> stop to the same day of the month shown. In range mode the start and end text inputs keep their own arrow keys. The calendar takes no focus when it appears, so a field that opens it keeps focus in its own box.
+
+For screen readers the calendar is a `grid` named by its month and year, and each day is named by its full date in the user's locale. The picked days are marked selected (`aria-selected`), and today is marked as the current date (`aria-current="date"`).
 
 Source: [`aform/src/components/form/ADatePicker.vue`](https://github.com/agritheory/stonecrop/blob/development/aform/src/components/form/ADatePicker.vue)

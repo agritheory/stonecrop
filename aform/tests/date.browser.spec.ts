@@ -1,9 +1,10 @@
 import { afterEach, describe, expect, it } from 'vitest'
-import { userEvent } from 'vitest/browser'
+import { page, userEvent } from 'vitest/browser'
 import { mount, type VueWrapper } from '@vue/test-utils'
 import { defineComponent, h, ref } from 'vue'
 
 import ADate from '../src/components/form/ADate.vue'
+import { focusedDay } from './focused-day'
 
 let wrapper: VueWrapper | undefined
 
@@ -154,5 +155,60 @@ describe('date component in a browser', { tags: ['browser'] }, () => {
 		await expect
 			.poll(() => ({ focused: document.activeElement, calendarOpen: calendarOpen() }))
 			.toEqual({ focused: before, calendarOpen: false })
+	})
+
+	it("opens aform's calendar on Space, F4 and Alt+Down, with focus on the field's day", async () => {
+		const landed: Record<string, string | null> = {}
+		for (const key of ['[Space]', '{F4}', '{Alt>}{ArrowDown}{/Alt}']) {
+			const { input } = mountDate('2026-01-10')
+			input.focus()
+			// oxlint-disable-next-line eslint/no-await-in-loop -- one key at a time, each on a fresh field
+			await userEvent.keyboard(key)
+			// oxlint-disable-next-line eslint/no-await-in-loop -- the calendar renders after the key
+			await expect.poll(calendarOpen).toBe(true)
+			landed[key] = focusedDay()
+			wrapper?.unmount()
+		}
+		expect(landed).toEqual({
+			'[Space]': 'January 2026 10',
+			'{F4}': 'January 2026 10',
+			'{Alt>}{ArrowDown}{/Alt}': 'January 2026 10',
+		})
+	})
+
+	it('closes the calendar on Escape, with focus back in the box', async () => {
+		const { input } = mountDate('2026-01-10')
+		input.focus()
+		await userEvent.keyboard('[Space]')
+		await expect.poll(focusedDay).toBe('January 2026 10')
+
+		await userEvent.keyboard('{Escape}')
+		await expect
+			.poll(() => ({ focused: document.activeElement, calendarOpen: calendarOpen() }))
+			.toEqual({ focused: input, calendarOpen: false })
+	})
+
+	it('puts focus back in the box once a day is picked by key', async () => {
+		const { input, model } = mountDate('2026-01-10')
+		input.focus()
+		await userEvent.keyboard('[Space]')
+		await expect.poll(focusedDay).toBe('January 2026 10')
+
+		await userEvent.keyboard('{ArrowRight}{Enter}')
+		await expect
+			.poll(() => ({ model: model.value, focused: document.activeElement, calendarOpen: calendarOpen() }))
+			.toEqual({ model: '2026-01-11', focused: input, calendarOpen: false })
+	})
+
+	// A date input cannot take the combobox role, and `aria-expanded` is not allowed on it.
+	it('tells a screen reader its box opens a calendar dialog named by the field', async () => {
+		const { input } = mountDate('2026-01-10')
+		expect(input.getAttribute('aria-haspopup')).toBe('dialog')
+
+		input.focus()
+		await userEvent.keyboard('[Space]')
+		const dialog = page.getByRole('dialog', { name: 'Date' })
+		await expect.element(dialog).toBeVisible()
+		expect(input.getAttribute('aria-controls')).toBe(dialog.element().id)
 	})
 })

@@ -1,5 +1,5 @@
 <template>
-	<div class="aform_form-element">
+	<div class="aform_form-element" @focusout="closeWhenFocusLeaves" @keydown="closeOnEscape">
 		<template v-if="mode === 'display'">
 			<span class="aform_display-value">{{ displayValue }}</span>
 			<label class="aform_field-label">{{ label }}</label>
@@ -8,21 +8,30 @@
 		<template v-else>
 			<input
 				:id="uuid"
+				ref="box"
 				class="aform_input-field"
 				type="text"
+				role="combobox"
+				aria-haspopup="dialog"
+				:aria-expanded="showPicker"
+				:aria-controls="showPicker ? calendarId : undefined"
 				:value="datetimeDisplay"
 				placeholder="Select date and time"
 				:disabled="mode === 'read'"
 				readonly
-				@click="openPicker" />
+				@click="openPicker"
+				@keydown="openFromKey" />
 			<label class="aform_field-label" :for="uuid">{{ label }}</label>
 
 			<p v-show="errorText" class="aform_error" v-html="errorText"></p>
 
 			<ADateSelection
 				v-if="showPicker"
-				ref="pickerRef"
+				:id="calendarId"
+				ref="picker"
 				class="adatetime-picker"
+				role="dialog"
+				:aria-label="label"
 				:select-range="false"
 				:show-date="true"
 				:show-time="true"
@@ -40,12 +49,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
-import { onClickOutside } from '@vueuse/core'
+import { type ComponentPublicInstance, ref, computed, useTemplateRef, watch } from 'vue'
 import { fromISODate } from '@stonecrop/utilities'
 import { Temporal } from 'temporal-polyfill'
 import ADateSelection from './ADateSelection.vue'
 import type { ComponentProps } from '../../types'
+import { useFieldCalendar } from '../../utils/fieldCalendar'
 
 const {
 	label = 'Date & Time',
@@ -82,9 +91,11 @@ const heldMoment = (value: string | Date | null | undefined) => (value ? readMom
 
 const currentDateTime = ref<Temporal.ZonedDateTime | null>(heldMoment(modelValue.value))
 
-const showPicker = ref(false)
-const pickerRef = ref(null)
-onClickOutside(pickerRef, () => (showPicker.value = false))
+const { showPicker, calendarId, openFromKey, closeOnEscape, closeWhenFocusLeaves } = useFieldCalendar(
+	useTemplateRef<HTMLInputElement>('box'),
+	useTemplateRef<ComponentPublicInstance>('picker'),
+	uuid
+)
 
 const openPicker = () => {
 	if (mode !== 'read') showPicker.value = true
@@ -158,8 +169,8 @@ const handleTime = (data: {
 	)
 	// Deliberately does NOT close the picker. `get-time` is the widget's current value, not a
 	// commit — it fires on every blur, arrow key and meridiem change — so closing here shut the
-	// picker as soon as the user tabbed out of the hours field. Dismissal is the click-outside
-	// handler above; closing on `get-date` instead would strand the time half of a datetime.
+	// picker as soon as the user tabbed out of the hours field. Dismissal is a click outside, Escape
+	// or focus leaving the field; closing on `get-date` instead would strand the time half of a datetime.
 }
 
 // An empty value resets it too: skipping one kept the cleared moment, which the next pick wrote back.

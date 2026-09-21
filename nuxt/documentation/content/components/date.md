@@ -5,7 +5,7 @@ description: A single-date field with a text input and an inline calendar picker
 
 # Date
 
-`ADate` renders a single date field: the browser's date input with a floating label, and an inline calendar (`ADatePicker`) that toggles open when the input is clicked. The calendar closes on selection, on an outside click, or when focus leaves the field, and the browser's own calendar is kept shut. Use it for any single-date field, such as due dates, birth dates or effective dates, either standalone or as a field inside an [AForm](/reference/aform) schema.
+`ADate` renders a single date field: the browser's date input with a floating label, and an inline calendar (`ADatePicker`) that toggles open when the input is clicked, or opens on <kbd>Space</kbd>, <kbd>F4</kbd> or <kbd>Alt</kbd>+<kbd>Down</kbd>. The calendar closes on selection, on <kbd>Escape</kbd>, on an outside click, or when focus leaves the field, and the browser's own calendar is kept shut. Use it for any single-date field, such as due dates, birth dates or effective dates, either standalone or as a field inside an [AForm](/reference/aform) schema.
 
 ## Import
 
@@ -109,6 +109,10 @@ rows:
 
 ## Accessibility
 
-The input and its label are linked via `id`/`for` (backed by `uuid`), so the label is announced by screen readers on focus. `required` sets the native `required` attribute, so unsupported submission is caught by the browser's built-in validation UI in addition to any schema-level validation. The inline calendar opens only on a click, with focus staying in the input so a date can still be typed. The keys that open the browser's own calendar (Space, F4 and Alt+Down in Chrome) are blocked, and no key opens the inline calendar yet. It closes on an outside click, on selection, or when focus leaves the field.
+The input and its label are linked via `id`/`for` (backed by `uuid`), so the label is announced by screen readers on focus. `required` sets the native `required` attribute, so unsupported submission is caught by the browser's built-in validation UI in addition to any schema-level validation. A click opens the inline calendar with focus staying in the input, so a date can still be typed.
+
+The keys that open the browser's own calendar in Chrome, <kbd>Space</kbd>, <kbd>F4</kbd> and <kbd>Alt</kbd>+<kbd>Down</kbd>, open the inline calendar instead, with focus on the field's day; the calendar's own keys are on the [Date Picker](/components/date-picker#accessibility) page. Picking a day or pressing <kbd>Escape</kbd> closes it and returns focus to the input, and it also closes on an outside click or when focus leaves the field.
+
+The input tells a screen reader that it opens a dialog (`aria-haspopup`), and the calendar is a dialog named by the field's label. A date input cannot take the `combobox` role, so unlike `ADateTime` and `ADateRange` the input does not announce whether the calendar is open, and plain <kbd>Down</kbd> steps the focused part of the date rather than opening the calendar.
 
 Source: [`aform/src/components/form/ADate.vue`](https://github.com/agritheory/stonecrop/blob/development/aform/src/components/form/ADate.vue)

@@ -5,8 +5,8 @@
 		<p v-show="errorText" class="aform_error" v-html="errorText"></p>
 	</template>
 	<template v-else>
-		<div ref="datepicker" class="adatepicker" tabindex="0">
-			<table @mousedown="preventCellSelection">
+		<div class="adatepicker">
+			<table ref="grid" role="grid" :aria-label="monthAndYear" @mousedown="preventCellSelection">
 				<tbody>
 					<tr>
 						<td id="previous-month-btn" :tabindex="-1" @click="previousMonth">&lt;</td>
@@ -49,7 +49,10 @@
 							class="date-cell"
 							:contenteditable="false"
 							:spellcheck="false"
-							:tabindex="0"
+							:tabindex="getCurrentDate(rowNo, colNo).equals(focusedDay) ? 0 : -1"
+							:aria-label="fullDate(getCurrentDate(rowNo, colNo))"
+							:aria-selected="isPicked(getCurrentDate(rowNo, colNo))"
+							:aria-current="isTodaysDate(getCurrentDate(rowNo, colNo)) ? 'date' : undefined"
 							:class="{
 								todaysDate: isTodaysDate(getCurrentDate(rowNo, colNo)),
 								selectedDate: isSelectedDate(getCurrentDate(rowNo, colNo)),
@@ -58,7 +61,7 @@
 								endDate: selectRange ? isEndDate(getCurrentDate(rowNo, colNo)) : false,
 							}"
 							@click.prevent.stop="selectDate(getCurrentCell(rowNo, colNo))"
-							@keydown.enter="selectDate(getCurrentCell(rowNo, colNo))"
+							@keydown="onDayKeydown($event, getCurrentCell(rowNo, colNo))"
 							@mouseover="hoverDate(getCurrentCell(rowNo, colNo))">
 							{{ getCurrentDate(rowNo, colNo).day }}
 						</td>
@@ -71,11 +74,9 @@
 </template>
 
 <script setup lang="ts">
-/* removed keyboard nav temportarily since it interfered with user experience navigating input fields */
-// import { defaultKeypressHandlers, useKeyboardNav } from '@stonecrop/utilities'
 import { fromISODate } from '@stonecrop/utilities'
 import { Temporal } from 'temporal-polyfill'
-import { computed, ref, useTemplateRef, watch } from 'vue'
+import { computed, nextTick, ref, useTemplateRef, watch } from 'vue'
 
 import type { ComponentProps } from '../../types'
 import { readTypedDay, writeTypedDay } from '../../utils/typedDay'
@@ -97,8 +98,9 @@ const currentMonth = ref<number>(selectedDate.value.month - 1)
 const currentYear = ref<number>(selectedDate.value.year)
 const currentDates = ref<Temporal.PlainDate[]>([])
 
-/* needed for keyboard navigation. uncomment if implementing */
-// const datepickerRef = useTemplateRef<HTMLDivElement>('datepicker')
+// The day the grid's one Tab stop sits on, where its keys move from. It is always a day the grid shows.
+const focusedDay = ref<Temporal.PlainDate>(selectedDate.value)
+const grid = useTemplateRef<HTMLTableElement>('grid')
 
 const hoveredDate = ref<Temporal.PlainDate>(selectedDate.value)
 const start_date = ref<Temporal.PlainDate | null>(null)
@@ -159,6 +161,13 @@ const isStartDate = (day: Temporal.PlainDate) => {
 const isEndDate = (day: Temporal.PlainDate) => {
 	return end_date.value !== null && day.equals(end_date.value)
 }
+
+// Every day the calendar marks as picked, so a screen reader hears the same days marked.
+const isPicked = (day: Temporal.PlainDate) =>
+	isSelectedDate(day) || (selectRange && (isStartDate(day) || isEndDate(day)))
+
+const fullDate = (day: Temporal.PlainDate) =>
+	day.toLocaleString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
 
 const getCurrentCell = (rowNo: number, colNo: number) => {
 	return (rowNo - 1) * numberOfColumns + colNo - 1
@@ -223,29 +232,59 @@ const enterDate = (event: KeyboardEvent) => {
 	if (event.key === 'Enter') enterInputDate()
 }
 
-// useKeyboardNav([
-// 	{
-// 		parent: datepickerRef,
-// 		selectors: 'td',
-// 		handlers: {
-// 			...defaultKeypressHandlers,
-// 			...{
-// 				'keydown.pageup': previousMonth,
-// 				'keydown.shift.pageup': previousYear,
-// 				'keydown.pagedown': nextMonth,
-// 				'keydown.shift.pagedown': nextYear,
-// 				// TODO: this is a hack to override the stonecrop enter handler;
-// 				// store context inside the component so that handlers can be setup consistently
-// 				// eslint-disable-next-line @typescript-eslint/no-empty-function
-// 				'keydown.enter': () => {}, // select this date
-// 			},
-// 		},
-// 	},
-// ])
+// The grid's keys move by day, not by table cell as `useKeyboardNav` does: that one can't cross into
+// another month, and on every cell it took the arrow keys from a range's typed-day boxes.
+/** The day a key moves focus to from `day`, or undefined for a key that moves nothing. */
+const dayAfterKey = (event: KeyboardEvent, day: Temporal.PlainDate) => {
+	switch (event.key) {
+		case 'ArrowLeft':
+			return day.subtract({ days: 1 })
+		case 'ArrowRight':
+			return day.add({ days: 1 })
+		case 'ArrowUp':
+			return day.subtract({ weeks: 1 })
+		case 'ArrowDown':
+			return day.add({ weeks: 1 })
+		case 'PageUp':
+			return day.subtract(event.shiftKey ? { years: 1 } : { months: 1 })
+		case 'PageDown':
+			return day.add(event.shiftKey ? { years: 1 } : { months: 1 })
+		// The grid's weeks run Monday, day 1, to Sunday, day 7.
+		case 'Home':
+			return day.subtract({ days: day.dayOfWeek - 1 })
+		case 'End':
+			return day.add({ days: 7 - day.dayOfWeek })
+	}
+}
+
+const focusTabStop = async () => {
+	await nextTick()
+	grid.value?.querySelector<HTMLElement>('[tabindex="0"]')?.focus()
+}
+
+const onDayKeydown = (event: KeyboardEvent, currentIndex: number) => {
+	if (event.key === 'Enter' || event.key === ' ') {
+		event.preventDefault()
+		selectDate(currentIndex)
+		return
+	}
+	const next = dayAfterKey(event, focusedDay.value)
+	if (!next) return
+	event.preventDefault()
+	focusedDay.value = next
+	currentMonth.value = next.month - 1
+	currentYear.value = next.year
+	void focusTabStop()
+}
 
 const selectDate = (currentIndex: number) => {
 	const picked = currentDates.value[currentIndex]
 	selectedDate.value = picked
+	focusedDay.value = picked
+	// A click leaves focus where it was, so focus follows a pick only when it is on a day already.
+	if (document.activeElement instanceof HTMLTableCellElement && grid.value?.contains(document.activeElement)) {
+		void focusTabStop()
+	}
 	date.value = picked.toString()
 
 	if (selectRange) {
@@ -307,30 +346,18 @@ Hooks
 // The calendar takes no focus when it appears: a field opening it keeps focus in its box, where typing goes.
 populateMonth()
 
-// setup keyboard navigation
-// useKeyboardNav([
-// 	{
-// 		parent: datepickerRef,
-// 		selectors: 'td',
-// 		handlers: {
-// 			...defaultKeypressHandlers,
-// 			'keydown.pageup': previousMonth,
-// 			'keydown.shift.pageup': previousYear,
-// 			'keydown.pagedown': nextMonth,
-// 			'keydown.shift.pagedown': nextYear,
-// 			// TODO: this is a hack to override the stonecrop enter handler;
-// 			// store context inside the component so that handlers can be setup consistently
-
-// 			'keydown.enter': () => {}, // select this date
-// 		},
-// 	},
-// ])
-
 /*******************
 Watchers
 *******************/
 
-watch([currentMonth, currentYear], populateMonth)
+watch([currentMonth, currentYear], () => {
+	populateMonth()
+	// The month buttons carry the Tab stop along, to the same day of the month shown.
+	const month = currentMonth.value + 1
+	if (focusedDay.value.month !== month || focusedDay.value.year !== currentYear.value) {
+		focusedDay.value = focusedDay.value.with({ year: currentYear.value, month })
+	}
+})
 
 // A day handed in, such as one typed into the field while the calendar is open. A pick here sets
 // `selectedDate` first, so picking a day of the next month in this grid leaves the month shown.
@@ -338,6 +365,7 @@ watch(date, value => {
 	const day = fromISODate(value ?? '')
 	if (!day || day.equals(selectedDate.value)) return
 	selectedDate.value = day
+	focusedDay.value = day
 	currentMonth.value = day.month - 1
 	currentYear.value = day.year
 })
@@ -386,6 +414,11 @@ defineExpose({ currentMonth, currentYear, selectedDate: computed(() => selectedD
 }
 .adatepicker td.date-cell:hover {
 	background: var(--sc-gray-10);
+}
+
+.adatepicker td.date-cell:focus-visible {
+	outline: 1px solid var(--sc-input-active-border-color);
+	outline-offset: -1px;
 }
 
 .adatepicker td:focus,

@@ -129,6 +129,6 @@ rows:
 
 ## Accessibility
 
-The calendar cells inside the composed `ADatePicker` are focusable (`tabindex="0"`) and can be activated with a mouse click or, once focused, the Enter key. The composed `ADateTimeInput` segment(s) support the same numeric-input, arrow-key increment/decrement, and Enter-to-confirm behavior described on the [Date Time](/components/date-time) page. `ADateSelection` does not accept a `label` prop or expose an `id`/`for` pairing of its own — an accessible name for the group must be supplied by the surrounding context.
+The composed `ADatePicker` is one <kbd>Tab</kbd> stop and takes the keys described on the [Date Picker](/components/date-picker#accessibility) page. The composed `ADateTimeInput` segment(s) support the same numeric-input, arrow-key increment/decrement, and Enter-to-confirm behavior described on the [Date Time](/components/date-time) page. `ADateSelection` does not accept a `label` prop or expose an `id`/`for` pairing of its own, so an accessible name for the group must be supplied by the surrounding context.
 
 Source: [`aform/src/components/form/ADateSelection.vue`](https://github.com/agritheory/stonecrop/blob/development/aform/src/components/form/ADateSelection.vue)

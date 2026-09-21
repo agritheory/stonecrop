@@ -5,7 +5,7 @@ description: A start/end date range field with a single input and an inline rang
 
 # Date Range
 
-`ADateRange` renders a start/end date range as a single field — a read-only-styled text input that summarizes the selected range, with an inline calendar (`ADatePicker`, in range-select mode) that opens when the input is clicked. Use it for reporting periods, filters, or any field that needs a from/to date pair, either standalone or as a field inside an [AForm](/reference/aform) schema.
+`ADateRange` renders a start/end date range as a single field: a read-only-styled text input that summarizes the selected range, with an inline calendar (`ADatePicker`, in range-select mode) that opens when the input is clicked or on <kbd>Space</kbd>, <kbd>F4</kbd>, <kbd>Alt</kbd>+<kbd>Down</kbd> or <kbd>Down</kbd>. Use it for reporting periods, filters, or any field that needs a from/to date pair, either standalone or as a field inside an [AForm](/reference/aform) schema.
 
 ## Import
 
@@ -119,6 +119,8 @@ rows:
 
 ## Accessibility
 
-The input and its label are linked via `id`/`for` (backed by `uuid`). The input carries the native `readonly` attribute at all times, so keyboard and screen-reader users are never left editing raw text that doesn't match the picker's output — all changes go through the calendar. The calendar itself is opened only by a mouse/pointer click on the input, and closes automatically on an outside click.
+The input and its label are linked via `id`/`for` (backed by `uuid`). The input carries the native `readonly` attribute at all times, so keyboard and screen-reader users are never left editing raw text that doesn't match the picker's output: all changes go through the calendar.
+
+A click, <kbd>Space</kbd>, <kbd>F4</kbd>, <kbd>Alt</kbd>+<kbd>Down</kbd> or <kbd>Down</kbd> on the input opens the calendar, and a key also puts focus on a day, whose keys are on the [Date Picker](/components/date-picker#accessibility) page. Picking the end date or pressing <kbd>Escape</kbd> closes it and returns focus to the input, and it also closes on an outside click or when focus leaves the field. The input is a `combobox` that tells a screen reader it opens a dialog and whether that dialog is open, and the calendar is a dialog named by the field's label.
 
 Source: [`aform/src/components/form/ADateRange.vue`](https://github.com/agritheory/stonecrop/blob/development/aform/src/components/form/ADateRange.vue)

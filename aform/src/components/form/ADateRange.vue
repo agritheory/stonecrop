@@ -1,5 +1,5 @@
 <template>
-	<div class="aform_form-element">
+	<div class="aform_form-element" @focusout="closeWhenFocusLeaves" @keydown="closeOnEscape">
 		<template v-if="mode === 'display'">
 			<span class="aform_display-value">{{ displayValue }}</span>
 			<label class="aform_field-label">{{ label }}</label>
@@ -8,21 +8,30 @@
 		<template v-else>
 			<input
 				:id="uuid"
+				ref="box"
 				class="aform_input-field"
 				type="text"
+				role="combobox"
+				aria-haspopup="dialog"
+				:aria-expanded="showPicker"
+				:aria-controls="showPicker ? calendarId : undefined"
 				:value="rangeDisplay"
 				placeholder="Select date range"
 				:disabled="mode === 'read'"
 				readonly
-				@click="openPicker" />
+				@click="openPicker"
+				@keydown="openFromKey" />
 			<label class="aform_field-label" :for="uuid">{{ label }}</label>
 
 			<p v-show="errorText" class="aform_error" v-html="errorText"></p>
 
 			<ADateSelection
 				v-if="showPicker"
-				ref="pickerRef"
+				:id="calendarId"
+				ref="picker"
 				class="adaterange-picker"
+				role="dialog"
+				:aria-label="label"
 				:select-range="true"
 				:show-time="false"
 				@get-date="handlePickerDate" />
@@ -31,12 +40,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
-import { onClickOutside } from '@vueuse/core'
+import { type ComponentPublicInstance, ref, computed, useTemplateRef, watch } from 'vue'
 import { fromISODate } from '@stonecrop/utilities'
 import { Temporal } from 'temporal-polyfill'
 import ADateSelection from './ADateSelection.vue'
 import type { ComponentProps } from '../../types'
+import { useFieldCalendar } from '../../utils/fieldCalendar'
 
 const fmt = (d: string) => fromISODate(d)?.toLocaleString() ?? 'Invalid Date'
 
@@ -59,9 +68,11 @@ const readDay = (day: string | null | undefined) => (day ? (fromISODate(day) ?? 
 const startDate = ref<Temporal.PlainDate | null>(readDay(modelValue.value?.start_date))
 const endDate = ref<Temporal.PlainDate | null>(readDay(modelValue.value?.end_date))
 
-const showPicker = ref(false)
-const pickerRef = ref(null)
-onClickOutside(pickerRef, () => (showPicker.value = false))
+const { showPicker, calendarId, closePicker, openFromKey, closeOnEscape, closeWhenFocusLeaves } = useFieldCalendar(
+	useTemplateRef<HTMLInputElement>('box'),
+	useTemplateRef<ComponentPublicInstance>('picker'),
+	uuid
+)
 
 const openPicker = () => {
 	if (mode !== 'read') showPicker.value = true
@@ -106,7 +117,7 @@ const handlePickerDate = (data: { selected: string; start?: string | null; end?:
 	if (data.end) {
 		endDate.value = readDay(data.end)
 		ensureOrder()
-		showPicker.value = false
+		closePicker()
 	}
 	emitModel()
 }
