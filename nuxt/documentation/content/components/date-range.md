@@ -85,7 +85,7 @@ const data = ref({ reporting_period: { start_date: null, end_date: null } })
 ---
 headers: ['Name', 'Type', 'Default', 'Description']
 rows:
-  - ['`v-model`', '[`DateRangeValue`](#daterangevalue)', '`{ start_date: null, end_date: null }`', 'The selected date range.']
+  - ['`v-model`', '[`DateRangeValue`](#daterangevalue) or `null`', '`{ start_date: null, end_date: null }`', 'The selected date range; `null` shows no range, as a new record starts it.']
   - ['`label`', '`string`', "`'Date Range'`", 'Label rendered next to the input.']
   - ['`mode`', "`'edit' | 'read' | 'display'`", "`'edit'`", 'See [Modes](#modes) below.']
   - ['`uuid`', '`string`', 'none', "`id`/`for` pair linking the input to its label. Nothing generates one, so the pairing exists only when you pass it."]

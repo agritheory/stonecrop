@@ -90,7 +90,7 @@ const errorText = computed(() => (errors?.length ? errors.join('; ') : (validati
 
 // The calendar holds a `YYYY-MM-DD` day, and opens on today when it holds none it can read. No default
 // value: picking today on an empty calendar must still set it, and a model only reports a change.
-const date = defineModel<string>()
+const date = defineModel<string | null>()
 const selectedDate = ref<Temporal.PlainDate>(fromISODate(date.value ?? '') ?? Temporal.Now.plainDateISO())
 // 0 for January.
 const currentMonth = ref<number>(selectedDate.value.month - 1)

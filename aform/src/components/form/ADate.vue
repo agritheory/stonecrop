@@ -8,7 +8,7 @@
 			<input
 				:id="uuid"
 				ref="date"
-				v-model="modelValue"
+				v-model="boxDay"
 				class="aform_input-field"
 				type="date"
 				:disabled="mode === 'read'"
@@ -35,6 +35,7 @@ import { fromISODate } from '@stonecrop/utilities'
 
 import ADateSelection from './ADateSelection.vue'
 import type { ComponentProps } from '../../types'
+import { dayFromBox } from '../../utils/emptiedBox'
 
 const {
 	label = 'Date',
@@ -49,7 +50,12 @@ const {
 const errorText = computed(() => (errors?.length ? errors.join('; ') : (validation.errorMessage ?? '')))
 
 // The field holds a `YYYY-MM-DD` day, which is also the date input's own value; a Date would be an instant.
-const modelValue = defineModel<string>()
+const modelValue = defineModel<string | null>()
+
+const boxDay = computed({
+	get: () => modelValue.value,
+	set: (text: string) => (modelValue.value = dayFromBox(text)),
+})
 
 const displayValue = computed(() =>
 	modelValue.value ? (fromISODate(modelValue.value)?.toLocaleString() ?? 'Invalid Date') : ''

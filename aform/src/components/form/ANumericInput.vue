@@ -7,7 +7,7 @@
 		<template v-else>
 			<input
 				:id="uuid"
-				v-model="inputNumber"
+				v-model="boxNumber"
 				class="aform_input-field"
 				type="number"
 				:disabled="mode === 'read'"
@@ -22,11 +22,17 @@
 import { computed } from 'vue'
 
 import { ComponentProps } from '../../types'
+import { numberFromBox } from '../../utils/emptiedBox'
 
 const { label, required, mode, uuid, errors, validation = { errorMessage: '' } } = defineProps<ComponentProps>()
 
 // Dynamic trigger errors take precedence over a static schema errorMessage; empty means the slot hides.
 const errorText = computed(() => (errors?.length ? errors.join('; ') : (validation.errorMessage ?? '')))
 
-const inputNumber = defineModel<number>()
+const inputNumber = defineModel<number | null>()
+
+const boxNumber = computed({
+	get: () => inputNumber.value,
+	set: (value: number | '') => (inputNumber.value = numberFromBox(value)),
+})
 </script>

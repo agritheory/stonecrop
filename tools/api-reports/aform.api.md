@@ -141,8 +141,8 @@ export interface CurrencyOptions {
 
 // @public
 export interface CurrencyValue {
-    amount: number;
-    baseAmount: number;
+    amount: number | null;
+    baseAmount: number | null;
     baseCurrency: AFormLinkValue;
     currency: AFormLinkValue;
     exchangeRate: number;
@@ -172,8 +172,8 @@ export interface QuantityOptions {
 // @public
 export interface QuantityValue {
     conversionFactor: number;
-    qty: number;
-    stockQty: number;
+    qty: number | null;
+    stockQty: number | null;
     stockUom: string;
     uom: string;
 }

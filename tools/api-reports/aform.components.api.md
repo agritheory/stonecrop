@@ -59,10 +59,10 @@ props: {
   baseCurrencyLabel?: string \| undefined
   baseAmountLabel?: string \| undefined
   exchangeRateLabel?: string \| undefined
-  modelValue?: CurrencyValue \| undefined
+  modelValue?: CurrencyValue \| null \| undefined
 }
 emits: {
-  update:modelValue: [value: CurrencyValue]
+  update:modelValue: [value: CurrencyValue \| null]
 }
 slots: {}
 ```
@@ -81,10 +81,10 @@ props: {
   uuid?: string \| undefined
   validation?: { [key: string]: any; errorMessage: string; } \| undefined
   errors?: string[] \| undefined
-  modelValue?: string \| undefined
+  modelValue?: string \| null \| undefined
 }
 emits: {
-  update:modelValue: [value: string \| undefined]
+  update:modelValue: [value: string \| null \| undefined]
 }
 slots: {}
 ```
@@ -103,10 +103,10 @@ props: {
   uuid?: string \| undefined
   validation?: { [key: string]: any; errorMessage: string; } \| undefined
   errors?: string[] \| undefined
-  modelValue?: string \| undefined
+  modelValue?: string \| null \| undefined
 }
 emits: {
-  update:modelValue: [value: string \| undefined]
+  update:modelValue: [value: string \| null \| undefined]
   get-date: [{ start: string \| null; end: string \| null; selected: string; }]
 }
 slots: {}
@@ -131,10 +131,10 @@ props: {
   uuid?: string \| undefined
   validation?: { [key: string]: any; errorMessage: string; } \| undefined
   errors?: string[] \| undefined
-  modelValue?: DateRangeValue \| undefined
+  modelValue?: DateRangeValue \| null \| undefined
 }
 emits: {
-  update:modelValue: [value: DateRangeValue]
+  update:modelValue: [value: DateRangeValue \| null]
 }
 slots: {}
 ```
@@ -180,10 +180,10 @@ props: {
   errors?: string[] \| undefined
   allowMilitaryTime?: boolean \| undefined
   useSeconds?: boolean \| undefined
-  modelValue?: string \| Date \| undefined
+  modelValue?: string \| Date \| null \| undefined
 }
 emits: {
-  update:modelValue: [value: string \| Date \| undefined]
+  update:modelValue: [value: string \| Date \| null \| undefined]
 }
 slots: {}
 ```
@@ -362,10 +362,10 @@ props: {
   uuid?: string \| undefined
   validation?: { [key: string]: any; errorMessage: string; } \| undefined
   errors?: string[] \| undefined
-  modelValue?: number \| undefined
+  modelValue?: number \| null \| undefined
 }
 emits: {
-  update:modelValue: [value: number \| undefined]
+  update:modelValue: [value: number \| null \| undefined]
 }
 slots: {}
 ```
@@ -389,10 +389,10 @@ props: {
   stockUomLabel?: string \| undefined
   stockQtyLabel?: string \| undefined
   conversionFactorLabel?: string \| undefined
-  modelValue?: QuantityValue \| undefined
+  modelValue?: QuantityValue \| null \| undefined
 }
 emits: {
-  update:modelValue: [value: QuantityValue]
+  update:modelValue: [value: QuantityValue \| null]
 }
 slots: {}
 ```

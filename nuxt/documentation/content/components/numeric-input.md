@@ -86,7 +86,7 @@ const data = ref({ quantity: 0 })
 ---
 headers: ['Name', 'Type', 'Default', 'Description']
 rows:
-  - ['`v-model`', '`number | undefined`', '—', "The input's numeric value."]
+  - ['`v-model`', '`number | null`', 'none', "The input's numeric value, or `null` once emptied."]
   - ['`label`', '`string`', '—', 'Label text rendered next to the input.']
   - ['`required`', '`boolean`', '`false`', 'Marks the input as required (`edit` mode only).']
   - ['`mode`', "`'edit' | 'read' | 'display'`", "`'edit'`", 'See [Modes](#modes) below.']

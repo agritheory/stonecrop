@@ -112,10 +112,10 @@ describe('date range component', () => {
 	})
 
 	it('v-model shape has start_date and end_date keys', async () => {
-		const emitted: object[] = []
+		const emitted: (object | null)[] = []
 		const wrapper = mount(ADateRange, {
 			...globalComponents,
-			props: { 'onUpdate:modelValue': (v: object) => emitted.push(v) },
+			props: { 'onUpdate:modelValue': (v: object | null) => emitted.push(v) },
 		})
 
 		await wrapper.find('input').trigger('click')
@@ -180,10 +180,10 @@ describe('date range component', () => {
 		}
 
 		it('saves the range picked in the calendar and closes it', async () => {
-			const emitted: object[] = []
+			const emitted: (object | null)[] = []
 			const wrapper = mount(ADateRange, {
 				...globalComponents,
-				props: { 'onUpdate:modelValue': (v: object) => emitted.push(v) },
+				props: { 'onUpdate:modelValue': (v: object | null) => emitted.push(v) },
 			})
 			await wrapper.find('input').trigger('click')
 			await clickDay(wrapper, '10')
@@ -197,10 +197,10 @@ describe('date range component', () => {
 		})
 
 		it('updates start_date when picker emits a start date', async () => {
-			const emitted: object[] = []
+			const emitted: (object | null)[] = []
 			const wrapper = mount(ADateRange, {
 				...globalComponents,
-				props: { 'onUpdate:modelValue': (v: object) => emitted.push(v) },
+				props: { 'onUpdate:modelValue': (v: object | null) => emitted.push(v) },
 			})
 
 			await wrapper.find('input').trigger('click')
@@ -217,10 +217,10 @@ describe('date range component', () => {
 		})
 
 		it('auto-swaps start and end when end is before start', async () => {
-			const emitted: object[] = []
+			const emitted: (object | null)[] = []
 			const wrapper = mount(ADateRange, {
 				...globalComponents,
-				props: { 'onUpdate:modelValue': (v: object) => emitted.push(v) },
+				props: { 'onUpdate:modelValue': (v: object | null) => emitted.push(v) },
 			})
 
 			await wrapper.find('input').trigger('click')

@@ -482,11 +482,11 @@ describe('datetime form field component', { tags: ['component'] }, () => {
 	})
 
 	it('updates model when date and time are selected', async () => {
-		const emitted: (string | Date | undefined)[] = []
+		const emitted: (string | Date | null | undefined)[] = []
 		const wrapper = mount(ADateTime, {
 			...formFieldGlobals,
 			props: {
-				'onUpdate:modelValue': (v: string | Date | undefined) => {
+				'onUpdate:modelValue': (v: string | Date | null | undefined) => {
 					emitted.push(v)
 				},
 			},
@@ -586,10 +586,10 @@ describe('datetime form field component', { tags: ['component'] }, () => {
 			'saves the time its picker shows when only a date is picked on an empty field, seconds used: $useSeconds',
 			async ({ useSeconds, shown, savedSecond }) => {
 				vi.setSystemTime(new Date(2026, 0, 15, 12, 34, 56, 789))
-				const emitted: (string | Date | undefined)[] = []
+				const emitted: (string | Date | null | undefined)[] = []
 				const wrapper = mount(ADateTime, {
 					...formFieldGlobals,
-					props: { useSeconds, 'onUpdate:modelValue': (v: string | Date | undefined) => emitted.push(v) },
+					props: { useSeconds, 'onUpdate:modelValue': (v: string | Date | null | undefined) => emitted.push(v) },
 				})
 				await wrapper.find('.aform_input-field').trigger('click')
 				const timeSegments = wrapper

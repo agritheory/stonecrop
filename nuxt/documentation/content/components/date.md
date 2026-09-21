@@ -15,7 +15,7 @@ import { ADate } from '@stonecrop/aform'
 
 ## Basic
 
-`v-model` binds to the selected date as an ISO `YYYY-MM-DD` string. Click the field to toggle the inline calendar; picking a date there also updates `v-model`.
+`v-model` binds to the selected date as an ISO `YYYY-MM-DD` string, and to `null` once the field is cleared. Click the field to toggle the inline calendar; picking a date there also updates `v-model`.
 
 ::demo-panel
 :::client-only
@@ -85,7 +85,7 @@ const data = ref({ delivery_date: '2026-08-05' })
 ---
 headers: ['Name', 'Type', 'Default', 'Description']
 rows:
-  - ['`v-model`', '`string | undefined`', '—', 'The selected date, as an ISO `YYYY-MM-DD` string.']
+  - ['`v-model`', '`string | null`', 'none', 'The selected date, as an ISO `YYYY-MM-DD` string, or `null` once cleared.']
   - ['`label`', '`string`', "`'Date'`", 'Label rendered next to the input.']
   - ['`required`', '`boolean`', '`false`', 'Marks the input as required (`edit` mode only).']
   - ['`mode`', "`'edit' | 'read' | 'display'`", "`'edit'`", 'See [Modes](#modes) below.']

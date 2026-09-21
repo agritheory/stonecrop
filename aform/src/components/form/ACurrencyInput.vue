@@ -47,7 +47,7 @@
 				</div>
 				<div class="acurrency__field acurrency__field--base-amount">
 					<input
-						:value="modelValue.baseAmount"
+						:value="modelValue?.baseAmount"
 						class="aform_input-field acurrency__base-field"
 						type="number"
 						disabled />
@@ -55,7 +55,7 @@
 				</div>
 				<div class="acurrency__field acurrency__field--exchange-rate">
 					<input
-						:value="modelValue.exchangeRate"
+						:value="modelValue?.exchangeRate"
 						class="aform_input-field acurrency__base-field"
 						type="number"
 						disabled />
@@ -71,6 +71,7 @@
 import { computed, inject, ref, watch } from 'vue'
 
 import type { AFormLinkValue, ComponentProps, CurrencyOptions, CurrencyValue } from '../../types'
+import { numberFromBox } from '../../utils/emptiedBox'
 import AFormLink from './AFormLink.vue'
 
 const {
@@ -99,11 +100,11 @@ const {
 // (or the story/app data behind it) doesn't carry a `symbol`.
 const currencySymbol = (value: AFormLinkValue): string => value.symbol ?? value.displayText ?? String(value.id)
 
-const modelValue = defineModel<CurrencyValue>({
+const modelValue = defineModel<CurrencyValue | null>({
 	default: () => ({
-		amount: 0,
+		amount: null,
 		currency: { id: '' },
-		baseAmount: 0,
+		baseAmount: null,
 		baseCurrency: { id: '' },
 		exchangeRate: 1,
 	}),
@@ -181,25 +182,25 @@ const baseDecimals = computed(() => {
 
 const roundAmount = (value: number): number => Number(value.toFixed(baseDecimals.value))
 
-const recompute = (amount: number, currencyValue: AFormLinkValue) => {
+const recompute = (amount: number | null, currencyValue: AFormLinkValue) => {
 	const exchangeRate = resolveExchangeRate(currencyValue.id)
 	modelValue.value = {
 		amount,
 		currency: currencyValue,
 		exchangeRate,
 		baseCurrency: resolvedBaseCurrency.value,
-		baseAmount: roundAmount(amount * exchangeRate),
+		baseAmount: amount === null ? null : roundAmount(amount * exchangeRate),
 	}
 }
 
 const amount = computed({
-	get: () => modelValue.value?.amount ?? 0,
-	set: (value: number) => recompute(value, modelValue.value?.currency ?? { id: '' }),
+	get: () => modelValue.value?.amount ?? null,
+	set: (value: number | '') => recompute(numberFromBox(value), modelValue.value?.currency ?? { id: '' }),
 })
 
 const currency = computed<AFormLinkValue>({
 	get: () => modelValue.value?.currency ?? { id: '' },
-	set: (value: AFormLinkValue) => recompute(modelValue.value?.amount ?? 0, value),
+	set: (value: AFormLinkValue) => recompute(modelValue.value?.amount ?? null, value),
 })
 
 const amountNavigationKeys = new Set([
@@ -245,7 +246,7 @@ const showBase = computed(() => {
 
 const displayText = computed(() => {
 	const v = modelValue.value
-	if (!v || !v.currency?.id) return '—'
+	if (!v || !v.currency?.id || v.amount === null) return '—'
 	const currencyText = v.currency.displayText ?? String(v.currency.id)
 	const base = `${v.amount} ${currencyText}`
 	if (!showBase.value) return base

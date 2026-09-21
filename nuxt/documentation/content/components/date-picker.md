@@ -87,7 +87,7 @@ const data = ref({ orderDate: '2026-01-15' })
 ---
 headers: ['Name', 'Type', 'Default', 'Description']
 rows:
-  - ['`v-model`', '`string`', '`undefined`', 'The selected day, as `YYYY-MM-DD`. Unset, or not a day, the calendar opens on today.']
+  - ['`v-model`', '`string | null`', '`undefined`', 'The selected day, as `YYYY-MM-DD`. Unset, `null`, or not a day, the calendar opens on today.']
   - ['`label`', '`string`', '—', "Label text. Only rendered in `read`/`display` mode, next to the static value — `edit` mode's calendar grid has no label."]
   - ['`selectRange`', '`boolean`', '`false`', 'When `true`, renders start/end date text inputs above the calendar and switches day selection to range mode. See below.']
   - ['`mode`', "`'edit' | 'read' | 'display'`", "`'edit'`", 'See [Modes](#modes) below.']

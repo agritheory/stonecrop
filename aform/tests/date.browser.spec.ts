@@ -10,14 +10,14 @@ let wrapper: VueWrapper | undefined
 afterEach(() => wrapper?.unmount())
 
 const mountDate = (initial: string) => {
-	const model = ref<string | undefined>(initial)
+	const model = ref<string | null | undefined>(initial)
 	const renderErrors: unknown[] = []
 	const Host = defineComponent({
 		setup: () => () =>
 			h('div', { style: 'position: relative; padding: 40px; width: 300px' }, [
 				h(ADate, {
 					modelValue: model.value,
-					'onUpdate:modelValue': (next: string | undefined) => (model.value = next),
+					'onUpdate:modelValue': (next: string | null | undefined) => (model.value = next),
 					mode: 'edit',
 					uuid: 'date',
 				}),
@@ -37,6 +37,19 @@ describe('date component in a browser', { tags: ['browser'] }, () => {
 		input.focus()
 		await userEvent.keyboard('03')
 
+		await expect
+			.poll(() => ({ model: model.value, renderErrors: renderErrors.map(String) }))
+			.toEqual({ model: '2026-03-10', renderErrors: [] })
+	})
+
+	// Chrome reports a date input with any part missing as `''`, and keeps the parts still typed.
+	it('holds null once a part of its day is cleared, and the day again once it is retyped', async () => {
+		const { input, model, renderErrors } = mountDate('2026-01-10')
+		input.focus()
+		await userEvent.keyboard('{Backspace}')
+		await expect.poll(() => model.value).toBeNull()
+
+		await userEvent.keyboard('03')
 		await expect
 			.poll(() => ({ model: model.value, renderErrors: renderErrors.map(String) }))
 			.toEqual({ model: '2026-03-10', renderErrors: [] })

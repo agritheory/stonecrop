@@ -97,7 +97,7 @@ const data = ref({ created_at: null })
 </template>
 ```
 
-`ADateTime` declares a `v-model` of `string | Date`, so mounting it this way wires `created_at` to the field and no extra listener is needed. Clicking the input opens an `ADateSelection` picker, and the chosen date and time are written back through the model.
+`ADateTime` declares a `v-model` of `string | Date | null`, so mounting it this way wires `created_at` to the field and no extra listener is needed. Clicking the input opens an `ADateSelection` picker, and the chosen date and time are written back through the model.
 
 ## API Reference
 

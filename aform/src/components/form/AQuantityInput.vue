@@ -57,16 +57,20 @@
 			</div>
 			<div class="aquantity__row aquantity__row--stock">
 				<div class="aquantity__field aquantity__field--stock-uom">
-					<input :value="modelValue.stockUom" class="aform_input-field aquantity__stock-field" type="text" disabled />
+					<input :value="modelValue?.stockUom" class="aform_input-field aquantity__stock-field" type="text" disabled />
 					<label class="aform_field-label">{{ stockUomLabel }}</label>
 				</div>
 				<div class="aquantity__field aquantity__field--stock-qty">
-					<input :value="modelValue.stockQty" class="aform_input-field aquantity__stock-field" type="number" disabled />
+					<input
+						:value="modelValue?.stockQty"
+						class="aform_input-field aquantity__stock-field"
+						type="number"
+						disabled />
 					<label class="aform_field-label">{{ stockQtyLabel }}</label>
 				</div>
 				<div class="aquantity__field aquantity__field--conversion">
 					<input
-						:value="modelValue.conversionFactor"
+						:value="modelValue?.conversionFactor"
 						class="aform_input-field aquantity__stock-field"
 						type="number"
 						disabled />
@@ -83,6 +87,7 @@ import { vOnClickOutside } from '@vueuse/components'
 import { computed, reactive } from 'vue'
 
 import type { ComponentProps, QuantityOptions, QuantityValue } from '../../types'
+import { numberFromBox } from '../../utils/emptiedBox'
 
 const {
 	label,
@@ -105,8 +110,8 @@ const {
 	}
 >()
 
-const modelValue = defineModel<QuantityValue>({
-	default: () => ({ qty: 0, uom: '', stockQty: 0, stockUom: '', conversionFactor: 1 }),
+const modelValue = defineModel<QuantityValue | null>({
+	default: () => ({ qty: null, uom: '', stockQty: null, stockUom: '', conversionFactor: 1 }),
 })
 
 const uoms = computed(() => options.uoms ?? [])
@@ -116,36 +121,36 @@ const uoms = computed(() => options.uoms ?? [])
 const roundQty = (value: number): number => Number(value.toFixed(6))
 
 const resolveConversionFactor = (uom: string): number => {
-	const stockUom = options.stockUom ?? modelValue.value.stockUom
+	const stockUom = options.stockUom ?? modelValue.value?.stockUom
 	if (!uom || uom === stockUom) return 1
 	const mapped = options.conversionFactors?.[uom]
 	if (mapped !== undefined) return mapped
 	// UOM absent from the conversion map: keep the stored factor only when the unit is
 	// unchanged (e.g. editing qty on a loaded value, so the factor round-trips). Switching
 	// to a new, unmapped unit resets to 1 rather than silently reusing the previous factor.
-	if (uom === modelValue.value.uom) return modelValue.value.conversionFactor ?? 1
+	if (uom === modelValue.value?.uom) return modelValue.value.conversionFactor ?? 1
 	return 1
 }
 
-const recompute = (qty: number, uom: string) => {
+const recompute = (qty: number | null, uom: string) => {
 	const conversionFactor = resolveConversionFactor(uom)
 	modelValue.value = {
 		qty,
 		uom,
 		conversionFactor,
-		stockUom: options.stockUom ?? modelValue.value.stockUom,
-		stockQty: roundQty(qty * conversionFactor),
+		stockUom: options.stockUom ?? modelValue.value?.stockUom ?? '',
+		stockQty: qty === null ? null : roundQty(qty * conversionFactor),
 	}
 }
 
 const qty = computed({
-	get: () => modelValue.value?.qty ?? 0,
-	set: (value: number) => recompute(value, modelValue.value?.uom ?? ''),
+	get: () => modelValue.value?.qty ?? null,
+	set: (value: number | '') => recompute(numberFromBox(value), modelValue.value?.uom ?? ''),
 })
 
 const uom = computed({
 	get: () => modelValue.value?.uom ?? '',
-	set: (value: string) => recompute(modelValue.value?.qty ?? 0, value),
+	set: (value: string) => recompute(modelValue.value?.qty ?? null, value),
 })
 
 const qtyNavigationKeys = new Set([
@@ -223,7 +228,7 @@ const showStock = computed(() => {
 
 const displayText = computed(() => {
 	const v = modelValue.value
-	if (!v || !v.uom) return '—'
+	if (!v || !v.uom || v.qty === null) return '—'
 	const base = `${v.qty} ${v.uom}`
 	return showStock.value ? `${base} (${v.stockQty} ${v.stockUom})` : base
 })

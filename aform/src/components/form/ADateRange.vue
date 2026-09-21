@@ -50,14 +50,14 @@ export interface DateRangeValue {
 	end_date: string | null
 }
 
-const modelValue = defineModel<DateRangeValue>({
+const modelValue = defineModel<DateRangeValue | null>({
 	default: () => ({ start_date: null, end_date: null }),
 })
 
 const readDay = (day: string | null | undefined) => (day ? (fromISODate(day) ?? null) : null)
 
-const startDate = ref<Temporal.PlainDate | null>(readDay(modelValue.value.start_date))
-const endDate = ref<Temporal.PlainDate | null>(readDay(modelValue.value.end_date))
+const startDate = ref<Temporal.PlainDate | null>(readDay(modelValue.value?.start_date))
+const endDate = ref<Temporal.PlainDate | null>(readDay(modelValue.value?.end_date))
 
 const showPicker = ref(false)
 const pickerRef = ref(null)
@@ -78,8 +78,8 @@ const rangeDisplay = computed(() => {
 })
 
 const displayValue = computed(() => {
-	const s = modelValue.value.start_date
-	const e = modelValue.value.end_date
+	const s = modelValue.value?.start_date
+	const e = modelValue.value?.end_date
 	if (!s && !e) return ''
 	if (s && e) return `${fmt(s)} — ${fmt(e)}`
 	if (s) return `From ${fmt(s)}`
@@ -114,8 +114,8 @@ const handlePickerDate = (data: { selected: string; start?: string | null; end?:
 watch(
 	() => modelValue.value,
 	newVal => {
-		startDate.value = readDay(newVal.start_date)
-		endDate.value = readDay(newVal.end_date)
+		startDate.value = readDay(newVal?.start_date)
+		endDate.value = readDay(newVal?.end_date)
 	},
 	{ deep: true }
 )

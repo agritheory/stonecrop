@@ -100,10 +100,10 @@ describe('date component', { tags: ['component'] }, () => {
 	})
 
 	it('handles date selection from picker', async () => {
-		const emitted: (string | undefined)[] = []
+		const emitted: (string | null | undefined)[] = []
 		const wrapper = mount(ADate, {
 			...globalComponents,
-			props: { 'onUpdate:modelValue': (v: string | undefined) => emitted.push(v) },
+			props: { 'onUpdate:modelValue': (v: string | null | undefined) => emitted.push(v) },
 		})
 		await wrapper.find('input').trigger('click')
 		const picker = wrapper.findComponent(ADateSelection)
@@ -131,16 +131,16 @@ describe('date component', { tags: ['component'] }, () => {
 		expect(wrapper.find('input').element.value).toBe('')
 	})
 
-	it('accepts the input being cleared by hand', async () => {
-		const emitted: (string | undefined)[] = []
+	it('holds null once the input is cleared by hand', async () => {
+		const emitted: (string | null | undefined)[] = []
 		const renderErrors: unknown[] = []
 		const wrapper = mount(ADate, {
 			global: { ...globalComponents.global, config: { errorHandler: error => void renderErrors.push(error) } },
-			props: { modelValue: '2026-01-10', 'onUpdate:modelValue': (v: string | undefined) => emitted.push(v) },
+			props: { modelValue: '2026-01-10', 'onUpdate:modelValue': (v: string | null | undefined) => emitted.push(v) },
 		})
 		await wrapper.find('input').setValue('')
 		expect(renderErrors).toEqual([])
-		expect(emitted).toEqual([''])
+		expect(emitted).toEqual([null])
 	})
 
 	it('opens the calendar on the month of the field value', async () => {
@@ -170,10 +170,10 @@ describe('date component', { tags: ['component'] }, () => {
 		})
 
 		it('saves the day picked in the calendar', async () => {
-			const emitted: (string | undefined)[] = []
+			const emitted: (string | null | undefined)[] = []
 			const wrapper = mount(ADate, {
 				...globalComponents,
-				props: { 'onUpdate:modelValue': (v: string | undefined) => emitted.push(v) },
+				props: { 'onUpdate:modelValue': (v: string | null | undefined) => emitted.push(v) },
 			})
 			await wrapper.find('input').trigger('click')
 			const tenth = wrapper.findAll('td.date-cell').filter(cell => cell.text() === '10')

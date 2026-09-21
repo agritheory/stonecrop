@@ -64,7 +64,7 @@ const {
 
 const errorText = computed(() => (errors?.length ? errors.join('; ') : (validation.errorMessage ?? '')))
 
-const modelValue = defineModel<string | Date>()
+const modelValue = defineModel<string | Date | null>()
 
 /** Now, cut down to the smallest unit the picker shows, so a pick that leaves the time alone saves the time shown. */
 const now = () =>

@@ -78,13 +78,13 @@ import { ACurrencyInput } from '@stonecrop/aform'
 | baseCurrencyLabel | `string \| undefined` | no | `"Base Currency"` |  |
 | baseAmountLabel | `string \| undefined` | no | `"Base Amount"` |  |
 | exchangeRateLabel | `string \| undefined` | no | `"Exchange Rate"` |  |
-| modelValue | `CurrencyValue \| undefined` | no | `{ amount: 0, currency: { id: "" }, baseAmount: 0, baseCurrency: { id: "" }, exchangeRate: 1, }` |  |
+| modelValue | `CurrencyValue \| null \| undefined` | no | `{ amount: null, currency: { id: "" }, baseAmount: null, baseCurrency: { id: "" }, exchangeRate: 1, }` |  |
 
 **Events:**
 
 | Event | Payload | Description |
 |-------|---------|-------------|
-| update:modelValue | `[value: CurrencyValue]` |  |
+| update:modelValue | `[value: CurrencyValue \| null]` |  |
 
 ### ADate
 
@@ -107,13 +107,13 @@ import { ADate } from '@stonecrop/aform'
 | uuid | `string \| undefined` | no |  | Set a unique identifier for elements inside the component |
 | validation | `{ [key: string]: any; errorMessage: string; } \| undefined` | no | `{ errorMessage: "" }` | Validation options for elements inside the component |
 | errors | `string[] \| undefined` | no |  | Inline validation error messages to display on this field. Fed by the host (e.g. mapped from the core validation store) — the renderer stays dumb and just shows what it is given. Takes precedence over the static `validation.errorMessage`. |
-| modelValue | `string \| undefined` | no |  |  |
+| modelValue | `string \| null \| undefined` | no |  |  |
 
 **Events:**
 
 | Event | Payload | Description |
 |-------|---------|-------------|
-| update:modelValue | `[value: string \| undefined]` |  |
+| update:modelValue | `[value: string \| null \| undefined]` |  |
 
 ### ADatePicker
 
@@ -136,13 +136,13 @@ import { ADatePicker } from '@stonecrop/aform'
 | uuid | `string \| undefined` | no |  | Set a unique identifier for elements inside the component |
 | validation | `{ [key: string]: any; errorMessage: string; } \| undefined` | no | `{ errorMessage: "" }` | Validation options for elements inside the component |
 | errors | `string[] \| undefined` | no |  | Inline validation error messages to display on this field. Fed by the host (e.g. mapped from the core validation store) — the renderer stays dumb and just shows what it is given. Takes precedence over the static `validation.errorMessage`. |
-| modelValue | `string \| undefined` | no |  |  |
+| modelValue | `string \| null \| undefined` | no |  |  |
 
 **Events:**
 
 | Event | Payload | Description |
 |-------|---------|-------------|
-| update:modelValue | `[value: string \| undefined]` |  |
+| update:modelValue | `[value: string \| null \| undefined]` |  |
 | get-date | `[{ start: string \| null; end: string \| null; selected: string; }]` |  |
 
 **Exposed:**
@@ -174,13 +174,13 @@ import { ADateRange } from '@stonecrop/aform'
 | uuid | `string \| undefined` | no |  | Set a unique identifier for elements inside the component |
 | validation | `{ [key: string]: any; errorMessage: string; } \| undefined` | no | `{ errorMessage: "" }` | Validation options for elements inside the component |
 | errors | `string[] \| undefined` | no |  | Inline validation error messages to display on this field. Fed by the host (e.g. mapped from the core validation store) — the renderer stays dumb and just shows what it is given. Takes precedence over the static `validation.errorMessage`. |
-| modelValue | `DateRangeValue \| undefined` | no | `{ start_date: null, end_date: null }` |  |
+| modelValue | `DateRangeValue \| null \| undefined` | no | `{ start_date: null, end_date: null }` |  |
 
 **Events:**
 
 | Event | Payload | Description |
 |-------|---------|-------------|
-| update:modelValue | `[value: DateRangeValue]` |  |
+| update:modelValue | `[value: DateRangeValue \| null]` |  |
 
 ### ADateSelection
 
@@ -237,13 +237,13 @@ import { ADateTime } from '@stonecrop/aform'
 | errors | `string[] \| undefined` | no |  | Inline validation error messages to display on this field. Fed by the host (e.g. mapped from the core validation store) — the renderer stays dumb and just shows what it is given. Takes precedence over the static `validation.errorMessage`. |
 | allowMilitaryTime | `boolean \| undefined` | no | `false` |  |
 | useSeconds | `boolean \| undefined` | no | `true` |  |
-| modelValue | `string \| Date \| undefined` | no |  |  |
+| modelValue | `string \| Date \| null \| undefined` | no |  |  |
 
 **Events:**
 
 | Event | Payload | Description |
 |-------|---------|-------------|
-| update:modelValue | `[value: string \| Date \| undefined]` |  |
+| update:modelValue | `[value: string \| Date \| null \| undefined]` |  |
 
 ### ADateTimeInput
 
@@ -481,13 +481,13 @@ import { ANumericInput } from '@stonecrop/aform'
 | uuid | `string \| undefined` | no |  | Set a unique identifier for elements inside the component |
 | validation | `{ [key: string]: any; errorMessage: string; } \| undefined` | no | `{ errorMessage: "" }` | Validation options for elements inside the component |
 | errors | `string[] \| undefined` | no |  | Inline validation error messages to display on this field. Fed by the host (e.g. mapped from the core validation store) — the renderer stays dumb and just shows what it is given. Takes precedence over the static `validation.errorMessage`. |
-| modelValue | `number \| undefined` | no |  |  |
+| modelValue | `number \| null \| undefined` | no |  |  |
 
 **Events:**
 
 | Event | Payload | Description |
 |-------|---------|-------------|
-| update:modelValue | `[value: number \| undefined]` |  |
+| update:modelValue | `[value: number \| null \| undefined]` |  |
 
 ### AQuantityInput
 
@@ -515,13 +515,13 @@ import { AQuantityInput } from '@stonecrop/aform'
 | stockUomLabel | `string \| undefined` | no | `"Stock UOM"` |  |
 | stockQtyLabel | `string \| undefined` | no | `"Stock Qty"` |  |
 | conversionFactorLabel | `string \| undefined` | no | `"Conversion Factor"` |  |
-| modelValue | `QuantityValue \| undefined` | no | `{ qty: 0, uom: "", stockQty: 0, stockUom: "", conversionFactor: 1 }` |  |
+| modelValue | `QuantityValue \| null \| undefined` | no | `{ qty: null, uom: "", stockQty: null, stockUom: "", conversionFactor: 1 }` |  |
 
 **Events:**
 
 | Event | Payload | Description |
 |-------|---------|-------------|
-| update:modelValue | `[value: QuantityValue]` |  |
+| update:modelValue | `[value: QuantityValue \| null]` |  |
 
 ### ASegmentedControl
 
@@ -819,8 +819,8 @@ The value shape for ACurrencyInput — an amount paired with its currency (an `A
 
 ```typescript
 export interface CurrencyValue {
-  amount: number;
-  baseAmount: number;
+  amount: number | null;
+  baseAmount: number | null;
   baseCurrency: AFormLinkValue;
   currency: AFormLinkValue;
   exchangeRate: number;
@@ -831,8 +831,8 @@ export interface CurrencyValue {
 
 | Property | Type | Description |
 |----------|------|-------------|
-| amount | `number` | The entered amount, in `currency` units |
-| baseAmount | `number` | `amount` converted into `baseCurrency` units — `amount * exchangeRate` |
+| amount | `number \| null` | The entered amount, in `currency` units, or null when none is entered |
+| baseAmount | `number \| null` | `amount` converted into `baseCurrency` units (`amount * exchangeRate`), or null when `amount` is |
 | baseCurrency | `AFormLinkValue` | The record's base currency — fixed, not user-editable |
 | currency | `AFormLinkValue` | FK reference to the Currency doctype the user entered `amount` in |
 | exchangeRate | `number` | Multiplier from `currency` to `baseCurrency` — hidden from the UI, drives `baseAmount` |
@@ -868,8 +868,8 @@ The value shape for AQuantityInput — a quantity paired with its unit of measur
 ```typescript
 export interface QuantityValue {
   conversionFactor: number;
-  qty: number;
-  stockQty: number;
+  qty: number | null;
+  stockQty: number | null;
   stockUom: string;
   uom: string;
 }
@@ -880,8 +880,8 @@ export interface QuantityValue {
 | Property | Type | Description |
 |----------|------|-------------|
 | conversionFactor | `number` | Multiplier from `uom` to `stockUom` — hidden from the UI, drives `stockQty` |
-| qty | `number` | The entered quantity, in `uom` units |
-| stockQty | `number` | `qty` converted into `stockUom` units — `qty * conversionFactor` |
+| qty | `number \| null` | The entered quantity, in `uom` units, or null when none is entered |
+| stockQty | `number \| null` | `qty` converted into `stockUom` units (`qty * conversionFactor`), or null when `qty` is |
 | stockUom | `string` | The item's base/stock unit of measure — fixed, not user-editable |
 | uom | `string` | Unit of measure the user entered `qty` in |
 
