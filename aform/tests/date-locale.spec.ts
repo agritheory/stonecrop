@@ -4,6 +4,7 @@ import { nextTick } from 'vue'
 
 import ADatePicker from '../src/components/form/ADatePicker.vue'
 import ADateRange from '../src/components/form/ADateRange.vue'
+import ADateTime from '../src/components/form/ADateTime.vue'
 
 // A browser whose locale is French. Set before any import runs, because the Temporal polyfill keeps the
 // `Intl.DateTimeFormat` it finds when it loads.
@@ -69,5 +70,16 @@ describe('dates in a French browser', { tags: ['component'] }, () => {
 	it('shows a range in the range field as French writes it', () => {
 		const wrapper = mount(ADateRange, { props: { modelValue: { start_date: '2026-02-04', end_date: '2026-02-20' } } })
 		expect(wrapper.find('input').element.value).toBe('04/02/2026 — 20/02/2026')
+	})
+
+	it.each([
+		{ useSeconds: true, text: '20/02/2026 12:34:56' },
+		{ useSeconds: false, text: '20/02/2026 12:34' },
+	])('shows a date and time as French writes it, with seconds only when used: $useSeconds', ({ useSeconds, text }) => {
+		const modelValue = new Date(2026, 1, 20, 12, 34, 56).toISOString()
+		const field = mount(ADateTime, { props: { modelValue, useSeconds } })
+		expect(field.find<HTMLInputElement>('.aform_input-field').element.value).toBe(text)
+		const display = mount(ADateTime, { props: { modelValue, useSeconds, mode: 'display' } })
+		expect(display.find('.aform_display-value').text()).toBe(text)
 	})
 })

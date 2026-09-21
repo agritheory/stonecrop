@@ -66,7 +66,9 @@ const errorText = computed(() => (errors?.length ? errors.join('; ') : (validati
 
 const modelValue = defineModel<string | Date>()
 
-const now = () => Temporal.Now.zonedDateTimeISO()
+/** Now, cut down to the smallest unit the picker shows, so a pick that leaves the time alone saves the time shown. */
+const now = () =>
+	Temporal.Now.zonedDateTimeISO().round({ smallestUnit: useSeconds ? 'second' : 'minute', roundingMode: 'trunc' })
 
 /** The field's moment on the user's clock, or null when the value names no moment. */
 const readMoment = (value: string | Date): Temporal.ZonedDateTime | null => {
@@ -88,10 +90,20 @@ const openPicker = () => {
 	if (mode !== 'read') showPicker.value = true
 }
 
+// A date and time as `toLocaleString` writes one by default, less the seconds.
+const WITHOUT_SECONDS: Intl.DateTimeFormatOptions = {
+	year: 'numeric',
+	month: 'numeric',
+	day: 'numeric',
+	hour: 'numeric',
+	minute: 'numeric',
+}
+
 const displayValue = computed(() => {
 	if (!modelValue.value) return ''
 	// The wall-clock time alone: a `ZonedDateTime`'s own `toLocaleString` also names the zone.
-	return currentDateTime.value?.toPlainDateTime().toLocaleString() ?? 'Invalid Date'
+	const format = useSeconds ? undefined : WITHOUT_SECONDS
+	return currentDateTime.value?.toPlainDateTime().toLocaleString(undefined, format) ?? 'Invalid Date'
 })
 
 const datetimeDisplay = computed(() => displayValue.value)

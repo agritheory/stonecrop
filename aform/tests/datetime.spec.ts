@@ -577,5 +577,31 @@ describe('datetime form field component', { tags: ['component'] }, () => {
 				new Date(2026, 0, 15, 15, 30).toISOString()
 			)
 		})
+
+		// The picker shows seconds only when they are used, and milliseconds never.
+		it.each([
+			{ useSeconds: true, shown: ['12', '34', '56'], savedSecond: 56 },
+			{ useSeconds: false, shown: ['12', '34'], savedSecond: 0 },
+		])(
+			'saves the time its picker shows when only a date is picked on an empty field, seconds used: $useSeconds',
+			async ({ useSeconds, shown, savedSecond }) => {
+				vi.setSystemTime(new Date(2026, 0, 15, 12, 34, 56, 789))
+				const emitted: (string | Date | undefined)[] = []
+				const wrapper = mount(ADateTime, {
+					...formFieldGlobals,
+					props: { useSeconds, 'onUpdate:modelValue': (v: string | Date | undefined) => emitted.push(v) },
+				})
+				await wrapper.find('.aform_input-field').trigger('click')
+				const timeSegments = wrapper
+					.findAllComponents(ADateTimeInput)[0]
+					.findAll<HTMLInputElement>('input[type="text"]')
+				expect(timeSegments.map(segment => segment.element.value)).toEqual(shown)
+
+				const twentieth = wrapper.findAll('td.date-cell').filter(cell => cell.text() === '20')
+				expect(twentieth).toHaveLength(1)
+				await twentieth[0].trigger('click')
+				expect(emitted.at(-1)).toBe(new Date(2026, 0, 20, 12, 34, savedSecond).toISOString())
+			}
+		)
 	})
 })

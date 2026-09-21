@@ -101,7 +101,7 @@ const data = ref({ created_at: null })
 
 ## API Reference
 
-The tables below describe `ADateTimeInput`. `ADateTime` takes the shared `ComponentProps` (`label`, `mode`, `uuid`, and the rest) plus `allowMilitaryTime` and `useSeconds`, which it forwards to the picker.
+The tables below describe `ADateTimeInput`. `ADateTime` takes the shared `ComponentProps` (`label`, `mode`, `uuid`, and the rest) plus `allowMilitaryTime` and `useSeconds`, which it forwards to the picker. With `useSeconds` off, the field's text leaves out seconds too, and a date picked on an empty field saves the time the picker shows, to the minute.
 
 ### Props
 
