@@ -21,6 +21,9 @@
 						:store="store"
 						@row:action="handleRowAction"
 						@row:click="handleRowClick">
+						<template #content="slotProps">
+							<slot name="content" v-bind="slotProps" />
+						</template>
 						<template v-for="(column, colIndex) in getProcessedColumnsForRow(row)" :key="column.name">
 							<component
 								:is="column.ganttComponent || 'AGanttCell'"

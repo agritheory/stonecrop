@@ -247,13 +247,25 @@ if (addNavigation || isListExpansion) {
 	padding-bottom: var(--sc-atable-row-padding);
 }
 
-.atable-expanded-row {
-	border-left: 2px solid var(--sc-row-border-color);
+.expansion-index {
+	border-top: 1px solid var(--sc-row-border-color);
 }
 
 .atable-expanded-content {
+	box-sizing: border-box;
+	width: 100%;
 	border-top: 1px solid var(--sc-row-border-color);
+	border-right: 1px solid var(--sc-row-border-color);
+	border-bottom: 1px solid var(--sc-row-border-color);
+	border-left: 4px solid var(--sc-row-border-color);
 	padding: 1.5rem;
+}
+
+.atable-expanded-content > * {
+	display: block;
+	width: 100%;
+	max-width: 100%;
+	box-sizing: border-box;
 }
 /* sticky cells in modified rows should be a solid color to properly hide non-sticky cells */
 .atable-row:has(td.cell-modified) > td.sticky-column,

@@ -29,6 +29,14 @@
 				:mode="resolvedMode(componentObj)"
 				:errors="errors?.[componentObj.fieldname]"
 				v-bind="componentProps(componentObj)">
+				<template v-if="isListExpansionTable(componentObj)" #content="{ row, rowIndex }">
+					<AForm
+						class="aform-table-expansion"
+						:data="row"
+						:schema="tableExpansionSchema(componentObj)"
+						:mode="resolvedMode(componentObj)"
+						@update:data="val => updateTableRow(componentObj.fieldname, rowIndex, val)" />
+				</template>
 			</component>
 		</template>
 	</form>
@@ -37,8 +45,8 @@
 <script setup lang="ts">
 import { computed, watchEffect, watch, ref } from 'vue'
 
-import type { ResolvedField, ResolvedLink, ResolvedFieldset } from '../types'
-import type { InteractionMode } from '@stonecrop/schema'
+import type { ResolvedField, ResolvedLink, ResolvedFieldset, ResolvedTable } from '../types'
+import type { ColumnSchema, InteractionMode } from '@stonecrop/schema'
 
 const emit = defineEmits(['update:schema', 'update:data'])
 const dataModel = defineModel<Record<string, any>>('data', { required: true })
@@ -85,6 +93,28 @@ const updateNestedData = (fieldname: string, val: any) => {
 	nestedData.value[fieldname] = val
 	if (dataModel.value) {
 		dataModel.value[fieldname] = val
+		emit('update:data', { ...dataModel.value })
+	}
+}
+
+const isListExpansionTable = (componentObj: ResolvedField): componentObj is ResolvedTable =>
+	componentObj.kind === 'table' && componentObj.config?.view === 'list-expansion'
+
+const tableExpansionSchema = (table: ResolvedTable): ResolvedField[] =>
+	table.schema
+		.filter((col): col is ColumnSchema & { component: string } => Boolean(col.component))
+		.map(({ fieldname, component, ...rest }) => ({
+			kind: 'field' as const,
+			fieldname,
+			component,
+			...rest,
+		}))
+
+const updateTableRow = (fieldname: string, rowIndex: number, val: Record<string, unknown>) => {
+	const rows = Array.isArray(dataModel.value?.[fieldname]) ? [...dataModel.value[fieldname]] : []
+	rows[rowIndex] = { ...rows[rowIndex], ...val }
+	if (dataModel.value) {
+		dataModel.value[fieldname] = rows
 		emit('update:data', { ...dataModel.value })
 	}
 }
@@ -314,5 +344,12 @@ p.aform_error {
 .aform-nested-section .aform {
 	border-left-width: 2px;
 	margin-left: 0.5rem;
+}
+
+.aform-table-expansion {
+	margin-bottom: 0;
+	border: none;
+	border-left: none;
+	padding: 0;
 }
 </style>

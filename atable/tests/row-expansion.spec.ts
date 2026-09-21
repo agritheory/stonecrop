@@ -1,9 +1,11 @@
 import { createPinia, setActivePinia } from 'pinia'
 import { describe, it, expect, beforeEach } from 'vitest'
-import { flushPromises, mount } from '@vue/test-utils'
+import { config, flushPromises, mount } from '@vue/test-utils'
 import { h } from 'vue'
 
+import ACell from '../src/components/ACell.vue'
 import ARow from '../src/components/ARow.vue'
+import ATable from '../src/components/ATable.vue'
 import { createTableStore } from '../src/stores/table'
 import type { TableColumn, TableConfig } from '../src/types'
 
@@ -26,6 +28,7 @@ describe('ARow list-expansion (unified)', { tags: ['component'] }, () => {
 
 	beforeEach(() => {
 		setActivePinia(createPinia())
+		config.global.components = { ACell, ARow }
 	})
 
 	it('renders the chevron index collapsed, no expanded row', () => {
@@ -137,6 +140,51 @@ describe('ARow list-expansion (unified)', { tags: ['component'] }, () => {
 		})
 
 		expect(wrapper.find('.scoped-probe').text()).toBe('0:value1')
+	})
+
+	it('paints the chevron cell with a top border like list-index', () => {
+		const store = makeStore()
+		const wrapper = mount(ARow, {
+			props: { rowIndex: 0, store },
+			slots: { default: '<td>x</td>' },
+		})
+
+		expect(getComputedStyle(wrapper.find('.expansion-index').element).borderTopWidth).not.toBe('0px')
+	})
+
+	it('paints the expanded panel with full chrome and width', () => {
+		const store = makeStore()
+		store.toggleRowExpand(0)
+		const wrapper = mount(ARow, {
+			props: { rowIndex: 0, store },
+			slots: { default: '<td>x</td>', content: '<div class="panel-probe">panel</div>' },
+		})
+
+		const panel = wrapper.find('.atable-expanded-content').element
+		const style = getComputedStyle(panel)
+		expect(style.borderTopWidth).not.toBe('0px')
+		expect(style.borderRightWidth).not.toBe('0px')
+		expect(style.borderBottomWidth).not.toBe('0px')
+		expect(style.borderLeftWidth).not.toBe('0px')
+		expect(style.width).toBe('100%')
+	})
+
+	it('forwards #content from ATable into the expanded panel', async () => {
+		const wrapper = mount(ATable, {
+			props: {
+				columns: mockColumns,
+				rows: mockRows,
+				config: { view: 'list-expansion' },
+			},
+			slots: {
+				content: '<div class="atable-content-probe">Nested form</div>',
+			},
+		})
+
+		expect(wrapper.find('.atable-expanded-row').exists()).toBe(false)
+		await wrapper.find('.expansion-index').trigger('click')
+		await flushPromises()
+		expect(wrapper.find('.atable-content-probe').text()).toBe('Nested form')
 	})
 
 	it('toggles expansion on Ctrl+G when the row is focused (keyboard parity)', async () => {

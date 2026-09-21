@@ -1364,6 +1364,7 @@ export interface ValueField {
   cardinality?: 'atMostOne' | 'one' | 'noneOrMany' | 'atLeastOne';
   component: string;
   computed?: boolean;
+  config?: TableViewConfig;
   default?: unknown;
   doctype?: string;
   edit?: boolean;
@@ -1394,6 +1395,7 @@ export interface ValueField {
 | cardinality? | `'atMostOne' \| 'one' \| 'noneOrMany' \| 'atLeastOne'` | Cardinality for Link fields — authoritative value on LinkDeclaration takes precedence |
 | component | `string` | Vue component that renders this field — the primary (and only) rendering axis. Required: there is nothing left to derive it from, and a field without one has nothing to render it. Any string is valid; naming a custom component is how an app renders a field Stonecrop ships no widget for. See `CANONICAL_COMPONENTS` for the set Stonecrop provides. |
 | computed? | `boolean` | True for a computed/display field with no backing DB column — excluded from SQL SELECT. |
+| config? | `TableViewConfig` | View configuration when this link field expands to a table (`ATable`). |
 | default? | `unknown` | Default value for new records |
 | doctype? | `string` | Target doctype slug. Presence is what makes a field a link. How it renders is decided by `component`, not by this: `AFormLink` renders an inline id-picker, while `AForm`/`ATable` expand the target (see `linkRenderMode`). Expansion metadata — backlink, fetch strategy, authoritative cardinality — lives in the doctype's `links` map, which is additive and never required for a plain foreign key. |
 | edit? | `boolean` | Whether the field is editable in table cell context |
@@ -2146,6 +2148,23 @@ export const ValueFieldSchema: z.ZodObject<{
         atLeastOne: "atLeastOne";
     }>>;
     source: z.ZodOptional<z.ZodLiteral<"introspected">>;
+    config: z.ZodOptional<z.ZodObject<{
+        view: z.ZodOptional<z.ZodEnum<{
+            list: "list";
+            uncounted: "uncounted";
+            "list-expansion": "list-expansion";
+            tree: "tree";
+            gantt: "gantt";
+            "tree-gantt": "tree-gantt";
+        }>>;
+        fullWidth: z.ZodOptional<z.ZodBoolean>;
+        defaultTreeExpansion: z.ZodOptional<z.ZodEnum<{
+            root: "root";
+            branch: "branch";
+            leaf: "leaf";
+        }>>;
+        dependencyGraph: z.ZodOptional<z.ZodBoolean>;
+    }, z.core.$strip>>;
 }, z.core.$strip>
 ```
 
