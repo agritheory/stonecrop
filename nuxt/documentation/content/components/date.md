@@ -103,7 +103,7 @@ headers: ['Mode', 'Rendering']
 rows:
   - ['`edit`', "Interactive text input; clicking it opens an inline calendar for date selection."]
   - ['`read`', "Same text input, disabled — the calendar does not open, since disabled inputs don't fire clicks."]
-  - ['`display`', 'Static text showing the date via `toLocaleDateString()`, with the label rendered below it.']
+  - ['`display`', "Static text showing the day in the user's locale format (`Invalid Date` if not a `YYYY-MM-DD` day), with the label rendered below it."]
 ---
 ::
 

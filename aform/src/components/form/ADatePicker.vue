@@ -14,7 +14,7 @@
 						<td id="next-month-btn" :tabindex="-1" @click="nextMonth">&gt;</td>
 					</tr>
 					<tr v-if="selectRange">
-						<td colspan="7">
+						<td colspan="7" class="range-inputs">
 							<div class="date-input">
 								<input
 									ref="start-date-input"
@@ -38,13 +38,7 @@
 						</td>
 					</tr>
 					<tr class="days-header">
-						<td>M</td>
-						<td>T</td>
-						<td>W</td>
-						<td>T</td>
-						<td>F</td>
-						<td>S</td>
-						<td>S</td>
+						<td v-for="(letter, weekdayIndex) in weekdayLetters" :key="weekdayIndex">{{ letter }}</td>
 					</tr>
 					<tr v-for="rowNo in numberOfRows" :key="rowNo">
 						<!-- the 'ref' key is currently only used for test references -->
@@ -84,6 +78,7 @@ import { Temporal } from 'temporal-polyfill'
 import { computed, nextTick, onMounted, ref, useTemplateRef, watch } from 'vue'
 
 import type { ComponentProps } from '../../types'
+import { readTypedDay, writeTypedDay } from '../../utils/typedDay'
 
 const numberOfRows = 6
 const numberOfColumns = 7
@@ -132,22 +127,20 @@ const firstOfMonth = computed(() =>
 // Not a `PlainYearMonth`: its `toLocaleString` throws for the ISO calendar.
 const monthAndYear = computed(() => firstOfMonth.value.toLocaleString(undefined, { year: 'numeric', month: 'long' }))
 
-const getStartDate = computed(() => {
-	return start_date.value != null ? parseDateToString(start_date.value) : ''
-})
+// The grid's first week, so the letters follow its Monday start.
+const weekdayLetters = computed(() =>
+	currentDates.value.slice(0, numberOfColumns).map(day => day.toLocaleString(undefined, { weekday: 'narrow' }))
+)
 
-const getEndDate = computed(() => {
-	return end_date.value != null ? parseDateToString(end_date.value) : ''
-})
+const getStartDate = computed(() => boxText(start_date.value))
+
+const getEndDate = computed(() => boxText(end_date.value))
 
 /*******************
 Functions
 *******************/
 
-const parseDateToString = (dateValue: Temporal.PlainDate | null) => {
-	if (!dateValue) return ''
-	return `${dateValue.month}/${dateValue.day}/${dateValue.year}`
-}
+const boxText = (day: Temporal.PlainDate | null) => (day ? writeTypedDay(day) : '')
 
 const isTodaysDate = (day: Temporal.PlainDate): boolean => {
 	const today = Temporal.Now.plainDateISO()
@@ -266,8 +259,8 @@ const selectDate = (currentIndex: number) => {
 		} else {
 			end_date.value = picked
 		}
-		if (startDateInput.value) startDateInput.value.value = parseDateToString(start_date.value)
-		if (endDateInput.value) endDateInput.value.value = parseDateToString(end_date.value)
+		if (startDateInput.value) startDateInput.value.value = boxText(start_date.value)
+		if (endDateInput.value) endDateInput.value.value = boxText(end_date.value)
 	}
 	emitData()
 }
@@ -278,23 +271,17 @@ const testDateOrder = () => {
 	if (start && end && Temporal.PlainDate.compare(end, start) < 0) [start_date.value, end_date.value] = [end, start]
 }
 
-const readTypedDate = (text: string): Temporal.PlainDate | null => {
-	const typed = new Date(text)
-	if (isNaN(typed.getTime())) return null
-	return Temporal.PlainDate.from({ year: typed.getFullYear(), month: typed.getMonth() + 1, day: typed.getDate() })
-}
-
 const enterInputDate = () => {
 	if (startDateInput.value?.value == '') {
 		start_date.value = null
 	} else if (startDateInput.value) {
-		start_date.value = readTypedDate(startDateInput.value.value)
+		start_date.value = readTypedDay(startDateInput.value.value) ?? null
 	}
 
 	if (endDateInput.value?.value == '') {
 		end_date.value = null
 	} else if (endDateInput.value) {
-		end_date.value = readTypedDate(endDateInput.value.value)
+		end_date.value = readTypedDay(endDateInput.value.value) ?? null
 	}
 
 	if (start_date.value) {
@@ -452,8 +439,14 @@ defineExpose({ currentMonth, currentYear, selectedDate: computed(() => selectedD
 	gap: 5px;
 	align-items: center;
 }
+/* The boxes' row widens the calendar past its 3ch day columns, so each box fits a day such as `04/09/2026`. */
+.adatepicker td.range-inputs {
+	max-width: none;
+}
 .adatepicker .date-input > input {
-	width: 50%;
+	flex: none;
+	width: 11ch;
+	box-sizing: border-box;
 	padding: 2px;
 }
 

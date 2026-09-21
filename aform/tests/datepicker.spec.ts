@@ -234,12 +234,12 @@ describe('datepicker component', { tags: ['component'] }, () => {
 			await wrapper.vm.$nextTick()
 			const startInput = wrapper.find('input[placeholder="start date"]')
 			const endInput = wrapper.find('input[placeholder="end date"]')
-			await startInput.setValue('2026/03/01')
-			await endInput.setValue('2026/03/15')
+			await startInput.setValue('2026-03-01')
+			await endInput.setValue('2026-03-15')
 			await startInput.trigger('blur')
-			const emitted = wrapper.emitted('get-date')
-			expect(emitted).toBeTruthy()
-			expect(emitted![emitted!.length - 1][0]).toHaveProperty('selected')
+			expect(wrapper.emitted('get-date')?.at(-1)).toEqual([
+				{ start: '2026-03-01', end: '2026-03-15', selected: '2026-03-01' },
+			])
 		})
 
 		it('handles enterInputDate with empty start input', async () => {
@@ -260,10 +260,9 @@ describe('datepicker component', { tags: ['component'] }, () => {
 			})
 			await wrapper.vm.$nextTick()
 			const startInput = wrapper.find('input[placeholder="start date"]')
-			await startInput.setValue('2026/03/01')
+			await startInput.setValue('2026-03-01')
 			await startInput.trigger('keydown', { key: 'Enter' })
-			const emitted = wrapper.emitted('get-date')
-			expect(emitted).toBeTruthy()
+			expect(wrapper.emitted('get-date')?.at(-1)?.[0]).toMatchObject({ start: '2026-03-01' })
 		})
 
 		it('handles enterInputDate with empty end input', async () => {
@@ -286,8 +285,7 @@ describe('datepicker component', { tags: ['component'] }, () => {
 			const startInput = wrapper.find('input[placeholder="start date"]')
 			await startInput.setValue('not-a-date')
 			await startInput.trigger('blur')
-			const emitted = wrapper.emitted('get-date')
-			expect(emitted).toBeTruthy()
+			expect(wrapper.emitted('get-date')?.at(-1)?.[0]).toMatchObject({ start: null })
 		})
 
 		it('handles enterInputDate with invalid end date', async () => {
@@ -298,8 +296,7 @@ describe('datepicker component', { tags: ['component'] }, () => {
 			const endInput = wrapper.find('input[placeholder="end date"]')
 			await endInput.setValue('not-a-date')
 			await endInput.trigger('blur')
-			const emitted = wrapper.emitted('get-date')
-			expect(emitted).toBeTruthy()
+			expect(wrapper.emitted('get-date')?.at(-1)?.[0]).toMatchObject({ end: null })
 		})
 
 		it('testDateOrder swaps when end is before start', async () => {
@@ -309,11 +306,10 @@ describe('datepicker component', { tags: ['component'] }, () => {
 			await wrapper.vm.$nextTick()
 			const startInput = wrapper.find('input[placeholder="start date"]')
 			const endInput = wrapper.find('input[placeholder="end date"]')
-			await startInput.setValue('2026/03/15')
-			await endInput.setValue('2026/03/01')
+			await startInput.setValue('2026-03-15')
+			await endInput.setValue('2026-03-01')
 			await startInput.trigger('blur')
-			const emitted = wrapper.emitted('get-date')
-			expect(emitted).toBeTruthy()
+			expect(wrapper.emitted('get-date')?.at(-1)?.[0]).toMatchObject({ start: '2026-03-01', end: '2026-03-15' })
 		})
 
 		it('does not highlight any date as startDate or endDate on initial render', async () => {
@@ -396,6 +392,24 @@ describe('datepicker component', { tags: ['component'] }, () => {
 		it('shows no day when it holds none', () => {
 			const wrapper = mount(ADatePicker, { props: { mode: 'read' } })
 			expect(wrapper.find('.aform_display-value').text()).toBe('')
+		})
+
+		it('reads a day typed as YYYY-MM-DD into a range box as that day', async () => {
+			const wrapper = mount(ADatePicker, { props: { selectRange: true } })
+			await nextTick()
+			const startInput = wrapper.find('input[placeholder="start date"]')
+			await startInput.setValue('2026-02-04')
+			await startInput.trigger('blur')
+			expect(wrapper.emitted('get-date')?.at(-1)).toEqual([{ start: '2026-02-04', end: null, selected: '2026-02-04' }])
+		})
+
+		it('reads no day from a day typed into a range box that does not exist', async () => {
+			const wrapper = mount(ADatePicker, { props: { selectRange: true } })
+			await nextTick()
+			const startInput = wrapper.find('input[placeholder="start date"]')
+			await startInput.setValue('2026-02-30')
+			await startInput.trigger('blur')
+			expect(wrapper.emitted('get-date')?.at(-1)).toEqual([{ start: null, end: null, selected: '2026-01-15' }])
 		})
 	})
 })

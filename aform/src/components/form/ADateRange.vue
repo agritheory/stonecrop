@@ -67,10 +67,7 @@ const openPicker = () => {
 	if (mode !== 'read') showPicker.value = true
 }
 
-const formatDate = (d: Temporal.PlainDate | null): string => {
-	if (!d) return ''
-	return `${d.month}/${d.day}/${d.year}`
-}
+const formatDate = (d: Temporal.PlainDate | null): string => d?.toLocaleString() ?? ''
 
 const rangeDisplay = computed(() => {
 	const s = formatDate(startDate.value)

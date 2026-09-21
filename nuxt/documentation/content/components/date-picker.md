@@ -112,7 +112,7 @@ rows:
 
 ### Range selection
 
-When `selectRange` is `true`, clicking a day sets the range's start date; the next click sets the end date (a click before the current start date replaces the start instead). Hovering a day while a start date is set previews the in-between range with a lighter highlight. The start/end text inputs above the grid can also be typed into directly — an invalid or empty value clears that end of the range on blur or <kbd>Enter</kbd>.
+When `selectRange` is `true`, clicking a day sets the range's start date; the next click sets the end date (a click before the current start date replaces the start instead). Hovering a day while a start date is set previews the in-between range with a lighter highlight. The start/end text inputs above the grid show each picked day as the user's locale writes it in numbers, in Gregorian years and Western digits. They can be typed into in that form or as `YYYY-MM-DD`; any other text, a day that does not exist, or an empty value clears that end of the range on blur or <kbd>Enter</kbd>.
 
 ### Events
 

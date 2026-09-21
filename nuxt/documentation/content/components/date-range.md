@@ -111,7 +111,7 @@ rows:
 ---
 headers: ['Mode', 'Rendering']
 rows:
-  - ['`edit`', 'Read-only-styled text input showing the formatted range; clicking it opens an inline range calendar.']
+  - ['`edit`', "Read-only-styled text input showing the range in the user's locale format; clicking it opens an inline range calendar."]
   - ['`read`', "Same input, disabled — the calendar does not open, since disabled inputs don't fire clicks."]
   - ['`display`', "Static text — `start — end`, `From start` (end unset), or `Until end` (start unset) — with the label."]
 ---
