@@ -1034,11 +1034,12 @@ const handleKeydown = (event: KeyboardEvent) => {
 const visibleActionSetSlots = computed(() =>
 	(actionSetSlots ?? [])
 		.filter(slot => slot.show !== false)
-		.map(slot => ({
-			...slot,
-			icon: slot.icon ? markRaw(slot.icon) : undefined,
-			component: slot.component ? markRaw(slot.component) : undefined,
-		}))
+		.map(slot =>
+			Object.assign({}, slot, {
+				icon: slot.icon ? markRaw(slot.icon) : undefined,
+				component: slot.component ? markRaw(slot.component) : undefined,
+			})
+		)
 )
 
 const actionSetRef = ref<{ closeDrawer: () => void } | null>(null)

@@ -7,7 +7,18 @@ export default createConfigForNuxt({
 	features: { tooling: true },
 	dirs: { src: [] },
 })
-	.prepend({ ignores: ['playground/**', 'fullstack/**', 'test/fixtures/**'] })
+	.prepend({
+		ignores: [
+			'playground/**',
+			'fullstack/**',
+			'test/fixtures/**',
+			// nuxt-module-build emits these beside sources during `build` / `dev:prepare`; lint sources only.
+			'src/runtime/**/*.js',
+			'src/runtime/**/*.d.ts',
+			'src/runtime/**/*.d.vue.ts',
+			'src/runtime/**/*.vue.d.ts',
+		],
+	})
 	.prepend(eslint.configs.recommended)
 	.append({
 		rules: {

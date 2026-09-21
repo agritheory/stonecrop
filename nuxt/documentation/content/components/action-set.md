@@ -112,6 +112,6 @@ rows:
 
 ## Accessibility
 
-Tiles and drawer tabs are plain `<button>` elements with `aria-label` set from slot labels. The drawer uses `role="dialog"`. Preview pane close is a labeled button.
+The tile column uses plain `<button>` elements with `aria-label` from each slot label. The expand control exposes `aria-expanded`. The open drawer is a `role="dialog"` panel with `aria-modal="true"`, traps focus while open, restores focus on close, and closes on Escape. Clicking the active tile again also closes the drawer. Preview pane close is a labeled button.
 
 Source: [`desktop/src/components/ActionSet.vue`](https://github.com/agritheory/stonecrop/blob/development/desktop/src/components/ActionSet.vue)

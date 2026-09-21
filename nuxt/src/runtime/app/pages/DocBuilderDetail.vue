@@ -62,7 +62,6 @@ import { ref, watch, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'nuxt/app'
 import DocBuilderActionsPanel from '../components/DocBuilderActionsPanel.vue'
 import DocBuilderFieldsPanel from '../components/DocBuilderFieldsPanel.vue'
-
 const route = useRoute()
 const router = useRouter()
 const doctypeName = computed(() => route.params.doctype)
@@ -77,7 +76,6 @@ const layout = ref({})
 const validationIssues = ref([])
 const errorCount = computed(() => validationIssues.value.filter(i => i.severity === 'error').length)
 const warningCount = computed(() => validationIssues.value.filter(i => i.severity === 'warning').length)
-
 onMounted(async () => {
 	try {
 		const data = await $fetch(`/api/_stonecrop/docbuilder/${doctypeName.value}`)
@@ -93,15 +91,12 @@ onMounted(async () => {
 		loading.value = false
 	}
 })
-
 const newStateName = ref('Draft')
-
 function seedWorkflow() {
 	const name = newStateName.value.trim()
 	if (!name) return
 	workflowConfig.value = { states: [name], actions: {} }
 }
-
 function revalidate() {
 	const issues = []
 	if (workflowConfig.value) {
@@ -119,9 +114,7 @@ function revalidate() {
 	validationIssues.value = issues
 	if (issues.length > 0) warningsDismissed.value = false
 }
-
 watch(workflowConfig, revalidate, { deep: true })
-
 async function saveToDisk() {
 	if (errorCount.value > 0) return
 	saving.value = true
@@ -144,7 +137,6 @@ async function saveToDisk() {
 		saving.value = false
 	}
 }
-
 const docbuilderActions = computed(() => [
 	{
 		type: 'button',
@@ -160,44 +152,36 @@ const docbuilderActions = computed(() => [
 .docbuilder-desktop {
 	height: 100vh;
 }
-
 .docbuilder-loading {
 	padding: 2rem;
 	text-align: center;
 }
-
 .docbuilder-page {
 	box-sizing: border-box;
 	padding: 2rem;
 }
-
 .builder-workflow {
 	min-height: 8rem;
 	padding: 0.5em 1em;
 }
-
 :deep(.node-editor) {
 	height: 40vh;
 	overflow: hidden;
 	width: 100%;
 }
-
 .empty-workflow {
 	padding: 1rem 0;
 }
-
 .empty-workflow-hint {
 	color: #9ca3af;
 	font-style: italic;
 	margin: 0 0 0.75rem;
 }
-
 .empty-workflow-form {
 	align-items: center;
 	display: flex;
 	gap: 0.5rem;
 }
-
 .empty-workflow-form input {
 	border: 1px solid var(--sc-gray-20, #d1d5db);
 	border-radius: 4px;
@@ -205,7 +189,6 @@ const docbuilderActions = computed(() => [
 	font-size: 0.875rem;
 	padding: 0.4em 0.6em;
 }
-
 .btn-seed {
 	background: var(--sc-blue-40, #3b82f6);
 	border: none;
@@ -216,16 +199,13 @@ const docbuilderActions = computed(() => [
 	font-weight: 500;
 	padding: 0.45em 1em;
 }
-
 .btn-seed:disabled {
 	cursor: not-allowed;
 	opacity: 0.5;
 }
-
 .validation-panel {
 	margin-bottom: 1rem;
 }
-
 .validation-errors {
 	background: #fee2e2;
 	border: 1px solid #ef4444;
@@ -234,7 +214,6 @@ const docbuilderActions = computed(() => [
 	margin-bottom: 0.5rem;
 	padding: 1rem;
 }
-
 .validation-warnings {
 	background: #fef9c3;
 	border: 1px solid #eab308;
@@ -242,7 +221,6 @@ const docbuilderActions = computed(() => [
 	color: #713f12;
 	padding: 1rem;
 }
-
 .dismiss-button {
 	background: none;
 	border: 1px solid;
@@ -252,22 +230,18 @@ const docbuilderActions = computed(() => [
 	margin-left: 1rem;
 	padding: 0.125em 0.5em;
 }
-
 .builder-actions {
 	align-items: center;
 	display: flex;
 	gap: 1rem;
 	padding: 1rem;
 }
-
 .save-message {
 	font-size: 0.875rem;
 }
-
 .save-message.success {
 	color: #065f46;
 }
-
 .save-message.error {
 	color: #991b1b;
 }

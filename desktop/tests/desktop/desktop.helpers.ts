@@ -1,4 +1,4 @@
-import { mount, type VueWrapper } from '@vue/test-utils'
+import type { VueWrapper } from '@vue/test-utils'
 import { List } from 'immutable'
 import { App, nextTick } from 'vue'
 import { vi } from 'vitest'

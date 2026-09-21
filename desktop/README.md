@@ -67,6 +67,8 @@ const { run } = useClientAction()
 |------|------|---------|-------------|
 | `availableDoctypes` | `string[]` | `[]` | Doctype slugs to display in the doctypes list |
 | `routeAdapter` | `RouteAdapter` | none | Custom routing layer (required for Nuxt/custom hosts) |
+| `actionSetSlots` | `ActionSetSlot[]` | `[]` | Host drawer slots shown as tiles in ActionSet |
+| `hostActions` | `ActionElements[]` | none | Custom action list when using the `#default` slot (replaces FSM-derived actions) |
 
 Record identity is not a prop. It is declared per doctype (`primaryKey`, falling back to `id`) and resolved through `Doctype.getRecordId`, so a row's link always matches the key the record is stored under. One shell renders many doctypes, so a single prop could never answer this correctly.
 
@@ -106,7 +108,7 @@ See [api.md](./api.md) for payload type definitions.
 
 ### Event Handling Notes
 
-- **action**: Desktop merges `Doctype.getAvailableTransitions` and `Doctype.getAvailableCommands`, both resolved against `Stonecrop.getRecordState`, into one Actions dropdown. **Desktop never dispatches**: that is the host application's responsibility.
+- **action**: Desktop merges `Doctype.getAvailableTransitions` and `Doctype.getAvailableCommands`, both resolved against `Stonecrop.getRecordState`, into the ActionSet Actions drawer. **Desktop never dispatches**: that is the host application's responsibility.
 - **load-records / load-record**: notifications, not fetch requests. Desktop reads through `Stonecrop.getRecords` / `Stonecrop.getRecord` itself, using the registered `DataClient`; these events announce that read so a host can hang analytics off it. A host that fetches here races Desktop's own read into the same HST key. `load-record` is not emitted for a draft, which has nothing to fetch.
 
 ## Router Adapter

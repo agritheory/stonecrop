@@ -30,7 +30,6 @@
 import { Desktop } from '@stonecrop/desktop'
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'nuxt/app'
-
 const router = useRouter()
 const routeAdapter = useDocBuilderRouteAdapter()
 const doctypes = ref([])
@@ -99,43 +98,36 @@ const indexActions = computed(() => [{ type: 'button', label: 'Home', action: ()
 .docbuilder-desktop {
 	height: 100vh;
 }
-
 .docbuilder-index-inner {
 	margin: 0 auto;
 	max-width: 1200px;
 	padding: 2rem;
 }
-
 .docbuilder-header {
 	padding: 2rem 0 3rem;
 	text-align: center;
 }
-
 .docbuilder-header h1 {
 	font-size: 2.5rem;
 	font-weight: 700;
 	margin: 0 0 1rem;
 }
-
 .subtitle {
 	color: #6b7280;
 	font-size: 1.125rem;
 	margin: 0;
 }
-
 .empty,
 .loading {
 	color: #6b7280;
 	padding: 2rem;
 	text-align: center;
 }
-
 .docbuilder-create {
 	display: flex;
 	gap: 0.5rem;
 	margin-bottom: 1rem;
 }
-
 .docbuilder-create input {
 	border: 1px solid var(--sc-gray-20, #d1d5db);
 	border-radius: 4px;
@@ -143,7 +135,6 @@ const indexActions = computed(() => [{ type: 'button', label: 'Home', action: ()
 	font: inherit;
 	padding: 0.5em 0.75em;
 }
-
 .btn-create {
 	background: var(--sc-blue-40, #3b82f6);
 	border: none;
@@ -154,12 +145,10 @@ const indexActions = computed(() => [{ type: 'button', label: 'Home', action: ()
 	padding: 0.5em 1.25em;
 	white-space: nowrap;
 }
-
 .btn-create:disabled {
 	cursor: not-allowed;
 	opacity: 0.5;
 }
-
 .create-error {
 	color: #b91c1c;
 	font-size: 0.875rem;

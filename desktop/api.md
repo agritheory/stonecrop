@@ -28,6 +28,12 @@ import { ActionSet } from '@stonecrop/desktop'
 | drawerChange | `[open: boolean]` |  |
 | search | `[]` |  |
 
+**Exposed:**
+
+| Name | Type |
+|------|------|
+| closeDrawer | `() => void` |
+
 ### CommandPalette
 
 Vue component exported from @stonecrop/desktop.

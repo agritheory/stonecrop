@@ -17,6 +17,9 @@ emits: {
   search: []
 }
 slots: {}
+exposed: {
+  closeDrawer: () => void
+}
 ```
 
 ### CommandPalette

@@ -38,7 +38,20 @@ pnpm install --force
 
 Flags go before the task name in a `vp run`. Anything after it is passed to the task itself, so `vp run -r build --no-cache` runs `vite build --no-cache`, which clears every `dist` and then fails.
 
-Always build through `pnpm run build`, never `vp run -r build` directly. `dev:prepare` leaves `nuxt/dist/runtime` as a symlink into `nuxt/src/runtime`, and a warm cache replays real files through it, overwriting tracked sources with generated output. `pnpm run build` removes that symlink first; a bare `vp run` does not, and the damage looks like an unexplained diff across several `.vue` files.
+Always build through `pnpm run build`, never `vp run -r build` directly.
+
+## Pre-commit hooks
+
+`pnpm install` runs `vp config`, which installs the Vite+ hook dispatcher from `.vite-hooks/`. On every commit the hook runs, in order:
+
+1. `node --run format` — formats the whole tree (not just staged files), then stages the result
+2. `node --run check:deps` — dependency range check
+3. `node --run build` — full workspace build; stages regenerated `nuxt/documentation/content/reference/`
+4. `node --run lint` — oxlint after declarations exist
+
+Each step prints `ok` or dumps its log on failure. CI sets `VP_GIT_HOOKS=0` so automated commits skip the dispatcher; locally, set the same variable to commit without running the hook.
+
+To reinstall or inspect hooks: `pnpm exec vp hooks enable` and `pnpm exec vp hooks status`. `dev:prepare` leaves `nuxt/dist/runtime` as a symlink into `nuxt/src/runtime`, and a warm cache replays real files through it, overwriting tracked sources with generated output. `pnpm run build` removes that symlink first; a bare `vp run` does not, and the damage looks like an unexplained diff across several `.vue` files.
 
 ## Changesets
 
