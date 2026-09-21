@@ -570,8 +570,10 @@ The CLI will detect that you're in a Nuxt project and prompt for features:
 
 ? Select features to install
   ◉ @stonecrop/nuxt - Frontend module
+  ◯ @stonecrop/graphql-client - GraphQL client
   ◯ @stonecrop/nuxt-grafserv - GraphQL server
   ◯ @stonecrop/casl-middleware - Authorization
+  ◯ @stonecrop/rockfoil - PostGraphile middleware
   ◉ Sample doctypes
 ```
 

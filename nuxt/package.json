@@ -114,6 +114,7 @@
 		"nuxt": "catalog:",
 		"nuxt-graphql-middleware": "^5.4.0",
 		"postgraphile": "catalog:",
+		"temporal-polyfill": "catalog:",
 		"typescript": "catalog:",
 		"typescript-eslint": "^8.62.1",
 		"vite": "catalog:",

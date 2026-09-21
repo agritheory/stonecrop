@@ -39,8 +39,10 @@ export async function installGrafserv(options: GrafservInstallerOptions): Promis
 		await addDependencies(cwd, {
 			'@stonecrop/nuxt-grafserv': 'latest',
 			'@stonecrop/graphql-middleware': 'latest',
+			'@stonecrop/schema': 'latest',
 			graphql: '^16.11.0',
 			grafast: '^1.0.1',
+			'temporal-polyfill': '^1.0.5',
 		})
 
 		// Update nuxt.config.ts

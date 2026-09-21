@@ -22,6 +22,7 @@ import { constant, lambda, loadOne, object } from 'grafast'
 import { getMeta, getAllMeta, applyGuardedTransition } from '@stonecrop/graphql-middleware'
 import { getRecordIdField } from '@stonecrop/schema'
 import type { DoctypeMeta } from '@stonecrop/schema'
+import { Temporal } from 'temporal-polyfill'
 import { projects, tasks, type Project, type Task } from './data'
 
 // ============================================================
@@ -165,9 +166,9 @@ export const actionHandlers: Record<string, Record<string, ActionHandler>> = {
 			const task = recordId != null ? tasks.get(recordId) : undefined
 			if (!task) throw new Error(`Task ${recordId ?? '(none)'} not found`)
 
-			const from = task.dueDate ? new Date(task.dueDate) : new Date()
-			from.setDate(from.getDate() + 7)
-			const updated: Task = { ...task, dueDate: from.toISOString().slice(0, 10) }
+			// A task with no due date is snoozed from the server's today.
+			const from = task.dueDate ? Temporal.PlainDate.from(task.dueDate) : Temporal.Now.plainDateISO()
+			const updated: Task = { ...task, dueDate: from.add({ weeks: 1 }).toString() }
 			tasks.set(task.id, updated)
 			return Promise.resolve(updated)
 		},
