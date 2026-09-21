@@ -356,12 +356,12 @@ function bool(v) {
 .fields-panel :deep(input.locked),
 .fields-panel :deep(select.locked) {
 	background: var(--sc-gray-10, #f3f4f6);
-	color: #6b7280;
+	color: var(--sc-header-text-color);
 	cursor: not-allowed;
 }
 .fields-panel :deep(input.json-invalid) {
-	background: #fef2f2;
-	border-color: #f87171;
+	background: color-mix(in srgb, var(--sc-brand-danger) 8%, white);
+	border-color: var(--sc-brand-danger);
 }
 .center {
 	text-align: center;
@@ -410,7 +410,7 @@ function bool(v) {
 	padding: 0 1rem 0.75rem;
 }
 .locked-note {
-	color: #6b7280;
+	color: var(--sc-header-text-color);
 	font-size: 0.75rem;
 	font-style: italic;
 }
@@ -418,14 +418,14 @@ function bool(v) {
 	background: none;
 	border: 1px dashed var(--sc-gray-20, #d1d5db);
 	border-radius: var(--sc-border-radius);
-	color: var(--sc-blue-40, #2563eb);
+	color: var(--sc-primary-color);
 	cursor: pointer;
 	font-size: 0.875rem;
 	margin-top: 0.5rem;
 	padding: 0.4em 1em;
 }
 .fields-empty {
-	color: #9ca3af;
+	color: var(--sc-header-text-color);
 	font-style: italic;
 	padding: 1rem 0;
 }

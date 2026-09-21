@@ -195,7 +195,7 @@ function onRemoveRow(row) {
 	width: 100%;
 }
 .actions-panel :deep(input[type='text']:focus) {
-	border-color: var(--sc-blue-40, #3b82f6);
+	border-color: var(--sc-input-active-border-color);
 	outline: none;
 }
 .cell-readonly {
@@ -226,7 +226,7 @@ function onRemoveRow(row) {
 	color: #166534;
 }
 .actions-empty {
-	color: #9ca3af;
+	color: var(--sc-header-text-color);
 	font-style: italic;
 	padding: 1rem 0;
 	text-align: center;
@@ -237,10 +237,10 @@ function onRemoveRow(row) {
 	padding: 0.75rem 0 0.25rem;
 }
 .add-row {
-	background: var(--sc-blue-40, #3b82f6);
+	background: var(--sc-primary-color);
 	border: none;
 	border-radius: var(--sc-border-radius);
-	color: #fff;
+	color: var(--sc-primary-text-color);
 	cursor: pointer;
 	font-size: 0.8125rem;
 	font-weight: 500;

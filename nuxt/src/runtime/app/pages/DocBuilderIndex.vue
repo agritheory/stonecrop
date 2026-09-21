@@ -12,7 +12,7 @@
 					placeholder="New doctype name (e.g. Invoice)"
 					:disabled="creating"
 					@keyup.enter="createDoctype" />
-				<button type="button" class="btn-create" :disabled="creating || !newName.trim()" @click="createDoctype">
+				<button type="button" class="btn-primary" :disabled="creating || !newName.trim()" @click="createDoctype">
 					{{ creating ? 'Creating\u2026' : '+ New DocType' }}
 				</button>
 			</div>
@@ -21,17 +21,17 @@
 				<div v-if="loading" class="loading">Loading doctypes...</div>
 				<p v-else-if="!doctypes.length" class="empty">No doctypes yet — create one above.</p>
 				<ATable v-else :columns="columns" :rows="doctypes" :config="config" @row:click="handleRowClick" />
+				<DocBuilderHostActions :elements="indexActions" @action-click="handleAction" />
 			</ClientOnly>
 		</div>
-
-		<ActionSet :elements="indexActions" @action-click="handleAction" />
 	</div>
 </template>
 
 <script setup>
-import { ActionSet } from '@stonecrop/desktop'
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'nuxt/app'
+import DocBuilderHostActions from '../components/DocBuilderHostActions.vue'
+
 const router = useRouter()
 const doctypes = ref([])
 const loading = ref(true)
@@ -119,13 +119,13 @@ function handleAction(_label, action) {
 	margin: 0 0 1rem;
 }
 .subtitle {
-	color: #6b7280;
+	color: var(--sc-header-text-color);
 	font-size: 1.125rem;
 	margin: 0;
 }
 .empty,
 .loading {
-	color: #6b7280;
+	color: var(--sc-header-text-color);
 	padding: 2rem;
 	text-align: center;
 }
@@ -135,28 +135,28 @@ function handleAction(_label, action) {
 	margin-bottom: 1rem;
 }
 .docbuilder-create input {
-	border: 1px solid var(--sc-gray-20, #d1d5db);
+	border: 1px solid var(--sc-input-border-color);
 	border-radius: var(--sc-border-radius);
 	flex: 1;
 	font: inherit;
 	padding: 0.5em 0.75em;
 }
-.btn-create {
-	background: var(--sc-blue-40, #3b82f6);
+.btn-primary {
+	background: var(--sc-primary-color);
 	border: none;
 	border-radius: var(--sc-border-radius);
-	color: #fff;
+	color: var(--sc-primary-text-color);
 	cursor: pointer;
 	font-weight: 500;
 	padding: 0.5em 1.25em;
 	white-space: nowrap;
 }
-.btn-create:disabled {
+.btn-primary:disabled {
 	cursor: not-allowed;
 	opacity: 0.5;
 }
 .create-error {
-	color: #b91c1c;
+	color: var(--sc-brand-danger);
 	font-size: 0.875rem;
 	margin: -0.5rem 0 1rem;
 }

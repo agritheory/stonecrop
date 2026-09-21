@@ -353,9 +353,36 @@ const emitElements = () => {
 	border: 1px solid var(--sc-form-border);
 }
 
+.vue-flow__node-default,
+.vue-flow__node-input,
+.vue-flow__node-output {
+	border-radius: 0;
+	border: 1px solid var(--sc-form-border);
+	border-left-width: 4px;
+	background-color: var(--sc-form-background);
+	color: var(--sc-cell-text-color);
+}
+
+.vue-flow__node-default.selected,
+.vue-flow__node-default.selected:hover,
+.vue-flow__node-default:focus,
+.vue-flow__node-default:focus-visible,
+.vue-flow__node-input.selected,
+.vue-flow__node-input.selected:hover,
+.vue-flow__node-input:focus,
+.vue-flow__node-input:focus-visible,
+.vue-flow__node-output.selected,
+.vue-flow__node-output.selected:hover,
+.vue-flow__node-output:focus,
+.vue-flow__node-output:focus-visible {
+	border: 1px solid var(--sc-input-active-border-color);
+	border-left-width: 4px;
+}
+
 .default-input-node.vue-flow__node-input,
 .default-output-node.vue-flow__node-output {
 	border-color: var(--sc-gray-80);
+	border-left-color: var(--sc-gray-80);
 }
 
 .default-input-node.vue-flow__node-input .vue-flow__handle,
