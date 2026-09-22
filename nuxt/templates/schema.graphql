@@ -33,6 +33,8 @@ type StonecropField {
 	default: JSON
 	validation: JSON
 	cardinality: String
+	resolveCurrencyMeta: String
+	resolveItemUomMeta: String
 	source: String
 }
 
