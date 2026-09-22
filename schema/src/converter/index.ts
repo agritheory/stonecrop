@@ -243,5 +243,18 @@ export type { GenerationPlanEntry, GenerationPlanOptions } from './aggregate'
 export { mergeIntrospectedDoctype, formatDoctypeDrift } from './merge'
 export type { AuthoredDoctype, DoctypeDrift, MergeOptions, MergeResult } from './merge'
 
+// FSM — map Orpin state machines onto WorkflowMeta
+export {
+	FSM_GRAPHQL_TYPE_NAMES,
+	fromStonecropBridge,
+	fromMachineConfig,
+	machineToWorkflow,
+	machinesFromCatalog,
+	attachWorkflows,
+	fetchWorkflowMachines,
+	compareWorkflowStructure,
+} from './fsm'
+export type { StateMachineConfig, StateMachineCatalogNode, StonecropBridgeWorkflow, MachineConfigJson } from './fsm'
+
 // Naming utilities
 export { toSlug, toPascalCase, pascalToSnake, snakeToCamel, camelToSnake, snakeToLabel, camelToLabel } from '../naming'

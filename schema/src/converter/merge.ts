@@ -14,9 +14,11 @@
  * @packageDocumentation
  */
 
+import type { WorkflowMeta } from '../doctype'
 import { INTROSPECTED_IDENTITY_PROPS } from '../field'
 import { authoredPrimaryKey, flattenAuthored, isAuthoredRecord } from './authored'
 import type { AuthoredDoctype } from './authored'
+import { compareWorkflowStructure } from './fsm'
 import type { ConvertedGraphQLDoctype } from './types'
 
 export type { AuthoredDoctype }
@@ -49,6 +51,8 @@ export interface DoctypeDrift {
 	requiredDrift: string[]
 	/** Identity properties that differ. These are the ones a human must adjudicate. */
 	identityDrift: string[]
+	/** Workflow structure disagreements between authored and generated FSM mapping. */
+	workflowDrift: string[]
 }
 
 /**
@@ -120,6 +124,7 @@ export function mergeIntrospectedDoctype(
 		componentDrift: [],
 		requiredDrift: [],
 		identityDrift: [],
+		workflowDrift: [],
 	}
 
 	const tag = (field: AuthoredDoctype): AuthoredDoctype => {
@@ -161,7 +166,18 @@ export function mergeIntrospectedDoctype(
 		return { ...field, source: 'introspected' }
 	}
 
-	const merged: AuthoredDoctype = { ...authored, fields: authoredFields.map(tag) }
+	let merged: AuthoredDoctype = { ...authored, fields: authoredFields.map(tag) }
+
+	if (!options.subset) {
+		const authoredWorkflow = isAuthoredRecord(authored.workflow) ? (authored.workflow as WorkflowMeta) : undefined
+		const generatedWorkflow = generated.workflow
+
+		if (!authoredWorkflow && generatedWorkflow) {
+			merged = { ...merged, workflow: generatedWorkflow }
+		} else if (authoredWorkflow && generatedWorkflow) {
+			drift.workflowDrift.push(...compareWorkflowStructure(authoredWorkflow, generatedWorkflow))
+		}
+	}
 
 	// A curated subset omits columns by definition, so the bucket that reports omissions has
 	// nothing true to say about one.
@@ -202,6 +218,7 @@ export function formatDoctypeDrift(drift: DoctypeDrift): string[] {
 		if (entries.length) lines.push(`  ${drift.doctype}: ${label} ${entries.join('; ')}`)
 	}
 	bucket('identity drift', drift.identityDrift)
+	bucket('workflow drift', drift.workflowDrift)
 	bucket('component drift', drift.componentDrift)
 	bucket('required drift', drift.requiredDrift)
 	bucket('authored fields with no schema field:', drift.orphan)
