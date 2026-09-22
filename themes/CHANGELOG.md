@@ -1,5 +1,11 @@
 # Change Log - @stonecrop/themes
 
+## 0.34.0
+
+### Minor Changes
+
+- e9c340f: The default stylesheet adds `--sc-action-set-drawer-width` and `--sc-action-set-offset-top`, which size the ActionSet drawer and place its tile column.
+
 ## 0.33.0
 
 ## 0.32.0
