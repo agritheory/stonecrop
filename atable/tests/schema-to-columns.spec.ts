@@ -235,6 +235,24 @@ describe('schemaToColumns', { tags: ['component'] }, () => {
 		})
 	})
 
+	describe('Semver field handling', () => {
+		it('adds a formatSemver function for semver fields without an explicit format', () => {
+			const schema: ColumnSchema[] = [{ fieldname: 'version', component: 'ASemverInput', label: 'Version' }]
+			const columns = schemaToColumns(schema)
+			expect(typeof columns[0].format).toBe('function')
+			expect((columns[0].format as Function)({ raw: '1.2.3', major: 1, minor: 2, patch: 3 })).toBe('1.2.3')
+			expect((columns[0].format as Function)(null)).toBe('')
+		})
+
+		it('does not override an explicit format on a semver field', () => {
+			const schema: ColumnSchema[] = [
+				{ fieldname: 'version', component: 'ASemverInput', label: 'Version', format: '(v) => v.raw' },
+			]
+			const columns = schemaToColumns(schema)
+			expect(columns[0].format).toBe('(v) => v.raw')
+		})
+	})
+
 	it('preserves field order', () => {
 		const schema: ColumnSchema[] = [
 			{ fieldname: 'z', component: 'ATextInput', label: 'Z' },

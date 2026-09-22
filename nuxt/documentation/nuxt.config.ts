@@ -1,9 +1,8 @@
 // @stonecrop/nuxt documentation site
 // Nuxt + @nuxt/content proof-of-migration app (ported from the VitePress site in docs/)
-import { readdirSync } from 'node:fs'
 import { createRequire } from 'node:module'
-import { join, relative, sep } from 'node:path'
-import { fileURLToPath } from 'node:url'
+
+import { contentRoutes, indexTrailingSlashRouteRules } from './content-routes'
 
 // @nuxtjs/mdc's remark/rehype pipeline (behind @nuxt/content) depends on a chain of small CJS
 // utilities — remark-gfm, remark-emoji, remark-mdc, remark-rehype, rehype-raw, parse5,
@@ -36,29 +35,6 @@ const mdcTransitiveDeps = [
 	'extend',
 ]
 const mdcDepAliases = Object.fromEntries(mdcTransitiveDeps.map(name => [name, mdcRequire.resolve(name)]))
-
-// Prerendering is otherwise driven entirely by link crawling, so a page nothing links to never
-// reaches the static output and resolves only through the client-side fallback: a direct hit or a
-// search result lands on a 404 from the CDN. Enumerating the collection is what makes the built
-// site independent of whether the sidebar happens to mention a page.
-const contentRoot = fileURLToPath(new URL('./content', import.meta.url))
-
-function contentRoutes(directory: string = contentRoot): string[] {
-	return readdirSync(directory, { withFileTypes: true }).flatMap(entry => {
-		const fullPath = join(directory, entry.name)
-		if (entry.isDirectory()) {
-			return contentRoutes(fullPath)
-		}
-		if (!entry.name.endsWith('.md')) {
-			return []
-		}
-		const slug = relative(contentRoot, fullPath).slice(0, -'.md'.length).split(sep).join('/')
-		// The trailing slash on a directory index is load-bearing: content pages link to siblings
-		// as `./name`, which resolves against the parent when the current URL lacks one, turning
-		// every such link into a 404 at prerender time.
-		return [`/${slug.replace(/(^|\/)index$/, '$1')}`]
-	})
-}
 
 export default defineNuxtConfig({
 	compatibilityDate: '2026-01-01',
@@ -131,15 +107,17 @@ export default defineNuxtConfig({
 		prerender: {
 			routes: contentRoutes(),
 		},
+		routeRules: indexTrailingSlashRouteRules(),
 	},
 
-	// Without this, Vite's dependency pre-bundling doesn't dedupe @stonecrop/aform's own
-	// `vue` resolution against Nuxt's, producing a duplicate-module bundle and a client-side
-	// crash ("Identifier 'h' has already been declared") that silently breaks all hydration —
-	// demos never mount and DemoPanel's own toggle button stops working too. Mirrors the same
-	// workaround already in nuxt/fullstack/nuxt.config.ts and nuxt/playground/nuxt.config.ts.
+	// Without optimizeDeps.include, Vite's pre-bundling doesn't dedupe @stonecrop/*'s own `vue`
+	// resolution against Nuxt's, producing a duplicate-module bundle and a client-side crash that
+	// silently breaks all hydration — demos never mount. Vite keys its optimize cache on dep
+	// version, not dist content, so rebuilding a workspace package would leave the server on a
+	// stale pre-bundle (e.g. ASemverInput missing). Force a fresh re-optimize each dev start.
 	vite: {
 		optimizeDeps: {
+			force: true,
 			include: [
 				'pinia',
 				'@stonecrop/aform',

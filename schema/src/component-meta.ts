@@ -21,6 +21,7 @@ export type ComponentCategory =
 	| 'attach'
 	| 'quantity'
 	| 'currency'
+	| 'semver'
 
 /**
  * Canonical component → semantic category. Only the components Stonecrop ships with appear here;
@@ -45,6 +46,7 @@ export const COMPONENT_CATEGORY: Record<string, ComponentCategory> = {
 	AFileAttach: 'attach',
 	AQuantityInput: 'quantity',
 	ACurrencyInput: 'currency',
+	ASemverInput: 'semver',
 }
 
 /**

@@ -563,6 +563,35 @@ import { ASegmentedControl } from '@stonecrop/aform'
 |-------|---------|-------------|
 | update:modelValue | `[value: string \| string[]]` |  |
 
+### ASemverInput
+
+Vue component exported from @stonecrop/aform.
+
+```typescript
+import { ASemverInput } from '@stonecrop/aform'
+```
+
+**Props:**
+
+| Prop | Type | Required | Default | Description |
+|------|------|----------|---------|-------------|
+| schema | `ResolvedField \| undefined` | no |  | The schema object to pass to the component |
+| label | `string \| undefined` | no |  | The label to display in the component |
+| selectRange | `boolean \| undefined` | no |  |  |
+| mask | `string \| undefined` | no |  | The mask to apply to inputs inside the component. Accepts either a plain mask string (e.g. `"(###) ###-####"`) or a stringified arrow function that receives `locale` and returns a mask string (e.g. `"(locale) => locale === 'en-US' ? '(###) ###-####' : '####-######'"`). |
+| required | `boolean \| undefined` | no |  | Indicate whether input is required for text and/or select elements inside the component |
+| mode | `InteractionMode \| undefined` | no |  | The rendering mode for the component |
+| uuid | `string \| undefined` | no |  | Set a unique identifier for elements inside the component |
+| validation | `{ [key: string]: any; errorMessage: string; } \| undefined` | no | `{ errorMessage: "" }` | Validation options for elements inside the component |
+| errors | `string[] \| undefined` | no |  | Inline validation error messages to display on this field. Fed by the host (e.g. mapped from the core validation store) — the renderer stays dumb and just shows what it is given. Takes precedence over the static `validation.errorMessage`. |
+| modelValue | `SemverValue \| undefined` | no | `emptySemverValue()` |  |
+
+**Events:**
+
+| Event | Payload | Description |
+|-------|---------|-------------|
+| update:modelValue | `[value: SemverValue]` |  |
+
 ### ATextboxInput
 
 Vue component exported from @stonecrop/aform.
@@ -1005,6 +1034,30 @@ export interface ResolvedTable {
 | sourceKey? | `string` | When this changes, ATable refetches from offset 0. |
 | validation? | `FieldValidation` | Preserved from the original ValueField or TableField |
 
+### SemverValue
+
+The value shape for ASemverInput — a version string plus derived major/minor/patch parts. Prerelease and build metadata live only in `raw`.
+
+**Definition:**
+
+```typescript
+export interface SemverValue {
+  major: number;
+  minor: number;
+  patch: number;
+  raw: string;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| major | `number` | Parsed major version |
+| minor | `number` | Parsed minor version — `0` when omitted from `raw` |
+| patch | `number` | Parsed patch version — `0` when omitted from `raw` |
+| raw | `string` | The entered version string, including optional `v`, prerelease, and build metadata |
+
 ## Type Aliases
 
 ### AFormLinkModelValue
@@ -1243,6 +1296,14 @@ export const AQuantityInput: typeof __VLS_export
 
 ```typescript
 export const ASegmentedControl: typeof __VLS_export
+```
+
+### ASemverInput
+
+**Type:**
+
+```typescript
+export const ASemverInput: typeof __VLS_export
 ```
 
 ### ATextboxInput

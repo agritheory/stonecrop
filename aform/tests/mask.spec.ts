@@ -92,6 +92,22 @@ describe('useStringMask', { tags: ['component'] }, () => {
 		})
 	})
 
+	describe('semver named mask', () => {
+		it('filters to semver-safe characters without placeholders', () => {
+			const el = createMockInput('1.2.3-pre+b ok@')
+			useStringMask(el, createBinding('semver'))
+
+			expect(el.value).toBe('1.2.3-pre+bok')
+		})
+
+		it('leaves the # token mask path unchanged', () => {
+			const el = createMockInput('5551234567')
+			useStringMask(el, createBinding('(###) ### - ####'))
+
+			expect(el.value).toBe('(555) 123 - 4567')
+		})
+	})
+
 	describe('maskFilled tracking', () => {
 		it('sets maskFilled to true when mask is completely filled', () => {
 			// Note: the source checks `binding.instance?.['maskFilled']` as truthy, so

@@ -1,6 +1,7 @@
 import type { DirectiveBinding } from 'vue'
 
 import { deserializeFunction } from '../utils/deserialize'
+import { filterSemverMaskInput, SEMVER_MASK } from '../utils/semver'
 
 /**
  * Extracts a mask function from a stringified function
@@ -95,6 +96,11 @@ function fillMask(input: string, mask: string, maskToken?: string) {
 export function useStringMask(el: HTMLInputElement, binding: DirectiveBinding<string>) {
 	const mask = getMask(binding)
 	if (!mask) return
+
+	if (mask === SEMVER_MASK) {
+		el.value = filterSemverMaskInput(el.value)
+		return
+	}
 
 	const maskToken = '#'
 	const inputText = el.value

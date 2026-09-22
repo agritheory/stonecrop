@@ -331,3 +331,19 @@ export interface CurrencyOptions {
 	/** Whether `filterFunction` results should show a loading state — see AFormLink's `isAsync` */
 	isAsync?: boolean
 }
+
+/**
+ * The value shape for ASemverInput — a version string plus derived major/minor/patch parts.
+ * Prerelease and build metadata live only in `raw`.
+ * @public
+ */
+export interface SemverValue {
+	/** The entered version string, including optional `v`, prerelease, and build metadata */
+	raw: string
+	/** Parsed major version */
+	major: number
+	/** Parsed minor version — `0` when omitted from `raw` */
+	minor: number
+	/** Parsed patch version — `0` when omitted from `raw` */
+	patch: number
+}

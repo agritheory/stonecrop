@@ -13,7 +13,7 @@
  */
 
 import { spawn } from 'node:child_process'
-import { lstatSync, mkdirSync, rmSync, writeFileSync } from 'node:fs'
+import { lstatSync, mkdirSync, rmSync, unlinkSync, writeFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -91,8 +91,20 @@ const dim = text => paint('2', text)
 function unlinkStubbedRuntimes(members) {
 	for (const member of members) {
 		const runtime = join(rootDir, member, 'dist/runtime')
-		if (lstatSync(runtime, { throwIfNoEntry: false })?.isSymbolicLink()) {
-			rmSync(runtime)
+		const stat = lstatSync(runtime, { throwIfNoEntry: false })
+		if (!stat) continue
+
+		if (stat.isSymbolicLink()) {
+			// Plain rmSync follows a symlink to its target; on Node 24 that throws ERR_FS_EISDIR
+			// when the target is a directory. unlinkSync always removes the link itself.
+			unlinkSync(runtime)
+			continue
+		}
+
+		// Cache replay while the stub symlink was still present can materialize a real tree here.
+		// Only @stonecrop/nuxt uses the stub layout — other packages' dist/runtime is build output.
+		if (member === 'nuxt' && stat.isDirectory()) {
+			rmSync(runtime, { recursive: true, force: true })
 		}
 	}
 }

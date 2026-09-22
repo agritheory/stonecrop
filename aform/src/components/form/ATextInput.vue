@@ -11,7 +11,7 @@
 				v-mask="mask"
 				class="aform_input-field"
 				:disabled="mode === 'read'"
-				:maxlength="mask ? (maskFilled ? mask.length : undefined) : undefined"
+				:maxlength="mask && mask !== 'semver' ? (maskFilled ? mask.length : undefined) : undefined"
 				:required="required" />
 			<label class="aform_field-label" :for="uuid">{{ label }} </label>
 			<p v-show="errorText" class="aform_error" v-html="errorText"></p>

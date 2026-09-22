@@ -20,6 +20,7 @@ describe('component-meta', { tags: ['unit'] }, () => {
 		expect(componentCategory('ASegmentedControl')).toBe('select')
 		expect(componentCategory('ACodeEditor')).toBe('code')
 		expect(componentCategory('AFormLink')).toBe('link')
+		expect(componentCategory('ASemverInput')).toBe('semver')
 	})
 
 	it('categorizes the date components that previously had no category', () => {

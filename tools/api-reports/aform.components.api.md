@@ -425,6 +425,28 @@ emits: {
 slots: {}
 ```
 
+### ASemverInput
+
+```ts
+// src/components/form/ASemverInput.vue
+props: {
+  schema?: ResolvedField \| undefined
+  label?: string \| undefined
+  selectRange?: boolean \| undefined
+  mask?: string \| undefined
+  required?: boolean \| undefined
+  mode?: InteractionMode \| undefined
+  uuid?: string \| undefined
+  validation?: { [key: string]: any; errorMessage: string; } \| undefined
+  errors?: string[] \| undefined
+  modelValue?: SemverValue \| undefined
+}
+emits: {
+  update:modelValue: [value: SemverValue]
+}
+slots: {}
+```
+
 ### ATextboxInput
 
 ```ts

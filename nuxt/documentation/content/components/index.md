@@ -28,6 +28,7 @@ Interactive documentation for individual Stonecrop components — live demos alo
 - [Form Link](./form-link) — `AFormLink`, an autocomplete for linked (foreign-key) records
 - [Currency](./currency) — `ACurrencyInput`, a currency amount input with base-currency conversion
 - [Quantity Input](./quantity-input) — `AQuantityInput`, a quantity input with unit-of-measure conversion
+- [Semver Input](./semver) — `ASemverInput`, a semantic version text field with parsed parts
 - [Login](./login) — `Login`, a standalone email/password sign-in form
 - [Collapse Button](./collapse-button) — `CollapseButton`, the internal toggle glyph used by Fieldset
 

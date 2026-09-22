@@ -2,7 +2,7 @@ import { componentCategory } from '@stonecrop/schema'
 import type { ColumnSchema } from '@stonecrop/schema'
 
 import type { TableColumn } from './types'
-import { formatCurrency, formatQuantity } from './utils'
+import { formatCurrency, formatQuantity, formatSemver } from './utils'
 
 /**
  * Convert an array of doctype field descriptors into ATable column definitions.
@@ -60,6 +60,11 @@ export function schemaToColumns(schema: ColumnSchema[]): TableColumn[] {
 			// Currency fields: render the composite { amount, currency } value as "<amount> <currency>".
 			if (componentCategory(rest.component) === 'currency' && !rest.format) {
 				col.format = formatCurrency
+			}
+
+			// Semver fields: render the composite { raw, major, minor, patch } value as `raw`.
+			if (componentCategory(rest.component) === 'semver' && !rest.format) {
+				col.format = formatSemver
 			}
 
 			return col

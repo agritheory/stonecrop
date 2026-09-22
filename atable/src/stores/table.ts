@@ -17,7 +17,7 @@ import type {
 	TableRow,
 } from '../types'
 import { resolveFilterType } from '../resolveFilterType'
-import { formatCurrency, formatQuantity, generateHash } from '../utils'
+import { formatCurrency, formatQuantity, formatSemver, generateHash, compareSemverValues } from '../utils'
 
 /**
  * Represents the state of a single filter
@@ -385,6 +385,12 @@ export const createTableStore = (initData: {
 					if (aVal === null || aVal === undefined) aVal = ''
 					if (bVal === null || bVal === undefined) bVal = ''
 
+					const category = componentCategory(column.component)
+					if (category === 'semver') {
+						const cmp = compareSemverValues(aVal, bVal)
+						return direction === 'asc' ? cmp : -cmp
+					}
+
 					const aNum = toComparableNumber(aVal)
 					const bNum = toComparableNumber(bVal)
 					const isNumeric = !isNaN(aNum) && !isNaN(bNum) && aVal !== '' && bVal !== ''
@@ -547,6 +553,7 @@ export const createTableStore = (initData: {
 				if (category === 'datetime') return value != null ? new Date(String(value)).toLocaleString() : value
 				if (category === 'quantity') return formatQuantity(value)
 				if (category === 'currency') return formatCurrency(value)
+				if (category === 'semver') return formatSemver(value)
 				return value
 			}
 

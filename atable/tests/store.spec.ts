@@ -1538,4 +1538,40 @@ describe('table store', { tags: ['component'] }, () => {
 			expect(linkStore.filteredRows.map(r => r.label)).toEqual(['B'])
 		})
 	})
+
+	describe('semver column filtering and sorting', () => {
+		const semverColumns: TableColumn[] = [
+			{ name: 'item', label: 'Item' },
+			{ name: 'version', label: 'Version', component: 'ASemverInput' },
+		]
+		const semverRows: TableRow[] = [
+			{ item: 'A', version: { raw: '1.10.0', major: 1, minor: 10, patch: 0 } },
+			{ item: 'B', version: { raw: '1.2.0', major: 1, minor: 2, patch: 0 } },
+			{ item: 'C', version: { raw: '2.0.0', major: 2, minor: 0, patch: 0 } },
+		]
+
+		let semverStore: ReturnType<typeof createTableStore>
+		beforeEach(() => {
+			semverStore = createTableStore({
+				columns: semverColumns,
+				rows: semverRows.map(row => Object.assign({}, row)),
+			})
+		})
+
+		it('filters a semver column by raw text', () => {
+			semverStore.setFilter(1, { value: '1.10' })
+			expect(semverStore.filteredRows.map(r => r.item)).toEqual(['A'])
+		})
+
+		it('sorts semver columns by major/minor/patch, not string order', () => {
+			semverStore.sortByColumn(1)
+			expect(semverStore.filteredRows.map(r => r.item)).toEqual(['B', 'A', 'C'])
+		})
+
+		it('sorts semver columns descending', () => {
+			semverStore.sortByColumn(1)
+			semverStore.sortByColumn(1)
+			expect(semverStore.filteredRows.map(r => r.item)).toEqual(['C', 'A', 'B'])
+		})
+	})
 })

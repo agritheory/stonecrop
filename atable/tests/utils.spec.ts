@@ -1,5 +1,12 @@
 import { describe, it, expect } from 'vitest'
-import { isHtmlString, generateHash, formatQuantity, formatCurrency } from '../src/utils'
+import {
+	isHtmlString,
+	generateHash,
+	formatQuantity,
+	formatCurrency,
+	formatSemver,
+	compareSemverValues,
+} from '../src/utils'
 
 describe('utils', { tags: ['component'] }, () => {
 	describe('isHtmlString', () => {
@@ -104,6 +111,36 @@ describe('utils', { tags: ['component'] }, () => {
 
 		it('stringifies non-object values as-is', () => {
 			expect(formatCurrency(5)).toBe('5')
+		})
+	})
+
+	describe('formatSemver', () => {
+		it('renders the raw string from a composite value', () => {
+			expect(formatSemver({ raw: '1.2.3-pre', major: 1, minor: 2, patch: 3 })).toBe('1.2.3-pre')
+		})
+
+		it('returns an empty string for null/undefined', () => {
+			expect(formatSemver(null)).toBe('')
+			expect(formatSemver(undefined)).toBe('')
+		})
+
+		it('stringifies non-object values as-is', () => {
+			expect(formatSemver('2.0.0')).toBe('2.0.0')
+		})
+	})
+
+	describe('compareSemverValues', () => {
+		it('sorts 1.2.0 before 1.10.0 by tuple, not string order', () => {
+			const a = { raw: '1.2.0', major: 1, minor: 2, patch: 0 }
+			const b = { raw: '1.10.0', major: 1, minor: 10, patch: 0 }
+			expect(compareSemverValues(a, b)).toBeLessThan(0)
+		})
+
+		it('orders a release after a prerelease with the same triple', () => {
+			const release = { raw: '1.0.0', major: 1, minor: 0, patch: 0 }
+			const prerelease = { raw: '1.0.0-pre', major: 1, minor: 0, patch: 0 }
+			expect(compareSemverValues(prerelease, release)).toBeLessThan(0)
+			expect(compareSemverValues(release, prerelease)).toBeGreaterThan(0)
 		})
 	})
 })
