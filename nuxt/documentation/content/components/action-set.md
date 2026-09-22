@@ -1,22 +1,23 @@
 ---
 title: Action Set
-description: A floating panel of button and dropdown actions.
+description: Tile column and drawer UI for actions, host slots, and preview flyins.
 ---
 
 # Action Set
 
-`ActionSet` renders a collapsible panel of actions — plain buttons and button-triggered dropdowns — from a declarative `elements` array. It positions itself with `position: fixed`, anchored to the viewport by design, so it's meant to float over a host page's real content (e.g. a page-level actions panel), not sit inline in document flow.
+`ActionSet` is the fixed-position tile column rendered by [`Desktop`](/reference/desktop). It exposes Search (opens the command palette), host-configured drawer slots, and an Actions tab that lists FSM transitions and commands from the active record.
+
+Use `Desktop` with `:action-set-slots` for custom panels, and `useActionSet()` inside slot components to open preview flyins. For pages that are not standard doctype views (e.g. DocBuilder), pass `:host-actions` and fill Desktop's default slot.
 
 ## Import
 
 ```ts
-import { ActionSet } from '@stonecrop/desktop'
-import type { ActionElements } from '@stonecrop/desktop'
+import { Desktop, useActionSet, ActionSetIconFiles, type ActionSetSlot, type ActionElements } from '@stonecrop/desktop'
 ```
 
-## Basic
+## Basic (via Desktop)
 
-`elements` accepts a mix of `{ type: 'button', label, action }` and `{ type: 'dropdown', label, actions }` entries. Clicking the `×` glyph collapses the panel to just that toggle.
+FSM actions are derived automatically on record views. Host pages can supply custom actions with `:host-actions`:
 
 ::demo-panel
 :::client-only
@@ -26,13 +27,17 @@ import type { ActionElements } from '@stonecrop/desktop'
 #code
 ```vue
 <script setup lang="ts">
-import { ref } from 'vue'
-import { ActionSet } from '@stonecrop/desktop'
-import type { ActionElements } from '@stonecrop/desktop'
+import { computed, provide, ref } from 'vue'
+import { Registry, Stonecrop } from '@stonecrop/stonecrop'
+import { Desktop, type ActionElements } from '@stonecrop/desktop'
+
+const registry = new Registry()
+const stonecrop = new Stonecrop(registry)
+provide('$registry', registry)
+provide('$stonecrop', stonecrop)
 
 const lastAction = ref('')
-
-const elements: ActionElements[] = [
+const hostActions = computed<ActionElements[]>(() => [
 	{ type: 'button', label: 'Save', action: () => (lastAction.value = 'Save') },
 	{
 		type: 'dropdown',
@@ -42,61 +47,71 @@ const elements: ActionElements[] = [
 			{ label: 'Delete', action: () => (lastAction.value = 'Delete') },
 		],
 	},
-]
+])
 
-// ActionSet never invokes an element's `action`; it emits the label alongside it and leaves the
-// call to the host. Wiring this is what makes `action` above run at all.
-function onActionClick(label: string, action?: () => void | Promise<void>) {
-	if (action) {
-		void action()
-	} else {
-		lastAction.value = label
-	}
+const routeAdapter = {
+	getCurrentDoctype: () => '',
+	getCurrentRecordId: () => '',
+	getCurrentView: () => 'doctypes' as const,
+	navigate: () => {},
 }
 </script>
 
 <template>
-	<ActionSet :elements="elements" @action-click="onActionClick" />
+	<Desktop class="action-set-demo-desktop" :route-adapter="routeAdapter" :host-actions="hostActions">
+		<p>Document content. Open the Actions tile to run host actions.</p>
+		<p v-if="lastAction">Last action: <strong>{{ lastAction }}</strong></p>
+	</Desktop>
 </template>
 ```
 ::
 
+## Custom slots
+
+Pass `:action-set-slots` to Desktop. Each slot can provide an icon, label, optional badge, and a component rendered in the drawer:
+
+```vue
+const actionSetSlots = computed<ActionSetSlot[]>(() => [
+	{ id: 'files', label: 'Files', icon: ActionSetIconFiles, component: FilesPanel },
+])
+```
+
+Inside a slot component, call `useActionSet().present({ view, props })` to open the 50% preview pane.
+
 ## API Reference
 
-### Props
+### Desktop props (ActionSet integration)
 
 ::api-data-table
 ---
-headers: ['Name', 'Type', 'Default', 'Description']
+headers: ['Name', 'Type', 'Description']
 rows:
-  - ['`elements`', '`ActionElements[]`', '`[]`', "The buttons/dropdowns to render. `ActionElements` is `ButtonElement | DropdownElement`."]
+  - ['`actionSetSlots`', '`ActionSetSlot[]`', 'Host drawer slots shown as tiles alongside Search and Actions.']
+  - ['`hostActions`', '`ActionElements[]`', 'Actions listed in the Actions drawer in place of those derived from the doctype; `[]` lists none.']
+---
+::
+
+### ActionSetContext (`useActionSet()`)
+
+::api-data-table
+---
+headers: ['Member', 'Description']
+rows:
+  - ['`doctype`', 'Computed ref of the active doctype.']
+  - ['`recordId`', 'Computed ref of the active record id.']
+  - ['`activeSlotId`', 'Currently open host slot, or null.']
+  - ['`present(subject)`', 'Open a preview flyin with `ActionSetPreview` `{ view, props?, id? }`.']
+  - ['`closePreview()`', 'Close the preview pane.']
+  - ['`close()`', 'Close the drawer and preview.']
 ---
 ::
 
 ### Types
 
-::api-data-table
----
-headers: ['Name', 'Shape', 'Description']
-rows:
-  - ['`ButtonElement`', "`{ type: 'button', label, show?, disabled?, link?, action? }`", "Always renders a `<button>`. `link` is inherited from `ElementAction` and is not read here; `show` is declared but read nowhere, so neither hides nor links a button."]
-  - ['`DropdownElement`', "`{ type: 'dropdown', label, show?, actions: ElementAction[] }`", 'A button that toggles a nested list of actions. `show` is not read.']
-  - ['`ElementAction`', '`{ label, show?, link?, action? }`', "One entry inside a dropdown. This is the only place `link` has an effect: an entry with an `action` renders a `<button>`, one with only a `link` renders an `<a>`. `show` is not read."]
----
-::
-
-### Emits
-
-::api-data-table
----
-headers: ['Name', 'Payload', 'Description']
-rows:
-  - ['`actionClick`', '`[label: string, action: (() => void | Promise<void>) | undefined]`', "Fires on every button click, and on a dropdown entry that has an `action`. ActionSet never calls the callback itself: it passes it here and the host decides, so an element's `action` runs only if you invoke it."]
----
-::
+`ActionElements` remains `ButtonElement | DropdownElement` — same shape used in the Actions drawer list.
 
 ## Accessibility
 
-Every interactive element is a plain `<button>` (or `<a>` for `link` entries) with only its visible label text — there's no `aria-expanded` on the collapse toggle or the dropdown triggers, and no `aria-haspopup`/`role="menu"` on the dropdown lists, so a screen reader doesn't announce their expanded/collapsed state.
+The tile column uses plain `<button>` elements with `aria-label` from each slot label. The expand control exposes `aria-expanded`. The open drawer is a labeled `<aside>` beside the page rather than a modal: focus moves into it on open and returns on close, Tab moves on to the page and the preview, and Escape closes it. Each dropdown group in the Actions list is a labeled `role="group"`. Clicking the active tile again also closes the drawer. Preview pane close is a labeled button.
 
 Source: [`desktop/src/components/ActionSet.vue`](https://github.com/agritheory/stonecrop/blob/development/desktop/src/components/ActionSet.vue)

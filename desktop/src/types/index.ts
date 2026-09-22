@@ -1,3 +1,5 @@
+import type { Component, ComputedRef, MaybeRef } from 'vue'
+
 /**
  * Base type for elements in the Action Set
  * @public
@@ -104,4 +106,34 @@ export type LoadRecordsEventPayload = {
 export type LoadRecordEventPayload = {
 	doctype: string
 	recordId: string
+}
+
+/** Host-chosen identifier for an ActionSet slot. @public */
+export type ActionSetSlotId = string
+
+/** Host-declared drawer slot on the ActionSet tile column. @public */
+export type ActionSetSlot = {
+	id: ActionSetSlotId
+	label: string
+	icon?: Component
+	component?: Component
+	badge?: MaybeRef<number>
+	show?: boolean
+}
+
+/** A presented subject occupies the compressed-document (50%) surface. @public */
+export type ActionSetPreview = {
+	id?: string
+	view: Component
+	props?: Record<string, unknown>
+}
+
+/** Instance-scoped ActionSet API provided by Desktop to slot content. @public */
+export type ActionSetContext = {
+	doctype: ComputedRef<string>
+	recordId: ComputedRef<string>
+	activeSlotId: ComputedRef<ActionSetSlotId | null>
+	present: (subject: ActionSetPreview) => void
+	closePreview: () => void
+	close: () => void
 }

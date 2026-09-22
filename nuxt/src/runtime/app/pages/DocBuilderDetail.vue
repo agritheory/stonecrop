@@ -1,9 +1,8 @@
 <template>
 	<ClientOnly>
-		<div class="docbuilder-page">
+		<Desktop class="docbuilder-desktop" :route-adapter="routeAdapter" :host-actions="docbuilderActions">
 			<div v-if="loading" class="docbuilder-loading">Loading...</div>
-
-			<div v-else>
+			<div v-else class="docbuilder-page">
 				<div v-if="validationIssues.length > 0 && !warningsDismissed" class="validation-panel">
 					<div v-if="errorCount > 0" class="validation-errors">
 						<strong>⚠️ {{ errorCount }} Error(s) — Cannot Save</strong>
@@ -49,10 +48,8 @@
 				<div v-if="saveMessage" class="builder-actions">
 					<span class="save-message" :class="saveMessage.type">{{ saveMessage.text }}</span>
 				</div>
-
-				<DocBuilderHostActions :elements="docbuilderActions" @action-click="handleAction" />
 			</div>
-		</div>
+		</Desktop>
 		<template #fallback>
 			<div class="docbuilder-loading">Loading...</div>
 		</template>
@@ -62,16 +59,16 @@
 <script setup>
 import { AFieldset } from '@stonecrop/aform'
 import { StateEditor } from '@stonecrop/node-editor'
+import { Desktop } from '@stonecrop/desktop'
 import { WorkflowMeta } from '@stonecrop/schema'
 import { ref, watch, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'nuxt/app'
 import DocBuilderActionsPanel from '../components/DocBuilderActionsPanel.vue'
 import DocBuilderFieldsPanel from '../components/DocBuilderFieldsPanel.vue'
-import DocBuilderHostActions from '../components/DocBuilderHostActions.vue'
-
 const route = useRoute()
 const router = useRouter()
 const doctypeName = computed(() => route.params.doctype)
+const routeAdapter = useDocBuilderRouteAdapter({ doctype: doctypeName })
 const loading = ref(true)
 const saving = ref(false)
 const warningsDismissed = ref(false)
@@ -152,22 +149,20 @@ const docbuilderActions = computed(() => [
 	},
 	{ type: 'button', label: 'Back', action: () => void router.push('/docbuilder') },
 ])
-function handleAction(_label, action) {
-	if (action) void action()
-}
 </script>
 
 <style scoped>
-.docbuilder-page {
-	background: var(--sc-form-background);
-	box-sizing: border-box;
-	min-height: 100vh;
-	padding: 2rem;
+.docbuilder-desktop {
+	height: 100vh;
 }
 .docbuilder-loading {
 	color: var(--sc-header-text-color);
 	padding: 2rem;
 	text-align: center;
+}
+.docbuilder-page {
+	box-sizing: border-box;
+	padding: 2rem;
 }
 .builder-workflow {
 	min-height: 8rem;

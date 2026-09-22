@@ -4,26 +4,6 @@
 
 ## Vue Components
 
-### ActionSet
-
-Vue component exported from @stonecrop/desktop.
-
-```typescript
-import { ActionSet } from '@stonecrop/desktop'
-```
-
-**Props:**
-
-| Prop | Type | Required | Default | Description |
-|------|------|----------|---------|-------------|
-| elements | `ActionElements[] \| undefined` | no | `[]` |  |
-
-**Events:**
-
-| Event | Payload | Description |
-|-------|---------|-------------|
-| actionClick | `[label: string, action: (() => void \| Promise<void>) \| undefined]` |  |
-
 ### CommandPalette
 
 Vue component exported from @stonecrop/desktop.
@@ -70,6 +50,8 @@ import { Desktop } from '@stonecrop/desktop'
 |------|------|----------|---------|-------------|
 | availableDoctypes | `string[] \| undefined` | no | `[]` |  |
 | routeAdapter | `RouteAdapter \| undefined` | no |  | Pluggable router adapter. When provided, Desktop uses these functions for all routing instead of reaching into the registry's internal Vue Router instance. Nuxt hosts (or any host with custom route conventions) should supply this. |
+| actionSetSlots | `ActionSetSlot[] \| undefined` | no |  | Host drawer slots, each shown as a tile in the ActionSet column. |
+| hostActions | `ActionElements[] \| undefined` | no |  | When provided, the Actions drawer lists exactly these, in place of the actions Desktop derives from the doctype. |
 
 **Events:**
 
@@ -85,6 +67,7 @@ import { Desktop } from '@stonecrop/desktop'
 
 | Slot | Props | Description |
 |------|-------|-------------|
+| default | `{}` |  |
 | sheetnav-toolbar | `{}` |  |
 
 ### SheetNav
@@ -109,10 +92,80 @@ import { SheetNav } from '@stonecrop/desktop'
 
 ## Other Components
 
+### ActionSetIconActions
+
+```typescript
+export { ActionSetIconActions }
+```
+
+### ActionSetIconApprovals
+
+```typescript
+export { ActionSetIconApprovals }
+```
+
+### ActionSetIconChat
+
+```typescript
+export { ActionSetIconChat }
+```
+
+### ActionSetIconEmail
+
+```typescript
+export { ActionSetIconEmail }
+```
+
+### ActionSetIconFiles
+
+```typescript
+export { ActionSetIconFiles }
+```
+
+### ActionSetIconHelp
+
+```typescript
+export { ActionSetIconHelp }
+```
+
+### ActionSetIconPrint
+
+```typescript
+export { ActionSetIconPrint }
+```
+
+### ActionSetIconReports
+
+```typescript
+export { ActionSetIconReports }
+```
+
+### ActionSetIconSearch
+
+```typescript
+export { ActionSetIconSearch }
+```
+
+### ActionSetIconSettings
+
+```typescript
+export { ActionSetIconSettings }
+```
+
 ### StonecropDesktop
 
 ```typescript
 export { StonecropDesktop }
+```
+
+## Functions
+
+### useActionSet
+
+**Signature:**
+
+```typescript
+export declare function useActionSet(): ActionSetContext;
 ```
 
 ## Type Aliases
@@ -125,6 +178,64 @@ Superset of all element types in the Action Set
 
 ```typescript
 export type ActionElements = ButtonElement | DropdownElement;
+```
+
+### ActionSetContext
+
+Instance-scoped ActionSet API provided by Desktop to slot content.
+
+**Definition:**
+
+```typescript
+export type ActionSetContext = {
+    doctype: ComputedRef<string>;
+    recordId: ComputedRef<string>;
+    activeSlotId: ComputedRef<ActionSetSlotId | null>;
+    present: (subject: ActionSetPreview) => void;
+    closePreview: () => void;
+    close: () => void;
+};
+```
+
+### ActionSetPreview
+
+A presented subject occupies the compressed-document (50%) surface.
+
+**Definition:**
+
+```typescript
+export type ActionSetPreview = {
+    id?: string;
+    view: Component;
+    props?: Record<string, unknown>;
+};
+```
+
+### ActionSetSlot
+
+Host-declared drawer slot on the ActionSet tile column.
+
+**Definition:**
+
+```typescript
+export type ActionSetSlot = {
+    id: ActionSetSlotId;
+    label: string;
+    icon?: Component;
+    component?: Component;
+    badge?: MaybeRef<number>;
+    show?: boolean;
+};
+```
+
+### ActionSetSlotId
+
+Host-chosen identifier for an ActionSet slot.
+
+**Definition:**
+
+```typescript
+export type ActionSetSlotId = string;
 ```
 
 ### BaseElement
@@ -247,14 +358,6 @@ export type RouteAdapter = {
 ```
 
 ## Variables
-
-### ActionSet
-
-**Type:**
-
-```typescript
-export const ActionSet: typeof __VLS_export
-```
 
 ### CommandPalette
 

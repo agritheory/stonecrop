@@ -125,6 +125,10 @@ before all other rules.
 		--sc-btn-color: var(--sc-gray-2);
 		--sc-btn-hover: var(--sc-gray-5);
 		--sc-btn-label-color: var(--sc-gray-80);
+
+		/* Semantic: action set */
+		--sc-action-set-drawer-width: 380px;
+		--sc-action-set-offset-top: 35vh;
 	}
 
 	/*

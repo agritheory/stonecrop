@@ -1,27 +1,54 @@
 <template>
-	<div class="desktop" @click="handleClick">
-		<!-- Action Set -->
-		<ActionSet :elements="actionElements" @action-click="handleActionClick" />
+	<div
+		class="desktop"
+		:class="{
+			'desktop--action-set-open': actionSetDrawerOpen,
+			'desktop--preview-open': actionSetPreviewOpen,
+		}"
+		@click="handleClick">
+		<div class="desktop__workspace">
+			<div class="desktop__main">
+				<slot v-if="$slots.default" />
+				<AForm
+					v-else-if="currentViewSchema.length > 0"
+					v-model:data="currentViewData"
+					:schema="currentViewSchema"
+					:errors="fieldErrors" />
+				<div v-else-if="!stonecrop" class="loading"><p>Initializing Stonecrop...</p></div>
+				<div v-else class="loading">
+					<p>Loading {{ currentView }} data...</p>
+				</div>
+			</div>
 
-		<!-- Main content using AForm -->
-		<AForm
-			v-if="currentViewSchema.length > 0"
-			v-model:data="currentViewData"
-			:schema="currentViewSchema"
-			:errors="fieldErrors" />
-		<div v-else-if="!stonecrop" class="loading"><p>Initializing Stonecrop...</p></div>
-		<div v-else class="loading">
-			<p>Loading {{ currentView }} data...</p>
+			<aside v-if="actionSetPreviewSubject" class="desktop__preview">
+				<header class="desktop__preview-header">
+					<button
+						type="button"
+						class="desktop__preview-close"
+						aria-label="Close preview"
+						@click="closeActionSetPreview">
+						×
+					</button>
+				</header>
+				<div class="desktop__preview-body">
+					<component :is="actionSetPreviewSubject.view" v-bind="actionSetPreviewSubject.props ?? {}" />
+				</div>
+			</aside>
 		</div>
 
-		<!-- Sheet Navigation -->
-		<SheetNav :breadcrumbs="navigationBreadcrumbs">
+		<ActionSet
+			:slots="visibleActionSetSlots"
+			:elements="actionElements"
+			:controller="actionSetController"
+			@action-click="handleActionClick"
+			@search="commandPaletteOpen = true" />
+
+		<SheetNav class="desktop__sheetnav" :breadcrumbs="navigationBreadcrumbs">
 			<template #toolbar>
 				<slot name="sheetnav-toolbar" />
 			</template>
 		</SheetNav>
 
-		<!-- Command Palette -->
 		<CommandPalette
 			:is-open="commandPaletteOpen"
 			:search="searchCommands"
@@ -50,11 +77,12 @@ import {
 	type ResolvedField,
 	type ResolvedTable,
 } from '@stonecrop/aform'
-import { computed, onMounted, onUnmounted, provide, ref, unref, watch } from 'vue'
+import { computed, markRaw, onMounted, onUnmounted, provide, ref, unref, watch } from 'vue'
 
 import ActionSet from './ActionSet.vue'
 import SheetNav from './SheetNav.vue'
 import CommandPalette from './CommandPalette.vue'
+import { createActionSet, actionSetKey } from '../composables/useActionSet'
 import type {
 	ActionElements,
 	RouteAdapter,
@@ -63,9 +91,15 @@ import type {
 	RecordOpenEventPayload,
 	LoadRecordsEventPayload,
 	LoadRecordEventPayload,
+	ActionSetSlot,
 } from '../types'
 
-const { availableDoctypes = [], routeAdapter } = defineProps<{
+const {
+	availableDoctypes = [],
+	routeAdapter,
+	actionSetSlots,
+	hostActions,
+} = defineProps<{
 	availableDoctypes?: string[]
 	/**
 	 * Pluggable router adapter. When provided, Desktop uses these functions for all
@@ -73,6 +107,10 @@ const { availableDoctypes = [], routeAdapter } = defineProps<{
 	 * Nuxt hosts (or any host with custom route conventions) should supply this.
 	 */
 	routeAdapter?: RouteAdapter
+	/** Host drawer slots, each shown as a tile in the ActionSet column. */
+	actionSetSlots?: ActionSetSlot[]
+	/** When provided, the Actions drawer lists exactly these, in place of the actions Desktop derives from the doctype. */
+	hostActions?: ActionElements[]
 }>()
 
 const emit = defineEmits<{
@@ -483,6 +521,10 @@ const getAvailableCommands = () => {
 }
 
 const actionElements = computed(() => {
+	if (hostActions) {
+		return hostActions
+	}
+
 	const elements: ActionElements[] = []
 
 	switch (currentView.value) {
@@ -972,9 +1014,45 @@ const handleKeydown = (event: KeyboardEvent) => {
 		event.preventDefault()
 		commandPaletteOpen.value = true
 	}
-	if (event.key === 'Escape' && commandPaletteOpen.value) {
-		commandPaletteOpen.value = false
+	if (event.key === 'Escape') {
+		if (commandPaletteOpen.value) {
+			commandPaletteOpen.value = false
+			return
+		}
+		if (actionSetController.isPreviewOpen.value) {
+			actionSetController.closePreview()
+			return
+		}
+		if (actionSetController.isDrawerOpen.value) {
+			actionSetController.close()
+		}
 	}
+}
+
+const visibleActionSetSlots = computed(() =>
+	(actionSetSlots ?? [])
+		.filter(slot => slot.show !== false)
+		.map(slot =>
+			Object.assign({}, slot, {
+				icon: slot.icon ? markRaw(slot.icon) : undefined,
+				component: slot.component ? markRaw(slot.component) : undefined,
+			})
+		)
+)
+
+const actionSetController = createActionSet({ doctype: currentDoctype, recordId: currentRecordId })
+provide(actionSetKey, actionSetController)
+
+const actionSetDrawerOpen = computed(() => actionSetController.isDrawerOpen.value)
+const actionSetPreviewOpen = computed(() => actionSetController.isPreviewOpen.value)
+const actionSetPreviewSubject = computed(() => actionSetController.previewSubject.value)
+
+watch([currentDoctype, currentRecordId], () => {
+	actionSetController.close()
+})
+
+function closeActionSetPreview() {
+	actionSetController.closePreview()
 }
 
 onMounted(() => {
@@ -985,3 +1063,93 @@ onUnmounted(() => {
 	document.removeEventListener('keydown', handleKeydown)
 })
 </script>
+
+<style scoped>
+.desktop {
+	position: relative;
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+	min-height: 0;
+	overflow: hidden;
+}
+
+.desktop__workspace {
+	display: flex;
+	flex: 1;
+	min-height: 0;
+	min-width: 0;
+	margin-right: 0;
+	transition: margin-right 0.25s ease-out;
+}
+
+.desktop--action-set-open .desktop__workspace {
+	margin-right: var(--sc-action-set-drawer-width);
+}
+
+/* SheetNav is fixed to the viewport, so the workspace margin does not move it clear of the drawer. */
+.desktop__sheetnav {
+	transition: right 0.25s ease-out;
+}
+
+.desktop--action-set-open .desktop__sheetnav {
+	right: var(--sc-action-set-drawer-width);
+}
+
+.desktop__main {
+	flex: 1;
+	min-width: 0;
+	min-height: 0;
+	overflow: auto;
+}
+
+.desktop--preview-open .desktop__main {
+	flex: 0 0 calc(50% - 10px);
+	max-width: calc(50% - 10px);
+}
+
+.desktop__preview {
+	flex: 0 0 50%;
+	max-width: 50%;
+	min-width: 0;
+	min-height: 0;
+	display: flex;
+	flex-direction: column;
+	border-left: 1px solid var(--sc-gray-20);
+	background: var(--sc-form-background);
+	overflow: hidden;
+}
+
+.desktop__preview-header {
+	display: flex;
+	justify-content: flex-end;
+	align-items: center;
+	height: 40px;
+	padding: 0 8px;
+	border-bottom: 1px solid var(--sc-gray-20);
+	flex-shrink: 0;
+}
+
+.desktop__preview-close {
+	border: none;
+	background: transparent;
+	font-size: 1.25rem;
+	line-height: 1;
+	cursor: pointer;
+	color: var(--sc-gray-60);
+}
+
+.desktop__preview-body {
+	flex: 1;
+	min-height: 0;
+	overflow: auto;
+}
+
+.loading {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 50vh;
+	color: var(--sc-gray-60);
+}
+</style>
