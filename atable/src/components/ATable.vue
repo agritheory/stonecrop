@@ -178,9 +178,7 @@ const resolveCurrencyMetaFn = resolveCurrencyMeta
 	? (Function(`"use strict";return (${resolveCurrencyMeta})`)() as () => Promise<CurrencyMeta | undefined>)
 	: null
 const resolveItemUomMetaFn = resolveItemUomMeta
-	? (Function(`"use strict";return (${resolveItemUomMeta})`)() as (
-			itemId: string
-		) => Promise<ItemUomMeta | undefined>)
+	? (Function(`"use strict";return (${resolveItemUomMeta})`)() as (itemId: string) => Promise<ItemUomMeta | undefined>)
 	: null
 
 const store = createTableStore({
