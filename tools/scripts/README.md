@@ -174,7 +174,7 @@ node --run docs    # Generate api.md for aform only
 
 ### Before committing changes
 
-The pre-commit hook builds and stages `nuxt/documentation/content/reference/` automatically. To do it by hand:
+The pre-commit hook (see [CONTRIBUTING.md](../../CONTRIBUTING.md#pre-commit-hooks)) formats the tree, checks dependency ranges, runs a full build, stages `nuxt/documentation/content/reference/`, and lints. To regenerate reference docs by hand:
 
 ```bash
 node --run docs:full

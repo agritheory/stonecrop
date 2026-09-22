@@ -49,7 +49,6 @@ body {
 	gap: 1.5rem;
 	padding: 1rem 2rem;
 	background: var(--sc-gray-5);
-	border-bottom: 1px solid var(--sc-header-border-color);
 }
 
 .app-nav a {
