@@ -114,7 +114,9 @@ import { schemaToColumns } from '../schemaToColumns'
 import type {
 	ConnectionEvent,
 	ConnectionPath,
+	CurrencyMeta,
 	GanttDragEvent,
+	ItemUomMeta,
 	RowActionType,
 	RowAddEvent,
 	RowClickEvent,
@@ -140,6 +142,8 @@ const {
 	linkResolver = undefined,
 	getRecords = undefined,
 	sourceKey = undefined,
+	resolveCurrencyMeta = undefined,
+	resolveItemUomMeta = undefined,
 } = defineProps<{
 	id?: string
 	config?: TableConfig
@@ -147,6 +151,8 @@ const {
 	linkResolver?: LinkResolverFn
 	getRecords?: (options?: GetRecordsOptions) => Promise<GetRecordsResult>
 	sourceKey?: string
+	resolveCurrencyMeta?: string
+	resolveItemUomMeta?: string
 }>()
 
 const emit = defineEmits<{
@@ -167,12 +173,24 @@ const emit = defineEmits<{
 const tableRef = useTemplateRef<HTMLTableElement>('table')
 const resolvedColumns = columns.value?.length ? columns.value : schemaToColumns(schema ?? [])
 const injectedLinkResolver = inject<LinkResolverFn | null>('aformLinkResolver', null)
+
+const resolveCurrencyMetaFn = resolveCurrencyMeta
+	? (Function(`"use strict";return (${resolveCurrencyMeta})`)() as () => Promise<CurrencyMeta | undefined>)
+	: null
+const resolveItemUomMetaFn = resolveItemUomMeta
+	? (Function(`"use strict";return (${resolveItemUomMeta})`)() as (
+			itemId: string
+		) => Promise<ItemUomMeta | undefined>)
+	: null
+
 const store = createTableStore({
 	columns: resolvedColumns,
 	rows: rows.value,
 	id,
 	config,
 	linkResolver: linkResolver ?? injectedLinkResolver,
+	resolveCurrencyMeta: resolveCurrencyMetaFn,
+	resolveItemUomMeta: resolveItemUomMetaFn,
 })
 
 const pagination = useTablePagination({

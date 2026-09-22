@@ -10,6 +10,7 @@ import type { BadgePresentation } from '@stonecrop/schema';
 import type { ColumnSchema } from '@stonecrop/schema';
 import { ComponentOptionsMixin } from 'vue';
 import { ComponentProvideOptions } from 'vue';
+import type { createTableStore } from '@stonecrop/atable';
 import { DefineComponent } from 'vue';
 import type { FieldOptions } from '@stonecrop/schema';
 import type { FieldValidation } from '@stonecrop/schema';
@@ -23,7 +24,7 @@ import type { TableViewConfig } from '@stonecrop/schema';
 import type { ValueField } from '@stonecrop/schema';
 
 // @public (undocumented)
-export const ABadge: typeof __VLS_export_6;
+export const ABadge: typeof __VLS_export_8;
 
 // @public (undocumented)
 export const ACheckbox: typeof __VLS_export;
@@ -32,40 +33,40 @@ export const ACheckbox: typeof __VLS_export;
 export const ACurrencyInput: typeof __VLS_export_2;
 
 // @public (undocumented)
-export const ADate: typeof __VLS_export_3;
+export const ADate: typeof __VLS_export_5;
 
 // @public (undocumented)
-export const ADatePicker: typeof __VLS_export_7;
+export const ADatePicker: typeof __VLS_export_9;
 
 // @public (undocumented)
-export const ADateRange: typeof __VLS_export_8;
+export const ADateRange: typeof __VLS_export_10;
 
 // @public (undocumented)
-export const ADateSelection: typeof __VLS_export_9;
+export const ADateSelection: typeof __VLS_export_11;
 
 // @public (undocumented)
-export const ADateTime: typeof __VLS_export_11;
+export const ADateTime: typeof __VLS_export_13;
 
 // @public (undocumented)
-export const ADateTimeInput: typeof __VLS_export_12;
+export const ADateTimeInput: typeof __VLS_export_14;
 
 // @public (undocumented)
-export const ADropdown: typeof __VLS_export_4;
+export const ADropdown: typeof __VLS_export_6;
 
 // @public (undocumented)
-export const ADuration: typeof __VLS_export_10;
+export const ADuration: typeof __VLS_export_12;
 
 // @public (undocumented)
-export const AFieldset: typeof __VLS_export_13;
+export const AFieldset: typeof __VLS_export_15;
 
 // @public (undocumented)
-export const AFileAttach: typeof __VLS_export_14;
+export const AFileAttach: typeof __VLS_export_16;
 
 // @public (undocumented)
-export const AForm: typeof __VLS_export_15;
+export const AForm: typeof __VLS_export_17;
 
 // @public (undocumented)
-export const AFormLink: typeof __VLS_export_16;
+export const AFormLink: typeof __VLS_export_18;
 
 // @public
 export type AFormLinkModelValue = AFormLinkValue | string | number;
@@ -83,22 +84,22 @@ export interface AFormLinkValue {
 }
 
 // @public (undocumented)
-export const AFormLoading: typeof __VLS_export_22;
+export const AFormLoading: typeof __VLS_export_24;
 
 // @public (undocumented)
-export const ANumericInput: typeof __VLS_export_17;
+export const ANumericInput: typeof __VLS_export_19;
 
 // @public (undocumented)
-export const AQuantityInput: typeof __VLS_export_18;
+export const AQuantityInput: typeof __VLS_export_20;
 
 // @public (undocumented)
-export const ASegmentedControl: typeof __VLS_export_5;
+export const ASegmentedControl: typeof __VLS_export_7;
 
 // @public (undocumented)
-export const ATextboxInput: typeof __VLS_export_20;
+export const ATextboxInput: typeof __VLS_export_22;
 
 // @public (undocumented)
-export const ATextInput: typeof __VLS_export_19;
+export const ATextInput: typeof __VLS_export_21;
 
 // @public
 export type BadgeFormatContext = {
@@ -128,6 +129,9 @@ export type ComponentProps = {
     errors?: string[];
 };
 
+// @public (undocumented)
+export const CurrencyCellEditor: typeof __VLS_export_3;
+
 // @public
 export interface CurrencyOptions {
     baseCurrency?: AFormLinkValue | string;
@@ -151,7 +155,7 @@ export interface CurrencyValue {
 export function deserializeFunction<T extends (...args: any[]) => any>(source: string): T;
 
 // @public (undocumented)
-export const ExpandButton: typeof __VLS_export_23;
+export const ExpandButton: typeof __VLS_export_25;
 
 // @public
 export function install(app: App): void;
@@ -159,7 +163,10 @@ export function install(app: App): void;
 export { InteractionMode }
 
 // @public (undocumented)
-export const Login: typeof __VLS_export_21;
+export const Login: typeof __VLS_export_23;
+
+// @public (undocumented)
+export const QuantityCellEditor: typeof __VLS_export_4;
 
 // @public
 export interface QuantityOptions {
@@ -227,6 +234,10 @@ export interface ResolvedTable {
     mode?: InteractionMode;
     readOnly?: boolean;
     required?: boolean;
+    // (undocumented)
+    resolveCurrencyMeta?: string;
+    // (undocumented)
+    resolveItemUomMeta?: string;
     schema: ColumnSchema[];
     sourceKey?: string;
     validation?: FieldValidation;

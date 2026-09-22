@@ -117,6 +117,8 @@ export interface ResolvedTable {
 	getRecords?: (options?: GetRecordsOptions) => Promise<GetRecordsResult>
 	/** When this changes, ATable refetches from offset 0. */
 	sourceKey?: string
+	resolveCurrencyMeta?: string
+	resolveItemUomMeta?: string
 }
 
 /**

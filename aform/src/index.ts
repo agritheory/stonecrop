@@ -8,6 +8,8 @@ import type { App } from 'vue'
 
 import ACheckbox from './components/form/ACheckbox.vue'
 import ACurrencyInput from './components/form/ACurrencyInput.vue'
+import CurrencyCellEditor from './components/CurrencyCellEditor.vue'
+import QuantityCellEditor from './components/QuantityCellEditor.vue'
 import ADate from './components/form/ADate.vue'
 import ADropdown from './components/form/ADropdown.vue'
 import ASegmentedControl from './components/form/ASegmentedControl.vue'
@@ -42,6 +44,8 @@ function install(app: App /* options */) {
 
 	app.component('ACheckbox', ACheckbox)
 	app.component('ACurrencyInput', ACurrencyInput)
+	app.component('CurrencyCellEditor', CurrencyCellEditor)
+	app.component('QuantityCellEditor', QuantityCellEditor)
 	app.component('ADate', ADate)
 	app.component('ADropdown', ADropdown)
 	app.component('ASegmentedControl', ASegmentedControl)
@@ -67,6 +71,8 @@ function install(app: App /* options */) {
 export {
 	ACheckbox,
 	ACurrencyInput,
+	CurrencyCellEditor,
+	QuantityCellEditor,
 	ADate,
 	ADropdown,
 	ASegmentedControl,

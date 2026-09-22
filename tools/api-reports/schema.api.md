@@ -686,6 +686,10 @@ export interface ValueField {
     primaryKey?: boolean;
     readOnly?: boolean;
     required?: boolean;
+    // (undocumented)
+    resolveCurrencyMeta?: string;
+    // (undocumented)
+    resolveItemUomMeta?: string;
     source?: 'introspected';
     validation?: FieldValidation;
     width?: string;
@@ -732,6 +736,8 @@ export const ValueFieldSchema: z.ZodObject<{
         noneOrMany: "noneOrMany";
         atLeastOne: "atLeastOne";
     }>>;
+    resolveCurrencyMeta: z.ZodOptional<z.ZodString>;
+    resolveItemUomMeta: z.ZodOptional<z.ZodString>;
     source: z.ZodOptional<z.ZodLiteral<"introspected">>;
 }, z.core.$strip>;
 

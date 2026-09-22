@@ -8,8 +8,10 @@ import type {
 	CellContext,
 	ConnectionHandle,
 	ConnectionPath,
+	CurrencyMeta,
 	GanttBarInfo,
 	GanttDragEvent,
+	ItemUomMeta,
 	TableColumn,
 	TableConfig,
 	TableDisplay,
@@ -178,9 +180,28 @@ export const createTableStore = (initData: {
 	config?: TableConfig
 	modal?: TableModal
 	linkResolver?: ((doctype: string, id: string) => Promise<string | undefined>) | null
+	resolveCurrencyMeta?: (() => Promise<CurrencyMeta | undefined>) | null
+	resolveItemUomMeta?: ((itemId: string) => Promise<ItemUomMeta | undefined>) | null
 }) => {
 	const id = initData.id || generateHash()
 	const linkResolver = initData.linkResolver ?? null
+
+	const resolveCurrencyMeta = initData.resolveCurrencyMeta ?? null
+	let currencyMetaPromise: Promise<CurrencyMeta | undefined> | null = null
+	const getCurrencyMeta = (): Promise<CurrencyMeta | undefined> => {
+		if (!resolveCurrencyMeta) return Promise.resolve(undefined)
+		if (!currencyMetaPromise) currencyMetaPromise = resolveCurrencyMeta()
+		return currencyMetaPromise
+	}
+
+	const resolveItemUomMeta = initData.resolveItemUomMeta ?? null
+	const itemUomMetaCache = new Map<string, Promise<ItemUomMeta | undefined>>()
+	const getItemUomMeta = (itemId: string): Promise<ItemUomMeta | undefined> => {
+		if (!resolveItemUomMeta) return Promise.resolve(undefined)
+		if (!itemUomMetaCache.has(itemId)) itemUomMetaCache.set(itemId, resolveItemUomMeta(itemId))
+		return itemUomMetaCache.get(itemId)!
+	}
+
 	const createStore = defineStore(`table-${id}`, () => {
 		const createDisplayObject = () => {
 			const defaultDisplay: TableDisplay[] = [Object.assign({}, { rowModified: false })]
@@ -938,6 +959,8 @@ export const createTableStore = (initData: {
 
 			// resolver
 			linkResolver,
+			getCurrencyMeta,
+			getItemUomMeta,
 
 			// actions
 			addRow,

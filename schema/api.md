@@ -1380,6 +1380,8 @@ export interface ValueField {
   primaryKey?: boolean;
   readOnly?: boolean;
   required?: boolean;
+  resolveCurrencyMeta?: string;
+  resolveItemUomMeta?: string;
   source?: 'introspected';
   validation?: FieldValidation;
   width?: string;
@@ -1410,6 +1412,8 @@ export interface ValueField {
 | primaryKey? | `boolean` | True for the field that identifies the record's primary-key column. |
 | readOnly? | `boolean` | Whether the field is read-only |
 | required? | `boolean` | Whether the field is required |
+| resolveCurrencyMeta? | `string` |  |
+| resolveItemUomMeta? | `string` |  |
 | source? | `'introspected'` | Provenance marker — stamped only by the GraphQL converter; absence means hand-authored. When present, the docbuilder freezes the field's identity set (`fieldname`, `primaryKey`, `required`, `options`, `cardinality`, `doctype`), since `fieldname` is the GraphQL/column binding and `doctype` is the FK's target. `component` is deliberately **not** frozen: it chooses the widget, which is an authoring decision the database has no opinion about. |
 | validation? | `FieldValidation` | Validation configuration |
 | width? | `string` | CSS width (e.g. `"40ch"`, `"200px"`) |
@@ -2145,6 +2149,8 @@ export const ValueFieldSchema: z.ZodObject<{
         noneOrMany: "noneOrMany";
         atLeastOne: "atLeastOne";
     }>>;
+    resolveCurrencyMeta: z.ZodOptional<z.ZodString>;
+    resolveItemUomMeta: z.ZodOptional<z.ZodString>;
     source: z.ZodOptional<z.ZodLiteral<"introspected">>;
 }, z.core.$strip>
 ```

@@ -800,3 +800,22 @@ export interface RowClickEvent {
 	 */
 	event?: MouseEvent
 }
+
+/**
+ * @public
+ */
+export interface CurrencyMeta {
+	currencyCode: string
+	currencyName: string
+	currencySymbol: string
+	precision?: number
+	exchangeRate: number
+}
+
+/**
+ * @public
+ */
+export interface ItemUomMeta {
+	stockUom: string
+	conversionFactors: Record<string, number>
+}

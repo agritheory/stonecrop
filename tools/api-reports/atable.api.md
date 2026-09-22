@@ -129,6 +129,8 @@ export const createTableStore: (initData: {
     config?: TableConfig;
     modal?: TableModal;
     linkResolver?: ((doctype: string, id: string) => Promise<string | undefined>) | null;
+    resolveCurrencyMeta?: (() => Promise<CurrencyMeta | undefined>) | null;
+    resolveItemUomMeta?: ((itemId: string) => Promise<ItemUomMeta | undefined>) | null;
 }) => Store<`table-${string}`, Pick<{
 columns: Ref<    {
 name: string;
@@ -951,6 +953,8 @@ isDependencyGraphEnabled: ComputedRef<boolean>;
 numberedRowWidth: ComputedRef<string>;
 zeroColumn: ComputedRef<boolean>;
 linkResolver: ((doctype: string, id: string) => Promise<string | undefined>) | null;
+getCurrencyMeta: () => Promise<CurrencyMeta | undefined>;
+getItemUomMeta: (itemId: string) => Promise<ItemUomMeta | undefined>;
 addRow: (rowData?: Partial<TableRow>, position?: "start" | "end" | number) => number;
 clearFilter: (colIndex: number) => void;
 closeModal: (event: MouseEvent) => void;
@@ -1833,6 +1837,8 @@ isDependencyGraphEnabled: ComputedRef<boolean>;
 numberedRowWidth: ComputedRef<string>;
 zeroColumn: ComputedRef<boolean>;
 linkResolver: ((doctype: string, id: string) => Promise<string | undefined>) | null;
+getCurrencyMeta: () => Promise<CurrencyMeta | undefined>;
+getItemUomMeta: (itemId: string) => Promise<ItemUomMeta | undefined>;
 addRow: (rowData?: Partial<TableRow>, position?: "start" | "end" | number) => number;
 clearFilter: (colIndex: number) => void;
 closeModal: (event: MouseEvent) => void;
@@ -2715,6 +2721,8 @@ isDependencyGraphEnabled: ComputedRef<boolean>;
 numberedRowWidth: ComputedRef<string>;
 zeroColumn: ComputedRef<boolean>;
 linkResolver: ((doctype: string, id: string) => Promise<string | undefined>) | null;
+getCurrencyMeta: () => Promise<CurrencyMeta | undefined>;
+getItemUomMeta: (itemId: string) => Promise<ItemUomMeta | undefined>;
 addRow: (rowData?: Partial<TableRow>, position?: "start" | "end" | number) => number;
 clearFilter: (colIndex: number) => void;
 closeModal: (event: MouseEvent) => void;
@@ -2775,7 +2783,24 @@ unregisterConnectionHandle: (handleId: string) => void;
 unregisterGanttBar: (barId: string) => void;
 updateGanttBar: (event: GanttDragEvent) => void;
 updateRows: (newRows: TableRow[]) => void;
-}, "addRow" | "clearFilter" | "closeModal" | "createConnection" | "deleteConnection" | "deleteRow" | "duplicateRow" | "getCellData" | "getCellDisplayValue" | "getConnectionsForBar" | "getFormattedValue" | "getHandlesForBar" | "getHeaderCellStyle" | "getRowExpandSymbol" | "insertRowAbove" | "insertRowBelow" | "isRowGantt" | "isRowVisible" | "moveRow" | "registerConnectionHandle" | "registerGanttBar" | "resizeColumn" | "setCellData" | "setCellText" | "setFilter" | "sortByColumn" | "toggleRowExpand" | "unregisterConnectionHandle" | "unregisterGanttBar" | "updateGanttBar" | "updateRows">>;
+}, "getCurrencyMeta" | "getItemUomMeta" | "addRow" | "clearFilter" | "closeModal" | "createConnection" | "deleteConnection" | "deleteRow" | "duplicateRow" | "getCellData" | "getCellDisplayValue" | "getConnectionsForBar" | "getFormattedValue" | "getHandlesForBar" | "getHeaderCellStyle" | "getRowExpandSymbol" | "insertRowAbove" | "insertRowBelow" | "isRowGantt" | "isRowVisible" | "moveRow" | "registerConnectionHandle" | "registerGanttBar" | "resizeColumn" | "setCellData" | "setCellText" | "setFilter" | "sortByColumn" | "toggleRowExpand" | "unregisterConnectionHandle" | "unregisterGanttBar" | "updateGanttBar" | "updateRows">>;
+
+// @public (undocumented)
+export interface CurrencyMeta {
+    // (undocumented)
+    currencyCode: string;
+    // (undocumented)
+    currencyName: string;
+    // (undocumented)
+    currencySymbol: string;
+    // (undocumented)
+    exchangeRate: number;
+    // (undocumented)
+    precision?: number;
+}
+
+// @public (undocumented)
+export const CurrencyValueCell: typeof __VLS_export_11;
 
 // @public
 export const DeleteIcon: string;
@@ -2865,6 +2890,17 @@ export const InsertBelowIcon: string;
 
 // @public
 export function install(app: App): void;
+
+// @public (undocumented)
+export const ItemsTableSection: typeof __VLS_export_12;
+
+// @public (undocumented)
+export interface ItemUomMeta {
+    // (undocumented)
+    conversionFactors: Record<string, number>;
+    // (undocumented)
+    stockUom: string;
+}
 
 // @public
 export const MoveIcon: string;
