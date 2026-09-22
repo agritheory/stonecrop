@@ -26,6 +26,25 @@ export declare function aggregateDoctypeName(doctypeName: string): string;
 |-----------|------|-------------|
 | doctypeName | `string` | the entity doctype's `name` |
 
+### attachWorkflows
+
+Attach `workflow` to converted doctypes that have a matching machine.
+
+Joins on `pascalToSnake` of the GraphQL type name (`Resource` → `resource`). A `doctypeNames` remap does not change the join — the machine is keyed by the SQL doctype.
+
+**Signature:**
+
+```typescript
+export declare function attachWorkflows(doctypes: ConvertedGraphQLDoctype[], machines: readonly StateMachineConfig[]): ConvertedGraphQLDoctype[];
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| doctypes | `ConvertedGraphQLDoctype[]` |  |
+| machines | `readonly StateMachineConfig[]` |  |
+
 ### buildAggregateDoctype
 
 Derive the aggregate doctype for a converted entity.
@@ -204,6 +223,25 @@ export declare function defaultIsEntityType(typeName: string, type: GraphQLObjec
 | typeName | `string` | The GraphQL type name |
 | type | `GraphQLObjectType` | The GraphQL object type definition |
 
+### fetchWorkflowMachines
+
+Fetch FSM definitions from a GraphQL endpoint.
+
+Reads `allStateMachines` and the states, events, and transitions on each row. That table is the inventory: a host allow-list such as `listWorkflowEntityTypes` is only the fallback for a server that does not expose the catalog.
+
+**Signature:**
+
+```typescript
+export declare function fetchWorkflowMachines(endpoint: string, headers?: Record<string, string>): Promise<StateMachineConfig[]>;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| endpoint | `string` |  |
+| headers | `Record<string, string>` |  |
+
 ### flattenFields
 
 Recursively flatten Fieldset containers into a flat array of non-container fields. Fieldset entries are replaced by their children; all other fields pass through.
@@ -241,6 +279,39 @@ export declare function formatDoctypeDrift(drift: DoctypeDrift): string[];
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | drift | `DoctypeDrift` | a report from `mergeIntrospectedDoctype` |
+
+### fromMachineConfig
+
+Adapt `GET_MACHINE_CONFIG` JSON to `StateMachineConfig`.
+
+**Signature:**
+
+```typescript
+export declare function fromMachineConfig(doctype: string, config: MachineConfigJson): StateMachineConfig;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| doctype | `string` |  |
+| config | `MachineConfigJson` |  |
+
+### fromStonecropBridge
+
+Adapt the live Stonecrop bridge query result to `StateMachineConfig`.
+
+**Signature:**
+
+```typescript
+export declare function fromStonecropBridge(payload: StonecropBridgeWorkflow): StateMachineConfig;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| payload | `StonecropBridgeWorkflow` |  |
 
 ### getDisplayField
 
@@ -488,6 +559,40 @@ export declare function lookupBadge(options: FieldOptions | undefined, key: stri
 |-----------|------|-------------|
 | options | `FieldOptions \| undefined` |  |
 | key | `string \| undefined` |  |
+
+### machinesFromCatalog
+
+Map a page of state-machine rows onto `StateMachineConfig`.
+
+Inactive machines and inactive transitions are omitted. Event descriptions become action labels.
+
+**Signature:**
+
+```typescript
+export declare function machinesFromCatalog(nodes: readonly StateMachineCatalogNode[]): StateMachineConfig[];
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| nodes | `readonly StateMachineCatalogNode[]` |  |
+
+### machineToWorkflow
+
+Map a normalized machine onto Stonecrop `WorkflowMeta`.
+
+**Signature:**
+
+```typescript
+export declare function machineToWorkflow(machine: StateMachineConfig): WorkflowMeta;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| machine | `StateMachineConfig` |  |
 
 ### mergeIntrospectedDoctype
 
@@ -967,6 +1072,7 @@ export interface DoctypeDrift {
   reason?: string;
   requiredDrift: string[];
   tagged: string[];
+  workflowDrift: string[];
 }
 ```
 
@@ -983,6 +1089,7 @@ export interface DoctypeDrift {
 | reason? | `string` | Why the mode is `partial`, when it is. |
 | requiredDrift | `string[]` | `fieldname: authored=… schema=…` where nullability disagrees. |
 | tagged | `string[]` | Fieldnames confirmed against the schema and stamped. |
+| workflowDrift | `string[]` | Workflow structure disagreements between authored and generated FSM mapping. |
 
 ### DoctypeRef
 
@@ -1224,6 +1331,43 @@ export interface GraphQLConversionOptions {
 | isEntityType? | `(typeName: string, type: GraphQLObjectType) => boolean` | Custom function to determine if a GraphQL object type represents an entity (→ doctype). When provided, replaces the default heuristic entirely. The default heuristic excludes types matching synthetic patterns: `*Connection`, `*Edge`, `*Input`, `*Patch`, `*Payload`, `*Condition`, `*Filter`, `*OrderBy`, `*Aggregate`, `Query`, `Mutation`, `Subscription`, `__*`. |
 | onWarning? | `(message: string) => void` | Called with any advisory message raised during conversion — currently only the un-normalized-PostGraphile warning. Left to the caller so the library never writes to the console itself. |
 
+### MachineConfigJson
+
+XState-compatible JSON from `GET_MACHINE_CONFIG`.
+
+**Definition:**
+
+```typescript
+export interface MachineConfigJson {
+  context?: unknown;
+  id?: string;
+  initial?: string;
+  states?: Record<string, {
+        on?: {
+            target?: string;
+            event?: string;
+            guard?: string;
+            actions?: unknown;
+        }[];
+        type?: string;
+        meta?: {
+            label?: string;
+        };
+    }>;
+  version?: string;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| context? | `unknown` |  |
+| id? | `string` |  |
+| initial? | `string` |  |
+| states? | `Record<string, { on?: { target?: string; event?: string; guard?: string; actions?: unknown; }[]; type?: string; meta?: { label?: string; }; }>` |  |
+| version? | `string` |  |
+
 ### MergeOptions
 
 How to verify the authored doctype against the schema.
@@ -1281,6 +1425,123 @@ export interface SelectOptions {
 |----------|------|-------------|
 | badges? | `Record<string, BadgeSpec>` |  |
 | choices | `string[]` |  |
+
+### StateMachineCatalogNode
+
+One page of `allStateMachines`, including the states, events, and transitions PostGraphile nests on each machine. This is the inventory. `listWorkflowEntityTypes` is a host allow-list and is not.
+
+**Definition:**
+
+```typescript
+export interface StateMachineCatalogNode {
+  doctype: string;
+  initialState: string;
+  isActive?: boolean | null;
+  stateMachineEventsByMachineId?: {
+        nodes?: {
+            eventType: string;
+            description?: string | null;
+        }[] | null;
+    } | null;
+  stateMachineStatesByMachineId?: {
+        nodes?: {
+            stateKey: string;
+            displayName?: string | null;
+        }[] | null;
+    } | null;
+  stateMachineTransitionsByMachineId?: {
+        nodes?: {
+            sourceStateKey: string;
+            targetStateKey: string;
+            eventType?: string | null;
+            isActive?: boolean | null;
+        }[] | null;
+    } | null;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| doctype | `string` |  |
+| initialState | `string` |  |
+| isActive? | `boolean \| null` |  |
+| stateMachineEventsByMachineId? | `{ nodes?: { eventType: string; description?: string \| null; }[] \| null; } \| null` |  |
+| stateMachineStatesByMachineId? | `{ nodes?: { stateKey: string; displayName?: string \| null; }[] \| null; } \| null` |  |
+| stateMachineTransitionsByMachineId? | `{ nodes?: { sourceStateKey: string; targetStateKey: string; eventType?: string \| null; isActive?: boolean \| null; }[] \| null; } \| null` |  |
+
+### StateMachineConfig
+
+Normalized machine shape both adapters produce before mapping to `WorkflowMeta`.
+
+**Definition:**
+
+```typescript
+export interface StateMachineConfig {
+  doctype: string;
+  initialState: string;
+  states: {
+        key: string;
+        name?: string;
+    }[];
+  transitions: {
+        from: string;
+        to: string;
+        event?: string;
+        description?: string;
+    }[];
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| doctype | `string` | SQL doctype name (snake_case), e.g. `registered_function`. |
+| initialState | `string` |  |
+| states | `{ key: string; name?: string; }[]` |  |
+| transitions | `{ from: string; to: string; event?: string; description?: string; }[]` |  |
+
+### StonecropBridgeWorkflow
+
+Payload returned by Orpin's `getStonecropWorkflowMeta` GraphQL query.
+
+**Definition:**
+
+```typescript
+export interface StonecropBridgeWorkflow {
+  entityType: string;
+  events?: {
+        type: string;
+        description?: string | null;
+    }[] | null;
+  initialState: string;
+  machineId?: string;
+  states?: {
+        key: string;
+        name?: string;
+        type?: string;
+    }[] | null;
+  transitions?: {
+        from: string;
+        to: string;
+        event: string;
+        priority?: number | null;
+    }[] | null;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| entityType | `string` |  |
+| events? | `{ type: string; description?: string \| null; }[] \| null` |  |
+| initialState | `string` |  |
+| machineId? | `string` |  |
+| states? | `{ key: string; name?: string; type?: string; }[] \| null` |  |
+| transitions? | `{ from: string; to: string; event: string; priority?: number \| null; }[] \| null` |  |
 
 ### TableField
 

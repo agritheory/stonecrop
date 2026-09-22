@@ -27,6 +27,9 @@ export type ActionDefinition = z.infer<typeof ActionDefinition>;
 export function aggregateDoctypeName(doctypeName: string): string;
 
 // @public
+export function attachWorkflows(doctypes: ConvertedGraphQLDoctype[], machines: readonly StateMachineConfig[]): ConvertedGraphQLDoctype[];
+
+// @public
 export type AuthoredDoctype = Record<string, unknown>;
 
 // @public
@@ -186,6 +189,7 @@ export interface DoctypeDrift {
     reason?: string;
     requiredDrift: string[];
     tagged: string[];
+    workflowDrift: string[];
 }
 
 // @public
@@ -285,6 +289,9 @@ export const FetchStrategy: z.ZodDiscriminatedUnion<[z.ZodObject<{
 export type FetchStrategy = z.infer<typeof FetchStrategy>;
 
 // @public
+export function fetchWorkflowMachines(endpoint: string, headers?: Record<string, string>): Promise<StateMachineConfig[]>;
+
+// @public
 export const FieldOptions: z.ZodUnion<readonly [z.ZodArray<z.ZodString>, z.ZodRecord<z.ZodString, z.ZodUnknown>]>;
 
 // @public
@@ -329,6 +336,12 @@ export function flattenFields(fields: readonly DoctypeField[]): (ValueField | Ta
 
 // @public
 export function formatDoctypeDrift(drift: DoctypeDrift): string[];
+
+// @public
+export function fromMachineConfig(doctype: string, config: MachineConfigJson): StateMachineConfig;
+
+// @public
+export function fromStonecropBridge(payload: StonecropBridgeWorkflow): StateMachineConfig;
 
 // @public
 export interface GenerationPlanEntry {
@@ -495,6 +508,37 @@ export type LinkRenderMode = 'inline' | 'record' | 'table';
 export function lookupBadge(options: FieldOptions | undefined, key: string | undefined): BadgeDescriptor | undefined;
 
 // @public
+export interface MachineConfigJson {
+    // (undocumented)
+    context?: unknown;
+    // (undocumented)
+    id?: string;
+    // (undocumented)
+    initial?: string;
+    // (undocumented)
+    states?: Record<string, {
+        on?: {
+            target?: string;
+            event?: string;
+            guard?: string;
+            actions?: unknown;
+        }[];
+        type?: string;
+        meta?: {
+            label?: string;
+        };
+    }>;
+    // (undocumented)
+    version?: string;
+}
+
+// @public
+export function machinesFromCatalog(nodes: readonly StateMachineCatalogNode[]): StateMachineConfig[];
+
+// @public
+export function machineToWorkflow(machine: StateMachineConfig): WorkflowMeta;
+
+// @public
 export function mergeIntrospectedDoctype(authored: AuthoredDoctype, generated: ConvertedGraphQLDoctype, options?: MergeOptions): MergeResult;
 
 // @public
@@ -548,6 +592,86 @@ export function snakeToCamel(snakeCase: string): string;
 
 // @public
 export function snakeToLabel(snakeCase: string): string;
+
+// @public
+export interface StateMachineCatalogNode {
+    // (undocumented)
+    doctype: string;
+    // (undocumented)
+    initialState: string;
+    // (undocumented)
+    isActive?: boolean | null;
+    // (undocumented)
+    stateMachineEventsByMachineId?: {
+        nodes?: {
+            eventType: string;
+            description?: string | null;
+        }[] | null;
+    } | null;
+    // (undocumented)
+    stateMachineStatesByMachineId?: {
+        nodes?: {
+            stateKey: string;
+            displayName?: string | null;
+        }[] | null;
+    } | null;
+    // (undocumented)
+    stateMachineTransitionsByMachineId?: {
+        nodes?: {
+            sourceStateKey: string;
+            targetStateKey: string;
+            eventType?: string | null;
+            isActive?: boolean | null;
+        }[] | null;
+    } | null;
+}
+
+// @public
+export interface StateMachineConfig {
+    doctype: string;
+    // (undocumented)
+    initialState: string;
+    // (undocumented)
+    states: {
+        key: string;
+        name?: string;
+    }[];
+    // (undocumented)
+    transitions: {
+        from: string;
+        to: string;
+        event?: string;
+        description?: string;
+    }[];
+}
+
+// @public
+export interface StonecropBridgeWorkflow {
+    // (undocumented)
+    entityType: string;
+    // (undocumented)
+    events?: {
+        type: string;
+        description?: string | null;
+    }[] | null;
+    // (undocumented)
+    initialState: string;
+    // (undocumented)
+    machineId?: string;
+    // (undocumented)
+    states?: {
+        key: string;
+        name?: string;
+        type?: string;
+    }[] | null;
+    // (undocumented)
+    transitions?: {
+        from: string;
+        to: string;
+        event: string;
+        priority?: number | null;
+    }[] | null;
+}
 
 // @public
 export function stripFieldKind(field: unknown): unknown;
