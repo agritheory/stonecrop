@@ -20,7 +20,7 @@
 				</div>
 			</div>
 
-			<aside v-if="actionSetPreviewOpen && actionSetPreviewSubject" class="desktop__preview">
+			<aside v-if="actionSetPreviewSubject" class="desktop__preview">
 				<header class="desktop__preview-header">
 					<button
 						type="button"
@@ -37,16 +37,13 @@
 		</div>
 
 		<ActionSet
-			v-if="actionSetController"
-			ref="actionSetRef"
 			:slots="visibleActionSetSlots"
 			:elements="actionElements"
 			:controller="actionSetController"
 			@action-click="handleActionClick"
-			@drawer-change="actionSetDrawerOpen = $event"
 			@search="commandPaletteOpen = true" />
 
-		<SheetNav :breadcrumbs="navigationBreadcrumbs">
+		<SheetNav class="desktop__sheetnav" :breadcrumbs="navigationBreadcrumbs">
 			<template #toolbar>
 				<slot name="sheetnav-toolbar" />
 			</template>
@@ -80,12 +77,12 @@ import {
 	type ResolvedField,
 	type ResolvedTable,
 } from '@stonecrop/aform'
-import { computed, markRaw, onMounted, onUnmounted, provide, ref, shallowRef, unref, useSlots, watch } from 'vue'
+import { computed, markRaw, onMounted, onUnmounted, provide, ref, unref, watch } from 'vue'
 
 import ActionSet from './ActionSet.vue'
 import SheetNav from './SheetNav.vue'
 import CommandPalette from './CommandPalette.vue'
-import { createActionSet, actionSetKey, type ActionSetController } from '../composables/useActionSet'
+import { createActionSet, actionSetKey } from '../composables/useActionSet'
 import type {
 	ActionElements,
 	RouteAdapter,
@@ -104,12 +101,17 @@ const {
 	hostActions,
 } = defineProps<{
 	availableDoctypes?: string[]
+	/**
+	 * Pluggable router adapter. When provided, Desktop uses these functions for all
+	 * routing instead of reaching into the registry's internal Vue Router instance.
+	 * Nuxt hosts (or any host with custom route conventions) should supply this.
+	 */
 	routeAdapter?: RouteAdapter
+	/** Host drawer slots, each shown as a tile in the ActionSet column. */
 	actionSetSlots?: ActionSetSlot[]
+	/** When provided, the Actions drawer lists exactly these, in place of the actions Desktop derives from the doctype. */
 	hostActions?: ActionElements[]
 }>()
-
-const slots = useSlots()
 
 const emit = defineEmits<{
 	/**
@@ -519,7 +521,7 @@ const getAvailableCommands = () => {
 }
 
 const actionElements = computed(() => {
-	if (slots.default && hostActions?.length) {
+	if (hostActions) {
 		return hostActions
 	}
 
@@ -1017,16 +1019,12 @@ const handleKeydown = (event: KeyboardEvent) => {
 			commandPaletteOpen.value = false
 			return
 		}
-		if (actionSetController.value?.isPreviewOpen.value) {
-			actionSetController.value.closePreview()
+		if (actionSetController.isPreviewOpen.value) {
+			actionSetController.closePreview()
 			return
 		}
-		if (actionSetDrawerOpen.value) {
-			actionSetRef.value?.closeDrawer()
-			return
-		}
-		if (actionSetController.value?.activeSlotId.value) {
-			actionSetController.value.close()
+		if (actionSetController.isDrawerOpen.value) {
+			actionSetController.close()
 		}
 	}
 }
@@ -1042,42 +1040,19 @@ const visibleActionSetSlots = computed(() =>
 		)
 )
 
-const actionSetRef = ref<{ closeDrawer: () => void } | null>(null)
-const actionSetDrawerOpen = ref(false)
-const actionSetPreviewOpen = ref(false)
-const actionSetController = shallowRef<ActionSetController | null>(null)
-
-function ensureActionSetController() {
-	if (actionSetController.value) {
-		return
-	}
-	actionSetController.value = createActionSet({
-		doctype: currentDoctype,
-		recordId: currentRecordId,
-		onDrawerChange: open => {
-			actionSetDrawerOpen.value = open
-		},
-		onPreviewChange: open => {
-			actionSetPreviewOpen.value = open
-		},
-	})
-}
-
-ensureActionSetController()
-
+const actionSetController = createActionSet({ doctype: currentDoctype, recordId: currentRecordId })
 provide(actionSetKey, actionSetController)
 
-const actionSetPreviewSubject = computed(() => actionSetController.value?.previewSubject.value ?? null)
+const actionSetDrawerOpen = computed(() => actionSetController.isDrawerOpen.value)
+const actionSetPreviewOpen = computed(() => actionSetController.isPreviewOpen.value)
+const actionSetPreviewSubject = computed(() => actionSetController.previewSubject.value)
 
-watch(
-	() => [currentDoctype.value, currentRecordId.value] as const,
-	() => {
-		actionSetController.value?.reset()
-	}
-)
+watch([currentDoctype, currentRecordId], () => {
+	actionSetController.close()
+})
 
 function closeActionSetPreview() {
-	actionSetController.value?.closePreview()
+	actionSetController.closePreview()
 }
 
 onMounted(() => {
@@ -1109,7 +1084,16 @@ onUnmounted(() => {
 }
 
 .desktop--action-set-open .desktop__workspace {
-	margin-right: var(--sc-action-set-drawer-width, 380px);
+	margin-right: var(--sc-action-set-drawer-width);
+}
+
+/* SheetNav is fixed to the viewport, so the workspace margin does not move it clear of the drawer. */
+.desktop__sheetnav {
+	transition: right 0.25s ease-out;
+}
+
+.desktop--action-set-open .desktop__sheetnav {
+	right: var(--sc-action-set-drawer-width);
 }
 
 .desktop__main {

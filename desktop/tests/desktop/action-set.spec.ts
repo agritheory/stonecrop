@@ -1,12 +1,12 @@
-import { mount } from '@vue/test-utils'
+import { mount, type VueWrapper } from '@vue/test-utils'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { defineComponent, nextTick, ref } from 'vue'
+import { defineComponent, nextTick, ref, type Component } from 'vue'
 
 import { Registry, Stonecrop } from '@stonecrop/stonecrop'
 
 import Desktop from '../../src/components/Desktop.vue'
 import { useActionSet } from '../../src/composables/useActionSet'
-import type { ActionSetSlot, RouteAdapter } from '../../src/types'
+import type { ActionElements, ActionSetSlot, RouteAdapter } from '../../src/types'
 
 import { buildDoctype, findActionSet, makeStonecropPlugin, openActionsDrawer } from './desktop.helpers'
 
@@ -263,7 +263,7 @@ describe('Desktop ActionSet', { tags: ['component'] }, () => {
 			},
 		})
 
-		expect(() => mount(Orphan)).toThrow('useActionSet() must be called inside Desktop with actionSetSlots configured')
+		expect(() => mount(Orphan)).toThrow(/^useActionSet\(\) must be called inside a component rendered by Desktop$/)
 	})
 
 	it('exposes action elements on the ActionSet component', async () => {
@@ -273,5 +273,194 @@ describe('Desktop ActionSet', { tags: ['component'] }, () => {
 		const actionSet = findActionSet(wrapper)
 		const elements = actionSet.props('elements') as { label: string }[]
 		expect(elements.some(e => e.label === 'Actions')).toBe(true)
+	})
+})
+
+describe('Desktop ActionSet drawer state', { tags: ['component'] }, () => {
+	function mountOnRoute(
+		options: { actionSetSlots?: ActionSetSlot[]; hostActions?: ActionElements[]; defaultSlot?: Component } = {}
+	) {
+		const recordId = ref('rec-1')
+		const adapter: RouteAdapter = {
+			getCurrentDoctype: () => 'task',
+			getCurrentRecordId: () => recordId.value,
+			getCurrentView: () => 'record',
+			navigate: vi.fn(),
+		}
+		const registry = new Registry()
+		const stonecrop = new Stonecrop(registry)
+		registry.addDoctype(
+			buildDoctype('task', 'draft', { draft: { on: { SUBMIT: 'submitted' } }, submitted: { type: 'final' } })
+		)
+		stonecrop.addRecord('task', 'rec-1', { id: 'rec-1', title: 'One', status: 'draft' })
+		stonecrop.addRecord('task', 'rec-2', { id: 'rec-2', title: 'Two', status: 'draft' })
+
+		const wrapper = mount(Desktop, {
+			attachTo: document.body,
+			props: {
+				routeAdapter: adapter,
+				...(options.actionSetSlots ? { actionSetSlots: options.actionSetSlots } : {}),
+				...(options.hostActions ? { hostActions: options.hostActions } : {}),
+			},
+			slots: options.defaultSlot ? { default: options.defaultSlot } : {},
+			global: {
+				plugins: [makeStonecropPlugin(registry, stonecrop)],
+				stubs: { AForm: true, SheetNav: true, CommandPalette: true },
+			},
+		})
+		return { wrapper, recordId }
+	}
+
+	const drawerState = (wrapper: VueWrapper) => ({
+		drawer: wrapper.find('.action-set__drawer').exists(),
+		workspacePushed: wrapper.find('.desktop').classes().includes('desktop--action-set-open'),
+	})
+
+	const escape = async () => {
+		document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+		await nextTick()
+	}
+
+	afterEach(() => {
+		document.body.innerHTML = ''
+	})
+
+	it('closes the Actions drawer when the route moves to another record', async () => {
+		const { wrapper, recordId } = mountOnRoute()
+		await nextTick()
+		await openActionsDrawer(wrapper)
+		expect(drawerState(wrapper)).toEqual({ drawer: true, workspacePushed: true })
+
+		recordId.value = 'rec-2'
+		await nextTick()
+		await nextTick()
+
+		expect(drawerState(wrapper)).toEqual({ drawer: false, workspacePushed: false })
+	})
+
+	it('closes a slot drawer when the route moves to another record', async () => {
+		const { wrapper, recordId } = mountOnRoute({ actionSetSlots: [{ id: 'files', label: 'Files' }] })
+		await nextTick()
+		await wrapper.find('.action-set__item[aria-label="Files"]').trigger('click')
+		expect(drawerState(wrapper)).toEqual({ drawer: true, workspacePushed: true })
+
+		recordId.value = 'rec-2'
+		await nextTick()
+		await nextTick()
+
+		expect(drawerState(wrapper)).toEqual({ drawer: false, workspacePushed: false })
+	})
+
+	it('emits the workflow action when a transition is clicked in the drawer', async () => {
+		const { wrapper } = mountOnRoute()
+		await nextTick()
+		await openActionsDrawer(wrapper)
+		await wrapper.find('.action-set__actions-list-item').trigger('click')
+
+		expect(wrapper.emitted('action')?.[0]?.[0]).toMatchObject({ name: 'SUBMIT', doctype: 'task', recordId: 'rec-1' })
+	})
+
+	it.each([
+		['without', undefined],
+		['with', defineComponent({ template: '<p>host page</p>' })],
+	])('lists hostActions in place of derived actions %s a default slot', async (_, defaultSlot) => {
+		const { wrapper } = mountOnRoute({
+			hostActions: [{ type: 'button', label: 'Host action', action: () => {} }],
+			defaultSlot,
+		})
+		await nextTick()
+
+		const labels = (findActionSet(wrapper).props('elements') as { label: string }[]).map(e => e.label)
+		expect(labels).toEqual(['Host action'])
+	})
+
+	it('treats an empty hostActions as a declaration of no actions', async () => {
+		const { wrapper } = mountOnRoute({ hostActions: [] })
+		await nextTick()
+		expect(wrapper.find('.action-set__item[aria-label="Actions"]').exists()).toBe(false)
+	})
+
+	it('labels each dropdown group in the Actions drawer', async () => {
+		const { wrapper } = mountOnRoute({
+			hostActions: [
+				{ type: 'dropdown', label: 'More', actions: [{ label: 'Duplicate', action: () => {} }] },
+				{ type: 'dropdown', label: 'Export', actions: [{ label: 'CSV', action: () => {} }] },
+			],
+		})
+		await nextTick()
+		await openActionsDrawer(wrapper)
+
+		const labels = wrapper.findAll('.action-set__actions-group-label').map(label => label.text())
+		expect(labels).toEqual(['More', 'Export'])
+	})
+
+	it('renders an entry that carries only a link as a link', async () => {
+		const { wrapper } = mountOnRoute({
+			hostActions: [
+				{ type: 'button', label: 'Guide', link: '/guide' },
+				{ type: 'dropdown', label: 'More', actions: [{ label: 'Docs', link: '/docs' }] },
+			],
+		})
+		await nextTick()
+		await openActionsDrawer(wrapper)
+
+		const links = wrapper.findAll('.action-set__drawer a').map(link => [link.text(), link.attributes('href')])
+		expect(links).toEqual([
+			['Guide', '/guide'],
+			['Docs', '/docs'],
+		])
+	})
+
+	it('does not announce the drawer as a modal dialog', async () => {
+		const { wrapper } = mountOnRoute()
+		await nextTick()
+		await openActionsDrawer(wrapper)
+
+		const drawer = wrapper.find('.action-set__drawer')
+		expect(drawer.attributes('aria-modal')).toBeUndefined()
+		expect(drawer.attributes('role')).not.toBe('dialog')
+	})
+
+	it('leaves Tab to the browser so focus can reach the page and the preview', async () => {
+		const { wrapper } = mountOnRoute()
+		await nextTick()
+		await openActionsDrawer(wrapper)
+
+		const items = wrapper.findAll('.action-set__drawer button')
+		const last = items[items.length - 1].element as HTMLElement
+		last.focus()
+		const tab = new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true })
+		last.dispatchEvent(tab)
+
+		expect(tab.defaultPrevented).toBe(false)
+	})
+
+	it('closes the preview first, then the drawer, on successive Escapes', async () => {
+		const { wrapper } = mountOnRoute({ actionSetSlots: [{ id: 'files', label: 'Files', component: PreviewSlot }] })
+		await nextTick()
+		await wrapper.find('.action-set__item[aria-label="Files"]').trigger('click')
+		await wrapper.find('.open-preview').trigger('click')
+		expect(wrapper.find('.stub-preview').exists()).toBe(true)
+
+		await escape()
+		expect(wrapper.find('.stub-preview').exists()).toBe(false)
+		expect(drawerState(wrapper).drawer).toBe(true)
+
+		await escape()
+		expect(drawerState(wrapper)).toEqual({ drawer: false, workspacePushed: false })
+	})
+
+	it('provides useActionSet to default-slot content when no slots are configured', async () => {
+		let context: ReturnType<typeof useActionSet> | undefined
+		const HostPage = defineComponent({
+			setup() {
+				context = useActionSet()
+				return () => null
+			},
+		})
+		mountOnRoute({ hostActions: [], defaultSlot: HostPage })
+		await nextTick()
+
+		expect(context?.recordId.value).toBe('rec-1')
 	})
 })

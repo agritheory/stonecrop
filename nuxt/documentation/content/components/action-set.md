@@ -87,7 +87,7 @@ Inside a slot component, call `useActionSet().present({ view, props })` to open 
 headers: ['Name', 'Type', 'Description']
 rows:
   - ['`actionSetSlots`', '`ActionSetSlot[]`', 'Host drawer slots shown as tiles alongside Search and Actions.']
-  - ['`hostActions`', '`ActionElements[]`', 'Custom action list when using Desktop `#default` slot (replaces FSM-derived actions).']
+  - ['`hostActions`', '`ActionElements[]`', 'Actions listed in the Actions drawer in place of those derived from the doctype; `[]` lists none.']
 ---
 ::
 
@@ -112,6 +112,6 @@ rows:
 
 ## Accessibility
 
-The tile column uses plain `<button>` elements with `aria-label` from each slot label. The expand control exposes `aria-expanded`. The open drawer is a `role="dialog"` panel with `aria-modal="true"`, traps focus while open, restores focus on close, and closes on Escape. Clicking the active tile again also closes the drawer. Preview pane close is a labeled button.
+The tile column uses plain `<button>` elements with `aria-label` from each slot label. The expand control exposes `aria-expanded`. The open drawer is a labeled `<aside>` beside the page rather than a modal: focus moves into it on open and returns on close, Tab moves on to the page and the preview, and Escape closes it. Each dropdown group in the Actions list is a labeled `role="group"`. Clicking the active tile again also closes the drawer. Preview pane close is a labeled button.
 
 Source: [`desktop/src/components/ActionSet.vue`](https://github.com/agritheory/stonecrop/blob/development/desktop/src/components/ActionSet.vue)

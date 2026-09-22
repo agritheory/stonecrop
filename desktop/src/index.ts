@@ -1,4 +1,3 @@
-import ActionSet from './components/ActionSet.vue'
 import CommandPalette from './components/CommandPalette.vue'
 import Desktop from './components/Desktop.vue'
 import SheetNav from './components/SheetNav.vue'
@@ -29,4 +28,6 @@ export type {
 	ActionSetPreview,
 } from './types'
 
-export { ActionSet, CommandPalette, Desktop, SheetNav, StonecropDesktop }
+// ActionSet is not exported: it needs the controller Desktop creates for it, so Desktop is the only
+// place it can render.
+export { CommandPalette, Desktop, SheetNav, StonecropDesktop }

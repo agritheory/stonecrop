@@ -42,11 +42,14 @@ const routeAdapter = {
 </template>
 
 <style scoped>
+/* `transform` makes this frame the containing block for Desktop's fixed-position tile column,
+   drawer and SheetNav, so they stay inside the demo instead of pinning to the docs viewport. */
 .action-set-demo-frame {
 	position: relative;
+	transform: translateZ(0);
 	min-height: 14rem;
 	overflow: hidden;
-	border: 1px solid var(--sc-gray-20, #e5e7eb);
+	border: 1px solid var(--sc-gray-20);
 }
 
 .action-set-demo-desktop {

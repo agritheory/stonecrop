@@ -9,36 +9,6 @@ description: Desktop navigation and command palette
 
 ## Vue Components
 
-### ActionSet
-
-Vue component exported from @stonecrop/desktop.
-
-```typescript
-import { ActionSet } from '@stonecrop/desktop'
-```
-
-**Props:**
-
-| Prop | Type | Required | Default | Description |
-|------|------|----------|---------|-------------|
-| slots | `ActionSetSlot[] \| undefined` | no | `[]` |  |
-| elements | `ActionElements[] \| undefined` | no | `[]` |  |
-| controller | `ActionSetController` | yes |  |  |
-
-**Events:**
-
-| Event | Payload | Description |
-|-------|---------|-------------|
-| actionClick | `[label: string, action: (() => void \| Promise<void>) \| undefined]` |  |
-| drawerChange | `[open: boolean]` |  |
-| search | `[]` |  |
-
-**Exposed:**
-
-| Name | Type |
-|------|------|
-| closeDrawer | `() => void` |
-
 ### CommandPalette
 
 Vue component exported from @stonecrop/desktop.
@@ -84,9 +54,9 @@ import { Desktop } from '@stonecrop/desktop'
 | Prop | Type | Required | Default | Description |
 |------|------|----------|---------|-------------|
 | availableDoctypes | `string[] \| undefined` | no | `[]` |  |
-| routeAdapter | `RouteAdapter \| undefined` | no |  |  |
-| actionSetSlots | `ActionSetSlot[] \| undefined` | no |  |  |
-| hostActions | `ActionElements[] \| undefined` | no |  |  |
+| routeAdapter | `RouteAdapter \| undefined` | no |  | Pluggable router adapter. When provided, Desktop uses these functions for all routing instead of reaching into the registry's internal Vue Router instance. Nuxt hosts (or any host with custom route conventions) should supply this. |
+| actionSetSlots | `ActionSetSlot[] \| undefined` | no |  | Host drawer slots, each shown as a tile in the ActionSet column. |
+| hostActions | `ActionElements[] \| undefined` | no |  | When provided, the Actions drawer lists exactly these, in place of the actions Desktop derives from the doctype. |
 
 **Events:**
 
@@ -275,6 +245,8 @@ export type ActionSetSlotId = string;
 
 ### BaseElement
 
+Base type for elements in the Action Set
+
 **Definition:**
 
 ```typescript
@@ -391,14 +363,6 @@ export type RouteAdapter = {
 ```
 
 ## Variables
-
-### ActionSet
-
-**Type:**
-
-```typescript
-export const ActionSet: typeof __VLS_export
-```
 
 ### CommandPalette
 

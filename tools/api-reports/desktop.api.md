@@ -8,7 +8,7 @@ import { ActionEventPayload } from '@stonecrop/stonecrop';
 import { Component } from 'vue';
 import { ComponentOptionsMixin } from 'vue';
 import { ComponentProvideOptions } from 'vue';
-import { ComputedRef } from 'vue';
+import type { ComputedRef } from 'vue';
 import { DefineComponent } from 'vue';
 import type { MaybeRef } from 'vue';
 import { Plugin as Plugin_2 } from 'vue';
@@ -19,9 +19,6 @@ import { VNode } from 'vue';
 export type ActionElements = ButtonElement | DropdownElement;
 
 export { ActionEventPayload }
-
-// @public (undocumented)
-export const ActionSet: typeof __VLS_export;
 
 // @public
 export type ActionSetContext = {
@@ -83,7 +80,7 @@ export type ActionSetSlot = {
 // @public
 export type ActionSetSlotId = string;
 
-// @public (undocumented)
+// @public
 export type BaseElement = {
     label: string;
     show?: boolean;
@@ -96,10 +93,10 @@ export type ButtonElement = BaseElement & ElementAction & {
 };
 
 // @public (undocumented)
-export const CommandPalette: typeof __VLS_export_2;
+export const CommandPalette: typeof __VLS_export;
 
 // @public (undocumented)
-export const Desktop: typeof __VLS_export_3;
+export const Desktop: typeof __VLS_export_2;
 
 // @public
 export type DropdownElement = BaseElement & {
@@ -149,7 +146,7 @@ export type RouteAdapter = {
 export const SHEET_NAV_TOOLBAR_SELECTOR = "#sheetnav-toolbar";
 
 // @public (undocumented)
-export const SheetNav: typeof __VLS_export_4;
+export const SheetNav: typeof __VLS_export_3;
 
 // @public
 export const StonecropDesktop: Plugin_2;

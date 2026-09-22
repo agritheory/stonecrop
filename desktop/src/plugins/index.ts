@@ -1,6 +1,5 @@
 import { App, type Plugin } from 'vue'
 
-import ActionSet from '../components/ActionSet.vue'
 import CommandPalette from '../components/CommandPalette.vue'
 import Desktop from '../components/Desktop.vue'
 import SheetNav from '../components/SheetNav.vue'
@@ -11,7 +10,6 @@ import SheetNav from '../components/SheetNav.vue'
  */
 const plugin: Plugin = {
 	install: (app: App) => {
-		app.component('ActionSet', ActionSet)
 		app.component('CommandPalette', CommandPalette)
 		app.component('Desktop', Desktop)
 		app.component('SheetNav', SheetNav)

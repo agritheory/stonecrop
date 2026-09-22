@@ -22,10 +22,10 @@ export function useDocBuilderRouteAdapter(options: DocBuilderRouteAdapterOptions
 		navigate: (target: NavigationTarget) => {
 			if (target.view === 'doctypes') {
 				void router.push('/')
-				return
-			}
-			if (target.view === 'records' && target.doctype) {
+			} else if (target.view === 'records' && target.doctype) {
 				void router.push(`/${target.doctype}`)
+			} else if (target.view === 'record' && target.doctype && target.recordId) {
+				void router.push(`/${target.doctype}/${target.recordId}`)
 			}
 		},
 	}

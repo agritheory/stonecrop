@@ -55,11 +55,11 @@ const renderRows = async (doctype: ReturnType<typeof buildDoctype>, recordId: st
 }
 
 describe('StonecropDesktop plugin', { tags: ['component'] }, () => {
-	it('registers all desktop components globally', () => {
+	it('registers every component a host can render on its own', () => {
 		const app = createApp({ template: '<div />' })
 		app.use(StonecropDesktop)
 
-		expect(app.component('ActionSet')).toBeDefined()
+		expect(app.component('ActionSet')).toBeUndefined()
 		expect(app.component('CommandPalette')).toBeDefined()
 		expect(app.component('Desktop')).toBeDefined()
 		expect(app.component('SheetNav')).toBeDefined()

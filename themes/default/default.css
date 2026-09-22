@@ -35,9 +35,6 @@ before all other rules.
 
 		/* Warnings/Alerts/Success */
 		--sc-brand-danger: #e63c28;
-		--sc-danger-color: var(--sc-brand-danger);
-		--sc-action-set-drawer-width: 380px;
-		--sc-action-set-offset-top: 35vh;
 		--sc-brand-success: #155724;
 		--sc-brand-warning: #b99d3e;
 
@@ -101,6 +98,10 @@ before all other rules.
 		--sc-btn-color: white;
 		--sc-btn-hover: #f2f2f2;
 		--sc-btn-label-color: black;
+
+		/* ACTION SET */
+		--sc-action-set-drawer-width: 380px;
+		--sc-action-set-offset-top: 35vh;
 	}
 
 	/*

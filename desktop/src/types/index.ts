@@ -1,9 +1,9 @@
+import type { Component, ComputedRef, MaybeRef } from 'vue'
+
 /**
  * Base type for elements in the Action Set
  * @public
  */
-import type { Component, ComputedRef, MaybeRef } from 'vue'
-
 export type BaseElement = {
 	label: string
 	show?: boolean

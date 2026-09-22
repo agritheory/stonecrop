@@ -1,46 +1,46 @@
-import { computed, inject, markRaw, ref, shallowRef, type ComputedRef, type InjectionKey, type ShallowRef } from 'vue'
+import { computed, inject, markRaw, ref, shallowRef, type ComputedRef, type InjectionKey } from 'vue'
 
 import type { ActionSetContext, ActionSetPreview, ActionSetSlotId } from '../types'
 
 export type CreateActionSetOptions = {
 	doctype: ComputedRef<string>
 	recordId: ComputedRef<string>
-	onDrawerChange?: (open: boolean) => void
-	onPreviewChange?: (open: boolean) => void
 }
 
+/**
+ * The only owner of what the drawer shows. ActionSet and Desktop both read it, so the tile
+ * column, the drawer and the workspace margin cannot disagree about whether the drawer is open.
+ */
 export type ActionSetController = ActionSetContext & {
 	previewSubject: ComputedRef<ActionSetPreview | null>
 	isPreviewOpen: ComputedRef<boolean>
+	isActionsOpen: ComputedRef<boolean>
+	isDrawerOpen: ComputedRef<boolean>
+	openActions: () => void
 	openSlot: (slotId: ActionSetSlotId) => void
-	toggleSlot: (slotId: ActionSetSlotId) => void
-	reset: () => void
 }
 
-export const actionSetKey: InjectionKey<ShallowRef<ActionSetController | null>> = Symbol('actionSet')
+export const actionSetKey: InjectionKey<ActionSetController> = Symbol('actionSet')
 
 export function createActionSet(options: CreateActionSetOptions): ActionSetController {
 	const activeSlotId = ref<ActionSetSlotId | null>(null)
+	const actionsOpen = ref(false)
 	const previewSubject = shallowRef<ActionSetPreview | null>(null)
 	const previewId = ref<string | undefined>(undefined)
 
-	const isPreviewOpen = computed(() => previewSubject.value !== null)
+	function openActions() {
+		activeSlotId.value = null
+		closePreview()
+		actionsOpen.value = true
+	}
 
 	function openSlot(slotId: ActionSetSlotId) {
+		actionsOpen.value = false
 		if (activeSlotId.value === slotId) {
 			return
 		}
 		activeSlotId.value = slotId
 		closePreview()
-		options.onDrawerChange?.(true)
-	}
-
-	function toggleSlot(slotId: ActionSetSlotId) {
-		if (activeSlotId.value === slotId) {
-			close()
-			return
-		}
-		openSlot(slotId)
 	}
 
 	function present(subject: ActionSetPreview) {
@@ -49,22 +49,17 @@ export function createActionSet(options: CreateActionSetOptions): ActionSetContr
 		}
 		previewId.value = subject.id
 		previewSubject.value = { ...subject, view: markRaw(subject.view) }
-		options.onPreviewChange?.(true)
 	}
 
 	function closePreview() {
-		if (!previewSubject.value) {
-			return
-		}
 		previewSubject.value = null
 		previewId.value = undefined
-		options.onPreviewChange?.(false)
 	}
 
 	function close() {
 		activeSlotId.value = null
+		actionsOpen.value = false
 		closePreview()
-		options.onDrawerChange?.(false)
 	}
 
 	return {
@@ -72,22 +67,22 @@ export function createActionSet(options: CreateActionSetOptions): ActionSetContr
 		recordId: options.recordId,
 		activeSlotId: computed(() => activeSlotId.value),
 		previewSubject: computed(() => previewSubject.value),
-		isPreviewOpen,
+		isPreviewOpen: computed(() => previewSubject.value !== null),
+		isActionsOpen: computed(() => actionsOpen.value),
+		isDrawerOpen: computed(() => actionsOpen.value || activeSlotId.value !== null),
 		present,
 		closePreview,
 		close,
+		openActions,
 		openSlot,
-		toggleSlot,
-		reset: close,
 	}
 }
 
 /** @public */
 export function useActionSet(): ActionSetContext {
-	const actionSetRef = inject(actionSetKey, null)
-	const actionSet = actionSetRef?.value
+	const actionSet = inject(actionSetKey, null)
 	if (!actionSet) {
-		throw new Error('useActionSet() must be called inside Desktop with actionSetSlots configured')
+		throw new Error('useActionSet() must be called inside a component rendered by Desktop')
 	}
 	return actionSet
 }

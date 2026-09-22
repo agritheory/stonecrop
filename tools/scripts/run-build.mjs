@@ -13,9 +13,9 @@
  */
 
 import { spawn } from 'node:child_process'
-import { existsSync, lstatSync, mkdirSync, readdirSync, statSync, unlinkSync, writeFileSync } from 'node:fs'
+import { lstatSync, mkdirSync, unlinkSync, writeFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
-import { dirname, extname, join } from 'node:path'
+import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 import { workspaceMembers } from './workspace-members.mjs'
@@ -97,46 +97,6 @@ function unlinkStubbedRuntimes(members) {
 	}
 }
 
-/**
- * Drops mkdist output that landed in `src/runtime` when a cached `dist/runtime` replay ran through
- * the dev stub symlink. Unlinking the symlink stops the next replay; this clears strays left from
- * an earlier one, which otherwise make `nuxt-module-build` fail on duplicate `.vue.d.ts` paths.
- */
-function removeRuntimeStrays(members) {
-	for (const member of members) {
-		const runtimeSrc = join(rootDir, member, 'src/runtime')
-		if (!statSync(runtimeSrc, { throwIfNoEntry: false })?.isDirectory()) continue
-		walkRuntimeStrays(runtimeSrc)
-	}
-}
-
-function walkRuntimeStrays(dir) {
-	for (const name of readdirSync(dir)) {
-		const path = join(dir, name)
-		if (statSync(path).isDirectory()) {
-			walkRuntimeStrays(path)
-			continue
-		}
-
-		if (name.endsWith('.vue.d.ts') && existsSync(join(dir, `${name.slice(0, -'.vue.d.ts'.length)}.vue`))) {
-			unlinkSync(path)
-			continue
-		}
-		if (name.endsWith('.d.vue.ts') && existsSync(join(dir, `${name.slice(0, -'.d.vue.ts'.length)}.vue`))) {
-			unlinkSync(path)
-			continue
-		}
-
-		if (name.endsWith('.d.ts') && existsSync(join(dir, `${name.slice(0, -'.d.ts'.length)}.ts`))) {
-			unlinkSync(path)
-			continue
-		}
-		if (extname(name) === '.js' && existsSync(join(dir, `${name.slice(0, -'.js'.length)}.ts`))) {
-			unlinkSync(path)
-		}
-	}
-}
-
 // Deliberately unguarded. The member list drives the symlink check below, which is what keeps the
 // cache out of tracked sources, so a list this cannot read has to stop the build rather than leave
 // the check iterating nothing. `workspaceMembers` throws rather than returning an empty list.
@@ -144,7 +104,6 @@ const members = workspaceMembers()
 const memberCount = members.length
 
 unlinkStubbedRuntimes(members)
-removeRuntimeStrays(members)
 
 // Resolved rather than taken off PATH so no shell is involved: passing an argument array with
 // `shell: true` is deprecated, and the shell would be quoting these for no reason.

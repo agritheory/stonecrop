@@ -70,8 +70,7 @@ export default defineEventHandler(async event => {
 			const content = await readFile(filePath, 'utf-8')
 			existing = JSON.parse(content)
 		} catch {
-			// Unreadable existing file — start fresh rather than corrupt.
-			existing = {}
+			// Unreadable existing file — start fresh rather than corrupt
 		}
 	}
 

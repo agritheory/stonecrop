@@ -38,12 +38,10 @@
 			v-if="drawerOpen"
 			ref="drawerEl"
 			class="action-set__drawer"
-			role="dialog"
-			aria-modal="true"
 			aria-label="Side panel"
 			@keydown="onDrawerKeydown">
 			<header class="action-set__drawer-header">
-				<button type="button" class="action-set__drawer-close" aria-label="Close panel" @click="onCloseDrawer">
+				<button type="button" class="action-set__drawer-close" aria-label="Close panel" @click="controller.close()">
 					×
 				</button>
 			</header>
@@ -51,26 +49,35 @@
 				<template v-if="activeTabId === ACTIONS_TAB_ID">
 					<div class="action-set__actions-list">
 						<template v-for="el in elements" :key="el.label">
+							<div v-if="el.type === 'dropdown'" class="action-set__actions-group" role="group" :aria-label="el.label">
+								<p class="action-set__actions-group-label" aria-hidden="true">{{ el.label }}</p>
+								<template v-for="item in el.actions" :key="item.label">
+									<button
+										v-if="item.action"
+										type="button"
+										class="action-set__actions-list-item action-set__actions-list-item--nested"
+										@click="onActionClick(item.label, item.action)">
+										{{ item.label }}
+									</button>
+									<a
+										v-else-if="item.link"
+										:href="item.link"
+										class="action-set__actions-list-item action-set__actions-list-item--nested">
+										{{ item.label }}
+									</a>
+								</template>
+							</div>
+							<a v-else-if="!el.action && el.link" :href="el.link" class="action-set__actions-list-item">
+								{{ el.label }}
+							</a>
 							<button
-								v-if="el.type === 'button'"
+								v-else
 								type="button"
 								class="action-set__actions-list-item"
 								:disabled="el.disabled"
-								@click="onActionClick(el)">
+								@click="onActionClick(el.label, el.action)">
 								{{ el.label }}
 							</button>
-							<template v-else-if="el.type === 'dropdown'">
-								<div class="action-set__actions-group">
-									<button
-										v-for="item in el.actions"
-										:key="item.label"
-										type="button"
-										class="action-set__actions-list-item action-set__actions-list-item--nested"
-										@click="onDropdownItemClick(item)">
-										{{ item.label }}
-									</button>
-								</div>
-							</template>
 						</template>
 						<p v-if="elements.length === 0" class="action-set__actions-empty">No actions available</p>
 					</div>
@@ -89,7 +96,7 @@ import { computed, markRaw, nextTick, ref, unref, watch, type Component } from '
 
 import type { ActionSetController } from '../composables/useActionSet'
 import { ActionSetIconActions, ActionSetIconSearch } from '../icons'
-import type { ActionElements, ActionSetSlot, ActionSetSlotId } from '../types'
+import type { ActionElements, ActionSetSlot } from '../types'
 
 const ACTIONS_TAB_ID = '__actions__'
 const SEARCH_TAB_ID = '__search__'
@@ -113,25 +120,17 @@ const {
 
 const emit = defineEmits<{
 	actionClick: [label: string, action: (() => void | Promise<void>) | undefined]
-	drawerChange: [open: boolean]
 	search: []
 }>()
 
 const isExpanded = ref(true)
-const actionsTabOpen = ref(false)
 const drawerEl = ref<HTMLElement | null>(null)
 const lastFocusedBeforeDrawer = ref<HTMLElement | null>(null)
 
-const activeSlotId = computed(() => controller.activeSlotId.value)
-const activeSlot = computed(() => slots.find(slot => slot.id === activeSlotId.value) ?? null)
+const activeSlot = computed(() => slots.find(slot => slot.id === controller.activeSlotId.value) ?? null)
 const hasActions = computed(() => elements.length > 0)
-
-const activeTabId = computed(() => {
-	if (actionsTabOpen.value) return ACTIONS_TAB_ID
-	return activeSlotId.value
-})
-
-const drawerOpen = computed(() => activeTabId.value !== null)
+const activeTabId = computed(() => (controller.isActionsOpen.value ? ACTIONS_TAB_ID : controller.activeSlotId.value))
+const drawerOpen = computed(() => controller.isDrawerOpen.value)
 
 const allTabs = computed<Tab[]>(() => {
 	const tabs: Tab[] = [
@@ -171,117 +170,42 @@ function tabBadge(tab: Tab): number {
 	return typeof count === 'number' && count > 0 ? count : 0
 }
 
-function focusableElements(root: HTMLElement): HTMLElement[] {
-	return Array.from(
-		root.querySelectorAll<HTMLElement>(
-			'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
-		)
-	)
-}
-
-function trapFocus(event: KeyboardEvent) {
-	if (event.key !== 'Tab' || !drawerEl.value) return
-
-	const focusable = focusableElements(drawerEl.value)
-	if (focusable.length === 0) return
-
-	const first = focusable[0]
-	const last = focusable[focusable.length - 1]
-	const active = document.activeElement as HTMLElement | null
-
-	if (event.shiftKey) {
-		if (active === first || !drawerEl.value.contains(active)) {
-			event.preventDefault()
-			last.focus()
-		}
-		return
-	}
-
-	if (active === last) {
-		event.preventDefault()
-		first.focus()
-	}
-}
-
+// The drawer sits beside the page rather than over it, so Tab is left to the browser: trapping it
+// would strand keyboard users away from the page and from a preview opened out of the drawer.
 function onDrawerKeydown(event: KeyboardEvent) {
-	if (event.key === 'Escape') {
-		event.preventDefault()
-		event.stopPropagation()
-		onCloseDrawer()
-		return
-	}
-	trapFocus(event)
+	if (event.key !== 'Escape') return
+	event.preventDefault()
+	event.stopPropagation()
+	controller.close()
 }
 
 function onToggle() {
 	isExpanded.value = !isExpanded.value
 }
 
-function openDrawerForTab(tabId: string) {
-	if (tabId === SEARCH_TAB_ID) {
-		emit('search')
-		return
-	}
-	if (tabId === ACTIONS_TAB_ID) {
-		actionsTabOpen.value = true
-		controller.close()
-		emit('drawerChange', true)
-		return
-	}
-	actionsTabOpen.value = false
-	controller.openSlot(tabId as ActionSetSlotId)
-}
-
 function onTileClick(tabId: string) {
 	if (tabId === SEARCH_TAB_ID) {
 		emit('search')
-		return
-	}
-	if (drawerOpen.value && activeTabId.value === tabId) {
-		onCloseDrawer()
-		return
-	}
-	if (drawerOpen.value) {
-		openDrawerForTab(tabId)
-		return
-	}
-	if (tabId === ACTIONS_TAB_ID) {
-		actionsTabOpen.value = true
-		emit('drawerChange', true)
+	} else if (drawerOpen.value && activeTabId.value === tabId) {
+		controller.close()
+	} else if (tabId === ACTIONS_TAB_ID) {
+		controller.openActions()
 	} else {
-		actionsTabOpen.value = false
-		controller.toggleSlot(tabId as ActionSetSlotId)
+		controller.openSlot(tabId)
 	}
 }
 
-function onCloseDrawer() {
-	actionsTabOpen.value = false
-	controller.close()
-	emit('drawerChange', false)
-	lastFocusedBeforeDrawer.value?.focus()
-	lastFocusedBeforeDrawer.value = null
-}
-
-function onActionClick(el: ActionElements) {
-	if (el.type === 'button' && el.action) {
-		emit('actionClick', el.label, el.action)
+function onActionClick(label: string, action: (() => void) | undefined) {
+	if (action) {
+		emit('actionClick', label, action)
 	}
 }
-
-function onDropdownItemClick(item: { label: string; action?: () => void }) {
-	if (item.action) {
-		emit('actionClick', item.label, item.action)
-	}
-}
-
-defineExpose({ closeDrawer: onCloseDrawer })
 
 watch(drawerOpen, async open => {
 	if (open) {
 		lastFocusedBeforeDrawer.value = document.activeElement instanceof HTMLElement ? document.activeElement : null
 		await nextTick()
-		const focusable = drawerEl.value ? focusableElements(drawerEl.value) : []
-		focusable[0]?.focus()
+		drawerEl.value?.querySelector<HTMLElement>('button:not([disabled]), [href], input, select, textarea')?.focus()
 		return
 	}
 	lastFocusedBeforeDrawer.value?.focus()
@@ -291,8 +215,10 @@ watch(drawerOpen, async open => {
 
 <style scoped>
 .action-set {
+	/* Right offset + tile column width + gap: the strip the drawer keeps clear for the tile column. */
+	--action-set-rail-inset: calc(10px + 2.75rem + 18px + 8px);
 	position: fixed;
-	top: var(--sc-action-set-offset-top, 35vh);
+	top: var(--sc-action-set-offset-top);
 	right: 10px;
 	z-index: 1001;
 	display: flex;
@@ -301,7 +227,10 @@ watch(drawerOpen, async open => {
 	gap: 0;
 }
 
+/* Positioned above the drawer, which is a later sibling in the same stacking context. */
 .action-set__tile {
+	position: relative;
+	z-index: 1;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
@@ -387,7 +316,7 @@ watch(drawerOpen, async open => {
 	height: 14px;
 	padding: 0 3px;
 	border-radius: 7px;
-	background: var(--sc-badge-danger-accent, var(--sc-danger-color));
+	background: var(--sc-badge-danger-accent);
 	color: var(--sc-primary-text-color);
 	font-size: 10px;
 	font-weight: 600;
@@ -401,12 +330,14 @@ watch(drawerOpen, async open => {
 	top: 0;
 	right: 0;
 	bottom: 0;
-	width: var(--sc-action-set-drawer-width, 380px);
+	box-sizing: border-box;
+	width: var(--sc-action-set-drawer-width);
+	padding-right: var(--action-set-rail-inset);
 	background: var(--sc-form-background);
 	border-left: 1px solid var(--sc-gray-20);
 	display: flex;
 	flex-direction: column;
-	z-index: 1000;
+	z-index: 0;
 }
 
 .action-set__drawer-header {
@@ -449,6 +380,7 @@ watch(drawerOpen, async open => {
 
 .action-set__actions-list-item {
 	display: block;
+	box-sizing: border-box;
 	width: 100%;
 	padding: 10px 12px;
 	margin-bottom: 4px;
@@ -459,6 +391,7 @@ watch(drawerOpen, async open => {
 	font-family: var(--sc-font-family);
 	font-weight: 500;
 	color: var(--sc-gray-80);
+	text-decoration: none;
 	cursor: pointer;
 }
 
@@ -479,6 +412,17 @@ watch(drawerOpen, async open => {
 
 .action-set__actions-group {
 	margin-bottom: 8px;
+}
+
+.action-set__actions-group-label {
+	margin: 4px 0 6px;
+	padding: 0 2px;
+	font-family: var(--sc-font-family);
+	font-size: 0.75rem;
+	font-weight: 600;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	color: var(--sc-gray-60);
 }
 
 .action-set__actions-empty {
