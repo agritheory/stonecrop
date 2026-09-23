@@ -605,11 +605,13 @@ export interface DataClient<T extends DoctypeRef = DoctypeRef, M = DoctypeMeta> 
 	 * @param doctype - Doctype reference (name and optional slug)
 	 * @param action - Action name to execute (e.g., 'SUBMIT', 'APPROVE', 'save')
 	 * @param args - Action arguments (typically record ID and/or form data)
-	 * @returns Action result with success status, response data, and any error
+	 * @returns Action result: success, what the action's handler returned (`data`), any error, and the
+	 * record as {@link DataClient.getRecord} returns it after the action (`record`, null when the
+	 * action failed or targets no record)
 	 */
 	runAction(
 		doctype: T,
 		action: string,
 		args?: unknown[]
-	): Promise<{ success: boolean; data: unknown; error: string | null }>
+	): Promise<{ success: boolean; data: unknown; error: string | null; record: Record<string, unknown> | null }>
 }

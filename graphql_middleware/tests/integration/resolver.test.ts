@@ -8,6 +8,8 @@ import { execute, hookArgs } from 'postgraphile/grafast'
 import { makePgService, makeWithPgClientViaPgClientAlreadyInTransaction } from 'postgraphile/adaptors/pg'
 import { describe, it, expect, beforeAll, afterAll, afterEach, beforeEach, inject, vi } from 'vitest'
 
+import { snakeToCamel } from '@stonecrop/schema'
+
 import { createStonecropPlugin } from '../../src/plugin/postgraphile'
 import type { ActionHandler } from '../../src/plugin/postgraphile'
 import { loadDoctypesFromObject, clearRegistry } from '../../src/registry/doctypes'
@@ -63,6 +65,21 @@ const actionHandlers: Record<string, Record<string, ActionHandler>> = {
 				values: [String(recordId)],
 			})
 			throw new Error('blew up after writing')
+		},
+	},
+	// A save the way FAB's handlers write one: its own UPDATE, then `SELECT *` with the keys
+	// camelCased, so a day comes back as whatever `pg` parsed it into.
+	ScPeriodHandled: {
+		async save({ pgClient, recordId, data }) {
+			await pgClient.query({
+				text: `UPDATE sc_period SET name = $2 WHERE id::text = $1`,
+				values: [String(recordId), data.name],
+			})
+			const { rows } = await pgClient.query<Record<string, unknown>>({
+				text: `SELECT * FROM sc_period WHERE id::text = $1`,
+				values: [String(recordId)],
+			})
+			return Object.fromEntries(Object.entries(rows[0]).map(([column, value]) => [snakeToCamel(column), value]))
 		},
 	},
 	ScSignal: {
@@ -446,6 +463,16 @@ beforeAll(async () => {
 			],
 			workflow: { actions: { save: { label: 'Save', selfTransition: true } } },
 		},
+		// sc_period saved by a registered handler, as every FAB save is: no `selfTransition`.
+		ScPeriodHandled: {
+			name: 'ScPeriodHandled',
+			fields: [
+				{ kind: 'field', fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
+				{ kind: 'field', fieldname: 'name', component: 'ATextInput', label: 'Name' },
+				{ kind: 'field', fieldname: 'startsOn', component: 'ADate', label: 'Starts On' },
+			],
+			workflow: { actions: { save: { label: 'Save', stateless: true } } },
+		},
 		// Reads sc_period's list of zone-free timestamps, which no other period fixture declares.
 		ScPeriodReviews: {
 			name: 'ScPeriodReviews',
@@ -547,6 +574,7 @@ beforeAll(async () => {
 					ScPartyWithOrders: 'sc_party',
 					ScPeriodWithEntries: 'sc_period',
 					ScPeriodReviews: 'sc_period',
+					ScPeriodHandled: 'sc_period',
 					ScPeriodEntryWithPeriod: 'sc_period_entry',
 				},
 			}),
@@ -1724,6 +1752,96 @@ describe('stonecropAction with registered effects', { tags: ['integration', 'gra
 		expect(action?.error).toBeNull()
 		expect(action?.success).toBe(true)
 		expect(action?.data?.itemCount).toBe(3)
+	})
+})
+
+// ===========================================================================
+// stonecropAction — the record an action replies with
+// ===========================================================================
+
+// The client files `record` as the whole record, so it must be what a read of the record returns,
+// whoever wrote it. `data` stays the handler's own return, verbatim.
+describe('the record an action replies with', { tags: ['integration', 'graphql'] }, () => {
+	const serialize = (result: unknown): any => JSON.parse(JSON.stringify(result))
+	const readOf = (doctype: string, id: string) =>
+		`query { stonecropRecord(doctype: "${doctype}", id: "${id}") { data } }`
+
+	// `pg` parses a date into the reading process's midnight, so a handler's raw row shows the day
+	// only in UTC. Pinned east of it, where the raw row names the day before.
+	describe('in Asia/Kolkata', () => {
+		beforeEach(() => vi.stubEnv('TZ', 'Asia/Kolkata'))
+		afterEach(() => vi.unstubAllEnvs())
+
+		it("replies to a handler's save with the record a read returns, and data as the handler returned it", async () => {
+			const [save, read] = await runSequence([
+				`mutation { stonecropAction(doctype: "ScPeriodHandled", action: "save", args: [{ id: "1", data: { name: "Renamed" } }]) { success data record } }`,
+				readOf('ScPeriodHandled', '1'),
+			])
+			const action = serialize(save).data.stonecropAction
+			expect(action.success).toBe(true)
+			expect(action.record).toEqual(serialize(read).data.stonecropRecord.data)
+			expect(action.record.startsOn).toBe('2026-01-01')
+			expect(action.data.startsOn).toBe('2025-12-31T18:30:00.000Z')
+		})
+	})
+
+	it('replies to a save with the child rows a read returns', async () => {
+		const [save, read] = await runSequence([
+			`mutation { stonecropAction(doctype: "ScItem", action: "save", args: [{ id: "1", data: { name: "Renamed" } }]) { record } }`,
+			readOf('ScItem', '1'),
+		])
+		const record = serialize(save).data.stonecropAction.record
+		expect(record.tags).toHaveLength(2)
+		expect(record).toEqual(serialize(read).data.stonecropRecord.data)
+	})
+
+	it('replies to a transition with the whole record, not only its new state', async () => {
+		const [submit, read] = await runSequence([
+			`mutation { stonecropAction(doctype: "ScItem", action: "submit", args: [{ id: "1" }]) { data record } }`,
+			readOf('ScItem', '1'),
+		])
+		const action = serialize(submit).data.stonecropAction
+		expect(action.data).toEqual({ state: 'Active' })
+		expect(action.record.status).toBe('Active')
+		expect(action.record).toEqual(serialize(read).data.stonecropRecord.data)
+	})
+
+	it("replies to a handler's command with the record its writes left", async () => {
+		const [command, read] = await runSequence([
+			`mutation { stonecropAction(doctype: "ScItem", action: "recalculate", args: [{ id: "1", data: { suffix: "!" } }]) { data record } }`,
+			readOf('ScItem', '1'),
+		])
+		const action = serialize(command).data.stonecropAction
+		expect(action.data.seenState).toBe('Draft')
+		expect(action.record.name).toBe('ALPHA!')
+		expect(action.record).toEqual(serialize(read).data.stonecropRecord.data)
+	})
+
+	it('replies to a create with the record a read of it returns', async () => {
+		const [create, list] = await runSequence([
+			`mutation { stonecropAction(doctype: "ScPeriod", action: "save", args: [{ data: { name: "Q2", startsOn: "2026-04-01", openedAt: "2026-04-01T09:00:00.000000" } }]) { record } }`,
+			`query { stonecropRecords(doctype: "ScPeriod") { data } }`,
+		])
+		const created = serialize(list).data.stonecropRecords.data.filter(
+			(period: { name: string }) => period.name === 'Q2'
+		)
+		expect([serialize(create).data.stonecropAction.record]).toEqual(created)
+	})
+
+	it('replies with no record to a command that targets none', async () => {
+		const result = serialize(
+			await runQuery(`mutation { stonecropAction(doctype: "ScSignal", action: "ping") { success data record } }`)
+		)
+		expect(result.data.stonecropAction).toEqual({ success: true, data: { itemCount: 3 }, record: null })
+	})
+
+	it('replies with no record when the action fails', async () => {
+		const result = serialize(
+			await runQuery(
+				`mutation { stonecropAction(doctype: "ScItem", action: "explode", args: [{ id: "1" }]) { success record } }`
+			)
+		)
+		expect(result.data.stonecropAction).toEqual({ success: false, record: null })
 	})
 })
 

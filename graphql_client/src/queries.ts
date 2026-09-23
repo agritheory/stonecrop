@@ -67,6 +67,7 @@ export const RUN_ACTION_MUTATION = `
 			success
 			data
 			error
+			record
 		}
 	}
 `

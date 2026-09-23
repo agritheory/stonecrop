@@ -6,6 +6,7 @@ import { isDraftRecordId } from './draft'
 import Registry from './registry'
 import { createHST, type HSTNode } from './stores/hst'
 import { useOperationLogStore } from './stores/operation-log'
+import type { ActionDispatchResult } from './types/client-action'
 import type { OperationLogConfig } from './types/operation-log'
 import type { RouteContext } from './types/registry'
 import type { PageInfo, StonecropOptions } from './types/stonecrop'
@@ -436,21 +437,17 @@ export class Stonecrop {
 	 * client and its server handlers, not something this layer may parse. Dropping the stale key
 	 * and moving the route therefore stay with `useClientAction`, which knows both ids.
 	 *
-	 * A result that states no identity of its own — a `{ state: 'APPROVED' }` outcome — is left
-	 * alone rather than guessed at, for the same reason `settledRecordId` is strict: a partial
-	 * record must not be able to look like a rename.
+	 * What is filed is the result's `record`, the server's read of the record after the action, and
+	 * never its `data`, which is whatever the action's handler returned. A result with no `record`
+	 * leaves the stored copy alone.
 	 *
 	 * @param doctype - The doctype
 	 * @param action - Action name to execute (e.g., 'SUBMIT', 'APPROVE', 'save')
 	 * @param args - Action arguments (typically record ID and/or form data)
-	 * @returns Action result with success status, response data, and any error
+	 * @returns Action result with success status, the handler's data, any error, and the record
 	 * @throws Error if no data client has been configured
 	 */
-	async dispatchAction(
-		doctype: Doctype,
-		action: string,
-		args?: unknown[]
-	): Promise<{ success: boolean; data: unknown; error: string | null }> {
+	async dispatchAction(doctype: Doctype, action: string, args?: unknown[]): Promise<ActionDispatchResult> {
 		if (!this._client) {
 			throw new Error(
 				'No data client configured. Call setClient() with a DataClient implementation ' +
@@ -459,13 +456,11 @@ export class Stonecrop {
 		}
 
 		const result = await this._client.runAction(doctype, action, args)
+		const { record } = result
 
-		if (result.success && result.data && typeof result.data === 'object' && !Array.isArray(result.data)) {
-			// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- the guard above confirms a non-null, non-array object; the action result payload is an opaque JSON scalar
-			const record = result.data as Record<string, unknown>
+		if (result.success && record) {
 			// Require the declared key to be *present* before trusting `getRecordId`, which falls
-			// back to `id`. Without that, a handler returning `{ id, total }` for a natural-keyed
-			// doctype would relocate the record to a key the adapter cannot look up.
+			// back to `id`, so a record missing its key cannot be filed under a surrogate one.
 			if (record[doctype.recordIdField] !== undefined) {
 				const settledId = doctype.getRecordId(record)
 				if (settledId !== undefined) {

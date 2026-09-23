@@ -169,6 +169,7 @@ runAction(doctype: DoctypeRef, action: string, args: unknown[]): Promise<{
         success: boolean;
         data: unknown;
         error: string | null;
+        record: Record<string, unknown> | null;
     }>
 ```
 

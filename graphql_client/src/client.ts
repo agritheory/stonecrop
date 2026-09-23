@@ -209,9 +209,9 @@ export class StonecropClient implements DataClient {
 		doctype: DoctypeRef,
 		action: string,
 		args?: unknown[]
-	): Promise<{ success: boolean; data: unknown; error: string | null }> {
+	): Promise<{ success: boolean; data: unknown; error: string | null; record: Record<string, unknown> | null }> {
 		const result = await this.query<{
-			stonecropAction: { success: boolean; data: unknown; error: string | null }
+			stonecropAction: { success: boolean; data: unknown; error: string | null; record: Record<string, unknown> | null }
 		}>(RUN_ACTION_MUTATION, {
 			doctype: doctype.name,
 			action,

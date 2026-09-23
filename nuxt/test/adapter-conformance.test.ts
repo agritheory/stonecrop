@@ -59,6 +59,8 @@ vi.mock('@stonecrop/graphql-middleware', () => {
 /** Root fields `@stonecrop/graphql-client` selects. Adding one here is a contract change. */
 const CONTRACT_QUERY_FIELDS = ['stonecropMeta', 'stonecropAllMeta', 'stonecropRecord', 'stonecropRecords'] as const
 const CONTRACT_MUTATION_FIELDS = ['stonecropAction'] as const
+/** Fields the client selects on `stonecropAction`'s result. */
+const CONTRACT_ACTION_RESULT_FIELDS = ['success', 'data', 'error', 'record'] as const
 
 // ---------------------------------------------------------------------------
 // Hosts
@@ -156,6 +158,11 @@ describe.each(HOSTS)('$name — contract surface', { tags: ['unit', 'graphql'] }
 
 	it.each(CONTRACT_MUTATION_FIELDS)('serves Mutation.%s', fieldName => {
 		expect(mutations.has(fieldName), `${name} does not serve Mutation.${fieldName}`).toBe(true)
+	})
+
+	it.each(CONTRACT_ACTION_RESULT_FIELDS)("serves %s on stonecropAction's result", fieldName => {
+		const resultType = print(mutations.get('stonecropAction')!.type).replace(/!$/, '')
+		expect(rootFields(doc, resultType).has(fieldName), `${name}'s ${resultType} has no ${fieldName}`).toBe(true)
 	})
 
 	it.each(['stonecropCreate', 'stonecropUpdate', 'stonecropDelete'])('does not publish %s', verb => {

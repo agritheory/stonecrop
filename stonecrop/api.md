@@ -1121,6 +1121,7 @@ export type ActionDispatchResult = {
     success: boolean;
     data: unknown;
     error: string | null;
+    record: Record<string, unknown> | null;
 };
 ```
 
@@ -1960,14 +1961,10 @@ The write is the point. For a created record the settled identity is never the o
 
 Two things are deliberately NOT done here, because both need the id that was dispatched and that lives inside `args` — an opaque array whose shape is a convention between a host's client and its server handlers, not something this layer may parse. Dropping the stale key and moving the route therefore stay with `useClientAction`, which knows both ids.
 
-A result that states no identity of its own — a `{ state: 'APPROVED' }` outcome — is left alone rather than guessed at, for the same reason `settledRecordId` is strict: a partial record must not be able to look like a rename.
+What is filed is the result's `record`, the server's read of the record after the action, and never its `data`, which is whatever the action's handler returned. A result with no `record` leaves the stored copy alone.
 
 ```typescript
-dispatchAction(doctype: Doctype, action: string, args: unknown[]): Promise<{
-        success: boolean;
-        data: unknown;
-        error: string | null;
-    }>
+dispatchAction(doctype: Doctype, action: string, args: unknown[]): Promise<ActionDispatchResult>
 ```
 
 **Parameters:**

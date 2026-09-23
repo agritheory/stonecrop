@@ -146,6 +146,55 @@ describe('templates host — actions', { tags: ['unit', 'graphql'] }, () => {
 	})
 })
 
+// The client files `record` as the whole record, so the scaffold must reply with what its read returns.
+// Touches task 3's title and due date and task 2's state.
+describe('templates host — the record an action replies with', { tags: ['unit', 'graphql'] }, () => {
+	const readTask = async (id: string) =>
+		(await run(`query { stonecropRecord(doctype: "Task", id: "${id}") { data } }`)).data?.stonecropRecord?.data
+
+	it('replies to a save with the record a read returns', async () => {
+		const result = await run(
+			`mutation { stonecropAction(doctype: "Task", action: "save", args: [{ id: "3", data: { title: "renamed again" } }]) { record } }`
+		)
+		expect(result.data?.stonecropAction?.record?.title).toBe('renamed again')
+		expect(result.data?.stonecropAction?.record).toEqual(await readTask('3'))
+	})
+
+	it('replies to a create with the record a read of it returns', async () => {
+		const result = await run(
+			`mutation { stonecropAction(doctype: "Task", action: "save", args: [{ data: { title: "created with a record", projectId: "1" } }]) { record } }`
+		)
+		const record = result.data?.stonecropAction?.record
+		expect(record?.id).toBeTruthy()
+		expect(record).toEqual(await readTask(record.id))
+	})
+
+	it('replies to a transition with the whole record, not only its new state', async () => {
+		const result = await run(
+			`mutation { stonecropAction(doctype: "Task", action: "complete_task", args: [{ id: "2" }]) { data record } }`
+		)
+		expect(result.data?.stonecropAction?.data).toEqual({ state: 'Done' })
+		expect(result.data?.stonecropAction?.record?.status).toBe('Done')
+		expect(result.data?.stonecropAction?.record).toEqual(await readTask('2'))
+	})
+
+	it("replies to a handler's command with the record its writes left", async () => {
+		tasks.set('3', { ...tasks.get('3')!, dueDate: '2025-01-20' })
+		const result = await run(
+			`mutation { stonecropAction(doctype: "Task", action: "snooze", args: [{ id: "3" }]) { record } }`
+		)
+		expect(result.data?.stonecropAction?.record?.dueDate).toBe('2025-01-27')
+		expect(result.data?.stonecropAction?.record).toEqual(await readTask('3'))
+	})
+
+	it('replies with no record when the action fails', async () => {
+		const result = await run(
+			`mutation { stonecropAction(doctype: "Task", action: "start_task", args: [{ id: "no-such-task" }]) { success record } }`
+		)
+		expect(result.data?.stonecropAction).toEqual({ success: false, record: null })
+	})
+})
+
 // Touches the due dates of tasks 2 and 3.
 describe('templates host — snoozing across a clock change', { tags: ['unit', 'graphql'] }, () => {
 	afterEach(() => {

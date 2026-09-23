@@ -86,8 +86,16 @@ export const typeDefs = gql`
 
 	type StonecropActionResult {
 		success: Boolean!
+		"""
+		What the action's registered handler returned, verbatim, or the outcome the doctype declared.
+		"""
 		data: JSON
 		error: String
+		"""
+		The record as stonecropRecord returns it after the action, whoever wrote it. The client stores
+		this, never data. Null when the action failed or targets no record.
+		"""
+		record: JSON
 		"""
 		Keys the write discarded because the doctype declares no column for them, or because the
 		value was a nested relation rather than a column value. Null when everything sent was

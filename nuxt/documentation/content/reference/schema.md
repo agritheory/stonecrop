@@ -931,6 +931,7 @@ export interface DataClient {
         success: boolean;
         data: unknown;
         error: string | null;
+        record: Record<string, unknown> | null;
     }>;
 }
 ```

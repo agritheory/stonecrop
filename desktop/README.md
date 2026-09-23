@@ -158,7 +158,7 @@ Three things are adjustable, for the cases that genuinely differ between applica
 
 `args` is an opaque JSON array: nothing validates it, so both ends of your own stack have to agree. A backend taking positional `[recordId, data]` supplies `buildArgs` to say so.
 
-Resolving a record's identity and keying it into HST are deliberately **not** adjustable. That rule is declared on the doctype and re-derived server-side by the adapter, and every host that re-derived it client-side got it wrong. If you dispatch through `Stonecrop.dispatchAction` directly instead of using this composable, that method still files the returned record under the settled identity, so you cannot store it under the wrong key by accident. What you lose is the stale-key cleanup and the route-follow, which need the id you dispatched.
+Resolving a record's identity and keying it into HST are deliberately **not** adjustable. That rule is declared on the doctype and re-derived server-side by the adapter, and every host that re-derived it client-side got it wrong. If you dispatch through `Stonecrop.dispatchAction` directly instead of using this composable, that method still files the result's `record` (the server's read of the record after the action) under the settled identity, so you cannot store it under the wrong key by accident. What you lose is the stale-key cleanup and the route-follow, which need the id you dispatched.
 
 Do not copy form data into HST before dispatching. Desktop already hands you the current form snapshot in `payload.data`, and an unsaved record has no HST node to write to.
 
