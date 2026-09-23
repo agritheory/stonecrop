@@ -134,7 +134,7 @@ rows:
   - ['`baseCurrencyLabel`', '`string`', "`'Base Currency'`", "Label for the read-only base currency field."]
   - ['`baseAmountLabel`', '`string`', "`'Base Amount'`", "Label for the read-only derived base amount field."]
   - ['`exchangeRateLabel`', '`string`', "`'Exchange Rate'`", "Label for the read-only exchange rate field."]
-  - ['`validation`', '`{ errorMessage: string }`', "`{ errorMessage: '&nbsp;' }`", 'Static error message shown below the field.']
+  - ['`validation`', '`{ errorMessage: string }`', "`{ errorMessage: '' }`", 'Static error message shown below the field.']
   - ['`errors`', '`string[]`', '—', 'Dynamic validation errors (e.g. from a trigger). Takes precedence over `validation.errorMessage` whenever the list is non-empty.']
 ---
 ::

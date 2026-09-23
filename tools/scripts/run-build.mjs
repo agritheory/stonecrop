@@ -92,6 +92,8 @@ function unlinkStubbedRuntimes(members) {
 	for (const member of members) {
 		const runtime = join(rootDir, member, 'dist/runtime')
 		if (lstatSync(runtime, { throwIfNoEntry: false })?.isSymbolicLink()) {
+			// unlinkSync removes the link itself; rmSync throws ERR_FS_EISDIR on Node 24 when the
+			// target is a directory.
 			unlinkSync(runtime)
 		}
 	}

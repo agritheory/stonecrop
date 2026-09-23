@@ -183,7 +183,7 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 			expect(tableField.fieldname).toBe('addresses')
 			expect(tableField.component).toBe('ATable')
 			expect(tableField.kind).toBe('table')
-			expect(tableField.config).toEqual({ view: 'list' })
+			expect(tableField.config).toEqual({ view: 'list', fullWidth: true })
 			// rows are NOT in the resolved schema — they come from formData at render time
 
 			// Schema delegated to ATable — child fields are preserved, columns are not pre-built
@@ -194,6 +194,34 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 			expect(tableField.schema[2]).toEqual(expect.objectContaining({ fieldname: 'state' }))
 			expect(tableField.schema[3]).toEqual(expect.objectContaining({ fieldname: 'zip_code' }))
 			expect('columns' in tableField).toBe(false)
+		})
+
+		it.each([
+			[{ view: 'list-expansion' }, { view: 'list-expansion', fullWidth: true }],
+			[
+				{ view: 'list', fullWidth: false },
+				{ view: 'list', fullWidth: false },
+			],
+		])('merges a declared table config %j over the full-width default', (declared, expected) => {
+			const testDoctype = new Doctype(
+				'test',
+				List([
+					{
+						kind: 'field' as const,
+						fieldname: 'addresses',
+						component: 'ATable',
+						doctype: 'address',
+						config: declared,
+					},
+				]) as any,
+				undefined,
+				undefined,
+				{ addresses: { target: 'address', cardinality: 'noneOrMany', fieldname: 'addresses' } }
+			)
+			const tableField = registry.resolveSchema(testDoctype)[0] as any
+
+			expect(tableField.kind).toBe('table')
+			expect(tableField.config).toEqual(expected)
 		})
 
 		it('auto-derives columns from child doctype schema for noneOrMany links', () => {
@@ -393,7 +421,7 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 			expect(tableField.fieldname).toBe('addresses')
 			expect(tableField.component).toBe('ATable')
 			expect(tableField.kind).toBe('table')
-			expect(tableField.config).toEqual({ view: 'list' })
+			expect(tableField.config).toEqual({ view: 'list', fullWidth: true })
 			// rows are NOT in the resolved schema — they come from formData at render time
 			expect(Array.isArray(tableField.schema)).toBe(true)
 			expect(tableField.schema).toHaveLength(4)

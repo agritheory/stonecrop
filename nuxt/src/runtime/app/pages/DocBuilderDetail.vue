@@ -29,7 +29,7 @@
 							<p class="empty-workflow-hint">No workflow yet. Name the first state to start building the workflow.</p>
 							<div class="empty-workflow-form">
 								<input v-model="newStateName" type="text" placeholder="e.g. Draft" @keyup.enter="seedWorkflow" />
-								<button class="btn-seed" type="button" :disabled="!newStateName.trim()" @click="seedWorkflow">
+								<button class="btn-primary" type="button" :disabled="!newStateName.trim()" @click="seedWorkflow">
 									Add first state
 								</button>
 							</div>
@@ -50,6 +50,9 @@
 				</div>
 			</div>
 		</Desktop>
+		<template #fallback>
+			<div class="docbuilder-loading">Loading...</div>
+		</template>
 	</ClientOnly>
 </template>
 
@@ -153,6 +156,7 @@ const docbuilderActions = computed(() => [
 	height: 100vh;
 }
 .docbuilder-loading {
+	color: var(--sc-header-text-color);
 	padding: 2rem;
 	text-align: center;
 }
@@ -173,7 +177,7 @@ const docbuilderActions = computed(() => [
 	padding: 1rem 0;
 }
 .empty-workflow-hint {
-	color: #9ca3af;
+	color: var(--sc-header-text-color);
 	font-style: italic;
 	margin: 0 0 0.75rem;
 }
@@ -183,23 +187,23 @@ const docbuilderActions = computed(() => [
 	gap: 0.5rem;
 }
 .empty-workflow-form input {
-	border: 1px solid var(--sc-gray-20, #d1d5db);
-	border-radius: 4px;
+	border: 1px solid var(--sc-input-border-color);
+	border-radius: var(--sc-border-radius);
 	font-family: inherit;
 	font-size: 0.875rem;
 	padding: 0.4em 0.6em;
 }
-.btn-seed {
-	background: var(--sc-blue-40, #3b82f6);
+.btn-primary {
+	background: var(--sc-primary-color);
 	border: none;
-	border-radius: 0.4rem;
-	color: #fff;
+	border-radius: var(--sc-border-radius);
+	color: var(--sc-primary-text-color);
 	cursor: pointer;
 	font-size: 0.875rem;
 	font-weight: 500;
 	padding: 0.45em 1em;
 }
-.btn-seed:disabled {
+.btn-primary:disabled {
 	cursor: not-allowed;
 	opacity: 0.5;
 }
@@ -207,24 +211,24 @@ const docbuilderActions = computed(() => [
 	margin-bottom: 1rem;
 }
 .validation-errors {
-	background: #fee2e2;
-	border: 1px solid #ef4444;
-	border-radius: 6px;
-	color: #991b1b;
+	background: var(--sc-badge-danger-bg);
+	border: 1px solid var(--sc-badge-danger-accent);
+	border-radius: var(--sc-border-radius);
+	color: var(--sc-badge-danger-text);
 	margin-bottom: 0.5rem;
 	padding: 1rem;
 }
 .validation-warnings {
-	background: #fef9c3;
-	border: 1px solid #eab308;
-	border-radius: 6px;
-	color: #713f12;
+	background: var(--sc-badge-warning-bg);
+	border: 1px solid var(--sc-badge-warning-accent);
+	border-radius: var(--sc-border-radius);
+	color: var(--sc-badge-warning-text);
 	padding: 1rem;
 }
 .dismiss-button {
 	background: none;
-	border: 1px solid;
-	border-radius: 3px;
+	border: 1px solid currentColor;
+	border-radius: var(--sc-border-radius);
 	cursor: pointer;
 	font-size: 0.75rem;
 	margin-left: 1rem;
@@ -240,9 +244,9 @@ const docbuilderActions = computed(() => [
 	font-size: 0.875rem;
 }
 .save-message.success {
-	color: #065f46;
+	color: var(--sc-brand-success);
 }
 .save-message.error {
-	color: #991b1b;
+	color: var(--sc-brand-danger);
 }
 </style>

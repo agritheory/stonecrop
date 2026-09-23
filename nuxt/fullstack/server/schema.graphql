@@ -44,6 +44,7 @@ type StonecropField {
 	validation: JSON
 	cardinality: String
 	source: String
+	config: JSON
 }
 
 """

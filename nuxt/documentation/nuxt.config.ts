@@ -110,6 +110,7 @@ export default defineNuxtConfig({
 	// its own declarations sit in a cascade layer, so this site's unlayered rules still win.
 	css: [
 		'@stonecrop/themes/default.css',
+		fileURLToPath(new URL('../example-host.css', import.meta.url)),
 		'@stonecrop/desktop/styles',
 		'@stonecrop/atable/styles',
 		'@stonecrop/node-editor/styles',

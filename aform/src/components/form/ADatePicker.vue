@@ -2,7 +2,7 @@
 	<template v-if="mode === 'display' || mode === 'read'">
 		<span class="aform_display-value">{{ date ? new Date(date).toLocaleDateString() : '' }}</span>
 		<label v-if="label">{{ label }}</label>
-		<p v-show="errorText" class="aform_error" v-html="errorText"></p>
+		<p v-show="errorText" :id="errorId" class="aform_error" role="alert">{{ errorText }}</p>
 	</template>
 	<template v-else>
 		<div ref="datepicker" class="adatepicker" tabindex="0">
@@ -72,7 +72,7 @@
 				</tbody>
 			</table>
 		</div>
-		<p v-show="errorText" class="aform_error" v-html="errorText"></p>
+		<p v-show="errorText" :id="errorId" class="aform_error" role="alert">{{ errorText }}</p>
 	</template>
 </template>
 
@@ -81,15 +81,24 @@
 // import { defaultKeypressHandlers, useKeyboardNav } from '@stonecrop/utilities'
 import { computed, nextTick, onMounted, ref, useTemplateRef, watch } from 'vue'
 
+import { fieldErrorA11y } from '../../composables/fieldErrorA11y'
 import type { ComponentProps } from '../../types'
 
 const numberOfRows = 6
 const numberOfColumns = 7
 
-const { mode, label, selectRange = false, errors, validation = { errorMessage: '' } } = defineProps<ComponentProps>()
+const {
+	mode,
+	label,
+	selectRange = false,
+	uuid,
+	errors,
+	validation = { errorMessage: '' },
+} = defineProps<ComponentProps>()
 
 // Dynamic trigger errors take precedence over a static schema errorMessage; empty means the slot hides.
 const errorText = computed(() => (errors?.length ? errors.join('; ') : (validation.errorMessage ?? '')))
+const { errorId } = fieldErrorA11y(uuid, errorText)
 
 const date = defineModel<number | Date>({ default: () => new Date() })
 const selectedDate = ref(new Date(date.value))
@@ -438,7 +447,7 @@ defineExpose({ currentMonth, currentYear, selectedDate })
 .adatepicker .todaysDate {
 	font-weight: bolder;
 	/* text-decoration: underline; */
-	color: black;
+	color: var(--sc-cell-text-color);
 }
 .days-header > td {
 	font-weight: bold;

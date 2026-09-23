@@ -43,6 +43,16 @@
 			"mode": "display"
 		},
 		{
+			"fieldname": "items",
+			"label": "Line Items",
+			"component": "ATable",
+			"doctype": "order-item",
+			"config": {
+				"view": "list-expansion",
+				"fullWidth": true
+			}
+		},
+		{
 			"fieldname": "shippingAddress",
 			"label": "Shipping Address",
 			"component": "ATextboxInput"
@@ -63,6 +73,13 @@
 			"component": "ADateTime"
 		}
 	],
+	"links": {
+		"items": {
+			"target": "order-item",
+			"cardinality": "noneOrMany",
+			"fieldname": "items"
+		}
+	},
 	"workflow": {
 		"states": [
 			"DRAFT",

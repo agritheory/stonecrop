@@ -13,28 +13,28 @@ import { createTableStore } from '../stores/table'
 const { store } = defineProps<{ store: ReturnType<typeof createTableStore> }>()
 
 const amodalRef = useTemplateRef('amodal')
-const { width: modalWidth, height: modalHeight } = useElementBounding(amodalRef)
+const { width: modalWidth } = useElementBounding(amodalRef)
 
 const amodalStyles = computed((): StyleValue => {
 	if (!(store.modal.height && store.modal.width && store.modal.left && store.modal.bottom)) return {}
 
-	const table = store.modal.cell?.closest('table')
-	if (!table) return {}
+	const cell = store.modal.cell
+	if (!cell) return {}
 
-	const maxHeight = table.offsetHeight || 0
-	const maxWidth = table.offsetWidth || 0
+	const container = cell.closest('.atable-container') ?? cell.closest('table')
+	if (!(container instanceof HTMLElement)) return {}
 
-	// Get the Y position of the cell clicked by getting the cumulative height of prior rows + the header (if present)
-	let modalY = store.modal.cell?.offsetTop || 0
-	const headerHeight = table.querySelector('thead')?.offsetHeight || 0
-	modalY += headerHeight
-	// if the modal will overflow the bottom of the table, remove modal and cell heights from the Y position
-	modalY = modalY + modalHeight.value < maxHeight ? modalY : modalY - (modalHeight.value + store.modal.height)
+	// Always open below the cell. Flipping above the field is a combobox anti-pattern here —
+	// the calendar is taller than a row, so "fit in the table" put it over the value.
+	const cellRect = cell.getBoundingClientRect()
+	const containerRect = container.getBoundingClientRect()
+	const modalY = cellRect.bottom - containerRect.top
 
-	// Get the X position of the cell clicked by getting the cumulative width of prior cells within the row
-	let modalX = store.modal.cell?.offsetLeft || 0
-	// if the modal will overflow the right of the table, remove modal and cell widths from the X position
-	modalX = modalX + modalWidth.value <= maxWidth ? modalX : modalX - (modalWidth.value - store.modal.width)
+	let modalX = cellRect.left - containerRect.left
+	const maxWidth = container.clientWidth || containerRect.width
+	if (modalWidth.value && modalX + modalWidth.value > maxWidth) {
+		modalX = Math.max(0, maxWidth - modalWidth.value)
+	}
 
 	return {
 		left: `${modalX}px`,
@@ -46,7 +46,13 @@ const amodalStyles = computed((): StyleValue => {
 <style>
 .amodal {
 	position: absolute;
-	background-color: var(--sc-row-color-zebra-dark);
+	width: max-content;
+	max-width: 100%;
+	box-sizing: border-box;
+	margin-top: 0.25rem;
+	padding: 10px;
+	border: 1px solid var(--sc-input-border-color);
+	background: var(--sc-input-field-background);
 	z-index: 200;
 }
 </style>

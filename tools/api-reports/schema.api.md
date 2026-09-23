@@ -670,6 +670,7 @@ export interface ValueField {
     cardinality?: 'atMostOne' | 'one' | 'noneOrMany' | 'atLeastOne';
     component: string;
     computed?: boolean;
+    config?: TableViewConfig;
     default?: unknown;
     doctype?: string;
     edit?: boolean;
@@ -733,6 +734,23 @@ export const ValueFieldSchema: z.ZodObject<{
         atLeastOne: "atLeastOne";
     }>>;
     source: z.ZodOptional<z.ZodLiteral<"introspected">>;
+    config: z.ZodOptional<z.ZodObject<{
+        view: z.ZodOptional<z.ZodEnum<{
+            list: "list";
+            uncounted: "uncounted";
+            "list-expansion": "list-expansion";
+            tree: "tree";
+            gantt: "gantt";
+            "tree-gantt": "tree-gantt";
+        }>>;
+        fullWidth: z.ZodOptional<z.ZodBoolean>;
+        defaultTreeExpansion: z.ZodOptional<z.ZodEnum<{
+            root: "root";
+            branch: "branch";
+            leaf: "leaf";
+        }>>;
+        dependencyGraph: z.ZodOptional<z.ZodBoolean>;
+    }, z.core.$strip>>;
 }, z.core.$strip>;
 
 // @public

@@ -1,42 +1,29 @@
 /**
  * Stonecrop Documentation Theme
  *
- * Gray-on-gray design per the Stonecrop Design Philosophy:
- * - Dark gray backgrounds reduce visual fatigue
- * - Mid-tone text improves long-term readability
- * - Color is reserved for semantic states (error, warning, success)
- * - Sans-serif typography with minimal ornamentation
- *
- * Ported from docs/.vitepress/theme/custom.css — VitePress's own `--vp-c-*` tokens and
- * `VP*` component classes don't exist here, so only the color palette and design intent
- * carried over; the nav/sidebar/page chrome below is new, built for this layout.
+ * Doc layout chrome aliases the product token floor (@stonecrop/themes/default.css).
+ * Live component demos stay inside .stonecrop-demo and read --sc-* directly.
  */
 
-/* Several field components (ADropdown, ADate, ADateRange, AFormLink's non-embedded label)
-   position their floating label with a hardcoded negative margin tuned against Arimo's line
-   metrics rather than an anchor like `top: 0`. Loading the real font (same source
-   @stonecrop/themes' default.css uses) keeps that math correct in the live demos below. */
-@import url('https://fonts.googleapis.com/css2?family=Arimo:ital,wght@0,400..700;1,400..700&display=swap');
-
 :root {
-	--doc-c-bg: #f5f5f5;
-	--doc-c-bg-soft: #ebebeb;
-	--doc-c-bg-mute: #e0e0e0;
-	--doc-c-bg-alt: #fafafa;
+	--doc-c-bg: var(--sc-page-background);
+	--doc-c-bg-soft: var(--sc-gray-5);
+	--doc-c-bg-mute: var(--sc-gray-10);
+	--doc-c-bg-alt: var(--sc-form-background);
 
-	--doc-c-text-1: #2d2d2d;
-	--doc-c-text-2: #4a4a4a;
-	--doc-c-text-3: #6b6b6b;
+	--doc-c-text-1: var(--sc-gray-80);
+	--doc-c-text-2: var(--sc-cell-text-color);
+	--doc-c-text-3: var(--sc-input-label-color);
 
-	--doc-c-divider: #d0d0d0;
-	--doc-c-divider-light: #e0e0e0;
+	--doc-c-divider: var(--sc-input-border-color);
+	--doc-c-divider-light: var(--sc-gray-10);
 
-	--doc-c-brand-1: #5a8a5a;
-	--doc-c-brand-2: #4a7a4a;
-	--doc-c-brand-soft: rgba(90, 138, 90, 0.14);
+	--doc-c-brand-1: var(--sc-color-brand);
+	--doc-c-brand-2: var(--sc-color-brand);
+	--doc-c-brand-soft: var(--sc-gray-10);
 
-	--doc-code-block-bg: #e8e8e8;
-	--doc-border-radius: 2px;
+	--doc-code-block-bg: var(--sc-gray-5);
+	--doc-border-radius: var(--sc-border-radius);
 	--doc-font-mono: 'JetBrains Mono', 'Fira Code', 'SF Mono', monospace;
 	--doc-sidebar-width: 260px;
 }
@@ -47,14 +34,14 @@
 
 body {
 	margin: 0;
-	background: var(--doc-c-bg);
-	color: var(--doc-c-text-1);
-	font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+	background: var(--sc-page-background);
+	color: var(--sc-cell-text-color);
+	font-family: var(--sc-font-family);
 	line-height: 1.6;
 }
 
 a {
-	color: var(--doc-c-brand-1);
+	color: var(--sc-color-brand);
 }
 
 /* MDC injects an anchor link into every h2-h4, so the bare `a` rule above turns each heading into
@@ -126,9 +113,9 @@ a {
 .doc-content blockquote {
 	margin: 1.5rem 0;
 	padding: 0.1rem 1.25rem;
-	border-left: 3px solid var(--doc-c-brand-1);
-	background: var(--doc-c-brand-soft);
-	border-radius: 0 var(--doc-border-radius) var(--doc-border-radius) 0;
+	border-left: 3px solid var(--sc-form-border);
+	background: var(--doc-c-bg-soft);
+	border-radius: 0;
 	color: var(--doc-c-text-2);
 }
 
@@ -136,7 +123,7 @@ a {
 .api-table {
 	margin: 1.5rem 0;
 	border: 1px solid var(--doc-c-divider);
-	border-radius: 12px;
+	border-radius: var(--doc-border-radius);
 	overflow: hidden;
 }
 
@@ -188,25 +175,13 @@ a {
 /* Demo panel */
 .demo-panel {
 	margin: 1.5rem 0;
-	border: 1px solid var(--doc-c-divider);
-	border-radius: 12px;
-	background: var(--doc-c-bg-soft);
-}
-
-.demo-panel__label {
-	display: block;
-	padding: 0.75rem 1.25rem 0;
-	font-size: 0.7rem;
-	font-weight: 600;
-	letter-spacing: 0.08em;
-	text-transform: uppercase;
-	color: var(--doc-c-text-3);
+	border: 1px solid var(--sc-input-border-color);
+	border-radius: var(--sc-border-radius);
+	background: var(--sc-form-background);
 }
 
 .demo-panel__preview {
-	display: flex;
-	align-items: center;
-	justify-content: center;
+	display: block;
 	min-height: 8rem;
 	padding: 2rem 1.5rem;
 }
@@ -238,7 +213,7 @@ a {
 
 .demo-panel__code {
 	border-top: 1px solid var(--doc-c-divider);
-	border-radius: 0 0 12px 12px;
+	border-radius: 0;
 	overflow: hidden;
 }
 
@@ -265,56 +240,27 @@ a {
 	display: block;
 	padding: 1.25rem 1.5rem;
 	border: 1px solid var(--doc-c-divider);
-	border-left: 4px solid var(--card-accent, var(--doc-c-brand-1));
-	border-radius: 8px;
+	border-radius: var(--sc-border-radius);
 	background: var(--doc-c-bg-alt);
 	text-decoration: none;
 	color: inherit;
-	transition:
-		border-color 0.2s,
-		box-shadow 0.2s,
-		transform 0.2s;
 }
 
 .card-grid-item:hover {
-	box-shadow: 0 0 0 1px var(--card-accent, var(--doc-c-brand-1));
-	transform: translateY(-2px);
+	border-color: var(--sc-input-active-border-color);
 }
 
 .card-grid-item__title {
 	margin: 0 0 0.25rem;
 	font-size: 1.05rem;
 	font-weight: 600;
-	color: var(--card-accent, var(--doc-c-text-1));
+	color: var(--doc-c-text-1);
 }
 
 .card-grid-item__description {
 	margin: 0;
 	font-size: 0.85rem;
 	color: var(--doc-c-text-2);
-}
-
-.card-grid-item--blue {
-	--card-accent: #3b82f6;
-}
-.card-grid-item--purple {
-	--card-accent: #8b5cf6;
-}
-.card-grid-item--teal {
-	--card-accent: #0d9488;
-}
-.card-grid-item--amber {
-	--card-accent: #d97706;
-}
-.card-grid-item--rose {
-	--card-accent: #e11d48;
-}
-.card-grid-item--indigo {
-	--card-accent: #4f46e5;
-}
-.card-grid-item--green {
-	/* Same green as the rest of the site — --doc-c-brand-1 (links, headings, blockquote accent). */
-	--card-accent: var(--doc-c-brand-1);
 }
 
 /* Site chrome: top nav + right sidebar */

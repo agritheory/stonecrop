@@ -151,9 +151,12 @@ const handleEndTime = (data: {
 <style scoped>
 .adate-selection {
 	display: inline-block;
-	border: 1px solid var(--sc-gray-80);
+	width: max-content;
+	max-width: 100%;
+	box-sizing: border-box;
+	border: 1px solid var(--sc-input-border-color);
 	padding: 10px;
-	background: var(--sc-form-background);
+	background: var(--sc-input-field-background);
 }
 
 .adate-selection__end-label {
@@ -166,9 +169,9 @@ const handleEndTime = (data: {
 }
 
 .empty {
-	color: #ccc;
+	color: var(--sc-input-label-color);
 	padding: 10px;
 	text-align: center;
-	border: 1px solid #ccc;
+	border: 1px solid var(--sc-input-border-color);
 }
 </style>
