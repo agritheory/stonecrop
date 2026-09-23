@@ -22,10 +22,15 @@ import AQuantityInput from './form/AQuantityInput.vue'
 import type { QuantityValue } from '../types'
 import type { createTableStore } from '@stonecrop/atable'
 
+type QuantityCellStore = Pick<
+	ReturnType<typeof createTableStore>,
+	'columns' | 'modal' | 'updates' | 'getCellData' | 'getItemUomMeta'
+>
+
 const props = defineProps<{
 	colIndex: number
 	rowIndex: number
-	store: ReturnType<typeof createTableStore>
+	store: QuantityCellStore
 }>()
 
 const uomColIndex = computed(() => props.store.columns.findIndex(column => column.name === 'uom'))

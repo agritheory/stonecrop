@@ -18,10 +18,15 @@ import ACurrencyInput from './form/ACurrencyInput.vue'
 import type { CurrencyValue } from '../types'
 import type { createTableStore } from '@stonecrop/atable'
 
+type CurrencyCellStore = Pick<
+	ReturnType<typeof createTableStore>,
+	'modal' | 'updates' | 'getCellData' | 'getCurrencyMeta'
+>
+
 const props = defineProps<{
 	colIndex: number
 	rowIndex: number
-	store: ReturnType<typeof createTableStore>
+	store: CurrencyCellStore
 }>()
 
 const currencyCode = ref('')
