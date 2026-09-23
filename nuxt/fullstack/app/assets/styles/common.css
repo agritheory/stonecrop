@@ -1,3 +1,9 @@
+/* Host override: same green as the documentation site brand (`--doc-c-brand-1`).
+   Unlayered `:root` beats the token floor's `stonecrop.tokens` layer. */
+:root {
+	--sc-primary-color: #5a8a5a;
+}
+
 /* Common page layouts - using Stonecrop theme variables */
 .page-container {
 	padding: 2rem;

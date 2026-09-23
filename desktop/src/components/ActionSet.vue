@@ -1,211 +1,434 @@
 <template>
-	<div :class="{ collapsed: !isOpen }" class="action-set">
-		<div class="action-menu-icon">
-			<div id="cross" :class="{ rotated: isOpen }" @click="onClick">×</div>
-		</div>
-		<div style="margin-right: 30px"></div>
-		<div v-for="(el, index) in elements" :key="el.label" class="action-element">
-			<div class="action-element-header">
+	<div
+		class="action-set"
+		:class="{
+			'action-set--expanded': isExpanded,
+			'action-set--drawer-open': drawerOpen,
+		}">
+		<div class="action-set__tile" role="presentation">
+			<button
+				type="button"
+				class="action-set__toggle"
+				:class="{ 'action-set__toggle--expanded': isExpanded }"
+				aria-label="Toggle menu"
+				:aria-expanded="isExpanded"
+				@click="onToggle">
+				+
+			</button>
+
+			<template v-if="isExpanded">
 				<button
-					v-if="el.type == 'button'"
-					:disabled="el.disabled"
-					class="button-default"
-					@click="handleClick(el.action, el.label)">
-					{{ el.label }}
+					v-for="tab in allTabs"
+					:key="tab.id"
+					type="button"
+					class="action-set__item"
+					:class="{ 'action-set__item--active': drawerOpen && activeTabId === tab.id }"
+					:aria-label="tab.label"
+					:aria-current="drawerOpen && activeTabId === tab.id ? 'page' : undefined"
+					:title="tab.label"
+					@click="onTileClick(tab.id)">
+					<component :is="tab.icon" v-if="tab.icon" class="action-set__item-icon" />
+					<span v-else class="action-set__item-fallback" aria-hidden="true">{{ slotFallback(tab.label) }}</span>
+					<span v-if="tabBadge(tab) > 0" class="action-set__item-badge">{{ tabBadge(tab) }}</span>
 				</button>
-			</div>
-			<div v-if="el.type == 'dropdown'">
-				<div class="dropdown-header">
-					<div class="cross" :class="{ rotated: dropdownOpen[index] }" @click="toggleDropdown(index)">×</div>
-					<button class="button-default dropdown-title" @click="toggleDropdown(index)">
-						{{ el.label }}
-					</button>
-				</div>
-				<div v-show="dropdownStates[index]" class="dropdown-container">
-					<div class="dropdown">
-						<div v-for="item in el.actions" :key="item.label">
-							<button v-if="item.action != null" class="dropdown-item" @click="handleClick(item.action, item.label)">
-								{{ item.label }}
-							</button>
-							<a v-else-if="item.link != null" :href="item.link"
-								><button class="dropdown-item">{{ item.label }}</button></a
-							>
-						</div>
-					</div>
-				</div>
-			</div>
+			</template>
 		</div>
+
+		<aside
+			v-if="drawerOpen"
+			ref="drawerEl"
+			class="action-set__drawer"
+			aria-label="Side panel"
+			@keydown="onDrawerKeydown">
+			<header class="action-set__drawer-header">
+				<button type="button" class="action-set__drawer-close" aria-label="Close panel" @click="controller.close()">
+					×
+				</button>
+			</header>
+			<div class="action-set__drawer-body">
+				<template v-if="activeTabId === ACTIONS_TAB_ID">
+					<div class="action-set__actions-list">
+						<template v-for="el in elements" :key="el.label">
+							<div v-if="el.type === 'dropdown'" class="action-set__actions-group" role="group" :aria-label="el.label">
+								<p class="action-set__actions-group-label" aria-hidden="true">{{ el.label }}</p>
+								<template v-for="item in el.actions" :key="item.label">
+									<button
+										v-if="item.action"
+										type="button"
+										class="action-set__actions-list-item action-set__actions-list-item--nested"
+										@click="onActionClick(item.label, item.action)">
+										{{ item.label }}
+									</button>
+									<a
+										v-else-if="item.link"
+										:href="item.link"
+										class="action-set__actions-list-item action-set__actions-list-item--nested">
+										{{ item.label }}
+									</a>
+								</template>
+							</div>
+							<a v-else-if="!el.action && el.link" :href="el.link" class="action-set__actions-list-item">
+								{{ el.label }}
+							</a>
+							<button
+								v-else
+								type="button"
+								class="action-set__actions-list-item"
+								:disabled="el.disabled"
+								@click="onActionClick(el.label, el.action)">
+								{{ el.label }}
+							</button>
+						</template>
+						<p v-if="elements.length === 0" class="action-set__actions-empty">No actions available</p>
+					</div>
+				</template>
+				<template v-else-if="activeSlot">
+					<component :is="activeSlot.component" v-if="activeSlot.component" :key="activeSlot.id" />
+					<p v-else class="action-set__drawer-empty">No content</p>
+				</template>
+			</div>
+		</aside>
 	</div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, markRaw, nextTick, ref, unref, watch, type Component } from 'vue'
 
-import type { ActionElements } from '../types'
+import type { ActionSetController } from '../composables/useActionSet'
+import { ActionSetIconActions, ActionSetIconSearch } from '../icons'
+import type { ActionElements, ActionSetSlot } from '../types'
 
-const { elements = [] } = defineProps<{ elements?: ActionElements[] }>()
-const emit = defineEmits<{
-	actionClick: [label: string, action: (() => void | Promise<void>) | undefined]
+const ACTIONS_TAB_ID = '__actions__'
+const SEARCH_TAB_ID = '__search__'
+
+type Tab = {
+	id: string
+	label: string
+	icon?: Component
+	badge?: number
+}
+
+const {
+	slots = [],
+	elements = [],
+	controller,
+} = defineProps<{
+	slots?: ActionSetSlot[]
+	elements?: ActionElements[]
+	controller: ActionSetController
 }>()
 
-// Track dropdown open state separately (index -> boolean)
-const dropdownStates = ref<Record<number, boolean>>({})
+const emit = defineEmits<{
+	actionClick: [label: string, action: (() => void | Promise<void>) | undefined]
+	search: []
+}>()
 
-const isOpen = ref(true)
-const dropdownOpen = ref<boolean[]>([])
+const isExpanded = ref(true)
+const drawerEl = ref<HTMLElement | null>(null)
+const lastFocusedBeforeDrawer = ref<HTMLElement | null>(null)
 
-onMounted(() => {
-	closeDropdowns()
+const activeSlot = computed(() => slots.find(slot => slot.id === controller.activeSlotId.value) ?? null)
+const hasActions = computed(() => elements.length > 0)
+const activeTabId = computed(() => (controller.isActionsOpen.value ? ACTIONS_TAB_ID : controller.activeSlotId.value))
+const drawerOpen = computed(() => controller.isDrawerOpen.value)
+
+const allTabs = computed<Tab[]>(() => {
+	const tabs: Tab[] = [
+		{
+			id: SEARCH_TAB_ID,
+			label: 'Search',
+			icon: markRaw(ActionSetIconSearch),
+		},
+	]
+
+	for (const slot of slots) {
+		tabs.push({
+			id: slot.id,
+			label: slot.label,
+			icon: slot.icon,
+			badge: slot.badge !== undefined ? unref(slot.badge) : undefined,
+		})
+	}
+
+	if (hasActions.value) {
+		tabs.push({
+			id: ACTIONS_TAB_ID,
+			label: 'Actions',
+			icon: markRaw(ActionSetIconActions),
+		})
+	}
+
+	return tabs
 })
 
-const closeDropdowns = () => {
-	dropdownStates.value = {}
-	dropdownOpen.value = []
+function slotFallback(label: string): string {
+	return label.trim().charAt(0).toUpperCase() || '?'
 }
 
-const onClick = () => {
-	isOpen.value = !isOpen.value
+function tabBadge(tab: Tab): number {
+	const count = tab.badge
+	return typeof count === 'number' && count > 0 ? count : 0
 }
 
-const toggleDropdown = (index: number) => {
-	const showDropdown = !dropdownStates.value[index]
-	closeDropdowns()
-	if (showDropdown) {
-		dropdownStates.value[index] = true
-		dropdownOpen.value[index] = true
+// The drawer sits beside the page rather than over it, so Tab is left to the browser: trapping it
+// would strand keyboard users away from the page and from a preview opened out of the drawer.
+function onDrawerKeydown(event: KeyboardEvent) {
+	if (event.key !== 'Escape') return
+	event.preventDefault()
+	event.stopPropagation()
+	controller.close()
+}
+
+function onToggle() {
+	isExpanded.value = !isExpanded.value
+}
+
+function onTileClick(tabId: string) {
+	if (tabId === SEARCH_TAB_ID) {
+		emit('search')
+	} else if (drawerOpen.value && activeTabId.value === tabId) {
+		controller.close()
+	} else if (tabId === ACTIONS_TAB_ID) {
+		controller.openActions()
+	} else {
+		controller.openSlot(tabId)
 	}
 }
 
-const handleClick = (action: (() => void | Promise<void>) | undefined, label: string) => {
-	// Emit event to parent - parent will handle execution
-	emit('actionClick', label, action)
+function onActionClick(label: string, action: (() => void) | undefined) {
+	if (action) {
+		emit('actionClick', label, action)
+	}
 }
+
+watch(drawerOpen, async open => {
+	if (open) {
+		lastFocusedBeforeDrawer.value = document.activeElement instanceof HTMLElement ? document.activeElement : null
+		await nextTick()
+		drawerEl.value?.querySelector<HTMLElement>('button:not([disabled]), [href], input, select, textarea')?.focus()
+		return
+	}
+	lastFocusedBeforeDrawer.value?.focus()
+	lastFocusedBeforeDrawer.value = null
+})
 </script>
 
 <style scoped>
-#cross {
-	position: relative;
-	transform: rotate(45deg);
-	cursor: pointer;
-	transition: all 0.2s ease-in-out;
-	user-select: none;
-	line-height: 1rem;
-}
-#cross.rotated,
-.cross.rotated {
-	transform: rotate(0deg);
-}
-#cross svg {
-	width: 1.5em;
-	height: 1.5em;
+.action-set {
+	/* Right offset + tile column width + gap: the strip the drawer keeps clear for the tile column. */
+	--action-set-rail-inset: calc(10px + 2.75rem + 18px + 8px);
+	position: fixed;
+	top: var(--sc-action-set-offset-top);
+	right: 10px;
+	z-index: 1001;
+	display: flex;
+	flex-direction: row-reverse;
+	align-items: flex-start;
+	gap: 0;
 }
 
-.action-set {
-	position: fixed;
-	top: 300px;
-	right: 10px;
-	padding: 10px;
+/* Positioned above the drawer, which is a later sibling in the same stacking context. */
+.action-set__tile {
+	position: relative;
+	z-index: 1;
 	display: flex;
 	flex-direction: column;
-	align-items: flex-end;
+	align-items: center;
+	padding: 8px;
 	background: var(--sc-form-background);
 	border: 1px solid var(--sc-gray-20);
-	border-left: 4px solid var(--sc-gray-20);
-	border-radius: 0;
-	overflow: hidden;
-	z-index: 1001; /* Above SheetNav (100) and operation log button (999) */
-	-webkit-transition: all 0.5s ease-in-out;
-	-moz-transition: all 0.5s ease-in-out;
-	-o-transition: all 0.5s ease-in-out;
-	transition: all 0.5s ease-in-out;
-}
-.action-menu-icon {
-	position: relative;
-	font-size: 2rem;
-	display: inline-block;
-	color: var(--sc-gray-60);
-	transition: all 0.2s ease-in-out;
-}
-.action-set.collapsed {
-	max-width: 46px;
-	max-height: 40px;
-	overflow: hidden;
-}
-.action-set.collapsed .action-element {
-	opacity: 0;
-	-webkit-transition: opacity 0.25s ease-in-out;
-	-moz-transition: opacity 0.25s ease-in-out;
-	-o-transition: opacity 0.25s ease-in-out;
-	transition: opacity 0.25s ease-in-out;
 }
 
-.action-element {
-	width: 100%;
-	text-align: right;
-	border: 1px solid var(--sc-gray-20);
-	background: none;
-	font-size: 1.5rem;
-	font-family: var(--sc-font-family);
-	font-weight: 600;
-	margin-top: 10px;
-	position: relative; /* Make this the positioning context for absolute children */
-}
-.action-element-header {
-	display: flex;
-	justify-content: end;
-}
-button.button-default {
-	background-color: transparent;
-	padding: 5px 12px;
-	border-radius: 0px;
-	box-shadow: none;
-	border: none;
-	cursor: pointer;
-	white-space: nowrap;
-	font-weight: bold;
-	font-size: 1rem;
-	text-align: right;
-	color: var(--sc-gray-80);
-	padding-left: 50px;
-	font-family: var(--sc-font-family);
-}
-.dropdown-header:hover button.button-default,
-.dropdown-header:hover,
-.action-element-header:hover {
-	background-color: #f2f2f2;
-}
-
-.dropdown-title {
-	position: relative;
-}
-.dropdown-header {
+.action-set__toggle {
 	display: flex;
 	align-items: center;
-}
-.cross {
-	pointer-events: all;
-	margin-left: 5px;
-	font-family: var(--sc-font-family);
+	justify-content: center;
+	width: 2.75rem;
+	height: 2.75rem;
+	padding: 0;
+	border: none;
+	background: transparent;
+	font-size: 1.5rem;
+	font-weight: 300;
+	line-height: 1;
 	color: var(--sc-gray-60);
 	cursor: pointer;
+	transition: transform 0.2s ease-in-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.action-set__toggle {
+		transition: none;
+	}
+}
+
+.action-set__toggle--expanded {
 	transform: rotate(45deg);
-	user-select: none;
-	transition: all 0.2s ease-in-out;
-	line-height: 1rem;
 }
 
-button.dropdown-item {
-	width: 100%;
-	padding: 5px 12px;
-	text-align: right;
-	border: none;
-	background-color: #ffffff;
+.action-set__toggle:focus-visible,
+.action-set__item:focus-visible,
+.action-set__drawer-close:focus-visible,
+.action-set__actions-list-item:focus-visible {
+	outline: 2px solid var(--sc-primary-color);
+	outline-offset: 2px;
+}
+
+.action-set__item {
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 2.75rem;
+	height: 2.75rem;
+	margin-top: 8px;
+	padding: 0;
+	border: 1px solid var(--sc-gray-20);
+	background: transparent;
 	cursor: pointer;
-	border-radius: 5px;
-	font-size: 1rem;
+	font-family: var(--sc-font-family);
+	color: var(--sc-gray-80);
 }
 
-button.dropdown-item:hover {
-	background-color: #f2f2f2;
+.action-set__item:hover,
+.action-set__item--active {
+	background: var(--sc-btn-hover);
+}
+
+.action-set__item-icon {
+	display: block;
+	width: 1rem;
+	height: 1rem;
+	flex-shrink: 0;
+}
+
+.action-set__item-fallback {
+	font-size: 0.85rem;
+	font-weight: 600;
+	line-height: 1;
+}
+
+.action-set__item-badge {
+	position: absolute;
+	top: 2px;
+	right: 2px;
+	min-width: 14px;
+	height: 14px;
+	padding: 0 3px;
+	border-radius: 7px;
+	background: var(--sc-badge-danger-accent);
+	color: var(--sc-primary-text-color);
+	font-size: 10px;
+	font-weight: 600;
+	line-height: 14px;
+	text-align: center;
+	pointer-events: none;
+}
+
+.action-set__drawer {
+	position: fixed;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	box-sizing: border-box;
+	width: var(--sc-action-set-drawer-width);
+	padding-right: var(--action-set-rail-inset);
+	background: var(--sc-form-background);
+	border-left: 1px solid var(--sc-gray-20);
+	display: flex;
+	flex-direction: column;
+	z-index: 0;
+}
+
+.action-set__drawer-header {
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	padding: 8px 12px;
+	flex-shrink: 0;
+}
+
+.action-set__drawer-close {
+	flex-shrink: 0;
+	border: none;
+	background: transparent;
+	font-size: 1.25rem;
+	line-height: 1;
+	cursor: pointer;
+	color: var(--sc-gray-60);
+	padding: 0.5rem;
+	min-width: 2.75rem;
+	min-height: 2.75rem;
+}
+
+.action-set__drawer-body {
+	flex: 1;
+	min-height: 0;
+	overflow: auto;
+}
+
+.action-set__drawer-empty {
+	padding: 16px 12px;
+	margin: 0;
+	color: var(--sc-gray-60);
+	font-style: italic;
+}
+
+.action-set__actions-list {
+	padding: 8px;
+}
+
+.action-set__actions-list-item {
+	display: block;
+	box-sizing: border-box;
+	width: 100%;
+	padding: 10px 12px;
+	margin-bottom: 4px;
+	border: 1px solid var(--sc-gray-20);
+	background: transparent;
+	text-align: left;
+	font-size: 0.9rem;
+	font-family: var(--sc-font-family);
+	font-weight: 500;
+	color: var(--sc-gray-80);
+	text-decoration: none;
+	cursor: pointer;
+}
+
+.action-set__actions-list-item:hover {
+	background: var(--sc-btn-hover);
+}
+
+.action-set__actions-list-item:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+.action-set__actions-list-item--nested {
+	margin-left: 0;
+	width: 100%;
+	font-weight: 400;
+}
+
+.action-set__actions-group {
+	margin-bottom: 8px;
+}
+
+.action-set__actions-group-label {
+	margin: 4px 0 6px;
+	padding: 0 2px;
+	font-family: var(--sc-font-family);
+	font-size: 0.75rem;
+	font-weight: 600;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	color: var(--sc-gray-60);
+}
+
+.action-set__actions-empty {
+	padding: 16px 12px;
+	margin: 0;
+	color: var(--sc-gray-60);
+	font-style: italic;
 }
 </style>

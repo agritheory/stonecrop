@@ -64,6 +64,20 @@ describe('--sc-* token floor', { tags: ['unit'] }, () => {
 		expect(undefinedTokens).toEqual([])
 	})
 
+	it('reads every token without a fallback', () => {
+		// A fallback is a second copy of the floor's default that renders only when the floor is
+		// missing, so it can disagree with the floor and nobody sees it.
+		const fallback = /var\(\s*(--sc-[a-zA-Z0-9-]+)\s*,/g
+		const withFallback = collect(SRC).flatMap(file =>
+			Array.from(
+				withoutComments(readFileSync(file, 'utf8')).matchAll(fallback),
+				match => `${match[1]} at ${file.replace(SRC, 'src')}`
+			)
+		)
+
+		expect(withFallback).toEqual([])
+	})
+
 	it('reads a floor that actually parsed', () => {
 		// Guards the guard: a moved or renamed floor would otherwise make the test above
 		// pass by finding nothing to check.

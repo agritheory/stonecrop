@@ -5,9 +5,12 @@
 ```ts
 
 import { ActionEventPayload } from '@stonecrop/stonecrop';
+import { Component } from 'vue';
 import { ComponentOptionsMixin } from 'vue';
 import { ComponentProvideOptions } from 'vue';
+import type { ComputedRef } from 'vue';
 import { DefineComponent } from 'vue';
+import type { MaybeRef } from 'vue';
 import { Plugin as Plugin_2 } from 'vue';
 import { PublicProps } from 'vue';
 import { VNode } from 'vue';
@@ -17,8 +20,65 @@ export type ActionElements = ButtonElement | DropdownElement;
 
 export { ActionEventPayload }
 
-// @public (undocumented)
-export const ActionSet: typeof __VLS_export;
+// @public
+export type ActionSetContext = {
+    doctype: ComputedRef<string>;
+    recordId: ComputedRef<string>;
+    activeSlotId: ComputedRef<ActionSetSlotId | null>;
+    present: (subject: ActionSetPreview) => void;
+    closePreview: () => void;
+    close: () => void;
+};
+
+// @public
+export const ActionSetIconActions: Component;
+
+// @public
+export const ActionSetIconApprovals: Component;
+
+// @public
+export const ActionSetIconChat: Component;
+
+// @public
+export const ActionSetIconEmail: Component;
+
+// @public
+export const ActionSetIconFiles: Component;
+
+// @public
+export const ActionSetIconHelp: Component;
+
+// @public
+export const ActionSetIconPrint: Component;
+
+// @public
+export const ActionSetIconReports: Component;
+
+// @public
+export const ActionSetIconSearch: Component;
+
+// @public
+export const ActionSetIconSettings: Component;
+
+// @public
+export type ActionSetPreview = {
+    id?: string;
+    view: Component;
+    props?: Record<string, unknown>;
+};
+
+// @public
+export type ActionSetSlot = {
+    id: ActionSetSlotId;
+    label: string;
+    icon?: Component;
+    component?: Component;
+    badge?: MaybeRef<number>;
+    show?: boolean;
+};
+
+// @public
+export type ActionSetSlotId = string;
 
 // @public
 export type BaseElement = {
@@ -33,10 +93,10 @@ export type ButtonElement = BaseElement & ElementAction & {
 };
 
 // @public (undocumented)
-export const CommandPalette: typeof __VLS_export_2;
+export const CommandPalette: typeof __VLS_export;
 
 // @public (undocumented)
-export const Desktop: typeof __VLS_export_3;
+export const Desktop: typeof __VLS_export_2;
 
 // @public
 export type DropdownElement = BaseElement & {
@@ -86,10 +146,13 @@ export type RouteAdapter = {
 export const SHEET_NAV_TOOLBAR_SELECTOR = "#sheetnav-toolbar";
 
 // @public (undocumented)
-export const SheetNav: typeof __VLS_export_4;
+export const SheetNav: typeof __VLS_export_3;
 
 // @public
 export const StonecropDesktop: Plugin_2;
+
+// @public (undocumented)
+export function useActionSet(): ActionSetContext;
 
 // (No @packageDocumentation comment for this package)
 
