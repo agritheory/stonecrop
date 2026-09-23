@@ -1,4 +1,4 @@
-import { readFileSync, readdirSync, statSync } from 'node:fs'
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
@@ -9,7 +9,12 @@ name nothing reads does nothing, and a read of a name nothing sets computes to `
 
 const NUXT = join(__dirname, '..')
 const FLOOR = join(NUXT, '..', 'themes', 'default', 'default.css')
-const HOST_APPS = ['playground/app', 'fullstack/app', 'documentation/app'].map(dir => join(NUXT, dir))
+const HOST_APPS = readdirSync(NUXT, { withFileTypes: true })
+	.filter(entry => entry.isDirectory() && existsSync(join(NUXT, entry.name, 'nuxt.config.ts')))
+	.map(entry => join(NUXT, entry.name, 'app'))
+const SHARED_HOST_STYLESHEETS = readdirSync(NUXT)
+	.filter(entry => entry.endsWith('.css'))
+	.map(entry => join(NUXT, entry))
 
 const collect = (dir: string, out: string[] = []): string[] => {
 	for (const entry of readdirSync(dir)) {
@@ -29,7 +34,7 @@ const floorTokens = (): Set<string> => {
 
 const hostTokens = (): string[] => {
 	const declarationOrRead = /^\s*(--sc-[a-zA-Z0-9-]+)\s*:|var\(\s*(--sc-[a-zA-Z0-9-]+)\s*[,)]/gm
-	return HOST_APPS.flatMap(dir => collect(dir)).flatMap(file =>
+	return [...HOST_APPS.flatMap(dir => collect(dir)), ...SHARED_HOST_STYLESHEETS].flatMap(file =>
 		Array.from(
 			withoutComments(readFileSync(file, 'utf8')).matchAll(declarationOrRead),
 			match => `${match[1] ?? match[2]} at ${file.replace(`${NUXT}/`, '')}`
@@ -46,7 +51,12 @@ describe('host --sc-* tokens', { tags: ['unit'] }, () => {
 	})
 
 	it('scans hosts that actually use tokens', () => {
+		expect(HOST_APPS).toHaveLength(3)
 		expect(floorTokens().size).toBeGreaterThan(50)
 		expect(hostTokens().length).toBeGreaterThan(0)
+	})
+
+	it('scans the stylesheet the example hosts share', () => {
+		expect(hostTokens().some(entry => entry.endsWith(' at example-host.css'))).toBe(true)
 	})
 })

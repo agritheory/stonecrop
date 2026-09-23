@@ -85,8 +85,6 @@
 						:key="`${store.modal.rowIndex}:${store.modal.colIndex}`"
 						:col-index="store.modal.colIndex"
 						:row-index="store.modal.rowIndex"
-						:model-value="modalCellValue"
-						:selected="modalCellValue"
 						:store="store"
 						v-bind="store.modal.componentProps" />
 				</template>
@@ -327,13 +325,6 @@ window.addEventListener('keydown', (event: KeyboardEvent) => {
 			}
 		}
 	}
-})
-
-const modalCellValue = computed(() => {
-	const colIndex = store.modal.colIndex
-	const rowIndex = store.modal.rowIndex
-	if (colIndex == null || rowIndex == null) return null
-	return store.getCellData(colIndex, rowIndex)
 })
 
 const getProcessedColumnsForRow = (row: TableRow) => {

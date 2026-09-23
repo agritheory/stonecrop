@@ -34,7 +34,7 @@ import { ADateSelection } from '@stonecrop/aform'
 const selectedDate = ref<Date | null>(null)
 const selectedTime = ref<{ hours: number; minutes: number; seconds: number; meridiem: string } | null>(null)
 
-const handleDate = (data: { selected: Date | null; start?: Date | null; end?: Date | null }) => {
+const handleDate = (data: { selected: Date; start?: Date | null; end?: Date | null }) => {
 	selectedDate.value = data.selected
 }
 
@@ -120,7 +120,7 @@ rows:
 ---
 headers: ['Name', 'Payload', 'Description']
 rows:
-  - ['`get-date`', '`{ selected: Date | null; start?: Date | null; end?: Date | null }`', 'Re-emitted from the underlying `ADatePicker` whenever a date (or range endpoint) is picked.']
+  - ['`get-date`', '`{ selected: Date; start?: Date | null; end?: Date | null }`', 'Re-emitted from the underlying `ADatePicker` whenever a date (or range endpoint) is picked.']
   - ['`get-time`', '`{ hours: number; minutes: number; seconds: number; meridiem: string }`', 'Re-emitted from the start `ADateTimeInput` whenever its value changes — unless `selectRange` and `showEndTime` are both `true`, in which case time changes feed into `get-range` instead.']
   - ['`get-range`', '`{ start: Date; end: Date }`', 'Emitted only when `selectRange`, `showTime`, and `showEndTime` are all `true`. Merges the picked date range with both time segments into a start/end `Date` pair whenever either time segment changes.']
 ---

@@ -8,36 +8,23 @@
 		<template v-else>
 			<input
 				:id="uuid"
-				ref="range-input"
 				class="aform_input-field"
 				type="text"
-				:value="inputText"
+				:value="rangeDisplay"
 				placeholder="Select date range"
 				:disabled="mode === 'read'"
-				:required="required"
-				:aria-expanded="showPicker"
-				aria-haspopup="dialog"
-				:aria-controls="showPicker ? pickerId : undefined"
+				readonly
 				:aria-invalid="invalid"
 				:aria-describedby="describedBy"
-				@click="openPicker"
-				@input="onInput"
-				@blur="commitTypedRange"
-				@keydown.enter.prevent="commitTypedRange"
-				@keydown.escape="showPicker = false"
-				@keydown.down="onInputKeydown" />
+				@click="openPicker" />
 			<label class="aform_field-label" :for="uuid">{{ label }}</label>
 
 			<p v-show="errorText" :id="errorId" class="aform_error" role="alert">{{ errorText }}</p>
 
 			<ADateSelection
 				v-if="showPicker"
-				:id="pickerId"
 				ref="pickerRef"
 				class="adaterange-picker"
-				:selected="startDate"
-				:start="startDate"
-				:end="endDate"
 				:select-range="true"
 				:show-time="false"
 				@get-date="handlePickerDate" />
@@ -46,30 +33,19 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, useTemplateRef } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { onClickOutside } from '@vueuse/core'
 import ADateSelection from './ADateSelection.vue'
 import { fieldErrorA11y } from '../../composables/fieldErrorA11y'
 import type { ComponentProps } from '../../types'
-import { parseCalendarDate, parseDateRange, toCalendarDateString } from '../../utils/calendar-date'
 
-const fmt = (d: string) => {
-	const parsed = parseCalendarDate(d)
-	return parsed ? parsed.toLocaleDateString() : ''
-}
+const fmt = (d: string) => new Date(d).toLocaleDateString()
 
-const {
-	label = 'Date Range',
-	required,
-	mode,
-	uuid,
-	errors,
-	validation = { errorMessage: '' },
-} = defineProps<ComponentProps>()
+const { label = 'Date Range', mode, uuid, errors, validation = { errorMessage: '' } } = defineProps<ComponentProps>()
 
+// Dynamic trigger errors take precedence over a static schema errorMessage; empty means the slot hides.
 const errorText = computed(() => (errors?.length ? errors.join('; ') : (validation.errorMessage ?? '')))
 const { errorId, describedBy, invalid } = fieldErrorA11y(uuid, errorText)
-const pickerId = computed(() => (uuid ? `${uuid}-picker` : undefined))
 
 export interface DateRangeValue {
 	start_date: string | null
@@ -80,39 +56,29 @@ const modelValue = defineModel<DateRangeValue>({
 	default: () => ({ start_date: null, end_date: null }),
 })
 
-const startDate = ref<Date | null>(parseCalendarDate(modelValue.value.start_date))
-const endDate = ref<Date | null>(parseCalendarDate(modelValue.value.end_date))
-
-const formatRange = (start: Date | null, end: Date | null) => {
-	const startText = start ? start.toLocaleDateString() : ''
-	const endText = end ? end.toLocaleDateString() : ''
-	if (startText && endText) return `${startText} — ${endText}`
-	if (startText) return `${startText} — ...`
-	return ''
-}
-
-const inputText = ref(formatRange(startDate.value, endDate.value))
+const startDate = ref<Date | null>(modelValue.value.start_date ? new Date(modelValue.value.start_date) : null)
+const endDate = ref<Date | null>(modelValue.value.end_date ? new Date(modelValue.value.end_date) : null)
 
 const showPicker = ref(false)
 const pickerRef = ref(null)
-const rangeInputRef = useTemplateRef<HTMLInputElement>('range-input')
-onClickOutside(pickerRef, () => (showPicker.value = false), { ignore: [rangeInputRef] })
+onClickOutside(pickerRef, () => (showPicker.value = false))
 
 const openPicker = () => {
 	if (mode !== 'read') showPicker.value = true
 }
 
-const onInputKeydown = (event: KeyboardEvent) => {
-	if (event.key === 'ArrowDown' && !showPicker.value && mode !== 'read') {
-		event.preventDefault()
-		showPicker.value = true
-	}
+const formatDate = (d: Date | null): string => {
+	if (!d) return ''
+	return `${d.getMonth() + 1}/${d.getDate()}/${d.getFullYear()}`
 }
 
-const onInput = (event: Event) => {
-	const target = event.target
-	if (target instanceof HTMLInputElement) inputText.value = target.value
-}
+const rangeDisplay = computed(() => {
+	const s = formatDate(startDate.value)
+	const e = formatDate(endDate.value)
+	if (s && e) return `${s} — ${e}`
+	if (s) return `${s} — ...`
+	return ''
+})
 
 const displayValue = computed(() => {
 	const s = modelValue.value.start_date
@@ -131,7 +97,7 @@ const ensureOrder = () => {
 	}
 }
 
-const toISODate = (d: Date | null): string | null => (d ? toCalendarDateString(d) : null)
+const toISODate = (d: Date | null): string | null => (d ? d.toISOString().split('T')[0] : null)
 
 const emitModel = () => {
 	modelValue.value = {
@@ -140,28 +106,7 @@ const emitModel = () => {
 	}
 }
 
-const commitTypedRange = () => {
-	if (!inputText.value.trim()) {
-		startDate.value = null
-		endDate.value = null
-		inputText.value = ''
-		emitModel()
-		return
-	}
-	const parsed = parseDateRange(inputText.value)
-	if (!parsed) {
-		inputText.value = formatRange(startDate.value, endDate.value)
-		return
-	}
-	startDate.value = parsed.start
-	endDate.value = parsed.end
-	ensureOrder()
-	emitModel()
-	inputText.value = formatRange(startDate.value, endDate.value)
-	if (parsed.start && parsed.end) showPicker.value = false
-}
-
-const handlePickerDate = (data: { selected: Date | null; start?: Date | null; end?: Date | null }) => {
+const handlePickerDate = (data: { selected: Date; start?: Date | null; end?: Date | null }) => {
 	if (data.start) startDate.value = data.start
 	if (data.end) {
 		endDate.value = data.end
@@ -169,15 +114,13 @@ const handlePickerDate = (data: { selected: Date | null; start?: Date | null; en
 		showPicker.value = false
 	}
 	emitModel()
-	inputText.value = formatRange(startDate.value, endDate.value)
 }
 
 watch(
 	() => modelValue.value,
 	newVal => {
-		startDate.value = parseCalendarDate(newVal.start_date)
-		endDate.value = parseCalendarDate(newVal.end_date)
-		inputText.value = formatRange(startDate.value, endDate.value)
+		startDate.value = newVal.start_date ? new Date(newVal.start_date) : null
+		endDate.value = newVal.end_date ? new Date(newVal.end_date) : null
 	},
 	{ deep: true }
 )

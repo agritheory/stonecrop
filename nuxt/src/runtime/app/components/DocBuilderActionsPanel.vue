@@ -182,12 +182,12 @@ function onRemoveRow(row) {
 	padding: 0.5em 1em;
 }
 .actions-panel :deep(.atable-row > td) {
-	border-top: 1px solid var(--sc-row-border-color, #e5e7eb);
-	padding: var(--sc-atable-row-padding, 0.25rem) 0.75em;
+	border-top: 1px solid var(--sc-row-border-color);
+	padding: var(--sc-atable-row-padding) 0.75em;
 	vertical-align: middle;
 }
 .actions-panel :deep(input[type='text']) {
-	border: 1px solid var(--sc-gray-20, #d1d5db);
+	border: 1px solid var(--sc-gray-20);
 	border-radius: var(--sc-border-radius);
 	font-family: inherit;
 	font-size: inherit;
@@ -199,7 +199,7 @@ function onRemoveRow(row) {
 	outline: none;
 }
 .cell-readonly {
-	color: var(--sc-gray-60, #4b5563);
+	color: var(--sc-gray-60);
 	cursor: default;
 }
 .badge {
@@ -209,21 +209,16 @@ function onRemoveRow(row) {
 	font-weight: 500;
 	padding: 0.125em 0.5em;
 }
+/* Only a transition, which moves the record to another state, takes a colour; status colours stay for status. */
 .badge-transition {
-	background: #dbeafe;
-	color: #1e40af;
+	background: var(--sc-badge-brand-bg);
+	color: var(--sc-badge-brand-text);
 }
-.badge-self-transition {
-	background: #fef3c7;
-	color: #92400e;
-}
-.badge-command {
-	background: #f3e8ff;
-	color: #6b21a8;
-}
+.badge-self-transition,
+.badge-command,
 .badge-trigger {
-	background: #dcfce7;
-	color: #166534;
+	background: var(--sc-badge-neutral-bg);
+	color: var(--sc-badge-neutral-text);
 }
 .actions-empty {
 	color: var(--sc-header-text-color);
@@ -258,14 +253,14 @@ function onRemoveRow(row) {
 	gap: 0.25rem;
 }
 .detail-label {
-	color: var(--sc-header-text-color, #374151);
+	color: var(--sc-header-text-color);
 	font-size: 0.75rem;
 	font-weight: 600;
 	letter-spacing: 0.05em;
 	text-transform: uppercase;
 }
 .detail-value {
-	color: var(--sc-gray-60, #4b5563);
+	color: var(--sc-gray-60);
 	font-size: 0.8125rem;
 }
 .client-handler-editor {
@@ -274,7 +269,7 @@ function onRemoveRow(row) {
 	gap: 0.5rem;
 }
 .handler-label {
-	color: var(--sc-header-text-color, #374151);
+	color: var(--sc-header-text-color);
 	font-size: 0.75rem;
 	font-weight: 600;
 	letter-spacing: 0.05em;
@@ -283,9 +278,9 @@ function onRemoveRow(row) {
 .remove-row {
 	align-self: flex-start;
 	background: none;
-	border: 1px solid #fca5a5;
+	border: 1px solid var(--sc-badge-danger-accent);
 	border-radius: var(--sc-border-radius);
-	color: #b91c1c;
+	color: var(--sc-badge-danger-text);
 	cursor: pointer;
 	font-size: 0.75rem;
 	padding: 0.3em 0.75em;

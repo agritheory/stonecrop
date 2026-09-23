@@ -13,7 +13,7 @@ import { createTableStore } from '../stores/table'
 const { store } = defineProps<{ store: ReturnType<typeof createTableStore> }>()
 
 const amodalRef = useTemplateRef('amodal')
-const { width: modalWidth, height: modalHeight } = useElementBounding(amodalRef)
+const { width: modalWidth } = useElementBounding(amodalRef)
 
 const amodalStyles = computed((): StyleValue => {
 	if (!(store.modal.height && store.modal.width && store.modal.left && store.modal.bottom)) return {}
@@ -21,38 +21,20 @@ const amodalStyles = computed((): StyleValue => {
 	const cell = store.modal.cell
 	if (!cell) return {}
 
-	const containerEl = cell.closest('.atable-container') ?? cell.closest('table')
-	if (!(containerEl instanceof HTMLElement)) return {}
-	const container = containerEl
-
-	const cellRect = typeof cell.getBoundingClientRect === 'function' ? cell.getBoundingClientRect() : null
-	const containerRect = typeof container.getBoundingClientRect === 'function' ? container.getBoundingClientRect() : null
-	const hasLayout =
-		cellRect &&
-		containerRect &&
-		(cellRect.width > 0 || cellRect.height > 0 || containerRect.width > 0 || containerRect.height > 0)
-
-	if (hasLayout) {
-		let modalX = cellRect.left - containerRect.left
-		const modalY = cellRect.bottom - containerRect.top
-		const maxWidth = container.clientWidth || container.offsetWidth || containerRect.width
-		if (modalWidth.value && modalX + modalWidth.value > maxWidth) {
-			modalX = Math.max(0, maxWidth - modalWidth.value)
-		}
-		return {
-			left: `${modalX}px`,
-			top: `${modalY}px`,
-		}
-	}
+	const container = cell.closest('.atable-container') ?? cell.closest('table')
+	if (!(container instanceof HTMLElement)) return {}
 
 	// Always open below the cell. Flipping above the field is a combobox anti-pattern here —
 	// the calendar is taller than a row, so "fit in the table" put it over the value.
-	const headerHeight = container.querySelector('thead')?.offsetHeight || 0
-	const modalY = (cell.offsetTop || 0) + headerHeight + store.modal.height
+	const cellRect = cell.getBoundingClientRect()
+	const containerRect = container.getBoundingClientRect()
+	const modalY = cellRect.bottom - containerRect.top
 
-	let modalX = cell.offsetLeft || 0
-	const maxWidth = container.offsetWidth || 0
-	modalX = modalX + modalWidth.value <= maxWidth ? modalX : modalX - (modalWidth.value - store.modal.width)
+	let modalX = cellRect.left - containerRect.left
+	const maxWidth = container.clientWidth || containerRect.width
+	if (modalWidth.value && modalX + modalWidth.value > maxWidth) {
+		modalX = Math.max(0, maxWidth - modalWidth.value)
+	}
 
 	return {
 		left: `${modalX}px`,

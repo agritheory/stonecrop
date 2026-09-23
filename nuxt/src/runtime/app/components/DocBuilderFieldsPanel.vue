@@ -340,13 +340,13 @@ function bool(v) {
 	padding: 0.5em 1em;
 }
 .fields-panel :deep(.atable-row > td) {
-	border-top: 1px solid var(--sc-row-border-color, #e5e7eb);
-	padding: var(--sc-atable-row-padding, 0.125rem) 0.75em;
+	border-top: 1px solid var(--sc-row-border-color);
+	padding: var(--sc-atable-row-padding) 0.75em;
 	vertical-align: middle;
 }
 .fields-panel :deep(input[type='text']),
 .fields-panel :deep(select) {
-	border: 1px solid var(--sc-gray-20, #d1d5db);
+	border: 1px solid var(--sc-gray-20);
 	border-radius: var(--sc-border-radius);
 	font-family: inherit;
 	font-size: inherit;
@@ -355,12 +355,12 @@ function bool(v) {
 }
 .fields-panel :deep(input.locked),
 .fields-panel :deep(select.locked) {
-	background: var(--sc-gray-10, #f3f4f6);
+	background: var(--sc-gray-10);
 	color: var(--sc-header-text-color);
 	cursor: not-allowed;
 }
 .fields-panel :deep(input.json-invalid) {
-	background: color-mix(in srgb, var(--sc-brand-danger) 8%, white);
+	background: var(--sc-badge-danger-bg);
 	border-color: var(--sc-brand-danger);
 }
 .center {
@@ -373,13 +373,14 @@ function bool(v) {
 	font-weight: 500;
 	padding: 0.125em 0.5em;
 }
+/* An authored field is editable here and takes the brand colour; an introspected one is locked and stays neutral. */
 .badge-manual {
-	background: #dcfce7;
-	color: #166534;
+	background: var(--sc-badge-brand-bg);
+	color: var(--sc-badge-brand-text);
 }
 .badge-introspected {
-	background: #e0e7ff;
-	color: #3730a3;
+	background: var(--sc-badge-neutral-bg);
+	color: var(--sc-badge-neutral-text);
 }
 .field-detail {
 	display: grid;
@@ -388,7 +389,7 @@ function bool(v) {
 	padding: 0.75rem 1rem;
 }
 .field-prop {
-	color: var(--sc-header-text-color, #374151);
+	color: var(--sc-header-text-color);
 	display: flex;
 	flex-direction: column;
 	font-size: 0.75rem;
@@ -416,7 +417,7 @@ function bool(v) {
 }
 .btn-add {
 	background: none;
-	border: 1px dashed var(--sc-gray-20, #d1d5db);
+	border: 1px dashed var(--sc-gray-20);
 	border-radius: var(--sc-border-radius);
 	color: var(--sc-primary-color);
 	cursor: pointer;

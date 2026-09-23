@@ -91,6 +91,9 @@ const listboxId = useId()
 
 const choiceList = computed(() => selectChoices(options))
 
+// Compile the serialized formatter once per `format` string, not once per keystroke:
+// badgeDescriptor re-evaluates on every input event and deserializeFunction runs the
+// Function constructor.
 const formatFn = computed(() => (format ? deserializeFunction<BadgeFormatFn>(format) : undefined))
 
 const badgeDescriptor = computed(() => resolveFieldBadge(search.value, options, formatFn.value))

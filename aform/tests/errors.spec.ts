@@ -1,7 +1,10 @@
 import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
+import type { Component } from 'vue'
 
 import AForm from '../src/components/AForm.vue'
+import ACurrencyInput from '../src/components/form/ACurrencyInput.vue'
+import AQuantityInput from '../src/components/form/AQuantityInput.vue'
 import ADate from '../src/components/form/ADate.vue'
 import ADatePicker from '../src/components/form/ADatePicker.vue'
 import ADateTime from '../src/components/form/ADateTime.vue'
@@ -138,6 +141,103 @@ describe('inline field errors', { tags: ['component'] }, () => {
 			const w = mount(ADatePicker, { props: {} })
 			expect(w.find('.aform_error').attributes('style') ?? '').toContain('display: none')
 		})
+	})
+
+	describe('date fields', () => {
+		it.each([
+			['ADate', ADate],
+			['ADateRange', ADateRange],
+			['ADateTime', ADateTime],
+		])('%s wires aria-invalid and aria-describedby to its error', (_name, component) => {
+			const w = mount(component, { props: { uuid: 'due', label: 'Due', errors: ['Due is required'] } })
+			const input = w.find('input')
+			const err = w.find('.aform_error')
+			expect(input.attributes('aria-invalid')).toBe('true')
+			expect(input.attributes('aria-describedby')).toBe('due-error')
+			expect(err.attributes('id')).toBe('due-error')
+			expect(err.attributes('role')).toBe('alert')
+		})
+
+		it.each([
+			['ADate', ADate],
+			['ADateRange', ADateRange],
+			['ADateTime', ADateTime],
+			['ADatePicker', ADatePicker],
+		])('%s renders an error message as text, never as markup', (_name, component) => {
+			const w = mount(component, { props: { uuid: 'due', label: 'Due', errors: ['<b>late</b>'] } })
+			const err = w.find('.aform_error')
+			expect(err.text()).toBe('<b>late</b>')
+			expect(err.find('b').exists()).toBe(false)
+		})
+	})
+
+	describe('grouped fields (ACurrencyInput, AQuantityInput)', () => {
+		const grouped = [
+			[
+				'ACurrencyInput',
+				ACurrencyInput,
+				'.acurrency__amount',
+				{
+					amount: 1,
+					currency: { id: 'USD' },
+					baseAmount: 1,
+					baseCurrency: { id: 'USD' },
+					exchangeRate: 1,
+				},
+				{ baseCurrency: { id: 'USD' } },
+			],
+			[
+				'AQuantityInput',
+				AQuantityInput,
+				'.aquantity__qty',
+				{ qty: 1, uom: 'Nos', stockQty: 1, stockUom: 'Nos', conversionFactor: 1 },
+				{ uoms: ['Nos'], stockUom: 'Nos' },
+			],
+		] as const
+
+		// The two components take different value shapes, so the table's rows are mounted untyped.
+		const mountGrouped = (component: Component, props: Record<string, unknown>) => mount(component, { props })
+
+		it.each(grouped)('%s renders the errors prop, as text', (_name, component, _input, modelValue, options) => {
+			const w = mountGrouped(component, { uuid: 'f', label: 'F', modelValue, options, errors: ['<b>late</b>'] })
+			const err = w.find('.aform_error')
+			expect(err.text()).toBe('<b>late</b>')
+			expect(err.find('b').exists()).toBe(false)
+			expect(err.attributes('style') ?? '').not.toContain('display: none')
+		})
+
+		it.each(grouped)(
+			'%s hides the error slot when there are no errors',
+			(_name, component, _input, modelValue, options) => {
+				const w = mountGrouped(component, { uuid: 'f', label: 'F', modelValue, options })
+				expect(w.find('.aform_error').attributes('style') ?? '').toContain('display: none')
+			}
+		)
+
+		it.each(grouped)(
+			'%s falls back to a static validation.errorMessage',
+			(_name, component, _input, modelValue, options) => {
+				const w = mountGrouped(component, {
+					uuid: 'f',
+					label: 'F',
+					modelValue,
+					options,
+					validation: { errorMessage: 'static' },
+				})
+				expect(w.find('.aform_error').text()).toBe('static')
+			}
+		)
+
+		it.each(grouped)(
+			'%s wires aria-invalid and aria-describedby to its error',
+			(_name, component, input, modelValue, options) => {
+				const w = mountGrouped(component, { uuid: 'f', label: 'F', modelValue, options, errors: ['Required'] })
+				expect(w.find(input).attributes('aria-invalid')).toBe('true')
+				expect(w.find(input).attributes('aria-describedby')).toBe('f-error')
+				expect(w.find('.aform_error').attributes('id')).toBe('f-error')
+				expect(w.find('.aform_error').attributes('role')).toBe('alert')
+			}
+		)
 	})
 
 	describe('field component (ADropdown)', () => {

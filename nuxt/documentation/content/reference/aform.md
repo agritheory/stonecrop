@@ -76,7 +76,7 @@ import { ACurrencyInput } from '@stonecrop/aform'
 | required | `boolean \| undefined` | no |  | Indicate whether input is required for text and/or select elements inside the component |
 | mode | `InteractionMode \| undefined` | no |  | The rendering mode for the component |
 | uuid | `string \| undefined` | no |  | Set a unique identifier for elements inside the component |
-| validation | `{ [key: string]: any; errorMessage: string; } \| undefined` | no | `{ errorMessage: "&nbsp;" }` | Validation options for elements inside the component |
+| validation | `{ [key: string]: any; errorMessage: string; } \| undefined` | no | `{ errorMessage: "" }` | Validation options for elements inside the component |
 | errors | `string[] \| undefined` | no |  | Inline validation error messages to display on this field. Fed by the host (e.g. mapped from the core validation store) — the renderer stays dumb and just shows what it is given. Takes precedence over the static `validation.errorMessage`. |
 | options | `CurrencyOptions \| undefined` | no | `{}` |  |
 | currencyLabel | `string \| undefined` | no | `"Currency"` |  |
@@ -134,26 +134,21 @@ import { ADatePicker } from '@stonecrop/aform'
 |------|------|----------|---------|-------------|
 | schema | `ResolvedField \| undefined` | no |  | The schema object to pass to the component |
 | label | `string \| undefined` | no |  | The label to display in the component |
-| selectRange | `boolean \| undefined` | no |  |  |
+| selectRange | `boolean \| undefined` | no | `false` |  |
 | mask | `string \| undefined` | no |  | The mask to apply to inputs inside the component. Accepts either a plain mask string (e.g. `"(###) ###-####"`) or a stringified arrow function that receives `locale` and returns a mask string (e.g. `"(locale) => locale === 'en-US' ? '(###) ###-####' : '####-######'"`). |
 | required | `boolean \| undefined` | no |  | Indicate whether input is required for text and/or select elements inside the component |
 | mode | `InteractionMode \| undefined` | no |  | The rendering mode for the component |
 | uuid | `string \| undefined` | no |  | Set a unique identifier for elements inside the component |
-| validation | `{ [key: string]: any; errorMessage: string; } \| undefined` | no |  | Validation options for elements inside the component |
+| validation | `{ [key: string]: any; errorMessage: string; } \| undefined` | no | `{ errorMessage: "" }` | Validation options for elements inside the component |
 | errors | `string[] \| undefined` | no |  | Inline validation error messages to display on this field. Fed by the host (e.g. mapped from the core validation store) — the renderer stays dumb and just shows what it is given. Takes precedence over the static `validation.errorMessage`. |
-| rangeStart | `string \| Date \| null \| undefined` | no |  |  |
-| rangeEnd | `string \| Date \| null \| undefined` | no |  |  |
-| store | `TableDateStore \| undefined` | no |  |  |
-| colIndex | `number \| undefined` | no |  |  |
-| rowIndex | `number \| undefined` | no |  |  |
-| modelValue | `string \| number \| Date \| null \| undefined` | no | `null` |  |
+| modelValue | `number \| Date \| undefined` | no | `new Date()` |  |
 
 **Events:**
 
 | Event | Payload | Description |
 |-------|---------|-------------|
-| update:modelValue | `[value: string \| number \| Date \| null]` |  |
-| get-date | `[{ start: Date \| null; end: Date \| null; selected: Date \| null; }]` |  |
+| update:modelValue | `[value: number \| Date]` |  |
+| get-date | `[{ start: Date \| null; end: Date \| null; selected: Date; }]` |  |
 
 **Exposed:**
 
@@ -161,7 +156,7 @@ import { ADatePicker } from '@stonecrop/aform'
 |------|------|
 | currentMonth | `number` |
 | currentYear | `number` |
-| selectedDate | `Date \| null` |
+| selectedDate | `Date` |
 
 ### ADateRange
 
@@ -204,7 +199,6 @@ import { ADateSelection } from '@stonecrop/aform'
 
 | Prop | Type | Required | Default | Description |
 |------|------|----------|---------|-------------|
-| id | `string \| undefined` | no |  |  |
 | showDate | `boolean \| undefined` | no | `true` |  |
 | showTime | `boolean \| undefined` | no | `true` |  |
 | selectRange | `boolean \| undefined` | no | `true` |  |
@@ -215,19 +209,12 @@ import { ADateSelection } from '@stonecrop/aform'
 | defaultSeconds | `number \| undefined` | no | `0` |  |
 | defaultMeridiem | `string \| undefined` | no | `"AM"` |  |
 | useSeconds | `boolean \| undefined` | no | `true` |  |
-| selected | `string \| number \| Date \| null \| undefined` | no |  |  |
-| modelValue | `string \| number \| Date \| null \| undefined` | no |  |  |
-| start | `string \| Date \| null \| undefined` | no | `null` |  |
-| end | `string \| Date \| null \| undefined` | no | `null` |  |
-| store | `TableDateStore \| undefined` | no |  |  |
-| colIndex | `number \| undefined` | no |  |  |
-| rowIndex | `number \| undefined` | no |  |  |
 
 **Events:**
 
 | Event | Payload | Description |
 |-------|---------|-------------|
-| get-date | `[{ selected: Date \| null; start?: Date \| null \| undefined; end?: Date \| null \| undefined; }]` |  |
+| get-date | `[{ selected: Date; start?: Date \| null \| undefined; end?: Date \| null \| undefined; }]` |  |
 | get-time | `[{ hours: number; minutes: number; seconds: number; meridiem: string; source?: "init" \| "user" \| undefined; }]` |  |
 | get-range | `[{ start: Date; end: Date; source?: "init" \| "user" \| undefined; }]` |  |
 
@@ -525,7 +512,7 @@ import { AQuantityInput } from '@stonecrop/aform'
 | required | `boolean \| undefined` | no |  | Indicate whether input is required for text and/or select elements inside the component |
 | mode | `InteractionMode \| undefined` | no |  | The rendering mode for the component |
 | uuid | `string \| undefined` | no |  | Set a unique identifier for elements inside the component |
-| validation | `{ [key: string]: any; errorMessage: string; } \| undefined` | no | `{ errorMessage: "&nbsp;" }` | Validation options for elements inside the component |
+| validation | `{ [key: string]: any; errorMessage: string; } \| undefined` | no | `{ errorMessage: "" }` | Validation options for elements inside the component |
 | errors | `string[] \| undefined` | no |  | Inline validation error messages to display on this field. Fed by the host (e.g. mapped from the core validation store) — the renderer stays dumb and just shows what it is given. Takes precedence over the static `validation.errorMessage`. |
 | options | `QuantityOptions \| undefined` | no | `{}` |  |
 | uomLabel | `string \| undefined` | no | `"UOM"` |  |

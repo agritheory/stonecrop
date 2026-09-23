@@ -8,7 +8,7 @@ import { ADateSelection } from '@stonecrop/aform'
 const selectedDate = ref<Date | null>(null)
 const selectedTime = ref<{ hours: number; minutes: number; seconds: number; meridiem: string } | null>(null)
 
-const handleDate = (data: { selected: Date | null; start?: Date | null; end?: Date | null }) => {
+const handleDate = (data: { selected: Date; start?: Date | null; end?: Date | null }) => {
 	selectedDate.value = data.selected
 }
 

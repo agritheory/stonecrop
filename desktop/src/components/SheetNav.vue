@@ -15,11 +15,7 @@
 						<span :class="rotateHideTabIcon" aria-hidden="true">×</span>
 					</button>
 				</li>
-				<li
-					class="hometab"
-					:style="{ display: breadcrumbsVisibile ? 'flex' : 'none' }"
-					@click="navigateHome"
-					@keydown.enter="navigateHome">
+				<li v-if="breadcrumbsVisibile" class="hometab" @click="navigateHome" @keydown.enter="navigateHome">
 					<router-link to="/" tabindex="0">
 						<svg class="icon" aria-label="Home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
 							<path d="M3 12l9-9 9 9" />
@@ -27,12 +23,11 @@
 						</svg>
 					</router-link>
 				</li>
-				<li
-					v-for="breadcrumb in breadcrumbs"
-					:key="breadcrumb.title"
-					:style="{ display: breadcrumbsVisibile ? 'flex' : 'none' }">
-					<router-link tabindex="0" :to="breadcrumb.to"> {{ breadcrumb.title }} </router-link>
-				</li>
+				<template v-if="breadcrumbsVisibile">
+					<li v-for="breadcrumb in breadcrumbs" :key="breadcrumb.title">
+						<router-link tabindex="0" :to="breadcrumb.to"> {{ breadcrumb.title }} </router-link>
+					</li>
+				</template>
 			</ul>
 		</div>
 	</footer>
@@ -150,9 +145,9 @@ footer {
 		border-color 0.15s ease;
 }
 
-/* row-reverse: last visible li is the left edge of the strip. */
-.tabs li:nth-last-child(1 of :not([style*='display: none'])) a,
-.tabs li:nth-last-child(1 of :not([style*='display: none'])) .hidebreadcrumbs-btn {
+/* row-reverse: the last li is the left edge of the strip. */
+.tabs li:last-child a,
+.tabs li:last-child .hidebreadcrumbs-btn {
 	border-left-width: 4px;
 }
 

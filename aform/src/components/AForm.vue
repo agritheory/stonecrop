@@ -103,12 +103,7 @@ const isListExpansionTable = (componentObj: ResolvedField): componentObj is Reso
 const tableExpansionSchema = (table: ResolvedTable): ResolvedField[] =>
 	table.schema
 		.filter((col): col is ColumnSchema & { component: string } => Boolean(col.component))
-		.map(({ fieldname, component, ...rest }) => ({
-			kind: 'field' as const,
-			fieldname,
-			component,
-			...rest,
-		}))
+		.map(({ fieldname, component, ...rest }) => Object.assign(rest, { kind: 'field' as const, fieldname, component }))
 
 const updateTableRow = (fieldname: string, rowIndex: number, val: Record<string, unknown>) => {
 	const rows = Array.isArray(dataModel.value?.[fieldname]) ? [...dataModel.value[fieldname]] : []
@@ -216,6 +211,7 @@ const childModels = computed(() => childModelsCache.value)
 	width: 100%;
 }
 .aform_input-field {
+	border: none;
 	outline: 1px solid var(--sc-input-border-color);
 	outline-offset: -1px;
 	font-size: 1rem;
@@ -242,7 +238,8 @@ const childModels = computed(() => childModelsCache.value)
 	word-break: break-word;
 }
 
-.aform_input-field:focus + .aform_field-label {
+/* A label darkens while anything beside it holds focus, wherever it sits in its field's markup. */
+:focus-within > .aform_field-label {
 	color: var(--sc-input-active-label-color);
 }
 
@@ -257,7 +254,9 @@ const childModels = computed(() => childModelsCache.value)
 	font-size: 0.7rem;
 	font-weight: 300;
 	letter-spacing: 0.05rem;
-	background: var(--sc-form-background);
+	/* The form colour masks the field's top border behind the text; below it the field shows
+	   through. Never paint a colour there: it can match only one of the surfaces a field shows. */
+	background: linear-gradient(var(--sc-form-background) calc(50% + 1px), transparent calc(50% + 1px));
 	width: auto;
 	box-sizing: border-box;
 	margin: 0;
@@ -275,14 +274,6 @@ const childModels = computed(() => childModelsCache.value)
 .aform_checkbox-container:has(.aform_checkbox:disabled) {
 	background: var(--sc-input-field-disabled-background);
 }
-.aform_input-field:disabled + .aform_field-label,
-.aform_checkbox-container:has(.aform_checkbox:disabled) + .aform_field-label {
-	background: var(--sc-form-background);
-}
-.aform_input-field:disabled ~ p.aform_error,
-.aform_checkbox-container:has(.aform_checkbox:disabled) ~ p.aform_error {
-	background: var(--sc-form-background);
-}
 .aform_field-label::after {
 	margin: 0;
 	padding: 0;
@@ -294,7 +285,8 @@ p.aform_error {
 	/* v-show toggles visibility per field; base display must be visible (was stuck at `none`,
 	   which overrode v-show and left every field error dormant). */
 	display: inline-block;
-	background: var(--sc-form-background);
+	/* Straddles the border like .aform_field-label, and paints the same way. */
+	background: linear-gradient(var(--sc-form-background) calc(50% + 1px), transparent calc(50% + 1px));
 	padding: 0 0.25rem;
 	margin: 0rem;
 	width: auto;

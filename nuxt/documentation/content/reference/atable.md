@@ -3017,8 +3017,6 @@ For quantity fields — those whose `component` carries the `'quantity'` categor
 
 For currency fields — those whose `component` carries the `'currency'` category — without an explicit `format`, a synchronous `format` is added that renders the `{ amount, currency }` value (see `CurrencyValue` in `@stonecrop/aform`) as `"<amount> <currency>"`.
 
-For date fields — those whose `component` carries the `'date'` category — without an explicit `format`, a synchronous `format` is added that treats `YYYY-MM-DD` as a local calendar day.
-
 **Signature:**
 
 ```typescript

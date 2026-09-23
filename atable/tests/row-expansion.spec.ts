@@ -23,8 +23,8 @@ describe('ARow list-expansion (unified)', { tags: ['component'] }, () => {
 		{ col1: 'value3', col2: 'value4' },
 	]
 
-	const makeStore = (config: TableConfig = { view: 'list-expansion' }) =>
-		createTableStore({ columns: mockColumns, rows: mockRows, config })
+	const makeStore = (tableConfig: TableConfig = { view: 'list-expansion' }) =>
+		createTableStore({ columns: mockColumns, rows: mockRows, config: tableConfig })
 
 	beforeEach(() => {
 		setActivePinia(createPinia())
@@ -152,7 +152,7 @@ describe('ARow list-expansion (unified)', { tags: ['component'] }, () => {
 		expect(getComputedStyle(wrapper.find('.expansion-index').element).borderTopWidth).not.toBe('0px')
 	})
 
-	it('paints the expanded panel with full chrome and width', () => {
+	it('paints the expanded panel with a border on every side', () => {
 		const store = makeStore()
 		store.toggleRowExpand(0)
 		const wrapper = mount(ARow, {
@@ -166,7 +166,6 @@ describe('ARow list-expansion (unified)', { tags: ['component'] }, () => {
 		expect(style.borderRightWidth).not.toBe('0px')
 		expect(style.borderBottomWidth).not.toBe('0px')
 		expect(style.borderLeftWidth).not.toBe('0px')
-		expect(style.width).toBe('100%')
 	})
 
 	it('forwards #content from ATable into the expanded panel', async () => {

@@ -93,6 +93,7 @@ function onSubmit(event: Event) {
 	align-items: center;
 	justify-content: center;
 	font-family: var(--sc-font-family);
+	background: var(--sc-form-background);
 }
 
 .account-container {

@@ -51,17 +51,28 @@ describe('SheetNav', { tags: ['component'] }, () => {
 			global: globalConfig,
 		})
 
-		const hometab = wrapper.find('.hometab')
-		expect(hometab.attributes('style')).toContain('display: flex')
+		expect(wrapper.find('.hometab').exists()).toBe(true)
 
 		// Click the hide/show toggle
 		await wrapper.find('.hidebreadcrumbs-btn').trigger('click')
 
-		expect(wrapper.find('.hometab').attributes('style')).toContain('display: none')
+		expect(wrapper.find('.hometab').exists()).toBe(false)
 
 		// Click again to restore
 		await wrapper.find('.hidebreadcrumbs-btn').trigger('click')
-		expect(wrapper.find('.hometab').attributes('style')).toContain('display: flex')
+		expect(wrapper.find('.hometab').exists()).toBe(true)
+	})
+
+	it('leaves the toggle as the last tab while breadcrumbs are hidden', async () => {
+		const wrapper = mount(SheetNav, {
+			props: { breadcrumbs: [{ title: 'Orders', to: '/order' }] },
+			global: globalConfig,
+		})
+		expect(wrapper.findAll('.tabs > li').at(-1)?.text()).toBe('Orders')
+
+		await wrapper.find('.hidebreadcrumbs-btn').trigger('click')
+
+		expect(wrapper.findAll('.tabs > li').at(-1)?.classes()).toContain('hidebreadcrumbs')
 	})
 
 	it('names the hide-breadcrumbs control for assistive tech', () => {
@@ -92,10 +103,10 @@ describe('SheetNav', { tags: ['component'] }, () => {
 
 		const btn = wrapper.find('.hidebreadcrumbs-btn')
 		expect(btn.element.tagName).toBe('BUTTON')
-		expect(wrapper.find('.hometab').attributes('style')).toContain('display: flex')
+		expect(wrapper.find('.hometab').exists()).toBe(true)
 
 		await btn.trigger('click')
-		expect(wrapper.find('.hometab').attributes('style')).toContain('display: none')
+		expect(wrapper.find('.hometab').exists()).toBe(false)
 	})
 
 	it('does not render a search tab', () => {

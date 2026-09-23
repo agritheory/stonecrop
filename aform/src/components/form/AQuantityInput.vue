@@ -15,6 +15,8 @@
 							type="number"
 							:disabled="mode === 'read'"
 							:required="required"
+							:aria-invalid="invalid"
+							:aria-describedby="describedBy"
 							@keydown="onQtyKeydown"
 							@paste="onQtyPaste" />
 						<div v-on-click-outside="closeDropdown" class="aquantity__uom">
@@ -73,7 +75,7 @@
 					<label class="aform_field-label">{{ conversionFactorLabel }}</label>
 				</div>
 			</div>
-			<p v-show="validation.errorMessage" class="aform_error" v-html="validation.errorMessage"></p>
+			<p v-show="errorText" :id="errorId" class="aform_error" role="alert">{{ errorText }}</p>
 		</template>
 	</div>
 </template>
@@ -82,6 +84,7 @@
 import { vOnClickOutside } from '@vueuse/components'
 import { computed, reactive } from 'vue'
 
+import { fieldErrorA11y } from '../../composables/fieldErrorA11y'
 import type { ComponentProps, QuantityOptions, QuantityValue } from '../../types'
 
 const {
@@ -89,7 +92,8 @@ const {
 	required,
 	mode,
 	uuid,
-	validation = { errorMessage: '&nbsp;' },
+	errors,
+	validation = { errorMessage: '' },
 	options = {},
 	uomLabel = 'UOM',
 	stockUomLabel = 'Stock UOM',
@@ -104,6 +108,10 @@ const {
 		conversionFactorLabel?: string
 	}
 >()
+
+// Dynamic trigger errors take precedence over a static schema errorMessage; empty means the slot hides.
+const errorText = computed(() => (errors?.length ? errors.join('; ') : (validation.errorMessage ?? '')))
+const { errorId, describedBy, invalid } = fieldErrorA11y(uuid, errorText)
 
 const modelValue = defineModel<QuantityValue>({
 	default: () => ({ qty: 0, uom: '', stockQty: 0, stockUom: '', conversionFactor: 1 }),
@@ -264,8 +272,10 @@ const displayText = computed(() => {
 	min-width: 0;
 	border: none;
 	outline: none;
-	padding: 0.5ch 1ch;
+	padding: 0.5rem 1ch;
 	font-size: 1rem;
+	font-family: var(--sc-font-family);
+	color: var(--sc-cell-text-color);
 	background: transparent;
 	border-radius: var(--sc-border-radius) 0 0 var(--sc-border-radius);
 	appearance: textfield;
@@ -291,6 +301,9 @@ const displayText = computed(() => {
 	gap: 0.75ch;
 	height: 100%;
 	padding: 0.5ch 1ch;
+	font-size: 1rem;
+	font-family: var(--sc-font-family);
+	color: var(--sc-cell-text-color);
 	background: var(--sc-input-addon-background);
 	border: none;
 	border-radius: 0 var(--sc-border-radius) var(--sc-border-radius) 0;
@@ -340,7 +353,7 @@ const displayText = computed(() => {
 .aquantity__stock-field {
 	width: 100%;
 	font-size: 1rem;
-	padding: 0.5ch 1ch;
+	padding: 0.5rem 1ch;
 	border: 1px solid var(--sc-input-border-color);
 	border-radius: var(--sc-border-radius);
 	outline: none;

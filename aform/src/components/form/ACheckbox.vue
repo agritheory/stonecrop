@@ -60,7 +60,7 @@ const checkbox = defineModel<InputHTMLAttributes['checked']>()
 	width: auto;
 }
 
-.aform_checkbox-container:hover + .aform_field-label {
+.aform_form-element:has(> .aform_checkbox-container:hover) > .aform_field-label {
 	color: var(--sc-input-active-label-color);
 }
 </style>

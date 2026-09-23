@@ -163,32 +163,30 @@ describe('table modal component', { tags: ['component'] }, () => {
 	})
 })
 
-// ATableModal.closest() must return an HTMLElement or it skips positioning. jsdom's
-// getBoundingClientRect is zeros, so these fixtures exercise the offsetTop/offsetLeft fallback.
+// ATableModal.closest() must return an HTMLElement or it skips positioning. jsdom lays nothing
+// out, so each fixture hands the cell and container the rectangles a browser would.
 function cellInTable(layout: {
 	cellTop?: number
 	cellLeft?: number
+	cellWidth?: number
+	cellHeight?: number
 	containerWidth?: number
 	containerHeight?: number
-	headerHeight?: number | null
 }) {
 	const container = document.createElement('div')
 	container.className = 'atable-container'
 	const table = document.createElement('table')
 	const cell = document.createElement('td')
-
-	if (layout.headerHeight != null) {
-		const thead = document.createElement('thead')
-		Object.defineProperty(thead, 'offsetHeight', { configurable: true, value: layout.headerHeight })
-		table.append(thead)
-	}
-
 	table.append(cell)
 	container.append(table)
-	Object.defineProperty(cell, 'offsetTop', { configurable: true, value: layout.cellTop ?? 0 })
-	Object.defineProperty(cell, 'offsetLeft', { configurable: true, value: layout.cellLeft ?? 0 })
-	Object.defineProperty(container, 'offsetWidth', { configurable: true, value: layout.containerWidth ?? 800 })
-	Object.defineProperty(container, 'offsetHeight', { configurable: true, value: layout.containerHeight ?? 500 })
+
+	const rect = (left: number, top: number, width: number, height: number) =>
+		({ left, top, width, height, right: left + width, bottom: top + height, x: left, y: top }) as DOMRect
+	const containerWidth = layout.containerWidth ?? 800
+	cell.getBoundingClientRect = () =>
+		rect(layout.cellLeft ?? 0, layout.cellTop ?? 0, layout.cellWidth ?? 150, layout.cellHeight ?? 40)
+	container.getBoundingClientRect = () => rect(0, 0, containerWidth, layout.containerHeight ?? 500)
+	Object.defineProperty(container, 'clientWidth', { configurable: true, value: containerWidth })
 	return cell
 }
 
@@ -263,7 +261,7 @@ describe('ATableModal', { tags: ['component'] }, () => {
 
 	it('should calculate modal position when all modal data is available', () => {
 		store.modal = {
-			cell: cellInTable({ cellTop: 50, cellLeft: 100, headerHeight: 30 }),
+			cell: cellInTable({ cellTop: 80, cellLeft: 100 }),
 			height: 40,
 			width: 150,
 			left: 100,
@@ -284,7 +282,7 @@ describe('ATableModal', { tags: ['component'] }, () => {
 
 	it('should position modal correctly when it fits within table bounds', () => {
 		store.modal = {
-			cell: cellInTable({ cellTop: 50, cellLeft: 100, headerHeight: 30 }),
+			cell: cellInTable({ cellTop: 80, cellLeft: 100 }),
 			height: 40,
 			width: 150,
 			left: 100,
@@ -298,7 +296,7 @@ describe('ATableModal', { tags: ['component'] }, () => {
 		const modalElement = wrapper.find('.amodal')
 		const style = modalElement.attributes('style')
 
-		// Below the cell: offsetTop + header + cell height
+		// Below the cell: the cell's bottom edge, measured from the container's top
 		expect(style).toContain('left: 100px')
 		expect(style).toContain('top: 120px')
 	})
@@ -306,10 +304,9 @@ describe('ATableModal', { tags: ['component'] }, () => {
 	it('stays below the cell even when that overflows the table bottom', () => {
 		store.modal = {
 			cell: cellInTable({
-				cellTop: 150,
+				cellTop: 180,
 				cellLeft: 100,
 				containerHeight: 200,
-				headerHeight: 30,
 			}),
 			height: 40,
 			width: 150,
@@ -324,17 +321,16 @@ describe('ATableModal', { tags: ['component'] }, () => {
 		const modalElement = wrapper.find('.amodal')
 		const style = modalElement.attributes('style')
 
-		// 150 + 30 header + 40 cell — never flip above the field
+		// The cell's bottom (220) is past the container's (200); never flip above the field
 		expect(style).toContain('top: 220px')
 	})
 
 	it('should adjust modal position when it would overflow table right', () => {
 		store.modal = {
 			cell: cellInTable({
-				cellTop: 50,
+				cellTop: 80,
 				cellLeft: 250,
 				containerWidth: 300,
-				headerHeight: 30,
 			}),
 			height: 40,
 			width: 150,
@@ -349,29 +345,8 @@ describe('ATableModal', { tags: ['component'] }, () => {
 		const modalElement = wrapper.find('.amodal')
 		const style = modalElement.attributes('style')
 
-		// Modal X should be adjusted to prevent overflow
-		// modalX = 250 - (200 modal width - 150 cell width) = 200
-		expect(style).toContain('left: 200px')
-	})
-
-	it('should handle missing header element gracefully', () => {
-		store.modal = {
-			cell: cellInTable({ cellTop: 50, cellLeft: 100 }),
-			height: 40,
-			width: 150,
-			left: 100,
-			bottom: 50,
-		}
-
-		const wrapper = mount(ATableModal, {
-			props: { store },
-		})
-
-		const modalElement = wrapper.find('.amodal')
-		const style = modalElement.attributes('style')
-
-		// No header: offsetTop + cell height
-		expect(style).toContain('top: 90px')
+		// The 200px modal would end at 450 in a 300px container, so its right edge meets the container's
+		expect(style).toContain('left: 100px')
 	})
 
 	it('should have correct CSS classes and attributes', () => {
@@ -391,7 +366,6 @@ describe('ATableModal', { tags: ['component'] }, () => {
 				cellLeft: 0,
 				containerWidth: 0,
 				containerHeight: 0,
-				headerHeight: 0,
 			}),
 			height: 40,
 			width: 150,

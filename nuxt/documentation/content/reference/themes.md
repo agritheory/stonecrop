@@ -19,7 +19,7 @@ Declare the names you want to change on `:root`:
 
 ```css
 :root {
-	--sc-primary-color: #6d28d9;
+	--sc-color-primary: #6d28d9;
 	--sc-font-family: 'IBM Plex Sans', sans-serif;
 }
 ```
@@ -39,10 +39,10 @@ The floor is primitive → semantic. Components read the semantic names; hosts u
 
 | Token | Default | Notes |
 |---|---|---|
-| `--sc-color-primary` | `#0098c9` | Primary action color |
+| `--sc-color-primary` | `var(--sc-gray-80)` | Primary action color |
 | `--sc-color-on-primary` | `#ffffff` | Text paired with the primary color |
-| `--sc-color-brand` | `#202a44` | Brand color |
-| `--sc-color-danger` | `#e63c28` | |
+| `--sc-color-brand` | `var(--sc-gray-80)` | Brand color |
+| `--sc-color-danger` | `#c02718` | |
 | `--sc-color-success` | `#155724` | |
 | `--sc-color-warning` | `#b99d3e` | |
 | `--sc-color-gold` | `#e6a92d` | Active-cell outline |
@@ -52,9 +52,9 @@ The floor is primitive → semantic. Components read the semantic names; hosts u
 
 ### Grays
 
-`--sc-gray-2` `#fafafa` · `--sc-gray-5` `#f2f2f2` · `--sc-gray-10` `#e6e6e6` · `--sc-gray-20` `#cccccc` · `--sc-gray-50` `#808080` · `--sc-gray-60` `#666666` · `--sc-gray-70` `#3a3c41` · `--sc-gray-80` `#333333`
+`--sc-gray-2` `#fafafa` · `--sc-gray-5` `#f2f2f2` · `--sc-gray-10` `#e6e6e6` · `--sc-gray-20` `#cccccc` · `--sc-gray-50` `#808080` · `--sc-gray-60` `#666666` · `--sc-gray-70` `#4d4d4d` · `--sc-gray-80` `#333333`
 
-The ramp is `token number = 100 − lightness%` (`--sc-gray-70` is the cell-text gray rather than a strict 30% step).
+The ramp is `token number = 100 − lightness%`.
 
 ### Surfaces
 
@@ -80,16 +80,16 @@ Each variant (`neutral`, `success`, `warning`, `danger`, `brand`) defines `--sc-
 
 | Token | Default |
 |---|---|
-| `--sc-cell-text-color` | `var(--sc-gray-70)` |
+| `--sc-cell-text-color` | `#3a3c41` |
 | `--sc-cell-changed-color` | `var(--sc-color-changed)` |
 | `--sc-active-cell-background` | `var(--sc-input-field-background)` |
-| `--sc-active-cell-outline` | `var(--sc-color-gold)` |
+| `--sc-active-cell-outline` | `var(--sc-focus-cell-outline)` |
 | `--sc-focus-cell-background` | `var(--sc-input-field-background)` |
 | `--sc-focus-cell-outline` | `var(--sc-gray-80)` |
 | `--sc-cell-border-color` | `var(--sc-form-background)` |
-| `--sc-header-text-color` | `var(--sc-gray-20)` |
+| `--sc-header-text-color` | `var(--sc-gray-60)` |
 | `--sc-header-border-color` | `var(--sc-form-background)` |
-| `--sc-row-border-color` | `var(--sc-gray-20)` |
+| `--sc-row-border-color` | `var(--sc-gray-50)` |
 | `--sc-row-color-zebra-dark` | `var(--sc-gray-5)` |
 | `--sc-row-color-zebra-light` | `var(--sc-form-background)` |
 | `--sc-row-number-background-color` | `var(--sc-form-background)` |
@@ -104,18 +104,25 @@ Each variant (`neutral`, `success`, `warning`, `danger`, `brand`) defines `--sc-
 
 | Token | Default |
 |---|---|
-| `--sc-form-border` | `var(--sc-gray-20)` |
+| `--sc-form-border` | `var(--sc-gray-50)` |
 | `--sc-form-field-max-width` | `50ch` |
 | `--sc-form-label-offset` | `var(--sc-space-2)` |
 | `--sc-input-active-border-color` | `var(--sc-gray-80)` |
 | `--sc-input-active-label-color` | `var(--sc-gray-80)` |
-| `--sc-input-border-color` | `var(--sc-gray-20)` |
+| `--sc-input-border-color` | `var(--sc-gray-50)` |
 | `--sc-input-label-color` | `var(--sc-gray-60)` |
 | `--sc-required-border` | `var(--sc-color-danger)` |
 
 ### Buttons
 
-`--sc-btn-border` `var(--sc-gray-20)` · `--sc-btn-color` `var(--sc-gray-2)` · `--sc-btn-hover` `var(--sc-gray-5)` · `--sc-btn-label-color` `var(--sc-gray-80)`
+`--sc-btn-border` `var(--sc-gray-50)` · `--sc-btn-color` `var(--sc-gray-2)` · `--sc-btn-hover` `var(--sc-gray-5)` · `--sc-btn-label-color` `var(--sc-gray-80)`
+
+### Action set
+
+| Token | Default | Notes |
+|---|---|---|
+| `--sc-action-set-drawer-width` | `380px` | Width of Desktop's action drawer |
+| `--sc-action-set-offset-top` | `35vh` | Distance from the top of the viewport to the tile column |
 
 ### Space and type
 

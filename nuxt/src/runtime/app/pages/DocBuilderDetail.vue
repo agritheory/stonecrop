@@ -211,18 +211,18 @@ const docbuilderActions = computed(() => [
 	margin-bottom: 1rem;
 }
 .validation-errors {
-	background: color-mix(in srgb, var(--sc-brand-danger) 12%, white);
-	border: 1px solid var(--sc-brand-danger);
+	background: var(--sc-badge-danger-bg);
+	border: 1px solid var(--sc-badge-danger-accent);
 	border-radius: var(--sc-border-radius);
-	color: var(--sc-brand-danger);
+	color: var(--sc-badge-danger-text);
 	margin-bottom: 0.5rem;
 	padding: 1rem;
 }
 .validation-warnings {
-	background: color-mix(in srgb, var(--sc-brand-warning) 18%, white);
-	border: 1px solid var(--sc-brand-warning);
+	background: var(--sc-badge-warning-bg);
+	border: 1px solid var(--sc-badge-warning-accent);
 	border-radius: var(--sc-border-radius);
-	color: color-mix(in srgb, var(--sc-brand-warning) 70%, black);
+	color: var(--sc-badge-warning-text);
 	padding: 1rem;
 }
 .dismiss-button {

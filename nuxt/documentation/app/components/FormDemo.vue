@@ -69,7 +69,7 @@ const data = ref({
 
 <template>
 	<div class="stonecrop-demo">
-		<AForm :schema="schema" v-model:data="data" />
+		<AForm v-model:data="data" :schema="schema" />
 		<p class="stonecrop-demo__state">
 			<code>v-model:data</code> value: <strong>{{ data }}</strong>
 		</p>

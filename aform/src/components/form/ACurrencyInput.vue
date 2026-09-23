@@ -33,6 +33,8 @@
 								type="number"
 								:disabled="mode === 'read'"
 								:required="required"
+								:aria-invalid="invalid"
+								:aria-describedby="describedBy"
 								@keydown="onAmountKeydown"
 								@paste="onAmountPaste" />
 							<label class="aform_field-label" :for="uuid">{{ label }}</label>
@@ -62,7 +64,7 @@
 					<label class="aform_field-label">{{ exchangeRateLabel }}</label>
 				</div>
 			</div>
-			<p v-show="validation.errorMessage" class="aform_error" v-html="validation.errorMessage"></p>
+			<p v-show="errorText" :id="errorId" class="aform_error" role="alert">{{ errorText }}</p>
 		</template>
 	</div>
 </template>
@@ -72,13 +74,15 @@ import { computed, inject, ref, watch } from 'vue'
 
 import type { AFormLinkValue, ComponentProps, CurrencyOptions, CurrencyValue } from '../../types'
 import AFormLink from './AFormLink.vue'
+import { fieldErrorA11y } from '../../composables/fieldErrorA11y'
 
 const {
 	label,
 	required,
 	mode,
 	uuid,
-	validation = { errorMessage: '&nbsp;' },
+	errors,
+	validation = { errorMessage: '' },
 	options = {},
 	currencyLabel = 'Currency',
 	baseCurrencyLabel = 'Base Currency',
@@ -93,6 +97,10 @@ const {
 		exchangeRateLabel?: string
 	}
 >()
+
+// Dynamic trigger errors take precedence over a static schema errorMessage; empty means the slot hides.
+const errorText = computed(() => (errors?.length ? errors.join('; ') : (validation.errorMessage ?? '')))
+const { errorId, describedBy, invalid } = fieldErrorA11y(uuid, errorText)
 
 // The merged currency prefix is compact by design, so it shows the symbol rather than the
 // full currency name once a value is picked — falls back gracefully when a currency record
@@ -298,12 +306,20 @@ const displayText = computed(() => {
 	font-size: 0.85rem;
 }
 
+/* The label names the whole group, so focus on the currency picker darkens it too. */
+.acurrency__group:focus-within .acurrency__amount-wrap > .aform_field-label {
+	color: var(--sc-input-active-label-color);
+}
+
 .acurrency__amount {
 	width: 100%;
 	box-sizing: border-box;
 	border: none;
 	outline: none;
-	padding: 0.5ch 1ch;
+	padding: 0.5rem 1ch;
+	font-size: 1rem;
+	font-family: var(--sc-font-family);
+	color: var(--sc-cell-text-color);
 	background: transparent;
 	border-radius: 0 var(--sc-border-radius) var(--sc-border-radius) 0;
 	text-align: right;
@@ -336,7 +352,7 @@ const displayText = computed(() => {
 	width: 100%;
 	box-sizing: border-box;
 	font-size: 1rem;
-	padding: 0.5ch 1ch;
+	padding: 0.5rem 1ch;
 	border: 1px solid var(--sc-input-border-color);
 	border-radius: var(--sc-border-radius);
 	outline: none;

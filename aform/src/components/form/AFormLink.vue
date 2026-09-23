@@ -1,6 +1,9 @@
 <template>
 	<div :class="['aform_form-element', { 'aform_form-element--embedded': embedded }]">
-		<span v-if="mode === 'display'" class="aform_display-value">{{ displayedText }}</span>
+		<template v-if="mode === 'display'">
+			<span class="aform_display-value">{{ displayedText }}</span>
+			<label v-if="label && !embedded" class="aform_field-label">{{ label }}</label>
+		</template>
 		<template v-else>
 			<div v-on-click-outside="onClickOutside" class="aform_form-link-wrapper">
 				<div class="input-group">
@@ -12,6 +15,7 @@
 						aria-autocomplete="list"
 						:class="['aform_input-field', { 'aform_input-field--embedded': embedded }]"
 						:placeholder="placeholder"
+						:size="embeddedSize"
 						:aria-label="ariaLabel"
 						:required="required"
 						:aria-expanded="dropdownOpen"
@@ -31,7 +35,16 @@
 						class="aform_form-btn"
 						@click="handleNavigate"
 						@keydown.enter.prevent="handleNavigate">
-						<span>{{ icon === 'chevron-right' ? '›' : '→' }}</span>
+						<svg
+							class="aform_form-btn-icon"
+							:data-icon="icon"
+							viewBox="1.75 2.75 12.5 10.5"
+							aria-hidden="true"
+							focusable="false">
+							<path v-if="icon === 'chevron-right'" d="M6 3.5 10.5 8 6 12.5" />
+							<path v-else d="M2.5 8h11M9 3.5 13.5 8 9 12.5" />
+						</svg>
+						<span class="aform_form-btn-name">{{ icon === 'chevron-right' ? '›' : '→' }}</span>
 					</button>
 				</div>
 				<ul v-if="dropdownOpen" :id="listboxId" class="autocomplete-results" role="listbox" :aria-label="ariaLabel">
@@ -113,6 +126,12 @@ const displayedText = computed(() => {
 })
 
 const searchText = ref(hasValidId.value ? displayedText.value : '')
+
+// An embedded input is as wide as the text it shows; left to the browser it is 20 characters wide
+// whatever it holds, which made the currency prefix half the group.
+const embeddedSize = computed(() =>
+	embedded ? Math.max((searchText.value || placeholder || '').length, 1) : undefined
+)
 const dropdownOpen = ref(false)
 const loading = ref(false)
 const dropdownResults = ref<AFormLinkValue[]>([])
@@ -301,17 +320,19 @@ const selectCurrent = () => {
 	min-width: 0;
 }
 
+/* No top padding: the shared rule reserves it for a floating label, which embedded mode never renders. */
 .aform_form-element--embedded {
 	min-width: 0;
 	flex-grow: 0;
+	padding-top: 0;
 }
 
-/* Embedded mode: the host component's own container supplies the border, so this input
-   goes borderless and inherits the host's padding scale instead of the standalone default. */
+/* Embedded mode: the host component's own container supplies the border, so this input goes
+   borderless. Its vertical padding stays the standalone field's, so its text lines up with the host's. */
 .aform_input-field--embedded {
 	outline: none;
 	background: transparent;
-	padding: 0.5ch 1ch;
+	padding: 0.5rem 1ch;
 }
 
 /* Only in embedded mode is the trigger deliberately narrower than its options (e.g. a currency
@@ -332,8 +353,38 @@ const selectCurrent = () => {
 	outline-offset: -1px;
 	margin-left: -2px;
 	background: var(--sc-input-field-background);
-	padding: 0 0.75rem;
+	padding: 0.5rem 0.75rem;
 	cursor: pointer;
+	display: block;
+	font-size: 1rem;
+	line-height: normal;
+	font-family: var(--sc-font-family);
+	color: var(--sc-cell-text-color);
+}
+
+/* Drawn rather than a text glyph, but set on the text's baseline at capital height: text sits
+   above its box's centre, so an icon centred in the box reads low beside the input's text. */
+.aform_form-btn-icon {
+	height: 0.716em;
+	width: auto;
+	vertical-align: baseline;
+	overflow: visible;
+	fill: none;
+	stroke: currentColor;
+	stroke-width: 1.5;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+}
+
+/* The glyph stays as the button's spoken name, hidden from sight. */
+.aform_form-btn-name {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
 }
 
 .aform_form-btn:focus,

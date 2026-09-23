@@ -205,7 +205,7 @@ const displayBadgeValue = computed(() => {
 	outline-offset: -1px;
 	border-radius: 0;
 	box-sizing: border-box;
-	background: var(--sc-input-field-disabled-background);
+	background: var(--sc-input-addon-background);
 	font-family: var(--sc-font-family);
 }
 
@@ -266,7 +266,7 @@ const displayBadgeValue = computed(() => {
 }
 
 .aform_segmented-segment:not(.aform_segmented-segment--badge):has(.aform_segmented-input:checked) {
-	background: var(--sc-input-field-background);
+	background: var(--sc-form-background);
 	color: var(--sc-cell-text-color);
 	font-weight: 500;
 }
@@ -311,7 +311,7 @@ const displayBadgeValue = computed(() => {
 }
 
 .aform_segmented-segment:hover:has(.aform_segmented-input:not(:disabled):not(:checked)) {
-	background: color-mix(in srgb, var(--sc-input-field-background) 50%, transparent);
+	background: color-mix(in srgb, var(--sc-form-background) 50%, transparent);
 }
 
 .aform_segmented-segment:has(.aform_segmented-input:disabled) {

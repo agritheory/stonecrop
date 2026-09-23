@@ -24,7 +24,7 @@ before all other rules.
 		--sc-gray-20: #cccccc;
 		--sc-gray-50: #808080;
 		--sc-gray-60: #666666;
-		--sc-gray-70: #3a3c41;
+		--sc-gray-70: #4d4d4d; /* the ramp is token = 100 − lightness%, so 70 → 30% */
 		--sc-gray-80: #333333;
 
 		/* Primitive: color (alerts, brand, on-color text). Not surfaces. */
@@ -89,7 +89,7 @@ before all other rules.
 		--sc-cell-background: var(--sc-form-background);
 
 		/* Semantic: text */
-		--sc-cell-text-color: var(--sc-gray-70);
+		--sc-cell-text-color: #3a3c41;
 		--sc-input-label-color: var(--sc-gray-60);
 		--sc-input-active-label-color: var(--sc-gray-80);
 		--sc-header-text-color: var(--sc-gray-60);
