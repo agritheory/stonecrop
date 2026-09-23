@@ -2,6 +2,7 @@ import { LIST_TYPES, TYPES } from '@dataplan/pg'
 import type { PgCodec, PgExecutor } from '@dataplan/pg'
 import { sql } from 'postgraphile/pg-sql2'
 import type { SQL } from 'postgraphile/pg-sql2'
+import { Temporal } from 'temporal-polyfill'
 
 import { resolveTable, resolveTableName } from './tables'
 
@@ -59,11 +60,56 @@ const momentConversion = (codec: PgCodec): MomentConversion | undefined => {
 	return undefined
 }
 
+const INTERVAL_PARTS = ['years', 'months', 'days', 'hours', 'minutes', 'seconds'] as const
+
+/**
+ * An interval, as PostGraphile decodes it, written as an ISO 8601 duration (`P1DT2H30M`): the value
+ * a duration field holds whatever the backend, as a day is `YYYY-MM-DD`. Not PostGraphile's object,
+ * which every other backend would have to imitate. Postgres writes an ISO 8601 duration back natively.
+ *
+ * Postgres signs each part apart, so it can hold "a day less an hour", which no ISO 8601 duration can.
+ * Such an interval throws rather than being read as some other length.
+ */
+const isoDuration = (interval: unknown, describe: () => string): string => {
+	const part = (name: (typeof INTERVAL_PARTS)[number]) => {
+		const value: unknown = interval instanceof Object ? Reflect.get(interval, name) : undefined
+		return typeof value === 'number' ? value : 0
+	}
+	const parts = INTERVAL_PARTS.map(part)
+	if (parts.some(value => value > 0) && parts.some(value => value < 0)) {
+		throw new Error(`${describe()} is an interval whose parts differ in sign, which no ISO 8601 duration can hold.`)
+	}
+	const microseconds = Math.round(part('seconds') * 1e6)
+	return Temporal.Duration.from({
+		years: part('years'),
+		months: part('months'),
+		days: part('days'),
+		hours: part('hours'),
+		minutes: part('minutes'),
+		seconds: Math.trunc(microseconds / 1e6),
+		milliseconds: Math.trunc((microseconds % 1e6) / 1e3),
+		microseconds: microseconds % 1e3,
+	}).toString()
+}
+
+const readIntervalList = (intervals: unknown, describe: () => string): unknown =>
+	Array.isArray(intervals)
+		? intervals.map((interval: unknown) => (interval === null ? null : isoDuration(interval, describe)))
+		: intervals
+
+/** Whether a column holds an interval or a list of them, each served as an ISO 8601 duration. */
+const intervalShape = (codec: PgCodec): 'one' | 'list' | undefined => {
+	if (baseCodec(codec) === TYPES.interval) return 'one'
+	if (codec.arrayOfCodec && baseCodec(codec.arrayOfCodec) === TYPES.interval) return 'list'
+	return undefined
+}
+
 /**
  * Reads a doctype's columns through the codecs PostGraphile introspected for its table, so each
  * value is the one PostGraphile's own query serves for that row, in any server zone: a `date` is
- * `2026-01-01`. The exception is a `timestamp`, or a list of them, served as the moment each names in
- * the database's zone (`2026-01-01T09:00:00.000000+00:00`); see `momentConversion`.
+ * `2026-01-01`. Two exceptions: a `timestamp`, or a list of them, served as the moment each names in
+ * the database's zone (`2026-01-01T09:00:00.000000+00:00`; see `momentConversion`), and an
+ * `interval`, or a list of them, served as an ISO 8601 duration (see `isoDuration`).
  *
  * Not `pg`'s type parsers: they turn `date` and `timestamp` into a Date at the server's local time,
  * which names another day or hour outside UTC, and a save writes that shifted value back. Not a
@@ -133,7 +179,16 @@ export function createColumnReader(
 							`The codec for ${table}."${column}" casts with a bound value, which this adapter cannot select.`
 						)
 					}
-					decoders.set(alias, readCodec.fromPg)
+					const shape = intervalShape(columnCodec)
+					const describe = (text: string) => () => `"${alias}" from ${table} (${text})`
+					decoders.set(
+						alias,
+						shape === 'one'
+							? text => isoDuration(readCodec.fromPg(text), describe(text))
+							: shape === 'list'
+								? text => readIntervalList(readCodec.fromPg(text), describe(text))
+								: readCodec.fromPg
+					)
 					return compiled.text
 				})
 				.join(', ')

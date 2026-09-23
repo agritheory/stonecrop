@@ -319,13 +319,13 @@ import { ADuration } from '@stonecrop/aform'
 | mode | `string \| undefined` | no | `"edit"` |  |
 | allowMilitaryTime | `boolean \| undefined` | no | `false` |  |
 | useSeconds | `boolean \| undefined` | no | `false` |  |
-| modelValue | `number \| undefined` | no |  |  |
+| modelValue | `string \| null \| undefined` | no |  |  |
 
 **Events:**
 
 | Event | Payload | Description |
 |-------|---------|-------------|
-| update:modelValue | `[value: number \| undefined]` |  |
+| update:modelValue | `[value: string \| null \| undefined]` |  |
 
 ### AFieldset
 

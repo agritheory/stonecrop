@@ -23,6 +23,7 @@ const SAMPLE_VALUES: Record<string, unknown> = {
 	ADateRange: { start_date: '2026-01-10', end_date: '2026-01-20' },
 	ADateSelection: undefined,
 	ADateTime: '2026-01-15T10:30:00.000Z',
+	ADuration: 'PT1H',
 	AFileAttach: undefined,
 	AFormLink: { id: 'EUR', displayText: 'Euro' },
 	ANumericInput: 5,
@@ -80,16 +81,31 @@ describe('fields holding something other than text', { tags: ['component'] }, ()
 		expect(problems).toEqual([])
 	})
 
+	const boxTexts = (name: string, modelValue: unknown) => {
+		const component = (aform as Record<string, unknown>)[name] as Component
+		const wrapper = mount(component, { props: { modelValue, mode: 'edit', label: name, uuid: name } })
+		return emptiableInputs(wrapper).map(({ element }) => (element as HTMLInputElement).value)
+	}
+
+	// `ADuration`'s boxes are its picker's start and end times, which show where picking starts
+	// whatever the field holds, so they never show its value, null or not.
+	const BOXES_NOT_SHOWING_THE_VALUE = new Set(['ADuration'])
+
 	// `initializeRecord` starts these fields at null, so a new record hands them null.
 	it.each(
 		typedFields.filter(
-			name => 'modelValue' in (((aform as Record<string, unknown>)[name] as { props?: object }).props ?? {})
+			name =>
+				!BOXES_NOT_SHOWING_THE_VALUE.has(name) &&
+				'modelValue' in (((aform as Record<string, unknown>)[name] as { props?: object }).props ?? {})
 		)
 	)('%s shows null as empty boxes', name => {
-		const component = (aform as Record<string, unknown>)[name] as Component
-		const wrapper = mount(component, { props: { modelValue: null, mode: 'edit', label: name, uuid: name } })
-		const boxes = emptiableInputs(wrapper).map(({ element }) => (element as HTMLInputElement).value)
-		expect(boxes.filter(text => text !== '')).toEqual([])
+		expect(boxTexts(name, null).filter(text => text !== '')).toEqual([])
+	})
+
+	// The range's empty start and end days, then the start and end times.
+	it("ADuration's boxes show the picker's starting times, whether it holds null or a duration", () => {
+		expect(boxTexts('ADuration', null)).toEqual(['', '', '12', '00', '12', '00'])
+		expect(boxTexts('ADuration', 'PT1H')).toEqual(['', '', '12', '00', '12', '00'])
 	})
 
 	it('has a sample value for exactly the fields holding something other than text', () => {
@@ -102,6 +118,7 @@ describe('fields holding something other than text', { tags: ['component'] }, ()
 			'ACurrencyInput',
 			'ADate',
 			'ADateSelection',
+			'ADuration',
 			'AFormLink',
 			'ANumericInput',
 			'AQuantityInput',

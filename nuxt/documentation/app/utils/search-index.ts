@@ -185,7 +185,7 @@ export const searchIndex: SearchEntry[] = [
 	},
 	{
 		title: 'Duration',
-		description: 'A start/end date-time range picker that derives an elapsed duration in milliseconds',
+		description: 'A start/end date-time range picker that derives an elapsed duration in ISO 8601',
 		url: '/components/duration',
 	},
 	{

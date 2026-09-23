@@ -149,3 +149,15 @@ CREATE TABLE sc_period_entry (
 	booked_on date NOT NULL
 );
 INSERT INTO sc_period_entry (period_id, booked_on) VALUES (1, '2026-01-01');
+
+-- Intervals, which Postgres holds as months, days and microseconds, each part with its own sign.
+CREATE TABLE sc_run (
+	id serial PRIMARY KEY,
+	label text NOT NULL,
+	took interval,
+	laps interval[]
+);
+INSERT INTO sc_run (label, took, laps) VALUES
+	('day and a half', '1 day 02:30:00', ARRAY['00:01:30', '1 mon 2 days']::interval[]),
+	('mixed signs', '1 day -01:00:00', NULL),
+	('months and a fraction', '1 year 2 mons 00:00:01.5', NULL);

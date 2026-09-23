@@ -241,10 +241,10 @@ props: {
   mode?: string \| undefined
   allowMilitaryTime?: boolean \| undefined
   useSeconds?: boolean \| undefined
-  modelValue?: number \| undefined
+  modelValue?: string \| null \| undefined
 }
 emits: {
-  update:modelValue: [value: number \| undefined]
+  update:modelValue: [value: string \| null \| undefined]
 }
 slots: {}
 ```

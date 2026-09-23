@@ -51,7 +51,8 @@
 		"@dataplan/pg": "^1.0.3",
 		"@stonecrop/schema": "workspace:*",
 		"graphql": "catalog:",
-		"postgraphile": "catalog:"
+		"postgraphile": "catalog:",
+		"temporal-polyfill": "catalog:"
 	},
 	"devDependencies": {
 		"@electric-sql/pglite": "^0.4.5",

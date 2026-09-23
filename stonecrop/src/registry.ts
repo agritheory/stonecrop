@@ -309,7 +309,7 @@ export default class Registry {
 						// A JSON editor starts from an empty object; any other language from empty source.
 						record[field.fieldname] = field.language === 'json' ? {} : ''
 					} else {
-						// date / datetime / select / link / attach — plus two cases with no better answer
+						// date / datetime / duration / select / link / attach, plus two cases with no better answer
 						// than "no value": an unknown (custom) component, and a code field whose missing
 						// `language` doesn't say which kind of empty it wants.
 						record[field.fieldname] = null

@@ -454,6 +454,16 @@ beforeAll(async () => {
 				{ kind: 'field', fieldname: 'reviewedAt', component: 'ATextInput', label: 'Reviewed At' },
 			],
 		},
+		ScRun: {
+			name: 'ScRun',
+			fields: [
+				{ kind: 'field', fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
+				{ kind: 'field', fieldname: 'label', component: 'ATextInput', label: 'Label' },
+				{ kind: 'field', fieldname: 'took', component: 'ADuration', label: 'Took' },
+				{ kind: 'field', fieldname: 'laps', component: 'ATextInput', label: 'Laps' },
+			],
+			workflow: { actions: { save: { label: 'Save', selfTransition: true } } },
+		},
 		ScPeriodEntry: {
 			name: 'ScPeriodEntry',
 			fields: [
@@ -1280,6 +1290,70 @@ describe('temporal columns', { tags: ['integration', 'graphql'] }, () => {
 		const host = await readHost()
 		const entry = await readRecord('ScPeriodEntry')
 		expect(entry.periodId).toEqual({ id: host.rowId, displayText: host.startsOn })
+	})
+})
+
+// ===========================================================================
+// Interval columns
+// ===========================================================================
+
+// A duration is an ISO 8601 duration whatever the backend, as a day is `YYYY-MM-DD`: not PostGraphile's
+// object, which every other backend would have to imitate, and not a number, which Postgres reads as seconds.
+describe('interval columns', { tags: ['integration', 'graphql'] }, () => {
+	const readRun = async (id: number) =>
+		(await runSequence([`query { stonecropRecord(doctype: "ScRun", id: "${id}") { data } }`]))[0] as any
+
+	it('reads an interval as the ISO 8601 duration it holds', async () => {
+		expect((await readRun(1)).data.stonecropRecord.data.took).toBe('P1DT2H30M')
+	})
+
+	it('reads months and a fraction of a second', async () => {
+		expect((await readRun(3)).data.stonecropRecord.data.took).toBe('P1Y2MT1.5S')
+	})
+
+	it('reads a list of intervals as ISO 8601 durations', async () => {
+		expect((await readRun(1)).data.stonecropRecord.data.laps).toEqual(['PT1M30S', 'P1M2D'])
+	})
+
+	// Postgres signs each part apart, and no ISO 8601 duration can hold "a day less an hour".
+	it('refuses an interval whose parts differ in sign, naming its column', async () => {
+		const result = await readRun(2)
+		expect(result.data?.stonecropRecord ?? null).toBeNull()
+		expect(String(result.errors?.[0]?.message)).toContain('"took" from "sc_run"')
+	})
+
+	it('saves an ISO 8601 duration as that interval, and reads it back unchanged', async () => {
+		const {
+			results: [save, read],
+			rows: [stored],
+		} = await runSequenceInDatabaseZone(
+			'UTC',
+			[
+				`mutation { stonecropAction(doctype: "ScRun", action: "save", args: [{ id: "1", data: { took: "PT1H" } }]) { success error data } }`,
+				`query { stonecropRecord(doctype: "ScRun", id: "1") { data } }`,
+			],
+			`SELECT took = interval '1 hour' AS exact FROM sc_run WHERE id = 1`
+		)
+		expect((save as any).data.stonecropAction).toMatchObject({ success: true, error: null })
+		expect(stored.exact).toBe(true)
+		expect((save as any).data.stonecropAction.data.took).toBe('PT1H')
+		expect((read as any).data.stonecropRecord.data.took).toBe('PT1H')
+	})
+
+	it('creates a record with an ISO 8601 duration', async () => {
+		const {
+			results: [create],
+			rows: [stored],
+		} = await runSequenceInDatabaseZone(
+			'UTC',
+			[
+				`mutation { stonecropAction(doctype: "ScRun", action: "save", args: [{ data: { label: "new", took: "P1DT12H15S" } }]) { success error data } }`,
+			],
+			`SELECT took = interval '1 day 12:00:15' AS exact FROM sc_run WHERE label = 'new'`
+		)
+		expect((create as any).data.stonecropAction).toMatchObject({ success: true, error: null })
+		expect(stored.exact).toBe(true)
+		expect((create as any).data.stonecropAction.data.took).toBe('P1DT12H15S')
 	})
 })
 

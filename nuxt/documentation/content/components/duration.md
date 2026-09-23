@@ -1,11 +1,11 @@
 ---
 title: Duration
-description: A start/end date-time range picker that derives an elapsed duration in milliseconds.
+description: A start/end date-time range picker that derives an elapsed duration in ISO 8601.
 ---
 
 # Duration
 
-`ADuration` pairs a date/time range picker with a live elapsed-duration readout. The user selects a start and end date and time; `v-model` receives the difference between them in milliseconds. It supports the same `edit` / `read` / `display` interaction modes as every other Stonecrop field component.
+`ADuration` pairs a date/time range picker with a live elapsed-duration readout. The user selects a start and end date and time; `v-model` receives the time between them as an ISO 8601 duration such as `PT2H30M`, which Postgres stores in an `interval` column as it is. A day counts as 24 hours. It supports the same `edit` / `read` / `display` interaction modes as every other Stonecrop field component.
 
 ## Import
 
@@ -15,7 +15,7 @@ import { ADuration } from '@stonecrop/aform'
 
 ## Basic
 
-`v-model` binds to the duration in milliseconds. Select a start date/time and an end date/time in the picker below — the duration summary updates automatically.
+`v-model` binds to the duration as an ISO 8601 string. Select a start date/time and an end date/time in the picker below, and the duration summary updates automatically.
 
 ::demo-panel
 :::client-only
@@ -28,14 +28,14 @@ import { ADuration } from '@stonecrop/aform'
 import { ref } from 'vue'
 import { ADuration } from '@stonecrop/aform'
 
-const durationMs = ref<number>(0)
+const duration = ref<string | null>(null)
 </script>
 
 <template>
 	<div class="stonecrop-demo">
-		<ADuration v-model="durationMs" label="Task Duration" />
+		<ADuration v-model="duration" label="Task Duration" />
 		<p class="stonecrop-demo__state">
-			<code>v-model</code> value: <strong>{{ durationMs }} ms</strong>
+			<code>v-model</code> value: <strong>{{ duration }}</strong>
 		</p>
 	</div>
 </template>
@@ -71,7 +71,7 @@ const schema = [
 import { ref } from 'vue'
 import { AForm } from '@stonecrop/aform'
 
-const data = ref({ task_duration: 0 })
+const data = ref({ task_duration: null })
 </script>
 
 <template>
@@ -87,7 +87,7 @@ const data = ref({ task_duration: 0 })
 ---
 headers: ['Name', 'Type', 'Default', 'Description']
 rows:
-  - ['`v-model`', '`number | undefined`', '—', 'The elapsed duration in milliseconds, derived from the selected start/end range.']
+  - ['`v-model`', '`string | null`', '—', 'The elapsed duration as an ISO 8601 duration (`PT2H30M`), derived from the selected start/end range. `read` and `display` show one it cannot read as "Invalid Duration".']
   - ['`label`', '`string`', "`'Duration'`", 'Label rendered below the picker (`edit` mode) or next to the value (`read`/`display`).']
   - ['`mode`', '`string`', "`'edit'`", "See [Modes](#modes) below. Declared as a plain `string` in the component's own props, not the shared `InteractionMode` union used elsewhere."]
   - ['`allowMilitaryTime`', '`boolean`', '`false`', 'Renders the embedded time pickers in 24-hour format.']
