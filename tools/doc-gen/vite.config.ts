@@ -25,7 +25,12 @@ export default defineConfig({
 					{ pattern: 'tools/scripts/docs-aggregate.mjs', base: 'workspace' },
 					{ pattern: 'tools/scripts/doc-packages.mjs', base: 'workspace' },
 				],
-				output: [{ pattern: 'nuxt/documentation/content/reference/**', base: 'workspace' }],
+				// Only the api.md copies — not `themes.md` or `index.md`, which are hand-maintained.
+				// A `reference/**` output made cache replay overwrite those on every pre-commit build.
+				output: docPackages.map(pkg => ({
+					pattern: `nuxt/documentation/content/reference/${pkg.name}.md`,
+					base: 'workspace',
+				})),
 			},
 		},
 	},
