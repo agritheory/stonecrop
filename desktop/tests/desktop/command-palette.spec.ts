@@ -14,7 +14,7 @@ afterEach(() => {
 	Stonecrop._root = undefined as any
 })
 
-describe('Desktop command palette', { tags: ['component'] }, () => {
+describe('Desktop command search', { tags: ['component'] }, () => {
 	it('provides search commands that can be queried', async () => {
 		const registry = new Registry()
 		const stonecrop = new Stonecrop(registry)
@@ -34,15 +34,14 @@ describe('Desktop command palette', { tags: ['component'] }, () => {
 					AForm: true,
 					ActionSet: true,
 					SheetNav: true,
-					CommandPalette: true,
 				},
 			},
 		})
 
 		await nextTick()
 
-		const commandPalette = wrapper.findComponent({ name: 'CommandPalette' })
-		const searchFn = commandPalette.props('search') as (query: string) => any[]
+		const actionSet = wrapper.findComponent({ name: 'ActionSet' })
+		const searchFn = actionSet.props('search') as (query: string) => any[]
 
 		expect(typeof searchFn).toBe('function')
 
@@ -56,7 +55,7 @@ describe('Desktop command palette', { tags: ['component'] }, () => {
 		expect(noMatch.length).toBe(0)
 	})
 
-	it('executes a command from the command palette', async () => {
+	it('executes a command from the search drawer', async () => {
 		const registry = new Registry()
 		const stonecrop = new Stonecrop(registry)
 		const navigateFn = vi.fn()
@@ -74,34 +73,22 @@ describe('Desktop command palette', { tags: ['component'] }, () => {
 				plugins: [makeStonecropPlugin(registry, stonecrop)],
 				stubs: {
 					AForm: true,
-					ActionSet: true,
 					SheetNav: true,
-					CommandPalette: true,
 				},
 			},
 		})
 
 		await nextTick()
 
-		const commandPalette = wrapper.findComponent({ name: 'CommandPalette' })
-		const selectHandler = commandPalette.props('onSelect') as ((cmd: any) => void) | undefined
-		if (selectHandler) {
-			const searchFn = commandPalette.props('search') as (query: string) => any[]
-			const commands = searchFn('')
-			if (commands.length > 0) {
-				selectHandler(commands[0])
-				await nextTick()
-			}
-		}
-
-		await commandPalette.vm.$emit('select', {
+		const actionSet = wrapper.findComponent({ name: 'ActionSet' })
+		await actionSet.vm.$emit('searchSelect', {
 			title: 'Go Home',
 			description: 'Navigate to the home page',
 			action: () => {},
 		})
 		await nextTick()
 
-		expect(commandPalette.props('isOpen')).toBe(false)
+		expect(wrapper.find('.action-set__drawer').exists()).toBe(false)
 	})
 
 	it('executes "View Records" command and navigates to records view', async () => {
@@ -124,15 +111,14 @@ describe('Desktop command palette', { tags: ['component'] }, () => {
 					AForm: true,
 					ActionSet: true,
 					SheetNav: true,
-					CommandPalette: true,
 				},
 			},
 		})
 
 		await nextTick()
 
-		const commandPalette = wrapper.findComponent({ name: 'CommandPalette' })
-		const searchFn = commandPalette.props('search') as (query: string) => any[]
+		const actionSet = wrapper.findComponent({ name: 'ActionSet' })
+		const searchFn = actionSet.props('search') as (query: string) => any[]
 		const commands = searchFn('View Task')
 
 		expect(commands.length).toBeGreaterThan(0)
@@ -168,15 +154,14 @@ describe('Desktop command palette', { tags: ['component'] }, () => {
 					AForm: true,
 					ActionSet: true,
 					SheetNav: true,
-					CommandPalette: true,
 				},
 			},
 		})
 
 		await nextTick()
 
-		const commandPalette = wrapper.findComponent({ name: 'CommandPalette' })
-		const searchFn = commandPalette.props('search') as (query: string) => any[]
+		const actionSet = wrapper.findComponent({ name: 'ActionSet' })
+		const searchFn = actionSet.props('search') as (query: string) => any[]
 		const commands = searchFn('Create New Task')
 
 		expect(commands.length).toBeGreaterThan(0)
@@ -187,7 +172,7 @@ describe('Desktop command palette', { tags: ['component'] }, () => {
 	})
 })
 
-describe('Desktop – command palette action closures', { tags: ['component'] }, () => {
+describe('Desktop – command search action closures', { tags: ['component'] }, () => {
 	it('all searchCommands action closures are callable without error', async () => {
 		const registry = new Registry()
 		const stonecrop = new Stonecrop(registry)
@@ -210,14 +195,14 @@ describe('Desktop – command palette action closures', { tags: ['component'] },
 			props: { routeAdapter: adapter, availableDoctypes: ['task', 'note'] },
 			global: {
 				plugins: [makeStonecropPlugin(registry, stonecrop)],
-				stubs: { AForm: true, ActionSet: true, SheetNav: true, CommandPalette: true },
+				stubs: { AForm: true, ActionSet: true, SheetNav: true },
 			},
 		})
 
 		await nextTick()
 
-		const commandPalette = wrapper.findComponent({ name: 'CommandPalette' })
-		const searchFn = commandPalette.props('search') as ((query: string) => any[]) | undefined
+		const actionSet = wrapper.findComponent({ name: 'ActionSet' })
+		const searchFn = actionSet.props('search') as ((query: string) => any[]) | undefined
 
 		expect(typeof searchFn).toBe('function')
 
@@ -234,18 +219,18 @@ describe('Desktop – command palette action closures', { tags: ['component'] },
 	})
 })
 
-describe('Desktop – CommandPalette slot rendering', { tags: ['component'] }, () => {
-	it('renders title and content slots with result data', async () => {
+describe('Desktop – ActionSet search slot rendering', { tags: ['component'] }, () => {
+	it('renders search title and content slots with result data', async () => {
 		const registry = new Registry()
 		const stonecrop = new Stonecrop(registry)
 
-		const CommandPaletteSlotStub = defineComponent({
-			props: ['isOpen', 'search', 'placeholder'],
-			emits: ['select', 'close'],
+		const ActionSetSlotStub = defineComponent({
+			props: ['search', 'searchPlaceholder', 'controller', 'slots', 'elements'],
+			emits: ['searchSelect', 'actionClick'],
 			template: `
 				<div>
-					<slot name="title" :result="{ title: 'Test Command', description: 'Test desc' }"></slot>
-					<slot name="content" :result="{ title: 'Test Command', description: 'Test desc' }"></slot>
+					<slot name="search-title" :result="{ title: 'Test Command', description: 'Test desc' }"></slot>
+					<slot name="search-content" :result="{ title: 'Test Command', description: 'Test desc' }"></slot>
 				</div>
 			`,
 		})
@@ -263,9 +248,8 @@ describe('Desktop – CommandPalette slot rendering', { tags: ['component'] }, (
 				plugins: [makeStonecropPlugin(registry, stonecrop)],
 				stubs: {
 					AForm: true,
-					ActionSet: true,
 					SheetNav: true,
-					CommandPalette: CommandPaletteSlotStub,
+					ActionSet: ActionSetSlotStub,
 				},
 			},
 		})

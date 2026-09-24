@@ -60,9 +60,12 @@ export function nuxtModuleBuildTask(configUrl: string): NonNullable<UserConfig['
 	const generatedTrees = apps.map(app => `${app}/.nuxt/**`)
 	return {
 		build: {
-			command: ['nuxt-module-build prepare', ...apps.map(app => `nuxi prepare ${app}`), 'nuxt-module-build build'].join(
-				' && '
-			),
+			command: [
+				'node ../tools/scripts/clean-compiled-beside-sources.mjs',
+				'nuxt-module-build prepare',
+				...apps.map(app => `nuxi prepare ${app}`),
+				'nuxt-module-build build',
+			].join(' && '),
 			input: [
 				{ auto: true },
 				{ pattern: 'tools/vite/**', base: 'workspace' },

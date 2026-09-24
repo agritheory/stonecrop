@@ -61,14 +61,14 @@ describe('CommandPalette', { tags: ['component'] }, () => {
 
 		await nextTick()
 
-		const input = document.querySelector('input.command-palette-input') as HTMLInputElement
+		const input = document.querySelector('input.command-search-input') as HTMLInputElement
 		if (!input) return // skip if teleport not supported in this env
 
 		input.value = 'home'
 		input.dispatchEvent(new Event('input'))
 		await nextTick()
 
-		expect(document.querySelector('.command-palette-results')).not.toBeNull()
+		expect(document.querySelector('.command-search-results')).not.toBeNull()
 	})
 
 	it('shows "no results" message when query returns nothing', async () => {
@@ -82,7 +82,7 @@ describe('CommandPalette', { tags: ['component'] }, () => {
 
 		await nextTick()
 
-		const input = document.querySelector('input.command-palette-input') as HTMLInputElement
+		const input = document.querySelector('input.command-search-input') as HTMLInputElement
 		if (!input) return
 
 		input.value = 'zzz'
@@ -125,7 +125,7 @@ describe('CommandPalette', { tags: ['component'] }, () => {
 
 		await nextTick()
 
-		const input = document.querySelector('input.command-palette-input') as HTMLInputElement
+		const input = document.querySelector('input.command-search-input') as HTMLInputElement
 		if (!input) return
 
 		// Type to trigger results
@@ -133,7 +133,7 @@ describe('CommandPalette', { tags: ['component'] }, () => {
 		input.dispatchEvent(new Event('input'))
 		await nextTick()
 
-		const result = document.querySelector('.command-palette-result') as HTMLElement
+		const result = document.querySelector('.command-search-result') as HTMLElement
 		if (!result) return
 
 		result.click()
@@ -154,7 +154,7 @@ describe('CommandPalette', { tags: ['component'] }, () => {
 
 		await nextTick()
 
-		const input = document.querySelector('input.command-palette-input') as HTMLInputElement
+		const input = document.querySelector('input.command-search-input') as HTMLInputElement
 		if (!input) return
 
 		input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
@@ -174,7 +174,7 @@ describe('CommandPalette', { tags: ['component'] }, () => {
 
 		await nextTick()
 
-		const input = document.querySelector('input.command-palette-input') as HTMLInputElement
+		const input = document.querySelector('input.command-search-input') as HTMLInputElement
 		if (!input) return
 
 		// Show results first
@@ -200,7 +200,7 @@ describe('CommandPalette', { tags: ['component'] }, () => {
 
 		await nextTick()
 
-		const input = document.querySelector('input.command-palette-input') as HTMLInputElement
+		const input = document.querySelector('input.command-search-input') as HTMLInputElement
 		if (!input) return
 
 		input.value = 'go'
@@ -224,7 +224,7 @@ describe('CommandPalette', { tags: ['component'] }, () => {
 
 		await nextTick()
 
-		const input = document.querySelector('input.command-palette-input') as HTMLInputElement
+		const input = document.querySelector('input.command-search-input') as HTMLInputElement
 		if (!input) return
 
 		input.value = 'go'
@@ -254,14 +254,14 @@ describe('CommandPalette', { tags: ['component'] }, () => {
 
 		await nextTick()
 
-		const input = document.querySelector('input.command-palette-input') as HTMLInputElement
+		const input = document.querySelector('input.command-search-input') as HTMLInputElement
 		if (!input) return
 
 		input.value = 'result'
 		input.dispatchEvent(new Event('input'))
 		await nextTick()
 
-		const resultItems = document.querySelectorAll('.command-palette-result')
+		const resultItems = document.querySelectorAll('.command-search-result')
 		expect(resultItems.length).toBeLessThanOrEqual(5)
 	})
 
@@ -293,7 +293,7 @@ describe('CommandPalette', { tags: ['component'] }, () => {
 
 		await nextTick()
 
-		const input = document.querySelector('input.command-palette-input') as HTMLInputElement
+		const input = document.querySelector('input.command-search-input') as HTMLInputElement
 		if (!input) return
 
 		input.value = 'zzz'
@@ -317,11 +317,11 @@ describe('CommandPalette', { tags: ['component'] }, () => {
 
 		await nextTick()
 
-		const dialog = document.querySelector('.command-palette[role="dialog"]')
+		const dialog = document.querySelector('.command-search[role="dialog"]')
 		expect(dialog).not.toBeNull()
 		expect(dialog?.getAttribute('aria-modal')).toBe('true')
 
-		const input = document.querySelector('input.command-palette-input') as HTMLInputElement
+		const input = document.querySelector('input.command-search-input') as HTMLInputElement
 		expect(input?.getAttribute('aria-label')).toBe('Search commands')
 
 		input.value = 'Go'

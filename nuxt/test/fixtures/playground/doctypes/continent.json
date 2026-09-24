@@ -1,0 +1,28 @@
+{
+	"name": "Continent",
+	"slug": "continent",
+	"fields": [
+		{
+			"fieldname": "code",
+			"primaryKey": true,
+			"label": "Code",
+			"component": "ATextInput",
+			"required": true,
+			"readOnly": true,
+			"source": "introspected"
+		},
+		{
+			"fieldname": "name",
+			"label": "Name",
+			"component": "ATextInput",
+			"required": true,
+			"source": "introspected"
+		}
+	],
+	"links": {
+		"countries": {
+			"target": "country",
+			"cardinality": "noneOrMany"
+		}
+	}
+}

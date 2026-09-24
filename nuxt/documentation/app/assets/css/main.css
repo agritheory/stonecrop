@@ -25,7 +25,6 @@
 	--doc-code-block-bg: var(--sc-gray-5);
 	--doc-border-radius: var(--sc-border-radius);
 	--doc-font-mono: 'JetBrains Mono', 'Fira Code', 'SF Mono', monospace;
-	--doc-sidebar-width: 260px;
 }
 
 * {
@@ -240,14 +239,20 @@ a {
 	display: block;
 	padding: 1.25rem 1.5rem;
 	border: 1px solid var(--doc-c-divider);
+	border-left: 4px solid var(--sc-badge-brand-accent);
 	border-radius: var(--sc-border-radius);
 	background: var(--doc-c-bg-alt);
 	text-decoration: none;
 	color: inherit;
 }
 
-.card-grid-item:hover {
-	border-color: var(--sc-input-active-border-color);
+.card-grid-item:hover,
+.card-grid-item.router-link-active {
+	border-top-color: var(--sc-input-active-border-color);
+	border-right-color: var(--sc-input-active-border-color);
+	border-bottom-color: var(--sc-input-active-border-color);
+	border-left-width: 4px;
+	border-left-color: var(--sc-badge-brand-accent);
 }
 
 .card-grid-item__title {
@@ -263,106 +268,29 @@ a {
 	color: var(--doc-c-text-2);
 }
 
-/* Site chrome: top nav + right sidebar */
-.doc-nav {
+/* F-layout: content starts top-left; ActionSet and SheetNav handle secondary navigation */
+.doc-shell {
+	min-height: 100vh;
 	display: flex;
-	align-items: center;
-	gap: 2rem;
-	padding: 0.9rem 2rem;
-	border-bottom: 1px solid var(--doc-c-divider-light);
-	background: var(--doc-c-bg-alt);
-	position: sticky;
-	top: 0;
-	z-index: 10;
+	flex-direction: column;
 }
 
-.doc-nav__logo {
-	font-weight: 700;
-	font-size: 1.05rem;
-	text-decoration: none;
-	color: var(--doc-c-text-1);
-	letter-spacing: -0.02em;
-}
-
-.doc-nav__links {
-	display: flex;
-	gap: 1.5rem;
+.doc-desktop {
 	flex: 1;
+	min-height: 100vh;
 }
 
-.doc-nav__links a {
-	color: var(--doc-c-text-2);
-	text-decoration: none;
-	font-size: 0.9rem;
-	font-weight: 500;
-}
-
-.doc-nav__links a:hover,
-.doc-nav__links a.router-link-active {
-	color: var(--doc-c-brand-1);
-}
-
-.doc-layout {
-	display: flex;
+.doc-content {
+	box-sizing: border-box;
+	width: min(1440px, calc(100% - 1ch));
 	max-width: 1440px;
-	margin: 0 auto;
-}
-
-.doc-main {
-	flex: 1;
-	min-width: 0;
-	/* Extra bottom padding clears SheetNav's fixed bottom bar so page content never renders
-	   underneath it. */
+	margin-left: 1ch;
+	margin-right: auto;
 	padding: 2rem 3rem 4.5rem;
 }
 
-.doc-sidebar {
-	width: var(--doc-sidebar-width);
-	flex-shrink: 0;
-	padding: 2rem 1.5rem 4.5rem;
-	border-left: 1px solid var(--doc-c-divider-light);
-}
-
-.doc-sidebar__group {
-	margin-bottom: 1.5rem;
-}
-
-.doc-sidebar__group-title {
-	font-size: 0.7rem;
-	font-weight: 600;
-	letter-spacing: 0.06em;
-	text-transform: uppercase;
-	color: var(--doc-c-text-3);
-	margin: 0 0 0.5rem;
-}
-
-.doc-sidebar__group ul {
-	list-style: none;
-	margin: 0;
-	padding: 0;
-}
-
-.doc-sidebar__group a {
-	display: block;
-	padding: 0.3rem 0;
-	color: var(--doc-c-text-2);
-	text-decoration: none;
-	font-size: 0.88rem;
-	border-radius: var(--doc-border-radius);
-}
-
-.doc-sidebar__group a:hover,
-.doc-sidebar__group a.router-link-exact-active {
-	color: var(--doc-c-brand-1);
-}
-
 @media (max-width: 900px) {
-	.doc-layout {
-		flex-direction: column;
-	}
-	.doc-sidebar {
-		width: 100%;
-		border-left: none;
-		border-top: 1px solid var(--doc-c-divider-light);
+	.doc-content {
+		padding: 1.5rem 1.25rem 4.5rem;
 	}
 }

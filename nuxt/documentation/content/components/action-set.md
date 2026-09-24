@@ -5,7 +5,7 @@ description: Tile column and drawer UI for actions, host slots, and preview flyi
 
 # Action Set
 
-`ActionSet` is the fixed-position tile column rendered by [`Desktop`](/reference/desktop). It exposes Search (opens the command palette), host-configured drawer slots, and an Actions tab that lists FSM transitions and commands from the active record.
+`ActionSet` is the fixed-position tile column rendered by [`Desktop`](/reference/desktop). It exposes Search (opens an inline search panel in the drawer), host-configured drawer slots, and an Actions tab that lists FSM transitions and commands from the active record.
 
 Use `Desktop` with `:action-set-slots` for custom panels, and `useActionSet()` inside slot components to open preview flyins. For pages that are not standard doctype views (e.g. DocBuilder), pass `:host-actions` and fill Desktop's default slot.
 

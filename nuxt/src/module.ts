@@ -35,6 +35,8 @@ const nuxtWithHomeLayout = new WeakSet<Nuxt>()
 export interface ModuleOptions {
 	/** Enable the DocBuilder feature with /docbuilder routes */
 	docbuilder?: boolean
+	/** Allow DocBuilder routes and handlers outside development (e.g. public documentation playground) */
+	docbuilderPublic?: boolean
 	/** Path to doctypes folder relative to the project root (defaults to 'doctypes') */
 	doctypesDir?: string
 	/**
@@ -336,8 +338,8 @@ export default defineNuxtModule<ModuleOptions>({
 			}
 		})
 
-		// Setup DocBuilder if enabled — dev-only enforcement (Invariant 1)
-		if (options.docbuilder && process.env.NODE_ENV === 'development') {
+		// Setup DocBuilder if enabled — dev-only by default (Invariant 1); docbuilderPublic opts out
+		if (options.docbuilder && (options.docbuilderPublic || process.env.NODE_ENV === 'development')) {
 			logger.log('DocBuilder enabled, adding routes and handlers')
 
 			// VueFlow CSS must be at document level — component @import lands too late for VueFlow's init check

@@ -698,6 +698,9 @@ importers:
       '@stonecrop/themes':
         specifier: workspace:*
         version: link:../themes
+      '@vueuse/core':
+        specifier: 'catalog:'
+        version: 14.4.0(vue@3.5.41(typescript@6.0.3))
     devDependencies:
       '@microsoft/api-extractor':
         specifier: 'catalog:'

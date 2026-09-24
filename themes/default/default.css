@@ -129,6 +129,8 @@ before all other rules.
 		/* Semantic: action set */
 		--sc-action-set-drawer-width: 380px;
 		--sc-action-set-offset-top: 35vh;
+		--sc-action-set-tile-gap: 4px;
+		--sc-action-set-rail-width: calc(2.75rem + 10px);
 	}
 
 	/*
