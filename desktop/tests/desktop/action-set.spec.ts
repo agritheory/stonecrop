@@ -215,13 +215,7 @@ describe('Desktop ActionSet', { tags: ['component'] }, () => {
 		expect(labels).toContain('Actions')
 	})
 
-	it('opens the command palette when the Search tile is clicked', async () => {
-		const CommandPaletteStub = defineComponent({
-			name: 'CommandPalette',
-			props: { isOpen: { type: Boolean, default: false } },
-			template: '<div class="command-palette-stub" v-if="isOpen" />',
-		})
-
+	it('opens the search drawer when the Search tile is clicked', async () => {
 		const registry = new Registry()
 		const stonecrop = new Stonecrop(registry)
 		const doctype = buildDoctype('task', 'draft', {
@@ -241,7 +235,6 @@ describe('Desktop ActionSet', { tags: ['component'] }, () => {
 				stubs: {
 					AForm: true,
 					SheetNav: true,
-					CommandPalette: CommandPaletteStub,
 				},
 			},
 		})
@@ -251,8 +244,8 @@ describe('Desktop ActionSet', { tags: ['component'] }, () => {
 		await searchItem!.trigger('click')
 		await nextTick()
 
-		expect(wrapper.find('.command-palette-stub').exists()).toBe(true)
-		expect(wrapper.find('.action-set__drawer').exists()).toBe(false)
+		expect(wrapper.find('.action-set__drawer').exists()).toBe(true)
+		expect(wrapper.find('.command-search-input').exists()).toBe(true)
 	})
 
 	it('throws when useActionSet is called outside Desktop', () => {

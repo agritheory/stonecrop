@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/desktop",
-	"version": "0.36.0",
+	"version": "0.37.0",
 	"description": "Desktop-specific components for Stonecrop UI",
 	"keywords": [
 		"components",
@@ -58,7 +58,8 @@
 		"@stonecrop/aform": "workspace:*",
 		"@stonecrop/schema": "workspace:*",
 		"@stonecrop/stonecrop": "workspace:*",
-		"@stonecrop/themes": "workspace:*"
+		"@stonecrop/themes": "workspace:*",
+		"@vueuse/core": "catalog:"
 	},
 	"devDependencies": {
 		"@microsoft/api-extractor": "catalog:",

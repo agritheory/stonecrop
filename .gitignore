@@ -139,5 +139,11 @@ tsdoc-metadata.json
 .build-*
 .netlify
 
+# Vue language-service / tsc emit beside sources (breaks @stonecrop/nuxt mkdist build)
+nuxt/src/**/*.d.vue.ts
+nuxt/src/**/*.vue.d.ts
+nuxt/src/runtime/**/*.js
+nuxt/src/runtime/**/*.d.ts
+
 # AI agent instruction files (local only)
 **/AGENTS.md

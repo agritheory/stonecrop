@@ -52,6 +52,9 @@ import { Desktop } from '@stonecrop/desktop'
 | routeAdapter | `RouteAdapter \| undefined` | no |  | Pluggable router adapter. When provided, Desktop uses these functions for all routing instead of reaching into the registry's internal Vue Router instance. Nuxt hosts (or any host with custom route conventions) should supply this. |
 | actionSetSlots | `ActionSetSlot[] \| undefined` | no |  | Host drawer slots, each shown as a tile in the ActionSet column. |
 | hostActions | `ActionElements[] \| undefined` | no |  | When provided, the Actions drawer lists exactly these, in place of the actions Desktop derives from the doctype. |
+| breadcrumbs | `{ title: string; to: string; }[] \| undefined` | no |  | When provided, replaces Desktop's default doctype-navigation breadcrumbs in SheetNav. |
+| commandSearch | `((query: string) => CommandSearchResult[]) \| undefined` | no |  | When provided, replaces Desktop's built-in command palette search (e.g. documentation site pages). |
+| commandSearchPlaceholder | `string \| undefined` | no | `"Type a command or search..."` |  |
 
 **Events:**
 

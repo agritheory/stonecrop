@@ -10,14 +10,19 @@ const buildCommand = async packageDir => {
 	return config.default.run.tasks.build.command
 }
 
+const cleanCompiledBesideSources = 'node ../tools/scripts/clean-compiled-beside-sources.mjs'
+
 describe('the Nuxt module build tasks', { tags: ['unit'] }, () => {
 	// A `--stub` build makes `dist/runtime` a symlink into `src/runtime`, and a later build step
 	// replayed from the cache writes its compiled files through it, beside the sources.
 	it.each([
-		['nuxt_grafserv', 'nuxt-module-build prepare && nuxi prepare playground && nuxt-module-build build'],
+		[
+			'nuxt_grafserv',
+			`${cleanCompiledBesideSources} && nuxt-module-build prepare && nuxi prepare playground && nuxt-module-build build`,
+		],
 		[
 			'nuxt',
-			'nuxt-module-build prepare && nuxi prepare documentation && nuxi prepare fullstack && nuxi prepare playground && nuxt-module-build build',
+			`${cleanCompiledBesideSources} && nuxt-module-build prepare && nuxi prepare documentation && nuxt-module-build build`,
 		],
 	])('build %s without a stub, preparing each app first', async (packageDir, command) => {
 		expect(await buildCommand(packageDir)).toBe(command)

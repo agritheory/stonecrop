@@ -1,55 +1,57 @@
 <template>
 	<ClientOnly>
-		<Desktop class="docbuilder-desktop" :route-adapter="routeAdapter" :host-actions="docbuilderActions">
-			<div v-if="loading" class="docbuilder-loading">Loading...</div>
-			<div v-else class="docbuilder-page">
-				<div v-if="validationIssues.length > 0 && !warningsDismissed" class="validation-panel">
-					<div v-if="errorCount > 0" class="validation-errors">
-						<strong>⚠️ {{ errorCount }} Error(s) — Cannot Save</strong>
-						<ul>
-							<li v-for="(issue, idx) in validationIssues.filter(i => i.severity === 'error')" :key="`err-${idx}`">
-								<code v-if="issue.fieldname">{{ issue.fieldname }}:</code> {{ issue.message }}
-							</li>
-						</ul>
-					</div>
-					<div v-if="warningCount > 0" class="validation-warnings">
-						<strong>⚡ {{ warningCount }} Warning(s)</strong>
-						<button class="dismiss-button" @click="warningsDismissed = true">Dismiss</button>
-					</div>
-				</div>
-
-				<AFieldset label="Workflow" :schema="[]" :collapsible="true">
-					<div class="builder-workflow">
-						<StateEditor
-							v-if="workflowConfig && workflowConfig.states && workflowConfig.states.length > 0"
-							v-model="workflowConfig"
-							v-model:layout="layout"
-							node-container-class="node-editor" />
-						<div v-else class="empty-workflow">
-							<p class="empty-workflow-hint">No workflow yet. Name the first state to start building the workflow.</p>
-							<div class="empty-workflow-form">
-								<input v-model="newStateName" type="text" placeholder="e.g. Draft" @keyup.enter="seedWorkflow" />
-								<button class="btn-primary" type="button" :disabled="!newStateName.trim()" @click="seedWorkflow">
-									Add first state
-								</button>
-							</div>
+		<div class="docbuilder-shell">
+			<Desktop class="docbuilder-desktop" :route-adapter="routeAdapter" :host-actions="docbuilderActions">
+				<div v-if="loading" class="docbuilder-loading">Loading...</div>
+				<div v-else class="docbuilder-page">
+					<div v-if="validationIssues.length > 0 && !warningsDismissed" class="validation-panel">
+						<div v-if="errorCount > 0" class="validation-errors">
+							<strong>⚠️ {{ errorCount }} Error(s) — Cannot Save</strong>
+							<ul>
+								<li v-for="(issue, idx) in validationIssues.filter(i => i.severity === 'error')" :key="`err-${idx}`">
+									<code v-if="issue.fieldname">{{ issue.fieldname }}:</code> {{ issue.message }}
+								</li>
+							</ul>
+						</div>
+						<div v-if="warningCount > 0" class="validation-warnings">
+							<strong>⚡ {{ warningCount }} Warning(s)</strong>
+							<button class="dismiss-button" @click="warningsDismissed = true">Dismiss</button>
 						</div>
 					</div>
-				</AFieldset>
 
-				<AFieldset label="Actions" :schema="[]" :collapsible="true">
-					<DocBuilderActionsPanel v-model="workflowConfig" />
-				</AFieldset>
+					<AFieldset label="Workflow" :schema="[]" :collapsible="true">
+						<div class="builder-workflow">
+							<StateEditor
+								v-if="workflowConfig && workflowConfig.states && workflowConfig.states.length > 0"
+								v-model="workflowConfig"
+								v-model:layout="layout"
+								node-container-class="node-editor" />
+							<div v-else class="empty-workflow">
+								<p class="empty-workflow-hint">No workflow yet. Name the first state to start building the workflow.</p>
+								<div class="empty-workflow-form">
+									<input v-model="newStateName" type="text" placeholder="e.g. Draft" @keyup.enter="seedWorkflow" />
+									<button class="btn-primary" type="button" :disabled="!newStateName.trim()" @click="seedWorkflow">
+										Add first state
+									</button>
+								</div>
+							</div>
+						</div>
+					</AFieldset>
 
-				<AFieldset label="Schema" :schema="[]" :collapsible="true">
-					<DocBuilderFieldsPanel v-model="fields" />
-				</AFieldset>
+					<AFieldset label="Actions" :schema="[]" :collapsible="true">
+						<DocBuilderActionsPanel v-model="workflowConfig" />
+					</AFieldset>
 
-				<div v-if="saveMessage" class="builder-actions">
-					<span class="save-message" :class="saveMessage.type">{{ saveMessage.text }}</span>
+					<AFieldset label="Schema" :schema="[]" :collapsible="true">
+						<DocBuilderFieldsPanel v-model="fields" />
+					</AFieldset>
+
+					<div v-if="saveMessage" class="builder-actions">
+						<span class="save-message" :class="saveMessage.type">{{ saveMessage.text }}</span>
+					</div>
 				</div>
-			</div>
-		</Desktop>
+			</Desktop>
+		</div>
 		<template #fallback>
 			<div class="docbuilder-loading">Loading...</div>
 		</template>
@@ -152,8 +154,14 @@ const docbuilderActions = computed(() => [
 </script>
 
 <style scoped>
+.docbuilder-shell {
+	display: flex;
+	flex-direction: column;
+	min-height: 100dvh;
+}
 .docbuilder-desktop {
-	height: 100vh;
+	flex: 1;
+	min-height: 0;
 }
 .docbuilder-loading {
 	color: var(--sc-header-text-color);
@@ -227,7 +235,7 @@ const docbuilderActions = computed(() => [
 }
 .dismiss-button {
 	background: none;
-	border: 1px solid currentColor;
+	border: 1px solid;
 	border-radius: var(--sc-border-radius);
 	cursor: pointer;
 	font-size: 0.75rem;

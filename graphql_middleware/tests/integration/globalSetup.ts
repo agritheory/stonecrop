@@ -40,13 +40,13 @@ export async function setup(project: TestProject) {
 	// Each integration test file calls makeSchema(), which triggers heavy PostGraphile
 	// catalog introspection. A single pglite-server can't survive multiple sequential
 	// introspection rounds without corruption. Give each file its own isolated instance.
-	const [resolver, camel, inflection, conformance, naturalId] = await Promise.all([
-		createTestDb(),
-		createTestDb(),
-		createTestDb(),
-		createTestDb(),
-		createTestDb(),
-	])
+	// Spin up one instance at a time: five PGlite servers in parallel can OOM when `vp run -r test`
+	// executes this package alongside other Vitest jobs on a memory-tight machine.
+	const resolver = await createTestDb()
+	const camel = await createTestDb()
+	const inflection = await createTestDb()
+	const conformance = await createTestDb()
+	const naturalId = await createTestDb()
 
 	project.provide('testDatabaseUrl', resolver.url)
 	project.provide('camelTestDatabaseUrl', camel.url)

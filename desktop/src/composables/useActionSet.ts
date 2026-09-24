@@ -15,8 +15,10 @@ export type ActionSetController = ActionSetContext & {
 	previewSubject: ComputedRef<ActionSetPreview | null>
 	isPreviewOpen: ComputedRef<boolean>
 	isActionsOpen: ComputedRef<boolean>
+	isSearchOpen: ComputedRef<boolean>
 	isDrawerOpen: ComputedRef<boolean>
 	openActions: () => void
+	openSearch: () => void
 	openSlot: (slotId: ActionSetSlotId) => void
 }
 
@@ -25,17 +27,27 @@ export const actionSetKey: InjectionKey<ActionSetController> = Symbol('actionSet
 export function createActionSet(options: CreateActionSetOptions): ActionSetController {
 	const activeSlotId = ref<ActionSetSlotId | null>(null)
 	const actionsOpen = ref(false)
+	const searchOpen = ref(false)
 	const previewSubject = shallowRef<ActionSetPreview | null>(null)
 	const previewId = ref<string | undefined>(undefined)
 
 	function openActions() {
 		activeSlotId.value = null
+		searchOpen.value = false
 		closePreview()
 		actionsOpen.value = true
 	}
 
+	function openSearch() {
+		activeSlotId.value = null
+		actionsOpen.value = false
+		closePreview()
+		searchOpen.value = true
+	}
+
 	function openSlot(slotId: ActionSetSlotId) {
 		actionsOpen.value = false
+		searchOpen.value = false
 		if (activeSlotId.value === slotId) {
 			return
 		}
@@ -59,6 +71,7 @@ export function createActionSet(options: CreateActionSetOptions): ActionSetContr
 	function close() {
 		activeSlotId.value = null
 		actionsOpen.value = false
+		searchOpen.value = false
 		closePreview()
 	}
 
@@ -69,11 +82,13 @@ export function createActionSet(options: CreateActionSetOptions): ActionSetContr
 		previewSubject: computed(() => previewSubject.value),
 		isPreviewOpen: computed(() => previewSubject.value !== null),
 		isActionsOpen: computed(() => actionsOpen.value),
-		isDrawerOpen: computed(() => actionsOpen.value || activeSlotId.value !== null),
+		isSearchOpen: computed(() => searchOpen.value),
+		isDrawerOpen: computed(() => actionsOpen.value || searchOpen.value || activeSlotId.value !== null),
 		present,
 		closePreview,
 		close,
 		openActions,
+		openSearch,
 		openSlot,
 	}
 }

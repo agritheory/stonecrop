@@ -481,8 +481,13 @@ const taskMachine = createMachine({
 
 ## Examples
 
-- **[playground](./playground)** — the default example: doctypes introspected from a live public GraphQL API with the `stonecrop-schema generate` CLI, browsed through the Desktop shell, and refined in the built-in DocBuilder (provenance-locked introspected fields, plus hand-authored workflow fixtures for the graph editor). `pnpm run dev` runs it.
-- **[fullstack](./fullstack)** — the middleware core on the app's own GraphQL server (grafserv + guarded workflow transitions over in-memory storage, no database). `pnpm run dev:full` runs it.
+All runnable examples live in **[documentation](./documentation)** at **`/playground`**:
+
+- **Workflow** — grafserv + guarded transitions over session-scoped in-memory storage (Orders/Users), Desktop rail panels
+- **Countries** — doctypes introspected from the public [countries GraphQL API](https://countries.trevorblades.com/graphql), same Desktop shell
+- **DocBuilder** — public doctype prototyping at `/docbuilder`
+
+`pnpm run dev` (alias for `dev:documentation`) runs the docs site on port 3002.
 
 
 ## Contribution
@@ -497,10 +502,10 @@ pnpm install
 # Generate type stubs
 pnpm run dev:prepare
 
-# Develop with the playground
+# Develop the documentation site (docs + playgrounds)
 pnpm run dev
 
-# Build the playground
+# Build the documentation site
 pnpm run dev:build
 
 # Run ESLint

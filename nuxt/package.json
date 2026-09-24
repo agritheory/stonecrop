@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/nuxt",
-	"version": "0.36.0",
+	"version": "0.37.0",
 	"description": "Nuxt module for Stonecrop",
 	"keywords": [
 		"nuxt",
@@ -52,13 +52,11 @@
 		"./package.json": "./package.json"
 	},
 	"scripts": {
-		"dev": "node --run dev:prepare && nuxi dev playground --host",
-		"dev:build": "nuxi build playground",
+		"dev": "node --run dev:documentation",
+		"dev:build": "nuxi build documentation",
 		"dev:documentation": "node --run dev:prepare:documentation && nuxi dev documentation --host",
-		"dev:full": "node --run dev:prepare:full && nuxi dev fullstack --host",
 		"dev:prepare": "nuxt-module-build build --stub && nuxt-module-build prepare && sh scripts/nuxt-apps.sh prepare",
-		"dev:prepare:documentation": "nuxi prepare documentation",
-		"dev:prepare:full": "nuxt-module-build build --stub && nuxt-module-build prepare && nuxi prepare fullstack",
+		"dev:prepare:documentation": "nuxt-module-build build --stub && nuxt-module-build prepare && nuxi prepare documentation",
 		"docs": "echo 'Nuxt modules use custom build system - skipping API docs generation'",
 		"generate:documentation": "nuxi generate documentation",
 		"lint": "eslint .",

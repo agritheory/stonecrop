@@ -1,6 +1,6 @@
 /**
  * The documentation site keeps three registries of its own pages: the content tree on disk, the
- * sidebar in `app/layouts/default.vue`, and the search index in `app/utils/search-index.ts`.
+ * nav links in `app/utils/docs-nav.ts`, and the search index in `app/utils/search-index.ts`.
  * Nothing made them agree, and they did not: `/guides/hst-patterns` was in the search index and
  * in `content/`, absent from the sidebar, and therefore absent from the static output too,
  * because prerendering was driven by crawling the links the sidebar emits. A direct hit or a
@@ -10,15 +10,18 @@
  * from that coupling. This asserts the other two both ways: no page missing from a registry, and
  * no registry entry pointing at a page that does not exist.
  */
-import { readdirSync, readFileSync } from 'node:fs'
+import { readdirSync } from 'node:fs'
 import { join, relative, sep } from 'node:path'
 import { describe, it, expect } from 'vitest'
 
+import { docsHomeNavGroups, docsNavSections } from '../documentation/app/utils/docs-nav'
 import { searchIndex } from '../documentation/app/utils/search-index'
 
 const documentationRoot = join(__dirname, '..', 'documentation')
 const contentRoot = join(documentationRoot, 'content')
-const layoutPath = join(documentationRoot, 'app', 'layouts', 'default.vue')
+
+/** Nuxt app routes linked from docs nav but not backed by a `content/` page. */
+const appOnlyNavRoutes = new Set(['/playground'])
 
 /** `/guides/` and `/guides` address the same page; compare them in one spelling. */
 function normalize(route: string): string {
@@ -39,12 +42,12 @@ function contentRoutes(directory: string = contentRoot): string[] {
 	})
 }
 
-/** Comments are stripped first so a route named only in prose cannot satisfy the scan. */
 function sidebarRoutes(): string[] {
-	const source = readFileSync(layoutPath, 'utf-8')
-		.replaceAll(/\/\*[\s\S]*?\*\//g, '')
-		.replaceAll(/^[ \t]*\/\/.*$/gm, '')
-	return [...source.matchAll(/\bto:\s*'([^']+)'/g)].map(match => normalize(match[1]))
+	const links = [
+		...docsNavSections.flatMap(section => section.groups.flatMap(group => group.links.map(link => link.to))),
+		...docsHomeNavGroups.flatMap(group => group.links.map(link => link.to)),
+	]
+	return links.map(normalize)
 }
 
 describe('documentation registries', { tags: ['unit'] }, () => {
@@ -75,7 +78,7 @@ describe('documentation registries', { tags: ['unit'] }, () => {
 
 	it('points every sidebar link at a real page', () => {
 		expect(
-			sidebar.filter(route => !pages.includes(route)),
+			sidebar.filter(route => !pages.includes(route) && !appOnlyNavRoutes.has(route)),
 			'These sidebar links have no page behind them and render as 404s.'
 		).toEqual([])
 	})
