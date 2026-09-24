@@ -1,5 +1,48 @@
 # Change Log - @stonecrop/nuxt
 
+## 0.36.0
+
+### Patch Changes
+
+- e673267: An action's result carries `record`, the record as a read returns it after the action, and the client stores that in place of `data`, which stays whatever the action's handler returned, so a `DataClient.runAction` must now return `record`.
+- e673267: The setup tool installs every package the files it copies import: the GraphQL server install now adds `@stonecrop/schema` and `temporal-polyfill`, and the frontend install adds `@stonecrop/graphql-client`, which apps built with pnpm could not otherwise resolve.
+- e673267: The starter server's "Snooze a Week" action adds a week to the due date through Temporal, where it landed a day short across a spring clock change, and snoozes a task with no due date from the server's today.
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+  - @stonecrop/graphql-middleware@0.36.0
+  - @stonecrop/graphql-client@0.36.0
+  - @stonecrop/schema@0.36.0
+  - @stonecrop/stonecrop@0.36.0
+  - @stonecrop/aform@0.36.0
+  - @stonecrop/atable@0.36.0
+  - @stonecrop/nuxt-grafserv@0.36.0
+  - @stonecrop/desktop@0.36.0
+  - @stonecrop/node-editor@0.36.0
+  - @stonecrop/casl-middleware@0.36.0
+  - @stonecrop/code-editor@0.36.0
+  - @stonecrop/themes@0.36.0
+
 ## 0.35.0
 
 ### Minor Changes

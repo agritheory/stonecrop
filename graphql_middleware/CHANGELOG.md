@@ -1,5 +1,20 @@
 # Change Log - @stonecrop/graphql-middleware
 
+## 0.36.0
+
+### Minor Changes
+
+- e673267: An action's result carries `record`, the record as a read returns it after the action, and the client stores that in place of `data`, which stays whatever the action's handler returned, so a `DataClient.runAction` must now return `record`.
+- e673267: Record reads and save replies return each column as PostGraphile serves it (a `date` as `YYYY-MM-DD`, a `timestamptz` ending `+00:00`), except a zone-free `timestamp` and an `interval`, and throw on a table or column PostGraphile did not introspect or a table name two schemas share.
+- e673267: Record reads and save replies return an `interval` column, or a list of them, as ISO 8601 durations such as `P1DT2H30M`, and refuse one whose parts differ in sign, which no ISO 8601 duration can hold.
+- e673267: A zone-free `timestamp` column is read and written as the moment it names in the database's time zone, so saving a date-time no longer moves it by the user's offset.
+
+### Patch Changes
+
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+  - @stonecrop/schema@0.36.0
+
 ## 0.35.0
 
 ### Minor Changes

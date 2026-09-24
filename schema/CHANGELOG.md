@@ -1,5 +1,12 @@
 # Change Log - @stonecrop/schema
 
+## 0.36.0
+
+### Minor Changes
+
+- e673267: An action's result carries `record`, the record as a read returns it after the action, and the client stores that in place of `data`, which stays whatever the action's handler returned, so a `DataClient.runAction` must now return `record`.
+- e673267: `ADuration` has its own `duration` component category, so a new record starts it at `null`, which an `interval` column accepts, where it started at `''`, and atable still filters it as text.
+
 ## 0.35.0
 
 ### Minor Changes

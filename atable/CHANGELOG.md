@@ -1,5 +1,20 @@
 # Change Log - @stonecrop/atable
 
+## 0.36.0
+
+### Patch Changes
+
+- e673267: `ADateRange` and the table's default date cell read and write each `YYYY-MM-DD` day as that day, so neither shows or saves a date a day off outside UTC.
+- e673267: `ADuration` has its own `duration` component category, so a new record starts it at `null`, which an `interval` column accepts, where it started at `''`, and atable still filters it as text.
+- e673267: The table's date filters compare the day each cell shows in the user's time zone, so a date-time range keeps every time on its last day and leaves out rows with no date.
+- e673267: The table's date filters no longer move a date held as a number into the current year, so a number in a date or date-time column matches no day, as its default display of "Invalid Date" says.
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+  - @stonecrop/schema@0.36.0
+  - @stonecrop/utilities@0.36.0
+  - @stonecrop/themes@0.36.0
+
 ## 0.35.0
 
 ### Minor Changes

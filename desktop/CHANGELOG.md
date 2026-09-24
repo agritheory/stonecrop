@@ -1,5 +1,32 @@
 # Change Log - @stonecrop/desktop
 
+## 0.36.0
+
+### Patch Changes
+
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+  - @stonecrop/schema@0.36.0
+  - @stonecrop/stonecrop@0.36.0
+  - @stonecrop/aform@0.36.0
+  - @stonecrop/themes@0.36.0
+
 ## 0.35.0
 
 ### Minor Changes

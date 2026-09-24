@@ -1,5 +1,38 @@
 # Change Log - @stonecrop/stonecrop
 
+## 0.36.0
+
+### Minor Changes
+
+- e673267: An action's result carries `record`, the record as a read returns it after the action, and the client stores that in place of `data`, which stays whatever the action's handler returned, so a `DataClient.runAction` must now return `record`.
+
+### Patch Changes
+
+- e673267: `ADuration` has its own `duration` component category, so a new record starts it at `null`, which an `interval` column accepts, where it started at `''`, and atable still filters it as text.
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+  - @stonecrop/schema@0.36.0
+  - @stonecrop/aform@0.36.0
+  - @stonecrop/atable@0.36.0
+
 ## 0.35.0
 
 ### Minor Changes

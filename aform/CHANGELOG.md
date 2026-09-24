@@ -1,5 +1,39 @@
 # Change Log - @stonecrop/aform
 
+## 0.36.0
+
+### Minor Changes
+
+- e673267: `ADate` holds its value as a `YYYY-MM-DD` string only, so a picked or stored day no longer shifts outside UTC, an empty field stays empty, and clearing the input no longer crashes it.
+- e673267: `ADatePicker` holds a `YYYY-MM-DD` day instead of a `Date`, and `ADateSelection` takes and hands back days the same way, so an `ADatePicker` field over day data no longer shows or saves the day before outside UTC.
+- e673267: `ADate` and `ADateTime` open their calendar on the date the field holds and mark it, through a new `defaultDate` prop on `ADateSelection`.
+- e673267: `ADuration` holds an ISO 8601 duration such as `PT2H30M` instead of milliseconds, which an `interval` column stored as seconds, and shows the years, months and fractions of a second a stored duration holds.
+- e673267: `ADate`, `ANumericInput` and the amount and quantity boxes of `ACurrencyInput` and `AQuantityInput` hold `null` once emptied, where they held an `''` that no date or number column accepts, so the date and number fields' model types now include `null`.
+
+### Patch Changes
+
+- e673267: aform's calendar leaves focus where it was when it appears and moves to a day set from outside, so a day can be typed into `ADate` with the calendar open, and a form showing `ADuration` keeps its focus.
+- e673267: The calendar's month grid shows a month that begins on a Sunday from its 1st, and no longer repeats or drops a day around a daylight saving change.
+- e673267: The calendar's range boxes read a typed day through Temporal instead of `new Date`, so `YYYY-MM-DD` is no longer a day early west of UTC, and a day that does not exist, or text not written the way the locale writes days, reads as no day.
+- e673267: `ADate`, `ADateTime` and `ADateRange` open aform's calendar on Space, F4 or Alt+Down (the last two on Down too) and close it on Escape or when focus leaves, and the calendar moves by day, week, month and year from the keyboard and names each day for screen readers.
+- e673267: `ACurrencyInput`, `AQuantityInput` and `ADateRange` render a `null` value, which a new record starts them at, where they threw.
+- e673267: `ADate` opens only aform's calendar, keeping the browser's own shut on a click and on Space, F4 and Alt+Down, and closes aform's when focus leaves the field.
+- e673267: `ADateRange` and the table's default date cell read and write each `YYYY-MM-DD` day as that day, so neither shows or saves a date a day off outside UTC.
+- e673267: The calendar's range boxes and weekday letters and `ADateRange`'s field follow the user's locale, where they were US English in every locale.
+- e673267: `ADateTime` starts again from today once its value is cleared from outside, where it kept the cleared date and time, opened its calendar on them and wrote them back with the next time picked.
+- e673267: `ADateTime` saves the time its picker shows when only a date is picked on an empty field, where it also saved the clock's milliseconds, and its seconds when seconds were hidden.
+- e673267: `ADateTime` with `useSeconds` off leaves the seconds out of its text, as its picker does.
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+  - @stonecrop/schema@0.36.0
+  - @stonecrop/atable@0.36.0
+  - @stonecrop/utilities@0.36.0
+  - @stonecrop/themes@0.36.0
+
 ## 0.35.0
 
 ### Minor Changes
