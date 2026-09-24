@@ -50,7 +50,11 @@ export class DocumentationDataClient implements DataClient {
 		return clientFor(doctype).getRecord(doctype, recordId)
 	}
 
-	runAction(doctype: DoctypeRef, action: string): Promise<{ success: boolean; data: unknown; error: string | null }> {
-		return clientFor(doctype).runAction(doctype, action)
+	runAction(
+		doctype: DoctypeRef,
+		action: string,
+		args?: unknown[]
+	): Promise<{ success: boolean; data: unknown; error: string | null; record: Record<string, unknown> | null }> {
+		return clientFor(doctype).runAction(doctype, action, args)
 	}
 }
