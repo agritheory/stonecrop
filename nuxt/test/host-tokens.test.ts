@@ -51,7 +51,7 @@ describe('host --sc-* tokens', { tags: ['unit'] }, () => {
 	})
 
 	it('scans hosts that actually use tokens', () => {
-		expect(HOST_APPS).toHaveLength(3)
+		expect(HOST_APPS).toHaveLength(1)
 		expect(floorTokens().size).toBeGreaterThan(50)
 		expect(hostTokens().length).toBeGreaterThan(0)
 	})

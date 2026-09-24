@@ -17,6 +17,7 @@ const COUNTRIES_DOCTYPES = [
 	'language.json',
 	'state.json',
 	'subdivision.json',
+	'user.json',
 ]
 
 const doctypeFiles = () => COUNTRIES_DOCTYPES.filter(file => readdirSync(doctypesDir).includes(file))

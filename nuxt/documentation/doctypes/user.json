@@ -1,0 +1,19 @@
+{
+	"name": "User",
+	"slug": "user",
+	"fields": [
+		{
+			"label": "Username",
+			"fieldname": "username",
+			"primaryKey": true,
+			"component": "ATextInput",
+			"required": true
+		},
+		{
+			"label": "Disabled",
+			"fieldname": "disabled",
+			"component": "ACheckbox",
+			"default": false
+		}
+	]
+}

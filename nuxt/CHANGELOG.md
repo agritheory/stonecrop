@@ -1,5 +1,27 @@
 # Change Log - @stonecrop/nuxt
 
+## 0.37.0
+
+### Minor Changes
+
+- Consolidate Nuxt playground and fullstack examples into the documentation app and refine Desktop ActionSet layout.
+
+### Patch Changes
+
+- Updated dependencies
+  - @stonecrop/desktop@0.37.0
+  - @stonecrop/aform@0.37.0
+  - @stonecrop/atable@0.37.0
+  - @stonecrop/casl-middleware@0.37.0
+  - @stonecrop/code-editor@0.37.0
+  - @stonecrop/graphql-client@0.37.0
+  - @stonecrop/graphql-middleware@0.37.0
+  - @stonecrop/node-editor@0.37.0
+  - @stonecrop/nuxt-grafserv@0.37.0
+  - @stonecrop/schema@0.37.0
+  - @stonecrop/stonecrop@0.37.0
+  - @stonecrop/themes@0.37.0
+
 ## 0.36.0
 
 ### Patch Changes
