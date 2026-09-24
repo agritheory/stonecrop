@@ -25,7 +25,9 @@
 				class="aform_segmented-track"
 				:aria-labelledby="groupAriaLabel ? undefined : labelId"
 				:aria-label="groupAriaLabel"
-				:aria-busy="busy || undefined">
+				:aria-busy="busy || undefined"
+				:aria-invalid="invalid"
+				:aria-describedby="describedBy">
 				<label
 					v-for="choice in choices"
 					:key="choice"
@@ -52,7 +54,7 @@
 					<span class="aform_segmented-label">{{ segmentLabel(choice) }}</span>
 				</label>
 			</div>
-			<p v-show="errorText" class="aform_error" v-html="errorText"></p>
+			<p v-show="errorText" :id="errorId" class="aform_error" role="alert">{{ errorText }}</p>
 		</template>
 	</div>
 </template>
@@ -62,6 +64,7 @@ import type { BadgeVariant, FieldOptions } from '@stonecrop/schema'
 import { hasBadgeOptions, lookupBadge, selectChoices } from '@stonecrop/schema'
 import { computed, useId, type CSSProperties } from 'vue'
 
+import { fieldErrorA11y } from '../../composables/fieldErrorA11y'
 import type { ComponentProps } from '../../types'
 import ABadge from './ABadge.vue'
 
@@ -100,6 +103,7 @@ const selectedMany = computed({
 })
 
 const errorText = computed(() => (errors?.length ? errors.join('; ') : (validation.errorMessage ?? '')))
+const { errorId, describedBy, invalid } = fieldErrorA11y(uuid, errorText)
 
 const fallbackId = useId()
 const groupName = computed(() => uuid ?? `aform-segmented-${fallbackId}`)
@@ -201,7 +205,7 @@ const displayBadgeValue = computed(() => {
 	outline-offset: -1px;
 	border-radius: 0;
 	box-sizing: border-box;
-	background: var(--sc-input-field-disabled-background);
+	background: var(--sc-input-addon-background);
 	font-family: var(--sc-font-family);
 }
 
@@ -262,7 +266,7 @@ const displayBadgeValue = computed(() => {
 }
 
 .aform_segmented-segment:not(.aform_segmented-segment--badge):has(.aform_segmented-input:checked) {
-	background: var(--sc-input-field-background);
+	background: var(--sc-form-background);
 	color: var(--sc-cell-text-color);
 	font-weight: 500;
 }
@@ -307,7 +311,7 @@ const displayBadgeValue = computed(() => {
 }
 
 .aform_segmented-segment:hover:has(.aform_segmented-input:not(:disabled):not(:checked)) {
-	background: color-mix(in srgb, var(--sc-input-field-background) 50%, transparent);
+	background: color-mix(in srgb, var(--sc-form-background) 50%, transparent);
 }
 
 .aform_segmented-segment:has(.aform_segmented-input:disabled) {

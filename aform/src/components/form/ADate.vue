@@ -17,10 +17,12 @@
 				:aria-controls="showPicker ? calendarId : undefined"
 				:disabled="mode === 'read'"
 				:required="required"
+				:aria-invalid="invalid"
+				:aria-describedby="describedBy"
 				@click.prevent="openPicker"
 				@keydown="openFromKey" />
 			<label class="aform_field-label" :for="uuid">{{ label }}</label>
-			<p v-show="errorText" class="aform_error" v-html="errorText"></p>
+			<p v-show="errorText" :id="errorId" class="aform_error" role="alert">{{ errorText }}</p>
 			<ADateSelection
 				v-if="showPicker"
 				:id="calendarId"
@@ -40,6 +42,7 @@
 import { type ComponentPublicInstance, useTemplateRef, computed } from 'vue'
 import { fromISODate } from '@stonecrop/utilities'
 
+import { fieldErrorA11y } from '../../composables/fieldErrorA11y'
 import ADateSelection from './ADateSelection.vue'
 import type { ComponentProps } from '../../types'
 import { dayFromBox } from '../../utils/emptiedBox'
@@ -56,6 +59,7 @@ const {
 
 // Dynamic trigger errors take precedence over a static schema errorMessage; empty means the slot hides.
 const errorText = computed(() => (errors?.length ? errors.join('; ') : (validation.errorMessage ?? '')))
+const { errorId, describedBy, invalid } = fieldErrorA11y(uuid, errorText)
 
 // The field holds a `YYYY-MM-DD` day, which is also the date input's own value; a Date would be an instant.
 const modelValue = defineModel<string | null>()
@@ -90,7 +94,10 @@ const handleDate = (data: { selected: string }) => {
 	position: absolute;
 	top: 100%;
 	left: 0;
-	z-index: 1000;
+	width: max-content;
+	max-width: 100%;
+	box-sizing: border-box;
+	z-index: 100;
 	margin-top: 0.25rem;
 }
 </style>

@@ -1,5 +1,22 @@
 # Change Log - @stonecrop/graphql-client
 
+## 0.35.0
+
+### Minor Changes
+
+- 2f16a84: A link field may declare `config` (a `TableViewConfig`), and the middleware serves it in field metadata to the client.
+
+### Patch Changes
+
+- Updated dependencies [2f16a84]
+  - @stonecrop/schema@0.35.0
+
+## 0.34.0
+
+### Patch Changes
+
+- @stonecrop/schema@0.34.0
+
 ## 0.33.0
 
 ### Patch Changes

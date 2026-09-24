@@ -24,14 +24,27 @@ describe('login component', { tags: ['component'] }, () => {
 		const wrapper = mount(Login)
 		await wrapper.vm.$nextTick()
 
-		const $submitBtn = wrapper.find('.btn')
 		const emailInput = wrapper.find('input[type="email"]')
 		const passwordInput = wrapper.find('input[type="password"]')
 		await emailInput.setValue('support@agritheory.dev')
 		await passwordInput.setValue('password')
-		await $submitBtn.trigger('click')
+		await wrapper.find('form').trigger('submit')
 
 		const loginEvents = wrapper.emitted('loginSuccess')
 		expect(loginEvents).toBeTruthy()
+	})
+
+	it('uses platform autocomplete attributes on email and password', () => {
+		const wrapper = mount(Login)
+		expect(wrapper.find('input[type="email"]').attributes('autocomplete')).toBe('email')
+		expect(wrapper.find('input[type="password"]').attributes('autocomplete')).toBe('current-password')
+	})
+
+	it('does not submit the form from the forgot-password button', async () => {
+		const wrapper = mount(Login)
+		await wrapper.find('input[type="email"]').setValue('a@b.c')
+		await wrapper.find('input[type="password"]').setValue('secret')
+		await wrapper.find('button[type="button"]').trigger('click')
+		expect(wrapper.emitted('loginSuccess')).toBeFalsy()
 	})
 })

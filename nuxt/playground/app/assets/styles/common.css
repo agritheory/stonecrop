@@ -22,7 +22,7 @@
 	background: var(--sc-primary-color);
 	color: var(--sc-primary-text-color);
 	border: 1px solid var(--sc-primary-color);
-	border-radius: 0.25rem;
+	border-radius: 0;
 	cursor: pointer;
 	font-family: var(--sc-font-family);
 }
@@ -36,7 +36,7 @@
 	background: var(--sc-btn-color);
 	color: var(--sc-btn-label-color);
 	border: 1px solid var(--sc-btn-border);
-	border-radius: 0.25rem;
+	border-radius: 0;
 	cursor: pointer;
 	font-family: var(--sc-font-family);
 }
@@ -55,7 +55,7 @@
 .form-container {
 	background: var(--sc-form-background);
 	padding: 2rem;
-	border-radius: 0.25rem;
+	border-radius: 0;
 	border: 1px solid var(--sc-form-border);
 	margin-bottom: 2rem;
 }

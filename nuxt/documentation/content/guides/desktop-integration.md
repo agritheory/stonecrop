@@ -215,14 +215,26 @@ That also makes prefetching counterproductive: `Stonecrop.getRecord` returns ear
 
 ## 6. FSM transitions and available actions
 
-Desktop builds the record view's action toolbar from two sources on the doctype, merged into one Actions dropdown:
+On record views, Desktop renders an [`ActionSet`](/components/action-set) tile column fixed to the right edge of the workspace. Expand the column and open the **Actions** tile to see every transition and command the doctype exposes for the current state.
+
+Desktop builds that list from two sources on the doctype:
 
 - `Doctype.getAvailableTransitions(currentState)` — actions that move the record to a new state.
 - `Doctype.getAvailableCommands(currentState)` — stateless Commands, which run a side effect and change no state.
 
-Both are resolved against `Stonecrop.getRecordState(doctype, recordId)`, and each entry's label comes from `Doctype.getActionMeta(name)?.label`, falling back to the raw action name.
+Both are resolved against `Stonecrop.getRecordState(doctype, recordId)`, and each entry's label comes from `Doctype.getActionMeta(name)?.label`, falling back to the raw action name. Choosing an item emits `@action` with the action name and current form data; Desktop never dispatches on its own.
 
 `getRecordState` reads the record's `status` field from HST and falls back to `workflow.initial` when the field is absent. This means:
 
 - **Server response should include `status`**: when the action result is written back, include the `status` field so Desktop renders the correct available actions.
 - **No special wiring needed**: Desktop reads `status` automatically — no extra setup required.
+
+---
+
+## 7. Custom ActionSet slots and host pages
+
+Pass `:action-set-slots` to add host drawer panels alongside Search and Actions. Each slot supplies an icon, label, optional badge, and a component rendered in the drawer when its tile is active. Inside a slot component, call `useActionSet().present({ view, props })` to open the preview flyin.
+
+For pages that are not standard doctype views (DocBuilder, settings screens, and similar), wrap your content in `<Desktop>` with the `#default` slot and pass `:host-actions` instead of relying on FSM-derived actions. Nuxt's DocBuilder routes do this with `useDocBuilderRouteAdapter()`.
+
+See the [Action Set component guide](/components/action-set) for props, types, and a working demo.

@@ -257,7 +257,9 @@ export default class Registry {
 	private buildTableConfig(field: ValueField, childSchema: ResolvedField[], component?: string): ResolvedTable {
 		const columns = resolvedFieldsToColumns(childSchema)
 
-		const config: TableViewConfig = (field as ValueField & { config?: TableViewConfig }).config ?? { view: 'list' }
+		const config: TableViewConfig = field.config
+			? { fullWidth: true, ...field.config }
+			: { view: 'list', fullWidth: true }
 		const { options: _opt, cardinality: _card, ...fieldRest } = field
 
 		return {

@@ -7,7 +7,7 @@ Desktop reads through Stonecrop: on navigating to a list or a record it calls `S
 ## Features
 
 - **Three-view layout**: doctypes → records → record form, navigated by route or adapter
-- **ActionSet toolbar**: FSM transitions become action buttons/dropdowns automatically from the doctype workflow
+- **ActionSet tile column**: expandable tile UI with Search, host slots, and an Actions drawer; FSM transitions populate the actions list automatically from the doctype workflow
 - **CommandPalette**: `Ctrl+K` / `Cmd+K` search across doctypes and records
 - **SheetNav**: tabbed navigation between open records, with a toolbar for host controls in the footer (see [Slots](#slots))
 - **Event-driven**: all significant interactions emit typed events for the host to respond to
@@ -67,6 +67,8 @@ const { run } = useClientAction()
 |------|------|---------|-------------|
 | `availableDoctypes` | `string[]` | `[]` | Doctype slugs to display in the doctypes list |
 | `routeAdapter` | `RouteAdapter` | none | Custom routing layer (required for Nuxt/custom hosts) |
+| `actionSetSlots` | `ActionSetSlot[]` | `[]` | Host drawer slots shown as tiles in ActionSet |
+| `hostActions` | `ActionElements[]` | none | Actions listed in the Actions drawer in place of those derived from the doctype; `[]` lists none |
 
 Record identity is not a prop. It is declared per doctype (`primaryKey`, falling back to `id`) and resolved through `Doctype.getRecordId`, so a row's link always matches the key the record is stored under. One shell renders many doctypes, so a single prop could never answer this correctly.
 
@@ -106,7 +108,7 @@ See [api.md](./api.md) for payload type definitions.
 
 ### Event Handling Notes
 
-- **action**: Desktop merges `Doctype.getAvailableTransitions` and `Doctype.getAvailableCommands`, both resolved against `Stonecrop.getRecordState`, into one Actions dropdown. **Desktop never dispatches**: that is the host application's responsibility.
+- **action**: Desktop merges `Doctype.getAvailableTransitions` and `Doctype.getAvailableCommands`, both resolved against `Stonecrop.getRecordState`, into the ActionSet Actions drawer. **Desktop never dispatches**: that is the host application's responsibility.
 - **load-records / load-record**: notifications, not fetch requests. Desktop reads through `Stonecrop.getRecords` / `Stonecrop.getRecord` itself, using the registered `DataClient`; these events announce that read so a host can hang analytics off it. A host that fetches here races Desktop's own read into the same HST key. `load-record` is not emitted for a draft, which has nothing to fetch.
 
 ## Router Adapter

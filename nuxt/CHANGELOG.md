@@ -1,5 +1,73 @@
 # Change Log - @stonecrop/nuxt
 
+## 0.35.0
+
+### Minor Changes
+
+- 2f16a84: Components read the floor's surface, border and radius tokens instead of hard-coded colours and radii, so a host restyles them from the floor alone.
+
+### Patch Changes
+
+- 2f16a84: DocBuilder's action-type and field-source pills, remove button and validation banners take their colours from the theme's badge tokens instead of fixed colours.
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+  - @stonecrop/atable@0.35.0
+  - @stonecrop/desktop@0.35.0
+  - @stonecrop/aform@0.35.0
+  - @stonecrop/node-editor@0.35.0
+  - @stonecrop/schema@0.35.0
+  - @stonecrop/graphql-middleware@0.35.0
+  - @stonecrop/graphql-client@0.35.0
+  - @stonecrop/stonecrop@0.35.0
+  - @stonecrop/themes@0.35.0
+  - @stonecrop/nuxt-grafserv@0.35.0
+  - @stonecrop/casl-middleware@0.35.0
+  - @stonecrop/code-editor@0.35.0
+
+## 0.34.0
+
+### Minor Changes
+
+- e9c340f: DocBuilder pages now render inside Desktop, and the `useDocBuilderRouteAdapter()` they use is auto-imported for any host page that does the same.
+
+### Patch Changes
+
+- Updated dependencies [e9c340f]
+- Updated dependencies [e9c340f]
+- Updated dependencies [e9c340f]
+- Updated dependencies [e9c340f]
+  - @stonecrop/desktop@0.34.0
+  - @stonecrop/themes@0.34.0
+  - @stonecrop/aform@0.34.0
+  - @stonecrop/atable@0.34.0
+  - @stonecrop/stonecrop@0.34.0
+  - @stonecrop/casl-middleware@0.34.0
+  - @stonecrop/code-editor@0.34.0
+  - @stonecrop/graphql-client@0.34.0
+  - @stonecrop/graphql-middleware@0.34.0
+  - @stonecrop/node-editor@0.34.0
+  - @stonecrop/nuxt-grafserv@0.34.0
+  - @stonecrop/schema@0.34.0
+
 ## 0.33.0
 
 ### Patch Changes

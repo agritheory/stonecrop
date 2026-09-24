@@ -1,5 +1,41 @@
 # Change Log - @stonecrop/stonecrop
 
+## 0.35.0
+
+### Minor Changes
+
+- 2f16a84: Link tables default to `fullWidth: true`, and a declared `config` merges over that default.
+
+### Patch Changes
+
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+  - @stonecrop/atable@0.35.0
+  - @stonecrop/aform@0.35.0
+  - @stonecrop/schema@0.35.0
+
+## 0.34.0
+
+### Patch Changes
+
+- @stonecrop/aform@0.34.0
+  - @stonecrop/atable@0.34.0
+  - @stonecrop/schema@0.34.0
+
 ## 0.33.0
 
 ### Patch Changes

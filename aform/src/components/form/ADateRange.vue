@@ -19,11 +19,13 @@
 				placeholder="Select date range"
 				:disabled="mode === 'read'"
 				readonly
+				:aria-invalid="invalid"
+				:aria-describedby="describedBy"
 				@click="openPicker"
 				@keydown="openFromKey" />
 			<label class="aform_field-label" :for="uuid">{{ label }}</label>
 
-			<p v-show="errorText" class="aform_error" v-html="errorText"></p>
+			<p v-show="errorText" :id="errorId" class="aform_error" role="alert">{{ errorText }}</p>
 
 			<ADateSelection
 				v-if="showPicker"
@@ -44,6 +46,7 @@ import { type ComponentPublicInstance, ref, computed, useTemplateRef, watch } fr
 import { fromISODate } from '@stonecrop/utilities'
 import { Temporal } from 'temporal-polyfill'
 import ADateSelection from './ADateSelection.vue'
+import { fieldErrorA11y } from '../../composables/fieldErrorA11y'
 import type { ComponentProps } from '../../types'
 import { useFieldCalendar } from '../../utils/fieldCalendar'
 
@@ -53,6 +56,7 @@ const { label = 'Date Range', mode, uuid, errors, validation = { errorMessage: '
 
 // Dynamic trigger errors take precedence over a static schema errorMessage; empty means the slot hides.
 const errorText = computed(() => (errors?.length ? errors.join('; ') : (validation.errorMessage ?? '')))
+const { errorId, describedBy, invalid } = fieldErrorA11y(uuid, errorText)
 
 export interface DateRangeValue {
 	start_date: string | null
@@ -137,7 +141,10 @@ watch(
 	position: absolute;
 	top: 100%;
 	left: 0;
-	z-index: 1000;
+	width: max-content;
+	max-width: 100%;
+	box-sizing: border-box;
+	z-index: 100;
 	margin-top: 0.25rem;
 }
 </style>

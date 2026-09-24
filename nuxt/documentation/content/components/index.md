@@ -39,7 +39,7 @@ Interactive documentation for individual Stonecrop components — live demos alo
 ## Desktop
 
 - [Command Palette](./command-palette) — `CommandPalette`, a generic keyboard-navigable search overlay
-- [Action Set](./action-set) — `ActionSet`, a floating panel of button and dropdown actions
+- [Action Set](./action-set) — `ActionSet` tile column and drawer (Search, host slots, Actions list)
 
 ## Editors
 

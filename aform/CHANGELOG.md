@@ -1,5 +1,47 @@
 # Change Log - @stonecrop/aform
 
+## 0.35.0
+
+### Minor Changes
+
+- 2f16a84: Components read the floor's surface, border and radius tokens instead of hard-coded colours and radii, so a host restyles them from the floor alone.
+- 2f16a84: Field errors render as text rather than HTML, and each input names its error through `aria-invalid` and `aria-describedby`; `ADropdown` is announced as a combobox with its options.
+- 2f16a84: A `list-expansion` table in a form opens each row as an editable form, through the `content` slot ATable now forwards to its rows.
+
+### Patch Changes
+
+- 2f16a84: `ACurrencyInput` and `AQuantityInput` set their text at the size, padding and colour of every other field, and the currency prefix is as wide as the symbol or name it shows.
+- 2f16a84: `ACurrencyInput` and `AQuantityInput` show the `errors` prop as text, wired to their input, and no longer show an empty error box over their border.
+- 2f16a84: Every field's label takes the active colour while the field holds focus, where only fields whose label follows their input did before.
+- 2f16a84: Floating labels and field errors paint the form colour only above their field's border, so the field shows through below it instead of a strip of the wrong colour.
+- 2f16a84: `AFormLink` shows its label in display mode, like every other field.
+- 2f16a84: `AFormLink`'s navigate button draws its arrow on the field text's baseline instead of using a text glyph that sat low.
+- 2f16a84: `Login`'s fields drop the browser's own inset border and draw the same one-pixel outline as every other field.
+- 2f16a84: `Login` paints the form colour behind its fields, so its labels no longer show as boxes on the host page.
+- 2f16a84: `Login` submits once per press and carries the `autocomplete` hints browsers read, where its misspelled attributes were ignored.
+- 2f16a84: `ASegmentedControl`'s selected segment reads lighter than a darker track, which had become the form colour under the gray palette.
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+  - @stonecrop/atable@0.35.0
+  - @stonecrop/schema@0.35.0
+  - @stonecrop/themes@0.35.0
+  - @stonecrop/utilities@0.35.0
+
+## 0.34.0
+
+### Patch Changes
+
+- Updated dependencies [e9c340f]
+  - @stonecrop/themes@0.34.0
+  - @stonecrop/atable@0.34.0
+  - @stonecrop/schema@0.34.0
+  - @stonecrop/utilities@0.34.0
+
 ## 0.33.0
 
 ### Patch Changes

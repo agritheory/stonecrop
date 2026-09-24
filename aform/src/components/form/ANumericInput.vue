@@ -11,9 +11,11 @@
 				class="aform_input-field"
 				type="number"
 				:disabled="mode === 'read'"
-				:required="required" />
+				:required="required"
+				:aria-invalid="invalid"
+				:aria-describedby="describedBy" />
 			<label class="aform_field-label" :for="uuid">{{ label }}</label>
-			<p v-show="errorText" class="aform_error" v-html="errorText"></p>
+			<p v-show="errorText" :id="errorId" class="aform_error" role="alert">{{ errorText }}</p>
 		</template>
 	</div>
 </template>
@@ -21,6 +23,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
+import { fieldErrorA11y } from '../../composables/fieldErrorA11y'
 import { ComponentProps } from '../../types'
 import { numberFromBox } from '../../utils/emptiedBox'
 
@@ -28,6 +31,7 @@ const { label, required, mode, uuid, errors, validation = { errorMessage: '' } }
 
 // Dynamic trigger errors take precedence over a static schema errorMessage; empty means the slot hides.
 const errorText = computed(() => (errors?.length ? errors.join('; ') : (validation.errorMessage ?? '')))
+const { errorId, describedBy, invalid } = fieldErrorA11y(uuid, errorText)
 
 const inputNumber = defineModel<number | null>()
 

@@ -38,7 +38,7 @@ describe('dropdown input component', { tags: ['component'] }, () => {
 
 		const liElements = wrapper.findAll('li')
 		const firstLiElement = liElements.at(0)
-		await firstLiElement!.trigger('click')
+		await firstLiElement!.trigger('mousedown')
 		await wrapper.vm.$nextTick()
 
 		updateEvents = wrapper.emitted('update:modelValue')
@@ -116,7 +116,7 @@ describe('dropdown input component', { tags: ['component'] }, () => {
 
 		const liElements = wrapper.findAll('li')
 		const firstLiElement = liElements.at(0)
-		await firstLiElement!.trigger('click')
+		await firstLiElement!.trigger('mousedown')
 		await wrapper.vm.$nextTick()
 
 		valueUpdateEvents = wrapper.emitted('update:modelValue')
@@ -361,5 +361,25 @@ describe('dropdown input component', { tags: ['component'] }, () => {
 		expect(updateEvents).toBeTruthy()
 		const lastEvent = updateEvents![updateEvents!.length - 1]
 		expect(lastEvent).toEqual(['Apple'])
+	})
+
+	it('exposes combobox semantics tying the input to its listbox', async () => {
+		const wrapper = mount(ADropdown, {
+			props: { uuid: 'fruit', modelValue: 'Orange', label: 'Fruit', options: dropdownData.options },
+		})
+		const input = wrapper.find('input')
+
+		expect(input.attributes('role')).toBe('combobox')
+		expect(input.attributes('aria-expanded')).toBe('false')
+		expect(input.attributes('for')).toBeUndefined()
+
+		await input.trigger('focus')
+		await flushPromises()
+
+		expect(input.attributes('aria-expanded')).toBe('true')
+		const list = wrapper.find('ul[role="listbox"]')
+		expect(input.attributes('aria-controls')).toBe(list.attributes('id'))
+		expect(wrapper.findAll('li[role="option"]')).toHaveLength(dropdownData.options.length)
+		expect(wrapper.find('label').attributes('for')).toBe('fruit')
 	})
 })

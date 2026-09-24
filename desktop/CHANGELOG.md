@@ -1,5 +1,53 @@
 # Change Log - @stonecrop/desktop
 
+## 0.35.0
+
+### Minor Changes
+
+- 2f16a84: Components read the floor's surface, border and radius tokens instead of hard-coded colours and radii, so a host restyles them from the floor alone.
+- 2f16a84: SheetNav drops its inline search tab, which searched nothing, and no longer fills the active breadcrumb with the primary colour.
+
+### Patch Changes
+
+- 2f16a84: The command palette is announced as a dialog whose results are a listbox with the highlighted result active.
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+  - @stonecrop/aform@0.35.0
+  - @stonecrop/schema@0.35.0
+  - @stonecrop/stonecrop@0.35.0
+  - @stonecrop/themes@0.35.0
+
+## 0.34.0
+
+### Minor Changes
+
+- e9c340f: `ActionSet` is no longer exported or registered by `StonecropDesktop`, since it only works inside Desktop; a page that rendered it directly renders `Desktop` with its content in the default slot and passes `hostActions`.
+- e9c340f: Desktop's form, list and default-slot content now sits in `.desktop__main` inside `.desktop__workspace`, so host CSS written against `.desktop > form.aform` must target `.desktop__main > form.aform` instead.
+- e9c340f: Desktop's ActionSet is now a tile column with a drawer: Search opens the command palette, `actionSetSlots` add host panels, the Actions tile lists the record's workflow actions (or `hostActions` when given), and `useActionSet().present()` opens a preview beside the record.
+
+### Patch Changes
+
+- Updated dependencies [e9c340f]
+  - @stonecrop/themes@0.34.0
+  - @stonecrop/aform@0.34.0
+  - @stonecrop/stonecrop@0.34.0
+  - @stonecrop/schema@0.34.0
+
 ## 0.33.0
 
 ### Minor Changes

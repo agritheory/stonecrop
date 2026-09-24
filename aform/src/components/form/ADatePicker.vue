@@ -2,7 +2,7 @@
 	<template v-if="mode === 'display' || mode === 'read'">
 		<span class="aform_display-value">{{ displayValue }}</span>
 		<label v-if="label">{{ label }}</label>
-		<p v-show="errorText" class="aform_error" v-html="errorText"></p>
+		<p v-show="errorText" :id="errorId" class="aform_error" role="alert">{{ errorText }}</p>
 	</template>
 	<template v-else>
 		<div class="adatepicker">
@@ -69,7 +69,7 @@
 				</tbody>
 			</table>
 		</div>
-		<p v-show="errorText" class="aform_error" v-html="errorText"></p>
+		<p v-show="errorText" :id="errorId" class="aform_error" role="alert">{{ errorText }}</p>
 	</template>
 </template>
 
@@ -78,16 +78,25 @@ import { fromISODate } from '@stonecrop/utilities'
 import { Temporal } from 'temporal-polyfill'
 import { computed, nextTick, ref, useTemplateRef, watch } from 'vue'
 
+import { fieldErrorA11y } from '../../composables/fieldErrorA11y'
 import type { ComponentProps } from '../../types'
 import { readTypedDay, writeTypedDay } from '../../utils/typedDay'
 
 const numberOfRows = 6
 const numberOfColumns = 7
 
-const { mode, label, selectRange = false, errors, validation = { errorMessage: '' } } = defineProps<ComponentProps>()
+const {
+	mode,
+	label,
+	selectRange = false,
+	uuid,
+	errors,
+	validation = { errorMessage: '' },
+} = defineProps<ComponentProps>()
 
 // Dynamic trigger errors take precedence over a static schema errorMessage; empty means the slot hides.
 const errorText = computed(() => (errors?.length ? errors.join('; ') : (validation.errorMessage ?? '')))
+const { errorId } = fieldErrorA11y(uuid, errorText)
 
 // The calendar holds a `YYYY-MM-DD` day, and opens on today when it holds none it can read. No default
 // value: picking today on an empty calendar must still set it, and a model only reports a change.
@@ -454,7 +463,7 @@ defineExpose({ currentMonth, currentYear, selectedDate: computed(() => selectedD
 .adatepicker .todaysDate {
 	font-weight: bolder;
 	/* text-decoration: underline; */
-	color: black;
+	color: var(--sc-cell-text-color);
 }
 .days-header > td {
 	font-weight: bold;

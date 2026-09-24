@@ -1,11 +1,16 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { ActionSet } from '@stonecrop/desktop'
-import type { ActionElements } from '@stonecrop/desktop'
+import { computed, provide, ref } from 'vue'
+import { Registry, Stonecrop } from '@stonecrop/stonecrop'
+import { Desktop, type ActionElements } from '@stonecrop/desktop'
+
+const registry = new Registry()
+const stonecrop = new Stonecrop(registry)
+provide('$registry', registry)
+provide('$stonecrop', stonecrop)
 
 const lastAction = ref('')
 
-const elements: ActionElements[] = [
+const hostActions = computed<ActionElements[]>(() => [
 	{ type: 'button', label: 'Save', action: () => (lastAction.value = 'Save') },
 	{
 		type: 'dropdown',
@@ -15,42 +20,40 @@ const elements: ActionElements[] = [
 			{ label: 'Delete', action: () => (lastAction.value = 'Delete') },
 		],
 	},
-]
+])
 
-// ActionSet never invokes an element's `action`; it emits the label alongside it and leaves the
-// call to the host. Wiring this is what makes `action` above run at all.
-function onActionClick(label: string, action?: () => void | Promise<void>) {
-	if (action) {
-		void action()
-	} else {
-		lastAction.value = label
-	}
+const routeAdapter = {
+	getCurrentDoctype: () => '',
+	getCurrentRecordId: () => '',
+	getCurrentView: () => 'doctypes' as const,
+	navigate: () => {},
 }
 </script>
 
 <template>
-	<!--
-		ActionSet positions itself with `position: fixed`, anchored to the viewport by design (it's
-		meant to float over a real page, not sit inside document flow). `transform` on this wrapper
-		establishes a new containing block per the CSS spec, so the fixed-positioned ActionSet is
-		contained within this preview box instead of the whole browser viewport. ActionSet's own
-		`top: 300px` then still assumes a full-page host, overflowing well below this small preview
-		box's height — overridden below to a small offset that actually fits inside the frame.
-	-->
 	<div class="stonecrop-demo action-set-demo-frame">
-		<ActionSet :elements="elements" @action-click="onActionClick" />
-		<p v-if="lastAction" class="action-set-demo-result">
-			Last action: <strong>{{ lastAction }}</strong>
-		</p>
+		<Desktop class="action-set-demo-desktop" :route-adapter="routeAdapter" :host-actions="hostActions">
+			<p class="action-set-demo-content">Document content. Expand the tile column and open Actions.</p>
+			<p v-if="lastAction" class="action-set-demo-result">
+				Last action: <strong>{{ lastAction }}</strong>
+			</p>
+		</Desktop>
 	</div>
 </template>
 
 <style scoped>
+/* `transform` makes this frame the containing block for Desktop's fixed-position tile column,
+   drawer and SheetNav, so they stay inside the demo instead of pinning to the docs viewport. */
 .action-set-demo-frame {
 	position: relative;
 	transform: translateZ(0);
-	min-height: 9.5rem;
-	padding-right: 3.5rem;
+	min-height: 14rem;
+	overflow: hidden;
+	border: 1px solid var(--sc-gray-20);
+}
+
+.action-set-demo-desktop {
+	height: 14rem;
 }
 
 .action-set-demo-frame :deep(.action-set) {
@@ -58,8 +61,15 @@ function onActionClick(label: string, action?: () => void | Promise<void>) {
 	right: 0.75rem;
 }
 
-.action-set-demo-result {
+.action-set-demo-content {
 	margin: 0;
+	padding: 1rem;
+	max-width: 70%;
+}
+
+.action-set-demo-result {
+	margin: 0.5rem 0 0;
+	padding: 0 1rem;
 	font-size: 0.85em;
 }
 </style>

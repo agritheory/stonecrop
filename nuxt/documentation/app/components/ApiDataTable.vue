@@ -9,7 +9,7 @@ defineProps<{
 // this feeds v-html, then applies links before code spans so a code span nested inside link
 // text (e.g. "[`CurrencyValue`](#currencyvalue)") still renders as <a><code>...</code></a>.
 function renderCell(text: string): string {
-	let html = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+	let html = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 	html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>')
 	html = html.replace(/`([^`]+)`/g, '<code>$1</code>')
 	return html
@@ -26,6 +26,7 @@ function renderCell(text: string): string {
 			</thead>
 			<tbody>
 				<tr v-for="(row, rowIndex) in rows" :key="rowIndex">
+					<!-- eslint-disable-next-line vue/no-v-html -- renderCell escapes the cell before adding markup -->
 					<td v-for="(cell, cellIndex) in row" :key="cellIndex" v-html="renderCell(cell)" />
 				</tr>
 			</tbody>

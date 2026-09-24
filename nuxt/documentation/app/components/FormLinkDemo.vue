@@ -27,7 +27,7 @@ const territory = ref<AFormLinkValue>({ id: 'TERR-001', displayText: 'North Amer
 			label="Territory"
 			doctype="territory"
 			uuid="form-link-demo"
-			:filterFunction="filterFunction" />
+			:filter-function="filterFunction" />
 		<p class="stonecrop-demo__state">
 			<code>v-model</code> value: <strong>{{ territory }}</strong>
 		</p>

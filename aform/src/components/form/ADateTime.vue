@@ -19,11 +19,13 @@
 				placeholder="Select date and time"
 				:disabled="mode === 'read'"
 				readonly
+				:aria-invalid="invalid"
+				:aria-describedby="describedBy"
 				@click="openPicker"
 				@keydown="openFromKey" />
 			<label class="aform_field-label" :for="uuid">{{ label }}</label>
 
-			<p v-show="errorText" class="aform_error" v-html="errorText"></p>
+			<p v-show="errorText" :id="errorId" class="aform_error" role="alert">{{ errorText }}</p>
 
 			<ADateSelection
 				v-if="showPicker"
@@ -53,6 +55,7 @@ import { type ComponentPublicInstance, ref, computed, useTemplateRef, watch } fr
 import { fromISODate } from '@stonecrop/utilities'
 import { Temporal } from 'temporal-polyfill'
 import ADateSelection from './ADateSelection.vue'
+import { fieldErrorA11y } from '../../composables/fieldErrorA11y'
 import type { ComponentProps } from '../../types'
 import { useFieldCalendar } from '../../utils/fieldCalendar'
 
@@ -72,6 +75,7 @@ const {
 >()
 
 const errorText = computed(() => (errors?.length ? errors.join('; ') : (validation.errorMessage ?? '')))
+const { errorId, describedBy, invalid } = fieldErrorA11y(uuid, errorText)
 
 const modelValue = defineModel<string | Date | null>()
 
@@ -185,7 +189,10 @@ watch(
 	position: absolute;
 	top: 100%;
 	left: 0;
-	z-index: 1000;
+	width: max-content;
+	max-width: 100%;
+	box-sizing: border-box;
+	z-index: 100;
 	margin-top: 0.25rem;
 }
 </style>

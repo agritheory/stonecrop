@@ -107,8 +107,8 @@ const displayValue = computed(() => {
 <style scoped>
 .aduration {
 	position: relative;
-	min-width: 40ch;
-	width: 100%;
+	width: max-content;
+	max-width: 100%;
 }
 
 .aduration__summary {

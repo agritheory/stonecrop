@@ -29,6 +29,14 @@
 				:mode="resolvedMode(componentObj)"
 				:errors="errors?.[componentObj.fieldname]"
 				v-bind="componentProps(componentObj)">
+				<template v-if="isListExpansionTable(componentObj)" #content="{ row, rowIndex }">
+					<AForm
+						class="aform-table-expansion"
+						:data="row"
+						:schema="tableExpansionSchema(componentObj)"
+						:mode="resolvedMode(componentObj)"
+						@update:data="val => updateTableRow(componentObj.fieldname, rowIndex, val)" />
+				</template>
 			</component>
 		</template>
 	</form>
@@ -37,8 +45,8 @@
 <script setup lang="ts">
 import { computed, watchEffect, watch, ref } from 'vue'
 
-import type { ResolvedField, ResolvedLink, ResolvedFieldset } from '../types'
-import type { InteractionMode } from '@stonecrop/schema'
+import type { ResolvedField, ResolvedLink, ResolvedFieldset, ResolvedTable } from '../types'
+import type { ColumnSchema, InteractionMode } from '@stonecrop/schema'
 
 const emit = defineEmits(['update:schema', 'update:data'])
 const dataModel = defineModel<Record<string, any>>('data', { required: true })
@@ -85,6 +93,23 @@ const updateNestedData = (fieldname: string, val: any) => {
 	nestedData.value[fieldname] = val
 	if (dataModel.value) {
 		dataModel.value[fieldname] = val
+		emit('update:data', { ...dataModel.value })
+	}
+}
+
+const isListExpansionTable = (componentObj: ResolvedField): componentObj is ResolvedTable =>
+	componentObj.kind === 'table' && componentObj.config?.view === 'list-expansion'
+
+const tableExpansionSchema = (table: ResolvedTable): ResolvedField[] =>
+	table.schema
+		.filter((col): col is ColumnSchema & { component: string } => Boolean(col.component))
+		.map(({ fieldname, component, ...rest }) => Object.assign(rest, { kind: 'field' as const, fieldname, component }))
+
+const updateTableRow = (fieldname: string, rowIndex: number, val: Record<string, unknown>) => {
+	const rows = Array.isArray(dataModel.value?.[fieldname]) ? [...dataModel.value[fieldname]] : []
+	rows[rowIndex] = { ...rows[rowIndex], ...val }
+	if (dataModel.value) {
+		dataModel.value[fieldname] = rows
 		emit('update:data', { ...dataModel.value })
 	}
 }
@@ -172,12 +197,13 @@ const childModels = computed(() => childModelsCache.value)
 	border: none;
 }
 .aform_form-element {
-	padding: 0;
+	padding: var(--sc-form-label-offset) 0 0;
 	margin: 0;
 	position: relative;
 	box-sizing: border-box;
 	flex-grow: 1;
 	min-width: 20ch;
+	max-width: var(--sc-form-field-max-width);
 	/* margin-bottom: 1rem; */
 }
 .aform__grid--full {
@@ -185,6 +211,7 @@ const childModels = computed(() => childModelsCache.value)
 	width: 100%;
 }
 .aform_input-field {
+	border: none;
 	outline: 1px solid var(--sc-input-border-color);
 	outline-offset: -1px;
 	font-size: 1rem;
@@ -211,7 +238,8 @@ const childModels = computed(() => childModelsCache.value)
 	word-break: break-word;
 }
 
-.aform_input-field:focus + .aform_field-label {
+/* A label darkens while anything beside it holds focus, wherever it sits in its field's markup. */
+:focus-within > .aform_field-label {
 	color: var(--sc-input-active-label-color);
 }
 
@@ -219,16 +247,18 @@ const childModels = computed(() => childModelsCache.value)
 	color: var(--sc-input-label-color);
 	display: inline-block;
 	position: absolute;
+	user-select: none;
 	padding: 0 0.25rem;
 	margin: 0rem;
 	z-index: 1;
 	font-size: 0.7rem;
 	font-weight: 300;
 	letter-spacing: 0.05rem;
-	background: linear-gradient(var(--sc-form-background) 50%, var(--sc-input-field-background) 50%);
+	/* The form colour masks the field's top border behind the text; below it the field shows
+	   through. Never paint a colour there: it can match only one of the surfaces a field shows. */
+	background: linear-gradient(var(--sc-form-background) calc(50% + 1px), transparent calc(50% + 1px));
 	width: auto;
 	box-sizing: border-box;
-	background: white;
 	margin: 0;
 	grid-row: 1;
 	top: 0;
@@ -237,17 +267,12 @@ const childModels = computed(() => childModelsCache.value)
 	line-height: 0;
 	transform: translateY(-50%);
 }
+.aform_form-element > .aform_field-label {
+	top: var(--sc-form-label-offset);
+}
 .aform_input-field:disabled,
 .aform_checkbox-container:has(.aform_checkbox:disabled) {
 	background: var(--sc-input-field-disabled-background);
-}
-.aform_input-field:disabled + .aform_field-label,
-.aform_checkbox-container:has(.aform_checkbox:disabled) + .aform_field-label {
-	background: linear-gradient(var(--sc-form-background) 50%, var(--sc-input-field-disabled-background) 50%);
-}
-.aform_input-field:disabled ~ p.aform_error,
-.aform_checkbox-container:has(.aform_checkbox:disabled) ~ p.aform_error {
-	background: linear-gradient(var(--sc-form-background) 50%, var(--sc-input-field-disabled-background) 50%);
 }
 .aform_field-label::after {
 	margin: 0;
@@ -260,7 +285,8 @@ p.aform_error {
 	/* v-show toggles visibility per field; base display must be visible (was stuck at `none`,
 	   which overrode v-show and left every field error dormant). */
 	display: inline-block;
-	background: linear-gradient(var(--sc-form-background) 50%, var(--sc-input-field-background) 50%);
+	/* Straddles the border like .aform_field-label, and paints the same way. */
+	background: linear-gradient(var(--sc-form-background) calc(50% + 1px), transparent calc(50% + 1px));
 	padding: 0 0.25rem;
 	margin: 0rem;
 	width: auto;
@@ -268,9 +294,8 @@ p.aform_error {
 	font-size: 0.7rem;
 	position: absolute;
 	right: 0;
-	top: 0;
+	top: var(--sc-form-label-offset);
 	line-height: 0;
-	background: white;
 	padding: 0.25rem;
 	transform: translate(-1rem, -50%);
 	margin: 0;
@@ -283,6 +308,7 @@ p.aform_error {
 	flex-wrap: wrap;
 	gap: 1rem;
 	padding: 1rem;
+	background: var(--sc-form-background);
 	border: 1px solid var(--sc-form-border);
 	border-left: 4px solid var(--sc-form-border);
 	margin-bottom: 1rem;
@@ -310,5 +336,12 @@ p.aform_error {
 .aform-nested-section .aform {
 	border-left-width: 2px;
 	margin-left: 0.5rem;
+}
+
+.aform-table-expansion {
+	margin-bottom: 0;
+	border: none;
+	border-left: none;
+	padding: 0;
 }
 </style>

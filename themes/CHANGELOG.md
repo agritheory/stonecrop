@@ -1,5 +1,18 @@
 # Change Log - @stonecrop/themes
 
+## 0.35.0
+
+### Minor Changes
+
+- 2f16a84: Default colours are now gray: primary and brand are `--sc-gray-80`, borders, row lines and header text are darker, danger is `#c02718` and `--sc-font-size` is `1rem`; set `--sc-color-primary` and `--sc-color-brand` to keep a brand colour.
+- 2f16a84: The floor adds primitive tokens (`--sc-color-*`, `--sc-space-*`, `--sc-gray-2`) that the existing names alias, plus surface tokens for the page, overlays, input addons and table cells.
+
+## 0.34.0
+
+### Minor Changes
+
+- e9c340f: The default stylesheet adds `--sc-action-set-drawer-width` and `--sc-action-set-offset-top`, which size the ActionSet drawer and place its tile column.
+
 ## 0.33.0
 
 ## 0.32.0

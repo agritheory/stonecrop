@@ -30,6 +30,7 @@ export const typeDefs = gql`
 		validation: JSON
 		cardinality: String
 		source: String
+		config: JSON
 	}
 
 	type StonecropWorkflowAction {

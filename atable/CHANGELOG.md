@@ -1,5 +1,32 @@
 # Change Log - @stonecrop/atable
 
+## 0.35.0
+
+### Minor Changes
+
+- 2f16a84: `config.zebra` stripes rows with `--sc-row-color-zebra-light` and `--sc-row-color-zebra-dark`; rows are one colour by default.
+- 2f16a84: Components read the floor's surface, border and radius tokens instead of hard-coded colours and radii, so a host restyles them from the floor alone.
+- 2f16a84: A `list-expansion` table in a form opens each row as an editable form, through the `content` slot ATable now forwards to its rows.
+
+### Patch Changes
+
+- 2f16a84: A cell's popup renders beside the table instead of inside it and opens below the cell, so later rows no longer paint over it.
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+  - @stonecrop/schema@0.35.0
+  - @stonecrop/themes@0.35.0
+  - @stonecrop/utilities@0.35.0
+
+## 0.34.0
+
+### Patch Changes
+
+- Updated dependencies [e9c340f]
+  - @stonecrop/themes@0.34.0
+  - @stonecrop/schema@0.34.0
+  - @stonecrop/utilities@0.34.0
+
 ## 0.33.0
 
 ### Patch Changes

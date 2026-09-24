@@ -1,5 +1,22 @@
 # Change Log - @stonecrop/node-editor
 
+## 0.35.0
+
+### Minor Changes
+
+- 2f16a84: Components read the floor's surface, border and radius tokens instead of hard-coded colours and radii, so a host restyles them from the floor alone.
+
+### Patch Changes
+
+- Updated dependencies [2f16a84]
+  - @stonecrop/schema@0.35.0
+
+## 0.34.0
+
+### Patch Changes
+
+- @stonecrop/schema@0.34.0
+
 ## 0.33.0
 
 ### Patch Changes

@@ -305,4 +305,31 @@ describe('CommandPalette', { tags: ['component'] }, () => {
 
 		expect(wrapper.emitted('select')).toBeFalsy()
 	})
+
+	it('exposes dialog and listbox semantics when open', async () => {
+		wrapper = mount(CommandPalette, {
+			props: {
+				search: makeSearch(defaultResults),
+				isOpen: true,
+			},
+			attachTo: document.body,
+		})
+
+		await nextTick()
+
+		const dialog = document.querySelector('.command-palette[role="dialog"]')
+		expect(dialog).not.toBeNull()
+		expect(dialog?.getAttribute('aria-modal')).toBe('true')
+
+		const input = document.querySelector('input.command-palette-input') as HTMLInputElement
+		expect(input?.getAttribute('aria-label')).toBe('Search commands')
+
+		input.value = 'Go'
+		input.dispatchEvent(new Event('input'))
+		await nextTick()
+
+		const listbox = document.querySelector('[role="listbox"]')
+		expect(listbox).not.toBeNull()
+		expect(document.querySelectorAll('[role="option"]')).toHaveLength(2)
+	})
 })

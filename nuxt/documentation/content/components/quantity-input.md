@@ -118,8 +118,8 @@ rows:
   - ['`stockUomLabel`', '`string`', "`'Stock UOM'`", "Label for the read-only stock UOM field."]
   - ['`stockQtyLabel`', '`string`', "`'Stock Qty'`", "Label for the read-only derived stock quantity field."]
   - ['`conversionFactorLabel`', '`string`', "`'Conversion Factor'`", "Label for the read-only conversion factor field."]
-  - ['`validation`', '`{ errorMessage: string }`', "`{ errorMessage: '&nbsp;' }`", 'Static error message shown below the field.']
-  - ['`errors`', '`string[]`', '—', 'Accepted for interface compatibility with other field components, but has no effect — unlike other Stonecrop inputs, `AQuantityInput` always renders `validation.errorMessage` only.']
+  - ['`validation`', '`{ errorMessage: string }`', "`{ errorMessage: '' }`", 'Static error message shown below the field.']
+  - ['`errors`', '`string[]`', '—', 'Dynamic validation errors (e.g. from a trigger). Takes precedence over `validation.errorMessage` whenever the list is non-empty.']
 ---
 ::
 
