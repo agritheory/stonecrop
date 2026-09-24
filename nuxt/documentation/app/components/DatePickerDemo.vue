@@ -4,7 +4,7 @@ import { ADatePicker } from '@stonecrop/aform'
 
 // ADatePicker's `edit` mode renders only the calendar grid — the `label` prop is only
 // used in `read`/`display` mode, so it's omitted here.
-const selected = ref(new Date())
+const selected = ref<string>()
 </script>
 
 <template>

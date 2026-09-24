@@ -611,6 +611,14 @@ describe('Registry class', { tags: ['unit'] }, () => {
 			expect(record.details).toEqual({ email: '' })
 		})
 
+		// An ISO 8601 duration has no empty text, and an `interval` column refuses `''`.
+		it('initializes a duration field to null', () => {
+			registry = new Registry()
+			const schema = [{ kind: 'field' as const, fieldname: 'took', component: 'ADuration' }]
+			const record = registry.initializeRecord(schema)
+			expect(record.took).toBeNull()
+		})
+
 		it('initializes a field with kind: "field" and an explicit default to that default value', () => {
 			registry = new Registry()
 			const schema = [

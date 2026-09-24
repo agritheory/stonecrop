@@ -931,6 +931,7 @@ export interface DataClient {
         success: boolean;
         data: unknown;
         error: string | null;
+        record: Record<string, unknown> | null;
     }>;
 }
 ```
@@ -1492,7 +1493,7 @@ Semantic category for a rendering component.
 **Definition:**
 
 ```typescript
-export type ComponentCategory = 'text' | 'number' | 'boolean' | 'date' | 'datetime' | 'select' | 'code' | 'link' | 'attach' | 'quantity' | 'currency';
+export type ComponentCategory = 'text' | 'number' | 'boolean' | 'date' | 'datetime' | 'duration' | 'select' | 'code' | 'link' | 'attach' | 'quantity' | 'currency';
 ```
 
 ### CustomFetch

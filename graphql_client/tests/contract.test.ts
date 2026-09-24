@@ -90,6 +90,12 @@ describe('client ⟷ middleware query contract', { tags: ['unit'] }, () => {
 		return [...found].toSorted()
 	}
 
+	// The store files an action's `record`, so a mutation that never selects it leaves every saved
+	// record as it was before the save.
+	it('RUN_ACTION_MUTATION selects the record an action replies with', () => {
+		expect(selectedFields(RUN_ACTION_MUTATION, 'StonecropActionResult')).toContain('record')
+	})
+
 	const META_QUERIES: [string, string][] = [
 		['GET_META_QUERY', GET_META_QUERY],
 		['GET_ALL_META_QUERY', GET_ALL_META_QUERY],

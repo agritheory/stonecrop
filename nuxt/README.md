@@ -427,7 +427,7 @@ await dispatchAction({ name: 'plan' }, 'SUBMIT', [recordId])
 | `setMeta(fn)` | `(fn: (ctx) => Doctype \| Promise<Doctype>) => void` | Sets the `getMeta` function on the Registry. Called by `useStonecrop({ doctype: 'slug' })` to lazy-load that doctype's metadata. `ctx` = `{ path, segments }`. |
 | `setClient(client)` | `(client: DataClient) => void` | Set the data client for record fetching. Throws if stonecrop not available. |
 | `getClient()` | `() => DataClient \| undefined` | Get the currently configured client. |
-| `dispatchAction(doctype, action, args)` | `Promise<{ success, data, error }>` | Dispatch an action via the configured client. Returns error if doctype not found in registry. |
+| `dispatchAction(doctype, action, args)` | `Promise<{ success, data, error }>` | Dispatch an action via the configured client, storing the result's `record` (the server's read of the record after the action). Returns error if doctype not found in registry. |
 
 ## Advanced Features
 
@@ -570,8 +570,10 @@ The CLI will detect that you're in a Nuxt project and prompt for features:
 
 ? Select features to install
   ◉ @stonecrop/nuxt - Frontend module
+  ◯ @stonecrop/graphql-client - GraphQL client
   ◯ @stonecrop/nuxt-grafserv - GraphQL server
   ◯ @stonecrop/casl-middleware - Authorization
+  ◯ @stonecrop/rockfoil - PostGraphile middleware
   ◉ Sample doctypes
 ```
 

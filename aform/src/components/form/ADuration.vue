@@ -19,7 +19,7 @@
 				<div v-if="startDatetime && endDatetime" class="aduration__summary">
 					<span class="aduration__label">Duration:</span>
 					<span class="aduration__value">{{ humanDuration }}</span>
-					<span class="aduration__ms">({{ modelValue ?? 0 }} ms)</span>
+					<span class="aduration__held">({{ modelValue }})</span>
 				</div>
 			</div>
 		</template>
@@ -27,7 +27,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { Temporal } from 'temporal-polyfill'
+import { ref, computed } from 'vue'
 import ADateSelection from './ADateSelection.vue'
 
 const {
@@ -42,50 +43,64 @@ const {
 	useSeconds?: boolean
 }>()
 
-const modelValue = defineModel<number>()
+// An ISO 8601 duration (`PT1H`), which Postgres and Temporal read natively and which, unlike a
+// count of milliseconds, holds days and months apart from hours.
+const modelValue = defineModel<string | null>()
 
 const startDatetime = ref<Date | null>(null)
 const endDatetime = ref<Date | null>(null)
 
-const duration = computed<number>(() => {
-	if (!startDatetime.value || !endDatetime.value) return 0
-	const ms = endDatetime.value.getTime() - startDatetime.value.getTime()
-	return ms > 0 ? ms : 0
-})
-
-watch(duration, newMs => {
-	modelValue.value = newMs
-})
+// The time between two picks, counting a day as 24 hours; a pick before the start is no time at all.
+const durationBetween = (start: Date, end: Date) =>
+	Temporal.Duration.from({ milliseconds: Math.max(end.getTime() - start.getTime(), 0) })
+		.round({ largestUnit: 'days' })
+		.toString()
 
 const handleRange = (data: { start: Date; end: Date; source?: 'init' | 'user' }) => {
 	// Both time widgets announce their starting values as they mount, which ADateSelection turns
-	// into a range. That is not a range the user picked: acting on it wrote a 0ms duration into the
+	// into a range. That is not a range the user picked: acting on it wrote a zero duration into the
 	// model, and lit the summary strip, on first render.
 	if (data.source === 'init') return
 
 	startDatetime.value = data.start
 	endDatetime.value = data.end
-	modelValue.value = duration.value
+	modelValue.value = durationBetween(data.start, data.end)
 }
 
-const humanDuration = computed(() => {
-	const ms = duration.value
-	if (ms === 0) return '0s'
-	const s = Math.floor(ms / 1000) % 60
-	const m = Math.floor(ms / 60000) % 60
-	const h = Math.floor(ms / 3600000) % 24
-	const d = Math.floor(ms / 86400000)
-	return [d && `${d}d`, h && `${h}h`, m && `${m}m`, s && `${s}s`].filter(Boolean).join(' ') || '0s'
-})
+const readDuration = (value: string) => {
+	try {
+		return Temporal.Duration.from(value)
+	} catch {
+		return undefined
+	}
+}
+
+const UNIT_SUFFIXES = [
+	['years', 'y'],
+	['months', 'mo'],
+	['weeks', 'w'],
+	['days', 'd'],
+	['hours', 'h'],
+	['minutes', 'm'],
+] as const
+
+// The units the duration holds, as it holds them: `PT25H` is 25h, not 1d 1h.
+const describeDuration = (duration: Temporal.Duration) => {
+	const parts = UNIT_SUFFIXES.filter(([unit]) => duration[unit]).map(([unit, suffix]) => `${duration[unit]}${suffix}`)
+	const seconds =
+		duration.seconds + duration.milliseconds / 1e3 + duration.microseconds / 1e6 + duration.nanoseconds / 1e9
+	if (seconds) parts.push(`${seconds}s`)
+	return parts.join(' ') || '0s'
+}
+
+const heldDuration = computed(() => (modelValue.value ? readDuration(modelValue.value) : undefined))
+
+const humanDuration = computed(() => (heldDuration.value ? describeDuration(heldDuration.value) : '0s'))
 
 const displayValue = computed(() => {
-	const ms = modelValue.value
-	if (!ms) return '—'
-	const s = Math.floor(ms / 1000) % 60
-	const m = Math.floor(ms / 60000) % 60
-	const h = Math.floor(ms / 3600000) % 24
-	const d = Math.floor(ms / 86400000)
-	return [d && `${d}d`, h && `${h}h`, m && `${m}m`, s && `${s}s`].filter(Boolean).join(' ') || '0s'
+	if (!modelValue.value) return '—'
+	if (!heldDuration.value) return 'Invalid Duration'
+	return heldDuration.value.blank ? '—' : describeDuration(heldDuration.value)
 })
 </script>
 
@@ -113,7 +128,7 @@ const displayValue = computed(() => {
 	color: var(--sc-cell-text-color);
 }
 
-.aduration__ms {
+.aduration__held {
 	color: var(--sc-gray-50);
 	font-size: 0.85em;
 }

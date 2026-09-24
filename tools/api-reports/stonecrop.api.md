@@ -40,6 +40,7 @@ export type ActionDispatchResult = {
     success: boolean;
     data: unknown;
     error: string | null;
+    record: Record<string, unknown> | null;
 };
 
 // @public
@@ -481,11 +482,7 @@ export class Stonecrop {
     addRecord(doctype: string | Doctype, recordId: string, recordData: any): void;
     clearRecords(doctype: string | Doctype): void;
     collectRecordPayload(doctype: Doctype, recordId: string): Record<string, any>;
-    dispatchAction(doctype: Doctype, action: string, args?: unknown[]): Promise<{
-        success: boolean;
-        data: unknown;
-        error: string | null;
-    }>;
+    dispatchAction(doctype: Doctype, action: string, args?: unknown[]): Promise<ActionDispatchResult>;
     fetchNestedData(path: string, doctype: Doctype, recordId: string, options?: {
         includeNested?: boolean | string[];
     }): Promise<void>;

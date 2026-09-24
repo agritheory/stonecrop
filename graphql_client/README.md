@@ -22,7 +22,7 @@ This boundary exists because PostGraphile's schema naming is configurable. An ap
 | `stonecropRecords` | `doctype`, `filters?`, `orderBy?`, `limit?`, `offset?`, `options?` | `{ data[], count }` |
 | `stonecropMeta` | `doctype` | `DoctypeMeta` |
 | `stonecropAllMeta` | — | `DoctypeMeta[]` |
-| `stonecropAction` | `doctype`, `action`, `args?` | `{ success, data, error }` |
+| `stonecropAction` | `doctype`, `action`, `args?` | `{ success, data, error, record }` |
 
 The client has no opinions about how the server implements these — naming conventions, query construction, nested data merging are all the server's concern.
 

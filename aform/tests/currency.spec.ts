@@ -168,6 +168,40 @@ describe('ACurrencyInput', { tags: ['component'] }, () => {
 		})
 	})
 
+	describe('no amount', () => {
+		const noAmount = {
+			amount: null,
+			currency: { id: 'EUR', displayText: 'Euro' },
+			baseAmount: null,
+			baseCurrency: { id: 'USD', displayText: 'US Dollar' },
+			exchangeRate: 1.1,
+		}
+
+		it('holds no amount, and no base amount, once its amount box is emptied', async () => {
+			const wrapper = mount(ACurrencyInput, {
+				props: { options, modelValue: { ...noAmount, amount: 5, baseAmount: 5.5 } },
+			})
+			await wrapper.find('input[type="number"]').setValue('')
+			expect(wrapper.emitted('update:modelValue')!.at(-1)![0]).toMatchObject({ amount: null, baseAmount: null })
+		})
+
+		it('shows an empty amount box for a value with no amount', () => {
+			const wrapper = mount(ACurrencyInput, { props: { options, modelValue: noAmount } })
+			expect(wrapper.find<HTMLInputElement>('.acurrency__amount').element.value).toBe('')
+		})
+
+		it('keeps no amount when a currency is picked', async () => {
+			const wrapper = mount(ACurrencyInput, { props: { options, modelValue: noAmount } })
+			await pickCurrency(wrapper, 'British Pound')
+			expect(wrapper.emitted('update:modelValue')!.at(-1)![0]).toMatchObject({ amount: null, baseAmount: null })
+		})
+
+		it('shows "—" in display mode for a value with no amount', () => {
+			const wrapper = mount(ACurrencyInput, { props: { mode: 'display', modelValue: noAmount } })
+			expect(wrapper.find('.aform_display-value').text()).toBe('—')
+		})
+	})
+
 	describe('base amount computation', () => {
 		it('sets exchangeRate to 1 and baseAmount = amount when currency equals baseCurrency', async () => {
 			const wrapper = mount(ACurrencyInput, {

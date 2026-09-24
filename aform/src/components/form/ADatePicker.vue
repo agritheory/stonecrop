@@ -1,12 +1,12 @@
 <template>
 	<template v-if="mode === 'display' || mode === 'read'">
-		<span class="aform_display-value">{{ date ? new Date(date).toLocaleDateString() : '' }}</span>
+		<span class="aform_display-value">{{ displayValue }}</span>
 		<label v-if="label">{{ label }}</label>
 		<p v-show="errorText" :id="errorId" class="aform_error" role="alert">{{ errorText }}</p>
 	</template>
 	<template v-else>
-		<div ref="datepicker" class="adatepicker" tabindex="0">
-			<table @mousedown="preventCellSelection">
+		<div class="adatepicker">
+			<table ref="grid" role="grid" :aria-label="monthAndYear" @mousedown="preventCellSelection">
 				<tbody>
 					<tr>
 						<td id="previous-month-btn" :tabindex="-1" @click="previousMonth">&lt;</td>
@@ -14,7 +14,7 @@
 						<td id="next-month-btn" :tabindex="-1" @click="nextMonth">&gt;</td>
 					</tr>
 					<tr v-if="selectRange">
-						<td colspan="7">
+						<td colspan="7" class="range-inputs">
 							<div class="date-input">
 								<input
 									ref="start-date-input"
@@ -38,13 +38,7 @@
 						</td>
 					</tr>
 					<tr class="days-header">
-						<td>M</td>
-						<td>T</td>
-						<td>W</td>
-						<td>T</td>
-						<td>F</td>
-						<td>S</td>
-						<td>S</td>
+						<td v-for="(letter, weekdayIndex) in weekdayLetters" :key="weekdayIndex">{{ letter }}</td>
 					</tr>
 					<tr v-for="rowNo in numberOfRows" :key="rowNo">
 						<!-- the 'ref' key is currently only used for test references -->
@@ -55,7 +49,10 @@
 							class="date-cell"
 							:contenteditable="false"
 							:spellcheck="false"
-							:tabindex="0"
+							:tabindex="getCurrentDate(rowNo, colNo).equals(focusedDay) ? 0 : -1"
+							:aria-label="fullDate(getCurrentDate(rowNo, colNo))"
+							:aria-selected="isPicked(getCurrentDate(rowNo, colNo))"
+							:aria-current="isTodaysDate(getCurrentDate(rowNo, colNo)) ? 'date' : undefined"
 							:class="{
 								todaysDate: isTodaysDate(getCurrentDate(rowNo, colNo)),
 								selectedDate: isSelectedDate(getCurrentDate(rowNo, colNo)),
@@ -64,9 +61,9 @@
 								endDate: selectRange ? isEndDate(getCurrentDate(rowNo, colNo)) : false,
 							}"
 							@click.prevent.stop="selectDate(getCurrentCell(rowNo, colNo))"
-							@keydown.enter="selectDate(getCurrentCell(rowNo, colNo))"
+							@keydown="onDayKeydown($event, getCurrentCell(rowNo, colNo))"
 							@mouseover="hoverDate(getCurrentCell(rowNo, colNo))">
-							{{ new Date(getCurrentDate(rowNo, colNo)).getDate() }}
+							{{ getCurrentDate(rowNo, colNo).day }}
 						</td>
 					</tr>
 				</tbody>
@@ -77,12 +74,13 @@
 </template>
 
 <script setup lang="ts">
-/* removed keyboard nav temportarily since it interfered with user experience navigating input fields */
-// import { defaultKeypressHandlers, useKeyboardNav } from '@stonecrop/utilities'
-import { computed, nextTick, onMounted, ref, useTemplateRef, watch } from 'vue'
+import { fromISODate } from '@stonecrop/utilities'
+import { Temporal } from 'temporal-polyfill'
+import { computed, nextTick, ref, useTemplateRef, watch } from 'vue'
 
 import { fieldErrorA11y } from '../../composables/fieldErrorA11y'
 import type { ComponentProps } from '../../types'
+import { readTypedDay, writeTypedDay } from '../../utils/typedDay'
 
 const numberOfRows = 6
 const numberOfColumns = 7
@@ -100,18 +98,22 @@ const {
 const errorText = computed(() => (errors?.length ? errors.join('; ') : (validation.errorMessage ?? '')))
 const { errorId } = fieldErrorA11y(uuid, errorText)
 
-const date = defineModel<number | Date>({ default: () => new Date() })
-const selectedDate = ref(new Date(date.value))
-const currentMonth = ref<number>(selectedDate.value.getMonth())
-const currentYear = ref<number>(selectedDate.value.getFullYear())
-const currentDates = ref<number[]>([])
+// The calendar holds a `YYYY-MM-DD` day, and opens on today when it holds none it can read. No default
+// value: picking today on an empty calendar must still set it, and a model only reports a change.
+const date = defineModel<string | null>()
+const selectedDate = ref<Temporal.PlainDate>(fromISODate(date.value ?? '') ?? Temporal.Now.plainDateISO())
+// 0 for January.
+const currentMonth = ref<number>(selectedDate.value.month - 1)
+const currentYear = ref<number>(selectedDate.value.year)
+const currentDates = ref<Temporal.PlainDate[]>([])
 
-/* needed for keyboard navigation. uncomment if implementing */
-// const datepickerRef = useTemplateRef<HTMLDivElement>('datepicker')
+// The day the grid's one Tab stop sits on, where its keys move from. It is always a day the grid shows.
+const focusedDay = ref<Temporal.PlainDate>(selectedDate.value)
+const grid = useTemplateRef<HTMLTableElement>('grid')
 
-const hoveredDate = ref(new Date(date.value))
-const start_date = ref<Date | null>(null)
-const end_date = ref<Date | null>(null)
+const hoveredDate = ref<Temporal.PlainDate>(selectedDate.value)
+const start_date = ref<Temporal.PlainDate | null>(null)
+const end_date = ref<Temporal.PlainDate | null>(null)
 const startDateInput = useTemplateRef<HTMLInputElement>('start-date-input')
 const endDateInput = useTemplateRef<HTMLInputElement>('end-date-input')
 
@@ -120,73 +122,74 @@ Emits
 *******************/
 
 const emit = defineEmits<{
-	'get-date': [{ start: Date | null; end: Date | null; selected: Date }]
+	'get-date': [{ start: string | null; end: string | null; selected: string }]
 }>()
 
 /*******************
 Computed
 *******************/
 
-const monthAndYear = computed(() => {
-	return new Date(currentYear.value, currentMonth.value, 1).toLocaleDateString(undefined, {
-		year: 'numeric',
-		month: 'long',
-	})
-})
+const displayValue = computed(() => (date.value ? (fromISODate(date.value)?.toLocaleString() ?? 'Invalid Date') : ''))
 
-const getStartDate = computed(() => {
-	return start_date.value != null ? parseDateToString(start_date.value) : ''
-})
+const firstOfMonth = computed(() =>
+	Temporal.PlainDate.from({ year: currentYear.value, month: currentMonth.value + 1, day: 1 })
+)
 
-const getEndDate = computed(() => {
-	return end_date.value != null ? parseDateToString(end_date.value) : ''
-})
+// Not a `PlainYearMonth`: its `toLocaleString` throws for the ISO calendar.
+const monthAndYear = computed(() => firstOfMonth.value.toLocaleString(undefined, { year: 'numeric', month: 'long' }))
+
+// The grid's first week, so the letters follow its Monday start.
+const weekdayLetters = computed(() =>
+	currentDates.value.slice(0, numberOfColumns).map(day => day.toLocaleString(undefined, { weekday: 'narrow' }))
+)
+
+const getStartDate = computed(() => boxText(start_date.value))
+
+const getEndDate = computed(() => boxText(end_date.value))
 
 /*******************
 Functions
 *******************/
 
-const parseDateToString = (dateValue: Date | null) => {
-	if (!validateDate(dateValue)) return ''
-	return dateValue.getMonth() + 1 + '/' + dateValue.getDate() + '/' + dateValue.getFullYear()
+const boxText = (day: Temporal.PlainDate | null) => (day ? writeTypedDay(day) : '')
+
+const isTodaysDate = (day: Temporal.PlainDate): boolean => {
+	const today = Temporal.Now.plainDateISO()
+	if (currentMonth.value !== today.month - 1) return false
+	return day.equals(today)
 }
 
-const isTodaysDate = (day: string | number | Date): boolean => {
-	const todaysDate = new Date()
-	if (currentMonth.value !== todaysDate.getMonth()) return false
-	return todaysDate.toDateString() === new Date(day).toDateString()
+const isSelectedDate = (day: Temporal.PlainDate) => {
+	return day.equals(selectedDate.value)
 }
 
-const isSelectedDate = (day: string | number | Date) => {
-	return new Date(day).toDateString() === new Date(selectedDate.value).toDateString()
+const isStartDate = (day: Temporal.PlainDate) => {
+	return start_date.value !== null && day.equals(start_date.value)
 }
 
-const isStartDate = (day: string | number | Date) => {
-	const start = start_date.value
-	if (!validateDate(start)) return false
-	return new Date(day).toDateString() === start.toDateString()
+const isEndDate = (day: Temporal.PlainDate) => {
+	return end_date.value !== null && day.equals(end_date.value)
 }
 
-const isEndDate = (day: string | number | Date) => {
-	const end = end_date.value
-	if (!validateDate(end)) return false
-	return new Date(day).toDateString() === end.toDateString()
-}
+// Every day the calendar marks as picked, so a screen reader hears the same days marked.
+const isPicked = (day: Temporal.PlainDate) =>
+	isSelectedDate(day) || (selectRange && (isStartDate(day) || isEndDate(day)))
+
+const fullDate = (day: Temporal.PlainDate) =>
+	day.toLocaleString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
 
 const getCurrentCell = (rowNo: number, colNo: number) => {
-	return (rowNo - 1) * numberOfColumns + colNo
+	return (rowNo - 1) * numberOfColumns + colNo - 1
 }
 
-const isInDateRange = (day: string | number | Date) => {
+const isInDateRange = (day: Temporal.PlainDate) => {
 	const start = start_date.value
-	if (!validateDate(start)) return false
-	const this_date = new Date(day)
+	if (!start) return false
 
 	//the end is either the selected end date or wherever the user is hovering
-	const end = end_date.value
-	const temp_end_date = validateDate(end) ? end : new Date(hoveredDate.value)
+	const end = end_date.value ?? hoveredDate.value
 
-	return this_date.getTime() > start.getTime() && this_date.getTime() < temp_end_date.getTime()
+	return Temporal.PlainDate.compare(day, start) > 0 && Temporal.PlainDate.compare(day, end) < 0
 }
 
 const getCurrentDate = (rowNo: number, colNo: number) => {
@@ -194,7 +197,7 @@ const getCurrentDate = (rowNo: number, colNo: number) => {
 }
 
 const hoverDate = (currentIndex: number) => {
-	hoveredDate.value = new Date(currentDates.value[currentIndex])
+	hoveredDate.value = currentDates.value[currentIndex]
 }
 
 // browsers (notably Firefox) allow drag-selecting text across table cells even with
@@ -207,15 +210,11 @@ const preventCellSelection = (event: MouseEvent) => {
 }
 
 const populateMonth = () => {
-	currentDates.value = []
-	const firstOfMonth = new Date(currentYear.value, currentMonth.value, 1)
-	const monthStartWeekday = firstOfMonth.getDay()
-	const calendarStartDay = firstOfMonth.setDate(firstOfMonth.getDate() - monthStartWeekday)
-
-	// assume midnight for all dates while building the calendar
-	for (const dayIndex of Array(43).keys()) {
-		currentDates.value.push(calendarStartDay + dayIndex * 86400000)
-	}
+	// The grid starts on the Monday on or before the 1st, matching the header's first column.
+	const gridStart = firstOfMonth.value.subtract({ days: firstOfMonth.value.dayOfWeek - 1 })
+	currentDates.value = Array.from({ length: numberOfRows * numberOfColumns }, (_, cellIndex) =>
+		gridStart.add({ days: cellIndex })
+	)
 }
 const previousYear = () => (currentYear.value -= 1)
 const nextYear = () => (currentYear.value += 1)
@@ -242,42 +241,74 @@ const enterDate = (event: KeyboardEvent) => {
 	if (event.key === 'Enter') enterInputDate()
 }
 
-// useKeyboardNav([
-// 	{
-// 		parent: datepickerRef,
-// 		selectors: 'td',
-// 		handlers: {
-// 			...defaultKeypressHandlers,
-// 			...{
-// 				'keydown.pageup': previousMonth,
-// 				'keydown.shift.pageup': previousYear,
-// 				'keydown.pagedown': nextMonth,
-// 				'keydown.shift.pagedown': nextYear,
-// 				// TODO: this is a hack to override the stonecrop enter handler;
-// 				// store context inside the component so that handlers can be setup consistently
-// 				// eslint-disable-next-line @typescript-eslint/no-empty-function
-// 				'keydown.enter': () => {}, // select this date
-// 			},
-// 		},
-// 	},
-// ])
+// The grid's keys move by day, not by table cell as `useKeyboardNav` does: that one can't cross into
+// another month, and on every cell it took the arrow keys from a range's typed-day boxes.
+/** The day a key moves focus to from `day`, or undefined for a key that moves nothing. */
+const dayAfterKey = (event: KeyboardEvent, day: Temporal.PlainDate) => {
+	switch (event.key) {
+		case 'ArrowLeft':
+			return day.subtract({ days: 1 })
+		case 'ArrowRight':
+			return day.add({ days: 1 })
+		case 'ArrowUp':
+			return day.subtract({ weeks: 1 })
+		case 'ArrowDown':
+			return day.add({ weeks: 1 })
+		case 'PageUp':
+			return day.subtract(event.shiftKey ? { years: 1 } : { months: 1 })
+		case 'PageDown':
+			return day.add(event.shiftKey ? { years: 1 } : { months: 1 })
+		// The grid's weeks run Monday, day 1, to Sunday, day 7.
+		case 'Home':
+			return day.subtract({ days: day.dayOfWeek - 1 })
+		case 'End':
+			return day.add({ days: 7 - day.dayOfWeek })
+	}
+}
+
+const focusTabStop = async () => {
+	await nextTick()
+	grid.value?.querySelector<HTMLElement>('[tabindex="0"]')?.focus()
+}
+
+const onDayKeydown = (event: KeyboardEvent, currentIndex: number) => {
+	if (event.key === 'Enter' || event.key === ' ') {
+		event.preventDefault()
+		selectDate(currentIndex)
+		return
+	}
+	const next = dayAfterKey(event, focusedDay.value)
+	if (!next) return
+	event.preventDefault()
+	focusedDay.value = next
+	currentMonth.value = next.month - 1
+	currentYear.value = next.year
+	void focusTabStop()
+}
 
 const selectDate = (currentIndex: number) => {
-	date.value = selectedDate.value = new Date(currentDates.value[currentIndex])
+	const picked = currentDates.value[currentIndex]
+	selectedDate.value = picked
+	focusedDay.value = picked
+	// A click leaves focus where it was, so focus follows a pick only when it is on a day already.
+	if (document.activeElement instanceof HTMLTableCellElement && grid.value?.contains(document.activeElement)) {
+		void focusTabStop()
+	}
+	date.value = picked.toString()
 
 	if (selectRange) {
 		const start = start_date.value
 		if (start == null || end_date.value != null) {
-			start_date.value = date.value
+			start_date.value = picked
 			end_date.value = null
-		} else if (validateDate(start) && selectedDate.value.getTime() < start.getTime()) {
+		} else if (Temporal.PlainDate.compare(picked, start) < 0) {
 			end_date.value = null
-			start_date.value = date.value
+			start_date.value = picked
 		} else {
-			end_date.value = date.value
+			end_date.value = picked
 		}
-		if (startDateInput.value) startDateInput.value.value = parseDateToString(start_date.value) ?? ''
-		if (endDateInput.value) endDateInput.value.value = parseDateToString(end_date.value) ?? ''
+		if (startDateInput.value) startDateInput.value.value = boxText(start_date.value)
+		if (endDateInput.value) endDateInput.value.value = boxText(end_date.value)
 	}
 	emitData()
 }
@@ -285,31 +316,24 @@ const selectDate = (currentIndex: number) => {
 const testDateOrder = () => {
 	const start = start_date.value
 	const end = end_date.value
-	if (validateDate(end) && validateDate(start) && end.getTime() < start.getTime())
-		[start_date.value, end_date.value] = [end, start]
-}
-
-const validateDate = (dateValue: unknown): dateValue is Date => {
-	return dateValue instanceof Date && !isNaN(dateValue.getTime())
+	if (start && end && Temporal.PlainDate.compare(end, start) < 0) [start_date.value, end_date.value] = [end, start]
 }
 
 const enterInputDate = () => {
 	if (startDateInput.value?.value == '') {
 		start_date.value = null
 	} else if (startDateInput.value) {
-		const start = new Date(startDateInput.value.value)
-		start_date.value = validateDate(start) ? start : null
+		start_date.value = readTypedDay(startDateInput.value.value) ?? null
 	}
 
 	if (endDateInput.value?.value == '') {
 		end_date.value = null
 	} else if (endDateInput.value) {
-		const end = new Date(endDateInput.value.value)
-		end_date.value = validateDate(end) ? end : null
+		end_date.value = readTypedDay(endDateInput.value.value) ?? null
 	}
 
-	if (validateDate(start_date.value)) {
-		if (validateDate(end_date.value)) testDateOrder()
+	if (start_date.value) {
+		if (end_date.value) testDateOrder()
 		selectedDate.value = start_date.value
 	}
 
@@ -318,9 +342,9 @@ const enterInputDate = () => {
 
 const emitData = () => {
 	emit('get-date', {
-		start: selectRange ? start_date.value : null,
-		end: selectRange ? end_date.value : null,
-		selected: selectedDate.value,
+		start: selectRange ? (start_date.value?.toString() ?? null) : null,
+		end: selectRange ? (end_date.value?.toString() ?? null) : null,
+		selected: selectedDate.value.toString(),
 	})
 }
 
@@ -328,51 +352,38 @@ const emitData = () => {
 Hooks
 *******************/
 
-onMounted(async () => {
-	populateMonth()
-	// required to allow the elements to be focused in the next step
-	await nextTick()
-	const $selectedDate = document.getElementsByClassName('selectedDate')
-	if ($selectedDate.length > 0) {
-		;($selectedDate[0] as HTMLElement).focus()
-	} else {
-		const $todaysDate = document.getElementsByClassName('todaysDate')
-		if ($todaysDate.length > 0) {
-			;($todaysDate[0] as HTMLElement).focus()
-		}
-	}
-})
-
-// setup keyboard navigation
-// useKeyboardNav([
-// 	{
-// 		parent: datepickerRef,
-// 		selectors: 'td',
-// 		handlers: {
-// 			...defaultKeypressHandlers,
-// 			'keydown.pageup': previousMonth,
-// 			'keydown.shift.pageup': previousYear,
-// 			'keydown.pagedown': nextMonth,
-// 			'keydown.shift.pagedown': nextYear,
-// 			// TODO: this is a hack to override the stonecrop enter handler;
-// 			// store context inside the component so that handlers can be setup consistently
-
-// 			'keydown.enter': () => {}, // select this date
-// 		},
-// 	},
-// ])
+// The calendar takes no focus when it appears: a field opening it keeps focus in its box, where typing goes.
+populateMonth()
 
 /*******************
 Watchers
 *******************/
 
-watch([currentMonth, currentYear], populateMonth)
+watch([currentMonth, currentYear], () => {
+	populateMonth()
+	// The month buttons carry the Tab stop along, to the same day of the month shown.
+	const month = currentMonth.value + 1
+	if (focusedDay.value.month !== month || focusedDay.value.year !== currentYear.value) {
+		focusedDay.value = focusedDay.value.with({ year: currentYear.value, month })
+	}
+})
+
+// A day handed in, such as one typed into the field while the calendar is open. A pick here sets
+// `selectedDate` first, so picking a day of the next month in this grid leaves the month shown.
+watch(date, value => {
+	const day = fromISODate(value ?? '')
+	if (!day || day.equals(selectedDate.value)) return
+	selectedDate.value = day
+	focusedDay.value = day
+	currentMonth.value = day.month - 1
+	currentYear.value = day.year
+})
 
 /*******************
 Expose
 *******************/
 
-defineExpose({ currentMonth, currentYear, selectedDate })
+defineExpose({ currentMonth, currentYear, selectedDate: computed(() => selectedDate.value.toString()) })
 </script>
 
 <style scoped>
@@ -412,6 +423,11 @@ defineExpose({ currentMonth, currentYear, selectedDate })
 }
 .adatepicker td.date-cell:hover {
 	background: var(--sc-gray-10);
+}
+
+.adatepicker td.date-cell:focus-visible {
+	outline: 1px solid var(--sc-input-active-border-color);
+	outline-offset: -1px;
 }
 
 .adatepicker td:focus,
@@ -462,8 +478,14 @@ defineExpose({ currentMonth, currentYear, selectedDate })
 	gap: 5px;
 	align-items: center;
 }
+/* The boxes' row widens the calendar past its 3ch day columns, so each box fits a day such as `04/09/2026`. */
+.adatepicker td.range-inputs {
+	max-width: none;
+}
 .adatepicker .date-input > input {
-	width: 50%;
+	flex: none;
+	width: 11ch;
+	box-sizing: border-box;
 	padding: 2px;
 }
 

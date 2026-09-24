@@ -119,6 +119,10 @@ type ActionResult {
 	success: Boolean!
 	data: JSON
 	error: String
+	"""
+	The record as stonecropRecord returns it after the action. Null when the action failed or targets no record
+	"""
+	record: JSON
 }
 
 # ============================================

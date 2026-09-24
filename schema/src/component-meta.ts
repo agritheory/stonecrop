@@ -15,6 +15,7 @@ export type ComponentCategory =
 	| 'boolean'
 	| 'date'
 	| 'datetime'
+	| 'duration'
 	| 'select'
 	| 'code'
 	| 'link'
@@ -36,7 +37,7 @@ export const COMPONENT_CATEGORY: Record<string, ComponentCategory> = {
 	ADatePicker: 'date',
 	ADateSelection: 'date',
 	ADateTime: 'datetime',
-	ADuration: 'text',
+	ADuration: 'duration',
 	ADateRange: 'date',
 	ADropdown: 'select',
 	ASegmentedControl: 'select',

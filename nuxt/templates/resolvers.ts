@@ -22,6 +22,7 @@ import { constant, lambda, loadOne, object } from 'grafast'
 import { getMeta, getAllMeta, applyGuardedTransition } from '@stonecrop/graphql-middleware'
 import { getRecordIdField } from '@stonecrop/schema'
 import type { DoctypeMeta } from '@stonecrop/schema'
+import { Temporal } from 'temporal-polyfill'
 import { projects, tasks, type Project, type Task } from './data'
 
 // ============================================================
@@ -142,8 +143,8 @@ function nextId(doctype: string): string {
 // `selfTransition` has nothing for the dispatcher to apply, and without an entry here it fails
 // loudly rather than reporting a false success.
 //
-// Add your own by registering under the doctype's `name`. Throwing rejects the action; returning
-// the updated record makes it the client writeback payload.
+// Add your own by registering under the doctype's `name`. Throwing rejects the action; what it
+// returns becomes the result's `data`, while the client stores the record as a read returns it.
 
 type ActionHandler = (context: {
 	recordId?: string
@@ -165,9 +166,9 @@ export const actionHandlers: Record<string, Record<string, ActionHandler>> = {
 			const task = recordId != null ? tasks.get(recordId) : undefined
 			if (!task) throw new Error(`Task ${recordId ?? '(none)'} not found`)
 
-			const from = task.dueDate ? new Date(task.dueDate) : new Date()
-			from.setDate(from.getDate() + 7)
-			const updated: Task = { ...task, dueDate: from.toISOString().slice(0, 10) }
+			// A task with no due date is snoozed from the server's today.
+			const from = task.dueDate ? Temporal.PlainDate.from(task.dueDate) : Temporal.Now.plainDateISO()
+			const updated: Task = { ...task, dueDate: from.add({ weeks: 1 }).toString() }
 			tasks.set(task.id, updated)
 			return Promise.resolve(updated)
 		},
@@ -278,7 +279,7 @@ export const resolvers = {
 									// The server owns the transition: read current state, guard against allowedStates,
 									// write nextState. Reads/writes go straight to the in-memory Maps; a PostGraphile
 									// setup swaps in pgClient SQL instead.
-									return await applyGuardedTransition(
+									const outcome = await applyGuardedTransition(
 										actionDef,
 										{
 											readState: async () => {
@@ -302,7 +303,7 @@ export const resolvers = {
 											// untouched); creating derives the identity from the doctype's declared
 											// primary key when the submitted data carries it, which is how a
 											// natural-keyed doctype is identified, and mints one only otherwise.
-											// Either way the full record comes back for the client writeback.
+											// Either way the full record comes back, stating its identity.
 											writeData: async (patch: Record<string, unknown>, exists: boolean) => {
 												if (exists) {
 													if (recordId == null) return {}
@@ -340,6 +341,15 @@ export const resolvers = {
 										},
 										recordData
 									)
+									// The record as `stonecropRecord` returns it: the client stores this, never
+									// `data`. Keyed by the identity the reply states, since a save may create it.
+									const repliedId: unknown =
+										outcome.data !== null && typeof outcome.data === 'object'
+											? Reflect.get(outcome.data, lookupField)
+											: undefined
+									const readId = repliedId ?? recordId
+									const record = outcome.success && readId != null ? getRecord(d, String(readId), lookupField) : null
+									return { ...outcome, record }
 								} catch (err) {
 									return { success: false, data: null, error: err instanceof Error ? err.message : String(err) }
 								}

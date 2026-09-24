@@ -19,6 +19,6 @@ describe('dist contract', { tags: ['unit'] }, () => {
 			bare,
 			`The set of externals changed. A bundled vue here reaches every consumer of atable and ` +
 				`aform, which both depend on this package.`
-		).toEqual(['@vueuse/core', 'vue'])
+		).toEqual(['@vueuse/core', 'temporal-polyfill', 'vue'])
 	})
 })

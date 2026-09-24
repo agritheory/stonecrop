@@ -108,7 +108,7 @@ const data = ref({
 ---
 headers: ['Name', 'Type', 'Default', 'Description']
 rows:
-  - ['`v-model`', '[`QuantityValue`](#quantityvalue)', "`{ qty: 0, uom: '', stockQty: 0, stockUom: '', conversionFactor: 1 }`", 'The current quantity, unit, and derived stock-equivalent figures.']
+  - ['`v-model`', '[`QuantityValue`](#quantityvalue)', "`{ qty: null, uom: '', stockQty: null, stockUom: '', conversionFactor: 1 }`", 'The current quantity, unit, and derived stock-equivalent figures.']
   - ['`label`', '`string`', '—', 'Label for the quantity input.']
   - ['`options`', '[`QuantityOptions`](#options)', '`{}`', 'Type-specific configuration — available UOMs, stock UOM, conversion factors.']
   - ['`required`', '`boolean`', '`false`', 'Marks the quantity input as required (`edit` mode only).']
@@ -141,9 +141,9 @@ rows:
 ---
 headers: ['Field', 'Type', 'Description']
 rows:
-  - ['`qty`', '`number`', 'The entered quantity, in `uom` units.']
+  - ['`qty`', '`number | null`', 'The entered quantity, in `uom` units, or `null` when none is entered.']
   - ['`uom`', '`string`', 'Unit of measure the user entered `qty` in.']
-  - ['`stockQty`', '`number`', '`qty` converted into `stockUom` units — `qty * conversionFactor`.']
+  - ['`stockQty`', '`number | null`', '`qty` converted into `stockUom` units (`qty * conversionFactor`), or `null` when `qty` is.']
   - ['`stockUom`', '`string`', "The item's base/stock unit of measure — fixed, not user-editable."]
   - ['`conversionFactor`', '`number`', 'Multiplier from `uom` to `stockUom` — hidden from the UI, drives `stockQty`.']
 ---
@@ -157,7 +157,7 @@ headers: ['Mode', 'Rendering']
 rows:
   - ['`edit`', 'Interactive quantity input with an embedded UOM dropdown, plus read-only Stock UOM/Stock Qty/Conversion Factor fields below.']
   - ['`read`', 'Same layout, all inputs disabled.']
-  - ['`display`', 'Static text: `qty uom` (with the stock-equivalent quantity/UOM in parentheses, if either differs; `—` if no UOM is set).']
+  - ['`display`', 'Static text: `qty uom` (with the stock-equivalent quantity/UOM in parentheses, if either differs; `—` if no quantity or UOM is set).']
 ---
 ::
 

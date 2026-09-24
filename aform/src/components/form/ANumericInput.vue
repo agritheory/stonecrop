@@ -7,7 +7,7 @@
 		<template v-else>
 			<input
 				:id="uuid"
-				v-model="inputNumber"
+				v-model="boxNumber"
 				class="aform_input-field"
 				type="number"
 				:disabled="mode === 'read'"
@@ -25,6 +25,7 @@ import { computed } from 'vue'
 
 import { fieldErrorA11y } from '../../composables/fieldErrorA11y'
 import { ComponentProps } from '../../types'
+import { numberFromBox } from '../../utils/emptiedBox'
 
 const { label, required, mode, uuid, errors, validation = { errorMessage: '' } } = defineProps<ComponentProps>()
 
@@ -32,5 +33,10 @@ const { label, required, mode, uuid, errors, validation = { errorMessage: '' } }
 const errorText = computed(() => (errors?.length ? errors.join('; ') : (validation.errorMessage ?? '')))
 const { errorId, describedBy, invalid } = fieldErrorA11y(uuid, errorText)
 
-const inputNumber = defineModel<number>()
+const inputNumber = defineModel<number | null>()
+
+const boxNumber = computed({
+	get: () => inputNumber.value,
+	set: (value: number | '') => (inputNumber.value = numberFromBox(value)),
+})
 </script>

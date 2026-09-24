@@ -59,10 +59,10 @@ props: {
   baseCurrencyLabel?: string \| undefined
   baseAmountLabel?: string \| undefined
   exchangeRateLabel?: string \| undefined
-  modelValue?: CurrencyValue \| undefined
+  modelValue?: CurrencyValue \| null \| undefined
 }
 emits: {
-  update:modelValue: [value: CurrencyValue]
+  update:modelValue: [value: CurrencyValue \| null]
 }
 slots: {}
 ```
@@ -81,10 +81,10 @@ props: {
   uuid?: string \| undefined
   validation?: { [key: string]: any; errorMessage: string; } \| undefined
   errors?: string[] \| undefined
-  modelValue?: string \| Date \| undefined
+  modelValue?: string \| null \| undefined
 }
 emits: {
-  update:modelValue: [value: string \| Date \| undefined]
+  update:modelValue: [value: string \| null \| undefined]
 }
 slots: {}
 ```
@@ -103,17 +103,17 @@ props: {
   uuid?: string \| undefined
   validation?: { [key: string]: any; errorMessage: string; } \| undefined
   errors?: string[] \| undefined
-  modelValue?: number \| Date \| undefined
+  modelValue?: string \| null \| undefined
 }
 emits: {
-  update:modelValue: [value: number \| Date]
-  get-date: [{ start: Date \| null; end: Date \| null; selected: Date; }]
+  update:modelValue: [value: string \| null \| undefined]
+  get-date: [{ start: string \| null; end: string \| null; selected: string; }]
 }
 slots: {}
 exposed: {
   currentMonth: number
   currentYear: number
-  selectedDate: Date
+  selectedDate: string
 }
 ```
 
@@ -131,10 +131,10 @@ props: {
   uuid?: string \| undefined
   validation?: { [key: string]: any; errorMessage: string; } \| undefined
   errors?: string[] \| undefined
-  modelValue?: DateRangeValue \| undefined
+  modelValue?: DateRangeValue \| null \| undefined
 }
 emits: {
-  update:modelValue: [value: DateRangeValue]
+  update:modelValue: [value: DateRangeValue \| null]
 }
 slots: {}
 ```
@@ -149,6 +149,7 @@ props: {
   selectRange?: boolean \| undefined
   showEndTime?: boolean \| undefined
   allowMilitaryTime?: boolean \| undefined
+  defaultDate?: string \| undefined
   defaultHours?: number \| undefined
   defaultMinutes?: number \| undefined
   defaultSeconds?: number \| undefined
@@ -156,7 +157,7 @@ props: {
   useSeconds?: boolean \| undefined
 }
 emits: {
-  get-date: [{ selected: Date; start?: Date \| null \| undefined; end?: Date \| null \| undefined; }]
+  get-date: [{ selected: string; start?: string \| null \| undefined; end?: string \| null \| undefined; }]
   get-time: [{ hours: number; minutes: number; seconds: number; meridiem: string; source?: "init" \| "user" \| undefined; }]
   get-range: [{ start: Date; end: Date; source?: "init" \| "user" \| undefined; }]
 }
@@ -179,10 +180,10 @@ props: {
   errors?: string[] \| undefined
   allowMilitaryTime?: boolean \| undefined
   useSeconds?: boolean \| undefined
-  modelValue?: string \| Date \| undefined
+  modelValue?: string \| Date \| null \| undefined
 }
 emits: {
-  update:modelValue: [value: string \| Date \| undefined]
+  update:modelValue: [value: string \| Date \| null \| undefined]
 }
 slots: {}
 ```
@@ -240,10 +241,10 @@ props: {
   mode?: string \| undefined
   allowMilitaryTime?: boolean \| undefined
   useSeconds?: boolean \| undefined
-  modelValue?: number \| undefined
+  modelValue?: string \| null \| undefined
 }
 emits: {
-  update:modelValue: [value: number \| undefined]
+  update:modelValue: [value: string \| null \| undefined]
 }
 slots: {}
 ```
@@ -361,10 +362,10 @@ props: {
   uuid?: string \| undefined
   validation?: { [key: string]: any; errorMessage: string; } \| undefined
   errors?: string[] \| undefined
-  modelValue?: number \| undefined
+  modelValue?: number \| null \| undefined
 }
 emits: {
-  update:modelValue: [value: number \| undefined]
+  update:modelValue: [value: number \| null \| undefined]
 }
 slots: {}
 ```
@@ -388,10 +389,10 @@ props: {
   stockUomLabel?: string \| undefined
   stockQtyLabel?: string \| undefined
   conversionFactorLabel?: string \| undefined
-  modelValue?: QuantityValue \| undefined
+  modelValue?: QuantityValue \| null \| undefined
 }
 emits: {
-  update:modelValue: [value: QuantityValue]
+  update:modelValue: [value: QuantityValue \| null]
 }
 slots: {}
 ```

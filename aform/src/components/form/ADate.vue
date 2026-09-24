@@ -1,27 +1,36 @@
 <template>
-	<div class="aform_form-element">
+	<div class="aform_form-element" @focusout="closeWhenFocusLeaves" @keydown="closeOnEscape">
 		<template v-if="mode === 'display'">
-			<span class="aform_display-value">{{ modelValue ? new Date(inputDate).toLocaleDateString() : '' }}</span>
+			<span class="aform_display-value">{{ displayValue }}</span>
 			<label class="aform_field-label">{{ label }}</label>
 		</template>
 		<template v-else>
+			<!-- `.prevent` and the calendar's keys keep the browser's own calendar shut: aform's is the only one this field opens.
+			     A date input cannot take the combobox role, and `aria-expanded` is not allowed on it. -->
 			<input
 				:id="uuid"
 				ref="date"
-				v-model="inputDate"
+				v-model="boxDay"
 				class="aform_input-field"
 				type="date"
+				aria-haspopup="dialog"
+				:aria-controls="showPicker ? calendarId : undefined"
 				:disabled="mode === 'read'"
 				:required="required"
 				:aria-invalid="invalid"
 				:aria-describedby="describedBy"
-				@click="openPicker" />
+				@click.prevent="openPicker"
+				@keydown="openFromKey" />
 			<label class="aform_field-label" :for="uuid">{{ label }}</label>
 			<p v-show="errorText" :id="errorId" class="aform_error" role="alert">{{ errorText }}</p>
 			<ADateSelection
 				v-if="showPicker"
+				:id="calendarId"
 				ref="picker"
 				class="adate-picker"
+				role="dialog"
+				:aria-label="label"
+				:default-date="modelValue || undefined"
 				:select-range="false"
 				:show-time="false"
 				@get-date="handleDate" />
@@ -30,12 +39,14 @@
 </template>
 
 <script setup lang="ts">
-import { useTemplateRef, ref, computed, watch } from 'vue'
-import { onClickOutside } from '@vueuse/core'
+import { type ComponentPublicInstance, useTemplateRef, computed } from 'vue'
+import { fromISODate } from '@stonecrop/utilities'
 
 import { fieldErrorA11y } from '../../composables/fieldErrorA11y'
 import ADateSelection from './ADateSelection.vue'
 import type { ComponentProps } from '../../types'
+import { dayFromBox } from '../../utils/emptiedBox'
+import { useFieldCalendar } from '../../utils/fieldCalendar'
 
 const {
 	label = 'Date',
@@ -50,39 +61,31 @@ const {
 const errorText = computed(() => (errors?.length ? errors.join('; ') : (validation.errorMessage ?? '')))
 const { errorId, describedBy, invalid } = fieldErrorA11y(uuid, errorText)
 
-const modelValue = defineModel<string | Date>()
+// The field holds a `YYYY-MM-DD` day, which is also the date input's own value; a Date would be an instant.
+const modelValue = defineModel<string | null>()
 
-const currentDate = ref(modelValue.value ? new Date(modelValue.value) : new Date())
-const inputDate = computed({
-	get: () => currentDate.value.toISOString().split('T')[0],
-	set: (value: string) => {
-		currentDate.value = new Date(value)
-		modelValue.value = value
-	},
+const boxDay = computed({
+	get: () => modelValue.value,
+	set: (text: string) => (modelValue.value = dayFromBox(text)),
 })
 
-const pickerRef = useTemplateRef<HTMLDivElement>('picker')
-const showPicker = ref(false)
+const displayValue = computed(() =>
+	modelValue.value ? (fromISODate(modelValue.value)?.toLocaleString() ?? 'Invalid Date') : ''
+)
 
-onClickOutside(pickerRef, () => (showPicker.value = false))
+const { showPicker, calendarId, closePicker, openFromKey, closeOnEscape, closeWhenFocusLeaves } = useFieldCalendar(
+	useTemplateRef<HTMLInputElement>('date'),
+	useTemplateRef<ComponentPublicInstance>('picker'),
+	uuid
+)
 
 const openPicker = () => {
 	if (mode !== 'read') showPicker.value = !showPicker.value
 }
 
-watch(
-	() => modelValue.value,
-	newValue => {
-		if (newValue) {
-			currentDate.value = new Date(newValue)
-		}
-	}
-)
-
-const handleDate = (data: { selected: Date }) => {
-	currentDate.value = data.selected
-	modelValue.value = inputDate.value
-	showPicker.value = false
+const handleDate = (data: { selected: string }) => {
+	modelValue.value = data.selected
+	closePicker()
 }
 </script>
 

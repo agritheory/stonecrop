@@ -6,7 +6,9 @@ import { makeSchema } from 'postgraphile'
 import { PostGraphileAmberPreset } from 'postgraphile/presets/amber'
 import { execute, hookArgs } from 'postgraphile/grafast'
 import { makePgService, makeWithPgClientViaPgClientAlreadyInTransaction } from 'postgraphile/adaptors/pg'
-import { describe, it, expect, beforeAll, afterAll, inject } from 'vitest'
+import { describe, it, expect, beforeAll, afterAll, afterEach, beforeEach, inject, vi } from 'vitest'
+
+import { snakeToCamel } from '@stonecrop/schema'
 
 import { createStonecropPlugin } from '../../src/plugin/postgraphile'
 import type { ActionHandler } from '../../src/plugin/postgraphile'
@@ -63,6 +65,21 @@ const actionHandlers: Record<string, Record<string, ActionHandler>> = {
 				values: [String(recordId)],
 			})
 			throw new Error('blew up after writing')
+		},
+	},
+	// A save the way FAB's handlers write one: its own UPDATE, then `SELECT *` with the keys
+	// camelCased, so a day comes back as whatever `pg` parsed it into.
+	ScPeriodHandled: {
+		async save({ pgClient, recordId, data }) {
+			await pgClient.query({
+				text: `UPDATE sc_period SET name = $2 WHERE id::text = $1`,
+				values: [String(recordId), data.name],
+			})
+			const { rows } = await pgClient.query<Record<string, unknown>>({
+				text: `SELECT * FROM sc_period WHERE id::text = $1`,
+				values: [String(recordId)],
+			})
+			return Object.fromEntries(Object.entries(rows[0]).map(([column, value]) => [snakeToCamel(column), value]))
 		},
 	},
 	ScSignal: {
@@ -277,7 +294,7 @@ beforeAll(async () => {
 				{ kind: 'field', fieldname: 'itemId', component: 'ATextInput', label: 'Item' },
 			],
 			links: {
-				// `component: AForm` makes this expand, so `getSqlColumns` omits item_id from the
+				// `component: AForm` makes this expand, so `getColumnSelections` omits item_id from the
 				// payload SELECT — and the expansion still has to find the value somewhere.
 				itemId: {
 					target: 'ScItem',
@@ -434,6 +451,84 @@ beforeAll(async () => {
 				actions: { save: { label: 'Save', selfTransition: true }, echoLink: { label: 'Echo Link' } },
 			},
 		},
+		// Temporal fixtures. A period is named by the day it starts, so a link to one displays a date.
+		ScPeriod: {
+			name: 'ScPeriod',
+			displayField: 'startsOn',
+			fields: [
+				{ kind: 'field', fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
+				{ kind: 'field', fieldname: 'name', component: 'ATextInput', label: 'Name' },
+				{ kind: 'field', fieldname: 'startsOn', component: 'ADate', label: 'Starts On' },
+				{ kind: 'field', fieldname: 'openedAt', component: 'ADateTime', label: 'Opened At' },
+			],
+			workflow: { actions: { save: { label: 'Save', selfTransition: true } } },
+		},
+		// sc_period saved by a registered handler, as every FAB save is: no `selfTransition`.
+		ScPeriodHandled: {
+			name: 'ScPeriodHandled',
+			fields: [
+				{ kind: 'field', fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
+				{ kind: 'field', fieldname: 'name', component: 'ATextInput', label: 'Name' },
+				{ kind: 'field', fieldname: 'startsOn', component: 'ADate', label: 'Starts On' },
+			],
+			workflow: { actions: { save: { label: 'Save', stateless: true } } },
+		},
+		// Reads sc_period's list of zone-free timestamps, which no other period fixture declares.
+		ScPeriodReviews: {
+			name: 'ScPeriodReviews',
+			fields: [
+				{ kind: 'field', fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
+				{ kind: 'field', fieldname: 'reviewedAt', component: 'ATextInput', label: 'Reviewed At' },
+			],
+		},
+		ScRun: {
+			name: 'ScRun',
+			fields: [
+				{ kind: 'field', fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
+				{ kind: 'field', fieldname: 'label', component: 'ATextInput', label: 'Label' },
+				{ kind: 'field', fieldname: 'took', component: 'ADuration', label: 'Took' },
+				{ kind: 'field', fieldname: 'laps', component: 'ATextInput', label: 'Laps' },
+			],
+			workflow: { actions: { save: { label: 'Save', selfTransition: true } } },
+		},
+		ScPeriodEntry: {
+			name: 'ScPeriodEntry',
+			fields: [
+				{ kind: 'field', fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
+				{ kind: 'field', fieldname: 'periodId', component: 'AFormLink', doctype: 'ScPeriod', label: 'Period' },
+				{ kind: 'field', fieldname: 'bookedOn', component: 'ADate', label: 'Booked On' },
+			],
+		},
+		ScPeriodWithEntries: {
+			name: 'ScPeriodWithEntries',
+			fields: [
+				{ kind: 'field', fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
+				{ kind: 'field', fieldname: 'startsOn', component: 'ADate', label: 'Starts On' },
+			],
+			links: {
+				entries: {
+					target: 'ScPeriodEntry',
+					cardinality: 'noneOrMany' as const,
+					backlink: 'periodId',
+					fetch: { method: 'sync' as const },
+				},
+			},
+		},
+		ScPeriodEntryWithPeriod: {
+			name: 'ScPeriodEntryWithPeriod',
+			fields: [
+				{ kind: 'field', fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
+				{ kind: 'field', fieldname: 'periodId', component: 'ATextInput', label: 'Period' },
+			],
+			links: {
+				periodId: {
+					target: 'ScPeriod',
+					cardinality: 'one' as const,
+					component: 'AForm',
+					fetch: { method: 'sync' as const },
+				},
+			},
+		},
 		// Reads sc_party, expanding its orders. The expanded ScOrder rows carry `customerId`,
 		// an inline link — so a nested record is a place enrichment has to reach as well.
 		ScPartyWithOrders: {
@@ -477,6 +572,10 @@ beforeAll(async () => {
 					ScBulkSync: 'sc_bulk',
 					ScBulkCapped: 'sc_bulk',
 					ScPartyWithOrders: 'sc_party',
+					ScPeriodWithEntries: 'sc_period',
+					ScPeriodReviews: 'sc_period',
+					ScPeriodHandled: 'sc_period',
+					ScPeriodEntryWithPeriod: 'sc_period_entry',
 				},
 			}),
 		],
@@ -546,12 +645,15 @@ async function runSequenceCapturingSql(
 			results.push((await execute(args)) as Record<string, unknown>)
 		}
 	} finally {
+		// A connection whose ROLLBACK failed is in an unknown state, so it is discarded, not pooled.
+		// One release either way: pg-pool throws on a second, which would hide the first failure.
+		let discardReason: Error | undefined
 		try {
 			await client.query('ROLLBACK')
 		} catch {
-			client.release(new Error('rollback failed'))
+			discardReason = new Error('rollback failed')
 		}
-		client.release()
+		client.release(discardReason)
 	}
 	return { results, sql }
 }
@@ -577,14 +679,63 @@ async function runSequence(queries: string[]): Promise<Record<string, unknown>[]
 			results.push((await execute(args)) as Record<string, unknown>)
 		}
 	} finally {
+		// A connection whose ROLLBACK failed is in an unknown state, so it is discarded, not pooled.
+		// One release either way: pg-pool throws on a second, which would hide the first failure.
+		let discardReason: Error | undefined
 		try {
 			await client.query('ROLLBACK')
 		} catch {
-			client.release(new Error('rollback failed'))
+			discardReason = new Error('rollback failed')
 		}
-		client.release()
+		client.release(discardReason)
 	}
 	return results
+}
+
+/**
+ * Like `runSequence`, with the connection's time zone set first and, optionally, one SQL read on the
+ * same connection after the documents. A zone-free column converts through that setting, so a test
+ * of the conversion needs a database zone unlike both UTC and the reader's.
+ */
+async function runSequenceInDatabaseZone(
+	databaseZone: string,
+	queries: string[],
+	sqlAfter?: string
+): Promise<{ results: Record<string, unknown>[]; rows: Record<string, unknown>[] }> {
+	const client: PoolClient = await pool.connect()
+	await client.query('BEGIN')
+	// Transaction-local, so the pooled connection goes back in its own zone.
+	await client.query(`SELECT set_config('TimeZone', $1, true)`, [databaseZone])
+	const results: Record<string, unknown>[] = []
+	try {
+		const withPgClient = makeWithPgClientViaPgClientAlreadyInTransaction(client, true)
+		for (const query of queries) {
+			// oxlint-disable-next-line eslint/no-await-in-loop -- one pooled client in one transaction; concurrent queries are impossible
+			const args = await hookArgs({
+				schema,
+				document: parse(query),
+				variableValues: {},
+				contextValue: Object.create(null) as Record<string, unknown>,
+				resolvedPreset,
+				requestContext: {},
+			})
+			args.contextValue.withPgClient = withPgClient
+			// oxlint-disable-next-line eslint/no-await-in-loop -- the SQL read after these must see every write
+			results.push((await execute(args)) as Record<string, unknown>)
+		}
+		const { rows } = sqlAfter ? await client.query(sqlAfter) : { rows: [] }
+		return { results, rows }
+	} finally {
+		// A connection whose ROLLBACK failed is in an unknown state, so it is discarded, not pooled.
+		// One release either way: pg-pool throws on a second, which would hide the first failure.
+		let discardReason: Error | undefined
+		try {
+			await client.query('ROLLBACK')
+		} catch {
+			discardReason = new Error('rollback failed')
+		}
+		client.release(discardReason)
+	}
 }
 
 async function runQuery(
@@ -610,14 +761,16 @@ async function runQuery(
 		args.contextValue.withPgClient = withPgClient
 		queryResult = (await execute(args)) as Record<string, unknown>
 	} finally {
+		// A connection whose ROLLBACK failed is in an unknown state, so it is discarded, not pooled,
+		// and the already-fetched result is still returned. One release either way: pg-pool throws
+		// on a second, which would lose that result.
+		let discardReason: Error | undefined
 		try {
 			await client.query('ROLLBACK')
 		} catch {
-			// If ROLLBACK itself fails the connection is in an unknown state; discard it.
-			// Return the already-fetched result rather than losing it.
-			client.release(new Error('rollback failed'))
+			discardReason = new Error('rollback failed')
 		}
-		client.release()
+		client.release(discardReason)
 	}
 	return queryResult
 }
@@ -961,6 +1114,274 @@ describe('self-transition data write', { tags: ['integration', 'graphql'] }, () 
 		expect((expanded as any).data?.stonecropAction?.droppedFields).toContain('itemId')
 		expect((scalar as any).data?.stonecropAction?.success).toBe(true)
 		expect((scalar as any).data?.stonecropAction?.droppedFields).toBeNull()
+	})
+})
+
+// ===========================================================================
+// Temporal columns
+// ===========================================================================
+
+describe('temporal columns', { tags: ['integration', 'graphql'] }, () => {
+	const hostRead = `query { scPeriodByRowId(rowId: 1) { rowId name startsOn openedAt } }`
+	// PostGraphile serves a zone-free `timestamp` as bare clock text. Stonecrop serves the moment that
+	// text names in the database's zone, which is UTC here (globalSetup pins it; checked below).
+	const inDatabaseZone = (host: { openedAt: string }) => ({ ...host, openedAt: `${host.openedAt}+00:00` })
+	const readHost = async () => inDatabaseZone(((await runQuery(hostRead)) as any).data.scPeriodByRowId)
+
+	// A date-time as a browser reads it, with `new Date`, written back as the UTC moment it names.
+	const momentOf = (value: unknown) => {
+		const date = value instanceof Date ? value : new Date(String(value))
+		return Number.isNaN(date.getTime()) ? `unreadable: ${String(value)}` : date.toISOString()
+	}
+
+	it('runs the fixture database in UTC', async () => {
+		const { rows } = await pool.query(`SELECT current_setting('TimeZone') AS zone`)
+		expect(rows[0].zone).toBe('UTC')
+	})
+
+	// Serialized, because the client receives JSON and a result object can still hold a Date.
+	const serialize = (result: unknown): any => JSON.parse(JSON.stringify(result))
+	const readRecord = async (doctype: string) =>
+		serialize(await runQuery(`query { stonecropRecord(doctype: "${doctype}", id: "1") { data } }`)).data.stonecropRecord
+			.data
+
+	// A period record in the host's vocabulary. The id is compared too: it is text until decoded, so it
+	// is what shows a read path that skips decoding, where a date reads the same either way.
+	const asHost = (period: { id: unknown; name: unknown; startsOn: unknown; openedAt: unknown }) => ({
+		rowId: period.id,
+		name: period.name,
+		startsOn: period.startsOn,
+		openedAt: period.openedAt,
+	})
+
+	// Pinned zones, because `pg` parses into the reading process's own zone and CI runs in UTC.
+	describe.each(['Asia/Kolkata', 'America/New_York'])('read in %s', zone => {
+		beforeEach(() => vi.stubEnv('TZ', zone))
+		afterEach(() => vi.unstubAllEnvs())
+
+		it('reads a date column as the day it holds', async () => {
+			expect((await readRecord('ScPeriod')).startsOn).toBe('2026-01-01')
+		})
+
+		it('reads the values PostGraphile serves for the same row', async () => {
+			expect(asHost(await readRecord('ScPeriod'))).toEqual(await readHost())
+		})
+
+		it('lists the values PostGraphile serves for the same row', async () => {
+			const list = serialize(await runQuery(`query { stonecropRecords(doctype: "ScPeriod") { data } }`))
+			expect(list.data.stonecropRecords.data.map(asHost)).toEqual([await readHost()])
+		})
+
+		it('replies to a save with the values PostGraphile serves', async () => {
+			const [save, host] = await runSequence([
+				`mutation { stonecropAction(doctype: "ScPeriod", action: "save", args: [{ id: "1", data: { name: "Renamed" } }]) { data } }`,
+				hostRead,
+			])
+			expect(asHost(serialize(save).data.stonecropAction.data)).toEqual(
+				inDatabaseZone((host as any).data.scPeriodByRowId)
+			)
+		})
+
+		// A save whose every key is dropped writes nothing and reads the record back instead.
+		it('replies to a save with nothing to write with the values PostGraphile serves', async () => {
+			const [save] = await runSequence([
+				`mutation { stonecropAction(doctype: "ScPeriod", action: "save", args: [{ id: "1", data: { undeclared: "x" } }]) { data } }`,
+			])
+			expect(asHost(serialize(save).data.stonecropAction.data)).toEqual(await readHost())
+		})
+
+		it('replies to a create with the values PostGraphile serves', async () => {
+			const [create, host] = await runSequence([
+				`mutation { stonecropAction(doctype: "ScPeriod", action: "save", args: [{ data: { name: "Q2", startsOn: "2026-04-01", openedAt: "2026-04-01T09:00:00.000000" } }]) { data } }`,
+				`query { allScPeriods { nodes { rowId name startsOn openedAt } } }`,
+			])
+			const hostCreated = (host as any).data.allScPeriods.nodes.filter((node: { name: string }) => node.name === 'Q2')
+			expect([asHost(serialize(create).data.stonecropAction.data)]).toEqual(hostCreated.map(inDatabaseZone))
+		})
+
+		it('reads child rows with the values PostGraphile serves', async () => {
+			const hostEntry = ((await runQuery(`query { scPeriodEntryByRowId(rowId: 1) { rowId bookedOn } }`)) as any).data
+				.scPeriodEntryByRowId
+			const period = await readRecord('ScPeriodWithEntries')
+			expect(
+				period.entries.map((entry: { id: unknown; bookedOn: unknown }) => ({
+					rowId: entry.id,
+					bookedOn: entry.bookedOn,
+				}))
+			).toEqual([hostEntry])
+		})
+
+		it('reads an expanded link with the values PostGraphile serves', async () => {
+			expect(asHost((await readRecord('ScPeriodEntryWithPeriod')).periodId)).toEqual(await readHost())
+		})
+
+		it('leaves the row unchanged when a read is saved back as it came', async () => {
+			const before = await readHost()
+			const period = await readRecord('ScPeriod')
+			const [save, after] = await runSequence([
+				`mutation { stonecropAction(doctype: "ScPeriod", action: "save", args: [{ id: "1", data: { startsOn: ${JSON.stringify(period.startsOn)}, openedAt: ${JSON.stringify(period.openedAt)} } }]) { success error } }`,
+				hostRead,
+			])
+			expect((save as any).data?.stonecropAction?.success).toBe(true)
+			expect(inDatabaseZone((after as any).data.scPeriodByRowId)).toEqual(before)
+		})
+
+		// `opened_at` is a zone-free `timestamp`. ADateTime sends the moment the user picked, in UTC,
+		// and reads a value back with `new Date`, in the user's zone; the save must keep that moment.
+		const picked = () => new Date(2026, 0, 1, 9, 0, 0).toISOString()
+
+		it('reads a saved date-time back as the moment the user picked', async () => {
+			const sent = picked()
+			const [save, read] = await runSequence([
+				`mutation { stonecropAction(doctype: "ScPeriod", action: "save", args: [{ id: "1", data: { openedAt: "${sent}" } }]) { data } }`,
+				`query { stonecropRecord(doctype: "ScPeriod", id: "1") { data } }`,
+			])
+			expect(momentOf(serialize(save).data.stonecropAction.data.openedAt)).toBe(sent)
+			expect(momentOf(serialize(read).data.stonecropRecord.data.openedAt)).toBe(sent)
+		})
+
+		it('reads a created date-time back as the moment the user picked', async () => {
+			const sent = picked()
+			const [create, list] = await runSequence([
+				`mutation { stonecropAction(doctype: "ScPeriod", action: "save", args: [{ data: { name: "Q2", startsOn: "2026-04-01", openedAt: "${sent}" } }]) { data } }`,
+				`query { stonecropRecords(doctype: "ScPeriod") { data } }`,
+			])
+			const created = serialize(list).data.stonecropRecords.data.filter((row: { name: string }) => row.name === 'Q2')
+			expect(created).toHaveLength(1)
+			expect(momentOf(serialize(create).data.stonecropAction.data.openedAt)).toBe(sent)
+			expect(momentOf(created[0].openedAt)).toBe(sent)
+		})
+
+		// Postgres's own cast between `timestamp` and `timestamptz` goes through the database's zone.
+		// Tokyo is neither UTC nor the reader's zone, so converting through either of those fails here.
+		it('stores a date-time as Postgres converts it through the database zone', async () => {
+			const sent = picked()
+			const {
+				results: [save, read],
+				rows: [stored],
+			} = await runSequenceInDatabaseZone(
+				'Asia/Tokyo',
+				[
+					`mutation { stonecropAction(doctype: "ScPeriod", action: "save", args: [{ id: "1", data: { openedAt: "${sent}" } }]) { success error } }`,
+					`query { stonecropRecord(doctype: "ScPeriod", id: "1") { data } }`,
+				],
+				`SELECT opened_at::timestamptz AS moment FROM sc_period WHERE id = 1`
+			)
+			expect((save as any).data.stonecropAction).toEqual({ success: true, error: null })
+			expect(momentOf(stored.moment)).toBe(sent)
+			expect(momentOf(serialize(read).data.stonecropRecord.data.openedAt)).toBe(sent)
+		})
+
+		it('creates a date-time as Postgres converts it through the database zone', async () => {
+			const sent = picked()
+			const {
+				results: [create],
+				rows: [stored],
+			} = await runSequenceInDatabaseZone(
+				'Asia/Tokyo',
+				[
+					`mutation { stonecropAction(doctype: "ScPeriod", action: "save", args: [{ data: { name: "Q2", startsOn: "2026-04-01", openedAt: "${sent}" } }]) { success error data } }`,
+				],
+				`SELECT opened_at::timestamptz AS moment FROM sc_period WHERE name = 'Q2'`
+			)
+			expect((create as any).data.stonecropAction).toMatchObject({ success: true, error: null })
+			expect(momentOf(stored.moment)).toBe(sent)
+			expect(momentOf(serialize(create).data.stonecropAction.data.openedAt)).toBe(sent)
+		})
+	})
+
+	it('reads a list of zone-free timestamps as the moments Postgres converts them to', async () => {
+		const {
+			results: [read],
+			rows: [stored],
+		} = await runSequenceInDatabaseZone(
+			'Asia/Tokyo',
+			[`query { stonecropRecord(doctype: "ScPeriodReviews", id: "1") { data } }`],
+			`SELECT reviewed_at::timestamptz[] AS moments FROM sc_period WHERE id = 1`
+		)
+		const expected = (stored.moments as Date[]).map(moment => moment.toISOString())
+		expect(expected).toHaveLength(2)
+		expect(serialize(read).data.stonecropRecord.data.reviewedAt.map(momentOf)).toEqual(expected)
+	})
+
+	// The seeded `2026-01-01 09:00`, read in Tokyo (+09:00, no daylight saving), names this moment.
+	it('filters a date-time by the moment it names in the database zone', async () => {
+		const {
+			results: [list],
+		} = await runSequenceInDatabaseZone('Asia/Tokyo', [
+			`query { stonecropRecords(doctype: "ScPeriod", filters: { openedAt: "2026-01-01T00:00:00.000Z" }) { data } }`,
+		])
+		expect(serialize(list).data.stonecropRecords.data.map((row: { id: unknown }) => row.id)).toEqual([1])
+	})
+
+	it('displays a link by a date display field as PostGraphile serves it', async () => {
+		const host = await readHost()
+		const entry = await readRecord('ScPeriodEntry')
+		expect(entry.periodId).toEqual({ id: host.rowId, displayText: host.startsOn })
+	})
+})
+
+// ===========================================================================
+// Interval columns
+// ===========================================================================
+
+// A duration is an ISO 8601 duration whatever the backend, as a day is `YYYY-MM-DD`: not PostGraphile's
+// object, which every other backend would have to imitate, and not a number, which Postgres reads as seconds.
+describe('interval columns', { tags: ['integration', 'graphql'] }, () => {
+	const readRun = async (id: number) =>
+		(await runSequence([`query { stonecropRecord(doctype: "ScRun", id: "${id}") { data } }`]))[0] as any
+
+	it('reads an interval as the ISO 8601 duration it holds', async () => {
+		expect((await readRun(1)).data.stonecropRecord.data.took).toBe('P1DT2H30M')
+	})
+
+	it('reads months and a fraction of a second', async () => {
+		expect((await readRun(3)).data.stonecropRecord.data.took).toBe('P1Y2MT1.5S')
+	})
+
+	it('reads a list of intervals as ISO 8601 durations', async () => {
+		expect((await readRun(1)).data.stonecropRecord.data.laps).toEqual(['PT1M30S', 'P1M2D'])
+	})
+
+	// Postgres signs each part apart, and no ISO 8601 duration can hold "a day less an hour".
+	it('refuses an interval whose parts differ in sign, naming its column', async () => {
+		const result = await readRun(2)
+		expect(result.data?.stonecropRecord ?? null).toBeNull()
+		expect(String(result.errors?.[0]?.message)).toContain('"took" from "sc_run"')
+	})
+
+	it('saves an ISO 8601 duration as that interval, and reads it back unchanged', async () => {
+		const {
+			results: [save, read],
+			rows: [stored],
+		} = await runSequenceInDatabaseZone(
+			'UTC',
+			[
+				`mutation { stonecropAction(doctype: "ScRun", action: "save", args: [{ id: "1", data: { took: "PT1H" } }]) { success error data } }`,
+				`query { stonecropRecord(doctype: "ScRun", id: "1") { data } }`,
+			],
+			`SELECT took = interval '1 hour' AS exact FROM sc_run WHERE id = 1`
+		)
+		expect((save as any).data.stonecropAction).toMatchObject({ success: true, error: null })
+		expect(stored.exact).toBe(true)
+		expect((save as any).data.stonecropAction.data.took).toBe('PT1H')
+		expect((read as any).data.stonecropRecord.data.took).toBe('PT1H')
+	})
+
+	it('creates a record with an ISO 8601 duration', async () => {
+		const {
+			results: [create],
+			rows: [stored],
+		} = await runSequenceInDatabaseZone(
+			'UTC',
+			[
+				`mutation { stonecropAction(doctype: "ScRun", action: "save", args: [{ data: { label: "new", took: "P1DT12H15S" } }]) { success error data } }`,
+			],
+			`SELECT took = interval '1 day 12:00:15' AS exact FROM sc_run WHERE label = 'new'`
+		)
+		expect((create as any).data.stonecropAction).toMatchObject({ success: true, error: null })
+		expect(stored.exact).toBe(true)
+		expect((create as any).data.stonecropAction.data.took).toBe('P1DT12H15S')
 	})
 })
 
@@ -1331,6 +1752,96 @@ describe('stonecropAction with registered effects', { tags: ['integration', 'gra
 		expect(action?.error).toBeNull()
 		expect(action?.success).toBe(true)
 		expect(action?.data?.itemCount).toBe(3)
+	})
+})
+
+// ===========================================================================
+// stonecropAction — the record an action replies with
+// ===========================================================================
+
+// The client files `record` as the whole record, so it must be what a read of the record returns,
+// whoever wrote it. `data` stays the handler's own return, verbatim.
+describe('the record an action replies with', { tags: ['integration', 'graphql'] }, () => {
+	const serialize = (result: unknown): any => JSON.parse(JSON.stringify(result))
+	const readOf = (doctype: string, id: string) =>
+		`query { stonecropRecord(doctype: "${doctype}", id: "${id}") { data } }`
+
+	// `pg` parses a date into the reading process's midnight, so a handler's raw row shows the day
+	// only in UTC. Pinned east of it, where the raw row names the day before.
+	describe('in Asia/Kolkata', () => {
+		beforeEach(() => vi.stubEnv('TZ', 'Asia/Kolkata'))
+		afterEach(() => vi.unstubAllEnvs())
+
+		it("replies to a handler's save with the record a read returns, and data as the handler returned it", async () => {
+			const [save, read] = await runSequence([
+				`mutation { stonecropAction(doctype: "ScPeriodHandled", action: "save", args: [{ id: "1", data: { name: "Renamed" } }]) { success data record } }`,
+				readOf('ScPeriodHandled', '1'),
+			])
+			const action = serialize(save).data.stonecropAction
+			expect(action.success).toBe(true)
+			expect(action.record).toEqual(serialize(read).data.stonecropRecord.data)
+			expect(action.record.startsOn).toBe('2026-01-01')
+			expect(action.data.startsOn).toBe('2025-12-31T18:30:00.000Z')
+		})
+	})
+
+	it('replies to a save with the child rows a read returns', async () => {
+		const [save, read] = await runSequence([
+			`mutation { stonecropAction(doctype: "ScItem", action: "save", args: [{ id: "1", data: { name: "Renamed" } }]) { record } }`,
+			readOf('ScItem', '1'),
+		])
+		const record = serialize(save).data.stonecropAction.record
+		expect(record.tags).toHaveLength(2)
+		expect(record).toEqual(serialize(read).data.stonecropRecord.data)
+	})
+
+	it('replies to a transition with the whole record, not only its new state', async () => {
+		const [submit, read] = await runSequence([
+			`mutation { stonecropAction(doctype: "ScItem", action: "submit", args: [{ id: "1" }]) { data record } }`,
+			readOf('ScItem', '1'),
+		])
+		const action = serialize(submit).data.stonecropAction
+		expect(action.data).toEqual({ state: 'Active' })
+		expect(action.record.status).toBe('Active')
+		expect(action.record).toEqual(serialize(read).data.stonecropRecord.data)
+	})
+
+	it("replies to a handler's command with the record its writes left", async () => {
+		const [command, read] = await runSequence([
+			`mutation { stonecropAction(doctype: "ScItem", action: "recalculate", args: [{ id: "1", data: { suffix: "!" } }]) { data record } }`,
+			readOf('ScItem', '1'),
+		])
+		const action = serialize(command).data.stonecropAction
+		expect(action.data.seenState).toBe('Draft')
+		expect(action.record.name).toBe('ALPHA!')
+		expect(action.record).toEqual(serialize(read).data.stonecropRecord.data)
+	})
+
+	it('replies to a create with the record a read of it returns', async () => {
+		const [create, list] = await runSequence([
+			`mutation { stonecropAction(doctype: "ScPeriod", action: "save", args: [{ data: { name: "Q2", startsOn: "2026-04-01", openedAt: "2026-04-01T09:00:00.000000" } }]) { record } }`,
+			`query { stonecropRecords(doctype: "ScPeriod") { data } }`,
+		])
+		const created = serialize(list).data.stonecropRecords.data.filter(
+			(period: { name: string }) => period.name === 'Q2'
+		)
+		expect([serialize(create).data.stonecropAction.record]).toEqual(created)
+	})
+
+	it('replies with no record to a command that targets none', async () => {
+		const result = serialize(
+			await runQuery(`mutation { stonecropAction(doctype: "ScSignal", action: "ping") { success data record } }`)
+		)
+		expect(result.data.stonecropAction).toEqual({ success: true, data: { itemCount: 3 }, record: null })
+	})
+
+	it('replies with no record when the action fails', async () => {
+		const result = serialize(
+			await runQuery(
+				`mutation { stonecropAction(doctype: "ScItem", action: "explode", args: [{ id: "1" }]) { success record } }`
+			)
+		)
+		expect(result.data.stonecropAction).toEqual({ success: false, record: null })
 	})
 })
 

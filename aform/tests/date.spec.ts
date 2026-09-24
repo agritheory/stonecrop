@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { afterEach, beforeEach, describe, it, expect, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 
 import ADate from '../src/components/form/ADate.vue'
@@ -100,14 +100,107 @@ describe('date component', { tags: ['component'] }, () => {
 	})
 
 	it('handles date selection from picker', async () => {
-		const emitted: (string | Date | undefined)[] = []
+		const emitted: (string | null | undefined)[] = []
 		const wrapper = mount(ADate, {
 			...globalComponents,
-			props: { 'onUpdate:modelValue': (v: string | Date | undefined) => emitted.push(v) },
+			props: { 'onUpdate:modelValue': (v: string | null | undefined) => emitted.push(v) },
 		})
 		await wrapper.find('input').trigger('click')
 		const picker = wrapper.findComponent(ADateSelection)
-		await picker.vm.$emit('get-date', { selected: new Date('2023-06-15') })
-		expect(emitted.length).toBeGreaterThan(0)
+		await picker.vm.$emit('get-date', { selected: '2023-06-15' })
+		expect(emitted).toEqual(['2023-06-15'])
+	})
+
+	// A day field over a date-time column must show its mismatch rather than a day read out of the moment.
+	it('shows a value that is not a day as an invalid date', () => {
+		const wrapper = mount(ADate, {
+			...globalComponents,
+			props: { modelValue: '2026-01-10T09:00:00+00:00', mode: 'display' },
+		})
+		expect(wrapper.find('.aform_display-value').text()).toBe('Invalid Date')
+	})
+
+	it('shows an empty input when the field has no value', () => {
+		const wrapper = mount(ADate, globalComponents)
+		expect(wrapper.find('input').element.value).toBe('')
+	})
+
+	it('empties the input when the value is cleared', async () => {
+		const wrapper = mount(ADate, { ...globalComponents, props: { modelValue: '2026-01-10' } })
+		await wrapper.setProps({ modelValue: '' })
+		expect(wrapper.find('input').element.value).toBe('')
+	})
+
+	it('holds null once the input is cleared by hand', async () => {
+		const emitted: (string | null | undefined)[] = []
+		const renderErrors: unknown[] = []
+		const wrapper = mount(ADate, {
+			global: { ...globalComponents.global, config: { errorHandler: error => void renderErrors.push(error) } },
+			props: { modelValue: '2026-01-10', 'onUpdate:modelValue': (v: string | null | undefined) => emitted.push(v) },
+		})
+		await wrapper.find('input').setValue('')
+		expect(renderErrors).toEqual([])
+		expect(emitted).toEqual([null])
+	})
+
+	it('opens the calendar on the month of the field value', async () => {
+		const wrapper = mount(ADate, { ...globalComponents, props: { modelValue: '2024-03-15' } })
+		await wrapper.find('input').trigger('click')
+		const picker = wrapper.findComponent(ADatePicker)
+		expect([picker.vm.currentYear, picker.vm.currentMonth]).toEqual([2024, 2])
+	})
+
+	it('marks a day typed while the calendar is open, on its month', async () => {
+		const wrapper = mount(ADate, { ...globalComponents, props: { modelValue: '2024-03-15' } })
+		const $input = wrapper.find('input')
+		await $input.trigger('click')
+		await $input.setValue('2024-05-20')
+		const picker = wrapper.findComponent(ADatePicker)
+		expect([
+			picker.vm.currentYear,
+			picker.vm.currentMonth,
+			wrapper.findAll('td.selectedDate').map(cell => cell.text()),
+		]).toEqual([2024, 4, ['20']])
+	})
+
+	it('marks the day the field holds as picked', async () => {
+		const wrapper = mount(ADate, { ...globalComponents, props: { modelValue: '2024-03-15' } })
+		await wrapper.find('input').trigger('click')
+		expect(wrapper.findAll('td.selectedDate').map(cell => cell.text())).toEqual(['15'])
+	})
+
+	// Pinned zones, because the runner's own zone hides these: CI runs in UTC, where both pass.
+	describe.each(['Asia/Kolkata', 'America/New_York'])('in %s', zone => {
+		beforeEach(() => {
+			vi.stubEnv('TZ', zone)
+			vi.useFakeTimers({ toFake: ['Date'] })
+			vi.setSystemTime(new Date(2026, 0, 15, 12))
+		})
+
+		afterEach(() => {
+			vi.useRealTimers()
+			vi.unstubAllEnvs()
+		})
+
+		it('saves the day picked in the calendar', async () => {
+			const emitted: (string | null | undefined)[] = []
+			const wrapper = mount(ADate, {
+				...globalComponents,
+				props: { 'onUpdate:modelValue': (v: string | null | undefined) => emitted.push(v) },
+			})
+			await wrapper.find('input').trigger('click')
+			const tenth = wrapper.findAll('td.date-cell').filter(cell => cell.text() === '10')
+			expect(tenth).toHaveLength(1)
+			await tenth[0].trigger('click')
+			expect(emitted.at(-1)).toBe('2026-01-10')
+		})
+
+		it('displays the stored day', () => {
+			const wrapper = mount(ADate, {
+				...globalComponents,
+				props: { modelValue: '2026-01-10', mode: 'display' },
+			})
+			expect(wrapper.find('.aform_display-value').text()).toBe(new Date(2026, 0, 10).toLocaleDateString())
+		})
 	})
 })

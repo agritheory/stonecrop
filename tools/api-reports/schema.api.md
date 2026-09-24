@@ -124,7 +124,7 @@ export const COMPONENT_CATEGORY: Record<string, ComponentCategory>;
 export const COMPONENT_LINK_EXPANSION: Record<string, LinkExpansion>;
 
 // @public
-export type ComponentCategory = 'text' | 'number' | 'boolean' | 'date' | 'datetime' | 'select' | 'code' | 'link' | 'attach' | 'quantity' | 'currency';
+export type ComponentCategory = 'text' | 'number' | 'boolean' | 'date' | 'datetime' | 'duration' | 'select' | 'code' | 'link' | 'attach' | 'quantity' | 'currency';
 
 // @public
 export function componentCategory(component?: string): ComponentCategory | undefined;
@@ -159,6 +159,7 @@ export interface DataClient<T extends DoctypeRef = DoctypeRef, M = DoctypeMeta> 
         success: boolean;
         data: unknown;
         error: string | null;
+        record: Record<string, unknown> | null;
     }>;
 }
 

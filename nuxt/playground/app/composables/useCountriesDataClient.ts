@@ -74,13 +74,17 @@ export class CountriesDataClient implements DataClient {
 		return { record: (await load(recordId)) as Record<string, unknown> | null }
 	}
 
-	runAction(doctype: DoctypeRef, action: string): Promise<{ success: boolean; data: unknown; error: string | null }> {
+	runAction(
+		doctype: DoctypeRef,
+		action: string
+	): Promise<{ success: boolean; data: unknown; error: string | null; record: Record<string, unknown> | null }> {
 		// The countries API is read-only, so this reports rather than pretends. Answering
 		// `success: true` would let a Save look like it persisted.
 		return Promise.resolve({
 			success: false,
 			data: null,
 			error: `The countries API is read-only — cannot run "${action}" on ${doctype.name}.`,
+			record: null,
 		})
 	}
 }

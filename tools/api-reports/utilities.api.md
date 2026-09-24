@@ -7,9 +7,13 @@
 import { App } from 'vue';
 import { ComponentPublicInstance } from 'vue';
 import { Ref } from 'vue';
+import { Temporal } from 'temporal-polyfill';
 
 // @public
 export const defaultKeypressHandlers: KeypressHandlers;
+
+// @public
+export function fromISODate(day: string): Temporal.PlainDate | undefined;
 
 // @public
 export function install(_app: App): void;

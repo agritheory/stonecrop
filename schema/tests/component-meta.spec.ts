@@ -16,6 +16,7 @@ describe('component-meta', { tags: ['unit'] }, () => {
 		expect(componentCategory('ACheckbox')).toBe('boolean')
 		expect(componentCategory('ADate')).toBe('date')
 		expect(componentCategory('ADateTime')).toBe('datetime')
+		expect(componentCategory('ADuration')).toBe('duration')
 		expect(componentCategory('ADropdown')).toBe('select')
 		expect(componentCategory('ASegmentedControl')).toBe('select')
 		expect(componentCategory('ACodeEditor')).toBe('code')

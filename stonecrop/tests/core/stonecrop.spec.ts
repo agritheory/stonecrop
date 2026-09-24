@@ -520,7 +520,12 @@ describe('Stonecrop class with HST integration', { tags: ['unit'] }, () => {
 		})
 
 		it('dispatchAction delegates to client.runAction', async () => {
-			const mockResult = { success: true, data: { id: '1', status: 'submitted' }, error: null }
+			const mockResult = {
+				success: true,
+				data: { state: 'submitted' },
+				record: { id: '1', status: 'submitted' },
+				error: null,
+			}
 			const mockClient = {
 				getMeta: vi.fn(),
 				getRecord: vi.fn(),
@@ -552,20 +557,21 @@ describe('Stonecrop class with HST integration', { tags: ['unit'] }, () => {
 				{ kind: 'field', fieldname: 'id', component: 'ATextInput' },
 			]
 
-			const withResult = (data: unknown, fields: DoctypeField[]) => {
+			// `data` is whatever a handler returned, verbatim; `record` is the server's read of the record.
+			const withReply = (reply: { data: unknown; record: unknown }, fields: DoctypeField[] = idFields) => {
 				const doctype = Doctype.fromObject({ name: 'User', fields })
 				const client = {
 					getMeta: vi.fn(),
 					getRecord: vi.fn(),
 					getRecords: vi.fn(),
-					runAction: vi.fn().mockResolvedValue({ success: true, data, error: null }),
+					runAction: vi.fn().mockResolvedValue({ success: true, error: null, ...reply }),
 				}
 				return { doctype, sc: new Stonecrop(registry, undefined, { client } as StonecropOptions) }
 			}
 
 			it('files the returned record under the identity the server settled on, not the one dispatched', async () => {
 				// The create case: a draft sends no id at all, and the server answers with `7`.
-				const { doctype, sc } = withResult({ id: '7', title: 'drafted' }, idFields)
+				const { doctype, sc } = withReply({ data: null, record: { id: '7', title: 'drafted' } })
 
 				await sc.dispatchAction(doctype, 'save', [{ data: { title: 'drafted' } }])
 
@@ -574,7 +580,7 @@ describe('Stonecrop class with HST integration', { tags: ['unit'] }, () => {
 			})
 
 			it('prefers the declared natural key over a surrogate id the record also carries', async () => {
-				const { doctype, sc } = withResult({ username: 'robert', id: '7' }, naturalFields)
+				const { doctype, sc } = withReply({ data: null, record: { username: 'robert', id: '7' } }, naturalFields)
 
 				await sc.dispatchAction(doctype, 'rename', [{ id: 'bob', data: { username: 'robert' } }])
 
@@ -582,19 +588,38 @@ describe('Stonecrop class with HST integration', { tags: ['unit'] }, () => {
 				expect(sc.getRecordIds('user')).toEqual(['robert'])
 			})
 
-			it('declines a partial record that omits its declared key, rather than guessing', async () => {
-				// A registered effect returning `{ id, total }` for a natural-keyed doctype. Trusting
-				// `getRecordId`'s `id` fallback here would relocate the record to a key the adapter
-				// cannot resolve, which reads as a rename that never happened.
-				const { doctype, sc } = withResult({ id: '7', total: 75 }, naturalFields)
+			it('declines a record that omits its declared key, rather than guessing', async () => {
+				// Trusting `getRecordId`'s `id` fallback here would relocate the record to a key the
+				// adapter cannot resolve, which reads as a rename that never happened.
+				const { doctype, sc } = withReply({ data: null, record: { id: '7', total: 75 } }, naturalFields)
 
 				await sc.dispatchAction(doctype, 'recalculate', [{ id: 'bob', data: {} }])
 
 				expect(sc.getRecordIds('user')).toEqual([])
 			})
 
+			it("files the record the server read, not the handler's data", async () => {
+				const { doctype, sc } = withReply({
+					data: { id: '7', title: 'as the handler returned it' },
+					record: { id: '7', title: 'as a read returns it' },
+				})
+
+				await sc.dispatchAction(doctype, 'save', [{ id: '7', data: {} }])
+
+				expect(sc.getRecordById('user', '7')?.get('title')).toBe('as a read returns it')
+			})
+
+			it('leaves the stored record alone when the reply carries no record', async () => {
+				const { doctype, sc } = withReply({ data: { id: '7', title: 'as the handler returned it' }, record: null })
+				sc.addRecord(doctype, '7', { id: '7', title: 'stored' })
+
+				await sc.dispatchAction(doctype, 'save', [{ id: '7', data: {} }])
+
+				expect(sc.getRecordById('user', '7')?.get('title')).toBe('stored')
+			})
+
 			it('writes nothing for a state-only outcome or a refused action', async () => {
-				const { doctype, sc } = withResult({ state: 'APPROVED' }, idFields)
+				const { doctype, sc } = withReply({ data: { state: 'APPROVED' }, record: null })
 				await sc.dispatchAction(doctype, 'approve', [{ id: 'r1', data: {} }])
 				expect(sc.getRecordIds('user')).toEqual([])
 
@@ -603,7 +628,9 @@ describe('Stonecrop class with HST integration', { tags: ['unit'] }, () => {
 					getMeta: vi.fn(),
 					getRecord: vi.fn(),
 					getRecords: vi.fn(),
-					runAction: vi.fn().mockResolvedValue({ success: false, data: { id: '7' }, error: 'refused' }),
+					runAction: vi
+						.fn()
+						.mockResolvedValue({ success: false, data: { id: '7' }, record: { id: '7' }, error: 'refused' }),
 				}
 				const sc2 = new Stonecrop(registry, undefined, { client } as StonecropOptions)
 				await sc2.dispatchAction(refused, 'save', [{ data: {} }])

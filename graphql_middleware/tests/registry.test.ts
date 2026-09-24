@@ -265,7 +265,7 @@ describe('validateReferences', { tags: ['unit', 'graphql'] }, () => {
 
 	it('accepts a one-side link bound by the map key alone', () => {
 		// The canonical form: the key IS the fieldname. Requiring an explicit `fieldname` here
-		// would outlaw the shape `getSqlColumns` and the client resolver both already bind.
+		// would outlaw the shape `getColumnSelections` and the client resolver both already bind.
 		loadDoctypesFromObject(withLinks({ ownerId: { target: 'owner', cardinality: 'one' } }))
 		expect(validateReferences()).toHaveLength(0)
 	})
@@ -285,7 +285,7 @@ describe('validateReferences', { tags: ['unit', 'graphql'] }, () => {
 	})
 
 	it('reports a one-side link bound to a computed field', () => {
-		// `computed` means "no backing DB column", and `getSqlColumns` skips such a field. A link
+		// `computed` means "no backing DB column", and `getColumnSelections` skips such a field. A link
 		// bound to one has no foreign key to read, so the record read fails on a missing column —
 		// taking the whole record with it, not just the link. Refuse it at load instead.
 		loadDoctypesFromObject(
@@ -311,7 +311,7 @@ describe('validateReferences', { tags: ['unit', 'graphql'] }, () => {
 	})
 
 	it('accepts a one-side link whose field is nested inside a fieldset', () => {
-		// A fieldset is a layout grouping, not a scope — `getSqlColumns` descends into it, so a
+		// A fieldset is a layout grouping, not a scope — `getColumnSelections` descends into it, so a
 		// checker that did not would report this working declaration as broken.
 		loadDoctypesFromObject(
 			withLinks({ ownerId: { target: 'owner', cardinality: 'one' } }, [

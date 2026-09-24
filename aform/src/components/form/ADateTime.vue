@@ -1,5 +1,5 @@
 <template>
-	<div class="aform_form-element">
+	<div class="aform_form-element" @focusout="closeWhenFocusLeaves" @keydown="closeOnEscape">
 		<template v-if="mode === 'display'">
 			<span class="aform_display-value">{{ displayValue }}</span>
 			<label class="aform_field-label">{{ label }}</label>
@@ -8,26 +8,36 @@
 		<template v-else>
 			<input
 				:id="uuid"
+				ref="box"
 				class="aform_input-field"
 				type="text"
+				role="combobox"
+				aria-haspopup="dialog"
+				:aria-expanded="showPicker"
+				:aria-controls="showPicker ? calendarId : undefined"
 				:value="datetimeDisplay"
 				placeholder="Select date and time"
 				:disabled="mode === 'read'"
 				readonly
 				:aria-invalid="invalid"
 				:aria-describedby="describedBy"
-				@click="openPicker" />
+				@click="openPicker"
+				@keydown="openFromKey" />
 			<label class="aform_field-label" :for="uuid">{{ label }}</label>
 
 			<p v-show="errorText" :id="errorId" class="aform_error" role="alert">{{ errorText }}</p>
 
 			<ADateSelection
 				v-if="showPicker"
-				ref="pickerRef"
+				:id="calendarId"
+				ref="picker"
 				class="adatetime-picker"
+				role="dialog"
+				:aria-label="label"
 				:select-range="false"
 				:show-date="true"
 				:show-time="true"
+				:default-date="currentDateTime?.toPlainDate().toString()"
 				:default-hours="pickerDefaults.hours"
 				:default-minutes="pickerDefaults.minutes"
 				:default-seconds="pickerDefaults.seconds"
@@ -41,11 +51,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
-import { onClickOutside } from '@vueuse/core'
+import { type ComponentPublicInstance, ref, computed, useTemplateRef, watch } from 'vue'
+import { fromISODate } from '@stonecrop/utilities'
+import { Temporal } from 'temporal-polyfill'
 import ADateSelection from './ADateSelection.vue'
 import { fieldErrorA11y } from '../../composables/fieldErrorA11y'
 import type { ComponentProps } from '../../types'
+import { useFieldCalendar } from '../../utils/fieldCalendar'
 
 const {
 	label = 'Date & Time',
@@ -65,47 +77,74 @@ const {
 const errorText = computed(() => (errors?.length ? errors.join('; ') : (validation.errorMessage ?? '')))
 const { errorId, describedBy, invalid } = fieldErrorA11y(uuid, errorText)
 
-const modelValue = defineModel<string | Date>()
+const modelValue = defineModel<string | Date | null>()
 
-const currentDateTime = ref<Date>(modelValue.value ? new Date(modelValue.value) : new Date())
+/** Now, cut down to the smallest unit the picker shows, so a pick that leaves the time alone saves the time shown. */
+const now = () =>
+	Temporal.Now.zonedDateTimeISO().round({ smallestUnit: useSeconds ? 'second' : 'minute', roundingMode: 'trunc' })
 
-const showPicker = ref(false)
-const pickerRef = ref(null)
-onClickOutside(pickerRef, () => (showPicker.value = false))
+/** The field's moment on the user's clock, or null when the value names no moment. */
+const readMoment = (value: string | Date): Temporal.ZonedDateTime | null => {
+	const epochMilliseconds = new Date(value).getTime()
+	if (isNaN(epochMilliseconds)) return null
+	return Temporal.Instant.fromEpochMilliseconds(epochMilliseconds).toZonedDateTimeISO(Temporal.Now.timeZoneId())
+}
+
+/** What the field holds for a value: its moment, or now for an empty field, where the picker starts. */
+const heldMoment = (value: string | Date | null | undefined) => (value ? readMoment(value) : now())
+
+const currentDateTime = ref<Temporal.ZonedDateTime | null>(heldMoment(modelValue.value))
+
+const { showPicker, calendarId, openFromKey, closeOnEscape, closeWhenFocusLeaves } = useFieldCalendar(
+	useTemplateRef<HTMLInputElement>('box'),
+	useTemplateRef<ComponentPublicInstance>('picker'),
+	uuid
+)
 
 const openPicker = () => {
 	if (mode !== 'read') showPicker.value = true
 }
 
+// A date and time as `toLocaleString` writes one by default, less the seconds.
+const WITHOUT_SECONDS: Intl.DateTimeFormatOptions = {
+	year: 'numeric',
+	month: 'numeric',
+	day: 'numeric',
+	hour: 'numeric',
+	minute: 'numeric',
+}
+
 const displayValue = computed(() => {
 	if (!modelValue.value) return ''
-	return currentDateTime.value.toLocaleString()
+	// The wall-clock time alone: a `ZonedDateTime`'s own `toLocaleString` also names the zone.
+	const format = useSeconds ? undefined : WITHOUT_SECONDS
+	return currentDateTime.value?.toPlainDateTime().toLocaleString(undefined, format) ?? 'Invalid Date'
 })
 
 const datetimeDisplay = computed(() => displayValue.value)
 
 const pickerDefaults = computed(() => {
-	const d = currentDateTime.value
-	const hours24 = d.getHours()
+	const d = currentDateTime.value ?? now()
+	const hours24 = d.hour
 	const meridiem = hours24 >= 12 ? 'PM' : 'AM'
 	const hours12 = hours24 % 12 || 12
 	return {
 		hours: allowMilitaryTime ? hours24 : hours12,
-		minutes: d.getMinutes(),
-		seconds: d.getSeconds(),
+		minutes: d.minute,
+		seconds: d.second,
 		meridiem,
 	}
 })
 
-const emitModel = () => {
-	modelValue.value = currentDateTime.value.toISOString()
+const setMoment = (moment: Temporal.ZonedDateTime) => {
+	currentDateTime.value = moment
+	modelValue.value = moment.toInstant().toString({ fractionalSecondDigits: 3 })
 }
 
-const handleDate = (data: { selected: Date }) => {
-	const next = new Date(currentDateTime.value)
-	next.setFullYear(data.selected.getFullYear(), data.selected.getMonth(), data.selected.getDate())
-	currentDateTime.value = next
-	emitModel()
+const handleDate = (data: { selected: string }) => {
+	const day = fromISODate(data.selected)
+	if (!day) return
+	setMoment((currentDateTime.value ?? now()).with({ year: day.year, month: day.month, day: day.day }))
 }
 
 const handleTime = (data: {
@@ -121,24 +160,27 @@ const handleTime = (data: {
 	// meant one click on an empty field silently filled it with the current date and time.
 	if (data.source === 'init') return
 
-	const next = new Date(currentDateTime.value)
 	const hours = data.militaryTime ?? data.hours
-	next.setHours(hours, data.minutes, useSeconds ? data.seconds : 0, 0)
-	currentDateTime.value = next
-	emitModel()
+	setMoment(
+		(currentDateTime.value ?? now()).with({
+			hour: hours,
+			minute: data.minutes,
+			second: useSeconds ? data.seconds : 0,
+			millisecond: 0,
+			microsecond: 0,
+			nanosecond: 0,
+		})
+	)
 	// Deliberately does NOT close the picker. `get-time` is the widget's current value, not a
 	// commit — it fires on every blur, arrow key and meridiem change — so closing here shut the
-	// picker as soon as the user tabbed out of the hours field. Dismissal is the click-outside
-	// handler above; closing on `get-date` instead would strand the time half of a datetime.
+	// picker as soon as the user tabbed out of the hours field. Dismissal is a click outside, Escape
+	// or focus leaving the field; closing on `get-date` instead would strand the time half of a datetime.
 }
 
+// An empty value resets it too: skipping one kept the cleared moment, which the next pick wrote back.
 watch(
 	() => modelValue.value,
-	newValue => {
-		if (newValue) {
-			currentDateTime.value = new Date(newValue)
-		}
-	}
+	newValue => (currentDateTime.value = heldMoment(newValue))
 )
 </script>
 

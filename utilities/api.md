@@ -4,6 +4,24 @@
 
 ## Functions
 
+### fromISODate
+
+Reads a `YYYY-MM-DD` day. Anything that is not a real day written exactly that way reads as no day.
+
+Not `Temporal.PlainDate.from` alone: it also takes the day out of a date-time, which would show a day field over a date-time column as a day instead of as the mismatch it is.
+
+**Signature:**
+
+```typescript
+export declare function fromISODate(day: string): Temporal.PlainDate | undefined;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| day | `string` | The day, as `YYYY-MM-DD` |
+
 ### install
 
 Install all utility components

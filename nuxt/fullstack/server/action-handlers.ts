@@ -37,8 +37,8 @@ export interface FullstackActionContext {
 }
 
 /**
- * Returning the updated record makes it the client writeback payload; returning `undefined` leaves
- * the doctype's own outcome to decide. Throwing rejects the action, and no state is written.
+ * What it returns becomes the result's `data`; the client stores the record as a read returns it
+ * after the action. Throwing rejects the action, and no state is written.
  */
 export type FullstackActionHandler = (context: FullstackActionContext) => Promise<unknown>
 
@@ -68,7 +68,6 @@ export const actionHandlers: Record<string, Record<string, FullstackActionHandle
 				'updateOrderById',
 				{ id: String(recordId), patch: { total } }
 			)
-			// The full row, so the client's writeback shows the recomputed total immediately.
 			return written.updateOrderById?.order
 		},
 	},

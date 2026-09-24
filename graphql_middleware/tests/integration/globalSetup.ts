@@ -25,6 +25,9 @@ async function createTestDb(): Promise<{ url: string; server: Server; db: PGlite
 
 	const seed = readFileSync(join(__dirname, 'seed.sql'), 'utf-8')
 	await db.exec(seed)
+	// PGlite takes its zone from the machine, so unpinned the fixture runs in UTC in CI and in the
+	// developer's zone locally. A test that needs another zone sets it for its own transaction.
+	await db.exec(`SET TIME ZONE 'UTC'`)
 
 	const server = createServer(db, { logLevel: LogLevel.Error })
 	await new Promise<void>(resolve => server.listen(0, () => resolve()))

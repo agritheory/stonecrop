@@ -97,11 +97,11 @@ const data = ref({ created_at: null })
 </template>
 ```
 
-`ADateTime` declares a `v-model` of `string | Date`, so mounting it this way wires `created_at` to the field and no extra listener is needed. Clicking the input opens an `ADateSelection` picker, and the chosen date and time are written back through the model.
+`ADateTime` declares a `v-model` of `string | Date | null`, so mounting it this way wires `created_at` to the field and no extra listener is needed. Clicking the input opens an `ADateSelection` picker, and the chosen date and time are written back through the model.
 
 ## API Reference
 
-The tables below describe `ADateTimeInput`. `ADateTime` takes the shared `ComponentProps` (`label`, `mode`, `uuid`, and the rest) plus `allowMilitaryTime` and `useSeconds`, which it forwards to the picker.
+The tables below describe `ADateTimeInput`. `ADateTime` takes the shared `ComponentProps` (`label`, `mode`, `uuid`, and the rest) plus `allowMilitaryTime` and `useSeconds`, which it forwards to the picker. With `useSeconds` off, the field's text leaves out seconds too, and a date picked on an empty field saves the time the picker shows, to the minute.
 
 ### Props
 
@@ -131,5 +131,7 @@ rows:
 ## Accessibility
 
 Each segment is a native `<input type="text" inputmode="numeric">`, which prompts a numeric keyboard on mobile devices. Focusing a segment selects its existing text for easy overtyping, and the Up/Down arrow keys increment or decrement the focused segment, rolling over into adjacent segments (and toggling AM/PM) at the 12/24-hour and 59-minute/second boundaries. The AM/PM control is a native `<select>`, so it remains reachable and operable with standard keyboard interaction. `ADateTimeInput` does not accept a `label` prop and has no `id`/`for` pairing of its own, so an accessible name for the group must be supplied by the surrounding context (for example a wrapping `<fieldset>`/`<legend>`, or an `aria-label` added by the consumer). `ADateTime` does take a `label` and pairs it with the input it renders.
+
+A click, <kbd>Space</kbd>, <kbd>F4</kbd>, <kbd>Alt</kbd>+<kbd>Down</kbd> or <kbd>Down</kbd> on that input opens the picker, and a key also puts focus on the calendar's day, whose keys are on the [Date Picker](/components/date-picker#accessibility) page. Picking a day leaves the picker open for the time. <kbd>Escape</kbd> closes it and returns focus to the input, and it also closes on an outside click or when focus leaves the field. The input is a `combobox` that tells a screen reader it opens a dialog and whether that dialog is open, and the picker is a dialog named by the field's label.
 
 Source: [`aform/src/components/form/ADateTimeInput.vue`](https://github.com/agritheory/stonecrop/blob/development/aform/src/components/form/ADateTimeInput.vue) and [`aform/src/components/form/ADateTime.vue`](https://github.com/agritheory/stonecrop/blob/development/aform/src/components/form/ADateTime.vue)
