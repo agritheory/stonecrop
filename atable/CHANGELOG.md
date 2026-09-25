@@ -1,5 +1,14 @@
 # Change Log - @stonecrop/atable
 
+## 0.38.1
+
+### Patch Changes
+
+- 74ea65f: fix atable expansion row wobble
+- @stonecrop/schema@0.38.1
+  - @stonecrop/themes@0.38.1
+  - @stonecrop/utilities@0.38.1
+
 ## 0.38.0
 
 ### Patch Changes
