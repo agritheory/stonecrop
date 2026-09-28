@@ -257,10 +257,13 @@ props: {
   schema: ResolvedField[]
   label?: string \| undefined
   collapsible?: boolean \| undefined
-  data?: Record<string, any> \| undefined
   mode?: InteractionMode \| undefined
+  errors?: Record<string, string[]> \| undefined
+  data?: Record<string, any> \| undefined
 }
-emits: {}
+emits: {
+  update:data: [value: Record<string, any>]
+}
 slots: {
   default: { collapsed: boolean; }
 }

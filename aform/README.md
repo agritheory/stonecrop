@@ -80,7 +80,7 @@ key on the schema field is ignored, and a table whose `fieldname` has no matchin
 const data = ref({ line_items: [{ item_code: 'LAPTOP-PRO-15', quantity: 2 }] })
 ```
 
-For a table nested in a fieldset, the rows nest the same way — `data[fieldsetFieldname][tableFieldname]`.
+A table inside a fieldset reads its rows from `data[tableFieldname]` too: a fieldset is layout, so every field inside one is a key of the record itself.
 
 ### Field width
 

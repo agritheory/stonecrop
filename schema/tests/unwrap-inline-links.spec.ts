@@ -48,17 +48,10 @@ describe('unwrapInlineLinks', { tags: ['unit'] }, () => {
 		expect(unwrapInlineLinks(fields, record)).toEqual({ customerId: 'p-1', title: { id: 'not-a-link' } })
 	})
 
-	it('reduces a fieldset child held flat, as the store holds it', () => {
+	it("reduces a fieldset child, held as the record's own key", () => {
 		const fields = [fieldset('details', [link('customerId', 'AFormLink')])]
 		expect(unwrapInlineLinks(fields, { customerId: { id: 'p-1', displayText: 'Dover' } })).toEqual({
 			customerId: 'p-1',
-		})
-	})
-
-	it('reduces a fieldset child held nested, as a form emits it', () => {
-		const fields = [fieldset('details', [link('customerId', 'AFormLink')])]
-		expect(unwrapInlineLinks(fields, { details: { customerId: { id: 'p-1', displayText: 'Dover' } } })).toEqual({
-			details: { customerId: 'p-1' },
 		})
 	})
 
