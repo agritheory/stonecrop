@@ -223,6 +223,7 @@ const setCurrentResult = () => {
 	border-radius: 0 0 var(--sc-border-radius) var(--sc-border-radius);
 	border-top: none;
 	background-color: var(--sc-overlay-background);
+	box-shadow: var(--sc-overlay-shadow);
 	list-style: none;
 }
 
@@ -230,7 +231,6 @@ const setCurrentResult = () => {
 	text-align: left;
 	padding: 4px 6px;
 	cursor: pointer;
-	border-bottom: 0.5px solid var(--sc-input-border-color);
 }
 
 .autocomplete-result.is-active,

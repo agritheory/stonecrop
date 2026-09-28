@@ -404,12 +404,12 @@ const selectCurrent = () => {
 	border-top: none;
 	border-radius: 0 0 var(--sc-border-radius) var(--sc-border-radius);
 	background: var(--sc-overlay-background);
+	box-shadow: var(--sc-overlay-shadow);
 }
 
 .autocomplete-result {
 	padding: 4px 6px;
 	cursor: pointer;
-	border-bottom: 0.5px solid var(--sc-input-border-color);
 }
 
 .autocomplete-result.is-active,

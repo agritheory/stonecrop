@@ -331,18 +331,23 @@ const displayText = computed(() => {
 	border-top: 0.3em solid currentColor;
 }
 
+/* Hangs from the divider beside the toggle to the field's outer border, so its side lines continue
+   theirs; a long unit name widens it to the left. */
 .aquantity__uom-menu {
 	position: absolute;
 	top: 100%;
-	right: 0;
+	right: -1px;
 	z-index: 100;
-	min-width: 100%;
-	margin: 0.15rem 0 0 0;
+	box-sizing: border-box;
+	min-width: calc(100% + 2px);
+	margin: 0;
 	padding: 0.25rem 0;
 	list-style: none;
-	background: var(--sc-input-field-background);
+	background: var(--sc-overlay-background);
 	border: 1px solid var(--sc-input-active-border-color);
-	border-radius: var(--sc-border-radius);
+	border-top: none;
+	border-radius: 0 0 var(--sc-border-radius) var(--sc-border-radius);
+	box-shadow: var(--sc-overlay-shadow);
 }
 
 .aquantity__uom-option {

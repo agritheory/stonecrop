@@ -52,7 +52,7 @@ The floor is primitive → semantic. Components read the semantic names; hosts u
 
 ### Grays
 
-`--sc-gray-2` `#fafafa` · `--sc-gray-5` `#f2f2f2` · `--sc-gray-10` `#e6e6e6` · `--sc-gray-20` `#cccccc` · `--sc-gray-50` `#808080` · `--sc-gray-60` `#666666` · `--sc-gray-70` `#4d4d4d` · `--sc-gray-80` `#333333`
+`--sc-gray-0` `#ffffff` · `--sc-gray-2` `#fafafa` · `--sc-gray-5` `#f2f2f2` · `--sc-gray-10` `#e6e6e6` · `--sc-gray-20` `#cccccc` · `--sc-gray-50` `#808080` · `--sc-gray-60` `#666666` · `--sc-gray-70` `#4d4d4d` · `--sc-gray-80` `#333333`
 
 The ramp is `token number = 100 − lightness%`.
 
@@ -65,10 +65,13 @@ The ramp is `token number = 100 − lightness%`.
 | `--sc-input-field-background` | `var(--sc-gray-5)` |
 | `--sc-input-addon-background` | `var(--sc-gray-10)` |
 | `--sc-input-field-disabled-background` | `var(--sc-gray-2)` |
-| `--sc-overlay-background` | `var(--sc-gray-2)` |
+| `--sc-overlay-background` | `var(--sc-gray-0)` |
+| `--sc-overlay-shadow` | `0 2px 4px rgba(0, 0, 0, 0.12), 0 8px 20px rgba(0, 0, 0, 0.16)` |
 | `--sc-cell-background` | `var(--sc-form-background)` |
 
 The sheet also sets `body` background and color from `--sc-page-background` and `--sc-cell-text-color`.
+
+Every dropdown list, the unit menu and atable's row menu are drawn in `--sc-overlay-background` and cast `--sc-overlay-shadow`; set the shadow to `none` to draw them flat.
 
 ### Badges
 

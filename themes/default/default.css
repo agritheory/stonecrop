@@ -18,6 +18,7 @@ before all other rules.
 @layer stonecrop.tokens {
 	:root {
 		/* Primitive: gray ramp */
+		--sc-gray-0: #ffffff;
 		--sc-gray-2: #fafafa;
 		--sc-gray-5: #f2f2f2;
 		--sc-gray-10: #e6e6e6;
@@ -85,7 +86,8 @@ before all other rules.
 		--sc-input-field-background: var(--sc-gray-5);
 		--sc-input-addon-background: var(--sc-gray-10);
 		--sc-input-field-disabled-background: var(--sc-gray-2);
-		--sc-overlay-background: var(--sc-gray-2);
+		--sc-overlay-background: var(--sc-gray-0);
+		--sc-overlay-shadow: 0 2px 4px rgba(0, 0, 0, 0.12), 0 8px 20px rgba(0, 0, 0, 0.16);
 		--sc-cell-background: var(--sc-form-background);
 
 		/* Semantic: text */
