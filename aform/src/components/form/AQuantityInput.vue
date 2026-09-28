@@ -262,6 +262,7 @@ const displayText = computed(() => {
 	position: relative;
 	display: flex;
 	align-items: stretch;
+	box-sizing: border-box;
 	width: 100%;
 	background: var(--sc-input-field-background);
 	border: 1px solid var(--sc-input-border-color);

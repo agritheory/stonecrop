@@ -394,6 +394,7 @@ const selectCurrent = () => {
 
 .autocomplete-results {
 	position: absolute;
+	box-sizing: border-box;
 	width: 100%;
 	z-index: 100;
 	padding: 0;

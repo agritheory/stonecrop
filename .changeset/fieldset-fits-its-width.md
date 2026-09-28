@@ -2,4 +2,4 @@
 '@stonecrop/aform': patch
 ---
 
-`AFieldset` now spans exactly the width it is given, so its bottom border no longer runs past the edge of the form around it.
+`AFieldset`, the outlined groups of `AQuantityInput` and `ACurrencyInput`, and `AFormLink`'s list of matches now span exactly the width they are given, so their edges no longer run past the form and fields around them.
