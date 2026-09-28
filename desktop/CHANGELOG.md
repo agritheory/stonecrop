@@ -1,5 +1,41 @@
 # Change Log - @stonecrop/desktop
 
+## 0.38.1
+
+### Patch Changes
+
+- @stonecrop/aform@0.38.1
+  - @stonecrop/stonecrop@0.38.1
+  - @stonecrop/schema@0.38.1
+  - @stonecrop/themes@0.38.1
+
+## 0.38.0
+
+### Minor Changes
+
+- 7b56de2: Consolidate Nuxt playground and fullstack examples into the documentation app and refine Desktop ActionSet layout.
+- 7b56de2: combine nuxt examples, improve actionset
+
+### Patch Changes
+
+- @stonecrop/aform@0.38.0
+  - @stonecrop/schema@0.38.0
+  - @stonecrop/stonecrop@0.38.0
+  - @stonecrop/themes@0.38.0
+
+## 0.37.0
+
+### Minor Changes
+
+- Consolidate Nuxt playground and fullstack examples into the documentation app and refine Desktop ActionSet layout.
+
+### Patch Changes
+
+- @stonecrop/aform@0.37.0
+  - @stonecrop/schema@0.37.0
+  - @stonecrop/stonecrop@0.37.0
+  - @stonecrop/themes@0.37.0
+
 ## 0.36.0
 
 ### Patch Changes

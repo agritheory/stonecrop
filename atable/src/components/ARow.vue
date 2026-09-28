@@ -253,7 +253,9 @@ if (addNavigation || isListExpansion) {
 
 .atable-expanded-content {
 	box-sizing: border-box;
-	width: 100%;
+	/* No width here. A colspan cell already spans the row, and width: 100% is fed
+	   into the auto table-layout as a column constraint, so opening the row
+	   redistributes every column and the headers jump. */
 	border-top: 1px solid var(--sc-row-border-color);
 	border-right: 1px solid var(--sc-row-border-color);
 	border-bottom: 1px solid var(--sc-row-border-color);

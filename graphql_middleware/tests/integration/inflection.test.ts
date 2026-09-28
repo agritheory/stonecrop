@@ -5,10 +5,12 @@ import { Pool, type PoolClient } from 'pg'
 import { makeSchema } from 'postgraphile'
 import { execute, hookArgs } from 'postgraphile/grafast'
 import { makePgService, makeWithPgClientViaPgClientAlreadyInTransaction } from 'postgraphile/adaptors/pg'
-import { describe, it, expect, beforeAll, afterAll, inject } from 'vitest'
+import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 
 import { createStonecropPlugin, createStonecropPreset } from '../../src'
 import { loadDoctypesFromObject, clearRegistry } from '../../src/registry/doctypes'
+
+import { startTestDatabase } from './test-database'
 
 // ---------------------------------------------------------------------------
 // Per-suite setup — same infrastructure as resolver.test.ts, but with
@@ -19,9 +21,12 @@ let pool: Pool
 let schema: GraphQLSchema
 let resolvedPreset: GraphileConfig.ResolvedPreset
 let releasePgService: (() => void | PromiseLike<void>) | undefined
+let stopTestDatabase: (() => Promise<void>) | undefined
 
 beforeAll(async () => {
-	const databaseUrl = inject('inflectionTestDatabaseUrl')
+	const testDatabase = await startTestDatabase()
+	stopTestDatabase = testDatabase.stop
+	const databaseUrl = testDatabase.url
 
 	loadDoctypesFromObject({
 		ScItem: {
@@ -67,6 +72,7 @@ afterAll(async () => {
 	clearRegistry()
 	await pool?.end()
 	await releasePgService?.()
+	await stopTestDatabase?.()
 })
 
 // ---------------------------------------------------------------------------

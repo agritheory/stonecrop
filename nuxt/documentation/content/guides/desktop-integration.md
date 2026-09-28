@@ -68,7 +68,7 @@ const { registerClient } = useStonecropSetup()
 registerClient(new StonecropClient({ endpoint: '/graphql' }))
 ```
 
-Nothing about this seam assumes GraphQL — a `DataClient` over plain `fetch` is as valid. `nuxt/playground` ships one over a third-party API whose schema shares nothing with Stonecrop's.
+Nothing about this seam assumes GraphQL — a `DataClient` over plain `fetch` is as valid. The documentation playground's countries section ships one over a third-party API whose schema shares nothing with Stonecrop's.
 
 Register it before Desktop renders. Desktop skips the read entirely when no client is configured, so a missing one shows up as permanently empty lists and blank forms rather than as an error. (`Stonecrop.getRecord` and `getRecords` do throw, naming `setClient`, for a host that calls them directly.)
 

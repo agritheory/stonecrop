@@ -1,5 +1,5 @@
 /**
- * Static page index for DocsSearch, hand-written rather than generated from the content
+ * Static page index for the documentation command search, hand-written rather than generated from the content
  * collection: fine for a page count that does not change daily, as long as adding a page also
  * adds an entry here. `nuxt/test/docs-registries.test.ts` is what makes a missed one go red.
  */

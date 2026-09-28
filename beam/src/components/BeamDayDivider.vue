@@ -14,6 +14,14 @@ import type { ListViewItem } from '../types'
 defineSlots<{ default(): any }>()
 const { item } = defineProps<{ item: ListViewItem }>()
 
+function parseListDate(raw: string): Date {
+	const calendar = /^(\d{4})-(\d{2})-(\d{2})$/.exec(raw)
+	if (calendar) {
+		return new Date(Number(calendar[1]), Number(calendar[2]) - 1, Number(calendar[3]))
+	}
+	return new Date(raw)
+}
+
 const date = computed(() => {
 	if (!item.date || isNaN(Date.parse(item.date))) {
 		return item.date
@@ -21,7 +29,7 @@ const date = computed(() => {
 
 	// if needed, the user can specify a Date format flag that will dictate how the output is formatted,
 	// defaults to toDateString(); using switch/case here in case more values wanted to be added
-	const dateObj = new Date(item.date)
+	const dateObj = parseListDate(item.date)
 	if (item.dateFormat) {
 		switch (item.dateFormat.toLowerCase()) {
 			case 'iso':

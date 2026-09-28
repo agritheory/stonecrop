@@ -214,6 +214,59 @@ describe('validateReferences', { tags: ['unit', 'graphql'] }, () => {
 		expect(errors.some(e => e.path.includes('links') && e.message.includes('nonesuch'))).toBe(true)
 	})
 
+	it('allows an unregistered links-map target when optionalTarget is true', () => {
+		loadDoctypesFromObject({
+			Task: {
+				slug: 'task',
+				fields: [],
+				links: {
+					extensions: {
+						target: 'task-extension',
+						cardinality: 'noneOrMany',
+						backlink: 'taskId',
+						optionalTarget: true,
+					},
+				},
+			},
+		})
+		expect(validateReferences()).toHaveLength(0)
+	})
+
+	it('still validates backlink when optionalTarget and target is unregistered', () => {
+		loadDoctypesFromObject({
+			Task: {
+				slug: 'task',
+				fields: [],
+				links: {
+					extensions: {
+						target: 'task-extension',
+						cardinality: 'noneOrMany',
+						optionalTarget: true,
+					},
+				},
+			},
+		})
+		const errors = validateReferences()
+		expect(errors).toHaveLength(1)
+		expect(errors[0].path).toEqual(['Task', 'links', 'extensions', 'backlink'])
+	})
+
+	it('still validates binding when optionalTarget link target is registered', () => {
+		loadDoctypesFromObject({
+			Owner: { slug: 'owner', fields: [] },
+			Task: {
+				slug: 'task',
+				fields: [],
+				links: {
+					owner: { target: 'owner', cardinality: 'one', optionalTarget: true },
+				},
+			},
+		})
+		const errors = validateReferences()
+		expect(errors).toHaveLength(1)
+		expect(errors[0].message).toContain('binds to field "owner"')
+	})
+
 	it('does not treat a field with options but no doctype as a link', () => {
 		// `options` carries choices/config and never names a link target — `doctype` does. A select
 		// whose choices happen to look like doctype names must not be resolved as a reference.

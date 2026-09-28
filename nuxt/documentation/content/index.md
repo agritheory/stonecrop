@@ -23,6 +23,9 @@ Stonecrop pairs AForm's schema-driven fields with ATable's advanced grid, backed
 
   :::card-grid-item{href="/reference/" title="Reference" description="Technical API documentation for every package, plus live component demos"}
   :::
+
+  :::card-grid-item{href="/playground" title="Playground" description="Live Desktop shell — grafserv workflow demos, countries GraphQL explorer, and public DocBuilder"}
+  :::
 ::
 
 ## Packages

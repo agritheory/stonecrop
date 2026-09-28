@@ -209,13 +209,12 @@ function onRemoveRow(row) {
 	font-weight: 500;
 	padding: 0.125em 0.5em;
 }
-/* Only a transition, which moves the record to another state, takes a colour; status colours stay for status. */
 .badge-transition {
 	background: var(--sc-badge-brand-bg);
 	color: var(--sc-badge-brand-text);
 }
-.badge-self-transition,
 .badge-command,
+.badge-self-transition,
 .badge-trigger {
 	background: var(--sc-badge-neutral-bg);
 	color: var(--sc-badge-neutral-text);

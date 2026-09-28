@@ -58,7 +58,7 @@ export default defineConfig({
 
 			// Rewritten by nuxt-graphql-middleware (downloadSchema) on every dev boot, so the
 			// downloaded formatting is the canonical one.
-			'nuxt/playground/schema.graphql',
+			'nuxt/documentation/schema.graphql',
 
 			// Machine-written by the schema CLI (`generate`) and the DocBuilder Save handler, both as
 			// `JSON.stringify(_, null, '\t')` — the exact bytes the generation oracle asserts. A

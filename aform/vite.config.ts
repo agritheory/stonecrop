@@ -5,6 +5,7 @@ import { libInjectCss } from 'vite-plugin-lib-inject-css'
 import { configDefaults, coverageConfigDefaults, defineConfig } from 'vitest/config'
 
 import { buildTask } from '../tools/vite/build-task.ts'
+import { playwrightLaunchOptions } from '../tools/vite/playwright-launch-options.ts'
 import { testTags } from '../tools/vite/test-tags.ts'
 
 const projectRootDir = resolve(import.meta.dirname)
@@ -55,9 +56,12 @@ export default defineConfig({
 					browser: {
 						enabled: true,
 						headless: true,
-						// The installed Google Chrome, so neither CI nor a checkout downloads a browser. The
-						// locale fixes the order of a date input's segments, which typing depends on.
-						provider: playwright({ launchOptions: { channel: 'chrome' }, contextOptions: { locale: 'en-US' } }),
+						// System Chrome when present (CI); otherwise Playwright's Chromium after
+						// `pnpm exec playwright install chromium`. Locale fixes date-input segment order.
+						provider: playwright({
+							launchOptions: playwrightLaunchOptions(),
+							contextOptions: { locale: 'en-US' },
+						}),
 						instances: [{ browser: 'chromium' }],
 					},
 				},

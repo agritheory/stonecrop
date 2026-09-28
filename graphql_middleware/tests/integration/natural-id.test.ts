@@ -3,11 +3,13 @@
 import { printSchema, type GraphQLSchema, type GraphQLObjectType } from 'postgraphile/graphql'
 import { makeSchema } from 'postgraphile'
 import { makePgService } from 'postgraphile/adaptors/pg'
-import { describe, it, expect, beforeAll, afterAll, inject } from 'vitest'
+import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 
 import { convertGraphQLSchema } from '@stonecrop/schema'
 
 import { createStonecropPreset } from '../../src'
+
+import { startTestDatabase } from './test-database'
 
 /**
  * Identity naming in the schema PostGraphile builds for a Stonecrop server.
@@ -24,17 +26,24 @@ import { createStonecropPreset } from '../../src'
  */
 
 let schema: GraphQLSchema
+let releasePgService: (() => void | PromiseLike<void>) | undefined
+let stopTestDatabase: (() => Promise<void>) | undefined
 
 beforeAll(async () => {
+	const testDatabase = await startTestDatabase()
+	stopTestDatabase = testDatabase.stop
+	const pgService = makePgService({ connectionString: testDatabase.url })
+	releasePgService = pgService.release
 	const { schema: built } = await makeSchema({
 		extends: [createStonecropPreset()],
-		pgServices: [makePgService({ connectionString: inject('naturalIdTestDatabaseUrl') })],
+		pgServices: [pgService],
 	})
 	schema = built
 }, 60_000)
 
-afterAll(() => {
-	// makeSchema's pg service is released by the global teardown that owns the database.
+afterAll(async () => {
+	await releasePgService?.()
+	await stopTestDatabase?.()
 })
 
 const fieldsOf = (typeName: string): string[] =>

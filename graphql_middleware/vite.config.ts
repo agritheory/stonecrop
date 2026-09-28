@@ -30,7 +30,8 @@ export default defineConfig({
 	test: {
 		globals: true,
 		fileParallelism: false,
-		globalSetup: ['./tests/integration/globalSetup.ts'],
+		maxWorkers: 1,
+		pool: 'forks',
 		tags: testTags,
 		environment: 'jsdom',
 		include: ['tests/**/*.{test,spec}.{ts,js}'],

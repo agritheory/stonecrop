@@ -3,24 +3,24 @@
 	// src/runtime, playground and fullstack; `templates/` appeared in no tsconfig at all, so the
 	// eight files the CLI writes into every new app were checked by nothing.
 	//
-	// Reference context is fullstack rather than playground: the scaffold registers a DataClient and
+	// Reference context is documentation rather than playground: the scaffold registers a DataClient and
 	// reads `$stonecropClient`, which playground has no plugin to type.
 	//
-	// `fullstack/.nuxt/nuxt.d.ts` must be listed explicitly — `include` here REPLACES the base's,
+	// `documentation/.nuxt/nuxt.d.ts` must be listed explicitly — `include` here REPLACES the base's,
 	// and that file is what pulls in the ambient Nuxt augmentations. Do NOT add a `paths` override
 	// to redirect `~/composables/*` at templates/: `compilerOptions` merge key-by-key, so any
 	// `paths` here discards the base's 34 entries and `$stonecropClient` degrades to `unknown`.
 	//
 	// templates/index.vue is deliberately absent. It imports `~/composables/useRouteAdapter`, and
-	// `~/*` resolves into fullstack/app/*, where the equivalent is named useFullstackRouteAdapter —
+	// `~/*` resolves into documentation/app/*, where the equivalent is named usePlaygroundRouteAdapter —
 	// an intentionally app-specific name. Checking it needs a real scaffolded layout, or for the two
-	// to share a name. Its type-relevant lines are currently identical to fullstack's own index.vue,
+	// to share a name. Its type-relevant lines are currently identical to documentation's playground page,
 	// which IS checked, so it is guarded by coincidence rather than by this file.
 	//
-	// Requires `dev:prepare` to have generated fullstack/.nuxt first, as `test:types` already does.
-	"extends": "./fullstack/.nuxt/tsconfig.json",
+	// Requires `dev:prepare` to have generated documentation/.nuxt first, as `test:types` already does.
+	"extends": "./documentation/.nuxt/tsconfig.json",
 	"include": [
-		"fullstack/.nuxt/nuxt.d.ts",
+		"documentation/.nuxt/nuxt.d.ts",
 		"templates/useDoctypes.ts",
 		"templates/useRouteAdapter.ts",
 		"templates/stonecrop.client.ts"

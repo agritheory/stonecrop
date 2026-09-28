@@ -3,26 +3,26 @@ import { join, resolve } from 'node:path'
 import { describe, it, expect } from 'vitest'
 import { CANONICAL_COMPONENTS, componentLinkExpansion, validateDoctype } from '@stonecrop/schema'
 
-import { hostComponents as playgroundHostComponents } from '../playground/app/host-components'
+import { hostComponents as documentationHostComponents } from '../documentation/app/host-components'
 
 /**
  * Content-integrity gate for every doctype fixture folder this package ships.
  *
  * `playground/doctypes` has its own generation + dangling-link oracle (`playground-doctypes.test.ts`);
- * the fullstack and templates fixtures had none — nothing read them, nothing validated them, and the
- * fullstack server plugin loads them with `continueOnError: true`, so a broken fixture degrades
+ * the fixtures/fullstack and templates fixtures had none — nothing read them, nothing validated them, and the
+ * documentation server plugin loads them with `continueOnError: true`, so a broken fixture degrades
  * silently at runtime with nothing failing.
  */
 
 /** `hostComponents` are the custom components the folder's app registers, read from its own registry. */
 const FIXTURE_DIRS = [
-	{ name: 'fullstack', dir: resolve(__dirname, '../fullstack/doctypes'), hostComponents: [] },
-	{ name: 'templates', dir: resolve(__dirname, '../templates'), hostComponents: [] },
+	{ name: 'fullstack', dir: resolve(__dirname, './fixtures/fullstack/doctypes'), hostComponents: [] },
 	{
-		name: 'playground',
-		dir: resolve(__dirname, '../playground/doctypes'),
-		hostComponents: Object.keys(playgroundHostComponents),
+		name: 'documentation',
+		dir: resolve(__dirname, '../documentation/doctypes'),
+		hostComponents: Object.keys(documentationHostComponents),
 	},
+	{ name: 'templates', dir: resolve(__dirname, '../templates'), hostComponents: [] },
 ]
 
 /** Component names Stonecrop knows — schema owns the list; the docbuilder suggests the same one. */
@@ -130,7 +130,7 @@ describe('doctype fixtures', { tags: ['unit'] }, () => {
 		// DocBuilder-only (absent from playground/schema.graphql, linked solely as
 		// /docbuilder/assignment), so nothing fetches it by key. Remove this exemption when it gains a
 		// server that exposes an identity for it.
-		const COMPOSITE_KEY_EXEMPT = new Set(['playground/assignment.json'])
+		const COMPOSITE_KEY_EXEMPT = new Set(['documentation/assignment.json'])
 
 		const offenders: string[] = []
 		for (const { file, doctype } of loadAll()) {

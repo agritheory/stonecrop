@@ -6,18 +6,23 @@ import { makeSchema } from 'postgraphile'
 import { PostGraphileAmberPreset } from 'postgraphile/presets/amber'
 import { execute, hookArgs } from 'postgraphile/grafast'
 import { makePgService, makeWithPgClientViaPgClientAlreadyInTransaction } from 'postgraphile/adaptors/pg'
-import { describe, it, expect, beforeAll, afterAll, inject } from 'vitest'
+import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 
 import { createStonecropPlugin } from '../../src/plugin/postgraphile'
 import { loadDoctypesFromObject, clearRegistry } from '../../src/registry/doctypes'
+
+import { startTestDatabase } from './test-database'
 
 let pool: Pool
 let schema: GraphQLSchema
 let resolvedPreset: GraphileConfig.ResolvedPreset
 let releasePgService: (() => void | PromiseLike<void>) | undefined
+let stopTestDatabase: (() => Promise<void>) | undefined
 
 beforeAll(async () => {
-	const databaseUrl = inject('camelTestDatabaseUrl')
+	const testDatabase = await startTestDatabase()
+	stopTestDatabase = testDatabase.stop
+	const databaseUrl = testDatabase.url
 
 	loadDoctypesFromObject({
 		ScCamelItem: {
@@ -75,6 +80,7 @@ afterAll(async () => {
 	clearRegistry()
 	await pool?.end()
 	await releasePgService?.()
+	await stopTestDatabase?.()
 })
 
 async function runQuery(query: string, variables?: Record<string, unknown>): Promise<Record<string, unknown>> {

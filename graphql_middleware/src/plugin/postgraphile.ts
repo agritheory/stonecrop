@@ -1118,7 +1118,8 @@ function assertActionHandlersResolve(actionHandlers: Record<string, Record<strin
  * What it prevents is silent: the link read does `const targetMeta = getMeta(link.target)` followed
  * by `if (!targetMeta) continue`, so an unresolvable target drops the relation from the response
  * with no error. On the wire that is indistinguishable from "this record has no such relation", and
- * a typo in a target reads as a legitimately empty link forever.
+ * a typo in a target reads as a legitimately empty link forever. Links with `optionalTarget: true`
+ * opt into that behavior deliberately (extension doctypes registered later, etc.).
  *
  * Throws rather than warns, like the handler check above: a link pointing at a doctype that does not
  * exist has no correct reading. Every offender is collected so a consumer fixes them in one pass.

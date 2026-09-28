@@ -31,11 +31,13 @@ import { makeSchema } from 'postgraphile'
 import { PostGraphileAmberPreset } from 'postgraphile/presets/amber'
 import { execute, hookArgs, makeGrafastSchema, constant, lambda, loadOne, object } from 'postgraphile/grafast'
 import { makePgService, makeWithPgClientViaPgClientAlreadyInTransaction } from 'postgraphile/adaptors/pg'
-import { describe, it, expect, beforeAll, afterAll, inject } from 'vitest'
+import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 
 import { createStonecropPlugin } from '../../src/plugin/postgraphile'
 import { loadDoctypesFromObject, clearRegistry, getMeta, getAllMeta } from '../../src/registry/doctypes'
 import { typeDefs } from '../../src/typeDefs'
+
+import { startTestDatabase } from './test-database'
 
 // ---------------------------------------------------------------------------
 // Shared fixture — one doctype set, one logical dataset, two storage backends
@@ -219,9 +221,12 @@ let pgSchema: GraphQLSchema
 let memSchema: GraphQLSchema
 let resolvedPreset: GraphileConfig.ResolvedPreset
 let releasePgService: (() => void | PromiseLike<void>) | undefined
+let stopTestDatabase: (() => Promise<void>) | undefined
 
 beforeAll(async () => {
-	const databaseUrl = inject('conformanceTestDatabaseUrl')
+	const testDatabase = await startTestDatabase()
+	stopTestDatabase = testDatabase.stop
+	const databaseUrl = testDatabase.url
 	loadDoctypesFromObject(DOCTYPES)
 
 	pool = new Pool({ connectionString: databaseUrl, max: 1 })
@@ -242,6 +247,7 @@ afterAll(async () => {
 	clearRegistry()
 	await pool?.end()
 	await releasePgService?.()
+	await stopTestDatabase?.()
 })
 
 /** Host A: executed inside a rolled-back transaction so the fixture is never mutated. */

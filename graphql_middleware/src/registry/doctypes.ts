@@ -223,7 +223,7 @@ export function validateReferences(): ValidationError[] {
 			const columnBacked = new Set(columnBackedFields(doctype.fields).map(f => f.fieldname))
 
 			for (const [key, link] of Object.entries(doctype.links)) {
-				if (getMeta(link.target) === undefined) {
+				if (getMeta(link.target) === undefined && !link.optionalTarget) {
 					errors.push({
 						path: [doctype.name, 'links', key, 'target'],
 						message: `Link references unknown doctype: ${link.target}`,

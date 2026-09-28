@@ -5,7 +5,7 @@ description: A generic keyboard-navigable search overlay for locating and jumpin
 
 # Command Palette
 
-`CommandPalette` is a generic, teleported search overlay — a text input over a scored/filtered result list, fully keyboard-navigable. It's generic over the result type `T` and takes a synchronous `search(query) => T[]` function, so it can search anything: pages, records, commands. This site's own [search](/) (press <kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>K</kbd>) is built on this exact component.
+`CommandPalette` is a generic, teleported search overlay — a text input over a scored/filtered result list, fully keyboard-navigable. It's generic over the result type `T` and takes a synchronous `search(query) => T[]` function, so it can search anything: pages, records, commands. Use it when you want a modal overlay; [`Desktop`](/reference/desktop) embeds the same search UI in the ActionSet drawer instead (press <kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>K</kbd> on this site).
 
 ## Import
 

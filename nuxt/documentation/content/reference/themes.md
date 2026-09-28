@@ -123,6 +123,8 @@ Each variant (`neutral`, `success`, `warning`, `danger`, `brand`) defines `--sc-
 |---|---|---|
 | `--sc-action-set-drawer-width` | `380px` | Width of Desktop's action drawer |
 | `--sc-action-set-offset-top` | `35vh` | Distance from the top of the viewport to the tile column |
+| `--sc-action-set-tile-gap` | `4px` | Gap between the action rail and drawer |
+| `--sc-action-set-rail-width` | `calc(2.75rem + 10px)` | Width reserved for the action tile column |
 
 ### Space and type
 

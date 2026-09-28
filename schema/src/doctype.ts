@@ -119,6 +119,15 @@ export const LinkDeclaration = z
 		/** Cardinality of the relationship */
 		cardinality: Cardinality,
 
+		/**
+		 * When true, an unregistered `target` slug is allowed at schema build time. Reads still
+		 * resolve the link with `getMeta(target)`; if nothing is registered, the relation is
+		 * omitted (many → `[]`, one → absent) — the same wire shape as an empty relation.
+		 * Use for extension doctypes a host may register later, or when another layer (custom
+		 * query) owns the data.
+		 */
+		optionalTarget: z.boolean().optional(),
+
 		/** Backlink fieldname on the target doctype that points back to this link */
 		backlink: z.string().optional(),
 

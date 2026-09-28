@@ -337,6 +337,9 @@ function bool(v) {
 
 <style scoped>
 .fields-panel {
+	box-sizing: border-box;
+	max-width: 100%;
+	overflow-x: auto;
 	padding: 0.5em 1em;
 }
 .fields-panel :deep(.atable-row > td) {
@@ -373,7 +376,6 @@ function bool(v) {
 	font-weight: 500;
 	padding: 0.125em 0.5em;
 }
-/* An authored field is editable here and takes the brand colour; an introspected one is locked and stays neutral. */
 .badge-manual {
 	background: var(--sc-badge-brand-bg);
 	color: var(--sc-badge-brand-text);

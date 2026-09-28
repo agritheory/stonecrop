@@ -1801,6 +1801,7 @@ export const DoctypeMeta: z.ZodObject<{
             noneOrMany: "noneOrMany";
             atLeastOne: "atLeastOne";
         }>;
+        optionalTarget: z.ZodOptional<z.ZodBoolean>;
         backlink: z.ZodOptional<z.ZodString>;
         component: z.ZodOptional<z.ZodString>;
         fieldname: z.ZodOptional<z.ZodString>;
@@ -1991,6 +1992,7 @@ export const LinkDeclaration: z.ZodObject<{
         noneOrMany: "noneOrMany";
         atLeastOne: "atLeastOne";
     }>;
+    optionalTarget: z.ZodOptional<z.ZodBoolean>;
     backlink: z.ZodOptional<z.ZodString>;
     component: z.ZodOptional<z.ZodString>;
     fieldname: z.ZodOptional<z.ZodString>;

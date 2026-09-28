@@ -14,7 +14,7 @@ import { defineConfig } from 'vitest/config'
 export default defineConfig({
 	resolve: {
 		alias: {
-			// The templates/ and fullstack/ resolver modules import bare `grafast`, which is what a
+			// The templates/ and fixtures/fullstack/ resolver modules import bare `grafast`, which is what a
 			// consumer server context provides. This package doesn't depend on it directly, so the
 			// specifier does not resolve here — but `postgraphile` is a devDependency and re-exports
 			// the same module, which is exactly what those consumers get.
@@ -57,7 +57,7 @@ export default defineConfig({
 				'**/coverage/**',
 				'**/test/**',
 				'**/playground/**',
-				'**/fullstack/**',
+				'**/documentation/**',
 				'**/templates/**',
 				'**/bin/**',
 				'**/*.config.*',

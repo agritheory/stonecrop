@@ -6,13 +6,15 @@ import { makeSchema } from 'postgraphile'
 import { PostGraphileAmberPreset } from 'postgraphile/presets/amber'
 import { execute, hookArgs } from 'postgraphile/grafast'
 import { makePgService, makeWithPgClientViaPgClientAlreadyInTransaction } from 'postgraphile/adaptors/pg'
-import { describe, it, expect, beforeAll, afterAll, afterEach, beforeEach, inject, vi } from 'vitest'
+import { describe, it, expect, beforeAll, afterAll, afterEach, beforeEach, vi } from 'vitest'
 
 import { snakeToCamel } from '@stonecrop/schema'
 
 import { createStonecropPlugin } from '../../src/plugin/postgraphile'
 import type { ActionHandler } from '../../src/plugin/postgraphile'
 import { loadDoctypesFromObject, clearRegistry } from '../../src/registry/doctypes'
+
+import { startTestDatabase } from './test-database'
 
 // ---------------------------------------------------------------------------
 // Server-side effects, as a database author would register them
@@ -101,9 +103,13 @@ let cappedSchema: GraphQLSchema
 let cappedResolvedPreset: GraphileConfig.ResolvedPreset
 let resolvedPreset: GraphileConfig.ResolvedPreset
 let releasePgService: (() => void | PromiseLike<void>) | undefined
+let stopTestDatabase: (() => Promise<void>) | undefined
+let databaseUrl: string
 
 beforeAll(async () => {
-	const databaseUrl = inject('testDatabaseUrl')
+	const testDatabase = await startTestDatabase()
+	stopTestDatabase = testDatabase.stop
+	databaseUrl = testDatabase.url
 
 	loadDoctypesFromObject({
 		ScItem: {
@@ -599,6 +605,7 @@ afterAll(async () => {
 	clearRegistry()
 	await pool?.end()
 	await releasePgService?.()
+	await stopTestDatabase?.()
 })
 
 // ---------------------------------------------------------------------------
@@ -1124,7 +1131,7 @@ describe('self-transition data write', { tags: ['integration', 'graphql'] }, () 
 describe('temporal columns', { tags: ['integration', 'graphql'] }, () => {
 	const hostRead = `query { scPeriodByRowId(rowId: 1) { rowId name startsOn openedAt } }`
 	// PostGraphile serves a zone-free `timestamp` as bare clock text. Stonecrop serves the moment that
-	// text names in the database's zone, which is UTC here (globalSetup pins it; checked below).
+	// text names in the database's zone, which is UTC here (startTestDatabase pins it; checked below).
 	const inDatabaseZone = (host: { openedAt: string }) => ({ ...host, openedAt: `${host.openedAt}+00:00` })
 	const readHost = async () => inDatabaseZone(((await runQuery(hostRead)) as any).data.scPeriodByRowId)
 
@@ -1948,7 +1955,7 @@ describe('actionHandlers registration', { tags: ['integration', 'graphql'] }, ()
 	// Each case builds its own schema, because the check runs during schema construction. The
 	// doctypes registered in beforeAll are what it validates against.
 	const buildWith = async (handlers: Record<string, Record<string, ActionHandler>>) => {
-		const pgService = makePgService({ connectionString: inject('testDatabaseUrl') })
+		const pgService = makePgService({ connectionString: databaseUrl })
 		try {
 			await makeSchema({
 				extends: [PostGraphileAmberPreset],
@@ -2114,7 +2121,7 @@ const columnless = (computed: boolean) => ({
 
 describe('doctype reference resolution', { tags: ['integration', 'graphql'] }, () => {
 	const build = async () => {
-		const pgService = makePgService({ connectionString: inject('testDatabaseUrl') })
+		const pgService = makePgService({ connectionString: databaseUrl })
 		try {
 			await makeSchema({
 				extends: [PostGraphileAmberPreset],
