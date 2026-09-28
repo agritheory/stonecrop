@@ -128,13 +128,17 @@ const tableExpansionSchema = (table: ResolvedTable): ResolvedField[] =>
 		.filter((col): col is ColumnSchema & { component: string } => Boolean(col.component))
 		.map(({ fieldname, component, ...rest }) => Object.assign(rest, { kind: 'field' as const, fieldname, component }))
 
-const updateTableRow = (fieldname: string, rowIndex: number, val: Record<string, unknown>) => {
-	const rows = Array.isArray(dataModel.value?.[fieldname]) ? [...dataModel.value[fieldname]] : []
-	rows[rowIndex] = { ...rows[rowIndex], ...val }
+const updateTableRows = (fieldname: string, rows: Record<string, unknown>[]) => {
 	if (dataModel.value) {
 		dataModel.value[fieldname] = rows
 		emit('update:data', { ...dataModel.value })
 	}
+}
+
+const updateTableRow = (fieldname: string, rowIndex: number, val: Record<string, unknown>) => {
+	const rows = Array.isArray(dataModel.value?.[fieldname]) ? [...dataModel.value[fieldname]] : []
+	rows[rowIndex] = { ...rows[rowIndex], ...val }
+	updateTableRows(fieldname, rows)
 }
 
 const componentProps = (componentObj: ResolvedField) => {
@@ -147,11 +151,13 @@ const componentProps = (componentObj: ResolvedField) => {
 		}
 	}
 
-	// A table sources its rows from the data model, never from the schema. `kind` is the only
-	// check: every path into AForm sets it (Zod's injectKind, Doctype.fromObject's
-	// normalizeFieldKind, and the registry), and hand-built ResolvedTable literals declare it.
+	// A table sources its rows from the data model, never from the schema, and its edits come back
+	// through `update:rows`. `kind` is the only check: every path into AForm sets it (Zod's
+	// injectKind, Doctype.fromObject's normalizeFieldKind, and the registry), and hand-built
+	// ResolvedTable literals declare it.
 	if (componentObj.kind === 'table') {
 		propsToPass['rows'] = dataModel.value[componentObj.fieldname] || []
+		propsToPass['onUpdate:rows'] = (rows: Record<string, unknown>[]) => updateTableRows(componentObj.fieldname, rows)
 	}
 
 	return propsToPass

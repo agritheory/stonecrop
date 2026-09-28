@@ -172,7 +172,8 @@ const resolvedColumns = columns.value?.length ? columns.value : schemaToColumns(
 const injectedLinkResolver = inject<LinkResolverFn | null>('aformLinkResolver', null)
 const store = createTableStore({
 	columns: resolvedColumns,
-	rows: rows.value,
+	// A copy, as the watcher below takes: the host's list changes only through `update:rows`.
+	rows: [...rows.value],
 	id,
 	config,
 	linkResolver: linkResolver ?? injectedLinkResolver,
