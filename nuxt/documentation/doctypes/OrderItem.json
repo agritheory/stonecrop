@@ -11,6 +11,12 @@
 			"hidden": true
 		},
 		{
+			"fieldname": "addedAt",
+			"label": "Added",
+			"component": "ADate",
+			"width": "12ch"
+		},
+		{
 			"fieldname": "productId",
 			"label": "Product ID",
 			"component": "ATextInput",

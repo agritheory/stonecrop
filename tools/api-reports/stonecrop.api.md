@@ -95,6 +95,20 @@ export interface BatchOperation {
 // @public
 export type ClientHandlerApi = Record<string, unknown>;
 
+// Warning: (ae-forgotten-export) The symbol "ComposeNewRecordResult" needs to be exported by the entry point index.d.ts
+//
+// @public (undocumented)
+export function composeNewRecord(registry: Registry, doctype: Doctype, options?: {
+    overlay?: DefaultsDocument;
+    now?: Date;
+}): Promise<ComposeNewRecordResult>;
+
+// @public
+export function composeNewRecordSync(registry: Registry, doctype: Doctype, options?: {
+    overlay?: DefaultsDocument;
+    now?: Date;
+}): ComposeNewRecordResult;
+
 // @public
 export function createHST(target: any, doctype: string): HSTNode;
 
@@ -114,9 +128,31 @@ export interface CrossTabMessage {
 export type CrossTabMessageType = 'operation' | 'undo' | 'redo' | 'sync-request' | 'sync-response';
 
 // @public
+export type DefaultsContext = {
+    doctype: Doctype;
+    record: Record<string, unknown>;
+    fieldname?: string;
+};
+
+// @public
+export type DefaultsDocument = {
+    [field: string]: DefaultsValue;
+};
+
+// @public
+export type DefaultsLoader = (slug: string) => DefaultsSource | undefined | Promise<DefaultsSource | undefined>;
+
+// @public
+export type DefaultsSource = DefaultsDocument | ((ctx: DefaultsContext) => DefaultsDocument | Promise<DefaultsDocument>);
+
+// @public
+export type DefaultsValue = string | number | boolean | null | DefaultsDocument | DefaultsValue[] | ((ctx: DefaultsContext) => DefaultsValue | Promise<DefaultsValue>);
+
+// @public
 export class Doctype {
-    constructor(doctype: string, schema: ImmutableDoctype['schema'], workflow: ImmutableDoctype['workflow'], component?: Component, links?: Record<string, LinkDeclaration>, displayField?: string);
+    constructor(doctype: string, schema: ImmutableDoctype['schema'], workflow: ImmutableDoctype['workflow'], component?: Component, links?: Record<string, LinkDeclaration>, displayField?: string, defaults?: DefaultsSource);
     readonly component?: Component;
+    readonly defaults?: DefaultsSource;
     readonly displayField?: string;
     readonly doctype: string;
     static fromObject(config: DoctypeConfig): Doctype;
@@ -152,6 +188,7 @@ export type DoctypeConfig = {
     links?: Record<string, LinkDeclaration>;
     workflow?: UnknownMachineConfig | WorkflowMeta;
     inherits?: string;
+    defaults?: DefaultsSource;
 };
 
 // @public
@@ -317,7 +354,7 @@ export type HSTStonecropReturn = BaseStonecropReturn & {
     hstStore: Ref<HSTNode | undefined>;
     formData: Ref<Record<string, any>>;
     resolvedSchema: Ref<ResolvedField[]>;
-    initializeNestedData: (path: string, doctype: Doctype) => void;
+    initializeNestedData: (path: string, doctype: Doctype) => Promise<void>;
     fetchNestedData: (path: string, doctype: Doctype, recordId: string, options?: {
         includeNested?: boolean | string[];
     }) => Promise<void>;
@@ -363,6 +400,9 @@ export type LazyLink = {
 
 // @public
 export function markOperationIrreversible(operationId: string | undefined, reason: string): void;
+
+// @public
+export function mergeComposeSettled(current: Record<string, unknown>, syncSnapshot: Record<string, unknown>, settled: Record<string, unknown>): Record<string, unknown>;
 
 // @public
 export type OperationLogAPI = {
@@ -444,6 +484,16 @@ export function registerTransitionAction(name: string, fn: TransitionActionFunct
 export class Registry {
     constructor(router?: Router, getMeta?: (routeContext: RouteContext) => Doctype | Promise<Doctype>);
     addDoctype(doctype: Doctype): void;
+    composeNewRecord(doctype: Doctype, options?: {
+        overlay?: DefaultsDocument;
+        now?: Date;
+    }): Promise<ComposeNewRecordResult>;
+    composeNewRecordSync(doctype: Doctype, options?: {
+        overlay?: DefaultsDocument;
+        now?: Date;
+    }): ComposeNewRecordResult;
+    // @internal (undocumented)
+    ensureDefaultsSourceLoaded(slug: string): Promise<void>;
     getAncestorLinks(doctypeSlug: string): Array<LinkDeclaration & {
         fieldname: string;
         doctype: string;
@@ -453,12 +503,16 @@ export class Registry {
     }>;
     getDoctype(slug: string): Doctype | undefined;
     getMeta?: (routeContext: RouteContext) => Doctype | Promise<Doctype>;
+    // @internal (undocumented)
+    getRegisteredDefaults(slug: string): DefaultsSource | undefined;
     initializeRecord(schema: ResolvedField[]): Record<string, any>;
     readonly name: string;
+    registerDefaults(slug: string, source: DefaultsSource): void;
     readonly registry: Record<string, Doctype>;
     resolveSchema(doctype: Doctype, visited?: Set<string>): ResolvedField[];
     static _root: Registry;
     readonly router?: Router;
+    setDefaultsLoader(loader: DefaultsLoader): void;
 }
 
 // @public
@@ -472,6 +526,11 @@ export class SchemaValidator {
     constructor(options?: ValidatorOptions);
     validate(doctype: string, schema: List<DoctypeField> | DoctypeField[] | undefined, workflow?: AnyStateNodeConfig, actions?: Map_2<string, string[]> | Map<string, string[]>, links?: Record<string, LinkDeclaration>): ValidationResult;
 }
+
+// @public
+export function seedDraftRecord(registry: Registry, doctype: Doctype, target: Ref<Record<string, unknown> | Record<string, any>>, options?: {
+    awaitLoader?: boolean;
+}): void;
 
 // @public
 export function setFieldRollback(doctype: string, fieldname: string, enableRollback: boolean): void;
@@ -749,7 +808,7 @@ export class Stonecrop {
     getRecords(doctype: Doctype, options?: GetRecordsOptions): Promise<GetRecordsResult>;
     getRecordState(doctype: string | Doctype, recordId: string): string;
     getStore(): HSTNode;
-    initializeNestedData(path: string, doctype: Doctype): void;
+    initializeNestedData(path: string, doctype: Doctype): Promise<void>;
     isWorkflowReady(doctype: Doctype, recordId: string): {
         ready: boolean;
         blockedLinks?: string[];

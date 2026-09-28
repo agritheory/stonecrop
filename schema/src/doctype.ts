@@ -339,6 +339,13 @@ export const DoctypeMeta = z
 
 		/** Parent doctype for inheritance */
 		inherits: z.string().optional(),
+
+		/**
+		 * Default values for new records — nested like the composed form/HST document.
+		 * Use field `default` for single-field static values; use this for document shape (including child-table rows).
+		 * Serialized JSON cannot contain functions; see superRefine on `defaults`.
+		 */
+		defaults: z.record(z.string(), z.unknown()).optional(),
 	})
 	.meta({
 		title: 'DoctypeMeta',
@@ -390,7 +397,32 @@ export const DoctypeMeta = z
 					: `displayField "${doctype.displayField}" is not declared on this doctype`,
 			})
 		}
+
+		if (doctype.defaults !== undefined) {
+			rejectFunctionsInDefaultsTree(doctype.defaults, [], ctx)
+		}
 	})
+
+function rejectFunctionsInDefaultsTree(value: unknown, path: Array<string | number>, ctx: z.RefinementCtx): void {
+	if (typeof value === 'function') {
+		const pathLabel = path.length ? path.join('.') : '(root)'
+		ctx.addIssue({
+			code: 'custom',
+			path: ['defaults', ...path],
+			message: `defaults cannot contain a function at ${pathLabel}; register code defaults on the client instead`,
+		})
+		return
+	}
+	if (Array.isArray(value)) {
+		value.forEach((item, index) => rejectFunctionsInDefaultsTree(item, [...path, index], ctx))
+		return
+	}
+	if (value !== null && typeof value === 'object') {
+		for (const [key, child] of Object.entries(value)) {
+			rejectFunctionsInDefaultsTree(child, [...path, key], ctx)
+		}
+	}
+}
 
 /**
  * Doctype metadata type inferred from Zod schema

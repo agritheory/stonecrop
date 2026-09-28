@@ -65,7 +65,8 @@
 		{
 			"fieldname": "createdAt",
 			"label": "Created At",
-			"component": "ADateTime"
+			"component": "ADateTime",
+			"mode": "edit"
 		},
 		{
 			"fieldname": "updatedAt",
@@ -79,6 +80,10 @@
 			"cardinality": "noneOrMany",
 			"fieldname": "items"
 		}
+	},
+	"defaults": {
+		"createdAt": "now",
+		"items": [{ "addedAt": "now" }]
 	},
 	"workflow": {
 		"states": [

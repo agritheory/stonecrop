@@ -4,6 +4,46 @@
 
 ## Functions
 
+### composeNewRecord
+
+**Signature:**
+
+```typescript
+export declare function composeNewRecord(registry: Registry, doctype: Doctype, options?: {
+    overlay?: DefaultsDocument;
+    now?: Date;
+}): Promise<ComposeNewRecordResult>;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| registry | `Registry` |  |
+| doctype | `Doctype` |  |
+| options | `{ overlay?: DefaultsDocument; now?: Date; }` |  |
+
+### composeNewRecordSync
+
+Build a new record: schema floor, compose-time tokens, doctype defaults, registered source, optional overlay. Sync functions block; promises merge when they settle.
+
+**Signature:**
+
+```typescript
+export declare function composeNewRecordSync(registry: Registry, doctype: Doctype, options?: {
+    overlay?: DefaultsDocument;
+    now?: Date;
+}): ComposeNewRecordResult;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| registry | `Registry` |  |
+| doctype | `Doctype` |  |
+| options | `{ overlay?: DefaultsDocument; now?: Date; }` |  |
+
 ### createHST
 
 Factory function for HST creation Creates a new HSTNode proxy for hierarchical state tree navigation.
@@ -112,6 +152,24 @@ export declare function markOperationIrreversible(operationId: string | undefine
 | operationId | `string \| undefined` | The ID of the operation to mark as irreversible |
 | reason | `string` | Human-readable reason why the operation cannot be undone |
 
+### mergeComposeSettled
+
+Apply an awaitable compose result without clobbering fields the user edited after the sync snapshot.
+
+**Signature:**
+
+```typescript
+export declare function mergeComposeSettled(current: Record<string, unknown>, syncSnapshot: Record<string, unknown>, settled: Record<string, unknown>): Record<string, unknown>;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| current | `Record<string, unknown>` |  |
+| syncSnapshot | `Record<string, unknown>` |  |
+| settled | `Record<string, unknown>` |  |
+
 ### registerGlobalAction
 
 Register a global action function that can be used in field triggers
@@ -145,6 +203,27 @@ export declare function registerTransitionAction(name: string, fn: TransitionAct
 |-----------|------|-------------|
 | name | `string` | The name of the transition action to register |
 | fn | `TransitionActionFunction` | The transition action function to execute |
+
+### seedDraftRecord
+
+Fill a draft form ref from composed defaults; apply awaitable layers when they settle.
+
+**Signature:**
+
+```typescript
+export declare function seedDraftRecord(registry: Registry, doctype: Doctype, target: Ref<Record<string, unknown> | Record<string, any>>, options?: {
+    awaitLoader?: boolean;
+}): void;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| registry | `Registry` |  |
+| doctype | `Doctype` |  |
+| target | `Ref<Record<string, unknown> \| Record<string, any>>` |  |
+| options | `{ awaitLoader?: boolean; }` |  |
 
 ### setFieldRollback
 
@@ -1175,6 +1254,62 @@ Cross-tab message types
 export type CrossTabMessageType = 'operation' | 'undo' | 'redo' | 'sync-request' | 'sync-response';
 ```
 
+### DefaultsContext
+
+Context passed to defaults functions at document or field level.
+
+**Definition:**
+
+```typescript
+export type DefaultsContext = {
+    doctype: Doctype;
+    record: Record<string, unknown>;
+    fieldname?: string;
+};
+```
+
+### DefaultsDocument
+
+Nested object in the same shape as a composed record (HST / formData).
+
+**Definition:**
+
+```typescript
+export type DefaultsDocument = {
+    [field: string]: DefaultsValue;
+};
+```
+
+### DefaultsLoader
+
+Lazy loader for defaults that are not on the doctype JSON.
+
+**Definition:**
+
+```typescript
+export type DefaultsLoader = (slug: string) => DefaultsSource | undefined | Promise<DefaultsSource | undefined>;
+```
+
+### DefaultsSource
+
+Static document or a function that returns one (sync blocks, promise loads).
+
+**Definition:**
+
+```typescript
+export type DefaultsSource = DefaultsDocument | ((ctx: DefaultsContext) => DefaultsDocument | Promise<DefaultsDocument>);
+```
+
+### DefaultsValue
+
+A value inside a defaults document.
+
+**Definition:**
+
+```typescript
+export type DefaultsValue = string | number | boolean | null | DefaultsDocument | DefaultsValue[] | ((ctx: DefaultsContext) => DefaultsValue | Promise<DefaultsValue>);
+```
+
 ### DoctypeConfig
 
 Plain object representation of doctype configuration for serialization/API responses. Extends DoctypeMeta with Stonecrop-specific properties: actions, slug, inherits.
@@ -1190,6 +1325,7 @@ export type DoctypeConfig = {
     links?: Record<string, LinkDeclaration>;
     workflow?: UnknownMachineConfig | WorkflowMeta;
     inherits?: string;
+    defaults?: DefaultsSource;
 };
 ```
 
@@ -1283,7 +1419,7 @@ export type HSTStonecropReturn = BaseStonecropReturn & {
     hstStore: Ref<HSTNode | undefined>;
     formData: Ref<Record<string, any>>;
     resolvedSchema: Ref<ResolvedField[]>;
-    initializeNestedData: (path: string, doctype: Doctype) => void;
+    initializeNestedData: (path: string, doctype: Doctype) => Promise<void>;
     fetchNestedData: (path: string, doctype: Doctype, recordId: string, options?: {
         includeNested?: boolean | string[];
     }) => Promise<void>;
@@ -1420,7 +1556,7 @@ Doctype runtime class with Immutable.js collections for HST change tracking.
 **Constructor:**
 
 ```typescript
-new Doctype(doctype: string, schema: ImmutableDoctype['schema'], workflow: ImmutableDoctype['workflow'], component: Component, links: Record<string, LinkDeclaration>, displayField: string)
+new Doctype(doctype: string, schema: ImmutableDoctype['schema'], workflow: ImmutableDoctype['workflow'], component: Component, links: Record<string, LinkDeclaration>, displayField: string, defaults: DefaultsSource)
 ```
 
 **Parameters:**
@@ -1433,12 +1569,14 @@ new Doctype(doctype: string, schema: ImmutableDoctype['schema'], workflow: Immut
 | component | `Component` | Optional Vue component for rendering the doctype |
 | links | `Record<string, LinkDeclaration>` | Optional relationship links to other doctypes |
 | displayField | `string` | Optional field used when displaying references to this doctype |
+| defaults | `DefaultsSource` |  |
 
 **Properties:**
 
 | Property | Type | Description |
 |----------|------|-------------|
 | component | `Component` | The doctype component |
+| defaults | `DefaultsSource` | Document-level defaults for new records (static document or in-memory function). |
 | displayField | `string` | Field on this doctype used when displaying a reference to one of its records. |
 | doctype | `string` | The doctype name |
 | links | `Record<string, LinkDeclaration>` | Relationship links to other doctypes |
@@ -1764,6 +1902,28 @@ addDoctype(doctype: Doctype): void
 |-----------|------|-------------|
 | doctype | `Doctype` | The doctype to fetch metadata for |
 
+#### composeNewRecord
+
+Compose a new record with document defaults. See `composeNewRecord`.
+
+```typescript
+composeNewRecord(doctype: Doctype, options: {
+        overlay?: DefaultsDocument;
+        now?: Date;
+    }): Promise<ComposeNewRecordResult>
+```
+
+#### composeNewRecordSync
+
+Compose a new record without awaiting `setDefaultsLoader`. Use when defaults are already registered.
+
+```typescript
+composeNewRecordSync(doctype: Doctype, options: {
+        overlay?: DefaultsDocument;
+        now?: Date;
+    }): ComposeNewRecordResult
+```
+
 #### getAncestorLinks
 
 Get links on other doctypes that target the given doctype.
@@ -1827,6 +1987,14 @@ initializeRecord(schema: ResolvedField[]): Record<string, any>
 |-----------|------|-------------|
 | schema | `ResolvedField[]` | The resolved schema array to derive defaults from |
 
+#### registerDefaults
+
+Register defaults for a doctype slug (typically from app bootstrap).
+
+```typescript
+registerDefaults(slug: string, source: DefaultsSource): void
+```
+
 #### resolveSchema
 
 Resolve a Doctype's authoring schema into a rendered schema array suitable for AForm.
@@ -1845,6 +2013,14 @@ resolveSchema(doctype: Doctype, visited: Set<string>): ResolvedField[]
 |-----------|------|-------------|
 | doctype | `Doctype` | The doctype to resolve |
 | visited | `Set<string>` | Internal — set of already-visited doctype slugs for cycle detection |
+
+#### setDefaultsLoader
+
+Lazy-load defaults from an external source the first time a new record is composed.
+
+```typescript
+setDefaultsLoader(loader: DefaultsLoader): void
+```
 
 ### SchemaValidator
 
@@ -2138,7 +2314,7 @@ Scaffold empty descendant records from defaults for all descendant links.
 Initializes all scalar and link fields at their HST paths with default values. For new records, call this after setting up the doctype to ensure all paths exist.
 
 ```typescript
-initializeNestedData(path: string, doctype: Doctype): void
+initializeNestedData(path: string, doctype: Doctype): Promise<void>
 ```
 
 **Parameters:**

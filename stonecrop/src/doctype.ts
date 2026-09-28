@@ -3,6 +3,7 @@ import { getRecordIdentity, getRecordIdField, isActionAllowedInState, normalizeF
 import { List } from 'immutable'
 import { Component } from 'vue'
 
+import type { DefaultsSource } from './types/defaults'
 import type { DoctypeConfig, ImmutableDoctype } from './types/doctype'
 
 /**
@@ -62,6 +63,13 @@ export default class Doctype {
 	readonly displayField?: string
 
 	/**
+	 * Document-level defaults for new records (static document or in-memory function).
+	 * @public
+	 * @readonly
+	 */
+	readonly defaults?: DefaultsSource
+
+	/**
 	 * Creates a new Doctype instance
 	 * @param doctype - The doctype name
 	 * @param schema - The doctype schema definition
@@ -76,7 +84,8 @@ export default class Doctype {
 		workflow: ImmutableDoctype['workflow'],
 		component?: Component,
 		links?: Record<string, LinkDeclaration>,
-		displayField?: string
+		displayField?: string,
+		defaults?: DefaultsSource
 	) {
 		this.doctype = doctype
 		this.schema = schema
@@ -84,6 +93,7 @@ export default class Doctype {
 		this.component = component
 		this.links = links
 		this.displayField = displayField
+		this.defaults = defaults
 	}
 
 	/**
@@ -133,7 +143,15 @@ export default class Doctype {
 		const fields = config.fields?.map(normalizeFieldKind) as DoctypeField[] | undefined
 		const schema = fields ? List(fields) : List<DoctypeField>()
 
-		return new Doctype(config.name, schema, config.workflow, undefined, config.links, config.displayField)
+		return new Doctype(
+			config.name,
+			schema,
+			config.workflow,
+			undefined,
+			config.links,
+			config.displayField,
+			config.defaults
+		)
 	}
 
 	/**

@@ -19,7 +19,12 @@ definePageMeta({
 				<p>Orders and users with guarded transitions, rail panels on order records, and public DocBuilder.</p>
 				<ul>
 					<li><NuxtLink to="/playground/user">Users</NuxtLink></li>
+					<li><NuxtLink to="/playground/user/new">New User</NuxtLink> — sync registered default on Created At</li>
 					<li><NuxtLink to="/playground/order">Orders</NuxtLink></li>
+					<li>
+						<NuxtLink to="/playground/order/new">New Order</NuxtLink> — JSON defaults (`now`, one line item) plus
+						awaitable customer
+					</li>
 				</ul>
 			</section>
 

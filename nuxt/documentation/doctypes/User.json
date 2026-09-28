@@ -49,7 +49,7 @@
 			"fieldname": "createdAt",
 			"label": "Created At",
 			"component": "ADateTime",
-			"mode": "display"
+			"mode": "edit"
 		},
 		{
 			"fieldname": "updatedAt",

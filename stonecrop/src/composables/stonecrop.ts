@@ -5,6 +5,8 @@ import { inject, onMounted, Ref, ref, watch, provide, computed } from 'vue'
 import Doctype from '../doctype'
 import { isDraftRecordId } from '../draft'
 import Registry from '../registry'
+import { mergeComposeSettled } from '../merge-settled-draft'
+import { seedDraftRecord } from '../seed-draft-record'
 import { Stonecrop } from '../stonecrop'
 import type { HSTNode } from '../types/hst'
 import type { BaseStonecropReturn, HSTStonecropReturn, HSTChangeData, OperationLogAPI } from '../types/composable'
@@ -210,7 +212,7 @@ export function useStonecrop(options?: {
 		hstStore.value = stonecrop.value.getStore()
 		resolvedSchema.value = registry.resolveSchema(options.doctype)
 		if (!options.recordId || isDraftRecordId(options.recordId)) {
-			formData.value = registry.initializeRecord(resolvedSchema.value)
+			seedDraftRecord(registry, options.doctype, formData)
 		}
 		if (hstStore.value) {
 			setupDeepReactivity(options.doctype, options.recordId || 'new', formData, hstStore.value)
@@ -288,7 +290,18 @@ export function useStonecrop(options?: {
 						}
 					}
 				} else {
-					formData.value = registry.initializeRecord(resolvedSchema.value)
+					isLoading.value = true
+					try {
+						const { record, settled } = await registry.composeNewRecord(doctype)
+						const syncSnapshot = record
+						formData.value = syncSnapshot
+						void settled.then(resolved => {
+							formData.value = mergeComposeSettled(formData.value, syncSnapshot, resolved)
+							return undefined
+						})
+					} finally {
+						isLoading.value = false
+					}
 				}
 
 				if (hstStore.value) {
@@ -310,7 +323,13 @@ export function useStonecrop(options?: {
 								formData.value = loadedRecord.get('') || {}
 							}
 						} catch {
-							formData.value = registry.initializeRecord(resolvedSchema.value)
+							const { record, settled } = await registry.composeNewRecord(doctype)
+							const syncSnapshot = record
+							formData.value = syncSnapshot
+							void settled.then(resolved => {
+								formData.value = mergeComposeSettled(formData.value, syncSnapshot, resolved)
+								return undefined
+							})
 						}
 					}
 				}
@@ -389,7 +408,7 @@ export function useStonecrop(options?: {
 	 * @param path - The HST path where initialized data should be stored
 	 * @param doctype - The doctype to initialize
 	 */
-	const initializeNestedData = (path: string, doctype: Doctype): void => {
+	const initializeNestedData = async (path: string, doctype: Doctype): Promise<void> => {
 		if (!stonecrop.value) {
 			throw new Error('Stonecrop instance not available')
 		}

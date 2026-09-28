@@ -594,13 +594,11 @@ export class Stonecrop {
 	 * @param doctype - The doctype to initialize
 	 * @public
 	 */
-	initializeNestedData(path: string, doctype: Doctype): void {
+	async initializeNestedData(path: string, doctype: Doctype): Promise<void> {
 		const slug = doctype.slug
 		this.ensureDoctypeExists(slug)
 
-		// Resolve schema and initialize with defaults
-		const resolvedSchema = this.registry.resolveSchema(doctype)
-		const record = this.registry.initializeRecord(resolvedSchema)
+		const { record, settled } = await this.registry.composeNewRecord(doctype)
 
 		// Ensure the ancestor path exists in HST before setting descendant fields
 		const existingData = this.hstStore.get(path)
@@ -609,9 +607,14 @@ export class Stonecrop {
 		}
 
 		// Store each field at its own HST path
-		for (const [key, value] of Object.entries(record)) {
-			this.hstStore.set(`${path}.${key}`, value, 'system')
+		const writeRecord = (data: Record<string, unknown>) => {
+			for (const [key, value] of Object.entries(data)) {
+				this.hstStore.set(`${path}.${key}`, value, 'system')
+			}
 		}
+
+		writeRecord(record)
+		void settled.then(writeRecord)
 	}
 
 	/**

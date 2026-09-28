@@ -64,7 +64,13 @@
 // The draft segment comes from @stonecrop/stonecrop rather than being spelled out here: that
 // package guards fetching, field initialization and workflow readiness on the same question, and
 // when the two were written separately they disagreed and every guard over there went dead.
-import { DRAFT_RECORD_ID, isDraftRecordId, useStonecrop, useValidationStore } from '@stonecrop/stonecrop'
+import {
+	DRAFT_RECORD_ID,
+	isDraftRecordId,
+	mergeComposeSettled,
+	useStonecrop,
+	useValidationStore,
+} from '@stonecrop/stonecrop'
 import {
 	AForm,
 	type AFormLinkNavigator,
@@ -967,7 +973,27 @@ watch(
 			return
 		}
 		const registry = stonecrop.value?.registry
-		draftRecord.value = registry ? registry.initializeRecord(getRecordFormSchema()) : {}
+		const slug = currentDoctype.value
+		if (!registry || !slug) {
+			draftRecord.value = {}
+			return
+		}
+		const doctype = registry.getDoctype(slug)
+		if (!doctype) {
+			draftRecord.value = registry.initializeRecord(getRecordFormSchema())
+			return
+		}
+		void registry.composeNewRecord(doctype).then(({ record, settled }) => {
+			if (!isNewRecord.value || currentDoctype.value !== slug) return undefined
+			const syncSnapshot = record
+			draftRecord.value = syncSnapshot
+			void settled.then(final => {
+				if (!isNewRecord.value || currentDoctype.value !== slug) return undefined
+				draftRecord.value = mergeComposeSettled(draftRecord.value, syncSnapshot, final)
+				return undefined
+			})
+			return undefined
+		})
 	},
 	{ immediate: true }
 )

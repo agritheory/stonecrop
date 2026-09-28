@@ -62,21 +62,21 @@ describe('Desktop draft records', { tags: ['component'] }, () => {
 		// cached from the getter. `addRecord` for any record invalidated that cache and the typed
 		// fields were silently dropped — a create then persisted an empty record.
 		const wrapper = mountAt('new')
-		await nextTick()
+		await flushPromises()
 
 		const aform = wrapper.findComponent(AForm)
 		aform.vm.$emit('update:data', { title: 'Buy milk' })
 		await flushPromises()
 
 		stonecrop.addRecord('task', '999', { id: '999', title: 'unrelated' })
-		await nextTick()
+		await flushPromises()
 
 		expect(aform.props('data')).toMatchObject({ title: 'Buy milk' })
 	})
 
 	it('seeds a draft with the doctype declared defaults', async () => {
 		const wrapper = mountAt('new')
-		await nextTick()
+		await flushPromises()
 
 		expect(wrapper.findComponent(AForm).props('data')).toMatchObject({ status: 'draft' })
 	})
