@@ -1033,14 +1033,14 @@ describe('self-transition data write', { tags: ['integration', 'graphql'] }, () 
 		expect((read as any).data?.stonecropRecord?.data?.name).toBe('Renamed')
 	})
 
-	// The client files a save's reply as the whole record, so a reply missing the sync-fetched `tags`
+	// The client files a save's `record` as the whole record, so one missing the sync-fetched `tags`
 	// a read carries empties the child table until the next read.
 	it('replies to a save with the record a read of it returns', async () => {
 		const [action, read] = await runSequence([
-			`mutation { stonecropAction(doctype: "ScItem", action: "save", args: [{ id: "1", data: { name: "Renamed" } }]) { data } }`,
+			`mutation { stonecropAction(doctype: "ScItem", action: "save", args: [{ id: "1", data: { name: "Renamed" } }]) { record } }`,
 			`query { stonecropRecord(doctype: "ScItem", id: "1") { data } }`,
 		])
-		expect((action as any).data?.stonecropAction?.data).toEqual((read as any).data?.stonecropRecord?.data)
+		expect((action as any).data?.stonecropAction?.record).toEqual((read as any).data?.stonecropRecord?.data)
 	})
 
 	// Creating is the same request with no id. There is no create action and no create mutation:
