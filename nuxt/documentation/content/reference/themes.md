@@ -11,7 +11,7 @@ description: The Stonecrop token floor and how to restyle it
 import '@stonecrop/themes/default.css'
 ```
 
-Nuxt hosts get it automatically — `@stonecrop/nuxt` loads it into `nuxt.options.css`, with no option to change or disable it.
+Nuxt hosts get it automatically: `@stonecrop/nuxt` loads it into `nuxt.options.css`, with no option to change or disable it.
 
 ## Overriding tokens
 
@@ -77,7 +77,7 @@ Every dropdown list, the unit menu and atable's row menu are drawn in `--sc-over
 
 Each variant (`neutral`, `success`, `warning`, `danger`, `brand`) defines `--sc-badge-{variant}-bg`, `-text` and `-accent`. All are derived from the brand colors and the gray ramp.
 
-`--sc-badge-bg`, `--sc-badge-text` and `--sc-badge-accent` are **not** floor tokens — `ABadge` and `ASegmentedControl` set them per-instance as inline styles.
+`--sc-badge-bg`, `--sc-badge-text` and `--sc-badge-accent` are **not** floor tokens: `ABadge` and `ASegmentedControl` set them per-instance as inline styles.
 
 ### Table
 
@@ -110,11 +110,14 @@ Each variant (`neutral`, `success`, `warning`, `danger`, `brand`) defines `--sc-
 | `--sc-form-border` | `var(--sc-gray-50)` |
 | `--sc-form-field-max-width` | `50ch` |
 | `--sc-form-label-offset` | `var(--sc-space-2)` |
+| `--sc-dropdown-max-height` | `17rem` |
 | `--sc-input-active-border-color` | `var(--sc-gray-80)` |
 | `--sc-input-active-label-color` | `var(--sc-gray-80)` |
 | `--sc-input-border-color` | `var(--sc-gray-50)` |
 | `--sc-input-label-color` | `var(--sc-gray-60)` |
 | `--sc-required-border` | `var(--sc-color-danger)` |
+
+Every dropdown list and the unit menu scroll inside once they reach `--sc-dropdown-max-height`, and near the window's bottom shrink to the room left below them, never under about four rows; set it to `none` to let a list fill that room.
 
 ### Buttons
 
@@ -146,7 +149,7 @@ The sheet also applies `--sc-font-family` to `body` and normalizes form controls
 
 ## Adding a token
 
-A component may only read a name the floor defines. `var()` on an undefined name is invalid at computed-value time — it does not throw, it computes to `unset` and renders wrong silently.
+A component may only read a name the floor defines. `var()` on an undefined name is invalid at computed-value time. It does not throw; it computes to `unset` and renders wrong silently.
 
 `aform`, `atable` and `desktop` each carry a `tests/token-floor.spec.ts` that fails when the package consumes a name the floor does not define, so a missing declaration is caught in CI rather than in a screenshot.
 

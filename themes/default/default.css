@@ -50,6 +50,7 @@ before all other rules.
 		--sc-border-radius: 0;
 		--sc-form-field-max-width: 50ch;
 		--sc-form-label-offset: var(--sc-space-2);
+		--sc-dropdown-max-height: 17rem; /* about ten rows */
 
 		/* Semantic: brand aliases */
 		--sc-primary-color: var(--sc-color-primary);

@@ -38,7 +38,12 @@
 								<span class="aquantity__uom-value">{{ uom || uomLabel }}</span>
 								<span class="aquantity__caret" aria-hidden="true"></span>
 							</button>
-							<ul v-show="dropdown.open" class="aquantity__uom-menu" role="listbox" :aria-label="uomLabel">
+							<ul
+								v-show="dropdown.open"
+								ref="uomMenu"
+								class="aquantity__uom-menu"
+								role="listbox"
+								:aria-label="uomLabel">
 								<li
 									v-for="(option, i) in uoms"
 									:id="`${uuid}-uom-opt-${i}`"
@@ -86,8 +91,9 @@
 
 <script setup lang="ts">
 import { vOnClickOutside } from '@vueuse/components'
-import { computed, reactive } from 'vue'
+import { computed, reactive, useTemplateRef } from 'vue'
 
+import { fitDropdownList } from '../../composables/dropdownList'
 import { fieldErrorA11y } from '../../composables/fieldErrorA11y'
 import type { ComponentProps, QuantityOptions, QuantityValue } from '../../types'
 import { numberFromBox } from '../../utils/emptiedBox'
@@ -190,6 +196,12 @@ const onQtyPaste = (event: ClipboardEvent) => {
 }
 
 const dropdown = reactive({ open: false, activeIndex: -1 })
+
+fitDropdownList(useTemplateRef<HTMLElement>('uomMenu'), {
+	isOpen: () => dropdown.open,
+	optionCount: () => uoms.value.length,
+	activeIndex: () => dropdown.activeIndex,
+})
 
 const openDropdown = () => {
 	dropdown.activeIndex = Math.max(uoms.value.indexOf(uom.value), 0)
@@ -340,6 +352,8 @@ const displayText = computed(() => {
 	z-index: 100;
 	box-sizing: border-box;
 	min-width: calc(100% + 2px);
+	max-height: var(--sc-dropdown-max-height);
+	overflow-y: auto;
 	margin: 0;
 	padding: 0.25rem 0;
 	list-style: none;
