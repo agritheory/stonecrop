@@ -72,7 +72,7 @@ import {
 	type ResolvedField,
 	type ResolvedTable,
 } from '@stonecrop/aform'
-import { computed, markRaw, onMounted, onUnmounted, provide, ref, unref, watch } from 'vue'
+import { computed, markRaw, onMounted, onUnmounted, provide, ref, toRaw, unref, watch } from 'vue'
 
 import ActionSet from './ActionSet.vue'
 import SheetNav from './SheetNav.vue'
@@ -1007,8 +1007,9 @@ const visibleActionSetSlots = computed(() =>
 		.filter(slot => slot.show !== false)
 		.map(slot =>
 			Object.assign({}, slot, {
-				icon: slot.icon ? markRaw(slot.icon) : undefined,
-				component: slot.component ? markRaw(slot.component) : undefined,
+				// A host's slots may be reactive, so each component is unwrapped before it is marked raw.
+				icon: slot.icon ? markRaw(toRaw(slot.icon)) : undefined,
+				component: slot.component ? markRaw(toRaw(slot.component)) : undefined,
 			})
 		)
 )

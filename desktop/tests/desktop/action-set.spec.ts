@@ -1,6 +1,6 @@
 import { mount, type VueWrapper } from '@vue/test-utils'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { defineComponent, nextTick, ref, type Component } from 'vue'
+import { defineComponent, nextTick, reactive, ref, type Component } from 'vue'
 
 import { Registry, Stonecrop } from '@stonecrop/stonecrop'
 
@@ -10,10 +10,18 @@ import type { ActionElements, ActionSetSlot, RouteAdapter } from '../../src/type
 
 import { buildDoctype, findActionSet, makeStonecropPlugin, openActionsDrawer } from './desktop.helpers'
 
+const consoleWarn = vi.spyOn(console, 'warn')
+
 afterEach(() => {
 	Registry._root = undefined as any
 	Stonecrop._root = undefined as any
+	consoleWarn.mockClear()
 })
+
+const reactiveComponentWarnings = () =>
+	consoleWarn.mock.calls
+		.map(([message]) => String(message))
+		.filter(message => message.includes('made a reactive object'))
 
 const StubPreview = defineComponent({
 	props: { title: { type: String, default: 'Preview' } },
@@ -200,6 +208,48 @@ describe('Desktop ActionSet', { tags: ['component'] }, () => {
 		expect(wrapper.find('.desktop').classes()).not.toContain('desktop--preview-open')
 	})
 
+	// A host keeping its slots or views in reactive state hands Desktop proxies of its components.
+	// Vue unwraps a proxy before rendering it, so its warning is the only trace of one.
+	// Each test defines its own component: once marked raw, a shared one stays raw for later tests.
+	it('renders a slot component from reactive state without making it reactive', async () => {
+		const FilesPanel = defineComponent({ template: '<p class="files-panel">Files</p>' })
+		const FilesIcon = defineComponent({ template: '<svg class="files-icon" />' })
+		const slots = reactive([{ id: 'files', label: 'Files', icon: FilesIcon, component: FilesPanel }])
+		const wrapper = mountDesktop(slots)
+		await nextTick()
+
+		const filesItem = wrapper.findAll('.action-set__item').find(i => i.attributes('aria-label') === 'Files')
+		await filesItem!.trigger('click')
+		await nextTick()
+
+		expect(wrapper.find('.files-icon').exists()).toBe(true)
+		expect(wrapper.find('.files-panel').exists()).toBe(true)
+		expect(reactiveComponentWarnings()).toEqual([])
+	})
+
+	it('renders a presented view from reactive state without making it reactive', async () => {
+		const InvoicePreview = defineComponent({ template: '<p class="invoice-preview">Invoice.pdf</p>' })
+		const views = reactive({ preview: InvoicePreview })
+		const ReactivePreviewSlot = defineComponent({
+			setup() {
+				const actionSet = useActionSet()
+				return { open: () => actionSet.present({ id: 'preview-1', view: views.preview }) }
+			},
+			template: '<button type="button" class="open-preview" @click="open">Open preview</button>',
+		})
+		const wrapper = mountDesktop([{ id: 'files', label: 'Files', component: ReactivePreviewSlot }])
+		await nextTick()
+
+		const filesItem = wrapper.findAll('.action-set__item').find(i => i.attributes('aria-label') === 'Files')
+		await filesItem!.trigger('click')
+		await nextTick()
+		await wrapper.find('.open-preview').trigger('click')
+		await nextTick()
+
+		expect(wrapper.find('.invoice-preview').exists()).toBe(true)
+		expect(reactiveComponentWarnings()).toEqual([])
+	})
+
 	it('hides a slot when show is false', async () => {
 		const wrapper = mountDesktop([
 			{ id: 'files', label: 'Files', show: false },
@@ -249,11 +299,12 @@ describe('Desktop ActionSet', { tags: ['component'] }, () => {
 	})
 
 	it('throws when useActionSet is called outside Desktop', () => {
+		// `render` stands in for the one `setup` never returns, so Vue reports only the throw.
 		const Orphan = defineComponent({
 			setup() {
 				useActionSet()
-				return () => null
 			},
+			render: () => null,
 		})
 
 		expect(() => mount(Orphan)).toThrow(/^useActionSet\(\) must be called inside a component rendered by Desktop$/)
