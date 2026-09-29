@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url'
 import NuxtGrafserv, { type ModuleOptions as GrafservOptions } from '@stonecrop/nuxt-grafserv'
 
 import NuxtStonecrop from '../src/module'
-import { contentRoutes, indexTrailingSlashRouteRules } from './content-routes'
+import { contentRoutes, indexSectionPaths } from './content-routes'
 
 // @nuxtjs/mdc's remark/rehype pipeline (behind @nuxt/content) depends on a chain of small CJS
 // utilities — remark-gfm, remark-emoji, remark-mdc, remark-rehype, rehype-raw, parse5,
@@ -106,6 +106,13 @@ export default defineNuxtConfig({
 
 	components: [{ path: '~/components', global: true }],
 
+	// Read here, where the content folder is on disk, for the trailing-slash middleware.
+	runtimeConfig: {
+		public: {
+			docsIndexPaths: indexSectionPaths(),
+		},
+	},
+
 	devtools: { enabled: true },
 
 	devServer: {
@@ -118,7 +125,6 @@ export default defineNuxtConfig({
 			routes: contentRoutes(),
 		},
 		routeRules: {
-			...indexTrailingSlashRouteRules(),
 			'/playground/**': { ssr: true, prerender: false },
 			'/docbuilder/**': { ssr: true, prerender: false },
 			'/graphql/**': { ssr: true, prerender: false },

@@ -30,8 +30,3 @@ export function contentRoutes(directory: string = contentRoot): string[] {
 export function indexSectionPaths(): string[] {
 	return contentRoutes().filter(route => route.endsWith('/') && route.length > 1)
 }
-
-/** Nitro routeRules redirecting bare index paths to their trailing-slash canonical URL. */
-export function indexTrailingSlashRouteRules(): Record<string, { redirect: string }> {
-	return Object.fromEntries(indexSectionPaths().map(route => [route.slice(0, -1), { redirect: route }]))
-}
