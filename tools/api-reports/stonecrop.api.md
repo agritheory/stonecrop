@@ -90,19 +90,20 @@ export interface BatchOperation {
 // @public
 export type ClientHandlerApi = Record<string, unknown>;
 
-// Warning: (ae-forgotten-export) The symbol "ComposeNewRecordResult" needs to be exported by the entry point index.d.ts
-//
-// @public (undocumented)
-export function composeNewRecord(registry: Registry, doctype: Doctype, options?: {
-    overlay?: DefaultsDocument;
-    now?: Date;
-}): Promise<ComposeNewRecordResult>;
+// @public
+export function composeNewRecord(registry: Registry, doctype: Doctype, options?: ComposeNewRecordOptions): Promise<ComposeNewRecordResult>;
 
 // @public
-export function composeNewRecordSync(registry: Registry, doctype: Doctype, options?: {
+export type ComposeNewRecordOptions = {
     overlay?: DefaultsDocument;
     now?: Date;
-}): ComposeNewRecordResult;
+    timeoutMs?: number;
+};
+
+// @public
+export type ComposeNewRecordResult = {
+    record: Record<string, unknown>;
+};
 
 // @public
 export function createHST(target: any, doctype: string): HSTNode;
@@ -121,6 +122,9 @@ export interface CrossTabMessage {
 
 // @public
 export type CrossTabMessageType = 'operation' | 'undo' | 'redo' | 'sync-request' | 'sync-response';
+
+// @public
+export const DEFAULTS_TIMEOUT_MS = 5000;
 
 // @public
 export type DefaultsContext = {
@@ -397,9 +401,6 @@ export type LazyLink = {
 export function markOperationIrreversible(operationId: string | undefined, reason: string): void;
 
 // @public
-export function mergeComposeSettled(current: Record<string, unknown>, syncSnapshot: Record<string, unknown>, settled: Record<string, unknown>): Record<string, unknown>;
-
-// @public
 export type OperationLogAPI = {
     operations: Ref<HSTOperation[]>;
     currentIndex: Ref<number>;
@@ -479,14 +480,7 @@ export function registerTransitionAction(name: string, fn: TransitionActionFunct
 export class Registry {
     constructor(router?: Router, getMeta?: (routeContext: RouteContext) => Doctype | Promise<Doctype>);
     addDoctype(doctype: Doctype): void;
-    composeNewRecord(doctype: Doctype, options?: {
-        overlay?: DefaultsDocument;
-        now?: Date;
-    }): Promise<ComposeNewRecordResult>;
-    composeNewRecordSync(doctype: Doctype, options?: {
-        overlay?: DefaultsDocument;
-        now?: Date;
-    }): ComposeNewRecordResult;
+    composeNewRecord(doctype: Doctype, options?: ComposeNewRecordOptions): Promise<ComposeNewRecordResult>;
     // @internal (undocumented)
     ensureDefaultsSourceLoaded(slug: string): Promise<void>;
     getAncestorLinks(doctypeSlug: string): Array<LinkDeclaration & {
@@ -521,11 +515,6 @@ export class SchemaValidator {
     constructor(options?: ValidatorOptions);
     validate(doctype: string, schema: List<DoctypeField> | DoctypeField[] | undefined, workflow?: AnyStateNodeConfig, actions?: Map_2<string, string[]> | Map<string, string[]>, links?: Record<string, LinkDeclaration>): ValidationResult;
 }
-
-// @public
-export function seedDraftRecord(registry: Registry, doctype: Doctype, target: Ref<Record<string, unknown> | Record<string, any>>, options?: {
-    awaitLoader?: boolean;
-}): void;
 
 // @public
 export function setFieldRollback(doctype: string, fieldname: string, enableRollback: boolean): void;

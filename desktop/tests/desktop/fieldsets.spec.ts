@@ -76,7 +76,7 @@ describe('Desktop fieldsets', { tags: ['component'] }, () => {
 
 	it('seeds a draft with the declared default of a field inside a fieldset', async () => {
 		const wrapper = mountAt('new', { AForm: true })
-		await nextTick()
+		await flushPromises()
 
 		expect(wrapper.findComponent({ name: 'AForm' }).props('data')).toMatchObject({ color: 'grey' })
 	})

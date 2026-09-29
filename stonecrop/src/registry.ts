@@ -4,9 +4,9 @@ import type { DoctypeField, LinkDeclaration, TableViewConfig, ValueField } from 
 import { componentCategory, componentLinkExpansion, resolveLinkRenderMode } from '@stonecrop/schema'
 import { Router } from 'vue-router'
 
-import { composeNewRecord, composeNewRecordSync, type ComposeNewRecordResult } from './compose-new-record'
+import { composeNewRecord } from './compose-new-record'
 import Doctype from './doctype'
-import type { DefaultsDocument, DefaultsLoader, DefaultsSource } from './types/defaults'
+import type { ComposeNewRecordOptions, ComposeNewRecordResult, DefaultsLoader, DefaultsSource } from './types/defaults'
 import { RouteContext } from './types/registry'
 
 /**
@@ -59,16 +59,17 @@ export default class Registry {
 	private registeredDefaults = new Map<string, DefaultsSource>()
 
 	/**
-	 * Optional lazy loader — invoked only from {@link composeNewRecord}, not from schema load.
+	 * Optional lazy loader, run the first time a new record of a doctype is composed, never at schema load.
 	 * @internal
 	 */
 	private defaultsLoader?: DefaultsLoader
 
 	/**
-	 * Slugs for which {@link defaultsLoader} has already run.
+	 * Each doctype's load by the defaults loader, kept while it runs and after it succeeds, so records composed
+	 * at once share one load. A load that fails is dropped, so the next new record asks again.
 	 * @internal
 	 */
-	private defaultsLoaderFetched = new Set<string>()
+	private defaultsLoads = new Map<string, Promise<void>>()
 
 	/**
 	 * The Vue router instance
@@ -466,34 +467,30 @@ export default class Registry {
 	/**
 	 * @internal
 	 */
-	async ensureDefaultsSourceLoaded(slug: string): Promise<void> {
-		if (!this.defaultsLoader || this.defaultsLoaderFetched.has(slug)) {
-			return
+	ensureDefaultsSourceLoaded(slug: string): Promise<void> {
+		const loader = this.defaultsLoader
+		if (!loader) return Promise.resolve()
+
+		let load = this.defaultsLoads.get(slug)
+		if (!load) {
+			load = (async () => {
+				const loaded = await loader(slug)
+				if (loaded !== undefined) {
+					this.registerDefaults(slug, loaded)
+				}
+			})()
+			this.defaultsLoads.set(slug, load)
+			load.catch(() => this.defaultsLoads.delete(slug))
 		}
-		this.defaultsLoaderFetched.add(slug)
-		const loaded = await this.defaultsLoader(slug)
-		if (loaded !== undefined) {
-			this.registerDefaults(slug, loaded)
-		}
+		return load
 	}
 
 	/**
-	 * Compose a new record with document defaults. See {@link composeNewRecord}.
+	 * Compose a new record, once, from every starting value. See {@link composeNewRecord}.
 	 * @public
 	 */
-	composeNewRecord(
-		doctype: Doctype,
-		options?: { overlay?: DefaultsDocument; now?: Date }
-	): Promise<ComposeNewRecordResult> {
+	composeNewRecord(doctype: Doctype, options?: ComposeNewRecordOptions): Promise<ComposeNewRecordResult> {
 		return composeNewRecord(this, doctype, options)
-	}
-
-	/**
-	 * Compose a new record without awaiting {@link setDefaultsLoader}. Use when defaults are already registered.
-	 * @public
-	 */
-	composeNewRecordSync(doctype: Doctype, options?: { overlay?: DefaultsDocument; now?: Date }): ComposeNewRecordResult {
-		return composeNewRecordSync(this, doctype, options)
 	}
 
 	// TODO: should we allow clearing the registry at all?

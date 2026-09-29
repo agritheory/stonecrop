@@ -603,7 +603,8 @@ export class Stonecrop {
 		const slug = doctype.slug
 		this.ensureDoctypeExists(slug)
 
-		const { record, settled } = await this.registry.composeNewRecord(doctype)
+		// Composed once, with every starting value in, so nothing later lands on what a user types here.
+		const { record } = await this.registry.composeNewRecord(doctype)
 
 		// Ensure the ancestor path exists in HST before setting descendant fields
 		const existingData = this.hstStore.get(path)
@@ -612,14 +613,9 @@ export class Stonecrop {
 		}
 
 		// Store each field at its own HST path
-		const writeRecord = (data: Record<string, unknown>) => {
-			for (const [key, value] of Object.entries(data)) {
-				this.hstStore.set(`${path}.${key}`, value, 'system')
-			}
+		for (const [key, value] of Object.entries(record)) {
+			this.hstStore.set(`${path}.${key}`, value, 'system')
 		}
-
-		writeRecord(record)
-		void settled.then(writeRecord)
 	}
 
 	/**

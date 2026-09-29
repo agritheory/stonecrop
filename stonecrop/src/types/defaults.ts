@@ -42,3 +42,24 @@ export type DefaultsSource = DefaultsDocument | ((ctx: DefaultsContext) => Defau
  * @public
  */
 export type DefaultsLoader = (slug: string) => DefaultsSource | undefined | Promise<DefaultsSource | undefined>
+
+/**
+ * Options for composing a new record.
+ * @public
+ */
+export type ComposeNewRecordOptions = {
+	/** Values the caller already knows (for example, the customer a form was opened from); these win. */
+	overlay?: DefaultsDocument
+	/** The moment `"now"` resolves to. Defaults to the time of the call. */
+	now?: Date
+	/** How long to wait for starting values that have not arrived, in milliseconds. */
+	timeoutMs?: number
+}
+
+/**
+ * A composed new record, complete: every starting value that arrived in time is in it.
+ * @public
+ */
+export type ComposeNewRecordResult = {
+	record: Record<string, unknown>
+}

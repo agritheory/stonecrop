@@ -915,6 +915,36 @@ describe('Stonecrop class with HST integration', { tags: ['unit'] }, () => {
 		})
 	})
 
+	describe('initializeNestedData', () => {
+		// A section is filled once, after its starting values arrive, so a slow value never lands on what was typed.
+		it('keeps what was typed after a slow starting value arrives', async () => {
+			const nestedRegistry = new Registry()
+			const task = createDoctype('Task')
+			const address = createDoctype('Address', [
+				{ kind: 'field', fieldname: 'street', component: 'ATextInput' },
+				{ kind: 'field', fieldname: 'city', component: 'ATextInput' },
+			])
+			nestedRegistry.addDoctype(task)
+			nestedRegistry.addDoctype(address)
+			nestedRegistry.registerDefaults('address', {
+				city: () => new Promise(resolve => setTimeout(() => resolve('Default City'), 10)) as any,
+			})
+			const sc = new Stonecrop(nestedRegistry)
+			;(sc as any).ensureDoctypeExists('task')
+
+			await sc.initializeNestedData('task.new', address)
+			expect(sc.getStore().get('task.new.city')).toBe('Default City')
+			sc.getStore().set('task.new.street', '12 Elm St')
+			sc.getStore().set('task.new.city', 'Portland')
+			await new Promise(resolve => setTimeout(resolve, 30))
+
+			expect([sc.getStore().get('task.new.street'), sc.getStore().get('task.new.city')]).toEqual([
+				'12 Elm St',
+				'Portland',
+			])
+		})
+	})
+
 	describe('collectRecordPayload', () => {
 		let localRegistry: Registry
 		let localStonecrop: Stonecrop

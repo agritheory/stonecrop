@@ -11,13 +11,14 @@ description: Core orchestration with Registry, HST, and composables
 
 ### composeNewRecord
 
+Build a new record, once, from every starting value: the schema's empty values and field defaults, the doctype's `defaults`, the source registered for it (after the defaults loader, if one is set), then the caller's `overlay`. Layers apply in that order, so a later one wins however long an earlier one took.
+
+Nothing is returned until every value is in, so nothing is written to the record after a user can see it. A value that throws, rejects, or has not arrived within `timeoutMs` (default `DEFAULTS_TIMEOUT_MS`) is skipped and reported with `console.warn`; the record still opens with everything else.
+
 **Signature:**
 
 ```typescript
-export declare function composeNewRecord(registry: Registry, doctype: Doctype, options?: {
-    overlay?: DefaultsDocument;
-    now?: Date;
-}): Promise<ComposeNewRecordResult>;
+export declare function composeNewRecord(registry: Registry, doctype: Doctype, options?: ComposeNewRecordOptions): Promise<ComposeNewRecordResult>;
 ```
 
 **Parameters:**
@@ -26,28 +27,7 @@ export declare function composeNewRecord(registry: Registry, doctype: Doctype, o
 |-----------|------|-------------|
 | registry | `Registry` |  |
 | doctype | `Doctype` |  |
-| options | `{ overlay?: DefaultsDocument; now?: Date; }` |  |
-
-### composeNewRecordSync
-
-Build a new record: schema floor, compose-time tokens, doctype defaults, registered source, optional overlay. Sync functions block; promises merge when they settle.
-
-**Signature:**
-
-```typescript
-export declare function composeNewRecordSync(registry: Registry, doctype: Doctype, options?: {
-    overlay?: DefaultsDocument;
-    now?: Date;
-}): ComposeNewRecordResult;
-```
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| registry | `Registry` |  |
-| doctype | `Doctype` |  |
-| options | `{ overlay?: DefaultsDocument; now?: Date; }` |  |
+| options | `ComposeNewRecordOptions` |  |
 
 ### createHST
 
@@ -157,24 +137,6 @@ export declare function markOperationIrreversible(operationId: string | undefine
 | operationId | `string \| undefined` | The ID of the operation to mark as irreversible |
 | reason | `string` | Human-readable reason why the operation cannot be undone |
 
-### mergeComposeSettled
-
-Apply an awaitable compose result without clobbering fields the user edited after the sync snapshot.
-
-**Signature:**
-
-```typescript
-export declare function mergeComposeSettled(current: Record<string, unknown>, syncSnapshot: Record<string, unknown>, settled: Record<string, unknown>): Record<string, unknown>;
-```
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| current | `Record<string, unknown>` |  |
-| syncSnapshot | `Record<string, unknown>` |  |
-| settled | `Record<string, unknown>` |  |
-
 ### registerGlobalAction
 
 Register a global action function that can be used in field triggers
@@ -208,27 +170,6 @@ export declare function registerTransitionAction(name: string, fn: TransitionAct
 |-----------|------|-------------|
 | name | `string` | The name of the transition action to register |
 | fn | `TransitionActionFunction` | The transition action function to execute |
-
-### seedDraftRecord
-
-Fill a draft form ref from composed defaults; apply awaitable layers when they settle.
-
-**Signature:**
-
-```typescript
-export declare function seedDraftRecord(registry: Registry, doctype: Doctype, target: Ref<Record<string, unknown> | Record<string, any>>, options?: {
-    awaitLoader?: boolean;
-}): void;
-```
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| registry | `Registry` |  |
-| doctype | `Doctype` |  |
-| target | `Ref<Record<string, unknown> \| Record<string, any>>` |  |
-| options | `{ awaitLoader?: boolean; }` |  |
 
 ### setFieldRollback
 
@@ -1234,6 +1175,32 @@ Named capabilities injected into a clientHandler body as function parameters. Th
 export type ClientHandlerApi = Record<string, unknown>;
 ```
 
+### ComposeNewRecordOptions
+
+Options for composing a new record.
+
+**Definition:**
+
+```typescript
+export type ComposeNewRecordOptions = {
+    overlay?: DefaultsDocument;
+    now?: Date;
+    timeoutMs?: number;
+};
+```
+
+### ComposeNewRecordResult
+
+A composed new record, complete: every starting value that arrived in time is in it.
+
+**Definition:**
+
+```typescript
+export type ComposeNewRecordResult = {
+    record: Record<string, unknown>;
+};
+```
+
 ### CrossTabMessageType
 
 Cross-tab message types
@@ -1894,24 +1861,10 @@ addDoctype(doctype: Doctype): void
 
 #### composeNewRecord
 
-Compose a new record with document defaults. See `composeNewRecord`.
+Compose a new record, once, from every starting value. See `composeNewRecord`.
 
 ```typescript
-composeNewRecord(doctype: Doctype, options: {
-        overlay?: DefaultsDocument;
-        now?: Date;
-    }): Promise<ComposeNewRecordResult>
-```
-
-#### composeNewRecordSync
-
-Compose a new record without awaiting `setDefaultsLoader`. Use when defaults are already registered.
-
-```typescript
-composeNewRecordSync(doctype: Doctype, options: {
-        overlay?: DefaultsDocument;
-        now?: Date;
-    }): ComposeNewRecordResult
+composeNewRecord(doctype: Doctype, options: ComposeNewRecordOptions): Promise<ComposeNewRecordResult>
 ```
 
 #### getAncestorLinks
@@ -2390,6 +2343,16 @@ setup(doctype: Doctype): void
 | doctype | `Doctype` | The doctype to setup |
 
 ## Variables
+
+### DEFAULTS_TIMEOUT_MS
+
+How long a new record waits for a starting value that has not arrived. A value still missing by then is skipped and reported, and the record opens without it.
+
+**Type:**
+
+```typescript
+export const DEFAULTS_TIMEOUT_MS: 
+```
 
 ### DRAFT_RECORD_ID
 

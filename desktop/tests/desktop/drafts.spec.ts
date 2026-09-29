@@ -83,7 +83,7 @@ describe('Desktop draft records', { tags: ['component'] }, () => {
 
 	it('writes no HST node for a draft, so it cannot appear as a list row', async () => {
 		const wrapper = mountAt('new')
-		await nextTick()
+		await flushPromises()
 
 		const aform = wrapper.findComponent(AForm)
 		aform.vm.$emit('update:data', { title: 'Buy milk' })
@@ -98,13 +98,13 @@ describe('Desktop draft records', { tags: ['component'] }, () => {
 		// Every draft routes to the same `/task/new`, so a buffer left behind would open the next
 		// New Record pre-filled with the abandoned one.
 		const first = mountAt('new')
-		await nextTick()
+		await flushPromises()
 		first.findComponent(AForm).vm.$emit('update:data', { title: 'Abandoned' })
 		await flushPromises()
 		first.unmount()
 
 		const second = mountAt('new')
-		await nextTick()
+		await flushPromises()
 
 		expect(second.findComponent(AForm).props('data')).not.toMatchObject({ title: 'Abandoned' })
 	})
@@ -116,5 +116,32 @@ describe('Desktop draft records', { tags: ['component'] }, () => {
 		await nextTick()
 
 		expect(wrapper.findComponent(AForm).props('data')).toMatchObject({ title: 'Saved' })
+	})
+
+	// A new form is filled once, with every starting value. Until then Desktop shows its loading state rather
+	// than a form whose typing a late value could overwrite, and offers no action on a record not yet there.
+	it('shows the loading state, not the form, until the starting values arrive', async () => {
+		let release!: () => void
+		registry.setDefaultsLoader(() => new Promise(resolve => (release = () => resolve({ title: 'Call the supplier' }))))
+		const wrapper = mountAt('new')
+		await flushPromises()
+
+		expect(wrapper.findComponent(AForm).exists()).toBe(false)
+		expect(wrapper.find('.loading').exists()).toBe(true)
+		expect(wrapper.findComponent({ name: 'ActionSet' }).props('elements')).toEqual([])
+
+		release()
+		await flushPromises()
+		expect(wrapper.findComponent(AForm).props('data')).toMatchObject({ title: 'Call the supplier', status: 'draft' })
+	})
+
+	it('opens the form with the declared defaults when loading the rest fails', async () => {
+		registry.setDefaultsLoader(() => Promise.reject(new Error('defaults endpoint 500')))
+		const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
+		const wrapper = mountAt('new')
+		await flushPromises()
+		warn.mockRestore()
+
+		expect(wrapper.findComponent(AForm).props('data')).toMatchObject({ status: 'draft' })
 	})
 })

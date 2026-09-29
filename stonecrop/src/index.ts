@@ -18,10 +18,8 @@ import {
 	triggerTransition,
 } from './field-triggers'
 import plugin from './plugins'
-import { composeNewRecord, composeNewRecordSync } from './compose-new-record'
+import { DEFAULTS_TIMEOUT_MS, composeNewRecord } from './compose-new-record'
 import Registry from './registry'
-import { mergeComposeSettled } from './merge-settled-draft'
-import { seedDraftRecord } from './seed-draft-record'
 import { Stonecrop } from './stonecrop'
 import { HST, createHST, type HSTNode } from './stores/hst'
 import { useOperationLogStore } from './stores/operation-log'
@@ -45,9 +43,7 @@ export {
 	Doctype,
 	Registry,
 	composeNewRecord,
-	composeNewRecordSync,
-	mergeComposeSettled,
-	seedDraftRecord,
+	DEFAULTS_TIMEOUT_MS,
 	Stonecrop,
 	// Unsaved-record identity, shared with the desktop shell
 	DRAFT_RECORD_ID,

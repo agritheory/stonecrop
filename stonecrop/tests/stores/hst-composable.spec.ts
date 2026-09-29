@@ -1,4 +1,4 @@
-import { mount } from '@vue/test-utils'
+import { flushPromises, mount } from '@vue/test-utils'
 import { List } from 'immutable'
 import type { DoctypeField } from '@stonecrop/schema'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
@@ -112,7 +112,8 @@ describe('HST Composable Functionality', { tags: ['unit'] }, () => {
 				},
 			})
 
-			await nextTick()
+			// A new record's form data arrives once its starting values are composed, not within one tick.
+			await flushPromises()
 
 			const vm = wrapper.vm as any
 

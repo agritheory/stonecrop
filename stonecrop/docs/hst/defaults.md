@@ -12,12 +12,16 @@ There is one value shape everywhere: a nested object in the same form as `formDa
 
 Serialized JSON **cannot** contain functions. `DoctypeMeta` validation rejects them so a file cannot silently drop them on `JSON.stringify`.
 
-## Sync blocks, a promise loads
+## A new record is filled once
 
-No configuration flag:
+Composition waits for every starting value, then returns the whole record. Nothing is written to it afterwards, so a late value can never land on top of what a user has typed.
 
-- A function that **returns a value** runs to completion before composition returns that layer. The draft does not proceed until sync work finishes.
-- A function that **returns a promise** loads. The form paints from everything already resolved; when the promise settles, that field or document is merged in.
+- A function may **return a value or a promise**. Either way, its value is in the record before the record is returned.
+- Layers apply in the order above, so a later layer wins however long an earlier one took. The caller's overlay always wins.
+- A value that **throws, rejects, or has not arrived within the timeout** (5 seconds, `DEFAULTS_TIMEOUT_MS`; `timeoutMs` to change it) is skipped and reported with `console.warn`. Everything else still applies.
+- A **failed loader** is not remembered: the next new record asks again. New records opened at once share one load.
+
+Hosts show their loading state while this runs: Desktop keeps the form, and its actions, behind its loading placeholder; `useStonecrop` sets `isLoading`. With only fixed values, nothing is awaited that the browser would paint around, so the form appears as quickly as before.
 
 ## Compose-time tokens
 
@@ -32,8 +36,6 @@ Child tables stay `[]` unless `defaults` includes rows. A row that needs an id s
 
 ## API
 
-- `registry.composeNewRecord(doctype)` — awaits the defaults loader once per slug, then composes.
-- `registry.composeNewRecordSync(doctype)` — no loader; use when defaults are already registered.
-- `seedDraftRecord(registry, doctype, formDataRef)` — used by hosts for draft routes.
+- `registry.composeNewRecord(doctype, { overlay, now, timeoutMs })` resolves to `{ record }` once every starting value is in. It runs the defaults loader first, once per slug.
 
 See `compose-new-record.ts` for merge order and table-row composition.

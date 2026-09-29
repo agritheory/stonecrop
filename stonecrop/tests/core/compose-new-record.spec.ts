@@ -1,5 +1,6 @@
 import { List } from 'immutable'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { reactive } from 'vue'
 
 import Doctype from '../../src/doctype'
 import Registry from '../../src/registry'
@@ -97,7 +98,7 @@ describe('composeNewRecord', { tags: ['unit'] }, () => {
 		expect(record.status).toBe('Draft')
 	})
 
-	it('patches an awaitable field after the sync record is returned', async () => {
+	it('waits for an awaitable field before returning the record', async () => {
 		const doctype = new Doctype(
 			'Order',
 			List([
@@ -117,13 +118,11 @@ describe('composeNewRecord', { tags: ['unit'] }, () => {
 			customer: () => customerPromise,
 		})
 
-		const { record, settled } = await registry.composeNewRecord(doctype)
-		expect(record.note).toBe('ready')
-		expect(record.customer).toBe('')
-
+		const composing = registry.composeNewRecord(doctype)
 		resolveCustomer('acme')
-		const final = await settled
-		expect(final.customer).toBe('acme')
+		const { record } = await composing
+		expect(record.note).toBe('ready')
+		expect(record.customer).toBe('acme')
 	})
 
 	it('leaves a many-table empty when defaults omit it', async () => {
@@ -157,5 +156,148 @@ describe('composeNewRecord', { tags: ['unit'] }, () => {
 		registry.addDoctype(doctype)
 		registry.resolveSchema(doctype)
 		expect(loader).not.toHaveBeenCalled()
+	})
+})
+
+// A form is filled once, with every starting value, so nothing can land on top of what a user types. These
+// are the ways a value that arrives late, fails, or never arrives used to reach the user.
+describe('composeNewRecord waits for every starting value', { tags: ['unit'] }, () => {
+	let registry: Registry
+	let warn: ReturnType<typeof vi.spyOn>
+
+	const workflow = (id: string) => ({ id, initial: 'draft', states: { draft: {} } }) as any
+	const text = (fieldname: string) => ({ kind: 'field', fieldname, component: 'ATextInput' })
+	const later = <T>(value: T, ms = 5) => new Promise<T>(resolve => setTimeout(() => resolve(value), ms))
+	const order = (...fieldnames: string[]) => {
+		const doctype = new Doctype('Order', List(fieldnames.map(text) as any), workflow('order'))
+		registry.addDoctype(doctype)
+		return doctype
+	}
+
+	beforeEach(() => {
+		Registry._root = undefined as any
+		registry = new Registry()
+		warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
+	})
+
+	afterEach(() => {
+		warn.mockRestore()
+	})
+
+	it('keeps a value the caller pre-filled over a looked-up default', async () => {
+		const doctype = order('customer')
+		registry.registerDefaults('order', { customer: () => later('first-customer-in-db') as any })
+
+		const { record } = await registry.composeNewRecord(doctype, { overlay: { customer: 'ACME' } })
+		expect(record.customer).toBe('ACME')
+	})
+
+	it('keeps the other values when one lookup fails, and reports the failure', async () => {
+		const doctype = order('warehouse', 'customer')
+		registry.registerDefaults('order', {
+			warehouse: () => later('Main') as any,
+			customer: () => Promise.reject(new Error('customer lookup failed')) as any,
+		})
+
+		const { record } = await registry.composeNewRecord(doctype)
+		expect(record.warehouse).toBe('Main')
+		expect(record.customer).toBe('')
+		expect(String(warn.mock.calls.flat().join(' '))).toContain('customer lookup failed')
+	})
+
+	it('keeps the other values when a default function throws, and reports it', async () => {
+		const doctype = order('a', 'b')
+		registry.registerDefaults('order', {
+			a: () => {
+				throw new Error('bug in default a')
+			},
+			b: 'still filled',
+		})
+
+		const { record } = await registry.composeNewRecord(doctype)
+		expect(record.b).toBe('still filled')
+		expect(String(warn.mock.calls.flat().join(' '))).toContain('bug in default a')
+	})
+
+	it('tries the loader again for the next new record after it fails', async () => {
+		const doctype = order('status')
+		let calls = 0
+		registry.setDefaultsLoader(async () => {
+			if (++calls === 1) throw new Error('network blip')
+			return { status: 'Open' }
+		})
+
+		const first = await registry.composeNewRecord(doctype)
+		const second = await registry.composeNewRecord(doctype)
+		expect(first.record.status).toBe('')
+		expect(second.record.status).toBe('Open')
+	})
+
+	it('gives two new records opened at once the loaded values, from one load', async () => {
+		const doctype = order('status')
+		const loader = vi.fn(() => later({ status: 'Open' }))
+		registry.setDefaultsLoader(loader)
+
+		const [a, b] = await Promise.all([registry.composeNewRecord(doctype), registry.composeNewRecord(doctype)])
+		expect([a.record.status, b.record.status]).toEqual(['Open', 'Open'])
+		expect(loader).toHaveBeenCalledTimes(1)
+	})
+
+	it('waits for a value nested inside a looked-up document', async () => {
+		const doctype = order('x', 'y')
+		registry.registerDefaults('order', async () => ({ x: 'X', y: () => later('Y') }) as any)
+
+		const { record } = await registry.composeNewRecord(doctype)
+		expect([record.x, record.y]).toEqual(['X', 'Y'])
+	})
+
+	it('waits for the rows of a table', async () => {
+		const line = new Doctype('Line', List([text('productId')] as any), workflow('line'))
+		const parent = new Doctype(
+			'Parent',
+			List([{ kind: 'field', fieldname: 'lines', component: 'ATable', doctype: 'line' }] as any),
+			workflow('parent'),
+			undefined,
+			{ lines: { target: 'line', cardinality: 'noneOrMany', fieldname: 'lines' } }
+		)
+		registry.addDoctype(line)
+		registry.addDoctype(parent)
+		registry.registerDefaults('parent', { lines: () => later([{ productId: 'P-1' }]) as any })
+
+		const { record } = await registry.composeNewRecord(parent)
+		expect(record.lines).toEqual([{ productId: 'P-1' }])
+	})
+
+	it('takes a default read from app state', async () => {
+		const doctype = order('owner', 'note')
+		const auth = reactive({ user: { id: 'u1' } })
+		registry.registerDefaults('order', { owner: () => auth.user as any, note: () => 'hi' })
+
+		const { record } = await registry.composeNewRecord(doctype)
+		expect(record.owner).toEqual({ id: 'u1' })
+		expect(record.note).toBe('hi')
+	})
+
+	it('gives up on a lookup that never answers, keeps the rest, and reports it', async () => {
+		const doctype = order('customer', 'warehouse')
+		registry.registerDefaults('order', {
+			customer: () => new Promise<never>(() => undefined),
+			warehouse: 'Main',
+		})
+
+		const { record } = await registry.composeNewRecord(doctype, { timeoutMs: 20 })
+		expect(record.customer).toBe('')
+		expect(record.warehouse).toBe('Main')
+		expect(String(warn.mock.calls.flat().join(' '))).toContain('customer')
+	})
+
+	it('never changes the record after returning it', async () => {
+		const doctype = order('customer')
+		registry.registerDefaults('order', { customer: () => later('too late', 40) as any })
+
+		const { record } = await registry.composeNewRecord(doctype, { timeoutMs: 10 })
+		const returned = { ...record }
+		await later(null, 60)
+		expect(record).toEqual(returned)
 	})
 })
