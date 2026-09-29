@@ -1,5 +1,17 @@
 # Change Log - @stonecrop/graphql-client
 
+## 0.39.0
+
+### Minor Changes
+
+- 835f62c: An action's result now carries `droppedFields`, the keys a save discarded instead of storing, through one `ActionDispatchResult` type that `@stonecrop/schema` now exports.
+
+### Patch Changes
+
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+  - @stonecrop/schema@0.39.0
+
 ## 0.38.1
 
 ### Patch Changes

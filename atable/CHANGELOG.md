@@ -1,5 +1,22 @@
 # Change Log - @stonecrop/atable
 
+## 0.39.0
+
+### Minor Changes
+
+- 835f62c: `ATable` no longer changes the list passed as `rows`; an edit arrives only through `update:rows`, so a host that passes `rows` without `v-model:rows` must listen for it.
+
+### Patch Changes
+
+- 835f62c: The row actions menu now casts `--sc-overlay-shadow`, whichever way it opens.
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+  - @stonecrop/schema@0.39.0
+  - @stonecrop/themes@0.39.0
+  - @stonecrop/utilities@0.39.0
+
 ## 0.38.1
 
 ### Patch Changes

@@ -1,5 +1,12 @@
 # Change Log - @stonecrop/themes
 
+## 0.39.0
+
+### Minor Changes
+
+- 835f62c: Adds `--sc-dropdown-max-height` (`17rem`, about ten rows), the height at which a dropdown list starts to scroll; `none` lets a list fill the room below its field.
+- 835f62c: Adds `--sc-gray-0` (white) and `--sc-overlay-shadow`, and `--sc-overlay-background` now defaults to `--sc-gray-0`, so pop-ups are white unless a host sets its own.
+
 ## 0.38.1
 
 ## 0.38.0

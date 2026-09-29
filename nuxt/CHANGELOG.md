@@ -1,5 +1,43 @@
 # Change Log - @stonecrop/nuxt
 
+## 0.39.0
+
+### Minor Changes
+
+- 835f62c: An action's result now carries `droppedFields`, the keys a save discarded instead of storing, through one `ActionDispatchResult` type that `@stonecrop/schema` now exports.
+
+### Patch Changes
+
+- 835f62c: `useStonecropRegistry().dispatchAction`, and the `runAction` that DocBuilder's code editor offers client handlers, now declare the `record` an action's result has carried since 0.36.0.
+- 835f62c: DocBuilder's fields and actions tables now keep each text box inside its column and line each row up under the filter row above it.
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+  - @stonecrop/graphql-client@0.39.0
+  - @stonecrop/schema@0.39.0
+  - @stonecrop/stonecrop@0.39.0
+  - @stonecrop/desktop@0.39.0
+  - @stonecrop/themes@0.39.0
+  - @stonecrop/aform@0.39.0
+  - @stonecrop/atable@0.39.0
+  - @stonecrop/graphql-middleware@0.39.0
+  - @stonecrop/node-editor@0.39.0
+  - @stonecrop/nuxt-grafserv@0.39.0
+  - @stonecrop/casl-middleware@0.39.0
+  - @stonecrop/code-editor@0.39.0
+
 ## 0.38.1
 
 ### Patch Changes
