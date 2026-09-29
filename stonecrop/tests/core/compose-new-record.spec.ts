@@ -219,6 +219,15 @@ describe('composeNewRecord waits for every starting value', { tags: ['unit'] }, 
 		expect(String(warn.mock.calls.flat().join(' '))).toContain('bug in default a')
 	})
 
+	it('reports a defaults source that gives back something other than a document', async () => {
+		const doctype = order('status')
+		registry.registerDefaults('order', (() => 'Open') as any)
+
+		const { record } = await registry.composeNewRecord(doctype)
+		expect(record.status).toBe('')
+		expect(String(warn.mock.calls.flat().join(' '))).toContain('registered defaults')
+	})
+
 	it('tries the loader again for the next new record after it fails', async () => {
 		const doctype = order('status')
 		let calls = 0

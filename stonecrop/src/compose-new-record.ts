@@ -159,7 +159,11 @@ async function applyLayer(
 ): Promise<void> {
 	if (!layer) return
 	const evaluated = await evaluate(layer, { doctype: run.doctype, record: { ...target } }, run, path)
-	if (!evaluated.ok || !isDefaultsDocument(evaluated.value)) return
+	if (!evaluated.ok) return
+	if (!isDefaultsDocument(evaluated.value)) {
+		run.problems.push(`${path}: gave back ${JSON.stringify(evaluated.value)}, not a document of field values`)
+		return
+	}
 	await applyDocument(target, evaluated.value, schema, run, path)
 }
 

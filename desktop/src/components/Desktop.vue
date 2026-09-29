@@ -15,6 +15,9 @@
 					:schema="currentViewSchema"
 					:errors="fieldErrors" />
 				<div v-else-if="!stonecrop" class="loading"><p>Initializing Stonecrop...</p></div>
+				<div v-else-if="draftLoading" class="loading">
+					<p>Preparing new {{ formatDoctypeName(currentDoctype) }}...</p>
+				</div>
 				<div v-else class="loading">
 					<p>Loading {{ currentView }} data...</p>
 				</div>

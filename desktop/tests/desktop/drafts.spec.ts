@@ -127,7 +127,7 @@ describe('Desktop draft records', { tags: ['component'] }, () => {
 		await flushPromises()
 
 		expect(wrapper.findComponent(AForm).exists()).toBe(false)
-		expect(wrapper.find('.loading').exists()).toBe(true)
+		expect(wrapper.find('.loading').text()).toBe('Preparing new Task...')
 		expect(wrapper.findComponent({ name: 'ActionSet' }).props('elements')).toEqual([])
 
 		release()
