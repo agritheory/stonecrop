@@ -153,7 +153,7 @@ export interface FieldsetField {
 	kind: 'fieldset'
 	/** Unique identifier for this fieldset within its doctype */
 	fieldname: string
-	/** Vue component to render this fieldset. Defaults to `'AFieldset'` in resolveSchema. */
+	/** Vue component to render this fieldset. AForm renders `'AFieldset'` when none is declared. */
 	component?: string
 	/** Human-readable label for the fieldset legend */
 	label?: string

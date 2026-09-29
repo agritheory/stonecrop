@@ -737,7 +737,7 @@ Doing it on the way in destroys the text the adapter looked up: nothing else hol
 
 Only *inline* links may be reduced. An inline link's value is indistinguishable by inspection from an expanded one (`{ id, ...the whole target record }`), so `component` — which states which of the two a field is — is what tells them apart, via `componentLinkExpansion`. Reducing an expanded link would send the id in place of the record.
 
-Fieldsets are descended into in both shapes a record appears in: flat, as the store and the server hold it, and nested under the fieldset's own key, as a form emits it.
+A fieldset's children are the record's own keys, since a fieldset is layout, so they are reduced where every other field is.
 
 **Signature:**
 
@@ -927,12 +927,7 @@ export interface DataClient {
   getMeta(context: DoctypeContext): Promise<M | null>;
   getRecord(doctype: T, recordId: string, options: GetRecordOptions): Promise<GetRecordResult>;
   getRecords(doctype: T, options: GetRecordsOptions): Promise<GetRecordsResult>;
-  runAction(doctype: T, action: string, args: unknown[]): Promise<{
-        success: boolean;
-        data: unknown;
-        error: string | null;
-        record: Record<string, unknown> | null;
-    }>;
+  runAction(doctype: T, action: string, args: unknown[]): Promise<ActionDispatchResult>;
 }
 ```
 
@@ -1033,7 +1028,7 @@ export interface FieldsetField {
 | Property | Type | Description |
 |----------|------|-------------|
 | collapsible? | `boolean` | Whether the fieldset can be collapsed |
-| component? | `string` | Vue component to render this fieldset. Defaults to `'AFieldset'` in resolveSchema. |
+| component? | `string` | Vue component to render this fieldset. AForm renders `'AFieldset'` when none is declared. |
 | fieldname | `string` | Unique identifier for this fieldset within its doctype |
 | kind | `'fieldset'` | Discriminator — identifies this as a fieldset container |
 | label? | `string` | Human-readable label for the fieldset legend |
@@ -1432,6 +1427,22 @@ Action definition type inferred from Zod schema
 
 ```typescript
 export type ActionDefinition = z.infer<typeof ActionDefinition>;
+```
+
+### ActionDispatchResult
+
+Result of dispatching an action to its server handler.
+
+**Definition:**
+
+```typescript
+export type ActionDispatchResult = {
+    success: boolean;
+    data: unknown;
+    error: string | null;
+    record: Record<string, unknown> | null;
+    droppedFields?: string[] | null;
+};
 ```
 
 ### AuthoredDoctype

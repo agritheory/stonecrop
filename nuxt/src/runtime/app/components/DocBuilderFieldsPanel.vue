@@ -344,11 +344,13 @@ function bool(v) {
 }
 .fields-panel :deep(.atable-row > td) {
 	border-top: 1px solid var(--sc-row-border-color);
-	padding: var(--sc-atable-row-padding) 0.75em;
+	/* atable's own side spacing, as on its filter row, so each row lines up under its filter box. */
+	padding: var(--sc-atable-row-padding) 0.5ch;
 	vertical-align: middle;
 }
 .fields-panel :deep(input[type='text']),
 .fields-panel :deep(select) {
+	box-sizing: border-box;
 	border: 1px solid var(--sc-gray-20);
 	border-radius: var(--sc-border-radius);
 	font-family: inherit;

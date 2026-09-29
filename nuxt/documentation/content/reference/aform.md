@@ -347,8 +347,15 @@ import { AFieldset } from '@stonecrop/aform'
 | schema | `ResolvedField[]` | yes |  |  |
 | label | `string \| undefined` | no | `undefined` |  |
 | collapsible | `boolean \| undefined` | no |  |  |
-| data | `Record<string, any> \| undefined` | no | `{}` |  |
 | mode | `InteractionMode \| undefined` | no | `"edit"` | Rendering mode forwarded to the inner AForm |
+| errors | `Record<string, string[]> \| undefined` | no | `undefined` | Inline validation errors keyed by fieldname, forwarded to the inner AForm. |
+| data | `Record<string, any> \| undefined` | no | `{}` | The record the fieldset's fields belong to: a fieldset is layout, so they are its own keys. |
+
+**Events:**
+
+| Event | Payload | Description |
+|-------|---------|-------------|
+| update:data | `[value: Record<string, any>]` |  |
 
 **Slots:**
 

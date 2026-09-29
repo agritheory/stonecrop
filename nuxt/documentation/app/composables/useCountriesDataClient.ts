@@ -1,4 +1,5 @@
 import type {
+	ActionDispatchResult,
 	DataClient,
 	DoctypeContext,
 	DoctypeMeta,
@@ -74,10 +75,7 @@ export class CountriesDataClient implements DataClient {
 		return { record: (await load(recordId)) as Record<string, unknown> | null }
 	}
 
-	runAction(
-		doctype: DoctypeRef,
-		action: string
-	): Promise<{ success: boolean; data: unknown; error: string | null; record: Record<string, unknown> | null }> {
+	runAction(doctype: DoctypeRef, action: string): Promise<ActionDispatchResult> {
 		// The countries API is read-only, so this reports rather than pretends. Answering
 		// `success: true` would let a Save look like it persisted.
 		return Promise.resolve({

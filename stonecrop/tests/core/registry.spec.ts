@@ -598,7 +598,8 @@ describe('Registry class', { tags: ['unit'] }, () => {
 			expect(record.address).toEqual({})
 		})
 
-		it('initializes a field with kind: "fieldset" to {} via recursive initialization', () => {
+		// A fieldset is layout, so its fields are seeded as the record's own, where a loaded record holds them.
+		it('initializes the fields of a fieldset at the top level of the record', () => {
 			registry = new Registry()
 			const schema = [
 				{
@@ -607,8 +608,7 @@ describe('Registry class', { tags: ['unit'] }, () => {
 					schema: [{ kind: 'field' as const, fieldname: 'email', component: 'ATextInput' }],
 				},
 			]
-			const record = registry.initializeRecord(schema)
-			expect(record.details).toEqual({ email: '' })
+			expect(registry.initializeRecord(schema)).toEqual({ email: '' })
 		})
 
 		// An ISO 8601 duration has no empty text, and an `interval` column refuses `''`.

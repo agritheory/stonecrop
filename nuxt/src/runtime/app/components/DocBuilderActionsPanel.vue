@@ -115,7 +115,7 @@ declare const router: {
   back(): void
   forward(): void
 }
-declare function runAction(action: string, args?: Record<string, unknown>): Promise<{ success: boolean; data: unknown; error: string | null }>
+declare function runAction(action: string, args?: Record<string, unknown>): Promise<{ success: boolean; data: unknown; error: string | null; record: Record<string, unknown> | null; droppedFields?: string[] | null }>
 declare const graphql: {
   query(query: string, variables?: Record<string, unknown>): Promise<unknown>
 }
@@ -183,10 +183,12 @@ function onRemoveRow(row) {
 }
 .actions-panel :deep(.atable-row > td) {
 	border-top: 1px solid var(--sc-row-border-color);
-	padding: var(--sc-atable-row-padding) 0.75em;
+	/* atable's own side spacing, as on its filter row, so each row lines up under its filter box. */
+	padding: var(--sc-atable-row-padding) 0.5ch;
 	vertical-align: middle;
 }
 .actions-panel :deep(input[type='text']) {
+	box-sizing: border-box;
 	border: 1px solid var(--sc-gray-20);
 	border-radius: var(--sc-border-radius);
 	font-family: inherit;

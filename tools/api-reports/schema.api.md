@@ -24,6 +24,15 @@ export const ActionDefinition: z.ZodObject<{
 export type ActionDefinition = z.infer<typeof ActionDefinition>;
 
 // @public
+export type ActionDispatchResult = {
+    success: boolean;
+    data: unknown;
+    error: string | null;
+    record: Record<string, unknown> | null;
+    droppedFields?: string[] | null;
+};
+
+// @public
 export function aggregateDoctypeName(doctypeName: string): string;
 
 // @public
@@ -155,12 +164,7 @@ export interface DataClient<T extends DoctypeRef = DoctypeRef, M = DoctypeMeta> 
     getMeta(context: DoctypeContext): Promise<M | null>;
     getRecord(doctype: T, recordId: string, options?: GetRecordOptions): Promise<GetRecordResult>;
     getRecords(doctype: T, options?: GetRecordsOptions): Promise<GetRecordsResult>;
-    runAction(doctype: T, action: string, args?: unknown[]): Promise<{
-        success: boolean;
-        data: unknown;
-        error: string | null;
-        record: Record<string, unknown> | null;
-    }>;
+    runAction(doctype: T, action: string, args?: unknown[]): Promise<ActionDispatchResult>;
 }
 
 // @public
