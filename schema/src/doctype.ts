@@ -593,6 +593,20 @@ export interface GetRecordsResult {
 }
 
 /**
+ * Result of dispatching an action to its server handler.
+ * @public
+ */
+export type ActionDispatchResult = {
+	success: boolean
+	data: unknown
+	error: string | null
+	/** The record as a read returns it after the action; null when it failed or targets no record. */
+	record: Record<string, unknown> | null
+	/** Keys the write discarded instead of storing; absent or null when it stored everything sent. */
+	droppedFields?: string[] | null
+}
+
+/**
  * Interface for data clients that fetch doctype metadata and records.
  * Implemented by \@stonecrop/graphql-client's StonecropClient.
  * Custom implementations can use any backend (REST, local storage, etc.).
@@ -637,13 +651,9 @@ export interface DataClient<T extends DoctypeRef = DoctypeRef, M = DoctypeMeta> 
 	 * @param doctype - Doctype reference (name and optional slug)
 	 * @param action - Action name to execute (e.g., 'SUBMIT', 'APPROVE', 'save')
 	 * @param args - Action arguments (typically record ID and/or form data)
-	 * @returns Action result: success, what the action's handler returned (`data`), any error, and the
+	 * @returns Action result: success, what the action's handler returned (`data`), any error, the
 	 * record as {@link DataClient.getRecord} returns it after the action (`record`, null when the
-	 * action failed or targets no record)
+	 * action failed or targets no record), and the keys the write discarded
 	 */
-	runAction(
-		doctype: T,
-		action: string,
-		args?: unknown[]
-	): Promise<{ success: boolean; data: unknown; error: string | null; record: Record<string, unknown> | null }>
+	runAction(doctype: T, action: string, args?: unknown[]): Promise<ActionDispatchResult>
 }

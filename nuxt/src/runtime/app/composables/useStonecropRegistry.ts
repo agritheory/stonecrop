@@ -1,4 +1,4 @@
-import type { DataClient } from '@stonecrop/schema'
+import type { ActionDispatchResult, DataClient } from '@stonecrop/schema'
 import type { Doctype, Registry, RouteContext, Stonecrop } from '@stonecrop/stonecrop'
 
 import { useNuxtApp } from 'nuxt/app'
@@ -167,7 +167,7 @@ export function useStonecropRegistry() {
 			doctype: { name: string; slug?: string },
 			action: string,
 			args?: unknown[]
-		): Promise<{ success: boolean; data: unknown; error: string | null }> {
+		): Promise<ActionDispatchResult> {
 			if (!stonecrop) {
 				return Promise.reject(
 					new Error(
@@ -184,6 +184,7 @@ export function useStonecropRegistry() {
 					success: false,
 					data: null,
 					error: `Doctype '${doctype.name}' not found in registry`,
+					record: null,
 				})
 			}
 

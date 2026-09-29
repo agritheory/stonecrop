@@ -1,4 +1,4 @@
-import { computed, inject, markRaw, ref, shallowRef, type ComputedRef, type InjectionKey } from 'vue'
+import { computed, inject, markRaw, ref, shallowRef, toRaw, type ComputedRef, type InjectionKey } from 'vue'
 
 import type { ActionSetContext, ActionSetPreview, ActionSetSlotId } from '../types'
 
@@ -60,7 +60,8 @@ export function createActionSet(options: CreateActionSetOptions): ActionSetContr
 			return
 		}
 		previewId.value = subject.id
-		previewSubject.value = { ...subject, view: markRaw(subject.view) }
+		// Unwrapped first: a view read from reactive state arrives as a proxy, which `markRaw` would keep.
+		previewSubject.value = { ...subject, view: markRaw(toRaw(subject.view)) }
 	}
 
 	function closePreview() {

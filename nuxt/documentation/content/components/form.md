@@ -293,7 +293,7 @@ rows:
 
 ## Schema field shape
 
-Each entry in `schema` is a [`ResolvedField`](https://github.com/agritheory/stonecrop/blob/development/aform/src/types/index.ts) — a discriminated union keyed by `kind`. Most entries are `kind: 'field'` (a scalar or link value); `kind: 'link'` and `kind: 'fieldset'` entries carry their own nested `schema` and are rendered as an embedded `AForm`, and `kind: 'table'` entries are rendered by `ATable` with row data sourced from `data[fieldname]` rather than from the schema itself.
+Each entry in `schema` is a [`ResolvedField`](https://github.com/agritheory/stonecrop/blob/development/aform/src/types/index.ts) — a discriminated union keyed by `kind`. Most entries are `kind: 'field'` (a scalar or link value); `kind: 'link'` and `kind: 'fieldset'` entries carry their own nested `schema` and are rendered as an embedded `AForm` (a link's binds `data[fieldname]`, while a fieldset's fields are keys of the record itself), and `kind: 'table'` entries are rendered by `ATable` with row data sourced from `data[fieldname]` rather than from the schema itself.
 
 The common keys on a `kind: 'field'` entry:
 

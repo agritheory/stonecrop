@@ -47,7 +47,13 @@
 						<span class="aform_form-btn-name">{{ icon === 'chevron-right' ? '›' : '→' }}</span>
 					</button>
 				</div>
-				<ul v-if="dropdownOpen" :id="listboxId" class="autocomplete-results" role="listbox" :aria-label="ariaLabel">
+				<ul
+					v-if="dropdownOpen"
+					:id="listboxId"
+					ref="results"
+					class="autocomplete-results"
+					role="listbox"
+					:aria-label="ariaLabel">
 					<li v-if="loading" class="autocomplete-result loading">Loading…</li>
 					<li
 						v-for="(option, i) in dropdownResults"
@@ -70,8 +76,9 @@
 
 <script setup lang="ts">
 import { vOnClickOutside } from '@vueuse/components'
-import { computed, inject, ref, useId, watch } from 'vue'
+import { computed, inject, ref, useId, useTemplateRef, watch } from 'vue'
 
+import { fitDropdownList } from '../../composables/dropdownList'
 import type { AFormLinkModelValue, AFormLinkNavigator, AFormLinkValue, ComponentProps } from '../../types'
 import { deserializeFunction } from '../../utils/deserialize'
 
@@ -136,6 +143,12 @@ const dropdownOpen = ref(false)
 const loading = ref(false)
 const dropdownResults = ref<AFormLinkValue[]>([])
 const activeIndex = ref<number | null>(null)
+
+fitDropdownList(useTemplateRef<HTMLElement>('results'), {
+	isOpen: () => dropdownOpen.value,
+	optionCount: () => dropdownResults.value.length,
+	activeIndex: () => activeIndex.value,
+})
 
 const navigator = inject<AFormLinkNavigator | null>('aformLinkNavigator', null)
 
@@ -394,6 +407,7 @@ const selectCurrent = () => {
 
 .autocomplete-results {
 	position: absolute;
+	box-sizing: border-box;
 	width: 100%;
 	z-index: 100;
 	padding: 0;
@@ -403,12 +417,14 @@ const selectCurrent = () => {
 	border-top: none;
 	border-radius: 0 0 var(--sc-border-radius) var(--sc-border-radius);
 	background: var(--sc-overlay-background);
+	box-shadow: var(--sc-overlay-shadow);
+	max-height: var(--sc-dropdown-max-height);
+	overflow-y: auto;
 }
 
 .autocomplete-result {
 	padding: 4px 6px;
 	cursor: pointer;
-	border-bottom: 0.5px solid var(--sc-input-border-color);
 }
 
 .autocomplete-result.is-active,

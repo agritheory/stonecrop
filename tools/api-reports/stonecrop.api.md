@@ -4,6 +4,7 @@
 
 ```ts
 
+import { ActionDispatchResult } from '@stonecrop/schema';
 import type { AnyStateNodeConfig } from 'xstate';
 import { Component } from 'vue';
 import { ComputedRef } from 'vue';
@@ -35,13 +36,7 @@ export interface ActionArgsContext {
     recordId: string;
 }
 
-// @public
-export type ActionDispatchResult = {
-    success: boolean;
-    data: unknown;
-    error: string | null;
-    record: Record<string, unknown> | null;
-};
+export { ActionDispatchResult }
 
 // @public
 export type ActionEventPayload = {

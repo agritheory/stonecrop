@@ -34,7 +34,13 @@
 					@keydown.esc="onClickOutside"
 					@keydown.tab="onClickOutside" />
 
-				<ul v-show="dropdown.open" :id="listboxId" class="autocomplete-results" role="listbox" :aria-label="label">
+				<ul
+					v-show="dropdown.open"
+					:id="listboxId"
+					ref="results"
+					class="autocomplete-results"
+					role="listbox"
+					:aria-label="label">
 					<li v-if="dropdown.loading" class="loading autocomplete-result">Loading results...</li>
 					<li
 						v-for="(result, i) in dropdown.results"
@@ -60,8 +66,9 @@
 import type { FieldOptions } from '@stonecrop/schema'
 import { selectChoices } from '@stonecrop/schema'
 import { vOnClickOutside } from '@vueuse/components'
-import { computed, reactive, ref, useId, watch } from 'vue'
+import { computed, reactive, ref, useId, useTemplateRef, watch } from 'vue'
 
+import { fitDropdownList } from '../../composables/dropdownList'
 import { fieldErrorA11y } from '../../composables/fieldErrorA11y'
 import type { ComponentProps } from '../../types'
 import type { BadgeFormatFn } from '../../utils/badge'
@@ -113,6 +120,12 @@ const dropdown = reactive({
 	open: false,
 	loading: false,
 	results: [] as string[],
+})
+
+fitDropdownList(useTemplateRef<HTMLElement>('results'), {
+	isOpen: () => dropdown.open,
+	optionCount: () => dropdown.results.length,
+	activeIndex: () => dropdown.activeItemIndex,
 })
 
 watch(
@@ -216,6 +229,7 @@ const setCurrentResult = () => {
 	left: 0;
 	right: 0;
 	z-index: 100;
+	box-sizing: border-box;
 	padding: 0;
 	margin: 0;
 	color: var(--sc-input-active-border-color);
@@ -223,14 +237,16 @@ const setCurrentResult = () => {
 	border-radius: 0 0 var(--sc-border-radius) var(--sc-border-radius);
 	border-top: none;
 	background-color: var(--sc-overlay-background);
+	box-shadow: var(--sc-overlay-shadow);
 	list-style: none;
+	max-height: var(--sc-dropdown-max-height);
+	overflow-y: auto;
 }
 
 .autocomplete-result {
 	text-align: left;
 	padding: 4px 6px;
 	cursor: pointer;
-	border-bottom: 0.5px solid var(--sc-input-border-color);
 }
 
 .autocomplete-result.is-active,

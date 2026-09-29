@@ -1,5 +1,30 @@
 # Change Log - @stonecrop/stonecrop
 
+## 0.39.0
+
+### Minor Changes
+
+- 835f62c: An action's result now carries `droppedFields`, the keys a save discarded instead of storing, through one `ActionDispatchResult` type that `@stonecrop/schema` now exports.
+- 835f62c: A fieldset's fields are now read and written as keys of the record itself, never nested under the fieldset's name, so an edit inside a fieldset reaches the form and its save, and data handed to `AForm` must hold them flat.
+
+### Patch Changes
+
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+  - @stonecrop/schema@0.39.0
+  - @stonecrop/aform@0.39.0
+  - @stonecrop/atable@0.39.0
+
 ## 0.38.1
 
 ### Patch Changes

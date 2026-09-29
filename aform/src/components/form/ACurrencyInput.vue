@@ -282,6 +282,7 @@ const displayText = computed(() => {
 .acurrency__group {
 	display: flex;
 	align-items: stretch;
+	box-sizing: border-box;
 	width: 100%;
 	background: var(--sc-input-field-background);
 	border: 1px solid var(--sc-input-border-color);
@@ -347,6 +348,13 @@ const displayText = computed(() => {
 	background: var(--sc-input-addon-background);
 	border-right: 1px solid var(--sc-input-border-color);
 	border-radius: var(--sc-border-radius) 0 0 var(--sc-border-radius);
+}
+
+/* The picker's list hangs from the group's outer border to the picker's divider, so its side lines
+   continue theirs. `.acurrency__group` is there to outrank AFormLink's own embedded `min-width`. */
+.acurrency__group .acurrency__currency :deep(.autocomplete-results) {
+	left: -1px;
+	min-width: calc(100% + 2px);
 }
 
 .acurrency__base-field {

@@ -1,5 +1,31 @@
 # Change Log - @stonecrop/desktop
 
+## 0.39.0
+
+### Minor Changes
+
+- 835f62c: A fieldset's fields are now read and written as keys of the record itself, never nested under the fieldset's name, so an edit inside a fieldset reaches the form and its save, and data handed to `AForm` must hold them flat.
+
+### Patch Changes
+
+- 835f62c: A slot's component or icon, or a view passed to `present()`, that the host keeps in reactive state now renders as the plain component, so an open slot panel no longer resets on the host's first change to its slots, and Vue no longer warns.
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+  - @stonecrop/schema@0.39.0
+  - @stonecrop/stonecrop@0.39.0
+  - @stonecrop/themes@0.39.0
+  - @stonecrop/aform@0.39.0
+
 ## 0.38.1
 
 ### Patch Changes
