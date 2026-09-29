@@ -310,3 +310,178 @@ describe('composeNewRecord waits for every starting value', { tags: ['unit'] }, 
 		expect(record).toEqual(returned)
 	})
 })
+
+// A grouped section is layout: its fields are the record's own keys, so they take starting values like any other.
+describe('composeNewRecord fills the fields inside a grouped section', { tags: ['unit'] }, () => {
+	let registry: Registry
+	let warn: ReturnType<typeof vi.spyOn>
+
+	const workflow = (id: string) => ({ id, initial: 'draft', states: { draft: {} } }) as any
+	const section = (fieldname: string, ...schema: any[]) => ({ kind: 'fieldset', fieldname, label: fieldname, schema })
+	const date = (fieldname: string, extra = {}) => ({ kind: 'field', fieldname, component: 'ADate', ...extra })
+	const noon = new Date(2026, 8, 29, 12, 0, 0)
+
+	beforeEach(() => {
+		Registry._root = undefined as any
+		registry = new Registry()
+		warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
+	})
+
+	afterEach(() => {
+		warn.mockRestore()
+	})
+
+	it('starts a date inside a section as today, from its field default or the defaults document', async () => {
+		const doctype = new Doctype(
+			'Visit',
+			List([section('details', date('onDay', { default: 'now' }), date('day'))] as any),
+			workflow('visit'),
+			undefined,
+			undefined,
+			undefined,
+			{ day: 'now' }
+		)
+		registry.addDoctype(doctype)
+
+		const { record } = await registry.composeNewRecord(doctype, { now: noon })
+		expect(record).toEqual({ onDay: '2026-09-29', day: '2026-09-29' })
+	})
+
+	it('reaches a section inside a section', async () => {
+		const doctype = new Doctype(
+			'Visit',
+			List([section('outer', section('inner', date('day', { default: 'now' })))] as any),
+			workflow('visit')
+		)
+		registry.addDoctype(doctype)
+
+		const { record } = await registry.composeNewRecord(doctype, { now: noon })
+		expect(record).toEqual({ day: '2026-09-29' })
+	})
+
+	it('gives a line item inside a section its own starting values', async () => {
+		const line = new Doctype(
+			'Line',
+			List([{ kind: 'field', fieldname: 'qty', component: 'ANumericInput', default: 1 }] as any),
+			workflow('line')
+		)
+		const parent = new Doctype(
+			'Parent',
+			List([section('items', { kind: 'field', fieldname: 'lines', component: 'ATable', doctype: 'line' })] as any),
+			workflow('parent'),
+			undefined,
+			{ lines: { target: 'line', cardinality: 'noneOrMany', fieldname: 'lines' } },
+			undefined,
+			{ lines: [{}] }
+		)
+		registry.addDoctype(line)
+		registry.addDoctype(parent)
+
+		const { record } = await registry.composeNewRecord(parent)
+		expect(record.lines).toEqual([{ qty: 1 }])
+	})
+
+	it("reports and skips a starting value given under a section's name", async () => {
+		const doctype = new Doctype(
+			'Visit',
+			List([section('details', date('day'))] as any),
+			workflow('visit'),
+			undefined,
+			undefined,
+			undefined,
+			{ details: { day: '2026-01-01' } }
+		)
+		registry.addDoctype(doctype)
+
+		const { record } = await registry.composeNewRecord(doctype)
+		expect(record).toEqual({ day: null })
+		expect(String(warn.mock.calls.flat().join(' '))).toContain('details: no field by that name')
+	})
+
+	it('gives a line item its own starting values when its link is keyed differently from its field', async () => {
+		const line = new Doctype(
+			'Line',
+			List([{ kind: 'field', fieldname: 'qty', component: 'ANumericInput', default: 1 }] as any),
+			workflow('line')
+		)
+		const parent = new Doctype(
+			'Parent',
+			List([{ kind: 'field', fieldname: 'lines', component: 'ATable', doctype: 'line' }] as any),
+			workflow('parent'),
+			undefined,
+			{ lineItems: { target: 'line', cardinality: 'noneOrMany', fieldname: 'lines' } },
+			undefined,
+			{ lines: [{}] }
+		)
+		registry.addDoctype(line)
+		registry.addDoctype(parent)
+
+		const { record } = await registry.composeNewRecord(parent)
+		expect(record.lines).toEqual([{ qty: 1 }])
+	})
+
+	it("gives the rows of a table inside an embedded record their own doctype's starting values", async () => {
+		const line = new Doctype(
+			'Line',
+			List([{ kind: 'field', fieldname: 'qty', component: 'ANumericInput', default: 1 }] as any),
+			workflow('line')
+		)
+		const shipment = new Doctype(
+			'Shipment',
+			List([{ kind: 'field', fieldname: 'lines', component: 'ATable', doctype: 'line' }] as any),
+			workflow('shipment'),
+			undefined,
+			{ lines: { target: 'line', cardinality: 'noneOrMany', fieldname: 'lines' } }
+		)
+		const order = new Doctype(
+			'Order',
+			List([{ kind: 'field', fieldname: 'shipment', component: 'AForm', doctype: 'shipment' }] as any),
+			workflow('order'),
+			undefined,
+			{ shipment: { target: 'shipment', cardinality: 'one', fieldname: 'shipment' } },
+			undefined,
+			{ shipment: { lines: [{}] } }
+		)
+		registry.addDoctype(line)
+		registry.addDoctype(shipment)
+		registry.addDoctype(order)
+
+		const { record } = await registry.composeNewRecord(order)
+		expect(record.shipment).toEqual({ lines: [{ qty: 1 }] })
+	})
+
+	it('reports a table row given as something other than a document, and starts it empty', async () => {
+		const line = new Doctype(
+			'Line',
+			List([{ kind: 'field', fieldname: 'qty', component: 'ANumericInput', default: 1 }] as any),
+			workflow('line')
+		)
+		const parent = new Doctype(
+			'Parent',
+			List([{ kind: 'field', fieldname: 'lines', component: 'ATable', doctype: 'line' }] as any),
+			workflow('parent'),
+			undefined,
+			{ lines: { target: 'line', cardinality: 'noneOrMany', fieldname: 'lines' } },
+			undefined,
+			{ lines: ['one'] } as any
+		)
+		registry.addDoctype(line)
+		registry.addDoctype(parent)
+
+		const { record } = await registry.composeNewRecord(parent)
+		expect(record.lines).toEqual([{ qty: 1 }])
+		expect(String(warn.mock.calls.flat().join(' '))).toContain('lines[0]: gave back "one"')
+	})
+
+	it('reports and skips a starting value for a field the doctype does not have', async () => {
+		const doctype = new Doctype('Visit', List([date('day')] as any), workflow('visit'))
+		registry.addDoctype(doctype)
+		const lookup = vi.fn(() => 'never asked')
+		registry.registerDefaults('visit', { dya: lookup })
+
+		const { record } = await registry.composeNewRecord(doctype)
+		expect(record).toEqual({ day: null })
+		expect(lookup).not.toHaveBeenCalled()
+		expect(String(warn.mock.calls.flat().join(' '))).toContain('dya: no field by that name')
+	})
+})

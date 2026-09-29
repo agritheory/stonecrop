@@ -4,6 +4,8 @@ New records start from the schema floor (`initializeRecord`), then compose-time 
 
 There is one value shape everywhere: a nested object in the same form as `formData` / the HST document, or a function that returns one (or a promise of one). Field entries inside the document may also be functions.
 
+A grouped section is layout, so its fields are the record's own keys and take their entries at the top level: `{ city: "Springfield" }`, not `{ address: { city: "Springfield" } }`. A key that names no field of the record, such as a typo or a section's name, is skipped and reported.
+
 ## Where defaults live
 
 - **`defaults` on the doctype JSON** — best for static documents, including child-table rows (`items: [{ postingDate: "now" }]`).
@@ -32,7 +34,7 @@ Resolved when the record is composed, on field `default` or inside `defaults`:
 | `"now"`   | ISO date or datetime for the component | Left as `"now"`  |
 | `"uuidv7"` | New uuidv7 string                     | Left as `"uuidv7"` |
 
-Child tables stay `[]` unless `defaults` includes rows. A row that needs an id sets that field to `"uuidv7"`.
+Child tables stay `[]` unless `defaults` includes rows. Each row starts from its own doctype's defaults (a linked table, whatever key the link is declared under) or from its columns (an inline table), then takes the row's entries. A row that needs an id sets that field to `"uuidv7"`.
 
 ## API
 

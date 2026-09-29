@@ -6,6 +6,7 @@ import { Router } from 'vue-router'
 
 import { composeNewRecord } from './compose-new-record'
 import Doctype from './doctype'
+import { expandedLink, linksByFieldname } from './record-fields'
 import type { ComposeNewRecordOptions, ComposeNewRecordResult, DefaultsLoader, DefaultsSource } from './types/defaults'
 import { RouteContext } from './types/registry'
 
@@ -160,15 +161,7 @@ export default class Registry {
 
 		const schemaArray: DoctypeField[] = doctype.schema ? doctype.schema.toArray() : []
 
-		// Map link declarations by fieldname (link.fieldname ?? key)
-		const linksByFieldname = new Map<string, LinkDeclaration>()
-		if (doctype.links) {
-			for (const [key, link] of Object.entries(doctype.links)) {
-				linksByFieldname.set(link.fieldname ?? key, link)
-			}
-		}
-
-		const result = this.resolveFields(schemaArray, linksByFieldname, seen)
+		const result = this.resolveFields(schemaArray, linksByFieldname(doctype), seen)
 		seen.delete(slug)
 		return result
 	}
@@ -192,39 +185,37 @@ export default class Registry {
 				const link = linkDecl
 				// The declaration's target wins over the field's own `doctype`.
 				const linkTarget = link?.target ?? field.doctype
+				const expanded = expandedLink(this, field, links)
 
-				// An undeclared link, or a declared one whose component renders an inline picker,
-				// stays a scalar: the target is not expanded, it only needs the slug for async
-				// display-text resolution and navigation.
-				if (!link || resolveLinkRenderMode(link, field.component) === 'inline') {
+				if (!expanded) {
 					const { cardinality: _c, ...rest } = field
-					resolved.push({
-						...rest,
-						component: rest.component || 'AFormLink',
-						...(linkTarget !== undefined ? { doctype: linkTarget } : {}),
-					})
+					// An undeclared link, or a declared one whose component renders an inline picker,
+					// stays a scalar: the target is not expanded, it only needs the slug for async
+					// display-text resolution and navigation.
+					if (!link || resolveLinkRenderMode(link, field.component) === 'inline') {
+						resolved.push({
+							...rest,
+							component: rest.component || 'AFormLink',
+							...(linkTarget !== undefined ? { doctype: linkTarget } : {}),
+						})
+					} else {
+						// Target not registered — copy as scalar
+						resolved.push({ ...rest })
+					}
 					continue
 				}
 
-				const targetDoctype = this.registry[link.target]
-				if (!targetDoctype) {
-					// Target not registered — copy as scalar
-					const { cardinality: _c, ...rest } = field
-					resolved.push({ ...rest })
-					continue
-				}
-
-				const childSchema = this.resolveSchema(targetDoctype, new Set(visited))
+				const childSchema = this.resolveSchema(expanded.target, new Set(visited))
 				const { options: _opt, cardinality: _card, kind: _kind, ...fieldRest } = field
 
-				if (resolveLinkRenderMode(link, field.component) === 'table') {
-					resolved.push(this.buildTableConfig(field, childSchema, link.component))
+				if (expanded.mode === 'table') {
+					resolved.push(this.buildTableConfig(field, childSchema, expanded.link.component))
 				} else {
 					const linkEntry: ResolvedLink = {
 						...fieldRest,
 						kind: 'link',
 						label: fieldRest.label || field.fieldname,
-						component: link.component || fieldRest.component || 'AForm',
+						component: expanded.link.component || fieldRest.component || 'AForm',
 						schema: childSchema,
 					}
 					resolved.push(linkEntry)

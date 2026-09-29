@@ -2,8 +2,8 @@ import type { ResolvedField } from '@stonecrop/aform'
 
 import { resolveDefaultToken, resolveTokensInRecord } from './default-tokens'
 import type Doctype from './doctype'
+import { columnFields, recordFields, type RecordField } from './record-fields'
 import type Registry from './registry'
-import { rowComposeSchema } from './table-row-schema'
 import type {
 	ComposeNewRecordOptions,
 	ComposeNewRecordResult,
@@ -35,21 +35,8 @@ type Run = {
 
 type Evaluated = { ok: true; value: unknown } | { ok: false }
 
-function applyResolvedTokens(
-	working: Record<string, unknown>,
-	schema: ResolvedField[],
-	registry: Registry,
-	doctype: Doctype,
-	now: Date
-): void {
-	Object.assign(
-		working,
-		resolveTokensInRecord(working, schema, now, {
-			registry,
-			doctype,
-		})
-	)
-}
+/** A field whose value is a list of rows: of a linked doctype, or of an inline table's columns. */
+type RowsField = Extract<RecordField, { holds: 'rows' | 'columns' }>
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
 	return typeof value === 'object' && value !== null && !Array.isArray(value)
@@ -82,78 +69,90 @@ async function evaluate(raw: unknown, context: DefaultsContext, run: Run, path: 
 /**
  * Apply one defaults document onto `target`. Its fields are awaited side by side; each lands when it is ready,
  * and a field that fails leaves `target`'s value for it untouched.
+ *
+ * A key that names no field of the record is skipped and reported, since it would otherwise reach the save as
+ * a field nobody declared. A grouped section's name is one such key: the section only groups fields, and each
+ * of them takes its own entry.
  */
 async function applyDocument(
 	target: Record<string, unknown>,
 	document: DefaultsDocument,
-	schema: ResolvedField[],
+	fields: ReadonlyMap<string, RecordField>,
 	run: Run,
 	path: string
 ): Promise<void> {
 	await Promise.all(
 		Object.entries(document).map(async ([key, rawValue]) => {
 			const fieldPath = `${path} › ${key}`
+			const field = fields.get(key)
+			if (!field) {
+				run.problems.push(`${fieldPath}: no field by that name`)
+				return
+			}
 			// A shallow copy: the function reads the record so far, and a copy it changes cannot reach the draft.
 			const context: DefaultsContext = { doctype: run.doctype, record: { ...target }, fieldname: key }
 			const evaluated = await evaluate(rawValue, context, run, fieldPath)
 			if (!evaluated.ok) return
-			const field = schema.find(f => f.fieldname === key)
-			await assignField(target, key, evaluated.value, field, run, fieldPath)
+			await assignField(target, field, evaluated.value, run, fieldPath)
 		})
 	)
 }
 
 async function assignField(
 	target: Record<string, unknown>,
-	key: string,
+	field: RecordField,
 	value: unknown,
-	field: ResolvedField | undefined,
 	run: Run,
 	path: string
 ): Promise<void> {
-	if (field?.kind === 'table' && Array.isArray(value)) {
-		const rowSchema = rowComposeSchema(field, run.registry, run.doctype)
-		target[key] = await Promise.all(
-			value.map((row, index) => composeTableRow(row, rowSchema, run, `${path}[${index}]`))
-		)
+	const key = field.fieldname
+	if ((field.holds === 'rows' || field.holds === 'columns') && Array.isArray(value)) {
+		target[key] = await Promise.all(value.map((row, index) => composeRow(row, field, run, `${path}[${index}]`)))
 		return
 	}
 
-	if (field && (field.kind === 'link' || field.kind === 'fieldset') && isDefaultsDocument(value)) {
+	if (field.holds === 'record' && isDefaultsDocument(value)) {
 		const existing = isPlainObject(target[key]) ? target[key] : {}
-		await applyDocument(existing, value, field.schema, run, path)
+		await applyDocument(existing, value, recordFields(run.registry, field.target), run, path)
 		target[key] = existing
 		return
 	}
 
-	if (isPlainObject(value) && !field) {
-		const existing = isPlainObject(target[key]) ? target[key] : {}
-		target[key] = { ...existing, ...value }
-		return
-	}
-
-	const component = field?.kind === 'field' ? field.component : undefined
-	target[key] = resolveDefaultToken(value, component, run.now)
+	target[key] = resolveDefaultToken(value, field.holds === 'value' ? field.component : undefined, run.now)
 }
 
-async function composeTableRow(
-	row: unknown,
-	childSchema: ResolvedField[],
-	run: Run,
-	path: string
-): Promise<Record<string, unknown>> {
-	const floor = run.registry.initializeRecord(childSchema)
-	const rowRecord = resolveTokensInRecord(floor, childSchema, run.now)
-	if (!isDefaultsDocument(row)) return rowRecord
-	await applyDocument(rowRecord, row, childSchema, run, path)
-	return resolveTokensInRecord(rowRecord, childSchema, run.now, { registry: run.registry, doctype: run.doctype })
+/**
+ * One row of a table's starting value: the row's own empty values and field defaults, then the row's entries.
+ * A linked table's rows are records of its target doctype; an inline table's rows have one value per column.
+ */
+async function composeRow(row: unknown, table: RowsField, run: Run, path: string): Promise<Record<string, unknown>> {
+	const { registry, now } = run
+	const fields = table.holds === 'rows' ? recordFields(registry, table.target) : columnFields(table.columns)
+	const floor =
+		table.holds === 'rows'
+			? registry.initializeRecord(registry.resolveSchema(table.target))
+			: registry.initializeRecord(
+					table.columns.map((column): ResolvedField => ({
+						kind: 'field',
+						fieldname: column.fieldname,
+						component: column.component ?? 'ATextInput',
+						label: column.label,
+					}))
+				)
+	const rowRecord = resolveTokensInRecord(floor, fields, registry, now)
+	if (!isDefaultsDocument(row)) {
+		run.problems.push(`${path}: gave back ${JSON.stringify(row)}, not a document of field values`)
+		return rowRecord
+	}
+	await applyDocument(rowRecord, row, fields, run, path)
+	return resolveTokensInRecord(rowRecord, fields, registry, now)
 }
 
 /** A layer is a document, or a function that returns one; either way it is applied only once it is whole. */
 async function applyLayer(
 	target: Record<string, unknown>,
 	layer: DefaultsSource | undefined,
-	schema: ResolvedField[],
+	fields: ReadonlyMap<string, RecordField>,
 	run: Run,
 	path: string
 ): Promise<void> {
@@ -164,7 +163,7 @@ async function applyLayer(
 		run.problems.push(`${path}: gave back ${JSON.stringify(evaluated.value)}, not a document of field values`)
 		return
 	}
-	await applyDocument(target, evaluated.value, schema, run, path)
+	await applyDocument(target, evaluated.value, fields, run, path)
 }
 
 /**
@@ -200,19 +199,17 @@ export async function composeNewRecord(
 	try {
 		await evaluate(registry.ensureDefaultsSourceLoaded(doctype.slug), { doctype, record: {} }, run, 'defaults loader')
 
-		const schema = registry.resolveSchema(doctype)
-		const working: Record<string, unknown> = resolveTokensInRecord(registry.initializeRecord(schema), schema, now, {
-			registry,
-			doctype,
-		})
+		const fields = recordFields(registry, doctype)
+		const floor = registry.initializeRecord(registry.resolveSchema(doctype))
+		const working = resolveTokensInRecord(floor, fields, registry, now)
 
-		await applyLayer(working, doctype.defaults, schema, run, 'doctype defaults')
-		await applyLayer(working, registry.getRegisteredDefaults(doctype.slug), schema, run, 'registered defaults')
+		await applyLayer(working, doctype.defaults, fields, run, 'doctype defaults')
+		await applyLayer(working, registry.getRegisteredDefaults(doctype.slug), fields, run, 'registered defaults')
 		if (options?.overlay) {
-			await applyDocument(working, options.overlay, schema, run, 'overlay')
+			await applyDocument(working, options.overlay, fields, run, 'overlay')
 		}
 
-		applyResolvedTokens(working, schema, registry, doctype, now)
+		Object.assign(working, resolveTokensInRecord(working, fields, registry, now))
 
 		if (run.problems.length > 0) {
 			console.warn(

@@ -1,9 +1,7 @@
-import type { ResolvedField } from '@stonecrop/aform'
 import { componentCategory } from '@stonecrop/schema'
 
-import type Doctype from './doctype'
+import { columnFields, recordFields, type RecordField } from './record-fields'
 import type Registry from './registry'
-import { rowComposeSchema } from './table-row-schema'
 import { createUuidv7 } from './uuidv7'
 
 export const DEFAULT_TOKEN_NOW = 'now'
@@ -35,40 +33,36 @@ export function resolveDefaultToken(value: unknown, component: string | undefine
 }
 
 /**
- * Walk a composed record and resolve `"now"` / `"uuidv7"` on scalars using the resolved schema.
+ * Walk a composed record and resolve `"now"` / `"uuidv7"` on its values. Each key is read through its field in the
+ * doctype's declarations, so embedded records and rows use their own doctype, and an inline table's rows use its
+ * columns.
  * @internal
  */
 export function resolveTokensInRecord(
 	record: Record<string, unknown>,
-	schema: ResolvedField[],
-	now: Date,
-	options?: { registry?: Registry; doctype?: Doctype }
+	fields: ReadonlyMap<string, RecordField>,
+	registry: Registry,
+	now: Date
 ): Record<string, unknown> {
 	const out: Record<string, unknown> = { ...record }
 
-	for (const field of schema) {
-		if (field.kind === 'table') {
-			const rows = out[field.fieldname]
-			if (!Array.isArray(rows)) continue
-			const rowSchema =
-				options?.registry && options?.doctype ? rowComposeSchema(field, options.registry, options.doctype) : []
-			out[field.fieldname] = rows.map(row => {
-				if (isPlainObject(row)) {
-					return resolveTokensInRecord(row, rowSchema, now, options)
-				}
-				return row
-			})
-		} else if (field.kind === 'link' || field.kind === 'fieldset') {
-			const nested = out[field.fieldname]
-			if (isPlainObject(nested)) {
-				out[field.fieldname] = resolveTokensInRecord(nested, field.schema, now)
-			}
-		} else if (field.kind === 'field') {
+	for (const field of fields.values()) {
+		const value = out[field.fieldname]
+		if (field.holds === 'value') {
 			if (field.fieldname in out) {
-				out[field.fieldname] = resolveDefaultToken(out[field.fieldname], field.component, now)
+				out[field.fieldname] = resolveDefaultToken(value, field.component, now)
 			} else if (field.default !== undefined) {
 				out[field.fieldname] = resolveDefaultToken(field.default, field.component, now)
 			}
+		} else if (field.holds === 'record') {
+			if (isPlainObject(value)) {
+				out[field.fieldname] = resolveTokensInRecord(value, recordFields(registry, field.target), registry, now)
+			}
+		} else if (Array.isArray(value)) {
+			const rowFields = field.holds === 'rows' ? recordFields(registry, field.target) : columnFields(field.columns)
+			out[field.fieldname] = value.map(row =>
+				isPlainObject(row) ? resolveTokensInRecord(row, rowFields, registry, now) : row
+			)
 		}
 	}
 
