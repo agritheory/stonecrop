@@ -257,7 +257,9 @@ export default class Registry {
 	private buildTableConfig(field: ValueField, childSchema: ResolvedField[], component?: string): ResolvedTable {
 		const columns = resolvedFieldsToColumns(childSchema)
 
-		const config: TableViewConfig = (field as ValueField & { config?: TableViewConfig }).config ?? { view: 'list' }
+		const config: TableViewConfig = field.config
+			? { fullWidth: true, ...field.config }
+			: { view: 'list', fullWidth: true }
 		const { options: _opt, cardinality: _card, ...fieldRest } = field
 
 		return {
@@ -275,7 +277,7 @@ export default class Registry {
 	 * Narrows by `kind` discriminator for precise branch selection.
 	 *
 	 * - `kind: 'table'` or `kind: 'link'` → `[]` or `{}`
-	 * - `kind: 'fieldset'` → recursively initializes children as `{}`
+	 * - `kind: 'fieldset'` → its children, at the top level of the record: a fieldset is layout
 	 * - `kind: 'field'` → derives the default from the component's category; falls back to `null`
 	 *
 	 * @param schema - The resolved schema array to derive defaults from
@@ -291,7 +293,7 @@ export default class Registry {
 			} else if (field.kind === 'link') {
 				record[field.fieldname] = this.initializeRecord(field.schema)
 			} else if (field.kind === 'fieldset') {
-				record[field.fieldname] = this.initializeRecord(field.schema)
+				Object.assign(record, this.initializeRecord(field.schema))
 			} else {
 				// kind: 'field' — the empty default comes from the component's category.
 				const fieldDefault = field.default
@@ -309,7 +311,7 @@ export default class Registry {
 						// A JSON editor starts from an empty object; any other language from empty source.
 						record[field.fieldname] = field.language === 'json' ? {} : ''
 					} else {
-						// date / datetime / select / link / attach — plus two cases with no better answer
+						// date / datetime / duration / select / link / attach, plus two cases with no better answer
 						// than "no value": an unknown (custom) component, and a code field whose missing
 						// `language` doesn't say which kind of empty it wants.
 						record[field.fieldname] = null

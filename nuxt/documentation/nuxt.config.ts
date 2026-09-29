@@ -1,7 +1,10 @@
 // @stonecrop/nuxt documentation site
-// Nuxt + @nuxt/content proof-of-migration app (ported from the VitePress site in docs/)
+// Nuxt + @nuxt/content docs with integrated public playground (grafserv + DocBuilder)
 import { createRequire } from 'node:module'
+import { fileURLToPath } from 'node:url'
+import NuxtGrafserv, { type ModuleOptions as GrafservOptions } from '@stonecrop/nuxt-grafserv'
 
+import NuxtStonecrop from '../src/module'
 import { contentRoutes, indexTrailingSlashRouteRules } from './content-routes'
 
 // @nuxtjs/mdc's remark/rehype pipeline (behind @nuxt/content) depends on a chain of small CJS
@@ -39,7 +42,27 @@ const mdcDepAliases = Object.fromEntries(mdcTransitiveDeps.map(name => [name, md
 export default defineNuxtConfig({
 	compatibilityDate: '2026-01-01',
 
-	modules: ['@nuxt/content'],
+	modules: ['@nuxt/content', NuxtStonecrop, NuxtGrafserv, 'nuxt-graphql-middleware'],
+
+	stonecrop: {
+		docbuilder: true,
+		docbuilderPublic: true,
+		doctypesDir: 'doctypes',
+	},
+
+	grafserv: {
+		type: 'schema' as const,
+		schema: './server/schema.graphql',
+		resolvers: './server/resolvers.ts',
+		url: '/graphql/',
+		graphiql: true,
+	} as GrafservOptions,
+
+	graphqlMiddleware: {
+		graphqlEndpoint: 'https://countries.trevorblades.com/graphql',
+		downloadSchema: 'dev-only',
+		autoImportPatterns: ['./app/graphql/**/*.graphql'],
+	},
 
 	app: {
 		head: {
@@ -49,13 +72,6 @@ export default defineNuxtConfig({
 		},
 	},
 
-	// Nuxt's auto-import transform excludes `node_modules` by checking for a literal
-	// `node_modules` path segment — but pnpm workspace packages (this whole monorepo) resolve
-	// to their real symlinked path, which has no such segment. So the transform was running on
-	// @stonecrop/*'s own pre-built dist files and injecting a duplicate `import { h } from 'vue'`
-	// into one (misreading an unrelated minified local variable also named `h`), producing a
-	// hard "Identifier `h` has already been declared" build error. Excluding these dist/src
-	// paths explicitly stops Nuxt from transforming code that isn't this app's own source.
 	imports: {
 		transform: {
 			exclude: [
@@ -67,33 +83,27 @@ export default defineNuxtConfig({
 
 	content: {
 		experimental: {
-			// Avoids a native better-sqlite3 dependency in the workspace; Node >= 22.5 ships this built in.
 			sqliteConnector: 'native',
 		},
 		build: {
 			markdown: {
 				highlight: {
-					// Supplying this REPLACES the default language set rather than extending it, so the
-					// defaults are repeated here. Dropping one silently unhighlights every fence using it,
-					// which is how the graphql blocks in the middleware guide lost their colours.
 					langs: ['js', 'jsx', 'json', 'ts', 'tsx', 'vue', 'css', 'html', 'bash', 'md', 'mdc', 'yaml', 'graphql'],
 				},
 			},
 		},
 	},
 
-	// The token floor comes first: it declares every --sc-* the component sheets below read, and
-	// its own declarations sit in a cascade layer, so this site's unlayered rules still win.
 	css: [
 		'@stonecrop/themes/default.css',
+		fileURLToPath(new URL('../example-host.css', import.meta.url)),
 		'@stonecrop/desktop/styles',
 		'@stonecrop/atable/styles',
 		'@stonecrop/node-editor/styles',
 		'~/assets/css/main.css',
+		'~/assets/css/playground-common.css',
 	],
 
-	// `global: true` makes these resolvable as bare `:component-name` MDC tags inside markdown
-	// content (@nuxt/content's ContentRenderer only resolves components registered globally).
 	components: [{ path: '~/components', global: true }],
 
 	devtools: { enabled: true },
@@ -107,14 +117,26 @@ export default defineNuxtConfig({
 		prerender: {
 			routes: contentRoutes(),
 		},
-		routeRules: indexTrailingSlashRouteRules(),
+		routeRules: {
+			...indexTrailingSlashRouteRules(),
+			'/playground/**': { ssr: true, prerender: false },
+			'/docbuilder/**': { ssr: true, prerender: false },
+			'/graphql/**': { ssr: true, prerender: false },
+			'/api/_stonecrop/**': { ssr: true, prerender: false },
+		},
+		storage: {
+			cache: {
+				driver: 'memory',
+			},
+		},
+		externals: {
+			external: ['grafast', 'grafserv', 'grafserv/h3/v1', 'graphile-config', 'debug'],
+		},
 	},
 
-	// Without optimizeDeps.include, Vite's pre-bundling doesn't dedupe @stonecrop/*'s own `vue`
-	// resolution against Nuxt's, producing a duplicate-module bundle and a client-side crash that
-	// silently breaks all hydration — demos never mount. Vite keys its optimize cache on dep
-	// version, not dist content, so rebuilding a workspace package would leave the server on a
-	// stale pre-bundle (e.g. ASemverInput missing). Force a fresh re-optimize each dev start.
+	// Vite keys its optimize cache on dep version, not dist content, so rebuilding a workspace
+	// package would leave the server on a stale pre-bundle (e.g. ASemverInput missing). Force a
+	// fresh re-optimize each dev start.
 	vite: {
 		optimizeDeps: {
 			force: true,
@@ -123,6 +145,7 @@ export default defineNuxtConfig({
 				'@stonecrop/aform',
 				'@stonecrop/schema',
 				'@stonecrop/desktop',
+				'@stonecrop/stonecrop',
 				'@stonecrop/utilities',
 				'@stonecrop/atable',
 				'@stonecrop/code-editor',
@@ -130,16 +153,10 @@ export default defineNuxtConfig({
 			],
 		},
 		resolve: {
-			// In this pnpm workspace, @stonecrop/* packages can each resolve their own `vue` copy
-			// independently of Nuxt's — dev's esbuild pre-bundling tolerates that (worked around
-			// above via optimizeDeps.include), but production's Rollup client build concatenates
-			// modules into shared chunks and ends up with two `h` bindings in one scope, which is
-			// a hard syntax error, not just a runtime duplicate. Forcing a single resolved `vue`
-			// path fixes both dev and production the same way.
 			dedupe: ['vue'],
-			// See mdcDepAliases above — resolves @nuxtjs/mdc's own transitive deps to their real
-			// paths, since they're not resolvable via plain Node resolution from this app root.
 			alias: mdcDepAliases,
 		},
 	},
+
+	typescript: { strict: true },
 })

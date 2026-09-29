@@ -4,6 +4,7 @@
 
 ```ts
 
+import { ActionDispatchResult } from '@stonecrop/schema';
 import type { AnyStateNodeConfig } from 'xstate';
 import { Component } from 'vue';
 import { ComputedRef } from 'vue';
@@ -35,12 +36,7 @@ export interface ActionArgsContext {
     recordId: string;
 }
 
-// @public
-export type ActionDispatchResult = {
-    success: boolean;
-    data: unknown;
-    error: string | null;
-};
+export { ActionDispatchResult }
 
 // @public
 export type ActionEventPayload = {
@@ -481,11 +477,7 @@ export class Stonecrop {
     addRecord(doctype: string | Doctype, recordId: string, recordData: any): void;
     clearRecords(doctype: string | Doctype): void;
     collectRecordPayload(doctype: Doctype, recordId: string): Record<string, any>;
-    dispatchAction(doctype: Doctype, action: string, args?: unknown[]): Promise<{
-        success: boolean;
-        data: unknown;
-        error: string | null;
-    }>;
+    dispatchAction(doctype: Doctype, action: string, args?: unknown[]): Promise<ActionDispatchResult>;
     fetchNestedData(path: string, doctype: Doctype, recordId: string, options?: {
         includeNested?: boolean | string[];
     }): Promise<void>;

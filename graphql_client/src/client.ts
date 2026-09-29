@@ -1,4 +1,5 @@
 import type {
+	ActionDispatchResult,
 	DataClient,
 	DoctypeMeta,
 	DoctypeContext,
@@ -205,14 +206,8 @@ export class StonecropClient implements DataClient {
 	 * @param action - Action name to execute
 	 * @param args - Action arguments
 	 */
-	async runAction(
-		doctype: DoctypeRef,
-		action: string,
-		args?: unknown[]
-	): Promise<{ success: boolean; data: unknown; error: string | null }> {
-		const result = await this.query<{
-			stonecropAction: { success: boolean; data: unknown; error: string | null }
-		}>(RUN_ACTION_MUTATION, {
+	async runAction(doctype: DoctypeRef, action: string, args?: unknown[]): Promise<ActionDispatchResult> {
+		const result = await this.query<{ stonecropAction: ActionDispatchResult }>(RUN_ACTION_MUTATION, {
 			doctype: doctype.name,
 			action,
 			args,

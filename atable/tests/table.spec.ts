@@ -303,6 +303,25 @@ describe('table component', { tags: ['component'] }, () => {
 		expect(wrapper.emitted('update:rows')).toBeTruthy()
 	})
 
+	// An edit reaches the host only through `update:rows`. Changed in place, the host's list took the
+	// edit behind its own write, so its undo held a "before" that already had the edit in it.
+	it('leaves the list it was given untouched and sends the edit up instead', async () => {
+		const given = getBasicRows()
+		const onUpdateRows = vi.fn()
+		const wrapper = mount(ATable, {
+			props: { rows: given, columns: basicColumns, 'onUpdate:rows': onUpdateRows },
+		})
+
+		wrapper.vm.store.setCellData(1, 0, 'Joan')
+		await nextTick()
+
+		expect(given).toEqual(getBasicRows())
+		expect(onUpdateRows).toHaveBeenLastCalledWith([
+			{ id: 1, name: 'Joan', status: 'active' },
+			{ id: 2, name: 'Jane', status: 'inactive' },
+		])
+	})
+
 	it('should handle gantt view with gantt bars', () => {
 		const ganttColumns: TableColumn[] = [
 			{ name: 'id', label: 'ID', width: '100px', pinned: true },
@@ -457,6 +476,27 @@ describe('table component', { tags: ['component'] }, () => {
 
 		await nextTick()
 		expect(tableStore.modal.visible).toBe(false)
+	})
+
+	it('renders the cell modal outside the table so later rows cannot cover it', async () => {
+		const wrapper = mount(ATable, {
+			props: {
+				rows: getBasicRows(),
+				columns: basicColumns,
+			},
+		})
+
+		wrapper.vm.store.modal.visible = true
+		await nextTick()
+
+		const container = wrapper.find('.atable-container')
+		const table = container.find('table')
+		const modal = container.find('.amodal')
+
+		expect(modal.exists()).toBe(true)
+		expect(table.exists()).toBe(true)
+		expect(table.find('.amodal').exists()).toBe(false)
+		expect(modal.element.parentElement).toBe(container.element)
 	})
 
 	it('should handle connection events correctly', async () => {

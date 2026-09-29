@@ -40,28 +40,23 @@
 			:slots="visibleActionSetSlots"
 			:elements="actionElements"
 			:controller="actionSetController"
+			:search="resolvedCommandSearch"
+			:search-placeholder="commandSearchPlaceholder"
 			@action-click="handleActionClick"
-			@search="commandPaletteOpen = true" />
+			@search-select="onSearchSelect">
+			<template #search-title="{ result }">
+				{{ (result as Command).title }}
+			</template>
+			<template #search-content="{ result }">
+				{{ (result as Command).description }}
+			</template>
+		</ActionSet>
 
-		<SheetNav class="desktop__sheetnav" :breadcrumbs="navigationBreadcrumbs">
+		<SheetNav class="desktop__sheetnav" :breadcrumbs="sheetBreadcrumbs">
 			<template #toolbar>
 				<slot name="sheetnav-toolbar" />
 			</template>
 		</SheetNav>
-
-		<CommandPalette
-			:is-open="commandPaletteOpen"
-			:search="searchCommands"
-			placeholder="Type a command or search..."
-			@select="executeCommand"
-			@close="commandPaletteOpen = false">
-			<template #title="{ result }">
-				{{ result.title }}
-			</template>
-			<template #content="{ result }">
-				{{ result.description }}
-			</template>
-		</CommandPalette>
 	</div>
 </template>
 
@@ -77,11 +72,10 @@ import {
 	type ResolvedField,
 	type ResolvedTable,
 } from '@stonecrop/aform'
-import { computed, markRaw, onMounted, onUnmounted, provide, ref, unref, watch } from 'vue'
+import { computed, markRaw, onMounted, onUnmounted, provide, ref, toRaw, unref, watch } from 'vue'
 
 import ActionSet from './ActionSet.vue'
 import SheetNav from './SheetNav.vue'
-import CommandPalette from './CommandPalette.vue'
 import { createActionSet, actionSetKey } from '../composables/useActionSet'
 import type {
 	ActionElements,
@@ -94,11 +88,20 @@ import type {
 	ActionSetSlot,
 } from '../types'
 
+type CommandSearchResult = {
+	title: string
+	description: string
+	action: () => void
+}
+
 const {
 	availableDoctypes = [],
 	routeAdapter,
 	actionSetSlots,
 	hostActions,
+	breadcrumbs: hostBreadcrumbs,
+	commandSearch,
+	commandSearchPlaceholder = 'Type a command or search...',
 } = defineProps<{
 	availableDoctypes?: string[]
 	/**
@@ -111,6 +114,11 @@ const {
 	actionSetSlots?: ActionSetSlot[]
 	/** When provided, the Actions drawer lists exactly these, in place of the actions Desktop derives from the doctype. */
 	hostActions?: ActionElements[]
+	/** When provided, replaces Desktop's default doctype-navigation breadcrumbs in SheetNav. */
+	breadcrumbs?: { title: string; to: string }[]
+	/** When provided, replaces Desktop's built-in command palette search (e.g. documentation site pages). */
+	commandSearch?: (query: string) => CommandSearchResult[]
+	commandSearchPlaceholder?: string
 }>()
 
 const emit = defineEmits<{
@@ -163,7 +171,6 @@ const fieldErrors = computed<Record<string, string[]>>(() =>
 
 // State
 const loading = ref(false)
-const commandPaletteOpen = ref(false)
 
 // The record being composed on a `/{doctype}/new` route. Deliberately not in HST: a draft has no
 // identity to be keyed by, and both ways of faking one fail — see `DRAFT_RECORD_ID`.
@@ -220,24 +227,7 @@ const currentViewData = computed<Record<string, any>>({
 			// Return a plain shallow copy so AForm mutations don't propagate directly into
 			// the HST reactive object, which would bypass field-trigger diffing and cause
 			// setupDeepReactivity to fire triggers for all fields on every keystroke.
-			const flat: Record<string, any> = { ...source }
-
-			// AFieldset receives data[fieldsetFieldname] as its data prop, so the fieldset's
-			// children must be grouped under the fieldset key. The server returns flat SQL rows,
-			// so we nest fieldset children here before AForm renders them.
-			const doctype = stonecrop.value.registry.registry[currentDoctype.value]
-			if (doctype) {
-				for (const field of doctype.getSchemaArray()) {
-					if (field.kind === 'fieldset') {
-						const nested: Record<string, any> = {}
-						for (const child of field.schema) {
-							if (child.fieldname) nested[child.fieldname] = flat[child.fieldname]
-						}
-						flat[field.fieldname] = nested
-					}
-				}
-			}
-			return flat
+			return { ...source }
 		} catch {
 			return {}
 		}
@@ -250,34 +240,6 @@ const currentViewData = computed<Record<string, any>>({
 		}
 
 		try {
-			// AForm emits nested data for fieldsets: { fieldsetKey: { childA: val } }.
-			// HST and the server both expect flat rows, so flatten fieldset values back before writing.
-			const doctype = stonecrop.value.registry.registry[currentDoctype.value]
-			const fieldsetNames = new Set<string>()
-			if (doctype) {
-				for (const field of doctype.getSchemaArray()) {
-					if (field.kind === 'fieldset') {
-						fieldsetNames.add(field.fieldname)
-					}
-				}
-			}
-			// Two-pass flatten: non-fieldset keys first, then fieldset children.
-			// Fieldset children must be applied last — AForm may emit stale flat copies
-			// of fieldset children alongside the updated nested value, and the nested
-			// value must win regardless of key insertion order.
-			const flatData: Record<string, any> = {}
-			const fieldsetValues: Record<string, any>[] = []
-			for (const [key, value] of Object.entries(newData)) {
-				if (fieldsetNames.has(key) && value && typeof value === 'object' && !Array.isArray(value)) {
-					fieldsetValues.push(value)
-				} else {
-					flatData[key] = value
-				}
-			}
-			for (const nestedValue of fieldsetValues) {
-				Object.assign(flatData, nestedValue)
-			}
-
 			// Only update fields that actually changed. Never write undefined — AForm may emit
 			// schema fields absent from the record as undefined; writing them would silently
 			// clear values that exist. Explicit null is allowed (intentional clear).
@@ -286,7 +248,7 @@ const currentViewData = computed<Record<string, any>>({
 				// Reassigned, not mutated, so the getter re-runs. Relying on in-place mutation of the
 				// cached object is what made a draft's edits vanish on any invalidation.
 				const next = { ...draftRecord.value }
-				for (const [fieldname, value] of Object.entries(flatData)) {
+				for (const [fieldname, value] of Object.entries(newData)) {
 					if (value === undefined) continue
 					if (next[fieldname] !== value) {
 						next[fieldname] = value
@@ -296,7 +258,7 @@ const currentViewData = computed<Record<string, any>>({
 				draftRecord.value = next
 			} else {
 				const hstStore = stonecrop.value.getStore()
-				for (const [fieldname, value] of Object.entries(flatData)) {
+				for (const [fieldname, value] of Object.entries(newData)) {
 					if (value === undefined) continue
 					const fieldPath = `${currentDoctype.value}.${currentRecordId.value}.${fieldname}`
 					const currentValue = hstStore.has(fieldPath) ? hstStore.get(fieldPath) : undefined
@@ -575,11 +537,16 @@ const navigationBreadcrumbs = computed(() => {
 	return breadcrumbs
 })
 
+const sheetBreadcrumbs = computed(() => hostBreadcrumbs ?? navigationBreadcrumbs.value)
+
 // Command palette functionality
-type Command = {
-	title: string
-	description: string
-	action: () => void
+type Command = CommandSearchResult
+
+const resolvedCommandSearch = (query: string): Command[] => {
+	if (commandSearch) {
+		return commandSearch(query)
+	}
+	return searchCommands(query)
 }
 
 const searchCommands = (query: string): Command[] => {
@@ -590,9 +557,15 @@ const searchCommands = (query: string): Command[] => {
 			action: () => void doNavigate({ view: 'doctypes' }),
 		},
 		{
-			title: 'Toggle Command Palette',
-			description: 'Open/close the command palette',
-			action: () => (commandPaletteOpen.value = !commandPaletteOpen.value),
+			title: 'Toggle Search',
+			description: 'Open/close the search panel',
+			action: () => {
+				if (actionSetController.isSearchOpen.value) {
+					actionSetController.close()
+				} else {
+					actionSetController.openSearch()
+				}
+			},
 		},
 	]
 
@@ -632,7 +605,11 @@ const searchCommands = (query: string): Command[] => {
 
 const executeCommand = (command: Command) => {
 	command.action()
-	commandPaletteOpen.value = false
+	actionSetController.close()
+}
+
+const onSearchSelect = (result: unknown) => {
+	executeCommand(result as Command)
 }
 
 // List reads are wired on the records table; ATable owns the fetch via getRecords.
@@ -1012,13 +989,9 @@ provide('aformLinkResolver', async (doctypeSlug: string, id: string): Promise<st
 const handleKeydown = (event: KeyboardEvent) => {
 	if ((event.ctrlKey || event.metaKey) && event.key === 'k') {
 		event.preventDefault()
-		commandPaletteOpen.value = true
+		actionSetController.openSearch()
 	}
 	if (event.key === 'Escape') {
-		if (commandPaletteOpen.value) {
-			commandPaletteOpen.value = false
-			return
-		}
 		if (actionSetController.isPreviewOpen.value) {
 			actionSetController.closePreview()
 			return
@@ -1034,8 +1007,9 @@ const visibleActionSetSlots = computed(() =>
 		.filter(slot => slot.show !== false)
 		.map(slot =>
 			Object.assign({}, slot, {
-				icon: slot.icon ? markRaw(slot.icon) : undefined,
-				component: slot.component ? markRaw(slot.component) : undefined,
+				// A host's slots may be reactive, so each component is unwrapped before it is marked raw.
+				icon: slot.icon ? markRaw(toRaw(slot.icon)) : undefined,
+				component: slot.component ? markRaw(toRaw(slot.component)) : undefined,
 			})
 		)
 )
@@ -1083,8 +1057,9 @@ onUnmounted(() => {
 	transition: margin-right 0.25s ease-out;
 }
 
+/* Pull workspace 1px under the drawer so Firefox does not leave a hairline at the seam. */
 .desktop--action-set-open .desktop__workspace {
-	margin-right: var(--sc-action-set-drawer-width);
+	margin-right: calc(var(--sc-action-set-drawer-width) - 1px);
 }
 
 /* SheetNav is fixed to the viewport, so the workspace margin does not move it clear of the drawer. */
@@ -1101,6 +1076,15 @@ onUnmounted(() => {
 	min-width: 0;
 	min-height: 0;
 	overflow: auto;
+	/* Keep the scroll track left of the fixed tile column (drawer open shifts workspace instead). */
+	padding-right: calc(var(--sc-action-set-rail-width) + var(--sc-action-set-tile-gap));
+	scrollbar-gutter: stable;
+}
+
+.desktop--action-set-open .desktop__main {
+	padding-right: 0;
+	/* Stable gutter reserves a column in Firefox; release it when the drawer owns the right edge. */
+	scrollbar-gutter: auto;
 }
 
 .desktop--preview-open .desktop__main {

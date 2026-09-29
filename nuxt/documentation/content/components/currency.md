@@ -134,7 +134,7 @@ rows:
   - ['`baseCurrencyLabel`', '`string`', "`'Base Currency'`", "Label for the read-only base currency field."]
   - ['`baseAmountLabel`', '`string`', "`'Base Amount'`", "Label for the read-only derived base amount field."]
   - ['`exchangeRateLabel`', '`string`', "`'Exchange Rate'`", "Label for the read-only exchange rate field."]
-  - ['`validation`', '`{ errorMessage: string }`', "`{ errorMessage: '&nbsp;' }`", 'Static error message shown below the field.']
+  - ['`validation`', '`{ errorMessage: string }`', "`{ errorMessage: '' }`", 'Static error message shown below the field.']
   - ['`errors`', '`string[]`', '—', 'Dynamic validation errors (e.g. from a trigger). Takes precedence over `validation.errorMessage` whenever the list is non-empty.']
 ---
 ::
@@ -160,9 +160,9 @@ rows:
 ---
 headers: ['Field', 'Type', 'Description']
 rows:
-  - ['`amount`', '`number`', 'The entered amount, in `currency` units.']
+  - ['`amount`', '`number | null`', 'The entered amount, in `currency` units, or `null` when none is entered.']
   - ['`currency`', '`AFormLinkValue`', 'FK reference to the currency the user entered `amount` in.']
-  - ['`baseAmount`', '`number`', '`amount` converted into `baseCurrency` units — `amount * exchangeRate`.']
+  - ['`baseAmount`', '`number | null`', '`amount` converted into `baseCurrency` units (`amount * exchangeRate`), or `null` when `amount` is.']
   - ['`baseCurrency`', '`AFormLinkValue`', "The record's base currency — fixed, not user-editable."]
   - ['`exchangeRate`', '`number`', 'Multiplier from `currency` to `baseCurrency`, hidden from the UI.']
 ---
@@ -176,7 +176,7 @@ headers: ['Mode', 'Rendering']
 rows:
   - ['`edit`', 'Interactive amount input with an embedded currency picker.']
   - ['`read`', 'Same layout, all inputs disabled.']
-  - ['`display`', 'Static text: `amount currency` (with the base-currency equivalent in parentheses, if it differs).']
+  - ['`display`', 'Static text: `amount currency` (with the base-currency equivalent in parentheses, if it differs; `—` if no amount or currency is set).']
 ---
 ::
 

@@ -8,7 +8,7 @@
  *
  *   1. graphql_middleware/src/typeDefs.ts   — the Postgres adapter (the shipped one)
  *   2. nuxt/templates/schema.graphql        — the scaffold the CLI writes into a new app
- *   3. nuxt/fullstack/server/schema.graphql — the playground adapter over an in-memory store
+ *   3. nuxt/test/fixtures/fullstack/schema.graphql — the playground adapter over an in-memory store
  *
  * This file is the missing specification. Each expectation is written once and run against every
  * host, so a host that disagrees fails by name rather than at a consumer's runtime.
@@ -32,8 +32,8 @@ import { describe, it, expect, vi } from 'vitest'
 import type { DoctypeMeta } from '@stonecrop/schema'
 
 import { recordLookupField as templatesLookupField, actionHandlers as templatesHandlers } from '../templates/resolvers'
-import { recordLookupField as fullstackLookupField } from '../fullstack/server/resolvers'
-import { actionHandlers as fullstackHandlers } from '../fullstack/server/action-handlers'
+import { recordLookupField as fullstackLookupField } from './fixtures/fullstack/resolvers'
+import { actionHandlers as fullstackHandlers } from './fixtures/fullstack/action-handlers'
 
 // The two resolver modules above import the middleware at top level, which transitively boots
 // postgraphile + pg — a server-only chain that breaks vitest's node interop. vitest hoists this
@@ -59,6 +59,8 @@ vi.mock('@stonecrop/graphql-middleware', () => {
 /** Root fields `@stonecrop/graphql-client` selects. Adding one here is a contract change. */
 const CONTRACT_QUERY_FIELDS = ['stonecropMeta', 'stonecropAllMeta', 'stonecropRecord', 'stonecropRecords'] as const
 const CONTRACT_MUTATION_FIELDS = ['stonecropAction'] as const
+/** Fields the client selects on `stonecropAction`'s result. */
+const CONTRACT_ACTION_RESULT_FIELDS = ['success', 'data', 'error', 'record'] as const
 
 // ---------------------------------------------------------------------------
 // Hosts
@@ -115,7 +117,7 @@ const HOSTS: Host[] = [
 	},
 	{
 		name: 'fullstack',
-		sdl: readSdl('../fullstack/server/schema.graphql'),
+		sdl: readSdl('./fixtures/fullstack/schema.graphql'),
 		extensions: {
 			query: ['getMeta', 'healthCheck', 'serverInfo'],
 			mutation: [],
@@ -156,6 +158,11 @@ describe.each(HOSTS)('$name — contract surface', { tags: ['unit', 'graphql'] }
 
 	it.each(CONTRACT_MUTATION_FIELDS)('serves Mutation.%s', fieldName => {
 		expect(mutations.has(fieldName), `${name} does not serve Mutation.${fieldName}`).toBe(true)
+	})
+
+	it.each(CONTRACT_ACTION_RESULT_FIELDS)("serves %s on stonecropAction's result", fieldName => {
+		const resultType = print(mutations.get('stonecropAction')!.type).replace(/!$/, '')
+		expect(rootFields(doc, resultType).has(fieldName), `${name}'s ${resultType} has no ${fieldName}`).toBe(true)
 	})
 
 	it.each(['stonecropCreate', 'stonecropUpdate', 'stonecropDelete'])('does not publish %s', verb => {
@@ -352,7 +359,7 @@ describe('action executability', { tags: ['unit', 'graphql'] }, () => {
 		{ name: 'templates', dir: '../templates', files: ['Project.json', 'Task.json'], handlers: templatesHandlers },
 		{
 			name: 'fullstack',
-			dir: '../fullstack/doctypes',
+			dir: './fixtures/fullstack/doctypes',
 			files: ['Order.json', 'OrderItem.json', 'User.json'],
 			handlers: fullstackHandlers,
 		},

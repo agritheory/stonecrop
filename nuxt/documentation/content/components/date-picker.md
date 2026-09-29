@@ -15,7 +15,7 @@ import { ADatePicker } from '@stonecrop/aform'
 
 ## Basic
 
-`v-model` binds to the selected date, as a JS `Date` (or an epoch-millisecond number). Click a day to select it, or use the previous/next month arrows to navigate.
+`v-model` binds to the selected day, as a `YYYY-MM-DD` string. Click a day to select it, or use the previous/next month arrows to navigate. The keyboard can do both (see [Accessibility](#accessibility)).
 
 ::demo-panel
 :::client-only
@@ -30,7 +30,7 @@ import { ADatePicker } from '@stonecrop/aform'
 
 // ADatePicker's `edit` mode renders only the calendar grid — the `label` prop is only
 // used in `read`/`display` mode, so it's omitted here.
-const selected = ref(new Date())
+const selected = ref<string>()
 </script>
 
 <template>
@@ -71,7 +71,7 @@ const schema = [
 import { ref } from 'vue'
 import { AForm } from '@stonecrop/aform'
 
-const data = ref({ orderDate: new Date() })
+const data = ref({ orderDate: '2026-01-15' })
 </script>
 
 <template>
@@ -87,7 +87,7 @@ const data = ref({ orderDate: new Date() })
 ---
 headers: ['Name', 'Type', 'Default', 'Description']
 rows:
-  - ['`v-model`', '`Date | number`', '`new Date()`', 'The selected date. Accepts a `Date` object or an epoch-millisecond timestamp.']
+  - ['`v-model`', '`string | null`', '`undefined`', 'The selected day, as `YYYY-MM-DD`. Unset, `null`, or not a day, the calendar opens on today. A day set from outside moves the calendar to its month and marks it.']
   - ['`label`', '`string`', '—', "Label text. Only rendered in `read`/`display` mode, next to the static value — `edit` mode's calendar grid has no label."]
   - ['`selectRange`', '`boolean`', '`false`', 'When `true`, renders start/end date text inputs above the calendar and switches day selection to range mode. See below.']
   - ['`mode`', "`'edit' | 'read' | 'display'`", "`'edit'`", 'See [Modes](#modes) below.']
@@ -106,13 +106,13 @@ headers: ['Mode', 'Rendering']
 rows:
   - ['`edit`', 'Interactive calendar grid with previous/next month navigation. If `selectRange` is set, also renders editable start/end date text inputs above the grid.']
   - ['`read`', 'Static text — same rendering as `display`. There is no separate disabled-but-visible calendar.']
-  - ['`display`', "Static text: the selected date's `toLocaleDateString()` value (empty string if unset), followed by `label` if one was given."]
+  - ['`display`', "Static text: the selected day in the user's locale format (empty string if unset, `Invalid Date` if not a `YYYY-MM-DD` day), followed by `label` if one was given."]
 ---
 ::
 
 ### Range selection
 
-When `selectRange` is `true`, clicking a day sets the range's start date; the next click sets the end date (a click before the current start date replaces the start instead). Hovering a day while a start date is set previews the in-between range with a lighter highlight. The start/end text inputs above the grid can also be typed into directly — an invalid or empty value clears that end of the range on blur or <kbd>Enter</kbd>.
+When `selectRange` is `true`, clicking a day sets the range's start date; the next click sets the end date (a click before the current start date replaces the start instead). Hovering a day while a start date is set previews the in-between range with a lighter highlight. The start/end text inputs above the grid show each picked day as the user's locale writes it in numbers, in Gregorian years and Western digits. They can be typed into in that form or as `YYYY-MM-DD`; any other text, a day that does not exist, or an empty value clears that end of the range on blur or <kbd>Enter</kbd>.
 
 ### Events
 
@@ -120,12 +120,21 @@ When `selectRange` is `true`, clicking a day sets the range's start date; the ne
 ---
 headers: ['Event', 'Payload', 'Description']
 rows:
-  - ['`get-date`', '`{ start: Date | null; end: Date | null; selected: Date }`', "Emitted whenever a date is selected on the grid or entered into the start/end inputs. `start`/`end` are always `null` unless `selectRange` is `true`."]
+  - ['`get-date`', '`{ start: string | null; end: string | null; selected: string }`', "Emitted whenever a date is selected on the grid or entered into the start/end inputs, each day as `YYYY-MM-DD`. `start`/`end` are always `null` unless `selectRange` is `true`."]
 ---
 ::
 
 ## Accessibility
 
-Each day cell is a native `td` with `tabindex="0"`, so the grid is keyboard-focusable cell by cell via <kbd>Tab</kbd>, and <kbd>Enter</kbd> on a focused cell selects that date (mirroring a click). On mount, the component moves focus to the currently selected date's cell, falling back to today's date if nothing is selected. Note that dedicated arrow-key navigation between days and month/year paging shortcuts exist in the source but are currently commented out, so day-to-day movement still relies on <kbd>Tab</kbd> order rather than arrow keys.
+The grid is one <kbd>Tab</kbd> stop, on the picked day (or today). From there:
+
+- the arrow keys move a day or a week, crossing into the next or previous month;
+- <kbd>Page Up</kbd> and <kbd>Page Down</kbd> move a month, and with <kbd>Shift</kbd> a year;
+- <kbd>Home</kbd> and <kbd>End</kbd> go to the week's Monday and Sunday;
+- <kbd>Enter</kbd> or <kbd>Space</kbd> picks the focused day.
+
+The previous/next month arrows are for the mouse, and carry the <kbd>Tab</kbd> stop to the same day of the month shown. In range mode the start and end text inputs keep their own arrow keys. The calendar takes no focus when it appears, so a field that opens it keeps focus in its own box.
+
+For screen readers the calendar is a `grid` named by its month and year, and each day is named by its full date in the user's locale. The picked days are marked selected (`aria-selected`), and today is marked as the current date (`aria-current="date"`).
 
 Source: [`aform/src/components/form/ADatePicker.vue`](https://github.com/agritheory/stonecrop/blob/development/aform/src/components/form/ADatePicker.vue)

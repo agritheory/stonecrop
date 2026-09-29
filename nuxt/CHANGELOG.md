@@ -1,5 +1,193 @@
 # Change Log - @stonecrop/nuxt
 
+## 0.39.0
+
+### Minor Changes
+
+- 835f62c: An action's result now carries `droppedFields`, the keys a save discarded instead of storing, through one `ActionDispatchResult` type that `@stonecrop/schema` now exports.
+
+### Patch Changes
+
+- 835f62c: `useStonecropRegistry().dispatchAction`, and the `runAction` that DocBuilder's code editor offers client handlers, now declare the `record` an action's result has carried since 0.36.0.
+- 835f62c: DocBuilder's fields and actions tables now keep each text box inside its column and line each row up under the filter row above it.
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+  - @stonecrop/graphql-client@0.39.0
+  - @stonecrop/schema@0.39.0
+  - @stonecrop/stonecrop@0.39.0
+  - @stonecrop/desktop@0.39.0
+  - @stonecrop/themes@0.39.0
+  - @stonecrop/aform@0.39.0
+  - @stonecrop/atable@0.39.0
+  - @stonecrop/graphql-middleware@0.39.0
+  - @stonecrop/node-editor@0.39.0
+  - @stonecrop/nuxt-grafserv@0.39.0
+  - @stonecrop/casl-middleware@0.39.0
+  - @stonecrop/code-editor@0.39.0
+
+## 0.38.1
+
+### Patch Changes
+
+- Updated dependencies [74ea65f]
+  - @stonecrop/atable@0.38.1
+  - @stonecrop/aform@0.38.1
+  - @stonecrop/stonecrop@0.38.1
+  - @stonecrop/desktop@0.38.1
+  - @stonecrop/casl-middleware@0.38.1
+  - @stonecrop/code-editor@0.38.1
+  - @stonecrop/graphql-client@0.38.1
+  - @stonecrop/graphql-middleware@0.38.1
+  - @stonecrop/node-editor@0.38.1
+  - @stonecrop/nuxt-grafserv@0.38.1
+  - @stonecrop/schema@0.38.1
+  - @stonecrop/themes@0.38.1
+
+## 0.38.0
+
+### Minor Changes
+
+- 7b56de2: Consolidate Nuxt playground and fullstack examples into the documentation app and refine Desktop ActionSet layout.
+- 7b56de2: combine nuxt examples, improve actionset
+
+### Patch Changes
+
+- Updated dependencies [7b56de2]
+- Updated dependencies [7b56de2]
+  - @stonecrop/desktop@0.38.0
+  - @stonecrop/aform@0.38.0
+  - @stonecrop/atable@0.38.0
+  - @stonecrop/casl-middleware@0.38.0
+  - @stonecrop/code-editor@0.38.0
+  - @stonecrop/graphql-client@0.38.0
+  - @stonecrop/graphql-middleware@0.38.0
+  - @stonecrop/node-editor@0.38.0
+  - @stonecrop/nuxt-grafserv@0.38.0
+  - @stonecrop/schema@0.38.0
+  - @stonecrop/stonecrop@0.38.0
+  - @stonecrop/themes@0.38.0
+
+## 0.37.0
+
+### Minor Changes
+
+- Consolidate Nuxt playground and fullstack examples into the documentation app and refine Desktop ActionSet layout.
+
+### Patch Changes
+
+- Updated dependencies
+  - @stonecrop/desktop@0.37.0
+  - @stonecrop/aform@0.37.0
+  - @stonecrop/atable@0.37.0
+  - @stonecrop/casl-middleware@0.37.0
+  - @stonecrop/code-editor@0.37.0
+  - @stonecrop/graphql-client@0.37.0
+  - @stonecrop/graphql-middleware@0.37.0
+  - @stonecrop/node-editor@0.37.0
+  - @stonecrop/nuxt-grafserv@0.37.0
+  - @stonecrop/schema@0.37.0
+  - @stonecrop/stonecrop@0.37.0
+  - @stonecrop/themes@0.37.0
+
+## 0.36.0
+
+### Patch Changes
+
+- e673267: An action's result carries `record`, the record as a read returns it after the action, and the client stores that in place of `data`, which stays whatever the action's handler returned, so a `DataClient.runAction` must now return `record`.
+- e673267: The setup tool installs every package the files it copies import: the GraphQL server install now adds `@stonecrop/schema` and `temporal-polyfill`, and the frontend install adds `@stonecrop/graphql-client`, which apps built with pnpm could not otherwise resolve.
+- e673267: The starter server's "Snooze a Week" action adds a week to the due date through Temporal, where it landed a day short across a spring clock change, and snoozes a task with no due date from the server's today.
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+  - @stonecrop/graphql-middleware@0.36.0
+  - @stonecrop/graphql-client@0.36.0
+  - @stonecrop/schema@0.36.0
+  - @stonecrop/stonecrop@0.36.0
+  - @stonecrop/aform@0.36.0
+  - @stonecrop/atable@0.36.0
+  - @stonecrop/nuxt-grafserv@0.36.0
+  - @stonecrop/desktop@0.36.0
+  - @stonecrop/node-editor@0.36.0
+  - @stonecrop/casl-middleware@0.36.0
+  - @stonecrop/code-editor@0.36.0
+  - @stonecrop/themes@0.36.0
+
+## 0.35.0
+
+### Minor Changes
+
+- 2f16a84: Components read the floor's surface, border and radius tokens instead of hard-coded colours and radii, so a host restyles them from the floor alone.
+
+### Patch Changes
+
+- 2f16a84: DocBuilder's action-type and field-source pills, remove button and validation banners take their colours from the theme's badge tokens instead of fixed colours.
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+  - @stonecrop/atable@0.35.0
+  - @stonecrop/desktop@0.35.0
+  - @stonecrop/aform@0.35.0
+  - @stonecrop/node-editor@0.35.0
+  - @stonecrop/schema@0.35.0
+  - @stonecrop/graphql-middleware@0.35.0
+  - @stonecrop/graphql-client@0.35.0
+  - @stonecrop/stonecrop@0.35.0
+  - @stonecrop/themes@0.35.0
+  - @stonecrop/nuxt-grafserv@0.35.0
+  - @stonecrop/casl-middleware@0.35.0
+  - @stonecrop/code-editor@0.35.0
+
 ## 0.34.0
 
 ### Minor Changes

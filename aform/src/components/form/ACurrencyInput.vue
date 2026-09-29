@@ -33,6 +33,8 @@
 								type="number"
 								:disabled="mode === 'read'"
 								:required="required"
+								:aria-invalid="invalid"
+								:aria-describedby="describedBy"
 								@keydown="onAmountKeydown"
 								@paste="onAmountPaste" />
 							<label class="aform_field-label" :for="uuid">{{ label }}</label>
@@ -47,7 +49,7 @@
 				</div>
 				<div class="acurrency__field acurrency__field--base-amount">
 					<input
-						:value="modelValue.baseAmount"
+						:value="modelValue?.baseAmount"
 						class="aform_input-field acurrency__base-field"
 						type="number"
 						disabled />
@@ -55,14 +57,14 @@
 				</div>
 				<div class="acurrency__field acurrency__field--exchange-rate">
 					<input
-						:value="modelValue.exchangeRate"
+						:value="modelValue?.exchangeRate"
 						class="aform_input-field acurrency__base-field"
 						type="number"
 						disabled />
 					<label class="aform_field-label">{{ exchangeRateLabel }}</label>
 				</div>
 			</div>
-			<p v-show="validation.errorMessage" class="aform_error" v-html="validation.errorMessage"></p>
+			<p v-show="errorText" :id="errorId" class="aform_error" role="alert">{{ errorText }}</p>
 		</template>
 	</div>
 </template>
@@ -71,14 +73,17 @@
 import { computed, inject, ref, watch } from 'vue'
 
 import type { AFormLinkValue, ComponentProps, CurrencyOptions, CurrencyValue } from '../../types'
+import { numberFromBox } from '../../utils/emptiedBox'
 import AFormLink from './AFormLink.vue'
+import { fieldErrorA11y } from '../../composables/fieldErrorA11y'
 
 const {
 	label,
 	required,
 	mode,
 	uuid,
-	validation = { errorMessage: '&nbsp;' },
+	errors,
+	validation = { errorMessage: '' },
 	options = {},
 	currencyLabel = 'Currency',
 	baseCurrencyLabel = 'Base Currency',
@@ -94,16 +99,20 @@ const {
 	}
 >()
 
+// Dynamic trigger errors take precedence over a static schema errorMessage; empty means the slot hides.
+const errorText = computed(() => (errors?.length ? errors.join('; ') : (validation.errorMessage ?? '')))
+const { errorId, describedBy, invalid } = fieldErrorA11y(uuid, errorText)
+
 // The merged currency prefix is compact by design, so it shows the symbol rather than the
 // full currency name once a value is picked — falls back gracefully when a currency record
 // (or the story/app data behind it) doesn't carry a `symbol`.
 const currencySymbol = (value: AFormLinkValue): string => value.symbol ?? value.displayText ?? String(value.id)
 
-const modelValue = defineModel<CurrencyValue>({
+const modelValue = defineModel<CurrencyValue | null>({
 	default: () => ({
-		amount: 0,
+		amount: null,
 		currency: { id: '' },
-		baseAmount: 0,
+		baseAmount: null,
 		baseCurrency: { id: '' },
 		exchangeRate: 1,
 	}),
@@ -181,25 +190,25 @@ const baseDecimals = computed(() => {
 
 const roundAmount = (value: number): number => Number(value.toFixed(baseDecimals.value))
 
-const recompute = (amount: number, currencyValue: AFormLinkValue) => {
+const recompute = (amount: number | null, currencyValue: AFormLinkValue) => {
 	const exchangeRate = resolveExchangeRate(currencyValue.id)
 	modelValue.value = {
 		amount,
 		currency: currencyValue,
 		exchangeRate,
 		baseCurrency: resolvedBaseCurrency.value,
-		baseAmount: roundAmount(amount * exchangeRate),
+		baseAmount: amount === null ? null : roundAmount(amount * exchangeRate),
 	}
 }
 
 const amount = computed({
-	get: () => modelValue.value?.amount ?? 0,
-	set: (value: number) => recompute(value, modelValue.value?.currency ?? { id: '' }),
+	get: () => modelValue.value?.amount ?? null,
+	set: (value: number | '') => recompute(numberFromBox(value), modelValue.value?.currency ?? { id: '' }),
 })
 
 const currency = computed<AFormLinkValue>({
 	get: () => modelValue.value?.currency ?? { id: '' },
-	set: (value: AFormLinkValue) => recompute(modelValue.value?.amount ?? 0, value),
+	set: (value: AFormLinkValue) => recompute(modelValue.value?.amount ?? null, value),
 })
 
 const amountNavigationKeys = new Set([
@@ -245,7 +254,7 @@ const showBase = computed(() => {
 
 const displayText = computed(() => {
 	const v = modelValue.value
-	if (!v || !v.currency?.id) return '—'
+	if (!v || !v.currency?.id || v.amount === null) return '—'
 	const currencyText = v.currency.displayText ?? String(v.currency.id)
 	const base = `${v.amount} ${currencyText}`
 	if (!showBase.value) return base
@@ -273,9 +282,11 @@ const displayText = computed(() => {
 .acurrency__group {
 	display: flex;
 	align-items: stretch;
+	box-sizing: border-box;
 	width: 100%;
+	background: var(--sc-input-field-background);
 	border: 1px solid var(--sc-input-border-color);
-	border-radius: 0.25rem;
+	border-radius: var(--sc-border-radius);
 }
 
 .acurrency__group:focus-within {
@@ -297,14 +308,22 @@ const displayText = computed(() => {
 	font-size: 0.85rem;
 }
 
+/* The label names the whole group, so focus on the currency picker darkens it too. */
+.acurrency__group:focus-within .acurrency__amount-wrap > .aform_field-label {
+	color: var(--sc-input-active-label-color);
+}
+
 .acurrency__amount {
 	width: 100%;
 	box-sizing: border-box;
 	border: none;
 	outline: none;
-	padding: 0.5ch 1ch;
+	padding: 0.5rem 1ch;
+	font-size: 1rem;
+	font-family: var(--sc-font-family);
+	color: var(--sc-cell-text-color);
 	background: transparent;
-	border-radius: 0 0.25rem 0.25rem 0;
+	border-radius: 0 var(--sc-border-radius) var(--sc-border-radius) 0;
 	text-align: right;
 	appearance: textfield;
 	-moz-appearance: textfield;
@@ -326,18 +345,25 @@ const displayText = computed(() => {
 	position: relative;
 	flex: 0 0 auto;
 	min-width: 4.5rem;
-	background: var(--sc-gray-5);
+	background: var(--sc-input-addon-background);
 	border-right: 1px solid var(--sc-input-border-color);
-	border-radius: 0.25rem 0 0 0.25rem;
+	border-radius: var(--sc-border-radius) 0 0 var(--sc-border-radius);
+}
+
+/* The picker's list hangs from the group's outer border to the picker's divider, so its side lines
+   continue theirs. `.acurrency__group` is there to outrank AFormLink's own embedded `min-width`. */
+.acurrency__group .acurrency__currency :deep(.autocomplete-results) {
+	left: -1px;
+	min-width: calc(100% + 2px);
 }
 
 .acurrency__base-field {
 	width: 100%;
 	box-sizing: border-box;
 	font-size: 1rem;
-	padding: 0.5ch 1ch;
+	padding: 0.5rem 1ch;
 	border: 1px solid var(--sc-input-border-color);
-	border-radius: 0.25rem;
+	border-radius: var(--sc-border-radius);
 	outline: none;
 	appearance: textfield;
 	-moz-appearance: textfield;

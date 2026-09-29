@@ -140,6 +140,8 @@ export interface ValueField {
 	 * chooses the widget, which is an authoring decision the database has no opinion about.
 	 */
 	source?: 'introspected'
+	/** View configuration when this link field expands to a table (`ATable`). */
+	config?: TableViewConfig
 }
 
 /**
@@ -151,7 +153,7 @@ export interface FieldsetField {
 	kind: 'fieldset'
 	/** Unique identifier for this fieldset within its doctype */
 	fieldname: string
-	/** Vue component to render this fieldset. Defaults to `'AFieldset'` in resolveSchema. */
+	/** Vue component to render this fieldset. AForm renders `'AFieldset'` when none is declared. */
 	component?: string
 	/** Human-readable label for the fieldset legend */
 	label?: string
@@ -473,6 +475,7 @@ function createDoctypeFieldSchemas() {
 			validation: FieldValidation.optional(),
 			cardinality: z.enum(['atMostOne', 'one', 'noneOrMany', 'atLeastOne']).optional(),
 			source: z.literal('introspected').optional(),
+			config: TableViewConfig.optional(),
 		})
 		.meta({ title: 'ValueField' })
 

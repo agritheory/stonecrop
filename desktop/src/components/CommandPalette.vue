@@ -3,36 +3,23 @@
 		<Transition name="fade">
 			<div v-if="isOpen" class="command-palette-overlay" @click="closeModal">
 				<div class="command-palette" @click.stop>
-					<div class="command-palette-header">
-						<input
-							ref="input"
-							v-model="query"
-							type="text"
-							class="command-palette-input"
-							:placeholder="placeholder"
-							autofocus
-							@keydown="handleKeydown" />
-					</div>
-
-					<div v-if="results.length" class="command-palette-results">
-						<div
-							v-for="(result, index) in results"
-							:key="index"
-							class="command-palette-result"
-							:class="{ selected: index === selectedIndex }"
-							@click="selectResult(result)"
-							@mouseover="selectedIndex = index">
-							<div class="result-title">
-								<slot name="title" :result="result" />
-							</div>
-							<div class="result-content">
-								<slot name="content" :result="result" />
-							</div>
-						</div>
-					</div>
-					<div v-else-if="query && !results.length" class="command-palette-no-results">
-						<slot name="empty"> No results found for "{{ query }}" </slot>
-					</div>
+					<CommandSearch
+						:search="search"
+						:placeholder="placeholder"
+						:max-results="maxResults"
+						:autofocus="isOpen"
+						@select="onSelect"
+						@close="closeModal">
+						<template #title="{ result }">
+							<slot name="title" :result="result" />
+						</template>
+						<template #content="{ result }">
+							<slot name="content" :result="result" />
+						</template>
+						<template v-if="$slots.empty" #empty>
+							<slot name="empty" />
+						</template>
+					</CommandSearch>
 				</div>
 			</div>
 		</Transition>
@@ -40,7 +27,7 @@
 </template>
 
 <script setup lang="ts" generic="T">
-import { ref, computed, watch, nextTick, useTemplateRef } from 'vue'
+import CommandSearch from './CommandSearch.vue'
 
 defineSlots<{
 	title?: { result: T }
@@ -65,64 +52,11 @@ const emit = defineEmits<{
 	close: []
 }>()
 
-const query = ref('')
-const selectedIndex = ref(0)
-const inputRef = useTemplateRef('input')
-
-const results = computed(() => {
-	if (!query.value) return []
-	const searchResults = search(query.value)
-	return searchResults.slice(0, maxResults)
-})
-
-// reset search query when modal opens
-watch(
-	() => isOpen,
-	async open => {
-		if (open) {
-			query.value = ''
-			selectedIndex.value = 0
-			await nextTick()
-			;(inputRef.value as HTMLInputElement)?.focus()
-		}
-	}
-)
-
-// reset selected index when results change
-watch(results, () => {
-	selectedIndex.value = 0
-})
-
 const closeModal = () => {
 	emit('close')
 }
 
-const handleKeydown = (e: KeyboardEvent) => {
-	switch (e.key) {
-		case 'Escape':
-			closeModal()
-			break
-		case 'ArrowDown':
-			e.preventDefault()
-			if (results.value.length) {
-				selectedIndex.value = (selectedIndex.value + 1) % results.value.length
-			}
-			break
-		case 'ArrowUp':
-			e.preventDefault()
-			if (results.value.length) {
-				selectedIndex.value = (selectedIndex.value - 1 + results.value.length) % results.value.length
-			}
-			break
-		case 'Enter':
-			if (results.value.length && selectedIndex.value >= 0) {
-				selectResult(results.value[selectedIndex.value])
-			}
-			break
-	}
-}
-
-const selectResult = (result: T) => {
+const onSelect = (result: T) => {
 	emit('select', result)
 	closeModal()
 }
@@ -156,80 +90,12 @@ const selectResult = (result: T) => {
 .command-palette {
 	width: 600px;
 	max-width: 90%;
-	background-color: white;
-	border-radius: 8px;
+	background-color: var(--sc-overlay-background);
+	border-radius: var(--sc-border-radius);
 	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
 	overflow: hidden;
 	max-height: 80vh;
 	display: flex;
 	flex-direction: column;
-}
-
-.command-palette-header {
-	display: flex;
-	border-bottom: 1px solid #eaeaea;
-	padding: 12px;
-}
-
-.command-palette-input {
-	flex: 1;
-	border: none;
-	outline: none;
-	font-size: 16px;
-	padding: 8px 12px;
-	background-color: transparent;
-}
-
-.command-palette-close {
-	background: transparent;
-	border: none;
-	font-size: 24px;
-	cursor: pointer;
-	color: #666;
-	padding: 0 8px;
-}
-
-.command-palette-close:hover {
-	color: #333;
-}
-
-.command-palette-results {
-	overflow-y: auto;
-	max-height: 60vh;
-}
-
-.command-palette-result {
-	padding: 12px 16px;
-	cursor: pointer;
-	border-bottom: 1px solid #f0f0f0;
-}
-
-.command-palette-result:hover,
-.command-palette-result.selected {
-	background-color: #f5f5f5;
-}
-
-.command-palette-result.selected {
-	background-color: rgba(132, 60, 3, 0.1);
-}
-
-.result-title {
-	font-weight: 500;
-	margin-bottom: 4px;
-	color: #333;
-}
-
-.result-content {
-	font-size: 14px;
-	color: #666;
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
-}
-
-.command-palette-no-results {
-	padding: 20px 16px;
-	text-align: center;
-	color: #666;
 }
 </style>

@@ -24,6 +24,15 @@ export const ActionDefinition: z.ZodObject<{
 export type ActionDefinition = z.infer<typeof ActionDefinition>;
 
 // @public
+export type ActionDispatchResult = {
+    success: boolean;
+    data: unknown;
+    error: string | null;
+    record: Record<string, unknown> | null;
+    droppedFields?: string[] | null;
+};
+
+// @public
 export function aggregateDoctypeName(doctypeName: string): string;
 
 // @public
@@ -124,7 +133,7 @@ export const COMPONENT_CATEGORY: Record<string, ComponentCategory>;
 export const COMPONENT_LINK_EXPANSION: Record<string, LinkExpansion>;
 
 // @public
-export type ComponentCategory = 'text' | 'number' | 'boolean' | 'date' | 'datetime' | 'select' | 'code' | 'link' | 'attach' | 'quantity' | 'currency' | 'semver';
+export type ComponentCategory = 'text' | 'number' | 'boolean' | 'date' | 'datetime' | 'duration' | 'select' | 'code' | 'link' | 'attach' | 'quantity' | 'currency' | 'semver';
 
 // @public
 export function componentCategory(component?: string): ComponentCategory | undefined;
@@ -155,11 +164,7 @@ export interface DataClient<T extends DoctypeRef = DoctypeRef, M = DoctypeMeta> 
     getMeta(context: DoctypeContext): Promise<M | null>;
     getRecord(doctype: T, recordId: string, options?: GetRecordOptions): Promise<GetRecordResult>;
     getRecords(doctype: T, options?: GetRecordsOptions): Promise<GetRecordsResult>;
-    runAction(doctype: T, action: string, args?: unknown[]): Promise<{
-        success: boolean;
-        data: unknown;
-        error: string | null;
-    }>;
+    runAction(doctype: T, action: string, args?: unknown[]): Promise<ActionDispatchResult>;
 }
 
 // @public
@@ -670,6 +675,7 @@ export interface ValueField {
     cardinality?: 'atMostOne' | 'one' | 'noneOrMany' | 'atLeastOne';
     component: string;
     computed?: boolean;
+    config?: TableViewConfig;
     default?: unknown;
     doctype?: string;
     edit?: boolean;
@@ -733,6 +739,23 @@ export const ValueFieldSchema: z.ZodObject<{
         atLeastOne: "atLeastOne";
     }>>;
     source: z.ZodOptional<z.ZodLiteral<"introspected">>;
+    config: z.ZodOptional<z.ZodObject<{
+        view: z.ZodOptional<z.ZodEnum<{
+            list: "list";
+            uncounted: "uncounted";
+            "list-expansion": "list-expansion";
+            tree: "tree";
+            gantt: "gantt";
+            "tree-gantt": "tree-gantt";
+        }>>;
+        fullWidth: z.ZodOptional<z.ZodBoolean>;
+        defaultTreeExpansion: z.ZodOptional<z.ZodEnum<{
+            root: "root";
+            branch: "branch";
+            leaf: "leaf";
+        }>>;
+        dependencyGraph: z.ZodOptional<z.ZodBoolean>;
+    }, z.core.$strip>>;
 }, z.core.$strip>;
 
 // @public

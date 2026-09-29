@@ -22,9 +22,9 @@ const ADateSelectionStub = defineComponent({
 const global = { components: { ADateSelection: ADateSelectionStub } }
 
 const mountAndEmitRange = async (start: Date, end: Date) => {
-	const emitted: (number | undefined)[] = []
+	const emitted: (string | null | undefined)[] = []
 	const wrapper = mount(ADuration, {
-		props: { 'onUpdate:modelValue': (v: number | undefined) => emitted.push(v) },
+		props: { 'onUpdate:modelValue': (v: string | null | undefined) => emitted.push(v) },
 		global,
 	})
 	await wrapper.findComponent({ name: 'ADateSelection' }).vm.$emit('get-range', { start, end })
@@ -71,7 +71,7 @@ describe('ADuration', () => {
 	describe('display mode', () => {
 		it('renders .aform_display-value in display mode', () => {
 			const wrapper = mount(ADuration, {
-				props: { mode: 'display', modelValue: 3_600_000 },
+				props: { mode: 'display', modelValue: 'PT1H' },
 				global,
 			})
 			expect(wrapper.find('.aform_display-value').exists()).toBe(true)
@@ -79,26 +79,59 @@ describe('ADuration', () => {
 
 		it('does not render ADateSelection in display mode', () => {
 			const wrapper = mount(ADuration, {
-				props: { mode: 'display', modelValue: 3_600_000 },
+				props: { mode: 'display', modelValue: 'PT1H' },
 				global,
 			})
 			expect(wrapper.findComponent({ name: 'ADateSelection' }).exists()).toBe(false)
 		})
 
-		it('shows "1h" for 3_600_000 ms in display mode', () => {
+		it('shows "1h" for PT1H in display mode', () => {
 			const wrapper = mount(ADuration, {
-				props: { mode: 'display', modelValue: 3_600_000 },
+				props: { mode: 'display', modelValue: 'PT1H' },
 				global,
 			})
 			expect(wrapper.find('.aform_display-value').text()).toBe('1h')
 		})
 
-		it('shows "—" when modelValue is 0 in display mode', () => {
+		it('shows "—" when modelValue is a zero duration in display mode', () => {
 			const wrapper = mount(ADuration, {
-				props: { mode: 'display', modelValue: 0 },
+				props: { mode: 'display', modelValue: 'PT0S' },
 				global,
 			})
 			expect(wrapper.find('.aform_display-value').text()).toBe('—')
+		})
+
+		it('shows "—" when modelValue is null in display mode', () => {
+			const wrapper = mount(ADuration, {
+				props: { mode: 'display', modelValue: null },
+				global,
+			})
+			expect(wrapper.find('.aform_display-value').text()).toBe('—')
+		})
+
+		// A backend may hold months, which no count of days or milliseconds can stand for.
+		it('shows years, months and a fraction of a second', () => {
+			const wrapper = mount(ADuration, {
+				props: { mode: 'display', modelValue: 'P1Y2MT1.5S' },
+				global,
+			})
+			expect(wrapper.find('.aform_display-value').text()).toBe('1y 2mo 1.5s')
+		})
+
+		it('shows a duration in the units it holds', () => {
+			const wrapper = mount(ADuration, {
+				props: { mode: 'display', modelValue: 'PT25H' },
+				global,
+			})
+			expect(wrapper.find('.aform_display-value').text()).toBe('25h')
+		})
+
+		it('shows a value that is no ISO 8601 duration as invalid', () => {
+			const wrapper = mount(ADuration, {
+				props: { mode: 'display', modelValue: '3600000' },
+				global,
+			})
+			expect(wrapper.find('.aform_display-value').text()).toBe('Invalid Duration')
 		})
 
 		it('shows "—" when modelValue is undefined in display mode', () => {
@@ -110,10 +143,8 @@ describe('ADuration', () => {
 		})
 
 		it('formats multi-unit duration correctly in display mode', () => {
-			// 1d 2h 30m 15s
-			const ms = (24 + 2) * 3_600_000 + 30 * 60_000 + 15_000
 			const wrapper = mount(ADuration, {
-				props: { mode: 'display', modelValue: ms },
+				props: { mode: 'display', modelValue: 'P1DT2H30M15S' },
 				global,
 			})
 			expect(wrapper.find('.aform_display-value').text()).toBe('1d 2h 30m 15s')
@@ -121,7 +152,7 @@ describe('ADuration', () => {
 
 		it('does not render ADateSelection in read mode', () => {
 			const wrapper = mount(ADuration, {
-				props: { mode: 'read', modelValue: 3_600_000 },
+				props: { mode: 'read', modelValue: 'PT1H' },
 				global,
 			})
 			expect(wrapper.findComponent({ name: 'ADateSelection' }).exists()).toBe(false)
@@ -129,38 +160,38 @@ describe('ADuration', () => {
 	})
 
 	describe('duration computed', () => {
-		it('calculates the correct duration in milliseconds', async () => {
+		it('holds the duration as ISO 8601', async () => {
 			const start = new Date('2026-01-01T08:00:00')
-			const end = new Date('2026-01-01T10:30:00') // 2.5h = 9_000_000 ms
+			const end = new Date('2026-01-01T10:30:00')
 			const { emitted } = await mountAndEmitRange(start, end)
-			expect(emitted[emitted.length - 1]).toBe(9_000_000)
+			expect(emitted[emitted.length - 1]).toBe('PT2H30M')
 		})
 
 		it('clamps to 0 when end is before start', async () => {
 			const start = new Date('2026-01-02T10:00:00')
 			const end = new Date('2026-01-01T08:00:00') // earlier than start
 			const { emitted } = await mountAndEmitRange(start, end)
-			expect(emitted[emitted.length - 1]).toBe(0)
+			expect(emitted[emitted.length - 1]).toBe('PT0S')
 		})
 
 		it('clamps to 0 when start equals end', async () => {
 			const date = new Date('2026-01-01T10:00:00')
 			const { emitted } = await mountAndEmitRange(date, date)
-			expect(emitted[emitted.length - 1]).toBe(0)
+			expect(emitted[emitted.length - 1]).toBe('PT0S')
 		})
 
 		it('handles multi-day spans correctly', async () => {
 			const start = new Date('2026-01-01T00:00:00')
 			const end = new Date('2026-01-03T00:00:00') // exactly 2 days
 			const { emitted } = await mountAndEmitRange(start, end)
-			expect(emitted[emitted.length - 1]).toBe(2 * 24 * 60 * 60 * 1000)
+			expect(emitted[emitted.length - 1]).toBe('P2D')
 		})
 
 		it('handles same-day time-only duration', async () => {
 			const start = new Date('2026-01-01T08:00:00')
 			const end = new Date('2026-01-01T08:30:00') // 30 min
 			const { emitted } = await mountAndEmitRange(start, end)
-			expect(emitted[emitted.length - 1]).toBe(30 * 60 * 1000)
+			expect(emitted[emitted.length - 1]).toBe('PT30M')
 		})
 	})
 
@@ -186,18 +217,19 @@ describe('ADuration', () => {
 			expect(wrapper.find('.aduration__value').text()).toBe('1d 12h')
 		})
 
-		it('shows ms value in summary strip', async () => {
+		it('shows the value it holds in summary strip', async () => {
 			const start = new Date('2026-01-01T08:00:00')
 			const end = new Date('2026-01-01T09:00:00')
 			const { wrapper } = await mountAndEmitRange(start, end)
-			expect(wrapper.find('.aduration__ms').text()).toContain('3600000')
+			expect(wrapper.find('.aduration__held').text()).toBe('(PT1H)')
 		})
 
-		it('shows "0s" for sub-1000ms duration', async () => {
+		it('shows a fraction of a second', async () => {
 			const start = new Date('2026-01-01T08:00:00.000')
 			const end = new Date('2026-01-01T08:00:00.500')
-			const { wrapper } = await mountAndEmitRange(start, end)
-			expect(wrapper.find('.aduration__value').text()).toBe('0s')
+			const { wrapper, emitted } = await mountAndEmitRange(start, end)
+			expect(emitted[emitted.length - 1]).toBe('PT0.5S')
+			expect(wrapper.find('.aduration__value').text()).toBe('0.5s')
 		})
 	})
 
@@ -241,9 +273,9 @@ describe('ADuration', () => {
 
 	describe('v-model', () => {
 		it('emits update:modelValue on range change', async () => {
-			const emitted: (number | undefined)[] = []
+			const emitted: (string | null | undefined)[] = []
 			const wrapper = mount(ADuration, {
-				props: { 'onUpdate:modelValue': (v: number | undefined) => emitted.push(v) },
+				props: { 'onUpdate:modelValue': (v: string | null | undefined) => emitted.push(v) },
 				global,
 			})
 			await wrapper.findComponent({ name: 'ADateSelection' }).vm.$emit('get-range', {
@@ -252,14 +284,14 @@ describe('ADuration', () => {
 			})
 			await nextTick()
 			expect(emitted.length).toBeGreaterThan(0)
-			expect(emitted[emitted.length - 1]).toBe(3_600_000)
+			expect(emitted[emitted.length - 1]).toBe('PT1H')
 		})
 
 		it('emits on every range change', async () => {
-			const emitted: (number | undefined)[] = []
+			const emitted: (string | null | undefined)[] = []
 			let wrapper: ReturnType<typeof mount>
 			wrapper = mount(ADuration, {
-				props: { 'onUpdate:modelValue': (v: number | undefined) => emitted.push(v) },
+				props: { 'onUpdate:modelValue': (v: string | null | undefined) => emitted.push(v) },
 				global,
 			})
 
@@ -278,13 +310,13 @@ describe('ADuration', () => {
 			await nextTick()
 
 			const last2 = emitted.slice(-2)
-			expect(last2).toEqual([3_600_000, 7_200_000])
+			expect(last2).toEqual(['PT1H', 'PT2H'])
 		})
 
 		it('calculates duration when only end time changes without selecting dates', async () => {
-			const emitted: (number | undefined)[] = []
+			const emitted: (string | null | undefined)[] = []
 			const wrapper = mount(ADuration, {
-				props: { 'onUpdate:modelValue': (v: number | undefined) => emitted.push(v) },
+				props: { 'onUpdate:modelValue': (v: string | null | undefined) => emitted.push(v) },
 				global,
 			})
 
@@ -300,13 +332,13 @@ describe('ADuration', () => {
 			await wrapper.findComponent({ name: 'ADateSelection' }).vm.$emit('get-range', { start, end })
 			await nextTick()
 
-			expect(emitted[emitted.length - 1]).toBe(13 * 60 * 60 * 1000)
+			expect(emitted[emitted.length - 1]).toBe('PT13H')
 		})
 
 		it('calculates duration when start is 12 AM and end is 2 PM', async () => {
-			const emitted: (number | undefined)[] = []
+			const emitted: (string | null | undefined)[] = []
 			const wrapper = mount(ADuration, {
-				props: { 'onUpdate:modelValue': (v: number | undefined) => emitted.push(v) },
+				props: { 'onUpdate:modelValue': (v: string | null | undefined) => emitted.push(v) },
 				global,
 			})
 
@@ -320,13 +352,13 @@ describe('ADuration', () => {
 			await wrapper.findComponent({ name: 'ADateSelection' }).vm.$emit('get-range', { start, end })
 			await nextTick()
 
-			expect(emitted[emitted.length - 1]).toBe(14 * 60 * 60 * 1000)
+			expect(emitted[emitted.length - 1]).toBe('PT14H')
 		})
 
 		it('calculates duration when only hours change without AM/PM change', async () => {
-			const emitted: (number | undefined)[] = []
+			const emitted: (string | null | undefined)[] = []
 			const wrapper = mount(ADuration, {
-				props: { 'onUpdate:modelValue': (v: number | undefined) => emitted.push(v) },
+				props: { 'onUpdate:modelValue': (v: string | null | undefined) => emitted.push(v) },
 				global,
 			})
 
@@ -341,7 +373,7 @@ describe('ADuration', () => {
 			await wrapper.findComponent({ name: 'ADateSelection' }).vm.$emit('get-range', { start, end })
 			await nextTick()
 
-			expect(emitted[emitted.length - 1]).toBe(2 * 60 * 60 * 1000)
+			expect(emitted[emitted.length - 1]).toBe('PT2H')
 		})
 
 		// Mounted against the REAL ADateSelection, not the stub above: the defect only exists in the

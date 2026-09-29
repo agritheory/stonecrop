@@ -14,7 +14,7 @@ const email = ref('')
 
 <template>
 	<div class="stonecrop-demo">
-		<AFieldset label="Contact Information" :collapsible="true" :schema="[]" v-slot="{ collapsed }">
+		<AFieldset v-slot="{ collapsed }" label="Contact Information" :collapsible="true" :schema="[]">
 			<div v-show="!collapsed" class="stonecrop-demo__fields">
 				<ATextInput v-model="firstName" label="First Name" uuid="fieldset-demo-first-name" />
 				<ATextInput v-model="lastName" label="Last Name" uuid="fieldset-demo-last-name" />

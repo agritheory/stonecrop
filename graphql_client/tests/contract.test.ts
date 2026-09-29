@@ -1,7 +1,8 @@
-import { buildSchema, parse, print, validate } from 'graphql'
-import { describe, it, expect } from 'vitest'
+import { buildSchema, graphql, parse, print, validate } from 'graphql'
+import { afterEach, describe, it, expect, vi } from 'vitest'
 
 import { typeDefs } from '@stonecrop/graphql-middleware'
+import { StonecropClient } from '../src/client'
 import { GET_META_QUERY, GET_ALL_META_QUERY, RUN_ACTION_MUTATION } from '../src/queries'
 
 // ---------------------------------------------------------------------------
@@ -90,6 +91,12 @@ describe('client ⟷ middleware query contract', { tags: ['unit'] }, () => {
 		return [...found].toSorted()
 	}
 
+	// The store files an action's `record`, so a mutation that never selects it leaves every saved
+	// record as it was before the save.
+	it('RUN_ACTION_MUTATION selects the record an action replies with', () => {
+		expect(selectedFields(RUN_ACTION_MUTATION, 'StonecropActionResult')).toContain('record')
+	})
+
 	const META_QUERIES: [string, string][] = [
 		['GET_META_QUERY', GET_META_QUERY],
 		['GET_ALL_META_QUERY', GET_ALL_META_QUERY],
@@ -110,4 +117,47 @@ describe('client ⟷ middleware query contract', { tags: ['unit'] }, () => {
 			expect(selectedFields(query, 'StonecropWorkflowAction')).toEqual(sdlFields)
 		})
 	}
+
+	it('RUN_ACTION_MUTATION selects every StonecropActionResult field the SDL publishes', () => {
+		const sdlFields = Object.keys(
+			(schema.getType('StonecropActionResult') as { getFields: () => object }).getFields()
+		).toSorted()
+		expect(selectedFields(RUN_ACTION_MUTATION, 'StonecropActionResult')).toEqual(sdlFields)
+	})
+
+	describe('runAction against the published SDL', () => {
+		afterEach(() => vi.unstubAllGlobals())
+
+		// The request executes against the SDL, so only what the client's document selects comes back.
+		it('hands back the keys the write discarded', async () => {
+			const rootValue = {
+				stonecropAction: () => ({
+					success: true,
+					data: { id: 1 },
+					error: null,
+					record: { id: 1 },
+					droppedFields: ['tags'],
+				}),
+			}
+			vi.stubGlobal('fetch', async (_endpoint: string, init: RequestInit) => {
+				const { query, variables } = JSON.parse(init.body as string)
+				const result = await graphql({ schema, source: query, variableValues: variables, rootValue })
+				return { json: () => Promise.resolve(result) }
+			})
+
+			const result = await new StonecropClient({ endpoint: 'http://stonecrop.test/graphql' }).runAction(
+				{ name: 'ScItem' },
+				'save',
+				[{ id: '1', data: { tags: [] } }]
+			)
+
+			expect(result).toEqual({
+				success: true,
+				data: { id: 1 },
+				error: null,
+				record: { id: 1 },
+				droppedFields: ['tags'],
+			})
+		})
+	})
 })

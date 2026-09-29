@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/utilities",
-	"version": "0.34.0",
+	"version": "0.39.0",
 	"description": "Shared utility functions for Stonecrop",
 	"keywords": [
 		"helpers",
@@ -51,7 +51,8 @@
 		"test:watch": "vitest watch"
 	},
 	"dependencies": {
-		"@vueuse/core": "catalog:"
+		"@vueuse/core": "catalog:",
+		"temporal-polyfill": "catalog:"
 	},
 	"devDependencies": {
 		"@microsoft/api-extractor": "catalog:",

@@ -1,28 +1,30 @@
 <template>
 	<ClientOnly>
-		<Desktop class="docbuilder-desktop" :route-adapter="routeAdapter" :host-actions="indexActions">
-			<div class="docbuilder-index-inner">
-				<div class="docbuilder-header">
-					<h1>DocType Builder</h1>
-					<p class="subtitle">Select a DocType to view and edit its schema</p>
+		<div class="docbuilder-shell">
+			<Desktop class="docbuilder-desktop" :route-adapter="routeAdapter" :host-actions="indexActions">
+				<div class="docbuilder-index-inner">
+					<div class="docbuilder-header">
+						<h1>DocType Builder</h1>
+						<p class="subtitle">Select a DocType to view and edit its schema</p>
+					</div>
+					<div class="docbuilder-create">
+						<input
+							v-model="newName"
+							type="text"
+							placeholder="New doctype name (e.g. Invoice)"
+							:disabled="creating"
+							@keyup.enter="createDoctype" />
+						<button type="button" class="btn-primary" :disabled="creating || !newName.trim()" @click="createDoctype">
+							{{ creating ? 'Creating\u2026' : '+ New DocType' }}
+						</button>
+					</div>
+					<p v-if="createError" class="create-error">{{ createError }}</p>
+					<div v-if="loading" class="loading">Loading doctypes...</div>
+					<p v-else-if="!doctypes.length" class="empty">No doctypes yet — create one above.</p>
+					<ATable v-else :columns="columns" :rows="doctypes" :config="config" @row:click="handleRowClick" />
 				</div>
-				<div class="docbuilder-create">
-					<input
-						v-model="newName"
-						type="text"
-						placeholder="New doctype name (e.g. Invoice)"
-						:disabled="creating"
-						@keyup.enter="createDoctype" />
-					<button type="button" class="btn-create" :disabled="creating || !newName.trim()" @click="createDoctype">
-						{{ creating ? 'Creating\u2026' : '+ New DocType' }}
-					</button>
-				</div>
-				<p v-if="createError" class="create-error">{{ createError }}</p>
-				<div v-if="loading" class="loading">Loading doctypes...</div>
-				<p v-else-if="!doctypes.length" class="empty">No doctypes yet — create one above.</p>
-				<ATable v-else :columns="columns" :rows="doctypes" :config="config" @row:click="handleRowClick" />
-			</div>
-		</Desktop>
+			</Desktop>
+		</div>
 	</ClientOnly>
 </template>
 
@@ -95,8 +97,14 @@ const indexActions = computed(() => [{ type: 'button', label: 'Home', action: ()
 </script>
 
 <style scoped>
+.docbuilder-shell {
+	display: flex;
+	flex-direction: column;
+	min-height: 100dvh;
+}
 .docbuilder-desktop {
-	height: 100vh;
+	flex: 1;
+	min-height: 0;
 }
 .docbuilder-index-inner {
 	margin: 0 auto;
@@ -113,13 +121,16 @@ const indexActions = computed(() => [{ type: 'button', label: 'Home', action: ()
 	margin: 0 0 1rem;
 }
 .subtitle {
-	color: #6b7280;
 	font-size: 1.125rem;
 	margin: 0;
 }
 .empty,
+.loading,
+.subtitle {
+	color: var(--sc-header-text-color);
+}
+.empty,
 .loading {
-	color: #6b7280;
 	padding: 2rem;
 	text-align: center;
 }
@@ -129,28 +140,28 @@ const indexActions = computed(() => [{ type: 'button', label: 'Home', action: ()
 	margin-bottom: 1rem;
 }
 .docbuilder-create input {
-	border: 1px solid var(--sc-gray-20, #d1d5db);
-	border-radius: 4px;
+	border: 1px solid var(--sc-input-border-color);
+	border-radius: var(--sc-border-radius);
 	flex: 1;
 	font: inherit;
 	padding: 0.5em 0.75em;
 }
-.btn-create {
-	background: var(--sc-blue-40, #3b82f6);
+.btn-primary {
+	background: var(--sc-primary-color);
 	border: none;
-	border-radius: 0.4rem;
-	color: #fff;
+	border-radius: var(--sc-border-radius);
+	color: var(--sc-primary-text-color);
 	cursor: pointer;
 	font-weight: 500;
 	padding: 0.5em 1.25em;
 	white-space: nowrap;
 }
-.btn-create:disabled {
+.btn-primary:disabled {
 	cursor: not-allowed;
 	opacity: 0.5;
 }
 .create-error {
-	color: #b91c1c;
+	color: var(--sc-brand-danger);
 	font-size: 0.875rem;
 	margin: -0.5rem 0 1rem;
 }

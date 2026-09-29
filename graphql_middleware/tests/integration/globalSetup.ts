@@ -25,6 +25,9 @@ async function createTestDb(): Promise<{ url: string; server: Server; db: PGlite
 
 	const seed = readFileSync(join(__dirname, 'seed.sql'), 'utf-8')
 	await db.exec(seed)
+	// PGlite takes its zone from the machine, so unpinned the fixture runs in UTC in CI and in the
+	// developer's zone locally. A test that needs another zone sets it for its own transaction.
+	await db.exec(`SET TIME ZONE 'UTC'`)
 
 	const server = createServer(db, { logLevel: LogLevel.Error })
 	await new Promise<void>(resolve => server.listen(0, () => resolve()))
@@ -37,13 +40,13 @@ export async function setup(project: TestProject) {
 	// Each integration test file calls makeSchema(), which triggers heavy PostGraphile
 	// catalog introspection. A single pglite-server can't survive multiple sequential
 	// introspection rounds without corruption. Give each file its own isolated instance.
-	const [resolver, camel, inflection, conformance, naturalId] = await Promise.all([
-		createTestDb(),
-		createTestDb(),
-		createTestDb(),
-		createTestDb(),
-		createTestDb(),
-	])
+	// Spin up one instance at a time: five PGlite servers in parallel can OOM when `vp run -r test`
+	// executes this package alongside other Vitest jobs on a memory-tight machine.
+	const resolver = await createTestDb()
+	const camel = await createTestDb()
+	const inflection = await createTestDb()
+	const conformance = await createTestDb()
+	const naturalId = await createTestDb()
 
 	project.provide('testDatabaseUrl', resolver.url)
 	project.provide('camelTestDatabaseUrl', camel.url)

@@ -11,6 +11,7 @@ const CATEGORY_FILTER: Record<ComponentCategory, Exclude<ResolvedFilterType, 'co
 	boolean: 'checkbox',
 	date: 'date',
 	datetime: 'dateRange',
+	duration: 'text',
 	select: 'select',
 	code: 'text',
 	link: 'text',

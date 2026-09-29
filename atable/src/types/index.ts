@@ -219,6 +219,14 @@ export interface BaseTableConfig {
 	 * Omit to show the whole held list as one window (server paging uses the backend cap).
 	 */
 	pageSize?: number
+
+	/**
+	 * Alternate row backgrounds using `--sc-row-color-zebra-light` and
+	 * `--sc-row-color-zebra-dark`. Off by default so cells match the field surface.
+	 *
+	 * @defaultValue false
+	 */
+	zebra?: boolean
 }
 
 /**

@@ -47,6 +47,31 @@ describe('AFormLink component', { tags: ['component'] }, () => {
 		expect(wrapper.find('input').element.value).toBe('Acme Corp')
 	})
 
+	it.each([
+		['arrow-right', '→'],
+		['chevron-right', '›'],
+	] as const)('draws the %s navigate icon, keeping its glyph as the spoken name', (icon, glyph) => {
+		const wrapper = mount(AFormLink, { props: { label: 'Customer', modelValue: validValue, icon } })
+		const button = wrapper.find('.aform_form-btn')
+		expect(button.find(`svg[data-icon="${icon}"][aria-hidden="true"]`).exists()).toBe(true)
+		expect(button.find('.aform_form-btn-name').text()).toBe(glyph)
+		expect(button.text()).toBe(glyph)
+	})
+
+	it('shows its label in display mode, like every other field', () => {
+		const wrapper = mount(AFormLink, { props: { label: 'Customer', modelValue: validValue, mode: 'display' } })
+		expect(wrapper.find('.aform_display-value').text()).toBe('Acme Corp')
+		expect(wrapper.find('.aform_field-label').text()).toBe('Customer')
+	})
+
+	it('shows no label in display mode when embedded', () => {
+		const wrapper = mount(AFormLink, {
+			props: { label: 'Customer', modelValue: validValue, mode: 'display', embedded: true },
+		})
+		expect(wrapper.find('.aform_display-value').exists()).toBe(true)
+		expect(wrapper.find('.aform_field-label').exists()).toBe(false)
+	})
+
 	it('shows the display text of a value that arrives already resolved, after mount', async () => {
 		// The shape a real record takes: the field mounts empty, and the row lands a tick later
 		// carrying `{ id, displayText }` — which is what the middleware returns for an inline link.

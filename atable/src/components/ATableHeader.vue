@@ -98,6 +98,10 @@ const onResize = (entries: ReadonlyArray<ResizeObserverEntry>) => {
 </script>
 
 <style>
+.atable-header-row,
+.atable-filters-row {
+	background-color: var(--sc-cell-background);
+}
 .atable-header-row th {
 	padding-left: 0.5ch !important;
 	font-weight: 700;

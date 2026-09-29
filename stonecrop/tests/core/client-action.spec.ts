@@ -66,7 +66,13 @@ function makeSc(
 		registeredDoctype: doctype,
 		registry: { getDoctype: vi.fn(() => doctype) },
 		dispatchAction:
-			opts.dispatch ?? vi.fn(async () => ({ success: true, data: { id: 'r1', status: 'assigned' }, error: null })),
+			opts.dispatch ??
+			vi.fn(async () => ({
+				success: true,
+				data: { state: 'assigned' },
+				record: { id: 'r1', status: 'assigned' },
+				error: null,
+			})),
 		addRecord: vi.fn(),
 		removeRecord: vi.fn(),
 		getRecordById: vi.fn(() => ({ get: () => opts.record ?? {} })),
@@ -86,8 +92,7 @@ afterEach(() => {
 // lives inside it. That half is covered against a real `Stonecrop` in stonecrop.spec.ts
 // ("dispatchAction files the returned record..."). What is asserted here is everything the
 // composable still owns: the argument envelope, clientHandler supersede, the stale-key removal
-// and route-follow (both need the *dispatched* id, which `dispatchAction` never sees), and the
-// fallback write for a result that states no identity of its own.
+// and route-follow (both need the *dispatched* id, which `dispatchAction` never sees).
 describe('useClientAction', { tags: ['unit'] }, () => {
 	it('dispatches to the server handler with the [{id,data}] envelope when no clientHandler', async () => {
 		mocks.router = makeRouter()
@@ -161,7 +166,7 @@ describe('useClientAction', { tags: ['unit'] }, () => {
 		mocks.router = makeRouter()
 		mocks.sc = makeSc({
 			actions: { Activate: {} },
-			dispatch: vi.fn(async () => ({ success: false, data: null, error: 'Handler not registered' })),
+			dispatch: vi.fn(async () => ({ success: false, data: null, error: 'Handler not registered', record: null })),
 		})
 
 		await useClientAction().run(payload('Activate'))
@@ -183,7 +188,7 @@ describe('useClientAction onError', { tags: ['unit'] }, () => {
 		mocks.router = makeRouter()
 		mocks.sc = makeSc({
 			actions: { Activate: {} },
-			dispatch: vi.fn(async () => ({ success: false, data: null, error: 'Handler not registered' })),
+			dispatch: vi.fn(async () => ({ success: false, data: null, error: 'Handler not registered', record: null })),
 		})
 
 		await useClientAction({ onError }).run(payload('Activate'))
@@ -218,7 +223,7 @@ describe('useClientAction onError', { tags: ['unit'] }, () => {
 		mocks.router = makeRouter()
 		mocks.sc = makeSc({
 			actions: { Activate: {} },
-			dispatch: vi.fn(async () => ({ success: false, data: null, error: null })),
+			dispatch: vi.fn(async () => ({ success: false, data: null, error: null, record: null })),
 		})
 
 		await useClientAction({ onError }).run(payload('Activate'))
@@ -235,7 +240,7 @@ describe('useClientAction record identity', { tags: ['unit'] }, () => {
 		mocks.router = makeRouter()
 		mocks.sc = makeSc({
 			actions: { save: {} },
-			dispatch: vi.fn(async () => ({ success: true, data: { id: '7', title: 'drafted' }, error: null })),
+			dispatch: vi.fn(async () => ({ success: true, data: null, record: { id: '7', title: 'drafted' }, error: null })),
 		})
 
 		await useClientAction().run({ name: 'save', doctype: 'user', recordId: 'new', data: { title: 'drafted' } })
@@ -251,7 +256,7 @@ describe('useClientAction record identity', { tags: ['unit'] }, () => {
 		mocks.router = makeRouter()
 		mocks.sc = makeSc({
 			actions: { save: {} },
-			dispatch: vi.fn(async () => ({ success: true, data: { id: '7', title: 'drafted' }, error: null })),
+			dispatch: vi.fn(async () => ({ success: true, data: null, record: { id: '7', title: 'drafted' }, error: null })),
 		})
 
 		await useClientAction().run({ name: 'save', doctype: 'user', recordId: 'new', data: { title: 'drafted' } })
@@ -268,7 +273,7 @@ describe('useClientAction record identity', { tags: ['unit'] }, () => {
 		mocks.router = makeRouter()
 		mocks.sc = makeSc({
 			actions: { validate: {} },
-			dispatch: vi.fn(async () => ({ success: true, data: { state: 'checked' }, error: null })),
+			dispatch: vi.fn(async () => ({ success: true, data: { state: 'checked' }, record: null, error: null })),
 		})
 
 		await useClientAction().run({ name: 'validate', doctype: 'user', recordId: 'new', data: { title: 'x' } })
@@ -292,7 +297,12 @@ describe('useClientAction record identity', { tags: ['unit'] }, () => {
 		mocks.sc = makeSc({
 			actions: { rename: {} },
 			fields: USERNAME_FIELDS,
-			dispatch: vi.fn(async () => ({ success: true, data: { username: 'robert', id: '7' }, error: null })),
+			dispatch: vi.fn(async () => ({
+				success: true,
+				data: null,
+				record: { username: 'robert', id: '7' },
+				error: null,
+			})),
 		})
 
 		await useClientAction().run({ name: 'rename', doctype: 'user', recordId: 'bob', data: { username: 'robert' } })
@@ -302,36 +312,54 @@ describe('useClientAction record identity', { tags: ['unit'] }, () => {
 		expect(mocks.router.replace).toHaveBeenCalledWith('/user/robert')
 	})
 
-	it('does not relocate a natural-keyed record when the result omits its key', async () => {
+	it('does not relocate a natural-keyed record when the record omits its key', async () => {
 		mocks.router = makeRouter()
 		mocks.sc = makeSc({
 			actions: { recalculate: {} },
 			fields: USERNAME_FIELDS,
-			// A registered effect returning a partial row. `getRecordId` alone would fall back to
-			// `id` and move the record to /user/7, which the adapter — looking up by `username` —
-			// cannot resolve. `dispatchAction` declines it for the same reason, so the composable
-			// is what files it, under the id that was dispatched.
-			dispatch: vi.fn(async () => ({ success: true, data: { id: '7', total: 75 }, error: null })),
+			// `getRecordId` alone would fall back to `id` and move the record to /user/7, which the
+			// adapter, looking up by `username`, cannot resolve.
+			dispatch: vi.fn(async () => ({ success: true, data: null, record: { id: '7', total: 75 }, error: null })),
 		})
 
 		await useClientAction().run({ name: 'recalculate', doctype: 'user', recordId: 'bob', data: {} })
 
-		expect(mocks.sc.addRecord).toHaveBeenCalledWith('user', 'bob', { id: '7', total: 75 })
+		expect(mocks.sc.addRecord).not.toHaveBeenCalled()
 		expect(mocks.sc.removeRecord).not.toHaveBeenCalled()
 		expect(mocks.router.replace).not.toHaveBeenCalled()
 	})
+})
 
-	it('leaves the record in place when the result states no identity at all', async () => {
+// `data` is whatever a handler returned; `record` is the server's read of the record, which is all
+// the store and the route follow.
+describe('useClientAction and the record a reply carries', { tags: ['unit'] }, () => {
+	it('follows the route to the identity the record states, whatever data holds', async () => {
+		mocks.router = makeRouter()
+		mocks.sc = makeSc({
+			actions: { save: {} },
+			dispatch: vi.fn(async () => ({
+				success: true,
+				data: { state: 'created' },
+				record: { id: '7', title: 'drafted' },
+				error: null,
+			})),
+		})
+
+		await useClientAction().run({ name: 'save', doctype: 'user', recordId: 'new', data: { title: 'drafted' } })
+
+		expect(mocks.router.replace).toHaveBeenCalledWith('/user/7')
+	})
+
+	it('leaves the store alone when the reply carries no record', async () => {
 		mocks.router = makeRouter()
 		mocks.sc = makeSc({
 			actions: { approve: {} },
-			// The dispatcher's `{ state: nextState }` outcome, returned when nothing wrote data.
-			dispatch: vi.fn(async () => ({ success: true, data: { state: 'assigned' }, error: null })),
+			dispatch: vi.fn(async () => ({ success: true, data: { state: 'assigned' }, record: null, error: null })),
 		})
 
 		await useClientAction().run(payload('approve'))
 
-		expect(mocks.sc.addRecord).toHaveBeenCalledWith('user', 'r1', { state: 'assigned' })
+		expect(mocks.sc.addRecord).not.toHaveBeenCalled()
 		expect(mocks.sc.removeRecord).not.toHaveBeenCalled()
 		expect(mocks.router.replace).not.toHaveBeenCalled()
 	})
@@ -345,7 +373,7 @@ describe('useClientAction host overrides', { tags: ['unit'] }, () => {
 		mocks.router = makeRouter()
 		mocks.sc = makeSc({
 			actions: { save: {} },
-			dispatch: vi.fn(async () => ({ success: true, data: { state: 'assigned' }, error: null })),
+			dispatch: vi.fn(async () => ({ success: true, data: null, record: { id: '7', title: 'x' }, error: null })),
 		})
 
 		// The positional shape a backend that does not take the default envelope uses end to end.
@@ -355,8 +383,9 @@ describe('useClientAction host overrides', { tags: ['unit'] }, () => {
 			'r1',
 			{ id: 'r1', title: 'x' },
 		])
-		// Changing what was *sent* must not change how the answer is stored.
-		expect(mocks.sc.addRecord).toHaveBeenCalledWith('user', 'r1', { state: 'assigned' })
+		// Changing what was *sent* must not change how the answer is followed.
+		expect(mocks.sc.removeRecord).toHaveBeenCalledWith('user', 'r1')
+		expect(mocks.router.replace).toHaveBeenCalledWith('/user/7')
 	})
 
 	it('buildArgs is told when the record is a draft, so it can omit the id its own way', async () => {
@@ -386,7 +415,7 @@ describe('useClientAction host overrides', { tags: ['unit'] }, () => {
 		mocks.router = makeRouter()
 		mocks.sc = makeSc({
 			actions: { save: {} },
-			dispatch: vi.fn(async () => ({ success: true, data: { id: '7', title: 'drafted' }, error: null })),
+			dispatch: vi.fn(async () => ({ success: true, data: null, record: { id: '7', title: 'drafted' }, error: null })),
 		})
 
 		await useClientAction({ followRecord }).run({

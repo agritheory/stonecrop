@@ -1,5 +1,21 @@
 # Change Log - @stonecrop/utilities
 
+## 0.39.0
+
+## 0.38.1
+
+## 0.38.0
+
+## 0.37.0
+
+## 0.36.0
+
+### Minor Changes
+
+- e673267: Adds `fromISODate`, which reads a `YYYY-MM-DD` day as a `Temporal.PlainDate` and any other text as no day.
+
+## 0.35.0
+
 ## 0.34.0
 
 ## 0.33.0

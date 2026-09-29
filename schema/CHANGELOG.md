@@ -1,5 +1,31 @@
 # Change Log - @stonecrop/schema
 
+## 0.39.0
+
+### Minor Changes
+
+- 835f62c: An action's result now carries `droppedFields`, the keys a save discarded instead of storing, through one `ActionDispatchResult` type that `@stonecrop/schema` now exports.
+- 835f62c: A fieldset's fields are now read and written as keys of the record itself, never nested under the fieldset's name, so an edit inside a fieldset reaches the form and its save, and data handed to `AForm` must hold them flat.
+
+## 0.38.1
+
+## 0.38.0
+
+## 0.37.0
+
+## 0.36.0
+
+### Minor Changes
+
+- e673267: An action's result carries `record`, the record as a read returns it after the action, and the client stores that in place of `data`, which stays whatever the action's handler returned, so a `DataClient.runAction` must now return `record`.
+- e673267: `ADuration` has its own `duration` component category, so a new record starts it at `null`, which an `interval` column accepts, where it started at `''`, and atable still filters it as text.
+
+## 0.35.0
+
+### Minor Changes
+
+- 2f16a84: A link field may declare `config` (a `TableViewConfig`), and the middleware serves it in field metadata to the client.
+
 ## 0.34.0
 
 ## 0.33.0

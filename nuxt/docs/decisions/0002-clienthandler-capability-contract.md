@@ -5,6 +5,8 @@ deciders: ['Rohan Bansal']
 ---
 # clientHandler capability contract: runAction is the only blessed write, graphql is read-only
 
+> **Still current, but the stored value moved.** `runAction` now stores the action result's `record`, the server's read of the record after the action, rather than `result.data`, which stays whatever the action's handler returned. Read `addRecord(result.data)` below as `addRecord(result.record)`.
+
 ## Context and Problem Statement
 
 A `clientHandler` runs in the browser with named capabilities injected by the assembly composable (see [0001](0001-clienthandler-execution-host-delegation.md)). The session already holds a live HST store and a GraphQL data client, so the question is what authority to hand authored code: which APIs are injected, and specifically whether a handler may issue arbitrary writes.

@@ -5,7 +5,7 @@
 			<CollapseButton v-if="collapsible" :collapsed="collapsed" />
 		</legend>
 		<slot :collapsed="collapsed">
-			<AForm v-show="!collapsed" v-model:data="formData" :schema="formSchema" :mode="mode" />
+			<AForm v-show="!collapsed" v-model:data="formData" :schema="schema" :mode="mode" :errors="errors" />
 		</slot>
 	</fieldset>
 </template>
@@ -22,20 +22,22 @@ const {
 	schema,
 	label = undefined,
 	collapsible,
-	data = {},
 	mode = 'edit',
+	errors = undefined,
 } = defineProps<{
 	schema: ResolvedField[]
 	label?: string
 	collapsible?: boolean
-	data?: Record<string, any>
 	/** Rendering mode forwarded to the inner AForm */
 	mode?: InteractionMode
+	/** Inline validation errors keyed by fieldname, forwarded to the inner AForm. */
+	errors?: Record<string, string[]>
 }>()
 
+/** The record the fieldset's fields belong to: a fieldset is layout, so they are its own keys. */
+const formData = defineModel<Record<string, any>>('data', { default: () => ({}) })
+
 const collapsed = ref(false)
-const formData = ref(data || [])
-const formSchema = ref(schema)
 
 const toggleCollapse = (event: Event) => {
 	event.preventDefault()
@@ -49,9 +51,12 @@ defineExpose({ collapsed })
 
 <style scoped>
 fieldset {
+	/* Its padding and border sit inside the width, and no browser margin sits outside it: a fieldset
+	   spans exactly the space it is given, so its border never crosses the form's. */
+	box-sizing: border-box;
 	max-width: 100%;
 	width: 100%;
-	margin-right: 2ch;
+	margin: 0;
 	border: 1px solid transparent;
 	border-bottom: 1px solid var(--sc-gray-50);
 }

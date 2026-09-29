@@ -427,7 +427,7 @@ await dispatchAction({ name: 'plan' }, 'SUBMIT', [recordId])
 | `setMeta(fn)` | `(fn: (ctx) => Doctype \| Promise<Doctype>) => void` | Sets the `getMeta` function on the Registry. Called by `useStonecrop({ doctype: 'slug' })` to lazy-load that doctype's metadata. `ctx` = `{ path, segments }`. |
 | `setClient(client)` | `(client: DataClient) => void` | Set the data client for record fetching. Throws if stonecrop not available. |
 | `getClient()` | `() => DataClient \| undefined` | Get the currently configured client. |
-| `dispatchAction(doctype, action, args)` | `Promise<{ success, data, error }>` | Dispatch an action via the configured client. Returns error if doctype not found in registry. |
+| `dispatchAction(doctype, action, args)` | `Promise<{ success, data, error }>` | Dispatch an action via the configured client, storing the result's `record` (the server's read of the record after the action). Returns error if doctype not found in registry. |
 
 ## Advanced Features
 
@@ -481,8 +481,13 @@ const taskMachine = createMachine({
 
 ## Examples
 
-- **[playground](./playground)** — the default example: doctypes introspected from a live public GraphQL API with the `stonecrop-schema generate` CLI, browsed through the Desktop shell, and refined in the built-in DocBuilder (provenance-locked introspected fields, plus hand-authored workflow fixtures for the graph editor). `pnpm run dev` runs it.
-- **[fullstack](./fullstack)** — the middleware core on the app's own GraphQL server (grafserv + guarded workflow transitions over in-memory storage, no database). `pnpm run dev:full` runs it.
+All runnable examples live in **[documentation](./documentation)** at **`/playground`**:
+
+- **Workflow** — grafserv + guarded transitions over session-scoped in-memory storage (Orders/Users), Desktop rail panels
+- **Countries** — doctypes introspected from the public [countries GraphQL API](https://countries.trevorblades.com/graphql), same Desktop shell
+- **DocBuilder** — public doctype prototyping at `/docbuilder`
+
+`pnpm run dev` (alias for `dev:documentation`) runs the docs site on port 3002.
 
 
 ## Contribution
@@ -497,10 +502,10 @@ pnpm install
 # Generate type stubs
 pnpm run dev:prepare
 
-# Develop with the playground
+# Develop the documentation site (docs + playgrounds)
 pnpm run dev
 
-# Build the playground
+# Build the documentation site
 pnpm run dev:build
 
 # Run ESLint
@@ -570,8 +575,10 @@ The CLI will detect that you're in a Nuxt project and prompt for features:
 
 ? Select features to install
   ◉ @stonecrop/nuxt - Frontend module
+  ◯ @stonecrop/graphql-client - GraphQL client
   ◯ @stonecrop/nuxt-grafserv - GraphQL server
   ◯ @stonecrop/casl-middleware - Authorization
+  ◯ @stonecrop/rockfoil - PostGraphile middleware
   ◉ Sample doctypes
 ```
 

@@ -160,11 +160,7 @@ query(query: string, variables: Record<string, unknown>): Promise<T>
 Execute a doctype action
 
 ```typescript
-runAction(doctype: DoctypeRef, action: string, args: unknown[]): Promise<{
-        success: boolean;
-        data: unknown;
-        error: string | null;
-    }>
+runAction(doctype: DoctypeRef, action: string, args: unknown[]): Promise<ActionDispatchResult>
 ```
 
 **Parameters:**

@@ -68,7 +68,7 @@ const { registerClient } = useStonecropSetup()
 registerClient(new StonecropClient({ endpoint: '/graphql' }))
 ```
 
-Nothing about this seam assumes GraphQL — a `DataClient` over plain `fetch` is as valid. `nuxt/playground` ships one over a third-party API whose schema shares nothing with Stonecrop's.
+Nothing about this seam assumes GraphQL — a `DataClient` over plain `fetch` is as valid. The documentation playground's countries section ships one over a third-party API whose schema shares nothing with Stonecrop's.
 
 Register it before Desktop renders. Desktop skips the read entirely when no client is configured, so a missing one shows up as permanently empty lists and blank forms rather than as an error. (`Stonecrop.getRecord` and `getRecords` do throw, naming `setClient`, for a host that calls them directly.)
 
@@ -167,7 +167,7 @@ const { run } = useClientAction({
 
 Resolving a record's identity and keying it into HST are not options. That rule is declared on the doctype and re-derived server-side by the adapter, so a host that overrode it would be disagreeing with the very lookup its own backend performs — which is how a hardcoded `record.id` once dropped every row of a natural-keyed doctype.
 
-For the same reason the write is not the composable's to begin with: `Stonecrop.dispatchAction` files the returned record under the settled identity itself. So dispatching directly still cannot store a record under the wrong key:
+For the same reason the write is not the composable's to begin with: `Stonecrop.dispatchAction` files the result's `record`, the server's read of the record after the action, under the settled identity itself. So dispatching directly still cannot store a record under the wrong key:
 
 ```typescript
 // Filed under whatever identity the result declares — not under the id you sent.

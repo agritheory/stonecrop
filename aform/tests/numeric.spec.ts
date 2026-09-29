@@ -18,6 +18,13 @@ describe('numeric input component', { tags: ['component'] }, () => {
 		expect(updateEvents![0]).toEqual([26])
 	})
 
+	it('holds null once emptied, and 0 as 0', async () => {
+		const w = mount(ANumericInput, { props: { modelValue: 5, label: 'Amount' } })
+		await w.find('input').setValue('')
+		await w.find('input').setValue(0)
+		expect(w.emitted('update:modelValue')).toEqual([[null], [0]])
+	})
+
 	it('is disabled in read mode', () => {
 		const w = mount(ANumericInput, { props: { modelValue: 42, label: 'Amount', mode: 'read' } })
 		expect(w.find('input').attributes()).toHaveProperty('disabled')

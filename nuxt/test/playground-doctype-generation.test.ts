@@ -21,13 +21,13 @@ import { convertGraphQLSchema, mergeIntrospectedDoctype } from '@stonecrop/schem
  * "fix" it by pasting generator output over the file; that is what discards curation.
  */
 
-const playgroundDir = resolve(__dirname, '../playground')
-const doctypesDir = join(playgroundDir, 'doctypes')
+const documentationDir = resolve(__dirname, '../documentation')
+const doctypesDir = join(documentationDir, 'doctypes')
 
 const INCLUDE = ['Country', 'Continent', 'Language', 'State', 'Subdivision']
 
-describe('playground doctype generation', { tags: ['unit'] }, () => {
-	const introspection = JSON.parse(readFileSync(join(playgroundDir, 'introspection.json'), 'utf-8'))
+describe('countries explorer doctype generation', { tags: ['unit'] }, () => {
+	const introspection = JSON.parse(readFileSync(join(documentationDir, 'introspection.json'), 'utf-8'))
 	const generated = convertGraphQLSchema(introspection.data ?? introspection, { include: INCLUDE })
 
 	it('converts exactly the included types', () => {

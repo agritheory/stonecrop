@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/atable",
-	"version": "0.34.0",
+	"version": "0.39.0",
 	"description": "Advanced data table component for Stonecrop",
 	"keywords": [
 		"components",
@@ -62,7 +62,8 @@
 		"@stonecrop/themes": "workspace:*",
 		"@stonecrop/utilities": "workspace:*",
 		"@vueuse/components": "catalog:",
-		"@vueuse/core": "catalog:"
+		"@vueuse/core": "catalog:",
+		"temporal-polyfill": "catalog:"
 	},
 	"devDependencies": {
 		"@microsoft/api-extractor": "catalog:",

@@ -1,0 +1,29 @@
+{
+	"name": "State",
+	"slug": "state",
+	"fields": [
+		{
+			"fieldname": "code",
+			"primaryKey": true,
+			"label": "Code",
+			"component": "ATextInput",
+			"readOnly": true,
+			"source": "introspected"
+		},
+		{
+			"fieldname": "country",
+			"label": "Country",
+			"component": "AFormLink",
+			"required": true,
+			"doctype": "country",
+			"source": "introspected"
+		},
+		{
+			"fieldname": "name",
+			"label": "Name",
+			"component": "ATextInput",
+			"required": true,
+			"source": "introspected"
+		}
+	]
+}

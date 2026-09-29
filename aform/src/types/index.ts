@@ -268,12 +268,12 @@ export interface AFormLinkNavigator {
  * @public
  */
 export interface QuantityValue {
-	/** The entered quantity, in `uom` units */
-	qty: number
+	/** The entered quantity, in `uom` units, or null when none is entered */
+	qty: number | null
 	/** Unit of measure the user entered `qty` in */
 	uom: string
-	/** `qty` converted into `stockUom` units — `qty * conversionFactor` */
-	stockQty: number
+	/** `qty` converted into `stockUom` units (`qty * conversionFactor`), or null when `qty` is */
+	stockQty: number | null
 	/** The item's base/stock unit of measure — fixed, not user-editable */
 	stockUom: string
 	/** Multiplier from `uom` to `stockUom` — hidden from the UI, drives `stockQty` */
@@ -301,12 +301,12 @@ export interface QuantityOptions {
  * @public
  */
 export interface CurrencyValue {
-	/** The entered amount, in `currency` units */
-	amount: number
+	/** The entered amount, in `currency` units, or null when none is entered */
+	amount: number | null
 	/** FK reference to the Currency doctype the user entered `amount` in */
 	currency: AFormLinkValue
-	/** `amount` converted into `baseCurrency` units — `amount * exchangeRate` */
-	baseAmount: number
+	/** `amount` converted into `baseCurrency` units (`amount * exchangeRate`), or null when `amount` is */
+	baseAmount: number | null
 	/** The record's base currency — fixed, not user-editable */
 	baseCurrency: AFormLinkValue
 	/** Multiplier from `currency` to `baseCurrency` — hidden from the UI, drives `baseAmount` */

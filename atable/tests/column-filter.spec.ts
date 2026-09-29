@@ -547,6 +547,17 @@ describe('Column Filter Component', { tags: ['component'] }, () => {
 			expect(wrapper.findAll('input[type="date"]')).toHaveLength(2)
 		})
 
+		it('renders text input for ADuration when filterType is absent', () => {
+			const wrapper = mount(ATableColumnFilter, {
+				props: {
+					column: { name: 'took', label: 'Took', component: 'ADuration' },
+					colIndex: 0,
+					store: mockStore,
+				},
+			})
+			expect(wrapper.find('input[type="text"]').exists()).toBe(true)
+		})
+
 		it('renders number input for ANumericInput when filterType is absent', () => {
 			const wrapper = mount(ATableColumnFilter, {
 				props: {

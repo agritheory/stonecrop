@@ -1,10 +1,9 @@
 <template>
 	<form class="aform">
 		<template v-for="(componentObj, key) in schema" :key="key">
-			<!-- Nested schema field (Doctype or any field with resolved schema) -->
-			<div v-if="isNestedSection(componentObj)" class="aform-nested-section">
-				<!-- Suppress h4 for fieldsets — they render their own legend inside AFieldset -->
-				<h4 v-if="componentObj.label && componentObj.kind !== 'fieldset'" class="aform-nested-label">
+			<!-- A linked record: its form binds the link's own value -->
+			<div v-if="isLinkSection(componentObj)" class="aform-nested-section">
+				<h4 v-if="componentObj.label" class="aform-nested-label">
 					{{ componentObj.label }}
 				</h4>
 				<component
@@ -13,9 +12,22 @@
 					:mode="resolvedMode(componentObj)"
 					:schema="componentObj.schema"
 					:label="componentObj.label"
-					:collapsible="componentObj.kind === 'fieldset' ? componentObj.collapsible : undefined"
 					:errors="errors"
 					@update:data="(val: any) => updateNestedData(componentObj.fieldname, val)" />
+			</div>
+
+			<!-- A fieldset is layout: its fields are this record's own, so it binds this record.
+				 No h4, since AFieldset renders its own legend. -->
+			<div v-else-if="isFieldsetSection(componentObj)" class="aform-nested-section">
+				<component
+					:is="componentObj.component ?? 'AFieldset'"
+					:data="dataModel"
+					:mode="resolvedMode(componentObj)"
+					:schema="componentObj.schema"
+					:label="componentObj.label"
+					:collapsible="componentObj.collapsible"
+					:errors="errors"
+					@update:data="updateFieldsetData" />
 			</div>
 
 			<!-- Regular field -->
@@ -29,6 +41,14 @@
 				:mode="resolvedMode(componentObj)"
 				:errors="errors?.[componentObj.fieldname]"
 				v-bind="componentProps(componentObj)">
+				<template v-if="isListExpansionTable(componentObj)" #content="{ row, rowIndex }">
+					<AForm
+						class="aform-table-expansion"
+						:data="row"
+						:schema="tableExpansionSchema(componentObj)"
+						:mode="resolvedMode(componentObj)"
+						@update:data="val => updateTableRow(componentObj.fieldname, rowIndex, val)" />
+				</template>
 			</component>
 		</template>
 	</form>
@@ -37,8 +57,8 @@
 <script setup lang="ts">
 import { computed, watchEffect, watch, ref } from 'vue'
 
-import type { ResolvedField, ResolvedLink, ResolvedFieldset } from '../types'
-import type { InteractionMode } from '@stonecrop/schema'
+import type { ResolvedField, ResolvedLink, ResolvedFieldset, ResolvedTable } from '../types'
+import type { ColumnSchema, InteractionMode } from '@stonecrop/schema'
 
 const emit = defineEmits(['update:schema', 'update:data'])
 const dataModel = defineModel<Record<string, any>>('data', { required: true })
@@ -53,13 +73,16 @@ const {
 	errors?: Record<string, string[]>
 }>()
 
-const isNestedSection = (componentObj: ResolvedField): componentObj is ResolvedLink | ResolvedFieldset =>
-	(componentObj.kind === 'link' || componentObj.kind === 'fieldset') &&
-	'schema' in componentObj &&
-	Array.isArray(componentObj.schema) &&
-	componentObj.schema.length > 0
+const hasChildSchema = (componentObj: ResolvedField) =>
+	'schema' in componentObj && Array.isArray(componentObj.schema) && componentObj.schema.length > 0
 
-// Reactive nested data refs for two-way binding with nested AForm instances
+const isLinkSection = (componentObj: ResolvedField): componentObj is ResolvedLink =>
+	componentObj.kind === 'link' && hasChildSchema(componentObj)
+
+const isFieldsetSection = (componentObj: ResolvedField): componentObj is ResolvedFieldset =>
+	componentObj.kind === 'fieldset' && hasChildSchema(componentObj)
+
+// Reactive nested data refs for two-way binding with the forms of linked records
 const nestedData = ref<Record<string, any>>({})
 
 // Sync external dataModel changes into nestedData (one-way, no emit back).
@@ -70,7 +93,7 @@ watch(
 	newData => {
 		if (!schema || !newData) return
 		schema.forEach(field => {
-			if (isNestedSection(field)) {
+			if (isLinkSection(field)) {
 				nestedData.value[field.fieldname] = newData[field.fieldname] ?? {}
 			}
 		})
@@ -89,6 +112,35 @@ const updateNestedData = (fieldname: string, val: any) => {
 	}
 }
 
+// Called by a fieldset's @update:data handler. Its form holds this record, so its edits are this record's.
+const updateFieldsetData = (val: Record<string, any>) => {
+	if (dataModel.value) {
+		Object.assign(dataModel.value, val)
+		emit('update:data', { ...dataModel.value })
+	}
+}
+
+const isListExpansionTable = (componentObj: ResolvedField): componentObj is ResolvedTable =>
+	componentObj.kind === 'table' && componentObj.config?.view === 'list-expansion'
+
+const tableExpansionSchema = (table: ResolvedTable): ResolvedField[] =>
+	table.schema
+		.filter((col): col is ColumnSchema & { component: string } => Boolean(col.component))
+		.map(({ fieldname, component, ...rest }) => Object.assign(rest, { kind: 'field' as const, fieldname, component }))
+
+const updateTableRows = (fieldname: string, rows: Record<string, unknown>[]) => {
+	if (dataModel.value) {
+		dataModel.value[fieldname] = rows
+		emit('update:data', { ...dataModel.value })
+	}
+}
+
+const updateTableRow = (fieldname: string, rowIndex: number, val: Record<string, unknown>) => {
+	const rows = Array.isArray(dataModel.value?.[fieldname]) ? [...dataModel.value[fieldname]] : []
+	rows[rowIndex] = { ...rows[rowIndex], ...val }
+	updateTableRows(fieldname, rows)
+}
+
 const componentProps = (componentObj: ResolvedField) => {
 	const propsToPass: Record<string, any> = {}
 	for (const [key, value] of Object.entries(componentObj)) {
@@ -99,11 +151,13 @@ const componentProps = (componentObj: ResolvedField) => {
 		}
 	}
 
-	// A table sources its rows from the data model, never from the schema. `kind` is the only
-	// check: every path into AForm sets it (Zod's injectKind, Doctype.fromObject's
-	// normalizeFieldKind, and the registry), and hand-built ResolvedTable literals declare it.
+	// A table sources its rows from the data model, never from the schema, and its edits come back
+	// through `update:rows`. `kind` is the only check: every path into AForm sets it (Zod's
+	// injectKind, Doctype.fromObject's normalizeFieldKind, and the registry), and hand-built
+	// ResolvedTable literals declare it.
 	if (componentObj.kind === 'table') {
 		propsToPass['rows'] = dataModel.value[componentObj.fieldname] || []
+		propsToPass['onUpdate:rows'] = (rows: Record<string, unknown>[]) => updateTableRows(componentObj.fieldname, rows)
 	}
 
 	return propsToPass
@@ -172,12 +226,13 @@ const childModels = computed(() => childModelsCache.value)
 	border: none;
 }
 .aform_form-element {
-	padding: 0;
+	padding: var(--sc-form-label-offset) 0 0;
 	margin: 0;
 	position: relative;
 	box-sizing: border-box;
 	flex-grow: 1;
 	min-width: 20ch;
+	max-width: var(--sc-form-field-max-width);
 	/* margin-bottom: 1rem; */
 }
 .aform__grid--full {
@@ -185,6 +240,7 @@ const childModels = computed(() => childModelsCache.value)
 	width: 100%;
 }
 .aform_input-field {
+	border: none;
 	outline: 1px solid var(--sc-input-border-color);
 	outline-offset: -1px;
 	font-size: 1rem;
@@ -211,7 +267,8 @@ const childModels = computed(() => childModelsCache.value)
 	word-break: break-word;
 }
 
-.aform_input-field:focus + .aform_field-label {
+/* A label darkens while anything beside it holds focus, wherever it sits in its field's markup. */
+:focus-within > .aform_field-label {
 	color: var(--sc-input-active-label-color);
 }
 
@@ -219,16 +276,18 @@ const childModels = computed(() => childModelsCache.value)
 	color: var(--sc-input-label-color);
 	display: inline-block;
 	position: absolute;
+	user-select: none;
 	padding: 0 0.25rem;
 	margin: 0rem;
 	z-index: 1;
 	font-size: 0.7rem;
 	font-weight: 300;
 	letter-spacing: 0.05rem;
-	background: linear-gradient(var(--sc-form-background) 50%, var(--sc-input-field-background) 50%);
+	/* The form colour masks the field's top border behind the text; below it the field shows
+	   through. Never paint a colour there: it can match only one of the surfaces a field shows. */
+	background: linear-gradient(var(--sc-form-background) calc(50% + 1px), transparent calc(50% + 1px));
 	width: auto;
 	box-sizing: border-box;
-	background: white;
 	margin: 0;
 	grid-row: 1;
 	top: 0;
@@ -237,17 +296,12 @@ const childModels = computed(() => childModelsCache.value)
 	line-height: 0;
 	transform: translateY(-50%);
 }
+.aform_form-element > .aform_field-label {
+	top: var(--sc-form-label-offset);
+}
 .aform_input-field:disabled,
 .aform_checkbox-container:has(.aform_checkbox:disabled) {
 	background: var(--sc-input-field-disabled-background);
-}
-.aform_input-field:disabled + .aform_field-label,
-.aform_checkbox-container:has(.aform_checkbox:disabled) + .aform_field-label {
-	background: linear-gradient(var(--sc-form-background) 50%, var(--sc-input-field-disabled-background) 50%);
-}
-.aform_input-field:disabled ~ p.aform_error,
-.aform_checkbox-container:has(.aform_checkbox:disabled) ~ p.aform_error {
-	background: linear-gradient(var(--sc-form-background) 50%, var(--sc-input-field-disabled-background) 50%);
 }
 .aform_field-label::after {
 	margin: 0;
@@ -260,7 +314,8 @@ p.aform_error {
 	/* v-show toggles visibility per field; base display must be visible (was stuck at `none`,
 	   which overrode v-show and left every field error dormant). */
 	display: inline-block;
-	background: linear-gradient(var(--sc-form-background) 50%, var(--sc-input-field-background) 50%);
+	/* Straddles the border like .aform_field-label, and paints the same way. */
+	background: linear-gradient(var(--sc-form-background) calc(50% + 1px), transparent calc(50% + 1px));
 	padding: 0 0.25rem;
 	margin: 0rem;
 	width: auto;
@@ -268,9 +323,8 @@ p.aform_error {
 	font-size: 0.7rem;
 	position: absolute;
 	right: 0;
-	top: 0;
+	top: var(--sc-form-label-offset);
 	line-height: 0;
-	background: white;
 	padding: 0.25rem;
 	transform: translate(-1rem, -50%);
 	margin: 0;
@@ -283,6 +337,7 @@ p.aform_error {
 	flex-wrap: wrap;
 	gap: 1rem;
 	padding: 1rem;
+	background: var(--sc-form-background);
 	border: 1px solid var(--sc-form-border);
 	border-left: 4px solid var(--sc-form-border);
 	margin-bottom: 1rem;
@@ -310,5 +365,12 @@ p.aform_error {
 .aform-nested-section .aform {
 	border-left-width: 2px;
 	margin-left: 0.5rem;
+}
+
+.aform-table-expansion {
+	margin-bottom: 0;
+	border: none;
+	border-left: none;
+	padding: 0;
 }
 </style>

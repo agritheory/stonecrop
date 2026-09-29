@@ -32,6 +32,9 @@ props: {
   routeAdapter?: RouteAdapter \| undefined
   actionSetSlots?: ActionSetSlot[] \| undefined
   hostActions?: ActionElements[] \| undefined
+  breadcrumbs?: { title: string; to: string; }[] \| undefined
+  commandSearch?: ((query: string) => CommandSearchResult[]) \| undefined
+  commandSearchPlaceholder?: string \| undefined
 }
 emits: {
   action: [payload: ActionEventPayload]

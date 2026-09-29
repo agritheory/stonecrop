@@ -2,8 +2,8 @@ import type { DoctypeMeta } from '@stonecrop/schema'
 import { camelToSnake, flattenFields, getDisplayField, getRecordIdField } from '@stonecrop/schema'
 import type { PgClient } from '@dataplan/pg'
 
+import type { ColumnReader } from './columns'
 import { getMeta } from './registry/doctypes'
-import { resolveTableName } from './tables'
 
 type SqlQueryFn = (
 	pgClient: PgClient,
@@ -14,7 +14,7 @@ interface LinkDisplaySpec {
 	fieldname: string
 	displayField: string
 	targetPkFieldname: string
-	targetTable: string
+	targetDoctype: string
 }
 
 /**
@@ -35,7 +35,7 @@ function scalarText(value: unknown): string | undefined {
 	return undefined
 }
 
-function collectLinkDisplaySpecs(meta: DoctypeMeta, tables?: Record<string, string>): LinkDisplaySpec[] {
+function collectLinkDisplaySpecs(meta: DoctypeMeta): LinkDisplaySpec[] {
 	const specs: LinkDisplaySpec[] = []
 
 	for (const field of flattenFields(meta.fields)) {
@@ -54,7 +54,7 @@ function collectLinkDisplaySpecs(meta: DoctypeMeta, tables?: Record<string, stri
 			fieldname: field.fieldname,
 			displayField: displayField.fieldname,
 			targetPkFieldname: getRecordIdField(targetMeta.fields),
-			targetTable: resolveTableName(targetMeta.name, tables),
+			targetDoctype: targetMeta.name,
 		})
 	}
 
@@ -73,10 +73,10 @@ export async function enrichLinkDisplayFields(
 	pgClient: PgClient,
 	meta: DoctypeMeta,
 	rows: Record<string, unknown>[],
-	tables: Record<string, string> | undefined,
+	columns: ColumnReader,
 	debugSql: SqlQueryFn
 ): Promise<void> {
-	const specs = collectLinkDisplaySpecs(meta, tables)
+	const specs = collectLinkDisplaySpecs(meta)
 	if (specs.length === 0 || rows.length === 0) return
 
 	await Promise.all(
@@ -89,14 +89,16 @@ export async function enrichLinkDisplayFields(
 			if (ids.size === 0) return
 
 			const pkColumn = camelToSnake(spec.targetPkFieldname)
-			const displayColumn = camelToSnake(spec.displayField)
-			const displayAlias =
-				displayColumn !== spec.displayField ? `"${displayColumn}" AS "${spec.displayField}"` : `"${spec.displayField}"`
+			const select = columns.select(spec.targetDoctype, [
+				{ column: pkColumn, alias: spec.targetPkFieldname },
+				{ column: camelToSnake(spec.displayField), alias: spec.displayField },
+			])
 
 			const { rows: displayRows } = await debugSql(pgClient, {
-				text: `SELECT "${pkColumn}" AS "${spec.targetPkFieldname}", ${displayAlias} FROM ${spec.targetTable} WHERE "${pkColumn}"::text = ANY($1::text[])`,
+				text: `SELECT ${select.list} FROM ${select.table} WHERE "${pkColumn}"::text = ANY($1::text[])`,
 				values: [Array.from(ids)],
 			})
+			select.decodeRows(displayRows)
 
 			const displayById = new Map<string, string>()
 			for (const displayRow of displayRows) {

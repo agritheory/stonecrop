@@ -132,6 +132,32 @@ describe('AQuantityInput', () => {
 		})
 	})
 
+	describe('no quantity', () => {
+		const noQty = { qty: null, uom: 'Box', stockQty: null, stockUom: 'Nos', conversionFactor: 10 }
+
+		it('holds no quantity, and no stock quantity, once its box is emptied', async () => {
+			const wrapper = mount(AQuantityInput, { props: { options, modelValue: { ...noQty, qty: 2, stockQty: 20 } } })
+			await wrapper.find('.aquantity__qty').setValue('')
+			expect(wrapper.emitted('update:modelValue')!.at(-1)![0]).toMatchObject({ qty: null, stockQty: null })
+		})
+
+		it('shows an empty box for a value with no quantity', () => {
+			const wrapper = mount(AQuantityInput, { props: { options, modelValue: noQty } })
+			expect(wrapper.find<HTMLInputElement>('.aquantity__qty').element.value).toBe('')
+		})
+
+		it('keeps no quantity when a unit is picked', async () => {
+			const wrapper = mount(AQuantityInput, { props: { options, modelValue: noQty } })
+			await pickUom(wrapper, 'Kg')
+			expect(wrapper.emitted('update:modelValue')!.at(-1)![0]).toMatchObject({ qty: null, stockQty: null })
+		})
+
+		it('shows "—" in display mode for a value with no quantity', () => {
+			const wrapper = mount(AQuantityInput, { props: { mode: 'display', modelValue: noQty } })
+			expect(wrapper.find('.aform_display-value').text()).toBe('—')
+		})
+	})
+
 	describe('stock qty computation', () => {
 		it('sets conversionFactor to 1 and stockQty = qty when uom equals stockUom', async () => {
 			const wrapper = mount(AQuantityInput, {
@@ -323,10 +349,10 @@ describe('AQuantityInput', () => {
 		})
 
 		it('tolerates a partial modelValue (missing qty or uom)', () => {
-			// A parent may bind a value that has not been fully populated yet; the getters
-			// fall back to 0 / '' rather than surfacing undefined.
+			// A parent may bind a value that has not been fully populated yet: a missing quantity
+			// shows as none, and a missing unit as the placeholder.
 			const missingQty = mount(AQuantityInput, { props: { options, modelValue: { uom: 'Box' } as any } })
-			expect((missingQty.find('.aquantity__qty').element as HTMLInputElement).value).toBe('0')
+			expect((missingQty.find('.aquantity__qty').element as HTMLInputElement).value).toBe('')
 
 			const missingUom = mount(AQuantityInput, { props: { options, modelValue: { qty: 5 } as any, uomLabel: 'Unit' } })
 			expect(missingUom.find('.aquantity__uom-toggle').text()).toContain('Unit')

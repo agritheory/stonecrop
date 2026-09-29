@@ -1,20 +1,23 @@
+import vue from '@vitejs/plugin-vue'
+import { playwright } from '@vitest/browser-playwright'
 import { defineConfig } from 'vitest/config'
 
-// This package's tests all run in a plain `node` environment — NOT under @nuxt/test-utils'
-// `defineVitestConfig`. That wrapper installs the Nuxt-client machinery (including the Vue SFC
-// compiler) into vitest's Vite instance for every test it governs, which then breaks the
-// @nuxt/test-utils/e2e `setup()` build with "MagicString is not a constructor"
-// (nuxt/nuxt#34645; @vue/compiler-sfc@3.5.x's bare `require('magic-string')` resolves to the
-// ESM namespace, not the constructor). Per the Nuxt maintainers, `defineVitestConfig` is only
-// for tests that need the Nuxt client runtime — and none here do (the composable tests mock
-// `nuxt/app`; the rest are pure logic or the e2e harness). If a test is added that genuinely
-// needs the Nuxt runtime (e.g. `mountSuspended`), split this into a projects-based config and
-// put that test in a `defineVitestProject({ environment: 'nuxt' })` project (which pulls in
-// `happy-dom`), leaving the node/e2e tests here untouched.
+import { playwrightLaunchOptions } from '../tools/vite/playwright-launch-options.ts'
+
+// Two projects: `node` for everything but layout, and `browser` for `*.browser.test.ts`, which mounts
+// runtime components in real Chrome. Neither runs under @nuxt/test-utils' `defineVitestConfig`.
+// That wrapper installs the Nuxt-client machinery (including the Vue SFC compiler) into vitest's
+// Vite instance for every test it governs, which then breaks the @nuxt/test-utils/e2e `setup()`
+// build with "MagicString is not a constructor" (nuxt/nuxt#34645; @vue/compiler-sfc@3.5.x's bare
+// `require('magic-string')` resolves to the ESM namespace, not the constructor). The Vue plugin
+// therefore sits on the browser project alone, which has its own Vite instance. If a test is added
+// that genuinely needs the Nuxt runtime (e.g. `mountSuspended`), put it in a
+// `defineVitestProject({ environment: 'nuxt' })` project (which pulls in `happy-dom`), leaving the
+// node/e2e tests untouched.
 export default defineConfig({
 	resolve: {
 		alias: {
-			// The templates/ and fullstack/ resolver modules import bare `grafast`, which is what a
+			// The templates/ and fixtures/fullstack/ resolver modules import bare `grafast`, which is what a
 			// consumer server context provides. This package doesn't depend on it directly, so the
 			// specifier does not resolve here — but `postgraphile` is a devDependency and re-exports
 			// the same module, which is exactly what those consumers get.
@@ -28,9 +31,34 @@ export default defineConfig({
 		},
 	},
 	test: {
-		environment: 'node',
-		include: ['test/**/*.test.ts'],
-		exclude: ['**/node_modules/**', '**/fixtures/**'],
+		projects: [
+			{
+				extends: true,
+				test: {
+					name: 'node',
+					environment: 'node',
+					include: ['test/**/*.test.ts'],
+					exclude: ['**/node_modules/**', '**/fixtures/**', '**/*.browser.test.ts'],
+				},
+			},
+			// A width is only computed by a real browser: node has no layout at all.
+			{
+				extends: true,
+				plugins: [vue()],
+				test: {
+					name: 'browser',
+					include: ['test/**/*.browser.test.ts'],
+					browser: {
+						enabled: true,
+						headless: true,
+						// System Chrome when present (CI); otherwise Playwright's Chromium after
+						// `pnpm exec playwright install chromium`.
+						provider: playwright({ launchOptions: playwrightLaunchOptions() }),
+						instances: [{ browser: 'chromium' }],
+					},
+				},
+			},
+		],
 		tags: [
 			{ name: 'unit', description: 'Pure logic test — no DOM, network, or framework runtime.' },
 			{ name: 'component', description: 'Vue component test using jsdom + @vue/test-utils.' },
@@ -57,7 +85,7 @@ export default defineConfig({
 				'**/coverage/**',
 				'**/test/**',
 				'**/playground/**',
-				'**/fullstack/**',
+				'**/documentation/**',
 				'**/templates/**',
 				'**/bin/**',
 				'**/*.config.*',

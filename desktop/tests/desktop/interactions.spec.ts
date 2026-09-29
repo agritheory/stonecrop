@@ -16,7 +16,7 @@ afterEach(() => {
 
 describe('Desktop user interactions', { tags: ['component'] }, () => {
 	describe('keyboard shortcuts', () => {
-		it('opens command palette on Ctrl+K', async () => {
+		it('opens search drawer on Ctrl+K', async () => {
 			const registry = new Registry()
 			const stonecrop = new Stonecrop(registry)
 
@@ -33,9 +33,7 @@ describe('Desktop user interactions', { tags: ['component'] }, () => {
 					plugins: [makeStonecropPlugin(registry, stonecrop)],
 					stubs: {
 						AForm: true,
-						ActionSet: true,
 						SheetNav: true,
-						CommandPalette: true,
 					},
 				},
 				attachTo: document.body,
@@ -46,13 +44,13 @@ describe('Desktop user interactions', { tags: ['component'] }, () => {
 			document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true, bubbles: true }))
 			await nextTick()
 
-			const palette = wrapper.findComponent({ name: 'CommandPalette' })
-			expect(palette.props('isOpen')).toBe(true)
+			expect(wrapper.find('.action-set__drawer').exists()).toBe(true)
+			expect(wrapper.find('.command-search-input').exists()).toBe(true)
 
 			wrapper.unmount()
 		})
 
-		it('closes command palette on Escape when open', async () => {
+		it('closes search drawer on Escape when open', async () => {
 			const registry = new Registry()
 			const stonecrop = new Stonecrop(registry)
 
@@ -69,9 +67,7 @@ describe('Desktop user interactions', { tags: ['component'] }, () => {
 					plugins: [makeStonecropPlugin(registry, stonecrop)],
 					stubs: {
 						AForm: true,
-						ActionSet: true,
 						SheetNav: true,
-						CommandPalette: true,
 					},
 				},
 				attachTo: document.body,
@@ -82,13 +78,12 @@ describe('Desktop user interactions', { tags: ['component'] }, () => {
 			document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true, bubbles: true }))
 			await nextTick()
 
-			const palette = wrapper.findComponent({ name: 'CommandPalette' })
-			expect(palette.props('isOpen')).toBe(true)
+			expect(wrapper.find('.action-set__drawer').exists()).toBe(true)
 
 			document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
 			await nextTick()
 
-			expect(palette.props('isOpen')).toBe(false)
+			expect(wrapper.find('.action-set__drawer').exists()).toBe(false)
 
 			wrapper.unmount()
 		})

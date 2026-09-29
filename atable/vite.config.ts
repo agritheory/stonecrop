@@ -27,7 +27,7 @@ export default defineConfig({
 			formats: ['es'],
 		},
 		rollupOptions: {
-			external: ['vue', 'pinia', /^@vueuse\//, /^@stonecrop\//],
+			external: ['vue', 'pinia', /^@vueuse\//, /^@stonecrop\//, 'temporal-polyfill'],
 			output: {
 				chunkFileNames: 'chunks/[name].[hash].js',
 				assetFileNames: 'assets/[name].[ext]',

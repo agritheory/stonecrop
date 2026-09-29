@@ -24,7 +24,7 @@ export interface GuardedTransitionIO {
 	writeState: (nextState: string) => Promise<void>
 	/**
 	 * Persist a record's field data for a self-transition, returning the full record as it now
-	 * stands (so the client writeback reflects it).
+	 * stands, which states its identity (the only place a created record's key is known).
 	 *
 	 * **This is an upsert, and it is the create path.** Saving a record is one request whether or
 	 * not the row is there yet, so there is no create action and no create mutation — `exists` says
@@ -55,8 +55,9 @@ export interface GuardedTransitionIO {
 	 * and the Postgres adapter in particular dispatches outside one. A handler whose own statements
 	 * must be all-or-nothing has to wrap them itself.
 	 *
-	 * Returning a full record makes it the client writeback payload; returning `undefined` leaves
-	 * the doctype's own outcome to decide what comes back.
+	 * What it returns becomes the result's `data`, verbatim; returning `undefined` leaves the
+	 * doctype's own outcome to decide `data`. The client stores the adapter's read of the record,
+	 * never this.
 	 *
 	 * @param currentState - The state the guard read, or `undefined` when nothing required reading it
 	 * @returns The updated record, or `undefined` to leave the result payload to the state outcome
@@ -197,7 +198,7 @@ export async function applyGuardedTransition(
 	}
 
 	// Self-transition: mutate record data in place, keep the current state. The full updated
-	// record is returned so the client writeback reflects the new data. When the backend has no
+	// record is returned so a created record's identity is known. When the backend has no
 	// data-write path the effect above already did the persisting (guarded at the top).
 	if (isSelfTransition) {
 		const record = io.writeData ? await io.writeData(data ?? {}, true) : effectResult

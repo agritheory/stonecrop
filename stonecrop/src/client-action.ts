@@ -14,13 +14,10 @@ import type {
 } from './types/client-action'
 
 /**
- * The identity a server response settled on, or `undefined` when it did not state one.
+ * The identity an action's `record` settled on, or `undefined` when it states none.
  *
  * Deliberately stricter than `getRecordId`: that falls back to `id` when the declared key is
- * absent, which here would let a handler returning a partial record (say `{ id, total }` for a
- * natural-keyed doctype) look like a rename and relocate the record to a key the adapter cannot
- * look up. An action whose result carries no identity at all — a `{ state }` outcome — leaves the
- * record exactly where it is.
+ * absent, which would relocate a natural-keyed record to a key the adapter cannot look up.
  */
 function settledRecordId(doctype: Doctype, record: Record<string, unknown>): string | undefined {
 	if (record[doctype.recordIdField] === undefined) return undefined
@@ -95,10 +92,10 @@ export function useClientAction(options: UseClientActionOptions = {}) {
 		extra?: Record<string, unknown>
 	): Promise<ActionDispatchResult> {
 		const sc = stonecrop.value
-		if (!sc) return { success: false, data: null, error: 'Stonecrop is not initialized' }
+		if (!sc) return { success: false, data: null, error: 'Stonecrop is not initialized', record: null }
 
 		const doctype = sc.registry.getDoctype(doctypeSlug)
-		if (!doctype) return { success: false, data: null, error: `Unknown doctype: ${doctypeSlug}` }
+		if (!doctype) return { success: false, data: null, error: `Unknown doctype: ${doctypeSlug}`, record: null }
 
 		// A draft omits the id, which the write path reads as "create". Sending the route segment
 		// instead reaches the same branch by accident — via a lookup for a record named `new`.
@@ -109,23 +106,13 @@ export function useClientAction(options: UseClientActionOptions = {}) {
 			buildArgs({ doctype: doctypeSlug, action, recordId, isDraft, data, extra })
 		)
 
-		if (result.success && result.data) {
-			// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- the action result payload is an opaque JSON scalar; every adapter returns the record as an object
-			const record = result.data as Record<string, unknown>
+		const { record } = result
+		if (result.success && record) {
 			const settledId = settledRecordId(doctype, record)
-
-			if (settledId === undefined) {
-				// The result states no identity of its own — a `{ state }` outcome. `dispatchAction`
-				// could not file it, because only this layer knows which record was dispatched. A
-				// draft has nowhere to put it: filing it under the route segment would leave a
-				// record named `new` in the list view.
-				if (!isDraft) sc.addRecord(doctypeSlug, recordId, record)
-				return result
-			}
 
 			// `dispatchAction` has already filed the record under `settledId`. Only the two steps
 			// that need the dispatched id are left.
-			if (recordId !== settledId) {
+			if (settledId !== undefined && recordId !== settledId) {
 				// No-op for a draft, which was never in the store — `removeRecord` checks first.
 				sc.removeRecord(doctypeSlug, recordId)
 				await followRecord({ doctype: doctypeSlug, recordId: settledId, previousRecordId: recordId })

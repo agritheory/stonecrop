@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { afterEach, beforeEach, describe, it, expect, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 
 import ADateSelection from '../src/components/form/ADateSelection.vue'
@@ -50,12 +50,11 @@ describe('date-selection component', () => {
 
 	it('emits get-date when date is selected', async () => {
 		const wrapper = mount(ADateSelection, globalComponents)
-		const testDate = new Date(2023, 5, 15)
 		const datePicker = wrapper.findComponent(ADatePicker)
-		await datePicker.vm.$emit('get-date', { selected: testDate, start: null, end: null })
+		await datePicker.vm.$emit('get-date', { selected: '2023-06-15', start: null, end: null })
 		const emitted = wrapper.emitted('get-date')
 		expect(emitted).toBeTruthy()
-		expect(emitted![0][0]).toEqual({ selected: testDate, start: null, end: null })
+		expect(emitted![0][0]).toEqual({ selected: '2023-06-15', start: null, end: null })
 	})
 
 	it('emits get-time when time is selected', async () => {
@@ -104,9 +103,8 @@ describe('date-selection component', () => {
 			...globalComponents,
 			props: { selectRange: true, showTime: true, showEndTime: true },
 		})
-		const testDate = new Date(2023, 5, 15)
 		const datePicker = wrapper.findComponent(ADatePicker)
-		await datePicker.vm.$emit('get-date', { selected: testDate, start: testDate, end: testDate })
+		await datePicker.vm.$emit('get-date', { selected: '2023-06-15', start: '2023-06-15', end: '2023-06-15' })
 		const emitted = wrapper.emitted('get-range')
 		expect(emitted).toBeTruthy()
 		expect(emitted![0][0]).toHaveProperty('start')
@@ -141,6 +139,29 @@ describe('date-selection component', () => {
 		await endTime.vm.$emit('get-time', { hours: 5, minutes: 0, seconds: 0, meridiem: 'PM', militaryTime: 17 })
 		const rangeEvents = wrapper.emitted('get-range')
 		expect(rangeEvents).toBeTruthy()
+	})
+
+	// Pinned zones, because a day read as UTC midnight only shifts west of UTC, and CI runs in UTC.
+	describe.each(['Asia/Kolkata', 'America/New_York'])('in %s', zone => {
+		beforeEach(() => vi.stubEnv('TZ', zone))
+		afterEach(() => vi.unstubAllEnvs())
+
+		it('builds the range from the days picked at the times picked', async () => {
+			const wrapper = mount(ADateSelection, {
+				...globalComponents,
+				props: { selectRange: true, showTime: true, showEndTime: true },
+			})
+			await wrapper.vm.$nextTick()
+			await wrapper
+				.findComponent(ADatePicker)
+				.vm.$emit('get-date', { selected: '2026-03-04', start: '2026-03-02', end: '2026-03-04' })
+			const [startTime, endTime] = wrapper.findAllComponents(ADateTimeInput)
+			await startTime.vm.$emit('get-time', { hours: 9, minutes: 0, seconds: 0, meridiem: 'AM', militaryTime: 9 })
+			await endTime.vm.$emit('get-time', { hours: 5, minutes: 0, seconds: 0, meridiem: 'PM', militaryTime: 17 })
+			expect(wrapper.emitted('get-range')?.at(-1)).toEqual([
+				{ start: new Date(2026, 2, 2, 9), end: new Date(2026, 2, 4, 17), source: 'user' },
+			])
+		})
 	})
 
 	it('renders end time picker when selectRange, showTime, and showEndTime are all true', () => {

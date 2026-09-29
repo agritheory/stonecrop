@@ -26,11 +26,12 @@ export async function installFrontend(options: FrontendInstallerOptions): Promis
 
 	try {
 		// Add @stonecrop/nuxt and its required peer dependencies
-		// These packages are imported by the Nuxt module and need to be available at runtime
+		// These packages are imported by the Nuxt module or the scaffolded app files and need to be available at runtime
 		await addDependencies(cwd, {
 			'@stonecrop/nuxt': 'latest',
 			'@stonecrop/aform': 'latest',
 			'@stonecrop/atable': 'latest',
+			'@stonecrop/graphql-client': 'latest',
 			'@stonecrop/stonecrop': 'latest',
 			'@stonecrop/node-editor': 'latest',
 			'@stonecrop/schema': 'latest',

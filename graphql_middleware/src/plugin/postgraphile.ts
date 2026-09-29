@@ -1,11 +1,13 @@
 import type { DoctypeField, DoctypeMeta, LinkDeclaration, ValueField, GetRecordOptions } from '@stonecrop/schema'
 import { camelToSnake, getRecordIdField, resolveLinkRenderMode, unwrapInlineLinks } from '@stonecrop/schema'
 import { loadOneWithPgClient, sideEffectWithPgClient } from '@dataplan/pg'
-import type { PgClient, PgExecutor } from '@dataplan/pg'
+import type { PgClient, PgCodec, PgExecutor } from '@dataplan/pg'
 import { constant, lambda, object } from 'postgraphile/grafast'
 import { GraphileConfig } from 'postgraphile/graphile-build'
 import { extendSchema } from 'postgraphile/utils'
 
+import { createColumnReader } from '../columns'
+import type { ColumnSelection } from '../columns'
 import { columnBackedFields, flattenFields } from '../fields'
 import { enrichLinkDisplayFields } from '../link-display'
 import { resolveTableName } from '../tables'
@@ -67,8 +69,9 @@ export interface ActionHandlerContext {
 /**
  * A server-side effect for one doctype action, supplied by whoever owns the database.
  *
- * Throwing rejects the action and no state is written. Returning the updated record makes it the
- * client writeback payload; returning `undefined` leaves the doctype's own outcome to decide.
+ * Throwing rejects the action and no state is written. The client stores the result's `record`,
+ * the adapter's read of the record after the action, never this return; a return carrying the
+ * doctype's declared key names the record read, which is how a handler that creates one says so.
  *
  * The return value is passed through verbatim as `StonecropActionResult.data`, so it must be
  * API-layer data — camelCase fieldname keys, not raw snake_case columns. See `pgClient` above and
@@ -174,9 +177,24 @@ class ActionRolledBack extends Error {
 	}
 }
 
+/** One record a read is asked for: the arguments `stonecropRecord` takes. */
+interface RecordReadSpec {
+	doctype: unknown
+	id: unknown
+	options?: unknown
+}
+
+/** One record as `stonecropRecord` serves it. */
+interface RecordReadResult {
+	data: Record<string, unknown> | null
+	doctype: string
+	unknownLinks?: string[]
+	truncatedLinks?: string[]
+}
+
 /**
  * Column-alias prefix for a foreign key the record SELECT carries only so the link expansion can
- * read it. An *expanding* link is a relation in the payload rather than a scalar, so `getSqlColumns`
+ * read it. An *expanding* link is a relation in the payload rather than a scalar, so `getColumnSelections`
  * omits its FK column by design — but the expansion needs the value to find the target. Aliasing
  * keeps that need from changing the payload: every alias is stripped before the record is returned.
  */
@@ -224,16 +242,272 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 	return extendSchema(build => {
 		// Obtain the PgExecutor from pgExecutors — one entry exists per configured pgService.
 		// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- build.input.pgRegistry is a PostGraphile internal not in the public Build type
-		const pgExecutors = (build as any).input?.pgRegistry?.pgExecutors as Record<string, PgExecutor> | undefined
-		const executor = pgExecutors ? Object.values(pgExecutors)[0] : undefined
+		const pgRegistry = (build as any).input?.pgRegistry as
+			| { pgExecutors?: Record<string, PgExecutor>; pgCodecs?: Record<string, PgCodec> }
+			| undefined
+		const executor = pgRegistry?.pgExecutors ? Object.values(pgRegistry.pgExecutors)[0] : undefined
 		if (!executor) {
 			throw new Error('StonecropPlugin: no pgExecutors found — ensure pgServices is configured')
 		}
+		const columns = createColumnReader(pgRegistry?.pgCodecs ?? {}, executor, options.tables)
 
 		// Schema build is the one point where both the registry and the plugin's options are in
 		// hand, so it is where a stale registration can be caught before it silently no-ops.
 		if (options.actionHandlers) assertActionHandlersResolve(options.actionHandlers)
 		assertReferencesResolve()
+
+		/** Reads each requested record, batched by doctype: what `stonecropRecord` serves, and what an action replies with. */
+		const readRecords = async (pgClient: PgClient, specs: readonly RecordReadSpec[]): Promise<RecordReadResult[]> => {
+			// Group specs by doctype to batch the main SELECT per table
+			const byDoctype = new Map<string, number[]>()
+			for (let i = 0; i < specs.length; i++) {
+				const d = String(specs[i].doctype)
+				if (!byDoctype.has(d)) byDoctype.set(d, [])
+				byDoctype.get(d)!.push(i)
+			}
+
+			const results: RecordReadResult[] = Array.from({ length: specs.length })
+
+			for (const [doctype, indices] of byDoctype) {
+				const meta = getMeta(doctype)
+				if (!meta) {
+					for (const i of indices) results[i] = { data: null, doctype }
+					continue
+				}
+
+				// Not `data: null` — that is the answer for a record that does not exist, and a
+				// doctype nobody can look up is a misconfiguration, not an empty result.
+				const pkMeta = getPkMeta(meta)
+				if (!pkMeta) throw unresolvableIdentityError(doctype)
+				const pkColumn = camelToSnake(pkMeta.fieldname)
+				const ids = indices.map(i => String(specs[i].id))
+
+				// Resolved once per doctype: how each link renders, and which foreign keys the
+				// SELECT must carry for the expansion below to work at all.
+				//
+				// `resolveLinkRenderMode` needs the linked field's own component, so the fields
+				// are indexed by name — flattened, because a link's field may sit inside a
+				// fieldset and `getColumnSelections` already descends to select it.
+				const fieldByName = new Map(flattenFields(meta.fields).map(f => [f.fieldname, f]))
+				const linkFkAliases: Array<{ fieldname: string; alias: string }> = []
+				for (const [linkName, link] of Object.entries(meta.links ?? {})) {
+					// Many-side links find their rows by a column on the *target*; only a one-side
+					// link reads a foreign key off this row.
+					if (link.cardinality === 'noneOrMany' || link.cardinality === 'atLeastOne') continue
+					const fieldname = link.fieldname ?? linkName
+					// An inline link keeps its FK as a scalar, so `getColumnSelections` already selected
+					// it under its own name and no alias is needed.
+					if (resolveLinkRenderMode(link, fieldByName.get(fieldname)?.component) === 'inline') continue
+					linkFkAliases.push({ fieldname, alias: `${LINK_FK_ALIAS}${fieldname}` })
+				}
+				const select = columns.select(meta.name, [
+					...getColumnSelections(meta),
+					...linkFkAliases.map(({ fieldname, alias }) => ({ column: camelToSnake(fieldname), alias })),
+				])
+
+				// TODO(perf): queries per doctype group could be parallelized with Promise.all across doctype groups;
+				// requires refactoring the grouped-by-doctype loop to collect promises before resolving results
+				// oxlint-disable-next-line eslint/no-await-in-loop -- sequential per-doctype SQL; see TODO above
+				const { rows } = await debugSql<Record<string, unknown>>(pgClient, {
+					text: `SELECT ${select.list} FROM ${select.table} WHERE "${pkColumn}"::text = ANY($1::text[])`,
+					values: [ids],
+				})
+				select.decodeRows(rows)
+
+				// Use String() so integer PKs (e.g. serial) match the string ids from GraphQL
+				const rowByPk = new Map(rows.map(r => [String(r[pkMeta.fieldname]), r]))
+
+				// A declared key the database does not actually enforce as unique collapses several
+				// rows into that Map, and it keeps whichever came last — one arbitrary record,
+				// returned as though it were *the* record, with nothing to say so. Refuse instead.
+				//
+				// This is exact rather than a proxy for the problem: `ANY` matches each requested id
+				// once, so a shortfall here means two distinct rows genuinely share a key value. A
+				// `pg_index` check would instead ask whether a unique constraint exists, which is the
+				// cause rather than the harm — and would flag a column that is unique in practice but
+				// unconstrained, which is a real and common shape.
+				if (rows.length !== rowByPk.size) {
+					throw new Error(
+						`Doctype "${doctype}" declares "${pkMeta.fieldname}" as its identity, but that column ` +
+							`is not unique in ${resolveTableName(meta.name, options.tables)} — ${rows.length} rows ` +
+							`matched ${rowByPk.size} distinct values, so a lookup cannot say which record it means. ` +
+							`Declare a field that uniquely identifies a record, or add a unique constraint.`
+					)
+				}
+
+				// Collected across the batch so the display lookup runs once for all of them.
+				// Called per row inside this loop it issued one query per record per link field,
+				// which is the N+1 this batched loader exists to avoid — and silently, since the
+				// enriched rows come out identical either way.
+				const enrichedRows: Record<string, unknown>[] = []
+
+				for (const i of indices) {
+					const specId = String(specs[i].id)
+					const row = rowByPk.get(specId)
+
+					if (!row) {
+						results[i] = { data: null, doctype }
+						continue
+					}
+
+					const rowData: Record<string, unknown> = { ...row }
+					enrichedRows.push(rowData)
+					// Per record, not per doctype: two records of one doctype can differ in whether
+					// a relation overflowed, and a shared list would report the wrong one truncated.
+					const truncatedLinks: string[] = []
+					const recordOptions = (specs[i].options ?? {}) as GetRecordOptions
+					const includeAll = recordOptions.includeNested === true
+					const includeSet = Array.isArray(recordOptions.includeNested) ? new Set(recordOptions.includeNested) : null
+
+					// FetchStrategy dispatch over link declarations
+					if (meta.links) {
+						for (const [linkName, link] of Object.entries(meta.links)) {
+							// The payload key is the *resolved* fieldname, not the map key: the client
+							// binds a link to the field named `link.fieldname ?? key` and reads the
+							// nested data off that field, so writing under the bare key put the result
+							// somewhere nothing looks whenever a declaration named its own `fieldname`.
+							// Identical for every declaration that omits `fieldname`, which is all of them
+							// in this repo — hence latent until now.
+							const fieldname = link.fieldname ?? linkName
+							const fetch = link.fetch
+							const isMany = link.cardinality === 'noneOrMany' || link.cardinality === 'atLeastOne'
+							const effectiveMethod = fetch?.method ?? (isMany ? 'sync' : 'lazy')
+							// Two questions, kept apart. `method === 'sync'` is a *type narrowing* — only
+							// `SyncFetch` carries a `limit` — and the server default used to hang off its
+							// `else`, so declaring the method a many-side link already defaults to removed
+							// the cap entirely. "Did the author write a limit?" and "did the author write
+							// the word sync?" are now asked separately.
+							const declaredLimit = fetch?.method === 'sync' ? fetch.limit : undefined
+							const effectiveLimit = isMany ? (declaredLimit ?? defaultRowLimit) : undefined
+
+							// The one gate. It used to be followed by a second test that re-asked the
+							// same question using only `includeSet` — `null` for the boolean form — so
+							// `includeNested: true` admitted every link here and then silently dropped
+							// each non-`sync` one, handing back a partial record with no way to tell.
+							// That test was redundant wherever it was correct: with a name list this gate
+							// has already required membership, and without one it has already required
+							// `sync`, so it could only ever fire in the boolean case it got wrong.
+							const shouldInclude = includeAll || (includeSet ? includeSet.has(linkName) : effectiveMethod === 'sync')
+
+							if (!shouldInclude) continue
+
+							if (effectiveMethod === 'custom' && fetch?.method === 'custom') {
+								const handlerName = fetch.handler
+								const handler = getFetchHandler(handlerName)
+								if (handler) {
+									// TODO(perf): custom link handlers per-row could run in parallel; needs collecting all custom handlers before await
+									// oxlint-disable-next-line eslint/no-await-in-loop -- custom handler per link; see TODO above
+									rowData[fieldname] = await handler(pgClient, rowData, link)
+								}
+								continue
+							}
+
+							// `resolveLinkRenderMode` is the single definition of whether a link expands,
+							// and this loop was the one caller that never asked it. An `inline` link is a
+							// picker: the field holds its own id and the client resolves display text
+							// separately, so expanding it here overwrote that id with the whole target
+							// record and left the picker with an object it cannot render.
+							if (resolveLinkRenderMode(link, fieldByName.get(fieldname)?.component) === 'inline') continue
+
+							const targetMeta = getMeta(link.target)
+							if (!targetMeta) continue
+
+							const targetSelect = columns.select(targetMeta.name, getColumnSelections(targetMeta))
+
+							if (isMany) {
+								if (!link.backlink) continue
+								const backlinkCol = camelToSnake(link.backlink)
+								let sql = `SELECT ${targetSelect.list} FROM ${targetSelect.table} WHERE "${backlinkCol}"::text = $1`
+								const linkValues: unknown[] = [specId]
+								// Same reason the list path orders: a capped relation without a fixed order
+								// returns an arbitrary subset of the children, and a different one each time
+								// a child row is updated. `truncatedLinks` says the tail was cut; it cannot
+								// say the head kept changing. Skipped when the target declares no identity —
+								// there is no stable key to order by, and inventing one would be a guess.
+								const linkPkMeta = getPkMeta(targetMeta)
+								if (linkPkMeta) {
+									sql += ` ORDER BY "${camelToSnake(linkPkMeta.fieldname)}" ASC`
+								}
+								if (effectiveLimit != null) {
+									// One row more than the cap, same probe the list path uses: its presence
+									// is the whole truncation answer and costs no second query.
+									sql += ` LIMIT $2`
+									linkValues.push(effectiveLimit + 1)
+								}
+								// TODO(perf): many-side link queries per row could be parallelized; needs collecting across links before await
+								// oxlint-disable-next-line eslint/no-await-in-loop -- one SQL per backlink per row; see TODO above
+								const { rows: linked } = await debugSql<Record<string, unknown>>(pgClient, {
+									text: sql,
+									values: linkValues,
+								})
+								targetSelect.decodeRows(linked)
+								// A truncated relation that says nothing is how a read-modify-write deletes
+								// the tail: the client cannot tell 50 rows from all of them, so it writes
+								// back what it was given. Reported for every source of truncation, the
+								// author's `fetch.limit` included — that one is just as silent.
+								if (effectiveLimit != null && linked.length > effectiveLimit) {
+									truncatedLinks.push(fieldname)
+									rowData[fieldname] = linked.slice(0, effectiveLimit)
+								} else {
+									rowData[fieldname] = linked
+								}
+							} else {
+								// Read from the reserved alias, never the fieldname: an expanding link's FK
+								// column is deliberately absent from `getColumnSelections`, so the plain read found
+								// `undefined` on every record and answered `null` — a relation that looked
+								// permanently empty rather than one nobody had asked the right question for.
+								const fkValue = rowData[`${LINK_FK_ALIAS}${fieldname}`]
+								if (fkValue == null) {
+									rowData[fieldname] = null
+									continue
+								}
+								// `continue` here would drop the link from the payload, which reads to the
+								// client as "this record has no such relation" rather than "its target
+								// cannot be identified".
+								const targetPkMeta = getPkMeta(targetMeta)
+								if (!targetPkMeta) throw unresolvableIdentityError(targetMeta.name)
+								const targetPkColumn = camelToSnake(targetPkMeta.fieldname)
+								// TODO(perf): one-side link FK lookups per row could be parallelized; needs collecting across links before await
+								// oxlint-disable-next-line eslint/no-await-in-loop -- one FK lookup per link per row; see TODO above
+								const { rows: linked } = await debugSql<Record<string, unknown>>(pgClient, {
+									text: `SELECT ${targetSelect.list} FROM ${targetSelect.table} WHERE "${targetPkColumn}" = $1`,
+									values: [fkValue],
+								})
+								targetSelect.decodeRows(linked)
+								rowData[fieldname] = linked[0] ?? null
+							}
+						}
+					}
+
+					// The aliases are a read channel for this loop, not part of the record. Stripped
+					// unconditionally so a link that was never expanded cannot leak its raw FK into a
+					// payload that has otherwise always described that relation as a nested object.
+					for (const { alias } of linkFkAliases) delete rowData[alias]
+
+					// Names in includeNested that don't correspond to any link
+					const unknownLinks =
+						includeSet && meta.links ? [...includeSet].filter(name => !(name in meta.links!)) : undefined
+
+					results[i] = {
+						data: rowData,
+						doctype,
+						unknownLinks: unknownLinks?.length ? unknownLinks : undefined,
+						truncatedLinks: truncatedLinks.length ? truncatedLinks : undefined,
+					}
+				}
+
+				// After the expansion loop, not before it: a link that expanded has replaced its
+				// scalar FK with an object, and enrichment skips those. Running first stamped a
+				// display value beside a relation that no longer had an id to display.
+				//
+				// Sequential per doctype group because `pgClient` is one checked-out connection,
+				// so awaiting these together would only queue them inside the driver.
+				// oxlint-disable-next-line eslint/no-await-in-loop
+				await enrichLinkDisplayFields(pgClient, meta, enrichedRows, columns, debugSql)
+			}
+
+			return results
+		}
 
 		return {
 			typeDefs,
@@ -256,265 +530,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 							return loadOneWithPgClient(
 								executor,
 								object({ doctype: $doctype, id: $id, options: $options }),
-								async (pgClient: PgClient, specs) => {
-									// Group specs by doctype to batch the main SELECT per table
-									const byDoctype = new Map<string, number[]>()
-									for (let i = 0; i < specs.length; i++) {
-										const d = String(specs[i].doctype)
-										if (!byDoctype.has(d)) byDoctype.set(d, [])
-										byDoctype.get(d)!.push(i)
-									}
-
-									const results: Array<{
-										data: Record<string, unknown> | null
-										doctype: string
-										unknownLinks?: string[]
-										truncatedLinks?: string[]
-									}> = Array.from({ length: specs.length })
-
-									for (const [doctype, indices] of byDoctype) {
-										const meta = getMeta(doctype)
-										if (!meta) {
-											for (const i of indices) results[i] = { data: null, doctype }
-											continue
-										}
-
-										// Not `data: null` — that is the answer for a record that does not exist, and a
-										// doctype nobody can look up is a misconfiguration, not an empty result.
-										const pkMeta = getPkMeta(meta)
-										if (!pkMeta) throw unresolvableIdentityError(doctype)
-										const pkColumn = camelToSnake(pkMeta.fieldname)
-										const columns = getSqlColumns(meta)
-										const ids = indices.map(i => String(specs[i].id))
-
-										// Resolved once per doctype: how each link renders, and which foreign keys the
-										// SELECT must carry for the expansion below to work at all.
-										//
-										// `resolveLinkRenderMode` needs the linked field's own component, so the fields
-										// are indexed by name — flattened, because a link's field may sit inside a
-										// fieldset and `getSqlColumns` already descends to select it.
-										const fieldByName = new Map(flattenFields(meta.fields).map(f => [f.fieldname, f]))
-										const linkFkAliases: Array<{ fieldname: string; alias: string }> = []
-										for (const [linkName, link] of Object.entries(meta.links ?? {})) {
-											// Many-side links find their rows by a column on the *target*; only a one-side
-											// link reads a foreign key off this row.
-											if (link.cardinality === 'noneOrMany' || link.cardinality === 'atLeastOne') continue
-											const fieldname = link.fieldname ?? linkName
-											// An inline link keeps its FK as a scalar, so `getSqlColumns` already selected
-											// it under its own name and no alias is needed.
-											if (resolveLinkRenderMode(link, fieldByName.get(fieldname)?.component) === 'inline') continue
-											linkFkAliases.push({ fieldname, alias: `${LINK_FK_ALIAS}${fieldname}` })
-										}
-										const selectList = [
-											columns,
-											...linkFkAliases.map(({ fieldname, alias }) => `"${camelToSnake(fieldname)}" AS "${alias}"`),
-										]
-											.filter(Boolean)
-											.join(', ')
-
-										// TODO(perf): queries per doctype group could be parallelized with Promise.all across doctype groups;
-										// requires refactoring the grouped-by-doctype loop to collect promises before resolving results
-										// oxlint-disable-next-line eslint/no-await-in-loop -- sequential per-doctype SQL; see TODO above
-										const { rows } = await debugSql<Record<string, unknown>>(pgClient, {
-											text: `SELECT ${selectList} FROM ${resolveTableName(meta.name, options.tables)} WHERE "${pkColumn}"::text = ANY($1::text[])`,
-											values: [ids],
-										})
-
-										// Use String() so integer PKs (e.g. serial) match the string ids from GraphQL
-										const rowByPk = new Map(rows.map(r => [String(r[pkMeta.fieldname]), r]))
-
-										// A declared key the database does not actually enforce as unique collapses several
-										// rows into that Map, and it keeps whichever came last — one arbitrary record,
-										// returned as though it were *the* record, with nothing to say so. Refuse instead.
-										//
-										// This is exact rather than a proxy for the problem: `ANY` matches each requested id
-										// once, so a shortfall here means two distinct rows genuinely share a key value. A
-										// `pg_index` check would instead ask whether a unique constraint exists, which is the
-										// cause rather than the harm — and would flag a column that is unique in practice but
-										// unconstrained, which is a real and common shape.
-										if (rows.length !== rowByPk.size) {
-											throw new Error(
-												`Doctype "${doctype}" declares "${pkMeta.fieldname}" as its identity, but that column ` +
-													`is not unique in ${resolveTableName(meta.name, options.tables)} — ${rows.length} rows ` +
-													`matched ${rowByPk.size} distinct values, so a lookup cannot say which record it means. ` +
-													`Declare a field that uniquely identifies a record, or add a unique constraint.`
-											)
-										}
-
-										// Collected across the batch so the display lookup runs once for all of them.
-										// Called per row inside this loop it issued one query per record per link field,
-										// which is the N+1 this batched loader exists to avoid — and silently, since the
-										// enriched rows come out identical either way.
-										const enrichedRows: Record<string, unknown>[] = []
-
-										for (const i of indices) {
-											const specId = String(specs[i].id)
-											const row = rowByPk.get(specId)
-
-											if (!row) {
-												results[i] = { data: null, doctype }
-												continue
-											}
-
-											const rowData: Record<string, unknown> = { ...row }
-											enrichedRows.push(rowData)
-											// Per record, not per doctype: two records of one doctype can differ in whether
-											// a relation overflowed, and a shared list would report the wrong one truncated.
-											const truncatedLinks: string[] = []
-											const recordOptions = (specs[i].options ?? {}) as GetRecordOptions
-											const includeAll = recordOptions.includeNested === true
-											const includeSet = Array.isArray(recordOptions.includeNested)
-												? new Set(recordOptions.includeNested)
-												: null
-
-											// FetchStrategy dispatch over link declarations
-											if (meta.links) {
-												for (const [linkName, link] of Object.entries(meta.links)) {
-													// The payload key is the *resolved* fieldname, not the map key: the client
-													// binds a link to the field named `link.fieldname ?? key` and reads the
-													// nested data off that field, so writing under the bare key put the result
-													// somewhere nothing looks whenever a declaration named its own `fieldname`.
-													// Identical for every declaration that omits `fieldname`, which is all of them
-													// in this repo — hence latent until now.
-													const fieldname = link.fieldname ?? linkName
-													const fetch = link.fetch
-													const isMany = link.cardinality === 'noneOrMany' || link.cardinality === 'atLeastOne'
-													const effectiveMethod = fetch?.method ?? (isMany ? 'sync' : 'lazy')
-													// Two questions, kept apart. `method === 'sync'` is a *type narrowing* — only
-													// `SyncFetch` carries a `limit` — and the server default used to hang off its
-													// `else`, so declaring the method a many-side link already defaults to removed
-													// the cap entirely. "Did the author write a limit?" and "did the author write
-													// the word sync?" are now asked separately.
-													const declaredLimit = fetch?.method === 'sync' ? fetch.limit : undefined
-													const effectiveLimit = isMany ? (declaredLimit ?? defaultRowLimit) : undefined
-
-													// The one gate. It used to be followed by a second test that re-asked the
-													// same question using only `includeSet` — `null` for the boolean form — so
-													// `includeNested: true` admitted every link here and then silently dropped
-													// each non-`sync` one, handing back a partial record with no way to tell.
-													// That test was redundant wherever it was correct: with a name list this gate
-													// has already required membership, and without one it has already required
-													// `sync`, so it could only ever fire in the boolean case it got wrong.
-													const shouldInclude =
-														includeAll || (includeSet ? includeSet.has(linkName) : effectiveMethod === 'sync')
-
-													if (!shouldInclude) continue
-
-													if (effectiveMethod === 'custom' && fetch?.method === 'custom') {
-														const handlerName = fetch.handler
-														const handler = getFetchHandler(handlerName)
-														if (handler) {
-															// TODO(perf): custom link handlers per-row could run in parallel; needs collecting all custom handlers before await
-															// oxlint-disable-next-line eslint/no-await-in-loop -- custom handler per link; see TODO above
-															rowData[fieldname] = await handler(pgClient, rowData, link)
-														}
-														continue
-													}
-
-													// `resolveLinkRenderMode` is the single definition of whether a link expands,
-													// and this loop was the one caller that never asked it. An `inline` link is a
-													// picker: the field holds its own id and the client resolves display text
-													// separately, so expanding it here overwrote that id with the whole target
-													// record and left the picker with an object it cannot render.
-													if (resolveLinkRenderMode(link, fieldByName.get(fieldname)?.component) === 'inline') continue
-
-													const targetMeta = getMeta(link.target)
-													if (!targetMeta) continue
-
-													const targetColumns = getSqlColumns(targetMeta)
-
-													if (isMany) {
-														if (!link.backlink) continue
-														const backlinkCol = camelToSnake(link.backlink)
-														let sql = `SELECT ${targetColumns} FROM ${resolveTableName(targetMeta.name, options.tables)} WHERE "${backlinkCol}"::text = $1`
-														const linkValues: unknown[] = [specId]
-														// Same reason the list path orders: a capped relation without a fixed order
-														// returns an arbitrary subset of the children, and a different one each time
-														// a child row is updated. `truncatedLinks` says the tail was cut; it cannot
-														// say the head kept changing. Skipped when the target declares no identity —
-														// there is no stable key to order by, and inventing one would be a guess.
-														const linkPkMeta = getPkMeta(targetMeta)
-														if (linkPkMeta) {
-															sql += ` ORDER BY "${camelToSnake(linkPkMeta.fieldname)}" ASC`
-														}
-														if (effectiveLimit != null) {
-															// One row more than the cap, same probe the list path uses: its presence
-															// is the whole truncation answer and costs no second query.
-															sql += ` LIMIT $2`
-															linkValues.push(effectiveLimit + 1)
-														}
-														// TODO(perf): many-side link queries per row could be parallelized; needs collecting across links before await
-														// oxlint-disable-next-line eslint/no-await-in-loop -- one SQL per backlink per row; see TODO above
-														const { rows: linked } = await debugSql<Record<string, unknown>>(pgClient, {
-															text: sql,
-															values: linkValues,
-														})
-														// A truncated relation that says nothing is how a read-modify-write deletes
-														// the tail: the client cannot tell 50 rows from all of them, so it writes
-														// back what it was given. Reported for every source of truncation, the
-														// author's `fetch.limit` included — that one is just as silent.
-														if (effectiveLimit != null && linked.length > effectiveLimit) {
-															truncatedLinks.push(fieldname)
-															rowData[fieldname] = linked.slice(0, effectiveLimit)
-														} else {
-															rowData[fieldname] = linked
-														}
-													} else {
-														// Read from the reserved alias, never the fieldname: an expanding link's FK
-														// column is deliberately absent from `getSqlColumns`, so the plain read found
-														// `undefined` on every record and answered `null` — a relation that looked
-														// permanently empty rather than one nobody had asked the right question for.
-														const fkValue = rowData[`${LINK_FK_ALIAS}${fieldname}`]
-														if (fkValue == null) {
-															rowData[fieldname] = null
-															continue
-														}
-														// `continue` here would drop the link from the payload, which reads to the
-														// client as "this record has no such relation" rather than "its target
-														// cannot be identified".
-														const targetPkMeta = getPkMeta(targetMeta)
-														if (!targetPkMeta) throw unresolvableIdentityError(targetMeta.name)
-														const targetPkColumn = camelToSnake(targetPkMeta.fieldname)
-														// TODO(perf): one-side link FK lookups per row could be parallelized; needs collecting across links before await
-														// oxlint-disable-next-line eslint/no-await-in-loop -- one FK lookup per link per row; see TODO above
-														const { rows: linked } = await debugSql<Record<string, unknown>>(pgClient, {
-															text: `SELECT ${targetColumns} FROM ${resolveTableName(targetMeta.name, options.tables)} WHERE "${targetPkColumn}" = $1`,
-															values: [fkValue],
-														})
-														rowData[fieldname] = linked[0] ?? null
-													}
-												}
-											}
-
-											// The aliases are a read channel for this loop, not part of the record. Stripped
-											// unconditionally so a link that was never expanded cannot leak its raw FK into a
-											// payload that has otherwise always described that relation as a nested object.
-											for (const { alias } of linkFkAliases) delete rowData[alias]
-
-											// Names in includeNested that don't correspond to any link
-											const unknownLinks =
-												includeSet && meta.links ? [...includeSet].filter(name => !(name in meta.links!)) : undefined
-
-											results[i] = {
-												data: rowData,
-												doctype,
-												unknownLinks: unknownLinks?.length ? unknownLinks : undefined,
-												truncatedLinks: truncatedLinks.length ? truncatedLinks : undefined,
-											}
-										}
-
-										// After the expansion loop, not before it: a link that expanded has replaced its
-										// scalar FK with an object, and enrichment skips those. Running first stamped a
-										// display value beside a relation that no longer had an id to display.
-										//
-										// Sequential per doctype group because `pgClient` is one checked-out connection,
-										// so awaiting these together would only queue them inside the driver.
-										// oxlint-disable-next-line eslint/no-await-in-loop
-										await enrichLinkDisplayFields(pgClient, meta, enrichedRows, options.tables, debugSql)
-									}
-
-									return results
-								}
+								readRecords
 							)
 						},
 
@@ -543,10 +559,11 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 											}
 
 											const knownFields = new Set(flattenFields(meta.fields).map(f => f.fieldname))
-											const columns = getSqlColumns(meta)
-											const values: unknown[] = []
+											const select = columns.select(meta.name, getColumnSelections(meta))
 
-											// WHERE from filters (parameterised — safe against SQL injection)
+											// WHERE from filters (parameterised — safe against SQL injection). Built once for
+											// the page and its total, which must count the rows the page is drawn from.
+											const filterValues: unknown[] = []
 											const whereClauses: string[] = []
 											if (spec.filters != null) {
 												// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- spec.filters is a Grafast runtime value; shape guaranteed by GraphQL schema
@@ -554,11 +571,15 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 													if (!knownFields.has(field)) {
 														throw new Error(`Unknown filter field: ${field} for doctype ${meta.name}`)
 													}
-													values.push(value)
-													whereClauses.push(`"${camelToSnake(field)}" = $${values.length}`)
+													filterValues.push(value)
+													const column = camelToSnake(field)
+													whereClauses.push(
+														`"${column}" = ${columns.bind(meta.name, column, `$${filterValues.length}`)}`
+													)
 												}
 											}
 											const whereClause = whereClauses.length > 0 ? ` WHERE ${whereClauses.join(' AND ')}` : ''
+											const values: unknown[] = [...filterValues]
 
 											// ORDER BY (field name whitelisted — column names cannot be parameterised)
 											let orderByClause = ''
@@ -622,9 +643,10 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 											}
 
 											const { rows } = await debugSql<Record<string, unknown>>(pgClient, {
-												text: `SELECT ${columns} FROM ${resolveTableName(meta.name, options.tables)}${whereClause}${orderByClause}${pagingClause}`,
+												text: `SELECT ${select.list} FROM ${select.table}${whereClause}${orderByClause}${pagingClause}`,
 												values,
 											})
+											select.decodeRows(rows)
 
 											// The extra row requested above is a probe, not data. Its presence is what makes
 											// a capped page distinguishable from a complete table; trim it before anything
@@ -632,7 +654,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 											const hasMore = effectiveLimit != null && rows.length > effectiveLimit
 											const data = [...(hasMore ? rows.slice(0, effectiveLimit ?? rows.length) : rows)]
 
-											await enrichLinkDisplayFields(pgClient, meta, data, options.tables, debugSql)
+											await enrichLinkDisplayFields(pgClient, meta, data, columns, debugSql)
 
 											// Total matching the filters, independent of LIMIT/OFFSET, and opt-in.
 											//
@@ -642,20 +664,9 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 											// against. An argument also puts the cost in the query the client wrote.
 											let count: number | null = null
 											if (spec.includeTotal === true) {
-												const countValues: unknown[] = []
-												const countWhere: string[] = []
-												if (spec.filters != null) {
-													// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- spec.filters is a Grafast runtime value; shape guaranteed by GraphQL schema
-													for (const [field, value] of Object.entries(spec.filters as Record<string, unknown>)) {
-														if (!knownFields.has(field)) continue
-														countValues.push(value)
-														countWhere.push(`"${camelToSnake(field)}" = $${countValues.length}`)
-													}
-												}
-												const countWhereClause = countWhere.length > 0 ? ` WHERE ${countWhere.join(' AND ')}` : ''
 												const { rows: countRows } = await debugSql<{ row_count: string }>(pgClient, {
-													text: `SELECT COUNT(*) AS row_count FROM ${resolveTableName(meta.name, options.tables)}${countWhereClause}`,
-													values: countValues,
+													text: `SELECT COUNT(*) AS row_count FROM ${resolveTableName(meta.name, options.tables)}${whereClause}`,
+													values: filterValues,
 												})
 												count = parseInt(countRows[0]?.row_count ?? '0', 10)
 											}
@@ -826,7 +837,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 													// shipped and patched downstream.
 													writeData: async (patch: Record<string, unknown>, exists: boolean) => {
 														const { cols, values } = partitionPatch(patch)
-														const returning = getSqlColumns(meta)
+														const returning = columns.select(meta.name, getColumnSelections(meta))
 
 														if (!exists) {
 															// Creating is what the *absence* of an id means. An id that was
@@ -852,9 +863,10 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 															// column default supplies it. Either way the row states its
 															// own identity back.
 															const text = cols.length
-																? `INSERT INTO ${table} (${cols.map(c => `"${c}"`).join(', ')}) VALUES (${cols.map((_col, i) => `$${i + 1}`).join(', ')}) RETURNING ${returning}`
-																: `INSERT INTO ${table} DEFAULT VALUES RETURNING ${returning}`
+																? `INSERT INTO ${table} (${cols.map(c => `"${c}"`).join(', ')}) VALUES (${cols.map((c, i) => columns.bind(meta.name, c, `$${i + 1}`)).join(', ')}) RETURNING ${returning.list}`
+																: `INSERT INTO ${table} DEFAULT VALUES RETURNING ${returning.list}`
 															const { rows } = await debugSql<Record<string, unknown>>(tx, { text, values })
+															returning.decodeRows(rows)
 															return rows[0] ?? {}
 														}
 
@@ -865,17 +877,21 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 														// nothing changed.
 														if (cols.length === 0) {
 															const { rows } = await debugSql<Record<string, unknown>>(tx, {
-																text: `SELECT ${returning} FROM ${table} WHERE "${pkColumn()}"::text = $1`,
+																text: `SELECT ${returning.list} FROM ${table} WHERE "${pkColumn()}"::text = $1`,
 																values: [String(recordId)],
 															})
+															returning.decodeRows(rows)
 															return rows[0] ?? {}
 														}
 
-														const assignments = cols.map((c, i) => `"${c}" = $${i + 1}`).join(', ')
+														const assignments = cols
+															.map((c, i) => `"${c}" = ${columns.bind(meta.name, c, `$${i + 1}`)}`)
+															.join(', ')
 														const { rows } = await debugSql<Record<string, unknown>>(tx, {
-															text: `UPDATE ${table} SET ${assignments} WHERE "${pkColumn()}"::text = $${cols.length + 1} RETURNING ${returning}`,
+															text: `UPDATE ${table} SET ${assignments} WHERE "${pkColumn()}"::text = $${cols.length + 1} RETURNING ${returning.list}`,
 															values: [...values, String(recordId)],
 														})
+														returning.decodeRows(rows)
 														return rows[0] ?? {}
 													},
 													runEffect: handler
@@ -921,14 +937,30 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 												const written = (Array.isArray(outcome.data) ? outcome.data : [outcome.data]).filter(
 													(row: unknown): row is Record<string, unknown> => row !== null && typeof row === 'object'
 												)
-												await enrichLinkDisplayFields(tx, meta, written, options.tables, debugSql)
+												await enrichLinkDisplayFields(tx, meta, written, columns, debugSql)
 											}
+
+											// The record as a read returns it, whoever wrote it: the client files this,
+											// never `data`, which stays the handler's own. Keyed by the declared identity
+											// the reply states when it states one, since an action may create or re-key
+											// the record, and by the dispatched id otherwise.
+											const pkField = getPkMeta(meta)?.fieldname
+											const repliedId: unknown =
+												pkField !== undefined && outcome.data !== null && typeof outcome.data === 'object'
+													? Reflect.get(outcome.data, pkField)
+													: undefined
+											const readId = repliedId ?? recordId
+											const record =
+												readId == null
+													? null
+													: ((await readRecords(tx, [{ doctype: meta.name, id: readId }]))[0]?.data ?? null)
 
 											// Attached here rather than carried through `applyGuardedTransition`:
 											// which keys a backend can store is a storage question, and the
 											// dispatcher is deliberately storage-agnostic. A failed action wrote
 											// nothing, so the list is only meaningful on success.
-											return droppedFields.length ? { ...outcome, droppedFields } : outcome
+											const reply = { ...outcome, record }
+											return droppedFields.length ? { ...reply, droppedFields } : reply
 										})
 									} catch (err) {
 										if (err instanceof ActionRolledBack) return err.outcome
@@ -953,43 +985,42 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 // ===========================================================================
 
 /**
- * Derive quoted SQL column entries from a flat field array.
+ * Derive column selections from a flat field array.
  * Skips non-scalar fields (kind !== 'field'), `computed` fields
  * (no backing DB column), and *expanding* links
  * (relations fetched separately, not scalar columns on this table).
  */
-function collectColumns(fields: DoctypeField[], links: Map<string, LinkDeclaration>): string[] {
-	const columns: string[] = []
+function collectColumns(fields: DoctypeField[], links: Map<string, LinkDeclaration>): ColumnSelection[] {
+	const columns: ColumnSelection[] = []
 	for (const f of columnBackedFields(fields)) {
 		// Only an *expanding* link is a relation rather than a column. An inline link (a picker)
 		// keeps its FK on this table and must still be selected — `resolveLinkRenderMode` is the
 		// shared rule, also used by the client resolver; never re-derive it here.
 		const link = links.get(f.fieldname)
 		if (link && resolveLinkRenderMode(link, f.component) !== 'inline') continue
-		const col = camelToSnake(f.fieldname)
-		columns.push(col !== f.fieldname ? `"${col}" AS "${f.fieldname}"` : `"${f.fieldname}"`)
+		columns.push({ column: camelToSnake(f.fieldname), alias: f.fieldname })
 	}
 	return columns
 }
 
 /**
- * Derive a quoted SQL column list from doctype field definitions.
- * Applies camelToSnake to each fieldname to get the DB column name, then
- * aliases it back to the fieldname so result rows carry API-layer keys.
+ * Derive the columns a record payload selects from doctype field definitions.
+ * Applies camelToSnake to each fieldname to get the DB column name, and keeps
+ * the fieldname as its alias so result rows carry API-layer keys.
  * Excludes `computed` fields (no backing DB column), Fieldset
  * containers (recursing into their children instead), and *expanding* links
  * (relations fetched separately). An inline link keeps its FK column here.
  *
  * Exported for unit testing (not re-exported from the package index).
  */
-export function getSqlColumns(meta: DoctypeMeta): string {
+export function getColumnSelections(meta: DoctypeMeta): ColumnSelection[] {
 	const links = new Map<string, LinkDeclaration>()
 	if (meta.links) {
 		for (const [key, link] of Object.entries(meta.links)) {
 			links.set(link.fieldname ?? key, link)
 		}
 	}
-	return collectColumns(meta.fields, links).join(', ')
+	return collectColumns(meta.fields, links)
 }
 
 /**
@@ -1002,11 +1033,11 @@ export function getSqlColumns(meta: DoctypeMeta): string {
  * like a record that does not exist.
  *
  * Returns `undefined` only when the resolved name is not a declared field — a doctype with no
- * `primaryKey` and no `id`. That case cannot be served: `getSqlColumns` selects declared fields
+ * `primaryKey` and no `id`. That case cannot be served: `getColumnSelections` selects declared fields
  * only, so the row map would key on a column the SELECT never returned and every lookup would miss
  * silently. Callers must say so rather than answer `null`.
  *
- * Descends into fieldsets, because both halves of the question already do — `getSqlColumns` selects
+ * Descends into fieldsets, because both halves of the question already do — `getColumnSelections` selects
  * a fieldset's children, and `getRecordIdField` resolves a key declared among them. While this
  * scanned top level only it could refuse a name that helper had just resolved, so a doctype whose
  * SELECT carried its own key column had no identity to look that column up by.

@@ -1,5 +1,80 @@
 # Change Log - @stonecrop/atable
 
+## 0.39.0
+
+### Minor Changes
+
+- 835f62c: `ATable` no longer changes the list passed as `rows`; an edit arrives only through `update:rows`, so a host that passes `rows` without `v-model:rows` must listen for it.
+
+### Patch Changes
+
+- 835f62c: The row actions menu now casts `--sc-overlay-shadow`, whichever way it opens.
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+  - @stonecrop/schema@0.39.0
+  - @stonecrop/themes@0.39.0
+  - @stonecrop/utilities@0.39.0
+
+## 0.38.1
+
+### Patch Changes
+
+- 74ea65f: fix atable expansion row wobble
+- @stonecrop/schema@0.38.1
+  - @stonecrop/themes@0.38.1
+  - @stonecrop/utilities@0.38.1
+
+## 0.38.0
+
+### Patch Changes
+
+- @stonecrop/schema@0.38.0
+  - @stonecrop/themes@0.38.0
+  - @stonecrop/utilities@0.38.0
+
+## 0.37.0
+
+### Patch Changes
+
+- @stonecrop/schema@0.37.0
+  - @stonecrop/themes@0.37.0
+  - @stonecrop/utilities@0.37.0
+
+## 0.36.0
+
+### Patch Changes
+
+- e673267: `ADateRange` and the table's default date cell read and write each `YYYY-MM-DD` day as that day, so neither shows or saves a date a day off outside UTC.
+- e673267: `ADuration` has its own `duration` component category, so a new record starts it at `null`, which an `interval` column accepts, where it started at `''`, and atable still filters it as text.
+- e673267: The table's date filters compare the day each cell shows in the user's time zone, so a date-time range keeps every time on its last day and leaves out rows with no date.
+- e673267: The table's date filters no longer move a date held as a number into the current year, so a number in a date or date-time column matches no day, as its default display of "Invalid Date" says.
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+  - @stonecrop/schema@0.36.0
+  - @stonecrop/utilities@0.36.0
+  - @stonecrop/themes@0.36.0
+
+## 0.35.0
+
+### Minor Changes
+
+- 2f16a84: `config.zebra` stripes rows with `--sc-row-color-zebra-light` and `--sc-row-color-zebra-dark`; rows are one colour by default.
+- 2f16a84: Components read the floor's surface, border and radius tokens instead of hard-coded colours and radii, so a host restyles them from the floor alone.
+- 2f16a84: A `list-expansion` table in a form opens each row as an editable form, through the `content` slot ATable now forwards to its rows.
+
+### Patch Changes
+
+- 2f16a84: A cell's popup renders beside the table instead of inside it and opens below the cell, so later rows no longer paint over it.
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+  - @stonecrop/schema@0.35.0
+  - @stonecrop/themes@0.35.0
+  - @stonecrop/utilities@0.35.0
+
 ## 0.34.0
 
 ### Patch Changes

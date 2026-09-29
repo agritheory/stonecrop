@@ -359,6 +359,7 @@ defineExpose({
 
 <style>
 .atable-cell {
+	background-color: inherit;
 	border-radius: 0px;
 	box-sizing: border-box;
 	margin: 0px;

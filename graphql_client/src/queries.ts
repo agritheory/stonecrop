@@ -39,6 +39,7 @@ export const GET_META_QUERY = `
 				validation
 				cardinality
 				source
+				config
 			}
 			workflow {
 				states
@@ -67,6 +68,8 @@ export const RUN_ACTION_MUTATION = `
 			success
 			data
 			error
+			record
+			droppedFields
 		}
 	}
 `
@@ -105,6 +108,7 @@ export const GET_ALL_META_QUERY = `
 				validation
 				cardinality
 				source
+				config
 			}
 			workflow {
 				states

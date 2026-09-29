@@ -124,7 +124,8 @@ const resolvedSchema = registry.resolveSchema(customerDoctype)
 //   component: 'AForm',
 //   schema: [ /* address fields */ ]
 // }
-// AForm narrows on `kind === 'link'` (or `'fieldset'`) with a non-empty schema and renders a nested AForm.
+// AForm narrows on `kind === 'link'` with a non-empty schema and renders a nested AForm bound to the
+// link's value. A `'fieldset'` renders the same way but binds the record itself, since it is layout.
 ```
 
 **1:many links** (`noneOrMany`, `atLeastOne`) — embed child schema for an inline table:

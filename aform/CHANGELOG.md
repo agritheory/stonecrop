@@ -1,5 +1,126 @@
 # Change Log - @stonecrop/aform
 
+## 0.39.0
+
+### Minor Changes
+
+- 835f62c: A fieldset's fields are now read and written as keys of the record itself, never nested under the fieldset's name, so an edit inside a fieldset reaches the form and its save, and data handed to `AForm` must hold them flat.
+
+### Patch Changes
+
+- 835f62c: In a dropdown list or the unit menu, the option the arrow keys highlight is now scrolled into sight, where it used to move off the screen.
+- 835f62c: Dropdown lists and the quantity field's unit menu now hang straight from their field in `--sc-overlay-background` with `--sc-overlay-shadow`, without lines between items.
+- 835f62c: The link, currency and plain dropdown lists and the unit menu now scroll once they reach `--sc-dropdown-max-height`, and near the window's bottom shrink to the room left below them, never under about four rows.
+- 835f62c: The currency and quantity dropdowns now line up with the borders of the field they open from.
+- 835f62c: `AFieldset`, the outlined groups of `AQuantityInput` and `ACurrencyInput`, and `AFormLink`'s list of matches now span exactly the width they are given, so their edges no longer run past the form and fields around them.
+- 835f62c: `AFieldset` now passes validation errors to its fields, so a field inside a fieldset shows its error like any other.
+- 835f62c: A fieldset that declares no `component` now renders as `AFieldset` with its label, as its type always documented, rather than as a bare form without one.
+- 835f62c: A table in `AForm` now sends each edit up as the record's new rows, so an edit made after a save is saved too, and a table edit is undone and checked like any other field's.
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+  - @stonecrop/schema@0.39.0
+  - @stonecrop/themes@0.39.0
+  - @stonecrop/atable@0.39.0
+  - @stonecrop/utilities@0.39.0
+
+## 0.38.1
+
+### Patch Changes
+
+- Updated dependencies [74ea65f]
+  - @stonecrop/atable@0.38.1
+  - @stonecrop/schema@0.38.1
+  - @stonecrop/themes@0.38.1
+  - @stonecrop/utilities@0.38.1
+
+## 0.38.0
+
+### Patch Changes
+
+- @stonecrop/atable@0.38.0
+  - @stonecrop/schema@0.38.0
+  - @stonecrop/themes@0.38.0
+  - @stonecrop/utilities@0.38.0
+
+## 0.37.0
+
+### Patch Changes
+
+- @stonecrop/atable@0.37.0
+  - @stonecrop/schema@0.37.0
+  - @stonecrop/themes@0.37.0
+  - @stonecrop/utilities@0.37.0
+
+## 0.36.0
+
+### Minor Changes
+
+- e673267: `ADate` holds its value as a `YYYY-MM-DD` string only, so a picked or stored day no longer shifts outside UTC, an empty field stays empty, and clearing the input no longer crashes it.
+- e673267: `ADatePicker` holds a `YYYY-MM-DD` day instead of a `Date`, and `ADateSelection` takes and hands back days the same way, so an `ADatePicker` field over day data no longer shows or saves the day before outside UTC.
+- e673267: `ADate` and `ADateTime` open their calendar on the date the field holds and mark it, through a new `defaultDate` prop on `ADateSelection`.
+- e673267: `ADuration` holds an ISO 8601 duration such as `PT2H30M` instead of milliseconds, which an `interval` column stored as seconds, and shows the years, months and fractions of a second a stored duration holds.
+- e673267: `ADate`, `ANumericInput` and the amount and quantity boxes of `ACurrencyInput` and `AQuantityInput` hold `null` once emptied, where they held an `''` that no date or number column accepts, so the date and number fields' model types now include `null`.
+
+### Patch Changes
+
+- e673267: aform's calendar leaves focus where it was when it appears and moves to a day set from outside, so a day can be typed into `ADate` with the calendar open, and a form showing `ADuration` keeps its focus.
+- e673267: The calendar's month grid shows a month that begins on a Sunday from its 1st, and no longer repeats or drops a day around a daylight saving change.
+- e673267: The calendar's range boxes read a typed day through Temporal instead of `new Date`, so `YYYY-MM-DD` is no longer a day early west of UTC, and a day that does not exist, or text not written the way the locale writes days, reads as no day.
+- e673267: `ADate`, `ADateTime` and `ADateRange` open aform's calendar on Space, F4 or Alt+Down (the last two on Down too) and close it on Escape or when focus leaves, and the calendar moves by day, week, month and year from the keyboard and names each day for screen readers.
+- e673267: `ACurrencyInput`, `AQuantityInput` and `ADateRange` render a `null` value, which a new record starts them at, where they threw.
+- e673267: `ADate` opens only aform's calendar, keeping the browser's own shut on a click and on Space, F4 and Alt+Down, and closes aform's when focus leaves the field.
+- e673267: `ADateRange` and the table's default date cell read and write each `YYYY-MM-DD` day as that day, so neither shows or saves a date a day off outside UTC.
+- e673267: The calendar's range boxes and weekday letters and `ADateRange`'s field follow the user's locale, where they were US English in every locale.
+- e673267: `ADateTime` starts again from today once its value is cleared from outside, where it kept the cleared date and time, opened its calendar on them and wrote them back with the next time picked.
+- e673267: `ADateTime` saves the time its picker shows when only a date is picked on an empty field, where it also saved the clock's milliseconds, and its seconds when seconds were hidden.
+- e673267: `ADateTime` with `useSeconds` off leaves the seconds out of its text, as its picker does.
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+  - @stonecrop/schema@0.36.0
+  - @stonecrop/atable@0.36.0
+  - @stonecrop/utilities@0.36.0
+  - @stonecrop/themes@0.36.0
+
+## 0.35.0
+
+### Minor Changes
+
+- 2f16a84: Components read the floor's surface, border and radius tokens instead of hard-coded colours and radii, so a host restyles them from the floor alone.
+- 2f16a84: Field errors render as text rather than HTML, and each input names its error through `aria-invalid` and `aria-describedby`; `ADropdown` is announced as a combobox with its options.
+- 2f16a84: A `list-expansion` table in a form opens each row as an editable form, through the `content` slot ATable now forwards to its rows.
+
+### Patch Changes
+
+- 2f16a84: `ACurrencyInput` and `AQuantityInput` set their text at the size, padding and colour of every other field, and the currency prefix is as wide as the symbol or name it shows.
+- 2f16a84: `ACurrencyInput` and `AQuantityInput` show the `errors` prop as text, wired to their input, and no longer show an empty error box over their border.
+- 2f16a84: Every field's label takes the active colour while the field holds focus, where only fields whose label follows their input did before.
+- 2f16a84: Floating labels and field errors paint the form colour only above their field's border, so the field shows through below it instead of a strip of the wrong colour.
+- 2f16a84: `AFormLink` shows its label in display mode, like every other field.
+- 2f16a84: `AFormLink`'s navigate button draws its arrow on the field text's baseline instead of using a text glyph that sat low.
+- 2f16a84: `Login`'s fields drop the browser's own inset border and draw the same one-pixel outline as every other field.
+- 2f16a84: `Login` paints the form colour behind its fields, so its labels no longer show as boxes on the host page.
+- 2f16a84: `Login` submits once per press and carries the `autocomplete` hints browsers read, where its misspelled attributes were ignored.
+- 2f16a84: `ASegmentedControl`'s selected segment reads lighter than a darker track, which had become the form colour under the gray palette.
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+  - @stonecrop/atable@0.35.0
+  - @stonecrop/schema@0.35.0
+  - @stonecrop/themes@0.35.0
+  - @stonecrop/utilities@0.35.0
+
 ## 0.34.0
 
 ### Patch Changes

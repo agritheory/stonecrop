@@ -2,14 +2,14 @@
 import { ref } from 'vue'
 import { ADuration } from '@stonecrop/aform'
 
-const durationMs = ref<number>(0)
+const duration = ref<string | null>(null)
 </script>
 
 <template>
 	<div class="stonecrop-demo">
-		<ADuration v-model="durationMs" label="Task Duration" />
+		<ADuration v-model="duration" label="Task Duration" />
 		<p class="stonecrop-demo__state">
-			<code>v-model</code> value: <strong>{{ durationMs }} ms</strong>
+			<code>v-model</code> value: <strong>{{ duration }}</strong>
 		</p>
 	</div>
 </template>

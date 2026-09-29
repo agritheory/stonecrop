@@ -1,5 +1,126 @@
 # Change Log - @stonecrop/desktop
 
+## 0.39.0
+
+### Minor Changes
+
+- 835f62c: A fieldset's fields are now read and written as keys of the record itself, never nested under the fieldset's name, so an edit inside a fieldset reaches the form and its save, and data handed to `AForm` must hold them flat.
+
+### Patch Changes
+
+- 835f62c: A slot's component or icon, or a view passed to `present()`, that the host keeps in reactive state now renders as the plain component, so an open slot panel no longer resets on the host's first change to its slots, and Vue no longer warns.
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+  - @stonecrop/schema@0.39.0
+  - @stonecrop/stonecrop@0.39.0
+  - @stonecrop/themes@0.39.0
+  - @stonecrop/aform@0.39.0
+
+## 0.38.1
+
+### Patch Changes
+
+- @stonecrop/aform@0.38.1
+  - @stonecrop/stonecrop@0.38.1
+  - @stonecrop/schema@0.38.1
+  - @stonecrop/themes@0.38.1
+
+## 0.38.0
+
+### Minor Changes
+
+- 7b56de2: Consolidate Nuxt playground and fullstack examples into the documentation app and refine Desktop ActionSet layout.
+- 7b56de2: combine nuxt examples, improve actionset
+
+### Patch Changes
+
+- @stonecrop/aform@0.38.0
+  - @stonecrop/schema@0.38.0
+  - @stonecrop/stonecrop@0.38.0
+  - @stonecrop/themes@0.38.0
+
+## 0.37.0
+
+### Minor Changes
+
+- Consolidate Nuxt playground and fullstack examples into the documentation app and refine Desktop ActionSet layout.
+
+### Patch Changes
+
+- @stonecrop/aform@0.37.0
+  - @stonecrop/schema@0.37.0
+  - @stonecrop/stonecrop@0.37.0
+  - @stonecrop/themes@0.37.0
+
+## 0.36.0
+
+### Patch Changes
+
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+  - @stonecrop/schema@0.36.0
+  - @stonecrop/stonecrop@0.36.0
+  - @stonecrop/aform@0.36.0
+  - @stonecrop/themes@0.36.0
+
+## 0.35.0
+
+### Minor Changes
+
+- 2f16a84: Components read the floor's surface, border and radius tokens instead of hard-coded colours and radii, so a host restyles them from the floor alone.
+- 2f16a84: SheetNav drops its inline search tab, which searched nothing, and no longer fills the active breadcrumb with the primary colour.
+
+### Patch Changes
+
+- 2f16a84: The command palette is announced as a dialog whose results are a listbox with the highlighted result active.
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+- Updated dependencies [2f16a84]
+  - @stonecrop/aform@0.35.0
+  - @stonecrop/schema@0.35.0
+  - @stonecrop/stonecrop@0.35.0
+  - @stonecrop/themes@0.35.0
+
 ## 0.34.0
 
 ### Minor Changes

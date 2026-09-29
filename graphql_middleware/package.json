@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/graphql-middleware",
-	"version": "0.34.0",
+	"version": "0.39.0",
 	"description": "GraphQL middleware for PostGraphile and Stonecrop schema",
 	"keywords": [
 		"graphql",
@@ -51,10 +51,11 @@
 		"@dataplan/pg": "^1.0.3",
 		"@stonecrop/schema": "workspace:*",
 		"graphql": "catalog:",
-		"postgraphile": "catalog:"
+		"postgraphile": "catalog:",
+		"temporal-polyfill": "catalog:"
 	},
 	"devDependencies": {
-		"@electric-sql/pglite": "^0.4.5",
+		"@electric-sql/pglite": "^0.5.8",
 		"@microsoft/api-extractor": "catalog:",
 		"@types/node": "catalog:",
 		"@types/pg": "^8.11.0",

@@ -6,7 +6,6 @@ const showCode = ref(false)
 
 <template>
 	<div class="demo-panel">
-		<span class="demo-panel__label">Preview</span>
 		<div class="demo-panel__preview">
 			<slot />
 		</div>

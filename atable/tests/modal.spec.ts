@@ -163,6 +163,33 @@ describe('table modal component', { tags: ['component'] }, () => {
 	})
 })
 
+// ATableModal.closest() must return an HTMLElement or it skips positioning. jsdom lays nothing
+// out, so each fixture hands the cell and container the rectangles a browser would.
+function cellInTable(layout: {
+	cellTop?: number
+	cellLeft?: number
+	cellWidth?: number
+	cellHeight?: number
+	containerWidth?: number
+	containerHeight?: number
+}) {
+	const container = document.createElement('div')
+	container.className = 'atable-container'
+	const table = document.createElement('table')
+	const cell = document.createElement('td')
+	table.append(cell)
+	container.append(table)
+
+	const rect = (left: number, top: number, width: number, height: number) =>
+		({ left, top, width, height, right: left + width, bottom: top + height, x: left, y: top }) as DOMRect
+	const containerWidth = layout.containerWidth ?? 800
+	cell.getBoundingClientRect = () =>
+		rect(layout.cellLeft ?? 0, layout.cellTop ?? 0, layout.cellWidth ?? 150, layout.cellHeight ?? 40)
+	container.getBoundingClientRect = () => rect(0, 0, containerWidth, layout.containerHeight ?? 500)
+	Object.defineProperty(container, 'clientWidth', { configurable: true, value: containerWidth })
+	return cell
+}
+
 describe('ATableModal', { tags: ['component'] }, () => {
 	let store: ReturnType<typeof createTableStore>
 
@@ -233,20 +260,8 @@ describe('ATableModal', { tags: ['component'] }, () => {
 	})
 
 	it('should calculate modal position when all modal data is available', () => {
-		// Create a mock cell element
-		const mockCell = {
-			offsetTop: 50,
-			offsetLeft: 100,
-			closest: vi.fn(() => ({
-				offsetHeight: 500,
-				offsetWidth: 800,
-				querySelector: vi.fn(() => ({ offsetHeight: 30 })), // header height
-			})),
-		} as any
-
-		// Set up modal data
 		store.modal = {
-			cell: mockCell,
+			cell: cellInTable({ cellTop: 80, cellLeft: 100 }),
 			height: 40,
 			width: 150,
 			left: 100,
@@ -266,20 +281,8 @@ describe('ATableModal', { tags: ['component'] }, () => {
 	})
 
 	it('should position modal correctly when it fits within table bounds', () => {
-		const mockTable = {
-			offsetHeight: 500,
-			offsetWidth: 800,
-			querySelector: vi.fn(() => ({ offsetHeight: 30 })), // header height
-		}
-
-		const mockCell = {
-			offsetTop: 50,
-			offsetLeft: 100,
-			closest: vi.fn(() => mockTable),
-		} as any
-
 		store.modal = {
-			cell: mockCell,
+			cell: cellInTable({ cellTop: 80, cellLeft: 100 }),
 			height: 40,
 			width: 150,
 			left: 100,
@@ -293,26 +296,18 @@ describe('ATableModal', { tags: ['component'] }, () => {
 		const modalElement = wrapper.find('.amodal')
 		const style = modalElement.attributes('style')
 
-		// Modal should be positioned at cell position + header height
-		expect(style).toContain('left: 100px') // cell offsetLeft
-		expect(style).toContain('top: 80px') // cell offsetTop + header height
+		// Below the cell: the cell's bottom edge, measured from the container's top
+		expect(style).toContain('left: 100px')
+		expect(style).toContain('top: 120px')
 	})
 
-	it('should adjust modal position when it would overflow table bottom', () => {
-		const mockTable = {
-			offsetHeight: 200, // Small table height
-			offsetWidth: 800,
-			querySelector: vi.fn(() => ({ offsetHeight: 30 })),
-		}
-
-		const mockCell = {
-			offsetTop: 150, // Near bottom of table
-			offsetLeft: 100,
-			closest: vi.fn(() => mockTable),
-		} as any
-
+	it('stays below the cell even when that overflows the table bottom', () => {
 		store.modal = {
-			cell: mockCell,
+			cell: cellInTable({
+				cellTop: 180,
+				cellLeft: 100,
+				containerHeight: 200,
+			}),
 			height: 40,
 			width: 150,
 			left: 100,
@@ -326,26 +321,17 @@ describe('ATableModal', { tags: ['component'] }, () => {
 		const modalElement = wrapper.find('.amodal')
 		const style = modalElement.attributes('style')
 
-		// Modal Y should be adjusted to prevent overflow
-		// modalY = 180 (cell + header) - (100 modal height + 40 cell height) = 40
-		expect(style).toContain('top: 40px')
+		// The cell's bottom (220) is past the container's (200); never flip above the field
+		expect(style).toContain('top: 220px')
 	})
 
 	it('should adjust modal position when it would overflow table right', () => {
-		const mockTable = {
-			offsetHeight: 500,
-			offsetWidth: 300, // Small table width
-			querySelector: vi.fn(() => ({ offsetHeight: 30 })),
-		}
-
-		const mockCell = {
-			offsetTop: 50,
-			offsetLeft: 250, // Near right edge of table
-			closest: vi.fn(() => mockTable),
-		} as any
-
 		store.modal = {
-			cell: mockCell,
+			cell: cellInTable({
+				cellTop: 80,
+				cellLeft: 250,
+				containerWidth: 300,
+			}),
 			height: 40,
 			width: 150,
 			left: 100,
@@ -359,41 +345,8 @@ describe('ATableModal', { tags: ['component'] }, () => {
 		const modalElement = wrapper.find('.amodal')
 		const style = modalElement.attributes('style')
 
-		// Modal X should be adjusted to prevent overflow
-		// modalX = 250 - (200 modal width - 150 cell width) = 200
-		expect(style).toContain('left: 200px')
-	})
-
-	it('should handle missing header element gracefully', () => {
-		const mockTable = {
-			offsetHeight: 500,
-			offsetWidth: 800,
-			querySelector: vi.fn(() => null), // No header found
-		}
-
-		const mockCell = {
-			offsetTop: 50,
-			offsetLeft: 100,
-			closest: vi.fn(() => mockTable),
-		} as any
-
-		store.modal = {
-			cell: mockCell,
-			height: 40,
-			width: 150,
-			left: 100,
-			bottom: 50,
-		}
-
-		const wrapper = mount(ATableModal, {
-			props: { store },
-		})
-
-		const modalElement = wrapper.find('.amodal')
-		const style = modalElement.attributes('style')
-
-		// Should use 0 for header height
-		expect(style).toContain('top: 50px') // cell offsetTop + 0 header height
+		// The 200px modal would end at 450 in a 300px container, so its right edge meets the container's
+		expect(style).toContain('left: 100px')
 	})
 
 	it('should have correct CSS classes and attributes', () => {
@@ -407,20 +360,13 @@ describe('ATableModal', { tags: ['component'] }, () => {
 	})
 
 	it('should handle edge case with zero dimensions', () => {
-		const mockTable = {
-			offsetHeight: 0,
-			offsetWidth: 0,
-			querySelector: vi.fn(() => ({ offsetHeight: 0 })),
-		}
-
-		const mockCell = {
-			offsetTop: 0,
-			offsetLeft: 0,
-			closest: vi.fn(() => mockTable),
-		} as any
-
 		store.modal = {
-			cell: mockCell,
+			cell: cellInTable({
+				cellTop: 0,
+				cellLeft: 0,
+				containerWidth: 0,
+				containerHeight: 0,
+			}),
 			height: 40,
 			width: 150,
 			left: 100,

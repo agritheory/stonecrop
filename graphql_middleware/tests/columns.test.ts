@@ -1,19 +1,21 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 
-import { getSqlColumns } from '../src/plugin/postgraphile'
+import { getColumnSelections } from '../src/plugin/postgraphile'
 import { loadDoctypesFromObject, getMeta, clearRegistry } from '../src/registry/doctypes'
 
 // ===========================================================================
-// getSqlColumns — SQL column selection rules
+// getColumnSelections — SQL column selection rules
 //
 // Regression guard for the display/mode conflation: the SELECT-column builder
 // must key the "no backing DB column" decision off `component: 'ATextInput', computed: true`
 // ONLY. `mode` is an interaction/rendering concern ('edit' | 'read' | 'display')
 // and a `mode: 'display'` field still has a real column that must be selected.
 // (See schema/src/mode.ts and schema/src/component-meta.ts.)
+//
+// Each test asserts the whole selection, so a column wrongly kept and one wrongly dropped both fail.
 // ===========================================================================
 
-describe('getSqlColumns', { tags: ['unit', 'graphql'] }, () => {
+describe('getColumnSelections', { tags: ['unit', 'graphql'] }, () => {
 	beforeEach(() => {
 		clearRegistry()
 	})
@@ -41,17 +43,14 @@ describe('getSqlColumns', { tags: ['unit', 'graphql'] }, () => {
 			},
 		})
 
-		const columns = getSqlColumns(getMeta('ColumnSample')!)
-
-		// mode:'display' field is selected, aliased camel<-snake
-		expect(columns).toContain('"created_at" AS "createdAt"')
-		// mode:'read' field is selected
-		expect(columns).toContain('"status"')
-		// plain editable field is selected
-		expect(columns).toContain('"name"')
-		// the computed field is NOT selected (no backing column)
-		expect(columns).not.toContain('computed_total')
-		expect(columns).not.toContain('computedTotal')
+		expect(getColumnSelections(getMeta('ColumnSample')!)).toEqual([
+			{ column: 'id', alias: 'id' },
+			{ column: 'name', alias: 'name' },
+			// mode:'display' field is selected, aliased camel<-snake
+			{ column: 'created_at', alias: 'createdAt' },
+			// mode:'read' field is selected
+			{ column: 'status', alias: 'status' },
+		])
 	})
 
 	it('excludes computed:true fields and selects the primaryKey column (component-primary)', () => {
@@ -67,11 +66,10 @@ describe('getSqlColumns', { tags: ['unit', 'graphql'] }, () => {
 			},
 		})
 
-		const columns = getSqlColumns(getMeta('ComputedSample')!)
-
-		expect(columns).toContain('"id"')
-		expect(columns).toContain('"name"')
-		expect(columns).not.toContain('total')
+		expect(getColumnSelections(getMeta('ComputedSample')!)).toEqual([
+			{ column: 'id', alias: 'id' },
+			{ column: 'name', alias: 'name' },
+		])
 	})
 
 	it('flattens Fieldset children into columns and omits the container', () => {
@@ -93,15 +91,12 @@ describe('getSqlColumns', { tags: ['unit', 'graphql'] }, () => {
 			},
 		})
 
-		const columns = getSqlColumns(getMeta('FieldsetSample')!)
-
-		// children are flattened into the SELECT
-		expect(columns).toContain('"item_name" AS "itemName"')
-		// a mode:'display' child is still selected
-		expect(columns).toContain('"item_color" AS "itemColor"')
-		// the Fieldset container itself is not a column
-		expect(columns).not.toContain('basicInfo_fieldset')
-		expect(columns).not.toContain('basic_info_fieldset')
+		// children are flattened into the SELECT, a mode:'display' child included, and the container is not a column
+		expect(getColumnSelections(getMeta('FieldsetSample')!)).toEqual([
+			{ column: 'id', alias: 'id' },
+			{ column: 'item_name', alias: 'itemName' },
+			{ column: 'item_color', alias: 'itemColor' },
+		])
 	})
 
 	it('still selects an inline link FK column even though it has a links declaration', () => {
@@ -120,9 +115,10 @@ describe('getSqlColumns', { tags: ['unit', 'graphql'] }, () => {
 			},
 		})
 
-		const columns = getSqlColumns(getMeta('InlineLinkSample')!)
-
-		expect(columns).toContain('"user_id" AS "userId"')
+		expect(getColumnSelections(getMeta('InlineLinkSample')!)).toEqual([
+			{ column: 'id', alias: 'id' },
+			{ column: 'user_id', alias: 'userId' },
+		])
 	})
 
 	it('excludes Link fields that have an explicit links declaration', () => {
@@ -143,10 +139,10 @@ describe('getSqlColumns', { tags: ['unit', 'graphql'] }, () => {
 			},
 		})
 
-		const columns = getSqlColumns(getMeta('LinkSample')!)
-
-		expect(columns).toContain('"name"')
 		// the declared link is not a scalar column on this table
-		expect(columns).not.toContain('children')
+		expect(getColumnSelections(getMeta('LinkSample')!)).toEqual([
+			{ column: 'id', alias: 'id' },
+			{ column: 'name', alias: 'name' },
+		])
 	})
 })

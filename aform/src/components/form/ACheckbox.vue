@@ -13,9 +13,11 @@
 					type="checkbox"
 					class="aform_checkbox"
 					:disabled="mode === 'read'"
-					:required="required" />
+					:required="required"
+					:aria-invalid="invalid"
+					:aria-describedby="describedBy" />
 			</span>
-			<p v-show="errorText" class="aform_error" v-html="errorText"></p>
+			<p v-show="errorText" :id="errorId" class="aform_error" role="alert">{{ errorText }}</p>
 		</template>
 	</div>
 </template>
@@ -23,12 +25,14 @@
 <script setup lang="ts">
 import { computed, InputHTMLAttributes } from 'vue'
 
+import { fieldErrorA11y } from '../../composables/fieldErrorA11y'
 import { ComponentProps } from '../../types'
 
 const { label, required, mode, uuid, errors, validation = { errorMessage: '' } } = defineProps<ComponentProps>()
 
 // Dynamic trigger errors take precedence over a static schema errorMessage; empty means the slot hides.
 const errorText = computed(() => (errors?.length ? errors.join('; ') : (validation.errorMessage ?? '')))
+const { errorId, describedBy, invalid } = fieldErrorA11y(uuid, errorText)
 
 const checkbox = defineModel<InputHTMLAttributes['checked']>()
 </script>
@@ -43,7 +47,7 @@ const checkbox = defineModel<InputHTMLAttributes['checked']>()
 
 .aform_checkbox:checked {
 	accent-color: var(--sc-primary-color);
-	border: 1px solid black;
+	border: 1px solid var(--sc-input-active-border-color);
 }
 
 .aform_checkbox-container {
@@ -56,7 +60,7 @@ const checkbox = defineModel<InputHTMLAttributes['checked']>()
 	width: auto;
 }
 
-.aform_checkbox-container:hover + .aform_field-label {
+.aform_form-element:has(> .aform_checkbox-container:hover) > .aform_field-label {
 	color: var(--sc-input-active-label-color);
 }
 </style>

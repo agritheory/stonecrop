@@ -66,7 +66,7 @@ const data = ref({
 	<div class="stonecrop-demo">
 		<div class="stonecrop-demo__mode">
 			<p class="stonecrop-demo__mode-label"><code>mode="edit"</code></p>
-			<AForm :schema="schema" v-model:data="data" mode="edit" />
+			<AForm v-model:data="data" :schema="schema" mode="edit" />
 		</div>
 		<div class="stonecrop-demo__mode">
 			<p class="stonecrop-demo__mode-label"><code>mode="display"</code></p>

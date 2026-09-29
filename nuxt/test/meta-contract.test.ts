@@ -2,7 +2,7 @@
  * Meta-pipeline contract tests for the two host SDLs and their resolvers.
  *
  * The GraphQL meta pipeline restates @stonecrop/schema shapes in three places
- * the type system cannot see: the host SDL files (templates/, fullstack/) and
+ * the type system cannot see: the host SDL files (templates/, fixtures/fullstack/) and
  * the resolver formatting helpers. Each restatement drifts independently —
  * fullstack's SDL rotted to 9 of 19 field keys, and both resolvers dropped
  * `format`/`source` by enumerating keys — so both are pinned here against the
@@ -18,7 +18,7 @@ import { describe, it, expect, vi } from 'vitest'
 import { ActionDefinition, ValueFieldSchema, type DoctypeMeta } from '@stonecrop/schema'
 
 import { formatDoctypeMeta as templatesFormatDoctypeMeta } from '../templates/resolvers'
-import { formatDoctypeMeta as fullstackFormatDoctypeMeta } from '../fullstack/server/resolvers'
+import { formatDoctypeMeta as fullstackFormatDoctypeMeta } from './fixtures/fullstack/resolvers'
 
 // The resolver modules imported above pull in the middleware at top level, which
 // transitively boots postgraphile + pg (a server-only chain that also breaks vitest's node
@@ -38,7 +38,7 @@ vi.mock('@stonecrop/graphql-middleware', () => {
 
 const HOST_SDLS = [
 	{ name: 'templates', path: '../templates/schema.graphql' },
-	{ name: 'fullstack', path: '../fullstack/server/schema.graphql' },
+	{ name: 'fullstack', path: './fixtures/fullstack/schema.graphql' },
 ]
 
 function typeFieldNames(doc: DocumentNode, typeName: string): string[] | undefined {

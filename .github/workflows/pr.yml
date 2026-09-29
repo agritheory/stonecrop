@@ -194,7 +194,7 @@ jobs:
       # could break a <script setup> block or a template binding in desktop, aform, atable,
       # node_editor, code_editor or beam and still merge green. Projects opt in by defining a
       # `test:types` script, exactly as `lint` works. Runs after Build because vue-tsc needs
-      # dependencies' .d.ts files, and both nuxt builds run `dev:prepare`, so .nuxt exists by now.
+      # dependencies' .d.ts files, and both nuxt builds prepare every app, so .nuxt exists by now.
       - name: Typecheck
         run: pnpm run test:types
 

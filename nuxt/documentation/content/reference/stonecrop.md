@@ -1115,20 +1115,6 @@ export interface ValidatorOptions {
 
 ## Type Aliases
 
-### ActionDispatchResult
-
-Result of dispatching an action to its server handler.
-
-**Definition:**
-
-```typescript
-export type ActionDispatchResult = {
-    success: boolean;
-    data: unknown;
-    error: string | null;
-};
-```
-
 ### ActionEventPayload
 
 Payload emitted with the 'action' event when the user triggers a declared action — an FSM transition or a stateless Command.
@@ -1819,7 +1805,7 @@ getDoctype(slug: string): Doctype | undefined
 
 Initialize a new record with default values based on a resolved schema. Narrows by `kind` discriminator for precise branch selection.
 
-- `kind: 'table'` or `kind: 'link'` → `[]` or `{}` - `kind: 'fieldset'` → recursively initializes children as `{}` - `kind: 'field'` → derives the default from the component's category; falls back to `null`
+- `kind: 'table'` or `kind: 'link'` → `[]` or `{}` - `kind: 'fieldset'` → its children, at the top level of the record: a fieldset is layout - `kind: 'field'` → derives the default from the component's category; falls back to `null`
 
 ```typescript
 initializeRecord(schema: ResolvedField[]): Record<string, any>
@@ -1965,14 +1951,10 @@ The write is the point. For a created record the settled identity is never the o
 
 Two things are deliberately NOT done here, because both need the id that was dispatched and that lives inside `args` — an opaque array whose shape is a convention between a host's client and its server handlers, not something this layer may parse. Dropping the stale key and moving the route therefore stay with `useClientAction`, which knows both ids.
 
-A result that states no identity of its own — a `{ state: 'APPROVED' }` outcome — is left alone rather than guessed at, for the same reason `settledRecordId` is strict: a partial record must not be able to look like a rename.
+What is filed is the result's `record`, the server's read of the record after the action, and never its `data`, which is whatever the action's handler returned. A result with no `record` leaves the stored copy alone.
 
 ```typescript
-dispatchAction(doctype: Doctype, action: string, args: unknown[]): Promise<{
-        success: boolean;
-        data: unknown;
-        error: string | null;
-    }>
+dispatchAction(doctype: Doctype, action: string, args: unknown[]): Promise<ActionDispatchResult>
 ```
 
 **Parameters:**
@@ -2600,4 +2582,12 @@ export enum ValidationSeverity {
   WARNING = "warning",
 }
 ```
+
+## Re-exported
+
+Declared elsewhere and re-exported by this package.
+
+| Name | From |
+|------|------|
+| ActionDispatchResult | `@stonecrop/schema` |
 

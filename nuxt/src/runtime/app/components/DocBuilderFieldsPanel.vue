@@ -337,17 +337,22 @@ function bool(v) {
 
 <style scoped>
 .fields-panel {
+	box-sizing: border-box;
+	max-width: 100%;
+	overflow-x: auto;
 	padding: 0.5em 1em;
 }
 .fields-panel :deep(.atable-row > td) {
-	border-top: 1px solid var(--sc-row-border-color, #e5e7eb);
-	padding: var(--sc-atable-row-padding, 0.125rem) 0.75em;
+	border-top: 1px solid var(--sc-row-border-color);
+	/* atable's own side spacing, as on its filter row, so each row lines up under its filter box. */
+	padding: var(--sc-atable-row-padding) 0.5ch;
 	vertical-align: middle;
 }
 .fields-panel :deep(input[type='text']),
 .fields-panel :deep(select) {
-	border: 1px solid var(--sc-gray-20, #d1d5db);
-	border-radius: 3px;
+	box-sizing: border-box;
+	border: 1px solid var(--sc-gray-20);
+	border-radius: var(--sc-border-radius);
 	font-family: inherit;
 	font-size: inherit;
 	padding: 0.25em 0.5em;
@@ -355,13 +360,13 @@ function bool(v) {
 }
 .fields-panel :deep(input.locked),
 .fields-panel :deep(select.locked) {
-	background: var(--sc-gray-10, #f3f4f6);
-	color: #6b7280;
+	background: var(--sc-gray-10);
+	color: var(--sc-header-text-color);
 	cursor: not-allowed;
 }
 .fields-panel :deep(input.json-invalid) {
-	background: #fef2f2;
-	border-color: #f87171;
+	background: var(--sc-badge-danger-bg);
+	border-color: var(--sc-brand-danger);
 }
 .center {
 	text-align: center;
@@ -374,12 +379,12 @@ function bool(v) {
 	padding: 0.125em 0.5em;
 }
 .badge-manual {
-	background: #dcfce7;
-	color: #166534;
+	background: var(--sc-badge-brand-bg);
+	color: var(--sc-badge-brand-text);
 }
 .badge-introspected {
-	background: #e0e7ff;
-	color: #3730a3;
+	background: var(--sc-badge-neutral-bg);
+	color: var(--sc-badge-neutral-text);
 }
 .field-detail {
 	display: grid;
@@ -388,7 +393,7 @@ function bool(v) {
 	padding: 0.75rem 1rem;
 }
 .field-prop {
-	color: var(--sc-header-text-color, #374151);
+	color: var(--sc-header-text-color);
 	display: flex;
 	flex-direction: column;
 	font-size: 0.75rem;
@@ -410,22 +415,22 @@ function bool(v) {
 	padding: 0 1rem 0.75rem;
 }
 .locked-note {
-	color: #6b7280;
+	color: var(--sc-header-text-color);
 	font-size: 0.75rem;
 	font-style: italic;
 }
 .btn-add {
 	background: none;
-	border: 1px dashed var(--sc-gray-20, #d1d5db);
-	border-radius: 4px;
-	color: var(--sc-blue-40, #2563eb);
+	border: 1px dashed var(--sc-gray-20);
+	border-radius: var(--sc-border-radius);
+	color: var(--sc-primary-color);
 	cursor: pointer;
 	font-size: 0.875rem;
 	margin-top: 0.5rem;
 	padding: 0.4em 1em;
 }
 .fields-empty {
-	color: #9ca3af;
+	color: var(--sc-header-text-color);
 	font-style: italic;
 	padding: 1rem 0;
 }

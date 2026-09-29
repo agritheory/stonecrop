@@ -1,5 +1,58 @@
 # Change Log - @stonecrop/graphql-client
 
+## 0.39.0
+
+### Minor Changes
+
+- 835f62c: An action's result now carries `droppedFields`, the keys a save discarded instead of storing, through one `ActionDispatchResult` type that `@stonecrop/schema` now exports.
+
+### Patch Changes
+
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+  - @stonecrop/schema@0.39.0
+
+## 0.38.1
+
+### Patch Changes
+
+- @stonecrop/schema@0.38.1
+
+## 0.38.0
+
+### Patch Changes
+
+- @stonecrop/schema@0.38.0
+
+## 0.37.0
+
+### Patch Changes
+
+- @stonecrop/schema@0.37.0
+
+## 0.36.0
+
+### Minor Changes
+
+- e673267: An action's result carries `record`, the record as a read returns it after the action, and the client stores that in place of `data`, which stays whatever the action's handler returned, so a `DataClient.runAction` must now return `record`.
+
+### Patch Changes
+
+- Updated dependencies [e673267]
+- Updated dependencies [e673267]
+  - @stonecrop/schema@0.36.0
+
+## 0.35.0
+
+### Minor Changes
+
+- 2f16a84: A link field may declare `config` (a `TableViewConfig`), and the middleware serves it in field metadata to the client.
+
+### Patch Changes
+
+- Updated dependencies [2f16a84]
+  - @stonecrop/schema@0.35.0
+
 ## 0.34.0
 
 ### Patch Changes

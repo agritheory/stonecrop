@@ -4,15 +4,23 @@ import { describe, it, expect } from 'vitest'
 import { validateDoctype } from '@stonecrop/schema'
 
 /**
- * Content-integrity gate for the playground's doctypes folder — the merged
- * default example ships GraphQL-introspected doctypes (country, continent,
- * language) alongside the hand-authored docbuilder workflow fixtures
- * (issue, assignment, user).
+ * Content-integrity gate for the countries explorer doctypes shipped in documentation.
  */
 
-const doctypesDir = resolve(__dirname, '../playground/doctypes')
+const doctypesDir = resolve(__dirname, '../documentation/doctypes')
 
-const doctypeFiles = () => readdirSync(doctypesDir).filter(f => f.endsWith('.json'))
+const COUNTRIES_DOCTYPES = [
+	'assignment.json',
+	'continent.json',
+	'country.json',
+	'issue.json',
+	'language.json',
+	'state.json',
+	'subdivision.json',
+	'user.json',
+]
+
+const doctypeFiles = () => COUNTRIES_DOCTYPES.filter(file => readdirSync(doctypesDir).includes(file))
 
 const loadAll = () =>
 	doctypeFiles().map(file => ({
@@ -20,18 +28,9 @@ const loadAll = () =>
 		doctype: JSON.parse(readFileSync(join(doctypesDir, file), 'utf-8')) as Record<string, unknown>,
 	}))
 
-describe('playground doctypes', { tags: ['unit'] }, () => {
-	it('contains exactly the merged doctype set', () => {
-		expect(doctypeFiles().sort()).toEqual([
-			'assignment.json',
-			'continent.json',
-			'country.json',
-			'issue.json',
-			'language.json',
-			'state.json',
-			'subdivision.json',
-			'user.json',
-		])
+describe('countries explorer doctypes', { tags: ['unit'] }, () => {
+	it('contains the merged countries doctype set', () => {
+		expect(doctypeFiles().sort()).toEqual([...COUNTRIES_DOCTYPES].sort())
 	})
 
 	it('every doctype passes schema validation', () => {
@@ -59,7 +58,6 @@ describe('playground doctypes', { tags: ['unit'] }, () => {
 
 			const fields = (doctype.fields ?? []) as Array<Record<string, unknown>>
 			for (const field of fields) {
-				// A field is a link iff it carries `doctype`, which is also its target.
 				if (typeof field.doctype === 'string') {
 					targets.push([`fields.${String(field.fieldname)}`, field.doctype])
 				}

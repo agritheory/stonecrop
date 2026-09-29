@@ -10,34 +10,54 @@
 		<template v-else>
 			<div v-on-click-outside="onClickOutside" class="autocomplete" :class="{ isOpen: dropdown.open }">
 				<input
+					:id="uuid"
 					v-model="search"
 					type="text"
+					role="combobox"
+					autocomplete="off"
+					aria-autocomplete="list"
 					class="aform_input-field"
 					:disabled="mode === 'read'"
 					:style="inputAccentStyle"
+					:aria-expanded="dropdown.open"
+					:aria-controls="dropdown.open ? listboxId : undefined"
+					:aria-activedescendant="
+						dropdown.activeItemIndex === null ? undefined : `${listboxId}-opt-${dropdown.activeItemIndex}`
+					"
+					:aria-invalid="invalid"
+					:aria-describedby="describedBy"
 					@input="filter"
 					@focus="openDropdown"
-					@keydown.down="selectNextResult"
-					@keydown.up="selectPrevResult"
-					@keydown.enter="setCurrentResult"
+					@keydown.down.prevent="selectNextResult"
+					@keydown.up.prevent="selectPrevResult"
+					@keydown.enter.prevent="setCurrentResult"
 					@keydown.esc="onClickOutside"
 					@keydown.tab="onClickOutside" />
 
-				<ul v-show="dropdown.open" id="autocomplete-results" class="autocomplete-results">
+				<ul
+					v-show="dropdown.open"
+					:id="listboxId"
+					ref="results"
+					class="autocomplete-results"
+					role="listbox"
+					:aria-label="label">
 					<li v-if="dropdown.loading" class="loading autocomplete-result">Loading results...</li>
 					<li
 						v-for="(result, i) in dropdown.results"
 						v-else
+						:id="`${listboxId}-opt-${i}`"
 						:key="result"
+						role="option"
+						:aria-selected="i === dropdown.activeItemIndex"
 						class="autocomplete-result"
 						:class="{ 'is-active': i === dropdown.activeItemIndex }"
-						@click.stop="setResult(result)">
+						@mousedown.prevent="setResult(result)">
 						{{ result }}
 					</li>
 				</ul>
-				<label class="aform_field-label">{{ label }}</label>
+				<label class="aform_field-label" :for="uuid">{{ label }}</label>
 			</div>
-			<p v-show="errorText" class="aform_error" v-html="errorText"></p>
+			<p v-show="errorText" :id="errorId" class="aform_error" role="alert">{{ errorText }}</p>
 		</template>
 	</div>
 </template>
@@ -46,8 +66,10 @@
 import type { FieldOptions } from '@stonecrop/schema'
 import { selectChoices } from '@stonecrop/schema'
 import { vOnClickOutside } from '@vueuse/components'
-import { computed, reactive, ref, watch } from 'vue'
+import { computed, reactive, ref, useId, useTemplateRef, watch } from 'vue'
 
+import { fitDropdownList } from '../../composables/dropdownList'
+import { fieldErrorA11y } from '../../composables/fieldErrorA11y'
 import type { ComponentProps } from '../../types'
 import type { BadgeFormatFn } from '../../utils/badge'
 import { badgeInputAccentStyle, resolveFieldBadge } from '../../utils/badge'
@@ -60,6 +82,7 @@ const {
 	isAsync = false,
 	filterFunction = undefined,
 	mode,
+	uuid,
 	errors,
 	validation = { errorMessage: '' },
 } = defineProps<
@@ -70,6 +93,8 @@ const {
 		filterFunction?: (search: string) => string[] | Promise<string[]>
 	}
 >()
+
+const listboxId = useId()
 
 const choiceList = computed(() => selectChoices(options))
 
@@ -85,6 +110,7 @@ const inputAccentStyle = computed(() => badgeInputAccentStyle(badgeDescriptor.va
 const displayAccentStyle = computed(() => badgeInputAccentStyle(badgeDescriptor.value))
 
 const errorText = computed(() => (errors?.length ? errors.join('; ') : (validation.errorMessage ?? '')))
+const { errorId, describedBy, invalid } = fieldErrorA11y(uuid, errorText)
 const search = defineModel<string>()
 
 const committedValue = ref(search.value ?? '')
@@ -94,6 +120,12 @@ const dropdown = reactive({
 	open: false,
 	loading: false,
 	results: [] as string[],
+})
+
+fitDropdownList(useTemplateRef<HTMLElement>('results'), {
+	isOpen: () => dropdown.open,
+	optionCount: () => dropdown.results.length,
+	activeIndex: () => dropdown.activeItemIndex,
 })
 
 watch(
@@ -197,21 +229,24 @@ const setCurrentResult = () => {
 	left: 0;
 	right: 0;
 	z-index: 100;
+	box-sizing: border-box;
 	padding: 0;
 	margin: 0;
 	color: var(--sc-input-active-border-color);
 	border: 1px solid var(--sc-input-active-border-color);
-	border-radius: 0;
+	border-radius: 0 0 var(--sc-border-radius) var(--sc-border-radius);
 	border-top: none;
-	background-color: var(--sc-input-field-background);
+	background-color: var(--sc-overlay-background);
+	box-shadow: var(--sc-overlay-shadow);
 	list-style: none;
+	max-height: var(--sc-dropdown-max-height);
+	overflow-y: auto;
 }
 
 .autocomplete-result {
 	text-align: left;
 	padding: 4px 6px;
 	cursor: pointer;
-	border-bottom: 0.5px solid lightgray;
 }
 
 .autocomplete-result.is-active,

@@ -2,6 +2,10 @@ import { readdirSync } from 'node:fs'
 import { join, relative, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
+// Prerendering is otherwise driven entirely by link crawling, so a page nothing links to never
+// reaches the static output and resolves only through the client-side fallback: a direct hit or a
+// search result lands on a 404 from the CDN. Enumerating the collection is what makes the built
+// site independent of whether the sidebar happens to mention a page.
 const contentRoot = fileURLToPath(new URL('./content', import.meta.url))
 
 /** Every markdown page path used for prerendering and trailing-slash redirects. */

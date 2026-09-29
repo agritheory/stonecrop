@@ -17,12 +17,13 @@
 import { parse } from 'graphql'
 import type { GraphQLSchema } from 'graphql'
 import { execute, hookArgs, makeGrafastSchema } from 'postgraphile/grafast'
-import { beforeAll, describe, expect, it } from 'vitest'
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 
 import { loadDoctypesFromObject, clearRegistry } from '@stonecrop/graphql-middleware'
 
 import projectDoctype from '../templates/Project.json'
 import taskDoctype from '../templates/Task.json'
+import { tasks } from '../templates/data'
 import { resolvers } from '../templates/resolvers'
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
@@ -49,6 +50,13 @@ beforeAll(() => {
 async function run(query: string): Promise<any> {
 	const args = await hookArgs({ schema, document: parse(query), contextValue: Object.create(null) })
 	return (await execute(args)) as any
+}
+
+async function snooze(taskId: string): Promise<any> {
+	const result = await run(
+		`mutation { stonecropAction(doctype: "Task", action: "snooze", args: [{ id: "${taskId}" }]) { success data error } }`
+	)
+	return result.data?.stonecropAction
 }
 
 describe('templates host — actions', { tags: ['unit', 'graphql'] }, () => {
@@ -120,17 +128,13 @@ describe('templates host — actions', { tags: ['unit', 'graphql'] }, () => {
 		expect(again.data?.stonecropAction?.error).toContain('not allowed')
 	})
 
+	// Touches task 3's due date.
 	it('runs the registered server-side effect for a stateless command', async () => {
-		const before = await run(`query { stonecropRecord(doctype: "Task", id: "3") { data } }`)
-		const previousDue = before.data?.stonecropRecord?.data?.dueDate
-
-		const result = await run(
-			`mutation { stonecropAction(doctype: "Task", action: "snooze", args: [{ id: "3" }]) { success data error } }`
-		)
-		const action = result.data?.stonecropAction
+		tasks.set('3', { ...tasks.get('3')!, dueDate: '2025-01-20' })
+		const action = await snooze('3')
 		expect(action?.error).toBeNull()
 		expect(action?.success).toBe(true)
-		expect(action?.data?.dueDate).not.toBe(previousDue)
+		expect(action?.data?.dueDate).toBe('2025-01-27')
 	})
 
 	it('reports a command with no outcome and no registered effect', async () => {
@@ -139,6 +143,86 @@ describe('templates host — actions', { tags: ['unit', 'graphql'] }, () => {
 		)
 		expect(result.data?.stonecropAction?.success).toBe(false)
 		expect(result.data?.stonecropAction?.error).toContain('Unknown action')
+	})
+})
+
+// The client files `record` as the whole record, so the scaffold must reply with what its read returns.
+// Touches task 3's title and due date and task 2's state.
+describe('templates host — the record an action replies with', { tags: ['unit', 'graphql'] }, () => {
+	const readTask = async (id: string) =>
+		(await run(`query { stonecropRecord(doctype: "Task", id: "${id}") { data } }`)).data?.stonecropRecord?.data
+
+	it('replies to a save with the record a read returns', async () => {
+		const result = await run(
+			`mutation { stonecropAction(doctype: "Task", action: "save", args: [{ id: "3", data: { title: "renamed again" } }]) { record } }`
+		)
+		expect(result.data?.stonecropAction?.record?.title).toBe('renamed again')
+		expect(result.data?.stonecropAction?.record).toEqual(await readTask('3'))
+	})
+
+	it('replies to a create with the record a read of it returns', async () => {
+		const result = await run(
+			`mutation { stonecropAction(doctype: "Task", action: "save", args: [{ data: { title: "created with a record", projectId: "1" } }]) { record } }`
+		)
+		const record = result.data?.stonecropAction?.record
+		expect(record?.id).toBeTruthy()
+		expect(record).toEqual(await readTask(record.id))
+	})
+
+	it('replies to a transition with the whole record, not only its new state', async () => {
+		const result = await run(
+			`mutation { stonecropAction(doctype: "Task", action: "complete_task", args: [{ id: "2" }]) { data record } }`
+		)
+		expect(result.data?.stonecropAction?.data).toEqual({ state: 'Done' })
+		expect(result.data?.stonecropAction?.record?.status).toBe('Done')
+		expect(result.data?.stonecropAction?.record).toEqual(await readTask('2'))
+	})
+
+	it("replies to a handler's command with the record its writes left", async () => {
+		tasks.set('3', { ...tasks.get('3')!, dueDate: '2025-01-20' })
+		const result = await run(
+			`mutation { stonecropAction(doctype: "Task", action: "snooze", args: [{ id: "3" }]) { record } }`
+		)
+		expect(result.data?.stonecropAction?.record?.dueDate).toBe('2025-01-27')
+		expect(result.data?.stonecropAction?.record).toEqual(await readTask('3'))
+	})
+
+	it('replies with no record when the action fails', async () => {
+		const result = await run(
+			`mutation { stonecropAction(doctype: "Task", action: "start_task", args: [{ id: "no-such-task" }]) { success record } }`
+		)
+		expect(result.data?.stonecropAction).toEqual({ success: false, record: null })
+	})
+})
+
+// Touches the due dates of tasks 2 and 3.
+describe('templates host — snoozing across a clock change', { tags: ['unit', 'graphql'] }, () => {
+	afterEach(() => {
+		vi.useRealTimers()
+		vi.unstubAllEnvs()
+	})
+
+	// Each server zone's clocks spring forward within the week, so a week counted on its clock is an hour short.
+	it.each([
+		{ zone: 'America/New_York', due: '2026-03-05', snoozed: '2026-03-12' },
+		{ zone: 'Europe/Berlin', due: '2026-03-25', snoozed: '2026-04-01' },
+	])('snoozes a task due $due to a week later on a server in $zone', async ({ zone, due, snoozed }) => {
+		vi.stubEnv('TZ', zone)
+		tasks.set('3', { ...tasks.get('3')!, dueDate: due })
+		const action = await snooze('3')
+		expect(action?.error).toBeNull()
+		expect(action?.data?.dueDate).toBe(snoozed)
+	})
+
+	// 9pm in New York, when UTC has already reached the next day.
+	it("snoozes a task with no due date to a week from the server's today", async () => {
+		vi.stubEnv('TZ', 'America/New_York')
+		vi.useFakeTimers({ toFake: ['Date'] })
+		vi.setSystemTime(new Date(2026, 0, 10, 21))
+		tasks.set('2', { ...tasks.get('2')!, dueDate: null })
+		const action = await snooze('2')
+		expect(action?.error).toBeNull()
+		expect(action?.data?.dueDate).toBe('2026-01-17')
 	})
 })
 
