@@ -28,6 +28,7 @@ interface User {
 
 interface OrderItem {
 	id: string
+	addedAt?: string
 	productId: string
 	productName: string
 	quantity: number

@@ -183,7 +183,7 @@ export type HSTStonecropReturn = BaseStonecropReturn & {
 	 * @param path - The HST path where initialized data should be stored
 	 * @param doctype - The doctype to initialize
 	 */
-	initializeNestedData: (path: string, doctype: Doctype) => void
+	initializeNestedData: (path: string, doctype: Doctype) => Promise<void>
 
 	/**
 	 * Fetch a record and its nested data from the server.

@@ -365,7 +365,7 @@ describe('useStonecrop HST mode', { tags: ['unit'] }, () => {
 		})
 
 		const vm = wrapper.vm as any
-		vm.initializeNestedData('task.new', addressDoctype)
+		await vm.initializeNestedData('task.new', addressDoctype)
 
 		// Verify fields were scaffolded into HST
 		const street = vm.hstStore.get('task.new.street')

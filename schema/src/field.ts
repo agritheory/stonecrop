@@ -126,8 +126,6 @@ export interface ValueField {
 	readOnly?: boolean
 	/** Whether the field is hidden from the UI */
 	hidden?: boolean
-	/** Default value for new records */
-	default?: unknown
 	/** Validation configuration */
 	validation?: FieldValidation
 	/** Cardinality for Link fields — authoritative value on LinkDeclaration takes precedence */
@@ -471,7 +469,10 @@ function createDoctypeFieldSchemas() {
 			required: z.boolean().optional(),
 			readOnly: z.boolean().optional(),
 			hidden: z.boolean().optional(),
-			default: z.unknown().optional(),
+			// Refused rather than dropped, so a file written with one says so instead of silently losing the value.
+			default: z
+				.never({ error: "a field has no default of its own; give its starting value in the doctype's defaults" })
+				.optional(),
 			validation: FieldValidation.optional(),
 			cardinality: z.enum(['atMostOne', 'one', 'noneOrMany', 'atLeastOne']).optional(),
 			source: z.literal('introspected').optional(),

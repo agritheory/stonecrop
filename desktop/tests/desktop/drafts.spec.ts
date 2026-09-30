@@ -16,10 +16,10 @@ function buildTaskDoctype() {
 	const fields = List([
 		{ kind: 'field' as const, fieldname: 'id', label: 'ID', component: 'ATextInput', primaryKey: true },
 		{ kind: 'field' as const, fieldname: 'title', label: 'Title', component: 'ATextInput' },
-		{ kind: 'field' as const, fieldname: 'status', label: 'Status', component: 'ATextInput', default: 'draft' },
+		{ kind: 'field' as const, fieldname: 'status', label: 'Status', component: 'ATextInput' },
 	])
 	const workflow = { states: ['draft'], actions: { save: { label: 'Save', selfTransition: true } } }
-	return new Doctype('task', fields as any, workflow as any)
+	return new Doctype('task', fields as any, workflow as any, undefined, undefined, undefined, { status: 'draft' })
 }
 
 const adapterFor = (recordId: string, view: 'record' | 'records' = 'record'): RouteAdapter => ({
@@ -62,28 +62,28 @@ describe('Desktop draft records', { tags: ['component'] }, () => {
 		// cached from the getter. `addRecord` for any record invalidated that cache and the typed
 		// fields were silently dropped — a create then persisted an empty record.
 		const wrapper = mountAt('new')
-		await nextTick()
+		await flushPromises()
 
 		const aform = wrapper.findComponent(AForm)
 		aform.vm.$emit('update:data', { title: 'Buy milk' })
 		await flushPromises()
 
 		stonecrop.addRecord('task', '999', { id: '999', title: 'unrelated' })
-		await nextTick()
+		await flushPromises()
 
 		expect(aform.props('data')).toMatchObject({ title: 'Buy milk' })
 	})
 
 	it('seeds a draft with the doctype declared defaults', async () => {
 		const wrapper = mountAt('new')
-		await nextTick()
+		await flushPromises()
 
 		expect(wrapper.findComponent(AForm).props('data')).toMatchObject({ status: 'draft' })
 	})
 
 	it('writes no HST node for a draft, so it cannot appear as a list row', async () => {
 		const wrapper = mountAt('new')
-		await nextTick()
+		await flushPromises()
 
 		const aform = wrapper.findComponent(AForm)
 		aform.vm.$emit('update:data', { title: 'Buy milk' })
@@ -98,13 +98,13 @@ describe('Desktop draft records', { tags: ['component'] }, () => {
 		// Every draft routes to the same `/task/new`, so a buffer left behind would open the next
 		// New Record pre-filled with the abandoned one.
 		const first = mountAt('new')
-		await nextTick()
+		await flushPromises()
 		first.findComponent(AForm).vm.$emit('update:data', { title: 'Abandoned' })
 		await flushPromises()
 		first.unmount()
 
 		const second = mountAt('new')
-		await nextTick()
+		await flushPromises()
 
 		expect(second.findComponent(AForm).props('data')).not.toMatchObject({ title: 'Abandoned' })
 	})
@@ -116,5 +116,35 @@ describe('Desktop draft records', { tags: ['component'] }, () => {
 		await nextTick()
 
 		expect(wrapper.findComponent(AForm).props('data')).toMatchObject({ title: 'Saved' })
+	})
+
+	// A new form is filled once, with every starting value. Until then Desktop shows its loading state rather
+	// than a form whose typing a late value could overwrite, and offers no action on a record not yet there.
+	it('shows the loading state, not the form, until the starting values arrive', async () => {
+		let release!: () => void
+		registry.registerDefaults(
+			'task',
+			() => new Promise(resolve => (release = () => resolve({ title: 'Call the supplier' })))
+		)
+		const wrapper = mountAt('new')
+		await flushPromises()
+
+		expect(wrapper.findComponent(AForm).exists()).toBe(false)
+		expect(wrapper.find('.loading').text()).toBe('Preparing new Task...')
+		expect(wrapper.findComponent({ name: 'ActionSet' }).props('elements')).toEqual([])
+
+		release()
+		await flushPromises()
+		expect(wrapper.findComponent(AForm).props('data')).toMatchObject({ title: 'Call the supplier', status: 'draft' })
+	})
+
+	it("opens the form with the doctype's defaults when the app's fail", async () => {
+		registry.registerDefaults('task', () => Promise.reject(new Error('defaults endpoint 500')))
+		const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
+		const wrapper = mountAt('new')
+		await flushPromises()
+		warn.mockRestore()
+
+		expect(wrapper.findComponent(AForm).props('data')).toMatchObject({ status: 'draft' })
 	})
 })

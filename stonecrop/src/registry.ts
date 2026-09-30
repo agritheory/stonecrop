@@ -1,10 +1,13 @@
 import type { ResolvedField, ResolvedLink, ResolvedScalar, ResolvedTable, ResolvedFieldset } from '@stonecrop/aform'
 import { resolvedFieldsToColumns } from '@stonecrop/aform'
 import type { DoctypeField, LinkDeclaration, TableViewConfig, ValueField } from '@stonecrop/schema'
-import { componentCategory, componentLinkExpansion, resolveLinkRenderMode } from '@stonecrop/schema'
+import { componentCategory, componentLinkExpansion, resolveLinkRenderMode, toSlug } from '@stonecrop/schema'
 import { Router } from 'vue-router'
 
+import { composeNewRecord } from './compose-new-record'
 import Doctype from './doctype'
+import { expandedLink, linksByFieldname } from './record-fields'
+import type { ComposeNewRecordOptions, ComposeNewRecordResult, DefaultsSource } from './types/defaults'
 import { RouteContext } from './types/registry'
 
 /**
@@ -49,6 +52,12 @@ export default class Registry {
 	 * @internal
 	 */
 	private _ancestorIndexDirty: boolean = true
+
+	/**
+	 * The app's starting values for each doctype, by slug: one registration per doctype (functions allowed).
+	 * @internal
+	 */
+	private registeredDefaults = new Map<string, DefaultsSource>()
 
 	/**
 	 * The Vue router instance
@@ -139,15 +148,7 @@ export default class Registry {
 
 		const schemaArray: DoctypeField[] = doctype.schema ? doctype.schema.toArray() : []
 
-		// Map link declarations by fieldname (link.fieldname ?? key)
-		const linksByFieldname = new Map<string, LinkDeclaration>()
-		if (doctype.links) {
-			for (const [key, link] of Object.entries(doctype.links)) {
-				linksByFieldname.set(link.fieldname ?? key, link)
-			}
-		}
-
-		const result = this.resolveFields(schemaArray, linksByFieldname, seen)
+		const result = this.resolveFields(schemaArray, linksByFieldname(doctype), seen)
 		seen.delete(slug)
 		return result
 	}
@@ -171,39 +172,37 @@ export default class Registry {
 				const link = linkDecl
 				// The declaration's target wins over the field's own `doctype`.
 				const linkTarget = link?.target ?? field.doctype
+				const expanded = expandedLink(this, field, links)
 
-				// An undeclared link, or a declared one whose component renders an inline picker,
-				// stays a scalar: the target is not expanded, it only needs the slug for async
-				// display-text resolution and navigation.
-				if (!link || resolveLinkRenderMode(link, field.component) === 'inline') {
+				if (!expanded) {
 					const { cardinality: _c, ...rest } = field
-					resolved.push({
-						...rest,
-						component: rest.component || 'AFormLink',
-						...(linkTarget !== undefined ? { doctype: linkTarget } : {}),
-					})
+					// An undeclared link, or a declared one whose component renders an inline picker,
+					// stays a scalar: the target is not expanded, it only needs the slug for async
+					// display-text resolution and navigation.
+					if (!link || resolveLinkRenderMode(link, field.component) === 'inline') {
+						resolved.push({
+							...rest,
+							component: rest.component || 'AFormLink',
+							...(linkTarget !== undefined ? { doctype: linkTarget } : {}),
+						})
+					} else {
+						// Target not registered — copy as scalar
+						resolved.push({ ...rest })
+					}
 					continue
 				}
 
-				const targetDoctype = this.registry[link.target]
-				if (!targetDoctype) {
-					// Target not registered — copy as scalar
-					const { cardinality: _c, ...rest } = field
-					resolved.push({ ...rest })
-					continue
-				}
-
-				const childSchema = this.resolveSchema(targetDoctype, new Set(visited))
+				const childSchema = this.resolveSchema(expanded.target, new Set(visited))
 				const { options: _opt, cardinality: _card, kind: _kind, ...fieldRest } = field
 
-				if (resolveLinkRenderMode(link, field.component) === 'table') {
-					resolved.push(this.buildTableConfig(field, childSchema, link.component))
+				if (expanded.mode === 'table') {
+					resolved.push(this.buildTableConfig(field, childSchema, expanded.link.component))
 				} else {
 					const linkEntry: ResolvedLink = {
 						...fieldRest,
 						kind: 'link',
 						label: fieldRest.label || field.fieldname,
-						component: link.component || fieldRest.component || 'AForm',
+						component: expanded.link.component || fieldRest.component || 'AForm',
 						schema: childSchema,
 					}
 					resolved.push(linkEntry)
@@ -278,7 +277,7 @@ export default class Registry {
 	 *
 	 * - `kind: 'table'` or `kind: 'link'` → `[]` or `{}`
 	 * - `kind: 'fieldset'` → its children, at the top level of the record: a fieldset is layout
-	 * - `kind: 'field'` → derives the default from the component's category; falls back to `null`
+	 * - `kind: 'field'` → an empty value for the component's category; falls back to `null`
 	 *
 	 * @param schema - The resolved schema array to derive defaults from
 	 * @returns A plain object with default values for each field
@@ -295,27 +294,23 @@ export default class Registry {
 			} else if (field.kind === 'fieldset') {
 				Object.assign(record, this.initializeRecord(field.schema))
 			} else {
-				// kind: 'field' — the empty default comes from the component's category.
-				const fieldDefault = field.default
-				if (fieldDefault !== undefined) {
-					record[field.fieldname] = fieldDefault
+				// kind: 'field' — the empty value comes from the component's category. Starting values are the
+				// doctype's `defaults` and the registry's, applied over this by `composeNewRecord`.
+				const category = componentCategory(field.component)
+				if (category === 'text') {
+					record[field.fieldname] = ''
+				} else if (category === 'number') {
+					record[field.fieldname] = 0
+				} else if (category === 'boolean') {
+					record[field.fieldname] = false
+				} else if (category === 'code' && field.language) {
+					// A JSON editor starts from an empty object; any other language from empty source.
+					record[field.fieldname] = field.language === 'json' ? {} : ''
 				} else {
-					const category = componentCategory(field.component)
-					if (category === 'text') {
-						record[field.fieldname] = ''
-					} else if (category === 'number') {
-						record[field.fieldname] = 0
-					} else if (category === 'boolean') {
-						record[field.fieldname] = false
-					} else if (category === 'code' && field.language) {
-						// A JSON editor starts from an empty object; any other language from empty source.
-						record[field.fieldname] = field.language === 'json' ? {} : ''
-					} else {
-						// date / datetime / duration / select / link / attach, plus two cases with no better answer
-						// than "no value": an unknown (custom) component, and a code field whose missing
-						// `language` doesn't say which kind of empty it wants.
-						record[field.fieldname] = null
-					}
+					// date / datetime / duration / select / link / attach, plus two cases with no better answer
+					// than "no value": an unknown (custom) component, and a code field whose missing
+					// `language` doesn't say which kind of empty it wants.
+					record[field.fieldname] = null
 				}
 			}
 		}
@@ -418,6 +413,41 @@ export default class Registry {
 				}
 			}
 		}
+	}
+
+	/**
+	 * Register the app's starting values for a doctype, by its name or its slug (typically from app bootstrap).
+	 * Either one is keyed the way {@link Doctype.slug} is, so `'OrderItem'` and `'order-item'` register for the
+	 * same doctype, whether or not it has been added yet.
+	 *
+	 * They apply over the doctype's own `defaults` for every new record, and a function here runs for each one, so
+	 * it can work out what a doctype file cannot (today's date, a value looked up for the user's company). A doctype
+	 * takes one registration: a second replaces the first, with a warning.
+	 * @public
+	 */
+	registerDefaults(doctype: string, source: DefaultsSource): void {
+		const slug = toSlug(doctype)
+		if (this.registeredDefaults.has(slug)) {
+			console.warn(
+				`[stonecrop] Defaults for "${slug}" were registered again; the new registration replaces the old one.`
+			)
+		}
+		this.registeredDefaults.set(slug, source)
+	}
+
+	/**
+	 * @internal
+	 */
+	getRegisteredDefaults(slug: string): DefaultsSource | undefined {
+		return this.registeredDefaults.get(slug)
+	}
+
+	/**
+	 * Compose a new record, once, from every starting value. See {@link composeNewRecord}.
+	 * @public
+	 */
+	composeNewRecord(doctype: Doctype, options?: ComposeNewRecordOptions): Promise<ComposeNewRecordResult> {
+		return composeNewRecord(this, doctype, options)
 	}
 
 	// TODO: should we allow clearing the registry at all?

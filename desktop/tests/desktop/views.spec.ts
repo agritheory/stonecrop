@@ -319,7 +319,7 @@ describe('Desktop FSM state reading', { tags: ['component'] }, () => {
 		const registry = new Registry()
 		const stonecrop = new Stonecrop(registry)
 
-		// WorkflowMeta-format workflow (states array + labeled actions), mirroring Order.json.
+		// WorkflowMeta-format workflow (states array + labeled actions), mirroring order.json.
 		const schema = List([
 			{ kind: 'field' as const, fieldname: 'id', label: 'ID', component: 'ATextInput' },
 			{ kind: 'field' as const, fieldname: 'status', label: 'Status', component: 'ATextInput' },

@@ -23,13 +23,13 @@ function buildGadgetDoctype() {
 			label: 'Info',
 			component: 'AFieldset',
 			schema: [
-				{ kind: 'field' as const, fieldname: 'color', label: 'Color', component: 'ATextInput', default: 'grey' },
+				{ kind: 'field' as const, fieldname: 'color', label: 'Color', component: 'ATextInput' },
 				{ kind: 'field' as const, fieldname: 'weight', label: 'Weight', component: 'ATextInput' },
 			],
 		},
 	])
 	const workflow = { states: ['draft'], actions: { save: { label: 'Save', selfTransition: true } } }
-	return new Doctype('gadget', fields as any, workflow as any)
+	return new Doctype('gadget', fields as any, workflow as any, undefined, undefined, undefined, { color: 'grey' })
 }
 
 const adapterFor = (recordId: string): RouteAdapter => ({
@@ -76,7 +76,7 @@ describe('Desktop fieldsets', { tags: ['component'] }, () => {
 
 	it('seeds a draft with the declared default of a field inside a fieldset', async () => {
 		const wrapper = mountAt('new', { AForm: true })
-		await nextTick()
+		await flushPromises()
 
 		expect(wrapper.findComponent({ name: 'AForm' }).props('data')).toMatchObject({ color: 'grey' })
 	})

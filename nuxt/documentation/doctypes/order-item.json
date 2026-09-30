@@ -11,6 +11,12 @@
 			"hidden": true
 		},
 		{
+			"fieldname": "addedAt",
+			"label": "Added",
+			"component": "ADate",
+			"width": "12ch"
+		},
+		{
 			"fieldname": "productId",
 			"label": "Product ID",
 			"component": "ATextInput",
@@ -29,7 +35,6 @@
 			"label": "Qty",
 			"component": "ANumericInput",
 			"required": true,
-			"default": 1,
 			"width": "8ch",
 			"align": "right"
 		},
@@ -49,5 +54,8 @@
 			"width": "12ch",
 			"align": "right"
 		}
-	]
+	],
+	"defaults": {
+		"quantity": 1
+	}
 }

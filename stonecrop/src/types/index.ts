@@ -1,5 +1,6 @@
 // Re-export all type files
 export * from './client-action'
+export * from './defaults'
 export * from './composable'
 export * from './doctype'
 export * from './field-triggers'
