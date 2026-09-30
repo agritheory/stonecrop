@@ -1,7 +1,7 @@
 import type { ResolvedField, ResolvedLink, ResolvedScalar, ResolvedTable, ResolvedFieldset } from '@stonecrop/aform'
 import { resolvedFieldsToColumns } from '@stonecrop/aform'
 import type { DoctypeField, LinkDeclaration, TableViewConfig, ValueField } from '@stonecrop/schema'
-import { componentCategory, componentLinkExpansion, resolveLinkRenderMode } from '@stonecrop/schema'
+import { componentCategory, componentLinkExpansion, resolveLinkRenderMode, toSlug } from '@stonecrop/schema'
 import { Router } from 'vue-router'
 
 import { composeNewRecord } from './compose-new-record'
@@ -433,11 +433,13 @@ export default class Registry {
 	}
 
 	/**
-	 * Register defaults for a doctype slug (typically from app bootstrap).
+	 * Register defaults for a doctype, by its name or its slug (typically from app bootstrap). Either one is
+	 * keyed the way {@link Doctype.slug} is, so `'OrderItem'` and `'order-item'` register for the same doctype,
+	 * whether or not it has been added yet.
 	 * @public
 	 */
-	registerDefaults(slug: string, source: DefaultsSource): void {
-		this.registeredDefaults.set(slug, source)
+	registerDefaults(doctype: string, source: DefaultsSource): void {
+		this.registeredDefaults.set(toSlug(doctype), source)
 	}
 
 	/**

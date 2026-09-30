@@ -496,7 +496,7 @@ export class Registry {
     getRegisteredDefaults(slug: string): DefaultsSource | undefined;
     initializeRecord(schema: ResolvedField[]): Record<string, any>;
     readonly name: string;
-    registerDefaults(slug: string, source: DefaultsSource): void;
+    registerDefaults(doctype: string, source: DefaultsSource): void;
     readonly registry: Record<string, Doctype>;
     resolveSchema(doctype: Doctype, visited?: Set<string>): ResolvedField[];
     static _root: Registry;

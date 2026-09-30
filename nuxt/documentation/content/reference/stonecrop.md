@@ -1932,10 +1932,10 @@ initializeRecord(schema: ResolvedField[]): Record<string, any>
 
 #### registerDefaults
 
-Register defaults for a doctype slug (typically from app bootstrap).
+Register defaults for a doctype, by its name or its slug (typically from app bootstrap). Either one is keyed the way `slug` is, so `'OrderItem'` and `'order-item'` register for the same doctype, whether or not it has been added yet.
 
 ```typescript
-registerDefaults(slug: string, source: DefaultsSource): void
+registerDefaults(doctype: string, source: DefaultsSource): void
 ```
 
 #### resolveSchema

@@ -1,5 +1,6 @@
 import { z } from 'zod'
 
+import type { DoctypeField, FieldsetField } from './field'
 import { DoctypeFieldSchema, flattenFields, getDisplayField } from './field'
 import { toSlug } from './naming'
 
@@ -400,8 +401,47 @@ export const DoctypeMeta = z
 
 		if (doctype.defaults !== undefined) {
 			rejectFunctionsInDefaultsTree(doctype.defaults, [], ctx)
+			rejectUnknownDefaultsKeys(doctype.defaults, doctype.fields, ctx)
 		}
 	})
+
+/**
+ * Refuse a `defaults` key that names no field of the record, so a typo is reported where it is written rather than
+ * skipped when a new record is composed. The record's keys are `flattenFields`, the same set a new record is built
+ * from. A grouped section's name is refused too: a section only groups fields, and each takes its own entry.
+ *
+ * Only the top level: a row's or an embedded record's keys belong to the linked doctype, which this doctype alone
+ * cannot see.
+ */
+function rejectUnknownDefaultsKeys(
+	defaults: Record<string, unknown>,
+	fields: readonly DoctypeField[],
+	ctx: z.RefinementCtx
+): void {
+	const keys = new Set(flattenFields(fields).map(f => f.fieldname))
+	for (const key of Object.keys(defaults)) {
+		if (keys.has(key)) continue
+		const section = findSection(fields, key)
+		const sectionFields = section ? flattenFields(section.schema).map(f => f.fieldname) : []
+		ctx.addIssue({
+			code: 'custom',
+			path: ['defaults', key],
+			message: section
+				? `defaults key "${key}" names a grouped section, which holds no value of its own; give each of its fields (${sectionFields.join(', ')}) its own entry`
+				: `defaults key "${key}" is not a field of this doctype`,
+		})
+	}
+}
+
+function findSection(fields: readonly DoctypeField[], fieldname: string): FieldsetField | undefined {
+	for (const field of fields) {
+		if (field.kind !== 'fieldset') continue
+		if (field.fieldname === fieldname) return field
+		const inner = findSection(field.schema, fieldname)
+		if (inner) return inner
+	}
+	return undefined
+}
 
 function rejectFunctionsInDefaultsTree(value: unknown, path: Array<string | number>, ctx: z.RefinementCtx): void {
 	if (typeof value === 'function') {

@@ -1,5 +1,11 @@
 import type { DoctypeField, LinkDeclaration, TriggerDefinition, WorkflowMeta } from '@stonecrop/schema'
-import { getRecordIdentity, getRecordIdField, isActionAllowedInState, normalizeFieldKind } from '@stonecrop/schema'
+import {
+	getRecordIdentity,
+	getRecordIdField,
+	isActionAllowedInState,
+	normalizeFieldKind,
+	toSlug,
+} from '@stonecrop/schema'
 import { List } from 'immutable'
 import { Component } from 'vue'
 
@@ -370,9 +376,6 @@ export default class Doctype {
 	 * @public
 	 */
 	get slug() {
-		return this.doctype
-			.replace(/([a-z])([A-Z])/g, '$1-$2')
-			.replace(/[\s_]+/g, '-')
-			.toLowerCase()
+		return toSlug(this.doctype)
 	}
 }

@@ -4,12 +4,12 @@ New records start from the schema floor (`initializeRecord`), then compose-time 
 
 There is one value shape everywhere: a nested object in the same form as `formData` / the HST document, or a function that returns one (or a promise of one). Field entries inside the document may also be functions.
 
-A grouped section is layout, so its fields are the record's own keys and take their entries at the top level: `{ city: "Springfield" }`, not `{ address: { city: "Springfield" } }`. A key that names no field of the record, such as a typo or a section's name, is skipped and reported.
+A grouped section is layout, so its fields are the record's own keys and take their entries at the top level: `{ city: "Springfield" }`, not `{ address: { city: "Springfield" } }`. A key that names no field of the record, such as a typo or a section's name, is refused when the doctype loads (`validateDoctype` checks the top-level keys of `defaults`), and skipped and reported when a new record is composed.
 
 ## Where defaults live
 
 - **`defaults` on the doctype JSON** — best for static documents, including child-table rows (`items: [{ postingDate: "now" }]`).
-- **`registry.registerDefaults(slug, source)`** — same shape; functions are allowed when the doctype is built in memory.
+- **`registry.registerDefaults(doctype, source)`** — same shape; functions are allowed when the doctype is built in memory. `doctype` is its name or its slug (`'OrderItem'` or `'order-item'`).
 - **`registry.setDefaultsLoader(fn)`** — fills registered defaults the first time a **new** record is composed. Schema load and `resolveSchema` never call the loader.
 
 Serialized JSON **cannot** contain functions. `DoctypeMeta` validation rejects them so a file cannot silently drop them on `JSON.stringify`.
@@ -31,7 +31,7 @@ Resolved when the record is composed, on field `default` or inside `defaults`:
 
 | Token     | On date / datetime fields              | Elsewhere        |
 | --------- | -------------------------------------- | ---------------- |
-| `"now"`   | ISO date or datetime for the component | Left as `"now"`  |
+| `"now"`   | Today in the user's time zone (date), or the current moment as an ISO timestamp (datetime) | Left as `"now"`  |
 | `"uuidv7"` | New uuidv7 string                     | Left as `"uuidv7"` |
 
 Child tables stay `[]` unless `defaults` includes rows. Each row starts from its own doctype's defaults (a linked table, whatever key the link is declared under) or from its columns (an inline table), then takes the row's entries. A row that needs an id sets that field to `"uuidv7"`.

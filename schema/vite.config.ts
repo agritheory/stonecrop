@@ -23,6 +23,9 @@ export default defineConfig({
 				// drags Zod along with it. It does not, and must not: Zod in a Nitro SSR entry
 				// collides with the `process` Nitro imports there and 500s every request.
 				record: resolve(import.meta.dirname, 'src/record.ts'),
+				// The same for the naming rules: stonecrop's `Registry`, which server bundles include, keys doctypes
+				// by `toSlug`.
+				naming: resolve(import.meta.dirname, 'src/naming.ts'),
 			},
 			name: '@stonecrop/schema',
 			formats: ['es'],

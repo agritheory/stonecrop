@@ -12,6 +12,17 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
 }
 
 /**
+ * The day `now` falls on in the user's own time zone, as `YYYY-MM-DD`: the same day the date picker shows as
+ * today. Not the UTC day, which is tomorrow in the evening in the Americas and yesterday in the morning in Asia.
+ */
+function localDay(now: Date): string {
+	const year = String(now.getFullYear()).padStart(4, '0')
+	const month = String(now.getMonth() + 1).padStart(2, '0')
+	const day = String(now.getDate()).padStart(2, '0')
+	return `${year}-${month}-${day}`
+}
+
+/**
  * Resolve compose-time tokens on a scalar value for a field component.
  * @internal
  */
@@ -27,7 +38,7 @@ export function resolveDefaultToken(value: unknown, component: string | undefine
 		return now.toISOString()
 	}
 	if (category === 'date') {
-		return now.toISOString().slice(0, 10)
+		return localDay(now)
 	}
 	return value
 }

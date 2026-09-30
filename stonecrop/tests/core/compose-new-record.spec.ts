@@ -14,7 +14,7 @@ describe('composeNewRecord', { tags: ['unit'] }, () => {
 	})
 
 	it('resolves "now" on date and datetime fields at compose time', async () => {
-		const fixed = new Date('2026-03-28T15:04:05.000Z')
+		const fixed = new Date(2026, 2, 28, 15, 4, 5)
 		const doctype = new Doctype(
 			'Event',
 			List([
@@ -48,7 +48,7 @@ describe('composeNewRecord', { tags: ['unit'] }, () => {
 	})
 
 	it('resolves "now" inside a defaults table row', async () => {
-		const fixed = new Date('2026-03-28T12:00:00.000Z')
+		const fixed = new Date(2026, 2, 28, 12)
 		const line = new Doctype('Line', List([{ kind: 'field', fieldname: 'postingDate', component: 'ADate' }] as any), {
 			id: 'line',
 			initial: 'draft',
@@ -96,6 +96,19 @@ describe('composeNewRecord', { tags: ['unit'] }, () => {
 
 		const { record } = await registry.composeNewRecord(doctype)
 		expect(record.status).toBe('Draft')
+	})
+
+	it("applies defaults registered under the doctype's name", async () => {
+		const doctype = new Doctype(
+			'OrderItem',
+			List([{ kind: 'field', fieldname: 'qty', component: 'ANumericInput' }] as any),
+			{ id: 'order-item', initial: 'draft', states: { draft: {} } } as any
+		)
+		registry.addDoctype(doctype)
+		registry.registerDefaults('OrderItem', { qty: 5 })
+
+		const { record } = await registry.composeNewRecord(doctype)
+		expect(record.qty).toBe(5)
 	})
 
 	it('waits for an awaitable field before returning the record', async () => {
@@ -156,6 +169,35 @@ describe('composeNewRecord', { tags: ['unit'] }, () => {
 		registry.addDoctype(doctype)
 		registry.resolveSchema(doctype)
 		expect(loader).not.toHaveBeenCalled()
+	})
+})
+
+// "now" on a date field is the day on the user's own calendar. Pinned zones, because the runner's own zone hides
+// the difference: CI runs in UTC, where the calendar day and the UTC day agree.
+describe.each(['America/Los_Angeles', 'Asia/Tokyo'])('composeNewRecord gives today in %s', zone => {
+	let registry: Registry
+
+	beforeEach(() => {
+		vi.stubEnv('TZ', zone)
+		Registry._root = undefined as any
+		registry = new Registry()
+	})
+
+	afterEach(() => {
+		vi.unstubAllEnvs()
+	})
+
+	it("as the user's own date, morning and evening", async () => {
+		const doctype = new Doctype(
+			'Visit',
+			List([{ kind: 'field', fieldname: 'day', component: 'ADate', default: 'now' }] as any),
+			{ id: 'visit', initial: 'draft', states: { draft: {} } } as any
+		)
+		registry.addDoctype(doctype)
+
+		const morning = await registry.composeNewRecord(doctype, { now: new Date(2026, 8, 29, 8) })
+		const evening = await registry.composeNewRecord(doctype, { now: new Date(2026, 8, 29, 20) })
+		expect([morning.record.day, evening.record.day]).toEqual(['2026-09-29', '2026-09-29'])
 	})
 })
 
