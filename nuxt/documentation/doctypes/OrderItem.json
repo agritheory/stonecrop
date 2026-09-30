@@ -35,7 +35,6 @@
 			"label": "Qty",
 			"component": "ANumericInput",
 			"required": true,
-			"default": 1,
 			"width": "8ch",
 			"align": "right"
 		},
@@ -55,5 +54,8 @@
 			"width": "12ch",
 			"align": "right"
 		}
-	]
+	],
+	"defaults": {
+		"quantity": 1
+	}
 }

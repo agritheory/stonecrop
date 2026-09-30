@@ -677,7 +677,6 @@ export interface ValueField {
     component: string;
     computed?: boolean;
     config?: TableViewConfig;
-    default?: unknown;
     doctype?: string;
     edit?: boolean;
     fieldname: string;
@@ -729,7 +728,7 @@ export const ValueFieldSchema: z.ZodObject<{
     required: z.ZodOptional<z.ZodBoolean>;
     readOnly: z.ZodOptional<z.ZodBoolean>;
     hidden: z.ZodOptional<z.ZodBoolean>;
-    default: z.ZodOptional<z.ZodUnknown>;
+    default: z.ZodOptional<z.ZodNever>;
     validation: z.ZodOptional<z.ZodObject<{
         errorMessage: z.ZodString;
     }, z.core.$loose>>;

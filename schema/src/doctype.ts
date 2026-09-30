@@ -342,9 +342,9 @@ export const DoctypeMeta = z
 		inherits: z.string().optional(),
 
 		/**
-		 * Default values for new records — nested like the composed form/HST document.
-		 * Use field `default` for single-field static values; use this for document shape (including child-table rows).
-		 * Serialized JSON cannot contain functions; see superRefine on `defaults`.
+		 * Starting values for new records, nested like the record itself (including child-table rows). The one place a
+		 * doctype gives them: a field has no default of its own. Serialized JSON cannot contain functions; see
+		 * superRefine on `defaults`.
 		 */
 		defaults: z.record(z.string(), z.unknown()).optional(),
 	})

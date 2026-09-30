@@ -62,8 +62,6 @@ export function resolveTokensInRecord(
 		if (field.holds === 'value') {
 			if (field.fieldname in out) {
 				out[field.fieldname] = resolveDefaultToken(value, field.component, now)
-			} else if (field.default !== undefined) {
-				out[field.fieldname] = resolveDefaultToken(field.default, field.component, now)
 			}
 		} else if (field.holds === 'record') {
 			if (isPlainObject(value)) {

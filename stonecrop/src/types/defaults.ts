@@ -11,7 +11,20 @@ export type DefaultsContext = {
 }
 
 /**
- * A value inside a defaults document.
+ * A fixed starting value, as a doctype file can hold it: plain data, nested like the record.
+ * @public
+ */
+export type DefaultsData = string | number | boolean | null | DefaultsData[] | { [field: string]: DefaultsData }
+
+/**
+ * A doctype's own starting values for a new record: fixed data in the shape of the record. Anything worked out when
+ * a record is made (today's date, a value looked up for the user's company) is registered on the registry instead.
+ * @public
+ */
+export type DoctypeDefaults = { [field: string]: DefaultsData }
+
+/**
+ * A value inside a registered defaults document.
  * @public
  */
 export type DefaultsValue =
@@ -38,18 +51,10 @@ export type DefaultsDocument = {
 export type DefaultsSource = DefaultsDocument | ((ctx: DefaultsContext) => DefaultsDocument | Promise<DefaultsDocument>)
 
 /**
- * Lazy loader for defaults that are not on the doctype JSON.
- * @public
- */
-export type DefaultsLoader = (slug: string) => DefaultsSource | undefined | Promise<DefaultsSource | undefined>
-
-/**
  * Options for composing a new record.
  * @public
  */
 export type ComposeNewRecordOptions = {
-	/** Values the caller already knows (for example, the customer a form was opened from); these win. */
-	overlay?: DefaultsDocument
 	/** The moment `"now"` resolves to. Defaults to the time of the call. */
 	now?: Date
 	/** How long to wait for starting values that have not arrived, in milliseconds. */

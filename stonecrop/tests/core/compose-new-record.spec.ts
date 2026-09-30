@@ -18,10 +18,14 @@ describe('composeNewRecord', { tags: ['unit'] }, () => {
 		const doctype = new Doctype(
 			'Event',
 			List([
-				{ kind: 'field', fieldname: 'onDay', component: 'ADate', default: 'now' },
-				{ kind: 'field', fieldname: 'at', component: 'ADateTime', default: 'now' },
+				{ kind: 'field', fieldname: 'onDay', component: 'ADate' },
+				{ kind: 'field', fieldname: 'at', component: 'ADateTime' },
 			] as any),
-			{ id: 'event', initial: 'draft', states: { draft: {} } } as any
+			{ id: 'event', initial: 'draft', states: { draft: {} } } as any,
+			undefined,
+			undefined,
+			undefined,
+			{ onDay: 'now', at: 'now' }
 		)
 		registry.addDoctype(doctype)
 
@@ -70,11 +74,15 @@ describe('composeNewRecord', { tags: ['unit'] }, () => {
 		expect(record.lines).toEqual([{ postingDate: '2026-03-28' }])
 	})
 
-	it('generates uuidv7 for id when default is the token', async () => {
+	it('generates uuidv7 for id when its starting value is the token', async () => {
 		const doctype = new Doctype(
 			'Row',
-			List([{ kind: 'field', fieldname: 'id', component: 'ATextInput', default: 'uuidv7' }] as any),
-			{ id: 'row', initial: 'draft', states: { draft: {} } } as any
+			List([{ kind: 'field', fieldname: 'id', component: 'ATextInput' }] as any),
+			{ id: 'row', initial: 'draft', states: { draft: {} } } as any,
+			undefined,
+			undefined,
+			undefined,
+			{ id: 'uuidv7' }
 		)
 		registry.addDoctype(doctype)
 
@@ -98,6 +106,15 @@ describe('composeNewRecord', { tags: ['unit'] }, () => {
 		expect(record.status).toBe('Draft')
 	})
 
+	it('warns when a second registration replaces the first', () => {
+		const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
+		registry.registerDefaults('order', { status: 'Draft' })
+		expect(warn).not.toHaveBeenCalled()
+		registry.registerDefaults('Order', { status: 'Open' })
+		expect(warn).toHaveBeenCalledWith(expect.stringContaining('"order"'))
+		warn.mockRestore()
+	})
+
 	it("applies defaults registered under the doctype's name", async () => {
 		const doctype = new Doctype(
 			'OrderItem',
@@ -115,10 +132,14 @@ describe('composeNewRecord', { tags: ['unit'] }, () => {
 		const doctype = new Doctype(
 			'Order',
 			List([
-				{ kind: 'field', fieldname: 'note', component: 'ATextInput', default: 'ready' },
+				{ kind: 'field', fieldname: 'note', component: 'ATextInput' },
 				{ kind: 'field', fieldname: 'customer', component: 'ATextInput' },
 			] as any),
-			{ id: 'order', initial: 'draft', states: { draft: {} } } as any
+			{ id: 'order', initial: 'draft', states: { draft: {} } } as any,
+			undefined,
+			undefined,
+			undefined,
+			{ note: 'ready' }
 		)
 		registry.addDoctype(doctype)
 
@@ -158,17 +179,25 @@ describe('composeNewRecord', { tags: ['unit'] }, () => {
 		expect(record.lines).toEqual([])
 	})
 
-	it('does not invoke the defaults loader during resolveSchema', () => {
-		const loader = vi.fn()
-		registry.setDefaultsLoader(loader)
-		const doctype = new Doctype('Task', List([{ kind: 'field', fieldname: 'title', component: 'ATextInput' }] as any), {
-			id: 'task',
-			initial: 'draft',
-			states: { draft: {} },
-		} as any)
+	it("applies the app's registration over the doctype's own defaults, and lets it read them", async () => {
+		const doctype = new Doctype(
+			'Order',
+			List([
+				{ kind: 'field', fieldname: 'company', component: 'ATextInput' },
+				{ kind: 'field', fieldname: 'status', component: 'ATextInput' },
+				{ kind: 'field', fieldname: 'warehouse', component: 'ATextInput' },
+			] as any),
+			{ id: 'order', initial: 'draft', states: { draft: {} } } as any,
+			undefined,
+			undefined,
+			undefined,
+			{ company: 'ACME', status: 'Draft' }
+		)
 		registry.addDoctype(doctype)
-		registry.resolveSchema(doctype)
-		expect(loader).not.toHaveBeenCalled()
+		registry.registerDefaults('order', { status: 'Open', warehouse: ({ record }) => `${String(record.company)} main` })
+
+		const { record } = await registry.composeNewRecord(doctype)
+		expect(record).toEqual({ company: 'ACME', status: 'Open', warehouse: 'ACME main' })
 	})
 })
 
@@ -190,8 +219,12 @@ describe.each(['America/Los_Angeles', 'Asia/Tokyo'])('composeNewRecord gives tod
 	it("as the user's own date, morning and evening", async () => {
 		const doctype = new Doctype(
 			'Visit',
-			List([{ kind: 'field', fieldname: 'day', component: 'ADate', default: 'now' }] as any),
-			{ id: 'visit', initial: 'draft', states: { draft: {} } } as any
+			List([{ kind: 'field', fieldname: 'day', component: 'ADate' }] as any),
+			{ id: 'visit', initial: 'draft', states: { draft: {} } } as any,
+			undefined,
+			undefined,
+			undefined,
+			{ day: 'now' }
 		)
 		registry.addDoctype(doctype)
 
@@ -224,14 +257,6 @@ describe('composeNewRecord waits for every starting value', { tags: ['unit'] }, 
 
 	afterEach(() => {
 		warn.mockRestore()
-	})
-
-	it('keeps a value the caller pre-filled over a looked-up default', async () => {
-		const doctype = order('customer')
-		registry.registerDefaults('order', { customer: () => later('first-customer-in-db') as any })
-
-		const { record } = await registry.composeNewRecord(doctype, { overlay: { customer: 'ACME' } })
-		expect(record.customer).toBe('ACME')
 	})
 
 	it('keeps the other values when one lookup fails, and reports the failure', async () => {
@@ -268,30 +293,6 @@ describe('composeNewRecord waits for every starting value', { tags: ['unit'] }, 
 		const { record } = await registry.composeNewRecord(doctype)
 		expect(record.status).toBe('')
 		expect(String(warn.mock.calls.flat().join(' '))).toContain('registered defaults')
-	})
-
-	it('tries the loader again for the next new record after it fails', async () => {
-		const doctype = order('status')
-		let calls = 0
-		registry.setDefaultsLoader(async () => {
-			if (++calls === 1) throw new Error('network blip')
-			return { status: 'Open' }
-		})
-
-		const first = await registry.composeNewRecord(doctype)
-		const second = await registry.composeNewRecord(doctype)
-		expect(first.record.status).toBe('')
-		expect(second.record.status).toBe('Open')
-	})
-
-	it('gives two new records opened at once the loaded values, from one load', async () => {
-		const doctype = order('status')
-		const loader = vi.fn(() => later({ status: 'Open' }))
-		registry.setDefaultsLoader(loader)
-
-		const [a, b] = await Promise.all([registry.composeNewRecord(doctype), registry.composeNewRecord(doctype)])
-		expect([a.record.status, b.record.status]).toEqual(['Open', 'Open'])
-		expect(loader).toHaveBeenCalledTimes(1)
 	})
 
 	it('waits for a value nested inside a looked-up document', async () => {
@@ -373,15 +374,15 @@ describe('composeNewRecord fills the fields inside a grouped section', { tags: [
 		warn.mockRestore()
 	})
 
-	it('starts a date inside a section as today, from its field default or the defaults document', async () => {
+	it('starts a date inside a section as today', async () => {
 		const doctype = new Doctype(
 			'Visit',
-			List([section('details', date('onDay', { default: 'now' }), date('day'))] as any),
+			List([section('details', date('onDay'), date('day'))] as any),
 			workflow('visit'),
 			undefined,
 			undefined,
 			undefined,
-			{ day: 'now' }
+			{ onDay: 'now', day: 'now' }
 		)
 		registry.addDoctype(doctype)
 
@@ -392,8 +393,12 @@ describe('composeNewRecord fills the fields inside a grouped section', { tags: [
 	it('reaches a section inside a section', async () => {
 		const doctype = new Doctype(
 			'Visit',
-			List([section('outer', section('inner', date('day', { default: 'now' })))] as any),
-			workflow('visit')
+			List([section('outer', section('inner', date('day')))] as any),
+			workflow('visit'),
+			undefined,
+			undefined,
+			undefined,
+			{ day: 'now' }
 		)
 		registry.addDoctype(doctype)
 
@@ -404,8 +409,12 @@ describe('composeNewRecord fills the fields inside a grouped section', { tags: [
 	it('gives a line item inside a section its own starting values', async () => {
 		const line = new Doctype(
 			'Line',
-			List([{ kind: 'field', fieldname: 'qty', component: 'ANumericInput', default: 1 }] as any),
-			workflow('line')
+			List([{ kind: 'field', fieldname: 'qty', component: 'ANumericInput' }] as any),
+			workflow('line'),
+			undefined,
+			undefined,
+			undefined,
+			{ qty: 1 }
 		)
 		const parent = new Doctype(
 			'Parent',
@@ -443,8 +452,12 @@ describe('composeNewRecord fills the fields inside a grouped section', { tags: [
 	it('gives a line item its own starting values when its link is keyed differently from its field', async () => {
 		const line = new Doctype(
 			'Line',
-			List([{ kind: 'field', fieldname: 'qty', component: 'ANumericInput', default: 1 }] as any),
-			workflow('line')
+			List([{ kind: 'field', fieldname: 'qty', component: 'ANumericInput' }] as any),
+			workflow('line'),
+			undefined,
+			undefined,
+			undefined,
+			{ qty: 1 }
 		)
 		const parent = new Doctype(
 			'Parent',
@@ -465,8 +478,12 @@ describe('composeNewRecord fills the fields inside a grouped section', { tags: [
 	it("gives the rows of a table inside an embedded record their own doctype's starting values", async () => {
 		const line = new Doctype(
 			'Line',
-			List([{ kind: 'field', fieldname: 'qty', component: 'ANumericInput', default: 1 }] as any),
-			workflow('line')
+			List([{ kind: 'field', fieldname: 'qty', component: 'ANumericInput' }] as any),
+			workflow('line'),
+			undefined,
+			undefined,
+			undefined,
+			{ qty: 1 }
 		)
 		const shipment = new Doctype(
 			'Shipment',
@@ -495,8 +512,12 @@ describe('composeNewRecord fills the fields inside a grouped section', { tags: [
 	it('reports a table row given as something other than a document, and starts it empty', async () => {
 		const line = new Doctype(
 			'Line',
-			List([{ kind: 'field', fieldname: 'qty', component: 'ANumericInput', default: 1 }] as any),
-			workflow('line')
+			List([{ kind: 'field', fieldname: 'qty', component: 'ANumericInput' }] as any),
+			workflow('line'),
+			undefined,
+			undefined,
+			undefined,
+			{ qty: 1 }
 		)
 		const parent = new Doctype(
 			'Parent',
@@ -525,5 +546,54 @@ describe('composeNewRecord fills the fields inside a grouped section', { tags: [
 		expect(record).toEqual({ day: null })
 		expect(lookup).not.toHaveBeenCalled()
 		expect(String(warn.mock.calls.flat().join(' '))).toContain('dya: no field by that name')
+	})
+
+	it("starts an embedded record from its own doctype's defaults, under the containing doctype's", async () => {
+		const address = new Doctype(
+			'Address',
+			List([
+				{ kind: 'field', fieldname: 'city', component: 'ATextInput' },
+				{ kind: 'field', fieldname: 'country', component: 'ATextInput' },
+			] as any),
+			workflow('address'),
+			undefined,
+			undefined,
+			undefined,
+			{ city: 'Springfield', country: 'US' }
+		)
+		const order = new Doctype(
+			'Order',
+			List([{ kind: 'field', fieldname: 'address', component: 'AForm', doctype: 'address' }] as any),
+			workflow('order'),
+			undefined,
+			{ address: { target: 'address', cardinality: 'one', fieldname: 'address' } },
+			undefined,
+			{ address: { city: 'Portland' } }
+		)
+		registry.addDoctype(address)
+		registry.addDoctype(order)
+
+		const { record } = await registry.composeNewRecord(order)
+		expect(record.address).toEqual({ city: 'Portland', country: 'US' })
+	})
+
+	it('stops and reports defaults that would start a row of the same doctype forever', async () => {
+		const category = new Doctype(
+			'Category',
+			List([
+				{ kind: 'field', fieldname: 'name', component: 'ATextInput' },
+				{ kind: 'field', fieldname: 'children', component: 'ATable', doctype: 'category' },
+			] as any),
+			workflow('category'),
+			undefined,
+			{ children: { target: 'category', cardinality: 'noneOrMany', fieldname: 'children' } },
+			undefined,
+			{ name: 'New', children: [{}] }
+		)
+		registry.addDoctype(category)
+
+		const { record } = await registry.composeNewRecord(category)
+		expect(record).toEqual({ name: 'New', children: [{ name: '', children: [] }] })
+		expect(String(warn.mock.calls.flat().join(' '))).toContain('would never end')
 	})
 })

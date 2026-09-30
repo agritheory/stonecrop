@@ -1,6 +1,6 @@
 import type { DoctypeField, LinkDeclaration, WorkflowMeta } from '@stonecrop/schema'
 
-import type { DefaultsSource } from './defaults'
+import type { DoctypeDefaults } from './defaults'
 import { List } from 'immutable'
 import type { AnyStateNodeConfig, UnknownMachineConfig } from 'xstate'
 
@@ -34,6 +34,6 @@ export type DoctypeConfig = {
 	workflow?: UnknownMachineConfig | WorkflowMeta
 	/** Ancestor doctype for inheritance */
 	inherits?: string
-	/** Document-level defaults for new records */
-	defaults?: DefaultsSource
+	/** Starting values for new records: fixed data in the shape of the record */
+	defaults?: DoctypeDefaults
 }

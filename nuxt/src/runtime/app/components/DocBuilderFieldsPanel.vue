@@ -156,10 +156,7 @@ const BOOL_PROPS = [
 	{ key: 'primaryKey', label: 'Primary key' },
 	{ key: 'computed', label: 'Computed (no DB column)' },
 ]
-const JSON_PROPS = [
-	{ key: 'options', label: 'Options' },
-	{ key: 'default', label: 'Default' },
-]
+const JSON_PROPS = [{ key: 'options', label: 'Options' }]
 const FIELD_COLUMNS = [
 	{ name: 'fieldname', label: 'ID', sortable: false, filterable: true },
 	{ name: 'label', label: 'Label', sortable: false },

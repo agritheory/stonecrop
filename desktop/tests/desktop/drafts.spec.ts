@@ -16,10 +16,10 @@ function buildTaskDoctype() {
 	const fields = List([
 		{ kind: 'field' as const, fieldname: 'id', label: 'ID', component: 'ATextInput', primaryKey: true },
 		{ kind: 'field' as const, fieldname: 'title', label: 'Title', component: 'ATextInput' },
-		{ kind: 'field' as const, fieldname: 'status', label: 'Status', component: 'ATextInput', default: 'draft' },
+		{ kind: 'field' as const, fieldname: 'status', label: 'Status', component: 'ATextInput' },
 	])
 	const workflow = { states: ['draft'], actions: { save: { label: 'Save', selfTransition: true } } }
-	return new Doctype('task', fields as any, workflow as any)
+	return new Doctype('task', fields as any, workflow as any, undefined, undefined, undefined, { status: 'draft' })
 }
 
 const adapterFor = (recordId: string, view: 'record' | 'records' = 'record'): RouteAdapter => ({
@@ -122,7 +122,10 @@ describe('Desktop draft records', { tags: ['component'] }, () => {
 	// than a form whose typing a late value could overwrite, and offers no action on a record not yet there.
 	it('shows the loading state, not the form, until the starting values arrive', async () => {
 		let release!: () => void
-		registry.setDefaultsLoader(() => new Promise(resolve => (release = () => resolve({ title: 'Call the supplier' }))))
+		registry.registerDefaults(
+			'task',
+			() => new Promise(resolve => (release = () => resolve({ title: 'Call the supplier' })))
+		)
 		const wrapper = mountAt('new')
 		await flushPromises()
 
@@ -135,8 +138,8 @@ describe('Desktop draft records', { tags: ['component'] }, () => {
 		expect(wrapper.findComponent(AForm).props('data')).toMatchObject({ title: 'Call the supplier', status: 'draft' })
 	})
 
-	it('opens the form with the declared defaults when loading the rest fails', async () => {
-		registry.setDefaultsLoader(() => Promise.reject(new Error('defaults endpoint 500')))
+	it("opens the form with the doctype's defaults when the app's fail", async () => {
+		registry.registerDefaults('task', () => Promise.reject(new Error('defaults endpoint 500')))
 		const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
 		const wrapper = mountAt('new')
 		await flushPromises()

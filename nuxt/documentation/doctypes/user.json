@@ -30,8 +30,7 @@
 				"MANAGER",
 				"USER",
 				"GUEST"
-			],
-			"default": "USER"
+			]
 		},
 		{
 			"fieldname": "status",
@@ -42,8 +41,7 @@
 				"SUSPENDED",
 				"PENDING",
 				"DELETED"
-			],
-			"default": "PENDING"
+			]
 		},
 		{
 			"fieldname": "createdAt",
@@ -74,6 +72,10 @@
 			"component": "ATextInput"
 		}
 	],
+	"defaults": {
+		"role": "USER",
+		"status": "PENDING"
+	},
 	"workflow": {
 		"states": [
 			"PENDING",

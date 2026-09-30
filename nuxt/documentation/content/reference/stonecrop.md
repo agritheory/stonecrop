@@ -11,7 +11,7 @@ description: Core orchestration with Registry, HST, and composables
 
 ### composeNewRecord
 
-Build a new record, once, from every starting value: the schema's empty values and field defaults, the doctype's `defaults`, the source registered for it (after the defaults loader, if one is set), then the caller's `overlay`. Layers apply in that order, so a later one wins however long an earlier one took.
+Build a new record, once, from every starting value: the schema's empty values, the doctype's `defaults`, then the source the app registered for it. Layers apply in that order, so the registered source wins however long the doctype's took.
 
 Nothing is returned until every value is in, so nothing is written to the record after a user can see it. A value that throws, rejects, or has not arrived within `timeoutMs` (default `DEFAULTS_TIMEOUT_MS`) is skipped and reported with `console.warn`; the record still opens with everything else.
 
@@ -1183,7 +1183,6 @@ Options for composing a new record.
 
 ```typescript
 export type ComposeNewRecordOptions = {
-    overlay?: DefaultsDocument;
     now?: Date;
     timeoutMs?: number;
 };
@@ -1225,6 +1224,18 @@ export type DefaultsContext = {
 };
 ```
 
+### DefaultsData
+
+A fixed starting value, as a doctype file can hold it: plain data, nested like the record.
+
+**Definition:**
+
+```typescript
+export type DefaultsData = string | number | boolean | null | DefaultsData[] | {
+    [field: string]: DefaultsData;
+};
+```
+
 ### DefaultsDocument
 
 Nested object in the same shape as a composed record (HST / formData).
@@ -1235,16 +1246,6 @@ Nested object in the same shape as a composed record (HST / formData).
 export type DefaultsDocument = {
     [field: string]: DefaultsValue;
 };
-```
-
-### DefaultsLoader
-
-Lazy loader for defaults that are not on the doctype JSON.
-
-**Definition:**
-
-```typescript
-export type DefaultsLoader = (slug: string) => DefaultsSource | undefined | Promise<DefaultsSource | undefined>;
 ```
 
 ### DefaultsSource
@@ -1259,7 +1260,7 @@ export type DefaultsSource = DefaultsDocument | ((ctx: DefaultsContext) => Defau
 
 ### DefaultsValue
 
-A value inside a defaults document.
+A value inside a registered defaults document.
 
 **Definition:**
 
@@ -1282,7 +1283,19 @@ export type DoctypeConfig = {
     links?: Record<string, LinkDeclaration>;
     workflow?: UnknownMachineConfig | WorkflowMeta;
     inherits?: string;
-    defaults?: DefaultsSource;
+    defaults?: DoctypeDefaults;
+};
+```
+
+### DoctypeDefaults
+
+A doctype's own starting values for a new record: fixed data in the shape of the record. Anything worked out when a record is made (today's date, a value looked up for the user's company) is registered on the registry instead.
+
+**Definition:**
+
+```typescript
+export type DoctypeDefaults = {
+    [field: string]: DefaultsData;
 };
 ```
 
@@ -1513,7 +1526,7 @@ Doctype runtime class with Immutable.js collections for HST change tracking.
 **Constructor:**
 
 ```typescript
-new Doctype(doctype: string, schema: ImmutableDoctype['schema'], workflow: ImmutableDoctype['workflow'], component: Component, links: Record<string, LinkDeclaration>, displayField: string, defaults: DefaultsSource)
+new Doctype(doctype: string, schema: ImmutableDoctype['schema'], workflow: ImmutableDoctype['workflow'], component: Component, links: Record<string, LinkDeclaration>, displayField: string, defaults: DoctypeDefaults)
 ```
 
 **Parameters:**
@@ -1526,14 +1539,14 @@ new Doctype(doctype: string, schema: ImmutableDoctype['schema'], workflow: Immut
 | component | `Component` | Optional Vue component for rendering the doctype |
 | links | `Record<string, LinkDeclaration>` | Optional relationship links to other doctypes |
 | displayField | `string` | Optional field used when displaying references to this doctype |
-| defaults | `DefaultsSource` |  |
+| defaults | `DoctypeDefaults` |  |
 
 **Properties:**
 
 | Property | Type | Description |
 |----------|------|-------------|
 | component | `Component` | The doctype component |
-| defaults | `DefaultsSource` | Document-level defaults for new records (static document or in-memory function). |
+| defaults | `DoctypeDefaults` | Starting values for new records: fixed data in the shape of the record. |
 | displayField | `string` | Field on this doctype used when displaying a reference to one of its records. |
 | doctype | `string` | The doctype name |
 | links | `Record<string, LinkDeclaration>` | Relationship links to other doctypes |
@@ -1918,7 +1931,7 @@ getDoctype(slug: string): Doctype | undefined
 
 Initialize a new record with default values based on a resolved schema. Narrows by `kind` discriminator for precise branch selection.
 
-- `kind: 'table'` or `kind: 'link'` → `[]` or `{}` - `kind: 'fieldset'` → its children, at the top level of the record: a fieldset is layout - `kind: 'field'` → derives the default from the component's category; falls back to `null`
+- `kind: 'table'` or `kind: 'link'` → `[]` or `{}` - `kind: 'fieldset'` → its children, at the top level of the record: a fieldset is layout - `kind: 'field'` → an empty value for the component's category; falls back to `null`
 
 ```typescript
 initializeRecord(schema: ResolvedField[]): Record<string, any>
@@ -1932,7 +1945,9 @@ initializeRecord(schema: ResolvedField[]): Record<string, any>
 
 #### registerDefaults
 
-Register defaults for a doctype, by its name or its slug (typically from app bootstrap). Either one is keyed the way `slug` is, so `'OrderItem'` and `'order-item'` register for the same doctype, whether or not it has been added yet.
+Register the app's starting values for a doctype, by its name or its slug (typically from app bootstrap). Either one is keyed the way `slug` is, so `'OrderItem'` and `'order-item'` register for the same doctype, whether or not it has been added yet.
+
+They apply over the doctype's own `defaults` for every new record, and a function here runs for each one, so it can work out what a doctype file cannot (today's date, a value looked up for the user's company). A doctype takes one registration: a second replaces the first, with a warning.
 
 ```typescript
 registerDefaults(doctype: string, source: DefaultsSource): void
@@ -1956,14 +1971,6 @@ resolveSchema(doctype: Doctype, visited: Set<string>): ResolvedField[]
 |-----------|------|-------------|
 | doctype | `Doctype` | The doctype to resolve |
 | visited | `Set<string>` | Internal — set of already-visited doctype slugs for cycle detection |
-
-#### setDefaultsLoader
-
-Lazy-load defaults from an external source the first time a new record is composed.
-
-```typescript
-setDefaultsLoader(loader: DefaultsLoader): void
-```
 
 ### SchemaValidator
 

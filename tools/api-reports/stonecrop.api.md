@@ -95,7 +95,6 @@ export function composeNewRecord(registry: Registry, doctype: Doctype, options?:
 
 // @public
 export type ComposeNewRecordOptions = {
-    overlay?: DefaultsDocument;
     now?: Date;
     timeoutMs?: number;
 };
@@ -134,12 +133,14 @@ export type DefaultsContext = {
 };
 
 // @public
-export type DefaultsDocument = {
-    [field: string]: DefaultsValue;
+export type DefaultsData = string | number | boolean | null | DefaultsData[] | {
+    [field: string]: DefaultsData;
 };
 
 // @public
-export type DefaultsLoader = (slug: string) => DefaultsSource | undefined | Promise<DefaultsSource | undefined>;
+export type DefaultsDocument = {
+    [field: string]: DefaultsValue;
+};
 
 // @public
 export type DefaultsSource = DefaultsDocument | ((ctx: DefaultsContext) => DefaultsDocument | Promise<DefaultsDocument>);
@@ -149,9 +150,9 @@ export type DefaultsValue = string | number | boolean | null | DefaultsDocument 
 
 // @public
 export class Doctype {
-    constructor(doctype: string, schema: ImmutableDoctype['schema'], workflow: ImmutableDoctype['workflow'], component?: Component, links?: Record<string, LinkDeclaration>, displayField?: string, defaults?: DefaultsSource);
+    constructor(doctype: string, schema: ImmutableDoctype['schema'], workflow: ImmutableDoctype['workflow'], component?: Component, links?: Record<string, LinkDeclaration>, displayField?: string, defaults?: DoctypeDefaults);
     readonly component?: Component;
-    readonly defaults?: DefaultsSource;
+    readonly defaults?: DoctypeDefaults;
     readonly displayField?: string;
     readonly doctype: string;
     static fromObject(config: DoctypeConfig): Doctype;
@@ -187,7 +188,12 @@ export type DoctypeConfig = {
     links?: Record<string, LinkDeclaration>;
     workflow?: UnknownMachineConfig | WorkflowMeta;
     inherits?: string;
-    defaults?: DefaultsSource;
+    defaults?: DoctypeDefaults;
+};
+
+// @public
+export type DoctypeDefaults = {
+    [field: string]: DefaultsData;
 };
 
 // @public
@@ -481,8 +487,6 @@ export class Registry {
     constructor(router?: Router, getMeta?: (routeContext: RouteContext) => Doctype | Promise<Doctype>);
     addDoctype(doctype: Doctype): void;
     composeNewRecord(doctype: Doctype, options?: ComposeNewRecordOptions): Promise<ComposeNewRecordResult>;
-    // @internal (undocumented)
-    ensureDefaultsSourceLoaded(slug: string): Promise<void>;
     getAncestorLinks(doctypeSlug: string): Array<LinkDeclaration & {
         fieldname: string;
         doctype: string;
@@ -501,7 +505,6 @@ export class Registry {
     resolveSchema(doctype: Doctype, visited?: Set<string>): ResolvedField[];
     static _root: Registry;
     readonly router?: Router;
-    setDefaultsLoader(loader: DefaultsLoader): void;
 }
 
 // @public

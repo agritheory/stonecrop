@@ -26,8 +26,7 @@
 			"fieldname": "status",
 			"label": "Status",
 			"component": "ADropdown",
-			"options": ["Todo", "In Progress", "Done"],
-			"default": "Todo"
+			"options": ["Todo", "In Progress", "Done"]
 		},
 		{
 			"fieldname": "description",
@@ -46,6 +45,9 @@
 			"mode": "display"
 		}
 	],
+	"defaults": {
+		"status": "Todo"
+	},
 	"workflow": {
 		"states": ["Todo", "In Progress", "Done"],
 		"actions": {

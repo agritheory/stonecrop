@@ -23,13 +23,13 @@ function buildGadgetDoctype() {
 			label: 'Info',
 			component: 'AFieldset',
 			schema: [
-				{ kind: 'field' as const, fieldname: 'color', label: 'Color', component: 'ATextInput', default: 'grey' },
+				{ kind: 'field' as const, fieldname: 'color', label: 'Color', component: 'ATextInput' },
 				{ kind: 'field' as const, fieldname: 'weight', label: 'Weight', component: 'ATextInput' },
 			],
 		},
 	])
 	const workflow = { states: ['draft'], actions: { save: { label: 'Save', selfTransition: true } } }
-	return new Doctype('gadget', fields as any, workflow as any)
+	return new Doctype('gadget', fields as any, workflow as any, undefined, undefined, undefined, { color: 'grey' })
 }
 
 const adapterFor = (recordId: string): RouteAdapter => ({

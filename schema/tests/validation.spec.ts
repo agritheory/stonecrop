@@ -176,7 +176,6 @@ describe('Field Validation', { tags: ['unit'] }, () => {
 				readOnly: false,
 				edit: true,
 				hidden: false,
-				default: 'pending',
 				options: ['pending', 'active', 'completed'],
 				mask: '###-###',
 			}

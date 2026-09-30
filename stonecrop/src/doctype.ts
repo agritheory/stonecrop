@@ -9,7 +9,7 @@ import {
 import { List } from 'immutable'
 import { Component } from 'vue'
 
-import type { DefaultsSource } from './types/defaults'
+import type { DoctypeDefaults } from './types/defaults'
 import type { DoctypeConfig, ImmutableDoctype } from './types/doctype'
 
 /**
@@ -69,11 +69,11 @@ export default class Doctype {
 	readonly displayField?: string
 
 	/**
-	 * Document-level defaults for new records (static document or in-memory function).
+	 * Starting values for new records: fixed data in the shape of the record.
 	 * @public
 	 * @readonly
 	 */
-	readonly defaults?: DefaultsSource
+	readonly defaults?: DoctypeDefaults
 
 	/**
 	 * Creates a new Doctype instance
@@ -91,7 +91,7 @@ export default class Doctype {
 		component?: Component,
 		links?: Record<string, LinkDeclaration>,
 		displayField?: string,
-		defaults?: DefaultsSource
+		defaults?: DoctypeDefaults
 	) {
 		this.doctype = doctype
 		this.schema = schema

@@ -7,7 +7,7 @@ import { Router } from 'vue-router'
 import { composeNewRecord } from './compose-new-record'
 import Doctype from './doctype'
 import { expandedLink, linksByFieldname } from './record-fields'
-import type { ComposeNewRecordOptions, ComposeNewRecordResult, DefaultsLoader, DefaultsSource } from './types/defaults'
+import type { ComposeNewRecordOptions, ComposeNewRecordResult, DefaultsSource } from './types/defaults'
 import { RouteContext } from './types/registry'
 
 /**
@@ -54,23 +54,10 @@ export default class Registry {
 	private _ancestorIndexDirty: boolean = true
 
 	/**
-	 * Imperative defaults registered beside a doctype (functions allowed).
+	 * The app's starting values for each doctype, by slug: one registration per doctype (functions allowed).
 	 * @internal
 	 */
 	private registeredDefaults = new Map<string, DefaultsSource>()
-
-	/**
-	 * Optional lazy loader, run the first time a new record of a doctype is composed, never at schema load.
-	 * @internal
-	 */
-	private defaultsLoader?: DefaultsLoader
-
-	/**
-	 * Each doctype's load by the defaults loader, kept while it runs and after it succeeds, so records composed
-	 * at once share one load. A load that fails is dropped, so the next new record asks again.
-	 * @internal
-	 */
-	private defaultsLoads = new Map<string, Promise<void>>()
 
 	/**
 	 * The Vue router instance
@@ -290,7 +277,7 @@ export default class Registry {
 	 *
 	 * - `kind: 'table'` or `kind: 'link'` → `[]` or `{}`
 	 * - `kind: 'fieldset'` → its children, at the top level of the record: a fieldset is layout
-	 * - `kind: 'field'` → derives the default from the component's category; falls back to `null`
+	 * - `kind: 'field'` → an empty value for the component's category; falls back to `null`
 	 *
 	 * @param schema - The resolved schema array to derive defaults from
 	 * @returns A plain object with default values for each field
@@ -307,27 +294,23 @@ export default class Registry {
 			} else if (field.kind === 'fieldset') {
 				Object.assign(record, this.initializeRecord(field.schema))
 			} else {
-				// kind: 'field' — the empty default comes from the component's category.
-				const fieldDefault = field.default
-				if (fieldDefault !== undefined) {
-					record[field.fieldname] = fieldDefault
+				// kind: 'field' — the empty value comes from the component's category. Starting values are the
+				// doctype's `defaults` and the registry's, applied over this by `composeNewRecord`.
+				const category = componentCategory(field.component)
+				if (category === 'text') {
+					record[field.fieldname] = ''
+				} else if (category === 'number') {
+					record[field.fieldname] = 0
+				} else if (category === 'boolean') {
+					record[field.fieldname] = false
+				} else if (category === 'code' && field.language) {
+					// A JSON editor starts from an empty object; any other language from empty source.
+					record[field.fieldname] = field.language === 'json' ? {} : ''
 				} else {
-					const category = componentCategory(field.component)
-					if (category === 'text') {
-						record[field.fieldname] = ''
-					} else if (category === 'number') {
-						record[field.fieldname] = 0
-					} else if (category === 'boolean') {
-						record[field.fieldname] = false
-					} else if (category === 'code' && field.language) {
-						// A JSON editor starts from an empty object; any other language from empty source.
-						record[field.fieldname] = field.language === 'json' ? {} : ''
-					} else {
-						// date / datetime / duration / select / link / attach, plus two cases with no better answer
-						// than "no value": an unknown (custom) component, and a code field whose missing
-						// `language` doesn't say which kind of empty it wants.
-						record[field.fieldname] = null
-					}
+					// date / datetime / duration / select / link / attach, plus two cases with no better answer
+					// than "no value": an unknown (custom) component, and a code field whose missing
+					// `language` doesn't say which kind of empty it wants.
+					record[field.fieldname] = null
 				}
 			}
 		}
@@ -433,21 +416,23 @@ export default class Registry {
 	}
 
 	/**
-	 * Register defaults for a doctype, by its name or its slug (typically from app bootstrap). Either one is
-	 * keyed the way {@link Doctype.slug} is, so `'OrderItem'` and `'order-item'` register for the same doctype,
-	 * whether or not it has been added yet.
+	 * Register the app's starting values for a doctype, by its name or its slug (typically from app bootstrap).
+	 * Either one is keyed the way {@link Doctype.slug} is, so `'OrderItem'` and `'order-item'` register for the
+	 * same doctype, whether or not it has been added yet.
+	 *
+	 * They apply over the doctype's own `defaults` for every new record, and a function here runs for each one, so
+	 * it can work out what a doctype file cannot (today's date, a value looked up for the user's company). A doctype
+	 * takes one registration: a second replaces the first, with a warning.
 	 * @public
 	 */
 	registerDefaults(doctype: string, source: DefaultsSource): void {
-		this.registeredDefaults.set(toSlug(doctype), source)
-	}
-
-	/**
-	 * Lazy-load defaults from an external source the first time a new record is composed.
-	 * @public
-	 */
-	setDefaultsLoader(loader: DefaultsLoader): void {
-		this.defaultsLoader = loader
+		const slug = toSlug(doctype)
+		if (this.registeredDefaults.has(slug)) {
+			console.warn(
+				`[stonecrop] Defaults for "${slug}" were registered again; the new registration replaces the old one.`
+			)
+		}
+		this.registeredDefaults.set(slug, source)
 	}
 
 	/**
@@ -455,27 +440,6 @@ export default class Registry {
 	 */
 	getRegisteredDefaults(slug: string): DefaultsSource | undefined {
 		return this.registeredDefaults.get(slug)
-	}
-
-	/**
-	 * @internal
-	 */
-	ensureDefaultsSourceLoaded(slug: string): Promise<void> {
-		const loader = this.defaultsLoader
-		if (!loader) return Promise.resolve()
-
-		let load = this.defaultsLoads.get(slug)
-		if (!load) {
-			load = (async () => {
-				const loaded = await loader(slug)
-				if (loaded !== undefined) {
-					this.registerDefaults(slug, loaded)
-				}
-			})()
-			this.defaultsLoads.set(slug, load)
-			load.catch(() => this.defaultsLoads.delete(slug))
-		}
-		return load
 	}
 
 	/**

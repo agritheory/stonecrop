@@ -10,7 +10,7 @@ import type Registry from './registry'
  * @internal
  */
 export type RecordField =
-	| { holds: 'value'; fieldname: string; component?: string; default?: unknown }
+	| { holds: 'value'; fieldname: string; component?: string }
 	| { holds: 'record'; fieldname: string; target: Doctype }
 	| { holds: 'rows'; fieldname: string; target: Doctype }
 	| { holds: 'columns'; fieldname: string; columns: ColumnSchema[] }
@@ -66,7 +66,7 @@ export function recordFields(registry: Registry, doctype: Doctype): Map<string, 
 		}
 		const expanded = expandedLink(registry, field, links)
 		if (!expanded) {
-			fields.set(fieldname, { holds: 'value', fieldname, component: field.component, default: field.default })
+			fields.set(fieldname, { holds: 'value', fieldname, component: field.component })
 		} else {
 			fields.set(fieldname, {
 				holds: expanded.mode === 'table' ? 'rows' : 'record',

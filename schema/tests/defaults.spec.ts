@@ -76,4 +76,19 @@ describe('doctype defaults', { tags: ['unit'] }, () => {
 		})
 		expect(result.success).toBe(true)
 	})
+
+	it("refuses a field's own default and points to the doctype's defaults", () => {
+		const result = validateDoctype({
+			name: 'Sample',
+			fields: [{ fieldname: 'status', component: 'ATextInput', default: 'Draft' }],
+		})
+		expect(result.success).toBe(false)
+		if (result.success) return
+		expect(result.errors).toContainEqual(
+			expect.objectContaining({
+				path: ['fields', 0, 'default'],
+				message: expect.stringContaining('defaults'),
+			})
+		)
+	})
 })

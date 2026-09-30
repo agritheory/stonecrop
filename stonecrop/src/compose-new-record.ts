@@ -79,7 +79,8 @@ async function applyDocument(
 	document: DefaultsDocument,
 	fields: ReadonlyMap<string, RecordField>,
 	run: Run,
-	path: string
+	path: string,
+	within: readonly Doctype[]
 ): Promise<void> {
 	await Promise.all(
 		Object.entries(document).map(async ([key, rawValue]) => {
@@ -93,7 +94,7 @@ async function applyDocument(
 			const context: DefaultsContext = { doctype: run.doctype, record: { ...target }, fieldname: key }
 			const evaluated = await evaluate(rawValue, context, run, fieldPath)
 			if (!evaluated.ok) return
-			await assignField(target, field, evaluated.value, run, fieldPath)
+			await assignField(target, field, evaluated.value, run, fieldPath, within)
 		})
 	)
 }
@@ -103,17 +104,18 @@ async function assignField(
 	field: RecordField,
 	value: unknown,
 	run: Run,
-	path: string
+	path: string,
+	within: readonly Doctype[]
 ): Promise<void> {
 	const key = field.fieldname
 	if ((field.holds === 'rows' || field.holds === 'columns') && Array.isArray(value)) {
-		target[key] = await Promise.all(value.map((row, index) => composeRow(row, field, run, `${path}[${index}]`)))
+		target[key] = await Promise.all(value.map((row, index) => composeRow(row, field, run, `${path}[${index}]`, within)))
 		return
 	}
 
 	if (field.holds === 'record' && isDefaultsDocument(value)) {
 		const existing = isPlainObject(target[key]) ? target[key] : {}
-		await applyDocument(existing, value, recordFields(run.registry, field.target), run, path)
+		await applyDocument(existing, value, recordFields(run.registry, field.target), run, path, within)
 		target[key] = existing
 		return
 	}
@@ -122,10 +124,48 @@ async function assignField(
 }
 
 /**
- * One row of a table's starting value: the row's own empty values and field defaults, then the row's entries.
- * A linked table's rows are records of its target doctype; an inline table's rows have one value per column.
+ * Apply a doctype's own `defaults` onto a record of it, and each embedded record's doctype's `defaults` onto that
+ * record first, so the containing doctype's entries win. Only where the record holds an embedded record, which
+ * `resolveSchema` decided, so a doctype that embeds itself stops where its form does.
+ *
+ * `within` is the doctypes whose `defaults` are being applied above this record. Defaults that start a row of a
+ * doctype already among them would never end, so they stop there and are reported.
  */
-async function composeRow(row: unknown, table: RowsField, run: Run, path: string): Promise<Record<string, unknown>> {
+async function applyDoctypeDefaults(
+	target: Record<string, unknown>,
+	doctype: Doctype,
+	run: Run,
+	path: string,
+	within: readonly Doctype[]
+): Promise<void> {
+	if (within.includes(doctype)) {
+		run.problems.push(
+			`${path}: a new ${doctype.doctype} inside a new ${doctype.doctype} would never end, so it starts empty`
+		)
+		return
+	}
+	const fields = recordFields(run.registry, doctype)
+	for (const field of fields.values()) {
+		const embedded = target[field.fieldname]
+		if (field.holds === 'record' && isPlainObject(embedded)) {
+			await applyDoctypeDefaults(embedded, field.target, run, `${path} › ${field.fieldname}`, within)
+		}
+	}
+	await applyLayer(target, doctype.defaults, fields, run, path, [...within, doctype])
+}
+
+/**
+ * One row of a table's starting value: the row's own empty values and its doctype's `defaults`, then the row's
+ * entries. A linked table's rows are records of its target doctype; an inline table's rows have one value per
+ * column.
+ */
+async function composeRow(
+	row: unknown,
+	table: RowsField,
+	run: Run,
+	path: string,
+	within: readonly Doctype[]
+): Promise<Record<string, unknown>> {
 	const { registry, now } = run
 	const fields = table.holds === 'rows' ? recordFields(registry, table.target) : columnFields(table.columns)
 	const floor =
@@ -139,12 +179,13 @@ async function composeRow(row: unknown, table: RowsField, run: Run, path: string
 						label: column.label,
 					}))
 				)
+	if (table.holds === 'rows') await applyDoctypeDefaults(floor, table.target, run, `${path} defaults`, within)
 	const rowRecord = resolveTokensInRecord(floor, fields, registry, now)
 	if (!isDefaultsDocument(row)) {
 		run.problems.push(`${path}: gave back ${JSON.stringify(row)}, not a document of field values`)
 		return rowRecord
 	}
-	await applyDocument(rowRecord, row, fields, run, path)
+	await applyDocument(rowRecord, row, fields, run, path, within)
 	return resolveTokensInRecord(rowRecord, fields, registry, now)
 }
 
@@ -154,7 +195,8 @@ async function applyLayer(
 	layer: DefaultsSource | undefined,
 	fields: ReadonlyMap<string, RecordField>,
 	run: Run,
-	path: string
+	path: string,
+	within: readonly Doctype[]
 ): Promise<void> {
 	if (!layer) return
 	const evaluated = await evaluate(layer, { doctype: run.doctype, record: { ...target } }, run, path)
@@ -163,13 +205,13 @@ async function applyLayer(
 		run.problems.push(`${path}: gave back ${JSON.stringify(evaluated.value)}, not a document of field values`)
 		return
 	}
-	await applyDocument(target, evaluated.value, fields, run, path)
+	await applyDocument(target, evaluated.value, fields, run, path, within)
 }
 
 /**
- * Build a new record, once, from every starting value: the schema's empty values and field defaults, the
- * doctype's `defaults`, the source registered for it (after the defaults loader, if one is set), then the
- * caller's `overlay`. Layers apply in that order, so a later one wins however long an earlier one took.
+ * Build a new record, once, from every starting value: the schema's empty values, the doctype's `defaults`, then
+ * the source the app registered for it. Layers apply in that order, so the registered source wins however long
+ * the doctype's took.
  *
  * Nothing is returned until every value is in, so nothing is written to the record after a user can see it.
  * A value that throws, rejects, or has not arrived within `timeoutMs` (default {@link DEFAULTS_TIMEOUT_MS}) is
@@ -197,17 +239,14 @@ export async function composeNewRecord(
 	}
 
 	try {
-		await evaluate(registry.ensureDefaultsSourceLoaded(doctype.slug), { doctype, record: {} }, run, 'defaults loader')
-
 		const fields = recordFields(registry, doctype)
 		const floor = registry.initializeRecord(registry.resolveSchema(doctype))
 		const working = resolveTokensInRecord(floor, fields, registry, now)
 
-		await applyLayer(working, doctype.defaults, fields, run, 'doctype defaults')
-		await applyLayer(working, registry.getRegisteredDefaults(doctype.slug), fields, run, 'registered defaults')
-		if (options?.overlay) {
-			await applyDocument(working, options.overlay, fields, run, 'overlay')
-		}
+		await applyDoctypeDefaults(working, doctype, run, 'doctype defaults', [])
+		await applyLayer(working, registry.getRegisteredDefaults(doctype.slug), fields, run, 'registered defaults', [
+			doctype,
+		])
 
 		Object.assign(working, resolveTokensInRecord(working, fields, registry, now))
 
