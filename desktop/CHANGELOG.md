@@ -1,5 +1,23 @@
 # Change Log - @stonecrop/desktop
 
+## 0.40.0
+
+### Minor Changes
+
+- a5f8744: Add document-level defaults for new records: doctype defaults JSON, registry providers, and compose-time now and uuidv7 tokens. A new record is filled once, after every starting value has arrived: Desktop shows its loading state until then, a value that fails or takes longer than 5 seconds is skipped and reported, and nothing is written to the form afterwards.
+
+### Patch Changes
+
+- Updated dependencies [a5f8744]
+- Updated dependencies [a5f8744]
+- Updated dependencies [a5f8744]
+- Updated dependencies [a5f8744]
+- Updated dependencies [a5f8744]
+  - @stonecrop/schema@0.40.0
+  - @stonecrop/stonecrop@0.40.0
+  - @stonecrop/aform@0.40.0
+  - @stonecrop/themes@0.40.0
+
 ## 0.39.0
 
 ### Minor Changes
