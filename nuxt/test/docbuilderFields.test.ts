@@ -1,6 +1,15 @@
 import { describe, expect, it } from 'vitest'
 
-import { setOrDelete, updateFieldAt, type Field, isValueField } from '../src/runtime/app/components/docbuilderFields'
+import {
+	copyField,
+	isValueField,
+	renamedFields,
+	savedNames,
+	setOrDelete,
+	updateFieldAt,
+	withFieldIds,
+	type Field,
+} from '../src/runtime/app/components/docbuilderFields'
 
 /**
  * Hop 3 of the unknown-key preservation chain — the fields-panel cell edit. Previously untested: the
@@ -129,5 +138,57 @@ describe('isValueField', () => {
 		// rather than being silently preserved as an unrenderable container.
 		expect(isValueField({ kind: 'fieldset', fieldname: 'malformed' })).toBe(true)
 		expect(isValueField({ kind: 7, fieldname: 'g', schema: [] })).toBe(false)
+	})
+})
+
+/**
+ * The server moves a renamed field's starting value to its new name, and only the builder knows a field was renamed:
+ * the panel edits `fieldname` like any other cell, and fields are rebuilt on every edit, moved and copied.
+ */
+describe('renamedFields', () => {
+	const loaded = () => withFieldIds([{ fieldname: 'status' }, { fieldname: 'priority' }])
+
+	it('reports a renamed field under the name it has in the file', () => {
+		const fields = loaded()
+		expect(renamedFields(updateFieldAt(fields, 0, 'fieldname', 'state'), savedNames(fields))).toEqual({
+			status: 'state',
+		})
+	})
+
+	it('follows a field through a move and further edits', () => {
+		const start = loaded()
+		let fields = [start[1]!, start[0]!]
+		fields = updateFieldAt(fields, 1, 'label', 'Status')
+		fields = updateFieldAt(fields, 1, 'fieldname', 'stat')
+		fields = updateFieldAt(fields, 1, 'fieldname', 'stage')
+		expect(renamedFields(fields, savedNames(start))).toEqual({ status: 'stage' })
+	})
+
+	it('reports nothing for a new field or a copy', () => {
+		const fields = loaded()
+		const edited = withFieldIds([...fields, { fieldname: 'notes' }, copyField(fields[0]!, 'status_copy')])
+		expect(renamedFields(edited, savedNames(fields))).toEqual({})
+	})
+
+	it('starts over once a save writes the new names', () => {
+		const sent = withFieldIds(updateFieldAt(loaded(), 0, 'fieldname', 'state'))
+		expect(renamedFields(sent, savedNames(sent))).toEqual({})
+	})
+
+	it('counts a rename made while a save runs from the name that save wrote', () => {
+		const sent = withFieldIds(updateFieldAt(loaded(), 0, 'fieldname', 'state'))
+		const editedMeanwhile = updateFieldAt(sent, 0, 'fieldname', 'stage')
+		expect(renamedFields(withFieldIds(editedMeanwhile), savedNames(sent))).toEqual({ state: 'stage' })
+	})
+
+	it('never writes the id to the file', () => {
+		expect(JSON.stringify(loaded())).toBe('[{"fieldname":"status"},{"fieldname":"priority"}]')
+	})
+})
+
+describe('copyField', () => {
+	it('keeps every key but the name and the introspected marker', () => {
+		const { source: _source, ...rest } = richField()
+		expect(copyField(richField(), 'total_copy')).toStrictEqual({ ...rest, fieldname: 'total_copy' })
 	})
 })

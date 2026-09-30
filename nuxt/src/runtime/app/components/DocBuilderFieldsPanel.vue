@@ -129,7 +129,7 @@
 import { ATable, ARow } from '@stonecrop/atable'
 import { CANONICAL_COMPONENTS, INTROSPECTED_IDENTITY_PROPS } from '@stonecrop/schema'
 import { computed, nextTick, ref, useId } from 'vue'
-import { isValueField, updateFieldAt } from './docbuilderFields'
+import { copyField, isValueField, updateFieldAt } from './docbuilderFields'
 const IDENTITY_PROPS = new Set(INTROSPECTED_IDENTITY_PROPS)
 const isIdentity = key => IDENTITY_PROPS.has(key)
 const componentListId = useId()
@@ -292,13 +292,12 @@ function removeField(realIndex) {
 function duplicateField(realIndex) {
 	const original = props.modelValue[realIndex]
 	if (!original) return
-	const { source: _source, ...rest } = original
 	const existing = new Set(props.modelValue.map(f => String(f.fieldname ?? '')))
-	const baseName = `${String(rest.fieldname ?? 'field')}_copy`
+	const baseName = `${String(original.fieldname ?? 'field')}_copy`
 	let fieldname = baseName
 	let n = 1
 	while (existing.has(fieldname)) fieldname = `${baseName}_${++n}`
-	const clone = { ...rest, fieldname }
+	const clone = copyField(original, fieldname)
 	const next = props.modelValue.slice()
 	next.splice(realIndex + 1, 0, clone)
 	emit('update:modelValue', next)
