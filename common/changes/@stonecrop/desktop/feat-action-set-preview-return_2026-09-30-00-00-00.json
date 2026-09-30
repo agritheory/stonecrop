@@ -1,0 +1,10 @@
+{
+	"changes": [
+		{
+			"packageName": "@stonecrop/desktop",
+			"comment": "Let a preview replace the slot drawer it was opened from and reopen that drawer when the preview closes; make the preview pane resizable",
+			"type": "minor"
+		}
+	],
+	"packageName": "@stonecrop/desktop"
+}
