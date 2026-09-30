@@ -65,7 +65,7 @@
 			"fieldname": "createdAt",
 			"label": "Created At",
 			"component": "ADateTime",
-			"mode": "edit"
+			"mode": "display"
 		},
 		{
 			"fieldname": "updatedAt",
@@ -82,7 +82,6 @@
 	},
 	"defaults": {
 		"status": "DRAFT",
-		"createdAt": "now",
 		"items": [{ "addedAt": "now" }]
 	},
 	"workflow": {

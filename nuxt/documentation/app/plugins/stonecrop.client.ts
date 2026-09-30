@@ -49,7 +49,7 @@ export default defineNuxtPlugin({
 		})
 
 		registry!.registerDefaults('user', () => ({
-			createdAt: new Date().toISOString(),
+			bio: `Joined in ${new Intl.DateTimeFormat(undefined, { month: 'long', year: 'numeric' }).format(new Date())}`,
 		}))
 
 		return {
