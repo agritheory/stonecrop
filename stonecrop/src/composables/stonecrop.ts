@@ -210,7 +210,17 @@ export function useStonecrop(options?: {
 		hstStore.value = stonecrop.value.getStore()
 		resolvedSchema.value = registry.resolveSchema(options.doctype)
 		if (!options.recordId || isDraftRecordId(options.recordId)) {
-			formData.value = registry.initializeRecord(resolvedSchema.value)
+			// Filled once, when every starting value is in; until then the form reports that it is loading.
+			isLoading.value = true
+			void registry
+				.composeNewRecord(options.doctype)
+				.then(({ record }) => {
+					formData.value = record
+					return undefined
+				})
+				.finally(() => {
+					isLoading.value = false
+				})
 		}
 		if (hstStore.value) {
 			setupDeepReactivity(options.doctype, options.recordId || 'new', formData, hstStore.value)
@@ -288,7 +298,12 @@ export function useStonecrop(options?: {
 						}
 					}
 				} else {
-					formData.value = registry.initializeRecord(resolvedSchema.value)
+					isLoading.value = true
+					try {
+						formData.value = (await registry.composeNewRecord(doctype)).record
+					} finally {
+						isLoading.value = false
+					}
 				}
 
 				if (hstStore.value) {
@@ -389,7 +404,7 @@ export function useStonecrop(options?: {
 	 * @param path - The HST path where initialized data should be stored
 	 * @param doctype - The doctype to initialize
 	 */
-	const initializeNestedData = (path: string, doctype: Doctype): void => {
+	const initializeNestedData = async (path: string, doctype: Doctype): Promise<void> => {
 		if (!stonecrop.value) {
 			throw new Error('Stonecrop instance not available')
 		}

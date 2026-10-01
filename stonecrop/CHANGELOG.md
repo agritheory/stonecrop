@@ -1,5 +1,23 @@
 # Change Log - @stonecrop/stonecrop
 
+## 0.40.0
+
+### Minor Changes
+
+- a5f8744: `validateDoctype` refuses a `defaults` key that names no field of the doctype, such as a typo or a grouped section's name, and says which. `registry.registerDefaults` takes a doctype's name as well as its slug (`'OrderItem'` or `'order-item'`), so defaults registered under the name apply instead of being ignored.
+- a5f8744: A doctype gives its starting values in one place, its `defaults`, which hold fixed data only. A field no longer has a `default` of its own: `validateDoctype` refuses one and points to `defaults`, and DocBuilder no longer offers the column. Embedded records and table rows start from their own doctype's `defaults`. The app's starting values come from one registration per doctype, `registry.registerDefaults`, whose functions run for every new record; registering a doctype a second time warns. `registry.setDefaultsLoader` and `composeNewRecord`'s `overlay` option are removed.
+- a5f8744: A new record reads its starting values through the doctype's declarations: a field inside a grouped section is filled like any other field (a date there set to `"now"` starts as today), and a table's rows take their own doctype's starting values however the link is keyed, including inside an embedded record. A starting value whose key names no field of the record, such as a typo or a section's name, is skipped and reported instead of being added to the record, as is a table row that is not a document of field values.
+- a5f8744: Add document-level defaults for new records: doctype defaults JSON, registry providers, and compose-time now and uuidv7 tokens. A new record is filled once, after every starting value has arrived: Desktop shows its loading state until then, a value that fails or takes longer than 5 seconds is skipped and reported, and nothing is written to the form afterwards.
+
+### Patch Changes
+
+- a5f8744: A date field set to `"now"` starts as today in the user's own time zone. It used the UTC date, which is tomorrow in the evening in the Americas and yesterday in the morning in Asia.
+- Updated dependencies [a5f8744]
+- Updated dependencies [a5f8744]
+  - @stonecrop/schema@0.40.0
+  - @stonecrop/aform@0.40.0
+  - @stonecrop/atable@0.40.0
+
 ## 0.39.0
 
 ### Minor Changes

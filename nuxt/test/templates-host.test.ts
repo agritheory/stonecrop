@@ -21,8 +21,8 @@ import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 
 import { loadDoctypesFromObject, clearRegistry } from '@stonecrop/graphql-middleware'
 
-import projectDoctype from '../templates/Project.json'
-import taskDoctype from '../templates/Task.json'
+import projectDoctype from '../templates/project.json'
+import taskDoctype from '../templates/task.json'
 import { tasks } from '../templates/data'
 import { resolvers } from '../templates/resolvers'
 import { readFileSync } from 'node:fs'

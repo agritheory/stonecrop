@@ -960,7 +960,6 @@ A resolved Link field with cardinality `one` or `atMostOne` — embedded as a ne
 ```typescript
 export interface ResolvedLink {
   component: string;
-  default?: unknown;
   fieldname: string;
   hidden?: boolean;
   kind: 'link';
@@ -978,7 +977,6 @@ export interface ResolvedLink {
 | Property | Type | Description |
 |----------|------|-------------|
 | component | `string` | Component to render; defaults to `'AForm'` |
-| default? | `unknown` | Preserved from the original ValueField |
 | fieldname | `string` | Field identifier |
 | hidden? | `boolean` | Preserved from the original ValueField |
 | kind | `'link'` | Discriminator |
@@ -1003,7 +1001,6 @@ Rows are never part of the schema. AForm sources them from the data model at `da
 export interface ResolvedTable {
   component: string;
   config: TableViewConfig;
-  default?: unknown;
   fieldname: string;
   getRecords?: (options?: GetRecordsOptions) => Promise<GetRecordsResult>;
   hidden?: boolean;
@@ -1024,7 +1021,6 @@ export interface ResolvedTable {
 |----------|------|-------------|
 | component | `string` | Component to render; defaults to `'ATable'` |
 | config | `TableViewConfig` | View configuration — always present; defaults to `{ view: 'list' }` |
-| default? | `unknown` | Preserved from the original ValueField or TableField |
 | fieldname | `string` | Field identifier |
 | getRecords? | `(options?: GetRecordsOptions) => Promise<GetRecordsResult>` | When set, ATable fetches list pages through this callback (server paging). |
 | hidden? | `boolean` | Preserved from the original ValueField or TableField |

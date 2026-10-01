@@ -356,11 +356,11 @@ describe('record identity — the no-primaryKey rule, now settled', { tags: ['un
  */
 describe('action executability', { tags: ['unit', 'graphql'] }, () => {
 	const HOSTS_WITH_DOCTYPES = [
-		{ name: 'templates', dir: '../templates', files: ['Project.json', 'Task.json'], handlers: templatesHandlers },
+		{ name: 'templates', dir: '../templates', files: ['project.json', 'task.json'], handlers: templatesHandlers },
 		{
 			name: 'fullstack',
 			dir: './fixtures/fullstack/doctypes',
-			files: ['Order.json', 'OrderItem.json', 'User.json'],
+			files: ['order.json', 'order-item.json', 'user.json'],
 			handlers: fullstackHandlers,
 		},
 	]

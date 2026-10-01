@@ -264,6 +264,7 @@ export const DoctypeMeta: z.ZodObject<{
         }, z.core.$strip>>>;
     }, z.core.$strip>>;
     inherits: z.ZodOptional<z.ZodString>;
+    defaults: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodUnknown>>;
 }, z.core.$strip>;
 
 // @public
@@ -676,7 +677,6 @@ export interface ValueField {
     component: string;
     computed?: boolean;
     config?: TableViewConfig;
-    default?: unknown;
     doctype?: string;
     edit?: boolean;
     fieldname: string;
@@ -728,7 +728,7 @@ export const ValueFieldSchema: z.ZodObject<{
     required: z.ZodOptional<z.ZodBoolean>;
     readOnly: z.ZodOptional<z.ZodBoolean>;
     hidden: z.ZodOptional<z.ZodBoolean>;
-    default: z.ZodOptional<z.ZodUnknown>;
+    default: z.ZodOptional<z.ZodNever>;
     validation: z.ZodOptional<z.ZodObject<{
         errorMessage: z.ZodString;
     }, z.core.$loose>>;

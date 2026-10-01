@@ -1,5 +1,20 @@
 # Change Log - @stonecrop/aform
 
+## 0.40.0
+
+### Minor Changes
+
+- a5f8744: A doctype gives its starting values in one place, its `defaults`, which hold fixed data only. A field no longer has a `default` of its own: `validateDoctype` refuses one and points to `defaults`, and DocBuilder no longer offers the column. Embedded records and table rows start from their own doctype's `defaults`. The app's starting values come from one registration per doctype, `registry.registerDefaults`, whose functions run for every new record; registering a doctype a second time warns. `registry.setDefaultsLoader` and `composeNewRecord`'s `overlay` option are removed.
+
+### Patch Changes
+
+- Updated dependencies [a5f8744]
+- Updated dependencies [a5f8744]
+  - @stonecrop/schema@0.40.0
+  - @stonecrop/atable@0.40.0
+  - @stonecrop/themes@0.40.0
+  - @stonecrop/utilities@0.40.0
+
 ## 0.39.0
 
 ### Minor Changes

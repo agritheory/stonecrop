@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { mergeSavedDoctype, orderKeysByReference } from '../src/runtime/server/api/docbuilder/mergeDoctype'
+import { mergeSavedDoctype, orderKeysByReference, saveRefusal } from '../src/runtime/server/api/docbuilder/mergeDoctype'
 
 describe('orderKeysByReference', () => {
 	it('re-imposes the reference key order on a reshuffled map', () => {
@@ -166,5 +166,106 @@ describe('mergeSavedDoctype', () => {
 		const onDisk = { name: 'Order', fields: [{ fieldname: 'stale' }], schema: [] }
 		mergeSavedDoctype(onDisk, { fields: [{ fieldname: 'fresh' }] }, 'order')
 		expect(onDisk).toEqual({ name: 'Order', fields: [{ fieldname: 'stale' }], schema: [] })
+	})
+})
+
+/**
+ * `defaults` is keyed by fieldname and the builder never shows it, so a rename or a delete in the fields panel has to
+ * reach it here. Left behind, the old key names no field, and the server refuses the doctype when it next loads it.
+ */
+describe('mergeSavedDoctype: defaults follow field edits', () => {
+	const onDisk = () => ({
+		name: 'Task',
+		fields: [
+			{ fieldname: 'status', component: 'ATextInput' },
+			{ fieldname: 'priority', component: 'ATextInput' },
+		],
+		defaults: { status: 'Todo', priority: 'Low' },
+	})
+
+	it("moves a renamed field's starting value to its new name, in its place", () => {
+		const merged = mergeSavedDoctype(
+			onDisk(),
+			{ fields: [{ fieldname: 'state' }, { fieldname: 'priority' }], renamedFields: { status: 'state' } },
+			'task'
+		)
+		expect(Object.entries(merged.defaults as object)).toEqual([
+			['state', 'Todo'],
+			['priority', 'Low'],
+		])
+	})
+
+	it("drops a deleted field's starting value", () => {
+		const merged = mergeSavedDoctype(onDisk(), { fields: [{ fieldname: 'priority' }] }, 'task')
+		expect(merged.defaults).toEqual({ priority: 'Low' })
+	})
+
+	it('swaps starting values when two fields swap names', () => {
+		const merged = mergeSavedDoctype(
+			onDisk(),
+			{
+				fields: [{ fieldname: 'priority' }, { fieldname: 'status' }],
+				renamedFields: { status: 'priority', priority: 'status' },
+			},
+			'task'
+		)
+		expect(merged.defaults).toEqual({ priority: 'Todo', status: 'Low' })
+	})
+
+	it("gives a field renamed onto a deleted field's name its own starting value", () => {
+		const merged = mergeSavedDoctype(
+			onDisk(),
+			{ fields: [{ fieldname: 'priority' }], renamedFields: { status: 'priority' } },
+			'task'
+		)
+		expect(merged.defaults).toEqual({ priority: 'Todo' })
+	})
+
+	it("keeps an entry the builder's edits did not orphan, so the load check still reports a stale one", () => {
+		const file = { ...onDisk(), defaults: { status: 'Todo', typo: 1 } }
+		const merged = mergeSavedDoctype(file, { fields: file.fields }, 'task')
+		expect(merged.defaults).toEqual({ status: 'Todo', typo: 1 })
+	})
+
+	it("keeps a grouped section's field entries, which are the record's own keys", () => {
+		const fields = [{ fieldname: 'address', schema: [{ fieldname: 'city', component: 'ATextInput' }] }]
+		const merged = mergeSavedDoctype(
+			{ name: 'Site', fields, defaults: { city: 'Springfield' } },
+			{ fields: [{ kind: 'fieldset', fieldname: 'address', schema: [{ kind: 'field', fieldname: 'city' }] }] },
+			'site'
+		)
+		expect(merged.defaults).toEqual({ city: 'Springfield' })
+	})
+
+	it('writes no defaults when the file has none', () => {
+		const merged = mergeSavedDoctype({ name: 'Task', fields: [] }, { fields: [], renamedFields: { a: 'b' } }, 'task')
+		expect('defaults' in merged).toBe(false)
+	})
+
+	it('does not change the defaults read from disk', () => {
+		const file = onDisk()
+		mergeSavedDoctype(file, { fields: [{ fieldname: 'state' }], renamedFields: { status: 'state' } }, 'task')
+		expect(file.defaults).toEqual({ status: 'Todo', priority: 'Low' })
+	})
+})
+
+describe('saveRefusal', () => {
+	it('refuses a doctype the server would refuse to load, and says why', () => {
+		const refusal = saveRefusal({
+			name: 'Task',
+			fields: [{ fieldname: 'status', component: 'ATextInput' }],
+			displayField: 'title',
+		})
+		expect(refusal).toContain('displayField "title" is not declared on this doctype')
+	})
+
+	it('passes a doctype the server loads', () => {
+		expect(
+			saveRefusal({
+				name: 'Task',
+				fields: [{ fieldname: 'status', component: 'ATextInput' }],
+				defaults: { status: 'Todo' },
+			})
+		).toBe(undefined)
 	})
 })

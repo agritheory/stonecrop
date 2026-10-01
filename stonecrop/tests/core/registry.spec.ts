@@ -618,16 +618,5 @@ describe('Registry class', { tags: ['unit'] }, () => {
 			const record = registry.initializeRecord(schema)
 			expect(record.took).toBeNull()
 		})
-
-		it('initializes a field with kind: "field" and an explicit default to that default value', () => {
-			registry = new Registry()
-			const schema = [
-				{ kind: 'field' as const, fieldname: 'status', component: 'ADropdown', default: 'Draft' },
-				{ kind: 'field' as const, fieldname: 'active', component: 'ACheckbox', default: true },
-			]
-			const record = registry.initializeRecord(schema)
-			expect(record.status).toBe('Draft')
-			expect(record.active).toBe(true)
-		})
 	})
 })

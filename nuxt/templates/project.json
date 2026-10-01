@@ -24,8 +24,7 @@
 			"fieldname": "status",
 			"label": "Status",
 			"component": "ADropdown",
-			"options": ["Active", "Archived"],
-			"default": "Active"
+			"options": ["Active", "Archived"]
 		},
 		{
 			"fieldname": "createdAt",
@@ -34,6 +33,9 @@
 			"mode": "display"
 		}
 	],
+	"defaults": {
+		"status": "Active"
+	},
 	"workflow": {
 		"states": ["Active", "Archived"],
 		"actions": {

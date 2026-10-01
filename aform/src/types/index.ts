@@ -69,8 +69,6 @@ export interface ResolvedLink {
 	/** Preserved from the original ValueField */
 	hidden?: boolean
 	/** Preserved from the original ValueField */
-	default?: unknown
-	/** Preserved from the original ValueField */
 	validation?: FieldValidation
 }
 
@@ -109,8 +107,6 @@ export interface ResolvedTable {
 	readOnly?: boolean
 	/** Preserved from the original ValueField or TableField */
 	hidden?: boolean
-	/** Preserved from the original ValueField or TableField */
-	default?: unknown
 	/** Preserved from the original ValueField or TableField */
 	validation?: FieldValidation
 	/** When set, ATable fetches list pages through this callback (server paging). */

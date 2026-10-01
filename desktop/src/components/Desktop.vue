@@ -10,11 +10,14 @@
 			<div class="desktop__main">
 				<slot v-if="$slots.default" />
 				<AForm
-					v-else-if="currentViewSchema.length > 0"
+					v-else-if="currentViewSchema.length > 0 && !draftLoading"
 					v-model:data="currentViewData"
 					:schema="currentViewSchema"
 					:errors="fieldErrors" />
 				<div v-else-if="!stonecrop" class="loading"><p>Initializing Stonecrop...</p></div>
+				<div v-else-if="draftLoading" class="loading">
+					<p>Preparing new {{ formatDoctypeName(currentDoctype) }}...</p>
+				</div>
 				<div v-else class="loading">
 					<p>Loading {{ currentView }} data...</p>
 				</div>
@@ -175,6 +178,9 @@ const loading = ref(false)
 // The record being composed on a `/{doctype}/new` route. Deliberately not in HST: a draft has no
 // identity to be keyed by, and both ways of faking one fail — see `DRAFT_RECORD_ID`.
 const draftRecord = ref<Record<string, any>>({})
+// True while a new record's starting values are still arriving. The form stays behind the loading state until
+// then, so no late value can land on top of what a user has typed.
+const draftLoading = ref(false)
 
 // Form/list data management — each view produces a different data shape.
 // List views (doctypes, records) return table row data keyed by fieldname.
@@ -498,6 +504,8 @@ const actionElements = computed(() => {
 			})
 			break
 		case 'record': {
+			// No actions until a new record has its starting values: there is nothing on screen to act on yet.
+			if (draftLoading.value) break
 			// Populate the Actions dropdown with every FSM transition AND stateless Command
 			// available in the record's current state.  Clicking either emits 'action'.
 			const recordActions = [...getAvailableTransitions(), ...getAvailableCommands()]
@@ -917,12 +925,41 @@ watch([currentDoctype, currentRecordId], () => {
 watch(
 	[currentDoctype, currentRecordId],
 	() => {
+		draftLoading.value = false
 		if (!isNewRecord.value) {
 			draftRecord.value = {}
 			return
 		}
 		const registry = stonecrop.value?.registry
-		draftRecord.value = registry ? registry.initializeRecord(getRecordFormSchema()) : {}
+		const slug = currentDoctype.value
+		if (!registry || !slug) {
+			draftRecord.value = {}
+			return
+		}
+		const doctype = registry.getDoctype(slug)
+		if (!doctype) {
+			draftRecord.value = registry.initializeRecord(getRecordFormSchema())
+			return
+		}
+		draftRecord.value = {}
+		draftLoading.value = true
+		const stillHere = () => isNewRecord.value && currentDoctype.value === slug
+		void registry
+			.composeNewRecord(doctype)
+			.then(({ record }) => {
+				if (!stillHere()) return undefined
+				draftRecord.value = record
+				return undefined
+			})
+			.catch((error: unknown) => {
+				// A failure outside any one starting value (those are skipped and reported where they fail): open the
+				// form with the schema's own values rather than leave it loading.
+				console.error(`[desktop] Could not prepare a new ${slug}:`, error)
+				if (stillHere()) draftRecord.value = registry.initializeRecord(getRecordFormSchema())
+			})
+			.finally(() => {
+				if (stillHere()) draftLoading.value = false
+			})
 	},
 	{ immediate: true }
 )

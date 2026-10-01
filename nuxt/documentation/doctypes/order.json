@@ -33,8 +33,7 @@
 				"SHIPPED",
 				"COMPLETED",
 				"CANCELLED"
-			],
-			"default": "DRAFT"
+			]
 		},
 		{
 			"fieldname": "total",
@@ -65,7 +64,8 @@
 		{
 			"fieldname": "createdAt",
 			"label": "Created At",
-			"component": "ADateTime"
+			"component": "ADateTime",
+			"mode": "display"
 		},
 		{
 			"fieldname": "updatedAt",
@@ -79,6 +79,10 @@
 			"cardinality": "noneOrMany",
 			"fieldname": "items"
 		}
+	},
+	"defaults": {
+		"status": "DRAFT",
+		"items": [{ "addedAt": "now" }]
 	},
 	"workflow": {
 		"states": [

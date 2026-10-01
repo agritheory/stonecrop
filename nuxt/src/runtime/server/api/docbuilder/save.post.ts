@@ -4,7 +4,7 @@ import { basename, resolve } from 'node:path'
 import { createError, defineEventHandler, readBody } from 'h3'
 import { useRuntimeConfig } from '#imports'
 
-import { mergeSavedDoctype } from './mergeDoctype'
+import { mergeSavedDoctype, saveRefusal } from './mergeDoctype'
 
 export default defineEventHandler(async event => {
 	const body = await readBody(event)
@@ -29,7 +29,7 @@ export default defineEventHandler(async event => {
 	// The builder only ever sends the URL slug (e.g. 'order'), never the display name. Resolve to
 	// the doctype's actual source file (case-insensitive) so we read AND write the same file it
 	// already lives in — preserving its real filename casing, its required `name`, and any keys the
-	// builder doesn't display (mode/options/default on fields, handler on actions). A brand-
+	// builder doesn't display (mode/options on fields, handler on actions). A brand-
 	// new doctype has no source file, so it uses the requested name verbatim.
 	const requested = body.doctype
 	const exactPath = resolve(doctypesDir, `${requested}.json`)
@@ -77,6 +77,11 @@ export default defineEventHandler(async event => {
 	// The merge itself is pure and lives in ./mergeDoctype so it can be unit-tested outside a Nuxt
 	// server context — this handler cannot be imported in a plain vitest run.
 	const doctypeData = mergeSavedDoctype(existing, body, requested)
+
+	const refusal = saveRefusal(doctypeData)
+	if (refusal) {
+		throw createError({ status: 422, message: refusal })
+	}
 
 	try {
 		await writeFile(filePath, JSON.stringify(doctypeData, null, '\t') + '\n', 'utf-8')

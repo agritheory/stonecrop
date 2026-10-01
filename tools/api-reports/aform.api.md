@@ -201,7 +201,6 @@ export function resolvedFieldsToColumns(fields: readonly ResolvedField[]): Colum
 // @public
 export interface ResolvedLink {
     component: string;
-    default?: unknown;
     fieldname: string;
     hidden?: boolean;
     kind: 'link';
@@ -222,7 +221,6 @@ export type ResolvedScalar = Omit<ValueField, 'cardinality'> & {
 export interface ResolvedTable {
     component: string;
     config: TableViewConfig;
-    default?: unknown;
     fieldname: string;
     getRecords?: (options?: GetRecordsOptions) => Promise<GetRecordsResult>;
     hidden?: boolean;

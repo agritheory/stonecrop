@@ -33,8 +33,7 @@
 				"SHIPPED",
 				"COMPLETED",
 				"CANCELLED"
-			],
-			"default": "DRAFT"
+			]
 		},
 		{
 			"fieldname": "total",
@@ -79,6 +78,9 @@
 			"cardinality": "noneOrMany",
 			"fieldname": "items"
 		}
+	},
+	"defaults": {
+		"status": "DRAFT"
 	},
 	"workflow": {
 		"states": [

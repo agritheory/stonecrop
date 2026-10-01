@@ -1361,7 +1361,6 @@ export interface ValueField {
   component: string;
   computed?: boolean;
   config?: TableViewConfig;
-  default?: unknown;
   doctype?: string;
   edit?: boolean;
   fieldname: string;
@@ -1392,7 +1391,6 @@ export interface ValueField {
 | component | `string` | Vue component that renders this field — the primary (and only) rendering axis. Required: there is nothing left to derive it from, and a field without one has nothing to render it. Any string is valid; naming a custom component is how an app renders a field Stonecrop ships no widget for. See `CANONICAL_COMPONENTS` for the set Stonecrop provides. |
 | computed? | `boolean` | True for a computed/display field with no backing DB column — excluded from SQL SELECT. |
 | config? | `TableViewConfig` | View configuration when this link field expands to a table (`ATable`). |
-| default? | `unknown` | Default value for new records |
 | doctype? | `string` | Target doctype slug. Presence is what makes a field a link. How it renders is decided by `component`, not by this: `AFormLink` renders an inline id-picker, while `AForm`/`ATable` expand the target (see `linkRenderMode`). Expansion metadata — backlink, fetch strategy, authoritative cardinality — lives in the doctype's `links` map, which is additive and never required for a plain foreign key. |
 | edit? | `boolean` | Whether the field is editable in table cell context |
 | fieldname | `string` | Unique identifier for this field within its doctype |
@@ -1798,7 +1796,7 @@ export const DoctypeMeta: z.ZodObject<{
     slug: z.ZodOptional<z.ZodString>;
     displayField: z.ZodOptional<z.ZodString>;
     route: z.ZodOptional<z.ZodString>;
-    fields: z.ZodArray<z.ZodType<import("./field").DoctypeField, unknown, z.core.$ZodTypeInternals<import("./field").DoctypeField, unknown>>>;
+    fields: z.ZodArray<z.ZodType<DoctypeField, unknown, z.core.$ZodTypeInternals<DoctypeField, unknown>>>;
     links: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodObject<{
         target: z.ZodString;
         cardinality: z.ZodEnum<{
@@ -1857,6 +1855,7 @@ export const DoctypeMeta: z.ZodObject<{
         }, z.core.$strip>>>;
     }, z.core.$strip>>;
     inherits: z.ZodOptional<z.ZodString>;
+    defaults: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodUnknown>>;
 }, z.core.$strip>
 ```
 
@@ -2149,7 +2148,7 @@ export const ValueFieldSchema: z.ZodObject<{
     required: z.ZodOptional<z.ZodBoolean>;
     readOnly: z.ZodOptional<z.ZodBoolean>;
     hidden: z.ZodOptional<z.ZodBoolean>;
-    default: z.ZodOptional<z.ZodUnknown>;
+    default: z.ZodOptional<z.ZodNever>;
     validation: z.ZodOptional<z.ZodObject<{
         errorMessage: z.ZodString;
     }, z.core.$loose>>;
