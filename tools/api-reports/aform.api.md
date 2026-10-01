@@ -237,14 +237,6 @@ export interface ResolvedTable {
 // @public
 export function resolveFieldBadge(value: unknown, options: FieldOptions | undefined, format: string | BadgeFormatFn | undefined, context?: BadgeFormatContext): BadgeDescriptor | undefined;
 
-// @public
-export interface SemverValue {
-    major: number;
-    minor: number;
-    patch: number;
-    raw: string;
-}
-
 
 export * from "@stonecrop/atable/types";
 

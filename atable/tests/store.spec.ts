@@ -1555,9 +1555,10 @@ describe('table store', { tags: ['component'] }, () => {
 			{ name: 'version', label: 'Version', component: 'ASemverInput' },
 		]
 		const semverRows: TableRow[] = [
-			{ item: 'A', version: { raw: '1.10.0', major: 1, minor: 10, patch: 0 } },
-			{ item: 'B', version: { raw: '1.2.0', major: 1, minor: 2, patch: 0 } },
-			{ item: 'C', version: { raw: '2.0.0', major: 2, minor: 0, patch: 0 } },
+			{ item: 'A', version: '1.10.0' },
+			{ item: 'B', version: '1.2.0' },
+			{ item: 'C', version: '2.0.0' },
+			{ item: 'D', version: '2.0.0-rc.1' },
 		]
 
 		let semverStore: ReturnType<typeof createTableStore>
@@ -1568,20 +1569,24 @@ describe('table store', { tags: ['component'] }, () => {
 			})
 		})
 
-		it('filters a semver column by raw text', () => {
+		it('filters a semver column as text', () => {
 			semverStore.setFilter(1, { value: '1.10' })
 			expect(semverStore.filteredRows.map(r => r.item)).toEqual(['A'])
 		})
 
-		it('sorts semver columns by major/minor/patch, not string order', () => {
+		it('sorts semver columns by version precedence, not string order', () => {
 			semverStore.sortByColumn(1)
-			expect(semverStore.filteredRows.map(r => r.item)).toEqual(['B', 'A', 'C'])
+			expect(semverStore.filteredRows.map(r => r.item)).toEqual(['B', 'A', 'D', 'C'])
 		})
 
 		it('sorts semver columns descending', () => {
 			semverStore.sortByColumn(1)
 			semverStore.sortByColumn(1)
-			expect(semverStore.filteredRows.map(r => r.item)).toEqual(['C', 'A', 'B'])
+			expect(semverStore.filteredRows.map(r => r.item)).toEqual(['C', 'D', 'A', 'B'])
+		})
+
+		it('shows a semver cell as the version it holds', () => {
+			expect(semverStore.getFormattedValue(1, 0, '1.10.0')).toBe('1.10.0')
 		})
 	})
 

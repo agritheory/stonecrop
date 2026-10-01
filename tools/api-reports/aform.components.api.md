@@ -443,10 +443,10 @@ props: {
   uuid?: string \| undefined
   validation?: { [key: string]: any; errorMessage: string; } \| undefined
   errors?: string[] \| undefined
-  modelValue?: SemverValue \| undefined
+  modelValue?: string \| null \| undefined
 }
 emits: {
-  update:modelValue: [value: SemverValue]
+  update:modelValue: [value: string \| null \| undefined]
 }
 slots: {}
 ```

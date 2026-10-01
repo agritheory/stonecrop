@@ -587,13 +587,13 @@ import { ASemverInput } from '@stonecrop/aform'
 | uuid | `string \| undefined` | no |  | Set a unique identifier for elements inside the component |
 | validation | `{ [key: string]: any; errorMessage: string; } \| undefined` | no | `{ errorMessage: "" }` | Validation options for elements inside the component |
 | errors | `string[] \| undefined` | no |  | Inline validation error messages to display on this field. Fed by the host (e.g. mapped from the core validation store) — the renderer stays dumb and just shows what it is given. Takes precedence over the static `validation.errorMessage`. |
-| modelValue | `SemverValue \| undefined` | no | `emptySemverValue()` |  |
+| modelValue | `string \| null \| undefined` | no |  |  |
 
 **Events:**
 
 | Event | Payload | Description |
 |-------|---------|-------------|
-| update:modelValue | `[value: SemverValue]` |  |
+| update:modelValue | `[value: string \| null \| undefined]` |  |
 
 ### ATextboxInput
 
@@ -1032,30 +1032,6 @@ export interface ResolvedTable {
 | schema | `ColumnSchema[]` | Column definitions — passed to ATable's `:schema` prop |
 | sourceKey? | `string` | When this changes, ATable refetches from offset 0. |
 | validation? | `FieldValidation` | Preserved from the original ValueField or TableField |
-
-### SemverValue
-
-The value shape for ASemverInput — a version string plus derived major/minor/patch parts. Prerelease and build metadata live only in `raw`.
-
-**Definition:**
-
-```typescript
-export interface SemverValue {
-  major: number;
-  minor: number;
-  patch: number;
-  raw: string;
-}
-```
-
-**Properties:**
-
-| Property | Type | Description |
-|----------|------|-------------|
-| major | `number` | Parsed major version |
-| minor | `number` | Parsed minor version — `0` when omitted from `raw` |
-| patch | `number` | Parsed patch version — `0` when omitted from `raw` |
-| raw | `string` | The entered version string, including optional `v`, prerelease, and build metadata |
 
 ## Type Aliases
 

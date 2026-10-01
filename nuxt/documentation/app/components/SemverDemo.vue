@@ -2,12 +2,7 @@
 import { ref } from 'vue'
 import { ASemverInput } from '@stonecrop/aform'
 
-const version = ref({
-	raw: '1.2.3-pre.1',
-	major: 1,
-	minor: 2,
-	patch: 3,
-})
+const version = ref<string | null>('1.2.3-pre.1')
 </script>
 
 <template>

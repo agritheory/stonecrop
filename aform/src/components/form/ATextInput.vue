@@ -11,7 +11,7 @@
 				v-mask="mask"
 				class="aform_input-field"
 				:disabled="mode === 'read'"
-				:maxlength="mask && mask !== 'semver' ? (maskFilled ? mask.length : undefined) : undefined"
+				:maxlength="mask ? (maskFilled ? mask.length : undefined) : undefined"
 				:required="required"
 				:aria-invalid="invalid"
 				:aria-describedby="describedBy" />

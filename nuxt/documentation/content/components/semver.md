@@ -1,11 +1,11 @@
 ---
 title: Semver Input
-description: A semantic version text field with parsed major, minor, and patch parts.
+description: A text field that only takes a semantic version, such as 1.4.0 or 2.0.0-rc.1.
 ---
 
 # Semver Input
 
-`ASemverInput` is a single-line version field built on [`ATextInput`](./text-input). The user types a semver string (including optional `v`, prerelease, and build metadata). The component keeps that string in `raw` and derives `major`, `minor`, and `patch` for the framework. Those parts are not shown in the form UI.
+`ASemverInput` is a single-line field for a [SemVer 2.0.0](https://semver.org) version: `1.4.0`, `2.0.0-rc.1`, `1.4.0+build.5`. It refuses any keystroke or paste that no version could start with, so the field only ever holds a whole version or nothing.
 
 ## Import
 
@@ -15,7 +15,7 @@ import { ASemverInput } from '@stonecrop/aform'
 
 ## Basic
 
-`v-model` binds to a [`SemverValue`](#semvervalue) object. Try editing the string and watch the parsed parts update in the state dump below the field.
+`v-model` binds to the version as a string, and to `null` while the box is empty or holds a version still being typed, such as `1.4.`. Try typing `v` or a fourth number: the box refuses them.
 
 ::demo-panel
 :::client-only
@@ -28,12 +28,7 @@ import { ASemverInput } from '@stonecrop/aform'
 import { ref } from 'vue'
 import { ASemverInput } from '@stonecrop/aform'
 
-const version = ref({
-	raw: '1.2.3-pre.1',
-	major: 1,
-	minor: 2,
-	patch: 3,
-})
+const version = ref<string | null>('1.2.3-pre.1')
 </script>
 
 <template>
@@ -75,7 +70,7 @@ import { ref } from 'vue'
 import { AForm } from '@stonecrop/aform'
 
 const data = ref({
-	version: { raw: '', major: 0, minor: 0, patch: 0 },
+	version: null,
 })
 </script>
 
@@ -84,9 +79,19 @@ const data = ref({
 </template>
 ```
 
-## Mask
+## What it accepts
 
-By default the field uses the named mask `semver`, which filters input to semver-safe characters without placeholders or a fixed width. Override with the schema `mask` property when you need a fixed `#` template instead (same engine as [`ATextInput`](./text-input)).
+Exactly the [SemVer 2.0.0](https://semver.org) grammar: three numbers without leading zeros, then an optional prerelease after `-` and optional build metadata after `+`. It is the same grammar, and the same ordering, as the `semver` type of the [pg-semver](https://github.com/theory/pg-semver) Postgres extension.
+
+| Typed | The box | `v-model` |
+|---|---|---|
+| `1.4.0-beta.2` | `1.4.0-beta.2` | `'1.4.0-beta.2'` |
+| `1.4.` | `1.4.` | `null`, until the version is whole |
+| `v1.4.0`, `01.4.0`, `1.4.0.1`, `1.4.0b1` | refuses the key that breaks the grammar | unchanged |
+
+A value set from outside the field shows as it is, even when it is not a version, so text saved before the field checked it can still be read and fixed.
+
+In [`ATable`](./table), a column with `component: 'ASemverInput'` filters as text and sorts by version precedence: `1.2.0` before `1.10.0`, and `2.0.0-rc.1` before `2.0.0`.
 
 ## API Reference
 
@@ -96,27 +101,13 @@ By default the field uses the named mask `semver`, which filters input to semver
 ---
 headers: ['Name', 'Type', 'Default', 'Description']
 rows:
-  - ['`v-model`', '[`SemverValue`](#semvervalue)', 'see below', 'The typed version string and derived major/minor/patch parts.']
+  - ['`v-model`', '`string \| null`', '—', 'The version, or `null` while there is no whole one.']
   - ['`label`', '`string`', '—', 'Label for the text input.']
-  - ['`mask`', '`string`', "`'semver'`", "Input mask. Defaults to the semver charset filter; pass a `#` template to use the classic mask engine instead."]
   - ['`required`', '`boolean`', '`false`', 'Marks the input as required (`edit` mode only).']
   - ['`mode`', "`'edit' | 'read' | 'display'`", "`'edit'`", 'See [Modes](#modes) below.']
   - ['`uuid`', '`string`', 'none', "`id`/`for` pair linking the input to its label."]
   - ['`validation`', '`{ errorMessage: string }`', "`{ errorMessage: '' }`", 'Static error message shown below the field.']
   - ['`errors`', '`string[]`', '—', 'Dynamic validation errors. Takes precedence over `validation.errorMessage` when non-empty.']
----
-::
-
-### SemverValue
-
-::api-data-table
----
-headers: ['Field', 'Type', 'Description']
-rows:
-  - ['`raw`', '`string`', 'The entered version string, including optional `v`, prerelease, and build metadata.']
-  - ['`major`', '`number`', 'Parsed major version.']
-  - ['`minor`', '`number`', 'Parsed minor version — `0` when omitted from `raw`.']
-  - ['`patch`', '`number`', 'Parsed patch version — `0` when omitted from `raw`.']
 ---
 ::
 
@@ -126,9 +117,9 @@ rows:
 ---
 headers: ['Mode', 'Rendering']
 rows:
-  - ['`edit`', 'Interactive text input with the semver mask applied.']
+  - ['`edit`', 'Text input that refuses edits no version could start with.']
   - ['`read`', 'Same layout, input disabled.']
-  - ['`display`', 'Static text showing `raw`.']
+  - ['`display`', 'Static text showing the version.']
 ---
 ::
 

@@ -220,7 +220,7 @@ export const searchIndex: SearchEntry[] = [
 	},
 	{
 		title: 'Semver Input',
-		description: 'A semantic version text field with parsed major, minor, and patch parts',
+		description: 'A text field that only takes a semantic version, such as 1.4.0 or 2.0.0-rc.1',
 		url: '/components/semver',
 	},
 	{
