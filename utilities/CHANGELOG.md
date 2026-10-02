@@ -1,5 +1,7 @@
 # Change Log - @stonecrop/utilities
 
+## 0.42.0
+
 ## 0.41.1
 
 ## 0.41.0

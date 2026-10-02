@@ -1,5 +1,17 @@
 # Change Log - @stonecrop/atable
 
+## 0.42.0
+
+### Minor Changes
+
+- f5d09ad: A server-backed table whose first page fails to load says so, with the server's message and **Try again**, in place of its rows, and a failed **Load more** keeps the rows and says why, where both failed silently before.
+
+### Patch Changes
+
+- @stonecrop/schema@0.42.0
+  - @stonecrop/themes@0.42.0
+  - @stonecrop/utilities@0.42.0
+
 ## 0.41.1
 
 ### Patch Changes

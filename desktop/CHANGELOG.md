@@ -1,5 +1,19 @@
 # Change Log - @stonecrop/desktop
 
+## 0.42.0
+
+### Minor Changes
+
+- f5d09ad: A record that is still loading, that the server does not have, or that fails to load now shows that state (a failure with the server's message and **Try again**) and offers none of its actions, instead of a blank, editable form.
+
+### Patch Changes
+
+- Updated dependencies [f5d09ad]
+  - @stonecrop/stonecrop@0.42.0
+  - @stonecrop/aform@0.42.0
+  - @stonecrop/schema@0.42.0
+  - @stonecrop/themes@0.42.0
+
 ## 0.41.1
 
 ### Patch Changes
