@@ -101,6 +101,44 @@ describe('useTablePagination', () => {
 		expect(getRecords).toHaveBeenLastCalledWith(undefined)
 	})
 
+	it('keeps a failed first read as `error`, and retry reads the first page again', async () => {
+		const failure = new Error('The server is down')
+		const getRecords = vi
+			.fn()
+			.mockRejectedValueOnce(failure)
+			.mockResolvedValueOnce({ data: [{ id: '1' }], hasMore: false })
+		const page = useTablePagination({ rows: ref(makeRows(1)), getRecords, sourceKey: 'task' })
+
+		await vi.waitFor(() => expect(page.error.value).toBe(failure))
+		expect(page.firstPageFailed.value).toBe(true)
+		expect(page.showFooter.value).toBe(true)
+		expect(page.loading.value).toBe(false)
+
+		await page.retry()
+
+		expect(getRecords).toHaveBeenLastCalledWith(undefined)
+		expect(page.error.value).toBeNull()
+		expect(page.firstPageFailed.value).toBe(false)
+	})
+
+	it('keeps the rows and the failure when "Load more" fails, and resolves rather than rejects', async () => {
+		const failure = new TypeError('Failed to fetch')
+		const getRecords = vi
+			.fn()
+			.mockResolvedValueOnce({ data: [{ id: '1' }, { id: '2' }], hasMore: true })
+			.mockRejectedValueOnce(failure)
+		const rows = ref(makeRows(2))
+		const page = useTablePagination({ rows, getRecords, sourceKey: 'task', pageSize: 2 })
+		await vi.waitFor(() => expect(getRecords).toHaveBeenCalledOnce())
+
+		await page.next()
+
+		expect(page.error.value).toBe(failure)
+		expect(page.firstPageFailed.value).toBe(false)
+		expect(page.visibleRows.value.map(r => r.id)).toEqual(['1', '2'])
+		expect(page.hasMore.value).toBe(true)
+	})
+
 	it('does not fetch when hasMore is false and next is called', async () => {
 		const getRecords = vi.fn().mockResolvedValue({ data: [{ id: '1' }], hasMore: false })
 		const rows = ref(makeRows(1))

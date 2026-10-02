@@ -592,6 +592,7 @@ describe('useStonecrop HST mode', { tags: ['unit'] }, () => {
 			{ items: { target: 'item', cardinality: 'noneOrMany', fieldname: 'items' } }
 		)
 		registry.addDoctype(orderDoctype)
+		stonecrop.addRecord(orderDoctype, 'order-2', { order_number: '', items: [] })
 
 		const TestComponent = defineComponent({
 			setup() {
@@ -967,5 +968,104 @@ describe('useStonecrop base mode', { tags: ['unit'] }, () => {
 		expect(vm.redoResult).toBe(false)
 		expect(vm.batchResult).toBe(null)
 		expect(vm.logResult).toBe('')
+	})
+})
+
+describe('useStonecrop reading an existing record', { tags: ['unit'] }, () => {
+	let registry: Registry
+	let stonecrop: Stonecrop
+
+	beforeEach(() => {
+		setActivePinia(createPinia())
+		Registry._root = undefined as any
+		Stonecrop._root = undefined as any
+		;(HST as any).instance = undefined
+		registry = new Registry()
+		stonecrop = new Stonecrop(registry)
+		registry.addDoctype(createDoctype('Task'))
+	})
+
+	const clientAnswering = (getRecord: ReturnType<typeof vi.fn>) => ({
+		getMeta: vi.fn().mockResolvedValue(null),
+		getRecord,
+		getRecords: vi.fn().mockResolvedValue({ data: [], hasMore: false }),
+		runAction: vi.fn(),
+	})
+
+	const mountReading = (doctype: Doctype | string) =>
+		mount(
+			defineComponent({
+				setup() {
+					return useStonecrop({ registry, doctype, recordId: 't1' })
+				},
+				template: '<div />',
+			}),
+			{ global: { provide: { $registry: registry, $stonecrop: stonecrop } } }
+		)
+
+	it.each([
+		['a Doctype', () => registry.getDoctype('task')!],
+		['a slug', () => 'task'],
+	])('reports a failed read through `error` and leaves the form empty, given %s', async (_, doctypeOf) => {
+		stonecrop.setClient(clientAnswering(vi.fn().mockRejectedValue(new Error('The server is down'))) as any)
+
+		const vm = mountReading(doctypeOf()).vm as any
+		await flushPromises()
+
+		expect(vm.error?.message).toBe('The server is down')
+		expect(vm.isLoading).toBe(false)
+		expect(vm.formData).toEqual({})
+	})
+
+	it('reports a record the server does not find as RECORD_NOT_FOUND', async () => {
+		stonecrop.setClient(clientAnswering(vi.fn().mockResolvedValue({ record: null, unknownLinks: [] })) as any)
+
+		const vm = mountReading('task').vm as any
+		await flushPromises()
+
+		expect(vm.error?.code).toBe('RECORD_NOT_FOUND')
+		expect(vm.formData).toEqual({})
+	})
+
+	it('never writes a record that did not load into the store, even after an edit', async () => {
+		// A record that did not load has no node in the store, and an edit must not make one: a later
+		// save would then send the form over the real record.
+		stonecrop.setClient(clientAnswering(vi.fn().mockRejectedValue(new Error('The server is down'))) as any)
+
+		const vm = mountReading(registry.getDoctype('task')!).vm as any
+		await flushPromises()
+		vm.formData.title = 'Typed after the failure'
+		await flushPromises()
+
+		expect(stonecrop.getRecordById('task', 't1')).toBeUndefined()
+	})
+
+	it('is loading while the record is read, and fills the form once it arrives', async () => {
+		let answer!: (value: unknown) => void
+		stonecrop.setClient(clientAnswering(vi.fn(() => new Promise(resolve => (answer = resolve)))) as any)
+
+		const vm = mountReading(registry.getDoctype('task')!).vm as any
+		await flushPromises()
+		expect(vm.isLoading).toBe(true)
+
+		answer({ record: { id: 't1', title: 'Loaded', status: 'draft' }, unknownLinks: [] })
+		await flushPromises()
+
+		expect(vm.isLoading).toBe(false)
+		expect(vm.error).toBeNull()
+		expect(vm.formData).toMatchObject({ title: 'Loaded' })
+	})
+
+	it('ties a loaded record to the store, so an edit reaches it', async () => {
+		stonecrop.setClient(
+			clientAnswering(vi.fn().mockResolvedValue({ record: { id: 't1', title: 'Loaded' }, unknownLinks: [] })) as any
+		)
+
+		const vm = mountReading(registry.getDoctype('task')!).vm as any
+		await flushPromises()
+		vm.formData.title = 'Edited'
+		await flushPromises()
+
+		expect(stonecrop.getRecordById('task', 't1')?.get('title')).toBe('Edited')
 	})
 })

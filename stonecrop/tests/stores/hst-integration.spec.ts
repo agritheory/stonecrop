@@ -86,6 +86,8 @@ describe('HST Real Component Integration', { tags: ['unit'] }, () => {
 
 	describe('Real AForm Integration with HST', () => {
 		it('should integrate HST with real AForm component for all field types', async () => {
+			// A loaded record whose fields are all empty.
+			stonecrop.addRecord(doctype, 'test-task', registry.initializeRecord(registry.resolveSchema(doctype)))
 			const FormWithHST = defineComponent({
 				components: {
 					AForm,
@@ -153,6 +155,8 @@ describe('HST Real Component Integration', { tags: ['unit'] }, () => {
 		})
 
 		it('should handle field updates through real ATextInput component', async () => {
+			// A loaded record whose fields are all empty.
+			stonecrop.addRecord(doctype, 'test-task', registry.initializeRecord(registry.resolveSchema(doctype)))
 			const FormWithHSTField = defineComponent({
 				components: { ATextInput },
 				template: `
