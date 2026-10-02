@@ -1,5 +1,6 @@
 import { z } from 'zod'
 
+import type { DoctypeField, FieldsetField } from './field'
 import { DoctypeFieldSchema, flattenFields, getDisplayField } from './field'
 import { toSlug } from './naming'
 
@@ -348,6 +349,13 @@ export const DoctypeMeta = z
 
 		/** Parent doctype for inheritance */
 		inherits: z.string().optional(),
+
+		/**
+		 * Starting values for new records, nested like the record itself (including child-table rows). The one place a
+		 * doctype gives them: a field has no default of its own. Serialized JSON cannot contain functions; see
+		 * superRefine on `defaults`.
+		 */
+		defaults: z.record(z.string(), z.unknown()).optional(),
 	})
 	.meta({
 		title: 'DoctypeMeta',
@@ -399,7 +407,71 @@ export const DoctypeMeta = z
 					: `displayField "${doctype.displayField}" is not declared on this doctype`,
 			})
 		}
+
+		if (doctype.defaults !== undefined) {
+			rejectFunctionsInDefaultsTree(doctype.defaults, [], ctx)
+			rejectUnknownDefaultsKeys(doctype.defaults, doctype.fields, ctx)
+		}
 	})
+
+/**
+ * Refuse a `defaults` key that names no field of the record, so a typo is reported where it is written rather than
+ * skipped when a new record is composed. The record's keys are `flattenFields`, the same set a new record is built
+ * from. A grouped section's name is refused too: a section only groups fields, and each takes its own entry.
+ *
+ * Only the top level: a row's or an embedded record's keys belong to the linked doctype, which this doctype alone
+ * cannot see.
+ */
+function rejectUnknownDefaultsKeys(
+	defaults: Record<string, unknown>,
+	fields: readonly DoctypeField[],
+	ctx: z.RefinementCtx
+): void {
+	const keys = new Set(flattenFields(fields).map(f => f.fieldname))
+	for (const key of Object.keys(defaults)) {
+		if (keys.has(key)) continue
+		const section = findSection(fields, key)
+		const sectionFields = section ? flattenFields(section.schema).map(f => f.fieldname) : []
+		ctx.addIssue({
+			code: 'custom',
+			path: ['defaults', key],
+			message: section
+				? `defaults key "${key}" names a grouped section, which holds no value of its own; give each of its fields (${sectionFields.join(', ')}) its own entry`
+				: `defaults key "${key}" is not a field of this doctype`,
+		})
+	}
+}
+
+function findSection(fields: readonly DoctypeField[], fieldname: string): FieldsetField | undefined {
+	for (const field of fields) {
+		if (field.kind !== 'fieldset') continue
+		if (field.fieldname === fieldname) return field
+		const inner = findSection(field.schema, fieldname)
+		if (inner) return inner
+	}
+	return undefined
+}
+
+function rejectFunctionsInDefaultsTree(value: unknown, path: Array<string | number>, ctx: z.RefinementCtx): void {
+	if (typeof value === 'function') {
+		const pathLabel = path.length ? path.join('.') : '(root)'
+		ctx.addIssue({
+			code: 'custom',
+			path: ['defaults', ...path],
+			message: `defaults cannot contain a function at ${pathLabel}; register code defaults on the client instead`,
+		})
+		return
+	}
+	if (Array.isArray(value)) {
+		value.forEach((item, index) => rejectFunctionsInDefaultsTree(item, [...path, index], ctx))
+		return
+	}
+	if (value !== null && typeof value === 'object') {
+		for (const [key, child] of Object.entries(value)) {
+			rejectFunctionsInDefaultsTree(child, [...path, key], ctx)
+		}
+	}
+}
 
 /**
  * Doctype metadata type inferred from Zod schema
@@ -570,6 +642,20 @@ export interface GetRecordsResult {
 }
 
 /**
+ * Result of dispatching an action to its server handler.
+ * @public
+ */
+export type ActionDispatchResult = {
+	success: boolean
+	data: unknown
+	error: string | null
+	/** The record as a read returns it after the action; null when it failed or targets no record. */
+	record: Record<string, unknown> | null
+	/** Keys the write discarded instead of storing; absent or null when it stored everything sent. */
+	droppedFields?: string[] | null
+}
+
+/**
  * Interface for data clients that fetch doctype metadata and records.
  * Implemented by \@stonecrop/graphql-client's StonecropClient.
  * Custom implementations can use any backend (REST, local storage, etc.).
@@ -614,13 +700,9 @@ export interface DataClient<T extends DoctypeRef = DoctypeRef, M = DoctypeMeta> 
 	 * @param doctype - Doctype reference (name and optional slug)
 	 * @param action - Action name to execute (e.g., 'SUBMIT', 'APPROVE', 'save')
 	 * @param args - Action arguments (typically record ID and/or form data)
-	 * @returns Action result: success, what the action's handler returned (`data`), any error, and the
+	 * @returns Action result: success, what the action's handler returned (`data`), any error, the
 	 * record as {@link DataClient.getRecord} returns it after the action (`record`, null when the
-	 * action failed or targets no record)
+	 * action failed or targets no record), and the keys the write discarded
 	 */
-	runAction(
-		doctype: T,
-		action: string,
-		args?: unknown[]
-	): Promise<{ success: boolean; data: unknown; error: string | null; record: Record<string, unknown> | null }>
+	runAction(doctype: T, action: string, args?: unknown[]): Promise<ActionDispatchResult>
 }

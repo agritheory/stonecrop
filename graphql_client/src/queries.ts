@@ -69,6 +69,7 @@ export const RUN_ACTION_MUTATION = `
 			data
 			error
 			record
+			droppedFields
 		}
 	}
 `

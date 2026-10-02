@@ -342,8 +342,15 @@ import { AFieldset } from '@stonecrop/aform'
 | schema | `ResolvedField[]` | yes |  |  |
 | label | `string \| undefined` | no | `undefined` |  |
 | collapsible | `boolean \| undefined` | no |  |  |
-| data | `Record<string, any> \| undefined` | no | `{}` |  |
 | mode | `InteractionMode \| undefined` | no | `"edit"` | Rendering mode forwarded to the inner AForm |
+| errors | `Record<string, string[]> \| undefined` | no | `undefined` | Inline validation errors keyed by fieldname, forwarded to the inner AForm. |
+| data | `Record<string, any> \| undefined` | no | `{}` | The record the fieldset's fields belong to: a fieldset is layout, so they are its own keys. |
+
+**Events:**
+
+| Event | Payload | Description |
+|-------|---------|-------------|
+| update:data | `[value: Record<string, any>]` |  |
 
 **Slots:**
 
@@ -558,6 +565,35 @@ import { ASegmentedControl } from '@stonecrop/aform'
 | Event | Payload | Description |
 |-------|---------|-------------|
 | update:modelValue | `[value: string \| string[]]` |  |
+
+### ASemverInput
+
+Vue component exported from @stonecrop/aform.
+
+```typescript
+import { ASemverInput } from '@stonecrop/aform'
+```
+
+**Props:**
+
+| Prop | Type | Required | Default | Description |
+|------|------|----------|---------|-------------|
+| schema | `ResolvedField \| undefined` | no |  | The schema object to pass to the component |
+| label | `string \| undefined` | no |  | The label to display in the component |
+| selectRange | `boolean \| undefined` | no |  |  |
+| mask | `string \| undefined` | no |  | The mask to apply to inputs inside the component. Accepts either a plain mask string (e.g. `"(###) ###-####"`) or a stringified arrow function that receives `locale` and returns a mask string (e.g. `"(locale) => locale === 'en-US' ? '(###) ###-####' : '####-######'"`). |
+| required | `boolean \| undefined` | no |  | Indicate whether input is required for text and/or select elements inside the component |
+| mode | `InteractionMode \| undefined` | no |  | The rendering mode for the component |
+| uuid | `string \| undefined` | no |  | Set a unique identifier for elements inside the component |
+| validation | `{ [key: string]: any; errorMessage: string; } \| undefined` | no | `{ errorMessage: "" }` | Validation options for elements inside the component |
+| errors | `string[] \| undefined` | no |  | Inline validation error messages to display on this field. Fed by the host (e.g. mapped from the core validation store) — the renderer stays dumb and just shows what it is given. Takes precedence over the static `validation.errorMessage`. |
+| modelValue | `string \| null \| undefined` | no |  |  |
+
+**Events:**
+
+| Event | Payload | Description |
+|-------|---------|-------------|
+| update:modelValue | `[value: string \| null \| undefined]` |  |
 
 ### ATextboxInput
 
@@ -924,7 +960,6 @@ A resolved Link field with cardinality `one` or `atMostOne` — embedded as a ne
 ```typescript
 export interface ResolvedLink {
   component: string;
-  default?: unknown;
   fieldname: string;
   hidden?: boolean;
   kind: 'link';
@@ -942,7 +977,6 @@ export interface ResolvedLink {
 | Property | Type | Description |
 |----------|------|-------------|
 | component | `string` | Component to render; defaults to `'AForm'` |
-| default? | `unknown` | Preserved from the original ValueField |
 | fieldname | `string` | Field identifier |
 | hidden? | `boolean` | Preserved from the original ValueField |
 | kind | `'link'` | Discriminator |
@@ -967,7 +1001,6 @@ Rows are never part of the schema. AForm sources them from the data model at `da
 export interface ResolvedTable {
   component: string;
   config: TableViewConfig;
-  default?: unknown;
   fieldname: string;
   getRecords?: (options?: GetRecordsOptions) => Promise<GetRecordsResult>;
   hidden?: boolean;
@@ -988,7 +1021,6 @@ export interface ResolvedTable {
 |----------|------|-------------|
 | component | `string` | Component to render; defaults to `'ATable'` |
 | config | `TableViewConfig` | View configuration — always present; defaults to `{ view: 'list' }` |
-| default? | `unknown` | Preserved from the original ValueField or TableField |
 | fieldname | `string` | Field identifier |
 | getRecords? | `(options?: GetRecordsOptions) => Promise<GetRecordsResult>` | When set, ATable fetches list pages through this callback (server paging). |
 | hidden? | `boolean` | Preserved from the original ValueField or TableField |
@@ -1239,6 +1271,14 @@ export const AQuantityInput: typeof __VLS_export
 
 ```typescript
 export const ASegmentedControl: typeof __VLS_export
+```
+
+### ASemverInput
+
+**Type:**
+
+```typescript
+export const ASemverInput: typeof __VLS_export
 ```
 
 ### ATextboxInput

@@ -1,5 +1,25 @@
 # Change Log - @stonecrop/schema
 
+## 0.41.0
+
+### Minor Changes
+
+- 863c853: `ASemverInput` has its own `semver` component category, so atable filters a semver column as text and sorts it by version precedence: `1.2.0` before `1.10.0`, and a prerelease before its release.
+
+## 0.40.0
+
+### Minor Changes
+
+- a5f8744: `validateDoctype` refuses a `defaults` key that names no field of the doctype, such as a typo or a grouped section's name, and says which. `registry.registerDefaults` takes a doctype's name as well as its slug (`'OrderItem'` or `'order-item'`), so defaults registered under the name apply instead of being ignored.
+- a5f8744: A doctype gives its starting values in one place, its `defaults`, which hold fixed data only. A field no longer has a `default` of its own: `validateDoctype` refuses one and points to `defaults`, and DocBuilder no longer offers the column. Embedded records and table rows start from their own doctype's `defaults`. The app's starting values come from one registration per doctype, `registry.registerDefaults`, whose functions run for every new record; registering a doctype a second time warns. `registry.setDefaultsLoader` and `composeNewRecord`'s `overlay` option are removed.
+
+## 0.39.0
+
+### Minor Changes
+
+- 835f62c: An action's result now carries `droppedFields`, the keys a save discarded instead of storing, through one `ActionDispatchResult` type that `@stonecrop/schema` now exports.
+- 835f62c: A fieldset's fields are now read and written as keys of the record itself, never nested under the fieldset's name, so an edit inside a fieldset reaches the form and its save, and data handed to `AForm` must hold them flat.
+
 ## 0.38.1
 
 ## 0.38.0

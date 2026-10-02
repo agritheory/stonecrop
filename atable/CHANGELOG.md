@@ -1,5 +1,46 @@
 # Change Log - @stonecrop/atable
 
+## 0.41.0
+
+### Minor Changes
+
+- 863c853: `ASemverInput` has its own `semver` component category, so atable filters a semver column as text and sorts it by version precedence: `1.2.0` before `1.10.0`, and a prerelease before its release.
+
+### Patch Changes
+
+- Updated dependencies [863c853]
+- Updated dependencies [863c853]
+  - @stonecrop/schema@0.41.0
+  - @stonecrop/utilities@0.41.0
+  - @stonecrop/themes@0.41.0
+
+## 0.40.0
+
+### Patch Changes
+
+- Updated dependencies [a5f8744]
+- Updated dependencies [a5f8744]
+  - @stonecrop/schema@0.40.0
+  - @stonecrop/themes@0.40.0
+  - @stonecrop/utilities@0.40.0
+
+## 0.39.0
+
+### Minor Changes
+
+- 835f62c: `ATable` no longer changes the list passed as `rows`; an edit arrives only through `update:rows`, so a host that passes `rows` without `v-model:rows` must listen for it.
+
+### Patch Changes
+
+- 835f62c: The row actions menu now casts `--sc-overlay-shadow`, whichever way it opens.
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+  - @stonecrop/schema@0.39.0
+  - @stonecrop/themes@0.39.0
+  - @stonecrop/utilities@0.39.0
+
 ## 0.38.1
 
 ### Patch Changes

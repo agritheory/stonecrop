@@ -129,7 +129,7 @@
 import { ATable, ARow } from '@stonecrop/atable'
 import { CANONICAL_COMPONENTS, INTROSPECTED_IDENTITY_PROPS } from '@stonecrop/schema'
 import { computed, nextTick, ref, useId } from 'vue'
-import { isValueField, updateFieldAt } from './docbuilderFields'
+import { copyField, isValueField, updateFieldAt } from './docbuilderFields'
 const IDENTITY_PROPS = new Set(INTROSPECTED_IDENTITY_PROPS)
 const isIdentity = key => IDENTITY_PROPS.has(key)
 const componentListId = useId()
@@ -156,10 +156,7 @@ const BOOL_PROPS = [
 	{ key: 'primaryKey', label: 'Primary key' },
 	{ key: 'computed', label: 'Computed (no DB column)' },
 ]
-const JSON_PROPS = [
-	{ key: 'options', label: 'Options' },
-	{ key: 'default', label: 'Default' },
-]
+const JSON_PROPS = [{ key: 'options', label: 'Options' }]
 const FIELD_COLUMNS = [
 	{ name: 'fieldname', label: 'ID', sortable: false, filterable: true },
 	{ name: 'label', label: 'Label', sortable: false },
@@ -295,13 +292,12 @@ function removeField(realIndex) {
 function duplicateField(realIndex) {
 	const original = props.modelValue[realIndex]
 	if (!original) return
-	const { source: _source, ...rest } = original
 	const existing = new Set(props.modelValue.map(f => String(f.fieldname ?? '')))
-	const baseName = `${String(rest.fieldname ?? 'field')}_copy`
+	const baseName = `${String(original.fieldname ?? 'field')}_copy`
 	let fieldname = baseName
 	let n = 1
 	while (existing.has(fieldname)) fieldname = `${baseName}_${++n}`
-	const clone = { ...rest, fieldname }
+	const clone = copyField(original, fieldname)
 	const next = props.modelValue.slice()
 	next.splice(realIndex + 1, 0, clone)
 	emit('update:modelValue', next)
@@ -344,11 +340,13 @@ function bool(v) {
 }
 .fields-panel :deep(.atable-row > td) {
 	border-top: 1px solid var(--sc-row-border-color);
-	padding: var(--sc-atable-row-padding) 0.75em;
+	/* atable's own side spacing, as on its filter row, so each row lines up under its filter box. */
+	padding: var(--sc-atable-row-padding) 0.5ch;
 	vertical-align: middle;
 }
 .fields-panel :deep(input[type='text']),
 .fields-panel :deep(select) {
+	box-sizing: border-box;
 	border: 1px solid var(--sc-gray-20);
 	border-radius: var(--sc-border-radius);
 	font-family: inherit;

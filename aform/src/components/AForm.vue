@@ -1,10 +1,9 @@
 <template>
 	<form class="aform">
 		<template v-for="(componentObj, key) in schema" :key="key">
-			<!-- Nested schema field (Doctype or any field with resolved schema) -->
-			<div v-if="isNestedSection(componentObj)" class="aform-nested-section">
-				<!-- Suppress h4 for fieldsets — they render their own legend inside AFieldset -->
-				<h4 v-if="componentObj.label && componentObj.kind !== 'fieldset'" class="aform-nested-label">
+			<!-- A linked record: its form binds the link's own value -->
+			<div v-if="isLinkSection(componentObj)" class="aform-nested-section">
+				<h4 v-if="componentObj.label" class="aform-nested-label">
 					{{ componentObj.label }}
 				</h4>
 				<component
@@ -13,9 +12,22 @@
 					:mode="resolvedMode(componentObj)"
 					:schema="componentObj.schema"
 					:label="componentObj.label"
-					:collapsible="componentObj.kind === 'fieldset' ? componentObj.collapsible : undefined"
 					:errors="errors"
 					@update:data="(val: any) => updateNestedData(componentObj.fieldname, val)" />
+			</div>
+
+			<!-- A fieldset is layout: its fields are this record's own, so it binds this record.
+				 No h4, since AFieldset renders its own legend. -->
+			<div v-else-if="isFieldsetSection(componentObj)" class="aform-nested-section">
+				<component
+					:is="componentObj.component ?? 'AFieldset'"
+					:data="dataModel"
+					:mode="resolvedMode(componentObj)"
+					:schema="componentObj.schema"
+					:label="componentObj.label"
+					:collapsible="componentObj.collapsible"
+					:errors="errors"
+					@update:data="updateFieldsetData" />
 			</div>
 
 			<!-- Regular field -->
@@ -61,13 +73,16 @@ const {
 	errors?: Record<string, string[]>
 }>()
 
-const isNestedSection = (componentObj: ResolvedField): componentObj is ResolvedLink | ResolvedFieldset =>
-	(componentObj.kind === 'link' || componentObj.kind === 'fieldset') &&
-	'schema' in componentObj &&
-	Array.isArray(componentObj.schema) &&
-	componentObj.schema.length > 0
+const hasChildSchema = (componentObj: ResolvedField) =>
+	'schema' in componentObj && Array.isArray(componentObj.schema) && componentObj.schema.length > 0
 
-// Reactive nested data refs for two-way binding with nested AForm instances
+const isLinkSection = (componentObj: ResolvedField): componentObj is ResolvedLink =>
+	componentObj.kind === 'link' && hasChildSchema(componentObj)
+
+const isFieldsetSection = (componentObj: ResolvedField): componentObj is ResolvedFieldset =>
+	componentObj.kind === 'fieldset' && hasChildSchema(componentObj)
+
+// Reactive nested data refs for two-way binding with the forms of linked records
 const nestedData = ref<Record<string, any>>({})
 
 // Sync external dataModel changes into nestedData (one-way, no emit back).
@@ -78,7 +93,7 @@ watch(
 	newData => {
 		if (!schema || !newData) return
 		schema.forEach(field => {
-			if (isNestedSection(field)) {
+			if (isLinkSection(field)) {
 				nestedData.value[field.fieldname] = newData[field.fieldname] ?? {}
 			}
 		})
@@ -97,6 +112,14 @@ const updateNestedData = (fieldname: string, val: any) => {
 	}
 }
 
+// Called by a fieldset's @update:data handler. Its form holds this record, so its edits are this record's.
+const updateFieldsetData = (val: Record<string, any>) => {
+	if (dataModel.value) {
+		Object.assign(dataModel.value, val)
+		emit('update:data', { ...dataModel.value })
+	}
+}
+
 const isListExpansionTable = (componentObj: ResolvedField): componentObj is ResolvedTable =>
 	componentObj.kind === 'table' && componentObj.config?.view === 'list-expansion'
 
@@ -105,13 +128,17 @@ const tableExpansionSchema = (table: ResolvedTable): ResolvedField[] =>
 		.filter((col): col is ColumnSchema & { component: string } => Boolean(col.component))
 		.map(({ fieldname, component, ...rest }) => Object.assign(rest, { kind: 'field' as const, fieldname, component }))
 
-const updateTableRow = (fieldname: string, rowIndex: number, val: Record<string, unknown>) => {
-	const rows = Array.isArray(dataModel.value?.[fieldname]) ? [...dataModel.value[fieldname]] : []
-	rows[rowIndex] = { ...rows[rowIndex], ...val }
+const updateTableRows = (fieldname: string, rows: Record<string, unknown>[]) => {
 	if (dataModel.value) {
 		dataModel.value[fieldname] = rows
 		emit('update:data', { ...dataModel.value })
 	}
+}
+
+const updateTableRow = (fieldname: string, rowIndex: number, val: Record<string, unknown>) => {
+	const rows = Array.isArray(dataModel.value?.[fieldname]) ? [...dataModel.value[fieldname]] : []
+	rows[rowIndex] = { ...rows[rowIndex], ...val }
+	updateTableRows(fieldname, rows)
 }
 
 const componentProps = (componentObj: ResolvedField) => {
@@ -124,11 +151,13 @@ const componentProps = (componentObj: ResolvedField) => {
 		}
 	}
 
-	// A table sources its rows from the data model, never from the schema. `kind` is the only
-	// check: every path into AForm sets it (Zod's injectKind, Doctype.fromObject's
-	// normalizeFieldKind, and the registry), and hand-built ResolvedTable literals declare it.
+	// A table sources its rows from the data model, never from the schema, and its edits come back
+	// through `update:rows`. `kind` is the only check: every path into AForm sets it (Zod's
+	// injectKind, Doctype.fromObject's normalizeFieldKind, and the registry), and hand-built
+	// ResolvedTable literals declare it.
 	if (componentObj.kind === 'table') {
 		propsToPass['rows'] = dataModel.value[componentObj.fieldname] || []
+		propsToPass['onUpdate:rows'] = (rows: Record<string, unknown>[]) => updateTableRows(componentObj.fieldname, rows)
 	}
 
 	return propsToPass

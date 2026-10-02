@@ -20,8 +20,8 @@ import { flattenFields } from './flatten'
  * which of the two a field is — is what tells them apart, via {@link componentLinkExpansion}.
  * Reducing an expanded link would send the id in place of the record.
  *
- * Fieldsets are descended into in both shapes a record appears in: flat, as the store and the
- * server hold it, and nested under the fieldset's own key, as a form emits it.
+ * A fieldset's children are the record's own keys, since a fieldset is layout, so they are
+ * reduced where every other field is.
  *
  * @param fields - the doctype's top-level fields
  * @param record - the record to reduce; not mutated
@@ -37,25 +37,12 @@ export function unwrapInlineLinks(fields: readonly DoctypeField[], record: Recor
 	)
 	if (inline.size === 0) return record
 
-	const fieldsets = new Set(fields.filter(field => field.kind === 'fieldset').map(field => field.fieldname))
-	return unwrapWith(inline, fieldsets, record)
-}
-
-function unwrapWith(
-	inline: ReadonlySet<string>,
-	fieldsets: ReadonlySet<string>,
-	record: Record<string, any>
-): Record<string, any> {
 	const result: Record<string, any> = { ...record }
 	for (const [key, value] of Object.entries(result)) {
-		if (value === null || typeof value !== 'object' || Array.isArray(value)) continue
-		if (inline.has(key)) {
-			// `'id' in value` rather than a truthiness test: an inline link that was never resolved
-			// is still a bare scalar, and reducing it a second time would be a no-op at best.
-			if ('id' in value) result[key] = value.id
-		} else if (fieldsets.has(key)) {
-			result[key] = unwrapWith(inline, fieldsets, value)
-		}
+		if (!inline.has(key) || value === null || typeof value !== 'object' || Array.isArray(value)) continue
+		// `'id' in value` rather than a truthiness test: an inline link that was never resolved
+		// is still a bare scalar, and reducing it a second time would be a no-op at best.
+		if ('id' in value) result[key] = value.id
 	}
 	return result
 }

@@ -18,6 +18,7 @@ import {
 	triggerTransition,
 } from './field-triggers'
 import plugin from './plugins'
+import { DEFAULTS_TIMEOUT_MS, composeNewRecord } from './compose-new-record'
 import Registry from './registry'
 import { Stonecrop } from './stonecrop'
 import { HST, createHST, type HSTNode } from './stores/hst'
@@ -41,6 +42,8 @@ export { ValidationSeverity }
 export {
 	Doctype,
 	Registry,
+	composeNewRecord,
+	DEFAULTS_TIMEOUT_MS,
 	Stonecrop,
 	// Unsaved-record identity, shared with the desktop shell
 	DRAFT_RECORD_ID,

@@ -1,5 +1,90 @@
 # Change Log - @stonecrop/nuxt
 
+## 0.41.0
+
+### Patch Changes
+
+- Updated dependencies [863c853]
+- Updated dependencies [863c853]
+  - @stonecrop/schema@0.41.0
+  - @stonecrop/atable@0.41.0
+  - @stonecrop/aform@0.41.0
+  - @stonecrop/desktop@0.41.0
+  - @stonecrop/graphql-client@0.41.0
+  - @stonecrop/graphql-middleware@0.41.0
+  - @stonecrop/node-editor@0.41.0
+  - @stonecrop/stonecrop@0.41.0
+  - @stonecrop/nuxt-grafserv@0.41.0
+  - @stonecrop/casl-middleware@0.41.0
+  - @stonecrop/code-editor@0.41.0
+  - @stonecrop/themes@0.41.0
+
+## 0.40.0
+
+### Minor Changes
+
+- a5f8744: A doctype gives its starting values in one place, its `defaults`, which hold fixed data only. A field no longer has a `default` of its own: `validateDoctype` refuses one and points to `defaults`, and DocBuilder no longer offers the column. Embedded records and table rows start from their own doctype's `defaults`. The app's starting values come from one registration per doctype, `registry.registerDefaults`, whose functions run for every new record; registering a doctype a second time warns. `registry.setDefaultsLoader` and `composeNewRecord`'s `overlay` option are removed.
+
+### Patch Changes
+
+- a5f8744: DocBuilder carries a field rename into the doctype's `defaults`, and a deleted field's starting value goes with it. A save the server would refuse to load is refused, with the reason, instead of written.
+- a5f8744: The setup tool scaffolds its sample doctypes as `doctypes/project.json` and `doctypes/task.json`. An app that already has `Project.json` or `Task.json` keeps them and gets no second copy.
+- Updated dependencies [a5f8744]
+- Updated dependencies [a5f8744]
+- Updated dependencies [a5f8744]
+- Updated dependencies [a5f8744]
+- Updated dependencies [a5f8744]
+  - @stonecrop/schema@0.40.0
+  - @stonecrop/stonecrop@0.40.0
+  - @stonecrop/aform@0.40.0
+  - @stonecrop/desktop@0.40.0
+  - @stonecrop/atable@0.40.0
+  - @stonecrop/graphql-client@0.40.0
+  - @stonecrop/graphql-middleware@0.40.0
+  - @stonecrop/node-editor@0.40.0
+  - @stonecrop/nuxt-grafserv@0.40.0
+  - @stonecrop/casl-middleware@0.40.0
+  - @stonecrop/code-editor@0.40.0
+  - @stonecrop/themes@0.40.0
+
+## 0.39.0
+
+### Minor Changes
+
+- 835f62c: An action's result now carries `droppedFields`, the keys a save discarded instead of storing, through one `ActionDispatchResult` type that `@stonecrop/schema` now exports.
+
+### Patch Changes
+
+- 835f62c: `useStonecropRegistry().dispatchAction`, and the `runAction` that DocBuilder's code editor offers client handlers, now declare the `record` an action's result has carried since 0.36.0.
+- 835f62c: DocBuilder's fields and actions tables now keep each text box inside its column and line each row up under the filter row above it.
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+  - @stonecrop/graphql-client@0.39.0
+  - @stonecrop/schema@0.39.0
+  - @stonecrop/stonecrop@0.39.0
+  - @stonecrop/desktop@0.39.0
+  - @stonecrop/themes@0.39.0
+  - @stonecrop/aform@0.39.0
+  - @stonecrop/atable@0.39.0
+  - @stonecrop/graphql-middleware@0.39.0
+  - @stonecrop/node-editor@0.39.0
+  - @stonecrop/nuxt-grafserv@0.39.0
+  - @stonecrop/casl-middleware@0.39.0
+  - @stonecrop/code-editor@0.39.0
+
 ## 0.38.1
 
 ### Patch Changes

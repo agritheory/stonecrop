@@ -24,6 +24,15 @@ export const ActionDefinition: z.ZodObject<{
 export type ActionDefinition = z.infer<typeof ActionDefinition>;
 
 // @public
+export type ActionDispatchResult = {
+    success: boolean;
+    data: unknown;
+    error: string | null;
+    record: Record<string, unknown> | null;
+    droppedFields?: string[] | null;
+};
+
+// @public
 export function aggregateDoctypeName(doctypeName: string): string;
 
 // @public
@@ -124,7 +133,7 @@ export const COMPONENT_CATEGORY: Record<string, ComponentCategory>;
 export const COMPONENT_LINK_EXPANSION: Record<string, LinkExpansion>;
 
 // @public
-export type ComponentCategory = 'text' | 'number' | 'boolean' | 'date' | 'datetime' | 'duration' | 'select' | 'code' | 'link' | 'attach' | 'quantity' | 'currency';
+export type ComponentCategory = 'text' | 'number' | 'boolean' | 'date' | 'datetime' | 'duration' | 'select' | 'code' | 'link' | 'attach' | 'quantity' | 'currency' | 'semver';
 
 // @public
 export function componentCategory(component?: string): ComponentCategory | undefined;
@@ -155,12 +164,7 @@ export interface DataClient<T extends DoctypeRef = DoctypeRef, M = DoctypeMeta> 
     getMeta(context: DoctypeContext): Promise<M | null>;
     getRecord(doctype: T, recordId: string, options?: GetRecordOptions): Promise<GetRecordResult>;
     getRecords(doctype: T, options?: GetRecordsOptions): Promise<GetRecordsResult>;
-    runAction(doctype: T, action: string, args?: unknown[]): Promise<{
-        success: boolean;
-        data: unknown;
-        error: string | null;
-        record: Record<string, unknown> | null;
-    }>;
+    runAction(doctype: T, action: string, args?: unknown[]): Promise<ActionDispatchResult>;
 }
 
 // @public
@@ -261,6 +265,7 @@ export const DoctypeMeta: z.ZodObject<{
         }, z.core.$strip>>>;
     }, z.core.$strip>>;
     inherits: z.ZodOptional<z.ZodString>;
+    defaults: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodUnknown>>;
 }, z.core.$strip>;
 
 // @public
@@ -674,7 +679,6 @@ export interface ValueField {
     component: string;
     computed?: boolean;
     config?: TableViewConfig;
-    default?: unknown;
     doctype?: string;
     edit?: boolean;
     fieldname: string;
@@ -726,7 +730,7 @@ export const ValueFieldSchema: z.ZodObject<{
     required: z.ZodOptional<z.ZodBoolean>;
     readOnly: z.ZodOptional<z.ZodBoolean>;
     hidden: z.ZodOptional<z.ZodBoolean>;
-    default: z.ZodOptional<z.ZodUnknown>;
+    default: z.ZodOptional<z.ZodNever>;
     validation: z.ZodOptional<z.ZodObject<{
         errorMessage: z.ZodString;
     }, z.core.$loose>>;

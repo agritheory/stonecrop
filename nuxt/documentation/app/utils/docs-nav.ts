@@ -29,6 +29,7 @@ export const docsNavSections: DocsNavSection[] = [
 					{ text: 'Form Link', to: '/components/form-link' },
 					{ text: 'Currency', to: '/components/currency' },
 					{ text: 'Quantity Input', to: '/components/quantity-input' },
+					{ text: 'Semver Input', to: '/components/semver' },
 					{ text: 'Login', to: '/components/login' },
 					{ text: 'Collapse Button', to: '/components/collapse-button' },
 				],

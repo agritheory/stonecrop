@@ -1,12 +1,11 @@
 // @stonecrop/nuxt documentation site
 // Nuxt + @nuxt/content docs with integrated public playground (grafserv + DocBuilder)
-import { readdirSync } from 'node:fs'
 import { createRequire } from 'node:module'
-import { join, relative, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import NuxtGrafserv, { type ModuleOptions as GrafservOptions } from '@stonecrop/nuxt-grafserv'
 
 import NuxtStonecrop from '../src/module'
+import { contentRoutes, indexSectionPaths } from './content-routes'
 
 // @nuxtjs/mdc's remark/rehype pipeline (behind @nuxt/content) depends on a chain of small CJS
 // utilities — remark-gfm, remark-emoji, remark-mdc, remark-rehype, rehype-raw, parse5,
@@ -39,29 +38,6 @@ const mdcTransitiveDeps = [
 	'extend',
 ]
 const mdcDepAliases = Object.fromEntries(mdcTransitiveDeps.map(name => [name, mdcRequire.resolve(name)]))
-
-// Prerendering is otherwise driven entirely by link crawling, so a page nothing links to never
-// reaches the static output and resolves only through the client-side fallback: a direct hit or a
-// search result lands on a 404 from the CDN. Enumerating the collection is what makes the built
-// site independent of whether the sidebar happens to mention a page.
-const contentRoot = fileURLToPath(new URL('./content', import.meta.url))
-
-function contentRoutes(directory: string = contentRoot): string[] {
-	return readdirSync(directory, { withFileTypes: true }).flatMap(entry => {
-		const fullPath = join(directory, entry.name)
-		if (entry.isDirectory()) {
-			return contentRoutes(fullPath)
-		}
-		if (!entry.name.endsWith('.md')) {
-			return []
-		}
-		const slug = relative(contentRoot, fullPath).slice(0, -'.md'.length).split(sep).join('/')
-		// The trailing slash on a directory index is load-bearing: content pages link to siblings
-		// as `./name`, which resolves against the parent when the current URL lacks one, turning
-		// every such link into a 404 at prerender time.
-		return [`/${slug.replace(/(^|\/)index$/, '$1')}`]
-	})
-}
 
 export default defineNuxtConfig({
 	compatibilityDate: '2026-01-01',
@@ -130,6 +106,13 @@ export default defineNuxtConfig({
 
 	components: [{ path: '~/components', global: true }],
 
+	// Read here, where the content folder is on disk, for the trailing-slash middleware.
+	runtimeConfig: {
+		public: {
+			docsIndexPaths: indexSectionPaths(),
+		},
+	},
+
 	devtools: { enabled: true },
 
 	devServer: {
@@ -157,8 +140,12 @@ export default defineNuxtConfig({
 		},
 	},
 
+	// Vite keys its optimize cache on dep version, not dist content, so rebuilding a workspace
+	// package would leave the server on a stale pre-bundle (e.g. ASemverInput missing). Force a
+	// fresh re-optimize each dev start.
 	vite: {
 		optimizeDeps: {
+			force: true,
 			include: [
 				'pinia',
 				'@stonecrop/aform',

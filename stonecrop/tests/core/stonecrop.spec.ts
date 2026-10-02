@@ -543,6 +543,26 @@ describe('Stonecrop class with HST integration', { tags: ['unit'] }, () => {
 			expect(result).toEqual(mockResult)
 		})
 
+		it('dispatchAction hands back the keys the write discarded', async () => {
+			const mockClient = {
+				getMeta: vi.fn(),
+				getRecord: vi.fn(),
+				getRecords: vi.fn(),
+				runAction: vi.fn().mockResolvedValue({
+					success: true,
+					data: { id: '1' },
+					error: null,
+					record: { id: '1' },
+					droppedFields: ['tags'],
+				}),
+			}
+			const localStonecrop = new Stonecrop(registry, undefined, { client: mockClient })
+
+			const result = await localStonecrop.dispatchAction(mockDoctype, 'save', [{ id: '1', data: { tags: [] } }])
+
+			expect(result.droppedFields).toEqual(['tags'])
+		})
+
 		// The write half. It is here rather than in the composable because a host that never adopts
 		// `useClientAction` still dispatches through this method, and filing a created record under
 		// the id that was *sent* is the mistake every hand-rolled handler made — the record lands
@@ -892,6 +912,36 @@ describe('Stonecrop class with HST integration', { tags: ['unit'] }, () => {
 			const record = second.getRecordById('task', '123')
 			expect(record).toBeDefined()
 			expect(record!.get('title')).toBe('Test Task')
+		})
+	})
+
+	describe('initializeNestedData', () => {
+		// A section is filled once, after its starting values arrive, so a slow value never lands on what was typed.
+		it('keeps what was typed after a slow starting value arrives', async () => {
+			const nestedRegistry = new Registry()
+			const task = createDoctype('Task')
+			const address = createDoctype('Address', [
+				{ kind: 'field', fieldname: 'street', component: 'ATextInput' },
+				{ kind: 'field', fieldname: 'city', component: 'ATextInput' },
+			])
+			nestedRegistry.addDoctype(task)
+			nestedRegistry.addDoctype(address)
+			nestedRegistry.registerDefaults('address', {
+				city: () => new Promise(resolve => setTimeout(() => resolve('Default City'), 10)) as any,
+			})
+			const sc = new Stonecrop(nestedRegistry)
+			;(sc as any).ensureDoctypeExists('task')
+
+			await sc.initializeNestedData('task.new', address)
+			expect(sc.getStore().get('task.new.city')).toBe('Default City')
+			sc.getStore().set('task.new.street', '12 Elm St')
+			sc.getStore().set('task.new.city', 'Portland')
+			await new Promise(resolve => setTimeout(resolve, 30))
+
+			expect([sc.getStore().get('task.new.street'), sc.getStore().get('task.new.city')]).toEqual([
+				'12 Elm St',
+				'Portland',
+			])
 		})
 	})
 

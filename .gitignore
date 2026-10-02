@@ -134,8 +134,6 @@ tsdoc-metadata.json
 # Nuxt
 .nuxt
 .output
-# nuxt-graphql-middleware (downloadSchema: dev-only) on documentation dev boot
-nuxt/documentation/schema.graphql
 .data
 .vercel_build_output
 .build-*

@@ -1,4 +1,10 @@
-import type { DataClient, GetRecordOptions, GetRecordsOptions, GetRecordsResult } from '@stonecrop/schema'
+import type {
+	ActionDispatchResult,
+	DataClient,
+	GetRecordOptions,
+	GetRecordsOptions,
+	GetRecordsResult,
+} from '@stonecrop/schema'
 import { reactive } from 'vue'
 
 import Doctype from './doctype'
@@ -6,7 +12,6 @@ import { isDraftRecordId } from './draft'
 import Registry from './registry'
 import { createHST, type HSTNode } from './stores/hst'
 import { useOperationLogStore } from './stores/operation-log'
-import type { ActionDispatchResult } from './types/client-action'
 import type { OperationLogConfig } from './types/operation-log'
 import type { RouteContext } from './types/registry'
 import type { PageInfo, StonecropOptions } from './types/stonecrop'
@@ -444,7 +449,7 @@ export class Stonecrop {
 	 * @param doctype - The doctype
 	 * @param action - Action name to execute (e.g., 'SUBMIT', 'APPROVE', 'save')
 	 * @param args - Action arguments (typically record ID and/or form data)
-	 * @returns Action result with success status, the handler's data, any error, and the record
+	 * @returns Action result with success status, the handler's data, any error, the record, and the keys the write discarded
 	 * @throws Error if no data client has been configured
 	 */
 	async dispatchAction(doctype: Doctype, action: string, args?: unknown[]): Promise<ActionDispatchResult> {
@@ -594,13 +599,12 @@ export class Stonecrop {
 	 * @param doctype - The doctype to initialize
 	 * @public
 	 */
-	initializeNestedData(path: string, doctype: Doctype): void {
+	async initializeNestedData(path: string, doctype: Doctype): Promise<void> {
 		const slug = doctype.slug
 		this.ensureDoctypeExists(slug)
 
-		// Resolve schema and initialize with defaults
-		const resolvedSchema = this.registry.resolveSchema(doctype)
-		const record = this.registry.initializeRecord(resolvedSchema)
+		// Composed once, with every starting value in, so nothing later lands on what a user types here.
+		const { record } = await this.registry.composeNewRecord(doctype)
 
 		// Ensure the ancestor path exists in HST before setting descendant fields
 		const existingData = this.hstStore.get(path)

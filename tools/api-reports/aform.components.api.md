@@ -257,10 +257,13 @@ props: {
   schema: ResolvedField[]
   label?: string \| undefined
   collapsible?: boolean \| undefined
-  data?: Record<string, any> \| undefined
   mode?: InteractionMode \| undefined
+  errors?: Record<string, string[]> \| undefined
+  data?: Record<string, any> \| undefined
 }
-emits: {}
+emits: {
+  update:data: [value: Record<string, any>]
+}
 slots: {
   default: { collapsed: boolean; }
 }
@@ -422,6 +425,28 @@ props: {
 }
 emits: {
   update:modelValue: [value: string \| string[]]
+}
+slots: {}
+```
+
+### ASemverInput
+
+```ts
+// src/components/form/ASemverInput.vue
+props: {
+  schema?: ResolvedField \| undefined
+  label?: string \| undefined
+  selectRange?: boolean \| undefined
+  mask?: string \| undefined
+  required?: boolean \| undefined
+  mode?: InteractionMode \| undefined
+  uuid?: string \| undefined
+  validation?: { [key: string]: any; errorMessage: string; } \| undefined
+  errors?: string[] \| undefined
+  modelValue?: string \| null \| undefined
+}
+emits: {
+  update:modelValue: [value: string \| null \| undefined]
 }
 slots: {}
 ```

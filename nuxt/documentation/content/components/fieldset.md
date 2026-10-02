@@ -69,7 +69,7 @@ const email = ref('')
 
 ## Usage in a schema
 
-`AFieldset` is usually resolved by `AForm` from a schema field with `kind: 'fieldset'`, which nests a `schema` array of its own child fields:
+`AFieldset` is usually resolved by `AForm` from a schema field with `kind: 'fieldset'`, which nests a `schema` array of its own child fields. `AForm` renders `AFieldset` when the field declares no `component`:
 
 ```ts
 const schema = [
@@ -93,15 +93,15 @@ const schema = [
 import { ref } from 'vue'
 import { AForm } from '@stonecrop/aform'
 
-const data = ref({
-	personal_info: { first_name: '', last_name: '', age: null },
-})
+const data = ref({ first_name: '', last_name: '', age: null })
 </script>
 
 <template>
 	<AForm :schema="schema" v-model:data="data" />
 </template>
 ```
+
+A fieldset is layout, so its fields are keys of the record itself, exactly as the store and the server hold them: the data has no `personal_info` key.
 
 ## API Reference
 
@@ -114,8 +114,9 @@ rows:
   - ['`schema`', '`ResolvedField[]`', '—', 'Child fields rendered by the built-in nested `AForm` when the default slot is not overridden. Required, even if a custom slot makes it unused.']
   - ['`label`', '`string`', '—', 'Legend text. The `<legend>` element only renders at all when `label` or `collapsible` is set.']
   - ['`collapsible`', '`boolean`', '—', "Whether clicking the legend toggles the group's collapsed state. Falsy (no toggle) when omitted."]
-  - ['`data`', '`Record<string, any>`', '`{}`', 'Data object passed to the built-in nested `AForm`.']
+  - ['`data`', '`Record<string, any>`', '`{}`', 'The record the fieldset belongs to, bound with `v-model:data`. The built-in nested `AForm` edits its fields in place and emits `update:data`.']
   - ['`mode`', '`InteractionMode`', "`'edit'`", "Interaction mode forwarded to the built-in nested `AForm` (and, via the default slot's `AForm`, to every child field)."]
+  - ['`errors`', '`Record<string, string[]>`', '—', 'Inline validation errors keyed by fieldname, forwarded to the built-in nested `AForm` so each field inside shows its own.']
 ---
 ::
 

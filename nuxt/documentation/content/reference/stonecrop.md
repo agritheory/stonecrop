@@ -9,6 +9,26 @@ description: Core orchestration with Registry, HST, and composables
 
 ## Functions
 
+### composeNewRecord
+
+Build a new record, once, from every starting value: the schema's empty values, the doctype's `defaults`, then the source the app registered for it. Layers apply in that order, so the registered source wins however long the doctype's took.
+
+Nothing is returned until every value is in, so nothing is written to the record after a user can see it. A value that throws, rejects, or has not arrived within `timeoutMs` (default `DEFAULTS_TIMEOUT_MS`) is skipped and reported with `console.warn`; the record still opens with everything else.
+
+**Signature:**
+
+```typescript
+export declare function composeNewRecord(registry: Registry, doctype: Doctype, options?: ComposeNewRecordOptions): Promise<ComposeNewRecordResult>;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| registry | `Registry` |  |
+| doctype | `Doctype` |  |
+| options | `ComposeNewRecordOptions` |  |
+
 ### createHST
 
 Factory function for HST creation Creates a new HSTNode proxy for hierarchical state tree navigation.
@@ -1115,21 +1135,6 @@ export interface ValidatorOptions {
 
 ## Type Aliases
 
-### ActionDispatchResult
-
-Result of dispatching an action to its server handler.
-
-**Definition:**
-
-```typescript
-export type ActionDispatchResult = {
-    success: boolean;
-    data: unknown;
-    error: string | null;
-    record: Record<string, unknown> | null;
-};
-```
-
 ### ActionEventPayload
 
 Payload emitted with the 'action' event when the user triggers a declared action — an FSM transition or a stateless Command.
@@ -1170,6 +1175,31 @@ Named capabilities injected into a clientHandler body as function parameters. Th
 export type ClientHandlerApi = Record<string, unknown>;
 ```
 
+### ComposeNewRecordOptions
+
+Options for composing a new record.
+
+**Definition:**
+
+```typescript
+export type ComposeNewRecordOptions = {
+    now?: Date;
+    timeoutMs?: number;
+};
+```
+
+### ComposeNewRecordResult
+
+A composed new record, complete: every starting value that arrived in time is in it.
+
+**Definition:**
+
+```typescript
+export type ComposeNewRecordResult = {
+    record: Record<string, unknown>;
+};
+```
+
 ### CrossTabMessageType
 
 Cross-tab message types
@@ -1178,6 +1208,64 @@ Cross-tab message types
 
 ```typescript
 export type CrossTabMessageType = 'operation' | 'undo' | 'redo' | 'sync-request' | 'sync-response';
+```
+
+### DefaultsContext
+
+Context passed to defaults functions at document or field level.
+
+**Definition:**
+
+```typescript
+export type DefaultsContext = {
+    doctype: Doctype;
+    record: Record<string, unknown>;
+    fieldname?: string;
+};
+```
+
+### DefaultsData
+
+A fixed starting value, as a doctype file can hold it: plain data, nested like the record.
+
+**Definition:**
+
+```typescript
+export type DefaultsData = string | number | boolean | null | DefaultsData[] | {
+    [field: string]: DefaultsData;
+};
+```
+
+### DefaultsDocument
+
+Nested object in the same shape as a composed record (HST / formData).
+
+**Definition:**
+
+```typescript
+export type DefaultsDocument = {
+    [field: string]: DefaultsValue;
+};
+```
+
+### DefaultsSource
+
+Static document or a function that returns one (sync blocks, promise loads).
+
+**Definition:**
+
+```typescript
+export type DefaultsSource = DefaultsDocument | ((ctx: DefaultsContext) => DefaultsDocument | Promise<DefaultsDocument>);
+```
+
+### DefaultsValue
+
+A value inside a registered defaults document.
+
+**Definition:**
+
+```typescript
+export type DefaultsValue = string | number | boolean | null | DefaultsDocument | DefaultsValue[] | ((ctx: DefaultsContext) => DefaultsValue | Promise<DefaultsValue>);
 ```
 
 ### DoctypeConfig
@@ -1195,6 +1283,19 @@ export type DoctypeConfig = {
     links?: Record<string, LinkDeclaration>;
     workflow?: UnknownMachineConfig | WorkflowMeta;
     inherits?: string;
+    defaults?: DoctypeDefaults;
+};
+```
+
+### DoctypeDefaults
+
+A doctype's own starting values for a new record: fixed data in the shape of the record. Anything worked out when a record is made (today's date, a value looked up for the user's company) is registered on the registry instead.
+
+**Definition:**
+
+```typescript
+export type DoctypeDefaults = {
+    [field: string]: DefaultsData;
 };
 ```
 
@@ -1288,7 +1389,7 @@ export type HSTStonecropReturn = BaseStonecropReturn & {
     hstStore: Ref<HSTNode | undefined>;
     formData: Ref<Record<string, any>>;
     resolvedSchema: Ref<ResolvedField[]>;
-    initializeNestedData: (path: string, doctype: Doctype) => void;
+    initializeNestedData: (path: string, doctype: Doctype) => Promise<void>;
     fetchNestedData: (path: string, doctype: Doctype, recordId: string, options?: {
         includeNested?: boolean | string[];
     }) => Promise<void>;
@@ -1425,7 +1526,7 @@ Doctype runtime class with Immutable.js collections for HST change tracking.
 **Constructor:**
 
 ```typescript
-new Doctype(doctype: string, schema: ImmutableDoctype['schema'], workflow: ImmutableDoctype['workflow'], component: Component, links: Record<string, LinkDeclaration>, displayField: string)
+new Doctype(doctype: string, schema: ImmutableDoctype['schema'], workflow: ImmutableDoctype['workflow'], component: Component, links: Record<string, LinkDeclaration>, displayField: string, defaults: DoctypeDefaults)
 ```
 
 **Parameters:**
@@ -1438,12 +1539,14 @@ new Doctype(doctype: string, schema: ImmutableDoctype['schema'], workflow: Immut
 | component | `Component` | Optional Vue component for rendering the doctype |
 | links | `Record<string, LinkDeclaration>` | Optional relationship links to other doctypes |
 | displayField | `string` | Optional field used when displaying references to this doctype |
+| defaults | `DoctypeDefaults` |  |
 
 **Properties:**
 
 | Property | Type | Description |
 |----------|------|-------------|
 | component | `Component` | The doctype component |
+| defaults | `DoctypeDefaults` | Starting values for new records: fixed data in the shape of the record. |
 | displayField | `string` | Field on this doctype used when displaying a reference to one of its records. |
 | doctype | `string` | The doctype name |
 | links | `Record<string, LinkDeclaration>` | Relationship links to other doctypes |
@@ -1769,6 +1872,14 @@ addDoctype(doctype: Doctype): void
 |-----------|------|-------------|
 | doctype | `Doctype` | The doctype to fetch metadata for |
 
+#### composeNewRecord
+
+Compose a new record, once, from every starting value. See `composeNewRecord`.
+
+```typescript
+composeNewRecord(doctype: Doctype, options: ComposeNewRecordOptions): Promise<ComposeNewRecordResult>
+```
+
 #### getAncestorLinks
 
 Get links on other doctypes that target the given doctype.
@@ -1820,7 +1931,7 @@ getDoctype(slug: string): Doctype | undefined
 
 Initialize a new record with default values based on a resolved schema. Narrows by `kind` discriminator for precise branch selection.
 
-- `kind: 'table'` or `kind: 'link'` → `[]` or `{}` - `kind: 'fieldset'` → recursively initializes children as `{}` - `kind: 'field'` → derives the default from the component's category; falls back to `null`
+- `kind: 'table'` or `kind: 'link'` → `[]` or `{}` - `kind: 'fieldset'` → its children, at the top level of the record: a fieldset is layout - `kind: 'field'` → an empty value for the component's category; falls back to `null`
 
 ```typescript
 initializeRecord(schema: ResolvedField[]): Record<string, any>
@@ -1831,6 +1942,16 @@ initializeRecord(schema: ResolvedField[]): Record<string, any>
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | schema | `ResolvedField[]` | The resolved schema array to derive defaults from |
+
+#### registerDefaults
+
+Register the app's starting values for a doctype, by its name or its slug (typically from app bootstrap). Either one is keyed the way `slug` is, so `'OrderItem'` and `'order-item'` register for the same doctype, whether or not it has been added yet.
+
+They apply over the doctype's own `defaults` for every new record, and a function here runs for each one, so it can work out what a doctype file cannot (today's date, a value looked up for the user's company). A doctype takes one registration: a second replaces the first, with a warning.
+
+```typescript
+registerDefaults(doctype: string, source: DefaultsSource): void
+```
 
 #### resolveSchema
 
@@ -2143,7 +2264,7 @@ Scaffold empty descendant records from defaults for all descendant links.
 Initializes all scalar and link fields at their HST paths with default values. For new records, call this after setting up the doctype to ensure all paths exist.
 
 ```typescript
-initializeNestedData(path: string, doctype: Doctype): void
+initializeNestedData(path: string, doctype: Doctype): Promise<void>
 ```
 
 **Parameters:**
@@ -2229,6 +2350,16 @@ setup(doctype: Doctype): void
 | doctype | `Doctype` | The doctype to setup |
 
 ## Variables
+
+### DEFAULTS_TIMEOUT_MS
+
+How long a new record waits for a starting value that has not arrived. A value still missing by then is skipped and reported, and the record opens without it.
+
+**Type:**
+
+```typescript
+export const DEFAULTS_TIMEOUT_MS: 
+```
 
 ### DRAFT_RECORD_ID
 
@@ -2597,4 +2728,12 @@ export enum ValidationSeverity {
   WARNING = "warning",
 }
 ```
+
+## Re-exported
+
+Declared elsewhere and re-exported by this package.
+
+| Name | From |
+|------|------|
+| ActionDispatchResult | `@stonecrop/schema` |
 

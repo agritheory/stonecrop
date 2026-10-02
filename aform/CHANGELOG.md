@@ -1,5 +1,62 @@
 # Change Log - @stonecrop/aform
 
+## 0.41.0
+
+### Minor Changes
+
+- 863c853: `ASemverInput` is a text field for a SemVer 2.0.0 version such as `1.4.0-beta.2`. It holds the version as a string, or null while the box is empty or the version is half-typed, and refuses any edit that no version could start with, so a `v` prefix, a leading zero or a fourth number never gets in.
+
+### Patch Changes
+
+- Updated dependencies [863c853]
+- Updated dependencies [863c853]
+  - @stonecrop/schema@0.41.0
+  - @stonecrop/atable@0.41.0
+  - @stonecrop/utilities@0.41.0
+  - @stonecrop/themes@0.41.0
+
+## 0.40.0
+
+### Minor Changes
+
+- a5f8744: A doctype gives its starting values in one place, its `defaults`, which hold fixed data only. A field no longer has a `default` of its own: `validateDoctype` refuses one and points to `defaults`, and DocBuilder no longer offers the column. Embedded records and table rows start from their own doctype's `defaults`. The app's starting values come from one registration per doctype, `registry.registerDefaults`, whose functions run for every new record; registering a doctype a second time warns. `registry.setDefaultsLoader` and `composeNewRecord`'s `overlay` option are removed.
+
+### Patch Changes
+
+- Updated dependencies [a5f8744]
+- Updated dependencies [a5f8744]
+  - @stonecrop/schema@0.40.0
+  - @stonecrop/atable@0.40.0
+  - @stonecrop/themes@0.40.0
+  - @stonecrop/utilities@0.40.0
+
+## 0.39.0
+
+### Minor Changes
+
+- 835f62c: A fieldset's fields are now read and written as keys of the record itself, never nested under the fieldset's name, so an edit inside a fieldset reaches the form and its save, and data handed to `AForm` must hold them flat.
+
+### Patch Changes
+
+- 835f62c: In a dropdown list or the unit menu, the option the arrow keys highlight is now scrolled into sight, where it used to move off the screen.
+- 835f62c: Dropdown lists and the quantity field's unit menu now hang straight from their field in `--sc-overlay-background` with `--sc-overlay-shadow`, without lines between items.
+- 835f62c: The link, currency and plain dropdown lists and the unit menu now scroll once they reach `--sc-dropdown-max-height`, and near the window's bottom shrink to the room left below them, never under about four rows.
+- 835f62c: The currency and quantity dropdowns now line up with the borders of the field they open from.
+- 835f62c: `AFieldset`, the outlined groups of `AQuantityInput` and `ACurrencyInput`, and `AFormLink`'s list of matches now span exactly the width they are given, so their edges no longer run past the form and fields around them.
+- 835f62c: `AFieldset` now passes validation errors to its fields, so a field inside a fieldset shows its error like any other.
+- 835f62c: A fieldset that declares no `component` now renders as `AFieldset` with its label, as its type always documented, rather than as a bare form without one.
+- 835f62c: A table in `AForm` now sends each edit up as the record's new rows, so an edit made after a save is saved too, and a table edit is undone and checked like any other field's.
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+- Updated dependencies [835f62c]
+  - @stonecrop/schema@0.39.0
+  - @stonecrop/themes@0.39.0
+  - @stonecrop/atable@0.39.0
+  - @stonecrop/utilities@0.39.0
+
 ## 0.38.1
 
 ### Patch Changes

@@ -67,6 +67,7 @@ import { ref, watch, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'nuxt/app'
 import DocBuilderActionsPanel from '../components/DocBuilderActionsPanel.vue'
 import DocBuilderFieldsPanel from '../components/DocBuilderFieldsPanel.vue'
+import { renamedFields, savedNames, withFieldIds } from '../components/docbuilderFields'
 const route = useRoute()
 const router = useRouter()
 const doctypeName = computed(() => route.params.doctype)
@@ -76,6 +77,7 @@ const saving = ref(false)
 const warningsDismissed = ref(false)
 const saveMessage = ref(null)
 const fields = ref([])
+let namesInFile = new Map()
 const workflowConfig = ref()
 const layout = ref({})
 const validationIssues = ref([])
@@ -84,7 +86,8 @@ const warningCount = computed(() => validationIssues.value.filter(i => i.severit
 onMounted(async () => {
 	try {
 		const data = await $fetch(`/api/_stonecrop/docbuilder/${doctypeName.value}`)
-		fields.value = data.fields ?? []
+		fields.value = withFieldIds(data.fields ?? [])
+		namesInFile = savedNames(fields.value)
 		if (data.workflow) {
 			const { layout: savedLayout, ...topology } = data.workflow
 			workflowConfig.value = topology
@@ -124,20 +127,24 @@ async function saveToDisk() {
 	if (errorCount.value > 0) return
 	saving.value = true
 	saveMessage.value = null
+	const sent = withFieldIds(fields.value)
+	fields.value = sent
 	try {
 		await $fetch('/api/_stonecrop/docbuilder/save', {
 			method: 'POST',
 			body: {
 				doctype: doctypeName.value,
-				fields: fields.value,
+				fields: sent,
+				renamedFields: renamedFields(sent, namesInFile),
 				workflow: workflowConfig.value
 					? { ...workflowConfig.value, ...(Object.keys(layout.value).length > 0 && { layout: layout.value }) }
 					: null,
 			},
 		})
+		namesInFile = savedNames(sent)
 		saveMessage.value = { type: 'success', text: 'Saved.' }
 	} catch (error) {
-		saveMessage.value = { type: 'error', text: error.message || 'Save failed.' }
+		saveMessage.value = { type: 'error', text: error.data?.message || error.message || 'Save failed.' }
 	} finally {
 		saving.value = false
 	}

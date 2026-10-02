@@ -10,11 +10,14 @@
 			<div class="desktop__main">
 				<slot v-if="$slots.default" />
 				<AForm
-					v-else-if="currentViewSchema.length > 0"
+					v-else-if="currentViewSchema.length > 0 && !draftLoading"
 					v-model:data="currentViewData"
 					:schema="currentViewSchema"
 					:errors="fieldErrors" />
 				<div v-else-if="!stonecrop" class="loading"><p>Initializing Stonecrop...</p></div>
+				<div v-else-if="draftLoading" class="loading">
+					<p>Preparing new {{ formatDoctypeName(currentDoctype) }}...</p>
+				</div>
 				<div v-else class="loading">
 					<p>Loading {{ currentView }} data...</p>
 				</div>
@@ -72,7 +75,7 @@ import {
 	type ResolvedField,
 	type ResolvedTable,
 } from '@stonecrop/aform'
-import { computed, markRaw, onMounted, onUnmounted, provide, ref, unref, watch } from 'vue'
+import { computed, markRaw, onMounted, onUnmounted, provide, ref, toRaw, unref, watch } from 'vue'
 
 import ActionSet from './ActionSet.vue'
 import SheetNav from './SheetNav.vue'
@@ -175,6 +178,9 @@ const loading = ref(false)
 // The record being composed on a `/{doctype}/new` route. Deliberately not in HST: a draft has no
 // identity to be keyed by, and both ways of faking one fail — see `DRAFT_RECORD_ID`.
 const draftRecord = ref<Record<string, any>>({})
+// True while a new record's starting values are still arriving. The form stays behind the loading state until
+// then, so no late value can land on top of what a user has typed.
+const draftLoading = ref(false)
 
 // Form/list data management — each view produces a different data shape.
 // List views (doctypes, records) return table row data keyed by fieldname.
@@ -227,24 +233,7 @@ const currentViewData = computed<Record<string, any>>({
 			// Return a plain shallow copy so AForm mutations don't propagate directly into
 			// the HST reactive object, which would bypass field-trigger diffing and cause
 			// setupDeepReactivity to fire triggers for all fields on every keystroke.
-			const flat: Record<string, any> = { ...source }
-
-			// AFieldset receives data[fieldsetFieldname] as its data prop, so the fieldset's
-			// children must be grouped under the fieldset key. The server returns flat SQL rows,
-			// so we nest fieldset children here before AForm renders them.
-			const doctype = stonecrop.value.registry.registry[currentDoctype.value]
-			if (doctype) {
-				for (const field of doctype.getSchemaArray()) {
-					if (field.kind === 'fieldset') {
-						const nested: Record<string, any> = {}
-						for (const child of field.schema) {
-							if (child.fieldname) nested[child.fieldname] = flat[child.fieldname]
-						}
-						flat[field.fieldname] = nested
-					}
-				}
-			}
-			return flat
+			return { ...source }
 		} catch {
 			return {}
 		}
@@ -257,34 +246,6 @@ const currentViewData = computed<Record<string, any>>({
 		}
 
 		try {
-			// AForm emits nested data for fieldsets: { fieldsetKey: { childA: val } }.
-			// HST and the server both expect flat rows, so flatten fieldset values back before writing.
-			const doctype = stonecrop.value.registry.registry[currentDoctype.value]
-			const fieldsetNames = new Set<string>()
-			if (doctype) {
-				for (const field of doctype.getSchemaArray()) {
-					if (field.kind === 'fieldset') {
-						fieldsetNames.add(field.fieldname)
-					}
-				}
-			}
-			// Two-pass flatten: non-fieldset keys first, then fieldset children.
-			// Fieldset children must be applied last — AForm may emit stale flat copies
-			// of fieldset children alongside the updated nested value, and the nested
-			// value must win regardless of key insertion order.
-			const flatData: Record<string, any> = {}
-			const fieldsetValues: Record<string, any>[] = []
-			for (const [key, value] of Object.entries(newData)) {
-				if (fieldsetNames.has(key) && value && typeof value === 'object' && !Array.isArray(value)) {
-					fieldsetValues.push(value)
-				} else {
-					flatData[key] = value
-				}
-			}
-			for (const nestedValue of fieldsetValues) {
-				Object.assign(flatData, nestedValue)
-			}
-
 			// Only update fields that actually changed. Never write undefined — AForm may emit
 			// schema fields absent from the record as undefined; writing them would silently
 			// clear values that exist. Explicit null is allowed (intentional clear).
@@ -293,7 +254,7 @@ const currentViewData = computed<Record<string, any>>({
 				// Reassigned, not mutated, so the getter re-runs. Relying on in-place mutation of the
 				// cached object is what made a draft's edits vanish on any invalidation.
 				const next = { ...draftRecord.value }
-				for (const [fieldname, value] of Object.entries(flatData)) {
+				for (const [fieldname, value] of Object.entries(newData)) {
 					if (value === undefined) continue
 					if (next[fieldname] !== value) {
 						next[fieldname] = value
@@ -303,7 +264,7 @@ const currentViewData = computed<Record<string, any>>({
 				draftRecord.value = next
 			} else {
 				const hstStore = stonecrop.value.getStore()
-				for (const [fieldname, value] of Object.entries(flatData)) {
+				for (const [fieldname, value] of Object.entries(newData)) {
 					if (value === undefined) continue
 					const fieldPath = `${currentDoctype.value}.${currentRecordId.value}.${fieldname}`
 					const currentValue = hstStore.has(fieldPath) ? hstStore.get(fieldPath) : undefined
@@ -543,6 +504,8 @@ const actionElements = computed(() => {
 			})
 			break
 		case 'record': {
+			// No actions until a new record has its starting values: there is nothing on screen to act on yet.
+			if (draftLoading.value) break
 			// Populate the Actions dropdown with every FSM transition AND stateless Command
 			// available in the record's current state.  Clicking either emits 'action'.
 			const recordActions = [...getAvailableTransitions(), ...getAvailableCommands()]
@@ -962,12 +925,41 @@ watch([currentDoctype, currentRecordId], () => {
 watch(
 	[currentDoctype, currentRecordId],
 	() => {
+		draftLoading.value = false
 		if (!isNewRecord.value) {
 			draftRecord.value = {}
 			return
 		}
 		const registry = stonecrop.value?.registry
-		draftRecord.value = registry ? registry.initializeRecord(getRecordFormSchema()) : {}
+		const slug = currentDoctype.value
+		if (!registry || !slug) {
+			draftRecord.value = {}
+			return
+		}
+		const doctype = registry.getDoctype(slug)
+		if (!doctype) {
+			draftRecord.value = registry.initializeRecord(getRecordFormSchema())
+			return
+		}
+		draftRecord.value = {}
+		draftLoading.value = true
+		const stillHere = () => isNewRecord.value && currentDoctype.value === slug
+		void registry
+			.composeNewRecord(doctype)
+			.then(({ record }) => {
+				if (!stillHere()) return undefined
+				draftRecord.value = record
+				return undefined
+			})
+			.catch((error: unknown) => {
+				// A failure outside any one starting value (those are skipped and reported where they fail): open the
+				// form with the schema's own values rather than leave it loading.
+				console.error(`[desktop] Could not prepare a new ${slug}:`, error)
+				if (stillHere()) draftRecord.value = registry.initializeRecord(getRecordFormSchema())
+			})
+			.finally(() => {
+				if (stillHere()) draftLoading.value = false
+			})
 	},
 	{ immediate: true }
 )
@@ -1052,8 +1044,9 @@ const visibleActionSetSlots = computed(() =>
 		.filter(slot => slot.show !== false)
 		.map(slot =>
 			Object.assign({}, slot, {
-				icon: slot.icon ? markRaw(slot.icon) : undefined,
-				component: slot.component ? markRaw(slot.component) : undefined,
+				// A host's slots may be reactive, so each component is unwrapped before it is marked raw.
+				icon: slot.icon ? markRaw(toRaw(slot.icon)) : undefined,
+				component: slot.component ? markRaw(toRaw(slot.component)) : undefined,
 			})
 		)
 )
@@ -1120,6 +1113,15 @@ onUnmounted(() => {
 	min-width: 0;
 	min-height: 0;
 	overflow: auto;
+	/* Keep the scroll track left of the fixed tile column (drawer open shifts workspace instead). */
+	padding-right: calc(var(--sc-action-set-rail-width) + var(--sc-action-set-tile-gap));
+	scrollbar-gutter: stable;
+}
+
+.desktop--action-set-open .desktop__main {
+	padding-right: 0;
+	/* Stable gutter reserves a column in Firefox; release it when the drawer owns the right edge. */
+	scrollbar-gutter: auto;
 }
 
 .desktop--preview-open .desktop__main {
