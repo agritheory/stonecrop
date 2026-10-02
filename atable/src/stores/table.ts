@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { componentCategory } from '@stonecrop/schema'
 import type { BadgeDescriptor } from '@stonecrop/schema'
-import { fromISODate } from '@stonecrop/utilities'
+import { compareSemver, fromISODate } from '@stonecrop/utilities'
 import { Temporal } from 'temporal-polyfill'
 import { type CSSProperties, computed, ref } from 'vue'
 
@@ -383,6 +383,12 @@ export const createTableStore = (initData: {
 
 					if (aVal === null || aVal === undefined) aVal = ''
 					if (bVal === null || bVal === undefined) bVal = ''
+
+					// By version precedence, the order the `semver` Postgres type sorts in: 1.2.0 before 1.10.0.
+					if (componentCategory(column.component) === 'semver') {
+						const cmp = compareSemver(String(aVal), String(bVal))
+						return direction === 'asc' ? cmp : -cmp
+					}
 
 					const aNum = toComparableNumber(aVal)
 					const bNum = toComparableNumber(bVal)

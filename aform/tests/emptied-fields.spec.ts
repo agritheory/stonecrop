@@ -28,6 +28,7 @@ const SAMPLE_VALUES: Record<string, unknown> = {
 	AFormLink: { id: 'EUR', displayText: 'Euro' },
 	ANumericInput: 5,
 	AQuantityInput: { qty: 5, uom: 'Box', stockQty: 50, stockUom: 'Nos', conversionFactor: 10 },
+	ASemverInput: '1.2.3',
 }
 
 const typedFields = Object.entries(COMPONENT_CATEGORY)
@@ -122,6 +123,7 @@ describe('fields holding something other than text', { tags: ['component'] }, ()
 			'AFormLink',
 			'ANumericInput',
 			'AQuantityInput',
+			'ASemverInput',
 		])
 	})
 })

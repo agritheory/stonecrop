@@ -1549,6 +1549,47 @@ describe('table store', { tags: ['component'] }, () => {
 		})
 	})
 
+	describe('semver column filtering and sorting', () => {
+		const semverColumns: TableColumn[] = [
+			{ name: 'item', label: 'Item' },
+			{ name: 'version', label: 'Version', component: 'ASemverInput' },
+		]
+		const semverRows: TableRow[] = [
+			{ item: 'A', version: '1.10.0' },
+			{ item: 'B', version: '1.2.0' },
+			{ item: 'C', version: '2.0.0' },
+			{ item: 'D', version: '2.0.0-rc.1' },
+		]
+
+		let semverStore: ReturnType<typeof createTableStore>
+		beforeEach(() => {
+			semverStore = createTableStore({
+				columns: semverColumns,
+				rows: semverRows.map(row => Object.assign({}, row)),
+			})
+		})
+
+		it('filters a semver column as text', () => {
+			semverStore.setFilter(1, { value: '1.10' })
+			expect(semverStore.filteredRows.map(r => r.item)).toEqual(['A'])
+		})
+
+		it('sorts semver columns by version precedence, not string order', () => {
+			semverStore.sortByColumn(1)
+			expect(semverStore.filteredRows.map(r => r.item)).toEqual(['B', 'A', 'D', 'C'])
+		})
+
+		it('sorts semver columns descending', () => {
+			semverStore.sortByColumn(1)
+			semverStore.sortByColumn(1)
+			expect(semverStore.filteredRows.map(r => r.item)).toEqual(['C', 'D', 'A', 'B'])
+		})
+
+		it('shows a semver cell as the version it holds', () => {
+			expect(semverStore.getFormattedValue(1, 0, '1.10.0')).toBe('1.10.0')
+		})
+	})
+
 	describe('date filters compare the days the table shows', () => {
 		// Pinned zones, because a day read as UTC midnight only shifts outside UTC, and CI runs in UTC.
 		describe.each(['Asia/Kolkata', 'America/New_York'])('in %s', zone => {

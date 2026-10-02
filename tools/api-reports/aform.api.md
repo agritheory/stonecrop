@@ -84,7 +84,7 @@ export interface AFormLinkValue {
 }
 
 // @public (undocumented)
-export const AFormLoading: typeof __VLS_export_22;
+export const AFormLoading: typeof __VLS_export_23;
 
 // @public (undocumented)
 export const ANumericInput: typeof __VLS_export_17;
@@ -96,10 +96,13 @@ export const AQuantityInput: typeof __VLS_export_18;
 export const ASegmentedControl: typeof __VLS_export_5;
 
 // @public (undocumented)
-export const ATextboxInput: typeof __VLS_export_20;
+export const ASemverInput: typeof __VLS_export_19;
 
 // @public (undocumented)
-export const ATextInput: typeof __VLS_export_19;
+export const ATextboxInput: typeof __VLS_export_21;
+
+// @public (undocumented)
+export const ATextInput: typeof __VLS_export_20;
 
 // @public
 export type BadgeFormatContext = {
@@ -152,7 +155,7 @@ export interface CurrencyValue {
 export function deserializeFunction<T extends (...args: any[]) => any>(source: string): T;
 
 // @public (undocumented)
-export const ExpandButton: typeof __VLS_export_23;
+export const ExpandButton: typeof __VLS_export_24;
 
 // @public
 export function install(app: App): void;
@@ -160,7 +163,7 @@ export function install(app: App): void;
 export { InteractionMode }
 
 // @public (undocumented)
-export const Login: typeof __VLS_export_21;
+export const Login: typeof __VLS_export_22;
 
 // @public
 export interface QuantityOptions {

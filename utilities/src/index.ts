@@ -2,6 +2,7 @@ import { App } from 'vue'
 
 import { defaultKeypressHandlers, useKeyboardNav } from './composables/keyboard'
 import { fromISODate } from './dates'
+import { compareSemver, isSemver, isSemverPrefix } from './semver'
 export type * from './types'
 
 /**
@@ -11,4 +12,4 @@ export type * from './types'
  */
 function install(_app: App /* options */) {}
 
-export { defaultKeypressHandlers, fromISODate, install, useKeyboardNav }
+export { compareSemver, defaultKeypressHandlers, fromISODate, install, isSemver, isSemverPrefix, useKeyboardNav }
