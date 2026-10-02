@@ -75,7 +75,7 @@ const config: OxlintConfig = {
 				'vitest/no-disabled-tests': 'warn',
 				'vitest/no-focused-tests': 'error',
 				'vitest/require-mock-type-parameters': 'off',
-				// The rule reads `expect(actual)` as the whole signature, but `@vitest/expect` declares
+				// The rule reads `expect(actual)` as the whole signature, but Vitest's `expect` declares
 				// `<T>(actual: T, message?: string)`. That message is what makes an assertion explain
 				// itself on failure, and every report here is against correct code.
 				'vitest/valid-expect': 'off',

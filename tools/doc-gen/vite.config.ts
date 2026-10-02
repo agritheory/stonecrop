@@ -18,19 +18,21 @@ export default defineConfig({
 			build: {
 				command: 'node ../../tools/scripts/docs-aggregate.mjs',
 				dependsOn: docPackages.map(pkg => `@stonecrop/${pkg.name}#build`),
-				// The two scripts the command actually reads, rather than all of `tools/scripts`:
-				// widened back, every edit to an unrelated build or check script re-runs aggregation.
-				input: [
-					{ pattern: '*/api.md', base: 'workspace' },
-					{ pattern: 'tools/scripts/docs-aggregate.mjs', base: 'workspace' },
-					{ pattern: 'tools/scripts/doc-packages.mjs', base: 'workspace' },
-				],
-				// Only the api.md copies — not `themes.md` or `index.md`, which are hand-maintained.
-				// A `reference/**` output made cache replay overwrite those on every pre-commit build.
-				output: docPackages.map(pkg => ({
-					pattern: `nuxt/documentation/content/reference/${pkg.name}.md`,
-					base: 'workspace',
-				})),
+				cache: {
+					// The two scripts the command actually reads, rather than all of `tools/scripts`:
+					// widened back, every edit to an unrelated build or check script re-runs aggregation.
+					input: [
+						{ pattern: '*/api.md', base: 'workspace' },
+						{ pattern: 'tools/scripts/docs-aggregate.mjs', base: 'workspace' },
+						{ pattern: 'tools/scripts/doc-packages.mjs', base: 'workspace' },
+					],
+					// Only the api.md copies — not `themes.md` or `index.md`, which are hand-maintained.
+					// A `reference/**` output made cache replay overwrite those on every pre-commit build.
+					output: docPackages.map(pkg => ({
+						pattern: `nuxt/documentation/content/reference/${pkg.name}.md`,
+						base: 'workspace',
+					})),
+				},
 			},
 		},
 	},
