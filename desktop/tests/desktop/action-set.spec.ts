@@ -4,6 +4,7 @@ import { defineComponent, nextTick, reactive, ref, type Component } from 'vue'
 
 import { Registry, Stonecrop } from '@stonecrop/stonecrop'
 
+import { resetActionSetLayoutSessionForTests } from '../../src/action-set-layout-session'
 import Desktop from '../../src/components/Desktop.vue'
 import { useActionSet } from '../../src/composables/useActionSet'
 import type { ActionElements, ActionSetSlot, RouteAdapter } from '../../src/types'
@@ -16,6 +17,7 @@ afterEach(() => {
 	Registry._root = undefined as any
 	Stonecrop._root = undefined as any
 	consoleWarn.mockClear()
+	resetActionSetLayoutSessionForTests()
 })
 
 const reactiveComponentWarnings = () =>
@@ -206,6 +208,70 @@ describe('Desktop ActionSet', { tags: ['component'] }, () => {
 
 		expect(wrapper.find('.stub-preview').exists()).toBe(false)
 		expect(wrapper.find('.desktop').classes()).not.toContain('desktop--preview-open')
+	})
+
+	it('replaces the drawer with the preview and brings it back when the preview closes', async () => {
+		const wrapper = mountDesktop([{ id: 'files', label: 'Files', component: PreviewSlot }])
+		await nextTick()
+
+		const filesItem = wrapper.findAll('.action-set__item').find(i => i.attributes('aria-label') === 'Files')
+		await filesItem!.trigger('click')
+		await nextTick()
+		await wrapper.find('.open-preview').trigger('click')
+		await nextTick()
+
+		expect(wrapper.find('.desktop').classes()).toContain('desktop--preview-open')
+		expect(wrapper.find('.desktop').classes()).not.toContain('desktop--action-set-open')
+		expect(wrapper.find('.open-preview').exists()).toBe(false)
+
+		await wrapper.find('.desktop__preview-close').trigger('click')
+		await nextTick()
+
+		expect(wrapper.find('.desktop').classes()).toContain('desktop--action-set-open')
+		expect(wrapper.find('.open-preview').exists()).toBe(true)
+	})
+
+	it('does not reopen the drawer when another tile takes over from the preview', async () => {
+		const wrapper = mountDesktop([
+			{ id: 'files', label: 'Files', component: PreviewSlot },
+			{ id: 'email', label: 'Email' },
+		])
+		await nextTick()
+
+		const tile = (label: string) =>
+			wrapper.findAll('.action-set__item').find(i => i.attributes('aria-label') === label)!
+		await tile('Files').trigger('click')
+		await nextTick()
+		await wrapper.find('.open-preview').trigger('click')
+		await nextTick()
+		await tile('Email').trigger('click')
+		await nextTick()
+
+		expect(wrapper.find('.desktop').classes()).not.toContain('desktop--preview-open')
+		expect(wrapper.find('.open-preview').exists()).toBe(false)
+	})
+
+	it('resizes the preview from the keyboard within its bounds', async () => {
+		const wrapper = mountDesktop([{ id: 'files', label: 'Files', component: PreviewSlot }])
+		await nextTick()
+
+		const filesItem = wrapper.findAll('.action-set__item').find(i => i.attributes('aria-label') === 'Files')
+		await filesItem!.trigger('click')
+		await nextTick()
+		await wrapper.find('.open-preview').trigger('click')
+		await nextTick()
+
+		const handle = wrapper.find('.desktop__preview-resize')
+		expect(handle.attributes('aria-valuenow')).toBe('50')
+
+		await handle.trigger('keydown', { key: 'ArrowLeft' })
+		expect(handle.attributes('aria-valuenow')).toBe('55')
+
+		await handle.trigger('keydown', { key: 'Home' })
+		expect(handle.attributes('aria-valuenow')).toBe('80')
+
+		await handle.trigger('dblclick')
+		expect(handle.attributes('aria-valuenow')).toBe('50')
 	})
 
 	// A host keeping its slots or views in reactive state hands Desktop proxies of its components.

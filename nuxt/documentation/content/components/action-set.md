@@ -76,7 +76,9 @@ const actionSetSlots = computed<ActionSetSlot[]>(() => [
 ])
 ```
 
-Inside a slot component, call `useActionSet().present({ view, props })` to open the 50% preview pane.
+Inside a slot component, call `useActionSet().present({ view, props })` to open the preview pane. The preview takes the drawer's place: the drawer collapses while it is open, and closing the preview (its × button or Escape) reopens the slot it came from. Opening another tile, or navigating to another record, closes the preview without reopening it.
+
+The pane opens at half the workspace. Its left edge is a separator the user can drag, move with the arrow keys (Home and End for the widest and narrowest) or double-click to reset; the width is kept for the rest of the session.
 
 ## API Reference
 
@@ -100,8 +102,8 @@ rows:
   - ['`doctype`', 'Computed ref of the active doctype.']
   - ['`recordId`', 'Computed ref of the active record id.']
   - ['`activeSlotId`', 'Currently open host slot, or null.']
-  - ['`present(subject)`', 'Open a preview flyin with `ActionSetPreview` `{ view, props?, id? }`.']
-  - ['`closePreview()`', 'Close the preview pane.']
+  - ['`present(subject)`', 'Open a preview flyin with `ActionSetPreview` `{ view, props?, id? }`, collapsing an open slot drawer in its place.']
+  - ['`closePreview()`', 'Close the preview pane and reopen the slot drawer it replaced, if any.']
   - ['`close()`', 'Close the drawer and preview.']
 ---
 ::

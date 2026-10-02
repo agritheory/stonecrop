@@ -4,9 +4,10 @@
 		:class="{
 			'desktop--action-set-open': actionSetDrawerOpen,
 			'desktop--preview-open': actionSetPreviewOpen,
+			'desktop--preview-resizing': previewResizing,
 		}"
 		@click="handleClick">
-		<div class="desktop__workspace">
+		<div ref="workspace" class="desktop__workspace">
 			<div class="desktop__main">
 				<slot v-if="$slots.default" />
 				<AForm
@@ -23,7 +24,20 @@
 				</div>
 			</div>
 
-			<aside v-if="actionSetPreviewSubject" class="desktop__preview">
+			<aside v-if="actionSetPreviewSubject" class="desktop__preview" :style="previewStyle">
+				<div
+					class="desktop__preview-resize"
+					role="separator"
+					aria-orientation="vertical"
+					aria-label="Resize preview"
+					:aria-valuenow="Math.round(previewFraction * 100)"
+					:aria-valuemin="Math.round(PREVIEW_MIN_FRACTION * 100)"
+					:aria-valuemax="Math.round(PREVIEW_MAX_FRACTION * 100)"
+					tabindex="0"
+					title="Drag to resize · double-click to reset"
+					@pointerdown="onPreviewResizeStart"
+					@dblclick="resetPreviewWidth"
+					@keydown="onPreviewResizeKeydown" />
 				<header class="desktop__preview-header">
 					<button
 						type="button"
@@ -80,6 +94,7 @@ import { computed, markRaw, onMounted, onUnmounted, provide, ref, toRaw, unref, 
 import ActionSet from './ActionSet.vue'
 import SheetNav from './SheetNav.vue'
 import { createActionSet, actionSetKey } from '../composables/useActionSet'
+import { PREVIEW_MAX_FRACTION, PREVIEW_MIN_FRACTION, usePreviewSplit } from '../composables/usePreviewSplit'
 import type {
 	ActionElements,
 	RouteAdapter,
@@ -1066,6 +1081,16 @@ function closeActionSetPreview() {
 	actionSetController.closePreview()
 }
 
+const workspace = ref<HTMLElement | null>(null)
+const {
+	fraction: previewFraction,
+	resizing: previewResizing,
+	previewStyle,
+	onPointerDown: onPreviewResizeStart,
+	onKeydown: onPreviewResizeKeydown,
+	reset: resetPreviewWidth,
+} = usePreviewSplit(workspace)
+
 onMounted(() => {
 	document.addEventListener('keydown', handleKeydown)
 })
@@ -1125,13 +1150,12 @@ onUnmounted(() => {
 }
 
 .desktop--preview-open .desktop__main {
-	flex: 0 0 calc(50% - 10px);
-	max-width: calc(50% - 10px);
+	flex: 1 1 0;
 }
 
 .desktop__preview {
+	position: relative;
 	flex: 0 0 50%;
-	max-width: 50%;
 	min-width: 0;
 	min-height: 0;
 	display: flex;
@@ -1139,6 +1163,47 @@ onUnmounted(() => {
 	border-left: 1px solid var(--sc-gray-20);
 	background: var(--sc-form-background);
 	overflow: hidden;
+}
+
+.desktop__preview-resize {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	z-index: 1;
+	width: 8px;
+	cursor: col-resize;
+	touch-action: none;
+}
+
+.desktop__preview-resize::before {
+	content: '';
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	width: 2px;
+	background: transparent;
+	transition: background-color 0.15s ease;
+}
+
+.desktop__preview-resize:hover::before,
+.desktop__preview-resize:focus-visible::before,
+.desktop--preview-resizing .desktop__preview-resize::before {
+	background: var(--sc-primary-color);
+}
+
+.desktop__preview-resize:focus-visible {
+	outline: none;
+}
+
+.desktop--preview-resizing {
+	cursor: col-resize;
+	user-select: none;
+}
+
+.desktop--preview-resizing .desktop__preview-body {
+	pointer-events: none;
 }
 
 .desktop__preview-header {
