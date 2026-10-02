@@ -2177,7 +2177,7 @@ getRecord(doctype: string | Doctype, recordId: string, options: GetRecordOptions
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | doctype | `string \| Doctype` | The doctype slug string or Doctype object |
-| recordId | `string` | The record ID |
+| recordId | `string` | The record ID A record the server does not find is an error, not an empty answer: a caller drawing what is in HST would otherwise show it as a blank record. |
 | options | `GetRecordOptions` | Query options (includeNested, maxDepth), forwarded to the client |
 
 #### getRecordById

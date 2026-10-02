@@ -209,6 +209,9 @@ props: {
   loading: boolean
   next: () => Promise<void>
   prev: () => void
+  errorMessage?: string \| undefined
+  firstPageFailed?: boolean \| undefined
+  retry?: (() => Promise<void>) \| undefined
 }
 emits: {}
 slots: {}

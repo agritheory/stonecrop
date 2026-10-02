@@ -224,13 +224,14 @@ export type HSTStonecropReturn = BaseStonecropReturn & {
 		handleHSTChange: (changeData: HSTChangeData) => void
 	}
 	/**
-	 * Loading state for async doctype resolution.
-	 * True while fetching doctype by slug string from registry.
+	 * Loading state: true while a doctype named by slug is resolved, a new record's starting values
+	 * are composed, or an existing record is read from the server.
 	 */
 	isLoading: Ref<boolean>
 	/**
-	 * Error state for doctype resolution failures.
-	 * Set when doctype slug lookup fails.
+	 * Why the form cannot show: the doctype slug did not resolve, or the record read failed. A
+	 * record the server does not find carries the code `"RECORD_NOT_FOUND"`. `formData` stays
+	 * empty when the read fails.
 	 */
 	error: Ref<Error | null>
 	/**

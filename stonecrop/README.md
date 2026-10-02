@@ -163,6 +163,8 @@ When you pass a string doctype slug instead of a `Doctype` instance, `useStonecr
 2. If not, call `registry.getMeta` to lazy-load it
 3. Return `isLoading`, `error`, and `resolvedDoctype` refs for handling the async state
 
+The same refs cover reading the record: `isLoading` is true while it is fetched, and a failed read sets `error` and leaves `formData` empty, never a blank record in its place. A record the server does not have fails with the code `RECORD_NOT_FOUND`.
+
 ```typescript
 const { isLoading, error, resolvedDoctype, resolvedSchema, formData } = useStonecrop({
   doctype: 'plan', // string slug - triggers lazy-loading
@@ -170,7 +172,7 @@ const { isLoading, error, resolvedDoctype, resolvedSchema, formData } = useStone
 })
 
 // In your template:
-// <div v-if="isLoading">Loading doctype...</div>
+// <div v-if="isLoading">Loading...</div>
 // <div v-else-if="error">Error: {{ error.message }}</div>
 // <AForm v-else :schema="resolvedSchema" v-model:data="formData" />
 ```

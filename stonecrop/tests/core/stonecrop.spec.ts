@@ -480,27 +480,32 @@ describe('Stonecrop class with HST integration', { tags: ['unit'] }, () => {
 			await expect(localStonecrop.getRecords(mockDoctype)).rejects.toThrow('No data client configured')
 		})
 
-		it('getRecord does not add record to HST when client returns null', async () => {
+		it.each([
+			['no result', null],
+			['a null record', { record: null, unknownLinks: [] }],
+		])('getRecord rejects with RECORD_NOT_FOUND and stores nothing when the server answers %s', async (_, answer) => {
+			// Returning quietly left every caller to draw the missing record as an empty, editable one.
 			const mockClient = {
 				getMeta: vi.fn(),
-				getRecord: vi.fn().mockResolvedValue(null),
+				getRecord: vi.fn().mockResolvedValue(answer),
 				getRecords: vi.fn(),
 				runAction: vi.fn(),
 			}
 			const options: StonecropOptions = { client: mockClient }
 			const localStonecrop = new Stonecrop(registry, undefined, options)
 
-			await localStonecrop.getRecord(mockDoctype, 'missing-id')
-
-			const stored = localStonecrop.getRecordById('task', 'missing-id')
-			expect(stored).toBeUndefined()
+			await expect(localStonecrop.getRecord(mockDoctype, 'missing-id')).rejects.toMatchObject({
+				code: 'RECORD_NOT_FOUND',
+				message: 'Record not found: Task missing-id',
+			})
+			expect(localStonecrop.getRecordById('task', 'missing-id')).toBeUndefined()
 		})
 
 		it('setClient allows deferred client configuration', async () => {
 			const mockRecord = { id: 'deferred', title: 'Deferred Task' }
 			const mockClient = {
 				getMeta: vi.fn(),
-				getRecord: vi.fn().mockResolvedValue(mockRecord),
+				getRecord: vi.fn().mockResolvedValue({ record: mockRecord, unknownLinks: [] }),
 				getRecords: vi.fn(),
 				runAction: vi.fn(),
 			}
@@ -517,6 +522,7 @@ describe('Stonecrop class with HST integration', { tags: ['unit'] }, () => {
 			// Now getRecord should work
 			await localStonecrop.getRecord(mockDoctype, 'deferred')
 			expect(mockClient.getRecord).toHaveBeenCalledOnce()
+			expect(localStonecrop.getRecordById('task', 'deferred')?.get('title')).toBe('Deferred Task')
 		})
 
 		it('dispatchAction delegates to client.runAction', async () => {

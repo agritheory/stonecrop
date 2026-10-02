@@ -45,6 +45,12 @@ export interface TablePagination {
 	loadedCount: Ref<number>
 	/** True once the server reported a further page existed (multi-page fetch). */
 	hasEverHadMore: Ref<boolean>
+	/** Why the last server read failed; null once a read succeeds. */
+	error: Ref<Error | null>
+	/** Whether the failed read was the first page, so the held rows are not its answer. */
+	firstPageFailed: Ref<boolean>
+	/** Reads the first page again after it failed. */
+	retry: () => Promise<void>
 }
 
 /**
@@ -63,6 +69,9 @@ export function useTablePagination(options: UseTablePaginationOptions): TablePag
 	const hasEverHadMore = ref(false)
 	const lastFetchOffset = ref(0)
 	const lastPageLength = ref(0)
+	const error = ref<Error | null>(null)
+	const failedOffset = ref(0)
+	const firstPageFailed = computed(() => error.value !== null && failedOffset.value === 0)
 	const loadedCount = computed(() => heldRows.value.length)
 
 	const effectivePageSize = computed(() => {
@@ -90,7 +99,13 @@ export function useTablePagination(options: UseTablePaginationOptions): TablePag
 	const showFooter = computed(() => {
 		if (options.getRecords) {
 			// Keep the footer after the last "Load more" so completion is visible, not silent.
-			return serverHasMore.value || hasPrev.value || loading.value || (hasEverHadMore.value && !serverHasMore.value)
+			return (
+				serverHasMore.value ||
+				hasPrev.value ||
+				loading.value ||
+				error.value !== null ||
+				(hasEverHadMore.value && !serverHasMore.value)
+			)
 		}
 		const size = pageSize.value
 		return size != null && size > 0 && heldRows.value.length > size
@@ -101,11 +116,15 @@ export function useTablePagination(options: UseTablePaginationOptions): TablePag
 		hasEverHadMore.value = false
 	}
 
+	// A failure is kept in `error` for the footer to show, never rethrown: the first page and "Load
+	// more" both fire and forget, so a rejection would go unhandled and the table would look empty or
+	// finished.
 	const fetchFromServer = async (fetchOptions?: GetRecordsOptions) => {
 		if (!options.getRecords) {
 			return
 		}
 		loading.value = true
+		error.value = null
 		try {
 			const result = await options.getRecords(fetchOptions)
 			serverHasMore.value = result.hasMore
@@ -114,6 +133,9 @@ export function useTablePagination(options: UseTablePaginationOptions): TablePag
 			}
 			lastFetchOffset.value = fetchOptions?.offset ?? 0
 			lastPageLength.value = result.data.length
+		} catch (failure) {
+			error.value = failure instanceof Error ? failure : new Error(String(failure))
+			failedOffset.value = fetchOptions?.offset ?? 0
 		} finally {
 			loading.value = false
 		}
@@ -156,6 +178,10 @@ export function useTablePagination(options: UseTablePaginationOptions): TablePag
 		}
 	}
 
+	const retry = async () => {
+		await fetchFromServer()
+	}
+
 	return {
 		visibleRows,
 		hasPrev,
@@ -168,5 +194,8 @@ export function useTablePagination(options: UseTablePaginationOptions): TablePag
 		hasLocalNext,
 		loadedCount,
 		hasEverHadMore,
+		error,
+		firstPageFailed,
+		retry,
 	}
 }
