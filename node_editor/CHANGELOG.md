@@ -1,5 +1,12 @@
 # Change Log - @stonecrop/node-editor
 
+## 0.41.0
+
+### Patch Changes
+
+- Updated dependencies [863c853]
+  - @stonecrop/schema@0.41.0
+
 ## 0.40.0
 
 ### Patch Changes

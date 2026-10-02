@@ -1,5 +1,11 @@
 # Change Log - @stonecrop/utilities
 
+## 0.41.0
+
+### Minor Changes
+
+- 863c853: `isSemver` and `compareSemver` check and order versions under SemVer 2.0.0, the grammar and precedence of the pg-semver Postgres type, and `isSemverPrefix` says whether typing more could still make a text a version.
+
 ## 0.40.0
 
 ## 0.39.0
