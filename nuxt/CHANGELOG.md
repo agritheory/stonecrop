@@ -1,5 +1,24 @@
 # Change Log - @stonecrop/nuxt
 
+## 0.41.1
+
+### Patch Changes
+
+- cc78578: The server schema the CLI scaffolds declares `displayField`, which the client asks for when it loads a doctype, so an app scaffolded earlier adds `displayField: String` to `DoctypeMeta` in its own `server/schema.graphql`.
+- Updated dependencies [cc78578]
+  - @stonecrop/graphql-client@0.41.1
+  - @stonecrop/aform@0.41.1
+  - @stonecrop/atable@0.41.1
+  - @stonecrop/casl-middleware@0.41.1
+  - @stonecrop/code-editor@0.41.1
+  - @stonecrop/desktop@0.41.1
+  - @stonecrop/graphql-middleware@0.41.1
+  - @stonecrop/node-editor@0.41.1
+  - @stonecrop/nuxt-grafserv@0.41.1
+  - @stonecrop/schema@0.41.1
+  - @stonecrop/stonecrop@0.41.1
+  - @stonecrop/themes@0.41.1
+
 ## 0.41.0
 
 ### Patch Changes
