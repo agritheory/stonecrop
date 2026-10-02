@@ -9,7 +9,7 @@ import type {
 	GetRecordsResult,
 } from '@stonecrop/schema'
 import type { GetRecordResult } from './types'
-import { GET_META_QUERY, GET_ALL_META_QUERY, RUN_ACTION_MUTATION } from './queries'
+import { GET_META_QUERY, GET_ALL_META_QUERY, GET_RECORD_QUERY, GET_RECORDS_QUERY, RUN_ACTION_MUTATION } from './queries'
 
 export type { DoctypeContext, DoctypeRef }
 export type { GetRecordResult, GetRecordsResult }
@@ -127,24 +127,16 @@ export class StonecropClient implements DataClient {
 	async getRecord(doctype: DoctypeRef, recordId: string, options?: GetRecordOptions): Promise<GetRecordResult> {
 		const result = await this.query<{
 			stonecropRecord: { data: Record<string, unknown> | null; unknownLinks?: string[] }
-		}>(
-			`query GetRecord($doctype: String!, $id: String!, $options: JSON) {
-				stonecropRecord(doctype: $doctype, id: $id, options: $options) {
-					data
-					unknownLinks
-				}
-			}`,
-			{
-				doctype: doctype.name,
-				id: recordId,
-				options: options?.includeNested
-					? {
-							includeNested: options.includeNested,
-							maxDepth: options.maxDepth,
-						}
-					: undefined,
-			}
-		)
+		}>(GET_RECORD_QUERY, {
+			doctype: doctype.name,
+			id: recordId,
+			options: options?.includeNested
+				? {
+						includeNested: options.includeNested,
+						maxDepth: options.maxDepth,
+					}
+				: undefined,
+		})
 
 		return {
 			record: result.stonecropRecord?.data ?? null,
@@ -164,35 +156,10 @@ export class StonecropClient implements DataClient {
 	async getRecords(doctype: DoctypeRef, options?: GetRecordsOptions): Promise<GetRecordsResult> {
 		const result = await this.query<{
 			stonecropRecords: { data: Record<string, unknown>[]; hasMore: boolean; count: number | null }
-		}>(
-			`
-			query GetRecords(
-				$doctype: String!
-				$filters: JSON
-				$orderBy: String
-				$limit: Int
-				$offset: Int
-				$includeTotal: Boolean
-			) {
-				stonecropRecords(
-					doctype: $doctype
-					filters: $filters
-					orderBy: $orderBy
-					limit: $limit
-					offset: $offset
-					includeTotal: $includeTotal
-				) {
-					data
-					hasMore
-					count
-				}
-			}
-			`,
-			{
-				doctype: doctype.name,
-				...options,
-			}
-		)
+		}>(GET_RECORDS_QUERY, {
+			doctype: doctype.name,
+			...options,
+		})
 
 		const { data, hasMore, count } = result.stonecropRecords
 		// `count` is null unless includeTotal was set. Omitting the key rather than passing null
