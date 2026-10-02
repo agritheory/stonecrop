@@ -4,11 +4,12 @@
  * Stonecrop's portability claim is that an app talks to a GraphQL API and never to a database,
  * so the database can be swapped by swapping the adapter behind that API. That claim only holds
  * if "the API" is specified independently of any one adapter. Today it is not: the contract is
- * restated in three places that drift apart independently —
+ * restated in four places that drift apart independently —
  *
  *   1. graphql_middleware/src/typeDefs.ts   — the Postgres adapter (the shipped one)
  *   2. nuxt/templates/schema.graphql        — the scaffold the CLI writes into a new app
  *   3. nuxt/test/fixtures/fullstack/schema.graphql — the playground adapter over an in-memory store
+ *   4. nuxt/documentation/server/schema.graphql    — the docs site's playground server
  *
  * This file is the missing specification. Each expectation is written once and run against every
  * host, so a host that disagrees fails by name rather than at a consumer's runtime.
@@ -19,18 +20,20 @@
  *
  * Why this reads SDL as text rather than importing it: importing @stonecrop/graphql-middleware
  * boots postgraphile + pg, a server-only chain that breaks vitest's node interop (the same reason
- * meta-contract.test.ts stubs the module). All three hosts are therefore treated symmetrically as
- * SDL artifacts. Behavioural expectations here run against pure helpers the resolver modules
+ * meta-contract.test.ts stubs the module). Every host is therefore treated symmetrically as an
+ * SDL artifact. Behavioural expectations here run against pure helpers the resolver modules
  * export; for the scaffold's plan resolvers actually executing, see templates-host.test.ts.
  */
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 
-import { parse, Kind, print, type DocumentNode, type FieldDefinitionNode } from 'graphql'
+import { buildSchema, parse, validate, Kind, print, type DocumentNode, type FieldDefinitionNode } from 'graphql'
 import { describe, it, expect, vi } from 'vitest'
 
 import type { DoctypeMeta } from '@stonecrop/schema'
 
+import * as clientOperations from '../../graphql_client/src/queries'
+import { recordLookupField as documentationLookupField } from '../documentation/server/resolvers'
 import { recordLookupField as templatesLookupField, actionHandlers as templatesHandlers } from '../templates/resolvers'
 import { recordLookupField as fullstackLookupField } from './fixtures/fullstack/resolvers'
 import { actionHandlers as fullstackHandlers } from './fixtures/fullstack/action-handlers'
@@ -59,8 +62,6 @@ vi.mock('@stonecrop/graphql-middleware', () => {
 /** Root fields `@stonecrop/graphql-client` selects. Adding one here is a contract change. */
 const CONTRACT_QUERY_FIELDS = ['stonecropMeta', 'stonecropAllMeta', 'stonecropRecord', 'stonecropRecords'] as const
 const CONTRACT_MUTATION_FIELDS = ['stonecropAction'] as const
-/** Fields the client selects on `stonecropAction`'s result. */
-const CONTRACT_ACTION_RESULT_FIELDS = ['success', 'data', 'error', 'record'] as const
 
 // ---------------------------------------------------------------------------
 // Hosts
@@ -124,6 +125,15 @@ const HOSTS: Host[] = [
 		},
 		lookupField: fullstackLookupField,
 	},
+	{
+		name: 'documentation',
+		sdl: readSdl('../documentation/server/schema.graphql'),
+		extensions: {
+			query: ['getMeta', 'healthCheck', 'serverInfo'],
+			mutation: [],
+		},
+		lookupField: documentationLookupField,
+	},
 ]
 
 function rootFields(doc: DocumentNode, typeName: string): Map<string, FieldDefinitionNode> {
@@ -158,11 +168,6 @@ describe.each(HOSTS)('$name — contract surface', { tags: ['unit', 'graphql'] }
 
 	it.each(CONTRACT_MUTATION_FIELDS)('serves Mutation.%s', fieldName => {
 		expect(mutations.has(fieldName), `${name} does not serve Mutation.${fieldName}`).toBe(true)
-	})
-
-	it.each(CONTRACT_ACTION_RESULT_FIELDS)("serves %s on stonecropAction's result", fieldName => {
-		const resultType = print(mutations.get('stonecropAction')!.type).replace(/!$/, '')
-		expect(rootFields(doc, resultType).has(fieldName), `${name}'s ${resultType} has no ${fieldName}`).toBe(true)
 	})
 
 	it.each(['stonecropCreate', 'stonecropUpdate', 'stonecropDelete'])('does not publish %s', verb => {
@@ -216,6 +221,41 @@ describe('contract argument signatures agree across hosts', { tags: ['unit', 'gr
 				argSignature(refMutations.get(fieldName)!)
 			)
 		}
+	})
+})
+
+describe('every request the client sends is valid on each host', { tags: ['unit', 'graphql'] }, () => {
+	// The client's own documents, imported rather than restated: a host must declare every field
+	// they select, or the server refuses the whole request before running it.
+	const operations = Object.values(clientOperations).map(source => parse(source))
+	const operationName = (operation: DocumentNode) =>
+		operation.definitions[0]?.kind === Kind.OPERATION_DEFINITION ? operation.definitions[0].name?.value : undefined
+
+	it('reads the five operations the client sends', () => {
+		expect(operations.map(operationName).toSorted()).toEqual([
+			'GetAllMeta',
+			'GetMeta',
+			'GetRecord',
+			'GetRecords',
+			'RunAction',
+		])
+	})
+
+	// The middleware extends a schema PostGraphile builds, so its SDL alone lacks the root types and
+	// the JSON scalar; they are supplied here only so it can be built.
+	const buildHostSchema = (host: Host) =>
+		buildSchema(
+			host.name === 'middleware'
+				? `scalar JSON\ntype Query { _root: Boolean }\ntype Mutation { _root: Boolean }\n${host.sdl}`
+				: host.sdl
+		)
+
+	it.each(HOSTS)('$name accepts every client operation', host => {
+		const schema = buildHostSchema(host)
+		const refusals = operations.flatMap(operation =>
+			validate(schema, operation).map(error => `${operationName(operation)}: ${error.message}`)
+		)
+		expect(refusals).toEqual([])
 	})
 })
 

@@ -118,10 +118,12 @@ describe('client ⟷ middleware query contract', { tags: ['unit'] }, () => {
 		})
 	}
 
-	it('RUN_ACTION_MUTATION selects every StonecropActionResult field the SDL publishes', () => {
-		const sdlFields = Object.keys(
-			(schema.getType('StonecropActionResult') as { getFields: () => object }).getFields()
-		).toSorted()
+	it('RUN_ACTION_MUTATION selects every StonecropActionResult field the SDL publishes, but droppedFields', () => {
+		// Not selected on purpose: the in-memory servers nuxt ships do not declare it, so asking for it
+		// fails every action there, and nothing in the client reads it.
+		const sdlFields = Object.keys((schema.getType('StonecropActionResult') as { getFields: () => object }).getFields())
+			.filter(field => field !== 'droppedFields')
+			.toSorted()
 		expect(selectedFields(RUN_ACTION_MUTATION, 'StonecropActionResult')).toEqual(sdlFields)
 	})
 
@@ -129,7 +131,7 @@ describe('client ⟷ middleware query contract', { tags: ['unit'] }, () => {
 		afterEach(() => vi.unstubAllGlobals())
 
 		// The request executes against the SDL, so only what the client's document selects comes back.
-		it('hands back the keys the write discarded', async () => {
+		it('hands back what the action replied, without the keys the write discarded', async () => {
 			const rootValue = {
 				stonecropAction: () => ({
 					success: true,
@@ -156,7 +158,6 @@ describe('client ⟷ middleware query contract', { tags: ['unit'] }, () => {
 				data: { id: 1 },
 				error: null,
 				record: { id: 1 },
-				droppedFields: ['tags'],
 			})
 		})
 	})
