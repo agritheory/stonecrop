@@ -1,5 +1,19 @@
 # Change Log - @stonecrop/stonecrop
 
+## 0.43.0
+
+### Minor Changes
+
+- 63f68d7: A new record (`initializeRecord`) or table row (`addRow`) no longer gives a field a value nobody entered, so a save leaves it to the database's default instead of sending `''`, 0, false or null.
+
+### Patch Changes
+
+- Updated dependencies [63f68d7]
+- Updated dependencies [63f68d7]
+  - @stonecrop/atable@0.43.0
+  - @stonecrop/aform@0.43.0
+  - @stonecrop/schema@0.43.0
+
 ## 0.42.0
 
 ### Minor Changes

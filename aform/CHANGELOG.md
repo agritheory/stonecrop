@@ -1,5 +1,16 @@
 # Change Log - @stonecrop/aform
 
+## 0.43.0
+
+### Patch Changes
+
+- 63f68d7: `AQuantityInput` and `ACurrencyInput` given no value show every box empty, as they do for `null`, instead of a conversion factor or exchange rate of 1 nobody entered.
+- Updated dependencies [63f68d7]
+  - @stonecrop/atable@0.43.0
+  - @stonecrop/schema@0.43.0
+  - @stonecrop/themes@0.43.0
+  - @stonecrop/utilities@0.43.0
+
 ## 0.42.0
 
 ### Patch Changes
