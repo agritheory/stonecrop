@@ -78,13 +78,13 @@ import { ACurrencyInput } from '@stonecrop/aform'
 | baseCurrencyLabel | `string \| undefined` | no | `"Base Currency"` |  |
 | baseAmountLabel | `string \| undefined` | no | `"Base Amount"` |  |
 | exchangeRateLabel | `string \| undefined` | no | `"Exchange Rate"` |  |
-| modelValue | `CurrencyValue \| null \| undefined` | no | `{ amount: null, currency: { id: "" }, baseAmount: null, baseCurrency: { id: "" }, exchangeRate: 1, }` |  |
+| modelValue | `CurrencyValue \| null \| undefined` | no |  |  |
 
 **Events:**
 
 | Event | Payload | Description |
 |-------|---------|-------------|
-| update:modelValue | `[value: CurrencyValue \| null]` |  |
+| update:modelValue | `[value: CurrencyValue \| null \| undefined]` |  |
 
 ### ADate
 
@@ -522,13 +522,13 @@ import { AQuantityInput } from '@stonecrop/aform'
 | stockUomLabel | `string \| undefined` | no | `"Stock UOM"` |  |
 | stockQtyLabel | `string \| undefined` | no | `"Stock Qty"` |  |
 | conversionFactorLabel | `string \| undefined` | no | `"Conversion Factor"` |  |
-| modelValue | `QuantityValue \| null \| undefined` | no | `{ qty: null, uom: "", stockQty: null, stockUom: "", conversionFactor: 1 }` |  |
+| modelValue | `QuantityValue \| null \| undefined` | no |  |  |
 
 **Events:**
 
 | Event | Payload | Description |
 |-------|---------|-------------|
-| update:modelValue | `[value: QuantityValue \| null]` |  |
+| update:modelValue | `[value: QuantityValue \| null \| undefined]` |  |
 
 ### ASegmentedControl
 

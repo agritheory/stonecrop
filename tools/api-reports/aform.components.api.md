@@ -62,7 +62,7 @@ props: {
   modelValue?: CurrencyValue \| null \| undefined
 }
 emits: {
-  update:modelValue: [value: CurrencyValue \| null]
+  update:modelValue: [value: CurrencyValue \| null \| undefined]
 }
 slots: {}
 ```
@@ -395,7 +395,7 @@ props: {
   modelValue?: QuantityValue \| null \| undefined
 }
 emits: {
-  update:modelValue: [value: QuantityValue \| null]
+  update:modelValue: [value: QuantityValue \| null \| undefined]
 }
 slots: {}
 ```

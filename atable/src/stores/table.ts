@@ -731,16 +731,9 @@ export const createTableStore = (initData: {
 		 * @returns The index of the newly added row
 		 */
 		const addRow = (rowData?: Partial<TableRow>, position: 'start' | 'end' | number = 'end'): number => {
-			// Create a new row with default empty values for each column
-			const newRow: TableRow = {}
-			for (const column of columns.value) {
-				newRow[column.name] = ''
-			}
-
-			// Merge in any provided row data
-			if (rowData) {
-				Object.assign(newRow, rowData)
-			}
+			// Only what the caller gives: a column nobody filled in has no value, so a save leaves it to the database's
+			// default. Never seed `''`, which an insert stores over that default and a date cell shows as "Invalid Date".
+			const newRow: TableRow = { ...rowData }
 
 			let insertIndex: number
 			if (position === 'start') {

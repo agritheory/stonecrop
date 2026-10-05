@@ -367,9 +367,11 @@ describe('useStonecrop HST mode', { tags: ['unit'] }, () => {
 		const vm = wrapper.vm as any
 		await vm.initializeNestedData('task.new', addressDoctype)
 
-		// Verify fields were scaffolded into HST
-		const street = vm.hstStore.get('task.new.street')
-		expect(street).toBeDefined()
+		// The record's node exists and holds no values, so an edit under it lands; HST refuses one under a node
+		// that does not exist.
+		expect(vm.hstStore.get('task.new.street')).toBeUndefined()
+		vm.hstStore.set('task.new.street', '1 Main St')
+		expect(vm.hstStore.get('task.new.street')).toBe('1 Main St')
 	})
 
 	it('fetchNestedData throws CLIENT_REQUIRED when no client', async () => {

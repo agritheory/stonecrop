@@ -124,7 +124,7 @@ const data = ref({
 ---
 headers: ['Name', 'Type', 'Default', 'Description']
 rows:
-  - ['`v-model`', '[`CurrencyValue`](#currencyvalue)', 'see below', 'The current amount, currency, and derived base-currency figures.']
+  - ['`v-model`', '[`CurrencyValue`](#currencyvalue) or `null`', '—', 'The current amount, currency, and derived base-currency figures. No value or `null` shows every box empty.']
   - ['`label`', '`string`', '—', 'Label for the amount input.']
   - ['`options`', '[`CurrencyOptions`](#options)', '`{}`', 'Type-specific configuration — base currency, exchange rates, precision, currency search.']
   - ['`required`', '`boolean`', '`false`', 'Marks the amount and currency inputs as required (`edit` mode only).']

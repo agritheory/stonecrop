@@ -146,11 +146,12 @@ const resolvedSchema = registry.resolveSchema(customerDoctype)
 
 ### Phase 4: Nested Data Loading
 
-For new records, scaffold empty nested data:
+For new records, scaffold the nested record:
 
 ```typescript
-stonecrop.initializeNestedData('customer.new', customerDoctype)
-// Sets each field at its own HST path: customer.new.customer_name, customer.new.email, etc.
+await stonecrop.initializeNestedData('customer.new', customerDoctype)
+// Creates customer.new, so edits under it land, and sets each starting value at its own HST path.
+// A field with no starting value gets none: a save leaves it to the database's default.
 ```
 
 For existing records, fetch from server:

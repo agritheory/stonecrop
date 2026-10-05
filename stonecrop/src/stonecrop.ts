@@ -595,9 +595,8 @@ export class Stonecrop {
 	}
 
 	/**
-	 * Scaffold empty descendant records from defaults for all descendant links.
-	 *
-	 * Initializes all scalar and link fields at their HST paths with default values.
+	 * Scaffold a new descendant record at `path`: its node, so edits under it land, and its starting values, each at
+	 * its own HST path. A field with no starting value gets no path until someone fills it in.
 	 * For new records, call this after setting up the doctype to ensure all paths exist.
 	 *
 	 * @param path - HST path (e.g., "customer.new")

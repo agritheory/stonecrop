@@ -108,15 +108,8 @@ const { errorId, describedBy, invalid } = fieldErrorA11y(uuid, errorText)
 // (or the story/app data behind it) doesn't carry a `symbol`.
 const currencySymbol = (value: AFormLinkValue): string => value.symbol ?? value.displayText ?? String(value.id)
 
-const modelValue = defineModel<CurrencyValue | null>({
-	default: () => ({
-		amount: null,
-		currency: { id: '' },
-		baseAmount: null,
-		baseCurrency: { id: '' },
-		exchangeRate: 1,
-	}),
-})
+// No default: a field with no value shows empty, as null does, rather than a rate nobody entered.
+const modelValue = defineModel<CurrencyValue | null>()
 
 // The base currency is fixed configuration, not user-editable. It may be supplied as a bare id
 // (resolved to displayText below via the same `aformLinkResolver` injection AFormLink uses) or
