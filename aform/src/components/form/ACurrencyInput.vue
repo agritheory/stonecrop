@@ -8,25 +8,44 @@
 			<div class="acurrency__row">
 				<div class="acurrency__field acurrency__field--amount">
 					<div class="acurrency__group">
-						<div class="acurrency__currency">
-							<AFormLink
-								v-model="currency"
-								:mode="mode"
+						<div class="acurrency__currency" @click="focusCurrencyPicker">
+							<ADropdown
+								ref="currencyDropdownRef"
+								v-model:link-value="currency"
 								embedded
+								list-anchor="group"
+								:mode="mode"
 								:placeholder="currencyLabel"
 								:aria-label="currencyLabel"
-								:required="required"
 								:formatter="currencySymbol"
 								:doctype="options.doctype"
-								:filter-function="options.filterFunction"
+								:link-filter-function="options.filterFunction"
 								:is-async="options.isAsync">
 								<template #option="{ option }"
 									>{{ option.symbol ? `${option.symbol} — ` : '' }}{{ option.displayText ?? option.id }}</template
 								>
-							</AFormLink>
+							</ADropdown>
 						</div>
 						<div class="acurrency__amount-wrap">
 							<input
+								v-if="amountMaskEnabled"
+								:id="uuid"
+								:value="amountText"
+								class="acurrency__amount"
+								type="text"
+								inputmode="decimal"
+								autocomplete="off"
+								:disabled="mode === 'read'"
+								:required="required"
+								:aria-invalid="invalid"
+								:aria-describedby="describedBy"
+								@focus="onAmountFocus"
+								@blur="onAmountBlur"
+								@input="onAmountInput"
+								@keydown="onAmountKeydownMasked"
+								@paste="onAmountPasteMasked" />
+							<input
+								v-else
 								:id="uuid"
 								v-model.number="amount"
 								class="acurrency__amount"
@@ -37,44 +56,30 @@
 								:aria-describedby="describedBy"
 								@keydown="onAmountKeydown"
 								@paste="onAmountPaste" />
-							<label class="aform_field-label" :for="uuid">{{ label }}</label>
 						</div>
+						<label class="aform_field-label" :for="uuid">{{ label }}</label>
 					</div>
 				</div>
 			</div>
-			<div class="acurrency__row acurrency__row--base">
-				<div class="acurrency__field acurrency__field--base-currency">
-					<input :value="baseCurrencyText" class="aform_input-field acurrency__base-field" type="text" disabled />
-					<label class="aform_field-label">{{ baseCurrencyLabel }}</label>
-				</div>
-				<div class="acurrency__field acurrency__field--base-amount">
-					<input
-						:value="modelValue?.baseAmount"
-						class="aform_input-field acurrency__base-field"
-						type="number"
-						disabled />
-					<label class="aform_field-label">{{ baseAmountLabel }}</label>
-				</div>
-				<div class="acurrency__field acurrency__field--exchange-rate">
-					<input
-						:value="modelValue?.exchangeRate"
-						class="aform_input-field acurrency__base-field"
-						type="number"
-						disabled />
-					<label class="aform_field-label">{{ exchangeRateLabel }}</label>
-				</div>
-			</div>
+			<p v-show="showBase && !errorText" :id="helperId" class="acurrency__helper">{{ conversionHelperText }}</p>
 			<p v-show="errorText" :id="errorId" class="aform_error" role="alert">{{ errorText }}</p>
 		</template>
 	</div>
 </template>
 
 <script setup lang="ts">
-import { computed, inject, ref, watch } from 'vue'
+import {
+	currencyAmountEntryPattern,
+	currencyInputFractionDigits,
+	formatCurrencyAmount,
+	formatCurrencyAmountInput,
+	parseCurrencyAmountInput,
+} from '@stonecrop/utilities'
+import { computed, inject, ref, useTemplateRef, watch } from 'vue'
 
 import type { AFormLinkValue, ComponentProps, CurrencyOptions, CurrencyValue } from '../../types'
 import { numberFromBox } from '../../utils/emptiedBox'
-import AFormLink from './AFormLink.vue'
+import ADropdown from './ADropdown.vue'
 import { fieldErrorA11y } from '../../composables/fieldErrorA11y'
 
 const {
@@ -86,27 +91,16 @@ const {
 	validation = { errorMessage: '' },
 	options = {},
 	currencyLabel = 'Currency',
-	baseCurrencyLabel = 'Base Currency',
-	baseAmountLabel = 'Base Amount',
-	exchangeRateLabel = 'Exchange Rate',
 } = defineProps<
 	ComponentProps & {
 		options?: CurrencyOptions
 		currencyLabel?: string
-		baseCurrencyLabel?: string
-		baseAmountLabel?: string
-		exchangeRateLabel?: string
 	}
 >()
 
 // Dynamic trigger errors take precedence over a static schema errorMessage; empty means the slot hides.
 const errorText = computed(() => (errors?.length ? errors.join('; ') : (validation.errorMessage ?? '')))
-const { errorId, describedBy, invalid } = fieldErrorA11y(uuid, errorText)
-
-// The merged currency prefix is compact by design, so it shows the symbol rather than the
-// full currency name once a value is picked — falls back gracefully when a currency record
-// (or the story/app data behind it) doesn't carry a `symbol`.
-const currencySymbol = (value: AFormLinkValue): string => value.symbol ?? value.displayText ?? String(value.id)
+const helperId = computed(() => (uuid ? `${uuid}-helper` : undefined))
 
 const modelValue = defineModel<CurrencyValue | null>({
 	default: () => ({
@@ -117,6 +111,58 @@ const modelValue = defineModel<CurrencyValue | null>({
 		exchangeRate: 1,
 	}),
 })
+
+const showBase = computed(() => {
+	const v = modelValue.value
+	return !!v?.baseCurrency?.id && (v.currency?.id !== v.baseCurrency?.id || v.amount !== v.baseAmount)
+})
+
+const helperDescribedBy = computed(() => (showBase.value && !errorText.value ? helperId.value : undefined))
+const { errorId, describedBy, invalid } = fieldErrorA11y(uuid, errorText, helperDescribedBy)
+
+// The merged currency prefix is compact by design, so it shows the symbol rather than the
+// full currency name once a value is picked — falls back gracefully when a currency record
+// (or the story/app data behind it) doesn't carry a `symbol`.
+const currencySymbol = (value: AFormLinkValue): string => value.symbol ?? value.displayText ?? String(value.id)
+
+const currencyDropdownRef = useTemplateRef<{ openCurrencyList?: () => void }>('currencyDropdownRef')
+
+const openCurrencyList = () => {
+	currencyDropdownRef.value?.openCurrencyList?.()
+}
+
+const focusCurrencyPicker = (event: MouseEvent) => {
+	const root = event.currentTarget as HTMLElement
+	if ((event.target as HTMLElement).closest('input')) {
+		openCurrencyList()
+		return
+	}
+	const input = root.querySelector<HTMLInputElement>('input[role="combobox"]')
+	input?.focus()
+	openCurrencyList()
+}
+
+const amountMaskEnabled = computed(() => options.amountMask !== false)
+const amountFocused = ref(false)
+const amountText = ref('')
+
+const selectedCurrencyId = computed(() => String(modelValue.value?.currency?.id ?? ''))
+
+const syncAmountTextFromModel = () => {
+	amountText.value = formatCurrencyAmountInput(modelValue.value?.amount ?? null, selectedCurrencyId.value)
+}
+
+watch(selectedCurrencyId, () => {
+	if (!amountFocused.value) syncAmountTextFromModel()
+})
+
+watch(
+	() => modelValue.value?.amount,
+	() => {
+		if (!amountFocused.value) syncAmountTextFromModel()
+	},
+	{ immediate: true }
+)
 
 // The base currency is fixed configuration, not user-editable. It may be supplied as a bare id
 // (resolved to displayText below via the same `aformLinkResolver` injection AFormLink uses) or
@@ -247,19 +293,75 @@ const onAmountPaste = (event: ClipboardEvent) => {
 	if (!/^-?\d*\.?\d*$/.test(pasted)) event.preventDefault()
 }
 
-const showBase = computed(() => {
+const onAmountFocus = (event: FocusEvent) => {
+	amountFocused.value = true
+	const input = event.target as HTMLInputElement | null
+	if (input) requestAnimationFrame(() => input.select())
+}
+
+const onAmountBlur = () => {
+	amountFocused.value = false
+	const parsed = parseCurrencyAmountInput(amountText.value, selectedCurrencyId.value)
+	recompute(parsed, modelValue.value?.currency ?? { id: '' })
+	syncAmountTextFromModel()
+}
+
+const onAmountInput = (event: Event) => {
+	const input = event.target as HTMLInputElement
+	amountText.value = input.value
+	const parsed = parseCurrencyAmountInput(amountText.value, selectedCurrencyId.value)
+	if (amountText.value.trim() === '' || amountText.value.trim() === '-' || parsed !== null) {
+		recompute(parsed, modelValue.value?.currency ?? { id: '' })
+	}
+}
+
+const onAmountKeydownMasked = (event: KeyboardEvent) => {
+	if (event.ctrlKey || event.metaKey || event.altKey) return
+	if (amountNavigationKeys.has(event.key)) return
+	if (/^[0-9]$/.test(event.key)) return
+	if (event.key === '-') {
+		const input = event.target as HTMLInputElement
+		if (!input.value.includes('-') && input.selectionStart === 0) return
+	}
+	if (event.key === '.' || event.key === ',') {
+		if (currencyInputFractionDigits(selectedCurrencyId.value) === 0) {
+			event.preventDefault()
+			return
+		}
+		const input = event.target as HTMLInputElement
+		if (!input.value.includes('.') && !input.value.includes(',')) return
+	}
+	const pattern = currencyAmountEntryPattern(selectedCurrencyId.value)
+	const input = event.target as HTMLInputElement
+	const { selectionStart, selectionEnd, value } = input
+	if (selectionStart === null || selectionEnd === null) {
+		event.preventDefault()
+		return
+	}
+	const next = value.slice(0, selectionStart) + event.key + value.slice(selectionEnd)
+	if (event.key.length === 1 && !pattern.test(next)) event.preventDefault()
+}
+
+const onAmountPasteMasked = (event: ClipboardEvent) => {
+	const pasted = event.clipboardData?.getData('text') ?? ''
+	if (!currencyAmountEntryPattern(selectedCurrencyId.value).test(pasted.trim())) event.preventDefault()
+}
+
+const conversionHelperText = computed(() => {
 	const v = modelValue.value
-	return !!v?.baseCurrency?.id && (v.currency?.id !== v.baseCurrency?.id || v.amount !== v.baseAmount)
+	if (!v || v.baseAmount === null || v.amount === null) return ''
+	const baseLabel = baseCurrencyText.value || String(v.baseCurrency?.id ?? '')
+	const enteredId = String(v.currency?.id ?? '')
+	const rate = v.exchangeRate
+	return `≈ ${formatCurrencyAmount(v.baseAmount, v.baseCurrency)} · 1 ${enteredId} = ${rate} ${baseLabel}`
 })
 
 const displayText = computed(() => {
 	const v = modelValue.value
 	if (!v || !v.currency?.id || v.amount === null) return '—'
-	const currencyText = v.currency.displayText ?? String(v.currency.id)
-	const base = `${v.amount} ${currencyText}`
+	const base = formatCurrencyAmount(v.amount, v.currency)
 	if (!showBase.value) return base
-	const baseText = v.baseCurrency.displayText ?? String(v.baseCurrency.id)
-	return `${base} (${v.baseAmount} ${baseText})`
+	return `${base} (≈ ${formatCurrencyAmount(v.baseAmount, v.baseCurrency)})`
 })
 </script>
 
@@ -269,10 +371,6 @@ const displayText = computed(() => {
 	gap: 1ch;
 }
 
-.acurrency__row--base {
-	margin-top: 1.5rem;
-}
-
 .acurrency__field {
 	position: relative;
 	flex: 1;
@@ -280,6 +378,7 @@ const displayText = computed(() => {
 }
 
 .acurrency__group {
+	position: relative;
 	display: flex;
 	align-items: stretch;
 	box-sizing: border-box;
@@ -293,24 +392,15 @@ const displayText = computed(() => {
 	border-color: var(--sc-input-active-border-color);
 }
 
-/* Wraps just the amount input so its floating label (`left: 10px` of the nearest
-   `position: relative` ancestor, per .aform_field-label) anchors above the amount box
-   specifically, not the group's outer left edge — which is now the currency prefix. */
+/* Solid form surface behind long labels; the shared gradient only masks the top half and reads
+   poorly over the merged prefix + amount backgrounds. Matches the field's page/form parent. */
+.acurrency__group > .aform_field-label {
+	background: var(--sc-form-background);
+}
+
 .acurrency__amount-wrap {
-	position: relative;
 	flex: 1;
 	min-width: 0;
-}
-
-/* The amount label ("Total") is the primary label for the whole merged group — bumped up
-   slightly from the shared .aform_field-label size so it reads as the group's main label. */
-.acurrency__amount-wrap .aform_field-label {
-	font-size: 0.85rem;
-}
-
-/* The label names the whole group, so focus on the currency picker darkens it too. */
-.acurrency__group:focus-within .acurrency__amount-wrap > .aform_field-label {
-	color: var(--sc-input-active-label-color);
 }
 
 .acurrency__amount {
@@ -337,47 +427,47 @@ const displayText = computed(() => {
 }
 
 /* The currency picker reads as a simple prefix addon (like Bootstrap's "$" prepend) rather
-   than an equal partner to the amount box: compact width (it shows a symbol once a value is
-   picked, not the full name), tinted background, left-rounded to match the group's own
+   than an equal partner to the amount box: fixed compact width (symbol or short code like NZD),
+   tinted background, left-rounded to match the group's own
    corner so the tint doesn't overhang the border. The dropdown itself isn't bound by this
-   width — see AFormLink's .autocomplete-results — so search results still show full names. */
+   width — ADropdown list spans the group — so search results still show full names. */
 .acurrency__currency {
-	position: relative;
-	flex: 0 0 auto;
-	min-width: 4.5rem;
+	/* Fixed minimum prefix: 3rem content band + 1ch inset each side (fits NZD without shifting). */
+	flex: 0 0 calc(3rem + 2ch);
+	width: calc(3rem + 2ch);
+	min-width: calc(3rem + 2ch);
+	max-width: calc(3rem + 2ch);
+	box-sizing: border-box;
+	cursor: pointer;
 	background: var(--sc-input-addon-background);
 	border-right: 1px solid var(--sc-input-border-color);
 	border-radius: var(--sc-border-radius) 0 0 var(--sc-border-radius);
 }
 
-/* The picker's list hangs from the group's outer border to the picker's divider, so its side lines
-   continue theirs. `.acurrency__group` is there to outrank AFormLink's own embedded `min-width`. */
-.acurrency__group .acurrency__currency :deep(.autocomplete-results) {
+.acurrency__currency :deep(.aform_input-field--embedded) {
+	padding-left: 1ch;
+	padding-right: 1ch;
+	text-align: right;
+}
+
+.acurrency__currency :deep(.aform_form-element--embedded),
+.acurrency__currency :deep(.autocomplete) {
+	position: static;
+}
+
+.acurrency__group :deep(.autocomplete-results--anchor-group) {
 	left: -1px;
-	min-width: calc(100% + 2px);
-}
-
-.acurrency__base-field {
-	width: 100%;
+	right: -1px;
 	box-sizing: border-box;
-	font-size: 1rem;
-	padding: 0.5rem 1ch;
-	border: 1px solid var(--sc-input-border-color);
-	border-radius: var(--sc-border-radius);
-	outline: none;
-	appearance: textfield;
-	-moz-appearance: textfield;
+	width: auto;
+	min-width: unset;
+	max-width: none;
 }
 
-.acurrency__base-field:disabled {
-	color: var(--sc-gray-50);
-}
-
-/* Base Amount and Exchange Rate are read-only — the number spinner offers nothing here. */
-.acurrency__base-field::-webkit-outer-spin-button,
-.acurrency__base-field::-webkit-inner-spin-button {
-	appearance: none;
-	-webkit-appearance: none;
-	margin: 0;
+.acurrency__helper {
+	margin: 0.5rem 0 0;
+	font-size: 0.85rem;
+	color: var(--sc-cell-text-color);
+	opacity: 0.75;
 }
 </style>

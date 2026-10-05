@@ -131,6 +131,7 @@ export type ComponentProps = {
 
 // @public
 export interface CurrencyOptions {
+    amountMask?: boolean;
     baseCurrency?: AFormLinkValue | string;
     doctype?: string;
     exchangeRates?: Record<string, number>;

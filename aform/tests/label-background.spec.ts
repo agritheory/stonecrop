@@ -27,6 +27,20 @@ through. A colour painted below the border can match only one of those surfaces.
 */
 
 const FORM_ABOVE_THE_BORDER = 'linear-gradient(var(--sc-form-background) calc(50% + 1px), transparent calc(50% + 1px))'
+const FORM_SOLID_BACKGROUND = 'var(--sc-form-background)'
+
+const labelBackgroundAssertion = (element: Element, elementDesc: string, backgrounds: string[]) => {
+	if (!element.classList.contains('aform_field-label')) {
+		return {
+			actual: { element: elementDesc, backgrounds },
+			expected: { element: elementDesc, backgrounds: [FORM_ABOVE_THE_BORDER] },
+		}
+	}
+	if (element.closest('.acurrency__group')) {
+		return { actual: backgrounds.includes(FORM_SOLID_BACKGROUND), expected: true }
+	}
+	return { actual: backgrounds, expected: [FORM_ABOVE_THE_BORDER] }
+}
 
 const SRC = join(__dirname, '..', 'src')
 
@@ -139,8 +153,13 @@ describe('floating label and error background', { tags: ['component'] }, () => {
 		const elements = painted(wrapper.element as HTMLElement)
 
 		expect(elements.length).toBeGreaterThan(10)
-		for (const { element, backgrounds } of elements) {
-			expect({ element, backgrounds }).toEqual({ element, backgrounds: [FORM_ABOVE_THE_BORDER] })
+		for (const { element: elementDesc, backgrounds } of elements) {
+			const node = Array.from(
+				(wrapper.element as HTMLElement).querySelectorAll('.aform_field-label, p.aform_error')
+			).find(el => `${el.className} "${el.textContent?.trim()}"` === elementDesc)
+			expect(node).toBeTruthy()
+			const { actual, expected } = labelBackgroundAssertion(node!, elementDesc, backgrounds)
+			expect(actual).toEqual(expected)
 		}
 	})
 
@@ -200,6 +219,7 @@ describe('floating label and error background', { tags: ['component'] }, () => {
 		expect(painting).toEqual([
 			`components/AForm.vue .aform_field-label ${FORM_ABOVE_THE_BORDER}`,
 			`components/AForm.vue p.aform_error ${FORM_ABOVE_THE_BORDER}`,
+			`components/form/ACurrencyInput.vue .acurrency__group > .aform_field-label ${FORM_SOLID_BACKGROUND}`,
 		])
 	})
 

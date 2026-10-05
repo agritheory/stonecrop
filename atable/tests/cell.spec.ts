@@ -352,4 +352,73 @@ describe('table cell component', { tags: ['component'] }, () => {
 			expect(nonEditableCell!.vm.currentData).toEqual(nonEditableCell!.text())
 		})
 	})
+
+	describe('quantity and currency field editors', () => {
+		const quantityValue = { qty: 2, uom: 'Nos', stockQty: 2, stockUom: 'Nos', conversionFactor: 1 }
+
+		const AQuantityInput = {
+			name: 'AQuantityInput',
+			props: ['modelValue', 'options', 'mode', 'label', 'uuid'],
+			emits: ['update:modelValue'],
+			template: `<input data-test="qty-input" type="number" :value="modelValue?.qty" @input="$emit('update:modelValue', { ...modelValue, qty: Number($event.target.value) })" />`,
+		}
+
+		const ACurrencyInput = {
+			name: 'ACurrencyInput',
+			props: ['modelValue', 'options', 'mode', 'label', 'uuid'],
+			emits: ['update:modelValue'],
+			template: `<input data-test="amount-input" type="number" :value="modelValue?.amount" @input="$emit('update:modelValue', { ...modelValue, amount: Number($event.target.value) })" />`,
+		}
+
+		it('renders AQuantityInput in an editable quantity column and writes updates to the store', async () => {
+			const rows = [{ qty: quantityValue }]
+			const testColumns: TableColumn[] = [
+				{
+					name: 'qty',
+					label: 'Qty',
+					component: 'AQuantityInput',
+					edit: true,
+					options: { uoms: ['Nos'], stockUom: 'Nos' },
+				},
+			]
+			const wrapper = mount(ATable, {
+				props: {
+					rows,
+					columns: testColumns,
+					config: { view: 'list' },
+					'onUpdate:rows': (next: typeof rows) => wrapper.setProps({ rows: next }),
+				},
+				global: { components: { AQuantityInput } },
+			})
+			await wrapper.vm.$nextTick()
+
+			const input = wrapper.find('[data-test="qty-input"]')
+			expect(input.exists()).toBe(true)
+			expect(wrapper.find('td[data-editable="true"]').attributes('contenteditable')).toBe('false')
+
+			await input.setValue('5')
+			expect(wrapper.props('rows')[0].qty).toEqual({ ...quantityValue, qty: 5 })
+		})
+
+		it('renders formatted text for read-only currency columns', async () => {
+			const rows = [{ total: { amount: 12.5, currency: { id: 'USD', displayText: 'US Dollar', symbol: '$' } } }]
+			const testColumns: TableColumn[] = [
+				{
+					name: 'total',
+					label: 'Total',
+					component: 'ACurrencyInput',
+					edit: false,
+					format: (v: { amount: number; currency: { id: string } }) => `$${v.amount}`,
+				},
+			]
+			const wrapper = mount(ATable, {
+				props: { rows, columns: testColumns, config: { view: 'list' } },
+				global: { components: { ACurrencyInput } },
+			})
+			await wrapper.vm.$nextTick()
+
+			expect(wrapper.find('[data-test="amount-input"]').exists()).toBe(false)
+			expect(wrapper.find('td').text()).toContain('$12.5')
+		})
+	})
 })

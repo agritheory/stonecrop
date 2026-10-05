@@ -1385,8 +1385,8 @@ describe('table store', { tags: ['component'] }, () => {
 	})
 
 	describe('quantity column filtering and sorting', () => {
-		// Quantity cells hold a composite `{ qty, uom, ... }` value; numeric filter/sort must
-		// compare on `qty`, not the object itself (which would coerce to NaN).
+		// Quantity cells hold a composite `{ qty, uom, stockQty, ... }` value; numeric filter/sort
+		// must compare on `stockQty` when present so mixed UOM rows are comparable.
 		const quantityColumns: TableColumn[] = [
 			{ name: 'item', label: 'Item' },
 			{ name: 'qty', label: 'Qty', component: 'AQuantityInput', filterType: 'number' },
@@ -1405,20 +1405,57 @@ describe('table store', { tags: ['component'] }, () => {
 			})
 		})
 
-		it("filters a quantity column by the composite value's qty", () => {
+		it("filters a quantity column by the composite value's stockQty", () => {
 			qtyStore.setFilter(1, { value: '12' })
 			expect(qtyStore.filteredRows.map(r => r.item)).toEqual(['C'])
 		})
 
-		it('sorts a quantity column numerically on qty (ascending)', () => {
+		it('sorts a quantity column numerically on stockQty (ascending)', () => {
 			qtyStore.sortByColumn(1)
 			expect(qtyStore.filteredRows.map(r => r.item)).toEqual(['B', 'C', 'A'])
 		})
 
-		it('sorts a quantity column numerically on qty (descending)', () => {
+		it('sorts a quantity column numerically on stockQty (descending)', () => {
 			qtyStore.sortByColumn(1) // asc
 			qtyStore.sortByColumn(1) // desc
 			expect(qtyStore.filteredRows.map(r => r.item)).toEqual(['A', 'C', 'B'])
+		})
+
+		it('sorts mixed UOM rows on stockQty, not entered qty', () => {
+			const mixedStore = createTableStore({
+				columns: quantityColumns,
+				rows: [
+					{ item: 'BoxLine', qty: { qty: 5, uom: 'Box', stockQty: 50, stockUom: 'Nos', conversionFactor: 10 } },
+					{ item: 'Forty', qty: { qty: 40, uom: 'Nos', stockQty: 40, stockUom: 'Nos', conversionFactor: 1 } },
+					{ item: 'Twelve', qty: { qty: 12, uom: 'Nos', stockQty: 12, stockUom: 'Nos', conversionFactor: 1 } },
+				],
+			})
+			mixedStore.sortByColumn(1)
+			expect(mixedStore.filteredRows.map(r => r.item)).toEqual(['Twelve', 'Forty', 'BoxLine'])
+		})
+
+		it('filters mixed UOM rows on stockQty', () => {
+			const mixedStore = createTableStore({
+				columns: quantityColumns,
+				rows: [
+					{ item: 'BoxLine', qty: { qty: 5, uom: 'Box', stockQty: 50, stockUom: 'Nos', conversionFactor: 10 } },
+					{ item: 'Forty', qty: { qty: 40, uom: 'Nos', stockQty: 40, stockUom: 'Nos', conversionFactor: 1 } },
+				],
+			})
+			mixedStore.setFilter(1, { value: '50' })
+			expect(mixedStore.filteredRows.map(r => r.item)).toEqual(['BoxLine'])
+		})
+
+		it('falls back to qty for a value carrying no stockQty', () => {
+			const unconvertedStore = createTableStore({
+				columns: quantityColumns,
+				rows: [
+					{ item: 'A', qty: { qty: 7, uom: 'Nos' } },
+					{ item: 'B', qty: { qty: 3, uom: 'Nos' } },
+				],
+			})
+			unconvertedStore.sortByColumn(1)
+			expect(unconvertedStore.filteredRows.map(r => r.item)).toEqual(['B', 'A'])
 		})
 	})
 

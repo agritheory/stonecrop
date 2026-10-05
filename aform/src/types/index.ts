@@ -326,4 +326,10 @@ export interface CurrencyOptions {
 	filterFunction?: string | ((search: string) => AFormLinkValue[] | Promise<AFormLinkValue[]>)
 	/** Whether `filterFunction` results should show a loading state — see AFormLink's `isAsync` */
 	isAsync?: boolean
+	/**
+	 * When true (default), the amount field uses a locale- and currency-aware display mask
+	 * (grouping and decimal separators follow the selected currency). Set false for a plain
+	 * `type="number"` input.
+	 */
+	amountMask?: boolean
 }

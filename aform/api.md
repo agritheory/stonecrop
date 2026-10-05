@@ -75,9 +75,6 @@ import { ACurrencyInput } from '@stonecrop/aform'
 | errors | `string[] \| undefined` | no |  | Inline validation error messages to display on this field. Fed by the host (e.g. mapped from the core validation store) — the renderer stays dumb and just shows what it is given. Takes precedence over the static `validation.errorMessage`. |
 | options | `CurrencyOptions \| undefined` | no | `{}` |  |
 | currencyLabel | `string \| undefined` | no | `"Currency"` |  |
-| baseCurrencyLabel | `string \| undefined` | no | `"Base Currency"` |  |
-| baseAmountLabel | `string \| undefined` | no | `"Base Amount"` |  |
-| exchangeRateLabel | `string \| undefined` | no | `"Exchange Rate"` |  |
 | modelValue | `CurrencyValue \| null \| undefined` | no | `{ amount: null, currency: { id: "" }, baseAmount: null, baseCurrency: { id: "" }, exchangeRate: 1, }` |  |
 
 **Events:**
@@ -295,13 +292,35 @@ import { ADropdown } from '@stonecrop/aform'
 | format | `string \| undefined` | no |  |  |
 | isAsync | `boolean \| undefined` | no | `false` |  |
 | filterFunction | `((search: string) => string[] \| Promise<string[]>) \| undefined` | no | `undefined` |  |
+| linkFilterFunction | `string \| ((search: string) => AFormLinkValue[] \| Promise<AFormLinkValue[]>) \| undefined` | no | `undefined` | When set, the picker searches link records and binds an `AFormLinkValue` (embedded currency, etc.). |
+| formatter | `((value: AFormLinkValue) => string) \| undefined` | no | `undefined` |  |
+| doctype | `string \| undefined` | no | `undefined` |  |
+| embedded | `boolean \| undefined` | no | `false` |  |
+| trigger | `"combobox" \| "button" \| undefined` | no | `"combobox"` |  |
+| listAnchor | `"field" \| "group" \| undefined` | no | `"field"` |  |
+| placeholder | `string \| undefined` | no | `undefined` |  |
+| ariaLabel | `string \| undefined` | no | `undefined` |  |
 | modelValue | `string \| undefined` | no |  |  |
+| linkValue | `AFormLinkModelValue \| undefined` | no |  |  |
 
 **Events:**
 
 | Event | Payload | Description |
 |-------|---------|-------------|
 | update:modelValue | `[value: string \| undefined]` |  |
+| update:linkValue | `[value: AFormLinkModelValue \| undefined]` |  |
+
+**Slots:**
+
+| Slot | Props | Description |
+|------|-------|-------------|
+| option | `{ option: { [x: string]: any; id: string \| number; displayText?: string \| undefined; }; }` |  |
+
+**Exposed:**
+
+| Name | Type |
+|------|------|
+| openCurrencyList | `() => void` |
 
 ### ADuration
 
@@ -453,6 +472,12 @@ import { AFormLink } from '@stonecrop/aform'
 |------|-------|-------------|
 | option | `{ option: { [x: string]: any; id: string \| number; displayText?: string \| undefined; }; }` |  |
 
+**Exposed:**
+
+| Name | Type |
+|------|------|
+| openCurrencyList | `() => void` |
+
 ### AFormLoading
 
 Vue component exported from @stonecrop/aform.
@@ -519,9 +544,6 @@ import { AQuantityInput } from '@stonecrop/aform'
 | errors | `string[] \| undefined` | no |  | Inline validation error messages to display on this field. Fed by the host (e.g. mapped from the core validation store) — the renderer stays dumb and just shows what it is given. Takes precedence over the static `validation.errorMessage`. |
 | options | `QuantityOptions \| undefined` | no | `{}` |  |
 | uomLabel | `string \| undefined` | no | `"UOM"` |  |
-| stockUomLabel | `string \| undefined` | no | `"Stock UOM"` |  |
-| stockQtyLabel | `string \| undefined` | no | `"Stock Qty"` |  |
-| conversionFactorLabel | `string \| undefined` | no | `"Conversion Factor"` |  |
 | modelValue | `QuantityValue \| null \| undefined` | no | `{ qty: null, uom: "", stockQty: null, stockUom: "", conversionFactor: 1 }` |  |
 
 **Events:**
@@ -798,6 +820,7 @@ Type-specific configuration for ACurrencyInput, passed via the field's `options`
 
 ```typescript
 export interface CurrencyOptions {
+  amountMask?: boolean;
   baseCurrency?: AFormLinkValue | string;
   doctype?: string;
   exchangeRates?: Record<string, number>;
@@ -811,6 +834,7 @@ export interface CurrencyOptions {
 
 | Property | Type | Description |
 |----------|------|-------------|
+| amountMask? | `boolean` | When true (default), the amount field uses a locale- and currency-aware display mask (grouping and decimal separators follow the selected currency). Set false for a plain `type="number"` input. |
 | baseCurrency? | `AFormLinkValue \| string` | The record's base currency — fixed, not user-editable. A bare id resolves to displayText via `aformLinkResolver`. |
 | doctype? | `string` | Currency doctype name, used for FK resolution via `aformLinkResolver`. The currency picker is embedded, so it renders no navigate button. |
 | exchangeRates? | `Record<string, number>` | Exchange rate lookup for each non-base currency id, relative to `baseCurrency` (which is implicitly `1`) |

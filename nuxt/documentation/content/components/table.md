@@ -81,6 +81,77 @@ const columns = ref<TableColumn[]>([
 ```
 ::
 
+## Quantity and currency columns
+
+Columns whose `component` is `AQuantityInput` or `ACurrencyInput` (or a `:schema` derived from those fields) format composite cell values for display — UOM omitted when it matches stock UOM, currency via `Intl` when the id is ISO — and sort/filter on `stockQty` / `baseAmount` so mixed units stay comparable.
+
+::demo-panel
+:::client-only
+:table-denominated-demo
+:::
+
+#code
+```vue
+<script setup lang="ts">
+import { ref } from 'vue'
+import type { ColumnSchema } from '@stonecrop/schema'
+import { ATable, type TableRow } from '@stonecrop/atable'
+
+const usd = { id: 'USD', displayText: 'US Dollar', symbol: '$' }
+const eur = { id: 'EUR', displayText: 'Euro', symbol: '€' }
+
+const rows = ref<TableRow[]>([
+	{
+		id: '1',
+		item: 'Widget A (received in Box)',
+		qty: { qty: 5, uom: 'Box', stockQty: 50, stockUom: 'Nos', conversionFactor: 10 },
+		lineTotal: { amount: 100, currency: eur, baseAmount: 110, baseCurrency: usd, exchangeRate: 1.1 },
+	},
+	{
+		id: '2',
+		item: 'Widget B (stock UOM)',
+		qty: { qty: 40, uom: 'Nos', stockQty: 40, stockUom: 'Nos', conversionFactor: 1 },
+		lineTotal: { amount: 40, currency: usd, baseAmount: 40, baseCurrency: usd, exchangeRate: 1 },
+	},
+])
+
+const schema = ref<ColumnSchema[]>([
+	{ fieldname: 'item', component: 'ATextInput', label: 'Item', edit: false },
+	{
+		fieldname: 'qty',
+		component: 'AQuantityInput',
+		label: 'Qty',
+		align: 'right',
+		sortable: true,
+		filterable: true,
+		filterType: 'number',
+		options: { uoms: ['Nos', 'Box'], stockUom: 'Nos', conversionFactors: { Box: 10 } },
+	},
+	{
+		fieldname: 'lineTotal',
+		component: 'ACurrencyInput',
+		label: 'Line total',
+		align: 'right',
+		sortable: true,
+		filterable: true,
+		filterType: 'number',
+		options: {
+			baseCurrency: usd,
+			exchangeRates: { EUR: 1.1 },
+			precision: 2,
+		},
+	},
+])
+</script>
+
+<template>
+	<ATable v-model:rows="rows" :schema="schema" :config="{ view: 'list' }" />
+</template>
+```
+::
+
+Live line items with the same field components are on playground orders — open an order and expand **Line Items** (`/playground/order`).
+
 ## Filtering & Sorting
 
 Setting `sortable`/`filterable` on a column adds a header sort toggle and a filter control. `filterType` picks the control: `'text'` for free-text matching, `'select'` for a dropdown (supply `filterOptions`, or omit them to auto-derive from the column's data), or `'dateRange'` for a date span.

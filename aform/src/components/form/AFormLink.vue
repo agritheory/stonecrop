@@ -15,7 +15,6 @@
 						aria-autocomplete="list"
 						:class="['aform_input-field', { 'aform_input-field--embedded': embedded }]"
 						:placeholder="placeholder"
-						:size="embeddedSize"
 						:aria-label="ariaLabel"
 						:required="required"
 						:aria-expanded="dropdownOpen"
@@ -24,6 +23,8 @@
 						:disabled="disabled || mode === 'read'"
 						@input="onInput"
 						@focus="onFocus"
+						@click="onEmbeddedClick"
+						@pointerdown="onEmbeddedPointerDown"
 						@keydown.down.prevent="selectNext"
 						@keydown.up.prevent="selectPrev"
 						@keydown.enter.prevent="selectCurrent"
@@ -47,27 +48,26 @@
 						<span class="aform_form-btn-name">{{ icon === 'chevron-right' ? '›' : '→' }}</span>
 					</button>
 				</div>
-				<ul
-					v-if="dropdownOpen"
-					:id="listboxId"
-					ref="results"
-					class="autocomplete-results"
-					role="listbox"
-					:aria-label="ariaLabel">
-					<li v-if="loading" class="autocomplete-result loading">Loading…</li>
+				<ADropdownList
+					:listbox-id="listboxId"
+					:ariaLabel="ariaLabel ?? label ?? ''"
+					:open="dropdownOpen"
+					:option-count="() => dropdownResults.length"
+					:active-index="() => activeIndex">
+					<li v-if="loading" class="loading autocomplete-result">Loading…</li>
 					<li
 						v-for="(option, i) in dropdownResults"
 						v-else
 						:id="`${listboxId}-opt-${i}`"
 						:key="String(option.id)"
 						role="option"
-						:aria-selected="i === activeIndex"
+						:aria-selected="isResultSelected(option)"
 						class="autocomplete-result"
-						:class="{ 'is-active': i === activeIndex }"
+						:class="{ 'is-active': i === activeIndex, 'is-selected': isResultSelected(option) }"
 						@mousedown.prevent="selectOption(option)">
 						<slot name="option" :option="option">{{ option.displayText ?? String(option.id) }}</slot>
 					</li>
-				</ul>
+				</ADropdownList>
 			</div>
 			<label v-if="label && !embedded" class="aform_field-label">{{ label }}</label>
 		</template>
@@ -76,11 +76,12 @@
 
 <script setup lang="ts">
 import { vOnClickOutside } from '@vueuse/components'
-import { computed, inject, ref, useId, useTemplateRef, watch } from 'vue'
+import { computed, inject, ref, useId, watch } from 'vue'
 
-import { fitDropdownList } from '../../composables/dropdownList'
 import type { AFormLinkModelValue, AFormLinkNavigator, AFormLinkValue, ComponentProps } from '../../types'
 import { deserializeFunction } from '../../utils/deserialize'
+import { asLinkValue, linkDisplayText, linkId } from '../../utils/linkValue'
+import ADropdownList from './ADropdownList.vue'
 
 const {
 	label,
@@ -134,21 +135,10 @@ const displayedText = computed(() => {
 
 const searchText = ref(hasValidId.value ? displayedText.value : '')
 
-// An embedded input is as wide as the text it shows; left to the browser it is 20 characters wide
-// whatever it holds, which made the currency prefix half the group.
-const embeddedSize = computed(() =>
-	embedded ? Math.max((searchText.value || placeholder || '').length, 1) : undefined
-)
 const dropdownOpen = ref(false)
 const loading = ref(false)
 const dropdownResults = ref<AFormLinkValue[]>([])
 const activeIndex = ref<number | null>(null)
-
-fitDropdownList(useTemplateRef<HTMLElement>('results'), {
-	isOpen: () => dropdownOpen.value,
-	optionCount: () => dropdownResults.value.length,
-	activeIndex: () => activeIndex.value,
-})
 
 const navigator = inject<AFormLinkNavigator | null>('aformLinkNavigator', null)
 
@@ -165,27 +155,6 @@ const resolver = inject<ResolverFn | null>('aformLinkResolver', null)
 // It survives only until the parent writes its scalar back, so it fixed a scalar passed once at
 // mount and nothing else, and it emitted an `update:modelValue` the user never made on every
 // mount of a scalar-valued link field.
-function linkId(value: AFormLinkModelValue | null | undefined): string | undefined {
-	if (value == null) return undefined
-	if (typeof value === 'string') return value === '' ? undefined : value
-	if (typeof value === 'number') return String(value)
-	const id = value.id
-	if (id === null || id === undefined || id === '') return undefined
-	return String(id)
-}
-
-function linkDisplayText(value: AFormLinkModelValue | null | undefined): string | undefined {
-	if (value == null || typeof value !== 'object') return undefined
-	const text = value.displayText
-	return typeof text === 'string' || typeof text === 'number' ? String(text) : undefined
-}
-
-function asLinkValue(value: AFormLinkModelValue | null | undefined): AFormLinkValue {
-	if (value != null && typeof value === 'object') return value
-	const id = linkId(value)
-	return id !== undefined ? { id } : { id: '' }
-}
-
 // When the id changes (including on first render), resolve its display text.
 // Tries filterFunction first (returns a list of candidates to search); falls back to the
 // injected resolver (a direct doctype+id lookup). Skips if displayText is already set.
@@ -254,6 +223,11 @@ const handleNavigate = () => {
 	}
 }
 
+const isResultSelected = (option: AFormLinkValue) => {
+	const id = linkId(modelValue.value)
+	return id !== undefined && String(option.id) === String(id)
+}
+
 const openDropdown = async (text: string) => {
 	if (!filterFunction || mode === 'read') return
 	activeIndex.value = null
@@ -280,9 +254,42 @@ const onClickOutside = () => {
 	if (dropdownOpen.value) closeDropdown()
 }
 
-const onFocus = () => openDropdown(searchText.value)
+const embeddedFilterQuery = (): string => {
+	if (!embedded) return searchText.value
+	// Compact formatter output ("€") is not what filterFunction searches — treat it as "show all".
+	if (hasValidId.value && formatter) {
+		const formatted = formatter(asLinkValue(modelValue.value))
+		if (searchText.value === formatted) return ''
+	}
+	return searchText.value
+}
 
-const onInput = () => openDropdown(searchText.value)
+const openEmbeddedList = () => {
+	if (embedded) openDropdown(embeddedFilterQuery())
+}
+
+const onFocus = (event: FocusEvent) => {
+	if (embedded) {
+		openEmbeddedList()
+		const input = event.target as HTMLInputElement | null
+		if (input) requestAnimationFrame(() => input.select())
+		return
+	}
+	openDropdown(searchText.value)
+}
+
+// Focus alone is not enough: a second click while the combobox stays focused never refires focus.
+const onEmbeddedClick = () => {
+	openEmbeddedList()
+}
+
+const onEmbeddedPointerDown = () => {
+	openEmbeddedList()
+}
+
+const onInput = () => openDropdown(embedded ? embeddedFilterQuery() : searchText.value)
+
+defineExpose({ openCurrencyList: openEmbeddedList })
 
 const selectOption = (option: AFormLinkValue) => {
 	modelValue.value = option
@@ -336,13 +343,17 @@ const selectCurrent = () => {
 /* No top padding: the shared rule reserves it for a floating label, which embedded mode never renders. */
 .aform_form-element--embedded {
 	min-width: 0;
-	flex-grow: 0;
+	flex: 1 1 auto;
+	width: 100%;
 	padding-top: 0;
 }
 
 /* Embedded mode: the host component's own container supplies the border, so this input goes
    borderless. Its vertical padding stays the standalone field's, so its text lines up with the host's. */
 .aform_input-field--embedded {
+	box-sizing: border-box;
+	width: 100%;
+	min-width: 0;
 	outline: none;
 	background: transparent;
 	padding: 0.5rem 1ch;
@@ -353,7 +364,6 @@ const selectCurrent = () => {
    dropdown flush with the input, so a long display text can't overhang a narrow form column. */
 .aform_form-element--embedded .autocomplete-results {
 	min-width: 100%;
-	width: max-content;
 }
 
 /* Give the button the same outline as the input, then slide it 2px left so the outlines
@@ -403,33 +413,5 @@ const selectCurrent = () => {
 .aform_form-btn:focus,
 .input-group:focus-within .aform_form-btn {
 	outline-color: var(--sc-input-active-border-color);
-}
-
-.autocomplete-results {
-	position: absolute;
-	box-sizing: border-box;
-	width: 100%;
-	z-index: 100;
-	padding: 0;
-	margin: 0;
-	list-style: none;
-	border: 1px solid var(--sc-input-active-border-color);
-	border-top: none;
-	border-radius: 0 0 var(--sc-border-radius) var(--sc-border-radius);
-	background: var(--sc-overlay-background);
-	box-shadow: var(--sc-overlay-shadow);
-	max-height: var(--sc-dropdown-max-height);
-	overflow-y: auto;
-}
-
-.autocomplete-result {
-	padding: 4px 6px;
-	cursor: pointer;
-}
-
-.autocomplete-result.is-active,
-.autocomplete-result:hover {
-	background-color: var(--sc-row-color-zebra-light);
-	color: var(--sc-input-active-border-color);
 }
 </style>

@@ -18,6 +18,7 @@
 
 import type { DoctypeMeta } from '@stonecrop/schema'
 
+import { playgroundMoneyUsd, sumPlaygroundMoney } from './playground-denominated'
 import { mockExecutor } from './mock-executor'
 
 /** What a handler in this host is given. Mirrors the middleware's `ActionHandlerContext`, minus `pgClient`. */
@@ -56,13 +57,14 @@ export const actionHandlers: Record<string, Record<string, FullstackActionHandle
 		async recalculateTotal({ recordId }) {
 			if (recordId == null) throw new Error('recalculateTotal needs an order id')
 
-			const read = await mockExecutor.query<{ orderById?: { items?: { total?: number }[] } }>('orderById', {
+			const read = await mockExecutor.query<{ orderById?: { items?: { total?: unknown }[] } }>('orderById', {
 				id: recordId,
 			})
 			const order = read.orderById
 			if (!order) throw new Error(`Order ${String(recordId)} not found`)
 
-			const total = (order.items ?? []).reduce((sum, item) => sum + (Number(item.total) || 0), 0)
+			const totalAmount = sumPlaygroundMoney((order.items ?? []).map(item => item.total))
+			const total = playgroundMoneyUsd(totalAmount)
 
 			const written = await mockExecutor.mutate<{ updateOrderById?: { order?: Record<string, unknown> } }>(
 				'updateOrderById',

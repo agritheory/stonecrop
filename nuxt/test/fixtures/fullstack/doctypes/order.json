@@ -38,8 +38,13 @@
 		{
 			"fieldname": "total",
 			"label": "Total",
-			"component": "ANumericInput",
-			"mode": "display"
+			"component": "ACurrencyInput",
+			"mode": "display",
+			"options": {
+				"baseCurrency": { "id": "USD", "displayText": "US Dollar", "symbol": "$" },
+				"exchangeRates": { "EUR": 1.1, "GBP": 1.3 },
+				"precision": 2
+			}
 		},
 		{
 			"fieldname": "items",

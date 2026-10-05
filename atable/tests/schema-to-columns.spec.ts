@@ -1,3 +1,4 @@
+import { formatCurrencyAmount } from '@stonecrop/utilities'
 import { describe, it, expect } from 'vitest'
 
 import { schemaToColumns } from '../src/schemaToColumns'
@@ -145,6 +146,27 @@ describe('schemaToColumns', { tags: ['component'] }, () => {
 		})
 	})
 
+	describe('edit default', () => {
+		it('defaults edit to true when edit and readOnly are omitted', () => {
+			const columns = schemaToColumns([{ fieldname: 'title', component: 'ATextInput', label: 'Title' }])
+			expect(columns[0].edit).toBe(true)
+		})
+
+		it('defaults edit to false when readOnly is true', () => {
+			const columns = schemaToColumns([
+				{ fieldname: 'total', component: 'ACurrencyInput', label: 'Total', readOnly: true },
+			])
+			expect(columns[0].edit).toBe(false)
+		})
+
+		it('honors an explicit edit when set', () => {
+			const columns = schemaToColumns([
+				{ fieldname: 'title', component: 'ATextInput', label: 'Title', edit: false, readOnly: false },
+			])
+			expect(columns[0].edit).toBe(false)
+		})
+	})
+
 	describe('Quantity field handling', () => {
 		it('adds a "<qty> <uom>" format for quantity fields without an explicit format', () => {
 			const schema: ColumnSchema[] = [{ fieldname: 'qty', component: 'AQuantityInput', label: 'Quantity' }]
@@ -216,7 +238,7 @@ describe('schemaToColumns', { tags: ['component'] }, () => {
 			const columns = schemaToColumns(schema)
 			expect(typeof columns[0].format).toBe('function')
 			expect((columns[0].format as Function)({ amount: 5, currency: { id: 'USD', displayText: 'US Dollar' } })).toBe(
-				'5 US Dollar'
+				formatCurrencyAmount(5, { id: 'USD', displayText: 'US Dollar' })
 			)
 		})
 

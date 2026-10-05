@@ -111,6 +111,9 @@ Each variant (`neutral`, `success`, `warning`, `danger`, `brand`) defines `--sc-
 | `--sc-form-field-max-width` | `50ch` |
 | `--sc-form-label-offset` | `var(--sc-space-2)` |
 | `--sc-dropdown-max-height` | `17rem` |
+| `--sc-dropdown-option-hover-background` | `color-mix(in srgb, var(--sc-gray-50) 28%, var(--sc-overlay-background))` |
+| `--sc-dropdown-option-active-background` | `var(--sc-dropdown-option-hover-background)` (alias; hover and `.is-active` use the same rule in `ADropdownList`) |
+| `--sc-dropdown-option-selected-accent` | `color-mix(in srgb, var(--sc-row-border-color) 45%, var(--sc-overlay-background))` (2px left bar on committed option; `ATable` row family, softened on overlay) |
 | `--sc-input-active-border-color` | `var(--sc-gray-80)` |
 | `--sc-input-active-label-color` | `var(--sc-gray-80)` |
 | `--sc-input-border-color` | `var(--sc-gray-50)` |

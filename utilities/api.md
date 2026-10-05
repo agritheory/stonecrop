@@ -4,6 +4,120 @@
 
 ## Functions
 
+### currencyAmountEntryPattern
+
+Characters allowed while typing in a masked currency amount field.
+
+**Signature:**
+
+```typescript
+export declare function currencyAmountEntryPattern(currencyId: string | undefined): RegExp;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| currencyId | `string \| undefined` |  |
+
+### currencyInputFractionDigits
+
+Fraction digits for a currency in amount inputs (e.g. JPY → 0).
+
+**Signature:**
+
+```typescript
+export declare function currencyInputFractionDigits(currencyId: string | undefined): number;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| currencyId | `string \| undefined` |  |
+
+### currencyInputLocale
+
+Locale for formatting/parsing the numeric portion of a currency amount in inputs.
+
+**Signature:**
+
+```typescript
+export declare function currencyInputLocale(currencyId: string | undefined): string;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| currencyId | `string \| undefined` |  |
+
+### formatCurrencyAmount
+
+Format a currency amount for display (forms, table cells). Uses `Intl` when `currency.id` is a valid ISO code; otherwise falls back to symbol, display text, or id.
+
+**Signature:**
+
+```typescript
+export declare function formatCurrencyAmount(amount: number | null | undefined, currency: CurrencyLike | undefined): string;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| amount | `number \| null \| undefined` |  |
+| currency | `CurrencyLike \| undefined` |  |
+
+### formatCurrencyAmountInput
+
+Format a numeric amount for display in a currency amount field (no currency symbol).
+
+**Signature:**
+
+```typescript
+export declare function formatCurrencyAmountInput(amount: number | null | undefined, currencyId: string | undefined): string;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| amount | `number \| null \| undefined` |  |
+| currencyId | `string \| undefined` |  |
+
+### formatCurrencyCell
+
+Render a composite currency value for table cells.
+
+**Signature:**
+
+```typescript
+export declare function formatCurrencyCell(value: unknown): string;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| value | `unknown` |  |
+
+### formatQuantityCell
+
+Render a composite quantity value for table cells. Omits the UOM when it matches `stockUom`.
+
+**Signature:**
+
+```typescript
+export declare function formatQuantityCell(value: unknown): string;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| value | `unknown` |  |
+
 ### fromISODate
 
 Reads a `YYYY-MM-DD` day. Anything that is not a real day written exactly that way reads as no day.
@@ -37,6 +151,23 @@ declare function install(_app: App): void;
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | _app | `App` | Vue app instance |
+
+### parseCurrencyAmountInput
+
+Parse user-entered text in a currency amount field back to a number.
+
+**Signature:**
+
+```typescript
+export declare function parseCurrencyAmountInput(text: string, currencyId: string | undefined): number | null;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| text | `string` |  |
+| currencyId | `string \| undefined` |  |
 
 ### useKeyboardNav
 

@@ -15,6 +15,9 @@
 		@input="debouncedUpdateCellData"
 		@click="onCellClick">
 		<component :is="column.cellComponent" v-if="column.cellComponent" v-bind="cellComponentBindings" />
+		<div v-else-if="compositeFieldComponent" class="atable-cell__field" @click.stop>
+			<component :is="compositeFieldComponent" v-bind="compositeFieldBindings" />
+		</div>
 		<component :is="'ABadge'" v-else-if="badgeFromFormat" v-bind="badgeFromFormat" presentation="cell-fill" />
 		<component :is="'ABadge'" v-else-if="badgeFromOptions" v-bind="badgeFromOptions" />
 		<span v-else-if="isHtmlValue" v-html="renderedValue" />
@@ -24,7 +27,7 @@
 
 <script setup lang="ts">
 import { KeypressHandlers, defaultKeypressHandlers, useKeyboardNav } from '@stonecrop/utilities'
-import { isBadgeDescriptor, hasBadgeOptions } from '@stonecrop/schema'
+import { componentCategory, isBadgeDescriptor, hasBadgeOptions } from '@stonecrop/schema'
 import { useDebounceFn, useElementBounding } from '@vueuse/core'
 import { computed, type CSSProperties, onMounted, ref, useTemplateRef, nextTick } from 'vue'
 
@@ -109,11 +112,37 @@ const badgeFromOptions = computed(() => {
 	}
 })
 
+const compositeFieldComponent = computed((): string | undefined => {
+	if (column.cellComponent) return undefined
+	if (!column.edit) return undefined
+	const category = componentCategory(column.component)
+	if (category === 'quantity') return 'AQuantityInput'
+	if (category === 'currency') return 'ACurrencyInput'
+	return undefined
+})
+
 const usesBadgeDisplay = computed(
 	() => !!column.cellComponent || badgeFromFormat.value !== undefined || hasBadgeOptions(column.options)
 )
 
-const isContentEditable = computed(() => column.edit && !usesBadgeDisplay.value)
+const usesSpecialCellDisplay = computed(() => usesBadgeDisplay.value || compositeFieldComponent.value !== undefined)
+
+const isContentEditable = computed(() => column.edit && !usesSpecialCellDisplay.value)
+
+const compositeFieldBindings = computed(() => {
+	const onUpdate = (val: unknown) => {
+		store.setCellData(colIndex, rowIndex, val)
+		cellModified.value = JSON.stringify(val) !== JSON.stringify(originalData)
+	}
+	return {
+		modelValue: store.getCellData(colIndex, rowIndex),
+		'onUpdate:modelValue': onUpdate,
+		mode: 'edit' as const,
+		label: ' ',
+		uuid: `atable-${String(rowIndex)}-${String(colIndex)}-${column.name}`,
+		options: column.options ?? {},
+	}
+})
 
 const cellComponentBindings = computed(() => {
 	const props = { ...column.cellComponentProps }
@@ -152,6 +181,7 @@ const cellClasses = computed(() => {
 		'sticky-column': pinned,
 		'cell-modified': cellModified.value,
 		'atable-cell--badge-fill': usesBadgeDisplay.value,
+		'atable-cell--field-fill': compositeFieldComponent.value !== undefined,
 	}
 })
 
@@ -407,5 +437,35 @@ defineExpose({
 .atable-cell--badge-fill {
 	padding: 0 !important;
 	margin-left: 0;
+}
+
+.atable-cell--field-fill {
+	padding: 0 !important;
+	margin-left: 0;
+	overflow: visible;
+	white-space: normal;
+}
+
+.atable-cell--field-fill .atable-cell__field {
+	width: 100%;
+	min-width: 0;
+}
+
+.atable-cell--field-fill :deep(.aform_form-element) {
+	margin: 0;
+}
+
+.atable-cell--field-fill :deep(.aform_field-label),
+.atable-cell--field-fill :deep(.aquantity__helper),
+.atable-cell--field-fill :deep(.acurrency__helper) {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border: 0;
 }
 </style>

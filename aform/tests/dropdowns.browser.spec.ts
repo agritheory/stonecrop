@@ -53,9 +53,9 @@ const currencies = () => [
 
 const openQuantityMenu = async () => {
 	mountInForm('AQuantityInput', { options: { uoms: ['Nos', 'Box'], stockUom: 'Nos' } })
-	document.querySelector<HTMLButtonElement>('.aquantity__uom-toggle')!.click()
+	document.querySelector<HTMLButtonElement>('.aform_dropdown-button')!.click()
 	await nextTick()
-	return '.aquantity__uom-menu'
+	return '.autocomplete-results'
 }
 
 const focusAndWait = async (selector: string) => {
@@ -84,18 +84,18 @@ const openDropdownList = async () => {
 
 // Needs real layout and the real cascade: what is measured is where the browser draws each list.
 describe('an open dropdown list', { tags: ['component'] }, () => {
-	it('under the quantity field, runs from the divider beside the unit to the field’s outer border', async () => {
+	it('under the quantity field, spans the full merged qty+uom group', async () => {
 		const menu = edges(await openQuantityMenu())
 
-		expect(menu.left).toBeCloseTo(edges('.aquantity__uom').left, 0)
+		expect(menu.left).toBeCloseTo(edges('.aquantity__group').left, 0)
 		expect(menu.right).toBeCloseTo(edges('.aquantity__group').right, 0)
 	})
 
-	it('under the currency picker, runs from the field’s outer border to the divider beside the picker', async () => {
+	it('under the currency picker, spans the full merged amount+currency group', async () => {
 		const list = edges(await openCurrencyList())
 
 		expect(list.left).toBeCloseTo(edges('.acurrency__group').left, 0)
-		expect(list.right).toBeCloseTo(edges('.acurrency__currency').right, 0)
+		expect(list.right).toBeCloseTo(edges('.acurrency__group').right, 0)
 	})
 
 	it.each([
@@ -113,6 +113,16 @@ describe('an open dropdown list', { tags: ['component'] }, () => {
 		expect(style.backgroundColor).toBe('rgb(1, 2, 3)')
 		expect(style.boxShadow).toBe('rgb(4, 5, 6) 0px 0px 7px 0px')
 	})
+
+	it('highlights the keyboard-active option from host tokens', async () => {
+		document.documentElement.style.cssText = '--sc-dropdown-option-hover-background: rgb(7, 8, 9)'
+
+		await openQuantityMenu()
+		const option = document.querySelector<HTMLElement>('.autocomplete-result')!
+		option.classList.add('is-active')
+
+		expect(getComputedStyle(option).backgroundColor).toBe('rgb(7, 8, 9)')
+	})
 })
 
 // As long as a real host's: every link field in FAB lists up to 200 records before anything is typed.
@@ -125,9 +135,9 @@ type LongList = { list: string; keys: string }
 
 const openLongUnitMenu = async (spaceAbove = 0): Promise<LongList> => {
 	mountInForm('AQuantityInput', { options: { uoms: units, stockUom: 'Unit 1' } }, spaceAbove)
-	document.querySelector<HTMLButtonElement>('.aquantity__uom-toggle')!.click()
+	document.querySelector<HTMLButtonElement>('.aform_dropdown-button')!.click()
 	await nextTick()
-	return { list: '.aquantity__uom-menu', keys: '.aquantity__uom-toggle' }
+	return { list: '.autocomplete-results', keys: '.aform_dropdown-button' }
 }
 
 const openLongCurrencyList = async (spaceAbove = 0): Promise<LongList> => {

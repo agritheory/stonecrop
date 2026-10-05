@@ -5,7 +5,7 @@ description: A quantity input with unit-of-measure conversion to a stock unit.
 
 # Quantity Input
 
-`AQuantityInput` pairs a quantity with a unit-of-measure (UOM) picker, and derives a read-only stock-equivalent quantity, stock UOM, and conversion factor alongside it. It's built for inventory/line-item style fields where a quantity can be entered in one unit (e.g. `Box`) but needs to be tracked in the item's stock unit (e.g. `Nos`) too.
+`AQuantityInput` pairs a quantity with a unit-of-measure (UOM) picker and derives stock-equivalent figures on the value. When the entered UOM differs from the item's stock UOM, a compact helper line under the field shows the conversion (for example `= 50 Nos · 1 Box = 10 Nos`). It's built for inventory/line-item style fields where a quantity can be entered in one unit (e.g. `Box`) but needs to be tracked in the item's stock unit (e.g. `Nos`) too.
 
 ## Import
 
@@ -15,7 +15,7 @@ import { AQuantityInput } from '@stonecrop/aform'
 
 ## Basic
 
-`v-model` binds to a [`QuantityValue`](#quantityvalue) object. The Stock UOM, Stock Qty, and Conversion Factor fields below the input are derived automatically — try changing the quantity or unit.
+`v-model` binds to a [`QuantityValue`](#quantityvalue) object. The stock conversion helper below the input updates automatically when the quantity or unit changes and the UOM differs from the stock UOM.
 
 ::demo-panel
 :::client-only
@@ -28,12 +28,13 @@ import { AQuantityInput } from '@stonecrop/aform'
 import { ref } from 'vue'
 import { AQuantityInput } from '@stonecrop/aform'
 
-// "Widget" item: stocked in Nos, but this line was purchased/received in Box.
-// 1 Box = 10 Nos, 1 Kg = 25 Nos.
+// "Widget" item: stocked in Nos, but lines may use Box, weight, or sheet size.
+// 1 Box = 10 Nos, 1 Kg = 25 Nos, 1 sheet = 1 Nos.
+const sheetUom = "4' x 8' sheet"
 const quantityOptions = {
-	uoms: ['Nos', 'Box', 'Kg'],
+	uoms: ['Nos', 'Box', 'Kg', sheetUom],
 	stockUom: 'Nos',
-	conversionFactors: { Box: 10, Kg: 25 },
+	conversionFactors: { Box: 10, Kg: 25, [sheetUom]: 1 },
 }
 
 const item = ref({
@@ -68,8 +69,8 @@ const item = ref({
 `AQuantityInput` is usually resolved by `AForm` from a schema field with `component: 'AQuantityInput'`, rather than used directly:
 
 ```ts
-// "Widget" item: stocked in Nos, but this line was purchased/received in Box.
-// 1 Box = 10 Nos, 1 Kg = 25 Nos.
+// "Widget" item: stocked in Nos, but lines may use Box, weight, or sheet size.
+const sheetUom = "4' x 8' sheet"
 const schema = [
 	{
 		fieldname: 'qty',
@@ -77,9 +78,9 @@ const schema = [
 		component: 'AQuantityInput',
 		label: 'Quantity',
 		options: {
-			uoms: ['Nos', 'Box', 'Kg'],
+			uoms: ['Nos', 'Box', 'Kg', sheetUom],
 			stockUom: 'Nos',
-			conversionFactors: { Box: 10, Kg: 25 },
+			conversionFactors: { Box: 10, Kg: 25, [sheetUom]: 1 },
 		},
 	},
 ]
@@ -115,9 +116,6 @@ rows:
   - ['`mode`', "`'edit' | 'read' | 'display'`", "`'edit'`", 'See [Modes](#modes) below.']
   - ['`uuid`', '`string`', 'none', "`id`/`for` pair linking the quantity input to its label, and root for the UOM dropdown's element ids. Nothing generates one, so the pairing exists only when you pass it."]
   - ['`uomLabel`', '`string`', "`'UOM'`", "Label for the embedded unit-of-measure dropdown."]
-  - ['`stockUomLabel`', '`string`', "`'Stock UOM'`", "Label for the read-only stock UOM field."]
-  - ['`stockQtyLabel`', '`string`', "`'Stock Qty'`", "Label for the read-only derived stock quantity field."]
-  - ['`conversionFactorLabel`', '`string`', "`'Conversion Factor'`", "Label for the read-only conversion factor field."]
   - ['`validation`', '`{ errorMessage: string }`', "`{ errorMessage: '' }`", 'Static error message shown below the field.']
   - ['`errors`', '`string[]`', '—', 'Dynamic validation errors (e.g. from a trigger). Takes precedence over `validation.errorMessage` whenever the list is non-empty.']
 ---
@@ -155,14 +153,14 @@ rows:
 ---
 headers: ['Mode', 'Rendering']
 rows:
-  - ['`edit`', 'Interactive quantity input with an embedded UOM dropdown, plus read-only Stock UOM/Stock Qty/Conversion Factor fields below.']
+  - ['`edit`', 'Interactive quantity input with an embedded UOM dropdown; when `uom` differs from `stockUom`, a helper line shows the stock conversion beneath the field.']
   - ['`read`', 'Same layout, all inputs disabled.']
-  - ['`display`', 'Static text: `qty uom` (with the stock-equivalent quantity/UOM in parentheses, if either differs; `—` if no quantity or UOM is set).']
+  - ['`display`', 'Static text: `qty uom` (with the stock-equivalent quantity/UOM in parentheses when they differ; `—` if no quantity or UOM is set). Table cells omit the UOM when it matches `stockUom`.']
 ---
 ::
 
 ## Accessibility
 
-The quantity input and its label are linked via `id`/`for` (backed by `uuid`). The UOM dropdown is a custom listbox button (`role="listbox"`/`role="option"`) exposing `aria-haspopup`, `aria-expanded`, and `aria-activedescendant`, and supports Arrow Up/Down to move the active option, Enter to select it, and Escape to close — the same interaction pattern as a native `<select>`. The read-only Stock UOM, Stock Qty, and Conversion Factor fields are rendered as disabled inputs but are not linked to their labels via `id`/`for`, unlike the primary quantity input. `required` sets the native `required` attribute on the quantity input only.
+The quantity input and its label are linked via `id`/`for` (backed by `uuid`). When a conversion helper is visible, it is included in `aria-describedby` on the quantity input (unless an error is shown, in which case the error id takes precedence). The UOM dropdown is a custom listbox button (`role="listbox"`/`role="option"`) exposing `aria-haspopup`, `aria-expanded`, and `aria-activedescendant`, and supports Arrow Up/Down to move the active option, Enter to select it, and Escape to close — the same interaction pattern as a native `<select>`. `required` sets the native `required` attribute on the quantity input only.
 
 Source: [`aform/src/components/form/AQuantityInput.vue`](https://github.com/agritheory/stonecrop/blob/development/aform/src/components/form/AQuantityInput.vue)

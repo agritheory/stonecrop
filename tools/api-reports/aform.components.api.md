@@ -56,9 +56,6 @@ props: {
   errors?: string[] \| undefined
   options?: CurrencyOptions \| undefined
   currencyLabel?: string \| undefined
-  baseCurrencyLabel?: string \| undefined
-  baseAmountLabel?: string \| undefined
-  exchangeRateLabel?: string \| undefined
   modelValue?: CurrencyValue \| null \| undefined
 }
 emits: {
@@ -224,12 +221,27 @@ props: {
   format?: string \| undefined
   isAsync?: boolean \| undefined
   filterFunction?: ((search: string) => string[] \| Promise<string[]>) \| undefined
+  linkFilterFunction?: string \| ((search: string) => AFormLinkValue[] \| Promise<AFormLinkValue[]>) \| undefined
+  formatter?: ((value: AFormLinkValue) => string) \| undefined
+  doctype?: string \| undefined
+  embedded?: boolean \| undefined
+  trigger?: "combobox" \| "button" \| undefined
+  listAnchor?: "field" \| "group" \| undefined
+  placeholder?: string \| undefined
+  ariaLabel?: string \| undefined
   modelValue?: string \| undefined
+  linkValue?: AFormLinkModelValue \| undefined
 }
 emits: {
   update:modelValue: [value: string \| undefined]
+  update:linkValue: [value: AFormLinkModelValue \| undefined]
 }
-slots: {}
+slots: {
+  option: { option: { [x: string]: any; id: string \| number; displayText?: string \| undefined; }; }
+}
+exposed: {
+  openCurrencyList: () => void
+}
 ```
 
 ### ADuration
@@ -338,6 +350,9 @@ emits: {
 slots: {
   option: { option: { [x: string]: any; id: string \| number; displayText?: string \| undefined; }; }
 }
+exposed: {
+  openCurrencyList: () => void
+}
 ```
 
 ### AFormLoading
@@ -389,9 +404,6 @@ props: {
   errors?: string[] \| undefined
   options?: QuantityOptions \| undefined
   uomLabel?: string \| undefined
-  stockUomLabel?: string \| undefined
-  stockQtyLabel?: string \| undefined
-  conversionFactorLabel?: string \| undefined
   modelValue?: QuantityValue \| null \| undefined
 }
 emits: {
