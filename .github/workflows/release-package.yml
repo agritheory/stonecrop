@@ -83,9 +83,9 @@ jobs:
 
       # Rewrites every package.json version and CHANGELOG.md and consumes the changeset files.
       # `commit: false` in .changeset/config.json means this leaves the result in the working
-      # tree, so the commit below is what records it.
+      # tree, so the commit below is what records it. With no changeset it changes nothing.
       - name: Bump Version for Packages
-        run: pnpm exec changeset version
+        run: bash tools/scripts/version-packages.sh
 
       # Before the push, not after. A publish that dies partway leaves development untouched,
       # so a re-run replays the same bump and pnpm skips whatever already landed. Pushing
@@ -163,7 +163,7 @@ jobs:
         run: bash tools/scripts/validate-trusted-publishing.sh
 
       - name: Bump Version for Packages
-        run: pnpm exec changeset version
+        run: bash tools/scripts/version-packages.sh
 
       # Asserts the "fixed" group in .changeset/config.json held. A convention check, not a
       # safety one: pnpm rewrites `workspace:*` to the version a sibling actually carries, so
@@ -194,11 +194,30 @@ jobs:
 
       # Rehearses the tagging publish-npm does, so it cannot regress unnoticed until a release
       # depends on it. The tags stay in the runner's tree; this job has no push.
+      # Expects exactly one tag per publishable package whose version the bump moved, read from
+      # HEAD since nothing here is committed. "At least one tag" failed every pull request that
+      # releases nothing, and passed a release that left a package untagged.
       - name: Tag Release (Dry Run)
         run: |
+          set -o pipefail
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git config user.name "github-actions[bot]"
+          packages=$(pnpm list -r --depth -1 --json | jq -r --arg root "$PWD/" '.[] | select(.private == false) | "\(.path | ltrimstr($root))\t\(.version)"')
+          if [ -z "$packages" ]; then
+            echo "::error::listed no publishable packages, so the tags were never checked"
+            exit 1
+          fi
+          bumped=0
+          while IFS=$'\t' read -r package_dir version; do
+            committed_version=$(git show "HEAD:${package_dir}/package.json" | jq -r .version)
+            if [ "$committed_version" != "$version" ]; then
+              bumped=$((bumped + 1))
+            fi
+          done <<< "$packages"
           pnpm exec changeset git-tag
-          count=$(git tag --list --points-at HEAD | wc -l)
-          echo "::notice::tagged ${count} packages"
-          [ "${count}" -gt 0 ]
+          tagged=$(git tag --list --points-at HEAD | wc -l)
+          if [ "$tagged" -ne "$bumped" ]; then
+            echo "::error::the bump moved ${bumped} packages but ${tagged} were tagged"
+            exit 1
+          fi
+          echo "::notice::tagged all ${tagged} packages the bump moved"
