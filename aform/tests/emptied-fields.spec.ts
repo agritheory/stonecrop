@@ -115,13 +115,10 @@ describe('fields holding something other than text', { tags: ['component'] }, ()
 			.filter(text => text !== '')
 	}
 
-	// Given no value, the quantity and currency fields start from their own model default, whose factor or rate of 1
-	// shows in a read-only box. Null skips that default, which is why the test above sees nothing.
-	const OWN_STARTING_VALUE: Record<string, string[]> = { AQuantityInput: ['1'], ACurrencyInput: ['1'] }
-
-	// A new record gives a field no value until someone fills it in.
+	// A new record gives a field no value until someone fills it in, and the field shows it as it shows null: empty,
+	// with no factor or rate of its own in a read-only box.
 	it.each(fieldsShowingTheValue)('%s shows no value as empty boxes', name => {
-		expect(shownValues(name, undefined)).toEqual(OWN_STARTING_VALUE[name] ?? [])
+		expect(shownValues(name, undefined)).toEqual([])
 	})
 
 	// The control: each field shows its sample value, so an empty box above is the field's answer, not a box the

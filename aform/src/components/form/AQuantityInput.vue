@@ -124,9 +124,8 @@ const {
 const errorText = computed(() => (errors?.length ? errors.join('; ') : (validation.errorMessage ?? '')))
 const { errorId, describedBy, invalid } = fieldErrorA11y(uuid, errorText)
 
-const modelValue = defineModel<QuantityValue | null>({
-	default: () => ({ qty: null, uom: '', stockQty: null, stockUom: '', conversionFactor: 1 }),
-})
+// No default: a field with no value shows empty, as null does, rather than a factor nobody entered.
+const modelValue = defineModel<QuantityValue | null>()
 
 const uoms = computed(() => options.uoms ?? [])
 
