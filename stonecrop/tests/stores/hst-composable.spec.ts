@@ -117,10 +117,8 @@ describe('HST Composable Functionality', { tags: ['unit'] }, () => {
 
 			const vm = wrapper.vm as any
 
-			// Check default values are set according to field types
-			expect(vm.formData.name).toBe('')
-			expect(vm.formData.active).toBe(false)
-			expect(vm.formData.count).toBe(0)
+			// No field has a value until someone enters one, so a save leaves each to its database default.
+			expect(vm.formData).toStrictEqual({})
 		})
 
 		it('should handle HST changes correctly', async () => {

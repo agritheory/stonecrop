@@ -92,15 +92,43 @@ describe('fields holding something other than text', { tags: ['component'] }, ()
 	// whatever the field holds, so they never show its value, null or not.
 	const BOXES_NOT_SHOWING_THE_VALUE = new Set(['ADuration'])
 
-	// `initializeRecord` starts these fields at null, so a new record hands them null.
-	it.each(
-		typedFields.filter(
-			name =>
-				!BOXES_NOT_SHOWING_THE_VALUE.has(name) &&
-				'modelValue' in (((aform as Record<string, unknown>)[name] as { props?: object }).props ?? {})
-		)
-	)('%s shows null as empty boxes', name => {
+	const fieldsShowingTheValue = typedFields.filter(
+		name =>
+			!BOXES_NOT_SHOWING_THE_VALUE.has(name) &&
+			'modelValue' in (((aform as Record<string, unknown>)[name] as { props?: object }).props ?? {})
+	)
+
+	// A field a user emptied holds null.
+	it.each(fieldsShowingTheValue)('%s shows null as empty boxes', name => {
 		expect(boxTexts(name, null).filter(text => text !== '')).toEqual([])
+	})
+
+	/** What every box of a field shows, read-only ones included, with a ticked checkbox as "checked". */
+	const shownValues = (name: string, modelValue: unknown) => {
+		const component = (aform as Record<string, unknown>)[name] as Component
+		const wrapper = mount(component, { props: { modelValue, mode: 'edit', label: name, uuid: name } })
+		return wrapper
+			.findAll('input')
+			.map(({ element }) => element as HTMLInputElement)
+			.filter(input => !['radio', 'button', 'file', 'hidden'].includes(input.type))
+			.map(input => (input.type === 'checkbox' ? (input.checked ? 'checked' : '') : input.value))
+			.filter(text => text !== '')
+	}
+
+	// Given no value, the quantity and currency fields start from their own model default, whose factor or rate of 1
+	// shows in a read-only box. Null skips that default, which is why the test above sees nothing.
+	const OWN_STARTING_VALUE: Record<string, string[]> = { AQuantityInput: ['1'], ACurrencyInput: ['1'] }
+
+	// A new record gives a field no value until someone fills it in.
+	it.each(fieldsShowingTheValue)('%s shows no value as empty boxes', name => {
+		expect(shownValues(name, undefined)).toEqual(OWN_STARTING_VALUE[name] ?? [])
+	})
+
+	// The control: each field shows its sample value, so an empty box above is the field's answer, not a box the
+	// reader cannot see. The calendar shows a value only by marking a day, which the reader does not look for.
+	it('reads a value from every field it checks for none, except the calendar', () => {
+		const unread = fieldsShowingTheValue.filter(name => shownValues(name, SAMPLE_VALUES[name]).length === 0)
+		expect(unread).toEqual(['ADatePicker'])
 	})
 
 	// The range's empty start and end days, then the start and end times.

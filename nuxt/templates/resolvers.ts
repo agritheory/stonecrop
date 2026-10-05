@@ -314,13 +314,9 @@ export const resolvers = {
 													return updated as Record<string, unknown>
 												}
 
+												// A new record carries its key only when a user typed one, a natural key.
 												const declared = patch[lookupField]
-												const identity =
-													typeof declared === 'string' && declared !== ''
-														? declared
-														: typeof declared === 'number'
-															? String(declared)
-															: nextId(d)
+												const identity = declared === undefined ? nextId(d) : String(declared)
 												const defaults =
 													d === 'project'
 														? { status: 'Active', description: '' }

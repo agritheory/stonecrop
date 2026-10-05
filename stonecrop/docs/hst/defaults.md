@@ -1,6 +1,8 @@
 # Document defaults
 
-A new record starts from each field's empty value (`initializeRecord`), then the doctype's **`defaults`**, then the source the app registered for the doctype. A later layer wins. `"now"` and `"uuidv7"` are resolved when the record is composed.
+A new record starts with no field values (`initializeRecord` gives it only its tables and embedded records), then the doctype's **`defaults`**, then the source the app registered for the doctype. A later layer wins. `"now"` and `"uuidv7"` are resolved when the record is composed.
+
+A field none of these sets has no value, so a save leaves it out and the database gives the column its default. Never give one an empty value instead: an insert stores `''`, 0, false or null over that default. The form shows such a field empty until the save, whose reply carries what the database stored.
 
 ## Where defaults live
 
@@ -13,7 +15,7 @@ A grouped section is layout, so its fields are the record's own keys and take th
 
 ## Embedded records and table rows
 
-An embedded record and each table row start from their own doctype's `defaults` (a linked table, whatever key the link is declared under), or from their columns' empty values (an inline table). The containing doctype's entries then apply over them. Child tables stay `[]` unless `defaults` includes rows. Defaults that would start a row of a doctype inside a new record of the same doctype stop there and are reported. A row that needs an id sets that field to `"uuidv7"`.
+An embedded record and each table row start from their own doctype's `defaults` (a linked table, whatever key the link is declared under), or with no values (an inline table). The containing doctype's entries then apply over them. Child tables stay `[]` unless `defaults` includes rows. Defaults that would start a row of a doctype inside a new record of the same doctype stop there and are reported. A row that needs an id sets that field to `"uuidv7"`.
 
 ## A new record is filled once
 

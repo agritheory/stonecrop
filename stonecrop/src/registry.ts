@@ -1,7 +1,7 @@
 import type { ResolvedField, ResolvedLink, ResolvedScalar, ResolvedTable, ResolvedFieldset } from '@stonecrop/aform'
 import { resolvedFieldsToColumns } from '@stonecrop/aform'
 import type { DoctypeField, LinkDeclaration, TableViewConfig, ValueField } from '@stonecrop/schema'
-import { componentCategory, componentLinkExpansion, resolveLinkRenderMode, toSlug } from '@stonecrop/schema'
+import { componentLinkExpansion, resolveLinkRenderMode, toSlug } from '@stonecrop/schema'
 import { Router } from 'vue-router'
 
 import { composeNewRecord } from './compose-new-record'
@@ -272,15 +272,18 @@ export default class Registry {
 	}
 
 	/**
-	 * Initialize a new record with default values based on a resolved schema.
+	 * The shape of a new record before any starting value: the containers its fields need, and no values.
 	 * Narrows by `kind` discriminator for precise branch selection.
 	 *
-	 * - `kind: 'table'` or `kind: 'link'` → `[]` or `{}`
+	 * - `kind: 'table'` → `[]`
+	 * - `kind: 'link'` → the embedded record, built the same way
 	 * - `kind: 'fieldset'` → its children, at the top level of the record: a fieldset is layout
-	 * - `kind: 'field'` → an empty value for the component's category; falls back to `null`
+	 * - `kind: 'field'` → no key at all
 	 *
-	 * @param schema - The resolved schema array to derive defaults from
-	 * @returns A plain object with default values for each field
+	 * Starting values are the doctype's `defaults` and the app's, which `composeNewRecord` lays over this.
+	 *
+	 * @param schema - The resolved schema array to derive the record from
+	 * @returns A plain object holding each table and embedded record, and no field values
 	 * @public
 	 */
 	initializeRecord(schema: ResolvedField[]): Record<string, any> {
@@ -293,26 +296,9 @@ export default class Registry {
 				record[field.fieldname] = this.initializeRecord(field.schema)
 			} else if (field.kind === 'fieldset') {
 				Object.assign(record, this.initializeRecord(field.schema))
-			} else {
-				// kind: 'field' — the empty value comes from the component's category. Starting values are the
-				// doctype's `defaults` and the registry's, applied over this by `composeNewRecord`.
-				const category = componentCategory(field.component)
-				if (category === 'text') {
-					record[field.fieldname] = ''
-				} else if (category === 'number') {
-					record[field.fieldname] = 0
-				} else if (category === 'boolean') {
-					record[field.fieldname] = false
-				} else if (category === 'code' && field.language) {
-					// A JSON editor starts from an empty object; any other language from empty source.
-					record[field.fieldname] = field.language === 'json' ? {} : ''
-				} else {
-					// date / datetime / duration / select / link / attach, plus two cases with no better answer
-					// than "no value": an unknown (custom) component, and a code field whose missing
-					// `language` doesn't say which kind of empty it wants.
-					record[field.fieldname] = null
-				}
 			}
+			// A plain field gets no value, so a save leaves its column to the database's default. Never seed an
+			// empty one: an insert stores `''`, 0, false or null over that default.
 		}
 
 		return record

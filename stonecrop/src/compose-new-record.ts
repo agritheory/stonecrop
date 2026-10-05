@@ -1,5 +1,3 @@
-import type { ResolvedField } from '@stonecrop/aform'
-
 import { resolveDefaultToken, resolveTokensInRecord } from './default-tokens'
 import type Doctype from './doctype'
 import { columnFields, recordFields, type RecordField } from './record-fields'
@@ -155,9 +153,8 @@ async function applyDoctypeDefaults(
 }
 
 /**
- * One row of a table's starting value: the row's own empty values and its doctype's `defaults`, then the row's
- * entries. A linked table's rows are records of its target doctype; an inline table's rows have one value per
- * column.
+ * One row of a table's starting value: its doctype's `defaults`, then the row's entries. A linked table's rows are
+ * records of its target doctype; an inline table's rows have no doctype, so they hold only their entries.
  */
 async function composeRow(
 	row: unknown,
@@ -168,17 +165,8 @@ async function composeRow(
 ): Promise<Record<string, unknown>> {
 	const { registry, now } = run
 	const fields = table.holds === 'rows' ? recordFields(registry, table.target) : columnFields(table.columns)
-	const floor =
-		table.holds === 'rows'
-			? registry.initializeRecord(registry.resolveSchema(table.target))
-			: registry.initializeRecord(
-					table.columns.map((column): ResolvedField => ({
-						kind: 'field',
-						fieldname: column.fieldname,
-						component: column.component ?? 'ATextInput',
-						label: column.label,
-					}))
-				)
+	const floor: Record<string, unknown> =
+		table.holds === 'rows' ? registry.initializeRecord(registry.resolveSchema(table.target)) : {}
 	if (table.holds === 'rows') await applyDoctypeDefaults(floor, table.target, run, `${path} defaults`, within)
 	const rowRecord = resolveTokensInRecord(floor, fields, registry, now)
 	if (!isDefaultsDocument(row)) {
@@ -209,9 +197,9 @@ async function applyLayer(
 }
 
 /**
- * Build a new record, once, from every starting value: the schema's empty values, the doctype's `defaults`, then
- * the source the app registered for it. Layers apply in that order, so the registered source wins however long
- * the doctype's took.
+ * Build a new record, once, from every starting value: the doctype's `defaults`, then the source the app registered
+ * for it, over the record's tables and embedded records. Layers apply in that order, so the registered source wins
+ * however long the doctype's took. A field neither sets has no value, so a save leaves it to the database's default.
  *
  * Nothing is returned until every value is in, so nothing is written to the record after a user can see it.
  * A value that throws, rejects, or has not arrived within `timeoutMs` (default {@link DEFAULTS_TIMEOUT_MS}) is

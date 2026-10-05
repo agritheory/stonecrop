@@ -343,14 +343,9 @@ export class MockGraphQLExecutor implements GraphQLExecutor {
 		// Handle User mutations
 		if (mutationName === 'createUser') {
 			const input = variables?.input as Partial<User>
-			// Identity is assigned AFTER the spread, and an empty submitted value does not count as
-			// one. A draft submits every declared field — `id` included, seeded to '' by
-			// `initializeRecord` — so spreading input last overwrote the id this mock had just
-			// assigned, and the created record came back with `id: ''`. Nothing errored: the client
-			// correctly refuses to file or navigate to a record that states no identity, so a Save
-			// looked like it did nothing at all. Same rule as templates/resolvers.ts, deliberately.
-			const submitted = typeof input.id === 'string' && input.id !== '' ? input.id : undefined
-			const id = submitted ?? String(users.size + 1)
+			// A new record carries its id only when a user typed one; otherwise this mints it, as a column default
+			// would. Same rule as templates/resolvers.ts.
+			const id = input.id ?? String(users.size + 1)
 			const user: User = {
 				email: input.email || '',
 				name: input.name || '',
@@ -385,10 +380,8 @@ export class MockGraphQLExecutor implements GraphQLExecutor {
 		// Handle Order mutations
 		if (mutationName === 'createOrder') {
 			const input = variables?.input as Partial<Order>
-			// Identity after the spread — see createUser above for why an empty submitted id must
-			// not win. `orderNumber` is derived, not declared identity, so it stays overridable.
-			const submitted = typeof input.id === 'string' && input.id !== '' ? input.id : undefined
-			const id = submitted ?? String(orders.size + 1)
+			// As createUser above. `orderNumber` is derived, not declared identity, so it stays overridable.
+			const id = input.id ?? String(orders.size + 1)
 			const orderNumber = `ORD-2025-${String(orders.size + 1).padStart(4, '0')}`
 			const order: Order = {
 				orderNumber,

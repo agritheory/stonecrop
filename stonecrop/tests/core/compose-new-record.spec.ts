@@ -267,8 +267,7 @@ describe('composeNewRecord waits for every starting value', { tags: ['unit'] }, 
 		})
 
 		const { record } = await registry.composeNewRecord(doctype)
-		expect(record.warehouse).toBe('Main')
-		expect(record.customer).toBe('')
+		expect(record).toStrictEqual({ warehouse: 'Main' })
 		expect(String(warn.mock.calls.flat().join(' '))).toContain('customer lookup failed')
 	})
 
@@ -291,7 +290,7 @@ describe('composeNewRecord waits for every starting value', { tags: ['unit'] }, 
 		registry.registerDefaults('order', (() => 'Open') as any)
 
 		const { record } = await registry.composeNewRecord(doctype)
-		expect(record.status).toBe('')
+		expect(record).toStrictEqual({})
 		expect(String(warn.mock.calls.flat().join(' '))).toContain('registered defaults')
 	})
 
@@ -338,8 +337,7 @@ describe('composeNewRecord waits for every starting value', { tags: ['unit'] }, 
 		})
 
 		const { record } = await registry.composeNewRecord(doctype, { timeoutMs: 20 })
-		expect(record.customer).toBe('')
-		expect(record.warehouse).toBe('Main')
+		expect(record).toStrictEqual({ warehouse: 'Main' })
 		expect(String(warn.mock.calls.flat().join(' '))).toContain('customer')
 	})
 
@@ -445,7 +443,7 @@ describe('composeNewRecord fills the fields inside a grouped section', { tags: [
 		registry.addDoctype(doctype)
 
 		const { record } = await registry.composeNewRecord(doctype)
-		expect(record).toEqual({ day: null })
+		expect(record).toStrictEqual({})
 		expect(String(warn.mock.calls.flat().join(' '))).toContain('details: no field by that name')
 	})
 
@@ -543,7 +541,7 @@ describe('composeNewRecord fills the fields inside a grouped section', { tags: [
 		registry.registerDefaults('visit', { dya: lookup })
 
 		const { record } = await registry.composeNewRecord(doctype)
-		expect(record).toEqual({ day: null })
+		expect(record).toStrictEqual({})
 		expect(lookup).not.toHaveBeenCalled()
 		expect(String(warn.mock.calls.flat().join(' '))).toContain('dya: no field by that name')
 	})
@@ -593,7 +591,7 @@ describe('composeNewRecord fills the fields inside a grouped section', { tags: [
 		registry.addDoctype(category)
 
 		const { record } = await registry.composeNewRecord(category)
-		expect(record).toEqual({ name: 'New', children: [{ name: '', children: [] }] })
+		expect(record).toStrictEqual({ name: 'New', children: [{ children: [] }] })
 		expect(String(warn.mock.calls.flat().join(' '))).toContain('would never end')
 	})
 })

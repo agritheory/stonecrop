@@ -894,16 +894,12 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 	})
 
 	describe('Registry.initializeRecord()', () => {
-		it('initializes default values based on the component category', () => {
+		it('gives plain fields no value and tables an empty list', () => {
 			const schema = [
 				{ kind: 'field' as const, fieldname: 'name', component: 'ATextInput' },
 				{ kind: 'field' as const, fieldname: 'bio', component: 'ATextboxInput' },
 				{ kind: 'field' as const, fieldname: 'active', component: 'ACheckbox' },
 				{ kind: 'field' as const, fieldname: 'count', component: 'ANumericInput' },
-				{ kind: 'field' as const, fieldname: 'price', component: 'ANumericInput' },
-				{ kind: 'field' as const, fieldname: 'amount', component: 'ANumericInput' },
-				{ kind: 'field' as const, fieldname: 'cost', component: 'ANumericInput' },
-				{ kind: 'field' as const, fieldname: 'qty', component: 'ANumericInput' },
 				{
 					kind: 'table' as const,
 					fieldname: 'items',
@@ -914,57 +910,22 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 				{ kind: 'field' as const, fieldname: 'meta', component: 'ACodeEditor', language: 'json' },
 				{ kind: 'field' as const, fieldname: 'birthday', component: 'ADatePicker' },
 			]
-			const record = registry.initializeRecord(schema)
 
-			expect(record.name).toBe('')
-			expect(record.bio).toBe('')
-			expect(record.active).toBe(false)
-			expect(record.count).toBe(0)
-			expect(record.price).toBe(0)
-			expect(record.amount).toBe(0)
-			expect(record.cost).toBe(0)
-			expect(record.qty).toBe(0)
-			expect(record.items).toEqual([])
-			expect(record.meta).toEqual({})
-			expect(record.birthday).toBe(null)
-		})
-
-		it('distinguishes a JSON editor from a code editor by language alone', () => {
-			// Both render with ACodeEditor, so `language` is the only thing that says which empty
-			// value is wanted; with none, there is nothing to derive it from.
-			const schema = [
-				{ kind: 'field' as const, fieldname: 'config', component: 'ACodeEditor', language: 'json' },
-				{ kind: 'field' as const, fieldname: 'code', component: 'ACodeEditor', language: 'typescript' },
-				{ kind: 'field' as const, fieldname: 'unknown', component: 'ACodeEditor' },
-			]
-			const record = registry.initializeRecord(schema)
-
-			expect(record.config).toEqual({})
-			expect(record.code).toBe('')
-			expect(record.unknown).toBe(null)
+			expect(registry.initializeRecord(schema)).toStrictEqual({ items: [] })
 		})
 
 		it('recursively initializes nested Doctype fields with resolved schemas', () => {
 			const resolved = registry.resolveSchema(customerDoctype)
 			const record = registry.initializeRecord(resolved)
 
-			expect(record.customer_name).toBe('')
-			expect(record.email).toBe('')
-			expect(record.address).toEqual({
-				street: '',
-				city: '',
-				state: '',
-				zip_code: '',
-			})
+			expect(record).toStrictEqual({ address: {} })
 		})
 
-		it('initializes an unresolved link entry to null', () => {
-			// A link whose target was never registered stays kind: 'field'. AForm is a container, not
-			// a value component, so it has no category and thus no opinion about what empty means.
+		it('gives an unresolved link entry no value', () => {
+			// A link whose target was never registered stays kind: 'field', a plain field like any other.
 			const schema = [{ kind: 'field' as const, fieldname: 'address', component: 'AForm' }]
-			const record = registry.initializeRecord(schema as any)
 
-			expect(record.address).toBe(null)
+			expect(registry.initializeRecord(schema as any)).toStrictEqual({})
 		})
 
 		it('initializes atLeastOne link entry to empty array', () => {
@@ -994,7 +955,7 @@ describe('Nested Doctype Support', { tags: ['unit'] }, () => {
 			)
 			const record = registry.initializeRecord(resolved)
 
-			expect(record.address).toEqual({ street: '', city: '', state: '', zip_code: '' })
+			expect(record).toStrictEqual({ address: {} })
 		})
 	})
 

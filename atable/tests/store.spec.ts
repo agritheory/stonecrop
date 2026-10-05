@@ -1187,13 +1187,26 @@ describe('table store', { tags: ['component'] }, () => {
 			expect(testStore.rows[1].name).toBe('Middle')
 		})
 
-		it('should add a row with default empty values when no data provided', () => {
+		// A row nobody filled in holds no values, so a save leaves its columns to their database defaults.
+		it('adds a row holding no values when no data is provided', () => {
 			const testStore = createTableStore({ columns: mockColumns, rows: [...mockRows] })
 			const newIndex = testStore.addRow()
 
-			expect(testStore.rows[newIndex].id).toBe('')
-			expect(testStore.rows[newIndex].name).toBe('')
-			expect(testStore.rows[newIndex].status).toBe('')
+			expect(testStore.rows[newIndex]).toStrictEqual({})
+		})
+
+		it('renders the date cells of a new row empty', () => {
+			const testStore = createTableStore({
+				columns: [
+					{ name: 'due', label: 'Due', component: 'ADate' },
+					{ name: 'stamped', label: 'Stamped', component: 'ADateTime' },
+				],
+				rows: [],
+			})
+			const newIndex = testStore.addRow()
+
+			const rendered = [testStore.getCellDisplayValue(0, newIndex), testStore.getCellDisplayValue(1, newIndex)]
+			expect(rendered.map(value => value ?? '')).toEqual(['', ''])
 		})
 
 		it('should delete a row and return the deleted row', () => {
