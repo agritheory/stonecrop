@@ -321,11 +321,6 @@ const assignStickyCellWidths = () => {
 window.addEventListener('keydown', (event: KeyboardEvent) => {
 	if (event.key === 'Escape') {
 		if (store.modal.visible) {
-			const tuplePanel = document.querySelector('.atable-tuple-picker-modal')
-			if (tuplePanel instanceof HTMLElement) {
-				tuplePanel.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
-				return
-			}
 			store.modal.visible = false
 
 			const $parent = store.modal.parent

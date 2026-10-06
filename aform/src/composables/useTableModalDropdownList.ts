@@ -31,6 +31,14 @@ export function useTableModalDropdownList(options: TableModalDropdownListOptions
 	})
 
 	const onKeydown = (event: KeyboardEvent) => {
+		// Before the check for options: a picker with nothing to pick, or still loading, closes on Escape too.
+		if (event.key === 'Escape') {
+			event.preventDefault()
+			event.stopPropagation()
+			options.onClose()
+			return
+		}
+
 		const count = options.optionCount()
 		if (!count) return
 
@@ -62,12 +70,6 @@ export function useTableModalDropdownList(options: TableModalDropdownListOptions
 			const index = activeIndex.value ?? 0
 			if (index >= 0 && index < count) options.selectAt(index)
 			return
-		}
-
-		if (event.key === 'Escape') {
-			event.preventDefault()
-			event.stopPropagation()
-			options.onClose()
 		}
 	}
 
