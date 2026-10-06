@@ -399,7 +399,14 @@ const closeDropdown = (result?: string) => {
 			: ''
 		return
 	}
-	if (!choiceList.value.includes(result || search.value || '')) {
+	const typed = result || search.value || ''
+	if (choiceList.value.includes(typed)) {
+		// A choice typed out in full is picked, as if from the list. A pick from the list has already been sent.
+		if (typed !== committedValue.value) {
+			modelValue.value = typed
+			committedValue.value = typed
+		}
+	} else {
 		search.value = committedValue.value
 		modelValue.value = committedValue.value
 	}
@@ -413,11 +420,10 @@ const toggleButtonDropdown = () => {
 const onComboboxInput = () => {
 	if (linkPicker.value) openLinkDropdown(embedded ? embeddedLinkFilterQuery() : search.value)
 	else {
+		// Typing searches the choices; the record changes only when one is picked, or when the box is cleared.
 		if (search.value === '') {
 			modelValue.value = ''
 			committedValue.value = ''
-		} else {
-			modelValue.value = search.value ?? ''
 		}
 		filter()
 	}

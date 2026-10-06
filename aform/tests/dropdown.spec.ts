@@ -195,8 +195,8 @@ describe('dropdown input component', { tags: ['component'] }, () => {
 		await autocomplete.trigger('click')
 		await wrapper.vm.$nextTick()
 
-		const updateEvents = wrapper.emitted('update:modelValue')
-		expect(updateEvents).toBeTruthy()
+		// Text that is not a choice is a search, never a value
+		expect(wrapper.emitted('update:modelValue')).toBeUndefined()
 	})
 
 	it('outside-click reverts to last committed value instead of clearing', async () => {
@@ -218,10 +218,9 @@ describe('dropdown input component', { tags: ['component'] }, () => {
 		await input.trigger('keydown.esc')
 		await wrapper.vm.$nextTick()
 
-		// should revert to the last committed value ('Orange'), not clear to ''
-		const updateEvents = wrapper.emitted('update:modelValue')
-		const lastEvent = updateEvents![updateEvents!.length - 1]
-		expect(lastEvent).toEqual(['Orange'])
+		// should revert to the last committed value ('Orange'), not clear to '', and never send the text typed
+		expect(wrapper.emitted('update:modelValue')).toBeUndefined()
+		expect(input.element.value).toBe('Orange')
 	})
 
 	it('should handle selectPrevResult when at first item', async () => {
