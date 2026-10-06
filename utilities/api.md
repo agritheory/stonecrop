@@ -28,7 +28,7 @@ Characters allowed while typing in a masked currency amount field.
 **Signature:**
 
 ```typescript
-export declare function currencyAmountEntryPattern(currencyId: string | undefined): RegExp;
+export declare function currencyAmountEntryPattern(currencyId: string | undefined, locale?: string): RegExp;
 ```
 
 **Parameters:**
@@ -36,6 +36,7 @@ export declare function currencyAmountEntryPattern(currencyId: string | undefine
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | currencyId | `string \| undefined` |  |
+| locale | `string` | The browser's own when omitted |
 
 ### currencyInputFractionDigits
 
@@ -45,22 +46,6 @@ Fraction digits for a currency in amount inputs (e.g. JPY → 0).
 
 ```typescript
 export declare function currencyInputFractionDigits(currencyId: string | undefined): number;
-```
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| currencyId | `string \| undefined` |  |
-
-### currencyInputLocale
-
-Locale for formatting/parsing the numeric portion of a currency amount in inputs.
-
-**Signature:**
-
-```typescript
-export declare function currencyInputLocale(currencyId: string | undefined): string;
 ```
 
 **Parameters:**
@@ -88,12 +73,12 @@ export declare function formatCurrencyAmount(amount: number | null | undefined, 
 
 ### formatCurrencyAmountInput
 
-Format a numeric amount for display in a currency amount field (no currency symbol).
+Format a numeric amount for display in a currency amount field (no currency symbol). The currency sets the decimals; the separators are the locale's, as in the table cell.
 
 **Signature:**
 
 ```typescript
-export declare function formatCurrencyAmountInput(amount: number | null | undefined, currencyId: string | undefined): string;
+export declare function formatCurrencyAmountInput(amount: number | null | undefined, currencyId: string | undefined, locale?: string): string;
 ```
 
 **Parameters:**
@@ -102,6 +87,7 @@ export declare function formatCurrencyAmountInput(amount: number | null | undefi
 |-----------|------|-------------|
 | amount | `number \| null \| undefined` |  |
 | currencyId | `string \| undefined` |  |
+| locale | `string` | The browser's own when omitted |
 
 ### formatCurrencyCell
 
@@ -203,12 +189,12 @@ export declare function isSemverPrefix(text: string): boolean;
 
 ### parseCurrencyAmountInput
 
-Parse user-entered text in a currency amount field back to a number.
+Parse user-entered text in a currency amount field back to a number, read with the separators the field writes it with.
 
 **Signature:**
 
 ```typescript
-export declare function parseCurrencyAmountInput(text: string, currencyId: string | undefined): number | null;
+export declare function parseCurrencyAmountInput(text: string, locale?: string): number | null;
 ```
 
 **Parameters:**
@@ -216,7 +202,7 @@ export declare function parseCurrencyAmountInput(text: string, currencyId: strin
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | text | `string` |  |
-| currencyId | `string \| undefined` |  |
+| locale | `string` | The browser's own when omitted |
 
 ### useKeyboardNav
 

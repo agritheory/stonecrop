@@ -126,7 +126,7 @@ watch(
 
 const parseDraftAmount = (): number | null => {
 	if (category === 'currency' && amountMaskEnabled.value) {
-		return parseCurrencyAmountInput(draftText.value, selectedCurrencyId.value)
+		return parseCurrencyAmountInput(draftText.value)
 	}
 	const text = draftText.value.trim()
 	if (text === '' || text === '-') return null
@@ -154,7 +154,7 @@ const commitNumber = () => {
 
 const onInput = () => {
 	if (category === 'currency' && amountMaskEnabled.value) {
-		const parsed = parseCurrencyAmountInput(draftText.value, selectedCurrencyId.value)
+		const parsed = parseCurrencyAmountInput(draftText.value)
 		if (draftText.value.trim() === '' || draftText.value.trim() === '-' || parsed !== null) {
 			commitNumber()
 		}
@@ -215,13 +215,20 @@ const refuseUnlessQuantity = (event: Event, inserted: string) => {
 	if (!quantityEntryPattern.test(textWith(event.target as HTMLInputElement, inserted))) event.preventDefault()
 }
 
+// What the box may hold, as the form's field refuses anything else.
+const entryPattern = computed(() => {
+	if (category === 'quantity') return quantityEntryPattern
+	return amountMaskEnabled.value ? currencyAmountEntryPattern(selectedCurrencyId.value) : undefined
+})
+
 // A number copied from a spreadsheet cell comes with a line break or tab: what is pasted is the number without them.
 const onPaste = (event: ClipboardEvent) => {
-	if (category !== 'quantity') return
+	const pattern = entryPattern.value
+	if (!pattern) return
 	event.preventDefault()
 	const input = event.target as HTMLInputElement
 	const pasted = (event.clipboardData?.getData('text') ?? '').trim()
-	if (!quantityEntryPattern.test(textWith(input, pasted))) return
+	if (!pattern.test(textWith(input, pasted))) return
 	input.setRangeText(pasted, input.selectionStart ?? 0, input.selectionEnd ?? 0, 'end')
 	input.dispatchEvent(new Event('input', { bubbles: true }))
 }

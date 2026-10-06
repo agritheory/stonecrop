@@ -13,13 +13,10 @@ import { Temporal } from 'temporal-polyfill';
 export function compareSemver(a: string, b: string): number;
 
 // @public
-export function currencyAmountEntryPattern(currencyId: string | undefined): RegExp;
+export function currencyAmountEntryPattern(currencyId: string | undefined, locale?: string): RegExp;
 
 // @public
 export function currencyInputFractionDigits(currencyId: string | undefined): number;
-
-// @public
-export function currencyInputLocale(currencyId: string | undefined): string;
 
 // @public
 export const defaultKeypressHandlers: KeypressHandlers;
@@ -30,7 +27,7 @@ export const defaultKeypressHandlers: KeypressHandlers;
 export function formatCurrencyAmount(amount: number | null | undefined, currency: CurrencyLike | undefined): string;
 
 // @public
-export function formatCurrencyAmountInput(amount: number | null | undefined, currencyId: string | undefined): string;
+export function formatCurrencyAmountInput(amount: number | null | undefined, currencyId: string | undefined, locale?: string): string;
 
 // @public
 export function formatCurrencyCell(value: unknown): string;
@@ -63,7 +60,7 @@ export type KeypressHandlers = {
 };
 
 // @public
-export function parseCurrencyAmountInput(text: string, currencyId: string | undefined): number | null;
+export function parseCurrencyAmountInput(text: string, locale?: string): number | null;
 
 // @public
 export function useKeyboardNav(options: KeyboardNavigationOptions[]): void;

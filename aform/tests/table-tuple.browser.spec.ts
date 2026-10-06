@@ -65,15 +65,16 @@ const mountQuantityTable = () =>
 	)
 
 const usd = { id: 'USD', displayText: 'US Dollar', symbol: '$' }
+const eur = { id: 'EUR', displayText: 'Euro', symbol: '€' }
 
-// Fifty dollars.
-const mountPriceTable = () =>
+// Fifty dollars, or fifty of another currency.
+const mountPriceTable = (currency = usd) =>
 	mountTable<PriceRow>(
-		{ name: 'price', label: 'Price', component: 'ACurrencyInput', options: { baseCurrency: usd } },
+		{ name: 'price', label: 'Price', component: 'ACurrencyInput', options: { baseCurrency: currency } },
 		{
 			product: 'Widget',
 			note: 'Fragile',
-			price: { amount: 50, currency: usd, baseAmount: 50, baseCurrency: usd, exchangeRate: 1 },
+			price: { amount: 50, currency, baseAmount: 50, baseCurrency: currency, exchangeRate: 1 },
 		}
 	)
 
@@ -184,5 +185,29 @@ describe('a price cell in a table', { tags: ['browser'] }, () => {
 		await userEvent.click(outside())
 
 		expect(rows.value[0].price.amount).toBe(12.75)
+	})
+
+	// The cell writes a price the browser's way whatever its currency, so the box reads it the same way.
+	it('keeps a euro price typed the way the browser writes numbers', async () => {
+		const { rows } = mountPriceTable(eur)
+		await startEditingCell()
+		await userEvent.keyboard(new Intl.NumberFormat(undefined, { minimumFractionDigits: 2 }).format(1234.56))
+		await userEvent.click(outside())
+
+		expect(rows.value[0].price.amount).toBe(1234.56)
+	})
+
+	// The form's price box refuses a paste that is not an amount; the table's must not save it as 0.
+	it('refuses a pasted price that is not an amount', async () => {
+		const { rows } = mountPriceTable()
+		const source = outside() as HTMLInputElement
+		source.value = 'abc'
+		source.select()
+		await userEvent.copy()
+		await startEditingCell()
+		await userEvent.paste()
+		await userEvent.click(outside())
+
+		expect(rows.value[0].price.amount).toBe(50)
 	})
 })

@@ -256,7 +256,7 @@ const onAmountFocus = (event: FocusEvent) => {
 
 const onAmountBlur = () => {
 	amountFocused.value = false
-	const parsed = parseCurrencyAmountInput(amountText.value, selectedCurrencyId.value)
+	const parsed = parseCurrencyAmountInput(amountText.value)
 	modelValue.value = patchCurrencyAmount(modelValue.value, parsed, options, resolvedBaseCurrency.value)
 	syncAmountTextFromModel()
 }
@@ -264,7 +264,7 @@ const onAmountBlur = () => {
 const onAmountInput = (event: Event) => {
 	const input = event.target as HTMLInputElement
 	amountText.value = input.value
-	const parsed = parseCurrencyAmountInput(amountText.value, selectedCurrencyId.value)
+	const parsed = parseCurrencyAmountInput(amountText.value)
 	if (amountText.value.trim() === '' || amountText.value.trim() === '-' || parsed !== null) {
 		modelValue.value = patchCurrencyAmount(modelValue.value, parsed, options, resolvedBaseCurrency.value)
 	}

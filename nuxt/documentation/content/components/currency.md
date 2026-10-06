@@ -17,7 +17,7 @@ import { ACurrencyInput } from '@stonecrop/aform'
 
 `v-model` binds to a [`CurrencyValue`](#currencyvalue) object. The base-currency helper below the input updates automatically when the currency or amount changes and the currency differs from the base.
 
-By default the amount field is **masked** for the selected currency: US/NZD amounts use comma grouping and a `.` decimal (e.g. `10,050.45`), EUR uses European separators (`10.050,45`), and JPY shows whole yen without grouping or decimals (`10050`). Set `options.amountMask` to `false` for an unformatted `type="number"` input.
+By default the amount field is **masked**: it writes and reads amounts with the browser's separators, as a table cell shows them (`10,050.45` in English, `10.050,45` in German), whatever the currency. The currency sets the decimals: JPY shows whole yen without grouping or decimals (`10050`). Set `options.amountMask` to `false` for an unformatted `type="number"` input.
 
 ::demo-panel
 :::client-only

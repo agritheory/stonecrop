@@ -15,7 +15,6 @@ function install(_app: App /* options */) {}
 export {
 	currencyAmountEntryPattern,
 	currencyInputFractionDigits,
-	currencyInputLocale,
 	formatCurrencyAmountInput,
 	parseCurrencyAmountInput,
 } from './currencyAmountFormat'

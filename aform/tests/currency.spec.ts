@@ -74,7 +74,8 @@ describe('ACurrencyInput', { tags: ['component'] }, () => {
 			expect(wrapper.find<HTMLInputElement>('.acurrency__currency input[type="text"]').exists()).toBe(true)
 		})
 
-		it('formats the amount with a currency-sensitive mask by default', () => {
+		// The browser's separators, as in a table cell, and the currency's decimals.
+		it('formats the amount the way the browser writes numbers by default', () => {
 			const wrapper = mount(ACurrencyInput, {
 				props: {
 					options,
@@ -87,7 +88,9 @@ describe('ACurrencyInput', { tags: ['component'] }, () => {
 					},
 				},
 			})
-			expect(amountInput(wrapper).element.value).toBe('10.050,45')
+			expect(amountInput(wrapper).element.value).toBe(
+				new Intl.NumberFormat(undefined, { minimumFractionDigits: 2 }).format(10050.45)
+			)
 		})
 
 		it('uses a plain number input when amountMask is false', () => {
