@@ -52,6 +52,10 @@ const copy = async (text: string) => {
 	await userEvent.copy()
 }
 
+// 1234.56 with the separators the other way round from the browser's. In English that is "1.234,56", as a European
+// invoice writes it.
+const writtenTheOtherWay = () => (new Intl.NumberFormat().format(1.5) === '1.5' ? '1.234,56' : '1,234.56')
+
 const currencyChoices = () =>
 	[...document.querySelectorAll('.acurrency__currency [role="option"]')].map(option => option.textContent?.trim())
 
@@ -102,6 +106,17 @@ describe('typing a price', { tags: ['browser'] }, () => {
 	it('refuses a pasted price that is not an amount', async () => {
 		const { model } = mountPrice(50)
 		await copy('abc')
+		await userEvent.click(amountBox())
+		await userEvent.paste()
+		await userEvent.click(outside())
+
+		expect(model.value?.amount).toBe(50)
+	})
+
+	// Read with the browser's separators it would be 1.23456.
+	it('refuses a pasted amount written with the separators the other way round', async () => {
+		const { model } = mountPrice(50)
+		await copy(writtenTheOtherWay())
 		await userEvent.click(amountBox())
 		await userEvent.paste()
 		await userEvent.click(outside())

@@ -98,6 +98,10 @@ const startEditingCell = async () => {
 	return document.activeElement as HTMLInputElement
 }
 
+// 1234.56 with the separators the other way round from the browser's. In English that is "1.234,56", as a European
+// invoice writes it.
+const writtenTheOtherWay = () => (new Intl.NumberFormat().format(1.5) === '1.5' ? '1.234,56' : '1,234.56')
+
 const unitList = () => document.querySelector('.atable-tuple-picker-modal')
 const isEditing = () => tupleCell().classList.contains('atable-cell--tuple-active')
 
@@ -245,6 +249,17 @@ describe('a price cell in a table', { tags: ['browser'] }, () => {
 	it('refuses a pasted price that is not an amount', async () => {
 		const { rows } = mountPriceTable()
 		await copy('abc')
+		await startEditingCell()
+		await userEvent.paste()
+		await userEvent.click(outside())
+
+		expect(rows.value[0].price.amount).toBe(50)
+	})
+
+	// Read with the browser's separators it would be 1.23456.
+	it('refuses a pasted price written with the separators the other way round', async () => {
+		const { rows } = mountPriceTable()
+		await copy(writtenTheOtherWay())
 		await startEditingCell()
 		await userEvent.paste()
 		await userEvent.click(outside())
