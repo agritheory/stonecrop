@@ -227,6 +227,30 @@ export function useStonecrop(options?: {
 		}
 	}
 
+	// A read that fails or finds nothing is reported through `error` and leaves the form empty. Never
+	// fill it with an empty record instead: that draws the real one as blank and editable.
+	const loadExistingRecord = async (doctype: Doctype, recordId: string): Promise<void> => {
+		if (!stonecrop.value) return
+		const existingRecord = stonecrop.value.getRecordById(doctype, recordId)
+		if (existingRecord) {
+			formData.value = existingRecord.get('') || {}
+			return
+		}
+		// Without a client the host fills the store itself, as Desktop's loaders assume.
+		if (!stonecrop.value.getClient()) return
+
+		isLoading.value = true
+		error.value = null
+		try {
+			await stonecrop.value.getRecord(doctype, recordId)
+			formData.value = stonecrop.value.getRecordById(doctype, recordId)?.get('') || {}
+		} catch (e) {
+			error.value = e instanceof Error ? e : new Error(String(e))
+		} finally {
+			isLoading.value = false
+		}
+	}
+
 	// onMounted handles only work that is genuinely async: lazy-loading a doctype by slug and
 	// fetching an existing record from the server. Both require the caller to name a doctype.
 	//
@@ -283,20 +307,7 @@ export function useStonecrop(options?: {
 				resolvedSchema.value = registry.resolveSchema(doctype)
 
 				if (recordId && !isDraftRecordId(recordId)) {
-					const existingRecord = stonecrop.value.getRecordById(doctype, recordId)
-					if (existingRecord) {
-						formData.value = existingRecord.get('') || {}
-					} else {
-						try {
-							await stonecrop.value.getRecord(doctype, recordId)
-							const loadedRecord = stonecrop.value.getRecordById(doctype, recordId)
-							if (loadedRecord) {
-								formData.value = loadedRecord.get('') || {}
-							}
-						} catch {
-							formData.value = registry.initializeRecord(resolvedSchema.value)
-						}
-					}
+					await loadExistingRecord(doctype, recordId)
 				} else {
 					isLoading.value = true
 					try {
@@ -313,21 +324,7 @@ export function useStonecrop(options?: {
 				// Doctype instance — sync init was done during setup().
 				// Only handle the async path: fetching an existing record from the server.
 				if (recordId && !isDraftRecordId(recordId)) {
-					const doctype = options.doctype
-					const existingRecord = stonecrop.value.getRecordById(doctype, recordId)
-					if (existingRecord) {
-						formData.value = existingRecord.get('') || {}
-					} else {
-						try {
-							await stonecrop.value.getRecord(doctype, recordId)
-							const loadedRecord = stonecrop.value.getRecordById(doctype, recordId)
-							if (loadedRecord) {
-								formData.value = loadedRecord.get('') || {}
-							}
-						} catch {
-							formData.value = registry.initializeRecord(resolvedSchema.value)
-						}
-					}
+					await loadExistingRecord(options.doctype, recordId)
 				}
 			}
 		}

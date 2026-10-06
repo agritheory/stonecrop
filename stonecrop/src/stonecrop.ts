@@ -392,9 +392,13 @@ export class Stonecrop {
 	 *
 	 * @param doctype - The doctype slug string or Doctype object
 	 * @param recordId - The record ID
+	 * A record the server does not find is an error, not an empty answer: a caller drawing what is in
+	 * HST would otherwise show it as a blank record.
+	 *
 	 * @param options - Query options (includeNested, maxDepth), forwarded to the client
 	 * @throws Error if no data client has been configured
 	 * @throws Error if a slug string is given and no matching doctype is found in the registry
+	 * @throws Error with code `"RECORD_NOT_FOUND"` if the server returns no record
 	 * @public
 	 */
 	async getRecord(doctype: string | Doctype, recordId: string, options?: GetRecordOptions): Promise<void> {
@@ -422,9 +426,10 @@ export class Stonecrop {
 
 		const result = await this._client.getRecord(resolved, recordId, options)
 
-		if (result?.record) {
-			this.addRecord(resolved, recordId, result.record)
+		if (!result?.record) {
+			throw recordNotFound(resolved, recordId)
 		}
+		this.addRecord(resolved, recordId, result.record)
 	}
 
 	/**
@@ -590,9 +595,8 @@ export class Stonecrop {
 	}
 
 	/**
-	 * Scaffold empty descendant records from defaults for all descendant links.
-	 *
-	 * Initializes all scalar and link fields at their HST paths with default values.
+	 * Scaffold a new descendant record at `path`: its node, so edits under it land, and its starting values, each at
+	 * its own HST path. A field with no starting value gets no path until someone fills it in.
 	 * For new records, call this after setting up the doctype to ensure all paths exist.
 	 *
 	 * @param path - HST path (e.g., "customer.new")
@@ -651,7 +655,7 @@ export class Stonecrop {
 		})
 
 		if (!result?.record) {
-			throw createCodedError(`Record not found: ${doctype.doctype} ${recordId}`, 'RECORD_NOT_FOUND')
+			throw recordNotFound(doctype, recordId)
 		}
 
 		// Store each scalar field at its own HST path, descendants at link-level path
@@ -717,4 +721,9 @@ function createCodedError(message: string, code: string): CodedError {
 	const error = new Error(message) as CodedError
 	error.code = code
 	return error
+}
+
+/** The one error both record reads throw when the server returns no record. */
+function recordNotFound(doctype: Doctype, recordId: string): CodedError {
+	return createCodedError(`Record not found: ${doctype.doctype} ${recordId}`, 'RECORD_NOT_FOUND')
 }

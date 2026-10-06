@@ -1,5 +1,31 @@
 # Change Log - @stonecrop/graphql-client
 
+## 0.43.0
+
+### Patch Changes
+
+- @stonecrop/schema@0.43.0
+
+## 0.42.0
+
+### Patch Changes
+
+- @stonecrop/schema@0.42.0
+
+## 0.41.1
+
+### Patch Changes
+
+- cc78578: `StonecropClient.runAction` no longer asks for `droppedFields`, which the in-memory servers `@stonecrop/nuxt` scaffolds do not declare, so actions against them are no longer refused.
+- @stonecrop/schema@0.41.1
+
+## 0.41.0
+
+### Patch Changes
+
+- Updated dependencies [863c853]
+  - @stonecrop/schema@0.41.0
+
 ## 0.40.0
 
 ### Patch Changes

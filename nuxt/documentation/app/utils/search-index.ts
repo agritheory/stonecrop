@@ -219,6 +219,11 @@ export const searchIndex: SearchEntry[] = [
 		url: '/components/quantity-input',
 	},
 	{
+		title: 'Semver Input',
+		description: 'A text field that only takes a semantic version, such as 1.4.0 or 2.0.0-rc.1',
+		url: '/components/semver',
+	},
+	{
 		title: 'Text Input',
 		description: 'A single-line text input rendered from an AForm schema field',
 		url: '/components/text-input',

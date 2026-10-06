@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { componentCategory } from '@stonecrop/schema'
 import type { BadgeDescriptor } from '@stonecrop/schema'
-import { fromISODate } from '@stonecrop/utilities'
+import { compareSemver, fromISODate } from '@stonecrop/utilities'
 import { Temporal } from 'temporal-polyfill'
 import { type CSSProperties, computed, ref } from 'vue'
 
@@ -382,6 +382,12 @@ export const createTableStore = (initData: {
 
 					if (aVal === null || aVal === undefined) aVal = ''
 					if (bVal === null || bVal === undefined) bVal = ''
+
+					// By version precedence, the order the `semver` Postgres type sorts in: 1.2.0 before 1.10.0.
+					if (componentCategory(column.component) === 'semver') {
+						const cmp = compareSemver(String(aVal), String(bVal))
+						return direction === 'asc' ? cmp : -cmp
+					}
 
 					const aNum = toComparableNumber(aVal)
 					const bNum = toComparableNumber(bVal)
@@ -776,16 +782,9 @@ export const createTableStore = (initData: {
 		 * @returns The index of the newly added row
 		 */
 		const addRow = (rowData?: Partial<TableRow>, position: 'start' | 'end' | number = 'end'): number => {
-			// Create a new row with default empty values for each column
-			const newRow: TableRow = {}
-			for (const column of columns.value) {
-				newRow[column.name] = ''
-			}
-
-			// Merge in any provided row data
-			if (rowData) {
-				Object.assign(newRow, rowData)
-			}
+			// Only what the caller gives: a column nobody filled in has no value, so a save leaves it to the database's
+			// default. Never seed `''`, which an insert stores over that default and a date cell shows as "Invalid Date".
+			const newRow: TableRow = { ...rowData }
 
 			let insertIndex: number
 			if (position === 'start') {

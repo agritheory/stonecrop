@@ -10,6 +10,9 @@ import { Ref } from 'vue';
 import { Temporal } from 'temporal-polyfill';
 
 // @public
+export function compareSemver(a: string, b: string): number;
+
+// @public
 export function currencyAmountEntryPattern(currencyId: string | undefined): RegExp;
 
 // @public
@@ -40,6 +43,12 @@ export function fromISODate(day: string): Temporal.PlainDate | undefined;
 
 // @public
 export function install(_app: App): void;
+
+// @public
+export function isSemver(text: string): boolean;
+
+// @public
+export function isSemverPrefix(text: string): boolean;
 
 // @public
 export type KeyboardNavigationOptions = {

@@ -72,6 +72,13 @@ function toMutationName(doctypeName: string, operation: 'create' | 'update'): st
 	return `${operation}${pascalName}ById`
 }
 
+/** A record as `stonecropRecord` serves it, or null when there is none. */
+async function readRecord(meta: DoctypeMeta, id: unknown): Promise<unknown> {
+	const queryName = toQueryName(meta.name)
+	const result = await mockExecutor.query(queryName, { id, lookupField: recordLookupField(meta) })
+	return result[queryName] ?? null
+}
+
 export function formatDoctypeMeta(meta: DoctypeMeta) {
 	// Fields and actions pass through verbatim — the SDL alone decides what is
 	// selectable. Enumerating keys here silently drops any field the schema gains
@@ -133,14 +140,9 @@ export default {
 								throw new Error(`Unknown doctype: ${spec.doctype}`)
 							}
 
-							const queryName = toQueryName(meta.name)
 							try {
-								const result = await mockExecutor.query(queryName, {
-									id: spec.id,
-									lookupField: recordLookupField(meta),
-								})
 								return {
-									data: result[queryName] ?? null,
+									data: await readRecord(meta, spec.id),
 									doctype: spec.doctype,
 									unknownLinks: undefined,
 								}
@@ -272,7 +274,7 @@ export default {
 									// The server owns the transition: read current state, guard against
 									// allowedStates, write nextState. Reads/writes go through this app's
 									// mock executor; a PostGraphile setup swaps in pgClient SQL instead.
-									return await applyGuardedTransition(
+									const outcome = await applyGuardedTransition(
 										actionDef,
 										{
 											readState: async () => {
@@ -301,7 +303,7 @@ export default {
 											// one interface, whether or not the row exists yet. Updating patches the
 											// record's field data (status untouched); creating lets the backend assign
 											// the identity, which is why a draft dispatches no id at all. Either way the
-											// full record comes back for the writeback.
+											// full record comes back, stating its identity.
 											// Verbatim patch; column-whitelisting is the (deferred) PostGraphile concern.
 											writeData: async (patch: Record<string, unknown>, exists: boolean) => {
 												const mutationName = toMutationName(meta.name, exists ? 'update' : 'create')
@@ -330,6 +332,15 @@ export default {
 										},
 										recordData
 									)
+									// The record as `stonecropRecord` returns it: the client stores this, never
+									// `data`. Keyed by the identity the reply states, since a save may create it.
+									const repliedId: unknown =
+										outcome.data !== null && typeof outcome.data === 'object'
+											? Reflect.get(outcome.data, recordLookupField(meta))
+											: undefined
+									const readId = repliedId ?? recordId
+									const record = outcome.success && readId != null ? await readRecord(meta, readId) : null
+									return { ...outcome, record }
 								} catch (err) {
 									return {
 										success: false,

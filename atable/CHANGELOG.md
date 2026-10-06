@@ -1,5 +1,51 @@
 # Change Log - @stonecrop/atable
 
+## 0.43.0
+
+### Minor Changes
+
+- 63f68d7: A new record (`initializeRecord`) or table row (`addRow`) no longer gives a field a value nobody entered, so a save leaves it to the database's default instead of sending `''`, 0, false or null.
+
+### Patch Changes
+
+- @stonecrop/schema@0.43.0
+  - @stonecrop/themes@0.43.0
+  - @stonecrop/utilities@0.43.0
+
+## 0.42.0
+
+### Minor Changes
+
+- f5d09ad: A server-backed table whose first page fails to load says so, with the server's message and **Try again**, in place of its rows, and a failed **Load more** keeps the rows and says why, where both failed silently before.
+
+### Patch Changes
+
+- @stonecrop/schema@0.42.0
+  - @stonecrop/themes@0.42.0
+  - @stonecrop/utilities@0.42.0
+
+## 0.41.1
+
+### Patch Changes
+
+- @stonecrop/schema@0.41.1
+  - @stonecrop/themes@0.41.1
+  - @stonecrop/utilities@0.41.1
+
+## 0.41.0
+
+### Minor Changes
+
+- 863c853: `ASemverInput` has its own `semver` component category, so atable filters a semver column as text and sorts it by version precedence: `1.2.0` before `1.10.0`, and a prerelease before its release.
+
+### Patch Changes
+
+- Updated dependencies [863c853]
+- Updated dependencies [863c853]
+  - @stonecrop/schema@0.41.0
+  - @stonecrop/utilities@0.41.0
+  - @stonecrop/themes@0.41.0
+
 ## 0.40.0
 
 ### Patch Changes

@@ -1,5 +1,50 @@
 # Change Log - @stonecrop/stonecrop
 
+## 0.43.0
+
+### Minor Changes
+
+- 63f68d7: A new record (`initializeRecord`) or table row (`addRow`) no longer gives a field a value nobody entered, so a save leaves it to the database's default instead of sending `''`, 0, false or null.
+
+### Patch Changes
+
+- Updated dependencies [63f68d7]
+- Updated dependencies [63f68d7]
+  - @stonecrop/atable@0.43.0
+  - @stonecrop/aform@0.43.0
+  - @stonecrop/schema@0.43.0
+
+## 0.42.0
+
+### Minor Changes
+
+- f5d09ad: `Stonecrop.getRecord` throws a `RECORD_NOT_FOUND` error when the server has no such record, as `fetchNestedData` already did, and `useStonecrop` reports a failed record read through `isLoading` and `error`, leaving `formData` empty instead of filling it with empty values.
+
+### Patch Changes
+
+- Updated dependencies [f5d09ad]
+  - @stonecrop/atable@0.42.0
+  - @stonecrop/aform@0.42.0
+  - @stonecrop/schema@0.42.0
+
+## 0.41.1
+
+### Patch Changes
+
+- @stonecrop/aform@0.41.1
+  - @stonecrop/atable@0.41.1
+  - @stonecrop/schema@0.41.1
+
+## 0.41.0
+
+### Patch Changes
+
+- Updated dependencies [863c853]
+- Updated dependencies [863c853]
+  - @stonecrop/schema@0.41.0
+  - @stonecrop/atable@0.41.0
+  - @stonecrop/aform@0.41.0
+
 ## 0.40.0
 
 ### Minor Changes

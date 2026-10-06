@@ -605,18 +605,41 @@ describe('Registry class', { tags: ['unit'] }, () => {
 				{
 					kind: 'fieldset' as const,
 					fieldname: 'details',
-					schema: [{ kind: 'field' as const, fieldname: 'email', component: 'ATextInput' }],
+					schema: [
+						{
+							kind: 'table' as const,
+							fieldname: 'items',
+							component: 'ATable',
+							schema: [],
+							config: { view: 'list' as const },
+						},
+					],
 				},
 			]
-			expect(registry.initializeRecord(schema)).toEqual({ email: '' })
+			expect(registry.initializeRecord(schema)).toStrictEqual({ items: [] })
 		})
 
-		// An ISO 8601 duration has no empty text, and an `interval` column refuses `''`.
-		it('initializes a duration field to null', () => {
+		// An insert gives a column its database default only when it leaves the column out, and `''`, 0, false and
+		// null each override that default. The table is the control: it still starts as an empty list.
+		it('gives a plain field no value, whatever its component', () => {
 			registry = new Registry()
-			const schema = [{ kind: 'field' as const, fieldname: 'took', component: 'ADuration' }]
-			const record = registry.initializeRecord(schema)
-			expect(record.took).toBeNull()
+			const schema = [
+				{ kind: 'field' as const, fieldname: 'name', component: 'ATextInput' },
+				{ kind: 'field' as const, fieldname: 'count', component: 'ANumericInput' },
+				{ kind: 'field' as const, fieldname: 'active', component: 'ACheckbox' },
+				{ kind: 'field' as const, fieldname: 'due', component: 'ADate' },
+				{ kind: 'field' as const, fieldname: 'took', component: 'ADuration' },
+				{ kind: 'field' as const, fieldname: 'meta', component: 'ACodeEditor', language: 'json' },
+				{ kind: 'field' as const, fieldname: 'custom', component: 'SomeAppComponent' },
+				{
+					kind: 'table' as const,
+					fieldname: 'items',
+					component: 'ATable',
+					schema: [],
+					config: { view: 'list' as const },
+				},
+			]
+			expect(registry.initializeRecord(schema)).toStrictEqual({ items: [] })
 		})
 	})
 })

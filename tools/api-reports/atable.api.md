@@ -3073,6 +3073,8 @@ export interface TableModalProps {
 
 // @public
 export interface TablePagination {
+    error: Ref<Error | null>;
+    firstPageFailed: Ref<boolean>;
     hasEverHadMore: Ref<boolean>;
     hasLocalNext: Ref<boolean>;
     hasMore: Ref<boolean>;
@@ -3087,6 +3089,7 @@ export interface TablePagination {
     next: () => Promise<void>;
     // (undocumented)
     prev: () => void;
+    retry: () => Promise<void>;
     showFooter: Ref<boolean>;
     // (undocumented)
     visibleRows: Ref<FilteredTableRow[]>;

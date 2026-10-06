@@ -12,7 +12,8 @@
 				<ATableHeader :columns="store.columns" :store="store" />
 			</slot>
 			<tbody>
-				<slot name="body" :data="store">
+				<!-- Rows held when the first page fails are an earlier read's, not this one's answer. -->
+				<slot v-if="!firstPageFailed" name="body" :data="store">
 					<ARow
 						v-for="(row, filteredIndex) in visibleRows"
 						:key="`${row.originalIndex}-${filteredIndex}`"
@@ -72,7 +73,10 @@
 					:loaded-count="loadedCount"
 					:loading="paginationLoading"
 					:next="paginationNext"
-					:prev="paginationPrev" />
+					:prev="paginationPrev"
+					:error-message="paginationError?.message"
+					:first-page-failed="firstPageFailed"
+					:retry="paginationRetry" />
 			</slot>
 		</table>
 
@@ -198,6 +202,9 @@ const {
 	loading: paginationLoading,
 	next: paginationNext,
 	prev: paginationPrev,
+	error: paginationError,
+	firstPageFailed,
+	retry: paginationRetry,
 } = pagination
 
 const footerColumnCount = computed(() => store.columns.length + (store.zeroColumn ? 1 : 0))

@@ -1,5 +1,50 @@
 # Change Log - @stonecrop/aform
 
+## 0.43.0
+
+### Patch Changes
+
+- 63f68d7: `AQuantityInput` and `ACurrencyInput` given no value show every box empty, as they do for `null`, instead of a conversion factor or exchange rate of 1 nobody entered.
+- Updated dependencies [63f68d7]
+  - @stonecrop/atable@0.43.0
+  - @stonecrop/schema@0.43.0
+  - @stonecrop/themes@0.43.0
+  - @stonecrop/utilities@0.43.0
+
+## 0.42.0
+
+### Patch Changes
+
+- Updated dependencies [f5d09ad]
+  - @stonecrop/atable@0.42.0
+  - @stonecrop/schema@0.42.0
+  - @stonecrop/themes@0.42.0
+  - @stonecrop/utilities@0.42.0
+
+## 0.41.1
+
+### Patch Changes
+
+- @stonecrop/atable@0.41.1
+  - @stonecrop/schema@0.41.1
+  - @stonecrop/themes@0.41.1
+  - @stonecrop/utilities@0.41.1
+
+## 0.41.0
+
+### Minor Changes
+
+- 863c853: `ASemverInput` is a text field for a SemVer 2.0.0 version such as `1.4.0-beta.2`. It holds the version as a string, or null while the box is empty or the version is half-typed, and refuses any edit that no version could start with, so a `v` prefix, a leading zero or a fourth number never gets in.
+
+### Patch Changes
+
+- Updated dependencies [863c853]
+- Updated dependencies [863c853]
+  - @stonecrop/schema@0.41.0
+  - @stonecrop/atable@0.41.0
+  - @stonecrop/utilities@0.41.0
+  - @stonecrop/themes@0.41.0
+
 ## 0.40.0
 
 ### Minor Changes

@@ -107,15 +107,8 @@ const {
 const errorText = computed(() => (errors?.length ? errors.join('; ') : (validation.errorMessage ?? '')))
 const helperId = computed(() => (uuid ? `${uuid}-helper` : undefined))
 
-const modelValue = defineModel<CurrencyValue | null>({
-	default: () => ({
-		amount: null,
-		currency: { id: '' },
-		baseAmount: null,
-		baseCurrency: { id: '' },
-		exchangeRate: 1,
-	}),
-})
+// No default: a field with no value shows empty, as null does, rather than a rate nobody entered.
+const modelValue = defineModel<CurrencyValue | null>()
 
 const showBase = computed(() => {
 	const v = modelValue.value

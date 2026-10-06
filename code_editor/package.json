@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/code-editor",
-	"version": "0.40.0",
+	"version": "0.43.0",
 	"description": "Monaco-based code editor component for Stonecrop",
 	"keywords": [
 		"code-editor",

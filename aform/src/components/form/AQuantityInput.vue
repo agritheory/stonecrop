@@ -72,9 +72,8 @@ const helperId = computed(() => (uuid ? `${uuid}-helper` : undefined))
 const helperDescribedBy = computed(() => (showStock.value && !errorText.value ? helperId.value : undefined))
 const { errorId, describedBy, invalid } = fieldErrorA11y(uuid, errorText, helperDescribedBy)
 
-const modelValue = defineModel<QuantityValue | null>({
-	default: () => ({ qty: null, uom: '', stockQty: null, stockUom: '', conversionFactor: 1 }),
-})
+// No default: a field with no value shows empty, as null does, rather than a factor nobody entered.
+const modelValue = defineModel<QuantityValue | null>()
 
 const uoms = computed(() => options.uoms ?? [])
 

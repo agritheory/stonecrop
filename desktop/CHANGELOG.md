@@ -1,5 +1,50 @@
 # Change Log - @stonecrop/desktop
 
+## 0.43.0
+
+### Patch Changes
+
+- Updated dependencies [63f68d7]
+- Updated dependencies [63f68d7]
+  - @stonecrop/stonecrop@0.43.0
+  - @stonecrop/aform@0.43.0
+  - @stonecrop/schema@0.43.0
+  - @stonecrop/themes@0.43.0
+
+## 0.42.0
+
+### Minor Changes
+
+- f5d09ad: A record that is still loading, that the server does not have, or that fails to load now shows that state (a failure with the server's message and **Try again**) and offers none of its actions, instead of a blank, editable form.
+
+### Patch Changes
+
+- Updated dependencies [f5d09ad]
+  - @stonecrop/stonecrop@0.42.0
+  - @stonecrop/aform@0.42.0
+  - @stonecrop/schema@0.42.0
+  - @stonecrop/themes@0.42.0
+
+## 0.41.1
+
+### Patch Changes
+
+- @stonecrop/aform@0.41.1
+  - @stonecrop/schema@0.41.1
+  - @stonecrop/stonecrop@0.41.1
+  - @stonecrop/themes@0.41.1
+
+## 0.41.0
+
+### Patch Changes
+
+- Updated dependencies [863c853]
+- Updated dependencies [863c853]
+  - @stonecrop/schema@0.41.0
+  - @stonecrop/aform@0.41.0
+  - @stonecrop/stonecrop@0.41.0
+  - @stonecrop/themes@0.41.0
+
 ## 0.40.0
 
 ### Minor Changes

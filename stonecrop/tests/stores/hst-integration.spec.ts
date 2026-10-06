@@ -84,8 +84,24 @@ describe('HST Real Component Integration', { tags: ['unit'] }, () => {
 		stonecrop = new Stonecrop(registry)
 	})
 
+	// A loaded record whose fields are all empty, as a server returns one.
+	const emptyLoadedTask = {
+		name: '',
+		description: '',
+		priority: 0,
+		progress: 0,
+		active: false,
+		urgent: false,
+		due_date: null,
+		created_at: null,
+		status: '',
+		category: '',
+		metadata: '',
+	}
+
 	describe('Real AForm Integration with HST', () => {
 		it('should integrate HST with real AForm component for all field types', async () => {
+			stonecrop.addRecord(doctype, 'test-task', { ...emptyLoadedTask })
 			const FormWithHST = defineComponent({
 				components: {
 					AForm,
@@ -153,6 +169,7 @@ describe('HST Real Component Integration', { tags: ['unit'] }, () => {
 		})
 
 		it('should handle field updates through real ATextInput component', async () => {
+			stonecrop.addRecord(doctype, 'test-task', { ...emptyLoadedTask })
 			const FormWithHSTField = defineComponent({
 				components: { ATextInput },
 				template: `

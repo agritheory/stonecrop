@@ -63,9 +63,6 @@ pnpm exec changeset
 
 # The same thing in one line
 pnpm exec changeset --minor @stonecrop/aform -m "What changed, in one sentence"
-
-# For a change that releases nothing
-pnpm exec changeset --empty
 ```
 
 That writes a file to `.changeset/`, which you can equally well write by hand:
@@ -82,10 +79,11 @@ What changed, in one sentence.
 - All publishable packages are one lockstep group, so the bump level applies to every one of them. Naming a package decides whose changelog gets your summary, not who gets released.
 - `git add` new files before running it. It finds changed packages with `git diff`, which does not report untracked files, so a new file's package is offered as unchanged.
 - It compares against the merge base with `development`. On a branch that has diverged far every package reads as changed, so pass `--since` a nearer ref when the grouping stops being useful.
-- CI fails when a pull request changes packages and has no changeset at all. It does not check that the package you touched has one.
+- CI fails when a pull request changes any file inside a published package and has no changeset, even a file that never ships, such as `vite.config.ts`. It does not check that the package you touched has one.
+- A change that releases nothing gets no changeset, never an empty one, though CI's error suggests `changeset add --empty`: an empty one satisfies CI while telling users nothing. If it touches a published package, put it on a branch that already carries a real changeset, or CI fails it.
 
 ## Releases
 
-- Merging to `development` runs the publish workflow: it versions the packages, writes the changelogs, publishes to npm and pushes tags.
+- Merging to `development` runs the publish workflow: it versions the packages, writes the changelogs, publishes to npm and pushes tags. A merge with no changeset does none of that.
 - `changeset version` consumes the files in `.changeset/`, so a changeset lives only until the next release. The changelog entry is what survives.
 - Every publishable package comes out on the same version, whichever packages the changesets named.

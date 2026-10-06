@@ -1187,13 +1187,26 @@ describe('table store', { tags: ['component'] }, () => {
 			expect(testStore.rows[1].name).toBe('Middle')
 		})
 
-		it('should add a row with default empty values when no data provided', () => {
+		// A row nobody filled in holds no values, so a save leaves its columns to their database defaults.
+		it('adds a row holding no values when no data is provided', () => {
 			const testStore = createTableStore({ columns: mockColumns, rows: [...mockRows] })
 			const newIndex = testStore.addRow()
 
-			expect(testStore.rows[newIndex].id).toBe('')
-			expect(testStore.rows[newIndex].name).toBe('')
-			expect(testStore.rows[newIndex].status).toBe('')
+			expect(testStore.rows[newIndex]).toStrictEqual({})
+		})
+
+		it('renders the date cells of a new row empty', () => {
+			const testStore = createTableStore({
+				columns: [
+					{ name: 'due', label: 'Due', component: 'ADate' },
+					{ name: 'stamped', label: 'Stamped', component: 'ADateTime' },
+				],
+				rows: [],
+			})
+			const newIndex = testStore.addRow()
+
+			const rendered = [testStore.getCellDisplayValue(0, newIndex), testStore.getCellDisplayValue(1, newIndex)]
+			expect(rendered.map(value => value ?? '')).toEqual(['', ''])
 		})
 
 		it('should delete a row and return the deleted row', () => {
@@ -1583,6 +1596,47 @@ describe('table store', { tags: ['component'] }, () => {
 
 			linkStore.setFilter(1, { value: 'def' })
 			expect(linkStore.filteredRows.map(r => r.label)).toEqual(['B'])
+		})
+	})
+
+	describe('semver column filtering and sorting', () => {
+		const semverColumns: TableColumn[] = [
+			{ name: 'item', label: 'Item' },
+			{ name: 'version', label: 'Version', component: 'ASemverInput' },
+		]
+		const semverRows: TableRow[] = [
+			{ item: 'A', version: '1.10.0' },
+			{ item: 'B', version: '1.2.0' },
+			{ item: 'C', version: '2.0.0' },
+			{ item: 'D', version: '2.0.0-rc.1' },
+		]
+
+		let semverStore: ReturnType<typeof createTableStore>
+		beforeEach(() => {
+			semverStore = createTableStore({
+				columns: semverColumns,
+				rows: semverRows.map(row => Object.assign({}, row)),
+			})
+		})
+
+		it('filters a semver column as text', () => {
+			semverStore.setFilter(1, { value: '1.10' })
+			expect(semverStore.filteredRows.map(r => r.item)).toEqual(['A'])
+		})
+
+		it('sorts semver columns by version precedence, not string order', () => {
+			semverStore.sortByColumn(1)
+			expect(semverStore.filteredRows.map(r => r.item)).toEqual(['B', 'A', 'D', 'C'])
+		})
+
+		it('sorts semver columns descending', () => {
+			semverStore.sortByColumn(1)
+			semverStore.sortByColumn(1)
+			expect(semverStore.filteredRows.map(r => r.item)).toEqual(['C', 'D', 'A', 'B'])
+		})
+
+		it('shows a semver cell as the version it holds', () => {
+			expect(semverStore.getFormattedValue(1, 0, '1.10.0')).toBe('1.10.0')
 		})
 	})
 

@@ -67,7 +67,7 @@ export default defineConfig({
 			exclude: [
 				...coverageConfigDefaults.exclude,
 				'src/index.ts', // ignore the entry file
-				'types/**', // ignore types
+				'src/types/**', // ignore types
 			],
 		},
 	},

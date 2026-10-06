@@ -6,7 +6,7 @@
 
 ### composeNewRecord
 
-Build a new record, once, from every starting value: the schema's empty values, the doctype's `defaults`, then the source the app registered for it. Layers apply in that order, so the registered source wins however long the doctype's took.
+Build a new record, once, from every starting value: the doctype's `defaults`, then the source the app registered for it, over the record's tables and embedded records. Layers apply in that order, so the registered source wins however long the doctype's took. A field neither sets has no value, so a save leaves it to the database's default.
 
 Nothing is returned until every value is in, so nothing is written to the record after a user can see it. A value that throws, rejects, or has not arrived within `timeoutMs` (default `DEFAULTS_TIMEOUT_MS`) is skipped and reported with `console.warn`; the record still opens with everything else.
 
@@ -1924,9 +1924,11 @@ getDoctype(slug: string): Doctype | undefined
 
 #### initializeRecord
 
-Initialize a new record with default values based on a resolved schema. Narrows by `kind` discriminator for precise branch selection.
+The shape of a new record before any starting value: the containers its fields need, and no values. Narrows by `kind` discriminator for precise branch selection.
 
-- `kind: 'table'` or `kind: 'link'` → `[]` or `{}` - `kind: 'fieldset'` → its children, at the top level of the record: a fieldset is layout - `kind: 'field'` → an empty value for the component's category; falls back to `null`
+- `kind: 'table'` → `[]` - `kind: 'link'` → the embedded record, built the same way - `kind: 'fieldset'` → its children, at the top level of the record: a fieldset is layout - `kind: 'field'` → no key at all
+
+Starting values are the doctype's `defaults` and the app's, which `composeNewRecord` lays over this.
 
 ```typescript
 initializeRecord(schema: ResolvedField[]): Record<string, any>
@@ -1936,7 +1938,7 @@ initializeRecord(schema: ResolvedField[]): Record<string, any>
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| schema | `ResolvedField[]` | The resolved schema array to derive defaults from |
+| schema | `ResolvedField[]` | The resolved schema array to derive the record from |
 
 #### registerDefaults
 
@@ -2172,7 +2174,7 @@ getRecord(doctype: string | Doctype, recordId: string, options: GetRecordOptions
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | doctype | `string \| Doctype` | The doctype slug string or Doctype object |
-| recordId | `string` | The record ID |
+| recordId | `string` | The record ID A record the server does not find is an error, not an empty answer: a caller drawing what is in HST would otherwise show it as a blank record. |
 | options | `GetRecordOptions` | Query options (includeNested, maxDepth), forwarded to the client |
 
 #### getRecordById
@@ -2254,9 +2256,7 @@ getStore(): HSTNode
 
 #### initializeNestedData
 
-Scaffold empty descendant records from defaults for all descendant links.
-
-Initializes all scalar and link fields at their HST paths with default values. For new records, call this after setting up the doctype to ensure all paths exist.
+Scaffold a new descendant record at `path`: its node, so edits under it land, and its starting values, each at its own HST path. A field with no starting value gets no path until someone fills it in. For new records, call this after setting up the doctype to ensure all paths exist.
 
 ```typescript
 initializeNestedData(path: string, doctype: Doctype): Promise<void>

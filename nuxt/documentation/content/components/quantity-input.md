@@ -109,7 +109,7 @@ const data = ref({
 ---
 headers: ['Name', 'Type', 'Default', 'Description']
 rows:
-  - ['`v-model`', '[`QuantityValue`](#quantityvalue)', "`{ qty: null, uom: '', stockQty: null, stockUom: '', conversionFactor: 1 }`", 'The current quantity, unit, and derived stock-equivalent figures.']
+  - ['`v-model`', '[`QuantityValue`](#quantityvalue) or `null`', '—', 'The current quantity, unit, and derived stock-equivalent figures. No value or `null` shows every box empty.']
   - ['`label`', '`string`', '—', 'Label for the quantity input.']
   - ['`options`', '[`QuantityOptions`](#options)', '`{}`', 'Type-specific configuration — available UOMs, stock UOM, conversion factors.']
   - ['`required`', '`boolean`', '`false`', 'Marks the quantity input as required (`edit` mode only).']

@@ -1,5 +1,17 @@
 # Change Log - @stonecrop/schema
 
+## 0.43.0
+
+## 0.42.0
+
+## 0.41.1
+
+## 0.41.0
+
+### Minor Changes
+
+- 863c853: `ASemverInput` has its own `semver` component category, so atable filters a semver column as text and sorts it by version precedence: `1.2.0` before `1.10.0`, and a prerelease before its release.
+
 ## 0.40.0
 
 ### Minor Changes

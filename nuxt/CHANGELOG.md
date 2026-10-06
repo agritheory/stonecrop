@@ -1,5 +1,82 @@
 # Change Log - @stonecrop/nuxt
 
+## 0.43.0
+
+### Patch Changes
+
+- Updated dependencies [63f68d7]
+- Updated dependencies [63f68d7]
+  - @stonecrop/stonecrop@0.43.0
+  - @stonecrop/atable@0.43.0
+  - @stonecrop/aform@0.43.0
+  - @stonecrop/desktop@0.43.0
+  - @stonecrop/casl-middleware@0.43.0
+  - @stonecrop/code-editor@0.43.0
+  - @stonecrop/graphql-client@0.43.0
+  - @stonecrop/graphql-middleware@0.43.0
+  - @stonecrop/node-editor@0.43.0
+  - @stonecrop/nuxt-grafserv@0.43.0
+  - @stonecrop/schema@0.43.0
+  - @stonecrop/themes@0.43.0
+
+## 0.42.0
+
+### Patch Changes
+
+- Updated dependencies [f5d09ad]
+- Updated dependencies [f5d09ad]
+- Updated dependencies [f5d09ad]
+  - @stonecrop/desktop@0.42.0
+  - @stonecrop/stonecrop@0.42.0
+  - @stonecrop/atable@0.42.0
+  - @stonecrop/aform@0.42.0
+  - @stonecrop/casl-middleware@0.42.0
+  - @stonecrop/code-editor@0.42.0
+  - @stonecrop/graphql-client@0.42.0
+  - @stonecrop/graphql-middleware@0.42.0
+  - @stonecrop/node-editor@0.42.0
+  - @stonecrop/nuxt-grafserv@0.42.0
+  - @stonecrop/schema@0.42.0
+  - @stonecrop/themes@0.42.0
+
+## 0.41.1
+
+### Patch Changes
+
+- cc78578: The server schema the CLI scaffolds declares `displayField`, which the client asks for when it loads a doctype, so an app scaffolded earlier adds `displayField: String` to `DoctypeMeta` in its own `server/schema.graphql`.
+- Updated dependencies [cc78578]
+  - @stonecrop/graphql-client@0.41.1
+  - @stonecrop/aform@0.41.1
+  - @stonecrop/atable@0.41.1
+  - @stonecrop/casl-middleware@0.41.1
+  - @stonecrop/code-editor@0.41.1
+  - @stonecrop/desktop@0.41.1
+  - @stonecrop/graphql-middleware@0.41.1
+  - @stonecrop/node-editor@0.41.1
+  - @stonecrop/nuxt-grafserv@0.41.1
+  - @stonecrop/schema@0.41.1
+  - @stonecrop/stonecrop@0.41.1
+  - @stonecrop/themes@0.41.1
+
+## 0.41.0
+
+### Patch Changes
+
+- Updated dependencies [863c853]
+- Updated dependencies [863c853]
+  - @stonecrop/schema@0.41.0
+  - @stonecrop/atable@0.41.0
+  - @stonecrop/aform@0.41.0
+  - @stonecrop/desktop@0.41.0
+  - @stonecrop/graphql-client@0.41.0
+  - @stonecrop/graphql-middleware@0.41.0
+  - @stonecrop/node-editor@0.41.0
+  - @stonecrop/stonecrop@0.41.0
+  - @stonecrop/nuxt-grafserv@0.41.0
+  - @stonecrop/casl-middleware@0.41.0
+  - @stonecrop/code-editor@0.41.0
+  - @stonecrop/themes@0.41.0
+
 ## 0.40.0
 
 ### Minor Changes

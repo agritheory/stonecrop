@@ -306,6 +306,9 @@ import { ATablePaginationFooter } from '@stonecrop/atable'
 | loading | `boolean` | yes |  |  |
 | next | `() => Promise<void>` | yes |  |  |
 | prev | `() => void` | yes |  |  |
+| errorMessage | `string \| undefined` | no |  | Why the last server read failed. |
+| firstPageFailed | `boolean \| undefined` | no |  | Whether the failed read was the first page, which the footer then stands in for. |
+| retry | `(() => Promise<void>) \| undefined` | no |  | Reads the first page again. |
 
 ## Functions
 
@@ -3702,6 +3705,8 @@ Pagination state and controls returned by `useTablePagination`.
 
 ```typescript
 export interface TablePagination {
+  error: Ref<Error | null>;
+  firstPageFailed: Ref<boolean>;
   hasEverHadMore: Ref<boolean>;
   hasLocalNext: Ref<boolean>;
   hasMore: Ref<boolean>;
@@ -3711,6 +3716,7 @@ export interface TablePagination {
   loading: Ref<boolean>;
   next: () => Promise<void>;
   prev: () => void;
+  retry: () => Promise<void>;
   showFooter: Ref<boolean>;
   visibleRows: Ref<FilteredTableRow[]>;
 }
@@ -3720,6 +3726,8 @@ export interface TablePagination {
 
 | Property | Type | Description |
 |----------|------|-------------|
+| error | `Ref<Error \| null>` | Why the last server read failed; null once a read succeeds. |
+| firstPageFailed | `Ref<boolean>` | Whether the failed read was the first page, so the held rows are not its answer. |
 | hasEverHadMore | `Ref<boolean>` | True once the server reported a further page existed (multi-page fetch). |
 | hasLocalNext | `Ref<boolean>` | Whether another in-memory window exists before asking the server. |
 | hasMore | `Ref<boolean>` | Whether the server reported more records beyond what has been fetched. |
@@ -3729,6 +3737,7 @@ export interface TablePagination {
 | loading | `Ref<boolean>` |  |
 | next | `() => Promise<void>` |  |
 | prev | `() => void` |  |
+| retry | `() => Promise<void>` | Reads the first page again after it failed. |
 | showFooter | `Ref<boolean>` | Whether footer chrome should render. |
 | visibleRows | `Ref<FilteredTableRow[]>` |  |
 

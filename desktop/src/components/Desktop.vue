@@ -10,13 +10,30 @@
 			<div class="desktop__main">
 				<slot v-if="$slots.default" />
 				<AForm
-					v-else-if="currentViewSchema.length > 0 && !draftLoading"
+					v-else-if="currentViewSchema.length > 0 && !draftLoading && recordLoadState === 'loaded'"
 					v-model:data="currentViewData"
 					:schema="currentViewSchema"
 					:errors="fieldErrors" />
 				<div v-else-if="!stonecrop" class="loading"><p>Initializing Stonecrop...</p></div>
 				<div v-else-if="draftLoading" class="loading">
 					<p>Preparing new {{ formatDoctypeName(currentDoctype) }}...</p>
+				</div>
+				<div v-else-if="recordLoadState === 'notFound'" class="loading">
+					<div class="desktop__load-state">
+						<p class="desktop__load-title">
+							{{ formatDoctypeName(currentDoctype) }} {{ currentRecordId }} was not found.
+						</p>
+						<p class="desktop__load-detail">It may have been deleted, or the link may be wrong.</p>
+					</div>
+				</div>
+				<div v-else-if="recordLoadState === 'failed'" class="loading">
+					<div class="desktop__load-state">
+						<p class="desktop__load-title desktop__load-title--failed">
+							Couldn't load {{ formatDoctypeName(currentDoctype) }} {{ currentRecordId }}.
+						</p>
+						<p class="desktop__load-detail">{{ recordLoadMessage }}</p>
+						<button type="button" class="desktop__load-retry" @click="retryRecordLoad">Try again</button>
+					</div>
 				</div>
 				<div v-else class="loading">
 					<p>Loading {{ currentView }} data...</p>
@@ -173,7 +190,8 @@ const fieldErrors = computed<Record<string, string[]>>(() =>
 )
 
 // State
-const loading = ref(false)
+// The last record read that failed, kept with the record it was for so it never shows on another.
+const recordLoadFailure = ref<{ doctype: string; recordId: string; error: unknown } | null>(null)
 
 // The record being composed on a `/{doctype}/new` route. Deliberately not in HST: a draft has no
 // identity to be keyed by, and both ways of faking one fail — see `DRAFT_RECORD_ID`.
@@ -381,6 +399,26 @@ const currentRecordId = computed(() => {
 })
 const isNewRecord = computed(() => isDraftRecordId(currentRecordId.value))
 
+// What the record view can draw. A record that is not in the store is never drawn as an empty form:
+// it is still loading, the server did not find it, or the read failed.
+const recordLoadState = computed<'loaded' | 'loading' | 'notFound' | 'failed'>(() => {
+	if (currentView.value !== 'record' || isNewRecord.value) return 'loaded'
+	if (!stonecrop.value || !currentDoctype.value || !currentRecordId.value) return 'loaded'
+	if (stonecrop.value.getRecordById(currentDoctype.value, currentRecordId.value)) return 'loaded'
+
+	const failure = recordLoadFailure.value
+	if (!failure || failure.doctype !== currentDoctype.value || failure.recordId !== currentRecordId.value) {
+		return 'loading'
+	}
+	// `getRecord` declares this code for a record the server does not have.
+	return (failure.error as { code?: unknown } | null)?.code === 'RECORD_NOT_FOUND' ? 'notFound' : 'failed'
+})
+
+const recordLoadMessage = computed(() => {
+	const error = recordLoadFailure.value?.error
+	return error instanceof Error ? error.message : String(error ?? '')
+})
+
 // Determine current view based on route
 const currentView = computed(() => {
 	if (routeAdapter) return routeAdapter.getCurrentView()
@@ -504,8 +542,9 @@ const actionElements = computed(() => {
 			})
 			break
 		case 'record': {
-			// No actions until a new record has its starting values: there is nothing on screen to act on yet.
-			if (draftLoading.value) break
+			// No actions until there is a record on screen to act on: a new record's starting values, or
+			// an existing record read into the store.
+			if (draftLoading.value || recordLoadState.value !== 'loaded') break
 			// Populate the Actions dropdown with every FSM transition AND stateless Command
 			// available in the record's current state.  Clicking either emits 'action'.
 			const recordActions = [...getAvailableTransitions(), ...getAvailableCommands()]
@@ -877,18 +916,26 @@ const handleClick = async (event: Event) => {
 // put it. Desktop asks for data and renders what arrives; it decides none of that itself.
 //
 // Both loaders are no-ops without a client, so a host that populates HST some other way keeps
-// working unchanged rather than taking a thrown error on every navigation.
+// working unchanged rather than taking a thrown error on every navigation; the record view waits
+// for its record to appear.
 const loadRecordData = async () => {
 	if (!stonecrop.value || !currentDoctype.value || !stonecrop.value.getClient()) return
 
-	loading.value = true
+	const doctype = currentDoctype.value
+	const recordId = currentRecordId.value
+	recordLoadFailure.value = null
 	try {
-		await stonecrop.value.getRecord(currentDoctype.value, currentRecordId.value)
+		await stonecrop.value.getRecord(doctype, recordId)
 	} catch (error) {
-		console.warn('Error fetching record:', error)
-	} finally {
-		loading.value = false
+		// A read that fails after the user has moved on belongs to no record on screen.
+		if (doctype === currentDoctype.value && recordId === currentRecordId.value) {
+			recordLoadFailure.value = { doctype, recordId, error }
+		}
 	}
+}
+
+const retryRecordLoad = () => {
+	void loadRecordData()
 }
 
 // Watch for route changes to load appropriate data
@@ -1172,5 +1219,53 @@ onUnmounted(() => {
 	justify-content: center;
 	min-height: 50vh;
 	color: var(--sc-gray-60);
+}
+
+.desktop__load-state {
+	max-width: 36rem;
+	text-align: center;
+}
+
+.desktop__load-title {
+	margin: 0;
+	font-size: var(--sc-font-size);
+	font-weight: 600;
+	color: var(--sc-gray-80);
+}
+
+.desktop__load-title--failed {
+	color: var(--sc-brand-danger);
+}
+
+.desktop__load-detail {
+	margin: 0.5rem 0 0;
+	font-size: 0.875rem;
+}
+
+/* ATable's pagination button, so the two retries look alike. */
+.desktop__load-retry {
+	appearance: none;
+	box-sizing: border-box;
+	margin-top: 1rem;
+	padding: 0.5rem 1rem;
+	background: var(--sc-btn-color);
+	color: var(--sc-btn-label-color);
+	border: 1px solid var(--sc-btn-border);
+	border-radius: var(--sc-border-radius);
+	cursor: pointer;
+	font-family: var(--sc-font-family);
+	font-size: var(--sc-font-size);
+	font-weight: 400;
+	line-height: 1.2;
+	transition: background-color 0.15s ease;
+}
+
+.desktop__load-retry:hover {
+	background: var(--sc-btn-hover);
+}
+
+.desktop__load-retry:focus-visible {
+	outline: 2px solid var(--sc-input-active-border-color);
+	outline-offset: 1px;
 }
 </style>

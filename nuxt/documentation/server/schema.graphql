@@ -77,6 +77,7 @@ Complete doctype metadata
 type DoctypeMeta {
 	name: String!
 	slug: String
+	displayField: String
 	fields: [StonecropField!]!
 	workflow: WorkflowMeta
 	inherits: String
@@ -119,6 +120,10 @@ type ActionResult {
 	success: Boolean!
 	data: JSON
 	error: String
+	"""
+	The record as stonecropRecord returns it after the action. Null when the action failed or targets no record
+	"""
+	record: JSON
 }
 
 # ============================================
