@@ -11,6 +11,7 @@ import type { ColumnSchema } from '@stonecrop/schema';
 import { ComponentOptionsMixin } from 'vue';
 import { ComponentProvideOptions } from 'vue';
 import { ComputedRef } from 'vue';
+import { createTableStore } from '@stonecrop/atable';
 import { DefineComponent } from 'vue';
 import type { FieldOptions } from '@stonecrop/schema';
 import type { FieldValidation } from '@stonecrop/schema';
@@ -96,10 +97,22 @@ export const AQuantityInput: typeof __VLS_export_18;
 export const ASegmentedControl: typeof __VLS_export_5;
 
 // @public (undocumented)
+export const ATableTupleCurrencyPicker: typeof __VLS_export_25;
+
+// @public (undocumented)
+export const ATableTupleQuantityPicker: typeof __VLS_export_24;
+
+// @public (undocumented)
 export const ATextboxInput: typeof __VLS_export_20;
 
 // @public (undocumented)
 export const ATextInput: typeof __VLS_export_19;
+
+// @public (undocumented)
+export const ATupleCellEditor: typeof __VLS_export_26;
+
+// @public (undocumented)
+export const ATupleCellShell: typeof __VLS_export_27;
 
 // @public
 export type BadgeFormatContext = {

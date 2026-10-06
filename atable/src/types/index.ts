@@ -1,4 +1,3 @@
-import { useElementBounding } from '@vueuse/core'
 import type { Ref, ShallowRef } from 'vue'
 
 import type { ColumnSchema } from '@stonecrop/schema'
@@ -491,12 +490,12 @@ export type GanttDragEvent = {
 )
 
 /**
- * Table modal definition.
+ * Cell-attached overlay state (date picker, tuple pickers, etc.) rendered in {@link ACellShell}.
  * @public
  */
 export interface TableModal {
 	/**
-	 * Indicates whether the table modal is currently visible.
+	 * Indicates whether the cell shell is currently visible.
 	 *
 	 * @defaultValue false
 	 */
@@ -541,28 +540,32 @@ export interface TableModal {
 	componentProps?: Record<string, any>
 
 	/**
-	 * Reactive bottom value for the modal's bounding box. The field is unset when the modal
-	 * is not being displayed.
+	 * Anchor cell bottom edge in viewport pixels when the shell was opened. Unset while hidden.
 	 */
-	bottom?: ReturnType<typeof useElementBounding>['bottom']
+	bottom?: number
 
 	/**
-	 * Reactive height value for the modal's bounding box. The field is unset when the modal
-	 * is not being displayed.
+	 * Anchor cell height in pixels when the shell was opened. Unset while hidden.
 	 */
-	height?: ReturnType<typeof useElementBounding>['height']
+	height?: number
 
 	/**
-	 * Reactive left value for the modal's bounding box. The field is unset when the modal
-	 * is not being displayed.
+	 * Anchor cell left edge in viewport pixels when the shell was opened. Unset while hidden.
 	 */
-	left?: ReturnType<typeof useElementBounding>['left']
+	left?: number
 
 	/**
-	 * Reactive width value for the modal's bounding box. The field is unset when the modal
-	 * is not being displayed.
+	 * Anchor cell width in pixels when the shell was opened. Unset while hidden.
 	 */
-	width?: ReturnType<typeof useElementBounding>['width']
+	width?: number
+}
+
+/** Pixel bounds snapshot passed to {@link createTableStore}'s `openCellShell`. */
+export type CellShellBounds = {
+	left: number
+	bottom: number
+	width: number
+	height: number
 }
 
 /**

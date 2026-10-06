@@ -35,7 +35,7 @@
 					</div>
 				</div>
 			</div>
-			<p v-show="showStock && !errorText" :id="helperId" class="aquantity__helper">{{ conversionHelperText }}</p>
+			<p v-if="showStock && !errorText" :id="helperId" class="aquantity__helper">{{ conversionHelperText }}</p>
 			<p v-show="errorText" :id="errorId" class="aform_error" role="alert">{{ errorText }}</p>
 		</template>
 	</div>
@@ -47,6 +47,7 @@ import { computed } from 'vue'
 import { fieldErrorA11y } from '../../composables/fieldErrorA11y'
 import type { ComponentProps, QuantityOptions, QuantityValue } from '../../types'
 import { numberFromBox } from '../../utils/emptiedBox'
+import { patchQuantityQty, patchQuantityUom } from '../../utils/quantityValue'
 import ADropdown from './ADropdown.vue'
 
 const {
@@ -77,41 +78,14 @@ const modelValue = defineModel<QuantityValue | null>({
 
 const uoms = computed(() => options.uoms ?? [])
 
-// Round to shed binary floating-point noise (e.g. 0.1 * 3 → 0.30000000000000004) while
-// preserving any legitimate decimal places.
-const roundQty = (value: number): number => Number(value.toFixed(6))
-
-const resolveConversionFactor = (uom: string): number => {
-	const stockUom = options.stockUom ?? modelValue.value?.stockUom
-	if (!uom || uom === stockUom) return 1
-	const mapped = options.conversionFactors?.[uom]
-	if (mapped !== undefined) return mapped
-	// UOM absent from the conversion map: keep the stored factor only when the unit is
-	// unchanged (e.g. editing qty on a loaded value, so the factor round-trips). Switching
-	// to a new, unmapped unit resets to 1 rather than silently reusing the previous factor.
-	if (uom === modelValue.value?.uom) return modelValue.value.conversionFactor ?? 1
-	return 1
-}
-
-const recompute = (qty: number | null, uom: string) => {
-	const conversionFactor = resolveConversionFactor(uom)
-	modelValue.value = {
-		qty,
-		uom,
-		conversionFactor,
-		stockUom: options.stockUom ?? modelValue.value?.stockUom ?? '',
-		stockQty: qty === null ? null : roundQty(qty * conversionFactor),
-	}
-}
-
 const qty = computed({
 	get: () => modelValue.value?.qty ?? null,
-	set: (value: number | '') => recompute(numberFromBox(value), modelValue.value?.uom ?? ''),
+	set: (value: number | '') => (modelValue.value = patchQuantityQty(modelValue.value, numberFromBox(value), options)),
 })
 
 const uom = computed({
 	get: () => modelValue.value?.uom ?? '',
-	set: (value: string) => recompute(modelValue.value?.qty ?? null, value),
+	set: (value: string) => (modelValue.value = patchQuantityUom(modelValue.value, value, options)),
 })
 
 const qtyNavigationKeys = new Set([
@@ -189,6 +163,10 @@ const displayText = computed(() => {
 
 .aquantity__group:focus-within {
 	border-color: var(--sc-input-active-border-color);
+}
+
+.aquantity__group > .aform_field-label {
+	background: var(--sc-form-background);
 }
 
 /* Focus ring lives on the merged group only (see AForm :focus-within label + group border). */

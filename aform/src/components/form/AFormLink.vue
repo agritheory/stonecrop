@@ -49,6 +49,7 @@
 					</button>
 				</div>
 				<ADropdownList
+					v-if="mode !== 'read'"
 					:listbox-id="listboxId"
 					:ariaLabel="ariaLabel ?? label ?? ''"
 					:open="dropdownOpen"
@@ -64,7 +65,8 @@
 						:aria-selected="isResultSelected(option)"
 						class="autocomplete-result"
 						:class="{ 'is-active': i === activeIndex, 'is-selected': isResultSelected(option) }"
-						@mousedown.prevent="selectOption(option)">
+						@mousedown.prevent="selectOption(option)"
+						@mouseenter="activeIndex = i">
 						<slot name="option" :option="option">{{ option.displayText ?? String(option.id) }}</slot>
 					</li>
 				</ADropdownList>
@@ -269,6 +271,7 @@ const openEmbeddedList = () => {
 }
 
 const onFocus = (event: FocusEvent) => {
+	if (mode === 'read') return
 	if (embedded) {
 		openEmbeddedList()
 		const input = event.target as HTMLInputElement | null

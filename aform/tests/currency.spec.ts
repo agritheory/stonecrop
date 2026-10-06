@@ -693,7 +693,7 @@ describe('ACurrencyInput', { tags: ['component'] }, () => {
 			await wrapper.find<HTMLInputElement>('.acurrency__currency input[type="text"]').trigger('focus')
 			await flushPromises()
 			expect(wrapper.find('.autocomplete-results').exists()).toBe(true)
-			expect(wrapper.findAll('.autocomplete-result')).toHaveLength(3)
+			expect(wrapper.findAll('.autocomplete-result')).toHaveLength(2)
 		})
 
 		it('falls back to the full name when a currency has no symbol', () => {

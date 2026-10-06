@@ -15,10 +15,12 @@ import type {
 	TableColumn,
 	TableConfig,
 	TableDisplay,
+	CellShellBounds,
 	TableModal,
 	TableRow,
 } from '../types'
 import { resolveFilterType } from '../resolveFilterType'
+import { isTableTuplePickerModal, tableTuplePickerModalComponent } from '../tuplePickerModal'
 import { formatCurrency, formatQuantity, generateHash } from '../utils'
 
 /**
@@ -572,6 +574,58 @@ export const createTableStore = (initData: {
 			}
 		}
 
+		/** Opens a cell-anchored overlay in {@link ACellShell} (positioned like legacy {@link ATableModal}). */
+		const openCellShell = (
+			colIndex: number,
+			rowIndex: number,
+			cell: HTMLTableCellElement,
+			bounds: CellShellBounds,
+			component: string,
+			componentProps: Record<string, unknown> = {}
+		) => {
+			const parent = cell.closest('.atable-container')
+			modal.value = {
+				visible: true,
+				colIndex,
+				rowIndex,
+				cell,
+				parent: parent instanceof HTMLElement ? parent : undefined,
+				left: bounds.left,
+				bottom: bounds.bottom,
+				width: bounds.width,
+				height: bounds.height,
+				component,
+				componentProps,
+			}
+		}
+
+		const closeCellShell = () => {
+			if (modal.value.visible) modal.value.visible = false
+		}
+
+		const openTuplePicker = (
+			colIndex: number,
+			rowIndex: number,
+			cell: HTMLTableCellElement,
+			bounds: CellShellBounds
+		) => {
+			openCellShell(
+				colIndex,
+				rowIndex,
+				cell,
+				bounds,
+				tableTuplePickerModalComponent(columns.value[colIndex]?.component)
+			)
+		}
+
+		const closeTuplePicker = () => {
+			if (isTableTuplePickerModal(modal.value)) closeCellShell()
+		}
+
+		const closeOverlays = (event: MouseEvent) => {
+			closeModal(event)
+		}
+
 		const updateGanttBar = (event: GanttDragEvent) => {
 			// update the local gantt bar cache
 			const ganttBar = rows.value[event.rowIndex]?.gantt
@@ -941,6 +995,8 @@ export const createTableStore = (initData: {
 			addRow,
 			clearFilter,
 			closeModal,
+			closeCellShell,
+			closeOverlays,
 			createConnection,
 			deleteConnection,
 			deleteRow,
@@ -955,6 +1011,9 @@ export const createTableStore = (initData: {
 			insertRowAbove,
 			insertRowBelow,
 			isRowGantt,
+			openCellShell,
+			openTuplePicker,
+			closeTuplePicker,
 			isRowVisible,
 			moveRow,
 			registerConnectionHandle,

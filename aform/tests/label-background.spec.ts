@@ -36,7 +36,7 @@ const labelBackgroundAssertion = (element: Element, elementDesc: string, backgro
 			expected: { element: elementDesc, backgrounds: [FORM_ABOVE_THE_BORDER] },
 		}
 	}
-	if (element.closest('.acurrency__group')) {
+	if (element.closest('.acurrency__group') || element.closest('.aquantity__group')) {
 		return { actual: backgrounds.includes(FORM_SOLID_BACKGROUND), expected: true }
 	}
 	return { actual: backgrounds, expected: [FORM_ABOVE_THE_BORDER] }
@@ -44,11 +44,31 @@ const labelBackgroundAssertion = (element: Element, elementDesc: string, backgro
 
 const SRC = join(__dirname, '..', 'src')
 
+const sfcStyles = (relativePath: string): string => {
+	const sfc = readFileSync(join(SRC, relativePath), 'utf8')
+	return Array.from(sfc.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g), match => match[1]).join('\n')
+}
+
+const mergedGroupLabelRule = (relativePath: string): string => {
+	const css = sfcStyles(relativePath)
+	const match = css.match(/\.(?:acurrency|aquantity)__group > \.aform_field-label\s*\{[^}]+\}/)
+	expect(match, `merged-group label rule in ${relativePath}`).toBeTruthy()
+	return match![0]
+}
+
 const globalStyles = (): string => {
-	const sfc = readFileSync(join(SRC, 'components', 'AForm.vue'), 'utf8')
-	const blocks = Array.from(sfc.matchAll(/<style>([\s\S]*?)<\/style>/g), match => match[1])
+	const blocks = Array.from(
+		readFileSync(join(SRC, 'components', 'AForm.vue'), 'utf8').matchAll(/<style>([\s\S]*?)<\/style>/g),
+		match => match[1]
+	)
 	expect(blocks).toHaveLength(1)
-	return blocks[0]
+	// jsdom mounts do not inject child SFC styles into `document.styleSheets`; merged currency/quantity
+	// labels rely on those component rules at runtime, so include them for paint inspection.
+	return [
+		blocks[0],
+		mergedGroupLabelRule('components/form/ACurrencyInput.vue'),
+		mergedGroupLabelRule('components/form/AQuantityInput.vue'),
+	].join('\n')
 }
 
 const collect = (dir: string, out: string[] = []): string[] => {
@@ -220,6 +240,7 @@ describe('floating label and error background', { tags: ['component'] }, () => {
 			`components/AForm.vue .aform_field-label ${FORM_ABOVE_THE_BORDER}`,
 			`components/AForm.vue p.aform_error ${FORM_ABOVE_THE_BORDER}`,
 			`components/form/ACurrencyInput.vue .acurrency__group > .aform_field-label ${FORM_SOLID_BACKGROUND}`,
+			`components/form/AQuantityInput.vue .aquantity__group > .aform_field-label ${FORM_SOLID_BACKGROUND}`,
 		])
 	})
 

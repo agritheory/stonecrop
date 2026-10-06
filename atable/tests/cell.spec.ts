@@ -353,24 +353,16 @@ describe('table cell component', { tags: ['component'] }, () => {
 		})
 	})
 
-	describe('quantity and currency field editors', () => {
+	describe('tuple cells', () => {
 		const quantityValue = { qty: 2, uom: 'Nos', stockQty: 2, stockUom: 'Nos', conversionFactor: 1 }
 
-		const AQuantityInput = {
-			name: 'AQuantityInput',
-			props: ['modelValue', 'options', 'mode', 'label', 'uuid'],
-			emits: ['update:modelValue'],
-			template: `<input data-test="qty-input" type="number" :value="modelValue?.qty" @input="$emit('update:modelValue', { ...modelValue, qty: Number($event.target.value) })" />`,
+		const ATupleCellEditor = {
+			name: 'ATupleCellEditor',
+			props: ['category', 'colIndex', 'rowIndex', 'store', 'active', 'displayText', 'inputId'],
+			template: `<span data-test="tuple-display">{{ displayText }}</span><input v-show="active" data-test="tuple-input" />`,
 		}
 
-		const ACurrencyInput = {
-			name: 'ACurrencyInput',
-			props: ['modelValue', 'options', 'mode', 'label', 'uuid'],
-			emits: ['update:modelValue'],
-			template: `<input data-test="amount-input" type="number" :value="modelValue?.amount" @input="$emit('update:modelValue', { ...modelValue, amount: Number($event.target.value) })" />`,
-		}
-
-		it('renders AQuantityInput in an editable quantity column and writes updates to the store', async () => {
+		it('shows formatted text for an editable quantity column until the cell is active', async () => {
 			const rows = [{ qty: quantityValue }]
 			const testColumns: TableColumn[] = [
 				{
@@ -378,6 +370,7 @@ describe('table cell component', { tags: ['component'] }, () => {
 					label: 'Qty',
 					component: 'AQuantityInput',
 					edit: true,
+					format: (v: { qty: number; uom: string }) => `${v.qty} ${v.uom}`,
 					options: { uoms: ['Nos'], stockUom: 'Nos' },
 				},
 			]
@@ -388,16 +381,13 @@ describe('table cell component', { tags: ['component'] }, () => {
 					config: { view: 'list' },
 					'onUpdate:rows': (next: typeof rows) => wrapper.setProps({ rows: next }),
 				},
-				global: { components: { AQuantityInput } },
+				global: { components: { ATupleCellEditor } },
 			})
 			await wrapper.vm.$nextTick()
 
-			const input = wrapper.find('[data-test="qty-input"]')
-			expect(input.exists()).toBe(true)
+			expect(wrapper.find('[data-test="tuple-input"]').isVisible()).toBe(false)
+			expect(wrapper.find('[data-test="tuple-display"]').text()).toContain('2 Nos')
 			expect(wrapper.find('td[data-editable="true"]').attributes('contenteditable')).toBe('false')
-
-			await input.setValue('5')
-			expect(wrapper.props('rows')[0].qty).toEqual({ ...quantityValue, qty: 5 })
 		})
 
 		it('renders formatted text for read-only currency columns', async () => {
@@ -408,17 +398,15 @@ describe('table cell component', { tags: ['component'] }, () => {
 					label: 'Total',
 					component: 'ACurrencyInput',
 					edit: false,
-					format: (v: { amount: number; currency: { id: string } }) => `$${v.amount}`,
+					format: (v: { amount: number }) => `$${v.amount}`,
 				},
 			]
 			const wrapper = mount(ATable, {
 				props: { rows, columns: testColumns, config: { view: 'list' } },
-				global: { components: { ACurrencyInput } },
 			})
 			await wrapper.vm.$nextTick()
 
-			expect(wrapper.find('[data-test="amount-input"]').exists()).toBe(false)
-			expect(wrapper.find('td').text()).toContain('$12.5')
+			expect(wrapper.find('td[data-colindex="0"]').text()).toContain('$12.5')
 		})
 	})
 })

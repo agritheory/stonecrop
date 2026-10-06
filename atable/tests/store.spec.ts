@@ -256,10 +256,10 @@ describe('table store', { tags: ['component'] }, () => {
 				expect(store.getFormattedValue(0, 0, { qty: 2, uom: 'Box' })).toBe('2 Box')
 			})
 
-			it('formats a Currency composite value as "<amount> <currency>"', () => {
+			it('formats a Currency composite value with formatCurrencyCell', () => {
 				store.columns[0] = { name: 'id', component: 'ACurrencyInput' }
 				expect(store.getFormattedValue(0, 0, { amount: 5, currency: { id: 'USD', displayText: 'US Dollar' } })).toBe(
-					'5 US Dollar'
+					'$5.00'
 				)
 			})
 

@@ -20,6 +20,7 @@
 					type="button"
 					class="aform_dropdown-button"
 					:disabled="mode === 'read'"
+					:required="required"
 					:aria-label="ariaLabel ?? label"
 					aria-haspopup="listbox"
 					:aria-expanded="dropdown.open"
@@ -47,7 +48,9 @@
 					aria-autocomplete="list"
 					:class="['aform_input-field', { 'aform_input-field--embedded': embedded }]"
 					:disabled="mode === 'read'"
+					:required="required"
 					:placeholder="placeholder"
+					:size="embeddedLinkInputSize"
 					:aria-label="ariaLabel"
 					:style="inputAccentStyle"
 					:aria-expanded="dropdown.open"
@@ -87,7 +90,8 @@
 								'is-active': i === dropdown.activeItemIndex,
 								'is-selected': isLinkOptionSelected(option),
 							}"
-							@mousedown.prevent="selectLinkOption(option)">
+							@mousedown.prevent="selectLinkOption(option)"
+							@mouseenter="dropdown.activeItemIndex = i">
 							<slot name="option" :option="option">{{ option.displayText ?? String(option.id) }}</slot>
 						</li>
 					</template>
@@ -103,7 +107,8 @@
 								'is-active': i === dropdown.activeItemIndex,
 								'is-selected': isChoiceSelected(result),
 							}"
-							@mousedown.prevent="setChoiceResult(result)">
+							@mousedown.prevent="setChoiceResult(result)"
+							@mouseenter="dropdown.activeItemIndex = i">
 							{{ result }}
 						</li>
 					</template>
@@ -131,6 +136,7 @@ import ADropdownList from './ADropdownList.vue'
 
 const {
 	label,
+	required,
 	options = [],
 	format,
 	isAsync = false,
@@ -165,9 +171,13 @@ const {
 	}
 >()
 
+const emit = defineEmits<{
+	'update:open': [open: boolean]
+}>()
+
 const linkPicker = computed(() => linkFilterFunction !== undefined)
 
-const listboxId = `${uuid ?? `aform-dropdown-${useId()}`}-listbox`
+const listboxId = uuid ?? `aform-dropdown-${useId()}-listbox`
 
 const choiceList = computed(() => selectChoices(options))
 
@@ -199,6 +209,11 @@ const dropdown = reactive({
 	results: [] as string[],
 })
 
+watch(
+	() => dropdown.open,
+	open => emit('update:open', open)
+)
+
 const linkResults = ref<AFormLinkValue[]>([])
 
 const optionCount = () => (linkPicker.value ? linkResults.value.length : dropdown.results.length)
@@ -218,8 +233,9 @@ watch(
 	modelValue,
 	value => {
 		if (linkPicker.value) return
-		search.value = value ?? ''
-		committedValue.value = value ?? ''
+		const next = value ?? ''
+		search.value = next
+		if (next === '' || choiceList.value.includes(next)) committedValue.value = next
 	},
 	{ immediate: true }
 )
@@ -276,6 +292,21 @@ const isLinkOptionSelected = (option: AFormLinkValue) => {
 	const id = linkId(linkModel.value)
 	return id !== undefined && String(option.id) === String(id)
 }
+
+const embeddedLinkDisplayText = computed(() => {
+	if (!embedded || !linkPicker.value) return ''
+	const id = linkId(linkModel.value)
+	if (!id) return placeholder ?? ''
+	const value = asLinkValue(linkModel.value)
+	return formatter ? formatter(value) : (linkDisplayText(linkModel.value) ?? String(id))
+})
+
+const embeddedLinkInputSize = computed(() => {
+	if (!embedded || !linkPicker.value) return undefined
+	const text = embeddedLinkDisplayText.value
+	const length = text.length > 0 ? text.length : (placeholder ?? '').length
+	return length > 0 ? length : undefined
+})
 
 const filterResults = () => {
 	if (!search.value) {
@@ -370,6 +401,7 @@ const closeDropdown = (result?: string) => {
 	}
 	if (!choiceList.value.includes(result || search.value || '')) {
 		search.value = committedValue.value
+		modelValue.value = committedValue.value
 	}
 }
 
@@ -380,7 +412,15 @@ const toggleButtonDropdown = () => {
 
 const onComboboxInput = () => {
 	if (linkPicker.value) openLinkDropdown(embedded ? embeddedLinkFilterQuery() : search.value)
-	else filter()
+	else {
+		if (search.value === '') {
+			modelValue.value = ''
+			committedValue.value = ''
+		} else {
+			modelValue.value = search.value ?? ''
+		}
+		filter()
+	}
 }
 
 const onComboboxFocus = (event: FocusEvent) => {
@@ -410,9 +450,28 @@ watch(
 	{ immediate: true }
 )
 
+const ensureDropdownOpen = () => {
+	if (dropdown.open) return
+	if (linkPicker.value) {
+		if (embedded) openEmbeddedList()
+		else void openLinkDropdown(search.value)
+	} else {
+		openChoiceDropdown()
+	}
+}
+
 const selectNextResult = () => {
 	const resultsLength = optionCount()
 	if (!resultsLength) return
+	const wasOpen = dropdown.open
+	ensureDropdownOpen()
+	if (!wasOpen) {
+		if (dropdown.activeItemIndex === null && !isAsync) {
+			const idx = choiceList.value.indexOf(search.value ?? '')
+			dropdown.activeItemIndex = idx >= 0 ? idx : 0
+		}
+		return
+	}
 	if (dropdown.activeItemIndex != null) {
 		const currentIndex = isNaN(dropdown.activeItemIndex) ? 0 : dropdown.activeItemIndex
 		dropdown.activeItemIndex = (currentIndex + 1) % resultsLength
@@ -424,10 +483,11 @@ const selectNextResult = () => {
 const selectPrevResult = () => {
 	const resultsLength = optionCount()
 	if (!resultsLength) return
+	ensureDropdownOpen()
 	if (dropdown.activeItemIndex != null) {
 		const currentIndex = isNaN(dropdown.activeItemIndex) ? 0 : dropdown.activeItemIndex
 		if (currentIndex === 0) {
-			dropdown.activeItemIndex = null
+			dropdown.activeItemIndex = trigger === 'button' ? resultsLength - 1 : null
 		} else {
 			dropdown.activeItemIndex = currentIndex - 1
 		}
@@ -437,6 +497,10 @@ const selectPrevResult = () => {
 }
 
 const setCurrentResult = () => {
+	if (!dropdown.open) {
+		ensureDropdownOpen()
+		return
+	}
 	if (linkPicker.value) {
 		if (dropdown.activeItemIndex !== null && linkResults.value[dropdown.activeItemIndex]) {
 			selectLinkOption(linkResults.value[dropdown.activeItemIndex])
@@ -444,11 +508,10 @@ const setCurrentResult = () => {
 		return
 	}
 	if (dropdown.results) {
-		const currentIndex = dropdown.activeItemIndex || 0
+		const currentIndex = dropdown.activeItemIndex ?? 0
 		const result = dropdown.results[currentIndex]
 		if (result !== undefined) setChoiceResult(result)
 	}
-	dropdown.activeItemIndex = 0
 }
 </script>
 

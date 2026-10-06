@@ -4,7 +4,10 @@
 		:id="listboxId"
 		ref="root"
 		class="autocomplete-results"
-		:class="{ 'autocomplete-results--anchor-group': listAnchor === 'group' }"
+		:class="{
+			'autocomplete-results--anchor-group': listAnchor === 'group',
+			'autocomplete-results--cell-modal': surface === 'cell-modal',
+		}"
 		role="listbox"
 		:aria-label="ariaLabel">
 		<slot />
@@ -21,6 +24,7 @@ const {
 	ariaLabel,
 	open,
 	listAnchor = 'field',
+	surface = 'field',
 	optionCount,
 	activeIndex,
 } = defineProps<{
@@ -28,6 +32,8 @@ const {
 	ariaLabel: string
 	open: boolean
 	listAnchor?: 'field' | 'group'
+	/** `cell-modal`: list fills {@link ATableModal} width (table tuple pickers). */
+	surface?: 'field' | 'cell-modal'
 	optionCount: () => number
 	activeIndex: () => number | null
 }>()
@@ -71,6 +77,17 @@ defineExpose({ root })
 	width: auto;
 	min-width: unset;
 	max-width: none;
+}
+
+.autocomplete-results--cell-modal {
+	position: relative;
+	top: 0;
+	left: 0;
+	right: 0;
+	width: 100%;
+	min-width: 100%;
+	max-width: none;
+	border-top: none;
 }
 
 /* :deep — option rows are slotted from ADropdown / AFormLink; scoped rules do not reach them otherwise. */

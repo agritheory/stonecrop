@@ -27,6 +27,10 @@ describe('currencyAmountFormat', () => {
 		expect(parseCurrencyAmountInput('10050', 'JPY')).toBe(10050)
 	})
 
+	it('parses ASCII decimal entry for comma-decimal locales', () => {
+		expect(parseCurrencyAmountInput('10.75', 'EUR')).toBe(10.75)
+	})
+
 	it('validates entry patterns per currency', () => {
 		expect(currencyAmountEntryPattern('USD').test('1,234.56')).toBe(true)
 		expect(currencyAmountEntryPattern('EUR').test('1.234,56')).toBe(true)

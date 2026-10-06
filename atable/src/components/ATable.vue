@@ -1,5 +1,5 @@
 <template>
-	<div class="atable-container" style="position: relative" v-on-click-outside="store.closeModal">
+	<div class="atable-container" style="position: relative" v-on-click-outside="store.closeOverlays">
 		<!-- Main table view -->
 		<table
 			ref="table"
@@ -314,12 +314,15 @@ const assignStickyCellWidths = () => {
 window.addEventListener('keydown', (event: KeyboardEvent) => {
 	if (event.key === 'Escape') {
 		if (store.modal.visible) {
+			const tuplePanel = document.querySelector('.atable-tuple-picker-modal')
+			if (tuplePanel instanceof HTMLElement) {
+				tuplePanel.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+				return
+			}
 			store.modal.visible = false
 
-			// focus on the parent cell again
 			const $parent = store.modal.parent
 			if ($parent) {
-				// wait for the modal to close before focusing
 				void nextTick().then(() => {
 					return $parent.focus()
 				})

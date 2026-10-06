@@ -8,10 +8,19 @@ import ATable from './components/ATable.vue'
 import ATableHeader from './components/ATableHeader.vue'
 import ATableLoading from './components/ATableLoading.vue'
 import ATableLoadingBar from './components/ATableLoadingBar.vue'
+import ACellShell from './components/ACellShell.vue'
 import ATableModal from './components/ATableModal.vue'
 import ATablePaginationFooter from './components/ATablePaginationFooter.vue'
 export { createTableStore } from './stores/table'
 export { useTablePagination } from './composables/table-pagination'
+export { cellOverlayContainer, computeCellOverlayStyle } from './composables/cellOverlayPosition'
+export type { CellOverlayPositionInput } from './composables/cellOverlayPosition'
+export {
+	TABLE_TUPLE_QUANTITY_PICKER,
+	TABLE_TUPLE_CURRENCY_PICKER,
+	isTableTuplePickerModal,
+	tableTuplePickerModalComponent,
+} from './tuplePickerModal'
 export type { FilteredTableRow, TablePagination, UseTablePaginationOptions } from './composables/table-pagination'
 export type { FilterState, FilterStateRecord } from './stores/table'
 export type * from './types'
@@ -43,6 +52,7 @@ function install(app: App /* options */) {
 	app.component('ATableHeader', ATableHeader)
 	app.component('ATableLoading', ATableLoading)
 	app.component('ATableLoadingBar', ATableLoadingBar)
+	app.component('ACellShell', ACellShell)
 	app.component('ATableModal', ATableModal)
 	app.component('ATablePaginationFooter', ATablePaginationFooter)
 }
@@ -56,6 +66,7 @@ export {
 	ATableHeader,
 	ATableLoading,
 	ATableLoadingBar,
+	ACellShell,
 	ATableModal,
 	ATablePaginationFooter,
 	install,

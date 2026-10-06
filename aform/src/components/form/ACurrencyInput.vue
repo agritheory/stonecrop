@@ -15,6 +15,7 @@
 								embedded
 								list-anchor="group"
 								:mode="mode"
+								:required="required"
 								:placeholder="currencyLabel"
 								:aria-label="currencyLabel"
 								:formatter="currencySymbol"
@@ -60,8 +61,11 @@
 						<label class="aform_field-label" :for="uuid">{{ label }}</label>
 					</div>
 				</div>
+				<div class="acurrency__field acurrency__field--base-currency" aria-hidden="true">
+					<input type="text" readonly tabindex="-1" :value="baseCurrencyText" />
+				</div>
 			</div>
-			<p v-show="showBase && !errorText" :id="helperId" class="acurrency__helper">{{ conversionHelperText }}</p>
+			<p v-if="showBase && !errorText" :id="helperId" class="acurrency__helper">{{ conversionHelperText }}</p>
 			<p v-show="errorText" :id="errorId" class="aform_error" role="alert">{{ errorText }}</p>
 		</template>
 	</div>
@@ -78,6 +82,7 @@ import {
 import { computed, inject, ref, useTemplateRef, watch } from 'vue'
 
 import type { AFormLinkValue, ComponentProps, CurrencyOptions, CurrencyValue } from '../../types'
+import { normalizeBaseCurrency, patchCurrencyAmount, patchCurrencyCurrency } from '../../utils/currencyValue'
 import { numberFromBox } from '../../utils/emptiedBox'
 import ADropdown from './ADropdown.vue'
 import { fieldErrorA11y } from '../../composables/fieldErrorA11y'
@@ -167,11 +172,7 @@ watch(
 // The base currency is fixed configuration, not user-editable. It may be supplied as a bare id
 // (resolved to displayText below via the same `aformLinkResolver` injection AFormLink uses) or
 // as a full AFormLinkValue that already carries displayText.
-const normalizedBaseCurrency = computed<AFormLinkValue>(() => {
-	const base = options.baseCurrency ?? modelValue.value?.baseCurrency
-	if (!base) return { id: '' }
-	return typeof base === 'string' ? { id: base } : base
-})
+const normalizedBaseCurrency = computed<AFormLinkValue>(() => normalizeBaseCurrency(options, modelValue.value))
 
 type ResolverFn = (doctype: string, id: string) => string | undefined | Promise<string | undefined>
 const resolver = inject<ResolverFn | null>('aformLinkResolver', null)
@@ -201,60 +202,21 @@ const baseCurrencyText = computed(() => {
 	return base.displayText ?? String(base.id)
 })
 
-const resolveExchangeRate = (currencyId: string | number | undefined): number => {
-	const baseId = resolvedBaseCurrency.value.id
-	if (!currencyId || String(currencyId) === String(baseId)) return 1
-	// The rate the value was booked at wins for as long as the currency is unchanged. Rates are
-	// time-varying in a way conversion factors are not (see AQuantityInput), so `exchangeRates`
-	// carries *today's* rates: preferring it here would silently re-rate a stored line to the
-	// current rate on any touch — including the write-back AFormLink does when it resolves the
-	// currency's display text, i.e. on mere render.
-	if (String(currencyId) === String(modelValue.value?.currency?.id)) {
-		return modelValue.value?.exchangeRate ?? options.exchangeRates?.[String(currencyId)] ?? 1
-	}
-	// Switching to a currency absent from the rate map resets to 1 rather than silently reusing
-	// the outgoing currency's rate.
-	return options.exchangeRates?.[String(currencyId)] ?? 1
-}
-
-// Enough decimal places to shed floating-point noise from the multiplication (e.g. 4 * 1.1 → 4.4
-// rather than 4.4000000000000004) without discarding a digit the rate actually produced. Matches
-// AQuantityInput's roundQty.
-const FLOAT_NOISE_DECIMALS = 6
-
-// How far to round the base amount is the *base currency's* business, and only the app knows what
-// that is — so it says so via `precision` (JPY carries 0 decimals, most currencies 2, KWD 3).
-// Unset stays deliberately loose rather than defaulting to 2: hard-rounding every currency to
-// cents destroys value outright, e.g. 50 IDR at 0.000063 rounds to a base amount of 0. A garbage
-// precision (non-integer, negative, or past toFixed's 100 ceiling) falls back rather than throwing
-// inside the setter and breaking the field.
-const baseDecimals = computed(() => {
-	const { precision } = options
-	if (precision === undefined) return FLOAT_NOISE_DECIMALS
-	return Number.isInteger(precision) && precision >= 0 && precision <= 100 ? precision : FLOAT_NOISE_DECIMALS
-})
-
-const roundAmount = (value: number): number => Number(value.toFixed(baseDecimals.value))
-
-const recompute = (amount: number | null, currencyValue: AFormLinkValue) => {
-	const exchangeRate = resolveExchangeRate(currencyValue.id)
-	modelValue.value = {
-		amount,
-		currency: currencyValue,
-		exchangeRate,
-		baseCurrency: resolvedBaseCurrency.value,
-		baseAmount: amount === null ? null : roundAmount(amount * exchangeRate),
-	}
-}
-
 const amount = computed({
 	get: () => modelValue.value?.amount ?? null,
-	set: (value: number | '') => recompute(numberFromBox(value), modelValue.value?.currency ?? { id: '' }),
+	set: (value: number | '') =>
+		(modelValue.value = patchCurrencyAmount(
+			modelValue.value,
+			numberFromBox(value),
+			options,
+			resolvedBaseCurrency.value
+		)),
 })
 
 const currency = computed<AFormLinkValue>({
 	get: () => modelValue.value?.currency ?? { id: '' },
-	set: (value: AFormLinkValue) => recompute(modelValue.value?.amount ?? null, value),
+	set: (value: AFormLinkValue) =>
+		(modelValue.value = patchCurrencyCurrency(modelValue.value, value, options, resolvedBaseCurrency.value)),
 })
 
 const amountNavigationKeys = new Set([
@@ -302,7 +264,7 @@ const onAmountFocus = (event: FocusEvent) => {
 const onAmountBlur = () => {
 	amountFocused.value = false
 	const parsed = parseCurrencyAmountInput(amountText.value, selectedCurrencyId.value)
-	recompute(parsed, modelValue.value?.currency ?? { id: '' })
+	modelValue.value = patchCurrencyAmount(modelValue.value, parsed, options, resolvedBaseCurrency.value)
 	syncAmountTextFromModel()
 }
 
@@ -311,7 +273,7 @@ const onAmountInput = (event: Event) => {
 	amountText.value = input.value
 	const parsed = parseCurrencyAmountInput(amountText.value, selectedCurrencyId.value)
 	if (amountText.value.trim() === '' || amountText.value.trim() === '-' || parsed !== null) {
-		recompute(parsed, modelValue.value?.currency ?? { id: '' })
+		modelValue.value = patchCurrencyAmount(modelValue.value, parsed, options, resolvedBaseCurrency.value)
 	}
 }
 
@@ -375,6 +337,18 @@ const displayText = computed(() => {
 	position: relative;
 	flex: 1;
 	min-width: 0;
+}
+
+.acurrency__field--base-currency {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border: 0;
 }
 
 .acurrency__group {

@@ -27,7 +27,7 @@ function withPlaygroundCurrencyOptions(doctype: DoctypeConfig): DoctypeConfig {
 	return {
 		...doctype,
 		fields: doctype.fields.map(field => {
-			if (field.component !== 'ACurrencyInput') return field
+			if (field.component !== 'ACurrencyInput' || !('options' in field)) return field
 			const existing = (field.options ?? {}) as Record<string, unknown>
 			return {
 				...field,

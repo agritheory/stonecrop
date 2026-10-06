@@ -70,7 +70,12 @@ export function parseCurrencyAmountInput(text: string, currencyId: string | unde
 	const { group, decimal } = separatorsForLocale(locale)
 	let normalized = trimmed.replace(/\s/g, '')
 	normalized = normalized.replace(/[^\d.,\-+]/g, '')
-	if (group) normalized = normalized.replaceAll(group, '')
+	// Locale may use "." as grouping (de-DE) while the user typed an ASCII decimal (common on US keyboards).
+	if (group && normalized.includes(group)) {
+		const typedAsciiDecimal =
+			decimal !== '.' && !normalized.includes(decimal) && (normalized.match(/\./g)?.length ?? 0) === 1
+		if (!typedAsciiDecimal) normalized = normalized.replaceAll(group, '')
+	}
 	if (decimal !== '.') {
 		const lastDecimal = normalized.lastIndexOf(decimal)
 		if (lastDecimal !== -1) {

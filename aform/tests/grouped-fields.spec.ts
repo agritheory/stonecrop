@@ -32,7 +32,11 @@ const declared = (sfcPath: string, selector: string): CSSStyleDeclaration[] => {
 const value = (declarations: CSSStyleDeclaration[], property: string): string =>
 	declarations.map(declaration => declaration.getPropertyValue(property)).findLast(Boolean) ?? ''
 
-const options = { doctype: 'currency', baseCurrency: { id: 'USD', displayText: 'US Dollar' } }
+const options = {
+	doctype: 'currency',
+	baseCurrency: { id: 'USD', displayText: 'US Dollar' },
+	filterFunction: (_: string) => [],
+}
 
 const prefixInput = (currency: AFormLinkValue) =>
 	mount(ACurrencyInput, {
