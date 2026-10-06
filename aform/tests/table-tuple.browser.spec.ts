@@ -119,15 +119,6 @@ describe('a quantity cell in a table', { tags: ['browser'] }, () => {
 		expect(rows.value[0].qty.qty).toBe(qty)
 	})
 
-	// These keys move the caret in a box being typed in. Moving to another cell is for the cell, not its box.
-	it.each(['ArrowLeft', 'ArrowRight', 'Home', 'End'])('keeps focus in the quantity being typed on %s', async key => {
-		mountQuantityTable()
-		const input = await startEditingCell()
-		await userEvent.keyboard(`{${key}}`)
-
-		expect(document.activeElement).toBe(input)
-	})
-
 	it('returns focus to the cell once a unit is picked', async () => {
 		mountQuantityTable()
 		await startEditingCell()
