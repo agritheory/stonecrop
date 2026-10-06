@@ -79,6 +79,20 @@ const pickerOpenForCell = computed(
 	() => isTableTuplePickerModal(store.modal) && store.modal.colIndex === colIndex && store.modal.rowIndex === rowIndex
 )
 
+// The picker holds focus while open, so the cell can't see focus leave. Once focus has settled after the picker closes:
+// if the page dropped it (a pick, Escape), bring it back to the box; if it went somewhere else, editing this cell is over.
+watch(pickerOpenForCell, (open, wasOpen) => {
+	if (!wasOpen || open) return
+	setTimeout(() => {
+		// Reopened meanwhile, as a click on the handle does: the list has focus again.
+		if (pickerOpenForCell.value) return
+		const focused = document.activeElement
+		if (focused && cellElement.value?.contains(focused)) return
+		if (!focused || focused === document.body) inputRef.value?.focus()
+		else emit('deactivate')
+	})
+})
+
 const syncDraftFromModel = () => {
 	const v = cellValue.value
 	if (category === 'quantity') {

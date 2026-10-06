@@ -5,7 +5,8 @@
 		class="atable-tuple-picker-modal"
 		tabindex="-1"
 		v-on-click-outside="onClickOutside"
-		@keydown="onKeydown">
+		@keydown="onKeydown"
+		@focusout="onFocusOut">
 		<ADropdownList
 			:listbox-id="listboxId"
 			ariaLabel="Unit of measure"
@@ -65,7 +66,7 @@ const selectUom = (uom: string) => {
 	closePicker()
 }
 
-const { activeIndex, onKeydown, onClickOutside } = useTableModalDropdownList({
+const { activeIndex, onKeydown, onClickOutside, onFocusOut } = useTableModalDropdownList({
 	panelRef,
 	isOpen: () => open.value,
 	optionCount,

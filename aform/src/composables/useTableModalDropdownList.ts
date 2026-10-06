@@ -77,5 +77,11 @@ export function useTableModalDropdownList(options: TableModalDropdownListOptions
 		options.onClose()
 	}
 
-	return { activeIndex, onKeydown, onClickOutside, focusPanel }
+	// Focus moving out of the picker, by Tab or to whatever was clicked, closes it.
+	const onFocusOut = (event: FocusEvent) => {
+		if (event.relatedTarget instanceof Node && options.panelRef.value?.contains(event.relatedTarget)) return
+		options.onClose()
+	}
+
+	return { activeIndex, onKeydown, onClickOutside, onFocusOut, focusPanel }
 }

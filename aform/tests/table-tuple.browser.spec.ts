@@ -87,8 +87,16 @@ const startEditingCell = async () => {
 	return document.activeElement as HTMLInputElement
 }
 
-const pickUnit = async (unit: string) => {
+const unitList = () => document.querySelector('.atable-tuple-picker-modal')
+const isEditing = () => tupleCell().classList.contains('atable-cell--tuple-active')
+
+const openUnitList = async () => {
 	await userEvent.click(tupleCell().querySelector<HTMLElement>('.atable-tuple-shell__handle')!)
+	await expect.poll(unitList).not.toBeNull()
+}
+
+const pickUnit = async (unit: string) => {
+	await openUnitList()
 	const option = [...document.querySelectorAll<HTMLElement>('.atable-tuple-picker-modal [role="option"]')].find(
 		element => element.textContent?.trim() === unit
 	)
@@ -133,7 +141,37 @@ describe('a quantity cell in a table', { tags: ['browser'] }, () => {
 		await pickUnit('Nos')
 		await userEvent.click(outside())
 
-		expect(tupleCell().classList.contains('atable-cell--tuple-active')).toBe(false)
+		expect(isEditing()).toBe(false)
+	})
+
+	// The unit list holds focus while it is open, so the cell must still learn that focus has gone elsewhere.
+	it('stops editing the cell when another cell is clicked with the unit list open', async () => {
+		mountQuantityTable()
+		await startEditingCell()
+		await openUnitList()
+		await userEvent.click(document.querySelector<HTMLElement>('td[data-colindex="2"]')!)
+
+		await expect.poll(isEditing).toBe(false)
+	})
+
+	it('keeps editing the cell when its handle is clicked with the unit list open', async () => {
+		mountQuantityTable()
+		await startEditingCell()
+		await openUnitList()
+		await userEvent.click(tupleCell().querySelector<HTMLElement>('.atable-tuple-shell__handle')!)
+		await new Promise(resolve => setTimeout(resolve, 100))
+
+		expect(isEditing()).toBe(true)
+	})
+
+	it('closes the unit list when Tab moves focus out of it', async () => {
+		mountQuantityTable()
+		await startEditingCell()
+		await openUnitList()
+		await userEvent.keyboard('{Tab}')
+
+		await expect.poll(unitList).toBeNull()
+		await expect.poll(isEditing).toBe(false)
 	})
 })
 
