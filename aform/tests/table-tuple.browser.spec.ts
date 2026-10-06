@@ -66,6 +66,7 @@ const mountQuantityTable = () =>
 
 const usd = { id: 'USD', displayText: 'US Dollar', symbol: '$' }
 const eur = { id: 'EUR', displayText: 'Euro', symbol: '€' }
+const jpy = { id: 'JPY', displayText: 'Yen', symbol: '¥' }
 
 // Fifty dollars, or fifty of another currency.
 const mountPriceTable = (currency = usd) =>
@@ -80,6 +81,15 @@ const mountPriceTable = (currency = usd) =>
 
 const tupleCell = () => document.querySelector<HTMLElement>('td.atable-cell--tuple')!
 const outside = () => document.querySelector<HTMLElement>('#outside')!
+
+// Puts `text` on the clipboard, as copying it from elsewhere would.
+const copy = async (text: string) => {
+	const source = document.body.appendChild(document.createElement('textarea'))
+	source.value = text
+	source.select()
+	await userEvent.copy()
+	source.remove()
+}
 
 // Clicking the cell puts its number in a box to type into, with the number selected.
 const startEditingCell = async () => {
@@ -126,6 +136,17 @@ describe('a quantity cell in a table', { tags: ['browser'] }, () => {
 		await userEvent.click(outside())
 
 		expect(rows.value[0].qty.qty).toBe(qty)
+	})
+
+	// A spreadsheet cell is copied with a line break after it.
+	it('takes a quantity pasted from a spreadsheet', async () => {
+		const { rows } = mountQuantityTable()
+		await copy('12\r\n')
+		await startEditingCell()
+		await userEvent.paste()
+		await userEvent.click(outside())
+
+		expect(rows.value[0].qty).toMatchObject({ qty: 12, uom: 'Box', stockQty: 120 })
 	})
 
 	it('returns focus to the cell once a unit is picked', async () => {
@@ -187,6 +208,28 @@ describe('a price cell in a table', { tags: ['browser'] }, () => {
 		expect(rows.value[0].price.amount).toBe(12.75)
 	})
 
+	// A refused key leaves the rest of what was typed, as in the form's price box.
+	it.each([
+		['12a', 12],
+		['-12', -12],
+	])('reads %s typed into a price as %s', async (typed, amount) => {
+		const { rows } = mountPriceTable()
+		await startEditingCell()
+		await userEvent.keyboard(typed)
+		await userEvent.click(outside())
+
+		expect(rows.value[0].price.amount).toBe(amount)
+	})
+
+	it('refuses a decimal point in a price without decimals', async () => {
+		const { rows } = mountPriceTable(jpy)
+		await startEditingCell()
+		await userEvent.keyboard('1.5')
+		await userEvent.click(outside())
+
+		expect(rows.value[0].price.amount).toBe(15)
+	})
+
 	// The cell writes a price the browser's way whatever its currency, so the box reads it the same way.
 	it('keeps a euro price typed the way the browser writes numbers', async () => {
 		const { rows } = mountPriceTable(eur)
@@ -200,14 +243,102 @@ describe('a price cell in a table', { tags: ['browser'] }, () => {
 	// The form's price box refuses a paste that is not an amount; the table's must not save it as 0.
 	it('refuses a pasted price that is not an amount', async () => {
 		const { rows } = mountPriceTable()
-		const source = outside() as HTMLInputElement
-		source.value = 'abc'
-		source.select()
-		await userEvent.copy()
+		await copy('abc')
 		await startEditingCell()
 		await userEvent.paste()
 		await userEvent.click(outside())
 
 		expect(rows.value[0].price.amount).toBe(50)
+	})
+})
+
+// Fifty dollars on a dollar order that takes euros and pounds too.
+const mountPriceTableWithRates = (currency = usd) =>
+	mountTable<PriceRow>(
+		{
+			name: 'price',
+			label: 'Price',
+			component: 'ACurrencyInput',
+			options: { baseCurrency: usd, exchangeRates: { EUR: 1.1, GBP: 1.25 } },
+		},
+		{
+			product: 'Widget',
+			note: 'Fragile',
+			price: { amount: 50, currency, baseAmount: 50, baseCurrency: usd, exchangeRate: 1 },
+		}
+	)
+
+const currencyChoices = () =>
+	[...document.querySelectorAll('.atable-tuple-picker-modal [role="option"]')].map(option => option.textContent?.trim())
+
+const openCurrencyListByKeyboard = async () => {
+	await startEditingCell()
+	await userEvent.keyboard('{Shift>}{ArrowDown}{/Shift}')
+	await expect.poll(unitList).not.toBeNull()
+}
+
+describe('the currency list of a price cell in a table', { tags: ['browser'] }, () => {
+	// The price's own currency is listed once, under its name, though it also has a rate.
+	it("lists the order's currency, the price's, then each one with a rate", async () => {
+		mountPriceTableWithRates(eur)
+		await startEditingCell()
+		await openUnitList()
+
+		expect(currencyChoices()).toEqual(['$ — US Dollar', '€ — Euro', 'GBP'])
+	})
+
+	it("keeps the amount and works out the order's amount when a currency is clicked", async () => {
+		const { rows } = mountPriceTableWithRates()
+		await startEditingCell()
+		await pickUnit('EUR')
+
+		expect(rows.value[0].price).toMatchObject({
+			amount: 50,
+			currency: { id: 'EUR' },
+			exchangeRate: 1.1,
+			baseAmount: 55,
+		})
+		expect(tupleCell().contains(document.activeElement)).toBe(true)
+	})
+
+	// Arrows move through the list in a loop; Enter picks the highlighted currency, or the first if none is.
+	it.each([
+		['{Enter}', 'USD'],
+		['{ArrowDown}{ArrowDown}{Enter}', 'EUR'],
+		['{ArrowUp}{Enter}', 'GBP'],
+		['{ArrowUp}{ArrowDown}{Enter}', 'USD'],
+		['{ArrowDown}{ArrowUp}{Enter}', 'GBP'],
+	])('picks with %s: %s', async (keys, currency) => {
+		const { rows } = mountPriceTableWithRates(eur)
+		await openCurrencyListByKeyboard()
+		await userEvent.keyboard(keys)
+
+		await expect.poll(unitList).toBeNull()
+		expect(rows.value[0].price.currency.id).toBe(currency)
+	})
+
+	// A doctype carries its lookup as text.
+	it("lists what the column's currency lookup returns", async () => {
+		mountTable<PriceRow>(
+			{
+				name: 'price',
+				label: 'Price',
+				component: 'ACurrencyInput',
+				options: {
+					baseCurrency: usd,
+					filterFunction:
+						"async () => [{ id: 'USD', displayText: 'US Dollar' }, { id: 'INR', displayText: 'Rupee', symbol: '₹' }]",
+				},
+			},
+			{
+				product: 'Widget',
+				note: 'Fragile',
+				price: { amount: 50, currency: usd, baseAmount: 50, baseCurrency: usd, exchangeRate: 1 },
+			}
+		)
+		await startEditingCell()
+		await openUnitList()
+
+		await expect.poll(currencyChoices).toEqual(['US Dollar', '₹ — Rupee'])
 	})
 })

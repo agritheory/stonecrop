@@ -351,9 +351,6 @@ emits: {
 slots: {
   option: { option: { [x: string]: any; id: string \| number; displayText?: string \| undefined; }; }
 }
-exposed: {
-  openCurrencyList: () => void
-}
 ```
 
 ### AFormLoading

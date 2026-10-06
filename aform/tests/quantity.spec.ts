@@ -65,6 +65,13 @@ describe('AQuantityInput', () => {
 			expect(isMenuOpen(wrapper)).toBe(true)
 		})
 
+		it('closes the uom menu when the toggle button is clicked again', async () => {
+			const wrapper = mount(AQuantityInput, { props: { options } })
+			await wrapper.find('.aform_dropdown-button').trigger('click')
+			await wrapper.find('.aform_dropdown-button').trigger('click')
+			expect(isMenuOpen(wrapper)).toBe(false)
+		})
+
 		it('closes the uom menu after an option is selected', async () => {
 			const wrapper = mount(AQuantityInput, { props: { options } })
 			await pickUom(wrapper, 'Box')

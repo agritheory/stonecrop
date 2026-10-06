@@ -473,12 +473,6 @@ import { AFormLink } from '@stonecrop/aform'
 |------|-------|-------------|
 | option | `{ option: { [x: string]: any; id: string \| number; displayText?: string \| undefined; }; }` |  |
 
-**Exposed:**
-
-| Name | Type |
-|------|------|
-| openCurrencyList | `() => void` |
-
 ### AFormLoading
 
 Vue component exported from @stonecrop/aform.

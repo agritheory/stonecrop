@@ -560,6 +560,33 @@ describe('table store', { tags: ['component'] }, () => {
 			store.closeModal(event)
 			expect(store.modal.visible).toBe(true)
 		})
+
+		const cellBounds = { left: 1, bottom: 1, width: 1, height: 1 }
+
+		it.each([
+			['AQuantityInput', 'ATableTupleQuantityPicker'],
+			['ACurrencyInput', 'ATableTupleCurrencyPicker'],
+		])('opens the list an %s column picks from', (component, picker) => {
+			store = createTableStore({ columns: [{ name: 'value', label: 'Value', component }], rows: [{ value: null }] })
+			store.openTuplePicker(0, 0, document.createElement('td'), cellBounds)
+
+			expect(store.modal).toMatchObject({ visible: true, component: picker, colIndex: 0, rowIndex: 0 })
+		})
+
+		it('closes a unit or currency list, and no other pop-up', () => {
+			store = createTableStore({
+				columns: [{ name: 'value', label: 'Value', component: 'AQuantityInput' }],
+				rows: [{ value: null }],
+			})
+			const cell = document.createElement('td')
+			store.openCellShell(0, 0, cell, cellBounds, 'ADatePicker')
+			store.closeTuplePicker()
+			expect(store.modal.visible).toBe(true)
+
+			store.openTuplePicker(0, 0, cell, cellBounds)
+			store.closeTuplePicker()
+			expect(store.modal.visible).toBe(false)
+		})
 	})
 
 	describe('error handling', () => {

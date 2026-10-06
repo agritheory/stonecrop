@@ -23,8 +23,6 @@
 						:disabled="disabled || mode === 'read'"
 						@input="onInput"
 						@focus="onFocus"
-						@click="onEmbeddedClick"
-						@pointerdown="onEmbeddedPointerDown"
 						@keydown.down.prevent="selectNext"
 						@keydown.up.prevent="selectPrev"
 						@keydown.enter.prevent="selectCurrent"
@@ -256,43 +254,9 @@ const onClickOutside = () => {
 	if (dropdownOpen.value) closeDropdown()
 }
 
-const embeddedFilterQuery = (): string => {
-	if (!embedded) return searchText.value
-	// Compact formatter output ("€") is not what filterFunction searches — treat it as "show all".
-	if (hasValidId.value && formatter) {
-		const formatted = formatter(asLinkValue(modelValue.value))
-		if (searchText.value === formatted) return ''
-	}
-	return searchText.value
-}
+const onFocus = () => openDropdown(searchText.value)
 
-const openEmbeddedList = () => {
-	if (embedded) openDropdown(embeddedFilterQuery())
-}
-
-const onFocus = (event: FocusEvent) => {
-	if (mode === 'read') return
-	if (embedded) {
-		openEmbeddedList()
-		const input = event.target as HTMLInputElement | null
-		if (input) requestAnimationFrame(() => input.select())
-		return
-	}
-	openDropdown(searchText.value)
-}
-
-// Focus alone is not enough: a second click while the combobox stays focused never refires focus.
-const onEmbeddedClick = () => {
-	openEmbeddedList()
-}
-
-const onEmbeddedPointerDown = () => {
-	openEmbeddedList()
-}
-
-const onInput = () => openDropdown(embedded ? embeddedFilterQuery() : searchText.value)
-
-defineExpose({ openCurrencyList: openEmbeddedList })
+const onInput = () => openDropdown(searchText.value)
 
 const selectOption = (option: AFormLinkValue) => {
 	modelValue.value = option

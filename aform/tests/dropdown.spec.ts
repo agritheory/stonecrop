@@ -388,28 +388,36 @@ describe('dropdown input component', { tags: ['component'] }, () => {
 })
 
 describe('a dropdown in a form', { tags: ['component'] }, () => {
-	// The record holds one of the field's choices. Text typed to find one is a search, and reaches the record only as
-	// the choice it picks.
-	it('sends the record the choice picked, not the text typed to find it', async () => {
-		const status = {
-			kind: 'field',
-			fieldname: 'status',
-			label: 'Status',
-			component: 'ADropdown',
-			options: ['Open', 'Pending', 'Closed'],
-		} as ResolvedField
+	const status = {
+		kind: 'field',
+		fieldname: 'status',
+		label: 'Status',
+		component: 'ADropdown',
+		options: ['Open', 'Pending', 'Closed'],
+	} as ResolvedField
+
+	// Types into the status box, then presses `key`; returns each status the form sent.
+	const typeStatus = async (typed: string, key: string) => {
 		const wrapper = mount(AForm, {
 			props: { schema: [status], data: { status: 'Open' } },
 			global: { components: { ADropdown } },
 		})
 		const input = wrapper.find('input')
 		await input.trigger('focus')
-		await input.setValue('Pend')
-		await input.trigger('keydown', { key: 'Enter' })
+		await input.setValue(typed)
+		await input.trigger('keydown', { key })
 		await flushPromises()
+		return (wrapper.emitted('update:data') ?? []).map(([data]) => (data as { status?: string }).status)
+	}
 
-		const sent = (wrapper.emitted('update:data') ?? []).map(([data]) => (data as { status?: string }).status)
-		expect(sent).toEqual(['Pending'])
+	// The record holds one of the field's choices. Text typed to find one is a search, and reaches the record only as
+	// the choice it picks.
+	it('sends the record the choice picked, not the text typed to find it', async () => {
+		expect(await typeStatus('Pend', 'Enter')).toEqual(['Pending'])
+	})
+
+	it('sends the record a choice typed out in full when the box is left', async () => {
+		expect(await typeStatus('Closed', 'Tab')).toEqual(['Closed'])
 	})
 })
 
