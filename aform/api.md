@@ -292,7 +292,8 @@ import { ADropdown } from '@stonecrop/aform'
 | format | `string \| undefined` | no |  |  |
 | isAsync | `boolean \| undefined` | no | `false` |  |
 | filterFunction | `((search: string) => string[] \| Promise<string[]>) \| undefined` | no | `undefined` |  |
-| linkFilterFunction | `string \| ((search: string) => AFormLinkValue[] \| Promise<AFormLinkValue[]>) \| undefined` | no | `undefined` | When set, the picker searches link records and binds an `AFormLinkValue` (embedded currency, etc.). |
+| link | `boolean \| undefined` | no | `false` | Picks a linked record, bound through `v-model:link-value` as an `AFormLinkValue` (embedded currency, etc.). |
+| linkFilterFunction | `string \| ((search: string) => AFormLinkValue[] \| Promise<AFormLinkValue[]>) \| undefined` | no | `undefined` | Searches the records a `link` picker lists. |
 | formatter | `((value: AFormLinkValue) => string) \| undefined` | no | `undefined` |  |
 | doctype | `string \| undefined` | no | `undefined` |  |
 | embedded | `boolean \| undefined` | no | `false` |  |

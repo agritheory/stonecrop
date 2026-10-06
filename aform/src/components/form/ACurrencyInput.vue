@@ -12,6 +12,7 @@
 							<ADropdown
 								ref="currencyDropdownRef"
 								v-model:link-value="currency"
+								link
 								embedded
 								list-anchor="group"
 								:mode="mode"

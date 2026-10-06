@@ -221,6 +221,7 @@ props: {
   format?: string \| undefined
   isAsync?: boolean \| undefined
   filterFunction?: ((search: string) => string[] \| Promise<string[]>) \| undefined
+  link?: boolean \| undefined
   linkFilterFunction?: string \| ((search: string) => AFormLinkValue[] \| Promise<AFormLinkValue[]>) \| undefined
   formatter?: ((value: AFormLinkValue) => string) \| undefined
   doctype?: string \| undefined

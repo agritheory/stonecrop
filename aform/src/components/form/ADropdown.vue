@@ -141,6 +141,7 @@ const {
 	format,
 	isAsync = false,
 	filterFunction = undefined,
+	link = false,
 	linkFilterFunction = undefined,
 	formatter = undefined,
 	doctype = undefined,
@@ -159,7 +160,9 @@ const {
 		format?: string
 		isAsync?: boolean
 		filterFunction?: (search: string) => string[] | Promise<string[]>
-		/** When set, the picker searches link records and binds an `AFormLinkValue` (embedded currency, etc.). */
+		/** Picks a linked record, bound through `v-model:link-value` as an `AFormLinkValue` (embedded currency, etc.). */
+		link?: boolean
+		/** Searches the records a `link` picker lists. */
 		linkFilterFunction?: string | ((search: string) => AFormLinkValue[] | Promise<AFormLinkValue[]>)
 		formatter?: (value: AFormLinkValue) => string
 		doctype?: string
@@ -175,7 +178,7 @@ const emit = defineEmits<{
 	'update:open': [open: boolean]
 }>()
 
-const linkPicker = computed(() => linkFilterFunction !== undefined)
+const linkPicker = computed(() => link)
 
 // The list's own id: `uuid` is already the box's, and `aria-controls` must name the list.
 const listboxId = `${uuid ?? `aform-dropdown-${useId()}`}-listbox`

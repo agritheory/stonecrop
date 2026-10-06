@@ -670,6 +670,45 @@ describe('ACurrencyInput', { tags: ['component'] }, () => {
 			expect(wrapper.find<HTMLInputElement>('.acurrency__currency input[type="text"]').element.value).toBe('€')
 		})
 
+		// A lookup is how the box finds other currencies; the currency it holds needs none.
+		it('shows the symbol in the currency box when the field has no currency lookup', () => {
+			const { filterFunction: _, ...withoutLookup } = optionsWithSymbols
+			const wrapper = mount(ACurrencyInput, {
+				props: {
+					options: withoutLookup,
+					modelValue: {
+						amount: 5,
+						currency: { id: 'EUR', displayText: 'Euro', symbol: '€' },
+						baseAmount: 5.5,
+						baseCurrency: { id: 'USD', displayText: 'US Dollar', symbol: '$' },
+						exchangeRate: 1.1,
+					},
+				},
+			})
+			expect(wrapper.find<HTMLInputElement>('.acurrency__currency input[type="text"]').element.value).toBe('€')
+		})
+
+		it('names a currency given only by its id through the injected aformLinkResolver', async () => {
+			const wrapper = mount(ACurrencyInput, {
+				props: {
+					options: { doctype: 'currency', baseCurrency: { id: 'USD', displayText: 'US Dollar' } },
+					modelValue: {
+						amount: 5,
+						currency: { id: 'EUR' },
+						baseAmount: 5.5,
+						baseCurrency: { id: 'USD', displayText: 'US Dollar' },
+						exchangeRate: 1.1,
+					},
+				},
+				global: { provide: { aformLinkResolver: async (_doctype: string, id: string) => `Resolved ${id}` } },
+			})
+			await flushPromises()
+
+			expect(wrapper.find<HTMLInputElement>('.acurrency__currency input[type="text"]').element.value).toBe(
+				'Resolved EUR'
+			)
+		})
+
 		it('shows the symbol alongside the name in the search dropdown', async () => {
 			const wrapper = mount(ACurrencyInput, { props: { options: optionsWithSymbols } })
 			const input = wrapper.find<HTMLInputElement>('.acurrency__currency input[type="text"]')
