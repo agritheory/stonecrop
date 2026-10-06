@@ -1,7 +1,10 @@
 import { mount, flushPromises } from '@vue/test-utils'
 import { describe, it, expect, vi } from 'vitest'
 
+import AForm from '../src/components/AForm.vue'
 import ADropdown from '../src/components/form/ADropdown.vue'
+import AQuantityInput from '../src/components/form/AQuantityInput.vue'
+import type { ResolvedField } from '../src/types'
 
 describe('dropdown input component', { tags: ['component'] }, () => {
 	const dropdownData = {
@@ -381,5 +384,59 @@ describe('dropdown input component', { tags: ['component'] }, () => {
 		expect(input.attributes('aria-controls')).toBe(list.attributes('id'))
 		expect(wrapper.findAll('li[role="option"]')).toHaveLength(dropdownData.options.length)
 		expect(wrapper.find('label').attributes('for')).toBe('fruit')
+	})
+})
+
+describe('a dropdown in a form', { tags: ['component'] }, () => {
+	// The record holds one of the field's choices. Text typed to find one is a search, and reaches the record only as
+	// the choice it picks.
+	it('sends the record the choice picked, not the text typed to find it', async () => {
+		const status = {
+			kind: 'field',
+			fieldname: 'status',
+			label: 'Status',
+			component: 'ADropdown',
+			options: ['Open', 'Pending', 'Closed'],
+		} as ResolvedField
+		const wrapper = mount(AForm, {
+			props: { schema: [status], data: { status: 'Open' } },
+			global: { components: { ADropdown } },
+		})
+		const input = wrapper.find('input')
+		await input.trigger('focus')
+		await input.setValue('Pend')
+		await input.trigger('keydown', { key: 'Enter' })
+		await flushPromises()
+
+		const sent = (wrapper.emitted('update:data') ?? []).map(([data]) => (data as { status?: string }).status)
+		expect(sent).toEqual(['Pending'])
+	})
+})
+
+// `aria-controls` names the open list by its id, so that id must belong to the list alone. The field's own box
+// already carries the field's id.
+describe('dropdown list ids', { tags: ['component'] }, () => {
+	it("gives a dropdown's list an id that names only the list", async () => {
+		const wrapper = mount(ADropdown, {
+			props: { uuid: 'fruit', modelValue: 'Orange', label: 'Fruit', options: ['Apple', 'Orange'] },
+		})
+		const input = wrapper.find('input')
+		await input.trigger('focus')
+		await flushPromises()
+
+		const controlled = input.attributes('aria-controls')
+		expect(wrapper.findAll(`[id="${controlled}"]`).map(element => element.element.tagName)).toEqual(['UL'])
+	})
+
+	it("gives a quantity field's unit list an id that names only the list", async () => {
+		const wrapper = mount(AQuantityInput, {
+			props: { uuid: 'qty', modelValue: null, label: 'Qty', options: { uoms: ['Nos', 'Box'] } },
+		})
+		const button = wrapper.find('button.aform_dropdown-button')
+		await button.trigger('click')
+		await flushPromises()
+
+		const controlled = button.attributes('aria-controls')
+		expect(wrapper.findAll(`[id="${controlled}"]`).map(element => element.element.tagName)).toEqual(['UL'])
 	})
 })

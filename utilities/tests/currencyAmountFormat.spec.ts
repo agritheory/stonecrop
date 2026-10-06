@@ -6,6 +6,7 @@ import {
 	formatCurrencyAmountInput,
 	parseCurrencyAmountInput,
 } from '../src/currencyAmountFormat'
+import { formatCurrencyCell } from '../src/denominatedFormat'
 
 describe('currencyAmountFormat', () => {
 	it('formats USD with grouping and two decimals', () => {
@@ -36,5 +37,18 @@ describe('currencyAmountFormat', () => {
 		expect(currencyAmountEntryPattern('EUR').test('1.234,56')).toBe(true)
 		expect(currencyAmountEntryPattern('JPY').test('10050')).toBe(true)
 		expect(currencyAmountEntryPattern('JPY').test('100.50')).toBe(false)
+	})
+
+	// A US keyboard groups thousands with ',' and ends with a '.' decimal, which EUR entry already accepts on its own.
+	it('parses a US-style EUR amount with thousands grouping as the amount typed', () => {
+		expect(parseCurrencyAmountInput('1,234.56', 'EUR')).toBe(1234.56)
+	})
+
+	// The editor and the cell show the same amount, so they must agree on which mark is the decimal point.
+	it('writes an EUR amount with the same separators in the editor as in the cell', () => {
+		const inEditor = formatCurrencyAmountInput(1234.5, 'EUR')
+		const inCell = formatCurrencyCell({ amount: 1234.5, currency: { id: 'EUR' } })
+
+		expect(inCell).toContain(inEditor)
 	})
 })
