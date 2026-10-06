@@ -20,14 +20,7 @@ import { parseArgs } from 'node:util'
 import { getIntrospectionQuery, type IntrospectionQuery } from 'graphql'
 
 import { authoredPrimaryKey } from './converter/authored'
-import {
-	attachWorkflows,
-	convertGraphQLSchema,
-	fetchWorkflowMachines,
-	formatDoctypeDrift,
-	mergeIntrospectedDoctype,
-	planGeneration,
-} from './converter/index'
+import { convertGraphQLSchema, formatDoctypeDrift, mergeIntrospectedDoctype, planGeneration } from './converter/index'
 import { stripFieldKind } from './field'
 import { validateDoctype } from './validation'
 import type { GraphQLConversionOptions } from './converter/types'
@@ -158,18 +151,7 @@ async function main(): Promise<void> {
 	}
 
 	// Convert
-	let entities = convertGraphQLSchema(source, options)
-
-	if (values.endpoint) {
-		console.log('Fetching FSM workflow definitions...')
-		const machines = await fetchWorkflowMachines(values.endpoint)
-		if (machines.length > 0) {
-			console.log(`  Found ${machines.length} state machine(s): ${machines.map(m => m.doctype).join(', ')}`)
-			entities = attachWorkflows(entities, machines)
-		} else {
-			console.warn('  No workflow entity types returned from listWorkflowEntityTypes')
-		}
-	}
+	const entities = convertGraphQLSchema(source, options)
 
 	if (entities.length === 0) {
 		console.warn('No entity types found in the schema. Check your include/exclude filters.')
