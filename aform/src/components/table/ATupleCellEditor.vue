@@ -29,7 +29,7 @@ import {
 	formatCurrencyAmountInput,
 	parseCurrencyAmountInput,
 } from '@stonecrop/utilities'
-import { isTableTuplePickerModal, type createTableStore } from '@stonecrop/atable'
+import { isTableTuplePickerModal, type TableStore } from '@stonecrop/atable'
 import { useElementBounding } from '@vueuse/core'
 import { computed, nextTick, ref, useTemplateRef, watch } from 'vue'
 
@@ -42,7 +42,7 @@ const { category, colIndex, rowIndex, store, active, displayText, inputId } = de
 	category: 'quantity' | 'currency'
 	colIndex: number
 	rowIndex: number
-	store: ReturnType<typeof createTableStore>
+	store: TableStore
 	active: boolean
 	displayText: string
 	inputId: string

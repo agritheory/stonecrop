@@ -78,8 +78,7 @@ import { type KeypressHandlers, useKeyboardNav, defaultKeypressHandlers } from '
 import { computed, useTemplateRef } from 'vue'
 
 import ARowActions from './ARowActions.vue'
-import { createTableStore } from '../stores/table'
-import type { RowActionsConfig, RowActionType } from '../types'
+import type { RowActionsConfig, RowActionType, TableStore } from '../types'
 
 const {
 	rowIndex,
@@ -88,7 +87,7 @@ const {
 	addNavigation = false, // default to allowing cell navigation
 } = defineProps<{
 	rowIndex: number
-	store: ReturnType<typeof createTableStore>
+	store: TableStore
 	tabIndex?: number
 	addNavigation?: boolean | KeypressHandlers
 }>()

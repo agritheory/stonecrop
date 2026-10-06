@@ -1,9 +1,9 @@
 <script setup lang="ts">
 /** @deprecated Use {@link ACellShell}. Kept for existing imports and docs. */
-import { createTableStore } from '../stores/table'
+import type { TableStore } from '../types'
 import ACellShell from './ACellShell.vue'
 
-defineProps<{ store: ReturnType<typeof createTableStore> }>()
+defineProps<{ store: TableStore }>()
 </script>
 
 <template>

@@ -32,7 +32,7 @@
 </template>
 
 <script setup lang="ts">
-import { TABLE_TUPLE_CURRENCY_PICKER, type createTableStore } from '@stonecrop/atable'
+import { TABLE_TUPLE_CURRENCY_PICKER, type TableStore } from '@stonecrop/atable'
 import { vOnClickOutside } from '@vueuse/components'
 import { computed, onMounted, ref, useTemplateRef, watch } from 'vue'
 
@@ -43,7 +43,7 @@ import { useTableModalDropdownList } from '../../composables/useTableModalDropdo
 import ADropdownList from '../form/ADropdownList.vue'
 
 const { store } = defineProps<{
-	store: ReturnType<typeof createTableStore>
+	store: TableStore
 }>()
 
 const panelRef = useTemplateRef('panelRef')

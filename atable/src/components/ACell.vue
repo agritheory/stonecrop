@@ -41,7 +41,8 @@ import { componentCategory, isBadgeDescriptor, hasBadgeOptions } from '@stonecro
 import { useDebounceFn, useElementBounding } from '@vueuse/core'
 import { computed, type CSSProperties, onMounted, ref, useTemplateRef, nextTick } from 'vue'
 
-import { createTableStore, getIndent } from '../stores/table'
+import { getIndent } from '../stores/table'
+import type { TableStore } from '../types'
 import { isTableTuplePickerModal } from '../tuplePickerModal'
 import { isHtmlString } from '../utils'
 
@@ -56,7 +57,7 @@ const {
 } = defineProps<{
 	colIndex: number
 	rowIndex: number
-	store: ReturnType<typeof createTableStore>
+	store: TableStore
 	addNavigation?: boolean | KeypressHandlers
 	tabIndex?: number
 	pinned?: boolean

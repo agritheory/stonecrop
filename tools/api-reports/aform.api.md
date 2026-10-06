@@ -11,7 +11,6 @@ import type { ColumnSchema } from '@stonecrop/schema';
 import { ComponentOptionsMixin } from 'vue';
 import { ComponentProvideOptions } from 'vue';
 import { ComputedRef } from 'vue';
-import { createTableStore } from '@stonecrop/atable';
 import { DefineComponent } from 'vue';
 import type { FieldOptions } from '@stonecrop/schema';
 import type { FieldValidation } from '@stonecrop/schema';
@@ -21,6 +20,7 @@ import { InputHTMLAttributes } from 'vue';
 import { InteractionMode } from '@stonecrop/schema';
 import { PublicProps } from 'vue';
 import { Ref } from 'vue';
+import { TableStore } from '@stonecrop/atable';
 import type { TableViewConfig } from '@stonecrop/schema';
 import type { ValueField } from '@stonecrop/schema';
 

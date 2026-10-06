@@ -16,9 +16,9 @@ import { useElementBounding } from '@vueuse/core'
 import { useTemplateRef, computed, type StyleValue } from 'vue'
 
 import { computeCellOverlayStyle } from '../composables/cellOverlayPosition'
-import { createTableStore } from '../stores/table'
+import type { TableStore } from '../types'
 
-const { store } = defineProps<{ store: ReturnType<typeof createTableStore> }>()
+const { store } = defineProps<{ store: TableStore }>()
 
 const shellRef = useTemplateRef('shellRef')
 const { width: shellWidth } = useElementBounding(shellRef)

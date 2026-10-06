@@ -6,6 +6,13 @@ import type { BadgeDescriptor } from '@stonecrop/schema'
 import { createTableStore } from '../stores/table'
 
 /**
+ * One table's store, as {@link createTableStore} makes it. An interface rather than an alias, so a component's
+ * declaration and docs name it instead of writing out the store's whole type, which refers to itself.
+ * @public
+ */
+export interface TableStore extends ReturnType<typeof createTableStore> {}
+
+/**
  * Runtime column definition for ATable.
  *
  * Extends `ColumnSchema` from `@stonecrop/schema` — all authoring properties (`label`, `component`, `width`,
@@ -124,7 +131,7 @@ export interface RowActionOptions {
 	 * @param store - The table store instance
 	 * @returns void or false to prevent default behavior
 	 */
-	handler?: (rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean
+	handler?: (rowIndex: number, store: TableStore) => void | boolean
 
 	/**
 	 * Per-row predicate to disable this action for specific rows (e.g. a lock-aware delete, or
@@ -134,7 +141,7 @@ export interface RowActionOptions {
 	 * @param rowIndex - The index of the row
 	 * @param store - The table store instance
 	 */
-	disabled?: (rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean
+	disabled?: (rowIndex: number, store: TableStore) => boolean
 }
 
 /**
@@ -591,7 +598,7 @@ export interface TableModalProps {
 	/**
 	 * The store for managing the current table's state.
 	 */
-	store: ReturnType<typeof createTableStore>
+	store: TableStore
 }
 
 /**
