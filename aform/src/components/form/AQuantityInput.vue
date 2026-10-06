@@ -47,7 +47,7 @@ import { computed } from 'vue'
 import { fieldErrorA11y } from '../../composables/fieldErrorA11y'
 import type { ComponentProps, QuantityOptions, QuantityValue } from '../../types'
 import { numberFromBox } from '../../utils/emptiedBox'
-import { patchQuantityQty, patchQuantityUom } from '../../utils/quantityValue'
+import { patchQuantityQty, patchQuantityUom, quantityEntryPattern } from '../../utils/quantityValue'
 import ADropdown from './ADropdown.vue'
 
 const {
@@ -114,7 +114,7 @@ const onQtyKeydown = (event: KeyboardEvent) => {
 
 const onQtyPaste = (event: ClipboardEvent) => {
 	const pasted = event.clipboardData?.getData('text') ?? ''
-	if (!/^-?\d*\.?\d*$/.test(pasted)) event.preventDefault()
+	if (!quantityEntryPattern.test(pasted)) event.preventDefault()
 }
 
 const showStock = computed(() => {

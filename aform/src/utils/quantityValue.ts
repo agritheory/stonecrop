@@ -1,5 +1,8 @@
 import type { QuantityOptions, QuantityValue } from '../types'
 
+/** What a quantity box may hold, typed or pasted: digits, one decimal point and a leading minus sign. */
+export const quantityEntryPattern = /^-?\d*\.?\d*$/
+
 const roundQty = (value: number): number => Number(value.toFixed(6))
 
 export function resolveQuantityConversionFactor(

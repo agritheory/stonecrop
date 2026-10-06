@@ -16,6 +16,7 @@
 			:aria-label="amountLabel"
 			@input="onInput"
 			@keydown="onKeydown"
+			@paste="onPaste"
 			@focus="onInputFocus"
 			@blur="onInputBlur" />
 	</ATupleCellShell>
@@ -34,7 +35,7 @@ import { computed, nextTick, ref, useTemplateRef, watch } from 'vue'
 
 import type { CurrencyOptions, CurrencyValue, QuantityOptions, QuantityValue } from '../../types'
 import { normalizeBaseCurrency, patchCurrencyAmount } from '../../utils/currencyValue'
-import { patchQuantityQty } from '../../utils/quantityValue'
+import { patchQuantityQty, quantityEntryPattern } from '../../utils/quantityValue'
 import ATupleCellShell from './ATupleCellShell.vue'
 
 const { category, colIndex, rowIndex, store, active, displayText, inputId } = defineProps<{
@@ -93,7 +94,15 @@ const syncDraftFromModel = () => {
 	draftText.value = c?.amount === null || c?.amount === undefined ? '' : String(c.amount)
 }
 
-watch(cellValue, syncDraftFromModel, { deep: true })
+watch(
+	cellValue,
+	() => {
+		// Not while the box is being typed in: the box holds text on its way to a number ("1.", "-"), and the number
+		// read back from it would overwrite that text.
+		if (document.activeElement !== inputRef.value) syncDraftFromModel()
+	},
+	{ deep: true }
+)
 watch(
 	() => active,
 	isActive => {
@@ -178,6 +187,29 @@ const onKeydown = (event: KeyboardEvent) => {
 	if (category === 'currency' && amountMaskEnabled.value && !pickerOpenForCell.value) {
 		if (onCurrencyKeydownMasked(event)) return
 	}
+	if (category === 'quantity' && event.key.length === 1 && !event.ctrlKey && !event.metaKey && !event.altKey) {
+		refuseUnlessQuantity(event, event.key)
+	}
+}
+
+// The box's text once `inserted` replaces its selection.
+const textWith = (input: HTMLInputElement, inserted: string) =>
+	input.value.slice(0, input.selectionStart ?? 0) + inserted + input.value.slice(input.selectionEnd ?? 0)
+
+// The same text as the form's quantity field accepts, so a typo leaves the quantity as it was.
+const refuseUnlessQuantity = (event: Event, inserted: string) => {
+	if (!quantityEntryPattern.test(textWith(event.target as HTMLInputElement, inserted))) event.preventDefault()
+}
+
+// A number copied from a spreadsheet cell comes with a line break or tab: what is pasted is the number without them.
+const onPaste = (event: ClipboardEvent) => {
+	if (category !== 'quantity') return
+	event.preventDefault()
+	const input = event.target as HTMLInputElement
+	const pasted = (event.clipboardData?.getData('text') ?? '').trim()
+	if (!quantityEntryPattern.test(textWith(input, pasted))) return
+	input.setRangeText(pasted, input.selectionStart ?? 0, input.selectionEnd ?? 0, 'end')
+	input.dispatchEvent(new Event('input', { bubbles: true }))
 }
 
 const onCurrencyKeydownMasked = (event: KeyboardEvent): boolean => {
