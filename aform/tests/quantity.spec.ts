@@ -446,7 +446,7 @@ describe('AQuantityInput', () => {
 			expect(toggle.attributes('aria-activedescendant')).toBeUndefined()
 			await toggle.trigger('keydown.down') // opens, active index 0
 			const active = toggle.attributes('aria-activedescendant')
-			expect(active).toBe('q-uom-opt-0')
+			expect(active).toBe('q-uom-listbox-opt-0')
 			expect(wrapper.find(`#${active}`).classes()).toContain('is-active')
 		})
 

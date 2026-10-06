@@ -27,7 +27,7 @@
 								list-anchor="group"
 								:options="uoms"
 								:mode="mode"
-								:uuid="`${uuid}-uom`"
+								:uuid="uuid ? `${uuid}-uom` : undefined"
 								:aria-label="uomLabel"
 								:placeholder="uomLabel" />
 						</div>

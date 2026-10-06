@@ -1,5 +1,6 @@
 import { mount, flushPromises } from '@vue/test-utils'
 import { describe, it, expect, vi } from 'vitest'
+import { defineComponent, h } from 'vue'
 
 import AForm from '../src/components/AForm.vue'
 import ADropdown from '../src/components/form/ADropdown.vue'
@@ -437,5 +438,22 @@ describe('dropdown list ids', { tags: ['component'] }, () => {
 
 		const controlled = button.attributes('aria-controls')
 		expect(wrapper.findAll(`[id="${controlled}"]`).map(element => element.element.tagName)).toEqual(['UL'])
+	})
+
+	// A field given no id has none to build on, so two of them on one form must not share one.
+	it('gives two quantity fields without an id their own unit lists', async () => {
+		const options = { uoms: ['Nos', 'Box'] }
+		const wrapper = mount(
+			defineComponent({
+				setup: () => () =>
+					h('div', [
+						h(AQuantityInput, { label: 'Ordered', options }),
+						h(AQuantityInput, { label: 'Received', options }),
+					]),
+			})
+		)
+		const ids = wrapper.findAll('[id]').map(element => element.attributes('id'))
+
+		expect(ids).toEqual([...new Set(ids)])
 	})
 })

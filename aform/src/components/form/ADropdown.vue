@@ -177,7 +177,8 @@ const emit = defineEmits<{
 
 const linkPicker = computed(() => linkFilterFunction !== undefined)
 
-const listboxId = uuid ?? `aform-dropdown-${useId()}-listbox`
+// The list's own id: `uuid` is already the box's, and `aria-controls` must name the list.
+const listboxId = `${uuid ?? `aform-dropdown-${useId()}`}-listbox`
 
 const choiceList = computed(() => selectChoices(options))
 
