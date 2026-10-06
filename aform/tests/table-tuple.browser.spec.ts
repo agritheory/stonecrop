@@ -211,6 +211,7 @@ describe('a price cell in a table', { tags: ['browser'] }, () => {
 	// A refused key leaves the rest of what was typed, as in the form's price box.
 	it.each([
 		['12a', 12],
+		['12.5.0', 12.5],
 		['-12', -12],
 	])('reads %s typed into a price as %s', async (typed, amount) => {
 		const { rows } = mountPriceTable()

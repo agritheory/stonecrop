@@ -47,6 +47,17 @@ describe('currencyAmountFormat', () => {
 		expect(currencyAmountEntryPattern('JPY', 'ja-JP').test('100.50')).toBe(false)
 	})
 
+	// The box holds an amount on its way to being typed, so "12." is fine, but a second decimal point is no amount.
+	it.each([
+		['USD', 'en-US', '12.', true],
+		['USD', 'en-US', '12.5.0', false],
+		['USD', 'en-US', '12.5,0', false],
+		['EUR', 'de-DE', '12,', true],
+		['EUR', 'de-DE', '12,5,0', false],
+	])('lets a %s amount in %s hold %s: %s', (currency, locale, text, allowed) => {
+		expect(currencyAmountEntryPattern(currency, locale).test(text)).toBe(allowed)
+	})
+
 	// The editor and the cell show the same amount, so they must agree on which mark is the decimal point.
 	it('writes an EUR amount with the same separators in the editor as in the cell', () => {
 		const inEditor = formatCurrencyAmountInput(1234.5, 'EUR')

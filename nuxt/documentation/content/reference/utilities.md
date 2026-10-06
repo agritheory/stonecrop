@@ -28,7 +28,7 @@ export declare function compareSemver(a: string, b: string): number;
 
 ### currencyAmountEntryPattern
 
-Characters allowed while typing in a masked currency amount field.
+What a masked currency amount field may hold while it is typed in: digits and grouping marks, then at most one decimal point followed by digits.
 
 **Signature:**
 

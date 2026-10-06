@@ -62,6 +62,8 @@ describe('typing a price', { tags: ['browser'] }, () => {
 	it.each([
 		['12a', 12],
 		['1-2', 12],
+		// A second decimal point would make the text no number, and so no price.
+		['12.5.0', 12.5],
 		// Credits and refunds are negative.
 		['-12', -12],
 	])('reads %s as %s', async (typed, amount) => {
@@ -105,6 +107,18 @@ describe('typing a price', { tags: ['browser'] }, () => {
 		await userEvent.click(outside())
 
 		expect(model.value?.amount).toBe(50)
+	})
+
+	// The paste is checked with what the box already holds, as a table cell checks it.
+	it('refuses a pasted decimal point after the one already typed', async () => {
+		const { model } = mountPrice(null)
+		await copy('.5')
+		await userEvent.click(amountBox())
+		await userEvent.keyboard('12.3')
+		await userEvent.paste()
+		await userEvent.click(outside())
+
+		expect(model.value?.amount).toBe(12.3)
 	})
 
 	// A plain number box takes "e" for an exponent and a second point mid-typing; a price takes neither.

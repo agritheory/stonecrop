@@ -298,9 +298,12 @@ const onAmountKeydownMasked = (event: KeyboardEvent) => {
 	if (event.key.length === 1 && !pattern.test(next)) event.preventDefault()
 }
 
+// The box's text once pasted, as a table cell checks it: ".5" pasted after "12.3" is no amount.
 const onAmountPasteMasked = (event: ClipboardEvent) => {
-	const pasted = event.clipboardData?.getData('text') ?? ''
-	if (!currencyAmountEntryPattern(selectedCurrencyId.value).test(pasted.trim())) event.preventDefault()
+	const input = event.target as HTMLInputElement
+	const pasted = (event.clipboardData?.getData('text') ?? '').trim()
+	const text = input.value.slice(0, input.selectionStart ?? 0) + pasted + input.value.slice(input.selectionEnd ?? 0)
+	if (!currencyAmountEntryPattern(selectedCurrencyId.value).test(text)) event.preventDefault()
 }
 
 const conversionHelperText = computed(() => {

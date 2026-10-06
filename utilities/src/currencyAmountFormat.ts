@@ -66,20 +66,17 @@ export function parseCurrencyAmountInput(text: string, locale?: string): number 
 }
 
 /**
- * Characters allowed while typing in a masked currency amount field.
+ * What a masked currency amount field may hold while it is typed in: digits and grouping marks, then at most one
+ * decimal point followed by digits.
  * @param locale - The browser's own when omitted
  * @public
  */
 export function currencyAmountEntryPattern(currencyId: string | undefined, locale?: string): RegExp {
 	const { group, decimal } = separatorsForLocale(locale)
-	const grp = group.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-	const fractionDigits = currencyInputFractionDigits(currencyId)
-	let extra = grp
-	if (fractionDigits > 0) {
-		const dec = decimal === '.' ? '\\.' : decimal.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-		extra += dec
-		// US-style keyboards often paste/type '.' even when the locale decimal is ','.
-		if (decimal !== '.') extra += '\\.'
-	}
-	return new RegExp(`^-?[\\d${extra}]*$`)
+	const escape = (mark: string) => mark.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+	const whole = `-?[\\d${escape(group)}]*`
+	if (currencyInputFractionDigits(currencyId) === 0) return new RegExp(`^${whole}$`)
+	// US-style keyboards often paste/type '.' even when the locale decimal is ','.
+	const point = decimal === '.' ? '\\.' : `[${escape(decimal)}.]`
+	return new RegExp(`^${whole}(?:${point}\\d*)?$`)
 }
