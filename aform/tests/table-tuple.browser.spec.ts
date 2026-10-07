@@ -48,36 +48,42 @@ const mountTable = <Row extends TableRow>(column: TableColumn, row: Row) => {
 	return { rows }
 }
 
+const quantityColumn: TableColumn = {
+	name: 'qty',
+	label: 'Qty',
+	component: 'AQuantityInput',
+	options: { uoms: ['Nos', 'Box'], stockUom: 'Nos', conversionFactors: { Box: 10 } },
+}
+
 // Two boxes of ten.
 const mountQuantityTable = () =>
-	mountTable<QuantityRow>(
-		{
-			name: 'qty',
-			label: 'Qty',
-			component: 'AQuantityInput',
-			options: { uoms: ['Nos', 'Box'], stockUom: 'Nos', conversionFactors: { Box: 10 } },
-		},
-		{
-			product: 'Widget',
-			note: 'Fragile',
-			qty: { qty: 2, uom: 'Box', stockQty: 20, stockUom: 'Nos', conversionFactor: 10 },
-		}
-	)
+	mountTable<QuantityRow>(quantityColumn, {
+		product: 'Widget',
+		note: 'Fragile',
+		qty: { qty: 2, uom: 'Box', stockQty: 20, stockUom: 'Nos', conversionFactor: 10 },
+	})
+
+// A row just added: a field nobody has filled in is left out of it.
+const mountNewRow = (column: TableColumn) => mountTable<TableRow>(column, { product: 'Widget', note: 'Fragile' })
 
 const usd = { id: 'USD', displayText: 'US Dollar', symbol: '$' }
 const eur = { id: 'EUR', displayText: 'Euro', symbol: '€' }
 const jpy = { id: 'JPY', displayText: 'Yen', symbol: '¥' }
 
+const priceColumn = (currency = usd): TableColumn => ({
+	name: 'price',
+	label: 'Price',
+	component: 'ACurrencyInput',
+	options: { baseCurrency: currency },
+})
+
 // Fifty dollars, or fifty of another currency.
 const mountPriceTable = (currency = usd) =>
-	mountTable<PriceRow>(
-		{ name: 'price', label: 'Price', component: 'ACurrencyInput', options: { baseCurrency: currency } },
-		{
-			product: 'Widget',
-			note: 'Fragile',
-			price: { amount: 50, currency, baseAmount: 50, baseCurrency: currency, exchangeRate: 1 },
-		}
-	)
+	mountTable<PriceRow>(priceColumn(currency), {
+		product: 'Widget',
+		note: 'Fragile',
+		price: { amount: 50, currency, baseAmount: 50, baseCurrency: currency, exchangeRate: 1 },
+	})
 
 const tupleCell = () => document.querySelector<HTMLElement>('td.atable-cell--tuple')!
 const outside = () => document.querySelector<HTMLElement>('#outside')!
@@ -142,6 +148,15 @@ describe('a quantity cell in a table', { tags: ['browser'] }, () => {
 		expect(rows.value[0].qty.qty).toBe(qty)
 	})
 
+	it('takes a quantity typed into a new row', async () => {
+		const { rows } = mountNewRow(quantityColumn)
+		await startEditingCell()
+		await userEvent.keyboard('3')
+		await userEvent.click(outside())
+
+		expect(rows.value[0].qty).toMatchObject({ qty: 3, stockQty: 3 })
+	})
+
 	// A spreadsheet cell is copied with a line break after it.
 	it('takes a quantity pasted from a spreadsheet', async () => {
 		const { rows } = mountQuantityTable()
@@ -190,6 +205,18 @@ describe('a quantity cell in a table', { tags: ['browser'] }, () => {
 		expect(isEditing()).toBe(true)
 	})
 
+	// Arrows move through the list in a loop; Enter picks the highlighted unit.
+	it.each(['{ArrowDown}{Enter}', '{ArrowUp}{ArrowUp}{Enter}'])('picks a unit with %s', async keys => {
+		const { rows } = mountQuantityTable()
+		await startEditingCell()
+		await userEvent.keyboard('{Shift>}{ArrowDown}{/Shift}')
+		await expect.poll(unitList).not.toBeNull()
+		await userEvent.keyboard(keys)
+
+		await expect.poll(unitList).toBeNull()
+		expect(rows.value[0].qty).toMatchObject({ qty: 2, uom: 'Nos', stockQty: 2 })
+	})
+
 	it('closes the unit list when Tab moves focus out of it', async () => {
 		mountQuantityTable()
 		await startEditingCell()
@@ -224,6 +251,44 @@ describe('a price cell in a table', { tags: ['browser'] }, () => {
 		await userEvent.click(outside())
 
 		expect(rows.value[0].price.amount).toBe(amount)
+	})
+
+	it('takes a price typed into a new row', async () => {
+		const { rows } = mountNewRow(priceColumn())
+		await startEditingCell()
+		await userEvent.keyboard('12.5')
+		await userEvent.click(outside())
+
+		expect(rows.value[0].price).toMatchObject({ amount: 12.5, baseAmount: 12.5 })
+	})
+
+	// Arrow keys move between cells in a table, as in any editable cell.
+	it('keeps a price typed before an arrow key moves to the next cell', async () => {
+		const { rows } = mountPriceTable()
+		await startEditingCell()
+		await userEvent.keyboard('12{ArrowRight}')
+
+		await expect.poll(() => document.activeElement?.closest('td')?.dataset.colindex).toBe('2')
+		expect(rows.value[0].price.amount).toBe(12)
+	})
+
+	it.each<[string, TableRow]>([
+		[
+			'a price',
+			{
+				product: 'Widget',
+				note: 'Fragile',
+				price: { amount: 50, currency: usd, baseAmount: 50, baseCurrency: usd, exchangeRate: 1 },
+			},
+		],
+		['a new row', { product: 'Widget', note: 'Fragile' }],
+	])('keeps a price typed into a plain number box, in %s', async (_, row) => {
+		const { rows } = mountTable<TableRow>({ ...priceColumn(), options: { baseCurrency: usd, amountMask: false } }, row)
+		await startEditingCell()
+		await userEvent.keyboard('12.75')
+		await userEvent.click(outside())
+
+		expect(rows.value[0].price).toMatchObject({ amount: 12.75 })
 	})
 
 	it('refuses a decimal point in a price without decimals', async () => {

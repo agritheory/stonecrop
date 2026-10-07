@@ -61,6 +61,12 @@ const currencyChoices = () =>
 
 const isListOpen = () => currencyBox().getAttribute('aria-expanded') === 'true'
 
+const listText = () => document.querySelector('.acurrency__currency [role="listbox"]')?.textContent?.trim()
+
+// A doctype is JSON, so it carries its lookup as text.
+const lookupAsText =
+	"async () => [{ id: 'USD', displayText: 'US Dollar', symbol: '$' }, { id: 'INR', displayText: 'Rupee', symbol: '₹' }]"
+
 describe('typing a price', { tags: ['browser'] }, () => {
 	// A refused key leaves the rest of what was typed.
 	it.each([
@@ -77,11 +83,25 @@ describe('typing a price', { tags: ['browser'] }, () => {
 		expect(model.value?.amount).toBe(amount)
 	})
 
+	it('takes a price typed with grouping separators', async () => {
+		const { model } = mountPrice(null)
+		await typeAmount(new Intl.NumberFormat().format(1234567))
+
+		expect(model.value?.amount).toBe(1234567)
+	})
+
 	it('refuses a decimal point in a currency without decimals', async () => {
 		const { model } = mountPrice(null, jpy)
 		await typeAmount('1.5')
 
 		expect(model.value?.amount).toBe(15)
+	})
+
+	it('moves the caret with the arrow keys to fix a typo', async () => {
+		const { model } = mountPrice(null)
+		await typeAmount('15{ArrowLeft}2')
+
+		expect(model.value?.amount).toBe(125)
 	})
 
 	it('lets keyboard shortcuts through', async () => {
@@ -140,9 +160,26 @@ describe('typing a price', { tags: ['browser'] }, () => {
 	it.each([
 		['12e3', 123],
 		['1.2.3', 1.23],
+		['-12', -12],
+		['15{ArrowLeft}2', 125],
+		['12{Control>}a{/Control}7', 7],
 	])('reads %s as %s in a plain number box', async (typed, amount) => {
 		const { model } = mountPrice(null, usd, { amountMask: false })
 		await typeAmount(typed)
+
+		expect(model.value?.amount).toBe(amount)
+	})
+
+	it.each([
+		['12.5', 12.5],
+		['abc', 50],
+	])('reads %s pasted into a plain number box as %s', async (pasted, amount) => {
+		const { model } = mountPrice(50, usd, { amountMask: false })
+		await copy(pasted)
+		await userEvent.click(amountBox())
+		await userEvent.keyboard('{Control>}a{/Control}')
+		await userEvent.paste()
+		await userEvent.click(outside())
 
 		expect(model.value?.amount).toBe(amount)
 	})
@@ -178,6 +215,29 @@ describe('the currency box of a price', { tags: ['browser'] }, () => {
 		await expect.poll(isListOpen).toBe(false)
 		expect(currencyBox().value).toBe('$')
 		expect(model.value?.currency).toMatchObject({ id: 'USD' })
+	})
+
+	it("lists the currencies a doctype's lookup returns", async () => {
+		mountPrice(50, usd, { filterFunction: lookupAsText })
+		await userEvent.click(currencyBox())
+
+		await expect.poll(currencyChoices).toEqual(['$ — US Dollar', '₹ — Rupee'])
+	})
+
+	it("shows the symbol of a currency stored by its id alone, from the doctype's lookup", async () => {
+		mountPrice(50, { id: 'INR' }, { filterFunction: lookupAsText })
+
+		await expect.poll(() => currencyBox().value).toBe('₹')
+	})
+
+	it('says the currencies are loading until a server lookup answers', async () => {
+		let answer: (list: typeof currencies) => void = () => {}
+		mountPrice(50, usd, { isAsync: true, filterFunction: () => new Promise(resolve => (answer = resolve)) })
+		await userEvent.click(currencyBox())
+		await expect.poll(listText).toBe('Loading results...')
+		answer(currencies)
+
+		await expect.poll(currencyChoices).toContain('€ — Euro')
 	})
 
 	// The list opens on a closed box with the first currency highlighted.
