@@ -1,5 +1,5 @@
 import { parse } from 'graphql'
-import type { GraphQLSchema } from 'graphql'
+import type { GraphQLInputObjectType, GraphQLSchema } from 'graphql'
 import type { GraphileConfig } from 'postgraphile/graphile-build'
 import { Pool, type PoolClient } from 'pg'
 import { makeSchema } from 'postgraphile'
@@ -488,6 +488,17 @@ beforeAll(async () => {
 				{ kind: 'field', fieldname: 'label', component: 'ATextInput', label: 'Label' },
 				{ kind: 'field', fieldname: 'took', component: 'ADuration', label: 'Took' },
 				{ kind: 'field', fieldname: 'laps', component: 'ATextInput', label: 'Laps' },
+			],
+			workflow: { actions: { save: { label: 'Save', selfTransition: true } } },
+		},
+		ScLine: {
+			name: 'ScLine',
+			fields: [
+				{ kind: 'field', fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
+				{ kind: 'field', fieldname: 'lineNo', component: 'ANumericInput', label: 'Line No' },
+				{ kind: 'field', fieldname: 'quantity', component: 'ANumericInput', label: 'Quantity' },
+				{ kind: 'field', fieldname: 'rate', component: 'ANumericInput', label: 'Rate' },
+				{ kind: 'field', fieldname: 'amount', component: 'ANumericInput', label: 'Amount' },
 			],
 			workflow: { actions: { save: { label: 'Save', selfTransition: true } } },
 		},
@@ -1124,6 +1135,47 @@ describe('self-transition data write', { tags: ['integration', 'graphql'] }, () 
 		expect((expanded as any).data?.stonecropAction?.droppedFields).toContain('itemId')
 		expect((scalar as any).data?.stonecropAction?.success).toBe(true)
 		expect((scalar as any).data?.stonecropAction?.droppedFields).toBeNull()
+	})
+
+	// `sc_line.line_no` is an identity generated always and `amount` is generated from quantity and
+	// rate: Postgres refuses any statement that sets either. A record read back carries both, so a
+	// client that edits one and saves it sends them back.
+	it('saves a record carrying the columns the database generates, and leaves them to it', async () => {
+		const [action, read] = await runSequence([
+			`mutation { stonecropAction(doctype: "ScLine", action: "save", args: [{ id: "1", data: { lineNo: 1, quantity: 3, rate: 5, amount: 10 } }]) { success error droppedFields } }`,
+			`query { stonecropRecord(doctype: "ScLine", id: "1") { data } }`,
+		])
+		const result = (action as any).data?.stonecropAction
+		expect(result?.error).toBeNull()
+		expect(result?.droppedFields).toEqual(expect.arrayContaining(['lineNo', 'amount']))
+		const record = (read as any).data?.stonecropRecord?.data
+		expect(record?.quantity).toBe(3)
+		// The database's value, not the stale one the patch carried.
+		expect(record?.amount).toBe(15)
+		expect(record?.lineNo).toBe(1)
+	})
+
+	it('creates a record carrying them, and the database fills them', async () => {
+		const [action] = await runSequence([
+			`mutation { stonecropAction(doctype: "ScLine", action: "save", args: [{ data: { lineNo: 99, quantity: 2, rate: 4, amount: 0 } }]) { success error data } }`,
+		])
+		const result = (action as any).data?.stonecropAction
+		expect(result?.error).toBeNull()
+		expect(result?.data?.amount).toBe(8)
+		// The identity's own next value, which a rolled-back test still consumes, so only "not ours".
+		expect(typeof result?.data?.lineNo).toBe('number')
+		expect(result?.data?.lineNo).not.toBe(99)
+	})
+
+	// PostGraphile's own create and update read the same marks, so the two never disagree about
+	// which columns a write may set.
+	it('keeps them out of PostGraphile’s own create and update inputs', () => {
+		for (const typeName of ['ScLineInput', 'ScLinePatch']) {
+			const fields = Object.keys((schema.getType(typeName) as GraphQLInputObjectType).getFields())
+			expect(fields).toEqual(expect.arrayContaining(['quantity', 'rate']))
+			expect(fields).not.toContain('lineNo')
+			expect(fields).not.toContain('amount')
+		}
 	})
 })
 

@@ -239,7 +239,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 	// about it is exactly how a link came to be capped by a different number than a list.
 	const defaultRowLimit: number | null = options.defaultRecordLimit === undefined ? 200 : options.defaultRecordLimit
 
-	return extendSchema(build => {
+	const schemaPlugin = extendSchema(build => {
 		// Obtain the PgExecutor from pgExecutors — one entry exists per configured pgService.
 		// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- build.input.pgRegistry is a PostGraphile internal not in the public Build type
 		const pgRegistry = (build as any).input?.pgRegistry as
@@ -744,7 +744,9 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 									//
 									// The same derivation the read path uses, so what a record exposes is what a
 									// record accepts. `status` is removed because state is the workflow's to
-									// move, never the patch's.
+									// move, never the patch's. A column the database fills itself is refused in
+									// `partitionPatch`, which asks the table only when there is a row to write:
+									// this map is built for every action, including one on a doctype with no table.
 									const writable = new Map(
 										columnBackedFields(meta.fields)
 											.filter(f => camelToSnake(f.fieldname) !== STATE_COLUMN)
@@ -764,7 +766,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 										const cols: string[] = []
 										const values: unknown[] = []
 										for (const [key, value] of Object.entries(patch)) {
-											if (!writable.has(key)) {
+											if (!writable.has(key) || !columns.writable(meta.name, camelToSnake(key))) {
 												droppedFields.push(key)
 												continue
 											}
@@ -978,6 +980,26 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 			},
 		}
 	})
+
+	return {
+		...schemaPlugin,
+		gather: {
+			hooks: {
+				// Marks a column Postgres generates as neither insertable nor updatable, as PostGraphile
+				// itself marks an identity generated always. PostGraphile reads `attgenerated` only into
+				// `hasDefault`, which a plain default shares, so without this the data write cannot tell
+				// the two apart. On the adapter's plugin rather than the preset, so it holds wherever the
+				// write runs.
+				pgCodecs_attribute(_info, event) {
+					const { attgenerated } = event.pgAttribute
+					if (attgenerated == null || attgenerated === '') return
+					event.attribute.extensions ??= {}
+					event.attribute.extensions.isInsertable = false
+					event.attribute.extensions.isUpdatable = false
+				},
+			},
+		},
+	}
 }
 
 // ===========================================================================

@@ -161,3 +161,14 @@ INSERT INTO sc_run (label, took, laps) VALUES
 	('day and a half', '1 day 02:30:00', ARRAY['00:01:30', '1 mon 2 days']::interval[]),
 	('mixed signs', '1 day -01:00:00', NULL),
 	('months and a fraction', '1 year 2 mons 00:00:01.5', NULL);
+
+-- Columns Postgres fills itself and refuses to let any statement set: an identity generated always,
+-- and a column generated from two others.
+CREATE TABLE sc_line (
+	id serial PRIMARY KEY,
+	line_no integer GENERATED ALWAYS AS IDENTITY,
+	quantity integer NOT NULL,
+	rate integer NOT NULL,
+	amount integer GENERATED ALWAYS AS (quantity * rate) STORED
+);
+INSERT INTO sc_line (quantity, rate) VALUES (2, 5);
