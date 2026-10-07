@@ -342,8 +342,9 @@ const embeddedLinkFilterQuery = (): string => {
 	return search.value
 }
 
+// One click fires pointerdown, focus and click here, and the price field's own click: only the first looks the list up.
 const openEmbeddedList = () => {
-	if (linkPicker.value) openLinkDropdown(embeddedLinkFilterQuery())
+	if (linkPicker.value && !dropdown.open) openLinkDropdown(embeddedLinkFilterQuery())
 }
 
 defineExpose({ openCurrencyList: openEmbeddedList })

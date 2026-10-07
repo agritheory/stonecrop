@@ -199,6 +199,24 @@ describe('the currency box of a price', { tags: ['browser'] }, () => {
 		expect(model.value?.currency).toMatchObject({ id: 'EUR' })
 	})
 
+	// With a server lookup, each one is a request.
+	it('looks the currencies up once for each click that opens the list', async () => {
+		let lookups = 0
+		const counted = (search: string) => {
+			lookups++
+			return lookup(search)
+		}
+		mountPrice(50, usd, { filterFunction: counted })
+		await userEvent.click(currencyBox())
+		await expect.poll(currencyChoices).toContain('€ — Euro')
+		await userEvent.click([...document.querySelectorAll<HTMLElement>('[role="option"]')][1])
+		await expect.poll(isListOpen).toBe(false)
+		await userEvent.click(currencyBox())
+		await expect.poll(isListOpen).toBe(true)
+
+		expect(lookups).toBe(2)
+	})
+
 	it('searches the currencies as you type', async () => {
 		mountPrice(50, usd, { filterFunction: lookup })
 		await userEvent.click(currencyBox())
