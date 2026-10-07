@@ -122,7 +122,9 @@ const StonecropFieldCasingPlugin: GraphileConfig.Plugin = {
  * Creates a Stonecrop-flavoured PostGraphile preset.
  *
  * The returned preset extends `PostGraphileAmberPreset` and applies Stonecrop's
- * recommended defaults. Pass it to `extends` in your PostGraphile configuration:
+ * recommended defaults. It turns off the create, update and delete mutations Amber generates for
+ * every table, so `stonecropAction` is the only write the API offers. Pass it to `extends` in your
+ * PostGraphile configuration:
  *
  * ```typescript
  * import { createStonecropPreset, makePgService, createStonecropPlugin } from '@stonecrop/graphql-middleware'
@@ -144,6 +146,11 @@ export const createStonecropPreset = (options?: { fieldCasing?: FieldCasing }): 
 		options?.fieldCasing === 'pascal'
 			? [StonecropNaturalIdPlugin, StonecropOwnedRelationsPlugin, StonecropFieldCasingPlugin]
 			: [StonecropNaturalIdPlugin, StonecropOwnedRelationsPlugin],
+	// Every write is an action, through `stonecropAction`, and Amber's create, update and delete for
+	// each table would write past the doctype's guard. Disabled rather than set in
+	// `schema.defaultBehavior`, which an app's own `defaultBehavior` replaces whole; `disablePlugins`
+	// lists merge.
+	disablePlugins: ['PgMutationCreatePlugin', 'PgMutationUpdateDeletePlugin'],
 })
 
 /**

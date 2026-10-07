@@ -102,7 +102,7 @@ createStonecropPlugin: (options?: StonecropPluginOptions) => GraphileConfig.Plug
 
 Creates a Stonecrop-flavoured PostGraphile preset.
 
-The returned preset extends `PostGraphileAmberPreset` and applies Stonecrop's recommended defaults. Pass it to `extends` in your PostGraphile configuration:
+The returned preset extends `PostGraphileAmberPreset` and applies Stonecrop's recommended defaults. It turns off the create, update and delete mutations Amber generates for every table, so `stonecropAction` is the only write the API offers. Pass it to `extends` in your PostGraphile configuration:
 
 **Signature:**
 

@@ -106,6 +106,10 @@ createStonecropPreset({ fieldCasing: 'pascal' })
 
 If your database columns are already camelCase, or you use `@name` smart tags on your column comments, the default is fine.
 
+### Mutations
+
+Amber generates a create, update and delete mutation for every table. The preset turns them off, so `stonecropAction` is the only write your API offers and every write passes the doctype's `allowedStates` guard. A database function PostGraphile exposes as a mutation is not affected.
+
 ### Using the preset constant directly
 
 When you don't need to customise any options, import `StonecropPreset` instead of calling the function:

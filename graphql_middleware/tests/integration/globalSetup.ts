@@ -14,6 +14,7 @@ declare module 'vitest' {
 		inflectionTestDatabaseUrl: string
 		conformanceTestDatabaseUrl: string
 		naturalIdTestDatabaseUrl: string
+		generatedMutationsTestDatabaseUrl: string
 	}
 }
 
@@ -47,15 +48,17 @@ export async function setup(project: TestProject) {
 	const inflection = await createTestDb()
 	const conformance = await createTestDb()
 	const naturalId = await createTestDb()
+	const generatedMutations = await createTestDb()
 
 	project.provide('testDatabaseUrl', resolver.url)
 	project.provide('camelTestDatabaseUrl', camel.url)
 	project.provide('inflectionTestDatabaseUrl', inflection.url)
 	project.provide('conformanceTestDatabaseUrl', conformance.url)
 	project.provide('naturalIdTestDatabaseUrl', naturalId.url)
+	project.provide('generatedMutationsTestDatabaseUrl', generatedMutations.url)
 
 	return async () => {
-		for (const { server, db } of [resolver, camel, inflection, conformance, naturalId]) {
+		for (const { server, db } of [resolver, camel, inflection, conformance, naturalId, generatedMutations]) {
 			server.unref()
 			server.close()
 			// oxlint-disable-next-line eslint/no-await-in-loop -- sequential teardown intentional; parallel close risks race conditions on shared DB state

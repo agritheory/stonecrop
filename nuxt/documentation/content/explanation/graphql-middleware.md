@@ -35,7 +35,7 @@ The `stonecropRecord` query accepts an `options` argument with an `includeNested
 
 ## Writing records
 
-There is one write path, and it is `stonecropAction`. Saving is a *self-transition* — an action declaring `selfTransition: true` — so there is no create mutation, no update mutation, and no separate create action. The client sends the record's id to update it and **sends no id to create it**; that absence is the entire signal, which is why a draft dispatches without one.
+There is one write path, and it is `stonecropAction`. The preset turns off the create, update and delete mutations PostGraphile generates for every table, which would write past the doctype's guard. Saving is a *self-transition* — an action declaring `selfTransition: true` — so there is no create mutation, no update mutation, and no separate create action. The client sends the record's id to update it and **sends no id to create it**; that absence is the entire signal, which is why a draft dispatches without one.
 
 What a write may set comes from the doctype, not from the request. The patch is intersected with the doctype's declared, column-backed fields — the same derivation the read path selects — so what a record exposes is what a record accepts. Keys naming no column are discarded, as are values that arrive as nested objects where the column holds a scalar (the shape a read-modify-write produces for an expanding link). So is a column the database fills itself (a generated column, or an identity generated always), which Postgres refuses to set. Everything discarded is listed in `droppedFields` on the result. The action still succeeds; report it, because those keys are data the user believes was saved.
 
