@@ -8,7 +8,7 @@
 			<span v-if="!linkPicker && badgeDescriptor" class="aform_display-value" :style="displayAccentStyle">{{
 				badgeDescriptor.label
 			}}</span>
-			<span v-else-if="!linkPicker" class="aform_display-value">{{ search ?? '' }}</span>
+			<span v-else-if="!linkPicker" class="aform_display-value">{{ search }}</span>
 			<span v-else class="aform_display-value">{{ linkDisplayedText }}</span>
 			<label v-if="label && !embedded" class="aform_field-label">{{ label }}</label>
 		</template>
@@ -224,12 +224,13 @@ const optionCount = () => (linkPicker.value ? linkResults.value.length : dropdow
 
 const committedValue = ref(modelValue.value ?? '')
 
-const linkDisplayedText = computed(() => {
-	const id = linkId(linkModel.value)
-	if (id === undefined) return '—'
-	if (formatter) return formatter(asLinkValue(linkModel.value))
-	return linkDisplayText(linkModel.value) ?? id
-})
+// The text a picked record shows: the formatter's, or else its name, or else its id.
+const linkText = (value: AFormLinkModelValue | undefined) => {
+	const record = asLinkValue(value)
+	return formatter ? formatter(record) : (linkDisplayText(record) ?? String(record.id))
+}
+
+const linkDisplayedText = computed(() => (linkId(linkModel.value) === undefined ? '—' : linkText(linkModel.value)))
 
 const search = ref('')
 
@@ -248,8 +249,7 @@ watch(
 	() => linkModel.value,
 	value => {
 		if (!linkPicker.value) return
-		const id = linkId(value)
-		search.value = id ? (formatter ? formatter(asLinkValue(value)) : (linkDisplayText(value) ?? id)) : ''
+		search.value = linkId(value) ? linkText(value) : ''
 	},
 	{ immediate: true }
 )
@@ -259,7 +259,7 @@ watch(
 	async id => {
 		if (!linkPicker.value || !id) return
 		if (linkDisplayText(linkModel.value)) {
-			search.value = formatter ? formatter(asLinkValue(linkModel.value)) : linkDisplayedText.value
+			search.value = linkText(linkModel.value)
 			return
 		}
 		try {
@@ -278,7 +278,7 @@ watch(
 			}
 			if (displayText) {
 				const resolved: AFormLinkValue = { ...asLinkValue(linkModel.value), ...match, id, displayText }
-				search.value = formatter ? formatter(resolved) : displayText
+				search.value = linkText(resolved)
 				linkModel.value = resolved
 			}
 		} catch {
@@ -297,13 +297,9 @@ const isLinkOptionSelected = (option: AFormLinkValue) => {
 	return id !== undefined && String(option.id) === String(id)
 }
 
-const embeddedLinkDisplayText = computed(() => {
-	if (!embedded || !linkPicker.value) return ''
-	const id = linkId(linkModel.value)
-	if (!id) return placeholder ?? ''
-	const value = asLinkValue(linkModel.value)
-	return formatter ? formatter(value) : (linkDisplayText(linkModel.value) ?? String(id))
-})
+const embeddedLinkDisplayText = computed(() =>
+	linkId(linkModel.value) ? linkText(linkModel.value) : (placeholder ?? '')
+)
 
 const embeddedLinkInputSize = computed(() => {
 	if (!embedded || !linkPicker.value) return undefined
@@ -316,7 +312,7 @@ const filterResults = () => {
 	if (!search.value) {
 		dropdown.results = choiceList.value
 	} else {
-		dropdown.results = choiceList.value.filter(item => item.toLowerCase().includes((search.value ?? '').toLowerCase()))
+		dropdown.results = choiceList.value.filter(item => item.toLowerCase().includes(search.value.toLowerCase()))
 	}
 }
 
@@ -379,13 +375,13 @@ const setChoiceResult = (result: string) => {
 
 const selectLinkOption = (option: AFormLinkValue) => {
 	linkModel.value = option
-	search.value = formatter ? formatter(option) : (option.displayText ?? String(option.id))
+	search.value = linkText(option)
 	dropdown.open = false
 	dropdown.activeItemIndex = null
 }
 
 const openChoiceDropdown = () => {
-	const idx = choiceList.value.indexOf(search.value ?? '')
+	const idx = choiceList.value.indexOf(search.value)
 	dropdown.activeItemIndex = isAsync ? null : idx >= 0 ? idx : null
 	dropdown.open = true
 	dropdown.results = isAsync ? [] : choiceList.value
@@ -395,12 +391,7 @@ const closeDropdown = (result?: string) => {
 	dropdown.activeItemIndex = null
 	dropdown.open = false
 	if (linkPicker.value) {
-		const id = linkId(linkModel.value)
-		search.value = id
-			? formatter
-				? formatter(asLinkValue(linkModel.value))
-				: (linkDisplayText(linkModel.value) ?? id)
-			: ''
+		search.value = linkId(linkModel.value) ? linkText(linkModel.value) : ''
 		return
 	}
 	const typed = result || search.value || ''
@@ -476,15 +467,12 @@ const selectNextResult = () => {
 	const wasOpen = dropdown.open
 	ensureDropdownOpen()
 	if (!wasOpen) {
-		if (dropdown.activeItemIndex === null && !isAsync) {
-			const idx = choiceList.value.indexOf(search.value ?? '')
-			dropdown.activeItemIndex = idx >= 0 ? idx : 0
-		}
+		// Opening already highlights the current choice; with none, the first is.
+		if (dropdown.activeItemIndex === null && !isAsync) dropdown.activeItemIndex = 0
 		return
 	}
 	if (dropdown.activeItemIndex != null) {
-		const currentIndex = isNaN(dropdown.activeItemIndex) ? 0 : dropdown.activeItemIndex
-		dropdown.activeItemIndex = (currentIndex + 1) % resultsLength
+		dropdown.activeItemIndex = (dropdown.activeItemIndex + 1) % resultsLength
 	} else {
 		dropdown.activeItemIndex = 0
 	}
@@ -495,11 +483,10 @@ const selectPrevResult = () => {
 	if (!resultsLength) return
 	ensureDropdownOpen()
 	if (dropdown.activeItemIndex != null) {
-		const currentIndex = isNaN(dropdown.activeItemIndex) ? 0 : dropdown.activeItemIndex
-		if (currentIndex === 0) {
+		if (dropdown.activeItemIndex === 0) {
 			dropdown.activeItemIndex = trigger === 'button' ? resultsLength - 1 : null
 		} else {
-			dropdown.activeItemIndex = currentIndex - 1
+			dropdown.activeItemIndex = dropdown.activeItemIndex - 1
 		}
 	} else {
 		dropdown.activeItemIndex = resultsLength - 1
@@ -517,11 +504,8 @@ const setCurrentResult = () => {
 		}
 		return
 	}
-	if (dropdown.results) {
-		const currentIndex = dropdown.activeItemIndex ?? 0
-		const result = dropdown.results[currentIndex]
-		if (result !== undefined) setChoiceResult(result)
-	}
+	const result = dropdown.results[dropdown.activeItemIndex ?? 0]
+	if (result !== undefined) setChoiceResult(result)
 }
 </script>
 
