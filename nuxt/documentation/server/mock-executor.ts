@@ -111,7 +111,7 @@ function seedOrders(): Map<string, Order> {
 				orderNumber: 'ORD-2025-0001',
 				userId: '2',
 				status: 'COMPLETED',
-				total: playgroundMoneyUsd(150),
+				total: playgroundMoneyUsd(155),
 				items: [
 					{
 						id: '1-1',
