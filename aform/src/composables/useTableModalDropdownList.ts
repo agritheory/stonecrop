@@ -1,0 +1,87 @@
+import { nextTick, onMounted, ref, watch, type Ref } from 'vue'
+
+type TableModalDropdownListOptions = {
+	panelRef: Readonly<Ref<HTMLElement | null>>
+	isOpen: () => boolean
+	optionCount: () => number
+	selectAt: (index: number) => void
+	onClose: () => void
+}
+
+/** Keyboard nav + focus for {@link ADropdownList} hosted in {@link ATableModal}. */
+export function useTableModalDropdownList(options: TableModalDropdownListOptions) {
+	const activeIndex = ref<number | null>(null)
+
+	const focusPanel = () => {
+		void nextTick(() => options.panelRef.value?.focus())
+	}
+
+	watch(
+		() => options.isOpen(),
+		open => {
+			if (open) {
+				activeIndex.value = null
+				focusPanel()
+			}
+		}
+	)
+
+	onMounted(() => {
+		if (options.isOpen()) focusPanel()
+	})
+
+	const onKeydown = (event: KeyboardEvent) => {
+		// Before the check for options: a picker with nothing to pick, or still loading, closes on Escape too.
+		if (event.key === 'Escape') {
+			event.preventDefault()
+			event.stopPropagation()
+			options.onClose()
+			return
+		}
+
+		const count = options.optionCount()
+		if (!count) return
+
+		if (event.key === 'ArrowDown') {
+			event.preventDefault()
+			event.stopPropagation()
+			if (activeIndex.value != null) {
+				activeIndex.value = (activeIndex.value + 1) % count
+			} else {
+				activeIndex.value = 0
+			}
+			return
+		}
+
+		if (event.key === 'ArrowUp') {
+			event.preventDefault()
+			event.stopPropagation()
+			if (activeIndex.value != null) {
+				activeIndex.value = activeIndex.value === 0 ? Math.max(count - 1, 0) : activeIndex.value - 1
+			} else {
+				activeIndex.value = Math.max(count - 1, 0)
+			}
+			return
+		}
+
+		if (event.key === 'Enter') {
+			event.preventDefault()
+			event.stopPropagation()
+			const index = activeIndex.value ?? 0
+			if (index >= 0 && index < count) options.selectAt(index)
+			return
+		}
+	}
+
+	const onClickOutside = () => {
+		options.onClose()
+	}
+
+	// Focus moving out of the picker, by Tab or to whatever was clicked, closes it.
+	const onFocusOut = (event: FocusEvent) => {
+		if (event.relatedTarget instanceof Node && options.panelRef.value?.contains(event.relatedTarget)) return
+		options.onClose()
+	}
+
+	return { activeIndex, onKeydown, onClickOutside, onFocusOut, focusPanel }
+}

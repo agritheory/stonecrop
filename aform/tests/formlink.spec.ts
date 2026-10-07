@@ -245,7 +245,11 @@ describe('AFormLink component', { tags: ['component'] }, () => {
 		await input.trigger('keydown.down')
 
 		expect(input.attributes('aria-activedescendant')).toBe(wrapper.findAll('li').at(0)!.attributes('id'))
-		expect(wrapper.findAll('li').at(0)!.attributes('aria-selected')).toBe('true')
+		expect(wrapper.findAll('li').at(0)!.attributes('aria-selected')).toBe('false')
+
+		await wrapper.setProps({ modelValue: { id: 'CUST-002', displayText: 'Beta LLC' } })
+		await flushPromises()
+		expect(wrapper.findAll('li').at(1)!.attributes('aria-selected')).toBe('true')
 	})
 
 	it('honours the shared `required` prop on the search input', () => {

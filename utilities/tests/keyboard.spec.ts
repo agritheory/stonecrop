@@ -133,6 +133,16 @@ describe('defaultKeypressHandlers', { tags: ['component'] }, () => {
 		expect(document.activeElement).toBe(cells[0][0])
 	})
 
+	it('moves to the next cell on tab when focus is on an input inside the cell', () => {
+		const $input = document.createElement('input')
+		$input.tabIndex = -1
+		cells[0][0].appendChild($input)
+		$input.focus()
+
+		defaultKeypressHandlers['keydown.tab'](keydownOn($input))
+		expect(document.activeElement).toBe(cells[0][1])
+	})
+
 	it('skips unfocusable cells when navigating', () => {
 		// make the middle row unfocusable; down from row 0 should land on row 2
 		for (const $cell of cells[1]) $cell.tabIndex = -1

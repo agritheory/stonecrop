@@ -352,4 +352,164 @@ describe('table cell component', { tags: ['component'] }, () => {
 			expect(nonEditableCell!.vm.currentData).toEqual(nonEditableCell!.text())
 		})
 	})
+
+	describe('tuple cells', () => {
+		const quantityValue = { qty: 2, uom: 'Nos', stockQty: 2, stockUom: 'Nos', conversionFactor: 1 }
+
+		// Stands in for aform's editor: a box to type in and a handle to open the unit list, and a record of each number
+		// the cell has the editor save.
+		let saves = 0
+		const ATupleCellEditor = {
+			name: 'ATupleCellEditor',
+			props: ['category', 'colIndex', 'rowIndex', 'store', 'active', 'displayText', 'inputId'],
+			emits: ['deactivate'],
+			methods: {
+				focusInput(this: { $refs: { input: HTMLInputElement } }) {
+					this.$refs.input.focus()
+				},
+				commitNumber: () => saves++,
+			},
+			template: `<span data-test="tuple-display">{{ displayText }}</span><input ref="input" v-show="active" class="atable-tuple-shell__input" data-test="tuple-input" /><button class="atable-tuple-shell__handle" />`,
+		}
+		const ATableTupleQuantityPicker = { template: '<button data-test="unit" />' }
+
+		// A quantity and a note beside it, to move focus to.
+		const mountQuantityTable = () => {
+			saves = 0
+			return mount(ATable, {
+				props: {
+					rows: [{ qty: quantityValue, note: 'Fragile' }],
+					columns: [
+						{ name: 'qty', label: 'Qty', component: 'AQuantityInput', edit: true },
+						{ name: 'note', label: 'Note', edit: true },
+					],
+					config: { view: 'list' },
+				},
+				attachTo: document.body,
+				global: { components: { ATupleCellEditor, ATableTupleQuantityPicker } },
+			})
+		}
+
+		type Table = ReturnType<typeof mountQuantityTable>
+		const tupleCell = (wrapper: Table) => wrapper.find('td[data-colindex="0"]')
+		const isEditing = (wrapper: Table) => tupleCell(wrapper).classes().includes('atable-cell--tuple-active')
+		const leaveCellFor = (wrapper: Table, element: Element) =>
+			tupleCell(wrapper).trigger('focusout', { relatedTarget: element })
+		const openUnitList = async (wrapper: Table) => {
+			const cell = tupleCell(wrapper).element as HTMLTableCellElement
+			wrapper.vm.store.openTuplePicker(0, 0, cell, { left: 1, bottom: 1, width: 1, height: 1 })
+			await wrapper.vm.$nextTick()
+		}
+
+		it('starts editing a quantity cell when it is clicked, with focus in its box', async () => {
+			const wrapper = mountQuantityTable()
+			await tupleCell(wrapper).trigger('click')
+			await wrapper.vm.$nextTick()
+
+			expect(isEditing(wrapper)).toBe(true)
+			expect(document.activeElement).toBe(wrapper.find('[data-test="tuple-input"]').element)
+			wrapper.unmount()
+		})
+
+		it('starts editing a quantity cell when focus moves to it', async () => {
+			const wrapper = mountQuantityTable()
+			await tupleCell(wrapper).trigger('focus')
+
+			expect(isEditing(wrapper)).toBe(true)
+			wrapper.unmount()
+		})
+
+		it('stops editing, saving what was typed, when focus leaves the cell', async () => {
+			const wrapper = mountQuantityTable()
+			await tupleCell(wrapper).trigger('click')
+			await leaveCellFor(wrapper, wrapper.find('td[data-colindex="1"]').element)
+
+			expect(isEditing(wrapper)).toBe(false)
+			expect(saves).toBe(1)
+			wrapper.unmount()
+		})
+
+		it.each([
+			['its box', '.atable-tuple-shell__input'],
+			['its handle', '.atable-tuple-shell__handle'],
+		])('keeps editing when focus moves to %s', async (_, selector) => {
+			const wrapper = mountQuantityTable()
+			await tupleCell(wrapper).trigger('click')
+			await leaveCellFor(wrapper, wrapper.find(selector).element)
+
+			expect(isEditing(wrapper)).toBe(true)
+			wrapper.unmount()
+		})
+
+		// The list holds focus while it is open; the editor ends editing once it closes.
+		it.each([
+			['into the unit list', () => document.querySelector('[data-test="unit"]')!],
+			['elsewhere', () => document.querySelector('td[data-colindex="1"]')!],
+		])('keeps editing while its unit list is open and focus moves %s', async (_, target) => {
+			const wrapper = mountQuantityTable()
+			await tupleCell(wrapper).trigger('click')
+			await openUnitList(wrapper)
+			await leaveCellFor(wrapper, target())
+
+			expect(isEditing(wrapper)).toBe(true)
+			wrapper.unmount()
+		})
+
+		it('stops editing when its editor says so', async () => {
+			const wrapper = mountQuantityTable()
+			await tupleCell(wrapper).trigger('click')
+			wrapper.findComponent({ name: 'ATupleCellEditor' }).vm.$emit('deactivate')
+			await wrapper.vm.$nextTick()
+
+			expect(isEditing(wrapper)).toBe(false)
+			wrapper.unmount()
+		})
+
+		it('shows formatted text for an editable quantity column until the cell is active', async () => {
+			const rows = [{ qty: quantityValue }]
+			const testColumns: TableColumn[] = [
+				{
+					name: 'qty',
+					label: 'Qty',
+					component: 'AQuantityInput',
+					edit: true,
+					format: (v: { qty: number; uom: string }) => `${v.qty} ${v.uom}`,
+					options: { uoms: ['Nos'], stockUom: 'Nos' },
+				},
+			]
+			const wrapper = mount(ATable, {
+				props: {
+					rows,
+					columns: testColumns,
+					config: { view: 'list' },
+					'onUpdate:rows': (next: typeof rows) => wrapper.setProps({ rows: next }),
+				},
+				global: { components: { ATupleCellEditor } },
+			})
+			await wrapper.vm.$nextTick()
+
+			expect(wrapper.find('[data-test="tuple-input"]').isVisible()).toBe(false)
+			expect(wrapper.find('[data-test="tuple-display"]').text()).toContain('2 Nos')
+			expect(wrapper.find('td[data-editable="true"]').attributes('contenteditable')).toBe('false')
+		})
+
+		it('renders formatted text for read-only currency columns', async () => {
+			const rows = [{ total: { amount: 12.5, currency: { id: 'USD', displayText: 'US Dollar', symbol: '$' } } }]
+			const testColumns: TableColumn[] = [
+				{
+					name: 'total',
+					label: 'Total',
+					component: 'ACurrencyInput',
+					edit: false,
+					format: (v: { amount: number }) => `$${v.amount}`,
+				},
+			]
+			const wrapper = mount(ATable, {
+				props: { rows, columns: testColumns, config: { view: 'list' } },
+			})
+			await wrapper.vm.$nextTick()
+
+			expect(wrapper.find('td[data-colindex="0"]').text()).toContain('$12.5')
+		})
+	})
 })

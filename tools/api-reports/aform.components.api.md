@@ -56,9 +56,6 @@ props: {
   errors?: string[] \| undefined
   options?: CurrencyOptions \| undefined
   currencyLabel?: string \| undefined
-  baseCurrencyLabel?: string \| undefined
-  baseAmountLabel?: string \| undefined
-  exchangeRateLabel?: string \| undefined
   modelValue?: CurrencyValue \| null \| undefined
 }
 emits: {
@@ -224,12 +221,29 @@ props: {
   format?: string \| undefined
   isAsync?: boolean \| undefined
   filterFunction?: ((search: string) => string[] \| Promise<string[]>) \| undefined
+  link?: boolean \| undefined
+  linkFilterFunction?: string \| ((search: string) => AFormLinkValue[] \| Promise<AFormLinkValue[]>) \| undefined
+  formatter?: ((value: AFormLinkValue) => string) \| undefined
+  doctype?: string \| undefined
+  embedded?: boolean \| undefined
+  trigger?: "combobox" \| "button" \| undefined
+  listAnchor?: "field" \| "group" \| undefined
+  placeholder?: string \| undefined
+  ariaLabel?: string \| undefined
   modelValue?: string \| undefined
+  linkValue?: AFormLinkModelValue \| undefined
 }
 emits: {
   update:modelValue: [value: string \| undefined]
+  update:linkValue: [value: AFormLinkModelValue \| undefined]
+  update:open: [open: boolean]
 }
-slots: {}
+slots: {
+  option: { option: { [x: string]: any; id: string \| number; displayText?: string \| undefined; }; }
+}
+exposed: {
+  openCurrencyList: () => void
+}
 ```
 
 ### ADuration
@@ -389,9 +403,6 @@ props: {
   errors?: string[] \| undefined
   options?: QuantityOptions \| undefined
   uomLabel?: string \| undefined
-  stockUomLabel?: string \| undefined
-  stockQtyLabel?: string \| undefined
-  conversionFactorLabel?: string \| undefined
   modelValue?: QuantityValue \| null \| undefined
 }
 emits: {
@@ -451,6 +462,28 @@ emits: {
 slots: {}
 ```
 
+### ATableTupleCurrencyPicker
+
+```ts
+// src/components/table/ATableTupleCurrencyPicker.vue
+props: {
+  store: TableStore
+}
+emits: {}
+slots: {}
+```
+
+### ATableTupleQuantityPicker
+
+```ts
+// src/components/table/ATableTupleQuantityPicker.vue
+props: {
+  store: TableStore
+}
+emits: {}
+slots: {}
+```
+
 ### ATextboxInput
 
 ```ts
@@ -496,6 +529,48 @@ emits: {
   update:modelValue: [value: string \| number \| undefined]
 }
 slots: {}
+```
+
+### ATupleCellEditor
+
+```ts
+// src/components/table/ATupleCellEditor.vue
+props: {
+  category: "quantity" \| "currency"
+  colIndex: number
+  rowIndex: number
+  store: TableStore
+  active: boolean
+  displayText: string
+  inputId: string
+}
+emits: {
+  deactivate: []
+}
+slots: {}
+exposed: {
+  focusInput: () => void
+  openPicker: () => void
+  commitNumber: () => void
+}
+```
+
+### ATupleCellShell
+
+```ts
+// src/components/table/ATupleCellShell.vue
+props: {
+  active: boolean
+  displayText: string
+  pickerLabel: string
+  pickerOpen: boolean
+}
+emits: {
+  open-picker: []
+}
+slots: {
+  default: {}
+}
 ```
 
 ### ExpandButton

@@ -26,6 +26,106 @@ export declare function compareSemver(a: string, b: string): number;
 | a | `string` | The first version |
 | b | `string` | The second version |
 
+### currencyAmountEntryPattern
+
+What a masked currency amount field may hold while it is typed in: digits and grouping marks, then at most one decimal point followed by digits.
+
+**Signature:**
+
+```typescript
+export declare function currencyAmountEntryPattern(currencyId: string | undefined, locale?: string): RegExp;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| currencyId | `string \| undefined` |  |
+| locale | `string` | The browser's own when omitted |
+
+### currencyInputFractionDigits
+
+Fraction digits for a currency in amount inputs (e.g. JPY → 0).
+
+**Signature:**
+
+```typescript
+export declare function currencyInputFractionDigits(currencyId: string | undefined): number;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| currencyId | `string \| undefined` |  |
+
+### formatCurrencyAmount
+
+Format a currency amount for display (forms, table cells). Uses `Intl` when `currency.id` is a valid ISO code; otherwise falls back to symbol, display text, or id.
+
+**Signature:**
+
+```typescript
+export declare function formatCurrencyAmount(amount: number | null | undefined, currency: CurrencyLike | undefined): string;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| amount | `number \| null \| undefined` |  |
+| currency | `CurrencyLike \| undefined` |  |
+
+### formatCurrencyAmountInput
+
+Format a numeric amount for display in a currency amount field (no currency symbol). The currency sets the decimals; the separators are the locale's, as in the table cell.
+
+**Signature:**
+
+```typescript
+export declare function formatCurrencyAmountInput(amount: number | null | undefined, currencyId: string | undefined, locale?: string): string;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| amount | `number \| null \| undefined` |  |
+| currencyId | `string \| undefined` |  |
+| locale | `string` | The browser's own when omitted |
+
+### formatCurrencyCell
+
+Render a composite currency value for table cells.
+
+**Signature:**
+
+```typescript
+export declare function formatCurrencyCell(value: unknown): string;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| value | `unknown` |  |
+
+### formatQuantityCell
+
+Render a composite quantity value for table cells. Omits the UOM when it matches `stockUom`.
+
+**Signature:**
+
+```typescript
+export declare function formatQuantityCell(value: unknown): string;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| value | `unknown` |  |
+
 ### fromISODate
 
 Reads a `YYYY-MM-DD` day. Anything that is not a real day written exactly that way reads as no day.
@@ -91,6 +191,23 @@ export declare function isSemverPrefix(text: string): boolean;
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | text | `string` | The text so far |
+
+### parseCurrencyAmountInput
+
+Parse user-entered text in a currency amount field back to a number, read with the separators the field writes it with.
+
+**Signature:**
+
+```typescript
+export declare function parseCurrencyAmountInput(text: string, locale?: string): number | null;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| text | `string` |  |
+| locale | `string` | The browser's own when omitted |
 
 ### useKeyboardNav
 

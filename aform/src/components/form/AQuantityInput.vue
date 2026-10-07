@@ -19,84 +19,36 @@
 							:aria-describedby="describedBy"
 							@keydown="onQtyKeydown"
 							@paste="onQtyPaste" />
-						<div v-on-click-outside="closeDropdown" class="aquantity__uom">
-							<button
-								:id="`${uuid}-uom`"
-								type="button"
-								class="aquantity__uom-toggle"
-								:disabled="mode === 'read'"
-								aria-haspopup="listbox"
-								:aria-expanded="dropdown.open"
-								:aria-activedescendant="
-									dropdown.open && dropdown.activeIndex >= 0 ? `${uuid}-uom-opt-${dropdown.activeIndex}` : undefined
-								"
-								@click="toggleDropdown"
-								@keydown.down.prevent="moveActive(1)"
-								@keydown.up.prevent="moveActive(-1)"
-								@keydown.enter.prevent="selectActive"
-								@keydown.esc="closeDropdown">
-								<span class="aquantity__uom-value">{{ uom || uomLabel }}</span>
-								<span class="aquantity__caret" aria-hidden="true"></span>
-							</button>
-							<ul
-								v-show="dropdown.open"
-								ref="uomMenu"
-								class="aquantity__uom-menu"
-								role="listbox"
-								:aria-label="uomLabel">
-								<li
-									v-for="(option, i) in uoms"
-									:id="`${uuid}-uom-opt-${i}`"
-									:key="option"
-									role="option"
-									:aria-selected="option === uom"
-									class="aquantity__uom-option"
-									:class="{ 'is-active': i === dropdown.activeIndex }"
-									@mouseenter="dropdown.activeIndex = i"
-									@click="selectUom(option)">
-									{{ option }}
-								</li>
-							</ul>
+						<div class="aquantity__uom">
+							<ADropdown
+								v-model="uom"
+								embedded
+								trigger="button"
+								list-anchor="group"
+								:options="uoms"
+								:mode="mode"
+								:uuid="uuid ? `${uuid}-uom` : undefined"
+								:aria-label="uomLabel"
+								:placeholder="uomLabel" />
 						</div>
 						<label class="aform_field-label" :for="uuid">{{ label }}</label>
 					</div>
 				</div>
 			</div>
-			<div class="aquantity__row aquantity__row--stock">
-				<div class="aquantity__field aquantity__field--stock-uom">
-					<input :value="modelValue?.stockUom" class="aform_input-field aquantity__stock-field" type="text" disabled />
-					<label class="aform_field-label">{{ stockUomLabel }}</label>
-				</div>
-				<div class="aquantity__field aquantity__field--stock-qty">
-					<input
-						:value="modelValue?.stockQty"
-						class="aform_input-field aquantity__stock-field"
-						type="number"
-						disabled />
-					<label class="aform_field-label">{{ stockQtyLabel }}</label>
-				</div>
-				<div class="aquantity__field aquantity__field--conversion">
-					<input
-						:value="modelValue?.conversionFactor"
-						class="aform_input-field aquantity__stock-field"
-						type="number"
-						disabled />
-					<label class="aform_field-label">{{ conversionFactorLabel }}</label>
-				</div>
-			</div>
+			<p v-if="showStock && !errorText" :id="helperId" class="aquantity__helper">{{ conversionHelperText }}</p>
 			<p v-show="errorText" :id="errorId" class="aform_error" role="alert">{{ errorText }}</p>
 		</template>
 	</div>
 </template>
 
 <script setup lang="ts">
-import { vOnClickOutside } from '@vueuse/components'
-import { computed, reactive, useTemplateRef } from 'vue'
+import { computed } from 'vue'
 
-import { fitDropdownList } from '../../composables/dropdownList'
 import { fieldErrorA11y } from '../../composables/fieldErrorA11y'
 import type { ComponentProps, QuantityOptions, QuantityValue } from '../../types'
 import { numberFromBox } from '../../utils/emptiedBox'
+import { patchQuantityQty, patchQuantityUom, quantityEntryPattern } from '../../utils/quantityValue'
+import ADropdown from './ADropdown.vue'
 
 const {
 	label,
@@ -107,63 +59,32 @@ const {
 	validation = { errorMessage: '' },
 	options = {},
 	uomLabel = 'UOM',
-	stockUomLabel = 'Stock UOM',
-	stockQtyLabel = 'Stock Qty',
-	conversionFactorLabel = 'Conversion Factor',
 } = defineProps<
 	ComponentProps & {
 		options?: QuantityOptions
 		uomLabel?: string
-		stockUomLabel?: string
-		stockQtyLabel?: string
-		conversionFactorLabel?: string
 	}
 >()
 
 // Dynamic trigger errors take precedence over a static schema errorMessage; empty means the slot hides.
 const errorText = computed(() => (errors?.length ? errors.join('; ') : (validation.errorMessage ?? '')))
-const { errorId, describedBy, invalid } = fieldErrorA11y(uuid, errorText)
+const helperId = computed(() => (uuid ? `${uuid}-helper` : undefined))
+const helperDescribedBy = computed(() => (showStock.value && !errorText.value ? helperId.value : undefined))
+const { errorId, describedBy, invalid } = fieldErrorA11y(uuid, errorText, helperDescribedBy)
 
 // No default: a field with no value shows empty, as null does, rather than a factor nobody entered.
 const modelValue = defineModel<QuantityValue | null>()
 
 const uoms = computed(() => options.uoms ?? [])
 
-// Round to shed binary floating-point noise (e.g. 0.1 * 3 → 0.30000000000000004) while
-// preserving any legitimate decimal places.
-const roundQty = (value: number): number => Number(value.toFixed(6))
-
-const resolveConversionFactor = (uom: string): number => {
-	const stockUom = options.stockUom ?? modelValue.value?.stockUom
-	if (!uom || uom === stockUom) return 1
-	const mapped = options.conversionFactors?.[uom]
-	if (mapped !== undefined) return mapped
-	// UOM absent from the conversion map: keep the stored factor only when the unit is
-	// unchanged (e.g. editing qty on a loaded value, so the factor round-trips). Switching
-	// to a new, unmapped unit resets to 1 rather than silently reusing the previous factor.
-	if (uom === modelValue.value?.uom) return modelValue.value.conversionFactor ?? 1
-	return 1
-}
-
-const recompute = (qty: number | null, uom: string) => {
-	const conversionFactor = resolveConversionFactor(uom)
-	modelValue.value = {
-		qty,
-		uom,
-		conversionFactor,
-		stockUom: options.stockUom ?? modelValue.value?.stockUom ?? '',
-		stockQty: qty === null ? null : roundQty(qty * conversionFactor),
-	}
-}
-
 const qty = computed({
 	get: () => modelValue.value?.qty ?? null,
-	set: (value: number | '') => recompute(numberFromBox(value), modelValue.value?.uom ?? ''),
+	set: (value: number | '') => (modelValue.value = patchQuantityQty(modelValue.value, numberFromBox(value), options)),
 })
 
 const uom = computed({
 	get: () => modelValue.value?.uom ?? '',
-	set: (value: string) => recompute(modelValue.value?.qty ?? null, value),
+	set: (value: string) => (modelValue.value = patchQuantityUom(modelValue.value, value, options)),
 })
 
 const qtyNavigationKeys = new Set([
@@ -184,65 +105,28 @@ const onQtyKeydown = (event: KeyboardEvent) => {
 	if (event.ctrlKey || event.metaKey || event.altKey) return
 	if (qtyNavigationKeys.has(event.key)) return
 	if (/^[0-9]$/.test(event.key)) return
+	// Quantity is signed — returns, adjustments, and credit lines can be negative.
 	const input = event.target as HTMLInputElement
 	if (event.key === '.' && !input.value.includes('.')) return
+	if (event.key === '-' && !input.value.includes('-')) return
 	event.preventDefault()
 }
 
 const onQtyPaste = (event: ClipboardEvent) => {
 	const pasted = event.clipboardData?.getData('text') ?? ''
-	if (!/^\d*\.?\d*$/.test(pasted)) event.preventDefault()
-}
-
-const dropdown = reactive({ open: false, activeIndex: -1 })
-
-fitDropdownList(useTemplateRef<HTMLElement>('uomMenu'), {
-	isOpen: () => dropdown.open,
-	optionCount: () => uoms.value.length,
-	activeIndex: () => dropdown.activeIndex,
-})
-
-const openDropdown = () => {
-	dropdown.activeIndex = Math.max(uoms.value.indexOf(uom.value), 0)
-	dropdown.open = true
-}
-
-const closeDropdown = () => {
-	dropdown.open = false
-}
-
-const toggleDropdown = () => {
-	if (dropdown.open) closeDropdown()
-	else openDropdown()
-}
-
-const selectUom = (value: string) => {
-	uom.value = value
-	closeDropdown()
-}
-
-const moveActive = (delta: number) => {
-	if (!dropdown.open) {
-		openDropdown()
-		return
-	}
-	const length = uoms.value.length
-	if (!length) return
-	dropdown.activeIndex = (dropdown.activeIndex + delta + length) % length
-}
-
-const selectActive = () => {
-	if (!dropdown.open) {
-		openDropdown()
-		return
-	}
-	const option = uoms.value[dropdown.activeIndex]
-	if (option !== undefined) selectUom(option)
+	if (!quantityEntryPattern.test(pasted)) event.preventDefault()
 }
 
 const showStock = computed(() => {
 	const v = modelValue.value
 	return !!v?.stockUom && (v.uom !== v.stockUom || v.qty !== v.stockQty)
+})
+
+const conversionHelperText = computed(() => {
+	const v = modelValue.value
+	if (!v || v.stockQty === null || v.qty === null) return ''
+	const factor = v.conversionFactor
+	return `= ${v.stockQty} ${v.stockUom} · 1 ${v.uom} = ${factor} ${v.stockUom}`
 })
 
 const displayText = computed(() => {
@@ -257,10 +141,6 @@ const displayText = computed(() => {
 .aquantity__row {
 	display: flex;
 	gap: 1ch;
-}
-
-.aquantity__row--stock {
-	margin-top: 1.5rem;
 }
 
 .aquantity__field {
@@ -284,8 +164,19 @@ const displayText = computed(() => {
 	border-color: var(--sc-input-active-border-color);
 }
 
+.aquantity__group > .aform_field-label {
+	background: var(--sc-form-background);
+}
+
+/* Focus ring lives on the merged group only (see AForm :focus-within label + group border). */
+.aquantity__group :deep(.aform_dropdown-button:focus),
+.aquantity__group :deep(.aform_dropdown-button:focus-visible) {
+	outline: none;
+	box-shadow: none;
+}
+
 .aquantity__qty {
-	flex: 1;
+	flex: 1 1 50%;
 	min-width: 0;
 	border: none;
 	outline: none;
@@ -293,6 +184,7 @@ const displayText = computed(() => {
 	font-size: 1rem;
 	font-family: var(--sc-font-family);
 	color: var(--sc-cell-text-color);
+	text-align: right;
 	background: transparent;
 	border-radius: var(--sc-border-radius) 0 0 var(--sc-border-radius);
 	appearance: textfield;
@@ -307,83 +199,34 @@ const displayText = computed(() => {
 }
 
 .aquantity__uom {
-	position: relative;
-	flex: 0 0 auto;
+	position: static;
+	flex: 1 1 50%;
+	min-width: 0;
+	display: flex;
+	align-items: stretch;
 	border-left: 1px solid var(--sc-input-border-color);
 }
 
-.aquantity__uom-toggle {
-	display: flex;
-	align-items: center;
-	gap: 0.75ch;
-	height: 100%;
-	padding: 0.5ch 1ch;
-	font-size: 1rem;
-	font-family: var(--sc-font-family);
-	color: var(--sc-cell-text-color);
-	background: var(--sc-input-addon-background);
-	border: none;
-	border-radius: 0 var(--sc-border-radius) var(--sc-border-radius) 0;
-	white-space: nowrap;
-	cursor: pointer;
+/* ADropdown list: anchor to merged group, not the UOM trigger column (see dropdowns.browser.spec). */
+.aquantity__group :deep(.aform_form-element--embedded),
+.aquantity__group :deep(.autocomplete) {
+	position: static;
+	align-self: stretch;
 }
 
-.aquantity__uom-toggle:disabled {
-	cursor: not-allowed;
-	color: var(--sc-gray-50);
-}
-
-.aquantity__caret {
-	display: inline-block;
-	width: 0;
-	height: 0;
-	border-left: 0.3em solid transparent;
-	border-right: 0.3em solid transparent;
-	border-top: 0.3em solid currentColor;
-}
-
-/* Hangs from the divider beside the toggle to the field's outer border, so its side lines continue
-   theirs; a long unit name widens it to the left. */
-.aquantity__uom-menu {
-	position: absolute;
-	top: 100%;
+.aquantity__group :deep(.autocomplete-results--anchor-group) {
+	left: -1px;
 	right: -1px;
-	z-index: 100;
 	box-sizing: border-box;
-	min-width: calc(100% + 2px);
-	max-height: var(--sc-dropdown-max-height);
-	overflow-y: auto;
-	margin: 0;
-	padding: 0.25rem 0;
-	list-style: none;
-	background: var(--sc-overlay-background);
-	border: 1px solid var(--sc-input-active-border-color);
-	border-top: none;
-	border-radius: 0 0 var(--sc-border-radius) var(--sc-border-radius);
-	box-shadow: var(--sc-overlay-shadow);
+	width: auto;
+	min-width: unset;
+	max-width: none;
 }
 
-.aquantity__uom-option {
-	padding: 0.4ch 1ch;
-	white-space: nowrap;
-	cursor: pointer;
-}
-
-.aquantity__uom-option.is-active,
-.aquantity__uom-option:hover {
-	background-color: var(--sc-row-color-zebra-light);
-}
-
-.aquantity__stock-field {
-	width: 100%;
-	font-size: 1rem;
-	padding: 0.5rem 1ch;
-	border: 1px solid var(--sc-input-border-color);
-	border-radius: var(--sc-border-radius);
-	outline: none;
-}
-
-.aquantity__stock-field:disabled {
-	color: var(--sc-gray-50);
+.aquantity__helper {
+	margin: 0.5rem 0 0;
+	font-size: 0.85rem;
+	color: var(--sc-cell-text-color);
+	opacity: 0.75;
 }
 </style>

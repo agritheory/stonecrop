@@ -20,12 +20,12 @@ import { formatCurrency, formatQuantity } from './utils'
  *   both bare ID strings and pre-resolved `{ id, displayText }` objects.
  *
  * For quantity fields — those whose `component` carries the `'quantity'` category — without an
- * explicit `format`, a synchronous `format` is added that renders the `{ qty, uom }` value (see
- * `QuantityValue` in `@stonecrop/aform`) as `"<qty> <uom>"`.
+ * explicit `format`, a synchronous `format` is added that renders the `{ qty, uom, stockUom }`
+ * value (see `QuantityValue` in `@stonecrop/aform`), omitting the UOM when it matches `stockUom`.
  *
  * For currency fields — those whose `component` carries the `'currency'` category — without an
- * explicit `format`, a synchronous `format` is added that renders the `{ amount, currency }` value
- * (see `CurrencyValue` in `@stonecrop/aform`) as `"<amount> <currency>"`.
+ * explicit `format`, a synchronous `format` is added that renders the `{ amount, currency }`
+ * value (see `CurrencyValue` in `@stonecrop/aform`) with `Intl` currency formatting when possible.
  *
  * @public
  */

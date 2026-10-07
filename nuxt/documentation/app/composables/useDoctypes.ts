@@ -4,6 +4,8 @@
 
 import type { DoctypeConfig } from '@stonecrop/stonecrop'
 
+import { playgroundCurrencyOptions } from '~/utils/playground-currency'
+
 const modules = import.meta.glob<DoctypeConfig>('../../doctypes/*.json', {
 	eager: true,
 	import: 'default',
@@ -18,6 +20,27 @@ for (const [path, doctype] of Object.entries(modules)) {
 		.replace(/[\s_]+/g, '-')
 		.toLowerCase()
 	doctypeMap.set(slug, doctype)
+}
+
+function withPlaygroundCurrencyOptions(doctype: DoctypeConfig): DoctypeConfig {
+	if (!Array.isArray(doctype.fields)) return doctype
+	return {
+		...doctype,
+		fields: doctype.fields.map(field => {
+			if (field.component !== 'ACurrencyInput' || !('options' in field)) return field
+			const existing = (field.options ?? {}) as Record<string, unknown>
+			return {
+				...field,
+				options: { ...playgroundCurrencyOptions, ...existing },
+			}
+		}),
+	}
+}
+
+for (const [slug, config] of doctypeMap.entries()) {
+	if (slug === 'order-item' || slug === 'order') {
+		doctypeMap.set(slug, withPlaygroundCurrencyOptions(config))
+	}
 }
 
 export { doctypeMap }

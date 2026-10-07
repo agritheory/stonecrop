@@ -1,7 +1,11 @@
 import { mount, flushPromises } from '@vue/test-utils'
 import { describe, it, expect, vi } from 'vitest'
+import { defineComponent, h } from 'vue'
 
+import AForm from '../src/components/AForm.vue'
 import ADropdown from '../src/components/form/ADropdown.vue'
+import AQuantityInput from '../src/components/form/AQuantityInput.vue'
+import type { ResolvedField } from '../src/types'
 
 describe('dropdown input component', { tags: ['component'] }, () => {
 	const dropdownData = {
@@ -192,8 +196,8 @@ describe('dropdown input component', { tags: ['component'] }, () => {
 		await autocomplete.trigger('click')
 		await wrapper.vm.$nextTick()
 
-		const updateEvents = wrapper.emitted('update:modelValue')
-		expect(updateEvents).toBeTruthy()
+		// Text that is not a choice is a search, never a value
+		expect(wrapper.emitted('update:modelValue')).toBeUndefined()
 	})
 
 	it('outside-click reverts to last committed value instead of clearing', async () => {
@@ -215,10 +219,9 @@ describe('dropdown input component', { tags: ['component'] }, () => {
 		await input.trigger('keydown.esc')
 		await wrapper.vm.$nextTick()
 
-		// should revert to the last committed value ('Orange'), not clear to ''
-		const updateEvents = wrapper.emitted('update:modelValue')
-		const lastEvent = updateEvents![updateEvents!.length - 1]
-		expect(lastEvent).toEqual(['Orange'])
+		// should revert to the last committed value ('Orange'), not clear to '', and never send the text typed
+		expect(wrapper.emitted('update:modelValue')).toBeUndefined()
+		expect(input.element.value).toBe('Orange')
 	})
 
 	it('should handle selectPrevResult when at first item', async () => {
@@ -381,5 +384,84 @@ describe('dropdown input component', { tags: ['component'] }, () => {
 		expect(input.attributes('aria-controls')).toBe(list.attributes('id'))
 		expect(wrapper.findAll('li[role="option"]')).toHaveLength(dropdownData.options.length)
 		expect(wrapper.find('label').attributes('for')).toBe('fruit')
+	})
+})
+
+describe('a dropdown in a form', { tags: ['component'] }, () => {
+	const status = {
+		kind: 'field',
+		fieldname: 'status',
+		label: 'Status',
+		component: 'ADropdown',
+		options: ['Open', 'Pending', 'Closed'],
+	} as ResolvedField
+
+	// Types into the status box, then presses `key`; returns each status the form sent.
+	const typeStatus = async (typed: string, key: string) => {
+		const wrapper = mount(AForm, {
+			props: { schema: [status], data: { status: 'Open' } },
+			global: { components: { ADropdown } },
+		})
+		const input = wrapper.find('input')
+		await input.trigger('focus')
+		await input.setValue(typed)
+		await input.trigger('keydown', { key })
+		await flushPromises()
+		return (wrapper.emitted('update:data') ?? []).map(([data]) => (data as { status?: string }).status)
+	}
+
+	// The record holds one of the field's choices. Text typed to find one is a search, and reaches the record only as
+	// the choice it picks.
+	it('sends the record the choice picked, not the text typed to find it', async () => {
+		expect(await typeStatus('Pend', 'Enter')).toEqual(['Pending'])
+	})
+
+	it('sends the record a choice typed out in full when the box is left', async () => {
+		expect(await typeStatus('Closed', 'Tab')).toEqual(['Closed'])
+	})
+})
+
+// `aria-controls` names the open list by its id, so that id must belong to the list alone. The field's own box
+// already carries the field's id.
+describe('dropdown list ids', { tags: ['component'] }, () => {
+	it("gives a dropdown's list an id that names only the list", async () => {
+		const wrapper = mount(ADropdown, {
+			props: { uuid: 'fruit', modelValue: 'Orange', label: 'Fruit', options: ['Apple', 'Orange'] },
+		})
+		const input = wrapper.find('input')
+		await input.trigger('focus')
+		await flushPromises()
+
+		const controlled = input.attributes('aria-controls')
+		expect(wrapper.findAll(`[id="${controlled}"]`).map(element => element.element.tagName)).toEqual(['UL'])
+	})
+
+	it("gives a quantity field's unit list an id that names only the list", async () => {
+		const wrapper = mount(AQuantityInput, {
+			props: { uuid: 'qty', modelValue: null, label: 'Qty', options: { uoms: ['Nos', 'Box'] } },
+		})
+		const button = wrapper.find('button.aform_dropdown-button')
+		await button.trigger('click')
+		await flushPromises()
+
+		const controlled = button.attributes('aria-controls')
+		expect(wrapper.findAll(`[id="${controlled}"]`).map(element => element.element.tagName)).toEqual(['UL'])
+	})
+
+	// A field given no id has none to build on, so two of them on one form must not share one.
+	it('gives two quantity fields without an id their own unit lists', async () => {
+		const options = { uoms: ['Nos', 'Box'] }
+		const wrapper = mount(
+			defineComponent({
+				setup: () => () =>
+					h('div', [
+						h(AQuantityInput, { label: 'Ordered', options }),
+						h(AQuantityInput, { label: 'Received', options }),
+					]),
+			})
+		)
+		const ids = wrapper.findAll('[id]').map(element => element.attributes('id'))
+
+		expect(ids).toEqual([...new Set(ids)])
 	})
 })

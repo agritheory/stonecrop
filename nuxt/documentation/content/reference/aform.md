@@ -80,9 +80,6 @@ import { ACurrencyInput } from '@stonecrop/aform'
 | errors | `string[] \| undefined` | no |  | Inline validation error messages to display on this field. Fed by the host (e.g. mapped from the core validation store) — the renderer stays dumb and just shows what it is given. Takes precedence over the static `validation.errorMessage`. |
 | options | `CurrencyOptions \| undefined` | no | `{}` |  |
 | currencyLabel | `string \| undefined` | no | `"Currency"` |  |
-| baseCurrencyLabel | `string \| undefined` | no | `"Base Currency"` |  |
-| baseAmountLabel | `string \| undefined` | no | `"Base Amount"` |  |
-| exchangeRateLabel | `string \| undefined` | no | `"Exchange Rate"` |  |
 | modelValue | `CurrencyValue \| null \| undefined` | no |  |  |
 
 **Events:**
@@ -300,13 +297,37 @@ import { ADropdown } from '@stonecrop/aform'
 | format | `string \| undefined` | no |  |  |
 | isAsync | `boolean \| undefined` | no | `false` |  |
 | filterFunction | `((search: string) => string[] \| Promise<string[]>) \| undefined` | no | `undefined` |  |
+| link | `boolean \| undefined` | no | `false` | Picks a linked record, bound through `v-model:link-value` as an `AFormLinkValue` (embedded currency, etc.). |
+| linkFilterFunction | `string \| ((search: string) => AFormLinkValue[] \| Promise<AFormLinkValue[]>) \| undefined` | no | `undefined` | Searches the records a `link` picker lists. |
+| formatter | `((value: AFormLinkValue) => string) \| undefined` | no | `undefined` |  |
+| doctype | `string \| undefined` | no | `undefined` |  |
+| embedded | `boolean \| undefined` | no | `false` |  |
+| trigger | `"combobox" \| "button" \| undefined` | no | `"combobox"` |  |
+| listAnchor | `"field" \| "group" \| undefined` | no | `"field"` |  |
+| placeholder | `string \| undefined` | no | `undefined` |  |
+| ariaLabel | `string \| undefined` | no | `undefined` |  |
 | modelValue | `string \| undefined` | no |  |  |
+| linkValue | `AFormLinkModelValue \| undefined` | no |  |  |
 
 **Events:**
 
 | Event | Payload | Description |
 |-------|---------|-------------|
 | update:modelValue | `[value: string \| undefined]` |  |
+| update:linkValue | `[value: AFormLinkModelValue \| undefined]` |  |
+| update:open | `[open: boolean]` |  |
+
+**Slots:**
+
+| Slot | Props | Description |
+|------|-------|-------------|
+| option | `{ option: { [x: string]: any; id: string \| number; displayText?: string \| undefined; }; }` |  |
+
+**Exposed:**
+
+| Name | Type |
+|------|------|
+| openCurrencyList | `() => void` |
 
 ### ADuration
 
@@ -524,9 +545,6 @@ import { AQuantityInput } from '@stonecrop/aform'
 | errors | `string[] \| undefined` | no |  | Inline validation error messages to display on this field. Fed by the host (e.g. mapped from the core validation store) — the renderer stays dumb and just shows what it is given. Takes precedence over the static `validation.errorMessage`. |
 | options | `QuantityOptions \| undefined` | no | `{}` |  |
 | uomLabel | `string \| undefined` | no | `"UOM"` |  |
-| stockUomLabel | `string \| undefined` | no | `"Stock UOM"` |  |
-| stockQtyLabel | `string \| undefined` | no | `"Stock Qty"` |  |
-| conversionFactorLabel | `string \| undefined` | no | `"Conversion Factor"` |  |
 | modelValue | `QuantityValue \| null \| undefined` | no |  |  |
 
 **Events:**
@@ -600,6 +618,34 @@ import { ASemverInput } from '@stonecrop/aform'
 |-------|---------|-------------|
 | update:modelValue | `[value: string \| null \| undefined]` |  |
 
+### ATableTupleCurrencyPicker
+
+Vue component exported from @stonecrop/aform.
+
+```typescript
+import { ATableTupleCurrencyPicker } from '@stonecrop/aform'
+```
+
+**Props:**
+
+| Prop | Type | Required | Default | Description |
+|------|------|----------|---------|-------------|
+| store | `TableStore` | yes |  |  |
+
+### ATableTupleQuantityPicker
+
+Vue component exported from @stonecrop/aform.
+
+```typescript
+import { ATableTupleQuantityPicker } from '@stonecrop/aform'
+```
+
+**Props:**
+
+| Prop | Type | Required | Default | Description |
+|------|------|----------|---------|-------------|
+| store | `TableStore` | yes |  |  |
+
 ### ATextboxInput
 
 Vue component exported from @stonecrop/aform.
@@ -660,6 +706,69 @@ import { ATextInput } from '@stonecrop/aform'
 | Event | Payload | Description |
 |-------|---------|-------------|
 | update:modelValue | `[value: string \| number \| undefined]` |  |
+
+### ATupleCellEditor
+
+Vue component exported from @stonecrop/aform.
+
+```typescript
+import { ATupleCellEditor } from '@stonecrop/aform'
+```
+
+**Props:**
+
+| Prop | Type | Required | Default | Description |
+|------|------|----------|---------|-------------|
+| category | `"quantity" \| "currency"` | yes |  |  |
+| colIndex | `number` | yes |  |  |
+| rowIndex | `number` | yes |  |  |
+| store | `TableStore` | yes |  |  |
+| active | `boolean` | yes |  |  |
+| displayText | `string` | yes |  |  |
+| inputId | `string` | yes |  |  |
+
+**Events:**
+
+| Event | Payload | Description |
+|-------|---------|-------------|
+| deactivate | `[]` |  |
+
+**Exposed:**
+
+| Name | Type |
+|------|------|
+| focusInput | `() => void` |
+| openPicker | `() => void` |
+| commitNumber | `() => void` |
+
+### ATupleCellShell
+
+Vue component exported from @stonecrop/aform.
+
+```typescript
+import { ATupleCellShell } from '@stonecrop/aform'
+```
+
+**Props:**
+
+| Prop | Type | Required | Default | Description |
+|------|------|----------|---------|-------------|
+| active | `boolean` | yes |  |  |
+| displayText | `string` | yes |  |  |
+| pickerLabel | `string` | yes |  |  |
+| pickerOpen | `boolean` | yes |  |  |
+
+**Events:**
+
+| Event | Payload | Description |
+|-------|---------|-------------|
+| open-picker | `[]` |  |
+
+**Slots:**
+
+| Slot | Props | Description |
+|------|-------|-------------|
+| default | `{}` |  |
 
 ### ExpandButton
 
@@ -832,6 +941,7 @@ Type-specific configuration for ACurrencyInput, passed via the field's `options`
 
 ```typescript
 export interface CurrencyOptions {
+  amountMask?: boolean;
   baseCurrency?: AFormLinkValue | string;
   doctype?: string;
   exchangeRates?: Record<string, number>;
@@ -845,6 +955,7 @@ export interface CurrencyOptions {
 
 | Property | Type | Description |
 |----------|------|-------------|
+| amountMask? | `boolean` | When true (default), the amount field uses a locale- and currency-aware display mask (grouping and decimal separators follow the selected currency). Set false for a plain `type="number"` input. |
 | baseCurrency? | `AFormLinkValue \| string` | The record's base currency — fixed, not user-editable. A bare id resolves to displayText via `aformLinkResolver`. |
 | doctype? | `string` | Currency doctype name, used for FK resolution via `aformLinkResolver`. The currency picker is embedded, so it renders no navigate button. |
 | exchangeRates? | `Record<string, number>` | Exchange rate lookup for each non-base currency id, relative to `baseCurrency` (which is implicitly `1`) |
@@ -1286,6 +1397,22 @@ export const ASegmentedControl: typeof __VLS_export
 export const ASemverInput: typeof __VLS_export
 ```
 
+### ATableTupleCurrencyPicker
+
+**Type:**
+
+```typescript
+export const ATableTupleCurrencyPicker: typeof __VLS_export
+```
+
+### ATableTupleQuantityPicker
+
+**Type:**
+
+```typescript
+export const ATableTupleQuantityPicker: typeof __VLS_export
+```
+
 ### ATextboxInput
 
 **Type:**
@@ -1300,6 +1427,22 @@ export const ATextboxInput: typeof __VLS_export
 
 ```typescript
 export const ATextInput: typeof __VLS_export
+```
+
+### ATupleCellEditor
+
+**Type:**
+
+```typescript
+export const ATupleCellEditor: typeof __VLS_export
+```
+
+### ATupleCellShell
+
+**Type:**
+
+```typescript
+export const ATupleCellShell: typeof __VLS_export
 ```
 
 ### ExpandButton

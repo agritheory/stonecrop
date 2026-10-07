@@ -9,19 +9,15 @@ const options = {
 	conversionFactors: { Box: 10, Kg: 25 },
 }
 
-// The uom picker is a dropdown-toggle button + menu (not a native <select>), so
-// selecting a uom means opening the menu, then clicking the matching option.
+// UOM uses embedded ADropdown (button trigger + shared autocomplete list).
 const pickUom = async (wrapper: VueWrapper, value: string) => {
-	await wrapper.find('.aquantity__uom-toggle').trigger('click')
-	const option = wrapper.findAll('.aquantity__uom-option').find(li => li.text() === value)
-	await option!.trigger('click')
+	await wrapper.find('.aform_dropdown-button').trigger('click')
+	const option = wrapper.findAll('.autocomplete-result').find(li => li.text() === value)
+	await option!.trigger('mousedown')
 }
 
-// The menu is toggled with v-show, which sets/clears an inline `display: none`.
-// Read that directly rather than via isVisible() (backed by getComputedStyle),
-// which jsdom caches stale once it's been read earlier for the same element.
 const isMenuOpen = (wrapper: VueWrapper) =>
-	wrapper.find('.aquantity__uom-menu').attributes('style') !== 'display: none;'
+	wrapper.find('.autocomplete-results').attributes('style') !== 'display: none;'
 
 // The qty <input> guards keystrokes/pastes itself (@keydown/@paste). We dispatch native events
 // on the element and assert defaultPrevented — the flag the handlers set to reject the input.
@@ -46,27 +42,34 @@ describe('AQuantityInput', () => {
 			const wrapper = mount(AQuantityInput, { props: { label: 'Quantity', options } })
 			expect(wrapper.find('input[type="number"]').exists()).toBe(true)
 			expect(wrapper.find('select').exists()).toBe(false)
-			expect(wrapper.find('button.aquantity__uom-toggle').exists()).toBe(true)
+			expect(wrapper.find('button.aform_dropdown-button').exists()).toBe(true)
 		})
 
 		it('renders qty input and uom toggle joined inside a single group', () => {
 			const wrapper = mount(AQuantityInput, { props: { options } })
 			const group = wrapper.find('.aquantity__group')
 			expect(group.find('input[type="number"]').exists()).toBe(true)
-			expect(group.find('button.aquantity__uom-toggle').exists()).toBe(true)
+			expect(group.find('button.aform_dropdown-button').exists()).toBe(true)
 		})
 
 		it('renders uom options from options.uoms', () => {
 			const wrapper = mount(AQuantityInput, { props: { options } })
-			const optionEls = wrapper.findAll('.aquantity__uom-option')
+			const optionEls = wrapper.findAll('.autocomplete-result')
 			expect(optionEls.map(o => o.text())).toEqual(['Nos', 'Box', 'Kg'])
 		})
 
 		it('opens the uom menu when the toggle button is clicked', async () => {
 			const wrapper = mount(AQuantityInput, { props: { options } })
 			expect(isMenuOpen(wrapper)).toBe(false)
-			await wrapper.find('.aquantity__uom-toggle').trigger('click')
+			await wrapper.find('.aform_dropdown-button').trigger('click')
 			expect(isMenuOpen(wrapper)).toBe(true)
+		})
+
+		it('closes the uom menu when the toggle button is clicked again', async () => {
+			const wrapper = mount(AQuantityInput, { props: { options } })
+			await wrapper.find('.aform_dropdown-button').trigger('click')
+			await wrapper.find('.aform_dropdown-button').trigger('click')
+			expect(isMenuOpen(wrapper)).toBe(false)
 		})
 
 		it('closes the uom menu after an option is selected', async () => {
@@ -88,20 +91,20 @@ describe('AQuantityInput', () => {
 
 		it('shows the custom uom label as placeholder text on the toggle when no uom is selected', () => {
 			const wrapper = mount(AQuantityInput, { props: { options, uomLabel: 'Unit' } })
-			expect(wrapper.find('.aquantity__uom-toggle').text()).toContain('Unit')
+			expect(wrapper.find('.aform_dropdown-button').text()).toContain('Unit')
 		})
 
 		it('shows the selected uom value on the toggle button', () => {
 			const wrapper = mount(AQuantityInput, {
 				props: { options, modelValue: { qty: 5, uom: 'Box', stockQty: 50, stockUom: 'Nos', conversionFactor: 10 } },
 			})
-			expect(wrapper.find('.aquantity__uom-toggle').text()).toContain('Box')
+			expect(wrapper.find('.aform_dropdown-button').text()).toContain('Box')
 		})
 
 		it('is disabled in read mode', () => {
 			const wrapper = mount(AQuantityInput, { props: { mode: 'read', options } })
 			expect(wrapper.find('input').attributes()).toHaveProperty('disabled')
-			expect(wrapper.find('.aquantity__uom-toggle').attributes()).toHaveProperty('disabled')
+			expect(wrapper.find('.aform_dropdown-button').attributes()).toHaveProperty('disabled')
 		})
 
 		it('renders plain text in display mode without inputs', () => {
@@ -200,7 +203,7 @@ describe('AQuantityInput', () => {
 			const wrapper = mount(AQuantityInput, {
 				props: { options, modelValue: { qty: 1, uom: 'Nos', stockQty: 1, stockUom: 'Nos', conversionFactor: 1 } },
 			})
-			const toggle = wrapper.find('.aquantity__uom-toggle')
+			const toggle = wrapper.find('.aform_dropdown-button')
 			await toggle.trigger('keydown.down') // opens the menu, activates current uom (Nos)
 			await toggle.trigger('keydown.down') // moves active to next uom (Box)
 			await toggle.trigger('keydown.enter')
@@ -212,45 +215,43 @@ describe('AQuantityInput', () => {
 
 		it('closes the menu on Escape without changing the uom', async () => {
 			const wrapper = mount(AQuantityInput, { props: { options } })
-			await wrapper.find('.aquantity__uom-toggle').trigger('click')
-			await wrapper.find('.aquantity__uom-toggle').trigger('keydown.esc')
+			await wrapper.find('.aform_dropdown-button').trigger('click')
+			await wrapper.find('.aform_dropdown-button').trigger('keydown.esc')
 			expect(isMenuOpen(wrapper)).toBe(false)
 			expect(wrapper.emitted('update:modelValue')).toBeUndefined()
 		})
 	})
 
-	describe('read-only stock fields', () => {
+	describe('conversion helper line', () => {
 		const modelValue = { qty: 2, uom: 'Box', stockQty: 20, stockUom: 'Nos', conversionFactor: 10 }
 
-		it('displays stock uom, stock qty, and conversion factor within the same box', () => {
-			const wrapper = mount(AQuantityInput, { props: { options, modelValue } })
-			expect(wrapper.find<HTMLInputElement>('.aquantity__field--stock-uom input').element.value).toBe('Nos')
-			expect(wrapper.find<HTMLInputElement>('.aquantity__field--stock-qty input').element.value).toBe('20')
-			expect(wrapper.find<HTMLInputElement>('.aquantity__field--conversion input').element.value).toBe('10')
+		it('shows stock conversion as a helper line when uom differs from stock uom', () => {
+			const wrapper = mount(AQuantityInput, { props: { options, modelValue, uuid: 'qty-helper' } })
+			expect(wrapper.find('.aquantity__helper').text()).toBe('= 20 Nos · 1 Box = 10 Nos')
 		})
 
-		it('labels each read-only field', () => {
-			const wrapper = mount(AQuantityInput, { props: { label: 'Quantity', options, modelValue } })
-			const labels = wrapper.findAll('label').map(l => l.text())
-			expect(labels).toEqual(['Quantity', 'Stock UOM', 'Stock Qty', 'Conversion Factor'])
-		})
-
-		it('is always disabled, even in edit mode', () => {
-			const wrapper = mount(AQuantityInput, { props: { options, modelValue, mode: 'edit' } })
-			expect(wrapper.find<HTMLInputElement>('.aquantity__field--stock-uom input').attributes()).toHaveProperty(
-				'disabled'
-			)
-			expect(wrapper.find<HTMLInputElement>('.aquantity__field--stock-qty input').attributes()).toHaveProperty(
-				'disabled'
-			)
-			expect(wrapper.find<HTMLInputElement>('.aquantity__field--conversion input').attributes()).toHaveProperty(
-				'disabled'
-			)
-		})
-
-		it('updates live as qty/uom change', async () => {
+		it('does not show the helper when uom matches stock uom', () => {
 			const wrapper = mount(AQuantityInput, {
-				props: { options, modelValue: { qty: 0, uom: 'Nos', stockQty: 0, stockUom: 'Nos', conversionFactor: 1 } },
+				props: {
+					options,
+					modelValue: { qty: 5, uom: 'Nos', stockQty: 5, stockUom: 'Nos', conversionFactor: 1 },
+				},
+			})
+			expect(wrapper.find('.aquantity__helper').exists()).toBe(false)
+		})
+
+		it('links the helper via aria-describedby on the qty input', () => {
+			const wrapper = mount(AQuantityInput, { props: { options, modelValue, uuid: 'qty-helper' } })
+			expect(wrapper.find('input[type="number"]').attributes('aria-describedby')).toBe('qty-helper-helper')
+		})
+
+		it('updates the helper live as qty/uom change', async () => {
+			const wrapper = mount(AQuantityInput, {
+				props: {
+					options,
+					uuid: 'qty-live',
+					modelValue: { qty: 0, uom: 'Nos', stockQty: 0, stockUom: 'Nos', conversionFactor: 1 },
+				},
 			})
 			await pickUom(wrapper, 'Box')
 			await wrapper.find('input[type="number"]').setValue(4)
@@ -258,8 +259,15 @@ describe('AQuantityInput', () => {
 			const emitted = wrapper.emitted('update:modelValue')!
 			await wrapper.setProps({ modelValue: emitted[emitted.length - 1][0] as any })
 
-			expect(wrapper.find<HTMLInputElement>('.aquantity__field--stock-qty input').element.value).toBe('40')
-			expect(wrapper.find<HTMLInputElement>('.aquantity__field--conversion input').element.value).toBe('10')
+			expect(wrapper.find('.aquantity__helper').text()).toBe('= 40 Nos · 1 Box = 10 Nos')
+		})
+
+		it('hides the helper when an error is shown', () => {
+			const wrapper = mount(AQuantityInput, {
+				props: { options, modelValue, uuid: 'qty-err', errors: ['Too many'] },
+			})
+			expect(wrapper.find('.aquantity__helper').exists()).toBe(false)
+			expect(wrapper.find('input[type="number"]').attributes('aria-describedby')).toBe('qty-err-error')
 		})
 	})
 
@@ -271,9 +279,14 @@ describe('AQuantityInput', () => {
 
 		it('rejects non-numeric character keys', () => {
 			const wrapper = mount(AQuantityInput, { props: { options } })
-			for (const key of ['a', 'e', 'E', '+', '-']) {
+			for (const key of ['a', 'e', 'E', '+']) {
 				expect(dispatchKey(wrapper, key).defaultPrevented).toBe(true)
 			}
+		})
+
+		it('allows a leading minus — quantity is signed (returns, adjustments, credit lines)', () => {
+			const wrapper = mount(AQuantityInput, { props: { options } })
+			expect(dispatchKey(wrapper, '-').defaultPrevented).toBe(false)
 		})
 
 		it('allows navigation/editing keys such as Backspace and ArrowLeft', () => {
@@ -301,7 +314,23 @@ describe('AQuantityInput', () => {
 		it('allows a numeric paste but blocks a non-numeric one', () => {
 			const wrapper = mount(AQuantityInput, { props: { options } })
 			expect(dispatchPaste(wrapper, '12.5').defaultPrevented).toBe(false)
+			expect(dispatchPaste(wrapper, '-12.5').defaultPrevented).toBe(false)
 			expect(dispatchPaste(wrapper, '12abc').defaultPrevented).toBe(true)
+		})
+
+		it('computes a negative stockQty from a negative qty', async () => {
+			const wrapper = mount(AQuantityInput, {
+				props: {
+					options,
+					modelValue: { qty: 0, uom: 'Box', stockQty: 0, stockUom: 'Nos', conversionFactor: 10 },
+				},
+			})
+			await wrapper.find('input[type="number"]').setValue(-2)
+
+			const emitted = wrapper.emitted('update:modelValue')!
+			const last = emitted[emitted.length - 1][0] as any
+			expect(last.qty).toBe(-2)
+			expect(last.stockQty).toBe(-20)
 		})
 	})
 
@@ -355,7 +384,7 @@ describe('AQuantityInput', () => {
 			expect((missingQty.find('.aquantity__qty').element as HTMLInputElement).value).toBe('')
 
 			const missingUom = mount(AQuantityInput, { props: { options, modelValue: { qty: 5 } as any, uomLabel: 'Unit' } })
-			expect(missingUom.find('.aquantity__uom-toggle').text()).toContain('Unit')
+			expect(missingUom.find('.aform_dropdown-button').text()).toContain('Unit')
 		})
 
 		it('derives stockUom from the value when options omits it', async () => {
@@ -394,7 +423,7 @@ describe('AQuantityInput', () => {
 			const wrapper = mount(AQuantityInput, {
 				props: { options, modelValue: { qty: 1, uom: 'Nos', stockQty: 1, stockUom: 'Nos', conversionFactor: 1 } },
 			})
-			const toggle = wrapper.find('.aquantity__uom-toggle')
+			const toggle = wrapper.find('.aform_dropdown-button')
 			await toggle.trigger('keydown.down') // opens, active = Nos (index 0)
 			await toggle.trigger('keydown.up') // wraps to last (Kg)
 			await toggle.trigger('keydown.enter')
@@ -405,32 +434,32 @@ describe('AQuantityInput', () => {
 
 		it('opens the menu (without selecting) when Enter is pressed while it is closed', async () => {
 			const wrapper = mount(AQuantityInput, { props: { options } })
-			await wrapper.find('.aquantity__uom-toggle').trigger('keydown.enter')
+			await wrapper.find('.aform_dropdown-button').trigger('keydown.enter')
 			expect(isMenuOpen(wrapper)).toBe(true)
 			expect(wrapper.emitted('update:modelValue')).toBeUndefined()
 		})
 
 		it('highlights an option on hover (mouseenter sets the active index)', async () => {
 			const wrapper = mount(AQuantityInput, { props: { options } })
-			await wrapper.find('.aquantity__uom-toggle').trigger('click')
-			const boxOption = wrapper.findAll('.aquantity__uom-option').find(li => li.text() === 'Box')!
+			await wrapper.find('.aform_dropdown-button').trigger('click')
+			const boxOption = wrapper.findAll('.autocomplete-result').find(li => li.text() === 'Box')!
 			await boxOption.trigger('mouseenter')
 			expect(boxOption.classes()).toContain('is-active')
 		})
 
 		it('points aria-activedescendant at the active option once the menu is open', async () => {
 			const wrapper = mount(AQuantityInput, { props: { uuid: 'q', options } })
-			const toggle = wrapper.find('.aquantity__uom-toggle')
+			const toggle = wrapper.find('.aform_dropdown-button')
 			expect(toggle.attributes('aria-activedescendant')).toBeUndefined()
 			await toggle.trigger('keydown.down') // opens, active index 0
 			const active = toggle.attributes('aria-activedescendant')
-			expect(active).toBe('q-uom-opt-0')
+			expect(active).toBe('q-uom-listbox-opt-0')
 			expect(wrapper.find(`#${active}`).classes()).toContain('is-active')
 		})
 
 		it('does not throw or emit when there are no uom options', async () => {
 			const wrapper = mount(AQuantityInput, { props: { options: { uoms: [] } } })
-			const toggle = wrapper.find('.aquantity__uom-toggle')
+			const toggle = wrapper.find('.aform_dropdown-button')
 			await toggle.trigger('keydown.down')
 			await toggle.trigger('keydown.down')
 			await toggle.trigger('keydown.enter')

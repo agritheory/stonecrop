@@ -299,6 +299,7 @@ const childModels = computed(() => childModelsCache.value)
 .aform_form-element > .aform_field-label {
 	top: var(--sc-form-label-offset);
 }
+
 .aform_input-field:disabled,
 .aform_checkbox-container:has(.aform_checkbox:disabled) {
 	background: var(--sc-input-field-disabled-background);

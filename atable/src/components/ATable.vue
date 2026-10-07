@@ -1,5 +1,5 @@
 <template>
-	<div class="atable-container" style="position: relative" v-on-click-outside="store.closeModal">
+	<div class="atable-container" style="position: relative" v-on-click-outside="store.closeOverlays">
 		<!-- Main table view -->
 		<table
 			ref="table"
@@ -132,6 +132,7 @@ import type {
 	TableColumn,
 	TableConfig,
 	TableRow,
+	TableStore,
 } from '../types'
 
 const rows = defineModel<TableRow[]>('rows', { required: true })
@@ -174,7 +175,7 @@ const emit = defineEmits<{
 const tableRef = useTemplateRef<HTMLTableElement>('table')
 const resolvedColumns = columns.value?.length ? columns.value : schemaToColumns(schema ?? [])
 const injectedLinkResolver = inject<LinkResolverFn | null>('aformLinkResolver', null)
-const store = createTableStore({
+const store: TableStore = createTableStore({
 	columns: resolvedColumns,
 	// A copy, as the watcher below takes: the host's list changes only through `update:rows`.
 	rows: [...rows.value],
@@ -323,10 +324,8 @@ window.addEventListener('keydown', (event: KeyboardEvent) => {
 		if (store.modal.visible) {
 			store.modal.visible = false
 
-			// focus on the parent cell again
 			const $parent = store.modal.parent
 			if ($parent) {
-				// wait for the modal to close before focusing
 				void nextTick().then(() => {
 					return $parent.focus()
 				})

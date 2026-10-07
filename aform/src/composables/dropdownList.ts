@@ -40,11 +40,14 @@ export function fitDropdownList(list: Readonly<Ref<HTMLElement | null>>, state: 
 		window.removeEventListener('resize', fit)
 	}
 
-	watch(state.isOpen, open => {
-		if (open) return listen()
-		stopListening()
-		if (list.value) list.value.style.maxHeight = ''
-	})
+	watch(
+		() => state.isOpen(),
+		open => {
+			if (open) return listen()
+			stopListening()
+			if (list.value) list.value.style.maxHeight = ''
+		}
+	)
 
 	// After the flush, not in it: a `v-show` list is still hidden while post-flush watchers run, and a
 	// hidden list measures as sitting at the top of the window.
@@ -54,7 +57,7 @@ export function fitDropdownList(list: Readonly<Ref<HTMLElement | null>>, state: 
 	)
 
 	watch(
-		state.activeIndex,
+		() => state.activeIndex(),
 		index => {
 			if (index === null || index < 0) return
 			// jsdom, where hosts test the forms they build, has no scrollIntoView.

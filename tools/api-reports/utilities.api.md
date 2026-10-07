@@ -13,7 +13,27 @@ import { Temporal } from 'temporal-polyfill';
 export function compareSemver(a: string, b: string): number;
 
 // @public
+export function currencyAmountEntryPattern(currencyId: string | undefined, locale?: string): RegExp;
+
+// @public
+export function currencyInputFractionDigits(currencyId: string | undefined): number;
+
+// @public
 export const defaultKeypressHandlers: KeypressHandlers;
+
+// Warning: (ae-forgotten-export) The symbol "CurrencyLike" needs to be exported by the entry point index.d.ts
+//
+// @public
+export function formatCurrencyAmount(amount: number | null | undefined, currency: CurrencyLike | undefined): string;
+
+// @public
+export function formatCurrencyAmountInput(amount: number | null | undefined, currencyId: string | undefined, locale?: string): string;
+
+// @public
+export function formatCurrencyCell(value: unknown): string;
+
+// @public
+export function formatQuantityCell(value: unknown): string;
 
 // @public
 export function fromISODate(day: string): Temporal.PlainDate | undefined;
@@ -38,6 +58,9 @@ export type KeyboardNavigationOptions = {
 export type KeypressHandlers = {
     [key: string]: (ev: KeyboardEvent) => any;
 };
+
+// @public
+export function parseCurrencyAmountInput(text: string, locale?: string): number | null;
 
 // @public
 export function useKeyboardNav(options: KeyboardNavigationOptions[]): void;

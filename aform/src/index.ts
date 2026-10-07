@@ -30,6 +30,10 @@ import ATextboxInput from './components/form/ATextboxInput.vue'
 import Login from './components/utilities/Login.vue'
 import AFormLoading from './components/AFormLoading.vue'
 import ExpandButton from './components/base/ExpandButton.vue'
+import ATableTupleCurrencyPicker from './components/table/ATableTupleCurrencyPicker.vue'
+import ATableTupleQuantityPicker from './components/table/ATableTupleQuantityPicker.vue'
+import ATupleCellEditor from './components/table/ATupleCellEditor.vue'
+import ATupleCellShell from './components/table/ATupleCellShell.vue'
 
 export type * from './types'
 
@@ -64,6 +68,10 @@ function install(app: App /* options */) {
 	app.component('ADuration', ADuration)
 	app.component('AFormLoading', AFormLoading)
 	app.component('ExpandButton', ExpandButton)
+	app.component('ATableTupleQuantityPicker', ATableTupleQuantityPicker)
+	app.component('ATableTupleCurrencyPicker', ATableTupleCurrencyPicker)
+	app.component('ATupleCellEditor', ATupleCellEditor)
+	app.component('ATupleCellShell', ATupleCellShell)
 }
 
 export {
@@ -91,5 +99,9 @@ export {
 	Login,
 	AFormLoading,
 	ExpandButton,
+	ATableTupleQuantityPicker,
+	ATableTupleCurrencyPicker,
+	ATupleCellEditor,
+	ATupleCellShell,
 	install,
 }

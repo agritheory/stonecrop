@@ -12,4 +12,11 @@ export type * from './types'
  */
 function install(_app: App /* options */) {}
 
+export {
+	currencyAmountEntryPattern,
+	currencyInputFractionDigits,
+	formatCurrencyAmountInput,
+	parseCurrencyAmountInput,
+} from './currencyAmountFormat'
+export { formatCurrencyAmount, formatCurrencyCell, formatQuantityCell } from './denominatedFormat'
 export { compareSemver, defaultKeypressHandlers, fromISODate, install, isSemver, isSemverPrefix, useKeyboardNav }

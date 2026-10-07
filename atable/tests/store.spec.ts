@@ -256,10 +256,10 @@ describe('table store', { tags: ['component'] }, () => {
 				expect(store.getFormattedValue(0, 0, { qty: 2, uom: 'Box' })).toBe('2 Box')
 			})
 
-			it('formats a Currency composite value as "<amount> <currency>"', () => {
+			it('formats a Currency composite value with formatCurrencyCell', () => {
 				store.columns[0] = { name: 'id', component: 'ACurrencyInput' }
 				expect(store.getFormattedValue(0, 0, { amount: 5, currency: { id: 'USD', displayText: 'US Dollar' } })).toBe(
-					'5 US Dollar'
+					'$5.00'
 				)
 			})
 
@@ -559,6 +559,33 @@ describe('table store', { tags: ['component'] }, () => {
 
 			store.closeModal(event)
 			expect(store.modal.visible).toBe(true)
+		})
+
+		const cellBounds = { left: 1, bottom: 1, width: 1, height: 1 }
+
+		it.each([
+			['AQuantityInput', 'ATableTupleQuantityPicker'],
+			['ACurrencyInput', 'ATableTupleCurrencyPicker'],
+		])('opens the list an %s column picks from', (component, picker) => {
+			store = createTableStore({ columns: [{ name: 'value', label: 'Value', component }], rows: [{ value: null }] })
+			store.openTuplePicker(0, 0, document.createElement('td'), cellBounds)
+
+			expect(store.modal).toMatchObject({ visible: true, component: picker, colIndex: 0, rowIndex: 0 })
+		})
+
+		it('closes a unit or currency list, and no other pop-up', () => {
+			store = createTableStore({
+				columns: [{ name: 'value', label: 'Value', component: 'AQuantityInput' }],
+				rows: [{ value: null }],
+			})
+			const cell = document.createElement('td')
+			store.openCellShell(0, 0, cell, cellBounds, 'ADatePicker')
+			store.closeTuplePicker()
+			expect(store.modal.visible).toBe(true)
+
+			store.openTuplePicker(0, 0, cell, cellBounds)
+			store.closeTuplePicker()
+			expect(store.modal.visible).toBe(false)
 		})
 	})
 
@@ -1398,8 +1425,8 @@ describe('table store', { tags: ['component'] }, () => {
 	})
 
 	describe('quantity column filtering and sorting', () => {
-		// Quantity cells hold a composite `{ qty, uom, ... }` value; numeric filter/sort must
-		// compare on `qty`, not the object itself (which would coerce to NaN).
+		// Quantity cells hold a composite `{ qty, uom, stockQty, ... }` value; numeric filter/sort
+		// must compare on `stockQty` when present so mixed UOM rows are comparable.
 		const quantityColumns: TableColumn[] = [
 			{ name: 'item', label: 'Item' },
 			{ name: 'qty', label: 'Qty', component: 'AQuantityInput', filterType: 'number' },
@@ -1418,20 +1445,78 @@ describe('table store', { tags: ['component'] }, () => {
 			})
 		})
 
-		it("filters a quantity column by the composite value's qty", () => {
+		it("filters a quantity column by the composite value's stockQty", () => {
 			qtyStore.setFilter(1, { value: '12' })
 			expect(qtyStore.filteredRows.map(r => r.item)).toEqual(['C'])
 		})
 
-		it('sorts a quantity column numerically on qty (ascending)', () => {
+		it('sorts a quantity column numerically on stockQty (ascending)', () => {
 			qtyStore.sortByColumn(1)
 			expect(qtyStore.filteredRows.map(r => r.item)).toEqual(['B', 'C', 'A'])
 		})
 
-		it('sorts a quantity column numerically on qty (descending)', () => {
+		it('sorts a quantity column numerically on stockQty (descending)', () => {
 			qtyStore.sortByColumn(1) // asc
 			qtyStore.sortByColumn(1) // desc
 			expect(qtyStore.filteredRows.map(r => r.item)).toEqual(['A', 'C', 'B'])
+		})
+
+		it('sorts mixed UOM rows on stockQty, not entered qty', () => {
+			const mixedStore = createTableStore({
+				columns: quantityColumns,
+				rows: [
+					{ item: 'BoxLine', qty: { qty: 5, uom: 'Box', stockQty: 50, stockUom: 'Nos', conversionFactor: 10 } },
+					{ item: 'Forty', qty: { qty: 40, uom: 'Nos', stockQty: 40, stockUom: 'Nos', conversionFactor: 1 } },
+					{ item: 'Twelve', qty: { qty: 12, uom: 'Nos', stockQty: 12, stockUom: 'Nos', conversionFactor: 1 } },
+				],
+			})
+			mixedStore.sortByColumn(1)
+			expect(mixedStore.filteredRows.map(r => r.item)).toEqual(['Twelve', 'Forty', 'BoxLine'])
+		})
+
+		it('filters mixed UOM rows on stockQty', () => {
+			const mixedStore = createTableStore({
+				columns: quantityColumns,
+				rows: [
+					{ item: 'BoxLine', qty: { qty: 5, uom: 'Box', stockQty: 50, stockUom: 'Nos', conversionFactor: 10 } },
+					{ item: 'Forty', qty: { qty: 40, uom: 'Nos', stockQty: 40, stockUom: 'Nos', conversionFactor: 1 } },
+				],
+			})
+			mixedStore.setFilter(1, { value: '50' })
+			expect(mixedStore.filteredRows.map(r => r.item)).toEqual(['BoxLine'])
+		})
+
+		it('falls back to qty for a value carrying no stockQty', () => {
+			const unconvertedStore = createTableStore({
+				columns: quantityColumns,
+				rows: [
+					{ item: 'A', qty: { qty: 7, uom: 'Nos' } },
+					{ item: 'B', qty: { qty: 3, uom: 'Nos' } },
+				],
+			})
+			unconvertedStore.sortByColumn(1)
+			expect(unconvertedStore.filteredRows.map(r => r.item)).toEqual(['B', 'A'])
+		})
+
+		// A cleared quantity is no quantity, not 0: it sorts first, as a blank number cell does.
+		it('sorts an emptied quantity with the blank cells', () => {
+			const box = (qty: number | null) => ({
+				qty,
+				uom: 'Box',
+				stockQty: qty === null ? null : qty * 10,
+				stockUom: 'Nos',
+				conversionFactor: 10,
+			})
+			const emptiedStore = createTableStore({
+				columns: quantityColumns,
+				rows: [
+					{ item: 'Five', qty: box(5) },
+					{ item: 'Emptied', qty: box(null) },
+					{ item: 'Return', qty: box(-2) },
+				],
+			})
+			emptiedStore.sortByColumn(1)
+			expect(emptiedStore.filteredRows.map(r => r.item)).toEqual(['Emptied', 'Return', 'Five'])
 		})
 	})
 
@@ -1509,6 +1594,26 @@ describe('table store', { tags: ['component'] }, () => {
 			})
 			unconvertedStore.sortByColumn(1)
 			expect(unconvertedStore.filteredRows.map(r => r.item)).toEqual(['B', 'A'])
+		})
+
+		it('sorts an emptied price with the blank cells', () => {
+			const price = (amount: number | null) => ({
+				amount,
+				currency: usd,
+				baseAmount: amount,
+				baseCurrency: usd,
+				exchangeRate: 1,
+			})
+			const emptiedStore = createTableStore({
+				columns: currencyColumns,
+				rows: [
+					{ item: 'Five', total: price(5) },
+					{ item: 'Emptied', total: price(null) },
+					{ item: 'Refund', total: price(-2) },
+				],
+			})
+			emptiedStore.sortByColumn(1)
+			expect(emptiedStore.filteredRows.map(r => r.item)).toEqual(['Emptied', 'Refund', 'Five'])
 		})
 	})
 

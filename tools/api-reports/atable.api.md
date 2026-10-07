@@ -5,7 +5,7 @@
 ```ts
 
 import { App } from 'vue';
-import { BadgeDescriptor } from '@stonecrop/schema';
+import type { BadgeDescriptor } from '@stonecrop/schema';
 import type { ColumnSchema } from '@stonecrop/schema';
 import { ComponentOptionsMixin } from 'vue';
 import { ComponentProvideOptions } from 'vue';
@@ -22,11 +22,13 @@ import { Ref } from 'vue';
 import type { ShallowRef } from 'vue';
 import { Store } from 'pinia';
 import { StyleValue } from 'vue';
-import { useElementBounding } from '@vueuse/core';
 import { WritableComputedRef } from 'vue';
 
 // @public (undocumented)
 export const ACell: typeof __VLS_export;
+
+// @public (undocumented)
+export const ACellShell: typeof __VLS_export_9;
 
 // @public
 export const actionIcons: Record<string, string>;
@@ -56,10 +58,10 @@ export const ATableLoading: typeof __VLS_export_7;
 export const ATableLoadingBar: typeof __VLS_export_8;
 
 // @public (undocumented)
-export const ATableModal: typeof __VLS_export_9;
+export const ATableModal: typeof __VLS_export_10;
 
 // @public (undocumented)
-export const ATablePaginationFooter: typeof __VLS_export_10;
+export const ATablePaginationFooter: typeof __VLS_export_11;
 
 // @public
 export interface BaseTableConfig {
@@ -83,6 +85,27 @@ export interface CellContext {
         [key: string]: any;
     };
 }
+
+// @public
+export function cellOverlayContainer(cell: HTMLElement): HTMLElement | null;
+
+// @public (undocumented)
+export type CellOverlayPositionInput = {
+    cell: HTMLElement;
+    overlayWidth: number;
+    minWidth?: number;
+};
+
+// @public
+export type CellShellBounds = {
+    left: number;
+    bottom: number;
+    width: number;
+    height: number;
+};
+
+// @public
+export function computeCellOverlayStyle(input: CellOverlayPositionInput): StyleValue;
 
 // @public
 export type ConnectionEvent = {
@@ -200,64 +223,64 @@ open?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 add?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 delete?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 duplicate?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 insertAbove?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 insertBelow?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 move?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 moveUp?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 moveDown?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 } | undefined;
 } | undefined;
@@ -278,64 +301,64 @@ open?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 add?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 delete?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 duplicate?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 insertAbove?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 insertBelow?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 move?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 moveUp?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 moveDown?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 } | undefined;
 } | undefined;
@@ -356,64 +379,64 @@ open?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 add?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 delete?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 duplicate?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 insertAbove?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 insertBelow?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 move?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 moveUp?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 moveDown?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 } | undefined;
 } | undefined;
@@ -435,64 +458,64 @@ open?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 add?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 delete?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 duplicate?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 insertAbove?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 insertBelow?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 move?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 moveUp?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 moveDown?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 } | undefined;
 } | undefined;
@@ -512,64 +535,64 @@ open?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 add?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 delete?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 duplicate?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 insertAbove?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 insertBelow?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 move?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 moveUp?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 moveDown?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 } | undefined;
 } | undefined;
@@ -590,64 +613,64 @@ open?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 add?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 delete?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 duplicate?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 insertAbove?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 insertBelow?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 move?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 moveUp?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 moveDown?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 } | undefined;
 } | undefined;
@@ -668,64 +691,64 @@ open?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 add?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 delete?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 duplicate?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 insertAbove?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 insertBelow?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 move?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 moveUp?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 moveDown?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 } | undefined;
 } | undefined;
@@ -747,64 +770,64 @@ open?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 add?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 delete?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 duplicate?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 insertAbove?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 insertBelow?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 move?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 moveUp?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 moveDown?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 } | undefined;
 } | undefined;
@@ -963,6 +986,8 @@ linkResolver: ((doctype: string, id: string) => Promise<string | undefined>) | n
 addRow: (rowData?: Partial<TableRow>, position?: "start" | "end" | number) => number;
 clearFilter: (colIndex: number) => void;
 closeModal: (event: MouseEvent) => void;
+closeCellShell: () => void;
+closeOverlays: (event: MouseEvent) => void;
 createConnection: (fromHandleId: string, toHandleId: string, options?: {
 style?: ConnectionPath["style"];
 label?: string;
@@ -1006,6 +1031,9 @@ getRowExpandSymbol: (rowIndex: number) => "" | "▼" | "►";
 insertRowAbove: (rowIndex: number, rowData?: Partial<TableRow>) => number;
 insertRowBelow: (rowIndex: number, rowData?: Partial<TableRow>) => number;
 isRowGantt: (rowIndex: number) => boolean;
+openCellShell: (colIndex: number, rowIndex: number, cell: HTMLTableCellElement, bounds: CellShellBounds, component: string, componentProps?: Record<string, unknown>) => void;
+openTuplePicker: (colIndex: number, rowIndex: number, cell: HTMLTableCellElement, bounds: CellShellBounds) => void;
+closeTuplePicker: () => void;
 isRowVisible: (rowIndex: number) => boolean | undefined;
 moveRow: (fromIndex: number, toIndex: number) => boolean;
 registerConnectionHandle: (handleInfo: ConnectionHandle) => void;
@@ -1090,64 +1118,64 @@ open?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 add?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 delete?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 duplicate?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 insertAbove?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 insertBelow?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 move?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 moveUp?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 moveDown?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 } | undefined;
 } | undefined;
@@ -1168,64 +1196,64 @@ open?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 add?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 delete?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 duplicate?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 insertAbove?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 insertBelow?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 move?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 moveUp?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 moveDown?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 } | undefined;
 } | undefined;
@@ -1246,64 +1274,64 @@ open?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 add?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 delete?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 duplicate?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 insertAbove?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 insertBelow?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 move?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 moveUp?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 moveDown?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 } | undefined;
 } | undefined;
@@ -1325,64 +1353,64 @@ open?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 add?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 delete?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 duplicate?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 insertAbove?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 insertBelow?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 move?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 moveUp?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 moveDown?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 } | undefined;
 } | undefined;
@@ -1402,64 +1430,64 @@ open?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 add?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 delete?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 duplicate?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 insertAbove?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 insertBelow?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 move?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 moveUp?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 moveDown?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 } | undefined;
 } | undefined;
@@ -1480,64 +1508,64 @@ open?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 add?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 delete?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 duplicate?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 insertAbove?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 insertBelow?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 move?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 moveUp?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 moveDown?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 } | undefined;
 } | undefined;
@@ -1558,64 +1586,64 @@ open?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 add?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 delete?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 duplicate?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 insertAbove?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 insertBelow?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 move?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 moveUp?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 moveDown?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 } | undefined;
 } | undefined;
@@ -1637,64 +1665,64 @@ open?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 add?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 delete?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 duplicate?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 insertAbove?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 insertBelow?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 move?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 moveUp?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 moveDown?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 } | undefined;
 } | undefined;
@@ -1853,6 +1881,8 @@ linkResolver: ((doctype: string, id: string) => Promise<string | undefined>) | n
 addRow: (rowData?: Partial<TableRow>, position?: "start" | "end" | number) => number;
 clearFilter: (colIndex: number) => void;
 closeModal: (event: MouseEvent) => void;
+closeCellShell: () => void;
+closeOverlays: (event: MouseEvent) => void;
 createConnection: (fromHandleId: string, toHandleId: string, options?: {
 style?: ConnectionPath["style"];
 label?: string;
@@ -1896,6 +1926,9 @@ getRowExpandSymbol: (rowIndex: number) => "" | "▼" | "►";
 insertRowAbove: (rowIndex: number, rowData?: Partial<TableRow>) => number;
 insertRowBelow: (rowIndex: number, rowData?: Partial<TableRow>) => number;
 isRowGantt: (rowIndex: number) => boolean;
+openCellShell: (colIndex: number, rowIndex: number, cell: HTMLTableCellElement, bounds: CellShellBounds, component: string, componentProps?: Record<string, unknown>) => void;
+openTuplePicker: (colIndex: number, rowIndex: number, cell: HTMLTableCellElement, bounds: CellShellBounds) => void;
+closeTuplePicker: () => void;
 isRowVisible: (rowIndex: number) => boolean | undefined;
 moveRow: (fromIndex: number, toIndex: number) => boolean;
 registerConnectionHandle: (handleInfo: ConnectionHandle) => void;
@@ -1980,64 +2013,64 @@ open?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 add?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 delete?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 duplicate?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 insertAbove?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 insertBelow?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 move?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 moveUp?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 moveDown?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 } | undefined;
 } | undefined;
@@ -2058,64 +2091,64 @@ open?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 add?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 delete?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 duplicate?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 insertAbove?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 insertBelow?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 move?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 moveUp?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 moveDown?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 } | undefined;
 } | undefined;
@@ -2136,64 +2169,64 @@ open?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 add?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 delete?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 duplicate?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 insertAbove?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 insertBelow?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 move?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 moveUp?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 moveDown?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 } | undefined;
 } | undefined;
@@ -2215,64 +2248,64 @@ open?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 add?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 delete?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 duplicate?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 insertAbove?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 insertBelow?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 move?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 moveUp?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 moveDown?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 } | undefined;
 } | undefined;
@@ -2292,64 +2325,64 @@ open?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 add?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 delete?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 duplicate?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 insertAbove?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 insertBelow?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 move?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 moveUp?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 moveDown?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 } | undefined;
 } | undefined;
@@ -2370,64 +2403,64 @@ open?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 add?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 delete?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 duplicate?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 insertAbove?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 insertBelow?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 move?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 moveUp?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 moveDown?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 } | undefined;
 } | undefined;
@@ -2448,64 +2481,64 @@ open?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 add?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 delete?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 duplicate?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 insertAbove?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 insertBelow?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 move?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 moveUp?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 moveDown?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 } | undefined;
 } | undefined;
@@ -2527,64 +2560,64 @@ open?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 add?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 delete?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 duplicate?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 insertAbove?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 insertBelow?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 move?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 moveUp?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 moveDown?: boolean | {
 enabled?: boolean | undefined;
 label?: string | undefined;
 icon?: string | undefined;
-handler?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean) | undefined;
-disabled?: ((rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean) | undefined;
+handler?: ((rowIndex: number, store: TableStore) => void | boolean) | undefined;
+disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 } | undefined;
 } | undefined;
@@ -2743,6 +2776,8 @@ linkResolver: ((doctype: string, id: string) => Promise<string | undefined>) | n
 addRow: (rowData?: Partial<TableRow>, position?: "start" | "end" | number) => number;
 clearFilter: (colIndex: number) => void;
 closeModal: (event: MouseEvent) => void;
+closeCellShell: () => void;
+closeOverlays: (event: MouseEvent) => void;
 createConnection: (fromHandleId: string, toHandleId: string, options?: {
 style?: ConnectionPath["style"];
 label?: string;
@@ -2786,6 +2821,9 @@ getRowExpandSymbol: (rowIndex: number) => "" | "▼" | "►";
 insertRowAbove: (rowIndex: number, rowData?: Partial<TableRow>) => number;
 insertRowBelow: (rowIndex: number, rowData?: Partial<TableRow>) => number;
 isRowGantt: (rowIndex: number) => boolean;
+openCellShell: (colIndex: number, rowIndex: number, cell: HTMLTableCellElement, bounds: CellShellBounds, component: string, componentProps?: Record<string, unknown>) => void;
+openTuplePicker: (colIndex: number, rowIndex: number, cell: HTMLTableCellElement, bounds: CellShellBounds) => void;
+closeTuplePicker: () => void;
 isRowVisible: (rowIndex: number) => boolean | undefined;
 moveRow: (fromIndex: number, toIndex: number) => boolean;
 registerConnectionHandle: (handleInfo: ConnectionHandle) => void;
@@ -2800,7 +2838,7 @@ unregisterConnectionHandle: (handleId: string) => void;
 unregisterGanttBar: (barId: string) => void;
 updateGanttBar: (event: GanttDragEvent) => void;
 updateRows: (newRows: TableRow[]) => void;
-}, "addRow" | "clearFilter" | "closeModal" | "createConnection" | "deleteConnection" | "deleteRow" | "duplicateRow" | "getCellData" | "getCellDisplayValue" | "getConnectionsForBar" | "getFormattedValue" | "getHandlesForBar" | "getHeaderCellStyle" | "getRowExpandSymbol" | "insertRowAbove" | "insertRowBelow" | "isRowGantt" | "isRowVisible" | "moveRow" | "registerConnectionHandle" | "registerGanttBar" | "resizeColumn" | "setCellData" | "setCellText" | "setFilter" | "sortByColumn" | "toggleRowExpand" | "unregisterConnectionHandle" | "unregisterGanttBar" | "updateGanttBar" | "updateRows">>;
+}, "addRow" | "clearFilter" | "closeModal" | "closeCellShell" | "closeOverlays" | "createConnection" | "deleteConnection" | "deleteRow" | "duplicateRow" | "getCellData" | "getCellDisplayValue" | "getConnectionsForBar" | "getFormattedValue" | "getHandlesForBar" | "getHeaderCellStyle" | "getRowExpandSymbol" | "insertRowAbove" | "insertRowBelow" | "isRowGantt" | "openCellShell" | "openTuplePicker" | "closeTuplePicker" | "isRowVisible" | "moveRow" | "registerConnectionHandle" | "registerGanttBar" | "resizeColumn" | "setCellData" | "setCellText" | "setFilter" | "sortByColumn" | "toggleRowExpand" | "unregisterConnectionHandle" | "unregisterGanttBar" | "updateGanttBar" | "updateRows">>;
 
 // @public
 export const DeleteIcon: string;
@@ -2891,6 +2929,9 @@ export const InsertBelowIcon: string;
 // @public
 export function install(app: App): void;
 
+// @public (undocumented)
+export function isTableTuplePickerModal(modal: TableModal): boolean;
+
 // @public
 export const MoveIcon: string;
 
@@ -2899,9 +2940,9 @@ export const OpenIcon: string;
 
 // @public
 export interface RowActionOptions {
-    disabled?: (rowIndex: number, store: ReturnType<typeof createTableStore>) => boolean;
+    disabled?: (rowIndex: number, store: TableStore) => boolean;
     enabled?: boolean;
-    handler?: (rowIndex: number, store: ReturnType<typeof createTableStore>) => void | boolean;
+    handler?: (rowIndex: number, store: TableStore) => void | boolean;
     icon?: string;
     label?: string;
 }
@@ -2971,6 +3012,12 @@ export interface RowMoveEvent {
 export function schemaToColumns(schema: ColumnSchema[]): TableColumn[];
 
 // @public
+export const TABLE_TUPLE_CURRENCY_PICKER = "ATableTupleCurrencyPicker";
+
+// @public
+export const TABLE_TUPLE_QUANTITY_PICKER = "ATableTupleQuantityPicker";
+
+// @public
 export interface TableColumn extends Omit<ColumnSchema, 'fieldname' | 'hidden' | 'format' | 'modalComponent'> {
     format?: string | ((value: any, context: CellContext) => string | BadgeDescriptor);
     linkDoctype?: string;
@@ -2997,17 +3044,17 @@ export interface TableDisplay {
 
 // @public
 export interface TableModal {
-    bottom?: ReturnType<typeof useElementBounding>['bottom'];
+    bottom?: number;
     cell?: HTMLTableCellElement | null;
     colIndex?: number;
     component?: string;
     componentProps?: Record<string, any>;
-    height?: ReturnType<typeof useElementBounding>['height'];
-    left?: ReturnType<typeof useElementBounding>['left'];
+    height?: number;
+    left?: number;
     parent?: HTMLElement;
     rowIndex?: number;
     visible?: boolean;
-    width?: ReturnType<typeof useElementBounding>['width'];
+    width?: number;
 }
 
 // @public
@@ -3015,7 +3062,7 @@ export interface TableModalProps {
     [key: string]: any;
     colIndex: number;
     rowIndex: number;
-    store: ReturnType<typeof createTableStore>;
+    store: TableStore;
 }
 
 // @public
@@ -3049,6 +3096,13 @@ export interface TableRow {
     indent?: number;
     parent?: number;
 }
+
+// @public
+export interface TableStore extends ReturnType<typeof createTableStore> {
+}
+
+// @public (undocumented)
+export function tableTuplePickerModalComponent(columnComponent: string | undefined): string;
 
 // @public
 export interface TreeGanttTableConfig extends BaseTableConfig {

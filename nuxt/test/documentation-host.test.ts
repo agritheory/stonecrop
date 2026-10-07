@@ -17,6 +17,8 @@ import { beforeAll, describe, expect, it } from 'vitest'
 import { loadDoctypesFromObject, clearRegistry } from '@stonecrop/graphql-middleware'
 
 import userDoctype from '../documentation/doctypes/user.json'
+import { mockExecutor } from '../documentation/server/mock-executor'
+import { sumPlaygroundMoney } from '../documentation/server/playground-denominated'
 import resolvers from '../documentation/server/resolvers'
 
 let schema: GraphQLSchema
@@ -81,5 +83,19 @@ describe('documentation host — the record an action replies with', { tags: ['u
 		)
 		expect(result.errors).toBeUndefined()
 		expect(result.data?.stonecropAction).toEqual({ success: false, record: null })
+	})
+})
+
+// Recalculate Total adds up an order's lines by their dollar amounts; an order must open with that total, or recalculating
+// changes an order nobody edited.
+describe('documentation host — seeded orders', { tags: ['unit'] }, () => {
+	it('opens each order with the total of its lines', async () => {
+		type Money = { amount: number; baseAmount: number }
+		type Order = { orderNumber: string; total: Money; items: { total: Money }[] }
+		const { allOrders } = await mockExecutor.query<{ allOrders: { nodes: Order[] } }>('allOrders')
+
+		for (const order of allOrders.nodes) {
+			expect(order.total.amount, order.orderNumber).toBe(sumPlaygroundMoney(order.items.map(item => item.total)))
+		}
 	})
 })

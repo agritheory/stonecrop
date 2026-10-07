@@ -27,14 +27,48 @@ through. A colour painted below the border can match only one of those surfaces.
 */
 
 const FORM_ABOVE_THE_BORDER = 'linear-gradient(var(--sc-form-background) calc(50% + 1px), transparent calc(50% + 1px))'
+const FORM_SOLID_BACKGROUND = 'var(--sc-form-background)'
+
+const labelBackgroundAssertion = (element: Element, elementDesc: string, backgrounds: string[]) => {
+	if (!element.classList.contains('aform_field-label')) {
+		return {
+			actual: { element: elementDesc, backgrounds },
+			expected: { element: elementDesc, backgrounds: [FORM_ABOVE_THE_BORDER] },
+		}
+	}
+	if (element.closest('.acurrency__group') || element.closest('.aquantity__group')) {
+		return { actual: backgrounds.includes(FORM_SOLID_BACKGROUND), expected: true }
+	}
+	return { actual: backgrounds, expected: [FORM_ABOVE_THE_BORDER] }
+}
 
 const SRC = join(__dirname, '..', 'src')
 
+const sfcStyles = (relativePath: string): string => {
+	const sfc = readFileSync(join(SRC, relativePath), 'utf8')
+	return Array.from(sfc.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g), match => match[1]).join('\n')
+}
+
+const mergedGroupLabelRule = (relativePath: string): string => {
+	const css = sfcStyles(relativePath)
+	const match = css.match(/\.(?:acurrency|aquantity)__group > \.aform_field-label\s*\{[^}]+\}/)
+	expect(match, `merged-group label rule in ${relativePath}`).toBeTruthy()
+	return match![0]
+}
+
 const globalStyles = (): string => {
-	const sfc = readFileSync(join(SRC, 'components', 'AForm.vue'), 'utf8')
-	const blocks = Array.from(sfc.matchAll(/<style>([\s\S]*?)<\/style>/g), match => match[1])
+	const blocks = Array.from(
+		readFileSync(join(SRC, 'components', 'AForm.vue'), 'utf8').matchAll(/<style>([\s\S]*?)<\/style>/g),
+		match => match[1]
+	)
 	expect(blocks).toHaveLength(1)
-	return blocks[0]
+	// jsdom mounts do not inject child SFC styles into `document.styleSheets`; merged currency/quantity
+	// labels rely on those component rules at runtime, so include them for paint inspection.
+	return [
+		blocks[0],
+		mergedGroupLabelRule('components/form/ACurrencyInput.vue'),
+		mergedGroupLabelRule('components/form/AQuantityInput.vue'),
+	].join('\n')
 }
 
 const collect = (dir: string, out: string[] = []): string[] => {
@@ -139,8 +173,13 @@ describe('floating label and error background', { tags: ['component'] }, () => {
 		const elements = painted(wrapper.element as HTMLElement)
 
 		expect(elements.length).toBeGreaterThan(10)
-		for (const { element, backgrounds } of elements) {
-			expect({ element, backgrounds }).toEqual({ element, backgrounds: [FORM_ABOVE_THE_BORDER] })
+		for (const { element: elementDesc, backgrounds } of elements) {
+			const node = Array.from(
+				(wrapper.element as HTMLElement).querySelectorAll('.aform_field-label, p.aform_error')
+			).find(el => `${el.className} "${el.textContent?.trim()}"` === elementDesc)
+			expect(node).toBeTruthy()
+			const { actual, expected } = labelBackgroundAssertion(node!, elementDesc, backgrounds)
+			expect(actual).toEqual(expected)
 		}
 	})
 
@@ -200,6 +239,8 @@ describe('floating label and error background', { tags: ['component'] }, () => {
 		expect(painting).toEqual([
 			`components/AForm.vue .aform_field-label ${FORM_ABOVE_THE_BORDER}`,
 			`components/AForm.vue p.aform_error ${FORM_ABOVE_THE_BORDER}`,
+			`components/form/ACurrencyInput.vue .acurrency__group > .aform_field-label ${FORM_SOLID_BACKGROUND}`,
+			`components/form/AQuantityInput.vue .aquantity__group > .aform_field-label ${FORM_SOLID_BACKGROUND}`,
 		])
 	})
 

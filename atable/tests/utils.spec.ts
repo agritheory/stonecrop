@@ -1,4 +1,6 @@
 import { describe, it, expect } from 'vitest'
+import { formatCurrencyAmount } from '@stonecrop/utilities'
+
 import { isHtmlString, generateHash, formatQuantity, formatCurrency } from '../src/utils'
 
 describe('utils', { tags: ['component'] }, () => {
@@ -61,6 +63,10 @@ describe('utils', { tags: ['component'] }, () => {
 			expect(formatQuantity({ qty: 2, uom: 'Box' })).toBe('2 Box')
 		})
 
+		it('omits uom when it matches stockUom', () => {
+			expect(formatQuantity({ qty: 50, uom: 'Nos', stockUom: 'Nos' })).toBe('50')
+		})
+
 		it('renders just the qty when the value carries no uom', () => {
 			expect(formatQuantity({ qty: 5 })).toBe('5')
 		})
@@ -85,12 +91,14 @@ describe('utils', { tags: ['component'] }, () => {
 	})
 
 	describe('formatCurrency', () => {
-		it('renders amount and currency displayText', () => {
-			expect(formatCurrency({ amount: 5, currency: { id: 'USD', displayText: 'US Dollar' } })).toBe('5 US Dollar')
+		it('renders amount with Intl currency formatting when id is a valid ISO code', () => {
+			expect(formatCurrency({ amount: 5, currency: { id: 'USD', displayText: 'US Dollar' } })).toBe(
+				formatCurrencyAmount(5, { id: 'USD', displayText: 'US Dollar' })
+			)
 		})
 
-		it('falls back to currency id when displayText is absent', () => {
-			expect(formatCurrency({ amount: 5, currency: { id: 'USD' } })).toBe('5 USD')
+		it('falls back to symbol or displayText for non-ISO currency ids', () => {
+			expect(formatCurrency({ amount: 5, currency: { id: 'CUSTOM', symbol: '¤' } })).toBe('5 ¤')
 		})
 
 		it('renders just the amount when currency is absent', () => {

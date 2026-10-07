@@ -1,3 +1,4 @@
+import { formatCurrencyAmount } from '@stonecrop/utilities'
 import { describe, it, expect, vi } from 'vitest'
 import { mount, flushPromises, VueWrapper } from '@vue/test-utils'
 
@@ -21,8 +22,16 @@ const pickCurrency = async (wrapper: VueWrapper, value: string) => {
 	const input = wrapper.find<HTMLInputElement>('.acurrency__currency input[type="text"]')
 	await input.trigger('focus')
 	await flushPromises()
-	const option = wrapper.findAll('.autocomplete-result').find(li => li.text() === value)
+	const option = wrapper.findAll('.autocomplete-result').find(li => li.text().includes(value))
 	await option!.trigger('mousedown')
+	await wrapper.vm.$nextTick()
+}
+
+const amountInput = (wrapper: VueWrapper) => wrapper.find<HTMLInputElement>('.acurrency__amount')
+
+const setAmount = async (wrapper: VueWrapper, value: number | string) => {
+	await amountInput(wrapper).setValue(String(value))
+	await amountInput(wrapper).trigger('blur')
 	await wrapper.vm.$nextTick()
 }
 
@@ -50,7 +59,7 @@ const mountWithPrecision = (precision?: number) =>
 	})
 
 const baseAmountAfterEntering = async (wrapper: VueWrapper, amount: number) => {
-	await wrapper.find('input[type="number"]').setValue(amount)
+	await setAmount(wrapper, amount)
 	const emitted = wrapper.emitted('update:modelValue')!
 	return (emitted[emitted.length - 1][0] as any).baseAmount
 }
@@ -59,9 +68,36 @@ describe('ACurrencyInput', { tags: ['component'] }, () => {
 	describe('rendering', () => {
 		it('renders an amount input and a currency link input in edit mode', () => {
 			const wrapper = mount(ACurrencyInput, { props: { label: 'Amount', options } })
-			expect(wrapper.find('input[type="number"]').exists()).toBe(true)
+			expect(amountInput(wrapper).exists()).toBe(true)
+			expect(amountInput(wrapper).attributes('type')).toBe('text')
 			expect(wrapper.find('select').exists()).toBe(false)
 			expect(wrapper.find<HTMLInputElement>('.acurrency__currency input[type="text"]').exists()).toBe(true)
+		})
+
+		// The browser's separators, as in a table cell, and the currency's decimals.
+		it('formats the amount the way the browser writes numbers by default', () => {
+			const wrapper = mount(ACurrencyInput, {
+				props: {
+					options,
+					modelValue: {
+						amount: 10050.45,
+						currency: { id: 'EUR', displayText: 'Euro', symbol: '€' },
+						baseAmount: 11055.495,
+						baseCurrency: { id: 'USD', displayText: 'US Dollar' },
+						exchangeRate: 1.1,
+					},
+				},
+			})
+			expect(amountInput(wrapper).element.value).toBe(
+				new Intl.NumberFormat(undefined, { minimumFractionDigits: 2 }).format(10050.45)
+			)
+		})
+
+		it('uses a plain number input when amountMask is false', () => {
+			const wrapper = mount(ACurrencyInput, {
+				props: { label: 'Amount', options: { ...options, amountMask: false } },
+			})
+			expect(wrapper.find('input[type="number"].acurrency__amount').exists()).toBe(true)
 		})
 
 		it('shows the currency label as a placeholder instead of a floating label, merged into one group', () => {
@@ -90,7 +126,7 @@ describe('ACurrencyInput', { tags: ['component'] }, () => {
 		it('renders amount and currency fields side by side in the same row', () => {
 			const wrapper = mount(ACurrencyInput, { props: { options } })
 			const row = wrapper.find('.acurrency__row')
-			expect(row.find('input[type="number"]').exists()).toBe(true)
+			expect(row.find('.acurrency__amount').exists()).toBe(true)
 			expect(row.find('input[type="text"]').exists()).toBe(true)
 		})
 
@@ -102,7 +138,7 @@ describe('ACurrencyInput', { tags: ['component'] }, () => {
 		it('associates the amount label with the amount input via for/id', () => {
 			const wrapper = mount(ACurrencyInput, { props: { uuid: 'line-amount', options } })
 			const amountLabel = wrapper.findAll('label').at(0)!
-			expect(amountLabel.attributes('for')).toBe(wrapper.find('input[type="number"]').attributes('id'))
+			expect(amountLabel.attributes('for')).toBe(amountInput(wrapper).attributes('id'))
 		})
 
 		it('shows the selected currency displayText in the currency input', () => {
@@ -123,7 +159,7 @@ describe('ACurrencyInput', { tags: ['component'] }, () => {
 
 		it('is disabled in read mode', () => {
 			const wrapper = mount(ACurrencyInput, { props: { mode: 'read', options } })
-			expect(wrapper.find('input[type="number"]').attributes()).toHaveProperty('disabled')
+			expect(amountInput(wrapper).attributes()).toHaveProperty('disabled')
 			expect(wrapper.find<HTMLInputElement>('.acurrency__currency input[type="text"]').attributes()).toHaveProperty(
 				'disabled'
 			)
@@ -143,7 +179,9 @@ describe('ACurrencyInput', { tags: ['component'] }, () => {
 				},
 			})
 			expect(wrapper.find('input').exists()).toBe(false)
-			expect(wrapper.find('.aform_display-value').text()).toBe('5 US Dollar')
+			expect(wrapper.find('.aform_display-value').text()).toBe(
+				formatCurrencyAmount(5, { id: 'USD', displayText: 'US Dollar' })
+			)
 		})
 
 		it('shows "—" in display mode when there is no currency', () => {
@@ -164,7 +202,11 @@ describe('ACurrencyInput', { tags: ['component'] }, () => {
 					},
 				},
 			})
-			expect(wrapper.find('.aform_display-value').text()).toBe('2 Euro (2.2 US Dollar)')
+			const eur = { id: 'EUR', displayText: 'Euro' }
+			const usd = { id: 'USD', displayText: 'US Dollar' }
+			expect(wrapper.find('.aform_display-value').text()).toBe(
+				`${formatCurrencyAmount(2, eur)} (≈ ${formatCurrencyAmount(2.2, usd)})`
+			)
 		})
 	})
 
@@ -181,7 +223,7 @@ describe('ACurrencyInput', { tags: ['component'] }, () => {
 			const wrapper = mount(ACurrencyInput, {
 				props: { options, modelValue: { ...noAmount, amount: 5, baseAmount: 5.5 } },
 			})
-			await wrapper.find('input[type="number"]').setValue('')
+			await setAmount(wrapper, '')
 			expect(wrapper.emitted('update:modelValue')!.at(-1)![0]).toMatchObject({ amount: null, baseAmount: null })
 		})
 
@@ -217,7 +259,7 @@ describe('ACurrencyInput', { tags: ['component'] }, () => {
 				},
 			})
 			await pickCurrency(wrapper, 'US Dollar')
-			await wrapper.find('input[type="number"]').setValue(5)
+			await setAmount(wrapper, 5)
 
 			const emitted = wrapper.emitted('update:modelValue')!
 			const last = emitted[emitted.length - 1][0] as any
@@ -244,7 +286,7 @@ describe('ACurrencyInput', { tags: ['component'] }, () => {
 				},
 			})
 			await pickCurrency(wrapper, 'Euro')
-			await wrapper.find('input[type="number"]').setValue(3)
+			await setAmount(wrapper, 3)
 
 			const emitted = wrapper.emitted('update:modelValue')!
 			const last = emitted[emitted.length - 1][0] as any
@@ -271,7 +313,7 @@ describe('ACurrencyInput', { tags: ['component'] }, () => {
 				},
 			})
 			await pickCurrency(wrapper, 'British Pound')
-			await wrapper.find('input[type="number"]').setValue(3)
+			await setAmount(wrapper, 3)
 
 			const emitted = wrapper.emitted('update:modelValue')!
 			const last = emitted[emitted.length - 1][0] as any
@@ -298,7 +340,7 @@ describe('ACurrencyInput', { tags: ['component'] }, () => {
 					},
 				},
 			})
-			await wrapper.find('input[type="number"]').setValue(50)
+			await setAmount(wrapper, 50)
 
 			const emitted = wrapper.emitted('update:modelValue')!
 			const last = emitted[emitted.length - 1][0] as any
@@ -371,7 +413,7 @@ describe('ACurrencyInput', { tags: ['component'] }, () => {
 
 		it("leaves the entered amount alone — precision is the base currency's scale, not the input's", async () => {
 			const wrapper = mountWithPrecision(0)
-			await wrapper.find('input[type="number"]').setValue(10.75)
+			await setAmount(wrapper, 10.75)
 			const emitted = wrapper.emitted('update:modelValue')!
 			expect((emitted[emitted.length - 1][0] as any).amount).toBe(10.75)
 		})
@@ -410,7 +452,7 @@ describe('ACurrencyInput', { tags: ['component'] }, () => {
 			const wrapper = mount(ACurrencyInput, {
 				props: { options, modelValue: bookedAtHistoricalRate },
 			})
-			await wrapper.find('input[type="number"]').setValue(101)
+			await setAmount(wrapper, 101)
 
 			const emitted = wrapper.emitted('update:modelValue')!
 			const last = emitted[emitted.length - 1][0] as any
@@ -452,7 +494,7 @@ describe('ACurrencyInput', { tags: ['component'] }, () => {
 	describe('amount input guarding', () => {
 		it('blocks non-numeric keydowns on the amount input', () => {
 			const wrapper = mount(ACurrencyInput, { props: { options } })
-			const input = wrapper.find('input[type="number"]').element as HTMLInputElement
+			const input = amountInput(wrapper).element as HTMLInputElement
 			const event = new KeyboardEvent('keydown', { key: 'e', cancelable: true })
 			input.dispatchEvent(event)
 			expect(event.defaultPrevented).toBe(true)
@@ -460,7 +502,7 @@ describe('ACurrencyInput', { tags: ['component'] }, () => {
 
 		it('allows digit keydowns on the amount input', () => {
 			const wrapper = mount(ACurrencyInput, { props: { options } })
-			const input = wrapper.find('input[type="number"]').element as HTMLInputElement
+			const input = amountInput(wrapper).element as HTMLInputElement
 			const event = new KeyboardEvent('keydown', { key: '5', cancelable: true })
 			input.dispatchEvent(event)
 			expect(event.defaultPrevented).toBe(false)
@@ -468,7 +510,7 @@ describe('ACurrencyInput', { tags: ['component'] }, () => {
 
 		it('allows a leading minus — currency amounts are signed (credits, refunds, adjustments)', () => {
 			const wrapper = mount(ACurrencyInput, { props: { options } })
-			const input = wrapper.find('input[type="number"]').element as HTMLInputElement
+			const input = amountInput(wrapper).element as HTMLInputElement
 			const event = new KeyboardEvent('keydown', { key: '-', cancelable: true })
 			input.dispatchEvent(event)
 			expect(event.defaultPrevented).toBe(false)
@@ -487,7 +529,7 @@ describe('ACurrencyInput', { tags: ['component'] }, () => {
 					},
 				},
 			})
-			await wrapper.find('input[type="number"]').setValue(-20)
+			await setAmount(wrapper, -20)
 
 			const emitted = wrapper.emitted('update:modelValue')!
 			const last = emitted[emitted.length - 1][0] as any
@@ -509,11 +551,11 @@ describe('ACurrencyInput', { tags: ['component'] }, () => {
 			expect(wrapper.find<HTMLInputElement>('.acurrency__currency input[type="text"]').attributes()).toHaveProperty(
 				'required'
 			)
-			expect(wrapper.find('input[type="number"]').attributes()).toHaveProperty('required')
+			expect(amountInput(wrapper).attributes()).toHaveProperty('required')
 		})
 	})
 
-	describe('read-only base fields', () => {
+	describe('conversion helper line', () => {
 		const modelValue = {
 			amount: 2,
 			currency: { id: 'EUR', displayText: 'Euro' },
@@ -522,38 +564,39 @@ describe('ACurrencyInput', { tags: ['component'] }, () => {
 			exchangeRate: 1.1,
 		}
 
-		it('displays base currency, base amount, and exchange rate within the same row', () => {
-			const wrapper = mount(ACurrencyInput, { props: { options, modelValue } })
-			expect(wrapper.find<HTMLInputElement>('.acurrency__field--base-currency input').element.value).toBe('US Dollar')
-			expect(wrapper.find<HTMLInputElement>('.acurrency__field--base-amount input').element.value).toBe('2.2')
-			expect(wrapper.find<HTMLInputElement>('.acurrency__field--exchange-rate input').element.value).toBe('1.1')
-		})
-
-		it('labels each read-only field', () => {
-			const wrapper = mount(ACurrencyInput, { props: { label: 'Amount', options, modelValue } })
-			const labels = wrapper.findAll('label').map(l => l.text())
-			// Currency has no label of its own — it's embedded in the amount+currency group,
-			// merged under the single "Amount" label, with its name shown as a placeholder instead.
-			expect(labels).toEqual(['Amount', 'Base Currency', 'Base Amount', 'Exchange Rate'])
-		})
-
-		it('is always disabled, even in edit mode', () => {
-			const wrapper = mount(ACurrencyInput, { props: { options, modelValue, mode: 'edit' } })
-			expect(wrapper.find<HTMLInputElement>('.acurrency__field--base-currency input').attributes()).toHaveProperty(
-				'disabled'
-			)
-			expect(wrapper.find<HTMLInputElement>('.acurrency__field--base-amount input').attributes()).toHaveProperty(
-				'disabled'
-			)
-			expect(wrapper.find<HTMLInputElement>('.acurrency__field--exchange-rate input').attributes()).toHaveProperty(
-				'disabled'
+		it('shows base conversion as a helper line when currency differs from base', () => {
+			const wrapper = mount(ACurrencyInput, { props: { options, modelValue, uuid: 'cur-helper' } })
+			expect(wrapper.find('.acurrency__helper').text()).toBe(
+				`≈ ${formatCurrencyAmount(2.2, modelValue.baseCurrency)} · 1 EUR = 1.1 US Dollar`
 			)
 		})
 
-		it('updates live as amount/currency change', async () => {
+		it('does not show the helper when currency matches base currency', () => {
 			const wrapper = mount(ACurrencyInput, {
 				props: {
 					options,
+					modelValue: {
+						amount: 5,
+						currency: { id: 'USD', displayText: 'US Dollar' },
+						baseAmount: 5,
+						baseCurrency: { id: 'USD', displayText: 'US Dollar' },
+						exchangeRate: 1,
+					},
+				},
+			})
+			expect(wrapper.find('.acurrency__helper').exists()).toBe(false)
+		})
+
+		it('links the helper via aria-describedby on the amount input', () => {
+			const wrapper = mount(ACurrencyInput, { props: { options, modelValue, uuid: 'cur-helper' } })
+			expect(amountInput(wrapper).attributes('aria-describedby')).toBe('cur-helper-helper')
+		})
+
+		it('updates the helper live as amount/currency change', async () => {
+			const wrapper = mount(ACurrencyInput, {
+				props: {
+					options,
+					uuid: 'cur-live',
 					modelValue: {
 						amount: 0,
 						currency: { id: 'USD', displayText: 'US Dollar' },
@@ -564,13 +607,13 @@ describe('ACurrencyInput', { tags: ['component'] }, () => {
 				},
 			})
 			await pickCurrency(wrapper, 'Euro')
-			await wrapper.find('input[type="number"]').setValue(4)
+			await setAmount(wrapper, 4)
 
 			const emitted = wrapper.emitted('update:modelValue')!
 			await wrapper.setProps({ modelValue: emitted[emitted.length - 1][0] as any })
 
-			expect(wrapper.find<HTMLInputElement>('.acurrency__field--base-amount input').element.value).toBe('4.4')
-			expect(wrapper.find<HTMLInputElement>('.acurrency__field--exchange-rate input').element.value).toBe('1.1')
+			expect(wrapper.find('.acurrency__helper').text()).toContain('≈')
+			expect(wrapper.find('.acurrency__helper').text()).toContain('1 EUR = 1.1 US Dollar')
 		})
 	})
 
@@ -627,6 +670,45 @@ describe('ACurrencyInput', { tags: ['component'] }, () => {
 			expect(wrapper.find<HTMLInputElement>('.acurrency__currency input[type="text"]').element.value).toBe('€')
 		})
 
+		// A lookup is how the box finds other currencies; the currency it holds needs none.
+		it('shows the symbol in the currency box when the field has no currency lookup', () => {
+			const { filterFunction: _, ...withoutLookup } = optionsWithSymbols
+			const wrapper = mount(ACurrencyInput, {
+				props: {
+					options: withoutLookup,
+					modelValue: {
+						amount: 5,
+						currency: { id: 'EUR', displayText: 'Euro', symbol: '€' },
+						baseAmount: 5.5,
+						baseCurrency: { id: 'USD', displayText: 'US Dollar', symbol: '$' },
+						exchangeRate: 1.1,
+					},
+				},
+			})
+			expect(wrapper.find<HTMLInputElement>('.acurrency__currency input[type="text"]').element.value).toBe('€')
+		})
+
+		it('names a currency given only by its id through the injected aformLinkResolver', async () => {
+			const wrapper = mount(ACurrencyInput, {
+				props: {
+					options: { doctype: 'currency', baseCurrency: { id: 'USD', displayText: 'US Dollar' } },
+					modelValue: {
+						amount: 5,
+						currency: { id: 'EUR' },
+						baseAmount: 5.5,
+						baseCurrency: { id: 'USD', displayText: 'US Dollar' },
+						exchangeRate: 1.1,
+					},
+				},
+				global: { provide: { aformLinkResolver: async (_doctype: string, id: string) => `Resolved ${id}` } },
+			})
+			await flushPromises()
+
+			expect(wrapper.find<HTMLInputElement>('.acurrency__currency input[type="text"]').element.value).toBe(
+				'Resolved EUR'
+			)
+		})
+
 		it('shows the symbol alongside the name in the search dropdown', async () => {
 			const wrapper = mount(ACurrencyInput, { props: { options: optionsWithSymbols } })
 			const input = wrapper.find<HTMLInputElement>('.acurrency__currency input[type="text"]')
@@ -634,6 +716,26 @@ describe('ACurrencyInput', { tags: ['component'] }, () => {
 			await flushPromises()
 			const results = wrapper.findAll('.autocomplete-result').map(li => li.text())
 			expect(results).toEqual(['$ — US Dollar', '€ — Euro'])
+		})
+
+		it('opens the full currency list on focus when the field shows a formatted symbol', async () => {
+			const wrapper = mount(ACurrencyInput, {
+				props: {
+					options: optionsWithSymbols,
+					modelValue: {
+						amount: 100,
+						currency: { id: 'EUR', displayText: 'Euro', symbol: '€' },
+						baseAmount: 110,
+						baseCurrency: { id: 'USD', displayText: 'US Dollar' },
+						exchangeRate: 1.1,
+					},
+				},
+			})
+			expect(wrapper.find<HTMLInputElement>('.acurrency__currency input[type="text"]').element.value).toBe('€')
+			await wrapper.find<HTMLInputElement>('.acurrency__currency input[type="text"]').trigger('focus')
+			await flushPromises()
+			expect(wrapper.find('.autocomplete-results').exists()).toBe(true)
+			expect(wrapper.findAll('.autocomplete-result')).toHaveLength(2)
 		})
 
 		it('falls back to the full name when a currency has no symbol', () => {

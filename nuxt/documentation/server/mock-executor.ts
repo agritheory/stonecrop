@@ -4,6 +4,7 @@
  * Session-scoped in-memory stores so each visitor gets isolated ephemeral data.
  */
 
+import { playgroundMoneyEur, playgroundMoneyUsd, playgroundQtyBox, playgroundQtyNos } from './playground-denominated'
 import { getSessionId, registerSessionEvictionHandler, touchSession } from './session-store'
 
 interface GraphQLExecutor {
@@ -31,9 +32,9 @@ interface OrderItem {
 	addedAt?: string
 	productId: string
 	productName: string
-	quantity: number
-	unitPrice: number
-	total: number
+	quantity: ReturnType<typeof playgroundQtyNos>
+	unitPrice: ReturnType<typeof playgroundMoneyUsd>
+	total: ReturnType<typeof playgroundMoneyUsd>
 }
 
 interface Order {
@@ -41,7 +42,7 @@ interface Order {
 	orderNumber: string
 	userId: string
 	status: 'DRAFT' | 'PENDING' | 'PROCESSING' | 'SHIPPED' | 'COMPLETED' | 'CANCELLED'
-	total: number
+	total: ReturnType<typeof playgroundMoneyUsd>
 	items: OrderItem[]
 	shippingAddress?: string
 	billingAddress?: string
@@ -110,23 +111,23 @@ function seedOrders(): Map<string, Order> {
 				orderNumber: 'ORD-2025-0001',
 				userId: '2',
 				status: 'COMPLETED',
-				total: 150.0,
+				total: playgroundMoneyUsd(155),
 				items: [
 					{
 						id: '1-1',
 						productId: 'PROD-001',
-						productName: 'Widget A',
-						quantity: 2,
-						unitPrice: 50.0,
-						total: 100.0,
+						productName: 'Widget A (2 Box)',
+						quantity: playgroundQtyBox(2),
+						unitPrice: playgroundMoneyUsd(50),
+						total: playgroundMoneyUsd(100),
 					},
 					{
 						id: '1-2',
 						productId: 'PROD-002',
-						productName: 'Widget B',
-						quantity: 1,
-						unitPrice: 50.0,
-						total: 50.0,
+						productName: 'Widget B (EUR line)',
+						quantity: playgroundQtyNos(1),
+						unitPrice: playgroundMoneyEur(50),
+						total: playgroundMoneyEur(50),
 					},
 				],
 				shippingAddress: '123 Main St, City, ST 12345',
@@ -141,15 +142,15 @@ function seedOrders(): Map<string, Order> {
 				orderNumber: 'ORD-2025-0002',
 				userId: '2',
 				status: 'PROCESSING',
-				total: 75.0,
+				total: playgroundMoneyUsd(75),
 				items: [
 					{
 						id: '2-1',
 						productId: 'PROD-003',
 						productName: 'Gadget X',
-						quantity: 3,
-						unitPrice: 25.0,
-						total: 75.0,
+						quantity: playgroundQtyNos(3),
+						unitPrice: playgroundMoneyUsd(25),
+						total: playgroundMoneyUsd(75),
 					},
 				],
 				shippingAddress: '123 Main St, City, ST 12345',
@@ -350,7 +351,7 @@ export class MockGraphQLExecutor implements GraphQLExecutor {
 				orderNumber,
 				userId: input.userId || '',
 				status: 'DRAFT',
-				total: 0,
+				total: playgroundMoneyUsd(0),
 				items: [],
 				createdAt: new Date().toISOString(),
 				...input,

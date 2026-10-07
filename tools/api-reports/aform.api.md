@@ -20,6 +20,7 @@ import { InputHTMLAttributes } from 'vue';
 import { InteractionMode } from '@stonecrop/schema';
 import { PublicProps } from 'vue';
 import { Ref } from 'vue';
+import { TableStore } from '@stonecrop/atable';
 import type { TableViewConfig } from '@stonecrop/schema';
 import type { ValueField } from '@stonecrop/schema';
 
@@ -99,10 +100,22 @@ export const ASegmentedControl: typeof __VLS_export_5;
 export const ASemverInput: typeof __VLS_export_19;
 
 // @public (undocumented)
+export const ATableTupleCurrencyPicker: typeof __VLS_export_26;
+
+// @public (undocumented)
+export const ATableTupleQuantityPicker: typeof __VLS_export_25;
+
+// @public (undocumented)
 export const ATextboxInput: typeof __VLS_export_21;
 
 // @public (undocumented)
 export const ATextInput: typeof __VLS_export_20;
+
+// @public (undocumented)
+export const ATupleCellEditor: typeof __VLS_export_27;
+
+// @public (undocumented)
+export const ATupleCellShell: typeof __VLS_export_28;
 
 // @public
 export type BadgeFormatContext = {
@@ -134,6 +147,7 @@ export type ComponentProps = {
 
 // @public
 export interface CurrencyOptions {
+    amountMask?: boolean;
     baseCurrency?: AFormLinkValue | string;
     doctype?: string;
     exchangeRates?: Record<string, number>;

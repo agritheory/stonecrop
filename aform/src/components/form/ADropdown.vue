@@ -1,23 +1,57 @@
 <template>
-	<div class="aform_form-element">
+	<div
+		:class="[
+			'aform_form-element',
+			{ 'aform_form-element--embedded': embedded, 'aform_dropdown--anchor-group': listAnchor === 'group' },
+		]">
 		<template v-if="mode === 'display'">
-			<span v-if="badgeDescriptor" class="aform_display-value" :style="displayAccentStyle">{{
+			<span v-if="!linkPicker && badgeDescriptor" class="aform_display-value" :style="displayAccentStyle">{{
 				badgeDescriptor.label
 			}}</span>
-			<span v-else class="aform_display-value">{{ search ?? '' }}</span>
-			<label class="aform_field-label">{{ label }}</label>
+			<span v-else-if="!linkPicker" class="aform_display-value">{{ search }}</span>
+			<span v-else class="aform_display-value">{{ linkDisplayedText }}</span>
+			<label v-if="label && !embedded" class="aform_field-label">{{ label }}</label>
 		</template>
 		<template v-else>
 			<div v-on-click-outside="onClickOutside" class="autocomplete" :class="{ isOpen: dropdown.open }">
+				<button
+					v-if="trigger === 'button'"
+					:id="uuid"
+					type="button"
+					class="aform_dropdown-button"
+					:disabled="mode === 'read'"
+					:required="required"
+					:aria-label="ariaLabel ?? label"
+					aria-haspopup="listbox"
+					:aria-expanded="dropdown.open"
+					:aria-controls="dropdown.open ? listboxId : undefined"
+					:aria-activedescendant="
+						dropdown.open && dropdown.activeItemIndex !== null
+							? `${listboxId}-opt-${dropdown.activeItemIndex}`
+							: undefined
+					"
+					@click="toggleButtonDropdown"
+					@keydown.down.prevent="selectNextResult"
+					@keydown.up.prevent="selectPrevResult"
+					@keydown.enter.prevent="setCurrentResult"
+					@keydown.esc="onClickOutside">
+					<span class="aform_dropdown-button-value">{{ search || placeholder || '' }}</span>
+					<span class="aform_dropdown-button-caret" aria-hidden="true"></span>
+				</button>
 				<input
+					v-else
 					:id="uuid"
 					v-model="search"
 					type="text"
 					role="combobox"
 					autocomplete="off"
 					aria-autocomplete="list"
-					class="aform_input-field"
+					:class="['aform_input-field', { 'aform_input-field--embedded': embedded }]"
 					:disabled="mode === 'read'"
+					:required="required"
+					:placeholder="placeholder"
+					:size="embeddedLinkInputSize"
+					:aria-label="ariaLabel"
 					:style="inputAccentStyle"
 					:aria-expanded="dropdown.open"
 					:aria-controls="dropdown.open ? listboxId : undefined"
@@ -26,38 +60,62 @@
 					"
 					:aria-invalid="invalid"
 					:aria-describedby="describedBy"
-					@input="filter"
-					@focus="openDropdown"
+					@input="onComboboxInput"
+					@focus="onComboboxFocus"
+					@click="onEmbeddedComboboxClick"
+					@pointerdown="onEmbeddedComboboxPointerDown"
 					@keydown.down.prevent="selectNextResult"
 					@keydown.up.prevent="selectPrevResult"
 					@keydown.enter.prevent="setCurrentResult"
 					@keydown.esc="onClickOutside"
 					@keydown.tab="onClickOutside" />
 
-				<ul
-					v-show="dropdown.open"
-					:id="listboxId"
-					ref="results"
-					class="autocomplete-results"
-					role="listbox"
-					:aria-label="label">
+				<ADropdownList
+					:listbox-id="listboxId"
+					:ariaLabel="ariaLabel ?? label ?? ''"
+					:open="dropdown.open"
+					:list-anchor="listAnchor"
+					:option-count="optionCount"
+					:active-index="() => dropdown.activeItemIndex">
 					<li v-if="dropdown.loading" class="loading autocomplete-result">Loading results...</li>
-					<li
-						v-for="(result, i) in dropdown.results"
-						v-else
-						:id="`${listboxId}-opt-${i}`"
-						:key="result"
-						role="option"
-						:aria-selected="i === dropdown.activeItemIndex"
-						class="autocomplete-result"
-						:class="{ 'is-active': i === dropdown.activeItemIndex }"
-						@mousedown.prevent="setResult(result)">
-						{{ result }}
-					</li>
-				</ul>
-				<label class="aform_field-label" :for="uuid">{{ label }}</label>
+					<template v-else-if="linkPicker">
+						<li
+							v-for="(option, i) in linkResults"
+							:id="`${listboxId}-opt-${i}`"
+							:key="String(option.id)"
+							role="option"
+							:aria-selected="isLinkOptionSelected(option)"
+							class="autocomplete-result"
+							:class="{
+								'is-active': i === dropdown.activeItemIndex,
+								'is-selected': isLinkOptionSelected(option),
+							}"
+							@mousedown.prevent="selectLinkOption(option)"
+							@mouseenter="dropdown.activeItemIndex = i">
+							<slot name="option" :option="option">{{ option.displayText ?? String(option.id) }}</slot>
+						</li>
+					</template>
+					<template v-else>
+						<li
+							v-for="(result, i) in dropdown.results"
+							:id="`${listboxId}-opt-${i}`"
+							:key="result"
+							role="option"
+							:aria-selected="isChoiceSelected(result)"
+							class="autocomplete-result"
+							:class="{
+								'is-active': i === dropdown.activeItemIndex,
+								'is-selected': isChoiceSelected(result),
+							}"
+							@mousedown.prevent="setChoiceResult(result)"
+							@mouseenter="dropdown.activeItemIndex = i">
+							{{ result }}
+						</li>
+					</template>
+				</ADropdownList>
+				<label v-if="label && !embedded" class="aform_field-label" :for="uuid">{{ label }}</label>
 			</div>
-			<p v-show="errorText" :id="errorId" class="aform_error" role="alert">{{ errorText }}</p>
+			<p v-if="!embedded" v-show="errorText" :id="errorId" class="aform_error" role="alert">{{ errorText }}</p>
 		</template>
 	</div>
 </template>
@@ -66,54 +124,87 @@
 import type { FieldOptions } from '@stonecrop/schema'
 import { selectChoices } from '@stonecrop/schema'
 import { vOnClickOutside } from '@vueuse/components'
-import { computed, reactive, ref, useId, useTemplateRef, watch } from 'vue'
+import { computed, inject, reactive, ref, useId, watch } from 'vue'
 
-import { fitDropdownList } from '../../composables/dropdownList'
 import { fieldErrorA11y } from '../../composables/fieldErrorA11y'
-import type { ComponentProps } from '../../types'
+import type { AFormLinkModelValue, AFormLinkValue, ComponentProps } from '../../types'
 import type { BadgeFormatFn } from '../../utils/badge'
 import { badgeInputAccentStyle, resolveFieldBadge } from '../../utils/badge'
 import { deserializeFunction } from '../../utils/deserialize'
+import { asLinkValue, linkDisplayText, linkId } from '../../utils/linkValue'
+import ADropdownList from './ADropdownList.vue'
 
 const {
 	label,
+	required,
 	options = [],
 	format,
 	isAsync = false,
 	filterFunction = undefined,
+	link = false,
+	linkFilterFunction = undefined,
+	formatter = undefined,
+	doctype = undefined,
 	mode,
 	uuid,
 	errors,
 	validation = { errorMessage: '' },
+	embedded = false,
+	trigger = 'combobox',
+	listAnchor = 'field',
+	placeholder = undefined,
+	ariaLabel = undefined,
 } = defineProps<
 	ComponentProps & {
 		options?: FieldOptions
 		format?: string
 		isAsync?: boolean
 		filterFunction?: (search: string) => string[] | Promise<string[]>
+		/** Picks a linked record, bound through `v-model:link-value` as an `AFormLinkValue` (embedded currency, etc.). */
+		link?: boolean
+		/** Searches the records a `link` picker lists. */
+		linkFilterFunction?: string | ((search: string) => AFormLinkValue[] | Promise<AFormLinkValue[]>)
+		formatter?: (value: AFormLinkValue) => string
+		doctype?: string
+		embedded?: boolean
+		trigger?: 'combobox' | 'button'
+		listAnchor?: 'field' | 'group'
+		placeholder?: string
+		ariaLabel?: string
 	}
 >()
 
-const listboxId = useId()
+const emit = defineEmits<{
+	'update:open': [open: boolean]
+}>()
+
+const linkPicker = computed(() => link)
+
+// The list's own id: `uuid` is already the box's, and `aria-controls` must name the list.
+const listboxId = `${uuid ?? `aform-dropdown-${useId()}`}-listbox`
 
 const choiceList = computed(() => selectChoices(options))
 
-// Compile the serialized formatter once per `format` string, not once per keystroke:
-// badgeDescriptor re-evaluates on every input event and deserializeFunction runs the
-// Function constructor.
 const formatFn = computed(() => (format ? deserializeFunction<BadgeFormatFn>(format) : undefined))
 
-const badgeDescriptor = computed(() => resolveFieldBadge(search.value, options, formatFn.value))
+const badgeDescriptor = computed(() =>
+	linkPicker.value ? null : resolveFieldBadge(search.value, options, formatFn.value)
+)
 
-const inputAccentStyle = computed(() => badgeInputAccentStyle(badgeDescriptor.value))
+const inputAccentStyle = computed(() => badgeInputAccentStyle(badgeDescriptor.value ?? undefined))
 
-const displayAccentStyle = computed(() => badgeInputAccentStyle(badgeDescriptor.value))
+const displayAccentStyle = computed(() => badgeInputAccentStyle(badgeDescriptor.value ?? undefined))
 
 const errorText = computed(() => (errors?.length ? errors.join('; ') : (validation.errorMessage ?? '')))
 const { errorId, describedBy, invalid } = fieldErrorA11y(uuid, errorText)
-const search = defineModel<string>()
 
-const committedValue = ref(search.value ?? '')
+const modelValue = defineModel<string>()
+const linkModel = defineModel<AFormLinkModelValue>('linkValue')
+
+type FilterFn = (search: string) => AFormLinkValue[] | Promise<AFormLinkValue[]>
+type ResolverFn = (doctype: string, id: string) => string | undefined | Promise<string | undefined>
+
+const resolver = inject<ResolverFn | null>('aformLinkResolver', null)
 
 const dropdown = reactive({
 	activeItemIndex: null as number | null,
@@ -122,21 +213,141 @@ const dropdown = reactive({
 	results: [] as string[],
 })
 
-fitDropdownList(useTemplateRef<HTMLElement>('results'), {
-	isOpen: () => dropdown.open,
-	optionCount: () => dropdown.results.length,
-	activeIndex: () => dropdown.activeItemIndex,
-})
+watch(
+	() => dropdown.open,
+	open => emit('update:open', open)
+)
+
+const linkResults = ref<AFormLinkValue[]>([])
+
+const optionCount = () => (linkPicker.value ? linkResults.value.length : dropdown.results.length)
+
+const committedValue = ref(modelValue.value ?? '')
+
+// The text a picked record shows: the formatter's, or else its name, or else its id.
+const linkText = (value: AFormLinkModelValue | undefined) => {
+	const record = asLinkValue(value)
+	return formatter ? formatter(record) : (linkDisplayText(record) ?? String(record.id))
+}
+
+const linkDisplayedText = computed(() => (linkId(linkModel.value) === undefined ? '—' : linkText(linkModel.value)))
+
+const search = ref('')
 
 watch(
-	choiceList,
-	choices => {
-		dropdown.results = choices
+	modelValue,
+	value => {
+		if (linkPicker.value) return
+		const next = value ?? ''
+		search.value = next
+		if (next === '' || choiceList.value.includes(next)) committedValue.value = next
+	},
+	{ immediate: true }
+)
+
+watch(
+	() => linkModel.value,
+	value => {
+		if (!linkPicker.value) return
+		search.value = linkId(value) ? linkText(value) : ''
+	},
+	{ immediate: true }
+)
+
+watch(
+	() => (linkPicker.value ? linkId(linkModel.value) : undefined),
+	async id => {
+		if (!linkPicker.value || !id) return
+		if (linkDisplayText(linkModel.value)) {
+			search.value = linkText(linkModel.value)
+			return
+		}
+		try {
+			let match: AFormLinkValue | undefined
+			let displayText: string | undefined
+			if (linkFilterFunction) {
+				const fn: FilterFn =
+					typeof linkFilterFunction === 'string'
+						? deserializeFunction<FilterFn>(linkFilterFunction)
+						: linkFilterFunction
+				const results = await fn(String(id))
+				match = results.find(r => String(r.id) === String(id))
+				displayText = match?.displayText
+			} else if (resolver && doctype) {
+				displayText = (await resolver(doctype, id.toString())) ?? undefined
+			}
+			if (displayText) {
+				const resolved: AFormLinkValue = { ...asLinkValue(linkModel.value), ...match, id, displayText }
+				search.value = linkText(resolved)
+				linkModel.value = resolved
+			}
+		} catch {
+			// fall back to raw id in the input
+		}
 	},
 	{ immediate: true }
 )
 
 const onClickOutside = () => closeDropdown()
+
+const isChoiceSelected = (result: string) => !!result && result === (modelValue.value ?? '')
+
+const isLinkOptionSelected = (option: AFormLinkValue) => {
+	const id = linkId(linkModel.value)
+	return id !== undefined && String(option.id) === String(id)
+}
+
+const embeddedLinkDisplayText = computed(() =>
+	linkId(linkModel.value) ? linkText(linkModel.value) : (placeholder ?? '')
+)
+
+const embeddedLinkInputSize = computed(() => {
+	if (!embedded || !linkPicker.value) return undefined
+	const text = embeddedLinkDisplayText.value
+	const length = text.length > 0 ? text.length : (placeholder ?? '').length
+	return length > 0 ? length : undefined
+})
+
+const filterResults = () => {
+	if (!search.value) {
+		dropdown.results = choiceList.value
+	} else {
+		dropdown.results = choiceList.value.filter(item => item.toLowerCase().includes(search.value.toLowerCase()))
+	}
+}
+
+const openLinkDropdown = async (text: string) => {
+	if (!linkFilterFunction || mode === 'read') return
+	dropdown.activeItemIndex = null
+	dropdown.open = true
+	if (isAsync) dropdown.loading = true
+	try {
+		const fn: FilterFn =
+			typeof linkFilterFunction === 'string' ? deserializeFunction<FilterFn>(linkFilterFunction) : linkFilterFunction
+		linkResults.value = (await fn(text)) ?? []
+	} catch {
+		linkResults.value = []
+	} finally {
+		dropdown.loading = false
+	}
+}
+
+const embeddedLinkFilterQuery = (): string => {
+	if (!embedded || !linkPicker.value) return search.value
+	const id = linkId(linkModel.value)
+	if (id && formatter) {
+		const formatted = formatter(asLinkValue(linkModel.value))
+		if (search.value === formatted) return ''
+	}
+	return search.value
+}
+
+// One click fires pointerdown, focus and click here, and the price field's own click: only the first looks the list up.
+const openEmbeddedList = () => {
+	if (linkPicker.value && !dropdown.open) openLinkDropdown(embeddedLinkFilterQuery())
+}
+
+defineExpose({ openCurrencyList: openEmbeddedList })
 
 const filter = async () => {
 	dropdown.open = true
@@ -156,14 +367,22 @@ const filter = async () => {
 	}
 }
 
-const setResult = (result: string) => {
+const setChoiceResult = (result: string) => {
+	modelValue.value = result
 	search.value = result
 	committedValue.value = result
 	closeDropdown(result)
 }
 
-const openDropdown = () => {
-	const idx = choiceList.value.indexOf(search.value ?? '')
+const selectLinkOption = (option: AFormLinkValue) => {
+	linkModel.value = option
+	search.value = linkText(option)
+	dropdown.open = false
+	dropdown.activeItemIndex = null
+}
+
+const openChoiceDropdown = () => {
+	const idx = choiceList.value.indexOf(search.value)
 	dropdown.activeItemIndex = isAsync ? null : idx >= 0 ? idx : null
 	dropdown.open = true
 	dropdown.results = isAsync ? [] : choiceList.value
@@ -172,37 +391,103 @@ const openDropdown = () => {
 const closeDropdown = (result?: string) => {
 	dropdown.activeItemIndex = null
 	dropdown.open = false
-	if (!choiceList.value.includes(result || search.value || '')) {
+	if (linkPicker.value) {
+		search.value = linkId(linkModel.value) ? linkText(linkModel.value) : ''
+		return
+	}
+	const typed = result || search.value || ''
+	if (choiceList.value.includes(typed)) {
+		// A choice typed out in full is picked, as if from the list. A pick from the list has already been sent.
+		if (typed !== committedValue.value) {
+			modelValue.value = typed
+			committedValue.value = typed
+		}
+	} else {
 		search.value = committedValue.value
+		modelValue.value = committedValue.value
 	}
 }
 
-const filterResults = () => {
-	if (!search.value) {
-		dropdown.results = choiceList.value
+const toggleButtonDropdown = () => {
+	if (dropdown.open) closeDropdown()
+	else openChoiceDropdown()
+}
+
+const onComboboxInput = () => {
+	if (linkPicker.value) openLinkDropdown(embedded ? embeddedLinkFilterQuery() : search.value)
+	else {
+		// Typing searches the choices; the record changes only when one is picked, or when the box is cleared.
+		if (search.value === '') {
+			modelValue.value = ''
+			committedValue.value = ''
+		}
+		filter()
+	}
+}
+
+const onComboboxFocus = (event: FocusEvent) => {
+	if (linkPicker.value && embedded) {
+		openEmbeddedList()
+		const input = event.target as HTMLInputElement | null
+		if (input) requestAnimationFrame(() => input.select())
+		return
+	}
+	if (linkPicker.value) openLinkDropdown(search.value)
+	else openChoiceDropdown()
+}
+
+const onEmbeddedComboboxClick = () => {
+	if (embedded && linkPicker.value) openEmbeddedList()
+}
+
+const onEmbeddedComboboxPointerDown = () => {
+	if (embedded && linkPicker.value) openEmbeddedList()
+}
+
+watch(
+	choiceList,
+	choices => {
+		if (!linkPicker.value) dropdown.results = choices
+	},
+	{ immediate: true }
+)
+
+const ensureDropdownOpen = () => {
+	if (dropdown.open) return
+	if (linkPicker.value) {
+		if (embedded) openEmbeddedList()
+		else void openLinkDropdown(search.value)
 	} else {
-		dropdown.results = choiceList.value.filter(item => item.toLowerCase().includes((search.value ?? '').toLowerCase()))
+		openChoiceDropdown()
 	}
 }
 
 const selectNextResult = () => {
-	const resultsLength = dropdown.results?.length || 0
+	const resultsLength = optionCount()
+	if (!resultsLength) return
+	const wasOpen = dropdown.open
+	ensureDropdownOpen()
+	if (!wasOpen) {
+		// Opening already highlights the current choice; with none, the first is.
+		if (dropdown.activeItemIndex === null && !isAsync) dropdown.activeItemIndex = 0
+		return
+	}
 	if (dropdown.activeItemIndex != null) {
-		const currentIndex = isNaN(dropdown.activeItemIndex) ? 0 : dropdown.activeItemIndex
-		dropdown.activeItemIndex = (currentIndex + 1) % resultsLength
+		dropdown.activeItemIndex = (dropdown.activeItemIndex + 1) % resultsLength
 	} else {
 		dropdown.activeItemIndex = 0
 	}
 }
 
 const selectPrevResult = () => {
-	const resultsLength = dropdown.results?.length || 0
+	const resultsLength = optionCount()
+	if (!resultsLength) return
+	ensureDropdownOpen()
 	if (dropdown.activeItemIndex != null) {
-		const currentIndex = isNaN(dropdown.activeItemIndex) ? 0 : dropdown.activeItemIndex
-		if (currentIndex === 0) {
-			dropdown.activeItemIndex = null
+		if (dropdown.activeItemIndex === 0) {
+			dropdown.activeItemIndex = trigger === 'button' ? resultsLength - 1 : null
 		} else {
-			dropdown.activeItemIndex = currentIndex - 1
+			dropdown.activeItemIndex = dropdown.activeItemIndex - 1
 		}
 	} else {
 		dropdown.activeItemIndex = resultsLength - 1
@@ -210,12 +495,18 @@ const selectPrevResult = () => {
 }
 
 const setCurrentResult = () => {
-	if (dropdown.results) {
-		const currentIndex = dropdown.activeItemIndex || 0
-		const result = dropdown.results[currentIndex]
-		setResult(result)
+	if (!dropdown.open) {
+		ensureDropdownOpen()
+		return
 	}
-	dropdown.activeItemIndex = 0
+	if (linkPicker.value) {
+		if (dropdown.activeItemIndex !== null && linkResults.value[dropdown.activeItemIndex]) {
+			selectLinkOption(linkResults.value[dropdown.activeItemIndex])
+		}
+		return
+	}
+	const result = dropdown.results[dropdown.activeItemIndex ?? 0]
+	if (result !== undefined) setChoiceResult(result)
 }
 </script>
 
@@ -224,34 +515,89 @@ const setCurrentResult = () => {
 	position: relative;
 }
 
-.autocomplete-results {
-	position: absolute;
-	left: 0;
-	right: 0;
-	z-index: 100;
+.aform_form-element--embedded {
+	min-width: 0;
+	flex: 1 1 auto;
+	width: 100%;
+	padding-top: 0;
+}
+
+.aform_form-element--embedded .autocomplete {
+	display: flex;
+	flex: 1;
+	min-width: 0;
+	min-height: 0;
+	width: 100%;
+}
+
+.aform_dropdown--anchor-group .autocomplete {
+	position: static;
+}
+
+.aform_input-field--embedded {
 	box-sizing: border-box;
-	padding: 0;
-	margin: 0;
-	color: var(--sc-input-active-border-color);
-	border: 1px solid var(--sc-input-active-border-color);
-	border-radius: 0 0 var(--sc-border-radius) var(--sc-border-radius);
-	border-top: none;
-	background-color: var(--sc-overlay-background);
-	box-shadow: var(--sc-overlay-shadow);
-	list-style: none;
-	max-height: var(--sc-dropdown-max-height);
-	overflow-y: auto;
+	width: 100%;
+	min-width: 0;
+	outline: none;
+	background: transparent;
+	padding: 0.5rem 1ch;
 }
 
-.autocomplete-result {
-	text-align: left;
-	padding: 4px 6px;
+.aform_dropdown-button {
+	display: flex;
+	align-items: center;
+	gap: 0.75ch;
+	flex: 1;
+	align-self: stretch;
+	box-sizing: border-box;
+	width: 100%;
+	min-height: 100%;
+	padding: 0.5rem 1ch;
+	font-size: 1rem;
+	font-family: var(--sc-font-family);
+	color: var(--sc-cell-text-color);
+	background: var(--sc-input-addon-background);
+	border: none;
+	outline: none;
+	border-radius: 0 var(--sc-border-radius) var(--sc-border-radius) 0;
+	white-space: nowrap;
 	cursor: pointer;
+	-webkit-tap-highlight-color: transparent;
 }
 
-.autocomplete-result.is-active,
-.autocomplete-result:hover {
-	background-color: var(--sc-row-color-zebra-light);
-	color: var(--sc-input-active-border-color);
+.aform_dropdown-button:focus,
+.aform_dropdown-button:focus-visible {
+	outline: none;
+	box-shadow: none;
+}
+
+.aform_dropdown-button::-moz-focus-inner {
+	border: 0;
+	padding: 0;
+}
+
+/* Merged fields (quantity UOM): same surface as the sibling input, not a nested addon chip. */
+.aform_form-element--embedded .aform_dropdown-button {
+	background: transparent;
+}
+
+.aform_dropdown-button:disabled {
+	cursor: not-allowed;
+	color: var(--sc-gray-50);
+}
+
+.aform_dropdown-button-value {
+	flex: 1;
+	min-width: 0;
+	text-align: left;
+}
+
+.aform_dropdown-button-caret {
+	display: inline-block;
+	width: 0;
+	height: 0;
+	border-left: 0.3em solid transparent;
+	border-right: 0.3em solid transparent;
+	border-top: 0.3em solid currentColor;
 }
 </style>

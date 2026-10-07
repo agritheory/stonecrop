@@ -1,3 +1,4 @@
+import { formatCurrencyAmount } from '@stonecrop/utilities'
 import { describe, it, expect } from 'vitest'
 
 import { schemaToColumns } from '../src/schemaToColumns'
@@ -145,6 +146,15 @@ describe('schemaToColumns', { tags: ['component'] }, () => {
 		})
 	})
 
+	// The app decides which cells may be edited: a column it doesn't declare editable isn't.
+	it('leaves a column not editable unless it declares edit', () => {
+		const columns = schemaToColumns([
+			{ fieldname: 'title', component: 'ATextInput', label: 'Title' },
+			{ fieldname: 'qty', component: 'AQuantityInput', label: 'Qty', edit: true },
+		])
+		expect(columns.map(column => column.edit)).toEqual([undefined, true])
+	})
+
 	describe('Quantity field handling', () => {
 		it('adds a "<qty> <uom>" format for quantity fields without an explicit format', () => {
 			const schema: ColumnSchema[] = [{ fieldname: 'qty', component: 'AQuantityInput', label: 'Quantity' }]
@@ -216,7 +226,7 @@ describe('schemaToColumns', { tags: ['component'] }, () => {
 			const columns = schemaToColumns(schema)
 			expect(typeof columns[0].format).toBe('function')
 			expect((columns[0].format as Function)({ amount: 5, currency: { id: 'USD', displayText: 'US Dollar' } })).toBe(
-				'5 US Dollar'
+				formatCurrencyAmount(5, { id: 'USD', displayText: 'US Dollar' })
 			)
 		})
 
