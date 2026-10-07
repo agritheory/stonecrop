@@ -1497,6 +1497,27 @@ describe('table store', { tags: ['component'] }, () => {
 			unconvertedStore.sortByColumn(1)
 			expect(unconvertedStore.filteredRows.map(r => r.item)).toEqual(['B', 'A'])
 		})
+
+		// A cleared quantity is no quantity, not 0: it sorts first, as a blank number cell does.
+		it('sorts an emptied quantity with the blank cells', () => {
+			const box = (qty: number | null) => ({
+				qty,
+				uom: 'Box',
+				stockQty: qty === null ? null : qty * 10,
+				stockUom: 'Nos',
+				conversionFactor: 10,
+			})
+			const emptiedStore = createTableStore({
+				columns: quantityColumns,
+				rows: [
+					{ item: 'Five', qty: box(5) },
+					{ item: 'Emptied', qty: box(null) },
+					{ item: 'Return', qty: box(-2) },
+				],
+			})
+			emptiedStore.sortByColumn(1)
+			expect(emptiedStore.filteredRows.map(r => r.item)).toEqual(['Emptied', 'Return', 'Five'])
+		})
 	})
 
 	describe('currency column filtering and sorting', () => {
@@ -1573,6 +1594,26 @@ describe('table store', { tags: ['component'] }, () => {
 			})
 			unconvertedStore.sortByColumn(1)
 			expect(unconvertedStore.filteredRows.map(r => r.item)).toEqual(['B', 'A'])
+		})
+
+		it('sorts an emptied price with the blank cells', () => {
+			const price = (amount: number | null) => ({
+				amount,
+				currency: usd,
+				baseAmount: amount,
+				baseCurrency: usd,
+				exchangeRate: 1,
+			})
+			const emptiedStore = createTableStore({
+				columns: currencyColumns,
+				rows: [
+					{ item: 'Five', total: price(5) },
+					{ item: 'Emptied', total: price(null) },
+					{ item: 'Refund', total: price(-2) },
+				],
+			})
+			emptiedStore.sortByColumn(1)
+			expect(emptiedStore.filteredRows.map(r => r.item)).toEqual(['Emptied', 'Refund', 'Five'])
 		})
 	})
 

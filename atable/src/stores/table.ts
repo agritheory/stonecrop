@@ -42,21 +42,16 @@ export interface FilterState {
  */
 export type FilterStateRecord = Record<number, FilterState>
 
-// Quantity and currency columns hold composite values (see `QuantityValue` and `CurrencyValue`
-// in `@stonecrop/aform`). Rows may be entered in one unit but compared in a common baseline:
-// `stockQty` for quantities, `baseAmount` for currencies. Prefer those when present; fall back
-// to the entered `qty` or `amount` when baseline figures are missing.
-function toComparableNumber(cellValue: unknown): number {
-	if (cellValue !== null && typeof cellValue === 'object') {
-		const field = (key: string) => (key in cellValue ? Reflect.get(cellValue, key) : undefined)
-		const stockQty = field('stockQty')
-		if (stockQty != null) return Number(stockQty)
-		const baseAmount = field('baseAmount')
-		if (baseAmount != null) return Number(baseAmount)
-		if ('qty' in cellValue) return Number(field('qty'))
-		if ('amount' in cellValue) return Number(field('amount'))
-	}
-	return Number(cellValue)
+// Quantity and currency columns, as their component declares, hold composite values (see `QuantityValue` and
+// `CurrencyValue` in `@stonecrop/aform`). Rows may be entered in one unit but compared in a common baseline:
+// `stockQty` for quantities, `baseAmount` for currencies, or the entered `qty` or `amount` when baseline figures are
+// missing. An emptied one has neither, and compares as a blank cell does. Other cells compare as they are.
+function comparableValue(cellValue: unknown, column: TableColumn): unknown {
+	const category = componentCategory(column.component)
+	if (category !== 'quantity' && category !== 'currency') return cellValue
+	const field = (key: string) =>
+		cellValue !== null && typeof cellValue === 'object' && key in cellValue ? Reflect.get(cellValue, key) : undefined
+	return category === 'quantity' ? (field('stockQty') ?? field('qty')) : (field('baseAmount') ?? field('amount'))
 }
 
 function isNodeOpen(rowIndex: number, treeDisplay: TableDisplay[]): boolean {
@@ -112,7 +107,7 @@ function applyFilter(cellValue: any, filter: FilterState, column: TableColumn): 
 		}
 
 		case 'number': {
-			const numValue = toComparableNumber(cellValue)
+			const numValue = Number(comparableValue(cellValue, column))
 			const filterNum = Number(value)
 			return !isNaN(numValue) && !isNaN(filterNum) && numValue === filterNum
 		}
@@ -377,8 +372,8 @@ export const createTableStore = (initData: {
 				const direction = sortState.value.direction
 
 				filtered.sort((a, b) => {
-					let aVal = a[column.name]
-					let bVal = b[column.name]
+					let aVal = comparableValue(a[column.name], column)
+					let bVal = comparableValue(b[column.name], column)
 
 					if (aVal === null || aVal === undefined) aVal = ''
 					if (bVal === null || bVal === undefined) bVal = ''
@@ -389,8 +384,8 @@ export const createTableStore = (initData: {
 						return direction === 'asc' ? cmp : -cmp
 					}
 
-					const aNum = toComparableNumber(aVal)
-					const bNum = toComparableNumber(bVal)
+					const aNum = Number(aVal)
+					const bNum = Number(bVal)
 					const isNumeric = !isNaN(aNum) && !isNaN(bNum) && aVal !== '' && bVal !== ''
 
 					if (isNumeric) {
