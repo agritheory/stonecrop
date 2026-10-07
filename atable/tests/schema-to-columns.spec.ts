@@ -146,25 +146,13 @@ describe('schemaToColumns', { tags: ['component'] }, () => {
 		})
 	})
 
-	describe('edit default', () => {
-		it('defaults edit to true when edit and readOnly are omitted', () => {
-			const columns = schemaToColumns([{ fieldname: 'title', component: 'ATextInput', label: 'Title' }])
-			expect(columns[0].edit).toBe(true)
-		})
-
-		it('defaults edit to false when readOnly is true', () => {
-			const columns = schemaToColumns([
-				{ fieldname: 'total', component: 'ACurrencyInput', label: 'Total', readOnly: true },
-			])
-			expect(columns[0].edit).toBe(false)
-		})
-
-		it('honors an explicit edit when set', () => {
-			const columns = schemaToColumns([
-				{ fieldname: 'title', component: 'ATextInput', label: 'Title', edit: false, readOnly: false },
-			])
-			expect(columns[0].edit).toBe(false)
-		})
+	// The app decides which cells may be edited: a column it doesn't declare editable isn't.
+	it('leaves a column not editable unless it declares edit', () => {
+		const columns = schemaToColumns([
+			{ fieldname: 'title', component: 'ATextInput', label: 'Title' },
+			{ fieldname: 'qty', component: 'AQuantityInput', label: 'Qty', edit: true },
+		])
+		expect(columns.map(column => column.edit)).toEqual([undefined, true])
 	})
 
 	describe('Quantity field handling', () => {

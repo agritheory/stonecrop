@@ -121,7 +121,6 @@ export interface ColumnSchema {
     modalComponentExtraProps?: Record<string, any>;
     options?: FieldOptions;
     pinned?: boolean;
-    readOnly?: boolean;
     resizable?: boolean;
     sortable?: boolean;
     width?: string;

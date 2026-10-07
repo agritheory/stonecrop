@@ -57,15 +57,9 @@ export interface ColumnSchema {
 	/**
 	 * Whether the column cell is editable in the table.
 	 *
-	 * When omitted, `schemaToColumns` sets this to `!readOnly` (defaulting to editable when
-	 * `readOnly` is also omitted).
-	 *
 	 * @defaultValue false
 	 */
 	edit?: boolean
-
-	/** When `true`, form-style read-only; used by `schemaToColumns` to default `edit` when unset. */
-	readOnly?: boolean
 
 	/**
 	 * CSS width of the column (e.g. `'20ch'`, `'200px'`).

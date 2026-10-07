@@ -861,7 +861,6 @@ export interface ColumnSchema {
   modalComponentExtraProps?: Record<string, any>;
   options?: FieldOptions;
   pinned?: boolean;
-  readOnly?: boolean;
   resizable?: boolean;
   sortable?: boolean;
   width?: string;
@@ -878,7 +877,7 @@ export interface ColumnSchema {
 | colspan? | `number` | Number of columns this Gantt bar spans across. When absent, the bar stretches to cover all non-pinned columns in the table. Only applicable for Gantt tables. |
 | component? | `string` | Rendering component (e.g. `'ATextInput'`, `'ANumericInput'`, `'ADate'`). Default cell formatting and filter widgets derive from its `ComponentCategory`. Optional here, unlike `ValueField.component`: absence is what marks an entry as non-scalar (a nested table or fieldset), which `schemaToColumns` excludes — it has no column equivalent. |
 | doctype? | `string` | Target doctype slug — marks this column as a link. When set and no `cellComponent` is given, `schemaToColumns` copies it to `TableColumn.linkDoctype`, which ACell uses to resolve a bare id to display text. |
-| edit? | `boolean` | Whether the column cell is editable in the table. When omitted, `schemaToColumns` sets this to `!readOnly` (defaulting to editable when `readOnly` is also omitted). |
+| edit? | `boolean` | Whether the column cell is editable in the table. |
 | fieldname | `string` | Unique identifier for the field within its doctype. Maps to `name` on `TableColumn`. |
 | filterable? | `boolean` | When `true`, a filter control is rendered in the column header. |
 | filterComponent? | `string` | Registered component name used when `filterType` is `'component'`. |
@@ -893,7 +892,6 @@ export interface ColumnSchema {
 | modalComponentExtraProps? | `Record<string, any>` | Extra props passed to `modalComponent` in addition to the standard cell props. Only applicable when `modalComponent` is set. |
 | options? | `FieldOptions` | Type-specific field options — Select choices, badge maps, quantity/currency config, etc. Spreads through `schemaToColumns` to `TableColumn`. |
 | pinned? | `boolean` | When `true`, the column is pinned to the left side of the table. |
-| readOnly? | `boolean` | When `true`, form-style read-only; used by `schemaToColumns` to default `edit` when unset. |
 | resizable? | `boolean` | When `true`, the column can be resized by dragging the header edge. |
 | sortable? | `boolean` | When `true`, clicking the column header sorts the table by this column. |
 | width? | `string` | CSS width of the column (e.g. `'20ch'`, `'200px'`). |

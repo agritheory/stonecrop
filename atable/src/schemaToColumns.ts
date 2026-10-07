@@ -27,9 +27,6 @@ import { formatCurrency, formatQuantity } from './utils'
  * explicit `format`, a synchronous `format` is added that renders the `{ amount, currency }`
  * value (see `CurrencyValue` in `@stonecrop/aform`) with `Intl` currency formatting when possible.
  *
- * When `edit` is omitted, it defaults to `!readOnly` so doctype columns are inline-editable unless
- * marked read-only.
- *
  * @public
  */
 export function schemaToColumns(schema: ColumnSchema[]): TableColumn[] {
@@ -37,10 +34,6 @@ export function schemaToColumns(schema: ColumnSchema[]): TableColumn[] {
 		.filter(f => !f.hidden && f.component)
 		.map(({ fieldname, hidden: _hidden, ...rest }) => {
 			const col: TableColumn = Object.assign({ name: fieldname }, rest)
-
-			if (col.edit === undefined) {
-				col.edit = !rest.readOnly
-			}
 
 			// Link fields: store the linked doctype for async resolution by ACell, and add a sync
 			// format that handles pre-resolved AFormLinkValue objects.

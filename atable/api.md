@@ -371,7 +371,6 @@ createTableStore: (initData: {
         label?: string | undefined;
         align?: "left" | "right" | "center" | "start" | "end" | undefined;
         edit?: boolean | undefined;
-        readOnly?: boolean | undefined;
         width?: string | undefined;
         pinned?: boolean | undefined;
         resizable?: boolean | undefined;
@@ -399,7 +398,6 @@ createTableStore: (initData: {
         label?: string | undefined;
         align?: "left" | "right" | "center" | "start" | "end" | undefined;
         edit?: boolean | undefined;
-        readOnly?: boolean | undefined;
         width?: string | undefined;
         pinned?: boolean | undefined;
         resizable?: boolean | undefined;
@@ -1268,7 +1266,6 @@ createTableStore: (initData: {
         label?: string | undefined;
         align?: "left" | "right" | "center" | "start" | "end" | undefined;
         edit?: boolean | undefined;
-        readOnly?: boolean | undefined;
         width?: string | undefined;
         pinned?: boolean | undefined;
         resizable?: boolean | undefined;
@@ -1296,7 +1293,6 @@ createTableStore: (initData: {
         label?: string | undefined;
         align?: "left" | "right" | "center" | "start" | "end" | undefined;
         edit?: boolean | undefined;
-        readOnly?: boolean | undefined;
         width?: string | undefined;
         pinned?: boolean | undefined;
         resizable?: boolean | undefined;
@@ -2165,7 +2161,6 @@ createTableStore: (initData: {
         label?: string | undefined;
         align?: "left" | "right" | "center" | "start" | "end" | undefined;
         edit?: boolean | undefined;
-        readOnly?: boolean | undefined;
         width?: string | undefined;
         pinned?: boolean | undefined;
         resizable?: boolean | undefined;
@@ -2193,7 +2188,6 @@ createTableStore: (initData: {
         label?: string | undefined;
         align?: "left" | "right" | "center" | "start" | "end" | undefined;
         edit?: boolean | undefined;
-        readOnly?: boolean | undefined;
         width?: string | undefined;
         pinned?: boolean | undefined;
         resizable?: boolean | undefined;
@@ -3101,8 +3095,6 @@ For link fields (those carrying `doctype`) without an explicit `cellComponent`: 
 For quantity fields — those whose `component` carries the `'quantity'` category — without an explicit `format`, a synchronous `format` is added that renders the `{ qty, uom, stockUom }` value (see `QuantityValue` in `@stonecrop/aform`), omitting the UOM when it matches `stockUom`.
 
 For currency fields — those whose `component` carries the `'currency'` category — without an explicit `format`, a synchronous `format` is added that renders the `{ amount, currency }` value (see `CurrencyValue` in `@stonecrop/aform`) with `Intl` currency formatting when possible.
-
-When `edit` is omitted, it defaults to `!readOnly` so doctype columns are inline-editable unless marked read-only.
 
 **Signature:**
 

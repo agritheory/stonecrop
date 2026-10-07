@@ -35,6 +35,7 @@
 			"label": "Qty",
 			"component": "AQuantityInput",
 			"required": true,
+			"edit": true,
 			"width": "10ch",
 			"align": "right",
 			"sortable": true,
@@ -51,6 +52,7 @@
 			"label": "Unit Price",
 			"component": "ACurrencyInput",
 			"required": true,
+			"edit": true,
 			"width": "14ch",
 			"align": "right",
 			"options": {
