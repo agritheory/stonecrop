@@ -1,5 +1,33 @@
 # Change Log - @stonecrop/aform
 
+## 0.44.0
+
+### Minor Changes
+
+- 358ecaf: `ACurrencyInput`'s amount box and a currency cell being edited write and read amounts with the browser's separators, as a table cell shows them (`1,234.56` in English, `1.234,56` in German), and with the currency's decimals. `options.amountMask: false` turns this off. `@stonecrop/utilities` exports the helpers: `formatCurrencyAmountInput`, `parseCurrencyAmountInput`, `currencyAmountEntryPattern` and `currencyInputFractionDigits`.
+- 358ecaf: Replace read-only conversion rows on `ACurrencyInput` and `AQuantityInput` with a compact helper line when the entered unit differs from the base. Remove `stockUomLabel`, `stockQtyLabel`, `conversionFactorLabel`, `baseCurrencyLabel`, `baseAmountLabel`, and `exchangeRateLabel` props.
+  
+  Table quantity and currency formatters omit redundant units and use `Intl` for currency cells. Quantity column sort/filter compares on `stockQty`. `AQuantityInput` accepts negative quantities.
+- 358ecaf: `ADropdown` picks a linked record when given `link`: it binds the record through `v-model:link-value` and searches with `linkFilterFunction`. `ACurrencyInput`'s currency box is one, so it shows its currency whether or not the field has a lookup, and names a bare currency id through `aformLinkResolver`, as before.
+- 358ecaf: `ADropdown` sends `update:modelValue` when a choice is picked from the list or typed out in full, instead of with each keystroke, so a record never holds a partly typed value such as `Pend`. Clearing the box empties the field.
+- 358ecaf: An editable quantity or currency column is edited in its cell: the number is typed in place, and the unit or currency is picked from a list opened with the cell's ▾ handle or Shift+ArrowDown. The cell editor and its lists come from `@stonecrop/aform`, which registers them when installed.
+
+### Patch Changes
+
+- 358ecaf: `ACurrencyInput`'s amount box and a currency cell being edited refuse a second decimal point, typed or pasted, which would leave no amount. `currencyAmountEntryPattern` allows one, followed only by digits.
+- 358ecaf: `AQuantityInput`'s unit button names its list in `aria-controls`, and two quantity fields without a `uuid` no longer share element ids.
+- Updated dependencies [358ecaf]
+- Updated dependencies [358ecaf]
+- Updated dependencies [358ecaf]
+- Updated dependencies [358ecaf]
+- Updated dependencies [358ecaf]
+- Updated dependencies [358ecaf]
+- Updated dependencies [358ecaf]
+  - @stonecrop/utilities@0.44.0
+  - @stonecrop/atable@0.44.0
+  - @stonecrop/themes@0.44.0
+  - @stonecrop/schema@0.44.0
+
 ## 0.43.0
 
 ### Patch Changes

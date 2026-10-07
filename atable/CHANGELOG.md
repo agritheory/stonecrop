@@ -1,5 +1,26 @@
 # Change Log - @stonecrop/atable
 
+## 0.44.0
+
+### Minor Changes
+
+- 358ecaf: Replace read-only conversion rows on `ACurrencyInput` and `AQuantityInput` with a compact helper line when the entered unit differs from the base. Remove `stockUomLabel`, `stockQtyLabel`, `conversionFactorLabel`, `baseCurrencyLabel`, `baseAmountLabel`, and `exchangeRateLabel` props.
+  
+  Table quantity and currency formatters omit redundant units and use `Intl` for currency cells. Quantity column sort/filter compares on `stockQty`. `AQuantityInput` accepts negative quantities.
+- 358ecaf: An editable quantity or currency column is edited in its cell: the number is typed in place, and the unit or currency is picked from a list opened with the cell's ▾ handle or Shift+ArrowDown. The cell editor and its lists come from `@stonecrop/aform`, which registers them when installed.
+- 358ecaf: Exports `TableStore`, the type of a table's store. The components and row actions that take a store use it, so their declarations and docs name it instead of writing out the store's whole type: atable's API docs shrink from 8 MB to 180 KB.
+
+### Patch Changes
+
+- 358ecaf: Sorting a quantity or currency column puts an emptied value with the blank cells, rather than ranking it as 0. A column's `component` decides how its cells compare, not the keys its values carry.
+- Updated dependencies [358ecaf]
+- Updated dependencies [358ecaf]
+- Updated dependencies [358ecaf]
+- Updated dependencies [358ecaf]
+  - @stonecrop/utilities@0.44.0
+  - @stonecrop/themes@0.44.0
+  - @stonecrop/schema@0.44.0
+
 ## 0.43.0
 
 ### Minor Changes

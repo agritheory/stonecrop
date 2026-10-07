@@ -1,5 +1,11 @@
 # Change Log - @stonecrop/themes
 
+## 0.44.0
+
+### Minor Changes
+
+- 358ecaf: Adds `--sc-dropdown-option-hover-background` and `--sc-dropdown-option-active-background`, the fill of the option under the pointer or keyboard, and `--sc-dropdown-option-selected-accent`, the bar beside the option a dropdown holds.
+
 ## 0.43.0
 
 ## 0.42.0
