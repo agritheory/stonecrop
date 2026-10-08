@@ -32,19 +32,21 @@ describe('createStonecropPreset', { tags: ['unit', 'graphql'] }, () => {
 		}
 	})
 
-	it('default (no options) adds the two corrective plugins and nothing else', () => {
-		// An exact list rather than two presence checks: the point is to catch a plugin arriving by
+	it('default (no options) adds the three always-on plugins and nothing else', () => {
+		// An exact list rather than presence checks: the point is to catch a plugin arriving by
 		// accident, and every plugin here changes the schema every consumer serves.
 		expect((createStonecropPreset().plugins ?? []).map(p => p.name)).toEqual([
 			'StonecropNaturalIdPlugin',
 			'StonecropOwnedRelationsPlugin',
+			'StonecropNoFunctionMutationsPlugin',
 		])
 	})
 
-	it("fieldCasing: 'camel' adds the same two, leaving the casing plugin opt-in", () => {
+	it("fieldCasing: 'camel' adds the same three, leaving the casing plugin opt-in", () => {
 		expect((createStonecropPreset({ fieldCasing: 'camel' }).plugins ?? []).map(p => p.name)).toEqual([
 			'StonecropNaturalIdPlugin',
 			'StonecropOwnedRelationsPlugin',
+			'StonecropNoFunctionMutationsPlugin',
 		])
 	})
 
@@ -68,9 +70,14 @@ describe('createStonecropPreset', { tags: ['unit', 'graphql'] }, () => {
 		)
 	})
 
-	it("fieldCasing: 'pascal' adds StonecropFieldCasingPlugin", () => {
+	it("fieldCasing: 'pascal' adds StonecropFieldCasingPlugin to the same three", () => {
 		const preset = createStonecropPreset({ fieldCasing: 'pascal' })
-		expect((preset.plugins ?? []).map(p => p.name)).toContain('StonecropFieldCasingPlugin')
+		expect((preset.plugins ?? []).map(p => p.name)).toEqual([
+			'StonecropNaturalIdPlugin',
+			'StonecropOwnedRelationsPlugin',
+			'StonecropNoFunctionMutationsPlugin',
+			'StonecropFieldCasingPlugin',
+		])
 	})
 
 	it("fieldCasing: 'pascal' plugin defines a replace.attribute inflector", () => {
