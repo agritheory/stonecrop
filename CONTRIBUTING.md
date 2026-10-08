@@ -84,7 +84,8 @@ What changed, in one sentence.
 
 ## Releases
 
-- Merging to `development` runs the publish workflow: it versions the packages, writes the changelogs, publishes to npm and pushes tags. A merge with no changeset does none of that.
-- Publishes run one at a time, each releasing every changeset `development` holds, so a stack merged whole, or pull requests merged close together, can come out as one version. A run that finds nothing left publishes nothing.
+- Merging to `development` runs the publish workflow: it versions the packages, writes the changelogs, publishes to npm and pushes tags. A merge with no changeset does none of that, and its run stops before building.
+- The run starts once per push to `development`, so a stack merged whole publishes once. It shows on that commit, under Actions, not on the pull request.
+- Publishes run one at a time, each releasing every changeset `development` holds, so pull requests merged close together can also come out as one version.
 - `changeset version` consumes the files in `.changeset/`, so a changeset lives only until the next release. The changelog entry is what survives.
 - Every publishable package comes out on the same version, whichever packages the changesets named.
