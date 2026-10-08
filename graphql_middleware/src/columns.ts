@@ -1,5 +1,5 @@
 import { LIST_TYPES, TYPES } from '@dataplan/pg'
-import type { PgCodec, PgExecutor } from '@dataplan/pg'
+import type { PgCodec, PgCodecAttribute, PgExecutor } from '@dataplan/pg'
 import { sql } from 'postgraphile/pg-sql2'
 import type { SQL } from 'postgraphile/pg-sql2'
 import { Temporal } from 'temporal-polyfill'
@@ -27,6 +27,8 @@ export interface ColumnReader {
 	select(doctype: string, selections: readonly ColumnSelection[]): ColumnSelect
 	/** `placeholder` as the value for `column`, cast where the column needs its value converted. */
 	bind(doctype: string, column: string, placeholder: string): string
+	/** Whether a write may set `column`: not one the database fills itself, which PostGraphile marks as neither insertable nor updatable. */
+	writable(doctype: string, column: string): boolean
 }
 
 /** A domain's underlying type, through any domains stacked on it. */
@@ -148,14 +150,14 @@ export function createColumnReader(
 		)
 	}
 
-	const findColumnCodec = (doctype: string, tableCodec: PgCodec, column: string): PgCodec => {
+	const findAttribute = (doctype: string, tableCodec: PgCodec, column: string): PgCodecAttribute => {
 		const attribute = tableCodec.attributes?.[column]
 		if (!attribute) {
 			throw new Error(
 				`Doctype "${doctype}" declares a field for column "${column}", which ${resolveTableName(doctype, tables)} does not have.`
 			)
 		}
-		return attribute.codec
+		return attribute
 	}
 
 	return {
@@ -166,7 +168,7 @@ export function createColumnReader(
 			const decoders = new Map<string, (value: string) => unknown>()
 			const list = selections
 				.map(({ column, alias }) => {
-					const columnCodec = findColumnCodec(doctype, tableCodec, column)
+					const columnCodec = findAttribute(doctype, tableCodec, column).codec
 					const conversion = momentConversion(columnCodec)
 					const readCodec = conversion?.codec ?? columnCodec
 					const columnSql = conversion ? sql`${sql.identifier(column)}${conversion.castSql}` : sql.identifier(column)
@@ -214,8 +216,13 @@ export function createColumnReader(
 		},
 
 		bind(doctype, column, placeholder) {
-			const conversion = momentConversion(findColumnCodec(doctype, findTableCodec(doctype), column))
+			const conversion = momentConversion(findAttribute(doctype, findTableCodec(doctype), column).codec)
 			return conversion ? `${placeholder}::${conversion.type}` : placeholder
+		},
+
+		writable(doctype, column) {
+			const { extensions } = findAttribute(doctype, findTableCodec(doctype), column)
+			return extensions?.isInsertable !== false || extensions?.isUpdatable !== false
 		},
 	}
 }
