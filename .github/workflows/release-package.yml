@@ -35,6 +35,13 @@ jobs:
     if: github.event_name == 'pull_request' && github.event.pull_request.merged == true
     runs-on: ubuntu-latest
 
+    # One publish at a time across every merged pull request, so two merges close together never
+    # publish at once. `max` keeps each waiting run; the default, `single`, cancels a waiting run
+    # when the next arrives.
+    concurrency:
+      group: publish-npm
+      queue: max
+
     permissions:
       # Must be job-level: a job's permissions block replaces the workflow's, it does
       # not merge. Without it OIDC fails and publishes anonymously, reported as a 404.
@@ -45,6 +52,10 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         name: Checkout
+        with:
+          # The branch's tip, not this pull request's merge commit, which lacks the version bump
+          # of any publish that ran while this one waited: it would release those changesets again.
+          ref: development
 
       # No registry-url: it exports NPM_CONFIG_USERCONFIG, which shadows the repo's own .npmrc.
       - uses: actions/setup-node@v6
@@ -88,8 +99,8 @@ jobs:
         run: bash tools/scripts/version-packages.sh
 
       # Before the push, not after. A publish that dies partway leaves development untouched,
-      # so a re-run replays the same bump and pnpm skips whatever already landed. Pushing
-      # first strands the re-run: the push below then fails non-fast-forward.
+      # so a re-run versions the same changesets and pnpm skips whatever already landed.
+      # Pushing first strands the re-run, which then finds no changeset to publish.
       #
       # No auth token: pnpm exchanges the job's id-token for a registry credential.
       # Each package needs a trusted publisher on npmjs.com naming this workflow.
@@ -108,6 +119,22 @@ jobs:
             exit 0
           fi
           git commit -m "Bump versions [skip ci]"
+          # A merge can land while this run publishes. The bump goes on top of it, and again if
+          # another lands between the rebase and the push: a lost bump makes the next run release
+          # these changesets a second time, under a version npm already holds.
+          pushed=false
+          for attempt in 1 2 3; do
+            git pull --rebase origin development
+            if git push origin HEAD:development; then
+              pushed=true
+              break
+            fi
+          done
+          if [ "$pushed" != true ]; then
+            echo "::error::development kept moving, so this published version bump never reached it"
+            exit 1
+          fi
+          # Tagged after the push, so every tag names a commit development holds.
           pnpm exec changeset git-tag
           git push --follow-tags origin HEAD:development
 
