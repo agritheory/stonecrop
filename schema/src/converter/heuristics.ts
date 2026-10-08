@@ -26,6 +26,7 @@ import {
 import type { FieldTemplate } from './types'
 import type { GraphQLConversionFieldMeta, GraphQLConversionOptions } from './types'
 import { buildScalarMap, INTERNAL_SCALARS } from './scalars'
+import { FSM_GRAPHQL_TYPE_NAMES } from './fsm'
 import { toSlug, camelToLabel, toPascalCase } from '../naming'
 
 /**
@@ -83,6 +84,11 @@ export function defaultIsEntityType(typeName: string, type: GraphQLObjectType): 
 
 	// Exclude the Node interface marker type
 	if (typeName === 'Node') {
+		return false
+	}
+
+	// FSM framework tables and bridge types are not business entities
+	if (FSM_GRAPHQL_TYPE_NAMES.has(typeName)) {
 		return false
 	}
 
