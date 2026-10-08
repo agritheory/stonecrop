@@ -1,5 +1,16 @@
 # Change Log - @stonecrop/graphql-middleware
 
+## 0.45.0
+
+### Minor Changes
+
+- d3dc42c: `createStonecropPreset()` turns off the mutations PostGraphile generates for every table and every `VOLATILE` database function, so `stonecropAction` is the only write an app's API offers; an app calling one of them should dispatch an action instead.
+
+### Patch Changes
+
+- 39c00e4: A save no longer writes a column the database fills itself (a generated column, or an identity generated always), which Postgres refused, and PostGraphile's generated mutations stop offering generated columns as inputs too.
+- @stonecrop/schema@0.45.0
+
 ## 0.44.0
 
 ### Patch Changes
