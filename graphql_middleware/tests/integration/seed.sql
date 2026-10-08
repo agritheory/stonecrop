@@ -172,3 +172,12 @@ CREATE TABLE sc_line (
 	amount integer GENERATED ALWAYS AS (quantity * rate) STORED
 );
 INSERT INTO sc_line (quantity, rate) VALUES (2, 5);
+
+-- A function that writes, which PostGraphile offers as a mutation because it is VOLATILE, and one that
+-- only reads, which it offers as a query because it is STABLE.
+CREATE FUNCTION sc_activate_item(item_id integer) RETURNS sc_item
+	LANGUAGE sql VOLATILE
+	AS $$ UPDATE sc_item SET status = 'Active' WHERE id = item_id RETURNING * $$;
+CREATE FUNCTION sc_draft_count() RETURNS integer
+	LANGUAGE sql STABLE
+	AS $$ SELECT count(*)::integer FROM sc_item WHERE status = 'Draft' $$;

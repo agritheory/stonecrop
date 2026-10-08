@@ -108,7 +108,9 @@ If your database columns are already camelCase, or you use `@name` smart tags on
 
 ### Mutations
 
-Amber generates a create, update and delete mutation for every table. The preset turns them off, so `stonecropAction` is the only write your API offers and every write passes the doctype's `allowedStates` guard. A database function PostGraphile exposes as a mutation is not affected.
+Amber generates a create, update and delete mutation for every table, and a mutation for every `VOLATILE` database function. The preset turns them all off, so `stonecropAction` is the only write your API offers and every write passes the doctype's `allowedStates` guard. A smart tag cannot bring one back; to run a function that writes, call it from an action's handler.
+
+A `STABLE` or `IMMUTABLE` function is still offered as a query or a computed field. Postgres declares a function `VOLATILE` unless told otherwise, so a function that only reads leaves the API until you declare it `STABLE`.
 
 ### Using the preset constant directly
 
