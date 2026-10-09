@@ -5,6 +5,7 @@ import { executeClientHandler } from './client-handler'
 import { useStonecrop } from './composables/stonecrop'
 import Doctype from './doctype'
 import { isDraftRecordId } from './draft'
+import { useValidationStore } from './stores/validation'
 import type {
 	ActionDispatchResult,
 	ActionEventPayload,
@@ -34,6 +35,9 @@ function notifyActionError(failure: ActionFailure): void {
 	if (typeof window !== 'undefined') window.alert(failure.message)
 }
 
+/** What `onError` is told when a save is held back because the form fails its validations. */
+const VALIDATION_REFUSAL = 'Fix the errors on the form, then try again.'
+
 /**
  * Shared executor for doctype action clicks. A host's Desktop `@action` handler delegates
  * here so every host runs the same logic from one definition.
@@ -41,6 +45,10 @@ function notifyActionError(failure: ActionFailure): void {
  * If the clicked action carries a `clientHandler`, it runs and **owns orchestration**: it calls
  * `runAction` itself when it needs the server, navigates via `router`, reads `record`, or queries
  * `graphql`, in place of the default dispatch. Otherwise the action is dispatched to the server.
+ *
+ * Either way, an action declaring `selfTransition` is not sent while the record fails the
+ * doctype's validation `triggers`: every trigger runs, its errors show on their fields, and the
+ * refusal goes to `onError` (or back to the `clientHandler` that called `runAction`).
  *
  * `runAction` is the only blessed write: it dispatches **and** leaves the store consistent,
  * filing the returned record under the identity the *server* settled on and following the route
@@ -78,6 +86,23 @@ export function useClientAction(options: UseClientActionOptions = {}) {
 			await resolveRouter()?.replace(`/${doctype}/${recordId}`)
 		})
 
+	// The validation store, which holds the form's field errors. Without an active Pinia there is
+	// none, and no validation has run, so there is nothing to check.
+	let validationStore: ReturnType<typeof useValidationStore> | null = null
+	try {
+		validationStore = useValidationStore()
+	} catch {
+		validationStore = null
+	}
+
+	/** Run every validation the doctype declares against `record`, and report whether all passed. */
+	async function passesValidation(doctype: Doctype, record: Record<string, unknown>): Promise<boolean> {
+		const triggers = doctype.getTriggers()
+		if (!validationStore || !triggers || Object.keys(triggers).length === 0) return true
+		await validationStore.validateRecord(triggers, record)
+		return validationStore.isValid
+	}
+
 	/**
 	 * Dispatch `action` for the record and reconcile the store and the route with whichever
 	 * identity the result carries.
@@ -94,6 +119,11 @@ export function useClientAction(options: UseClientActionOptions = {}) {
 
 		const doctype = sc.registry.getDoctype(doctypeSlug)
 		if (!doctype) return { success: false, data: null, error: `Unknown doctype: ${doctypeSlug}`, record: null }
+
+		// Checked here rather than in `run`, so a `clientHandler`'s `runAction` cannot skip it.
+		if (doctype.getActionMeta(action)?.selfTransition && !(await passesValidation(doctype, data))) {
+			return { success: false, data: null, error: VALIDATION_REFUSAL, record: null }
+		}
 
 		// A draft omits the id, which the write path reads as "create". Sending the route segment
 		// instead reaches the same branch by accident — via a lookup for a record named `new`.
