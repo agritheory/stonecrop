@@ -4,6 +4,7 @@
 
 ```ts
 
+import type { ActionDefinition } from '@stonecrop/schema';
 import { ActionDispatchResult } from '@stonecrop/schema';
 import type { AnyStateNodeConfig } from 'xstate';
 import { Component } from 'vue';
@@ -156,11 +157,7 @@ export class Doctype {
     readonly displayField?: string;
     readonly doctype: string;
     static fromObject(config: DoctypeConfig): Doctype;
-    getActionMeta(actionName: string): {
-        label: string;
-        requiredFields?: string[];
-        allowedStates?: string[];
-    } | undefined;
+    getActionMeta(actionName: string): ActionDefinition | undefined;
     getAvailableCommands(currentState?: string): Array<{
         name: string;
     }>;
