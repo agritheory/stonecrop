@@ -2,7 +2,9 @@
  * Controls the level of user interaction for a field, container, or table.
  *
  * - `'edit'` — field is fully interactive; user can change the value
+ *
  * - `'read'` — field is non-interactive but displayed with form chrome (input outline, etc.)
+ *
  * - `'display'` — field is non-interactive and displayed as plain text; no form chrome
  *
  * Applied at authoring time via `mode` on any `DoctypeField` variant. Propagated through

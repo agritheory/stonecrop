@@ -10,10 +10,9 @@ export interface GuardedTransitionIO {
 	/**
 	 * Read the record's current workflow state — the value of its `status` field.
 	 *
-	 * Three answers, and the difference between the last two matters:
-	 *  - a string — the record's current state
-	 *  - `undefined` — the record exists but carries no workflow state
-	 *  - `null` — **there is no such record**
+	 * Three answers, and the difference between the last two matters: a string is the record's
+	 * current state, `undefined` means the record exists but carries no workflow state, and `null`
+	 * means **there is no such record**.
 	 *
 	 * Collapsing those two into `undefined` is what let an action against a missing record report
 	 * success: the state read as `''`, an action declaring no `allowedStates` passed the guard, and
@@ -80,14 +79,18 @@ export interface GuardedTransitionIO {
  * handler never overrides the guard.
  *
  * There are four action shapes this distinguishes:
+ *
  *  - A cross-state **transition** (has `nextState`): writes the new `status`, guarded by `allowedStates`.
+ *
  *  - A **self-transition** (`selfTransition: true`, no `nextState`, e.g. `Save`): stays in the current
  *    state and persists record field `data` in place via `io.writeData`, guarded by `allowedStates`.
  *    When the target record does not exist the same write creates it — saving a record is one
  *    request whether or not the row is there yet, so there is no separate create action, no create
  *    mutation, and no second write path for it.
+ *
  *  - A **stateless command** (neither of the above) with an `io.runEffect`: the handler is the whole
  *    outcome. Still guarded by `allowedStates`, and still forbidden from moving the record.
+ *
  *  - Anything else — no `nextState`, no `selfTransition`, no registered effect — is either a genuine
  *    authoring mistake or a command whose handler was never wired. It fails loudly before touching
  *    the backend rather than reporting a false success.

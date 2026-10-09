@@ -26,8 +26,8 @@ export interface ValidationError {
  * corrected value clears its stale error without disturbing other triggers.
  *
  * The engine is **advisory** and does **no rollback** — an invalid value stays in the record so the
- * user can fix it; validity is reported separately via `isValid` (read by the save gate) and
- * the per-field messages are surfaced via `errorsByField` / `errorsFor` for display.
+ * user can fix it; validity is reported separately via `isValid`, and the per-field messages are
+ * surfaced via `errorsByField` / `errorsFor` for display.
  *
  * @public
  */

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
-import type { Component } from 'vue'
+import { defineComponent, h, type Component } from 'vue'
 
 import AForm from '../src/components/AForm.vue'
 import ACurrencyInput from '../src/components/form/ACurrencyInput.vue'
@@ -271,6 +271,34 @@ describe('inline field errors', { tags: ['component'] }, () => {
 			const fields = w.findAllComponents(ATextInput)
 			expect(fields[0].find('.aform_error').text()).toBe('') // start_date: no error
 			expect(fields[1].find('.aform_error').text()).toBe('End before start') // end_date: flagged
+		})
+
+		it("ties every field's label and error to its input, with ids unique across forms", () => {
+			const schema = [
+				{ fieldname: 'start_date', component: 'ATextInput', label: 'Start' },
+				{ fieldname: 'end_date', component: 'ATextInput', label: 'End' },
+				{ fieldname: 'due', component: 'ADate', label: 'Due' },
+			] as ResolvedField[]
+			const twoForms = defineComponent({
+				render: () => [
+					h(AForm, { schema, data: {}, errors: { end_date: ['End before start'] } }),
+					h(AForm, { schema, data: {} }),
+				],
+			})
+			const w = mount(twoForms, { global: { components: { ATextInput, ADate } } })
+
+			const inputs = w.findAll('.aform_form-element > input')
+			expect(inputs).toHaveLength(6)
+			const ids = inputs.map(input => input.attributes('id'))
+			expect(ids.every(Boolean)).toBe(true)
+			expect(new Set(ids).size).toBe(ids.length)
+			for (const input of inputs) {
+				expect(input.element.parentElement?.querySelector('label')?.htmlFor).toBe(input.attributes('id'))
+			}
+			const flagged = inputs[1]
+			const error = flagged.element.parentElement?.querySelector('.aform_error')
+			expect(error?.textContent).toBe('End before start')
+			expect(flagged.attributes('aria-describedby')).toBe(error?.id)
 		})
 	})
 })

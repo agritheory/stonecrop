@@ -36,8 +36,8 @@ export type { InteractionMode } from '@stonecrop/schema'
 // ---------------------------------------------------------------------------
 
 /**
- * A resolved scalar field. Derived from ValueField with `cardinality` omitted
- * (consumed by resolveSchema) and an optional `doctype` added for unresolved Link fields.
+ * A resolved scalar field. Derived from ValueField with `cardinality` omitted (resolution has
+ * already applied it) and an optional `doctype` added for unresolved Link fields.
  * @public
  */
 export type ResolvedScalar = Omit<ValueField, 'cardinality'> & {

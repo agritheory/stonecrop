@@ -4,6 +4,7 @@ import { PostGraphileAmberPreset } from 'postgraphile/presets/amber'
  * Controls how PostgreSQL column names are mapped to GraphQL field names in the synthesized preset.
  *
  * - `'camel'` (default): `my_column` → `myColumn`. This matches PostGraphile Amber's built-in behaviour.
+ *
  * - `'pascal'`: `my_column` → `MyColumn`. Opt in via `createStonecropPreset({ fieldCasing: 'pascal' })` or
  *   `grafserv.fieldCasing: 'pascal'` in `nuxt.config.ts`.
  *

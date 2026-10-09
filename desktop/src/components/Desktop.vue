@@ -777,9 +777,9 @@ const getRecordsSchema = (): ResolvedField[] => {
 			kind: 'table' as const,
 			fieldname: 'records_table',
 			component: 'ATable',
-			// Which resolved fields a cell can render is answered once, in @stonecrop/aform, and
-			// called by the child-table builder too. Flattening alone is not the rule: it kept the
-			// expanding links, whose value is a nested record or an array of them.
+			// Which resolved fields a cell can render is answered once, in @stonecrop/aform; never
+			// re-derive it here. Flattening alone is not the rule: it kept the expanding links, whose
+			// value is a nested record or an array of them.
 			schema: [...resolvedFieldsToColumns(schema), { fieldname: 'actions', label: 'Actions', component: 'ATextInput' }],
 			config: { view: 'list' as const, fullWidth: true },
 			...(clientConfigured ? { getRecords: listRecordsFetcher, sourceKey: doctypeSlug } : {}),
