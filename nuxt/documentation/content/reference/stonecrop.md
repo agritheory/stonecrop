@@ -219,6 +219,8 @@ Shared executor for doctype action clicks. A host's Desktop `@action` handler de
 
 If the clicked action carries a `clientHandler`, it runs and **owns orchestration**: it calls `runAction` itself when it needs the server, navigates via `router`, reads `record`, or queries `graphql`, in place of the default dispatch. Otherwise the action is dispatched to the server.
 
+Either way, an action declaring `selfTransition` is not sent while the record fails the doctype's validation `triggers`: every trigger runs, its errors show on their fields, and the refusal goes to `onError` (or back to the `clientHandler` that called `runAction`).
+
 `runAction` is the only blessed write: it dispatches **and** leaves the store consistent, filing the returned record under the identity the *server* settled on and following the route there when that differs from the one dispatched. For a created record those are never the same, which is what makes hand-rolling this reliably wrong.
 
 The store write itself lives one layer down, in `dispatchAction`, so a host that never adopts this composable still cannot file a record under the wrong key. What stays here is only what needs the *dispatched* id: dropping the stale key, and moving the route.
@@ -1595,11 +1597,7 @@ fromObject(config: DoctypeConfig): Doctype
 Returns metadata for a specific action, if available. Only works with WorkflowMeta format; returns undefined for XState format.
 
 ```typescript
-getActionMeta(actionName: string): {
-        label: string;
-        requiredFields?: string[];
-        allowedStates?: string[];
-    } | undefined
+getActionMeta(actionName: string): ActionDefinition | undefined
 ```
 
 **Parameters:**

@@ -1,12 +1,14 @@
 // @vitest-environment node
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { createPinia, setActivePinia } from 'pinia'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import type { DoctypeField } from '@stonecrop/schema'
+import type { DoctypeField, TriggerDefinition } from '@stonecrop/schema'
 
 // `vi.mock`/`vi.hoisted` below are hoisted above this import at runtime, so the composable
 // still loads with the mocked `useStonecrop`/`useRouter`.
 import { useClientAction } from '../../src/client-action'
 import Doctype from '../../src/doctype'
+import { useValidationStore } from '../../src/stores/validation'
 
 // Shared holders the mocks read from; set per-test.
 const { mocks } = vi.hoisted(() => ({ mocks: { sc: null as any, router: null as any } }))
@@ -23,7 +25,7 @@ vi.mock('vue-router', async importOriginal => {
 	return { ...actual, useRouter: () => mocks.router }
 })
 
-type Actions = Record<string, { clientHandler?: string }>
+type Actions = Record<string, { clientHandler?: string; selfTransition?: boolean; nextState?: string }>
 
 function makeRouter() {
 	return { push: vi.fn(), replace: vi.fn(), back: vi.fn(), forward: vi.fn() }
@@ -48,6 +50,7 @@ function makeSc(
 		record?: Record<string, unknown>
 		client?: unknown
 		dispatch?: any
+		triggers?: Record<string, TriggerDefinition>
 	} = {}
 ) {
 	// The real Doctype, not a stand-in: the identity rule under test lives in `getRecordId` and
@@ -60,7 +63,7 @@ function makeSc(
 	const doctype = Doctype.fromObject({
 		name: 'User',
 		fields: opts.fields ?? ID_FIELDS,
-		workflow: { states: ['active', 'assigned'], actions },
+		workflow: { states: ['active', 'assigned'], actions, ...(opts.triggers ? { triggers: opts.triggers } : {}) },
 	})
 	return {
 		registeredDoctype: doctype,
@@ -428,5 +431,93 @@ describe('useClientAction host overrides', { tags: ['unit'] }, () => {
 		expect(followRecord).toHaveBeenCalledWith({ doctype: 'user', recordId: '7', previousRecordId: 'new' })
 		// The default is fully replaced — a host staying on the page must not also be navigated.
 		expect(mocks.router.replace).not.toHaveBeenCalled()
+	})
+})
+
+// The validation store promised this check from the start (`isValid`, "read by the save gate"),
+// and nothing performed it: a form showing errors still saved.
+describe('useClientAction validation check', { tags: ['unit'] }, () => {
+	const titleRequired: Record<string, TriggerDefinition> = {
+		titleRequired: { on: ['title'], clientHandler: "if (!record.title) setError('title', 'Title is required')" },
+	}
+	const untitled = (name: string) => ({ name, doctype: 'user', recordId: 'r1', data: { id: 'r1', title: '' } })
+
+	beforeEach(() => {
+		setActivePinia(createPinia())
+	})
+
+	it('refuses to send a self-transition while a validation fails, including one whose field was never edited', async () => {
+		const onError = vi.fn()
+		mocks.router = makeRouter()
+		mocks.sc = makeSc({ actions: { Approve: { selfTransition: true } }, triggers: titleRequired })
+		const store = useValidationStore()
+		expect(store.isValid).toBe(true)
+
+		await useClientAction({ onError }).run(untitled('Approve'))
+
+		expect(mocks.sc.dispatchAction).not.toHaveBeenCalled()
+		expect(store.errorsFor('title')).toEqual(['Title is required'])
+		expect(onError).toHaveBeenCalledWith({
+			message: expect.any(String),
+			action: 'Approve',
+			doctype: 'user',
+			recordId: 'r1',
+		})
+	})
+
+	it('sends a self-transition once its validations pass', async () => {
+		mocks.router = makeRouter()
+		mocks.sc = makeSc({ actions: { save: { selfTransition: true } }, triggers: titleRequired })
+
+		await useClientAction().run(payload('save'))
+
+		expect(mocks.sc.dispatchAction).toHaveBeenCalledTimes(1)
+		expect(useValidationStore().isValid).toBe(true)
+	})
+
+	it('sends a self-transition on a doctype that declares no validations', async () => {
+		mocks.router = makeRouter()
+		mocks.sc = makeSc({ actions: { save: { selfTransition: true } } })
+
+		await useClientAction().run(untitled('save'))
+
+		expect(mocks.sc.dispatchAction).toHaveBeenCalledTimes(1)
+	})
+
+	it('reads the declaration, not the name: a `save` declaring no self-transition, and a transition, are sent', async () => {
+		mocks.router = makeRouter()
+		mocks.sc = makeSc({ actions: { save: {}, Assign: { nextState: 'assigned' } }, triggers: titleRequired })
+
+		await useClientAction().run(untitled('save'))
+		await useClientAction().run(untitled('Assign'))
+
+		expect(mocks.sc.dispatchAction).toHaveBeenCalledTimes(2)
+	})
+
+	it('checks a self-transition that a clientHandler dispatches through runAction', async () => {
+		mocks.router = makeRouter()
+		mocks.sc = makeSc({
+			actions: { Process: { clientHandler: "await runAction('save')" }, save: { selfTransition: true } },
+			triggers: titleRequired,
+		})
+
+		await useClientAction().run(untitled('Process'))
+
+		expect(mocks.sc.dispatchAction).not.toHaveBeenCalled()
+		expect(useValidationStore().errorsFor('title')).toEqual(['Title is required'])
+	})
+
+	it('sends when a validation throws, since a broken validation must not trap the user', async () => {
+		const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+		mocks.router = makeRouter()
+		mocks.sc = makeSc({
+			actions: { save: { selfTransition: true } },
+			triggers: { broken: { on: ['title'], clientHandler: "throw new Error('bug in validation')" } },
+		})
+
+		await useClientAction().run(untitled('save'))
+
+		expect(mocks.sc.dispatchAction).toHaveBeenCalledTimes(1)
+		errorSpy.mockRestore()
 	})
 })
