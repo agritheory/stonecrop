@@ -55,7 +55,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, watchEffect, watch, ref } from 'vue'
+import { computed, watchEffect, watch, ref, useId } from 'vue'
 
 import type { ResolvedField, ResolvedLink, ResolvedFieldset, ResolvedTable } from '../types'
 import type { ColumnSchema, InteractionMode } from '@stonecrop/schema'
@@ -101,8 +101,7 @@ watch(
 	{ immediate: true }
 )
 
-// Called by the nested <AForm>'s @update:data handler.
-// Updates nestedData locally and propagates upward in one step,
+// A nested form's edits: updates nestedData locally and propagates upward in one step,
 // avoiding the watchEffect feedback loop that occurred with v-model.
 const updateNestedData = (fieldname: string, val: any) => {
 	nestedData.value[fieldname] = val
@@ -112,7 +111,7 @@ const updateNestedData = (fieldname: string, val: any) => {
 	}
 }
 
-// Called by a fieldset's @update:data handler. Its form holds this record, so its edits are this record's.
+// A fieldset's edits. Its form holds this record, so its edits are this record's.
 const updateFieldsetData = (val: Record<string, any>) => {
 	if (dataModel.value) {
 		Object.assign(dataModel.value, val)
@@ -141,6 +140,10 @@ const updateTableRow = (fieldname: string, rowIndex: number, val: Record<string,
 	updateTableRows(fieldname, rows)
 }
 
+// Each field's `uuid` ties its label and error message to its input; one id per form keeps them
+// unique when several forms, or a fieldset's nested form, share a page.
+const formId = useId()
+
 const componentProps = (componentObj: ResolvedField) => {
 	const propsToPass: Record<string, any> = {}
 	for (const [key, value] of Object.entries(componentObj)) {
@@ -150,6 +153,7 @@ const componentProps = (componentObj: ResolvedField) => {
 			propsToPass[key] = value
 		}
 	}
+	propsToPass['uuid'] ??= `${formId}-${componentObj.fieldname}`
 
 	// A table sources its rows from the data model, never from the schema, and its edits come back
 	// through `update:rows`. `kind` is the only check: every path into AForm sets it (Zod's

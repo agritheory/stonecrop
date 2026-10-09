@@ -866,7 +866,7 @@ A cell renders one value, so only `kind: 'field'` qualifies. The other three kin
 
 A fieldset's *children* are real columns, so it is flattened rather than dropped; losing them is the same silent defect in the other direction.
 
-One definition, called by both consumers: `Registry.buildTableConfig` (a child table's columns, from its target's resolved schema) and Desktop's records list. Re-deriving it at either call site produced exactly one of the two failures above at each.
+This is the one definition, for a child table's columns and a records list alike. Call it; never re-derive it at a call site, which produced exactly one of the two failures above at each.
 
 **Signature:**
 
@@ -1225,7 +1225,7 @@ export type ResolvedField = ResolvedScalar | ResolvedLink | ResolvedTable | Reso
 
 ### ResolvedScalar
 
-A resolved scalar field. Derived from ValueField with `cardinality` omitted (consumed by resolveSchema) and an optional `doctype` added for unresolved Link fields.
+A resolved scalar field. Derived from ValueField with `cardinality` omitted (resolution has already applied it) and an optional `doctype` added for unresolved Link fields.
 
 **Definition:**
 

@@ -36,13 +36,11 @@ function notifyActionError(failure: ActionFailure): void {
 
 /**
  * Shared executor for doctype action clicks. A host's Desktop `@action` handler delegates
- * here so every host runs the same logic from one definition:
+ * here so every host runs the same logic from one definition.
  *
- * - If the clicked action carries a `clientHandler`, run it. The handler **owns
- *   orchestration** — it calls `runAction` itself when it needs the server, navigates via
- *   `router`, reads `record`, or queries `graphql`. It supersedes the default dispatch.
- * - Otherwise dispatch the action to its server `handler` (the pre-existing behavior),
- *   so actions without a `clientHandler` are unchanged.
+ * If the clicked action carries a `clientHandler`, it runs and **owns orchestration**: it calls
+ * `runAction` itself when it needs the server, navigates via `router`, reads `record`, or queries
+ * `graphql`, in place of the default dispatch. Otherwise the action is dispatched to the server.
  *
  * `runAction` is the only blessed write: it dispatches **and** leaves the store consistent,
  * filing the returned record under the identity the *server* settled on and following the route

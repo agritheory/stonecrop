@@ -262,7 +262,7 @@ export class Stonecrop {
 			return link.blockWorkflows
 		}
 		// TODO: For custom fetch handlers, this returns false (not blocking), but the custom handler
-		// may still be invoked by useLazyLink. Future: custom handlers should be able to declare they
+		// may still run when the link loads lazily. Future: custom handlers should be able to declare they
 		// satisfy blockWorkflows, or validation should reject custom + blockWorkflows: true.
 		return link.fetch?.method === 'sync'
 	}

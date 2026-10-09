@@ -1017,7 +1017,7 @@ function collectColumns(fields: DoctypeField[], links: Map<string, LinkDeclarati
 	for (const f of columnBackedFields(fields)) {
 		// Only an *expanding* link is a relation rather than a column. An inline link (a picker)
 		// keeps its FK on this table and must still be selected — `resolveLinkRenderMode` is the
-		// shared rule, also used by the client resolver; never re-derive it here.
+		// rule both sides of the wire share; never re-derive it here.
 		const link = links.get(f.fieldname)
 		if (link && resolveLinkRenderMode(link, f.component) !== 'inline') continue
 		columns.push({ column: camelToSnake(f.fieldname), alias: f.fieldname })
