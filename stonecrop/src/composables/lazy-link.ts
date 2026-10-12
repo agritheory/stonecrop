@@ -9,15 +9,23 @@ import type { LazyLink } from '../types/composable'
  * Get the lazy link state for a specific link field on a doctype record.
  *
  * This composable provides reactive state for lazy-loaded links:
+ *
  * - `loading`: true while fetching
+ *
  * - `loaded`: true after successful fetch (permanent until reload)
+ *
  * - `error`: error state if any
+ *
  * - `reload()`: explicitly trigger a fetch
+ *
  * - `data`: computed from HST, or undefined if not loaded
  *
  * The reload() function respects the link's fetch strategy:
+ *
  * - `sync`: fetches via GraphQL query through fetchNestedData
+ *
  * - `lazy`: fetches via GraphQL query through fetchNestedData
+ *
  * - `custom`: invokes the serialized handler function directly
  *
  * @param doctype - The doctype instance

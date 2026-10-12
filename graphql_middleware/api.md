@@ -12,7 +12,15 @@ The server owns the transition: it reads the record's authoritative current stat
 
 **The doctype decides whether an action may run and what state results; the adapter decides what actually happens.** `allowedStates`, `nextState` and `selfTransition` are authored in the doctype (in DocBuilder, by whoever models the workflow); the effect is registered by whoever owns the database. Neither names the other: an action never carries a handler name, and a handler never overrides the guard.
 
-There are four action shapes this distinguishes: - A cross-state **transition** (has `nextState`): writes the new `status`, guarded by `allowedStates`. - A **self-transition** (`selfTransition: true`, no `nextState`, e.g. `Save`): stays in the current state and persists record field `data` in place via `io.writeData`, guarded by `allowedStates`. When the target record does not exist the same write creates it — saving a record is one request whether or not the row is there yet, so there is no separate create action, no create mutation, and no second write path for it. - A **stateless command** (neither of the above) with an `io.runEffect`: the handler is the whole outcome. Still guarded by `allowedStates`, and still forbidden from moving the record. - Anything else — no `nextState`, no `selfTransition`, no registered effect — is either a genuine authoring mistake or a command whose handler was never wired. It fails loudly before touching the backend rather than reporting a false success.
+There are four action shapes this distinguishes:
+
+- A cross-state **transition** (has `nextState`): writes the new `status`, guarded by `allowedStates`.
+
+- A **self-transition** (`selfTransition: true`, no `nextState`, e.g. `Save`): stays in the current state and persists record field `data` in place via `io.writeData`, guarded by `allowedStates`. When the target record does not exist the same write creates it — saving a record is one request whether or not the row is there yet, so there is no separate create action, no create mutation, and no second write path for it.
+
+- A **stateless command** (neither of the above) with an `io.runEffect`: the handler is the whole outcome. Still guarded by `allowedStates`, and still forbidden from moving the record.
+
+- Anything else — no `nextState`, no `selfTransition`, no registered effect — is either a genuine authoring mistake or a command whose handler was never wired. It fails loudly before touching the backend rather than reporting a false success.
 
 **Signature:**
 
@@ -297,7 +305,7 @@ export interface GuardedTransitionIO {
 
 | Property | Type | Description |
 |----------|------|-------------|
-| readState | `() => Promise<string \| null \| undefined>` | Read the record's current workflow state — the value of its `status` field. Three answers, and the difference between the last two matters: - a string — the record's current state - `undefined` — the record exists but carries no workflow state - `null` — **there is no such record** Collapsing those two into `undefined` is what let an action against a missing record report success: the state read as `''`, an action declaring no `allowedStates` passed the guard, and the write then found nothing to write. Backends must return `null` when the lookup misses. |
+| readState | `() => Promise<string \| null \| undefined>` | Read the record's current workflow state — the value of its `status` field. Three answers, and the difference between the last two matters: a string is the record's current state, `undefined` means the record exists but carries no workflow state, and `null` means **there is no such record**. Collapsing those two into `undefined` is what let an action against a missing record report success: the state read as `''`, an action declaring no `allowedStates` passed the guard, and the write then found nothing to write. Backends must return `null` when the lookup misses. |
 | runEffect? | `(currentState: string \| undefined) => Promise<unknown>` | Run the adapter's side effect for this action, after the guard has passed and before any state is written. This is the seam a **database author** wires — see `StonecropPluginOptions.actionHandlers` for the Postgres adapter's registration surface. It is what makes a stateless Command (no `nextState`, no `selfTransition`) executable at all: without one, such an action has nothing to apply and fails loudly. Throwing rejects the action, so the dispatcher writes neither data nor state. It does **not** undo writes the handler already made: this guard is storage-agnostic and owns no transaction, and the Postgres adapter in particular dispatches outside one. A handler whose own statements must be all-or-nothing has to wrap them itself. What it returns becomes the result's `data`, verbatim; returning `undefined` leaves the doctype's own outcome to decide `data`. The client stores the adapter's read of the record, never this. |
 | writeData? | `(patch: Record<string, unknown>, exists: boolean) => Promise<Record<string, unknown>>` | Persist a record's field data for a self-transition, returning the full record as it now stands, which states its identity (the only place a created record's key is known). **This is an upsert, and it is the create path.** Saving a record is one request whether or not the row is there yet, so there is no create action and no create mutation — `exists` says which case you are in, and the second argument exists only because the dispatcher already knows: it read the record's state to run the guard. When `exists` is false, mint or derive the identity here and return the created record; identity is the backend's business, not the dispatcher's. Read the declared `primaryKey` out of `data` for a natural-keyed doctype — that value is a field the user filled in — and mint one only when the doctype is surrogate-keyed. Never return an empty object for a creation: the dispatcher treats that as a backend that only knows how to patch, and fails loudly rather than reporting a save that stored nothing. Optional. A backend with no data-write path omits it, which is how it declines both saving and creating; a self-transition is then rejected loudly rather than silently dropped — unless `runEffect` is supplied, in which case the handler is the persistence path. |
 | writeState | `(nextState: string) => Promise<void>` | Persist the record's new workflow state, written verbatim. |
@@ -376,7 +384,9 @@ export type FetchHandler = (pgClient: PgClient, parentRecord: Record<string, unk
 
 Controls how PostgreSQL column names are mapped to GraphQL field names in the synthesized preset.
 
-- `'camel'` (default): `my_column` → `myColumn`. This matches PostGraphile Amber's built-in behaviour. - `'pascal'`: `my_column` → `MyColumn`. Opt in via `createStonecropPreset({ fieldCasing: 'pascal' })` or `grafserv.fieldCasing: 'pascal'` in `nuxt.config.ts`.
+- `'camel'` (default): `my_column` → `myColumn`. This matches PostGraphile Amber's built-in behaviour.
+
+- `'pascal'`: `my_column` → `MyColumn`. Opt in via `createStonecropPreset({ fieldCasing: 'pascal' })` or `grafserv.fieldCasing: 'pascal'` in `nuxt.config.ts`.
 
 Smart tag overrides (`@name` on column comments) are respected regardless of this setting.
 

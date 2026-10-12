@@ -360,10 +360,8 @@ export default class Doctype {
 	}
 
 	/**
-	 * Converts the registered doctype string to a slug (kebab-case). The following conversions are made:
-	 * - It replaces camelCase and PascalCase with kebab-case strings
-	 * - It replaces spaces and underscores with hyphens
-	 * - It converts the string to lowercase
+	 * Converts the registered doctype string to a slug (kebab-case): camelCase and PascalCase become
+	 * kebab-case, spaces and underscores become hyphens, and the result is lowercased.
 	 *
 	 * @returns The slugified doctype string
 	 *

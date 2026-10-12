@@ -210,9 +210,9 @@ export declare function triggerTransition(doctype: string, transition: string, o
 
 ### useClientAction
 
-Shared executor for doctype action clicks. A host's Desktop `@action` handler delegates here so every host runs the same logic from one definition:
+Shared executor for doctype action clicks. A host's Desktop `@action` handler delegates here so every host runs the same logic from one definition.
 
-- If the clicked action carries a `clientHandler`, run it. The handler **owns orchestration** — it calls `runAction` itself when it needs the server, navigates via `router`, reads `record`, or queries `graphql`. It supersedes the default dispatch. - Otherwise dispatch the action to its server `handler` (the pre-existing behavior), so actions without a `clientHandler` are unchanged.
+If the clicked action carries a `clientHandler`, it runs and **owns orchestration**: it calls `runAction` itself when it needs the server, navigates via `router`, reads `record`, or queries `graphql`, in place of the default dispatch. Otherwise the action is dispatched to the server.
 
 `runAction` is the only blessed write: it dispatches **and** leaves the store consistent, filing the returned record under the identity the *server* settled on and following the route there when that differs from the one dispatched. For a created record those are never the same, which is what makes hand-rolling this reliably wrong.
 
@@ -238,9 +238,25 @@ export declare function useClientAction(options?: UseClientActionOptions): {
 
 Get the lazy link state for a specific link field on a doctype record.
 
-This composable provides reactive state for lazy-loaded links: - `loading`: true while fetching - `loaded`: true after successful fetch (permanent until reload) - `error`: error state if any - `reload()`: explicitly trigger a fetch - `data`: computed from HST, or undefined if not loaded
+This composable provides reactive state for lazy-loaded links:
 
-The reload() function respects the link's fetch strategy: - `sync`: fetches via GraphQL query through fetchNestedData - `lazy`: fetches via GraphQL query through fetchNestedData - `custom`: invokes the serialized handler function directly
+- `loading`: true while fetching
+
+- `loaded`: true after successful fetch (permanent until reload)
+
+- `error`: error state if any
+
+- `reload()`: explicitly trigger a fetch
+
+- `data`: computed from HST, or undefined if not loaded
+
+The reload() function respects the link's fetch strategy:
+
+- `sync`: fetches via GraphQL query through fetchNestedData
+
+- `lazy`: fetches via GraphQL query through fetchNestedData
+
+- `custom`: invokes the serialized handler function directly
 
 **Signature:**
 
@@ -1548,7 +1564,7 @@ new Doctype(doctype: string, schema: ImmutableDoctype['schema'], workflow: Immut
 | name | `string` | Alias for doctype (for DoctypeLike interface compatibility) |
 | recordIdField | `string` | The field a record of this doctype is identified by: the declared `primaryKey`, or `id` when nothing is declared. The client-side twin of the adapters' `recordLookupField`. Both are the same call to `@stonecrop/schema`'s `getRecordIdField`, so the field a caller reads an identity out of is the same field the adapter builds its lookup predicate on. Use this to ask whether a record *states* its own identity. `getRecordId` deliberately falls back to `id` when the declared key is missing, which is right for resolving a link from a record already in hand and wrong for deciding whether a server response settled on a new identity: a response that omits a natural key would resolve through that fallback to a surrogate the adapter cannot look up. |
 | schema | `ImmutableDoctype['schema']` | The doctype schema |
-| slug | `string` | Converts the registered doctype string to a slug (kebab-case). The following conversions are made: - It replaces camelCase and PascalCase with kebab-case strings - It replaces spaces and underscores with hyphens - It converts the string to lowercase |
+| slug | `string` | Converts the registered doctype string to a slug (kebab-case): camelCase and PascalCase become kebab-case, spaces and underscores become hyphens, and the result is lowercased. |
 | workflow | `ImmutableDoctype['workflow']` | The doctype workflow |
 
 **Methods:**
@@ -1926,9 +1942,15 @@ getDoctype(slug: string): Doctype | undefined
 
 The shape of a new record before any starting value: the containers its fields need, and no values. Narrows by `kind` discriminator for precise branch selection.
 
-- `kind: 'table'` → `[]` - `kind: 'link'` → the embedded record, built the same way - `kind: 'fieldset'` → its children, at the top level of the record: a fieldset is layout - `kind: 'field'` → no key at all
+- `kind: 'table'` → `[]`
 
-Starting values are the doctype's `defaults` and the app's, which `composeNewRecord` lays over this.
+- `kind: 'link'` → the embedded record, built the same way
+
+- `kind: 'fieldset'` → its children, at the top level of the record: a fieldset is layout
+
+- `kind: 'field'` → no key at all
+
+Starting values (the doctype's `defaults` and the app's) are laid over this.
 
 ```typescript
 initializeRecord(schema: ResolvedField[]): Record<string, any>
@@ -1954,7 +1976,19 @@ registerDefaults(doctype: string, source: DefaultsSource): void
 
 Resolve a Doctype's authoring schema into a rendered schema array suitable for AForm.
 
-Transforms `DoctypeField[]` (authoring space) → `ResolvedField[]` (rendering space): - `kind: 'field'` (not Link) → `ResolvedScalar` - `kind: 'field'` (Link, no declaration) → `ResolvedScalar` with `component: 'AFormLink'` - `kind: 'field'` (Link, `noneOrMany`/`atLeastOne`) → `ResolvedTable` - `kind: 'field'` (Link, `one`/`atMostOne`) → `ResolvedLink` - `kind: 'fieldset'` → `ResolvedFieldset` (children resolved recursively) - `kind: 'table'` → `ResolvedTable` (columns as `ColumnSchema[]`)
+Transforms `DoctypeField[]` (authoring space) → `ResolvedField[]` (rendering space):
+
+- `kind: 'field'` (not Link) → `ResolvedScalar`
+
+- `kind: 'field'` (Link, no declaration) → `ResolvedScalar` with `component: 'AFormLink'`
+
+- `kind: 'field'` (Link, `noneOrMany`/`atLeastOne`) → `ResolvedTable`
+
+- `kind: 'field'` (Link, `one`/`atMostOne`) → `ResolvedLink`
+
+- `kind: 'fieldset'` → `ResolvedFieldset` (children resolved recursively)
+
+- `kind: 'table'` → `ResolvedTable` (columns as `ColumnSchema[]`)
 
 Circular references are protected against via the `visited` set.
 
@@ -2646,7 +2680,7 @@ Reactive per-field validation error store + the advisory field-validation trigge
 
 Holds the errors produced by field-validation triggers (see `TriggerDefinition` in `@stonecrop/schema`) and runs a trigger's `clientHandler` on demand. Errors are **namespaced by trigger**: re-running a trigger clears its own prior contributions before repopulating, so a corrected value clears its stale error without disturbing other triggers.
 
-The engine is **advisory** and does **no rollback** — an invalid value stays in the record so the user can fix it; validity is reported separately via `isValid` (read by the save gate) and the per-field messages are surfaced via `errorsByField` / `errorsFor` for display.
+The engine is **advisory** and does **no rollback** — an invalid value stays in the record so the user can fix it; validity is reported separately via `isValid`, and the per-field messages are surfaced via `errorsByField` / `errorsFor` for display.
 
 **Type:**
 

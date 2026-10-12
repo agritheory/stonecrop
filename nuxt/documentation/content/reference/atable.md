@@ -3091,11 +3091,19 @@ export declare function isTableTuplePickerModal(modal: TableModal): boolean;
 
 Convert an array of doctype field descriptors into ATable column definitions.
 
-Fields are excluded when: - `hidden: true` — field should not be visible in any view - no `component` — non-scalar entry (nested table or fieldset), no column equivalent
+Fields are excluded when:
+
+- `hidden: true` — field should not be visible in any view
+
+- no `component` — non-scalar entry (nested table or fieldset), no column equivalent
 
 `fieldname` is renamed to `name`; `hidden` is stripped. All other `ColumnSchema` properties spread through automatically.
 
-For link fields (those carrying `doctype`) without an explicit `cellComponent`: - `linkDoctype` is set from the field's `doctype` property (used by ACell's async resolver). - A synchronous `format` function is added (unless the field already has one) that handles both bare ID strings and pre-resolved `{ id, displayText }` objects.
+For link fields (those carrying `doctype`) without an explicit `cellComponent`:
+
+- `linkDoctype` is set from the field's `doctype` property, the doctype a cell resolves the link's text from.
+
+- A synchronous `format` function is added (unless the field already has one) that handles both bare ID strings and pre-resolved `{ id, displayText }` objects.
 
 For quantity fields — those whose `component` carries the `'quantity'` category — without an explicit `format`, a synchronous `format` is added that renders the `{ qty, uom, stockUom }` value (see `QuantityValue` in `@stonecrop/aform`), omitting the UOM when it matches `stockUom`.
 
@@ -3596,9 +3604,9 @@ export interface TableColumn {
 | Property | Type | Description |
 |----------|------|-------------|
 | format? | `string \| ((value: any, context: CellContext) => string \| BadgeDescriptor)` | Widens `ColumnSchema.format` (string-only) to also accept a live function at runtime. Serialized string functions are deserialized by the table store's `getFormattedValue`. May return a plain string, HTML, or a `BadgeDescriptor`. |
-| linkDoctype? | `string` | For link columns (those carrying `doctype`): the target doctype slug used by the `linkResolver` to look up display text for bare ID values. Set automatically by `schemaToColumns` from the field's `doctype` property. |
+| linkDoctype? | `string` | For link columns (those carrying `doctype`): the target doctype slug, which display text for bare ID values is looked up in. Set from the field's `doctype` property. |
 | mask? | `(value: any) => any` | Input mask applied to the cell value before display. Accepts a live function only — masks cannot be serialized to JSON so they are absent from `ColumnSchema`. |
-| modalComponent? | `string \| ((context: CellContext) => string)` | Widens `ColumnSchema.modalComponent` (string-only) to also accept a factory function. When a function is provided it receives the cell context and returns the component name. The cell context exposes: - `row` — the row object for the current cell - `column` — the column object for the current cell - `table` — the table object |
+| modalComponent? | `string \| ((context: CellContext) => string)` | Widens `ColumnSchema.modalComponent` (string-only) to also accept a factory function. When a function is provided it receives the cell context (`row`, the current cell's row object; `column`, its column object; and `table`, the table object) and returns the component name. |
 | name | `string` | Runtime column key. Corresponds to `fieldname` in `ColumnSchema`; populated by `schemaToColumns`. |
 | originalIndex? | `number` | Runtime Gantt column index (excluding pinned columns). Set automatically during Gantt table rendering. |
 

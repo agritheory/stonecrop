@@ -38,11 +38,8 @@ export interface TableColumn extends Omit<ColumnSchema, 'fieldname' | 'hidden' |
 
 	/**
 	 * Widens `ColumnSchema.modalComponent` (string-only) to also accept a factory function.
-	 * When a function is provided it receives the cell context and returns the component name.
-	 * The cell context exposes:
-	 * - `row` — the row object for the current cell
-	 * - `column` — the column object for the current cell
-	 * - `table` — the table object
+	 * When a function is provided it receives the cell context (`row`, the current cell's row object;
+	 * `column`, its column object; and `table`, the table object) and returns the component name.
 	 */
 	modalComponent?: string | ((context: CellContext) => string)
 
@@ -53,9 +50,8 @@ export interface TableColumn extends Omit<ColumnSchema, 'fieldname' | 'hidden' |
 	mask?: (value: any) => any
 
 	/**
-	 * For link columns (those carrying `doctype`): the target doctype slug used by the `linkResolver`
-	 * to look up display text for bare ID values. Set automatically by `schemaToColumns`
-	 * from the field's `doctype` property.
+	 * For link columns (those carrying `doctype`): the target doctype slug, which display text for
+	 * bare ID values is looked up in. Set from the field's `doctype` property.
 	 */
 	linkDoctype?: string
 

@@ -60,9 +60,13 @@ const ROOT_TYPE_NAMES = new Set(['Query', 'Mutation', 'Subscription'])
  * An entity type becomes a Stonecrop doctype.
  *
  * This heuristic excludes:
+ *
  * - Introspection types (`__*`)
+ *
  * - Root operation types (`Query`, `Mutation`, `Subscription`)
+ *
  * - Types with synthetic suffixes (e.g., `*Connection`, `*Edge`, `*Input`)
+ *
  * - Types starting with `Node` interface marker (exact match only)
  *
  * @param typeName - The GraphQL type name
@@ -241,12 +245,18 @@ function getConnectionNodeType(type: GraphQLObjectType): string | undefined {
  * Classify a single GraphQL field into a Stonecrop field definition.
  *
  * Classification rules (in order):
- * 1. Scalar types → look up in merged scalar map
- * 2. Enum types → `Select` with enum values as options
- * 3. Object types that are entities → `Link` with slug as options
- * 4. Object types that are Connections → `Doctype` with node type slug as options
- * 5. List of entity type → `Doctype` with item type slug as options
- * 6. Anything else → `Data` with `_unmapped: true`
+ *
+ * 1. Scalar types → the component the merged scalar map names
+ *
+ * 2. Enum types → `ADropdown` with the enum's values as options
+ *
+ * 3. Object types that are entities → `AFormLink` with the entity's slug as `doctype`
+ *
+ * 4. Object types that are Connections → `ATable` linking the node type's slug, `noneOrMany`
+ *
+ * 5. List of entity type → `ATable` linking the item type's slug, `noneOrMany`
+ *
+ * 6. Anything else → `ATextInput` with `_unmapped: true`
  *
  * @param fieldName - The GraphQL field name
  * @param field - The GraphQL field definition
@@ -286,7 +296,7 @@ export function classifyFieldType(
 			return base
 		}
 
-		// Special case: ID fields that reference an entity type → Link
+		// Special case: ID fields that reference an entity type → AFormLink
 		if (namedType.name === 'ID') {
 			const candidateTypeName = toPascalCase(fieldName)
 			if (entityTypes.has(candidateTypeName)) {
@@ -300,7 +310,7 @@ export function classifyFieldType(
 		if (template) {
 			base.component = template.component
 		} else {
-			// Unknown scalar — default to Data with unmapped marker
+			// Unknown scalar: stays ATextInput, marked unmapped
 			base._unmapped = true
 			if (options.includeUnmappedMeta) {
 				base._graphqlType = namedType.name
@@ -309,7 +319,7 @@ export function classifyFieldType(
 		return base
 	}
 
-	// 2. Enum types → Select
+	// 2. Enum types → ADropdown
 	if (isEnumType(namedType)) {
 		base.component = 'ADropdown'
 		base.options = namedType.getValues().map(v => v.name)
@@ -318,7 +328,7 @@ export function classifyFieldType(
 
 	// 3–5. Object types
 	if (isObjectType(namedType)) {
-		// 3. Direct reference to an entity type → Link
+		// 3. Direct reference to an entity type → AFormLink
 		if (!isList && entityTypes.has(namedType.name)) {
 			base.component = 'AFormLink'
 			base.doctype = toSlug(namedType.name)

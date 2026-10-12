@@ -92,9 +92,13 @@ export type CustomFetch = z.infer<typeof CustomFetch>
 
 /**
  * Fetch strategy for link data loading.
+ *
  * - sync: fetched in the initial query
+ *
  * - lazy: fetched on demand in a separate query
+ *
  * - custom: uses a custom handler function
+ *
  * @public
  */
 export const FetchStrategy = z.discriminatedUnion('method', [SyncFetch, LazyFetch, CustomFetch]).meta({
@@ -534,7 +538,6 @@ export function linkDisplayFieldname(fieldname: string): string {
 
 /**
  * Context for identifying what doctype/record we're working with.
- * Used by graphql-middleware and graphql-client to resolve schema metadata.
  * @public
  */
 export interface DoctypeContext {
@@ -564,10 +567,8 @@ export interface DoctypeRef {
  */
 export interface GetRecordOptions {
 	/**
-	 * Include nested link sub-selections.
-	 * - `true`: include all descendant links
-	 * - `string[]`: include only named links
-	 * - `false` / omitted: scalar fields only (default)
+	 * Include nested link sub-selections: `true` includes all descendant links, a `string[]` only
+	 * the named links, and `false` or omitted scalar fields only (the default).
 	 */
 	includeNested?: boolean | string[]
 

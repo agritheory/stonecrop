@@ -98,7 +98,9 @@ export function componentLinkExpansion(component?: string): LinkExpansion | unde
  *
  * - `inline` — a scalar id-picker; the target is *not* expanded (the field keeps its own value
  *   and carries a `doctype` prop for async display-text resolution and navigation).
+ *
  * - `record` — the target doctype is resolved and embedded as a nested form.
+ *
  * - `table` — the target doctype is resolved and embedded as a child table.
  *
  * @public
@@ -112,10 +114,10 @@ export type LinkRenderMode = 'inline' | 'record' | 'table'
  * **cardinality** picks record vs table (many → table). The declaration's component wins over the
  * field's, matching the precedence the resolver already uses for the rendered component.
  *
- * This is the single definition of "does this link expand" — it is consumed by both the client
- * resolver (which builds the nested schema) and the server column builder (which must still
- * SELECT an `inline` link's FK column). Call it; never re-derive the rule at the call site, or
- * the two will drift and the client will render a table for a column the server never selected.
+ * This is the single definition of "does this link expand", on both sides of the wire: the client
+ * builds its nested schema from it, and the server must still SELECT an `inline` link's FK column.
+ * Call it; never re-derive the rule at the call site, or the two will drift and the client will
+ * render a table for a column the server never selected.
  *
  * @param link - the link declaration (only `component` and `cardinality` are consulted)
  * @param fieldComponent - the linked field's own `component`, used when the declaration names none

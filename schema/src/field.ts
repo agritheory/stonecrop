@@ -10,13 +10,9 @@ import { TableViewConfig } from './table'
 export { flattenFields }
 
 /**
- * Field options - flexible bag for type-specific configuration.
- *
- * Usage:
- * - Select: array of choices (["Draft", "Submitted", "Cancelled"])
- * - Select with badges: \{ choices: [...], badges: \{ Open: "warning", ... \} \} or bare map
- * - Decimal: config object (\{ precision: 10, scale: 2 \})
- * - Code: config object (\{ language: "python" \})
+ * Field options - flexible bag for component-specific configuration. Each component reads its own
+ * shape: a dropdown takes an array of choices (["Draft", "Submitted", "Cancelled"]), or
+ * \{ choices: [...], badges: \{ Open: "warning", ... \} \}, or a bare badge map.
  *
  * Deliberately *not* a bare string: a string once meant "link target", which made the value's
  * shape encode its meaning. That job belongs to `ValueField.doctype`, leaving this a plain
@@ -102,7 +98,7 @@ export interface ValueField {
 	label?: string
 	/** CSS width (e.g. `"40ch"`, `"200px"`) */
 	width?: string
-	/** CSS height (e.g. `"100%"`, `"40vh"`) — used by full-viewport fields such as Planner */
+	/** CSS height (e.g. `"100%"`, `"40vh"`), for fields that fill the viewport */
 	height?: string
 	/** Text alignment */
 	align?: 'left' | 'center' | 'right' | 'start' | 'end'
@@ -346,11 +342,13 @@ export const INTROSPECTED_IDENTITY_PROPS = [
  * drift and the client will key records by a column the server never queried.
  *
  * Two deliberate rules, both matching the shape `primaryKey` actually has:
+ *
  * - Fieldset children are **included**, via {@link flattenFields}. A fieldset is layout, not
  *   scope: its children are fields of the doctype with columns of their own, which is why the
  *   adapter's SELECT already descends and why `getDisplayField` does too. Scanning top level only
  *   did not *refuse* a nested declaration — it ignored one, so an author marked identity and
  *   nothing honoured it and nothing said so.
+ *
  * - The **first** match in document order wins. Identity is single-valued by design — a doctype
  *   describes the API surface, and mapping a composite database key onto one identity there is the
  *   adapter's job — so a doctype declaring several is malformed rather than composite.
@@ -375,7 +373,9 @@ export function getPrimaryKeyField(fields: readonly DoctypeField[]): ValueField 
  * disagree about which nominations are legal — which they did, in both directions at once.
  *
  * Two things disqualify a nomination, and both are the doctype saying so itself:
+ *
  * - it names no field at all, fieldset children included
+ *
  * - it names a `computed` field, which is declared precisely to state it has no column, so a
  *   SELECT built from it would reference a column the database does not have
  *
