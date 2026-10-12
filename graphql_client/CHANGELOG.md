@@ -1,5 +1,11 @@
 # Change Log - @stonecrop/graphql-client
 
+## 0.45.1
+
+### Patch Changes
+
+- @stonecrop/schema@0.45.1
+
 ## 0.45.0
 
 ### Patch Changes

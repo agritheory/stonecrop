@@ -1,5 +1,15 @@
 # Change Log - @stonecrop/aform
 
+## 0.45.1
+
+### Patch Changes
+
+- 6db7b3f: `AForm` gives each field an id, so a field's label and its error message are tied to its input for screen readers and label clicks.
+- @stonecrop/atable@0.45.1
+  - @stonecrop/schema@0.45.1
+  - @stonecrop/themes@0.45.1
+  - @stonecrop/utilities@0.45.1
+
 ## 0.45.0
 
 ### Patch Changes
