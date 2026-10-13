@@ -24,9 +24,13 @@
 
 <script setup lang="ts">
 import {
+	arithmeticEntryPattern,
 	currencyAmountEntryPattern,
+	currencyAmountSeparators,
 	currencyInputFractionDigits,
+	evaluateArithmetic,
 	formatCurrencyAmountInput,
+	isArithmeticKey,
 	parseCurrencyAmountInput,
 } from '@stonecrop/utilities'
 import { isTableTuplePickerModal, type TableStore } from '@stonecrop/atable'
@@ -62,6 +66,10 @@ const amountMaskEnabled = computed(
 
 const column = computed(() => store.columns[colIndex])
 const options = computed(() => column.value?.options ?? {})
+
+// As the form's field: the box takes arithmetic (`12*3+4`), read with the separators the amount is shown with.
+const arithmeticEnabled = computed(() => (options.value as QuantityOptions | CurrencyOptions).arithmetic === true)
+const arithmeticSeparators = () => (amountMaskEnabled.value ? currencyAmountSeparators() : {})
 const cellValue = computed(() => store.getCellData(colIndex, rowIndex))
 
 const pickerLabel = computed(() => (category === 'currency' ? 'Choose currency' : 'Choose unit'))
@@ -125,6 +133,7 @@ watch(
 )
 
 const parseDraftAmount = (): number | null => {
+	if (arithmeticEnabled.value) return evaluateArithmetic(draftText.value, arithmeticSeparators())
 	if (category === 'currency' && amountMaskEnabled.value) {
 		return parseCurrencyAmountInput(draftText.value)
 	}
@@ -136,6 +145,8 @@ const parseDraftAmount = (): number | null => {
 
 const commitNumber = () => {
 	const parsed = parseDraftAmount()
+	// An unfinished expression ("12*") leaves the cell at its last number.
+	if (arithmeticEnabled.value && parsed === null && draftText.value.trim() !== '') return
 	if (category === 'quantity') {
 		store.setCellData(
 			colIndex,
@@ -153,6 +164,10 @@ const commitNumber = () => {
 }
 
 const onInput = () => {
+	if (arithmeticEnabled.value) {
+		commitNumber()
+		return
+	}
 	if (category === 'currency' && amountMaskEnabled.value) {
 		const parsed = parseCurrencyAmountInput(draftText.value)
 		if (draftText.value.trim() === '' || draftText.value.trim() === '-' || parsed !== null) {
@@ -176,7 +191,7 @@ const shouldStayActiveAfterBlur = (related: EventTarget | null): boolean => {
 
 const onInputBlur = (event: FocusEvent) => {
 	commitNumber()
-	if (category === 'currency' && amountMaskEnabled.value) syncDraftFromModel()
+	if (arithmeticEnabled.value || (category === 'currency' && amountMaskEnabled.value)) syncDraftFromModel()
 	if (!shouldStayActiveAfterBlur(event.relatedTarget)) emit('deactivate')
 }
 
@@ -198,6 +213,16 @@ const onKeydown = (event: KeyboardEvent) => {
 		openPicker()
 		return
 	}
+	if (arithmeticEnabled.value) {
+		if (event.ctrlKey || event.metaKey || event.altKey) return
+		if (event.key === 'Enter') {
+			commitNumber()
+			syncDraftFromModel()
+			return
+		}
+		if (event.key.length === 1 && !isArithmeticKey(event.key, arithmeticSeparators())) event.preventDefault()
+		return
+	}
 	if (category === 'currency' && amountMaskEnabled.value && !pickerOpenForCell.value) {
 		if (onCurrencyKeydownMasked(event)) return
 	}
@@ -217,6 +242,7 @@ const refuseUnlessQuantity = (event: Event, inserted: string) => {
 
 // What the box may hold, as the form's field refuses anything else.
 const entryPattern = computed(() => {
+	if (arithmeticEnabled.value) return arithmeticEntryPattern(arithmeticSeparators())
 	if (category === 'quantity') return quantityEntryPattern
 	return amountMaskEnabled.value ? currencyAmountEntryPattern(selectedCurrencyId.value) : undefined
 })

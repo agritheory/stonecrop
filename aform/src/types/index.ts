@@ -258,6 +258,15 @@ export interface AFormLinkNavigator {
 }
 
 /**
+ * Type-specific configuration for ANumericInput, passed via the field's `options` property.
+ * @public
+ */
+export interface NumericOptions {
+	/** Let the box take arithmetic: `12*3+4` is read as `40` once the box is left or Enter is pressed. Digits, `.`, `+ - * / %` and parentheses only; exponents and letters are refused. */
+	arithmetic?: boolean
+}
+
+/**
  * The value shape for AQuantityInput — a quantity paired with its unit of measure, plus the
  * derived stock-equivalent quantity/UOM. `conversionFactor` is carried on the value so it
  * round-trips with the record even though it is never shown in the UI.
@@ -287,6 +296,8 @@ export interface QuantityOptions {
 	stockUom?: string
 	/** Conversion factor lookup for each non-stock UOM, relative to `stockUom` (which is implicitly `1`) */
 	conversionFactors?: Record<string, number>
+	/** Let the box take arithmetic: `12*3+4` is read as `40` once the box is left or Enter is pressed. Digits, `.`, `+ - * / %` and parentheses only; exponents and letters are refused. */
+	arithmetic?: boolean
 }
 
 /**
@@ -332,4 +343,6 @@ export interface CurrencyOptions {
 	 * `type="number"` input.
 	 */
 	amountMask?: boolean
+	/** Let the box take arithmetic: `12*3+4` is read as `40` once the box is left or Enter is pressed. Digits, `.`, `+ - * / %` and parentheses only; exponents and letters are refused. */
+	arithmetic?: boolean
 }

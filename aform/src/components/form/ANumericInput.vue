@@ -6,9 +6,27 @@
 		</template>
 		<template v-else>
 			<input
+				v-if="options.arithmetic"
+				:id="uuid"
+				:value="arithmetic.text.value"
+				class="aform_input-field anumeric__input"
+				type="text"
+				inputmode="decimal"
+				autocomplete="off"
+				:disabled="mode === 'read'"
+				:required="required"
+				:aria-invalid="invalid"
+				:aria-describedby="describedBy"
+				@input="arithmetic.onInput"
+				@keydown="arithmetic.onKeydown"
+				@paste="arithmetic.onPaste"
+				@focus="arithmetic.onFocus"
+				@blur="arithmetic.onBlur" />
+			<input
+				v-else
 				:id="uuid"
 				v-model="boxNumber"
-				class="aform_input-field"
+				class="aform_input-field anumeric__input"
 				type="number"
 				:disabled="mode === 'read'"
 				:required="required"
@@ -23,11 +41,20 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
+import { arithmeticInput } from '../../composables/arithmeticInput'
 import { fieldErrorA11y } from '../../composables/fieldErrorA11y'
-import { ComponentProps } from '../../types'
+import type { ComponentProps, NumericOptions } from '../../types'
 import { numberFromBox } from '../../utils/emptiedBox'
 
-const { label, required, mode, uuid, errors, validation = { errorMessage: '' } } = defineProps<ComponentProps>()
+const {
+	label,
+	required,
+	mode,
+	uuid,
+	errors,
+	validation = { errorMessage: '' },
+	options = {},
+} = defineProps<ComponentProps & { options?: NumericOptions }>()
 
 // Dynamic trigger errors take precedence over a static schema errorMessage; empty means the slot hides.
 const errorText = computed(() => (errors?.length ? errors.join('; ') : (validation.errorMessage ?? '')))
@@ -39,4 +66,24 @@ const boxNumber = computed({
 	get: () => inputNumber.value,
 	set: (value: number | '') => (inputNumber.value = numberFromBox(value)),
 })
+
+const arithmetic = arithmeticInput({
+	value: () => inputNumber.value,
+	commit: value => (inputNumber.value = value),
+})
 </script>
+
+<style scoped>
+/* A number is typed, not stepped: the spinner offers nothing here. */
+.anumeric__input {
+	appearance: textfield;
+	-moz-appearance: textfield;
+}
+
+.anumeric__input::-webkit-outer-spin-button,
+.anumeric__input::-webkit-inner-spin-button {
+	appearance: none;
+	-webkit-appearance: none;
+	margin: 0;
+}
+</style>

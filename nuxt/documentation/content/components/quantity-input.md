@@ -130,6 +130,7 @@ rows:
   - ['`uoms`', '`string[]`', '—', 'Dropdown choices for the `uom` field.']
   - ['`stockUom`', '`string`', '—', "The item's base/stock unit of measure — fixed, not user-editable."]
   - ['`conversionFactors`', '`Record<string, number>`', '—', "Conversion factor for each non-stock UOM, relative to `stockUom` (which is implicitly `1`). If the selected UOM is absent from this map, the factor resets to `1` unless it's unchanged from the current value (in which case the existing factor round-trips)."]
+  - ['`arithmetic`', '`boolean`', '`false`', 'Let the quantity box take arithmetic: `12*3+4` is read as `40` once the box is left or Enter is pressed. Digits, `.`, `+ - * / %` and parentheses only; `e`, `^` and other letters are refused. An unfinished expression (`12*`) leaves the last number in place. See [Numeric Input](/components/numeric-input#arithmetic).']
 ---
 ::
 

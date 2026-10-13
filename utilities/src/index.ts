@@ -12,8 +12,10 @@ export type * from './types'
  */
 function install(_app: App /* options */) {}
 
+export { arithmeticEntryPattern, evaluateArithmetic, isArithmeticKey, type NumberSeparators } from './arithmetic'
 export {
 	currencyAmountEntryPattern,
+	currencyAmountSeparators,
 	currencyInputFractionDigits,
 	formatCurrencyAmountInput,
 	parseCurrencyAmountInput,
