@@ -1,6 +1,7 @@
 import { existsSync, realpathSync } from 'node:fs'
 import { readFile, readdir } from 'node:fs/promises'
-import { dirname, extname } from 'node:path'
+import { createRequire } from 'node:module'
+import { dirname, extname, join } from 'node:path'
 import {
 	addComponent,
 	addImportsDir,
@@ -218,6 +219,27 @@ export default defineNuxtModule<ModuleOptions>({
 			}
 		}
 
+		// Serve Monaco's AMD build so the code editor works without CDN access. The AMD build (min/vs)
+		// has its workers pre-bundled, so no separate worker interception is needed. Browsers keep these
+		// files for a year, so the path carries Monaco's version: after an upgrade, a cached fixed-name
+		// file such as `loader.js` would otherwise ask for hashed chunks that no longer exist.
+		const requireFromModule = createRequire(import.meta.url)
+		const monacoPackagePath = requireFromModule.resolve('monaco-editor/package.json')
+		const { version: monacoVersion } = requireFromModule(monacoPackagePath) as { version: string }
+		const monacoPath = `/stonecrop-monaco/${monacoVersion}`
+		nuxt.options.runtimeConfig.public.stonecrop = {
+			...((nuxt.options.runtimeConfig.public.stonecrop as Record<string, unknown>) ?? {}),
+			monacoPath,
+		}
+		nuxt.hook('nitro:config', nitroConfig => {
+			nitroConfig.publicAssets = nitroConfig.publicAssets ?? []
+			nitroConfig.publicAssets.push({
+				dir: join(dirname(monacoPackagePath), 'min'),
+				baseURL: monacoPath,
+				maxAge: 60 * 60 * 24 * 365,
+			})
+		})
+
 		// add the base Stonecrop layout from the module
 		const homepage = resolve('runtime/app/layouts/StonecropHome.vue')
 		if (!nuxtWithHomeLayout.has(nuxt)) {
@@ -374,21 +396,6 @@ export default defineNuxtModule<ModuleOptions>({
 				handleHotUpdate(ctx: { file: string }) {
 					if (ctx.file.startsWith(doctypesDir)) return []
 				},
-			})
-
-			// Serve Monaco AMD build via Nitro publicAssets so the code editor works without CDN access.
-			// The AMD build (min/vs) has workers pre-bundled — no separate worker interception needed.
-			const { createRequire } = await import('node:module')
-			const { resolve: nodeResolve } = await import('node:path')
-			const req = createRequire(import.meta.url)
-			const monacoMinPath = nodeResolve(req.resolve('monaco-editor/package.json'), '../min')
-			nuxt.hook('nitro:config', nitroConfig => {
-				nitroConfig.publicAssets = nitroConfig.publicAssets ?? []
-				nitroConfig.publicAssets.push({
-					dir: monacoMinPath,
-					baseURL: '/stonecrop-monaco',
-					maxAge: 60 * 60 * 24 * 365,
-				})
 			})
 
 			const docBuilderIndex = resolve('runtime/app/pages/DocBuilderIndex.vue')
