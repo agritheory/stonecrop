@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/node-editor",
-	"version": "0.45.1",
+	"version": "0.46.0",
 	"description": "Node editor UI for Stonecrop",
 	"keywords": [
 		"components",

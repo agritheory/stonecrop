@@ -1,5 +1,15 @@
 # Change Log - @stonecrop/code-editor
 
+## 0.46.0
+
+### Minor Changes
+
+- add061b: `install` takes a `vsPath` option that points every editor at a copy of Monaco the app serves, instead of the jsDelivr CDN.
+
+### Patch Changes
+
+- add061b: `ACodeEditor` shows a JSON field's object value as formatted JSON on load and whenever a new value arrives, instead of throwing `t.create is not a function`, and its `modelValue` type now admits that value.
+
 ## 0.45.1
 
 ## 0.45.0

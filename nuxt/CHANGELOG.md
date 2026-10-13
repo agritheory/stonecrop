@@ -1,5 +1,26 @@
 # Change Log - @stonecrop/nuxt
 
+## 0.46.0
+
+### Patch Changes
+
+- add061b: The module registers `ACodeEditor`, so the field the doctype generator gives every JSON column renders without the app registering the code editor itself.
+- add061b: The module serves Monaco from the app at a path carrying its version and points the code editor there, so code editors work without reaching the jsDelivr CDN.
+- Updated dependencies [add061b]
+- Updated dependencies [add061b]
+  - @stonecrop/code-editor@0.46.0
+  - @stonecrop/aform@0.46.0
+  - @stonecrop/atable@0.46.0
+  - @stonecrop/casl-middleware@0.46.0
+  - @stonecrop/desktop@0.46.0
+  - @stonecrop/graphql-client@0.46.0
+  - @stonecrop/graphql-middleware@0.46.0
+  - @stonecrop/node-editor@0.46.0
+  - @stonecrop/nuxt-grafserv@0.46.0
+  - @stonecrop/schema@0.46.0
+  - @stonecrop/stonecrop@0.46.0
+  - @stonecrop/themes@0.46.0
+
 ## 0.45.1
 
 ### Patch Changes
