@@ -83,7 +83,12 @@ import {
 import { computed, inject, ref, useTemplateRef, watch } from 'vue'
 
 import type { AFormLinkValue, ComponentProps, CurrencyOptions, CurrencyValue } from '../../types'
-import { normalizeBaseCurrency, patchCurrencyAmount, patchCurrencyCurrency } from '../../utils/currencyValue'
+import {
+	normalizeBaseCurrency,
+	patchCurrencyAmount,
+	patchCurrencyCurrency,
+	recomputeCurrencyValue,
+} from '../../utils/currencyValue'
 import { numberFromBox } from '../../utils/emptiedBox'
 import ADropdown from './ADropdown.vue'
 import { fieldErrorA11y } from '../../composables/fieldErrorA11y'
@@ -111,8 +116,22 @@ const helperId = computed(() => (uuid ? `${uuid}-helper` : undefined))
 // No default: a field with no value shows empty, as null does, rather than a rate nobody entered.
 const modelValue = defineModel<CurrencyValue | null>()
 
-const showBase = computed(() => {
+// The base figures are worked out from the amount, currency, rate and options rather than read from
+// the value: when its parts are fields of their own, no field holds them.
+const shown = computed(() => {
 	const v = modelValue.value
+	if (!v) return null
+	return recomputeCurrencyValue(
+		v.amount ?? null,
+		v.currency ?? { id: '' },
+		options,
+		normalizeBaseCurrency(options, v),
+		v
+	)
+})
+
+const showBase = computed(() => {
+	const v = shown.value
 	return !!v?.baseCurrency?.id && (v.currency?.id !== v.baseCurrency?.id || v.amount !== v.baseAmount)
 })
 
@@ -307,7 +326,7 @@ const onAmountPasteMasked = (event: ClipboardEvent) => {
 }
 
 const conversionHelperText = computed(() => {
-	const v = modelValue.value
+	const v = shown.value
 	if (!v || v.baseAmount === null || v.amount === null) return ''
 	const baseLabel = baseCurrencyText.value || String(v.baseCurrency?.id ?? '')
 	const enteredId = String(v.currency?.id ?? '')
@@ -316,7 +335,7 @@ const conversionHelperText = computed(() => {
 })
 
 const displayText = computed(() => {
-	const v = modelValue.value
+	const v = shown.value
 	if (!v || !v.currency?.id || v.amount === null) return '—'
 	const base = formatCurrencyAmount(v.amount, v.currency)
 	if (!showBase.value) return base

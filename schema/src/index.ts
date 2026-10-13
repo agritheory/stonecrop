@@ -9,8 +9,10 @@ export {
 	CANONICAL_COMPONENTS,
 	COMPONENT_CATEGORY,
 	COMPONENT_LINK_EXPANSION,
+	COMPONENT_PARTS,
 	componentCategory,
 	componentLinkExpansion,
+	componentParts,
 	resolveLinkRenderMode,
 	type ComponentCategory,
 	type LinkExpansion,
@@ -38,7 +40,7 @@ export {
 export { flattenFields } from './flatten'
 
 // Record shaping — the single definition of what a record looks like on its way to the server
-export { unwrapInlineLinks } from './record'
+export { partsPatch, readParts, unwrapInlineLinks } from './record'
 
 // Doctype schema
 // ActionDefinition and WorkflowMeta are exported as values (Zod schemas) so consumers can use

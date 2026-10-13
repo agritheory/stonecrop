@@ -160,6 +160,22 @@ export declare function componentLinkExpansion(component?: string): LinkExpansio
 |-----------|------|-------------|
 | component | `string` |  |
 
+### componentParts
+
+Resolve the parts a component edits, or `undefined` for one that edits a single value.
+
+**Signature:**
+
+```typescript
+export declare function componentParts(component?: string): readonly string[] | undefined;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| component | `string` |  |
+
 ### convertGraphQLSchema
 
 Convert a GraphQL schema to Stonecrop doctype schemas.
@@ -587,6 +603,24 @@ export declare function parseField(data: unknown): import('./field').DoctypeFiel
 |-----------|------|-------------|
 | data | `unknown` | Data to parse |
 
+### partsPatch
+
+The fields to set after a group's component edits its value: one per part that changed. A part left alone keeps exactly what the record holds, and anything the component derives (a stock quantity, a conversion factor) is no part, so it is never written.
+
+**Signature:**
+
+```typescript
+export declare function partsPatch(parts: Readonly<Record<string, string>>, record: Readonly<Record<string, unknown>>, value: Readonly<Record<string, unknown>>): Record<string, unknown>;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| parts | `Readonly<Record<string, string>>` | the group's `parts`: the field holding each part, keyed by part |
+| record | `Readonly<Record<string, unknown>>` | the record before the edit |
+| value | `Readonly<Record<string, unknown>>` | the component's edited value, keyed by part |
+
 ### pascalToSnake
 
 Convert PascalCase to snake_case (e.g., for deriving table names from type names)
@@ -623,6 +657,23 @@ export declare function planGeneration(entities: readonly ConvertedGraphQLDoctyp
 |-----------|------|-------------|
 | entities | `readonly ConvertedGraphQLDoctype[]` | `convertGraphQLSchema` output |
 | options | `GenerationPlanOptions` | see `GenerationPlanOptions` |
+
+### readParts
+
+A field group's value, read part by part from the fields its `parts` names.
+
+**Signature:**
+
+```typescript
+export declare function readParts(parts: Readonly<Record<string, string>>, record: Readonly<Record<string, unknown>>): Record<string, unknown>;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| parts | `Readonly<Record<string, string>>` | the group's `parts`: the field holding each part, keyed by part |
+| record | `Readonly<Record<string, unknown>>` | the record the group's fields belong to |
 
 ### resolveLinkRenderMode
 
@@ -1409,6 +1460,7 @@ export interface ValueField {
   mask?: string;
   mode?: InteractionMode;
   options?: FieldOptions;
+  parts?: Record<string, string>;
   primaryKey?: boolean;
   readOnly?: boolean;
   required?: boolean;
@@ -1439,6 +1491,7 @@ export interface ValueField {
 | mask? | `string` | Input mask pattern or serialized function |
 | mode? | `InteractionMode` | Per-field interaction mode override |
 | options? | `FieldOptions` | Type-specific options: Select choices, Decimal precision config, etc. A link's target is not here — it is `doctype`. |
+| parts? | `Record<string, string>` | For a component that edits a value made of several parts, the field holding each part, keyed by part: `{ qty: 'quantity', uom: 'uom' }` for `AQuantityInput`. One part is this field itself; the others are fields of the same record, which several fields may share (an order's totals share its currency). The component reads each part from its field and writes it back there. |
 | primaryKey? | `boolean` | True for the field that identifies the record's primary-key column. |
 | readOnly? | `boolean` | Whether the field is read-only |
 | required? | `boolean` | Whether the field is required |
@@ -1780,10 +1833,10 @@ Cardinality for relationship links.
 
 ```typescript
 export const Cardinality: z.ZodEnum<{
-    atMostOne: "atMostOne";
-    one: "one";
     noneOrMany: "noneOrMany";
     atLeastOne: "atLeastOne";
+    atMostOne: "atMostOne";
+    one: "one";
 }>
 ```
 
@@ -1805,6 +1858,16 @@ Canonical link component → expansion. Only components Stonecrop ships with app
 
 ```typescript
 export const COMPONENT_LINK_EXPANSION: Record<string, LinkExpansion>
+```
+
+### COMPONENT_PARTS
+
+The parts of its value each component edits, each held in a field of the record (a field's `parts` names which). A component absent here edits a single value, so its field declares no parts.
+
+**Type:**
+
+```typescript
+export const COMPONENT_PARTS: Record<string, readonly string[]>
 ```
 
 ### CustomFetch
@@ -1846,10 +1909,10 @@ export const DoctypeMeta: z.ZodObject<{
     links: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodObject<{
         target: z.ZodString;
         cardinality: z.ZodEnum<{
-            atMostOne: "atMostOne";
-            one: "one";
             noneOrMany: "noneOrMany";
             atLeastOne: "atLeastOne";
+            atMostOne: "atMostOne";
+            one: "one";
         }>;
         backlink: z.ZodOptional<z.ZodString>;
         component: z.ZodOptional<z.ZodString>;
@@ -2041,10 +2104,10 @@ Link declaration - describes a relationship from one doctype to another.
 export const LinkDeclaration: z.ZodObject<{
     target: z.ZodString;
     cardinality: z.ZodEnum<{
-        atMostOne: "atMostOne";
-        one: "one";
         noneOrMany: "noneOrMany";
         atLeastOne: "atLeastOne";
+        atMostOne: "atMostOne";
+        one: "one";
     }>;
     backlink: z.ZodOptional<z.ZodString>;
     component: z.ZodOptional<z.ZodString>;
@@ -2195,6 +2258,7 @@ export const ValueFieldSchema: z.ZodObject<{
         display: "display";
     }>>;
     options: z.ZodOptional<z.ZodUnion<readonly [z.ZodArray<z.ZodString>, z.ZodRecord<z.ZodString, z.ZodUnknown>]>>;
+    parts: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodString>>;
     required: z.ZodOptional<z.ZodBoolean>;
     readOnly: z.ZodOptional<z.ZodBoolean>;
     hidden: z.ZodOptional<z.ZodBoolean>;
@@ -2203,10 +2267,10 @@ export const ValueFieldSchema: z.ZodObject<{
         errorMessage: z.ZodString;
     }, z.core.$loose>>;
     cardinality: z.ZodOptional<z.ZodEnum<{
-        atMostOne: "atMostOne";
-        one: "one";
         noneOrMany: "noneOrMany";
         atLeastOne: "atLeastOne";
+        atMostOne: "atMostOne";
+        one: "one";
     }>>;
     source: z.ZodOptional<z.ZodLiteral<"introspected">>;
     config: z.ZodOptional<z.ZodObject<{

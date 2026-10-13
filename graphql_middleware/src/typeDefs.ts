@@ -23,6 +23,7 @@ export const typeDefs = gql`
 		format: String
 		mode: String
 		options: JSON
+		parts: JSON
 		required: Boolean
 		readOnly: Boolean
 		hidden: Boolean

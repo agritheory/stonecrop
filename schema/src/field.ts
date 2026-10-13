@@ -1,6 +1,7 @@
 import { z } from 'zod'
 
 import type { ColumnSchema } from './column-schema'
+import { componentParts } from './component-meta'
 import { flattenFields } from './flatten'
 import type { InteractionMode } from './mode'
 import { TableViewConfig } from './table'
@@ -116,6 +117,13 @@ export interface ValueField {
 	/** Type-specific options: Select choices, Decimal precision config, etc. A link's target is not
 	 *  here — it is `doctype`. */
 	options?: FieldOptions
+	/**
+	 * For a component that edits a value made of several parts, the field holding each part, keyed
+	 * by part: `{ qty: 'quantity', uom: 'uom' }` for `AQuantityInput`. One part is this field itself;
+	 * the others are fields of the same record, which several fields may share (an order's totals
+	 * share its currency). The component reads each part from its field and writes it back there.
+	 */
+	parts?: Record<string, string>
 	/** Whether the field is required */
 	required?: boolean
 	/** Whether the field is read-only */
@@ -466,6 +474,7 @@ function createDoctypeFieldSchemas() {
 			format: z.string().optional(),
 			mode: z.enum(['edit', 'read', 'display']).optional(),
 			options: FieldOptions.optional(),
+			parts: z.record(z.string(), z.string().min(1)).optional(),
 			required: z.boolean().optional(),
 			readOnly: z.boolean().optional(),
 			hidden: z.boolean().optional(),
@@ -477,6 +486,27 @@ function createDoctypeFieldSchemas() {
 			cardinality: z.enum(['atMostOne', 'one', 'noneOrMany', 'atLeastOne']).optional(),
 			source: z.literal('introspected').optional(),
 			config: TableViewConfig.optional(),
+		})
+		// Whether each part names a field the doctype has is checked with the doctype (`DoctypeMeta`),
+		// which alone can see the other fields.
+		.superRefine((field, ctx) => {
+			if (!field.parts) return
+			const refuse = (message: string) => ctx.addIssue({ code: 'custom', path: ['parts'], message })
+			const expected = componentParts(field.component)
+			if (!expected) {
+				refuse(`${field.component} edits a single value, so its field declares no parts`)
+				return
+			}
+			const declared = Object.keys(field.parts)
+			for (const part of expected) if (!declared.includes(part)) refuse(`${field.component} needs a "${part}" part`)
+			for (const part of declared) if (!expected.includes(part)) refuse(`${field.component} has no "${part}" part`)
+
+			const named = Object.values(field.parts)
+			if (!named.includes(field.fieldname)) refuse(`one part must be "${field.fieldname}" itself`)
+			for (const fieldname of new Set(named)) {
+				if (named.filter(other => other === fieldname).length > 1)
+					refuse(`"${fieldname}" is named by more than one part`)
+			}
 		})
 		.meta({ title: 'ValueField' })
 

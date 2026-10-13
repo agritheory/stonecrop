@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-import type { DoctypeField, FieldsetField } from './field'
+import type { DoctypeField, FieldsetField, ValueField } from './field'
 import { DoctypeFieldSchema, flattenFields, getDisplayField } from './field'
 import { toSlug } from './naming'
 
@@ -334,7 +334,20 @@ export const DoctypeMeta = z
 		route: z.string().startsWith('/').optional(),
 
 		/** Field definitions (a link field is one carrying `doctype`) */
-		fields: z.array(DoctypeFieldSchema),
+		fields: z.array(DoctypeFieldSchema).superRefine((fields, ctx) => {
+			// Here rather than on the field: a part may name any field of the record, fieldsets included.
+			const valueFields = flattenFields(fields).filter((field): field is ValueField => field.kind === 'field')
+			const fieldnames = new Set(valueFields.map(field => field.fieldname))
+			for (const field of valueFields) {
+				for (const fieldname of Object.values(field.parts ?? {})) {
+					if (fieldnames.has(fieldname)) continue
+					ctx.addIssue({
+						code: 'custom',
+						message: `a part of "${field.fieldname}" names "${fieldname}", which is not a field of this doctype`,
+					})
+				}
+			}
+		}),
 
 		/** Relationship links to other doctypes */
 		links: z.record(z.string(), LinkDeclaration).optional(),

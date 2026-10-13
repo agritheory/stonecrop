@@ -47,7 +47,12 @@ import { computed } from 'vue'
 import { fieldErrorA11y } from '../../composables/fieldErrorA11y'
 import type { ComponentProps, QuantityOptions, QuantityValue } from '../../types'
 import { numberFromBox } from '../../utils/emptiedBox'
-import { patchQuantityQty, patchQuantityUom, quantityEntryPattern } from '../../utils/quantityValue'
+import {
+	patchQuantityQty,
+	patchQuantityUom,
+	quantityEntryPattern,
+	recomputeQuantityValue,
+} from '../../utils/quantityValue'
 import ADropdown from './ADropdown.vue'
 
 const {
@@ -117,20 +122,27 @@ const onQtyPaste = (event: ClipboardEvent) => {
 	if (!quantityEntryPattern.test(pasted)) event.preventDefault()
 }
 
-const showStock = computed(() => {
+// The stock figures are worked out from qty, uom and the options rather than read from the value:
+// in a field group no field holds them.
+const shown = computed(() => {
 	const v = modelValue.value
+	return v ? recomputeQuantityValue(v.qty ?? null, v.uom, options, v) : null
+})
+
+const showStock = computed(() => {
+	const v = shown.value
 	return !!v?.stockUom && (v.uom !== v.stockUom || v.qty !== v.stockQty)
 })
 
 const conversionHelperText = computed(() => {
-	const v = modelValue.value
+	const v = shown.value
 	if (!v || v.stockQty === null || v.qty === null) return ''
 	const factor = v.conversionFactor
 	return `= ${v.stockQty} ${v.stockUom} · 1 ${v.uom} = ${factor} ${v.stockUom}`
 })
 
 const displayText = computed(() => {
-	const v = modelValue.value
+	const v = shown.value
 	if (!v || !v.uom || v.qty === null) return '—'
 	const base = `${v.qty} ${v.uom}`
 	return showStock.value ? `${base} (${v.stockQty} ${v.stockUom})` : base

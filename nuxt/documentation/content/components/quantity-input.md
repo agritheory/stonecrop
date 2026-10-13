@@ -101,6 +101,32 @@ const data = ref({
 </template>
 ```
 
+## Over a record's own fields
+
+A record usually keeps a quantity and its unit in two fields of its own, as its table does. The quantity field's `parts` names the field holding each part, and the box reads each part from its field and writes it back there. The unit field is `hidden`, since the box shows it. The stock figures are worked out from `options`, since no field holds them.
+
+::demo-panel
+:::client-only
+:quantity-input-parts-demo
+:::
+
+#code
+```json
+[
+	{
+		"fieldname": "quantity",
+		"component": "AQuantityInput",
+		"label": "Quantity",
+		"parts": { "qty": "quantity", "uom": "uom" },
+		"options": { "uoms": ["Nos", "Box", "Kg"], "stockUom": "Nos", "conversionFactors": { "Box": 10, "Kg": 25 } }
+	},
+	{ "fieldname": "uom", "component": "ATextInput", "label": "Unit", "hidden": true }
+]
+```
+::
+
+The box needs both `qty` and `uom`, one of them the field itself, and each must name a field of the doctype: a doctype that misses any of these fails to load.
+
 ## API Reference
 
 ### Props

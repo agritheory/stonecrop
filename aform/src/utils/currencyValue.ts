@@ -57,7 +57,11 @@ export function patchCurrencyAmount(
 	options: CurrencyOptions,
 	baseCurrency: AFormLinkValue
 ): CurrencyValue {
-	return recomputeCurrencyValue(amount, current?.currency ?? { id: '' }, options, baseCurrency, current)
+	if (!current) return recomputeCurrencyValue(amount, { id: '' }, options, baseCurrency, current)
+	// Currency and rate exactly as given, never re-derived: they are often fields of their own, which
+	// an order's totals share, so typing one amount must not change them.
+	const recomputed = recomputeCurrencyValue(amount, current.currency ?? { id: '' }, options, baseCurrency, current)
+	return { ...recomputed, currency: current.currency, exchangeRate: current.exchangeRate }
 }
 
 export function patchCurrencyCurrency(
