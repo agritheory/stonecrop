@@ -10,16 +10,28 @@ import { Ref } from 'vue';
 import { Temporal } from 'temporal-polyfill';
 
 // @public
+export function arithmeticEntryPattern(separators?: NumberSeparators): RegExp;
+
+// @public
 export function compareSemver(a: string, b: string): number;
 
 // @public
 export function currencyAmountEntryPattern(currencyId: string | undefined, locale?: string): RegExp;
 
 // @public
+export function currencyAmountSeparators(locale?: string): {
+    group: string;
+    decimal: string;
+};
+
+// @public
 export function currencyInputFractionDigits(currencyId: string | undefined): number;
 
 // @public
 export const defaultKeypressHandlers: KeypressHandlers;
+
+// @public
+export function evaluateArithmetic(text: string, separators?: NumberSeparators): number | null;
 
 // Warning: (ae-forgotten-export) The symbol "CurrencyLike" needs to be exported by the entry point index.d.ts
 //
@@ -45,6 +57,9 @@ export function fromISODate(day: string): Temporal.PlainDate | undefined;
 export function install(_app: App): void;
 
 // @public
+export function isArithmeticKey(key: string, separators?: NumberSeparators): boolean;
+
+// @public
 export function isSemver(text: string): boolean;
 
 // @public
@@ -60,6 +75,12 @@ export type KeyboardNavigationOptions = {
 // @public
 export type KeypressHandlers = {
     [key: string]: (ev: KeyboardEvent) => any;
+};
+
+// @public
+export type NumberSeparators = {
+    group?: string;
+    decimal?: string;
 };
 
 // @public

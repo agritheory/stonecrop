@@ -9,6 +9,22 @@ description: Shared utility functions
 
 ## Functions
 
+### arithmeticEntryPattern
+
+What an arithmetic number box may hold while it is typed in: digits, a decimal point, whitespace, `+ - * / %` and parentheses, plus the given separators. Exponents (`e`, `^`) and any other letter are refused.
+
+**Signature:**
+
+```typescript
+export declare function arithmeticEntryPattern(separators?: NumberSeparators): RegExp;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| separators | `NumberSeparators` |  |
+
 ### compareSemver
 
 Orders two versions by SemVer 2.0.0 precedence: major, minor and patch as numbers, a prerelease before its release, and prerelease identifiers one by one. Build metadata does not count, so `1.4.0+a` and `1.4.0+b` compare equal. Text that is not a version comes after every version.
@@ -43,6 +59,25 @@ export declare function currencyAmountEntryPattern(currencyId: string | undefine
 | currencyId | `string \| undefined` |  |
 | locale | `string` | The browser's own when omitted |
 
+### currencyAmountSeparators
+
+The separators a currency amount field writes amounts with: the locale's grouping and decimal marks.
+
+**Signature:**
+
+```typescript
+export declare function currencyAmountSeparators(locale?: string): {
+    group: string;
+    decimal: string;
+};
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| locale | `string` | The browser's own when omitted |
+
 ### currencyInputFractionDigits
 
 Fraction digits for a currency in amount inputs (e.g. JPY → 0).
@@ -58,6 +93,25 @@ export declare function currencyInputFractionDigits(currencyId: string | undefin
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | currencyId | `string \| undefined` |  |
+
+### evaluateArithmetic
+
+Evaluate the arithmetic typed into a number box: `12*3+4` is `40`. Supports `+ - * / %` (remainder, as JavaScript's `%`), parentheses, signed numbers and decimals; nothing else, so no exponents, functions or names.
+
+The result is rounded to 15 significant digits to shed binary floating-point noise (`0.1*3` is `0.3`, not `0.30000000000000004`).
+
+**Signature:**
+
+```typescript
+export declare function evaluateArithmetic(text: string, separators?: NumberSeparators): number | null;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| text | `string` | The box's text |
+| separators | `NumberSeparators` | The marks the box writes numbers with; a plain `.` decimal point with no grouping when omitted |
 
 ### formatCurrencyAmount
 
@@ -176,6 +230,23 @@ declare function install(_app: App): void;
 |-----------|------|-------------|
 | _app | `App` | Vue app instance |
 
+### isArithmeticKey
+
+Whether a single typed character may go into an arithmetic number box.
+
+**Signature:**
+
+```typescript
+export declare function isArithmeticKey(key: string, separators?: NumberSeparators): boolean;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| key | `string` |  |
+| separators | `NumberSeparators` |  |
+
 ### isSemver
 
 Whether the text is a version under SemVer 2.0.0: `1.4.0`, `1.4.0-beta.2`, `1.4.0+build.5`. A `v` prefix, a missing part (`1.4`) and a leading zero (`01.4.0`) are not.
@@ -266,6 +337,19 @@ Key press handlers
 ```typescript
 export type KeypressHandlers = {
     [key: string]: (ev: KeyboardEvent) => any;
+};
+```
+
+### NumberSeparators
+
+The marks a number box writes numbers with. The decimal mark is read as the decimal point and the group mark is dropped, so `1.000,5*2` reads as `1000.5*2` with German separators.
+
+**Definition:**
+
+```typescript
+export type NumberSeparators = {
+    group?: string;
+    decimal?: string;
 };
 ```
 

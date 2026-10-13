@@ -85,6 +85,8 @@ const columns = ref<TableColumn[]>([
 
 Columns whose `component` is `AQuantityInput` or `ACurrencyInput` (or a `:schema` derived from those fields) format composite cell values for display — UOM omitted when it matches stock UOM, currency via `Intl` when the id is ISO — and sort/filter on `stockQty` / `baseAmount` so mixed units stay comparable.
 
+Set `options.arithmetic: true` on a quantity, currency or `ANumericInput` column and its cells take arithmetic as the form fields do: `12*3+4` is saved as `40` when you leave the cell or press Enter. See [Numeric Input](/components/numeric-input#arithmetic).
+
 ::demo-panel
 :::client-only
 :table-denominated-demo

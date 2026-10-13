@@ -9,6 +9,24 @@
 				<div class="aquantity__field aquantity__field--qty">
 					<div class="aquantity__group">
 						<input
+							v-if="options.arithmetic"
+							:id="uuid"
+							:value="arithmetic.text.value"
+							class="aquantity__qty"
+							type="text"
+							inputmode="decimal"
+							autocomplete="off"
+							:disabled="mode === 'read'"
+							:required="required"
+							:aria-invalid="invalid"
+							:aria-describedby="describedBy"
+							@input="arithmetic.onInput"
+							@keydown="arithmetic.onKeydown"
+							@paste="arithmetic.onPaste"
+							@focus="arithmetic.onFocus"
+							@blur="arithmetic.onBlur" />
+						<input
+							v-else
 							:id="uuid"
 							v-model.number="qty"
 							class="aquantity__qty"
@@ -44,6 +62,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
+import { arithmeticInput } from '../../composables/arithmeticInput'
 import { fieldErrorA11y } from '../../composables/fieldErrorA11y'
 import type { ComponentProps, QuantityOptions, QuantityValue } from '../../types'
 import { numberFromBox } from '../../utils/emptiedBox'
@@ -86,6 +105,11 @@ const uoms = computed(() => options.uoms ?? [])
 const qty = computed({
 	get: () => modelValue.value?.qty ?? null,
 	set: (value: number | '') => (modelValue.value = patchQuantityQty(modelValue.value, numberFromBox(value), options)),
+})
+
+const arithmetic = arithmeticInput({
+	value: () => modelValue.value?.qty,
+	commit: value => (modelValue.value = patchQuantityQty(modelValue.value, value, options)),
 })
 
 const uom = computed({

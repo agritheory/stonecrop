@@ -30,7 +30,24 @@
 						</div>
 						<div class="acurrency__amount-wrap">
 							<input
-								v-if="amountMaskEnabled"
+								v-if="options.arithmetic"
+								:id="uuid"
+								:value="arithmetic.text.value"
+								class="acurrency__amount"
+								type="text"
+								inputmode="decimal"
+								autocomplete="off"
+								:disabled="mode === 'read'"
+								:required="required"
+								:aria-invalid="invalid"
+								:aria-describedby="describedBy"
+								@focus="arithmetic.onFocus"
+								@blur="arithmetic.onBlur"
+								@input="arithmetic.onInput"
+								@keydown="arithmetic.onKeydown"
+								@paste="arithmetic.onPaste" />
+							<input
+								v-else-if="amountMaskEnabled"
 								:id="uuid"
 								:value="amountText"
 								class="acurrency__amount"
@@ -75,6 +92,7 @@
 <script setup lang="ts">
 import {
 	currencyAmountEntryPattern,
+	currencyAmountSeparators,
 	currencyInputFractionDigits,
 	formatCurrencyAmount,
 	formatCurrencyAmountInput,
@@ -94,6 +112,7 @@ import { numberFromBox } from '../../utils/emptiedBox'
 import { asLinkValue, linkId } from '../../utils/linkValue'
 import { numberFromRecord } from '../../utils/recordNumber'
 import ADropdown from './ADropdown.vue'
+import { arithmeticInput } from '../../composables/arithmeticInput'
 import { fieldErrorA11y } from '../../composables/fieldErrorA11y'
 
 const {
@@ -228,6 +247,25 @@ const amount = computed({
 			options,
 			resolvedBaseCurrency.value
 		)),
+})
+
+// With the mask, an expression reads and settles with the separators the amount is shown with ("1,000*2" → "2,000.00").
+const arithmetic = arithmeticInput({
+	value: () => modelValue.value?.amount,
+	commit: value =>
+		(modelValue.value = patchCurrencyAmount(modelValue.value, value, options, resolvedBaseCurrency.value)),
+	format: value =>
+		amountMaskEnabled.value
+			? formatCurrencyAmountInput(value, selectedCurrencyId.value)
+			: value === null
+				? ''
+				: String(value),
+	separators: () => (amountMaskEnabled.value ? currencyAmountSeparators() : {}),
+	selectOnFocus: true,
+})
+
+watch(selectedCurrencyId, () => {
+	if (!arithmetic.focused.value) arithmetic.syncText()
 })
 
 const currency = computed<AFormLinkValue>({

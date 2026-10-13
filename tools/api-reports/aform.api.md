@@ -148,6 +148,7 @@ export type ComponentProps = {
 // @public
 export interface CurrencyOptions {
     amountMask?: boolean;
+    arithmetic?: boolean;
     baseCurrency?: AFormLinkValue | string;
     doctype?: string;
     exchangeRates?: Record<string, number>;
@@ -180,7 +181,13 @@ export { InteractionMode }
 export const Login: typeof __VLS_export_22;
 
 // @public
+export interface NumericOptions {
+    arithmetic?: boolean;
+}
+
+// @public
 export interface QuantityOptions {
+    arithmetic?: boolean;
     conversionFactors?: Record<string, number>;
     stockUom?: string;
     uoms?: string[];
