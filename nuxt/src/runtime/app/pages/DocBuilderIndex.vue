@@ -32,6 +32,7 @@
 import { Desktop } from '@stonecrop/desktop'
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'nuxt/app'
+import { useDocBuilderRouteAdapter } from '../composables/useDocBuilderRouteAdapter'
 const router = useRouter()
 const routeAdapter = useDocBuilderRouteAdapter()
 const doctypes = ref([])
