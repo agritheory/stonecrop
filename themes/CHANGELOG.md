@@ -1,5 +1,7 @@
 # Change Log - @stonecrop/themes
 
+## 0.46.1
+
 ## 0.46.0
 
 ## 0.45.1

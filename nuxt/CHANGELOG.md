@@ -1,5 +1,23 @@
 # Change Log - @stonecrop/nuxt
 
+## 0.46.1
+
+### Patch Changes
+
+- b0c04ba: The DocBuilder pages import their route adapter, so they no longer fail with a 500 ("useDocBuilderRouteAdapter is not defined") in an app that installs the module from npm.
+- @stonecrop/aform@0.46.1
+  - @stonecrop/atable@0.46.1
+  - @stonecrop/casl-middleware@0.46.1
+  - @stonecrop/code-editor@0.46.1
+  - @stonecrop/desktop@0.46.1
+  - @stonecrop/graphql-client@0.46.1
+  - @stonecrop/graphql-middleware@0.46.1
+  - @stonecrop/node-editor@0.46.1
+  - @stonecrop/nuxt-grafserv@0.46.1
+  - @stonecrop/schema@0.46.1
+  - @stonecrop/stonecrop@0.46.1
+  - @stonecrop/themes@0.46.1
+
 ## 0.46.0
 
 ### Patch Changes
