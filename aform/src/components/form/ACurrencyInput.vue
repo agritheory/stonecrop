@@ -90,6 +90,8 @@ import {
 	recomputeCurrencyValue,
 } from '../../utils/currencyValue'
 import { numberFromBox } from '../../utils/emptiedBox'
+import { asLinkValue, linkId } from '../../utils/linkValue'
+import { numberFromRecord } from '../../utils/recordNumber'
 import ADropdown from './ADropdown.vue'
 import { fieldErrorA11y } from '../../composables/fieldErrorA11y'
 
@@ -117,22 +119,28 @@ const helperId = computed(() => (uuid ? `${uuid}-helper` : undefined))
 const modelValue = defineModel<CurrencyValue | null>()
 
 // The base figures are worked out from the amount, currency, rate and options rather than read from
-// the value: when its parts are fields of their own, no field holds them.
+// the value: when its parts are fields of their own, no field holds them, and those fields hold what the
+// server sent (a bare currency id, decimal text). Only what is shown is read this way; an edit writes
+// back the parts it leaves alone exactly as they came.
 const shown = computed(() => {
-	const v = modelValue.value
-	if (!v) return null
+	const boxValue = modelValue.value
+	if (!boxValue) return null
+	const readValue = { ...boxValue, currency: asLinkValue(boxValue.currency) }
 	return recomputeCurrencyValue(
-		v.amount ?? null,
-		v.currency ?? { id: '' },
+		numberFromRecord(boxValue.amount),
+		readValue.currency,
 		options,
-		normalizeBaseCurrency(options, v),
-		v
+		normalizeBaseCurrency(options, boxValue),
+		readValue
 	)
 })
 
 const showBase = computed(() => {
-	const v = shown.value
-	return !!v?.baseCurrency?.id && (v.currency?.id !== v.baseCurrency?.id || v.amount !== v.baseAmount)
+	const shownValue = shown.value
+	return (
+		!!shownValue?.baseCurrency?.id &&
+		(shownValue.currency?.id !== shownValue.baseCurrency?.id || shownValue.amount !== shownValue.baseAmount)
+	)
 })
 
 const helperDescribedBy = computed(() => (showBase.value && !errorText.value ? helperId.value : undefined))
@@ -164,7 +172,7 @@ const amountMaskEnabled = computed(() => options.amountMask !== false)
 const amountFocused = ref(false)
 const amountText = ref('')
 
-const selectedCurrencyId = computed(() => String(modelValue.value?.currency?.id ?? ''))
+const selectedCurrencyId = computed(() => linkId(modelValue.value?.currency) ?? '')
 
 const syncAmountTextFromModel = () => {
 	amountText.value = formatCurrencyAmountInput(modelValue.value?.amount ?? null, selectedCurrencyId.value)
@@ -326,20 +334,20 @@ const onAmountPasteMasked = (event: ClipboardEvent) => {
 }
 
 const conversionHelperText = computed(() => {
-	const v = shown.value
-	if (!v || v.baseAmount === null || v.amount === null) return ''
-	const baseLabel = baseCurrencyText.value || String(v.baseCurrency?.id ?? '')
-	const enteredId = String(v.currency?.id ?? '')
-	const rate = v.exchangeRate
-	return `≈ ${formatCurrencyAmount(v.baseAmount, v.baseCurrency)} · 1 ${enteredId} = ${rate} ${baseLabel}`
+	const shownValue = shown.value
+	if (!shownValue || shownValue.baseAmount === null || shownValue.amount === null) return ''
+	const baseLabel = baseCurrencyText.value || String(shownValue.baseCurrency?.id ?? '')
+	const enteredId = String(shownValue.currency?.id ?? '')
+	const rate = shownValue.exchangeRate
+	return `≈ ${formatCurrencyAmount(shownValue.baseAmount, shownValue.baseCurrency)} · 1 ${enteredId} = ${rate} ${baseLabel}`
 })
 
 const displayText = computed(() => {
-	const v = shown.value
-	if (!v || !v.currency?.id || v.amount === null) return '—'
-	const base = formatCurrencyAmount(v.amount, v.currency)
+	const shownValue = shown.value
+	if (!shownValue || !shownValue.currency?.id || shownValue.amount === null) return '—'
+	const base = formatCurrencyAmount(shownValue.amount, shownValue.currency)
 	if (!showBase.value) return base
-	return `${base} (≈ ${formatCurrencyAmount(v.baseAmount, v.baseCurrency)})`
+	return `${base} (≈ ${formatCurrencyAmount(shownValue.baseAmount, shownValue.baseCurrency)})`
 })
 </script>
 

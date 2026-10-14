@@ -215,16 +215,16 @@ watchEffect(() => {
 
 	// Recreate cache only if length changed
 	if (childModelsCache.value.length !== schema.length) {
-		childModelsCache.value = schema.map((_val, i) => {
+		childModelsCache.value = schema.map((_field, index) => {
 			return computed({
 				get() {
-					const parts = fieldParts(schema[i])
+					const parts = fieldParts(schema[index])
 					if (parts) return readParts(parts, dataModel.value ?? {})
-					return dataModel.value?.[schema[i].fieldname]
+					return dataModel.value?.[schema[index].fieldname]
 				},
 				set: (newValue: any) => {
-					const parts = fieldParts(schema[i])
-					const fieldname = schema[i].fieldname
+					const parts = fieldParts(schema[index])
+					const fieldname = schema[index].fieldname
 					if (parts && dataModel.value) {
 						Object.assign(dataModel.value, partsPatch(parts, dataModel.value, newValue))
 						emit('update:data', { ...dataModel.value })

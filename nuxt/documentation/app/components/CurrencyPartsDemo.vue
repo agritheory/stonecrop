@@ -17,8 +17,10 @@ const currencyOptions = {
 	exchangeRates: { EUR: 1.1, GBP: 1.3 },
 	precision: 2,
 	filterFunction: (search: string) => {
-		const q = search.toLowerCase()
-		return CURRENCIES.filter(c => c.displayText.toLowerCase().includes(q) || c.id.toLowerCase().includes(q))
+		const query = search.toLowerCase()
+		return CURRENCIES.filter(
+			currency => currency.displayText.toLowerCase().includes(query) || currency.id.toLowerCase().includes(query)
+		)
 	},
 }
 

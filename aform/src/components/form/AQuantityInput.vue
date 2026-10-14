@@ -47,6 +47,7 @@ import { computed } from 'vue'
 import { fieldErrorA11y } from '../../composables/fieldErrorA11y'
 import type { ComponentProps, QuantityOptions, QuantityValue } from '../../types'
 import { numberFromBox } from '../../utils/emptiedBox'
+import { numberFromRecord } from '../../utils/recordNumber'
 import {
 	patchQuantityQty,
 	patchQuantityUom,
@@ -123,29 +124,29 @@ const onQtyPaste = (event: ClipboardEvent) => {
 }
 
 // The stock figures are worked out from qty, uom and the options rather than read from the value:
-// under `parts` no field holds them.
+// under `parts` no field holds them, and the quantity field holds what the server sent (decimal text).
 const shown = computed(() => {
-	const v = modelValue.value
-	return v ? recomputeQuantityValue(v.qty ?? null, v.uom, options, v) : null
+	const boxValue = modelValue.value
+	return boxValue ? recomputeQuantityValue(numberFromRecord(boxValue.qty), boxValue.uom, options, boxValue) : null
 })
 
 const showStock = computed(() => {
-	const v = shown.value
-	return !!v?.stockUom && (v.uom !== v.stockUom || v.qty !== v.stockQty)
+	const shownValue = shown.value
+	return !!shownValue?.stockUom && (shownValue.uom !== shownValue.stockUom || shownValue.qty !== shownValue.stockQty)
 })
 
 const conversionHelperText = computed(() => {
-	const v = shown.value
-	if (!v || v.stockQty === null || v.qty === null) return ''
-	const factor = v.conversionFactor
-	return `= ${v.stockQty} ${v.stockUom} · 1 ${v.uom} = ${factor} ${v.stockUom}`
+	const shownValue = shown.value
+	if (!shownValue || shownValue.stockQty === null || shownValue.qty === null) return ''
+	const factor = shownValue.conversionFactor
+	return `= ${shownValue.stockQty} ${shownValue.stockUom} · 1 ${shownValue.uom} = ${factor} ${shownValue.stockUom}`
 })
 
 const displayText = computed(() => {
-	const v = shown.value
-	if (!v || !v.uom || v.qty === null) return '—'
-	const base = `${v.qty} ${v.uom}`
-	return showStock.value ? `${base} (${v.stockQty} ${v.stockUom})` : base
+	const shownValue = shown.value
+	if (!shownValue || !shownValue.uom || shownValue.qty === null) return '—'
+	const base = `${shownValue.qty} ${shownValue.uom}`
+	return showStock.value ? `${base} (${shownValue.stockQty} ${shownValue.stockUom})` : base
 })
 </script>
 

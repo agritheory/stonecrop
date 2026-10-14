@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { mount } from '@vue/test-utils'
+import { flushPromises, mount } from '@vue/test-utils'
 import { toRaw } from 'vue'
 
 import AForm from '../src/components/AForm.vue'
@@ -128,5 +128,79 @@ describe('an order’s totals sharing its one currency and rate', { tags: ['comp
 		expect(helpers).toHaveLength(2)
 		expect(helpers[1]).toContain('1 EUR = 1.25')
 		expect(helpers[1]).toContain('137.5')
+	})
+})
+
+// A record's own fields hold what the server sends: Postgres sends a `numeric` column as its decimal
+// text, and a link field may hold its target's bare id.
+describe('parts holding the values a server sends', { tags: ['component'] }, () => {
+	const USD: AFormLinkValue = { id: 'USD', displayText: 'US Dollar' }
+
+	it('shows no stock line for a quantity sent as text in the stock unit', () => {
+		const wrapper = mount(AForm, {
+			props: {
+				schema: [
+					{
+						kind: 'field',
+						fieldname: 'quantity',
+						component: 'AQuantityInput',
+						label: 'Quantity',
+						parts: { qty: 'quantity', uom: 'uom' },
+						options: { uoms: ['Box', 'Nos'], stockUom: 'Nos', conversionFactors: { Box: 12 } },
+					},
+					{ kind: 'field', fieldname: 'uom', component: 'ATextInput', label: 'Unit', hidden: true },
+				],
+				data: { quantity: '5', uom: 'Nos' },
+			},
+			global: { components: { AQuantityInput, ATextInput } },
+		})
+		expect(wrapper.find('.aquantity__qty').exists()).toBe(true)
+		expect(wrapper.find('.aquantity__helper').exists()).toBe(false)
+	})
+
+	const total = (options: Record<string, unknown>): ResolvedField[] => [
+		{
+			kind: 'field',
+			fieldname: 'netTotal',
+			component: 'ACurrencyInput',
+			label: 'Net Total',
+			parts: { amount: 'netTotal', currency: 'currencyCode', exchangeRate: 'exchangeRate' },
+			options: { doctype: 'currency', baseCurrency: USD, amountMask: false, ...options },
+		},
+	]
+
+	it('shows no conversion line for an amount sent as text in the base currency', () => {
+		const wrapper = mount(AForm, {
+			props: { schema: total({}), data: { netTotal: '604.8', currencyCode: USD, exchangeRate: '1' } },
+			global: { components: { ACurrencyInput } },
+		})
+		expect(wrapper.find('.acurrency__amount').exists()).toBe(true)
+		expect(wrapper.find('.acurrency__helper').exists()).toBe(false)
+	})
+
+	it('shows no conversion line for the base currency held as its bare id', () => {
+		const wrapper = mount(AForm, {
+			props: { schema: total({}), data: { netTotal: 604.8, currencyCode: 'USD', exchangeRate: 1 } },
+			global: { components: { ACurrencyInput } },
+		})
+		expect(wrapper.find('.acurrency__amount').exists()).toBe(true)
+		expect(wrapper.find('.acurrency__helper').exists()).toBe(false)
+	})
+
+	// Opening the form looks the currency up by its id; that lookup is no choice of a currency, so the
+	// stored rate stands rather than today's rate from the options.
+	it('keeps the stored rate of a currency held as its bare id once the form opens', async () => {
+		const lookups: string[] = []
+		const data = { netTotal: 100, currencyCode: 'EUR', exchangeRate: 1.25 }
+		const wrapper = mount(AForm, {
+			props: { schema: total({ exchangeRates: { EUR: 1.1 } }), data },
+			global: {
+				components: { ACurrencyInput },
+				provide: { aformLinkResolver: (_doctype: string, id: string) => (lookups.push(id), 'Euro') },
+			},
+		})
+		await flushPromises()
+		expect(lookups).toContain('EUR')
+		expect((lastData(wrapper) ?? data).exchangeRate).toBe(1.25)
 	})
 })

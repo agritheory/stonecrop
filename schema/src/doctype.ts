@@ -334,14 +334,14 @@ export const DoctypeMeta = z
 		route: z.string().startsWith('/').optional(),
 
 		/** Field definitions (a link field is one carrying `doctype`) */
-		fields: z.array(DoctypeFieldSchema).superRefine((fields, ctx) => {
+		fields: z.array(DoctypeFieldSchema).superRefine((fields, context) => {
 			// Here rather than on the field: a part may name any field of the record, fieldsets included.
 			const valueFields = flattenFields(fields).filter((field): field is ValueField => field.kind === 'field')
 			const fieldnames = new Set(valueFields.map(field => field.fieldname))
 			for (const field of valueFields) {
 				for (const fieldname of Object.values(field.parts ?? {})) {
 					if (fieldnames.has(fieldname)) continue
-					ctx.addIssue({
+					context.addIssue({
 						code: 'custom',
 						message: `a part of "${field.fieldname}" names "${fieldname}", which is not a field of this doctype`,
 					})
@@ -369,7 +369,7 @@ export const DoctypeMeta = z
 		title: 'DoctypeMeta',
 		description: 'Doctype metadata - complete definition of a doctype',
 	})
-	.superRefine((doctype, ctx) => {
+	.superRefine((doctype, context) => {
 		// A record is identified by exactly one field here, and that is the design rather than a
 		// limitation awaiting composite support. A doctype describes the **API surface** a client
 		// interacts with, not the table behind it; how a composite database key maps onto a single
@@ -387,13 +387,13 @@ export const DoctypeMeta = z
 		//
 		// Zero keys stays legal and is not an omission: a surrogate-key doctype declares none and
 		// resolves through `getRecordIdField`'s documented `id` fallback.
-		const declared = flattenFields(doctype.fields).filter(f => f.kind === 'field' && f.primaryKey)
+		const declared = flattenFields(doctype.fields).filter(field => field.kind === 'field' && field.primaryKey)
 		if (declared.length > 1) {
-			ctx.addIssue({
+			context.addIssue({
 				code: 'custom',
 				path: ['fields'],
 				message: `Doctype declares ${declared.length} primaryKey fields (${declared
-					.map(f => (f.kind === 'field' ? f.fieldname : ''))
+					.map(field => (field.kind === 'field' ? field.fieldname : ''))
 					.join(
 						', '
 					)}); a record is identified by exactly one field. A composite database key is mapped to a single identity by the adapter, so a doctype never declares its parts`,
@@ -406,8 +406,8 @@ export const DoctypeMeta = z
 		// have worked, while neither side excluded `computed` fields, so a nomination naming one
 		// passed the gate and then failed as a missing column at query time.
 		if (doctype.displayField && !getDisplayField(doctype.fields, doctype.displayField)) {
-			const named = flattenFields(doctype.fields).find(f => f.fieldname === doctype.displayField)
-			ctx.addIssue({
+			const named = flattenFields(doctype.fields).find(field => field.fieldname === doctype.displayField)
+			context.addIssue({
 				code: 'custom',
 				path: ['displayField'],
 				message: named
@@ -417,8 +417,8 @@ export const DoctypeMeta = z
 		}
 
 		if (doctype.defaults !== undefined) {
-			rejectFunctionsInDefaultsTree(doctype.defaults, [], ctx)
-			rejectUnknownDefaultsKeys(doctype.defaults, doctype.fields, ctx)
+			rejectFunctionsInDefaultsTree(doctype.defaults, [], context)
+			rejectUnknownDefaultsKeys(doctype.defaults, doctype.fields, context)
 		}
 	})
 
@@ -433,14 +433,14 @@ export const DoctypeMeta = z
 function rejectUnknownDefaultsKeys(
 	defaults: Record<string, unknown>,
 	fields: readonly DoctypeField[],
-	ctx: z.RefinementCtx
+	context: z.RefinementCtx
 ): void {
-	const keys = new Set(flattenFields(fields).map(f => f.fieldname))
+	const keys = new Set(flattenFields(fields).map(field => field.fieldname))
 	for (const key of Object.keys(defaults)) {
 		if (keys.has(key)) continue
 		const section = findSection(fields, key)
-		const sectionFields = section ? flattenFields(section.schema).map(f => f.fieldname) : []
-		ctx.addIssue({
+		const sectionFields = section ? flattenFields(section.schema).map(field => field.fieldname) : []
+		context.addIssue({
 			code: 'custom',
 			path: ['defaults', key],
 			message: section
@@ -460,10 +460,10 @@ function findSection(fields: readonly DoctypeField[], fieldname: string): Fields
 	return undefined
 }
 
-function rejectFunctionsInDefaultsTree(value: unknown, path: Array<string | number>, ctx: z.RefinementCtx): void {
+function rejectFunctionsInDefaultsTree(value: unknown, path: Array<string | number>, context: z.RefinementCtx): void {
 	if (typeof value === 'function') {
 		const pathLabel = path.length ? path.join('.') : '(root)'
-		ctx.addIssue({
+		context.addIssue({
 			code: 'custom',
 			path: ['defaults', ...path],
 			message: `defaults cannot contain a function at ${pathLabel}; register code defaults on the client instead`,
@@ -471,12 +471,12 @@ function rejectFunctionsInDefaultsTree(value: unknown, path: Array<string | numb
 		return
 	}
 	if (Array.isArray(value)) {
-		value.forEach((item, index) => rejectFunctionsInDefaultsTree(item, [...path, index], ctx))
+		value.forEach((item, index) => rejectFunctionsInDefaultsTree(item, [...path, index], context))
 		return
 	}
 	if (value !== null && typeof value === 'object') {
 		for (const [key, child] of Object.entries(value)) {
-			rejectFunctionsInDefaultsTree(child, [...path, key], ctx)
+			rejectFunctionsInDefaultsTree(child, [...path, key], context)
 		}
 	}
 }
