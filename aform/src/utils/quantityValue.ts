@@ -39,7 +39,9 @@ export function patchQuantityQty(
 	qty: number | null,
 	options: QuantityOptions
 ): QuantityValue {
-	return recomputeQuantityValue(qty, current?.uom ?? '', options, current)
+	// `current.uom` exactly as given, never `?? ''`: under `parts` the unit is a field of its own,
+	// and typing a quantity must not turn an empty unit into `''`.
+	return recomputeQuantityValue(qty, current ? current.uom : '', options, current)
 }
 
 export function patchQuantityUom(

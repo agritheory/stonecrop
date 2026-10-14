@@ -1,6 +1,7 @@
 import { z } from 'zod'
 
 import type { ColumnSchema } from './column-schema'
+import { componentParts } from './component-meta'
 import { flattenFields } from './flatten'
 import type { InteractionMode } from './mode'
 import { TableViewConfig } from './table'
@@ -116,6 +117,13 @@ export interface ValueField {
 	/** Type-specific options: Select choices, Decimal precision config, etc. A link's target is not
 	 *  here — it is `doctype`. */
 	options?: FieldOptions
+	/**
+	 * For a component that edits a value made of several parts, the field holding each part, keyed
+	 * by part: `{ qty: 'quantity', uom: 'uom' }` for `AQuantityInput`. One part is this field itself;
+	 * the others are fields of the same record, which several fields may share (an order's totals
+	 * share its currency). The component reads each part from its field and writes it back there.
+	 */
+	parts?: Record<string, string>
 	/** Whether the field is required */
 	required?: boolean
 	/** Whether the field is read-only */
@@ -242,14 +250,14 @@ export function inferFieldKind(field: unknown): DoctypeField['kind'] {
 function injectKind(data: unknown): unknown {
 	if (typeof data !== 'object' || data === null || Array.isArray(data)) return data
 	// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- safe: non-null, non-array object verified by guards above
-	const obj = data as Record<string, unknown>
+	const fieldObject = data as Record<string, unknown>
 	// An explicit `kind` is left exactly as it was found: this is the one place a declaration still
 	// beats the shape, and only so an already-parsed object survives a second pass unchanged.
 	// Returning `data` itself rather than rebuilding it also preserves identity and key order.
 	// Nothing outside this function shares that precedence — a reader classifying a file on disk
 	// wants `inferFieldKind`, because `kind` is ours and no author writes it.
-	if ('kind' in obj) return data
-	return { kind: inferFieldKind(obj), ...obj }
+	if ('kind' in fieldObject) return data
+	return { kind: inferFieldKind(fieldObject), ...fieldObject }
 }
 
 /**
@@ -271,9 +279,9 @@ export function normalizeFieldKind(field: unknown): unknown {
 	const injected = injectKind(field)
 	if (typeof injected !== 'object' || injected === null) return injected
 	// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- injectKind returns a non-null object for object input; guarded above
-	const obj = injected as Record<string, unknown>
-	if (obj.kind === 'fieldset' && Array.isArray(obj.schema)) {
-		return { ...obj, schema: obj.schema.map(normalizeFieldKind) }
+	const fieldObject = injected as Record<string, unknown>
+	if (fieldObject.kind === 'fieldset' && Array.isArray(fieldObject.schema)) {
+		return { ...fieldObject, schema: fieldObject.schema.map(normalizeFieldKind) }
 	}
 	return injected
 }
@@ -301,11 +309,11 @@ export function normalizeFieldKind(field: unknown): unknown {
 export function stripFieldKind(field: unknown): unknown {
 	if (typeof field !== 'object' || field === null || Array.isArray(field)) return field
 	// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- safe: non-null, non-array object verified by the guard above
-	const obj = field as Record<string, unknown>
+	const fieldObject = field as Record<string, unknown>
 
-	if (obj.kind !== undefined && obj.kind !== inferFieldKind(obj)) return field
+	if (fieldObject.kind !== undefined && fieldObject.kind !== inferFieldKind(fieldObject)) return field
 
-	const { kind: _kind, ...rest } = obj
+	const { kind: _kind, ...rest } = fieldObject
 	if (Array.isArray(rest.schema)) {
 		return { ...rest, schema: rest.schema.map(stripFieldKind) }
 	}
@@ -360,7 +368,7 @@ export const INTROSPECTED_IDENTITY_PROPS = [
  * @public
  */
 export function getPrimaryKeyField(fields: readonly DoctypeField[]): ValueField | undefined {
-	return flattenFields(fields).find((f): f is ValueField => f.kind === 'field' && Boolean(f.primaryKey))
+	return flattenFields(fields).find((field): field is ValueField => field.kind === 'field' && Boolean(field.primaryKey))
 }
 
 /**
@@ -390,7 +398,7 @@ export function getDisplayField(
 ): ValueField | undefined {
 	if (!displayField) return undefined
 	return flattenFields(fields).find(
-		(f): f is ValueField => f.kind === 'field' && !f.computed && f.fieldname === displayField
+		(field): field is ValueField => field.kind === 'field' && !field.computed && field.fieldname === displayField
 	)
 }
 
@@ -466,6 +474,7 @@ function createDoctypeFieldSchemas() {
 			format: z.string().optional(),
 			mode: z.enum(['edit', 'read', 'display']).optional(),
 			options: FieldOptions.optional(),
+			parts: z.record(z.string(), z.string().min(1)).optional(),
 			required: z.boolean().optional(),
 			readOnly: z.boolean().optional(),
 			hidden: z.boolean().optional(),
@@ -477,6 +486,27 @@ function createDoctypeFieldSchemas() {
 			cardinality: z.enum(['atMostOne', 'one', 'noneOrMany', 'atLeastOne']).optional(),
 			source: z.literal('introspected').optional(),
 			config: TableViewConfig.optional(),
+		})
+		// Whether each part names a field the doctype has is checked with the doctype (`DoctypeMeta`),
+		// which alone can see the other fields.
+		.superRefine((field, context) => {
+			if (!field.parts) return
+			const refuse = (message: string) => context.addIssue({ code: 'custom', path: ['parts'], message })
+			const expected = componentParts(field.component)
+			if (!expected) {
+				refuse(`${field.component} edits a single value, so its field declares no parts`)
+				return
+			}
+			const declared = Object.keys(field.parts)
+			for (const part of expected) if (!declared.includes(part)) refuse(`${field.component} needs a "${part}" part`)
+			for (const part of declared) if (!expected.includes(part)) refuse(`${field.component} has no "${part}" part`)
+
+			const named = Object.values(field.parts)
+			if (!named.includes(field.fieldname)) refuse(`one part must be "${field.fieldname}" itself`)
+			for (const fieldname of new Set(named)) {
+				if (named.filter(other => other === fieldname).length > 1)
+					refuse(`"${fieldname}" is named by more than one part`)
+			}
 		})
 		.meta({ title: 'ValueField' })
 

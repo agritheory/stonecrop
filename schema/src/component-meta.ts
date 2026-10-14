@@ -94,6 +94,25 @@ export function componentLinkExpansion(component?: string): LinkExpansion | unde
 }
 
 /**
+ * The parts of its value each component edits, each held in a field of the record (a field's
+ * `parts` names which). A component absent here edits a single value, so its field declares no
+ * parts.
+ * @public
+ */
+export const COMPONENT_PARTS: Record<string, readonly string[]> = {
+	AQuantityInput: ['qty', 'uom'],
+	ACurrencyInput: ['amount', 'currency', 'exchangeRate'],
+}
+
+/**
+ * Resolve the parts a component edits, or `undefined` for one that edits a single value.
+ * @public
+ */
+export function componentParts(component?: string): readonly string[] | undefined {
+	return component ? COMPONENT_PARTS[component] : undefined
+}
+
+/**
  * How a link field renders.
  *
  * - `inline` — a scalar id-picker; the target is *not* expanded (the field keeps its own value

@@ -1,4 +1,5 @@
 import type { AFormLinkValue, CurrencyOptions, CurrencyValue } from '../types'
+import { linkId } from './linkValue'
 
 const FLOAT_NOISE_DECIMALS = 6
 
@@ -25,7 +26,9 @@ export function resolveCurrencyExchangeRate(
 ): number {
 	const baseId = baseCurrency.id
 	if (!currencyId || String(currencyId) === String(baseId)) return 1
-	if (String(currencyId) === String(current?.currency?.id)) {
+	// `linkId`, never `.id`: a currency read from a record's own field may be its bare id, and taking it for
+	// another currency replaces the stored rate.
+	if (String(currencyId) === linkId(current?.currency)) {
 		return current?.exchangeRate ?? options.exchangeRates?.[String(currencyId)] ?? 1
 	}
 	return options.exchangeRates?.[String(currencyId)] ?? 1
@@ -57,7 +60,11 @@ export function patchCurrencyAmount(
 	options: CurrencyOptions,
 	baseCurrency: AFormLinkValue
 ): CurrencyValue {
-	return recomputeCurrencyValue(amount, current?.currency ?? { id: '' }, options, baseCurrency, current)
+	if (!current) return recomputeCurrencyValue(amount, { id: '' }, options, baseCurrency, current)
+	// Currency and rate exactly as given, never re-derived: they are often fields of their own, which
+	// an order's totals share, so typing one amount must not change them.
+	const recomputed = recomputeCurrencyValue(amount, current.currency ?? { id: '' }, options, baseCurrency, current)
+	return { ...recomputed, currency: current.currency, exchangeRate: current.exchangeRate }
 }
 
 export function patchCurrencyCurrency(

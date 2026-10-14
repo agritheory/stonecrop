@@ -39,7 +39,7 @@
 				:schema="componentObj"
 				:data="dataModel[componentObj.fieldname]"
 				:mode="resolvedMode(componentObj)"
-				:errors="errors?.[componentObj.fieldname]"
+				:errors="fieldErrors(componentObj)"
 				v-bind="componentProps(componentObj)">
 				<template v-if="isListExpansionTable(componentObj)" #content="{ row, rowIndex }">
 					<AForm
@@ -58,6 +58,7 @@
 import { computed, watchEffect, watch, ref, useId } from 'vue'
 
 import type { ResolvedField, ResolvedLink, ResolvedFieldset, ResolvedTable } from '../types'
+import { partsPatch, readParts } from '@stonecrop/schema'
 import type { ColumnSchema, InteractionMode } from '@stonecrop/schema'
 
 const emit = defineEmits(['update:schema', 'update:data'])
@@ -149,7 +150,9 @@ const componentProps = (componentObj: ResolvedField) => {
 	for (const [key, value] of Object.entries(componentObj)) {
 		// 'mode' is excluded here because it is handled by resolvedMode()
 		// and passed explicitly via :mode to avoid conflicting with the form-level defaults.
-		if (!['component', 'primaryKey', 'computed', 'language', 'hidden', 'mode', 'width', 'height'].includes(key)) {
+		if (
+			!['component', 'primaryKey', 'computed', 'language', 'hidden', 'mode', 'width', 'height', 'parts'].includes(key)
+		) {
 			propsToPass[key] = value
 		}
 	}
@@ -192,6 +195,17 @@ function resolvedMode(componentObj: ResolvedField): InteractionMode {
 	return effectiveFormMode.value
 }
 
+// A field declaring `parts` binds the value its component edits, read part by part from the fields
+// that hold them and written back only where a part changed.
+const fieldParts = (field: ResolvedField): Record<string, string> | undefined =>
+	field.kind === 'field' ? field.parts : undefined
+
+const fieldErrors = (field: ResolvedField): string[] | undefined => {
+	const parts = fieldParts(field)
+	if (!parts) return errors?.[field.fieldname]
+	return Object.values(parts).flatMap(fieldname => errors?.[fieldname] ?? [])
+}
+
 // Create stable computed refs array to avoid recreation on every access
 const childModelsCache = ref<ReturnType<typeof computed>[]>([])
 
@@ -201,14 +215,20 @@ watchEffect(() => {
 
 	// Recreate cache only if length changed
 	if (childModelsCache.value.length !== schema.length) {
-		childModelsCache.value = schema.map((_val, i) => {
+		childModelsCache.value = schema.map((_field, index) => {
 			return computed({
 				get() {
-					return dataModel.value?.[schema[i].fieldname]
+					const parts = fieldParts(schema[index])
+					if (parts) return readParts(parts, dataModel.value ?? {})
+					return dataModel.value?.[schema[index].fieldname]
 				},
-				set: newValue => {
-					const fieldname = schema[i].fieldname
-					if (fieldname && dataModel.value) {
+				set: (newValue: any) => {
+					const parts = fieldParts(schema[index])
+					const fieldname = schema[index].fieldname
+					if (parts && dataModel.value) {
+						Object.assign(dataModel.value, partsPatch(parts, dataModel.value, newValue))
+						emit('update:data', { ...dataModel.value })
+					} else if (fieldname && dataModel.value) {
 						dataModel.value[fieldname] = newValue
 						emit('update:data', { ...dataModel.value })
 					}

@@ -120,6 +120,38 @@ const data = ref({
 </template>
 ```
 
+## An order's totals in its one currency
+
+An order usually keeps one currency and one exchange rate for all its totals, in fields of their own. Each total's `parts` names those shared fields, so every box shows the order's currency, and choosing another in any box changes it for all of them. The base amounts are worked out from the stored rate, since no field holds them.
+
+::demo-panel
+:::client-only
+:currency-parts-demo
+:::
+
+#code
+```json
+[
+	{
+		"fieldname": "netTotal",
+		"component": "ACurrencyInput",
+		"label": "Net Total",
+		"parts": { "amount": "netTotal", "currency": "currencyCode", "exchangeRate": "exchangeRate" },
+		"options": { "doctype": "currency", "baseCurrency": "USD" }
+	},
+	{
+		"fieldname": "grandTotal",
+		"component": "ACurrencyInput",
+		"label": "Grand Total",
+		"parts": { "amount": "grandTotal", "currency": "currencyCode", "exchangeRate": "exchangeRate" },
+		"options": { "doctype": "currency", "baseCurrency": "USD" }
+	},
+	{ "fieldname": "currencyCode", "component": "AFormLink", "doctype": "currency", "hidden": true },
+	{ "fieldname": "exchangeRate", "component": "ANumericInput", "hidden": true }
+]
+```
+::
+
 ## API Reference
 
 ### Props
