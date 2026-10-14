@@ -1,5 +1,7 @@
 # Change Log - @stonecrop/casl-middleware
 
+## 0.47.0
+
 ## 0.46.1
 
 ## 0.46.0

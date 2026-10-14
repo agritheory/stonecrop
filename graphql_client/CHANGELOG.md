@@ -1,5 +1,17 @@
 # Change Log - @stonecrop/graphql-client
 
+## 0.47.0
+
+### Minor Changes
+
+- a5df570: A field can declare `parts`, naming the fields that hold each part of its component's value, so `AQuantityInput` and `ACurrencyInput` edit a record's own quantity, unit, amount, currency and rate fields, which several fields may share.
+- a5df570: An app that loads doctypes with `client.getMeta` or `getAllMeta` against its own copy of the server schema adds `parts: JSON` to `StonecropField`, or loading a doctype fails.
+
+### Patch Changes
+
+- Updated dependencies [a5df570]
+  - @stonecrop/schema@0.47.0
+
 ## 0.46.1
 
 ### Patch Changes
