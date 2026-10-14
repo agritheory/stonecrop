@@ -123,7 +123,7 @@ const onQtyPaste = (event: ClipboardEvent) => {
 }
 
 // The stock figures are worked out from qty, uom and the options rather than read from the value:
-// in a field group no field holds them.
+// under `parts` no field holds them.
 const shown = computed(() => {
 	const v = modelValue.value
 	return v ? recomputeQuantityValue(v.qty ?? null, v.uom, options, v) : null

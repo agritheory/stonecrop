@@ -610,7 +610,7 @@ export declare function parseField(data: unknown): import('./field').DoctypeFiel
 
 ### partsPatch
 
-The fields to set after a group's component edits its value: one per part that changed. A part left alone keeps exactly what the record holds, and anything the component derives (a stock quantity, a conversion factor) is no part, so it is never written.
+The fields to set after a field's component edits its value: one per part that changed. A part left alone keeps exactly what the record holds, and anything the component derives (a stock quantity, a conversion factor) is no part, so it is never written.
 
 **Signature:**
 
@@ -622,7 +622,7 @@ export declare function partsPatch(parts: Readonly<Record<string, string>>, reco
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| parts | `Readonly<Record<string, string>>` | the group's `parts`: the field holding each part, keyed by part |
+| parts | `Readonly<Record<string, string>>` | the field's `parts`: the field holding each part, keyed by part |
 | record | `Readonly<Record<string, unknown>>` | the record before the edit |
 | value | `Readonly<Record<string, unknown>>` | the component's edited value, keyed by part |
 
@@ -665,7 +665,7 @@ export declare function planGeneration(entities: readonly ConvertedGraphQLDoctyp
 
 ### readParts
 
-A field group's value, read part by part from the fields its `parts` names.
+A field's value, read part by part from the fields its `parts` names.
 
 **Signature:**
 
@@ -677,8 +677,8 @@ export declare function readParts(parts: Readonly<Record<string, string>>, recor
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| parts | `Readonly<Record<string, string>>` | the group's `parts`: the field holding each part, keyed by part |
-| record | `Readonly<Record<string, unknown>>` | the record the group's fields belong to |
+| parts | `Readonly<Record<string, string>>` | the field's `parts`: the field holding each part, keyed by part |
+| record | `Readonly<Record<string, unknown>>` | the record holding those fields |
 
 ### resolveLinkRenderMode
 

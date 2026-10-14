@@ -48,10 +48,10 @@ export function unwrapInlineLinks(fields: readonly DoctypeField[], record: Recor
 }
 
 /**
- * A field group's value, read part by part from the fields its `parts` names.
+ * A field's value, read part by part from the fields its `parts` names.
  *
- * @param parts - the group's `parts`: the field holding each part, keyed by part
- * @param record - the record the group's fields belong to
+ * @param parts - the field's `parts`: the field holding each part, keyed by part
+ * @param record - the record holding those fields
  * @returns the value, keyed by part
  * @public
  */
@@ -63,11 +63,11 @@ export function readParts(
 }
 
 /**
- * The fields to set after a group's component edits its value: one per part that changed. A part
+ * The fields to set after a field's component edits its value: one per part that changed. A part
  * left alone keeps exactly what the record holds, and anything the component derives (a stock
  * quantity, a conversion factor) is no part, so it is never written.
  *
- * @param parts - the group's `parts`: the field holding each part, keyed by part
+ * @param parts - the field's `parts`: the field holding each part, keyed by part
  * @param record - the record before the edit
  * @param value - the component's edited value, keyed by part
  * @returns the changed fields and their new values
