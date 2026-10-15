@@ -230,7 +230,28 @@ const linkText = (value: AFormLinkModelValue | undefined) => {
 	return formatter ? formatter(record) : (linkDisplayText(record) ?? String(record.id))
 }
 
-const linkDisplayedText = computed(() => (linkId(linkModel.value) === undefined ? '—' : linkText(linkModel.value)))
+// The record a link names, as last seen with its text: the value itself, a pick, or the picker's own
+// lookup. Kept here and never written into the record: a lookup is not a pick, and Save's reply hands
+// the id back bare.
+const knownLink = ref<AFormLinkValue>()
+
+watch(
+	() => linkModel.value,
+	value => {
+		if (linkPicker.value && linkDisplayText(value)) knownLink.value = asLinkValue(value)
+	},
+	{ immediate: true }
+)
+
+const shownLink = computed<AFormLinkModelValue | undefined>(() => {
+	const value = linkModel.value
+	if (linkDisplayText(value)) return value
+	const id = linkId(value)
+	const known = knownLink.value
+	return known && id !== undefined && String(known.id) === String(id) ? known : value
+})
+
+const linkDisplayedText = computed(() => (linkId(shownLink.value) === undefined ? '—' : linkText(shownLink.value)))
 
 const search = ref('')
 
@@ -246,7 +267,7 @@ watch(
 )
 
 watch(
-	() => linkModel.value,
+	shownLink,
 	value => {
 		if (!linkPicker.value) return
 		search.value = linkId(value) ? linkText(value) : ''
@@ -255,13 +276,9 @@ watch(
 )
 
 watch(
-	() => (linkPicker.value ? linkId(linkModel.value) : undefined),
+	() => (linkPicker.value && !linkDisplayText(shownLink.value) ? linkId(linkModel.value) : undefined),
 	async id => {
 		if (!linkPicker.value || !id) return
-		if (linkDisplayText(linkModel.value)) {
-			search.value = linkText(linkModel.value)
-			return
-		}
 		try {
 			let match: AFormLinkValue | undefined
 			let displayText: string | undefined
@@ -276,11 +293,7 @@ watch(
 			} else if (resolver && doctype) {
 				displayText = (await resolver(doctype, id.toString())) ?? undefined
 			}
-			if (displayText) {
-				const resolved: AFormLinkValue = { ...asLinkValue(linkModel.value), ...match, id, displayText }
-				search.value = linkText(resolved)
-				linkModel.value = resolved
-			}
+			if (displayText) knownLink.value = { ...asLinkValue(linkModel.value), ...match, id, displayText }
 		} catch {
 			// fall back to raw id in the input
 		}
@@ -298,7 +311,7 @@ const isLinkOptionSelected = (option: AFormLinkValue) => {
 }
 
 const embeddedLinkDisplayText = computed(() =>
-	linkId(linkModel.value) ? linkText(linkModel.value) : (placeholder ?? '')
+	linkId(shownLink.value) ? linkText(shownLink.value) : (placeholder ?? '')
 )
 
 const embeddedLinkInputSize = computed(() => {
@@ -334,9 +347,9 @@ const openLinkDropdown = async (text: string) => {
 
 const embeddedLinkFilterQuery = (): string => {
 	if (!embedded || !linkPicker.value) return search.value
-	const id = linkId(linkModel.value)
+	const id = linkId(shownLink.value)
 	if (id && formatter) {
-		const formatted = formatter(asLinkValue(linkModel.value))
+		const formatted = formatter(asLinkValue(shownLink.value))
 		if (search.value === formatted) return ''
 	}
 	return search.value
@@ -392,7 +405,7 @@ const closeDropdown = (result?: string) => {
 	dropdown.activeItemIndex = null
 	dropdown.open = false
 	if (linkPicker.value) {
-		search.value = linkId(linkModel.value) ? linkText(linkModel.value) : ''
+		search.value = linkId(shownLink.value) ? linkText(shownLink.value) : ''
 		return
 	}
 	const typed = result || search.value || ''

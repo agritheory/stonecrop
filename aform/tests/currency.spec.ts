@@ -141,7 +141,7 @@ describe('ACurrencyInput', { tags: ['component'] }, () => {
 			expect(amountLabel.attributes('for')).toBe(amountInput(wrapper).attributes('id'))
 		})
 
-		it('shows the selected currency displayText in the currency input', () => {
+		it('shows the selected currency’s symbol in the currency input', () => {
 			const wrapper = mount(ACurrencyInput, {
 				props: {
 					options,
@@ -154,7 +154,7 @@ describe('ACurrencyInput', { tags: ['component'] }, () => {
 					},
 				},
 			})
-			expect(wrapper.find<HTMLInputElement>('.acurrency__currency input[type="text"]').element.value).toBe('Euro')
+			expect(wrapper.find<HTMLInputElement>('.acurrency__currency input[type="text"]').element.value).toBe('€')
 		})
 
 		it('is disabled in read mode', () => {
@@ -688,13 +688,14 @@ describe('ACurrencyInput', { tags: ['component'] }, () => {
 			expect(wrapper.find<HTMLInputElement>('.acurrency__currency input[type="text"]').element.value).toBe('€')
 		})
 
+		// An app whose currency ids are not ISO codes.
 		it('names a currency given only by its id through the injected aformLinkResolver', async () => {
 			const wrapper = mount(ACurrencyInput, {
 				props: {
 					options: { doctype: 'currency', baseCurrency: { id: 'USD', displayText: 'US Dollar' } },
 					modelValue: {
 						amount: 5,
-						currency: { id: 'EUR' },
+						currency: { id: 'cur-eur' },
 						baseAmount: 5.5,
 						baseCurrency: { id: 'USD', displayText: 'US Dollar' },
 						exchangeRate: 1.1,
@@ -705,7 +706,7 @@ describe('ACurrencyInput', { tags: ['component'] }, () => {
 			await flushPromises()
 
 			expect(wrapper.find<HTMLInputElement>('.acurrency__currency input[type="text"]').element.value).toBe(
-				'Resolved EUR'
+				'Resolved cur-eur'
 			)
 		})
 
@@ -738,15 +739,13 @@ describe('ACurrencyInput', { tags: ['component'] }, () => {
 			expect(wrapper.findAll('.autocomplete-result')).toHaveLength(2)
 		})
 
-		it('falls back to the full name when a currency has no symbol', () => {
-			// `options` (module-level, no `symbol` field) covers the plain fallback case already
-			// exercised by the rendering tests above — this just makes the intent explicit here.
+		it('falls back to the full name when a currency is no ISO code and has no symbol', () => {
 			const wrapper = mount(ACurrencyInput, {
 				props: {
 					options,
 					modelValue: {
 						amount: 5,
-						currency: { id: 'EUR', displayText: 'Euro' },
+						currency: { id: 'cur-eur', displayText: 'Euro' },
 						baseAmount: 5.5,
 						baseCurrency: { id: 'USD', displayText: 'US Dollar' },
 						exchangeRate: 1.1,

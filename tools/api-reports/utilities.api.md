@@ -33,6 +33,9 @@ export function formatCurrencyAmountInput(amount: number | null | undefined, cur
 export function formatCurrencyCell(value: unknown): string;
 
 // @public
+export function formatCurrencySymbol(currency: CurrencyLike | undefined): string;
+
+// @public
 export function formatQuantityCell(value: unknown): string;
 
 // @public

@@ -19,7 +19,7 @@
 								:required="required"
 								:placeholder="currencyLabel"
 								:aria-label="currencyLabel"
-								:formatter="currencySymbol"
+								:formatter="formatCurrencySymbol"
 								:doctype="options.doctype"
 								:link-filter-function="options.filterFunction"
 								:is-async="options.isAsync">
@@ -78,6 +78,7 @@ import {
 	currencyInputFractionDigits,
 	formatCurrencyAmount,
 	formatCurrencyAmountInput,
+	formatCurrencySymbol,
 	parseCurrencyAmountInput,
 } from '@stonecrop/utilities'
 import { computed, inject, ref, useTemplateRef, watch } from 'vue'
@@ -145,11 +146,6 @@ const showBase = computed(() => {
 
 const helperDescribedBy = computed(() => (showBase.value && !errorText.value ? helperId.value : undefined))
 const { errorId, describedBy, invalid } = fieldErrorA11y(uuid, errorText, helperDescribedBy)
-
-// The merged currency prefix is compact by design, so it shows the symbol rather than the
-// full currency name once a value is picked — falls back gracefully when a currency record
-// (or the story/app data behind it) doesn't carry a `symbol`.
-const currencySymbol = (value: AFormLinkValue): string => value.symbol ?? value.displayText ?? String(value.id)
 
 const currencyDropdownRef = useTemplateRef<{ openCurrencyList?: () => void }>('currencyDropdownRef')
 

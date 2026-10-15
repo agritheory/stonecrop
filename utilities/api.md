@@ -105,6 +105,22 @@ export declare function formatCurrencyCell(value: unknown): string;
 |-----------|------|-------------|
 | value | `unknown` |  |
 
+### formatCurrencySymbol
+
+The mark that names a currency beside an amount: the symbol `Intl` formats a valid ISO code with, as `formatCurrencyAmount` does; otherwise its symbol, display text, or id.
+
+**Signature:**
+
+```typescript
+export declare function formatCurrencySymbol(currency: CurrencyLike | undefined): string;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| currency | `CurrencyLike \| undefined` |  |
+
 ### formatQuantityCell
 
 Render a composite quantity value for table cells. Omits the UOM when it matches `stockUom`.

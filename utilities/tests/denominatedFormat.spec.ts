@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest'
 
-import { formatCurrencyAmount, formatCurrencyCell, formatQuantityCell } from '../src/denominatedFormat'
+import {
+	formatCurrencyAmount,
+	formatCurrencyCell,
+	formatCurrencySymbol,
+	formatQuantityCell,
+} from '../src/denominatedFormat'
 
 describe('a quantity in a table cell', { tags: ['unit'] }, () => {
 	it('shows the unit unless it is the stock unit', () => {
@@ -30,6 +35,16 @@ describe('a price in a table cell', { tags: ['unit'] }, () => {
 		expect(formatCurrencyAmount(50.5, { id: 'points', symbol: 'pts', displayText: 'Points' })).toBe('50.5 pts')
 		expect(formatCurrencyAmount(50, { id: 'points', displayText: 'Points' })).toBe('50 Points')
 		expect(formatCurrencyAmount(50, { id: 'points' })).toBe('50 points')
+	})
+
+	// A money box's currency slot shows the same mark as the cell, without the amount.
+	it('marks a currency by the symbol its ISO code formats with, else its symbol, name or id', () => {
+		expect(formatCurrencySymbol({ id: 'EUR' })).toBe('€')
+		expect(formatCurrencySymbol({ id: 'GBP', symbol: 'GB£', displayText: 'British Pound' })).toBe('£')
+		expect(formatCurrencySymbol({ id: 'points', symbol: 'pts', displayText: 'Points' })).toBe('pts')
+		expect(formatCurrencySymbol({ id: 'points', displayText: 'Points' })).toBe('Points')
+		expect(formatCurrencySymbol({ id: 'points' })).toBe('points')
+		expect(formatCurrencySymbol(undefined)).toBe('')
 	})
 
 	it('shows a zero price', () => {

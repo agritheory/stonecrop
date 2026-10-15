@@ -423,6 +423,30 @@ describe('a dropdown in a form', { tags: ['component'] }, () => {
 
 // `aria-controls` names the open list by its id, so that id must belong to the list alone. The field's own box
 // already carries the field's id.
+describe('a link picker naming the record it holds', { tags: ['component'] }, () => {
+	const lookUpEuro = async (id: string) => [{ id, displayText: 'Euro' }]
+
+	// Opening a form must not change its record: the server sends a bare id, and a lookup is not a pick.
+	it('shows the looked-up name of a bare id without writing it into the record', async () => {
+		const wrapper = mount(ADropdown, { props: { link: true, linkValue: 'cur-7', linkFilterFunction: lookUpEuro } })
+		await flushPromises()
+
+		expect(wrapper.find('input').element.value).toBe('Euro')
+		expect(wrapper.emitted('update:linkValue')).toBeUndefined()
+	})
+
+	// Save's reply holds the bare id again, for the record the picker already named.
+	it('keeps the name when the record hands back the same id bare', async () => {
+		const wrapper = mount(ADropdown, {
+			props: { link: true, linkValue: { id: 'cur-7', displayText: 'Euro' }, linkFilterFunction: lookUpEuro },
+		})
+		await wrapper.setProps({ linkValue: 'cur-7' })
+		await flushPromises()
+
+		expect(wrapper.find('input').element.value).toBe('Euro')
+	})
+})
+
 describe('dropdown list ids', { tags: ['component'] }, () => {
 	it("gives a dropdown's list an id that names only the list", async () => {
 		const wrapper = mount(ADropdown, {

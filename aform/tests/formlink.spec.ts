@@ -134,6 +134,28 @@ describe('AFormLink component', { tags: ['component'] }, () => {
 		expect(wrapper.find('input').element.value).toBe('CUST-001')
 	})
 
+	// Opening a form must not change its record: the server sends a bare id, and a lookup is not a pick.
+	it('shows the looked-up name of a bare id without writing it into the record', async () => {
+		const filterFunction = vi.fn(async (id: string) => [{ id, displayText: 'Acme Corp' }])
+		const wrapper = mount(AFormLink, { props: { modelValue: 'CUST-001', filterFunction } })
+		await flushPromises()
+
+		expect(wrapper.find('input').element.value).toBe('Acme Corp')
+		expect(wrapper.emitted('update:modelValue')).toBeUndefined()
+	})
+
+	// Save's reply holds the bare id again, for the record the field already named.
+	it('keeps the name when the record hands back the same id bare', async () => {
+		const filterFunction = vi.fn(async (id: string) => [{ id, displayText: 'Acme Corp' }])
+		const wrapper = mount(AFormLink, {
+			props: { modelValue: { id: 'CUST-001', displayText: 'Acme Corp' }, filterFunction, mode: 'display' },
+		})
+		await wrapper.setProps({ modelValue: 'CUST-001' })
+		await flushPromises()
+
+		expect(wrapper.find('.aform_display-value').text()).toBe('Acme Corp')
+	})
+
 	it('resolves display text on mount when id is set but displayText is absent', async () => {
 		const filterFunction = vi.fn(async (_: string) => [{ id: 'PP-001', displayText: 'Q1 2026' }])
 		const wrapper = mount(AFormLink, {

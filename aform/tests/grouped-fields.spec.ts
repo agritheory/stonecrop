@@ -50,7 +50,7 @@ const prefixInput = (currency: AFormLinkValue) =>
 describe('currency group layout', { tags: ['component'] }, () => {
 	it.each([
 		['a symbol', { id: 'EUR', displayText: 'Euro', symbol: '€' }, '1'],
-		['a name, when the currency has no symbol', { id: 'USD', displayText: 'US Dollar' }, '9'],
+		['a name, when the currency is no ISO code and has no symbol', { id: 'cur-usd', displayText: 'US Dollar' }, '9'],
 		['the placeholder, when no currency is picked', { id: '' }, '8'],
 	])('sizes the currency picker to %s', (_, currency, size) => {
 		expect(prefixInput(currency).attributes('size')).toBe(size)
