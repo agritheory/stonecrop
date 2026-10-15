@@ -5,7 +5,7 @@ description: A plain numeric input rendered from an AForm schema field.
 
 # Numeric Input
 
-`ANumericInput` renders a single numeric field — a native `type="number"` input paired with a floating label — either standalone or as a field inside an [AForm](/reference/aform) schema. It supports the same `edit` / `read` / `display` interaction modes as every other Stonecrop field component.
+`ANumericInput` renders a single numeric field — a number input without spinner arrows, paired with a floating label — either standalone or as a field inside an [AForm](/reference/aform) schema. It supports the same `edit` / `read` / `display` interaction modes as every other Stonecrop field component.
 
 ## Import
 
@@ -78,6 +78,34 @@ const data = ref({ quantity: 0 })
 </template>
 ```
 
+## Arithmetic
+
+With `options.arithmetic` set, the box takes arithmetic as well as plain numbers: type `12*3+4` and the field holds `40`. The model takes each complete result as you type. When you leave the box or press Enter, the box shows the result in place of the expression.
+
+- Allowed: digits, `.`, `+`, `-`, `*`, `/`, `%` (remainder) and parentheses. `*` and `/` bind tighter than `+` and `-`.
+- Refused: `e`/`E`, `^` and any other letter, whether typed or pasted.
+- An unfinished or impossible expression (`12*`, `(3+4`, `5/0`) leaves the last number in place.
+
+::demo-panel
+:::client-only
+:arithmetic-input-demo
+:::
+::
+
+The same option works on [Quantity Input](/components/quantity-input), [Currency](/components/currency), and the matching [Table](/components/table#quantity-and-currency-columns) columns (including `ANumericInput` columns).
+
+```ts
+const schema = [
+	{
+		fieldname: 'quantity',
+		kind: 'field',
+		component: 'ANumericInput',
+		label: 'Quantity',
+		options: { arithmetic: true },
+	},
+]
+```
+
 ## API Reference
 
 ### Props
@@ -96,13 +124,23 @@ rows:
 ---
 ::
 
+### Options
+
+::api-data-table
+---
+headers: ['Name', 'Type', 'Default', 'Description']
+rows:
+  - ['`arithmetic`', '`boolean`', '`false`', 'Let the box take arithmetic: `12*3+4` is read as `40` once the box is left or Enter is pressed. Digits, `.`, `+ - * / %` and parentheses only; `e`, `^` and other letters are refused. An unfinished expression (`12*`) leaves the last number in place. See [Arithmetic](#arithmetic).']
+---
+::
+
 ### Modes
 
 ::api-data-table
 ---
 headers: ['Mode', 'Rendering']
 rows:
-  - ['`edit`', 'Interactive `type="number"` input.']
+  - ['`edit`', 'Interactive input: `type="number"`, or `type="text"` with `inputmode="decimal"` when `options.arithmetic` is set.']
   - ['`read`', 'Number input, disabled.']
   - ['`display`', 'Static label with the value in place of the input (empty string if unset).']
 ---

@@ -184,6 +184,7 @@ rows:
   - ['`precision`', '`number`', '—', 'Decimal places to round the derived `baseAmount` to (JPY carries 0, most currencies 2, KWD 3). Only affects `baseAmount` — the entered `amount` is left as typed. Omitted or invalid values round only enough to shed floating-point noise.']
   - ['`filterFunction`', '`(search: string) => AFormLinkValue[] | Promise<AFormLinkValue[]>`', '—', "Search function backing the currency picker's autocomplete dropdown."]
   - ['`isAsync`', '`boolean`', '`false`', 'Whether `filterFunction` results should show a loading state.']
+  - ['`arithmetic`', '`boolean`', '`false`', 'Let the amount box take arithmetic: `12*3+4` is read as `40` once the box is left or Enter is pressed. Digits, `.`, `+ - * / %` and parentheses only; `e`, `^` and other letters are refused. With the mask on, numbers in the expression use the same separators as the amount (`1,000.50*2`). An unfinished expression (`12*`) leaves the last number in place. See [Numeric Input](/components/numeric-input#arithmetic).']
 ---
 ::
 

@@ -379,6 +379,7 @@ props: {
   uuid?: string \| undefined
   validation?: { [key: string]: any; errorMessage: string; } \| undefined
   errors?: string[] \| undefined
+  options?: NumericOptions \| undefined
   modelValue?: number \| null \| undefined
 }
 emits: {
