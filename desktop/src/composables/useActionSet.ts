@@ -30,18 +30,19 @@ export function createActionSet(options: CreateActionSetOptions): ActionSetContr
 	const searchOpen = ref(false)
 	const previewSubject = shallowRef<ActionSetPreview | null>(null)
 	const previewId = ref<string | undefined>(undefined)
+	const returnSlotId = ref<ActionSetSlotId | null>(null)
 
 	function openActions() {
 		activeSlotId.value = null
 		searchOpen.value = false
-		closePreview()
+		clearPreview()
 		actionsOpen.value = true
 	}
 
 	function openSearch() {
 		activeSlotId.value = null
 		actionsOpen.value = false
-		closePreview()
+		clearPreview()
 		searchOpen.value = true
 	}
 
@@ -52,7 +53,7 @@ export function createActionSet(options: CreateActionSetOptions): ActionSetContr
 			return
 		}
 		activeSlotId.value = slotId
-		closePreview()
+		clearPreview()
 	}
 
 	function present(subject: ActionSetPreview) {
@@ -60,20 +61,33 @@ export function createActionSet(options: CreateActionSetOptions): ActionSetContr
 			return
 		}
 		previewId.value = subject.id
+		if (activeSlotId.value !== null) {
+			returnSlotId.value = activeSlotId.value
+			activeSlotId.value = null
+		}
 		// Unwrapped first: a view read from reactive state arrives as a proxy, which `markRaw` would keep.
 		previewSubject.value = { ...subject, view: markRaw(toRaw(subject.view)) }
 	}
 
-	function closePreview() {
+	function clearPreview() {
 		previewSubject.value = null
 		previewId.value = undefined
+		returnSlotId.value = null
+	}
+
+	function closePreview() {
+		const slotId = returnSlotId.value
+		clearPreview()
+		if (slotId !== null) {
+			activeSlotId.value = slotId
+		}
 	}
 
 	function close() {
 		activeSlotId.value = null
 		actionsOpen.value = false
 		searchOpen.value = false
-		closePreview()
+		clearPreview()
 	}
 
 	return {
