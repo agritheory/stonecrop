@@ -1,5 +1,7 @@
 # Change Log - @stonecrop/schema
 
+## 0.48.0
+
 ## 0.47.0
 
 ### Minor Changes

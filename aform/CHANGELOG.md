@@ -1,5 +1,17 @@
 # Change Log - @stonecrop/aform
 
+## 0.48.0
+
+### Patch Changes
+
+- d5b5a74: A money box's currency slot shows the currency's symbol, such as "$", whenever its id is an ISO 4217 code, instead of its name cut short, and `formatCurrencySymbol` in `@stonecrop/utilities` returns that symbol.
+- d5b5a74: A link field or a money box's currency picker that looks up a bare id's name now only shows it, so opening a form no longer changes the record.
+- Updated dependencies [d5b5a74]
+  - @stonecrop/utilities@0.48.0
+  - @stonecrop/atable@0.48.0
+  - @stonecrop/schema@0.48.0
+  - @stonecrop/themes@0.48.0
+
 ## 0.47.0
 
 ### Minor Changes
