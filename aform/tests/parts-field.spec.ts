@@ -187,6 +187,52 @@ describe('parts holding the values a server sends', { tags: ['component'] }, () 
 		expect(wrapper.find('.acurrency__helper').exists()).toBe(false)
 	})
 
+	const slot = (wrapper: { find: (selector: string) => { element: Element } }) =>
+		(wrapper.find('.acurrency__currency input[type="text"]').element as HTMLInputElement).value
+	const lookUpWithoutSymbols = (_: string) => [
+		{ id: 'EUR', displayText: 'Euro' },
+		{ id: 'GBP', displayText: 'British Pound' },
+	]
+
+	// The field's lookup may carry no symbol, as FAB's does not.
+	it('marks a currency held as its bare code by the code’s symbol, as a table cell does', async () => {
+		const wrapper = mount(AForm, {
+			props: {
+				schema: total({ filterFunction: lookUpWithoutSymbols }),
+				data: { netTotal: 100, currencyCode: 'EUR', exchangeRate: 1.1 },
+			},
+			global: { components: { ACurrencyInput } },
+		})
+		await flushPromises()
+		expect(slot(wrapper)).toBe('€')
+	})
+
+	it('changes nothing in the record when the form opens', async () => {
+		const wrapper = mount(AForm, {
+			props: {
+				schema: total({ filterFunction: lookUpWithoutSymbols }),
+				data: { netTotal: 100, currencyCode: 'EUR', exchangeRate: 1.1 },
+			},
+			global: { components: { ACurrencyInput } },
+		})
+		await flushPromises()
+		expect(wrapper.emitted('update:data')).toBeUndefined()
+	})
+
+	// Save's reply holds the bare code again, after a currency was picked.
+	it('keeps the mark when the record hands back a picked currency bare', async () => {
+		const wrapper = mount(AForm, {
+			props: {
+				schema: total({ filterFunction: lookUpWithoutSymbols }),
+				data: { netTotal: 100, currencyCode: { id: 'GBP', displayText: 'British Pound' }, exchangeRate: 1.3 },
+			},
+			global: { components: { ACurrencyInput } },
+		})
+		await wrapper.setProps({ data: { netTotal: 100, currencyCode: 'GBP', exchangeRate: 1.3 } })
+		await flushPromises()
+		expect(slot(wrapper)).toBe('£')
+	})
+
 	// Opening the form looks the currency up by its id; that lookup is no choice of a currency, so the
 	// stored rate stands rather than today's rate from the options.
 	it('keeps the stored rate of a currency held as its bare id once the form opens', async () => {

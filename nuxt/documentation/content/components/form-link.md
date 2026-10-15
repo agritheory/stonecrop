@@ -5,7 +5,7 @@ description: An autocomplete input for selecting a linked (foreign-key) record.
 
 # Form Link
 
-`AFormLink` renders a foreign-key reference to another record — a search box that resolves free text to a linked document via a `filterFunction`, plus an optional arrow to navigate to the linked record. It's the component `ACurrencyInput` embeds internally for its own currency picker, and the component `resolveSchema()` assigns automatically to any field carrying an unresolved `doctype` marker.
+`AFormLink` renders a foreign-key reference to another record — a search box that resolves free text to a linked document via a `filterFunction`, plus an optional arrow to navigate to the linked record. It's the component `resolveSchema()` assigns automatically to any field carrying an unresolved `doctype` marker.
 
 ## Import
 
@@ -117,7 +117,7 @@ rows:
   - ['`formatter`', '`(value: AFormLinkValue) => string`', '—', "Custom transform for the text shown in the input and in `display` mode — e.g. `ACurrencyInput` uses this to render a symbol."]
   - ['`icon`', "`'arrow-right' | 'chevron-right'`", "`'arrow-right'`", 'Glyph for the navigate button (→ or ›).']
   - ['`disabled`', '`boolean`', '`false`', 'Disables the input and hides the navigate button.']
-  - ['`embedded`', '`boolean`', '`false`', "Bare rendering for compositing into another component's own bordered container (e.g. `ACurrencyInput`'s merged amount+currency group) — suppresses this component's own border and floating label."]
+  - ['`embedded`', '`boolean`', '`false`', "Bare rendering for compositing into another component's own bordered container — suppresses this component's own border and floating label."]
   - ['`placeholder`', '`string`', '—', 'Placeholder text for the input.']
   - ['`ariaLabel`', '`string`', '—', 'Accessible name for the input. Effectively required when `embedded` is `true`, since the visible `label` is suppressed there.']
   - ['`required`', '`boolean`', '`false`', "Sets the native `required` attribute on the input (`edit` mode only)."]

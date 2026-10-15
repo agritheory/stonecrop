@@ -105,9 +105,9 @@ const {
 		disabled?: boolean
 		filterFunction?: string | ((search: string) => AFormLinkValue[] | Promise<AFormLinkValue[]>)
 		isAsync?: boolean
-		// Bare rendering for compositing into another component's own bordered container
-		// (e.g. ACurrencyInput's merged amount+currency group): suppresses this component's
-		// own outline/border and floating label so the parent supplies both exactly once.
+		// Bare rendering for compositing into another component's own bordered container:
+		// suppresses this component's own outline/border and floating label so the parent
+		// supplies both exactly once.
 		embedded?: boolean
 		placeholder?: string
 		// Accessible name for the search input. Needed in `embedded` mode, where the visible
@@ -126,11 +126,32 @@ const modelValue = defineModel<AFormLinkModelValue>({ default: () => ({ id: '', 
 
 const hasValidId = computed(() => linkId(modelValue.value) !== undefined)
 
+// The record a link names, as last seen with its text: the value itself, a pick, or this field's own
+// lookup. Kept here and never written into the record: a lookup is not a pick, and Save's reply hands
+// the id back bare.
+const knownLink = ref<AFormLinkValue>()
+
+watch(
+	() => modelValue.value,
+	value => {
+		if (linkDisplayText(value)) knownLink.value = asLinkValue(value)
+	},
+	{ immediate: true }
+)
+
+const shownLink = computed<AFormLinkModelValue>(() => {
+	const value = modelValue.value
+	if (linkDisplayText(value)) return value
+	const id = linkId(value)
+	const known = knownLink.value
+	return known && id !== undefined && String(known.id) === String(id) ? known : value
+})
+
 const displayedText = computed(() => {
-	const id = linkId(modelValue.value)
+	const id = linkId(shownLink.value)
 	if (id === undefined) return '—'
-	if (formatter) return formatter(asLinkValue(modelValue.value))
-	return linkDisplayText(modelValue.value) ?? id
+	if (formatter) return formatter(asLinkValue(shownLink.value))
+	return linkDisplayText(shownLink.value) ?? id
 })
 
 const searchText = ref(hasValidId.value ? displayedText.value : '')
@@ -166,7 +187,7 @@ watch(
 		// and by `closeDropdown` — and at setup a record's value has not arrived yet. So a link the
 		// server resolved for us (the middleware returns `{ id, displayText }` for an inline link)
 		// rendered blank, while a bare id rendered fine because it took the resolve branch.
-		if (id && linkDisplayText(modelValue.value)) {
+		if (id && linkDisplayText(shownLink.value)) {
 			// Through `displayedText` rather than the raw text, for the reason the resolve branch
 			// formats too: the same value must not render differently depending on how it arrived.
 			searchText.value = displayedText.value
@@ -192,17 +213,15 @@ watch(
 				displayText = (await resolver(doctype, id.toString())) ?? undefined
 			}
 			if (displayText) {
-				// Merge the whole matched record, not just its display text — the extra properties
-				// an AFormLinkValue carries are part of the value (ACurrencyInput's `symbol`, which
-				// its formatter renders, is one). `id` is pinned to the value we already hold so a
-				// loosely-typed match (1 vs '1') can't change the FK's type underneath the record.
-				const resolved: AFormLinkValue = { ...asLinkValue(modelValue.value), ...match, id, displayText }
+				// Keep the whole matched record, not just its display text: a formatter may render the
+				// extra properties an AFormLinkValue carries. `id` is pinned to the value we already
+				// hold so a loosely-typed match (1 vs '1') can't stand for a different record.
+				knownLink.value = { ...asLinkValue(modelValue.value), ...match, id, displayText }
 				// Format for the same reason selectOption does: the input shows `formatter`'s output
 				// everywhere else (initial render, blur), so assigning the raw displayText here would
 				// make a value that arrived as a bare id render differently from the identical value
 				// picked by hand — e.g. "Euro" instead of "€".
-				searchText.value = formatter ? formatter(resolved) : displayText
-				modelValue.value = resolved
+				searchText.value = displayedText.value
 			}
 		} catch {
 			// silent — fall back to showing the raw id

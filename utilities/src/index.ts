@@ -18,5 +18,5 @@ export {
 	formatCurrencyAmountInput,
 	parseCurrencyAmountInput,
 } from './currencyAmountFormat'
-export { formatCurrencyAmount, formatCurrencyCell, formatQuantityCell } from './denominatedFormat'
+export { formatCurrencyAmount, formatCurrencyCell, formatCurrencySymbol, formatQuantityCell } from './denominatedFormat'
 export { compareSemver, defaultKeypressHandlers, fromISODate, install, isSemver, isSemverPrefix, useKeyboardNav }

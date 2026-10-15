@@ -35,8 +35,31 @@ export function formatCurrencyAmount(amount: number | null | undefined, currency
 			// Not a valid ISO 4217 code — fall through to symbol / displayText.
 		}
 	}
-	const suffix = currency?.symbol ?? currency?.displayText ?? id
+	const suffix = formatCurrencySymbol(currency)
 	return suffix ? `${amount} ${suffix}`.trim() : String(amount)
+}
+
+/**
+ * The mark that names a currency beside an amount: the symbol `Intl` formats a valid ISO code with,
+ * as {@link formatCurrencyAmount} does; otherwise its symbol, display text, or id.
+ * @public
+ */
+export function formatCurrencySymbol(currency: CurrencyLike | undefined): string {
+	const id = currency?.id != null ? String(currency.id) : ''
+	if (id) {
+		try {
+			const parts = new Intl.NumberFormat(undefined, {
+				style: 'currency',
+				currency: id,
+				currencyDisplay: 'symbol',
+			}).formatToParts(0)
+			const symbol = parts.find(part => part.type === 'currency')?.value
+			if (symbol) return symbol
+		} catch {
+			// Not a valid ISO 4217 code — fall through to symbol / displayText.
+		}
+	}
+	return currency?.symbol ?? currency?.displayText ?? id
 }
 
 /**
