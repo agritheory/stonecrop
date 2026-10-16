@@ -1,4 +1,10 @@
-import type { DoctypeField, LinkDeclaration, TriggerDefinition, WorkflowMeta } from '@stonecrop/schema'
+import type {
+	ActionDefinition,
+	DoctypeField,
+	LinkDeclaration,
+	TriggerDefinition,
+	WorkflowMeta,
+} from '@stonecrop/schema'
 import {
 	getRecordIdentity,
 	getRecordIdField,
@@ -342,13 +348,7 @@ export default class Doctype {
 	 *
 	 * @public
 	 */
-	getActionMeta(actionName: string):
-		| {
-				label: string
-				requiredFields?: string[]
-				allowedStates?: string[]
-		  }
-		| undefined {
+	getActionMeta(actionName: string): ActionDefinition | undefined {
 		const workflow = this.workflow
 		if (!workflow) return undefined
 
