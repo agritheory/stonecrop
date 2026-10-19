@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { arithmeticEntryPattern, evaluateArithmetic, isArithmeticKey } from '../src/arithmetic'
+import { arithmeticEntryPattern, evaluateArithmetic, isArithmeticKey, roundToPrecision } from '../src/arithmetic'
 
 describe('evaluateArithmetic', () => {
 	it('reads a plain number', () => {
@@ -25,6 +25,20 @@ describe('evaluateArithmetic', () => {
 		expect(evaluateArithmetic('5--3')).toBe(8)
 		expect(evaluateArithmetic('+5')).toBe(5)
 		expect(evaluateArithmetic('((1))')).toBe(1)
+	})
+
+	it('reads a leading = or + as a spreadsheet does', () => {
+		expect(evaluateArithmetic('=12*3')).toBe(36)
+		expect(evaluateArithmetic('+12*3')).toBe(36)
+		expect(evaluateArithmetic(' = 12*3')).toBe(36)
+		expect(evaluateArithmetic('=+5')).toBe(5)
+		expect(evaluateArithmetic('=-5+2')).toBe(-3)
+	})
+
+	it('is null for = alone, twice, or anywhere but first', () => {
+		for (const text of ['=', '==5', '5=3', '12*3=']) {
+			expect(evaluateArithmetic(text), text).toBeNull()
+		}
 	})
 
 	it('ignores whitespace', () => {
@@ -93,6 +107,11 @@ describe('arithmeticEntryPattern', () => {
 		}
 	})
 
+	it('allows = only as the first character', () => {
+		for (const text of ['=', '=12*3', ' =1', '+12']) expect(arithmeticEntryPattern().test(text), text).toBe(true)
+		for (const text of ['1=2', '==1', '12*3=']) expect(arithmeticEntryPattern().test(text), text).toBe(false)
+	})
+
 	it('allows the given separators', () => {
 		expect(arithmeticEntryPattern().test('1,5')).toBe(false)
 		expect(arithmeticEntryPattern({ group: '.', decimal: ',' }).test('1.000,5')).toBe(true)
@@ -102,7 +121,7 @@ describe('arithmeticEntryPattern', () => {
 
 describe('isArithmeticKey', () => {
 	it('accepts the characters an expression is made of', () => {
-		for (const key of ['0', '9', '+', '-', '*', '/', '%', '(', ')', '.', ' ']) {
+		for (const key of ['0', '9', '+', '-', '*', '/', '%', '(', ')', '.', ' ', '=']) {
 			expect(isArithmeticKey(key), key).toBe(true)
 		}
 	})
@@ -112,5 +131,19 @@ describe('isArithmeticKey', () => {
 			expect(isArithmeticKey(key), key).toBe(false)
 		}
 		expect(isArithmeticKey(',', { group: ',', decimal: '.' })).toBe(true)
+	})
+})
+
+describe('roundToPrecision', () => {
+	it("rounds to a field's decimal places", () => {
+		expect(roundToPrecision(10 / 3, 2)).toBe(3.33)
+		expect(roundToPrecision(2 / 3, 0)).toBe(1)
+		expect(roundToPrecision(1.23456, 4)).toBe(1.2346)
+	})
+
+	it('leaves the number as it is without a usable precision', () => {
+		for (const precision of [undefined, -1, 1.5, 101]) {
+			expect(roundToPrecision(10 / 3, precision), String(precision)).toBe(10 / 3)
+		}
 	})
 })

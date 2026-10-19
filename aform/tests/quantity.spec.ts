@@ -9,6 +9,9 @@ const options = {
 	conversionFactors: { Box: 10, Kg: 25 },
 }
 
+// The plain `type="number"` box, whose own key guard the restriction tests cover; arithmetic.spec.ts covers the default.
+const plainOptions = { ...options, arithmetic: false }
+
 // UOM uses embedded ADropdown (button trigger + shared autocomplete list).
 const pickUom = async (wrapper: VueWrapper, value: string) => {
 	await wrapper.find('.aform_dropdown-button').trigger('click')
@@ -40,7 +43,7 @@ describe('AQuantityInput', () => {
 	describe('rendering', () => {
 		it('renders a qty input and a uom dropdown-toggle button in edit mode', () => {
 			const wrapper = mount(AQuantityInput, { props: { label: 'Quantity', options } })
-			expect(wrapper.find('input[type="number"]').exists()).toBe(true)
+			expect(wrapper.find('.aquantity__qty').exists()).toBe(true)
 			expect(wrapper.find('select').exists()).toBe(false)
 			expect(wrapper.find('button.aform_dropdown-button').exists()).toBe(true)
 		})
@@ -48,7 +51,7 @@ describe('AQuantityInput', () => {
 		it('renders qty input and uom toggle joined inside a single group', () => {
 			const wrapper = mount(AQuantityInput, { props: { options } })
 			const group = wrapper.find('.aquantity__group')
-			expect(group.find('input[type="number"]').exists()).toBe(true)
+			expect(group.find('.aquantity__qty').exists()).toBe(true)
 			expect(group.find('button.aform_dropdown-button').exists()).toBe(true)
 		})
 
@@ -242,7 +245,7 @@ describe('AQuantityInput', () => {
 
 		it('links the helper via aria-describedby on the qty input', () => {
 			const wrapper = mount(AQuantityInput, { props: { options, modelValue, uuid: 'qty-helper' } })
-			expect(wrapper.find('input[type="number"]').attributes('aria-describedby')).toBe('qty-helper-helper')
+			expect(wrapper.find('.aquantity__qty').attributes('aria-describedby')).toBe('qty-helper-helper')
 		})
 
 		it('updates the helper live as qty/uom change', async () => {
@@ -254,7 +257,7 @@ describe('AQuantityInput', () => {
 				},
 			})
 			await pickUom(wrapper, 'Box')
-			await wrapper.find('input[type="number"]').setValue(4)
+			await wrapper.find('.aquantity__qty').setValue(4)
 
 			const emitted = wrapper.emitted('update:modelValue')!
 			await wrapper.setProps({ modelValue: emitted[emitted.length - 1][0] as any })
@@ -267,43 +270,43 @@ describe('AQuantityInput', () => {
 				props: { options, modelValue, uuid: 'qty-err', errors: ['Too many'] },
 			})
 			expect(wrapper.find('.aquantity__helper').exists()).toBe(false)
-			expect(wrapper.find('input[type="number"]').attributes('aria-describedby')).toBe('qty-err-error')
+			expect(wrapper.find('.aquantity__qty').attributes('aria-describedby')).toBe('qty-err-error')
 		})
 	})
 
 	describe('qty input restriction', () => {
 		it('allows digit keys', () => {
-			const wrapper = mount(AQuantityInput, { props: { options } })
+			const wrapper = mount(AQuantityInput, { props: { options: plainOptions } })
 			expect(dispatchKey(wrapper, '7').defaultPrevented).toBe(false)
 		})
 
 		it('rejects non-numeric character keys', () => {
-			const wrapper = mount(AQuantityInput, { props: { options } })
+			const wrapper = mount(AQuantityInput, { props: { options: plainOptions } })
 			for (const key of ['a', 'e', 'E', '+']) {
 				expect(dispatchKey(wrapper, key).defaultPrevented).toBe(true)
 			}
 		})
 
 		it('allows a leading minus — quantity is signed (returns, adjustments, credit lines)', () => {
-			const wrapper = mount(AQuantityInput, { props: { options } })
+			const wrapper = mount(AQuantityInput, { props: { options: plainOptions } })
 			expect(dispatchKey(wrapper, '-').defaultPrevented).toBe(false)
 		})
 
 		it('allows navigation/editing keys such as Backspace and ArrowLeft', () => {
-			const wrapper = mount(AQuantityInput, { props: { options } })
+			const wrapper = mount(AQuantityInput, { props: { options: plainOptions } })
 			expect(dispatchKey(wrapper, 'Backspace').defaultPrevented).toBe(false)
 			expect(dispatchKey(wrapper, 'ArrowLeft').defaultPrevented).toBe(false)
 		})
 
 		it('lets shortcut chords through (Ctrl / Meta / Alt + key)', () => {
-			const wrapper = mount(AQuantityInput, { props: { options } })
+			const wrapper = mount(AQuantityInput, { props: { options: plainOptions } })
 			expect(dispatchKey(wrapper, 'a', { ctrlKey: true }).defaultPrevented).toBe(false)
 			expect(dispatchKey(wrapper, 'v', { metaKey: true }).defaultPrevented).toBe(false)
 			expect(dispatchKey(wrapper, 'x', { altKey: true }).defaultPrevented).toBe(false)
 		})
 
 		it('allows a single decimal point but rejects a second one', () => {
-			const wrapper = mount(AQuantityInput, { props: { options } })
+			const wrapper = mount(AQuantityInput, { props: { options: plainOptions } })
 			const el = wrapper.find('.aquantity__qty').element as HTMLInputElement
 			el.value = '1'
 			expect(dispatchKey(wrapper, '.').defaultPrevented).toBe(false)
@@ -312,7 +315,7 @@ describe('AQuantityInput', () => {
 		})
 
 		it('allows a numeric paste but blocks a non-numeric one', () => {
-			const wrapper = mount(AQuantityInput, { props: { options } })
+			const wrapper = mount(AQuantityInput, { props: { options: plainOptions } })
 			expect(dispatchPaste(wrapper, '12.5').defaultPrevented).toBe(false)
 			expect(dispatchPaste(wrapper, '-12.5').defaultPrevented).toBe(false)
 			expect(dispatchPaste(wrapper, '12abc').defaultPrevented).toBe(true)
@@ -325,7 +328,7 @@ describe('AQuantityInput', () => {
 					modelValue: { qty: 0, uom: 'Box', stockQty: 0, stockUom: 'Nos', conversionFactor: 10 },
 				},
 			})
-			await wrapper.find('input[type="number"]').setValue(-2)
+			await wrapper.find('.aquantity__qty').setValue(-2)
 
 			const emitted = wrapper.emitted('update:modelValue')!
 			const last = emitted[emitted.length - 1][0] as any
@@ -339,7 +342,7 @@ describe('AQuantityInput', () => {
 			const wrapper = mount(AQuantityInput, {
 				props: { options, modelValue: { qty: 0, uom: '', stockQty: 0, stockUom: '', conversionFactor: 1 } },
 			})
-			await wrapper.find('input[type="number"]').setValue(3)
+			await wrapper.find('.aquantity__qty').setValue(3)
 
 			const emitted = wrapper.emitted('update:modelValue')!
 			const last = emitted[emitted.length - 1][0] as any
@@ -370,7 +373,7 @@ describe('AQuantityInput', () => {
 					modelValue: { qty: 2, uom: 'Box', stockQty: 20, stockUom: 'Nos', conversionFactor: 10 },
 				},
 			})
-			await wrapper.find('input[type="number"]').setValue(3)
+			await wrapper.find('.aquantity__qty').setValue(3)
 
 			const emitted = wrapper.emitted('update:modelValue')!
 			const last = emitted[emitted.length - 1][0] as any
@@ -395,7 +398,7 @@ describe('AQuantityInput', () => {
 				},
 			})
 			await pickUom(wrapper, 'Box')
-			await wrapper.find('input[type="number"]').setValue(4)
+			await wrapper.find('.aquantity__qty').setValue(4)
 
 			const emitted = wrapper.emitted('update:modelValue')!
 			const last = emitted[emitted.length - 1][0] as any
@@ -410,7 +413,7 @@ describe('AQuantityInput', () => {
 				},
 			})
 			await pickUom(wrapper, 'Frac')
-			await wrapper.find('input[type="number"]').setValue(3)
+			await wrapper.find('.aquantity__qty').setValue(3)
 
 			const emitted = wrapper.emitted('update:modelValue')!
 			const last = emitted[emitted.length - 1][0] as any

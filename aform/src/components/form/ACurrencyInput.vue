@@ -30,7 +30,7 @@
 						</div>
 						<div class="acurrency__amount-wrap">
 							<input
-								v-if="options.arithmetic"
+								v-if="options.arithmetic !== false"
 								:id="uuid"
 								:value="arithmetic.text.value"
 								class="acurrency__amount"
@@ -98,6 +98,7 @@ import {
 	formatCurrencyAmountInput,
 	formatCurrencySymbol,
 	parseCurrencyAmountInput,
+	useArithmeticInput,
 } from '@stonecrop/utilities'
 import { computed, inject, ref, useTemplateRef, watch } from 'vue'
 
@@ -107,12 +108,12 @@ import {
 	patchCurrencyAmount,
 	patchCurrencyCurrency,
 	recomputeCurrencyValue,
+	roundToCurrency,
 } from '../../utils/currencyValue'
 import { numberFromBox } from '../../utils/emptiedBox'
 import { asLinkValue, linkId } from '../../utils/linkValue'
 import { numberFromRecord } from '../../utils/recordNumber'
 import ADropdown from './ADropdown.vue'
-import { arithmeticInput } from '../../composables/arithmeticInput'
 import { fieldErrorA11y } from '../../composables/fieldErrorA11y'
 
 const {
@@ -250,7 +251,7 @@ const amount = computed({
 })
 
 // With the mask, an expression reads and settles with the separators the amount is shown with ("1,000*2" → "2,000.00").
-const arithmetic = arithmeticInput({
+const arithmetic = useArithmeticInput({
 	value: () => modelValue.value?.amount,
 	commit: value =>
 		(modelValue.value = patchCurrencyAmount(modelValue.value, value, options, resolvedBaseCurrency.value)),
@@ -261,6 +262,7 @@ const arithmetic = arithmeticInput({
 				? ''
 				: String(value),
 	separators: () => (amountMaskEnabled.value ? currencyAmountSeparators() : {}),
+	round: value => roundToCurrency(value, selectedCurrencyId.value),
 	selectOnFocus: true,
 })
 

@@ -13,6 +13,19 @@ import { Temporal } from 'temporal-polyfill';
 export function arithmeticEntryPattern(separators?: NumberSeparators): RegExp;
 
 // @public
+export type ArithmeticInputOptions = {
+    value: () => unknown;
+    commit: (value: number | null) => void;
+    format?: (value: number | null) => string;
+    separators?: () => NumberSeparators;
+    round?: (value: number) => number;
+    live?: boolean;
+    text?: Ref<string>;
+    enabled?: () => boolean;
+    selectOnFocus?: boolean;
+};
+
+// @public
 export function compareSemver(a: string, b: string): number;
 
 // @public
@@ -85,6 +98,27 @@ export type NumberSeparators = {
 
 // @public
 export function parseCurrencyAmountInput(text: string, locale?: string): number | null;
+
+// @public
+export function roundToPrecision(value: number, precision?: number): number;
+
+// @public
+export function useArithmeticInput(input: ArithmeticInputOptions): {
+    text: Ref<string, string>;
+    focused: Ref<boolean, boolean>;
+    accepts: (next: string) => boolean;
+    begin: (current?: string) => void;
+    update: (next: string) => void;
+    settle: () => void;
+    end: () => void;
+    rebase: (current: string) => void;
+    syncText: () => void;
+    onFocus: (event: FocusEvent) => void;
+    onInput: (event: Event) => void;
+    onKeydown: (event: KeyboardEvent) => void;
+    onPaste: (event: ClipboardEvent) => void;
+    onBlur: () => void;
+};
 
 // @public
 export function useKeyboardNav(options: KeyboardNavigationOptions[]): void;

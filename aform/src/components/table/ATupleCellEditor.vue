@@ -28,17 +28,16 @@ import {
 	currencyAmountEntryPattern,
 	currencyAmountSeparators,
 	currencyInputFractionDigits,
-	evaluateArithmetic,
 	formatCurrencyAmountInput,
-	isArithmeticKey,
 	parseCurrencyAmountInput,
+	useArithmeticInput,
 } from '@stonecrop/utilities'
 import { isTableTuplePickerModal, type TableStore } from '@stonecrop/atable'
 import { useElementBounding } from '@vueuse/core'
 import { computed, nextTick, ref, useTemplateRef, watch } from 'vue'
 
 import type { CurrencyOptions, CurrencyValue, QuantityOptions, QuantityValue } from '../../types'
-import { normalizeBaseCurrency, patchCurrencyAmount } from '../../utils/currencyValue'
+import { normalizeBaseCurrency, patchCurrencyAmount, roundToCurrency } from '../../utils/currencyValue'
 import { patchQuantityQty, quantityEntryPattern } from '../../utils/quantityValue'
 import ATupleCellShell from './ATupleCellShell.vue'
 
@@ -68,7 +67,7 @@ const column = computed(() => store.columns[colIndex])
 const options = computed(() => column.value?.options ?? {})
 
 // As the form's field: the box takes arithmetic (`12*3+4`), read with the separators the amount is shown with.
-const arithmeticEnabled = computed(() => (options.value as QuantityOptions | CurrencyOptions).arithmetic === true)
+const arithmeticEnabled = computed(() => (options.value as QuantityOptions | CurrencyOptions).arithmetic !== false)
 const arithmeticSeparators = () => (amountMaskEnabled.value ? currencyAmountSeparators() : {})
 const cellValue = computed(() => store.getCellData(colIndex, rowIndex))
 
@@ -102,6 +101,10 @@ watch(pickerOpenForCell, (open, wasOpen) => {
 })
 
 const syncDraftFromModel = () => {
+	if (arithmeticEnabled.value) {
+		arithmetic.syncText()
+		return
+	}
 	const v = cellValue.value
 	if (category === 'quantity') {
 		const q = v as QuantityValue | null | undefined
@@ -133,7 +136,6 @@ watch(
 )
 
 const parseDraftAmount = (): number | null => {
-	if (arithmeticEnabled.value) return evaluateArithmetic(draftText.value, arithmeticSeparators())
 	if (category === 'currency' && amountMaskEnabled.value) {
 		return parseCurrencyAmountInput(draftText.value)
 	}
@@ -143,10 +145,7 @@ const parseDraftAmount = (): number | null => {
 	return Number.isFinite(n) ? n : null
 }
 
-const commitNumber = () => {
-	const parsed = parseDraftAmount()
-	// An unfinished expression ("12*") leaves the cell at its last number.
-	if (arithmeticEnabled.value && parsed === null && draftText.value.trim() !== '') return
+const saveNumber = (parsed: number | null) => {
 	if (category === 'quantity') {
 		store.setCellData(
 			colIndex,
@@ -163,9 +162,34 @@ const commitNumber = () => {
 	)
 }
 
+// The same arithmetic as the form's fields, kept in `draftText`. Only an edit saves: leaving the cell as it was
+// writes nothing to the row.
+const arithmetic = useArithmeticInput({
+	value: () =>
+		category === 'quantity'
+			? (cellValue.value as QuantityValue | null | undefined)?.qty
+			: (cellValue.value as CurrencyValue | null | undefined)?.amount,
+	commit: saveNumber,
+	format: value =>
+		amountMaskEnabled.value
+			? formatCurrencyAmountInput(value, selectedCurrencyId.value)
+			: value === null
+				? ''
+				: String(value),
+	separators: () => arithmeticSeparators(),
+	round: value => (category === 'currency' ? roundToCurrency(value, selectedCurrencyId.value) : value),
+	text: draftText,
+	enabled: () => arithmeticEnabled.value,
+})
+
+const commitNumber = () => {
+	if (arithmeticEnabled.value) arithmetic.settle()
+	else saveNumber(parseDraftAmount())
+}
+
 const onInput = () => {
 	if (arithmeticEnabled.value) {
-		commitNumber()
+		arithmetic.update(draftText.value)
 		return
 	}
 	if (category === 'currency' && amountMaskEnabled.value) {
@@ -190,8 +214,11 @@ const shouldStayActiveAfterBlur = (related: EventTarget | null): boolean => {
 }
 
 const onInputBlur = (event: FocusEvent) => {
-	commitNumber()
-	if (arithmeticEnabled.value || (category === 'currency' && amountMaskEnabled.value)) syncDraftFromModel()
+	if (arithmeticEnabled.value) arithmetic.end()
+	else {
+		commitNumber()
+		if (category === 'currency' && amountMaskEnabled.value) syncDraftFromModel()
+	}
 	if (!shouldStayActiveAfterBlur(event.relatedTarget)) emit('deactivate')
 }
 
@@ -214,13 +241,7 @@ const onKeydown = (event: KeyboardEvent) => {
 		return
 	}
 	if (arithmeticEnabled.value) {
-		if (event.ctrlKey || event.metaKey || event.altKey) return
-		if (event.key === 'Enter') {
-			commitNumber()
-			syncDraftFromModel()
-			return
-		}
-		if (event.key.length === 1 && !isArithmeticKey(event.key, arithmeticSeparators())) event.preventDefault()
+		arithmetic.onKeydown(event)
 		return
 	}
 	if (category === 'currency' && amountMaskEnabled.value && !pickerOpenForCell.value) {
@@ -301,6 +322,7 @@ const onCurrencyKeydownMasked = (event: KeyboardEvent): boolean => {
 }
 
 const onInputFocus = () => {
+	if (arithmeticEnabled.value) arithmetic.begin()
 	if (selectOnFocus.value) {
 		void nextTick(() => {
 			inputRef.value?.select()

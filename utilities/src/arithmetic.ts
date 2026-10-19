@@ -15,16 +15,18 @@ const escapeMark = (mark: string) => mark.replace(/[.*+?^${}()|[\]\\-]/g, '\\$&'
 
 /**
  * What an arithmetic number box may hold while it is typed in: digits, a decimal point, whitespace,
- * `+ - * / %` and parentheses, plus the given separators. Exponents (`e`, `^`) and any other letter are refused.
+ * `+ - * / %` and parentheses, plus the given separators, after an optional leading `=` (as a spreadsheet formula
+ * starts). Exponents (`e`, `^`) and any other letter are refused, and so is `=` anywhere but first.
  * @public
  */
 export function arithmeticEntryPattern(separators: NumberSeparators = {}): RegExp {
 	const marks = [separators.group, separators.decimal].filter(Boolean).map(mark => escapeMark(mark!))
-	return new RegExp(`^[\\d.\\s+\\-*/%()${marks.join('')}]*$`)
+	return new RegExp(`^\\s*=?[\\d.\\s+\\-*/%()${marks.join('')}]*$`)
 }
 
 /**
- * Whether a single typed character may go into an arithmetic number box.
+ * Whether a single typed character may go into an arithmetic number box. `=` is one, though only as the box's first
+ * character: check the box's text with {@link arithmeticEntryPattern} where the caret is known.
  * @public
  */
 export function isArithmeticKey(key: string, separators: NumberSeparators = {}): boolean {
@@ -32,8 +34,19 @@ export function isArithmeticKey(key: string, separators: NumberSeparators = {}):
 }
 
 /**
+ * Round a number to a field's decimal places, as a column with a fixed scale holds it: `3.3333333333333` at 2 is
+ * `3.33`. A missing or unusable precision (not a whole number from 0 to 100) leaves the number as it is.
+ * @public
+ */
+export function roundToPrecision(value: number, precision?: number): number {
+	if (precision === undefined || !Number.isInteger(precision) || precision < 0 || precision > 100) return value
+	return Number(value.toFixed(precision))
+}
+
+/**
  * Evaluate the arithmetic typed into a number box: `12*3+4` is `40`. Supports `+ - * / %` (remainder, as
  * JavaScript's `%`), parentheses, signed numbers and decimals; nothing else, so no exponents, functions or names.
+ * A leading `=` or `+` is read as a spreadsheet reads it, so `=12*3` and `+12*3` are both `36`.
  *
  * The result is rounded to 15 significant digits to shed binary floating-point noise (`0.1*3` is `0.3`, not
  * `0.30000000000000004`).
@@ -47,6 +60,7 @@ export function evaluateArithmetic(text: string, separators: NumberSeparators = 
 	let source = text.replace(/\s/g, '')
 	if (separators.group && separators.group !== separators.decimal) source = source.replaceAll(separators.group, '')
 	if (separators.decimal && separators.decimal !== '.') source = source.replaceAll(separators.decimal, '.')
+	if (source.startsWith('=')) source = source.slice(1)
 	if (source === '' || !/^[\d.+\-*/%()]*$/.test(source)) return null
 
 	let pos = 0

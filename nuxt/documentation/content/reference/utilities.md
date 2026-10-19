@@ -11,7 +11,7 @@ description: Shared utility functions
 
 ### arithmeticEntryPattern
 
-What an arithmetic number box may hold while it is typed in: digits, a decimal point, whitespace, `+ - * / %` and parentheses, plus the given separators. Exponents (`e`, `^`) and any other letter are refused.
+What an arithmetic number box may hold while it is typed in: digits, a decimal point, whitespace, `+ - * / %` and parentheses, plus the given separators, after an optional leading `=` (as a spreadsheet formula starts). Exponents (`e`, `^`) and any other letter are refused, and so is `=` anywhere but first.
 
 **Signature:**
 
@@ -96,7 +96,7 @@ export declare function currencyInputFractionDigits(currencyId: string | undefin
 
 ### evaluateArithmetic
 
-Evaluate the arithmetic typed into a number box: `12*3+4` is `40`. Supports `+ - * / %` (remainder, as JavaScript's `%`), parentheses, signed numbers and decimals; nothing else, so no exponents, functions or names.
+Evaluate the arithmetic typed into a number box: `12*3+4` is `40`. Supports `+ - * / %` (remainder, as JavaScript's `%`), parentheses, signed numbers and decimals; nothing else, so no exponents, functions or names. A leading `=` or `+` is read as a spreadsheet reads it, so `=12*3` and `+12*3` are both `36`.
 
 The result is rounded to 15 significant digits to shed binary floating-point noise (`0.1*3` is `0.3`, not `0.30000000000000004`).
 
@@ -232,7 +232,7 @@ declare function install(_app: App): void;
 
 ### isArithmeticKey
 
-Whether a single typed character may go into an arithmetic number box.
+Whether a single typed character may go into an arithmetic number box. `=` is one, though only as the box's first character: check the box's text with `arithmeticEntryPattern` where the caret is known.
 
 **Signature:**
 
@@ -296,6 +296,59 @@ export declare function parseCurrencyAmountInput(text: string, locale?: string):
 | text | `string` |  |
 | locale | `string` | The browser's own when omitted |
 
+### roundToPrecision
+
+Round a number to a field's decimal places, as a column with a fixed scale holds it: `3.3333333333333` at 2 is `3.33`. A missing or unusable precision (not a whole number from 0 to 100) leaves the number as it is.
+
+**Signature:**
+
+```typescript
+export declare function roundToPrecision(value: number, precision?: number): number;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| value | `number` |  |
+| precision | `number` |  |
+
+### useArithmeticInput
+
+A number box that takes arithmetic: `12*3+4` is read as `40`, and a leading `=` or `+` as a spreadsheet reads it. The box holds the typed text while it is edited and settles to the result on blur or Enter; text that is no expression by then (`12*`) leaves the model at its last number.
+
+Only an edit writes: a box focused and left as it was commits nothing, so a value is never rewritten (or rounded) by being looked at. "Edited" means the text differs from what the box last showed or saved.
+
+Form inputs bind the returned `onFocus`, `onInput`, `onKeydown`, `onPaste` and `onBlur`. A box that is no `<input>` (a contenteditable table cell) drives `begin`, `update`, `settle`, `end` and `accepts` itself.
+
+**Signature:**
+
+```typescript
+export declare function useArithmeticInput(input: ArithmeticInputOptions): {
+    text: Ref<string, string>;
+    focused: Ref<boolean, boolean>;
+    accepts: (next: string) => boolean;
+    begin: (current?: string) => void;
+    update: (next: string) => void;
+    settle: () => void;
+    end: () => void;
+    rebase: (current: string) => void;
+    syncText: () => void;
+    onFocus: (event: FocusEvent) => void;
+    onInput: (event: Event) => void;
+    onKeydown: (event: KeyboardEvent) => void;
+    onPaste: (event: ClipboardEvent) => void;
+    onBlur: () => void;
+};
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| { value, commit, format, separators, round, live, text, enabled, selectOnFocus, } | `` |  |
+| input | `ArithmeticInputOptions` |  |
+
 ### useKeyboardNav
 
 Keyboard navigation composable
@@ -313,6 +366,26 @@ export declare function useKeyboardNav(options: KeyboardNavigationOptions[]): vo
 | options | `KeyboardNavigationOptions[]` | Keyboard navigation options |
 
 ## Type Aliases
+
+### ArithmeticInputOptions
+
+Configuration for `useArithmeticInput`.
+
+**Definition:**
+
+```typescript
+export type ArithmeticInputOptions = {
+    value: () => unknown;
+    commit: (value: number | null) => void;
+    format?: (value: number | null) => string;
+    separators?: () => NumberSeparators;
+    round?: (value: number) => number;
+    live?: boolean;
+    text?: Ref<string>;
+    enabled?: () => boolean;
+    selectOnFocus?: boolean;
+};
+```
 
 ### KeyboardNavigationOptions
 

@@ -80,11 +80,13 @@ const data = ref({ quantity: 0 })
 
 ## Arithmetic
 
-With `options.arithmetic` set, the box takes arithmetic as well as plain numbers: type `12*3+4` and the field holds `40`. The model takes each complete result as you type. When you leave the box or press Enter, the box shows the result in place of the expression.
+The box takes arithmetic as well as plain numbers: type `12*3+4` and the field holds `40`. The model takes each complete result as you type. When you leave the box or press Enter, the box shows the result in place of the expression.
 
 - Allowed: digits, `.`, `+`, `-`, `*`, `/`, `%` (remainder) and parentheses. `*` and `/` bind tighter than `+` and `-`.
+- A leading `=` or `+` works as it does in a spreadsheet: `=12*3` and `+12*3` are both `36`. `=` is refused anywhere but first.
 - Refused: `e`/`E`, `^` and any other letter, whether typed or pasted.
 - An unfinished or impossible expression (`12*`, `(3+4`, `5/0`) leaves the last number in place.
+- A result keeps every digit it works out (`10/3` is `3.33333333333333`) unless the field sets `options.precision`: at `2`, `10/3` is `3.33`. A currency field rounds to its currency's decimals by itself.
 
 ::demo-panel
 :::client-only
@@ -92,7 +94,7 @@ With `options.arithmetic` set, the box takes arithmetic as well as plain numbers
 :::
 ::
 
-The same option works on [Quantity Input](/components/quantity-input), [Currency](/components/currency), and the matching [Table](/components/table#quantity-and-currency-columns) columns (including `ANumericInput` columns).
+Set `options.arithmetic: false` for a plain `type="number"` box. The same applies to [Quantity Input](/components/quantity-input), [Currency](/components/currency), and the matching [Table](/components/table#quantity-and-currency-columns) columns (including `ANumericInput` columns).
 
 ```ts
 const schema = [
@@ -101,7 +103,7 @@ const schema = [
 		kind: 'field',
 		component: 'ANumericInput',
 		label: 'Quantity',
-		options: { arithmetic: true },
+		options: { arithmetic: false }, // a plain number box
 	},
 ]
 ```
@@ -130,7 +132,8 @@ rows:
 ---
 headers: ['Name', 'Type', 'Default', 'Description']
 rows:
-  - ['`arithmetic`', '`boolean`', '`false`', 'Let the box take arithmetic: `12*3+4` is read as `40` once the box is left or Enter is pressed. Digits, `.`, `+ - * / %` and parentheses only; `e`, `^` and other letters are refused. An unfinished expression (`12*`) leaves the last number in place. See [Arithmetic](#arithmetic).']
+  - ['`arithmetic`', '`boolean`', '`true`', 'Whether the box takes arithmetic: `12*3+4` is read as `40` once the box is left or Enter is pressed. Digits, `.`, `+ - * / %` and parentheses only; `e`, `^` and other letters are refused. Set `false` for a plain `type="number"` box. An unfinished expression (`12*`) leaves the last number in place. See [Arithmetic](#arithmetic).']
+  - ['`precision`', '`number`', '—', 'Decimal places to round the number to, as a column with a fixed scale holds it: at `2`, `10/3` is `3.33`. Omit to keep every digit the box works out. A non-integer or out-of-range value is ignored.']
 ---
 ::
 
@@ -140,7 +143,7 @@ rows:
 ---
 headers: ['Mode', 'Rendering']
 rows:
-  - ['`edit`', 'Interactive input: `type="number"`, or `type="text"` with `inputmode="decimal"` when `options.arithmetic` is set.']
+  - ['`edit`', 'Interactive input: `type="text"` with `inputmode="decimal"` that takes arithmetic, or `type="number"` when `options.arithmetic` is `false`.']
   - ['`read`', 'Number input, disabled.']
   - ['`display`', 'Static label with the value in place of the input (empty string if unset).']
 ---

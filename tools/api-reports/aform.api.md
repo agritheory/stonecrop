@@ -183,6 +183,7 @@ export const Login: typeof __VLS_export_22;
 // @public
 export interface NumericOptions {
     arithmetic?: boolean;
+    precision?: number;
 }
 
 // @public

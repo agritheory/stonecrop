@@ -9,8 +9,8 @@ import { playgroundBaseCurrency, playgroundCurrencyOptions } from '~/utils/playg
 const usd = playgroundBaseCurrency
 const eur = { id: 'EUR', displayText: 'Euro', symbol: '€' }
 
-const quantityOptions = { uoms: ['Nos', 'Box'], stockUom: 'Nos', conversionFactors: { Box: 10 }, arithmetic: true }
-const currencyOptions = { ...playgroundCurrencyOptions, arithmetic: true }
+const quantityOptions = { uoms: ['Nos', 'Box'], stockUom: 'Nos', conversionFactors: { Box: 10 } }
+const currencyOptions = playgroundCurrencyOptions
 
 const count = ref<number | null>(42)
 const quantity = ref<QuantityValue | null>({ qty: 2, uom: 'Box', stockQty: 20, stockUom: 'Nos', conversionFactor: 10 })
@@ -48,7 +48,6 @@ const schema = ref<ColumnSchema[]>([
 		edit: true,
 		align: 'right',
 		width: '10ch',
-		options: { arithmetic: true },
 	},
 	{
 		fieldname: 'qty',
@@ -74,17 +73,12 @@ const schema = ref<ColumnSchema[]>([
 <template>
 	<div class="stonecrop-demo">
 		<p class="stonecrop-demo__hint">
-			Try <code>12*3+4</code>, <code>(2+3)*4</code> or <code>17%5</code>, then leave the box or press Enter. Letters,
-			<code>e</code> and <code>^</code> are refused; an unfinished expression such as <code>12*</code> keeps the last
-			number.
+			Try <code>12*3+4</code>, <code>(2+3)*4</code>, <code>17%5</code> or <code>=12*3</code>, then leave the box or
+			press Enter. Letters, <code>e</code> and <code>^</code> are refused; an unfinished expression such as
+			<code>12*</code> keeps the last number.
 		</p>
 		<div class="stonecrop-demo__fields">
-			<ANumericInput
-				v-model="count"
-				label="Count"
-				uuid="arithmetic-demo-count"
-				mode="edit"
-				:options="{ arithmetic: true }" />
+			<ANumericInput v-model="count" label="Count" uuid="arithmetic-demo-count" mode="edit" />
 			<AQuantityInput
 				v-model="quantity"
 				label="Quantity"

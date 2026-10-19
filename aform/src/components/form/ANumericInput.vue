@@ -6,7 +6,7 @@
 		</template>
 		<template v-else>
 			<input
-				v-if="options.arithmetic"
+				v-if="options.arithmetic !== false"
 				:id="uuid"
 				:value="arithmetic.text.value"
 				class="aform_input-field anumeric__input"
@@ -39,9 +39,9 @@
 </template>
 
 <script setup lang="ts">
+import { roundToPrecision, useArithmeticInput } from '@stonecrop/utilities'
 import { computed } from 'vue'
 
-import { arithmeticInput } from '../../composables/arithmeticInput'
 import { fieldErrorA11y } from '../../composables/fieldErrorA11y'
 import type { ComponentProps, NumericOptions } from '../../types'
 import { numberFromBox } from '../../utils/emptiedBox'
@@ -64,12 +64,16 @@ const inputNumber = defineModel<number | null>()
 
 const boxNumber = computed({
 	get: () => inputNumber.value,
-	set: (value: number | '') => (inputNumber.value = numberFromBox(value)),
+	set: (value: number | '') => {
+		const n = numberFromBox(value)
+		inputNumber.value = n === null ? null : roundToPrecision(n, options.precision)
+	},
 })
 
-const arithmetic = arithmeticInput({
+const arithmetic = useArithmeticInput({
 	value: () => inputNumber.value,
 	commit: value => (inputNumber.value = value),
+	round: value => roundToPrecision(value, options.precision),
 })
 </script>
 
