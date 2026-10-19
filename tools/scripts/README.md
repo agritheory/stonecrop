@@ -106,7 +106,7 @@ export default defineConfig({
 })
 ```
 
-`vite build` runs first so `emptyOutDir` clears `dist`. A leading `rm -rf dist` is its own cached
+`vp build` runs first so `emptyOutDir` clears `dist`. A leading `rm -rf dist` is its own cached
 sub-task, and a cache hit replays a snapshot instead of deleting, which ships stale chunks.
 
 ## Repo-wide Commands

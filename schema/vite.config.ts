@@ -1,8 +1,9 @@
 import { resolve } from 'node:path'
-import { coverageConfigDefaults, defineConfig } from 'vitest/config'
+import { coverageConfigDefaults, defineConfig } from 'vite-plus'
 
 import { buildTask } from '../tools/vite/build-task.ts'
 import { testTags } from '../tools/vite/test-tags.ts'
+import { fsModuleCachePath } from '../tools/vite/fs-module-cache.ts'
 
 export default defineConfig({
 	plugins: [],
@@ -36,6 +37,7 @@ export default defineConfig({
 		},
 	},
 	test: {
+		fsModuleCachePath,
 		globals: true,
 		tags: testTags,
 		environment: 'jsdom',

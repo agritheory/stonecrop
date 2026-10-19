@@ -1,6 +1,6 @@
 import { config, mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test'
 import { nextTick } from 'vue'
 import type { ColumnSchema } from '@stonecrop/schema'
 
@@ -33,7 +33,7 @@ import data from './data/http_logs.json'
 import ACell from '../src/components/ACell.vue'
 import ARow from '../src/components/ARow.vue'
 import ATable from '../src/components/ATable.vue'
-import type { GanttOptions, RowClickEvent, TableColumn, TableConfig, TableRow } from '../src/types'
+import type { RowClickEvent, TableColumn, TableConfig, TableRow } from '../src/types'
 
 function getBasicRows(): TableRow[] {
 	return [
@@ -337,7 +337,7 @@ describe('table component', { tags: ['component'] }, () => {
 					endIndex: 5,
 					color: '#ff0000',
 					colspan: 3,
-				} as GanttOptions,
+				},
 			},
 		]
 
@@ -368,7 +368,7 @@ describe('table component', { tags: ['component'] }, () => {
 					endIndex: 5,
 					color: '#ff0000',
 					colspan: 3,
-				} as GanttOptions,
+				},
 			},
 		]
 
@@ -403,7 +403,7 @@ describe('table component', { tags: ['component'] }, () => {
 					endIndex: 5,
 					color: '#ff0000',
 					colspan: 3,
-				} as GanttOptions,
+				},
 			},
 		]
 
@@ -440,7 +440,7 @@ describe('table component', { tags: ['component'] }, () => {
 					endIndex: 5,
 					color: '#ff0000',
 					colspan: 2,
-				} as GanttOptions,
+				},
 			},
 		]
 
@@ -512,7 +512,7 @@ describe('table component', { tags: ['component'] }, () => {
 					startIndex: 0,
 					endIndex: 5,
 					color: '#ff0000',
-				} as GanttOptions,
+				},
 			},
 		]
 
@@ -794,7 +794,7 @@ describe('Gantt View', { tags: ['component'] }, () => {
 					startIndex: 0,
 					endIndex: 5,
 					color: '#ff0000',
-				} as GanttOptions,
+				},
 			},
 		]
 

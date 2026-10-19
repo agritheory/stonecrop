@@ -189,7 +189,7 @@ jobs:
         run: pnpm exec vp run --filter stonecrop-scripts --fail-if-no-match test
 
       # Repo-wide, because the per-package matrix below is paths-filtered and cannot see cross-
-      # package breakage. `tsc -b` compiles only .ts and `vite build` does not typecheck, so
+      # package breakage. `tsc -b` compiles only .ts and `vp build` does not typecheck, so
       # vue-tsc is the only thing that reads a .vue file — meaning a change confined to schema/**
       # could break a <script setup> block or a template binding in desktop, aform, atable,
       # node_editor, code_editor or beam and still merge green. Projects opt in by defining a

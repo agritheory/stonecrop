@@ -1,5 +1,5 @@
 import { mount } from '@vue/test-utils'
-import { describe, it, expect, beforeAll, afterAll, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeAll, afterAll, beforeEach, vi } from 'vite-plus/test'
 import { defineComponent, h, nextTick, ref } from 'vue'
 
 import { defaultKeypressHandlers, useKeyboardNav } from '../src'

@@ -51,9 +51,9 @@ catalog:
   '@vitejs/plugin-vue': '^6.0.6'
   # The Vitest family is pinned exactly, at the version vite-plus bundles: each `@vitest/*` package
   # peers on its own exact `vitest`, and a range let one resolve a patch ahead of the rest.
-  '@vitest/browser-playwright': '5.0.1'
-  '@vitest/coverage-istanbul': '5.0.1'
-  '@vitest/ui': '5.0.1'
+  '@vitest/browser-playwright': '5.0.5'
+  '@vitest/coverage-istanbul': '5.0.5'
+  '@vitest/ui': '5.0.5'
   '@vue/test-utils': '^2.4.10'
   '@vueuse/components': '^14.2.1'
   '@vueuse/core': '^14.2.1'
@@ -65,22 +65,40 @@ catalog:
   jsdom: '^29.1.1'
   monaco-editor: '^0.55.1'
   nuxt: '^4.4.8'
-  oxlint: '1.67.0'
-  oxlint-tsgolint: '0.23.0'
   pinia: '^3.0.4'
   playwright: '^1.63.0'
   postgraphile: '^5.0.3'
+  # Nuxt imports Rolldown itself and declares it as a peer. Standalone Vite used to install it as a
+  # dependency of its own, but vite-plus's core bundles Rolldown, so the two Nuxt packages declare it,
+  # at the version vite-plus bundles.
+  rolldown: '1.2.14'
   temporal-polyfill: '^1.0.5'
   typescript: '^6.0.3'
-  vite: '^8.2.2'
+  # vite-plus's own core, installed under Vite's name, from the same release as `vite-plus` below.
+  # Bumping one without the other, or without the Vitest family above, installs a second toolchain
+  # beside the first.
+  vite: 'npm:@voidzero-dev/vite-plus-core@1.3.0'
   vite-plugin-lib-inject-css: '^2.2.2'
-  vitest: '5.0.1'
+  vite-plus: '1.3.0'
+  vitest: '5.0.5'
   vue: '^3.5.33'
   vue-component-meta: ^3.3.11
   vue-router: '^5.0.6'
   vue-tsc: '^3.3.6'
 
+# Every Vite and Vitest in the graph resolves to the catalog's, including the ones other packages
+# depend on (Nuxt's builder, `@vitejs/plugin-vue`, `@nuxt/test-utils`), so vite-plus's toolchain is
+# the only one installed. Keyed `@*` so the override replaces version ranges only: a bare key would
+# also replace the `catalog:` references in every manifest.
+overrides:
+  vite@*: 'catalog:'
+  vitest@*: 'catalog:'
+
 peerDependencyRules:
+  # `vite` is vite-plus's core, which carries vite-plus's version number rather than Vite's, so no
+  # peer range on Vite can match it.
+  allowAny:
+    - vite
   ignoreMissing:
     - react
     - react-dom

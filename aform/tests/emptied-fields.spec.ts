@@ -1,6 +1,6 @@
 import { mount } from '@vue/test-utils'
 import { COMPONENT_CATEGORY, type ComponentCategory } from '@stonecrop/schema'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it } from 'vite-plus/test'
 import type { Component } from 'vue'
 
 import * as aform from '../src'

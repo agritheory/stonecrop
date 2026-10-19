@@ -1,12 +1,13 @@
 import vue from '@vitejs/plugin-vue'
-import { playwright } from '@vitest/browser-playwright'
+import { playwright } from 'vite-plus/test/browser-playwright'
 import { resolve } from 'path'
 import { libInjectCss } from 'vite-plugin-lib-inject-css'
-import { configDefaults, coverageConfigDefaults, defineConfig } from 'vitest/config'
+import { configDefaults, coverageConfigDefaults, defineConfig } from 'vite-plus'
 
 import { buildTask } from '../tools/vite/build-task.ts'
 import { playwrightLaunchOptions } from '../tools/vite/playwright-launch-options.ts'
 import { testTags } from '../tools/vite/test-tags.ts'
+import { fsModuleCachePath } from '../tools/vite/fs-module-cache.ts'
 
 const projectRootDir = resolve(import.meta.dirname)
 
@@ -41,6 +42,7 @@ export default defineConfig({
 		},
 	},
 	test: {
+		fsModuleCachePath,
 		globals: true,
 		tags: testTags,
 		projects: [

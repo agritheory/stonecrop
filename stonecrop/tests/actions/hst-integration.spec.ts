@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test'
 import { Map, List } from 'immutable'
 import type { UnknownMachineConfig } from 'xstate'
 import Doctype from '../../src/doctype'

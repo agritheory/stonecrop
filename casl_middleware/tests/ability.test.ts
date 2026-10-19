@@ -1,5 +1,5 @@
 import { AbilityBuilder, PureAbility, subject, type AbilityClass } from '@casl/ability'
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi } from 'vite-plus/test'
 
 import {
 	createAbility,

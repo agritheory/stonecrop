@@ -1,6 +1,6 @@
 import { mount } from '@vue/test-utils'
 import { List } from 'immutable'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vite-plus/test'
 import { nextTick } from 'vue'
 
 import { Doctype, Registry, Stonecrop } from '@stonecrop/stonecrop'
@@ -467,7 +467,7 @@ describe('Desktop – fieldset flattening in records view', { tags: ['component'
 					{ kind: 'field' as const, fieldname: 'color', label: 'Color', component: 'ATextInput' },
 					{ kind: 'field' as const, fieldname: 'weight', label: 'Weight', component: 'ATextInput' },
 				],
-			} as any,
+			},
 		])
 		registry.addDoctype(doctype)
 

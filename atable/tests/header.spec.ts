@@ -1,10 +1,10 @@
 import { createPinia, setActivePinia } from 'pinia'
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test'
 import { mount } from '@vue/test-utils'
 
 import ATableHeader from '../src/components/ATableHeader.vue'
 import { createTableStore } from '../src/stores/table'
-import type { TableColumn, TableConfig } from '../src/types'
+import type { TableColumn } from '../src/types'
 
 // Mock the vResizeObserver directive
 const mockVResizeObserver = {
@@ -28,7 +28,7 @@ describe('ATableHeader component', { tags: ['component'] }, () => {
 		store = createTableStore({
 			columns: mockColumns,
 			rows: mockRows,
-			config: { view: 'list' } as TableConfig,
+			config: { view: 'list' },
 		})
 	})
 
@@ -141,7 +141,7 @@ describe('ATableHeader component', { tags: ['component'] }, () => {
 		const treeStore = createTableStore({
 			columns: mockColumns,
 			rows: mockRows,
-			config: { view: 'tree' } as TableConfig,
+			config: { view: 'tree' },
 		})
 
 		const wrapper = mount(ATableHeader, {
@@ -164,7 +164,7 @@ describe('ATableHeader component', { tags: ['component'] }, () => {
 		const expansionStore = createTableStore({
 			columns: mockColumns,
 			rows: mockRows,
-			config: { view: 'list-expansion' } as TableConfig,
+			config: { view: 'list-expansion' },
 		})
 
 		const wrapper = mount(ATableHeader, {
@@ -314,7 +314,7 @@ describe('ATableHeader component', { tags: ['component'] }, () => {
 		const numericStore = createTableStore({
 			columns: numericColumns,
 			rows: mockRows,
-			config: { view: 'list' } as TableConfig,
+			config: { view: 'list' },
 		})
 
 		const wrapper = mount(ATableHeader, {
@@ -356,7 +356,7 @@ describe('ATableHeader component', { tags: ['component'] }, () => {
 		const numericStore = createTableStore({
 			columns: numericColumns,
 			rows: mockRows,
-			config: { view: 'list' } as TableConfig,
+			config: { view: 'list' },
 		})
 
 		const wrapper = mount(ATableHeader, {

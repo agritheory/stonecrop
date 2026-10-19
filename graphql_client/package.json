@@ -41,15 +41,15 @@
 		"access": "public"
 	},
 	"scripts": {
-		"dev": "vite build --watch",
+		"dev": "vp build --watch",
 		"docs": "bash ../tools/scripts/run-docs.sh graphql_client",
-		"lint": "oxlint",
-		"lint:fix": "oxlint --fix",
+		"lint": "vp lint",
+		"lint:fix": "vp lint --fix",
 		"prepublishOnly": "vp run build",
-		"preview": "vite preview",
-		"test": "vitest run --coverage.enabled false",
-		"test:coverage": "vitest run --coverage",
-		"test:watch": "vitest watch"
+		"preview": "vp preview",
+		"test": "vp test run --coverage.enabled false",
+		"test:coverage": "vp test run --coverage",
+		"test:watch": "vp test watch"
 	},
 	"dependencies": {
 		"@stonecrop/schema": "workspace:*"
@@ -63,8 +63,6 @@
 		"@vitest/coverage-istanbul": "catalog:",
 		"graphql": "catalog:",
 		"miragejs": "^0.1.48",
-		"oxlint": "catalog:",
-		"oxlint-tsgolint": "catalog:",
 		"typescript": "catalog:",
 		"vite": "catalog:",
 		"vitest": "catalog:",

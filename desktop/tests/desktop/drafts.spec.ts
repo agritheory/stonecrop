@@ -1,5 +1,5 @@
 import { mount, flushPromises } from '@vue/test-utils'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test'
 import { nextTick } from 'vue'
 import { List } from 'immutable'
 import { createPinia, setActivePinia } from 'pinia'
@@ -22,7 +22,7 @@ function buildTaskDoctype() {
 		{ kind: 'field' as const, fieldname: 'due', label: 'Due', component: 'ADate' },
 	])
 	const workflow = { states: ['draft'], actions: { save: { label: 'Save', selfTransition: true } } }
-	return new Doctype('task', fields as any, workflow as any, undefined, undefined, undefined, { status: 'draft' })
+	return new Doctype('task', fields, workflow as any, undefined, undefined, undefined, { status: 'draft' })
 }
 
 const adapterFor = (recordId: string, view: 'record' | 'records' = 'record'): RouteAdapter => ({

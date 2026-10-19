@@ -1,7 +1,7 @@
 import { dirname, join } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it } from 'vite-plus/test'
 
 const rootDir = join(dirname(fileURLToPath(import.meta.url)), '../../..')
 

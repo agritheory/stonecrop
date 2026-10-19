@@ -6,11 +6,8 @@
 	"license": "MIT",
 	"type": "module",
 	"scripts": {
-		"test": "vitest run",
-		"test:watch": "vitest watch"
-	},
-	"devDependencies": {
-		"vitest": "catalog:"
+		"test": "vp test run",
+		"test:watch": "vp test watch"
 	},
 	"engines": {
 		"node": ">=24.0.0"

@@ -1,5 +1,5 @@
 import { createPinia, setActivePinia } from 'pinia'
-import { afterEach, describe, it, expect, beforeEach, vi } from 'vitest'
+import { afterEach, describe, it, expect, beforeEach, vi } from 'vite-plus/test'
 
 import { createTableStore, getIndent } from '../src/stores/table'
 import type { TableColumn, TableRow, GanttBarInfo, ConnectionHandle } from '../src/types'

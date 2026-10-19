@@ -1,6 +1,6 @@
 import type { DoctypeField } from '@stonecrop/schema'
 import { List, Map as ImmutableMap } from 'immutable'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it } from 'vite-plus/test'
 
 import type Registry from '../../src/registry'
 import { SchemaValidator, createValidator, validateSchema } from '../../src/schema-validator'
@@ -68,7 +68,7 @@ describe('SchemaValidator class', { tags: ['unit'] }, () => {
 
 		it('passes when component is present', () => {
 			const validator = new SchemaValidator()
-			const result = validator.validate('Doc', [{ kind: 'field' as const, fieldname: 'x', component: 'Comp' } as any])
+			const result = validator.validate('Doc', [{ kind: 'field' as const, fieldname: 'x', component: 'Comp' }])
 			expect(result.valid).toBe(true)
 		})
 

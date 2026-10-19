@@ -1,7 +1,7 @@
 import { flushPromises, mount } from '@vue/test-utils'
 import { List } from 'immutable'
 import { createPinia, setActivePinia } from 'pinia'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vite-plus/test'
 
 import { install as installAForm } from '@stonecrop/aform'
 import { Doctype, Registry, Stonecrop } from '@stonecrop/stonecrop'

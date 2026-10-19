@@ -527,8 +527,7 @@ function createDoctypeFieldSchemas() {
 	// callback can close over it. The placeholder is overwritten below; the callback
 	// only runs at parse time, after the real discriminated union is assigned.
 	// See: https://zod.dev/api?id=discriminated-unions#discriminated-unions
-	// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- required by Zod's recursive schema pattern; z.never() placeholder is overwritten before any parse call
-	let DoctypeFieldSchema: z.ZodType<DoctypeField> = z.never() as unknown as z.ZodType<DoctypeField>
+	let DoctypeFieldSchema: z.ZodType<DoctypeField> = z.never()
 
 	// FieldsetFieldSchema stays as a plain ZodObject (not z.ZodType<T>) so that
 	// z.discriminatedUnion can inspect its 'kind' discriminant property.
@@ -549,8 +548,7 @@ function createDoctypeFieldSchemas() {
 	// Overwrite the placeholder with the preprocessed schema. Because z.lazy captures
 	// DoctypeFieldSchema by closure reference, the lazy callback in FieldsetFieldSchema
 	// will resolve to this preprocessed version — so nested fieldsets also inject `kind`.
-	// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- ZodPipe output is DoctypeField; same pattern as the z.never() placeholder above
-	DoctypeFieldSchema = z.preprocess(injectKind, rawUnion) as unknown as z.ZodType<DoctypeField>
+	DoctypeFieldSchema = z.preprocess(injectKind, rawUnion)
 
 	return { ValueFieldSchema, TableFieldSchema, FieldsetFieldSchema, DoctypeFieldSchema }
 }

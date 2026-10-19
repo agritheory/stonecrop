@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test'
 
 import { StonecropClient } from '../src/client'
 import type { DoctypeMeta, DoctypeRef } from '@stonecrop/schema'

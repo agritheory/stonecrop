@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect } from 'vite-plus/test'
 
 import { componentParts, parseField, partsPatch, readParts, validateDoctype, validateField } from '../src'
 

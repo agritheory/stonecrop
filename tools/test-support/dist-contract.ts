@@ -97,8 +97,8 @@ export function readDistContract(packageDir: string): DistContract {
 	const seeded = [...new Set(queue)].map(file => relative(packageDir, file))
 
 	while (queue.length > 0) {
-		const file = queue.shift() as string
-		if (seen.has(file)) continue
+		const file = queue.shift()
+		if (file === undefined || seen.has(file)) continue
 		seen.add(file)
 
 		for (const specifier of specifiersOf(file)) {

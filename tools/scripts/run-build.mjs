@@ -115,7 +115,7 @@ const viteplusManifest = requireFromRoot.resolve('vite-plus/package.json')
 const vpBin = join(dirname(viteplusManifest), requireFromRoot(viteplusManifest).bin.vp)
 
 // Ahead of the task specifier, because vp appends anything following it to the task's own command:
-// `-r build --no-cache` runs `vite build --no-cache`, which clears dist and then fails.
+// `-r build --no-cache` runs `vp build --no-cache`, which rejects the flag and fails.
 const forwardedFlags = process.argv.slice(2)
 
 const child = spawn(

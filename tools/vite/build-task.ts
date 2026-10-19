@@ -2,7 +2,7 @@ import { existsSync, readdirSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-import type { UserConfig } from 'vitest/config'
+import type { UserConfig } from 'vite-plus'
 
 /**
  * The `build` task every publishable package runs, previously 13 copies of the same block.
@@ -84,14 +84,14 @@ export function buildTask(declarations: 'tsc' | 'vue-tsc'): NonNullable<UserConf
 	return {
 		build: {
 			command: [
-				'vite build --logLevel warn',
+				'vp build --logLevel warn',
 				`${declarations} -b --force`,
 				'node ../tools/scripts/run-api-extractor.mjs run --local -c config/api-extractor.json',
 				'node --run docs',
 			].join(' && '),
 			cache: {
 				// Both this file and the package's own config are tracked explicitly. `{ auto: true }`
-				// records what each sub-task read, and only `vite build` reads a config, so editing either
+				// records what each sub-task read, and only `vp build` reads a config, so editing either
 				// re-ran vite and then let the later sub-tasks replay a `dist/**` snapshot over its fresh
 				// output. Measured: dropping `vue` from a package's externals rebuilt, exited 0, shipped
 				// the old bundle, and the dist-contract test read that bundle and passed.

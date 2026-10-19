@@ -1,6 +1,6 @@
 import type { DoctypeField } from '@stonecrop/schema'
 import { List } from 'immutable'
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test'
 import { createRouter, createMemoryHistory } from 'vue-router'
 
 import Doctype from '../../src/doctype'
@@ -11,7 +11,7 @@ import type { StonecropOptions } from '../../src/types/stonecrop'
 import { ImmutableDoctype } from '../../src/types'
 
 // Mock fetch globally
-globalThis.fetch = vi.fn() as unknown as typeof fetch
+globalThis.fetch = vi.fn()
 
 function createDoctype(name: string, fields?: DoctypeField[], links?: Record<string, any>) {
 	const schema = List<DoctypeField>(
@@ -592,7 +592,7 @@ describe('Stonecrop class with HST integration', { tags: ['unit'] }, () => {
 					getRecords: vi.fn(),
 					runAction: vi.fn().mockResolvedValue({ success: true, error: null, ...reply }),
 				}
-				return { doctype, sc: new Stonecrop(registry, undefined, { client } as StonecropOptions) }
+				return { doctype, sc: new Stonecrop(registry, undefined, { client }) }
 			}
 
 			it('files the returned record under the identity the server settled on, not the one dispatched', async () => {
@@ -658,7 +658,7 @@ describe('Stonecrop class with HST integration', { tags: ['unit'] }, () => {
 						.fn()
 						.mockResolvedValue({ success: false, data: { id: '7' }, record: { id: '7' }, error: 'refused' }),
 				}
-				const sc2 = new Stonecrop(registry, undefined, { client } as StonecropOptions)
+				const sc2 = new Stonecrop(registry, undefined, { client })
 				await sc2.dispatchAction(refused, 'save', [{ data: {} }])
 				expect(sc2.getRecordIds('user')).toEqual([])
 			})

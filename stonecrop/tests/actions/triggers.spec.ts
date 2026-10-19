@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test'
 import { FieldTriggerEngine, getGlobalTriggerEngine, registerGlobalAction } from '../../src/field-triggers'
 import type { FieldChangeContext } from '../../src/types/field-triggers'
 

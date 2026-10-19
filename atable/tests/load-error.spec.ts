@@ -1,6 +1,6 @@
 import { config, flushPromises, mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vite-plus/test'
 
 vi.mock('@vueuse/core', async importOriginal => ({
 	...(await importOriginal<typeof import('@vueuse/core')>()),

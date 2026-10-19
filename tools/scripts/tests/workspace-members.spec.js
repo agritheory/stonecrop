@@ -2,7 +2,7 @@ import { execFileSync } from 'node:child_process'
 import { dirname, join, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it } from 'vite-plus/test'
 
 import { parseWorkspaceMembers, workspaceMembers } from '../workspace-members.mjs'
 
@@ -18,7 +18,8 @@ describe('workspaceMembers', { tags: ['unit'] }, () => {
 		)
 		const resolved = listed.map(pkg => relative(rootDir, pkg.path)).filter(dir => dir !== '')
 
-		expect(workspaceMembers().toSorted()).toEqual(resolved.toSorted())
+		const byName = (a, b) => a.localeCompare(b)
+		expect(workspaceMembers().toSorted(byName)).toEqual(resolved.toSorted(byName))
 	})
 })
 

@@ -1,6 +1,6 @@
 import { Map } from 'immutable'
 import { setActivePinia, createPinia } from 'pinia'
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test'
 
 import Doctype from '../../src/doctype'
 import type { HSTNode } from '../../src/stores'
