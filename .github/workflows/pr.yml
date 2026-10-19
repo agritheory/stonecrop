@@ -131,7 +131,8 @@ jobs:
         run: pnpm run format:check
 
       # The catalog in pnpm-workspace.yaml makes divergence impossible for what it already lists;
-      # this catches a dependency added to a second package without joining it.
+      # this catches a dependency added to a second package without joining it. It also fails when a
+      # package's range on Vite rejects the Vite inside Vite+, which the override never checks.
       - name: Dependency Consistency
         run: pnpm run check:deps
 

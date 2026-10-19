@@ -45,7 +45,7 @@ Always build through `pnpm run build`, never `vp run -r build` directly. `dev:pr
 `pnpm install` runs `vp config`, which installs the Vite+ hook dispatcher from `.vite-hooks/`. On every commit the hook runs, in order:
 
 1. `node --run format`: formats the whole tree (not just staged files), then stages the result
-2. `node --run check:deps`: dependency range check
+2. `node --run check:deps`: dependency range checks, including that every package depending on Vite accepts the Vite inside Vite+
 3. `node --run build`: full workspace build; stages regenerated `nuxt/documentation/content/reference/`
 4. `node --run lint`: oxlint after declarations exist
 

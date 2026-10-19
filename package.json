@@ -5,7 +5,7 @@
 	"type": "module",
 	"scripts": {
 		"build": "node tools/scripts/run-build.mjs",
-		"check:deps": "node tools/scripts/check-dependency-consistency.mjs",
+		"check:deps": "node tools/scripts/check-dependency-consistency.mjs && node tools/scripts/check-vite-ranges.mjs",
 		"check:publish": "node tools/scripts/check-publish-contract.mjs",
 		"docs": "vp run --log labeled -r docs",
 		"docs:full": "bash tools/scripts/docs-full.sh",

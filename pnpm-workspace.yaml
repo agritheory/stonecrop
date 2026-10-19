@@ -72,11 +72,12 @@ catalog:
   # dependency of its own, but vite-plus's core bundles Rolldown, so the two Nuxt packages declare it,
   # at the version vite-plus bundles.
   rolldown: '1.2.14'
+  semver: '^7.8.5'
   temporal-polyfill: '^1.0.5'
   typescript: '^6.0.3'
   # vite-plus's own core, installed under Vite's name, from the same release as `vite-plus` below.
   # Bumping one without the other, or without the Vitest family above, installs a second toolchain
-  # beside the first.
+  # beside the first; `check:deps` fails on a second core.
   vite: 'npm:@voidzero-dev/vite-plus-core@1.3.0'
   vite-plugin-lib-inject-css: '^2.2.2'
   vite-plus: '1.3.0'
@@ -90,6 +91,9 @@ catalog:
 # depend on (Nuxt's builder, `@vitejs/plugin-vue`, `@nuxt/test-utils`), so vite-plus's toolchain is
 # the only one installed. Keyed `@*` so the override replaces version ranges only: a bare key would
 # also replace the `catalog:` references in every manifest.
+#
+# pnpm never compares a replaced range with what replaced it, and the peer rule below silences every
+# peer range on Vite, so `check:deps` compares them instead (tools/scripts/check-vite-ranges.mjs).
 overrides:
   vite@*: 'catalog:'
   vitest@*: 'catalog:'
