@@ -1,5 +1,7 @@
 # Change Log - @stonecrop/rockfoil
 
+## 0.48.1
+
 ## 0.48.0
 
 ## 0.47.0
