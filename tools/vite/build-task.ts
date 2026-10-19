@@ -90,13 +90,14 @@ export function buildTask(declarations: 'tsc' | 'vue-tsc'): NonNullable<UserConf
 				'node --run docs',
 			].join(' && '),
 			cache: {
-				// Both this file and the package's own config are tracked explicitly. `{ auto: true }`
-				// records what each sub-task read, and only `vp build` reads a config, so editing either
-				// re-ran vite and then let the later sub-tasks replay a `dist/**` snapshot over its fresh
-				// output. Measured: dropping `vue` from a package's externals rebuilt, exited 0, shipped
-				// the old bundle, and the dist-contract test read that bundle and passed.
-				input: [{ auto: true }, { pattern: 'tools/vite/**', base: 'workspace' }, 'vite.config.ts', '!dist/**'],
-				output: ['dist/**'],
+				input: [{ auto: true }, '!dist/**'],
+				// No `output`: left to automatic tracking, a cache hit restores only the files that
+				// sub-task itself wrote. `output: ['dist/**']` gave every sub-task the whole directory,
+				// so whenever `vp build` re-ran but the declarations did not change, api-extractor and
+				// docs hit the cache and replayed an older bundle over the new one, and the build exited
+				// 0. A source edit inside a function did it, and so did a config edit: dropping `vue`
+				// from a package's externals shipped the old bundle, and the dist-contract test read that
+				// bundle and passed.
 			},
 		},
 	}
