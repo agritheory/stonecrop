@@ -1,5 +1,5 @@
 import { Position } from '@vue-flow/core'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it } from 'vite-plus/test'
 import type { WorkflowMeta } from '@stonecrop/schema'
 
 import type { FlowElements } from '../src/types'

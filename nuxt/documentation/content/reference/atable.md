@@ -3075,6 +3075,8 @@ declare function install(app: App): void;
 
 ### isTableTuplePickerModal
 
+Whether the table's open modal is one of the tuple pickers.
+
 **Signature:**
 
 ```typescript
@@ -3122,6 +3124,8 @@ export declare function schemaToColumns(schema: ColumnSchema[]): TableColumn[];
 | schema | `ColumnSchema[]` |  |
 
 ### tableTuplePickerModalComponent
+
+The tuple picker a column opens: the currency picker for a currency column, the quantity picker for any other.
 
 **Signature:**
 
@@ -3848,6 +3852,8 @@ export interface UseTablePaginationOptions {
 ## Type Aliases
 
 ### CellOverlayPositionInput
+
+Input to `computeCellOverlayStyle`.
 
 **Definition:**
 

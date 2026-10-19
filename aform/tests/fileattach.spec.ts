@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test'
 import { mount, flushPromises } from '@vue/test-utils'
 import { ref, Ref } from 'vue'
 
@@ -27,7 +27,7 @@ function createFileList(files: File[]): FileList {
 			},
 		},
 		files
-	) as FileList
+	)
 }
 
 describe('file attach component', { tags: ['component'] }, () => {

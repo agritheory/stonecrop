@@ -31,7 +31,7 @@ import { makeSchema } from 'postgraphile'
 import { PostGraphileAmberPreset } from 'postgraphile/presets/amber'
 import { execute, hookArgs, makeGrafastSchema, constant, lambda, loadOne, object } from 'postgraphile/grafast'
 import { makePgService, makeWithPgClientViaPgClientAlreadyInTransaction } from 'postgraphile/adaptors/pg'
-import { describe, it, expect, beforeAll, afterAll, inject } from 'vitest'
+import { describe, it, expect, beforeAll, afterAll, inject } from 'vite-plus/test'
 
 import { createStonecropPlugin } from '../../src/plugin/postgraphile'
 import { loadDoctypesFromObject, clearRegistry, getMeta, getAllMeta } from '../../src/registry/doctypes'
@@ -128,7 +128,7 @@ type PlanArgs = Record<`$${string}`, never>
 function buildInMemorySchema(): GraphQLSchema {
 	// `typeDefs` is a graphql-js DocumentNode (postgraphile's `gql` tag), so it is printed back to
 	// SDL rather than stringified — String() on it yields "[object Object]" and parses to nothing.
-	const sdl = `scalar JSON\n${print(typeDefs as unknown as DocumentNode).replace(/extend type (Query|Mutation)/g, 'type $1')}`
+	const sdl = `scalar JSON\n${print(typeDefs).replace(/extend type (Query|Mutation)/g, 'type $1')}`
 	return makeGrafastSchema({
 		typeDefs: sdl,
 		plans: {

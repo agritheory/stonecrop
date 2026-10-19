@@ -36,10 +36,10 @@
 		"access": "public"
 	},
 	"scripts": {
-		"build": "vite build --logLevel warn",
-		"dev": "vite build --watch",
-		"preview": "vite preview",
-		"prepublish": "vite build"
+		"build": "vp build --logLevel warn",
+		"dev": "vp build --watch",
+		"preview": "vp preview",
+		"prepublish": "vp build"
 	},
 	"devDependencies": {
 		"vite": "catalog:"

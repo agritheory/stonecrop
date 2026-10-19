@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test'
 import { isPortActive } from '../../src/composables/mqtt'
 
 describe('mqtt composable', { tags: ['component'] }, () => {

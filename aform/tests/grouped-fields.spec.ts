@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { mount } from '@vue/test-utils'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it } from 'vite-plus/test'
 
 import ACurrencyInput from '../src/components/form/ACurrencyInput.vue'
 import AFormLink from '../src/components/form/AFormLink.vue'

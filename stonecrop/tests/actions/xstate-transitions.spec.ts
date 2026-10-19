@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach } from 'vite-plus/test'
 import { List, Map } from 'immutable'
 import type { DoctypeField } from '@stonecrop/schema'
 import {

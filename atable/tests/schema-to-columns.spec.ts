@@ -1,5 +1,5 @@
 import { formatCurrencyAmount } from '@stonecrop/utilities'
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect } from 'vite-plus/test'
 
 import { schemaToColumns } from '../src/schemaToColumns'
 import type { ColumnSchema } from '@stonecrop/schema'
@@ -83,7 +83,7 @@ describe('schemaToColumns', { tags: ['component'] }, () => {
 	describe('Link field handling', () => {
 		it('adds a display format function for Link fields without explicit format or cellComponent', () => {
 			const schema: ColumnSchema[] = [
-				{ fieldname: 'category_id', label: 'Category', component: 'AFormLink', doctype: 'category' } as any,
+				{ fieldname: 'category_id', label: 'Category', component: 'AFormLink', doctype: 'category' },
 			]
 			const columns = schemaToColumns(schema)
 			expect(typeof columns[0].format).toBe('function')

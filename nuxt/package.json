@@ -62,11 +62,11 @@
 		"lint": "eslint .",
 		"prepack": "node --run dev:prepare && nuxt-module-build build",
 		"prepublish": "node --run dev:prepare && nuxt-module-build build",
-		"test": "vitest run",
-		"test:coverage": "vitest run --coverage.enabled --coverage.provider=istanbul",
+		"test": "vp test run",
+		"test:coverage": "vp test run --coverage.enabled --coverage.provider=istanbul",
 		"test:types": "vue-tsc --noEmit -p tsconfig.runtime.json && vue-tsc --noEmit -p tsconfig.templates-app.json && vue-tsc --noEmit -p tsconfig.templates-server.json && sh scripts/nuxt-apps.sh typecheck",
-		"test:ui": "vitest --ui",
-		"test:watch": "vitest watch"
+		"test:ui": "vp test --ui",
+		"test:watch": "vp test watch"
 	},
 	"dependencies": {
 		"@nuxt/kit": "catalog:",
@@ -116,6 +116,7 @@
 		"nuxt-graphql-middleware": "^5.4.0",
 		"playwright": "catalog:",
 		"postgraphile": "catalog:",
+		"rolldown": "catalog:",
 		"temporal-polyfill": "catalog:",
 		"typescript": "catalog:",
 		"typescript-eslint": "^8.62.1",

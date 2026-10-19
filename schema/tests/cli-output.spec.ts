@@ -2,7 +2,7 @@ import { execFileSync } from 'node:child_process'
 import { mkdtempSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync, existsSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
-import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it } from 'vite-plus/test'
 
 import { validateDoctype } from '../src/index'
 
@@ -34,7 +34,7 @@ beforeAll(() => {
 
 	if (!existsSync(CLI)) {
 		throw new Error(
-			`${CLI} is missing — run \`vite build\` in this package before the tests, or CI's build phase did not run.`
+			`${CLI} is missing — run \`vp build\` in this package before the tests, or CI's build phase did not run.`
 		)
 	}
 	execFileSync('node', [CLI, 'generate', '-s', sdlPath, '-o', out], { encoding: 'utf-8' })

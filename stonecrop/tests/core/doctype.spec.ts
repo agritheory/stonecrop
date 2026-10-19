@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect } from 'vite-plus/test'
 import { List } from 'immutable'
 import type { UnknownMachineConfig } from 'xstate'
 import type { WorkflowMeta } from '@stonecrop/schema'
@@ -521,7 +521,7 @@ describe('Doctype class', { tags: ['unit'] }, () => {
 
 	describe('getSchemaArray', () => {
 		it('returns empty array when schema is undefined', () => {
-			const doctype = new Doctype('Task', undefined as any, mockWorkflow)
+			const doctype = new Doctype('Task', undefined, mockWorkflow)
 			expect(doctype.getSchemaArray()).toEqual([])
 		})
 

@@ -1,5 +1,5 @@
-import { afterEach, describe, expect, it } from 'vitest'
-import { page } from 'vitest/browser'
+import { afterEach, describe, expect, it } from 'vite-plus/test'
+import { page } from 'vite-plus/test/browser'
 import { mount, type VueWrapper } from '@vue/test-utils'
 import { defineComponent, h, nextTick } from 'vue'
 

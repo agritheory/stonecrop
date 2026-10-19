@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect } from 'vite-plus/test'
 import { createApp } from 'vue'
 import * as BeamModule from '../src/index'
 

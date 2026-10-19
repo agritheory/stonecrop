@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url'
 import { PGlite } from '@electric-sql/pglite'
 import { createServer, LogLevel } from 'pglite-server'
 import type { Server } from 'node:net'
-import type { TestProject } from 'vitest/node'
+import type { TestProject } from 'vite-plus/test/node'
 
 declare module 'vitest' {
 	interface ProvidedContext {

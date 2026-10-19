@@ -44,17 +44,17 @@
 		"access": "public"
 	},
 	"scripts": {
-		"dev": "vite build --watch",
+		"dev": "vp build --watch",
 		"docs": "bash ../tools/scripts/run-docs.sh aform",
-		"lint": "oxlint",
-		"lint:fix": "oxlint --fix",
+		"lint": "vp lint",
+		"lint:fix": "vp lint --fix",
 		"prepublishOnly": "vp run build",
-		"preview": "vite preview",
-		"test": "vitest run --coverage.enabled false",
-		"test:coverage": "vitest run --coverage",
+		"preview": "vp preview",
+		"test": "vp test run --coverage.enabled false",
+		"test:coverage": "vp test run --coverage",
 		"test:types": "vue-tsc --noEmit -p tsconfig.typecheck.json",
-		"test:ui": "vitest --ui",
-		"test:watch": "vitest watch"
+		"test:ui": "vp test --ui",
+		"test:watch": "vp test watch"
 	},
 	"dependencies": {
 		"@stonecrop/atable": "workspace:*",
@@ -74,8 +74,6 @@
 		"@vitest/ui": "catalog:",
 		"@vue/test-utils": "catalog:",
 		"jsdom": "catalog:",
-		"oxlint": "catalog:",
-		"oxlint-tsgolint": "catalog:",
 		"pinia": "catalog:",
 		"playwright": "catalog:",
 		"typescript": "catalog:",

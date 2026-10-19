@@ -54,12 +54,12 @@
 		"docs": "echo 'Nuxt modules use custom build system - skipping API docs generation'",
 		"lint": "eslint .",
 		"prepack": "nuxt-module-build build",
-		"test": "vitest run",
-		"test:ci": "vitest run --run",
-		"test:coverage": "vitest run --coverage.enabled --coverage.provider=istanbul",
-		"test:e2e": "vitest run test/e2e",
+		"test": "vp test run",
+		"test:ci": "vp test run --run",
+		"test:coverage": "vp test run --coverage.enabled --coverage.provider=istanbul",
+		"test:e2e": "vp test run test/e2e",
 		"test:types": "vue-tsc --noEmit -p tsconfig.src.json && vue-tsc --noEmit -p tsconfig.test.json && cd playground && vue-tsc --noEmit",
-		"test:watch": "vitest watch"
+		"test:watch": "vp test watch"
 	},
 	"dependencies": {
 		"@graphql-tools/graphql-file-loader": "^8.1.14",
@@ -89,6 +89,7 @@
 		"nitropack": "^2.13.1",
 		"nuxt": "catalog:",
 		"postgraphile": "catalog:",
+		"rolldown": "catalog:",
 		"typescript": "catalog:",
 		"vite": "catalog:",
 		"vitest": "catalog:",

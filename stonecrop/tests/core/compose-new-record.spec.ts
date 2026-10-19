@@ -1,5 +1,5 @@
 import { List } from 'immutable'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test'
 import { reactive } from 'vue'
 
 import Doctype from '../../src/doctype'
@@ -262,8 +262,8 @@ describe('composeNewRecord waits for every starting value', { tags: ['unit'] }, 
 	it('keeps the other values when one lookup fails, and reports the failure', async () => {
 		const doctype = order('warehouse', 'customer')
 		registry.registerDefaults('order', {
-			warehouse: () => later('Main') as any,
-			customer: () => Promise.reject(new Error('customer lookup failed')) as any,
+			warehouse: () => later('Main'),
+			customer: () => Promise.reject(new Error('customer lookup failed')),
 		})
 
 		const { record } = await registry.composeNewRecord(doctype)
@@ -296,7 +296,7 @@ describe('composeNewRecord waits for every starting value', { tags: ['unit'] }, 
 
 	it('waits for a value nested inside a looked-up document', async () => {
 		const doctype = order('x', 'y')
-		registry.registerDefaults('order', async () => ({ x: 'X', y: () => later('Y') }) as any)
+		registry.registerDefaults('order', async () => ({ x: 'X', y: () => later('Y') }))
 
 		const { record } = await registry.composeNewRecord(doctype)
 		expect([record.x, record.y]).toEqual(['X', 'Y'])
@@ -313,7 +313,7 @@ describe('composeNewRecord waits for every starting value', { tags: ['unit'] }, 
 		)
 		registry.addDoctype(line)
 		registry.addDoctype(parent)
-		registry.registerDefaults('parent', { lines: () => later([{ productId: 'P-1' }]) as any })
+		registry.registerDefaults('parent', { lines: () => later([{ productId: 'P-1' }]) })
 
 		const { record } = await registry.composeNewRecord(parent)
 		expect(record.lines).toEqual([{ productId: 'P-1' }])
@@ -322,7 +322,7 @@ describe('composeNewRecord waits for every starting value', { tags: ['unit'] }, 
 	it('takes a default read from app state', async () => {
 		const doctype = order('owner', 'note')
 		const auth = reactive({ user: { id: 'u1' } })
-		registry.registerDefaults('order', { owner: () => auth.user as any, note: () => 'hi' })
+		registry.registerDefaults('order', { owner: () => auth.user, note: () => 'hi' })
 
 		const { record } = await registry.composeNewRecord(doctype)
 		expect(record.owner).toEqual({ id: 'u1' })
@@ -343,7 +343,7 @@ describe('composeNewRecord waits for every starting value', { tags: ['unit'] }, 
 
 	it('never changes the record after returning it', async () => {
 		const doctype = order('customer')
-		registry.registerDefaults('order', { customer: () => later('too late', 40) as any })
+		registry.registerDefaults('order', { customer: () => later('too late', 40) })
 
 		const { record } = await registry.composeNewRecord(doctype, { timeoutMs: 10 })
 		const returned = { ...record }
@@ -524,7 +524,7 @@ describe('composeNewRecord fills the fields inside a grouped section', { tags: [
 			undefined,
 			{ lines: { target: 'line', cardinality: 'noneOrMany', fieldname: 'lines' } },
 			undefined,
-			{ lines: ['one'] } as any
+			{ lines: ['one'] }
 		)
 		registry.addDoctype(line)
 		registry.addDoctype(parent)

@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect } from 'vite-plus/test'
 import { isActionAllowedInState } from '../src/doctype'
 
 // The single source of truth for "is this action runnable from the current state",

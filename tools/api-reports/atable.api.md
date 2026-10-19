@@ -89,7 +89,7 @@ export interface CellContext {
 // @public
 export function cellOverlayContainer(cell: HTMLElement): HTMLElement | null;
 
-// @public (undocumented)
+// @public
 export type CellOverlayPositionInput = {
     cell: HTMLElement;
     overlayWidth: number;
@@ -2929,7 +2929,7 @@ export const InsertBelowIcon: string;
 // @public
 export function install(app: App): void;
 
-// @public (undocumented)
+// @public
 export function isTableTuplePickerModal(modal: TableModal): boolean;
 
 // @public
@@ -3101,7 +3101,7 @@ export interface TableRow {
 export interface TableStore extends ReturnType<typeof createTableStore> {
 }
 
-// @public (undocumented)
+// @public
 export function tableTuplePickerModalComponent(columnComponent: string | undefined): string;
 
 // @public

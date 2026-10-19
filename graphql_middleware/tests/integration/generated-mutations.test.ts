@@ -4,7 +4,7 @@ import type { GraphQLSchema } from 'postgraphile/graphql'
 import { makeSchema } from 'postgraphile'
 import { makePgService } from 'postgraphile/adaptors/pg'
 import { pgSmartTags } from 'postgraphile/utils'
-import { describe, it, expect, beforeAll, inject } from 'vitest'
+import { describe, it, expect, beforeAll, inject } from 'vite-plus/test'
 
 import { createStonecropPlugin, createStonecropPreset } from '../../src'
 

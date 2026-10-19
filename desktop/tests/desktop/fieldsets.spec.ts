@@ -1,7 +1,7 @@
 import { flushPromises, mount } from '@vue/test-utils'
 import { List } from 'immutable'
 import { createPinia, setActivePinia } from 'pinia'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test'
 import { nextTick } from 'vue'
 
 import { install as installAForm } from '@stonecrop/aform'
@@ -29,7 +29,7 @@ function buildGadgetDoctype() {
 		},
 	])
 	const workflow = { states: ['draft'], actions: { save: { label: 'Save', selfTransition: true } } }
-	return new Doctype('gadget', fields as any, workflow as any, undefined, undefined, undefined, { color: 'grey' })
+	return new Doctype('gadget', fields, workflow as any, undefined, undefined, undefined, { color: 'grey' })
 }
 
 const adapterFor = (recordId: string): RouteAdapter => ({

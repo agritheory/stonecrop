@@ -1,7 +1,7 @@
 import { flushPromises, mount } from '@vue/test-utils'
 import { List } from 'immutable'
 import type { DoctypeField } from '@stonecrop/schema'
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test'
 import { nextTick, defineComponent } from 'vue'
 import type { UnknownMachineConfig } from 'xstate'
 

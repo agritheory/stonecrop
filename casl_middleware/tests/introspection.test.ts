@@ -1,6 +1,6 @@
 // casl-middleware/tests/introspection.test.ts
 
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test'
 import { AbilityBuilder, AbilityClass, PureAbility } from '@casl/ability'
 
 import {

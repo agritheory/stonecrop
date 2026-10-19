@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach } from 'vite-plus/test'
 
 import { getColumnSelections } from '../src/plugin/postgraphile'
 import { loadDoctypesFromObject, getMeta, clearRegistry } from '../src/registry/doctypes'

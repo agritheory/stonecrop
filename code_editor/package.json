@@ -44,16 +44,16 @@
 		"access": "public"
 	},
 	"scripts": {
-		"dev": "vite build --watch",
+		"dev": "vp build --watch",
 		"docs": "bash ../tools/scripts/run-docs.sh code_editor",
-		"lint": "oxlint",
-		"lint:fix": "oxlint --fix",
+		"lint": "vp lint",
+		"lint:fix": "vp lint --fix",
 		"prepublishOnly": "vp run build",
-		"preview": "vite preview",
-		"test": "vitest run",
-		"test:coverage": "vitest run --coverage",
+		"preview": "vp preview",
+		"test": "vp test run",
+		"test:coverage": "vp test run --coverage",
 		"test:types": "vue-tsc --noEmit",
-		"test:watch": "vitest"
+		"test:watch": "vp test"
 	},
 	"dependencies": {
 		"@monaco-editor/loader": "^1.7.0",
@@ -64,12 +64,9 @@
 		"@vitejs/plugin-vue": "catalog:",
 		"@vue/test-utils": "catalog:",
 		"jsdom": "catalog:",
-		"oxlint": "catalog:",
-		"oxlint-tsgolint": "catalog:",
 		"typescript": "catalog:",
 		"vite": "catalog:",
 		"vite-plugin-lib-inject-css": "catalog:",
-		"vitest": "catalog:",
 		"vue": "catalog:",
 		"vue-component-meta": "catalog:",
 		"vue-router": "catalog:",

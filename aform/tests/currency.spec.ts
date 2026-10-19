@@ -1,5 +1,5 @@
 import { formatCurrencyAmount } from '@stonecrop/utilities'
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi } from 'vite-plus/test'
 import { mount, flushPromises, VueWrapper } from '@vue/test-utils'
 
 import ACurrencyInput from '../src/components/form/ACurrencyInput.vue'

@@ -1,9 +1,10 @@
 import { resolve, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { coverageConfigDefaults, defineConfig } from 'vitest/config'
+import { coverageConfigDefaults, defineConfig } from 'vite-plus'
 
 import { buildTask } from '../tools/vite/build-task.ts'
 import { testTags } from '../tools/vite/test-tags.ts'
+import { fsModuleCachePath } from '../tools/vite/fs-module-cache.ts'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
@@ -28,6 +29,7 @@ export default defineConfig({
 		},
 	},
 	test: {
+		fsModuleCachePath,
 		globals: true,
 		fileParallelism: false,
 		maxWorkers: 1,
