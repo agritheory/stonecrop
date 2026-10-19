@@ -1,11 +1,18 @@
 import type { StyleValue } from 'vue'
 
-/** Container that {@link ATableModal} overlays position against. */
+/**
+ * Container that {@link ATableModal} overlays position against.
+ * @public
+ */
 export function cellOverlayContainer(cell: HTMLElement): HTMLElement | null {
 	const container = cell.closest('.atable-container') ?? cell.closest('table')
 	return container instanceof HTMLElement ? container : null
 }
 
+/**
+ * Input to {@link computeCellOverlayStyle}.
+ * @public
+ */
 export type CellOverlayPositionInput = {
 	cell: HTMLElement
 	overlayWidth: number
@@ -16,6 +23,7 @@ export type CellOverlayPositionInput = {
 /**
  * Positions a sibling overlay below the active cell, aligned to its left edge,
  * clamped to the table container width — same rules as {@link ATableModal}.
+ * @public
  */
 export function computeCellOverlayStyle(input: CellOverlayPositionInput): StyleValue {
 	const container = cellOverlayContainer(input.cell)

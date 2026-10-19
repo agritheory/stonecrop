@@ -399,6 +399,13 @@
 			"default": {
 				"logLevel": "warning"
 				// "addToApiReportFile": false
+			},
+
+			// An error, not a warning, because every build runs `--local`, where a warning never fails.
+			// Eight exports added to atable in #484 printed this on every build and CI run that followed,
+			// all of them green, and api-extractor counted them as public the whole time.
+			"ae-missing-release-tag": {
+				"logLevel": "error"
 			}
 
 			// "ae-extra-release-tag": {

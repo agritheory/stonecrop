@@ -563,7 +563,10 @@ export interface TableModal {
 	width?: number
 }
 
-/** Pixel bounds snapshot passed to {@link createTableStore}'s `openCellShell`. */
+/**
+ * Pixel bounds snapshot passed to {@link createTableStore}'s `openCellShell`.
+ * @public
+ */
 export type CellShellBounds = {
 	left: number
 	bottom: number
