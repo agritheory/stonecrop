@@ -818,10 +818,12 @@ Only *inline* links may be reduced. An inline link's value is indistinguishable 
 
 A fieldset's children are the record's own keys, since a fieldset is layout, so they are reduced where every other field is.
 
+A record also carries the rows of each relation its doctype declares in `links`, under the key the read path writes them to (`link.fieldname ?? key`), and each row is a record of the target doctype. Given `relations`, those rows are reduced by the target's own fields and relations, so a link picked inside a row leaves as its id too. A relation rendered as a picker is a link field, reduced above, never a record to descend into; `resolveLinkRenderMode` decides which, as it does for the read path.
+
 **Signature:**
 
 ```typescript
-export declare function unwrapInlineLinks(fields: readonly DoctypeField[], record: Record<string, any>): Record<string, any>;
+export declare function unwrapInlineLinks(fields: readonly DoctypeField[], record: Record<string, any>, relations?: RecordRelations): Record<string, any>;
 ```
 
 **Parameters:**
@@ -830,6 +832,7 @@ export declare function unwrapInlineLinks(fields: readonly DoctypeField[], recor
 |-----------|------|-------------|
 | fields | `readonly DoctypeField[]` | the doctype's top-level fields |
 | record | `Record<string, any>` | the record to reduce; not mutated |
+| relations | `RecordRelations` | the doctype's `links` and a lookup for each target's doctype; without them only the record's own fields are reduced |
 
 ### validateDoctype
 
@@ -883,9 +886,9 @@ export interface BadgeDescriptor {
 
 | Property | Type | Description |
 |----------|------|-------------|
-| color? | `string` |  |
-| label | `string` |  |
-| variant? | `BadgeVariant` |  |
+| color? | `string` | A CSS color painted over the variant's background, text and accent |
+| label | `string` | Text the badge shows |
+| variant? | `BadgeVariant` | Semantic variant, painted with the theme's `--sc-badge-{variant}-*` tokens |
 
 ### BadgeSpecObject
 
@@ -905,9 +908,9 @@ export interface BadgeSpecObject {
 
 | Property | Type | Description |
 |----------|------|-------------|
-| color? | `string` |  |
-| label? | `string` |  |
-| variant? | `BadgeVariant` |  |
+| color? | `string` | A CSS color painted over the variant's background, text and accent |
+| label? | `string` | Text the badge shows; the choice value when omitted |
+| variant? | `BadgeVariant` | Semantic variant, painted with the theme's `--sc-badge-{variant}-*` tokens |
 
 ### ColumnSchema
 
@@ -1350,6 +1353,46 @@ export interface MergeResult {
 | doctype | `AuthoredDoctype` | The authored doctype with `source` markers added and nothing else changed. |
 | drift | `DoctypeDrift` | Advisory report. Never applied. |
 
+### RecordRelations
+
+The relations a record carries rows for, and how to find each target's doctype.
+
+**Definition:**
+
+```typescript
+export interface RecordRelations {
+  links?: RelatedDoctype['links'];
+  resolve: (target: string) => RelatedDoctype | undefined;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| links? | `RelatedDoctype['links']` | The record's doctype's declared relations, keyed as in its `links` |
+| resolve | `(target: string) => RelatedDoctype \| undefined` | Finds a relation's target doctype by the `target` it declares; `undefined` leaves that relation's rows as they came |
+
+### RelatedDoctype
+
+A doctype as far as `unwrapInlineLinks` reads one: its fields, and the relations whose rows its records carry.
+
+**Definition:**
+
+```typescript
+export interface RelatedDoctype {
+  fields: readonly DoctypeField[];
+  links?: Readonly<Record<string, Pick<LinkDeclaration, 'target' | 'cardinality' | 'component' | 'fieldname'>>>;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| fields | `readonly DoctypeField[]` | The doctype's top-level fields |
+| links? | `Readonly<Record<string, Pick<LinkDeclaration, 'target' \| 'cardinality' \| 'component' \| 'fieldname'>>>` | The doctype's declared relations, keyed as in its `links` |
+
 ### SelectOptions
 
 Select field options when choices carry badge colors.
@@ -1367,8 +1410,8 @@ export interface SelectOptions {
 
 | Property | Type | Description |
 |----------|------|-------------|
-| badges? | `Record<string, BadgeSpec>` |  |
-| choices | `string[]` |  |
+| badges? | `Record<string, BadgeSpec>` | A badge per choice, keyed by the choice's stored value; a choice without one shows as plain text |
+| choices | `string[]` | The stored values a field can take, in the order a dropdown lists them |
 
 ### TableField
 

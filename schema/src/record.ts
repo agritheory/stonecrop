@@ -1,6 +1,30 @@
-import { componentLinkExpansion } from './component-meta'
+import { componentLinkExpansion, resolveLinkRenderMode } from './component-meta'
+import type { LinkDeclaration } from './doctype'
 import type { DoctypeField } from './field'
 import { flattenFields } from './flatten'
+
+/**
+ * A doctype as far as {@link unwrapInlineLinks} reads one: its fields, and the relations whose
+ * rows its records carry.
+ * @public
+ */
+export interface RelatedDoctype {
+	/** The doctype's top-level fields */
+	fields: readonly DoctypeField[]
+	/** The doctype's declared relations, keyed as in its `links` */
+	links?: Readonly<Record<string, Pick<LinkDeclaration, 'target' | 'cardinality' | 'component' | 'fieldname'>>>
+}
+
+/**
+ * The relations a record carries rows for, and how to find each target's doctype.
+ * @public
+ */
+export interface RecordRelations {
+	/** The record's doctype's declared relations, keyed as in its `links` */
+	links?: RelatedDoctype['links']
+	/** Finds a relation's target doctype by the `target` it declares; `undefined` leaves that relation's rows as they came */
+	resolve: (target: string) => RelatedDoctype | undefined
+}
 
 /**
  * Reduce a record's *inline* link values to the ids that get persisted.
@@ -23,19 +47,39 @@ import { flattenFields } from './flatten'
  * A fieldset's children are the record's own keys, since a fieldset is layout, so they are
  * reduced where every other field is.
  *
+ * A record also carries the rows of each relation its doctype declares in `links`, under the key
+ * the read path writes them to (`link.fieldname ?? key`), and each row is a record of the target
+ * doctype. Given `relations`, those rows are reduced by the target's own fields and relations, so
+ * a link picked inside a row leaves as its id too. A relation rendered as a picker is a link field,
+ * reduced above, never a record to descend into; {@link resolveLinkRenderMode} decides which, as it
+ * does for the read path.
+ *
  * @param fields - the doctype's top-level fields
  * @param record - the record to reduce; not mutated
+ * @param relations - the doctype's `links` and a lookup for each target's doctype; without them
+ *   only the record's own fields are reduced
  * @returns a shallow copy with every inline link reduced to its id
  * @public
  */
-export function unwrapInlineLinks(fields: readonly DoctypeField[], record: Record<string, any>): Record<string, any> {
+export function unwrapInlineLinks(
+	fields: readonly DoctypeField[],
+	record: Record<string, any>,
+	relations?: RecordRelations
+): Record<string, any> {
+	const flat = flattenFields(fields)
 	const inline = new Set(
-		flattenFields(fields)
+		flat
 			.filter(field => field.kind === 'field' && Boolean(field.doctype))
 			.filter(field => componentLinkExpansion(field.component) === 'inline')
 			.map(field => field.fieldname)
 	)
-	if (inline.size === 0) return record
+	const nested = Object.entries(relations?.links ?? {}).flatMap(([linkName, link]) => {
+		const fieldname = link.fieldname ?? linkName
+		const mode = resolveLinkRenderMode(link, flat.find(field => field.fieldname === fieldname)?.component)
+		const target = mode === 'inline' ? undefined : relations?.resolve(link.target)
+		return target ? [{ fieldname, mode, target }] : []
+	})
+	if (inline.size === 0 && nested.length === 0) return record
 
 	const result: Record<string, any> = { ...record }
 	for (const [key, value] of Object.entries(result)) {
@@ -43,6 +87,16 @@ export function unwrapInlineLinks(fields: readonly DoctypeField[], record: Recor
 		// `'id' in value` rather than a truthiness test: an inline link that was never resolved
 		// is still a bare scalar, and reducing it a second time would be a no-op at best.
 		if ('id' in value) result[key] = value.id
+	}
+	for (const { fieldname, mode, target } of nested) {
+		const value = result[fieldname]
+		const unwrapRow = (row: Record<string, any>) =>
+			unwrapInlineLinks(target.fields, row, { links: target.links, resolve: relations!.resolve })
+		if (mode === 'table' && Array.isArray(value)) {
+			result[fieldname] = value.map(row => (row !== null && typeof row === 'object' ? unwrapRow(row) : row))
+		} else if (mode === 'record' && value !== null && typeof value === 'object' && !Array.isArray(value)) {
+			result[fieldname] = unwrapRow(value)
+		}
 	}
 	return result
 }

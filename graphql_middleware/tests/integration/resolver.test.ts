@@ -31,6 +31,12 @@ const actionHandlers: Record<string, Record<string, ActionHandler>> = {
 			return Promise.resolve({ seenCustomerId: first?.data?.customerId, seenTitle: first?.data?.title })
 		},
 	},
+	ScPartyWithOrders: {
+		echoOrders({ args }) {
+			const first = (args as Array<{ data?: { orders?: Array<Record<string, unknown>> } }>)[0]
+			return Promise.resolve({ seenOrderCustomerIds: first?.data?.orders?.map(order => order.customerId) })
+		},
+	},
 	ScItem: {
 		// Real SQL through the request's client, so it runs inside the test's rolled-back
 		// transaction like every other write in this file.
@@ -558,6 +564,9 @@ beforeAll(async () => {
 					fetch: { method: 'sync' as const },
 				},
 			},
+			// `echoOrders` is a stateless command, so it shows what the envelope handed the handler
+			// for the rows of a relation.
+			workflow: { actions: { echoOrders: { label: 'Echo Orders' } } },
 		},
 	})
 
@@ -1515,6 +1524,17 @@ describe('link fields ({ id, displayText })', { tags: ['integration', 'graphql']
 		const action = (result as any).data?.stonecropAction
 		expect(action?.error).toBeNull()
 		expect(action?.data?.seenCustomerId).toBe('2')
+	})
+
+	// Each row of a relation is a record of the target doctype, so a link picked inside a row is
+	// reduced by that doctype's fields, as the record's own links are.
+	it("hands a handler a relation's rows with their inline links reduced", async () => {
+		const result = await runQuery(
+			`mutation { stonecropAction(doctype: "ScPartyWithOrders", action: "echoOrders", args: [{ id: "1", data: { orders: [{ title: "A", customerId: { id: "2", displayText: "STALE" } }, { title: "B", customerId: "1" }] } }]) { success error data } }`
+		)
+		const action = (result as any).data?.stonecropAction
+		expect(action?.error).toBeNull()
+		expect(action?.data?.seenOrderCustomerIds).toEqual(['2', '1'])
 	})
 
 	// Keyed on the doctype's declaration, never on the value looking like `{ id, ... }`.

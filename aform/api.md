@@ -16,9 +16,9 @@ import { ABadge } from '@stonecrop/aform'
 
 | Prop | Type | Required | Default | Description |
 |------|------|----------|---------|-------------|
-| label | `string \| undefined` | no |  |  |
-| variant | `BadgeVariant \| undefined` | no |  |  |
-| color | `string \| undefined` | no |  |  |
+| label | `string \| undefined` | no |  | Text the badge shows |
+| variant | `BadgeVariant \| undefined` | no |  | Semantic variant, painted with the theme's `--sc-badge-{variant}-*` tokens |
+| color | `string \| undefined` | no |  | A CSS color painted over the variant's background, text and accent |
 | presentation | `BadgePresentation \| undefined` | no |  | Defaults to `cell-fill`: every call site fully determines this, so omitting it should degrade to the common case rather than rendering an unstyled badge. |
 | value | `unknown` | no |  | Stored field value — used with `options` when `label` is omitted. |
 | options | `string[] \| Record<string, unknown> \| undefined` | no |  |  |
