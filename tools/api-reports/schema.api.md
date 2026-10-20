@@ -40,11 +40,8 @@ export type AuthoredDoctype = Record<string, unknown>;
 
 // @public
 export interface BadgeDescriptor {
-    // (undocumented)
     color?: string;
-    // (undocumented)
     label: string;
-    // (undocumented)
     variant?: BadgeVariant;
 }
 
@@ -56,11 +53,8 @@ export type BadgeSpec = BadgeVariant | BadgeSpecObject;
 
 // @public
 export interface BadgeSpecObject {
-    // (undocumented)
     color?: string;
-    // (undocumented)
     label?: string;
-    // (undocumented)
     variant?: BadgeVariant;
 }
 
@@ -552,9 +546,7 @@ export function selectChoices(options: FieldOptions | undefined): string[];
 
 // @public
 export interface SelectOptions extends Record<string, unknown> {
-    // (undocumented)
     badges?: Record<string, BadgeSpec>;
-    // (undocumented)
     choices: string[];
 }
 
@@ -662,7 +654,7 @@ export const TriggerDefinition: z.ZodObject<{
 export type TriggerDefinition = z.infer<typeof TriggerDefinition>;
 
 // @public
-export function unwrapInlineLinks(fields: readonly DoctypeField[], record: Record<string, any>): Record<string, any>;
+export function unwrapInlineLinks(meta: DoctypeMeta, record: Record<string, any>, resolve?: (target: string) => DoctypeMeta | undefined): Record<string, any>;
 
 // @public
 export function validateDoctype(data: unknown): ValidationResult;

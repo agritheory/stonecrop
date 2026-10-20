@@ -721,13 +721,19 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 										data?: Record<string, unknown>
 									}>
 									// An inline link arrives as `{ id, displayText }`; a column takes the id alone.
-									// Reduced here so no client has to know what storage accepts.
+									// Reduced here so no client has to know what storage accepts, in the rows of
+									// each declared relation too.
 									//
 									// The whole envelope, not just `recordData` below — handlers read `ctx.args`.
 									// Copied, not mutated: `spec.actionArgs` is the request's own value.
 									// oxlint-disable-next-line oxc/no-map-spread
 									const argList = rawArgs.map(entry =>
-										entry?.data ? { ...entry, data: unwrapInlineLinks(meta.fields, entry.data) } : entry
+										entry?.data
+											? {
+													...entry,
+													data: unwrapInlineLinks(meta, entry.data, getMeta),
+												}
+											: entry
 									)
 									const recordId = argList[0]?.id
 									const recordData = argList[0]?.data ?? {}

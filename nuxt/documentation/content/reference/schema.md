@@ -818,18 +818,21 @@ Only *inline* links may be reduced. An inline link's value is indistinguishable 
 
 A fieldset's children are the record's own keys, since a fieldset is layout, so they are reduced where every other field is.
 
+A record also carries the rows of each relation its doctype declares in `links`, under the key the read path writes them to (`link.fieldname ?? key`), and each row is a record of the target doctype. Given `resolve`, those rows are reduced by the target doctype in turn, so a link picked inside a row leaves as its id too. A relation rendered as a picker is a link field, reduced above, never a record to descend into; `resolveLinkRenderMode` decides which, as it does for the read path.
+
 **Signature:**
 
 ```typescript
-export declare function unwrapInlineLinks(fields: readonly DoctypeField[], record: Record<string, any>): Record<string, any>;
+export declare function unwrapInlineLinks(meta: DoctypeMeta, record: Record<string, any>, resolve?: (target: string) => DoctypeMeta | undefined): Record<string, any>;
 ```
 
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| fields | `readonly DoctypeField[]` | the doctype's top-level fields |
+| meta | `DoctypeMeta` | the record's doctype |
 | record | `Record<string, any>` | the record to reduce; not mutated |
+| resolve | `(target: string) => DoctypeMeta \| undefined` | finds a relation's target doctype by the `target` it declares; without it only the record's own fields are reduced, and a relation whose target it does not find keeps its rows as they came |
 
 ### validateDoctype
 
@@ -883,9 +886,9 @@ export interface BadgeDescriptor {
 
 | Property | Type | Description |
 |----------|------|-------------|
-| color? | `string` |  |
-| label | `string` |  |
-| variant? | `BadgeVariant` |  |
+| color? | `string` | A CSS color painted over the variant's background, text and accent |
+| label | `string` | Text the badge shows |
+| variant? | `BadgeVariant` | Semantic variant, painted with the theme's `--sc-badge-{variant}-*` tokens |
 
 ### BadgeSpecObject
 
@@ -905,9 +908,9 @@ export interface BadgeSpecObject {
 
 | Property | Type | Description |
 |----------|------|-------------|
-| color? | `string` |  |
-| label? | `string` |  |
-| variant? | `BadgeVariant` |  |
+| color? | `string` | A CSS color painted over the variant's background, text and accent |
+| label? | `string` | Text the badge shows; the choice value when omitted |
+| variant? | `BadgeVariant` | Semantic variant, painted with the theme's `--sc-badge-{variant}-*` tokens |
 
 ### ColumnSchema
 
@@ -1367,8 +1370,8 @@ export interface SelectOptions {
 
 | Property | Type | Description |
 |----------|------|-------------|
-| badges? | `Record<string, BadgeSpec>` |  |
-| choices | `string[]` |  |
+| badges? | `Record<string, BadgeSpec>` | A badge per choice, keyed by the choice's stored value; a choice without one shows as plain text |
+| choices | `string[]` | The stored values a field can take, in the order a dropdown lists them |
 
 ### TableField
 
