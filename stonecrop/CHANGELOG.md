@@ -1,5 +1,18 @@
 # Change Log - @stonecrop/stonecrop
 
+## 0.50.0
+
+### Minor Changes
+
+- b6d6f9a: Code that builds a `FieldChangeContext` by hand, such as a test, now supplies `get` and `set`, and code that reads `context.path` or a `FieldTriggerExecutionResult`'s `path` allows for it being absent, as it is on a record not saved yet.
+- b6d6f9a: A new record's edits in Desktop now run the doctype's field triggers before its first save, and a trigger reads and sets its own record, saved or not, with `context.get` and `context.set`; `stonecrop.editRecord(doctype, recordId)` gives a form that record.
+
+### Patch Changes
+
+- @stonecrop/aform@0.50.0
+  - @stonecrop/atable@0.50.0
+  - @stonecrop/schema@0.50.0
+
 ## 0.49.0
 
 ### Patch Changes
