@@ -5,7 +5,7 @@ import { List } from 'immutable'
 import { createPinia, setActivePinia } from 'pinia'
 
 import { AForm } from '@stonecrop/aform'
-import { Doctype, Registry, Stonecrop } from '@stonecrop/stonecrop'
+import { Doctype, Registry, Stonecrop, getGlobalTriggerEngine } from '@stonecrop/stonecrop'
 
 import Desktop from '../../src/components/Desktop.vue'
 import type { RouteAdapter } from '../../src/types'
@@ -166,5 +166,53 @@ describe('Desktop draft records', { tags: ['component'] }, () => {
 		warn.mockRestore()
 
 		expect(wrapper.findComponent(AForm).props('data')).toMatchObject({ status: 'draft' })
+	})
+
+	describe("a field's rules", () => {
+		afterEach(() => {
+			getGlobalTriggerEngine().registerDoctypeActions('task', {})
+		})
+
+		const estimateFromTitle = () => {
+			getGlobalTriggerEngine().registerAction('estimateFromTitle', context => {
+				context.set('estimate', String(context.get('title')).length)
+			})
+			getGlobalTriggerEngine().registerDoctypeActions('task', { title: ['estimateFromTitle'] })
+		}
+
+		it('run on a new record, and the form shows what a rule set, without touching the store', async () => {
+			estimateFromTitle()
+			const wrapper = mountAt('new')
+			await flushPromises()
+
+			wrapper.findComponent(AForm).vm.$emit('update:data', { title: 'Buy milk' })
+			await flushPromises()
+
+			expect(wrapper.findComponent(AForm).props('data')).toMatchObject({ title: 'Buy milk', estimate: 8 })
+			expect(stonecrop.getRecordIds('task')).toEqual([])
+		})
+
+		it('do not run for a starting value, which is in the form as it opens', async () => {
+			estimateFromTitle()
+			registry.registerDefaults('task', { title: 'Call the supplier' })
+			const wrapper = mountAt('new')
+			await flushPromises()
+
+			const data = wrapper.findComponent(AForm).props('data')
+			expect(data).toMatchObject({ title: 'Call the supplier', status: 'draft' })
+			expect(data).not.toHaveProperty('estimate')
+		})
+
+		it('still run on a saved record, through the store', async () => {
+			estimateFromTitle()
+			stonecrop.addRecord('task', '7', { id: '7', title: 'Saved', status: 'draft' })
+			const wrapper = mountAt('7')
+			await flushPromises()
+
+			wrapper.findComponent(AForm).vm.$emit('update:data', { title: 'Saved again' })
+			await flushPromises()
+
+			expect(stonecrop.getRecordById('task', '7')?.get('estimate')).toBe(11)
+		})
 	})
 })

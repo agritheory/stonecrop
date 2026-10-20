@@ -600,9 +600,22 @@ export interface CrossTabMessage {
 | timestamp | `Date` | When the message was sent |
 | type | `CrossTabMessageType` | Type of cross-tab message |
 
+### EditableRecord
+
+The record a form is editing, read and set by field name. Setting a field runs that field's rules, whether the record is saved or not saved yet.
+
+**Definition:**
+
+```typescript
+export interface EditableRecord {
+  get(fieldname: string): any;
+  set(fieldname: string, value: any): void;
+}
+```
+
 ### FieldChangeContext
 
-Context provided to action functions when field changes occur
+Context provided to action functions when field changes occur. Its `get` and `set` reach the record whose field changed, saved or not saved yet.
 
 **Definition:**
 
@@ -613,7 +626,7 @@ export interface FieldChangeContext {
   doctype: string;
   fieldname: string;
   operation: 'set' | 'delete' | 'patch';
-  path: string;
+  path?: string;
   recordId?: string;
   store?: HSTNode;
   timestamp: Date;
@@ -629,8 +642,8 @@ export interface FieldChangeContext {
 | doctype | `string` | The doctype of the record being changed |
 | fieldname | `string` | The field name (last segment of path) |
 | operation | `'set' \| 'delete' \| 'patch'` | The operation type |
-| path | `string` | The HST path that was changed |
-| recordId? | `string` | The record ID if applicable |
+| path? | `string` | The HST path that was changed; absent for a record not saved yet, which is not in the store |
+| recordId? | `string` | The record ID; absent for a record not saved yet |
 | store? | `HSTNode` | Reference to the HST store for state access (optional) |
 | timestamp | `Date` | Timestamp of the change |
 
@@ -672,7 +685,7 @@ Result of executing all actions for a field change
 export interface FieldTriggerExecutionResult {
   actionResults: ActionExecutionResult[];
   allSucceeded: boolean;
-  path: string;
+  path?: string;
   rolledBack: boolean;
   snapshot?: any;
   stoppedOnError: boolean;
@@ -686,7 +699,7 @@ export interface FieldTriggerExecutionResult {
 |----------|------|-------------|
 | actionResults | `ActionExecutionResult[]` | Results for each action that was executed |
 | allSucceeded | `boolean` | Whether all actions succeeded |
-| path | `string` | The path that triggered the actions |
+| path? | `string` | The path that triggered the actions; absent for a record not saved yet |
 | rolledBack | `boolean` | Whether a rollback was performed |
 | snapshot? | `any` | The snapshot that was captured before execution |
 | stoppedOnError | `boolean` | Whether execution was stopped due to an error |
@@ -2137,6 +2150,22 @@ dispatchAction(doctype: Doctype, action: string, args: unknown[]): Promise<Actio
 | action | `string` | Action name to execute (e.g., 'SUBMIT', 'APPROVE', 'save') |
 | args | `unknown[]` | Action arguments (typically record ID and/or form data) |
 
+#### editRecord
+
+The record a form is editing, read and set by field name; setting a field runs its rules. A saved record is read and set through the store. A record not saved yet (`recordId` is `DRAFT_RECORD_ID`) is held by the object returned, never in the store, and each call returns a new one, holding only its starting values.
+
+```typescript
+editRecord(doctype: string | Doctype, recordId: string, startingValues: Record<string, unknown>): EditableRecord
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| doctype | `string \| Doctype` | The doctype |
+| recordId | `string` | The record ID, or `DRAFT_RECORD_ID` for a record not saved yet |
+| startingValues | `Record<string, unknown>` | A record not saved yet's values before anything is set, such as `composeNewRecord` gives; they run no rules. Only a new record takes them. |
+
 #### fetchNestedData
 
 Fetch a record and its nested data from the server.
@@ -2508,7 +2537,7 @@ export const useOperationLogStore: import("pinia").StoreDefinition<"hst-operatio
     getSnapshot: () => OperationLogSnapshot;
     markIrreversible: (operationId: string, reason: string) => void;
     logAction: (doctype: string, actionName: string, recordIds?: string[], result?: "success" | "failure" | "pending", error?: string) => string;
-}, "config" | "operations" | "clientId" | "currentIndex">, Pick<{
+}, "config" | "operations" | "currentIndex" | "clientId">, Pick<{
     operations: import("vue").Ref<{
         id: string;
         type: import("..").HSTOperationType;

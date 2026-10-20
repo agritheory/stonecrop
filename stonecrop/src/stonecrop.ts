@@ -9,9 +9,12 @@ import { reactive } from 'vue'
 
 import Doctype from './doctype'
 import { isDraftRecordId } from './draft'
+import { newRecord } from './edit-record'
+import { recordInStore } from './record-access'
 import Registry from './registry'
 import { createHST, type HSTNode } from './stores/hst'
 import { useOperationLogStore } from './stores/operation-log'
+import type { EditableRecord } from './types/editable-record'
 import type { OperationLogConfig } from './types/operation-log'
 import type { RouteContext } from './types/registry'
 import type { PageInfo, StonecropOptions } from './types/stonecrop'
@@ -167,6 +170,26 @@ export class Stonecrop {
 
 		// Store raw record data - let HST handle wrapping with proper hierarchy
 		this.hstStore.set(`${slug}.${recordId}`, recordData)
+	}
+
+	/**
+	 * The record a form is editing, read and set by field name; setting a field runs its rules. A
+	 * saved record is read and set through the store. A record not saved yet (`recordId` is
+	 * {@link DRAFT_RECORD_ID}) is held by the object returned, never in the store, and each call
+	 * returns a new one, holding only its starting values.
+	 * @param doctype - The doctype
+	 * @param recordId - The record ID, or {@link DRAFT_RECORD_ID} for a record not saved yet
+	 * @param startingValues - A record not saved yet's values before anything is set, such as
+	 * {@link Registry.composeNewRecord} gives; they run no rules. Only a new record takes them.
+	 * @returns The record to read and set
+	 */
+	editRecord(doctype: string | Doctype, recordId: string, startingValues?: Record<string, unknown>): EditableRecord {
+		const slug = typeof doctype === 'string' ? doctype : doctype.slug
+		if (isDraftRecordId(recordId)) return newRecord(slug, this.hstStore, startingValues)
+		if (startingValues) throw new Error(`Starting values are only for a new record, not ${slug} ${recordId}`)
+
+		this.ensureDoctypeExists(slug)
+		return recordInStore(this.hstStore, `${slug}.${recordId}`)
 	}
 
 	/**
