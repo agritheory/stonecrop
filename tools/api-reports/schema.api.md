@@ -536,18 +536,6 @@ export function planGeneration(entities: readonly ConvertedGraphQLDoctype[], opt
 export function readParts(parts: Readonly<Record<string, string>>, record: Readonly<Record<string, unknown>>): Record<string, unknown>;
 
 // @public
-export interface RecordRelations {
-    links?: RelatedDoctype['links'];
-    resolve: (target: string) => RelatedDoctype | undefined;
-}
-
-// @public
-export interface RelatedDoctype {
-    fields: readonly DoctypeField[];
-    links?: Readonly<Record<string, Pick<LinkDeclaration, 'target' | 'cardinality' | 'component' | 'fieldname'>>>;
-}
-
-// @public
 export function resolveLinkRenderMode(link: {
     component?: string;
     cardinality?: string;
@@ -666,7 +654,7 @@ export const TriggerDefinition: z.ZodObject<{
 export type TriggerDefinition = z.infer<typeof TriggerDefinition>;
 
 // @public
-export function unwrapInlineLinks(fields: readonly DoctypeField[], record: Record<string, any>, relations?: RecordRelations): Record<string, any>;
+export function unwrapInlineLinks(meta: DoctypeMeta, record: Record<string, any>, resolve?: (target: string) => DoctypeMeta | undefined): Record<string, any>;
 
 // @public
 export function validateDoctype(data: unknown): ValidationResult;

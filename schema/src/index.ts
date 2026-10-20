@@ -41,7 +41,6 @@ export { flattenFields } from './flatten'
 
 // Record shaping — the single definition of what a record looks like on its way to the server
 export { partsPatch, readParts, unwrapInlineLinks } from './record'
-export type { RecordRelations, RelatedDoctype } from './record'
 
 // Doctype schema
 // ActionDefinition and WorkflowMeta are exported as values (Zod schemas) so consumers can use

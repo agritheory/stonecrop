@@ -818,21 +818,21 @@ Only *inline* links may be reduced. An inline link's value is indistinguishable 
 
 A fieldset's children are the record's own keys, since a fieldset is layout, so they are reduced where every other field is.
 
-A record also carries the rows of each relation its doctype declares in `links`, under the key the read path writes them to (`link.fieldname ?? key`), and each row is a record of the target doctype. Given `relations`, those rows are reduced by the target's own fields and relations, so a link picked inside a row leaves as its id too. A relation rendered as a picker is a link field, reduced above, never a record to descend into; `resolveLinkRenderMode` decides which, as it does for the read path.
+A record also carries the rows of each relation its doctype declares in `links`, under the key the read path writes them to (`link.fieldname ?? key`), and each row is a record of the target doctype. Given `resolve`, those rows are reduced by the target doctype in turn, so a link picked inside a row leaves as its id too. A relation rendered as a picker is a link field, reduced above, never a record to descend into; `resolveLinkRenderMode` decides which, as it does for the read path.
 
 **Signature:**
 
 ```typescript
-export declare function unwrapInlineLinks(fields: readonly DoctypeField[], record: Record<string, any>, relations?: RecordRelations): Record<string, any>;
+export declare function unwrapInlineLinks(meta: DoctypeMeta, record: Record<string, any>, resolve?: (target: string) => DoctypeMeta | undefined): Record<string, any>;
 ```
 
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| fields | `readonly DoctypeField[]` | the doctype's top-level fields |
+| meta | `DoctypeMeta` | the record's doctype |
 | record | `Record<string, any>` | the record to reduce; not mutated |
-| relations | `RecordRelations` | the doctype's `links` and a lookup for each target's doctype; without them only the record's own fields are reduced |
+| resolve | `(target: string) => DoctypeMeta \| undefined` | finds a relation's target doctype by the `target` it declares; without it only the record's own fields are reduced, and a relation whose target it does not find keeps its rows as they came |
 
 ### validateDoctype
 
@@ -1352,46 +1352,6 @@ export interface MergeResult {
 |----------|------|-------------|
 | doctype | `AuthoredDoctype` | The authored doctype with `source` markers added and nothing else changed. |
 | drift | `DoctypeDrift` | Advisory report. Never applied. |
-
-### RecordRelations
-
-The relations a record carries rows for, and how to find each target's doctype.
-
-**Definition:**
-
-```typescript
-export interface RecordRelations {
-  links?: RelatedDoctype['links'];
-  resolve: (target: string) => RelatedDoctype | undefined;
-}
-```
-
-**Properties:**
-
-| Property | Type | Description |
-|----------|------|-------------|
-| links? | `RelatedDoctype['links']` | The record's doctype's declared relations, keyed as in its `links` |
-| resolve | `(target: string) => RelatedDoctype \| undefined` | Finds a relation's target doctype by the `target` it declares; `undefined` leaves that relation's rows as they came |
-
-### RelatedDoctype
-
-A doctype as far as `unwrapInlineLinks` reads one: its fields, and the relations whose rows its records carry.
-
-**Definition:**
-
-```typescript
-export interface RelatedDoctype {
-  fields: readonly DoctypeField[];
-  links?: Readonly<Record<string, Pick<LinkDeclaration, 'target' | 'cardinality' | 'component' | 'fieldname'>>>;
-}
-```
-
-**Properties:**
-
-| Property | Type | Description |
-|----------|------|-------------|
-| fields | `readonly DoctypeField[]` | The doctype's top-level fields |
-| links? | `Readonly<Record<string, Pick<LinkDeclaration, 'target' \| 'cardinality' \| 'component' \| 'fieldname'>>>` | The doctype's declared relations, keyed as in its `links` |
 
 ### SelectOptions
 

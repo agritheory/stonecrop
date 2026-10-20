@@ -731,7 +731,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 										entry?.data
 											? {
 													...entry,
-													data: unwrapInlineLinks(meta.fields, entry.data, { links: meta.links, resolve: getMeta }),
+													data: unwrapInlineLinks(meta, entry.data, getMeta),
 												}
 											: entry
 									)
