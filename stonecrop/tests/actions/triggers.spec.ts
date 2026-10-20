@@ -29,6 +29,8 @@ describe('Field Trigger System', { tags: ['unit'] }, () => {
 				doctype: 'Task',
 				recordId: '123',
 				timestamp: new Date(),
+				get: () => undefined,
+				set: () => undefined,
 			}
 
 			const result = await triggerEngine.executeFieldTriggers(context)
@@ -58,6 +60,8 @@ describe('Field Trigger System', { tags: ['unit'] }, () => {
 				doctype: 'Task',
 				recordId: '123',
 				timestamp: new Date(),
+				get: () => undefined,
+				set: () => undefined,
 			}
 
 			const result = await triggerEngine.executeFieldTriggers(context)
@@ -85,6 +89,8 @@ describe('Field Trigger System', { tags: ['unit'] }, () => {
 				doctype: 'Task',
 				recordId: '123',
 				timestamp: new Date(),
+				get: () => undefined,
+				set: () => undefined,
 			}
 
 			const result = await triggerEngine.executeFieldTriggers(context)
@@ -114,6 +120,8 @@ describe('Field Trigger System', { tags: ['unit'] }, () => {
 				doctype: 'Task',
 				recordId: '123',
 				timestamp: new Date(),
+				get: () => undefined,
+				set: () => undefined,
 			}
 
 			const result = await triggerEngine.executeFieldTriggers(context)
@@ -142,6 +150,8 @@ describe('Field Trigger System', { tags: ['unit'] }, () => {
 				doctype: 'Task',
 				recordId: '123',
 				timestamp: new Date(),
+				get: () => undefined,
+				set: () => undefined,
 			}
 
 			const result = await triggerEngine.executeFieldTriggers(context)
@@ -165,6 +175,8 @@ describe('Field Trigger System', { tags: ['unit'] }, () => {
 				doctype: 'Task',
 				recordId: '123',
 				timestamp: new Date(),
+				get: () => undefined,
+				set: () => undefined,
 			}
 
 			const result = await triggerEngine.executeFieldTriggers(context)
@@ -224,6 +236,8 @@ describe('Field Trigger System', { tags: ['unit'] }, () => {
 				doctype: 'Task',
 				recordId: '123',
 				timestamp: new Date(),
+				get: () => undefined,
+				set: () => undefined,
 			}
 
 			const result = await triggerEngine.executeFieldTriggers(context)
@@ -248,6 +262,8 @@ describe('Field Trigger System', { tags: ['unit'] }, () => {
 				doctype: 'Task',
 				recordId: '123',
 				timestamp: new Date(),
+				get: () => undefined,
+				set: () => undefined,
 			}
 
 			const result = await triggerEngine.executeFieldTriggers(context)
@@ -274,6 +290,8 @@ describe('Field Trigger System', { tags: ['unit'] }, () => {
 				doctype: 'Task',
 				recordId: '123',
 				timestamp: new Date(),
+				get: () => undefined,
+				set: () => undefined,
 			}
 
 			const result = await triggerEngine.executeFieldTriggers(context)
