@@ -39,7 +39,7 @@
 import { KeypressHandlers, defaultKeypressHandlers, useKeyboardNav } from '@stonecrop/utilities'
 import { componentCategory, isBadgeDescriptor, hasBadgeOptions } from '@stonecrop/schema'
 import { useDebounceFn, useElementBounding } from '@vueuse/core'
-import { computed, type CSSProperties, onMounted, ref, useTemplateRef, nextTick } from 'vue'
+import { computed, type CSSProperties, onMounted, ref, useTemplateRef, nextTick, watch } from 'vue'
 
 import { getIndent } from '../stores/table'
 import type { TableStore } from '../types'
@@ -91,25 +91,39 @@ const tupleCategory = computed((): 'quantity' | 'currency' | undefined => {
 
 const tupleInputId = computed(() => `atable-${String(rowIndex)}-${String(colIndex)}-${column.name}`)
 
+// A link cell shows the name of the link it holds now, so it follows the cell's data, and a name that arrives
+// for a link it no longer holds is dropped.
 onMounted(() => {
-	if (!column.linkDoctype) return
-	const raw = store.getCellData(colIndex, rowIndex)
+	const linkDoctype = column.linkDoctype
+	if (!linkDoctype) return
 
-	if (raw !== null && raw !== undefined && typeof raw === 'object') {
-		const obj = raw as Record<string, unknown>
-		const display = obj.displayText ?? obj.id
-		if (typeof display === 'string' || typeof display === 'number') {
-			resolvedText.value = String(display)
-		}
-		return
-	}
+	watch(
+		() => store.getCellData(colIndex, rowIndex),
+		(raw, _previous, onCleanup) => {
+			resolvedText.value = null
 
-	const resolver = store.linkResolver
-	if (!resolver || typeof raw !== 'string' || raw === '') return
-	void resolver(column.linkDoctype, raw).then(text => {
-		if (text != null) resolvedText.value = text
-		return text
-	})
+			if (raw !== null && raw !== undefined && typeof raw === 'object') {
+				const obj = raw as Record<string, unknown>
+				const display = obj.displayText ?? obj.id
+				if (typeof display === 'string' || typeof display === 'number') {
+					resolvedText.value = String(display)
+				}
+				return
+			}
+
+			const resolver = store.linkResolver
+			if (!resolver || typeof raw !== 'string' || raw === '') return
+			let current = true
+			onCleanup(() => {
+				current = false
+			})
+			void resolver(linkDoctype, raw).then(text => {
+				if (current && text != null) resolvedText.value = text
+				return text
+			})
+		},
+		{ immediate: true }
+	)
 })
 
 const renderedValue = computed(() => resolvedText.value ?? displayValue.value)
