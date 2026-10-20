@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/aform",
-	"version": "0.48.1",
+	"version": "0.49.0",
 	"description": "Schema-driven form components for Stonecrop",
 	"keywords": [
 		"components",

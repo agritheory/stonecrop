@@ -1,5 +1,7 @@
 # Change Log - @stonecrop/utilities
 
+## 0.49.0
+
 ## 0.48.1
 
 ## 0.48.0

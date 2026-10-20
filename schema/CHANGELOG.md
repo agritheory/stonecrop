@@ -1,5 +1,11 @@
 # Change Log - @stonecrop/schema
 
+## 0.49.0
+
+### Minor Changes
+
+- d5fbd9a: An action now reduces a link picked inside the rows of a declared relation, such as a job's tasks, to its id before any handler sees it, as it already did for a record's own links; `unwrapInlineLinks` now takes the doctype's meta rather than its fields, plus an optional lookup for each relation's target.
+
 ## 0.48.1
 
 ### Patch Changes
