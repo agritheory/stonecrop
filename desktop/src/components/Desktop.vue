@@ -429,7 +429,8 @@ const currentView = computed(() => {
 // Computed properties (now that all helper functions are defined)
 // Helper function to get available transitions for current record.
 // Reads the actual FSM state from the record's `status` field (or falls back to the
-// workflow initial state) so the available action buttons always reflect reality.
+// workflow's first state) so the available action buttons always reflect reality. A record
+// not created yet has no state, and is offered only the actions that can run on it.
 const getAvailableTransitions = () => {
 	if (!stonecrop.value || !currentDoctype.value || !currentRecordId.value) {
 		return []
@@ -439,7 +440,8 @@ const getAvailableTransitions = () => {
 		const doctype = stonecrop.value.registry.getDoctype(currentDoctype.value)
 		if (!doctype?.workflow) return []
 
-		// Delegate state resolution to Stonecrop — reads record 'status', falls back to workflow.initial
+		// Delegate state resolution to Stonecrop: reads record 'status', falls back to the workflow's
+		// first state, and is null for a record not created yet
 		const currentState = stonecrop.value.getRecordState(currentDoctype.value, currentRecordId.value)
 
 		// Delegate transition lookup to Doctype — no more manual workflow introspection

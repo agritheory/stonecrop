@@ -539,19 +539,25 @@ export class Stonecrop {
 	 * Determine the current workflow state for a record.
 	 *
 	 * Reads the record's `status` field from the HST store. If the field is absent or
-	 * empty the doctype's declared `workflow.initial` state is used as the fallback,
+	 * empty the workflow's first listed state (an XState workflow's `initial`) is used as the fallback,
 	 * giving callers a reliable state name without having to duplicate that logic.
+	 *
+	 * A record not created yet ({@link DRAFT_RECORD_ID}) is in no state, as the server guard
+	 * treats it: pass the `null` returned to `Doctype.getAvailableTransitions` and
+	 * `Doctype.getAvailableCommands` to list the actions that can run on it.
 	 *
 	 * @param doctype - The doctype slug or Doctype instance
 	 * @param recordId - The record identifier
-	 * @returns The current state name, or an empty string if the doctype has no workflow
+	 * @returns The current state name, `null` for a record not created yet, or an empty string if
+	 * the doctype has no workflow
 	 *
 	 * @public
 	 */
-	getRecordState(doctype: string | Doctype, recordId: string): string {
+	getRecordState(doctype: string | Doctype, recordId: string): string | null {
 		const slug = typeof doctype === 'string' ? doctype : doctype.slug
 		const meta = this.registry.getDoctype(slug)
 		if (!meta?.workflow) return ''
+		if (isDraftRecordId(recordId)) return null
 
 		const record = this.getRecordById(slug, recordId)
 		// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- HSTNode.get returns any; status is always string in workflow records

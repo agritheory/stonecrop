@@ -452,6 +452,28 @@ export declare function isActionAllowedInState(action: {
 | action | `{ allowedStates?: string[] \| null; }` |  |
 | currentState | `string` |  |
 
+### isActionAllowedOnNewRecord
+
+Whether a workflow action may run on a record not created yet.
+
+A record not created yet is in no state, so the server-side dispatch guard runs two kinds of action on it: a self-transition, which creates it, and an action that declares no `allowedStates` and does not move the record, which never reads a state. This is that rule for the frontend (`getAvailableTransitions`, `getAvailableCommands`); a test against the guard keeps the two in step.
+
+**Signature:**
+
+```typescript
+export declare function isActionAllowedOnNewRecord(action: {
+    allowedStates?: string[] | null;
+    nextState?: string | null;
+    selfTransition?: boolean | null;
+}): boolean;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| action | `{ allowedStates?: string[] \| null; nextState?: string \| null; selfTransition?: boolean \| null; }` |  |
+
 ### isBadgeDescriptor
 
 True when `value` is a resolved badge descriptor for ACell / ADropdown.

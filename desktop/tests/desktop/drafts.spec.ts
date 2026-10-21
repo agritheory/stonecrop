@@ -215,4 +215,56 @@ describe('Desktop draft records', { tags: ['component'] }, () => {
 			expect(stonecrop.getRecordById('task', '7')?.get('estimate')).toBe(11)
 		})
 	})
+
+	describe('the actions it offers', () => {
+		const jobWorkflow = {
+			states: ['draft', 'planned', 'cancelled'],
+			actions: {
+				save: { label: 'Save', selfTransition: true, allowedStates: ['draft', 'planned'] },
+				plan: { label: 'Plan', allowedStates: ['draft'], nextState: 'planned' },
+				cancel: { label: 'Cancel', allowedStates: ['draft', 'planned'], nextState: 'cancelled' },
+				reload: { label: 'Reload tasks', allowedStates: ['draft', 'planned'] },
+				import: { label: 'Import' },
+				help: { label: 'Help', stateless: true },
+			},
+		}
+
+		const mountJobAt = (recordId: string) => {
+			registry.addDoctype(new Doctype('job', buildTaskDoctype().schema, jobWorkflow as any))
+			return mount(Desktop, {
+				props: {
+					routeAdapter: {
+						getCurrentDoctype: () => 'job',
+						getCurrentRecordId: () => recordId,
+						getCurrentView: () => 'record',
+						navigate: vi.fn(),
+					},
+				},
+				global: {
+					plugins: [makeStonecropPlugin(registry, stonecrop), pinia],
+					stubs: { AForm: true, ActionSet: true, SheetNav: true, CommandPalette: true },
+				},
+			})
+		}
+
+		const offeredLabels = (wrapper: ReturnType<typeof mountJobAt>) => {
+			const elements = wrapper.findComponent({ name: 'ActionSet' }).props('elements') as any[]
+			return elements.find(element => element.type === 'dropdown')?.actions.map((action: any) => action.label)
+		}
+
+		it('are only the ones the server runs on a record not created yet', async () => {
+			const wrapper = mountJobAt('new')
+			await flushPromises()
+
+			expect(offeredLabels(wrapper)).toEqual(['Save', 'Import', 'Help'])
+		})
+
+		it('are still every action allowed in the state of a saved record', async () => {
+			stonecrop.addRecord('job', '7', { id: '7', title: 'Saved', status: 'draft' })
+			const wrapper = mountJobAt('7')
+			await flushPromises()
+
+			expect(offeredLabels(wrapper)).toEqual(['Save', 'Plan', 'Cancel', 'Reload tasks', 'Import', 'Help'])
+		})
+	})
 })

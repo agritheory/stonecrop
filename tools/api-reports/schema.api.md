@@ -442,6 +442,13 @@ export function isActionAllowedInState(action: {
 }, currentState: string): boolean;
 
 // @public
+export function isActionAllowedOnNewRecord(action: {
+    allowedStates?: string[] | null;
+    nextState?: string | null;
+    selfTransition?: boolean | null;
+}): boolean;
+
+// @public
 export function isBadgeDescriptor(value: unknown): value is BadgeDescriptor;
 
 // @public

@@ -1,5 +1,7 @@
 import { describe, it, expect, vi } from 'vite-plus/test'
 
+import { isActionAllowedOnNewRecord } from '@stonecrop/schema'
+
 import { applyGuardedTransition } from '../src/dispatch/transition'
 
 /** Fresh spies per case — a backend sitting in 'Draft' with no data-write path, like PostGraphile. */
@@ -172,6 +174,42 @@ describe('applyGuardedTransition', () => {
 			)
 			expect(result.success).toBe(true)
 			expect(readState).not.toHaveBeenCalled()
+		})
+
+		// The page offers a record not created yet what `isActionAllowedOnNewRecord` allows. Every
+		// combination of the declarations an action can carry gets the same answer here, from a
+		// backend able to do everything, so the missing record is the only thing deciding. The guard
+		// does not call the rule: if it did, this would compare the rule with itself.
+		it('runs exactly the actions the page offers it', async () => {
+			const actionDefs = [true, false].flatMap(selfTransition =>
+				[true, false].flatMap(moves =>
+					[true, false].flatMap(limited =>
+						[true, false].map(stateless => ({
+							label: 'Act',
+							selfTransition: selfTransition || undefined,
+							nextState: moves ? 'Active' : undefined,
+							allowedStates: limited ? ['Draft'] : undefined,
+							stateless: stateless || undefined,
+						}))
+					)
+				)
+			)
+			const results = await Promise.all(
+				actionDefs.map(actionDef =>
+					applyGuardedTransition(actionDef, {
+						readState: async () => null,
+						writeState: async () => {},
+						writeData: async () => ({ id: '7' }),
+						runEffect: async () => ({ id: '7' }),
+					})
+				)
+			)
+			const disagreements = actionDefs
+				.map((actionDef, index) => ({ actionDef, result: results[index] }))
+				.filter(({ actionDef, result }) => result.success !== isActionAllowedOnNewRecord(actionDef))
+			expect(actionDefs).toHaveLength(16)
+			expect(actionDefs.filter(actionDef => isActionAllowedOnNewRecord(actionDef))).toHaveLength(10)
+			expect(disagreements).toEqual([])
 		})
 	})
 
