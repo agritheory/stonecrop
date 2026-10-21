@@ -25,6 +25,32 @@ export function arithmeticEntryPattern(separators: NumberSeparators = {}): RegEx
 }
 
 /**
+ * Whether every number in the text is written as the box writes numbers: grouping marks only in the whole part, then
+ * at most one decimal mark, and none at all where the field carries no decimals. "1.234,56" in English is no number
+ * (grouping after the decimal point), and neither is "1.2.3".
+ */
+function numbersWellFormed(text: string, separators: NumberSeparators, fractionDigits?: number): boolean {
+	const decimal = separators.decimal ?? '.'
+	const group = separators.group && separators.group !== decimal ? separators.group : undefined
+	const d = escapeMark(decimal)
+	const g = group ? escapeMark(group) : ''
+	const whole = group ? `\\d[\\d${g}]*` : '\\d+'
+	const number = new RegExp(fractionDigits === 0 ? `^${whole}$` : `^(?:${whole})?(?:${d}\\d*)?$`)
+	const tokens = text.match(new RegExp(`[\\d${d}${g}]+`, 'g')) ?? []
+	return tokens.every(token => number.test(token))
+}
+
+/**
+ * Whether an arithmetic number box may hold `text` while it is typed in: what {@link arithmeticEntryPattern} allows,
+ * with each number in it well formed (grouping marks only in the whole part, then at most one decimal mark).
+ * @param fractionDigits - The field's decimal places; at `0` (as for JPY) a decimal mark is refused
+ * @public
+ */
+export function isArithmeticEntry(text: string, separators: NumberSeparators = {}, fractionDigits?: number): boolean {
+	return arithmeticEntryPattern(separators).test(text) && numbersWellFormed(text, separators, fractionDigits)
+}
+
+/**
  * Whether a single typed character may go into an arithmetic number box. `=` is one, though only as the box's first
  * character: check the box's text with {@link arithmeticEntryPattern} where the caret is known.
  * @public
@@ -53,10 +79,12 @@ export function roundToPrecision(value: number, precision?: number): number {
  *
  * @param text - The box's text
  * @param separators - The marks the box writes numbers with; a plain `.` decimal point with no grouping when omitted
- * @returns The number, or null when the text is empty or no well-formed expression (`12*`, `(3`, `5/0`)
+ * @returns The number, or null when the text is empty or no well-formed expression (`12*`, `(3`, `5/0`, or a number
+ * written with the separators the other way round, as `1.234,56` in English)
  * @public
  */
 export function evaluateArithmetic(text: string, separators: NumberSeparators = {}): number | null {
+	if (!numbersWellFormed(text, separators)) return null
 	let source = text.replace(/\s/g, '')
 	if (separators.group && separators.group !== separators.decimal) source = source.replaceAll(separators.group, '')
 	if (separators.decimal && separators.decimal !== '.') source = source.replaceAll(separators.decimal, '.')

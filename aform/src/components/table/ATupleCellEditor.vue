@@ -24,7 +24,6 @@
 
 <script setup lang="ts">
 import {
-	arithmeticEntryPattern,
 	currencyAmountEntryPattern,
 	currencyAmountSeparators,
 	currencyInputFractionDigits,
@@ -177,6 +176,8 @@ const arithmetic = useArithmeticInput({
 				? ''
 				: String(value),
 	separators: () => arithmeticSeparators(),
+	// As the mask does: a currency without decimals (JPY) refuses a decimal point.
+	fractionDigits: () => (amountMaskEnabled.value ? currencyInputFractionDigits(selectedCurrencyId.value) : undefined),
 	round: value => (category === 'currency' ? roundToCurrency(value, selectedCurrencyId.value) : value),
 	text: draftText,
 	enabled: () => arithmeticEnabled.value,
@@ -263,7 +264,6 @@ const refuseUnlessQuantity = (event: Event, inserted: string) => {
 
 // What the box may hold, as the form's field refuses anything else.
 const entryPattern = computed(() => {
-	if (arithmeticEnabled.value) return arithmeticEntryPattern(arithmeticSeparators())
 	if (category === 'quantity') return quantityEntryPattern
 	return amountMaskEnabled.value ? currencyAmountEntryPattern(selectedCurrencyId.value) : undefined
 })
@@ -271,11 +271,12 @@ const entryPattern = computed(() => {
 // A number copied from a spreadsheet cell comes with a line break or tab: what is pasted is the number without them.
 const onPaste = (event: ClipboardEvent) => {
 	const pattern = entryPattern.value
-	if (!pattern) return
+	if (!arithmeticEnabled.value && !pattern) return
 	event.preventDefault()
 	const input = event.target as HTMLInputElement
 	const pasted = (event.clipboardData?.getData('text') ?? '').trim()
-	if (!pattern.test(textWith(input, pasted))) return
+	const next = textWith(input, pasted)
+	if (arithmeticEnabled.value ? !arithmetic.accepts(next) : !pattern!.test(next)) return
 	input.setRangeText(pasted, input.selectionStart ?? 0, input.selectionEnd ?? 0, 'end')
 	input.dispatchEvent(new Event('input', { bubbles: true }))
 }

@@ -16,6 +16,7 @@ function install(_app: App /* options */) {}
 export {
 	arithmeticEntryPattern,
 	evaluateArithmetic,
+	isArithmeticEntry,
 	isArithmeticKey,
 	roundToPrecision,
 	type NumberSeparators,

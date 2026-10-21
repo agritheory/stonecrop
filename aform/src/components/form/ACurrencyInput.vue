@@ -262,6 +262,8 @@ const arithmetic = useArithmeticInput({
 				? ''
 				: String(value),
 	separators: () => (amountMaskEnabled.value ? currencyAmountSeparators() : {}),
+	// As the mask does: a currency without decimals (JPY) refuses a decimal point.
+	fractionDigits: () => (amountMaskEnabled.value ? currencyInputFractionDigits(selectedCurrencyId.value) : undefined),
 	round: value => roundToCurrency(value, selectedCurrencyId.value),
 	selectOnFocus: true,
 })

@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest'
 
-import { arithmeticEntryPattern, evaluateArithmetic, isArithmeticKey, roundToPrecision } from '../src/arithmetic'
+import {
+	arithmeticEntryPattern,
+	evaluateArithmetic,
+	isArithmeticEntry,
+	isArithmeticKey,
+	roundToPrecision,
+} from '../src/arithmetic'
 
 describe('evaluateArithmetic', () => {
 	it('reads a plain number', () => {
@@ -91,6 +97,12 @@ describe('evaluateArithmetic', () => {
 		expect(evaluateArithmetic('1 000,5*2', fr)).toBe(2001)
 	})
 
+	it('refuses a number written with the separators the other way round', () => {
+		expect(evaluateArithmetic('1.234,56', { group: ',', decimal: '.' })).toBeNull()
+		expect(evaluateArithmetic('1,234.56', { group: '.', decimal: ',' })).toBeNull()
+		expect(evaluateArithmetic('1,234.56+1', { group: ',', decimal: '.' })).toBe(1235.56)
+	})
+
 	it('refuses a comma without separators that make it a mark', () => {
 		expect(evaluateArithmetic('1,5')).toBeNull()
 	})
@@ -145,5 +157,36 @@ describe('roundToPrecision', () => {
 		for (const precision of [undefined, -1, 1.5, 101]) {
 			expect(roundToPrecision(10 / 3, precision), String(precision)).toBe(10 / 3)
 		}
+	})
+})
+
+describe('isArithmeticEntry', () => {
+	const en = { group: ',', decimal: '.' }
+
+	it('takes expressions on their way to a number', () => {
+		for (const text of ['', '=', '1.', '.5', '12*', '1,234.5+2', '(3+']) {
+			expect(isArithmeticEntry(text, en), text).toBe(true)
+		}
+	})
+
+	it('refuses a second decimal point in one number, but not in the next', () => {
+		expect(isArithmeticEntry('1.2.3')).toBe(false)
+		expect(isArithmeticEntry('1.2+3.4')).toBe(true)
+	})
+
+	it('refuses grouping after the decimal point', () => {
+		expect(isArithmeticEntry('1.234,56', en)).toBe(false)
+		expect(isArithmeticEntry('1.2,', en)).toBe(false)
+	})
+
+	it('refuses a decimal point where the field carries no decimals', () => {
+		expect(isArithmeticEntry('1.5', en, 0)).toBe(false)
+		expect(isArithmeticEntry('1,500*2', en, 0)).toBe(true)
+		expect(isArithmeticEntry('1.5', en, 2)).toBe(true)
+	})
+
+	it('refuses what the entry pattern refuses', () => {
+		expect(isArithmeticEntry('1e3')).toBe(false)
+		expect(isArithmeticEntry('1=2')).toBe(false)
 	})
 })

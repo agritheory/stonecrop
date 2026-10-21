@@ -18,6 +18,7 @@ export type ArithmeticInputOptions = {
     commit: (value: number | null) => void;
     format?: (value: number | null) => string;
     separators?: () => NumberSeparators;
+    fractionDigits?: () => number | undefined;
     round?: (value: number) => number;
     live?: boolean;
     text?: Ref<string>;
@@ -68,6 +69,9 @@ export function fromISODate(day: string): Temporal.PlainDate | undefined;
 
 // @public
 export function install(_app: App): void;
+
+// @public
+export function isArithmeticEntry(text: string, separators?: NumberSeparators, fractionDigits?: number): boolean;
 
 // @public
 export function isArithmeticKey(key: string, separators?: NumberSeparators): boolean;

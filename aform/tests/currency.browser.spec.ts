@@ -71,7 +71,9 @@ describe('typing a price', { tags: ['browser'] }, () => {
 	// A refused key leaves the rest of what was typed.
 	it.each([
 		['12a', 12],
-		['1-2', 12],
+		['1^2', 12],
+		// The box takes arithmetic: a minus after a number is a subtraction.
+		['1-2', -1],
 		// A second decimal point would make the text no number, and so no price.
 		['12.5.0', 12.5],
 		// Credits and refunds are negative.

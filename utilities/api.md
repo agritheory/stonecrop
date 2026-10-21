@@ -225,6 +225,24 @@ declare function install(_app: App): void;
 |-----------|------|-------------|
 | _app | `App` | Vue app instance |
 
+### isArithmeticEntry
+
+Whether an arithmetic number box may hold `text` while it is typed in: what `arithmeticEntryPattern` allows, with each number in it well formed (grouping marks only in the whole part, then at most one decimal mark).
+
+**Signature:**
+
+```typescript
+export declare function isArithmeticEntry(text: string, separators?: NumberSeparators, fractionDigits?: number): boolean;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| text | `string` |  |
+| separators | `NumberSeparators` |  |
+| fractionDigits | `number` | The field's decimal places; at `0` (as for JPY) a decimal mark is refused |
+
 ### isArithmeticKey
 
 Whether a single typed character may go into an arithmetic number box. `=` is one, though only as the box's first character: check the box's text with `arithmeticEntryPattern` where the caret is known.
@@ -341,7 +359,7 @@ export declare function useArithmeticInput(input: ArithmeticInputOptions): {
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| { value, commit, format, separators, round, live, text, enabled, selectOnFocus, } | `` |  |
+| { value, commit, format, separators, fractionDigits, round, live, text, enabled, selectOnFocus, } | `` |  |
 | input | `ArithmeticInputOptions` |  |
 
 ### useKeyboardNav
@@ -374,6 +392,7 @@ export type ArithmeticInputOptions = {
     commit: (value: number | null) => void;
     format?: (value: number | null) => string;
     separators?: () => NumberSeparators;
+    fractionDigits?: () => number | undefined;
     round?: (value: number) => number;
     live?: boolean;
     text?: Ref<string>;

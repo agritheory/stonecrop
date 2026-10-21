@@ -1,6 +1,6 @@
 import { ref, watch, type Ref } from 'vue'
 
-import { arithmeticEntryPattern, evaluateArithmetic, type NumberSeparators } from '../arithmetic'
+import { evaluateArithmetic, isArithmeticEntry, type NumberSeparators } from '../arithmetic'
 
 /**
  * Configuration for {@link useArithmeticInput}.
@@ -15,6 +15,8 @@ export type ArithmeticInputOptions = {
 	format?: (value: number | null) => string
 	/** The marks the box writes numbers with; a plain `.` decimal point when omitted */
 	separators?: () => NumberSeparators
+	/** The field's decimal places, where it has a fixed number of them; at `0` (as for JPY) a decimal mark is refused */
+	fractionDigits?: () => number | undefined
 	/** Rounds a result before it is committed, as to a currency's decimals: `10/3` is `3.33`, as the box shows */
 	round?: (value: number) => number
 	/** Commit each well-formed result as it is typed (default), or only once the box settles */
@@ -59,6 +61,7 @@ export function useArithmeticInput({
 	commit,
 	format = n => (n === null ? '' : String(n)),
 	separators = () => ({}),
+	fractionDigits = () => undefined,
 	round = n => n,
 	live = true,
 	text = ref(''),
@@ -96,8 +99,11 @@ export function useArithmeticInput({
 		committedText = text.value
 	}
 
-	/** Whether the box may hold `next`: digits, `.`, `+ - * / %`, parentheses and a leading `=` */
-	const accepts = (next: string) => arithmeticEntryPattern(separators()).test(next)
+	/**
+	 * Whether the box may hold `next`: digits, `.`, `+ - * / %`, parentheses and a leading `=`, with each number
+	 * written as the box writes numbers (so not `1.2.3`, nor `1.234,56` in English)
+	 */
+	const accepts = (next: string) => isArithmeticEntry(next, separators(), fractionDigits())
 
 	/** The box gained focus; `current` is its text, when the caller keeps it */
 	const begin = (current?: string) => {
