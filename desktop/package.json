@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/desktop",
-	"version": "0.51.0",
+	"version": "0.52.0",
 	"description": "Desktop-specific components for Stonecrop UI",
 	"keywords": [
 		"components",

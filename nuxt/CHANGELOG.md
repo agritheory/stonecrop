@@ -1,5 +1,27 @@
 # Change Log - @stonecrop/nuxt
 
+## 0.52.0
+
+### Patch Changes
+
+- 4753b5b: The app template's server fails a Save it cannot read back afterwards, such as one whose server-side handler replies without the record's key, instead of reporting success with no record the page can file.
+- 4753b5b: The app template's server refuses a Save sent with the id of a record that no longer exists, as the Postgres adapter does, instead of creating a new record under a new id.
+- Updated dependencies [4753b5b]
+- Updated dependencies [4753b5b]
+- Updated dependencies [4753b5b]
+  - @stonecrop/graphql-middleware@0.52.0
+  - @stonecrop/graphql-client@0.52.0
+  - @stonecrop/nuxt-grafserv@0.52.0
+  - @stonecrop/aform@0.52.0
+  - @stonecrop/atable@0.52.0
+  - @stonecrop/casl-middleware@0.52.0
+  - @stonecrop/code-editor@0.52.0
+  - @stonecrop/desktop@0.52.0
+  - @stonecrop/node-editor@0.52.0
+  - @stonecrop/schema@0.52.0
+  - @stonecrop/stonecrop@0.52.0
+  - @stonecrop/themes@0.52.0
+
 ## 0.51.0
 
 ### Patch Changes

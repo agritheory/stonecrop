@@ -1,5 +1,16 @@
 # Change Log - @stonecrop/nuxt-grafserv
 
+## 0.52.0
+
+### Patch Changes
+
+- Updated dependencies [4753b5b]
+- Updated dependencies [4753b5b]
+- Updated dependencies [4753b5b]
+  - @stonecrop/graphql-middleware@0.52.0
+  - @stonecrop/casl-middleware@0.52.0
+  - @stonecrop/rockfoil@0.52.0
+
 ## 0.51.0
 
 ### Patch Changes
