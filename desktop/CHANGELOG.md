@@ -1,5 +1,20 @@
 # Change Log - @stonecrop/desktop
 
+## 0.51.0
+
+### Minor Changes
+
+- e8842fb: A record not created yet is offered only the actions the server guard runs on one (a self-transition, or an action declaring no `allowedStates` and no `nextState`), a rule now exported as `isActionAllowedOnNewRecord`, so Desktop no longer offers a new record a transition the server refuses.
+
+### Patch Changes
+
+- Updated dependencies [e8842fb]
+- Updated dependencies [e8842fb]
+  - @stonecrop/schema@0.51.0
+  - @stonecrop/stonecrop@0.51.0
+  - @stonecrop/aform@0.51.0
+  - @stonecrop/themes@0.51.0
+
 ## 0.50.1
 
 ### Patch Changes

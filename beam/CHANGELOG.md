@@ -1,5 +1,7 @@
 # Change Log - @stonecrop/beam
 
+## 0.51.0
+
 ## 0.50.1
 
 ## 0.50.0

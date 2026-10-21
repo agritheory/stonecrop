@@ -1,5 +1,19 @@
 # Change Log - @stonecrop/stonecrop
 
+## 0.51.0
+
+### Minor Changes
+
+- e8842fb: A record not created yet is offered only the actions the server guard runs on one (a self-transition, or an action declaring no `allowedStates` and no `nextState`), a rule now exported as `isActionAllowedOnNewRecord`, so Desktop no longer offers a new record a transition the server refuses.
+- e8842fb: `Stonecrop.getRecordState` returns `null` for a record not created yet instead of the workflow's first state, and `Doctype.getAvailableTransitions` and `getAvailableCommands` take that `null` to list the actions that can run on one.
+
+### Patch Changes
+
+- Updated dependencies [e8842fb]
+  - @stonecrop/schema@0.51.0
+  - @stonecrop/aform@0.51.0
+  - @stonecrop/atable@0.51.0
+
 ## 0.50.1
 
 ### Patch Changes
