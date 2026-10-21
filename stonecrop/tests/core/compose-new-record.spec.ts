@@ -595,3 +595,233 @@ describe('composeNewRecord fills the fields inside a grouped section', { tags: [
 		expect(String(warn.mock.calls.flat().join(' '))).toContain('would never end')
 	})
 })
+
+// An app opens a new record already filled in, such as a sales order made from a quotation: the values are
+// checked when the app hands them over, held until that doctype's new form is built, and win over every default.
+describe('a new record the app fills in', { tags: ['unit'] }, () => {
+	let registry: Registry
+	let warn: ReturnType<typeof vi.spyOn>
+
+	const workflow = (id: string) => ({ id, initial: 'draft', states: { draft: {} } }) as any
+
+	const addSalesOrder = () => {
+		const line = new Doctype(
+			'OrderLine',
+			List([
+				{ kind: 'field', fieldname: 'item', component: 'ATextInput' },
+				{ kind: 'field', fieldname: 'qty', component: 'ANumericInput' },
+			] as any),
+			workflow('order-line'),
+			undefined,
+			undefined,
+			undefined,
+			{ qty: 1 }
+		)
+		const address = new Doctype(
+			'Address',
+			List([{ kind: 'field', fieldname: 'city', component: 'ATextInput' }] as any),
+			workflow('address')
+		)
+		const order = new Doctype(
+			'SalesOrder',
+			List([
+				{ kind: 'field', fieldname: 'customer', component: 'ATextInput' },
+				{ kind: 'field', fieldname: 'status', component: 'ATextInput' },
+				{ kind: 'field', fieldname: 'items', component: 'ATable', doctype: 'order-line' },
+				{ kind: 'field', fieldname: 'shipTo', component: 'AForm', doctype: 'address' },
+				{ kind: 'table', fieldname: 'notes', columns: [{ fieldname: 'text', component: 'ATextInput' }] },
+			] as any),
+			workflow('sales-order'),
+			undefined,
+			{
+				items: { target: 'order-line', cardinality: 'noneOrMany', fieldname: 'items' },
+				shipTo: { target: 'address', cardinality: 'one', fieldname: 'shipTo' },
+			},
+			undefined,
+			{ status: 'Draft' }
+		)
+		registry.addDoctype(line)
+		registry.addDoctype(address)
+		registry.addDoctype(order)
+		return order
+	}
+
+	beforeEach(() => {
+		Registry._root = undefined as any
+		registry = new Registry()
+		warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
+	})
+
+	afterEach(() => {
+		warn.mockRestore()
+	})
+
+	describe('prefillDraft', () => {
+		const refusal = (reason: string) => new Error(`Couldn't open a new SalesOrder: ${reason}.`)
+
+		it('holds the values under the doctype, whichever name the caller uses, until they are taken once', () => {
+			addSalesOrder()
+			registry.prefillDraft('SalesOrder', { customer: 'C-1' })
+			expect(registry.takePrefill('sales-order')).toEqual({ customer: 'C-1' })
+			expect(registry.takePrefill('sales-order')).toBeUndefined()
+
+			registry.prefillDraft('sales-order', { customer: 'C-2' })
+			expect(registry.takePrefill('SalesOrder')).toEqual({ customer: 'C-2' })
+		})
+
+		it('holds values filled under another name the doctype is registered by for its own new form', () => {
+			const order = addSalesOrder()
+			// The Nuxt template also registers a doctype under its file name when that differs from its slug.
+			registry.registry['sales-orders'] = order
+			registry.prefillDraft('sales-orders', { customer: 'C-1' })
+
+			expect(registry.takePrefill(order.slug)).toEqual({ customer: 'C-1' })
+
+			registry.prefillDraft('SalesOrder', { customer: 'C-2' })
+			expect(registry.takePrefill('sales-orders')).toEqual({ customer: 'C-2' })
+		})
+
+		it('skips a field given as undefined, so its default stays', async () => {
+			const order = addSalesOrder()
+			registry.registerDefaults('sales-order', { customer: 'Walk-in' })
+			registry.prefillDraft('sales-order', { customer: undefined, status: 'Open', shipTo: { city: undefined } })
+			const prefill = registry.takePrefill('sales-order')
+
+			expect(prefill).toStrictEqual({ status: 'Open', shipTo: {} })
+			const { record } = await registry.composeNewRecord(order, { prefill })
+			expect(record.customer).toBe('Walk-in')
+		})
+
+		it('holds numbers, booleans and null inside a value as given', () => {
+			addSalesOrder()
+			registry.prefillDraft('sales-order', { customer: { id: 'C-1', qty: 2, active: true, note: null } })
+
+			expect(registry.takePrefill('sales-order')).toStrictEqual({
+				customer: { id: 'C-1', qty: 2, active: true, note: null },
+			})
+		})
+
+		it("skips a key given as undefined inside a field's own value", () => {
+			addSalesOrder()
+			registry.prefillDraft('sales-order', { customer: { id: 'C-1', displayText: undefined } })
+
+			expect(registry.takePrefill('sales-order')).toStrictEqual({ customer: { id: 'C-1' } })
+		})
+
+		it('replaces values held for the same doctype', () => {
+			addSalesOrder()
+			registry.prefillDraft('sales-order', { customer: 'C-1' })
+			registry.prefillDraft('sales-order', { customer: 'C-2' })
+
+			expect(registry.takePrefill('sales-order')).toEqual({ customer: 'C-2' })
+		})
+
+		it("keeps its own copy, so a later change to the caller's object does not reach the form", () => {
+			addSalesOrder()
+			// A link reads back as an object on a field of its own, so a value can be an object too.
+			const values = {
+				customer: { id: 'C-1', displayText: 'Acme' },
+				items: [{ item: 'apple' }],
+				shipTo: { city: 'Paris' },
+				notes: [{ text: 'Rush' }],
+			}
+			registry.prefillDraft('sales-order', values)
+			values.customer.displayText = 'changed'
+			values.items[0].item = 'pear'
+			values.shipTo.city = 'Lyon'
+			values.notes[0].text = 'Slow'
+
+			expect(registry.takePrefill('sales-order')).toEqual({
+				customer: { id: 'C-1', displayText: 'Acme' },
+				items: [{ item: 'apple' }],
+				shipTo: { city: 'Paris' },
+				notes: [{ text: 'Rush' }],
+			})
+		})
+
+		it.each([
+			['on the record', { colour: 'red' }, 'colour'],
+			['on a line', { items: [{ colour: 'red' }] }, 'items[0].colour'],
+			['on an embedded record', { shipTo: { colour: 'red' } }, 'shipTo.colour'],
+			["on an inline table's row", { notes: [{ colour: 'red' }] }, 'notes[0].colour'],
+		])('refuses a name the doctype does not have %s, and keeps what it held', (_where, values, path) => {
+			addSalesOrder()
+			registry.prefillDraft('sales-order', { customer: 'C-1' })
+
+			expect(() => registry.prefillDraft('sales-order', values)).toThrow(refusal(`it has no field "${path}"`))
+			expect(registry.takePrefill('sales-order')).toEqual({ customer: 'C-1' })
+		})
+
+		it.each([
+			['lines that are not a list', { items: 'apple' }, '"items" must be a list'],
+			['no lines at all', { items: null }, '"items" must be a list'],
+			['a line that is not a record', { items: ['apple'] }, '"items[0]" must be a record'],
+			['a date as a line', { items: [new Date(0)] }, '"items[0]" must be a record'],
+			['an embedded record that is not a record', { shipTo: 'Paris' }, '"shipTo" must be a record'],
+			['a function as a value', { customer: () => 'C-1' }, '"customer" can\'t be a function'],
+			['a function inside a line', { items: [{ item: () => 'apple' }] }, '"items[0].item" can\'t be a function'],
+			['a function inside a value', { customer: { id: 'C-1', pick: () => 1 } }, '"customer.pick" can\'t be a function'],
+			['a date as a value', { customer: new Date(0) }, '"customer" must be plain data'],
+			['a map as a value', { customer: new Map() }, '"customer" must be plain data'],
+			['a bigint as a value', { customer: BigInt(10) }, '"customer" must be plain data'],
+			['a symbol inside a value', { customer: { id: Symbol('C-1') } }, '"customer.id" must be plain data'],
+			['undefined inside a list value', { customer: ['C-1', undefined] }, '"customer[1]" must be plain data'],
+			['values that are not a record', ['C-1'], 'its values must be a record'],
+		])('refuses %s, and holds nothing', (_what, values, reason) => {
+			addSalesOrder()
+
+			expect(() => registry.prefillDraft('sales-order', values as any)).toThrow(refusal(reason))
+			expect(registry.takePrefill('sales-order')).toBeUndefined()
+		})
+
+		it('takes no embedded record as null, as a read gives one that is absent', () => {
+			addSalesOrder()
+			registry.prefillDraft('sales-order', { shipTo: null })
+
+			expect(registry.takePrefill('sales-order')).toEqual({ shipTo: null })
+		})
+
+		it('refuses a doctype that is not registered', () => {
+			expect(() => registry.prefillDraft('NoSuchThing', { customer: 'C-1' })).toThrow(
+				new Error("Couldn't open a new NoSuchThing: no doctype by that name is registered.")
+			)
+		})
+	})
+
+	describe('composeNewRecord with filled values', () => {
+		it('puts them over every default, an empty one included', async () => {
+			const order = addSalesOrder()
+			registry.registerDefaults('sales-order', { customer: 'Walk-in', status: 'Open' })
+
+			const { record } = await registry.composeNewRecord(order, { prefill: { customer: 'C-1', status: '' } })
+			expect(record.customer).toBe('C-1')
+			expect(record.status).toBe('')
+		})
+
+		it("gives each filled line its own doctype's defaults first", async () => {
+			const order = addSalesOrder()
+
+			const { record } = await registry.composeNewRecord(order, {
+				prefill: { items: [{ item: 'apple' }, { item: 'pear', qty: 3 }] },
+			})
+			expect(record.items).toEqual([
+				{ item: 'apple', qty: 1 },
+				{ item: 'pear', qty: 3 },
+			])
+		})
+
+		it('keeps them when registered defaults never answer or fail', async () => {
+			const order = addSalesOrder()
+			registry.registerDefaults('sales-order', {
+				customer: () => new Promise<never>(() => undefined),
+				status: () => Promise.reject(new Error('status lookup failed')),
+			})
+
+			const { record } = await registry.composeNewRecord(order, {
+				timeoutMs: 20,
+				prefill: { customer: 'C-1', status: 'From quotation' },
+			})
+			expect([record.customer, record.status]).toEqual(['C-1', 'From quotation'])
+		})
+	})
+})

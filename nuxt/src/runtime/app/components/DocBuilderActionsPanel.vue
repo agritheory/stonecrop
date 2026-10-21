@@ -119,6 +119,7 @@ declare const graphql: {
   query(query: string, variables?: Record<string, unknown>): Promise<unknown>
 }
 declare const record: Record<string, unknown>
+declare function prefillDraft(doctype: string, values: Record<string, unknown>): void
 `
 const TRIGGER_API_STUBS = `
 declare const record: Record<string, unknown>

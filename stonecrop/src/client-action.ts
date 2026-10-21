@@ -177,7 +177,15 @@ export function useClientAction(options: UseClientActionOptions = {}) {
 				},
 			}
 
-			await executeClientHandler(clientHandler, { router: resolveRouter(), record, runAction, graphql })
+			const prefillDraft = (target: string, values: Record<string, unknown>) => sc.registry.prefillDraft(target, values)
+
+			await executeClientHandler(clientHandler, {
+				router: resolveRouter(),
+				record,
+				runAction,
+				graphql,
+				prefillDraft,
+			})
 		} catch (error) {
 			onError({
 				message: error instanceof Error ? error.message : String(error),

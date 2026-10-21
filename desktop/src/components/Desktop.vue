@@ -967,8 +967,10 @@ watch(
 		}
 		draftLoading.value = true
 		const stillHere = () => isNewRecord.value && currentDoctype.value === slug
+		// Taken before the build waits on anything, so only this form uses what the app filled in.
+		const prefill = registry.takePrefill(doctype.slug)
 		void registry
-			.composeNewRecord(doctype)
+			.composeNewRecord(doctype, { prefill })
 			.then(({ record }) => {
 				if (!stillHere()) return undefined
 				editedRecord.value = app.editRecord(slug, recordId, record)
