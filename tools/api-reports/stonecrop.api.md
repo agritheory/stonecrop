@@ -161,10 +161,10 @@ export class Doctype {
         requiredFields?: string[];
         allowedStates?: string[];
     } | undefined;
-    getAvailableCommands(currentState?: string): Array<{
+    getAvailableCommands(currentState?: string | null): Array<{
         name: string;
     }>;
-    getAvailableTransitions(currentState: string): Array<{
+    getAvailableTransitions(currentState: string | null): Array<{
         name: string;
         targetState: string;
     }>;
@@ -800,7 +800,7 @@ export class Stonecrop {
     getRecordById(doctype: string | Doctype, recordId: string): HSTNode | undefined;
     getRecordIds(doctype: string | Doctype): string[];
     getRecords(doctype: Doctype, options?: GetRecordsOptions): Promise<GetRecordsResult>;
-    getRecordState(doctype: string | Doctype, recordId: string): string;
+    getRecordState(doctype: string | Doctype, recordId: string): string | null;
     getStore(): HSTNode;
     initializeNestedData(path: string, doctype: Doctype): Promise<void>;
     isWorkflowReady(doctype: Doctype, recordId: string): {

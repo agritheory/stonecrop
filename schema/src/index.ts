@@ -52,6 +52,7 @@ export {
 	WorkflowMeta,
 	getDoctypeSlug,
 	isActionAllowedInState,
+	isActionAllowedOnNewRecord,
 	LINK_DISPLAY_SUFFIX,
 	linkDisplayFieldname,
 } from './doctype'

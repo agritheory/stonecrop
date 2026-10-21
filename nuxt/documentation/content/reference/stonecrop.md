@@ -1628,7 +1628,7 @@ Returns the stateless **Commands** available in a given workflow state — side-
 Only meaningful for WorkflowMeta format; XState workflows have no Commands.
 
 ```typescript
-getAvailableCommands(currentState: string): Array<{
+getAvailableCommands(currentState: string | null): Array<{
         name: string;
     }>
 ```
@@ -1637,14 +1637,16 @@ getAvailableCommands(currentState: string): Array<{
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| currentState | `string` | The record's current state, used to honor a Command's `allowedStates` |
+| currentState | `string \| null` | The record's current state, used to honor a Command's `allowedStates`, or `null` for a record not created yet, which lists the Commands that can run on one (`isActionAllowedOnNewRecord`) |
 
 #### getAvailableTransitions
 
 Returns the transitions available from a given workflow state, derived from the doctype's workflow configuration. Supports both XState format and WorkflowMeta format.
 
+A record not created yet is in no state: given `null`, only the actions that can run on it are listed (`isActionAllowedOnNewRecord`), and since none of them moves it, each has a `targetState` of `''`.
+
 ```typescript
-getAvailableTransitions(currentState: string): Array<{
+getAvailableTransitions(currentState: string | null): Array<{
         name: string;
         targetState: string;
     }>
@@ -1654,7 +1656,7 @@ getAvailableTransitions(currentState: string): Array<{
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| currentState | `string` | The state name to read transitions from |
+| currentState | `string \| null` | The state name to read transitions from, or `null` for a record not created yet |
 
 #### getRecordId
 
@@ -2301,10 +2303,12 @@ getRecords(doctype: Doctype, options: GetRecordsOptions): Promise<GetRecordsResu
 
 Determine the current workflow state for a record.
 
-Reads the record's `status` field from the HST store. If the field is absent or empty the doctype's declared `workflow.initial` state is used as the fallback, giving callers a reliable state name without having to duplicate that logic.
+Reads the record's `status` field from the HST store. If the field is absent or empty the workflow's first listed state (an XState workflow's `initial`) is used as the fallback, giving callers a reliable state name without having to duplicate that logic.
+
+A record not created yet (`DRAFT_RECORD_ID`) is in no state, as the server guard treats it: pass the `null` returned to `Doctype.getAvailableTransitions` and `Doctype.getAvailableCommands` to list the actions that can run on it.
 
 ```typescript
-getRecordState(doctype: string | Doctype, recordId: string): string
+getRecordState(doctype: string | Doctype, recordId: string): string | null
 ```
 
 **Parameters:**
