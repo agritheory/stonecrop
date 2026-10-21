@@ -43,6 +43,8 @@ Two things a patch can never set. `status` is one: state moves through `nextStat
 
 An id that was dispatched but matched no row is refused rather than created. It means the record went away since the client read it, and creating a replacement under a new identity would report success for a lost update.
 
+A Save with a server-side handler registered for it (`createStonecropPlugin({ actionHandlers })`) is written by that handler instead, on a new record as on a saved one. The handler gets no `recordId` for a record not created yet, creates it, and must return the record it saved, or the Save fails. The rules above for what a patch may set do not apply to it, since the handler writes its own SQL; the refusal of an id that matched no row does, before the handler runs.
+
 ## Why there is no `DataAdapter` base class yet
 
 Stonecrop's middleware currently targets one backend: a PostgreSQL database accessed through PostGraphile's Grafast pipeline. A natural next question is: should there be a `DataAdapter` interface so that a REST API, a localStorage cache, or a different database could be swapped in?

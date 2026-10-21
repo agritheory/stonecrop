@@ -22,6 +22,8 @@ import { loadDoctypesFromObject, clearRegistry } from '../../src/registry/doctyp
 
 /** Records ids `ScItem.publish`'s effect ran against — its return value is empty by design. */
 const publishCalls: string[] = []
+/** Records ids `ScItemHandled.save` ran against, `(new)` for a record not created yet. */
+const handledSaveCalls: string[] = []
 
 const actionHandlers: Record<string, Record<string, ActionHandler>> = {
 	ScOrder: {
@@ -86,6 +88,35 @@ const actionHandlers: Record<string, Record<string, ActionHandler>> = {
 				values: [String(recordId)],
 			})
 			return Object.fromEntries(Object.entries(rows[0]).map(([column, value]) => [snakeToCamel(column), value]))
+		},
+	},
+	// A save declared as a self-transition whose handler creates as well as updates. It marks the
+	// name, so a row shows whether the handler wrote it or the adapter's own write did.
+	ScItemHandled: {
+		async save({ pgClient, recordId, data }) {
+			handledSaveCalls.push(recordId == null ? '(new)' : String(recordId))
+			const name = `${String(data.name)} (handled)`
+			const { rows } =
+				recordId == null
+					? await pgClient.query<Record<string, unknown>>({
+							text: `INSERT INTO sc_item (name) VALUES ($1) RETURNING id, name, status`,
+							values: [name],
+						})
+					: await pgClient.query<Record<string, unknown>>({
+							text: `UPDATE sc_item SET name = $2 WHERE id::text = $1 RETURNING id, name, status`,
+							values: [String(recordId), name],
+						})
+			return rows[0]
+		},
+	},
+	// Creates the row but replies without its key, so nothing can be read back.
+	ScItemHandledKeyless: {
+		async save({ pgClient, data }) {
+			const { rows } = await pgClient.query<Record<string, unknown>>({
+				text: `INSERT INTO sc_item (name) VALUES ($1) RETURNING name, status`,
+				values: [String(data.name)],
+			})
+			return rows[0]
 		},
 	},
 	ScSignal: {
@@ -479,6 +510,54 @@ beforeAll(async () => {
 			],
 			workflow: { actions: { save: { label: 'Save', stateless: true } } },
 		},
+		// sc_item saved by a registered handler on a Save declared as a self-transition limited to a state.
+		ScItemHandled: {
+			name: 'ScItemHandled',
+			fields: [
+				{ kind: 'field', fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
+				{ kind: 'field', fieldname: 'name', component: 'ATextInput', label: 'Name' },
+				{ kind: 'field', fieldname: 'status', component: 'ATextInput', label: 'Status' },
+			],
+			workflow: {
+				states: ['Draft', 'Active'],
+				actions: { save: { label: 'Save', selfTransition: true, allowedStates: ['Draft'] } },
+			},
+		},
+		// sc_item read without its key: no field declares `primaryKey` and none is named `id`.
+		ScItemUnkeyed: {
+			name: 'ScItemUnkeyed',
+			fields: [
+				{ kind: 'field', fieldname: 'name', component: 'ATextInput', label: 'Name' },
+				{ kind: 'field', fieldname: 'status', component: 'ATextInput', label: 'Status' },
+			],
+			workflow: { actions: { save: { label: 'Save', selfTransition: true } } },
+		},
+		// sc_item keyed by a field that is also a link, so a written record's key comes back enriched.
+		ScItemLinkKeyed: {
+			name: 'ScItemLinkKeyed',
+			fields: [
+				{
+					kind: 'field',
+					fieldname: 'id',
+					component: 'AFormLink',
+					doctype: 'ScPeriod',
+					primaryKey: true,
+					label: 'ID',
+				},
+				{ kind: 'field', fieldname: 'name', component: 'ATextInput', label: 'Name' },
+				{ kind: 'field', fieldname: 'status', component: 'ATextInput', label: 'Status' },
+			],
+			workflow: { actions: { save: { label: 'Save', selfTransition: true } } },
+		},
+		ScItemHandledKeyless: {
+			name: 'ScItemHandledKeyless',
+			fields: [
+				{ kind: 'field', fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
+				{ kind: 'field', fieldname: 'name', component: 'ATextInput', label: 'Name' },
+				{ kind: 'field', fieldname: 'status', component: 'ATextInput', label: 'Status' },
+			],
+			workflow: { actions: { save: { label: 'Save', selfTransition: true } } },
+		},
 		// Reads sc_period's list of zone-free timestamps, which no other period fixture declares.
 		ScPeriodReviews: {
 			name: 'ScPeriodReviews',
@@ -595,6 +674,10 @@ beforeAll(async () => {
 					ScPeriodWithEntries: 'sc_period',
 					ScPeriodReviews: 'sc_period',
 					ScPeriodHandled: 'sc_period',
+					ScItemHandled: 'sc_item',
+					ScItemHandledKeyless: 'sc_item',
+					ScItemUnkeyed: 'sc_item',
+					ScItemLinkKeyed: 'sc_item',
 					ScPeriodEntryWithPeriod: 'sc_period_entry',
 				},
 			}),
@@ -1038,10 +1121,8 @@ describe('lazy link retrieval via stonecropRecords', { tags: ['integration', 'gr
 // ===========================================================================
 
 describe('self-transition data write', { tags: ['integration', 'graphql'] }, () => {
-	// The adapter supplied `readState`/`writeState`/`runEffect` and no `writeData` at all, which
-	// `GuardedTransitionIO` documents as how a backend *declines* to write. So the reference
-	// Postgres backend was indistinguishable from a read-only one, and every save answered
-	// "which this backend does not support" — loud, but a lie.
+	// Saves through the adapter: its own `writeData`, which saves and creates (a backend without one
+	// declines to save), and a Save with a registered handler, which writes instead of it.
 	it('persists field data for a save against an existing record', async () => {
 		const [action, read] = await runSequence([
 			`mutation { stonecropAction(doctype: "ScItem", action: "save", args: [{ id: "1", data: { name: "Renamed" } }]) { success error data } }`,
@@ -1092,9 +1173,101 @@ describe('self-transition data write', { tags: ['integration', 'graphql'] }, () 
 		const result = (action as any).data?.stonecropAction
 		expect(result?.success).toBe(false)
 		// Naming the id is the difference between a usable report and "something went wrong".
-		expect(String(result?.error)).toContain('9999')
+		expect(result?.error).toBe('Save failed: record 9999 no longer exists.')
 		// The oracle that matters: the envelope could say failure while a row was still written.
 		expect((list as any).data?.stonecropRecords?.data.length).toBe(0)
+	})
+
+	// With no key to file the created record under, the page stays on its draft and the next save
+	// creates a second row.
+	it('refuses to save a doctype with no identity field, and writes nothing', async () => {
+		const [action, list] = await runSequence([
+			`mutation { stonecropAction(doctype: "ScItemUnkeyed", action: "save", args: [{ data: { name: "Unkeyed" } }]) { success error } }`,
+			`query { stonecropRecords(doctype: "ScItem", filters: { name: "Unkeyed" }) { data } }`,
+		])
+		const result = (action as any).data?.stonecropAction
+		expect(result?.success).toBe(false)
+		expect(String(result?.error)).toContain('has no identity field')
+		expect((list as any).data?.stonecropRecords?.data.length).toBe(0)
+	})
+
+	// A key that is also a link is read before links are expanded into `{ id, displayText }`, which no
+	// read can look up, so this save is read back rather than refused.
+	it('replies with the record when its key field is a link', async () => {
+		const [action] = await runSequence([
+			`mutation { stonecropAction(doctype: "ScItemLinkKeyed", action: "save", args: [{ id: "1", data: { name: "Linked" } }]) { success error record } }`,
+		])
+		const result = (action as any).data?.stonecropAction
+		expect(result?.error).toBeNull()
+		expect(result?.record?.name).toBe('Linked')
+	})
+
+	describe('with a registered handler', () => {
+		beforeEach(() => {
+			handledSaveCalls.length = 0
+		})
+
+		it('creates the record through the handler when no id is dispatched', async () => {
+			const [action, handled, plain] = await runSequence([
+				`mutation { stonecropAction(doctype: "ScItemHandled", action: "save", args: [{ data: { name: "Minted" } }]) { success error record } }`,
+				`query { stonecropRecords(doctype: "ScItemHandled", filters: { name: "Minted (handled)" }) { data } }`,
+				`query { stonecropRecords(doctype: "ScItemHandled", filters: { name: "Minted" }) { data } }`,
+			])
+			const result = (action as any).data?.stonecropAction
+			expect(result?.error).toBeNull()
+			// Read back by the identity the handler replied with, so the client files the new record.
+			expect(result?.record?.name).toBe('Minted (handled)')
+			expect(result?.record?.id).toBeDefined()
+			expect(handledSaveCalls).toEqual(['(new)'])
+			expect((handled as any).data?.stonecropRecords?.data.length).toBe(1)
+			// The adapter's own insert did not run beside the handler's.
+			expect((plain as any).data?.stonecropRecords?.data.length).toBe(0)
+		})
+
+		it('lets the handler be the write on a saved record', async () => {
+			const [action, read] = await runSequence([
+				`mutation { stonecropAction(doctype: "ScItemHandled", action: "save", args: [{ id: "1", data: { name: "Renamed" } }]) { success error record } }`,
+				`query { stonecropRecord(doctype: "ScItemHandled", id: "1") { data } }`,
+			])
+			expect((action as any).data?.stonecropAction?.error).toBeNull()
+			expect(handledSaveCalls).toEqual(['1'])
+			// The adapter's own write would have put "Renamed" back over the handler's value.
+			expect((read as any).data?.stonecropRecord?.data?.name).toBe('Renamed (handled)')
+		})
+
+		// With no record back the page stays on the draft, and its next save creates a second row.
+		it('fails a save whose handler replies without the key, and keeps nothing it wrote', async () => {
+			const [action, list] = await runSequence([
+				`mutation { stonecropAction(doctype: "ScItemHandledKeyless", action: "save", args: [{ data: { name: "Keyless" } }]) { success error record } }`,
+				`query { stonecropRecords(doctype: "ScItemHandledKeyless", filters: { name: "Keyless" }) { data } }`,
+			])
+			const result = (action as any).data?.stonecropAction
+			expect(result?.success).toBe(false)
+			expect(result?.error).toBe('Save failed: the server did not say which record it saved.')
+			expect((list as any).data?.stonecropRecords?.data.length).toBe(0)
+		})
+
+		it('refuses an id that matched no row before the handler runs', async () => {
+			const [action, list] = await runSequence([
+				`mutation { stonecropAction(doctype: "ScItemHandled", action: "save", args: [{ id: "9999", data: { name: "Ghost" } }]) { success error } }`,
+				`query { stonecropRecords(doctype: "ScItemHandled", filters: { name: "Ghost (handled)" }) { data } }`,
+			])
+			const result = (action as any).data?.stonecropAction
+			expect(result?.success).toBe(false)
+			expect(result?.error).toBe('Save failed: record 9999 no longer exists.')
+			expect(handledSaveCalls).toEqual([])
+			expect((list as any).data?.stonecropRecords?.data.length).toBe(0)
+		})
+
+		it('still refuses a saved record outside the states its save allows', async () => {
+			const [action, read] = await runSequence([
+				`mutation { stonecropAction(doctype: "ScItemHandled", action: "save", args: [{ id: "2", data: { name: "Renamed" } }]) { success error } }`,
+				`query { stonecropRecord(doctype: "ScItemHandled", id: "2") { data } }`,
+			])
+			expect((action as any).data?.stonecropAction?.success).toBe(false)
+			expect(handledSaveCalls).toEqual([])
+			expect((read as any).data?.stonecropRecord?.data?.name).toBe('Beta')
+		})
 	})
 
 	// The doctype owns state everywhere except creation, where `transition.ts` says the initial

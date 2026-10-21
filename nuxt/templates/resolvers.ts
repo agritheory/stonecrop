@@ -145,12 +145,14 @@ function nextId(doctype: string): string {
 //
 // Add your own by registering under the doctype's `name`. Throwing rejects the action; what it
 // returns becomes the result's `data`, while the client stores the record as a read returns it.
+// A handler on a Save (`selfTransition`) is the whole save, creating the record when it has no
+// `recordId`, and must return the record it saved.
 
 type ActionHandler = (context: {
 	recordId?: string
 	/** Record field data the client sent. Unvalidated browser input — validate before trusting it. */
 	data: Record<string, unknown>
-	/** The state the guard read, or undefined when nothing about the action required reading it. */
+	/** The state the guard read ('' for a record with no state), or undefined when nothing required reading it or the record does not exist yet. */
 	currentState?: string
 }) => Promise<unknown>
 
@@ -284,12 +286,22 @@ export const resolvers = {
 										{
 											readState: async () => {
 												// `null` means "no such record" and `undefined` means "exists, no
-												// state" — the dispatcher rejects the first outright. Returning
+												// state": the dispatcher refuses an action on the first, except a
+												// self-transition, which creates the record. Returning
 												// `undefined` for both is what let a Save on a record that was
 												// never created report success while persisting nothing.
 												if (recordId == null) return null
 												const record = getRecord(d, recordId, lookupField)
-												if (!record) return null
+												if (!record) {
+													// An id that matches nothing is a record deleted since it was read, and
+													// saving it as a create would report a lost update as a success.
+													if (actionDef.selfTransition === true) {
+														throw new Error(
+															`${actionDef.label ?? spec.action} failed: record ${recordId} no longer exists.`
+														)
+													}
+													return null
+												}
 												return record.status == null ? undefined : String(record.status)
 											},
 											writeState: async (nextState: string) => {
@@ -345,6 +357,16 @@ export const resolvers = {
 											: undefined
 									const readId = repliedId ?? recordId
 									const record = outcome.success && readId != null ? getRecord(d, String(readId), lookupField) : null
+									// A save with no record to file leaves the page on its draft, whose next save
+									// creates a second record. This store cannot undo what a handler wrote.
+									if (outcome.success && actionDef.selfTransition === true && record === null) {
+										return {
+											success: false,
+											data: null,
+											error: `${actionDef.label ?? spec.action} failed: the server did not say which record it saved.`,
+											record: null,
+										}
+									}
 									return { ...outcome, record }
 								} catch (err) {
 									return { success: false, data: null, error: err instanceof Error ? err.message : String(err) }

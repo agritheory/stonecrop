@@ -4,7 +4,7 @@ import { isActionAllowedOnNewRecord } from '@stonecrop/schema'
 
 import { applyGuardedTransition } from '../src/dispatch/transition'
 
-/** Fresh spies per case — a backend sitting in 'Draft' with no data-write path, like PostGraphile. */
+/** Fresh spies per case — a backend sitting in 'Draft' with no data-write path. */
 const io = () => ({ readState: vi.fn(async () => 'Draft'), writeState: vi.fn(async () => {}) })
 
 describe('applyGuardedTransition', () => {
@@ -132,8 +132,8 @@ describe('applyGuardedTransition', () => {
 		})
 
 		it('is not created by a backend with no data-write path at all', async () => {
-			// Omitting `writeData` is how a backend declines both saving and creating — the
-			// Postgres adapter's position today.
+			// Omitting `writeData`, with no effect registered, is how a backend declines both saving and
+			// creating.
 			const result = await applyGuardedTransition(
 				{ label: 'Save', selfTransition: true },
 				{ readState: async () => null, writeState: async () => {} },
@@ -143,7 +143,7 @@ describe('applyGuardedTransition', () => {
 			expect(result.error).toContain('does not support')
 		})
 
-		it('never reaches a registered effect', async () => {
+		it('never reaches a registered effect through a transition', async () => {
 			const runEffect = vi.fn(async () => ({ ok: true }))
 			const result = await applyGuardedTransition(
 				{ label: 'Recalculate', allowedStates: ['Draft'], nextState: 'Active' },
@@ -151,6 +151,41 @@ describe('applyGuardedTransition', () => {
 			)
 			expect(result.success).toBe(false)
 			expect(runEffect).not.toHaveBeenCalled()
+		})
+
+		it('is created by a registered effect, and never by the backend write as well', async () => {
+			const writeData = vi.fn(async (patch: Record<string, unknown>) => ({ id: '8', ...patch }))
+			const runEffect = vi.fn(async () => ({ id: '7', title: 'new task' }))
+			const result = await applyGuardedTransition(
+				{ label: 'Save', selfTransition: true, allowedStates: ['Draft'] },
+				{ readState: async () => null, writeState: async () => {}, writeData, runEffect },
+				{ title: 'new task' }
+			)
+			expect(result.success).toBe(true)
+			expect(result.data).toEqual({ id: '7', title: 'new task' })
+			expect(runEffect).toHaveBeenCalledWith(undefined)
+			expect(writeData).not.toHaveBeenCalled()
+		})
+
+		it('fails loudly when the effect creates nothing', async () => {
+			const replies = [undefined, null, {}, [{ id: '7' }], 'created']
+			const results = await Promise.all(
+				replies.map(reply =>
+					applyGuardedTransition(
+						{ label: 'Save', selfTransition: true },
+						{ readState: async () => null, writeState: async () => {}, runEffect: async () => reply },
+						{ title: 'new task' }
+					)
+				)
+			)
+			expect(results).toEqual(
+				replies.map(() =>
+					expect.objectContaining({
+						success: false,
+						error: 'Save failed: the server did not return the saved record.',
+					})
+				)
+			)
 		})
 
 		it('still treats `undefined` as an existing record with no workflow state', async () => {
@@ -178,8 +213,10 @@ describe('applyGuardedTransition', () => {
 
 		// The page offers a record not created yet what `isActionAllowedOnNewRecord` allows. Every
 		// combination of the declarations an action can carry gets the same answer here, from a
-		// backend able to do everything, so the missing record is the only thing deciding. The guard
-		// does not call the rule: if it did, this would compare the rule with itself.
+		// backend able to do everything, so the missing record is the only thing deciding. A save
+		// creates through its server code when it has some and through `writeData` when it has none,
+		// so both are swept. The guard does not call the rule: if it did, this would compare the rule
+		// with itself.
 		it('runs exactly the actions the page offers it', async () => {
 			const actionDefs = [true, false].flatMap(selfTransition =>
 				[true, false].flatMap(moves =>
@@ -194,22 +231,36 @@ describe('applyGuardedTransition', () => {
 					)
 				)
 			)
-			const results = await Promise.all(
-				actionDefs.map(actionDef =>
-					applyGuardedTransition(actionDef, {
-						readState: async () => null,
-						writeState: async () => {},
-						writeData: async () => ({ id: '7' }),
-						runEffect: async () => ({ id: '7' }),
+			const runs = await Promise.all(
+				[true, false].flatMap(saveHasServerCode =>
+					actionDefs.map(async actionDef => {
+						const result = await applyGuardedTransition(actionDef, {
+							readState: async () => null,
+							writeState: async () => {},
+							writeData: async () => ({ id: '7', writtenBy: 'writeData' }),
+							runEffect:
+								actionDef.selfTransition && !saveHasServerCode
+									? undefined
+									: async () => ({ id: '7', writtenBy: 'runEffect' }),
+						})
+						return { actionDef, saveHasServerCode, result }
 					})
 				)
 			)
-			const disagreements = actionDefs
-				.map((actionDef, index) => ({ actionDef, result: results[index] }))
-				.filter(({ actionDef, result }) => result.success !== isActionAllowedOnNewRecord(actionDef))
+			const disagreements = runs.filter(
+				({ actionDef, result }) => result.success !== isActionAllowedOnNewRecord(actionDef)
+			)
 			expect(actionDefs).toHaveLength(16)
 			expect(actionDefs.filter(actionDef => isActionAllowedOnNewRecord(actionDef))).toHaveLength(10)
 			expect(disagreements).toEqual([])
+
+			// Each sweep reached the write it is named for: the eight saves created through each.
+			const savesWrittenBy = (saveHasServerCode: boolean) =>
+				runs
+					.filter(run => run.saveHasServerCode === saveHasServerCode && run.actionDef.selfTransition)
+					.map(run => (run.result.data as { writtenBy?: string } | null)?.writtenBy)
+			expect(savesWrittenBy(true)).toEqual(Array(8).fill('runEffect'))
+			expect(savesWrittenBy(false)).toEqual(Array(8).fill('writeData'))
 		})
 	})
 
@@ -304,8 +355,8 @@ describe('applyGuardedTransition', () => {
 		})
 
 		it('lets a handler be the persistence path when the backend cannot write data', async () => {
-			// PostGraphile has no writeData, so a self-transition there fails loudly (asserted
-			// below). A registered effect supplies the missing capability.
+			// Without writeData a self-transition fails loudly (asserted below); a registered effect
+			// supplies the missing capability.
 			const result = await applyGuardedTransition(
 				{ label: 'Save', selfTransition: true, allowedStates: ['Draft'] },
 				{
@@ -319,22 +370,51 @@ describe('applyGuardedTransition', () => {
 			expect(result.data).toEqual({ id: '1', status: 'Draft', title: 'edited' })
 		})
 
-		it('prefers the backend record over the handler result on a self-transition', async () => {
-			// writeData runs last and returns the row as it now stands, so it is the fresher of
-			// the two. The handler still runs — it is additive, not a replacement.
-			const runEffect = vi.fn(async () => ({ id: '1', stale: true }))
+		it('lets an effect be the whole write of a self-transition', async () => {
+			// A second write after the effect would put the form's values back over what it wrote.
+			const writeData = vi.fn(async (patch: Record<string, unknown>) => ({ id: '1', status: 'Draft', ...patch }))
+			const runEffect = vi.fn(async () => ({ id: '1', status: 'Draft', title: 'edited by the handler' }))
 			const result = await applyGuardedTransition(
 				{ label: 'Save', selfTransition: true },
-				{
-					readState: async () => 'Draft',
-					writeState: async () => {},
-					writeData: async patch => ({ id: '1', status: 'Draft', ...patch }),
-					runEffect,
-				},
+				{ readState: async () => 'Draft', writeState: async () => {}, writeData, runEffect },
 				{ title: 'edited' }
 			)
-			expect(runEffect).toHaveBeenCalledOnce()
-			expect(result.data).toEqual({ id: '1', status: 'Draft', title: 'edited' })
+			expect(result.success).toBe(true)
+			expect(result.data).toEqual({ id: '1', status: 'Draft', title: 'edited by the handler' })
+			expect(runEffect).toHaveBeenCalledWith('Draft')
+			expect(writeData).not.toHaveBeenCalled()
+		})
+
+		it('fails loudly when a self-transition effect returns no record', async () => {
+			const replies = [undefined, null, {}, [{ id: '1' }], 'saved']
+			const saves = await Promise.all(
+				replies.map(reply =>
+					applyGuardedTransition(
+						{ label: 'Save', selfTransition: true },
+						{ readState: async () => 'Draft', writeState: async () => {}, runEffect: async () => reply },
+						{ title: 'edited' }
+					)
+				)
+			)
+			expect(saves).toEqual(
+				replies.map(() =>
+					expect.objectContaining({
+						success: false,
+						error: 'Save failed: the server did not return the saved record.',
+					})
+				)
+			)
+
+			// Only a save owes a record: a command may return nothing at all.
+			const commands = await Promise.all(
+				replies.map(reply =>
+					applyGuardedTransition(
+						{ label: 'Recalculate' },
+						{ readState: async () => 'Draft', writeState: async () => {}, runEffect: async () => reply }
+					)
+				)
+			)
+			expect(commands.map(command => command.success)).toEqual(replies.map(() => true))
 		})
 	})
 
@@ -384,7 +464,7 @@ describe('applyGuardedTransition', () => {
 		})
 
 		it('rejects loudly when the backend has no data-write capability', async () => {
-			// PostGraphile today: writeData is absent. A self-transition must fail loudly, not silently.
+			// With no writeData and no effect, a self-transition must fail loudly, not silently.
 			const result = await applyGuardedTransition(
 				{ label: 'Save', selfTransition: true, allowedStates: ['Draft'] },
 				{ readState: async () => 'Draft', writeState: async () => {} },
