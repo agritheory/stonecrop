@@ -5,7 +5,7 @@ import { List } from 'immutable'
 import { createPinia, setActivePinia } from 'pinia'
 
 import { AForm } from '@stonecrop/aform'
-import { Doctype, Registry, Stonecrop } from '@stonecrop/stonecrop'
+import { Doctype, Registry, Stonecrop, getGlobalTriggerEngine } from '@stonecrop/stonecrop'
 
 import Desktop from '../../src/components/Desktop.vue'
 import type { RouteAdapter } from '../../src/types'
@@ -166,5 +166,155 @@ describe('Desktop draft records', { tags: ['component'] }, () => {
 		warn.mockRestore()
 
 		expect(wrapper.findComponent(AForm).props('data')).toMatchObject({ status: 'draft' })
+	})
+
+	// A script fills a new record (a sales order made from a quotation) and then moves to its form.
+	describe('values the app filled in', () => {
+		it('open the new form with them, and are used up by it', async () => {
+			registry.prefillDraft('Task', { title: 'From the quotation' })
+			const filled = mountAt('new')
+			await flushPromises()
+
+			expect(filled.findComponent(AForm).props('data')).toMatchObject({ title: 'From the quotation', status: 'draft' })
+			filled.unmount()
+
+			const next = mountAt('new')
+			await flushPromises()
+			expect(next.findComponent(AForm).props('data')).not.toMatchObject({ title: 'From the quotation' })
+		})
+
+		it('reach the form of a doctype whose name and slug differ', async () => {
+			const fields = List([{ kind: 'field' as const, fieldname: 'title', label: 'Title', component: 'ATextInput' }])
+			registry.addDoctype(new Doctype('SalesNote', fields, { states: ['draft'], actions: {} } as any))
+			registry.prefillDraft('SalesNote', { title: 'From the quotation' })
+			const wrapper = mount(Desktop, {
+				props: {
+					routeAdapter: {
+						getCurrentDoctype: () => 'sales-note',
+						getCurrentRecordId: () => 'new',
+						getCurrentView: () => 'record',
+						navigate: vi.fn(),
+					},
+				},
+				global: {
+					plugins: [makeStonecropPlugin(registry, stonecrop), pinia],
+					stubs: { AForm: true, ActionSet: true, SheetNav: true, CommandPalette: true },
+				},
+			})
+			await flushPromises()
+
+			expect(wrapper.findComponent(AForm).props('data')).toMatchObject({ title: 'From the quotation' })
+		})
+
+		it("are not used by another doctype's new form", async () => {
+			const noteFields = List([{ kind: 'field' as const, fieldname: 'title', label: 'Title', component: 'ATextInput' }])
+			registry.addDoctype(new Doctype('note', noteFields, { states: ['draft'], actions: {} } as any))
+			registry.prefillDraft('note', { title: 'A note' })
+			const wrapper = mountAt('new')
+			await flushPromises()
+
+			expect(wrapper.findComponent(AForm).props('data')).not.toMatchObject({ title: 'A note' })
+			expect(registry.takePrefill('note')).toEqual({ title: 'A note' })
+		})
+	})
+
+	describe("a field's rules", () => {
+		afterEach(() => {
+			getGlobalTriggerEngine().registerDoctypeActions('task', {})
+		})
+
+		const estimateFromTitle = () => {
+			getGlobalTriggerEngine().registerAction('estimateFromTitle', context => {
+				context.set('estimate', String(context.get('title')).length)
+			})
+			getGlobalTriggerEngine().registerDoctypeActions('task', { title: ['estimateFromTitle'] })
+		}
+
+		it('run on a new record, and the form shows what a rule set, without touching the store', async () => {
+			estimateFromTitle()
+			const wrapper = mountAt('new')
+			await flushPromises()
+
+			wrapper.findComponent(AForm).vm.$emit('update:data', { title: 'Buy milk' })
+			await flushPromises()
+
+			expect(wrapper.findComponent(AForm).props('data')).toMatchObject({ title: 'Buy milk', estimate: 8 })
+			expect(stonecrop.getRecordIds('task')).toEqual([])
+		})
+
+		it('do not run for a starting value, which is in the form as it opens', async () => {
+			estimateFromTitle()
+			registry.registerDefaults('task', { title: 'Call the supplier' })
+			const wrapper = mountAt('new')
+			await flushPromises()
+
+			const data = wrapper.findComponent(AForm).props('data')
+			expect(data).toMatchObject({ title: 'Call the supplier', status: 'draft' })
+			expect(data).not.toHaveProperty('estimate')
+		})
+
+		it('still run on a saved record, through the store', async () => {
+			estimateFromTitle()
+			stonecrop.addRecord('task', '7', { id: '7', title: 'Saved', status: 'draft' })
+			const wrapper = mountAt('7')
+			await flushPromises()
+
+			wrapper.findComponent(AForm).vm.$emit('update:data', { title: 'Saved again' })
+			await flushPromises()
+
+			expect(stonecrop.getRecordById('task', '7')?.get('estimate')).toBe(11)
+		})
+	})
+
+	describe('the actions it offers', () => {
+		const jobWorkflow = {
+			states: ['draft', 'planned', 'cancelled'],
+			actions: {
+				save: { label: 'Save', selfTransition: true, allowedStates: ['draft', 'planned'] },
+				plan: { label: 'Plan', allowedStates: ['draft'], nextState: 'planned' },
+				cancel: { label: 'Cancel', allowedStates: ['draft', 'planned'], nextState: 'cancelled' },
+				reload: { label: 'Reload tasks', allowedStates: ['draft', 'planned'] },
+				import: { label: 'Import' },
+				help: { label: 'Help', stateless: true },
+			},
+		}
+
+		const mountJobAt = (recordId: string) => {
+			registry.addDoctype(new Doctype('job', buildTaskDoctype().schema, jobWorkflow as any))
+			return mount(Desktop, {
+				props: {
+					routeAdapter: {
+						getCurrentDoctype: () => 'job',
+						getCurrentRecordId: () => recordId,
+						getCurrentView: () => 'record',
+						navigate: vi.fn(),
+					},
+				},
+				global: {
+					plugins: [makeStonecropPlugin(registry, stonecrop), pinia],
+					stubs: { AForm: true, ActionSet: true, SheetNav: true, CommandPalette: true },
+				},
+			})
+		}
+
+		const offeredLabels = (wrapper: ReturnType<typeof mountJobAt>) => {
+			const elements = wrapper.findComponent({ name: 'ActionSet' }).props('elements') as any[]
+			return elements.find(element => element.type === 'dropdown')?.actions.map((action: any) => action.label)
+		}
+
+		it('are only the ones the server runs on a record not created yet', async () => {
+			const wrapper = mountJobAt('new')
+			await flushPromises()
+
+			expect(offeredLabels(wrapper)).toEqual(['Save', 'Import', 'Help'])
+		})
+
+		it('are still every action allowed in the state of a saved record', async () => {
+			stonecrop.addRecord('job', '7', { id: '7', title: 'Saved', status: 'draft' })
+			const wrapper = mountJobAt('7')
+			await flushPromises()
+
+			expect(offeredLabels(wrapper)).toEqual(['Save', 'Plan', 'Cancel', 'Reload tasks', 'Import', 'Help'])
+		})
 	})
 })

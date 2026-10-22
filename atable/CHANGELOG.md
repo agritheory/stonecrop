@@ -1,5 +1,56 @@
 # Change Log - @stonecrop/atable
 
+## 0.53.0
+
+### Patch Changes
+
+- @stonecrop/schema@0.53.0
+  - @stonecrop/themes@0.53.0
+  - @stonecrop/utilities@0.53.0
+
+## 0.52.0
+
+### Patch Changes
+
+- @stonecrop/schema@0.52.0
+  - @stonecrop/themes@0.52.0
+  - @stonecrop/utilities@0.52.0
+
+## 0.51.0
+
+### Patch Changes
+
+- Updated dependencies [e8842fb]
+  - @stonecrop/schema@0.51.0
+  - @stonecrop/themes@0.51.0
+  - @stonecrop/utilities@0.51.0
+
+## 0.50.1
+
+### Patch Changes
+
+- 7d84fb8: A link cell shows the name of the link it holds now, so a row whose link changes, such as a job task's picked workstation, no longer shows the old name until the page reloads.
+- @stonecrop/schema@0.50.1
+  - @stonecrop/themes@0.50.1
+  - @stonecrop/utilities@0.50.1
+
+## 0.50.0
+
+### Patch Changes
+
+- @stonecrop/schema@0.50.0
+  - @stonecrop/themes@0.50.0
+  - @stonecrop/utilities@0.50.0
+
+## 0.49.0
+
+### Patch Changes
+
+- Updated dependencies [d5fbd9a]
+  - @stonecrop/schema@0.49.0
+  - @stonecrop/themes@0.49.0
+  - @stonecrop/utilities@0.49.0
+
 ## 0.48.1
 
 ### Patch Changes

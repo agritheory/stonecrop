@@ -17,6 +17,7 @@ import { beforeAll, describe, expect, it } from 'vitest'
 import { loadDoctypesFromObject, clearRegistry } from '@stonecrop/graphql-middleware'
 
 import userDoctype from '../documentation/doctypes/user.json'
+import { actionHandlers } from '../documentation/server/action-handlers'
 import { mockExecutor } from '../documentation/server/mock-executor'
 import { sumPlaygroundMoney } from '../documentation/server/playground-denominated'
 import resolvers from '../documentation/server/resolvers'
@@ -77,12 +78,61 @@ describe('documentation host — the record an action replies with', { tags: ['u
 		expect(result.data?.stonecropAction?.record).toEqual(await readUser('3'))
 	})
 
+	// An id that matches nothing is a record deleted since the client read it; creating it would
+	// report a lost update as a success.
+	it('refuses a save that targets an id that does not exist, and creates nothing', async () => {
+		const result = await run(
+			`mutation { stonecropAction(doctype: "User", action: "save", args: [{ id: "no-such-user", data: { email: "ghost@example.com", name: "Ghost" } }]) { success error } }`
+		)
+		expect(result.data?.stonecropAction).toEqual({
+			success: false,
+			error: 'Save failed: record no-such-user no longer exists.',
+		})
+		const users = (await run(`query { stonecropRecords(doctype: "User") { data } }`)).data?.stonecropRecords?.data
+		expect(users?.length).toBeGreaterThan(0)
+		expect(users?.some((user: { name?: string }) => user.name === 'Ghost')).toBe(false)
+	})
+
+	// With no record back the page stays on its draft, and its next save creates a second user.
+	it('fails a save whose handler replies without the record key', async () => {
+		actionHandlers.User = { save: async ({ data }) => Promise.resolve({ name: data.name }) }
+		try {
+			const result = await run(
+				`mutation { stonecropAction(doctype: "User", action: "save", args: [{ data: { email: "keyless@example.com", name: "Keyless" } }]) { success error record } }`
+			)
+			expect(result.data?.stonecropAction).toEqual({
+				success: false,
+				error: 'Save failed: the server did not say which record it saved.',
+				record: null,
+			})
+		} finally {
+			delete actionHandlers.User
+		}
+	})
+
 	it('replies with no record when the action fails', async () => {
 		const result = await run(
 			`mutation { stonecropAction(doctype: "User", action: "activate", args: [{ id: "no-such-user" }]) { success record } }`
 		)
 		expect(result.errors).toBeUndefined()
 		expect(result.data?.stonecropAction).toEqual({ success: false, record: null })
+	})
+})
+
+// The fullstack fixture holds a copy of this host's resolvers that no test executes. Holding the copy
+// to this file lets the cases above cover its code, though not its own store or handlers.
+describe('the fullstack fixture host', { tags: ['unit'] }, () => {
+	it('runs the same resolvers as the documentation host, apart from its name', () => {
+		const lines = (path: string) => readFileSync(fileURLToPath(new URL(path, import.meta.url)), 'utf-8').split('\n')
+		const documentation = lines('../documentation/server/resolvers.ts')
+		const fixture = lines('./fixtures/fullstack/resolvers.ts')
+		expect(fixture).toHaveLength(documentation.length)
+		expect(
+			documentation.flatMap((line, index) => (line === fixture[index] ? [] : [[line.trim(), fixture[index].trim()]]))
+		).toEqual([
+			['* @stonecrop/nuxt documentation playground resolvers', '* @stonecrop/nuxt fullstack playground resolvers'],
+			["name: 'Stonecrop Documentation Playground',", "name: 'Stonecrop Fullstack Playground',"],
+		])
 	})
 })
 

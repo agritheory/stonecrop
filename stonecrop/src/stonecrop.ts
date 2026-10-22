@@ -9,9 +9,12 @@ import { reactive } from 'vue'
 
 import Doctype from './doctype'
 import { isDraftRecordId } from './draft'
+import { newRecord } from './edit-record'
+import { recordInStore } from './record-access'
 import Registry from './registry'
 import { createHST, type HSTNode } from './stores/hst'
 import { useOperationLogStore } from './stores/operation-log'
+import type { EditableRecord } from './types/editable-record'
 import type { OperationLogConfig } from './types/operation-log'
 import type { RouteContext } from './types/registry'
 import type { PageInfo, StonecropOptions } from './types/stonecrop'
@@ -167,6 +170,26 @@ export class Stonecrop {
 
 		// Store raw record data - let HST handle wrapping with proper hierarchy
 		this.hstStore.set(`${slug}.${recordId}`, recordData)
+	}
+
+	/**
+	 * The record a form is editing, read and set by field name; setting a field runs its rules. A
+	 * saved record is read and set through the store. A record not saved yet (`recordId` is
+	 * {@link DRAFT_RECORD_ID}) is held by the object returned, never in the store, and each call
+	 * returns a new one, holding only its starting values.
+	 * @param doctype - The doctype
+	 * @param recordId - The record ID, or {@link DRAFT_RECORD_ID} for a record not saved yet
+	 * @param startingValues - A record not saved yet's values before anything is set, such as
+	 * {@link Registry.composeNewRecord} gives; they run no rules. Only a new record takes them.
+	 * @returns The record to read and set
+	 */
+	editRecord(doctype: string | Doctype, recordId: string, startingValues?: Record<string, unknown>): EditableRecord {
+		const slug = typeof doctype === 'string' ? doctype : doctype.slug
+		if (isDraftRecordId(recordId)) return newRecord(slug, this.hstStore, startingValues)
+		if (startingValues) throw new Error(`Starting values are only for a new record, not ${slug} ${recordId}`)
+
+		this.ensureDoctypeExists(slug)
+		return recordInStore(this.hstStore, `${slug}.${recordId}`)
 	}
 
 	/**
@@ -516,19 +539,25 @@ export class Stonecrop {
 	 * Determine the current workflow state for a record.
 	 *
 	 * Reads the record's `status` field from the HST store. If the field is absent or
-	 * empty the doctype's declared `workflow.initial` state is used as the fallback,
+	 * empty the workflow's first listed state (an XState workflow's `initial`) is used as the fallback,
 	 * giving callers a reliable state name without having to duplicate that logic.
+	 *
+	 * A record not created yet ({@link DRAFT_RECORD_ID}) is in no state, as the server guard
+	 * treats it: pass the `null` returned to `Doctype.getAvailableTransitions` and
+	 * `Doctype.getAvailableCommands` to list the actions that can run on it.
 	 *
 	 * @param doctype - The doctype slug or Doctype instance
 	 * @param recordId - The record identifier
-	 * @returns The current state name, or an empty string if the doctype has no workflow
+	 * @returns The current state name, `null` for a record not created yet, or an empty string if
+	 * the doctype has no workflow
 	 *
 	 * @public
 	 */
-	getRecordState(doctype: string | Doctype, recordId: string): string {
+	getRecordState(doctype: string | Doctype, recordId: string): string | null {
 		const slug = typeof doctype === 'string' ? doctype : doctype.slug
 		const meta = this.registry.getDoctype(slug)
 		if (!meta?.workflow) return ''
+		if (isDraftRecordId(recordId)) return null
 
 		const record = this.getRecordById(slug, recordId)
 		// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- HSTNode.get returns any; status is always string in workflow records

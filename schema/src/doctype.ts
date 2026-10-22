@@ -247,6 +247,26 @@ export function isActionAllowedInState(action: { allowedStates?: string[] | null
 }
 
 /**
+ * Whether a workflow action may run on a record not created yet.
+ *
+ * A record not created yet is in no state, so the server-side dispatch guard runs two kinds of
+ * action on it: a self-transition, which creates it, and an action that declares no
+ * `allowedStates` and does not move the record, which never reads a state. This is that rule for
+ * the frontend (`getAvailableTransitions`, `getAvailableCommands`); a test against the guard keeps
+ * the two in step.
+ *
+ * @public
+ */
+export function isActionAllowedOnNewRecord(action: {
+	allowedStates?: string[] | null
+	nextState?: string | null
+	selfTransition?: boolean | null
+}): boolean {
+	if (action.selfTransition === true) return true
+	return action.nextState == null && !action.allowedStates?.length
+}
+
+/**
  * DocBuilder graph layout — node positions for the workflow-state graph, keyed by state name.
  * Pure authoring view-state: persisted in the doctype JSON so an author's manual arrangement
  * survives reloads, but — exactly like {@link (WorkflowMeta:type)}'s `triggers` — it is client-only

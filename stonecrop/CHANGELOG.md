@@ -1,5 +1,70 @@
 # Change Log - @stonecrop/stonecrop
 
+## 0.53.0
+
+### Minor Changes
+
+- 7e6db68: Add `prefillDraft(doctype, values)`, also given to scripts, which checks values against a doctype's fields and holds them for its next new record; `takePrefill` returns them once, and `composeNewRecord` applies them over every default as `prefill`.
+
+### Patch Changes
+
+- @stonecrop/aform@0.53.0
+  - @stonecrop/atable@0.53.0
+  - @stonecrop/schema@0.53.0
+
+## 0.52.0
+
+### Patch Changes
+
+- @stonecrop/aform@0.52.0
+  - @stonecrop/atable@0.52.0
+  - @stonecrop/schema@0.52.0
+
+## 0.51.0
+
+### Minor Changes
+
+- e8842fb: A record not created yet is offered only the actions the server guard runs on one (a self-transition, or an action declaring no `allowedStates` and no `nextState`), a rule now exported as `isActionAllowedOnNewRecord`, so Desktop no longer offers a new record a transition the server refuses.
+- e8842fb: `Stonecrop.getRecordState` returns `null` for a record not created yet instead of the workflow's first state, and `Doctype.getAvailableTransitions` and `getAvailableCommands` take that `null` to list the actions that can run on one.
+
+### Patch Changes
+
+- Updated dependencies [e8842fb]
+  - @stonecrop/schema@0.51.0
+  - @stonecrop/aform@0.51.0
+  - @stonecrop/atable@0.51.0
+
+## 0.50.1
+
+### Patch Changes
+
+- Updated dependencies [7d84fb8]
+  - @stonecrop/atable@0.50.1
+  - @stonecrop/aform@0.50.1
+  - @stonecrop/schema@0.50.1
+
+## 0.50.0
+
+### Minor Changes
+
+- b6d6f9a: Code that builds a `FieldChangeContext` by hand, such as a test, now supplies `get` and `set`, and code that reads `context.path` or a `FieldTriggerExecutionResult`'s `path` allows for it being absent, as it is on a record not saved yet.
+- b6d6f9a: A new record's edits in Desktop now run the doctype's field triggers before its first save, and a trigger reads and sets its own record, saved or not, with `context.get` and `context.set`; `stonecrop.editRecord(doctype, recordId)` gives a form that record.
+
+### Patch Changes
+
+- @stonecrop/aform@0.50.0
+  - @stonecrop/atable@0.50.0
+  - @stonecrop/schema@0.50.0
+
+## 0.49.0
+
+### Patch Changes
+
+- Updated dependencies [d5fbd9a]
+  - @stonecrop/schema@0.49.0
+  - @stonecrop/aform@0.49.0
+  - @stonecrop/atable@0.49.0
+
 ## 0.48.1
 
 ### Patch Changes

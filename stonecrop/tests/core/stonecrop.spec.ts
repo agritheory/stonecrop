@@ -742,6 +742,11 @@ describe('Stonecrop class with HST integration', { tags: ['unit'] }, () => {
 			expect(state).toBe('draft')
 		})
 
+		it('gives no state for a record not created yet', () => {
+			// The server treats such a record as in no state, so assuming the first one offered actions it refuses.
+			expect(stonecrop.getRecordState('task', DRAFT_RECORD_ID)).toBeNull()
+		})
+
 		describe('WorkflowMeta format support', () => {
 			it('returns first state as initial for WorkflowMeta format', () => {
 				Registry._root = undefined as any

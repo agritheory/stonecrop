@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/graphql-middleware",
-	"version": "0.48.1",
+	"version": "0.53.0",
 	"description": "GraphQL middleware for PostGraphile and Stonecrop schema",
 	"keywords": [
 		"graphql",

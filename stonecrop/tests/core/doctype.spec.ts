@@ -357,6 +357,46 @@ describe('Doctype class', { tags: ['unit'] }, () => {
 		})
 	})
 
+	// `null` is the state of a record not created yet: it lists what the server guard runs on one.
+	describe('actions on a record not created yet', () => {
+		const jobWorkflow: WorkflowMeta = {
+			states: ['draft', 'planned', 'cancelled'],
+			actions: {
+				save: { label: 'Save', selfTransition: true, allowedStates: ['draft', 'planned'] },
+				plan: { label: 'Plan', allowedStates: ['draft'], nextState: 'planned' },
+				cancel: { label: 'Cancel', allowedStates: ['draft', 'planned'], nextState: 'cancelled' },
+				reload: { label: 'Reload tasks', allowedStates: ['draft', 'planned'] },
+				import: { label: 'Import' },
+				help: { label: 'Help', stateless: true },
+				print: { label: 'Print', stateless: true, allowedStates: ['planned'] },
+				// The shape of the docs app's order Save: a stateless self-transition limited to states.
+				quickSave: { label: 'Quick save', stateless: true, selfTransition: true, allowedStates: ['draft'] },
+			},
+		}
+
+		it('lists only the self-transition and the action that reads no state, and neither moves it', () => {
+			const doctype = new Doctype('Job', mockSchema, jobWorkflow)
+
+			expect(doctype.getAvailableTransitions(null)).toEqual([
+				{ name: 'save', targetState: '' },
+				{ name: 'import', targetState: '' },
+			])
+		})
+
+		it('lists a command not limited to states, and a stateless self-transition even though it is', () => {
+			const doctype = new Doctype('Job', mockSchema, jobWorkflow)
+
+			expect(doctype.getAvailableCommands(null).map(command => command.name)).toEqual(['help', 'quickSave'])
+		})
+
+		it('lists no XState transition, which declares none of what the rule reads', () => {
+			const xstate = { id: 'w', initial: 'draft', states: { draft: { on: { SUBMIT: 'submitted' } }, submitted: {} } }
+			const doctype = new Doctype('Doc', mockSchema, xstate as any)
+
+			expect(doctype.getAvailableTransitions(null)).toEqual([])
+		})
+	})
+
 	describe('getTriggers', () => {
 		it('returns the workflow triggers map', () => {
 			const workflowWithTriggers: WorkflowMeta = {

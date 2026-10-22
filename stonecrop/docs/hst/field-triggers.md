@@ -9,6 +9,7 @@ The field trigger system leverages the Registry architecture with these key comp
 - **Unified Actions Map**: Field triggers are defined alongside regular actions in the doctype's actions Map
 - **Field Trigger Engine**: Singleton instance that executes actions when field changes occur
 - **HST Integration**: Automatic detection and triggering on `set()` operations
+- **Records Not Saved Yet**: A record a form is still creating runs its triggers too, through `stonecrop.editRecord`
 - **Pattern Matching**: Support for wildcards and complex path patterns
 - **Sequential Execution**: Actions run in order with stop-on-error behavior
 - **Automatic Rollback**: Snapshot-based rollback ensures data integrity when actions fail (enabled by default)
@@ -19,6 +20,7 @@ The field trigger system leverages the Registry architecture with these key comp
 - [Architecture](#architecture)
 - [Basic Usage](#basic-usage)
 - [Action Function Interface](#action-function-interface)
+- [Reading and Setting the Record](#reading-and-setting-the-record)
 - [Execution Model](#execution-model)
 - [Pattern Matching](#pattern-matching)
 - [Advanced Configuration](#advanced-configuration)
@@ -117,14 +119,17 @@ Action functions are simple, focused functions that receive a `FieldChangeContex
 
 ```typescript
 interface FieldChangeContext {
-  path: string          // Full HST path that changed
-  fieldname: string     // Last segment of the path
+  path?: string         // Full HST path that changed; absent for a record not saved yet
+  fieldname: string     // The field's path within the record, such as 'status' or 'emailAddress.0.is_primary'
   beforeValue: any      // Value before the change
   afterValue: any       // Value after the change
   operation: 'set' | 'delete' | 'patch'
   doctype: string       // The doctype name
-  recordId?: string     // The record ID if applicable
+  recordId?: string     // The record ID; absent for a record not saved yet
   timestamp: Date       // When the change occurred
+  store?: HSTNode       // The shared store, for reading other records
+  get(fieldname: string): any              // Reads a field of this record; '' reads the whole record
+  set(fieldname: string, value: any): void // Sets a field of this record, which runs that field's triggers
 }
 
 // Action function signature
@@ -141,6 +146,36 @@ const validateEmail: FieldActionFunction = (context) => {
 **Note:** Field triggers are separate from schema-driven mask and format functions. The schema system provides declarative validation, masking (input transformation), and formatting (display transformation) at the field definition level, while field triggers enable action execution when field values change. Use schema validation for data integrity rules, and field triggers for business logic, notifications, and side effects.
 
 Actions execute sequentially in the order defined. If an action throws an error, execution stops and subsequent actions do not run.
+
+## Reading and Setting the Record
+
+An action reads and sets the record whose field changed with `context.get` and `context.set`:
+
+```typescript
+registerGlobalAction('estimateFromTitle', (context) => {
+  context.set('estimate', String(context.get('title')).length)
+})
+```
+
+- A `set` runs the triggers of the field it sets, as any store write does.
+- They work the same on a saved record and on one not saved yet. A record not saved yet has no store path, so an action that writes through `context.store` with a path reaches only saved records.
+- As in the store, setting a field inside a group the record does not have throws: `set('address.city', 'Leeds')` needs `address` to exist.
+
+### Records Not Saved Yet
+
+A form gets the record it edits from `stonecrop.editRecord(doctype, recordId)`; Desktop does this for you. For a new record, `recordId` is `DRAFT_RECORD_ID`, and the record is held by the object returned rather than in HST, so it never shows in a list:
+
+```typescript
+import { DRAFT_RECORD_ID } from '@stonecrop/stonecrop'
+
+const record = stonecrop.editRecord('task', DRAFT_RECORD_ID, startingValues)
+record.set('title', 'Call the supplier') // runs the title field's triggers
+record.get('')                           // the whole record, with what those triggers set
+```
+
+- Starting values passed this way (such as `registry.composeNewRecord` gives) go in without running triggers. A saved record refuses them.
+- Its actions get no `context.recordId` and no `context.path`.
+- A failed action's changes to it stay: rollback needs a record id (see [Limitations](#limitations-and-considerations)).
 
 ## Execution Model
 
@@ -510,7 +545,7 @@ const actions = Map({
 ### Limitations and Considerations
 
 1. **Record-Level Only**: Rollback restores the entire record, not individual fields
-2. **Requires HST Store**: Rollback only works when `context.store` is available (automatic when triggered by HST)
+2. **Saved Records Only**: Rollback needs `context.store` and a record id, so a record not saved yet is never rolled back
 3. **Deep Copy Limitation**: Uses `JSON.parse(JSON.stringify())` - functions and special objects are not preserved
 4. **No Cross-Record Rollback**: Only rolls back the changed record, not related records
 5. **Side Effects Not Reversed**: External operations cannot be automatically undone
@@ -859,6 +894,7 @@ All types are exported from the main package:
 
 ```typescript
 import type {
+  EditableRecord,
   FieldChangeContext,
   FieldActionFunction,
   FieldTriggerExecutionResult,

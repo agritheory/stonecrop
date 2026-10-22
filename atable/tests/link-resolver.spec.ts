@@ -179,4 +179,64 @@ describe('ATable linkResolver', { tags: ['component'] }, () => {
 		expect(linkResolver).not.toHaveBeenCalled()
 		expect(wrapper.find('td.atable-cell').text()).toBe('Acme Corp')
 	})
+
+	it("shows the name of the link a cell holds now, after the row's link changes", async () => {
+		const names: Record<string, string> = { '1': 'Personal', '2': 'Business' }
+		const linkResolver = vi.fn(async (_doctype: string, id: string) => names[id])
+
+		const columns: TableColumn[] = [{ name: 'category_id', label: 'Category', linkDoctype: 'category' }]
+
+		const wrapper = mount(ATable, {
+			props: {
+				rows: [{ id: 'r1', category_id: { id: '1', displayText: 'Personal' } }],
+				columns,
+				linkResolver,
+				'onUpdate:rows': () => {},
+				config: cfg,
+			},
+			global: { components: { ACell, ARow } },
+		})
+		await flushPromises()
+		expect(wrapper.find('td.atable-cell').text()).toBe('Personal')
+
+		await wrapper.setProps({ rows: [{ id: 'r1', category_id: { id: '2', displayText: 'Business' } }] })
+		await flushPromises()
+		expect(wrapper.find('td.atable-cell').text()).toBe('Business')
+
+		await wrapper.setProps({ rows: [{ id: 'r1', category_id: '1' }] })
+		await flushPromises()
+		expect(wrapper.find('td.atable-cell').text()).toBe('Personal')
+	})
+
+	it('drops a name that arrives for a link the cell no longer holds', async () => {
+		let answerFirst: (name: string) => void = () => undefined
+		const linkResolver = vi.fn(
+			(_doctype: string, id: string) =>
+				new Promise<string>(resolve => {
+					if (id === '1') answerFirst = resolve
+					else resolve('Business')
+				})
+		)
+
+		const columns: TableColumn[] = [{ name: 'category_id', label: 'Category', linkDoctype: 'category' }]
+
+		const wrapper = mount(ATable, {
+			props: {
+				rows: [{ id: 'r1', category_id: '1' }],
+				columns,
+				linkResolver,
+				'onUpdate:rows': () => {},
+				config: cfg,
+			},
+			global: { components: { ACell, ARow } },
+		})
+		await flushPromises()
+
+		await wrapper.setProps({ rows: [{ id: 'r1', category_id: '2' }] })
+		await flushPromises()
+		answerFirst('Personal')
+		await flushPromises()
+
+		expect(wrapper.find('td.atable-cell').text()).toBe('Business')
+	})
 })

@@ -1,5 +1,121 @@
 # Change Log - @stonecrop/nuxt
 
+## 0.53.0
+
+### Patch Changes
+
+- 7e6db68: DocBuilder's script editor knows `prefillDraft`, so a script that calls it type-checks.
+- Updated dependencies [7e6db68]
+- Updated dependencies [7e6db68]
+  - @stonecrop/desktop@0.53.0
+  - @stonecrop/stonecrop@0.53.0
+  - @stonecrop/aform@0.53.0
+  - @stonecrop/atable@0.53.0
+  - @stonecrop/casl-middleware@0.53.0
+  - @stonecrop/code-editor@0.53.0
+  - @stonecrop/graphql-client@0.53.0
+  - @stonecrop/graphql-middleware@0.53.0
+  - @stonecrop/node-editor@0.53.0
+  - @stonecrop/nuxt-grafserv@0.53.0
+  - @stonecrop/schema@0.53.0
+  - @stonecrop/themes@0.53.0
+
+## 0.52.0
+
+### Patch Changes
+
+- 4753b5b: The app template's server fails a Save it cannot read back afterwards, such as one whose server-side handler replies without the record's key, instead of reporting success with no record the page can file.
+- 4753b5b: The app template's server refuses a Save sent with the id of a record that no longer exists, as the Postgres adapter does, instead of creating a new record under a new id.
+- Updated dependencies [4753b5b]
+- Updated dependencies [4753b5b]
+- Updated dependencies [4753b5b]
+  - @stonecrop/graphql-middleware@0.52.0
+  - @stonecrop/graphql-client@0.52.0
+  - @stonecrop/nuxt-grafserv@0.52.0
+  - @stonecrop/aform@0.52.0
+  - @stonecrop/atable@0.52.0
+  - @stonecrop/casl-middleware@0.52.0
+  - @stonecrop/code-editor@0.52.0
+  - @stonecrop/desktop@0.52.0
+  - @stonecrop/node-editor@0.52.0
+  - @stonecrop/schema@0.52.0
+  - @stonecrop/stonecrop@0.52.0
+  - @stonecrop/themes@0.52.0
+
+## 0.51.0
+
+### Patch Changes
+
+- Updated dependencies [e8842fb]
+- Updated dependencies [e8842fb]
+  - @stonecrop/schema@0.51.0
+  - @stonecrop/stonecrop@0.51.0
+  - @stonecrop/desktop@0.51.0
+  - @stonecrop/aform@0.51.0
+  - @stonecrop/atable@0.51.0
+  - @stonecrop/graphql-client@0.51.0
+  - @stonecrop/graphql-middleware@0.51.0
+  - @stonecrop/node-editor@0.51.0
+  - @stonecrop/nuxt-grafserv@0.51.0
+  - @stonecrop/casl-middleware@0.51.0
+  - @stonecrop/code-editor@0.51.0
+  - @stonecrop/themes@0.51.0
+
+## 0.50.1
+
+### Patch Changes
+
+- Updated dependencies [7d84fb8]
+  - @stonecrop/atable@0.50.1
+  - @stonecrop/aform@0.50.1
+  - @stonecrop/stonecrop@0.50.1
+  - @stonecrop/desktop@0.50.1
+  - @stonecrop/casl-middleware@0.50.1
+  - @stonecrop/code-editor@0.50.1
+  - @stonecrop/graphql-client@0.50.1
+  - @stonecrop/graphql-middleware@0.50.1
+  - @stonecrop/node-editor@0.50.1
+  - @stonecrop/nuxt-grafserv@0.50.1
+  - @stonecrop/schema@0.50.1
+  - @stonecrop/themes@0.50.1
+
+## 0.50.0
+
+### Patch Changes
+
+- Updated dependencies [b6d6f9a]
+- Updated dependencies [b6d6f9a]
+  - @stonecrop/stonecrop@0.50.0
+  - @stonecrop/desktop@0.50.0
+  - @stonecrop/aform@0.50.0
+  - @stonecrop/atable@0.50.0
+  - @stonecrop/casl-middleware@0.50.0
+  - @stonecrop/code-editor@0.50.0
+  - @stonecrop/graphql-client@0.50.0
+  - @stonecrop/graphql-middleware@0.50.0
+  - @stonecrop/node-editor@0.50.0
+  - @stonecrop/nuxt-grafserv@0.50.0
+  - @stonecrop/schema@0.50.0
+  - @stonecrop/themes@0.50.0
+
+## 0.49.0
+
+### Patch Changes
+
+- Updated dependencies [d5fbd9a]
+  - @stonecrop/schema@0.49.0
+  - @stonecrop/graphql-middleware@0.49.0
+  - @stonecrop/aform@0.49.0
+  - @stonecrop/atable@0.49.0
+  - @stonecrop/desktop@0.49.0
+  - @stonecrop/graphql-client@0.49.0
+  - @stonecrop/node-editor@0.49.0
+  - @stonecrop/stonecrop@0.49.0
+  - @stonecrop/nuxt-grafserv@0.49.0
+  - @stonecrop/casl-middleware@0.49.0
+  - @stonecrop/code-editor@0.49.0
+  - @stonecrop/themes@0.49.0
+
 ## 0.48.1
 
 ### Patch Changes

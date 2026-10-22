@@ -1,5 +1,57 @@
 # Change Log - @stonecrop/nuxt-grafserv
 
+## 0.53.0
+
+### Patch Changes
+
+- @stonecrop/casl-middleware@0.53.0
+  - @stonecrop/graphql-middleware@0.53.0
+  - @stonecrop/rockfoil@0.53.0
+
+## 0.52.0
+
+### Patch Changes
+
+- Updated dependencies [4753b5b]
+- Updated dependencies [4753b5b]
+- Updated dependencies [4753b5b]
+  - @stonecrop/graphql-middleware@0.52.0
+  - @stonecrop/casl-middleware@0.52.0
+  - @stonecrop/rockfoil@0.52.0
+
+## 0.51.0
+
+### Patch Changes
+
+- @stonecrop/graphql-middleware@0.51.0
+  - @stonecrop/casl-middleware@0.51.0
+  - @stonecrop/rockfoil@0.51.0
+
+## 0.50.1
+
+### Patch Changes
+
+- @stonecrop/casl-middleware@0.50.1
+  - @stonecrop/graphql-middleware@0.50.1
+  - @stonecrop/rockfoil@0.50.1
+
+## 0.50.0
+
+### Patch Changes
+
+- @stonecrop/casl-middleware@0.50.0
+  - @stonecrop/graphql-middleware@0.50.0
+  - @stonecrop/rockfoil@0.50.0
+
+## 0.49.0
+
+### Patch Changes
+
+- Updated dependencies [d5fbd9a]
+  - @stonecrop/graphql-middleware@0.49.0
+  - @stonecrop/casl-middleware@0.49.0
+  - @stonecrop/rockfoil@0.49.0
+
 ## 0.48.1
 
 ### Patch Changes

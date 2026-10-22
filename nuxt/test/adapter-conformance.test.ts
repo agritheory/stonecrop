@@ -173,7 +173,7 @@ describe.each(HOSTS)('$name — contract surface', { tags: ['unit', 'graphql'] }
 	it.each(['stonecropCreate', 'stonecropUpdate', 'stonecropDelete'])('does not publish %s', verb => {
 		// Named rather than left to the extension check above, because their absence is a decision
 		// and not an accident. Stonecrop does not follow CRUD: `stonecropAction` is the only write
-		// path, saving a record that does not exist creates it, and removal is a declared workflow
+		// path, saving a record not created yet creates it, and removal is a declared workflow
 		// outcome (`archive`, `cancel`). These three shipped in the scaffold for a while, called by
 		// nothing and absent from the Postgres adapter, which is exactly the drift this file exists
 		// to catch. Re-adding one should fail here and be argued for, not slip back in.

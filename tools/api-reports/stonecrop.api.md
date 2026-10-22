@@ -97,6 +97,9 @@ export function composeNewRecord(registry: Registry, doctype: Doctype, options?:
 export type ComposeNewRecordOptions = {
     now?: Date;
     timeoutMs?: number;
+    prefill?: {
+        [field: string]: DefaultsData;
+    };
 };
 
 // @public
@@ -161,10 +164,10 @@ export class Doctype {
         requiredFields?: string[];
         allowedStates?: string[];
     } | undefined;
-    getAvailableCommands(currentState?: string): Array<{
+    getAvailableCommands(currentState?: string | null): Array<{
         name: string;
     }>;
-    getAvailableTransitions(currentState: string): Array<{
+    getAvailableTransitions(currentState: string | null): Array<{
         name: string;
         targetState: string;
     }>;
@@ -200,6 +203,12 @@ export type DoctypeDefaults = {
 export const DRAFT_RECORD_ID = "new";
 
 // @public
+export interface EditableRecord {
+    get(fieldname: string): any;
+    set(fieldname: string, value: any): void;
+}
+
+// @public
 export function executeClientHandler(code: string, api?: ClientHandlerApi): Promise<unknown>;
 
 // @public
@@ -212,13 +221,13 @@ export type FieldActionFunction = (context: FieldChangeContext) => void | Promis
 export type FieldActionString = string;
 
 // @public
-export interface FieldChangeContext {
+export interface FieldChangeContext extends EditableRecord {
     afterValue: any;
     beforeValue: any;
     doctype: string;
     fieldname: string;
     operation: 'set' | 'delete' | 'patch';
-    path: string;
+    path?: string;
     recordId?: string;
     store?: HSTNode;
     timestamp: Date;
@@ -256,7 +265,7 @@ export class FieldTriggerEngine {
 export interface FieldTriggerExecutionResult {
     actionResults: ActionExecutionResult[];
     allSucceeded: boolean;
-    path: string;
+    path?: string;
     rolledBack: boolean;
     snapshot?: any;
     stoppedOnError: boolean;
@@ -500,11 +509,15 @@ export class Registry {
     getRegisteredDefaults(slug: string): DefaultsSource | undefined;
     initializeRecord(schema: ResolvedField[]): Record<string, any>;
     readonly name: string;
+    prefillDraft(doctype: string, values: Record<string, unknown>): void;
     registerDefaults(doctype: string, source: DefaultsSource): void;
     readonly registry: Record<string, Doctype>;
     resolveSchema(doctype: Doctype, visited?: Set<string>): ResolvedField[];
     static _root: Registry;
     readonly router?: Router;
+    takePrefill(doctype: string): {
+        [field: string]: DefaultsData;
+    } | undefined;
 }
 
 // @public
@@ -529,6 +542,7 @@ export class Stonecrop {
     clearRecords(doctype: string | Doctype): void;
     collectRecordPayload(doctype: Doctype, recordId: string): Record<string, any>;
     dispatchAction(doctype: Doctype, action: string, args?: unknown[]): Promise<ActionDispatchResult>;
+    editRecord(doctype: string | Doctype, recordId: string, startingValues?: Record<string, unknown>): EditableRecord;
     fetchNestedData(path: string, doctype: Doctype, recordId: string, options?: {
         includeNested?: boolean | string[];
     }): Promise<void>;
@@ -619,7 +633,7 @@ export class Stonecrop {
     getSnapshot: () => OperationLogSnapshot;
     markIrreversible: (operationId: string, reason: string) => void;
     logAction: (doctype: string, actionName: string, recordIds?: string[], result?: "success" | "failure" | "pending", error?: string) => string;
-    }, "config" | "operations" | "clientId" | "currentIndex">, Pick<{
+    }, "config" | "operations" | "currentIndex" | "clientId">, Pick<{
     operations: Ref<    {
     id: string;
     type: HSTOperationType;
@@ -793,7 +807,7 @@ export class Stonecrop {
     getRecordById(doctype: string | Doctype, recordId: string): HSTNode | undefined;
     getRecordIds(doctype: string | Doctype): string[];
     getRecords(doctype: Doctype, options?: GetRecordsOptions): Promise<GetRecordsResult>;
-    getRecordState(doctype: string | Doctype, recordId: string): string;
+    getRecordState(doctype: string | Doctype, recordId: string): string | null;
     getStore(): HSTNode;
     initializeNestedData(path: string, doctype: Doctype): Promise<void>;
     isWorkflowReady(doctype: Doctype, recordId: string): {
@@ -1025,7 +1039,7 @@ getOperationsFor: (doctype: string, recordId?: string) => HSTOperation[];
 getSnapshot: () => OperationLogSnapshot;
 markIrreversible: (operationId: string, reason: string) => void;
 logAction: (doctype: string, actionName: string, recordIds?: string[], result?: "success" | "failure" | "pending", error?: string) => string;
-}, "config" | "operations" | "clientId" | "currentIndex">, Pick<{
+}, "config" | "operations" | "currentIndex" | "clientId">, Pick<{
 operations: Ref<    {
 id: string;
 type: HSTOperationType;

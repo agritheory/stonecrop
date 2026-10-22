@@ -1,5 +1,77 @@
 # Change Log - @stonecrop/desktop
 
+## 0.53.0
+
+### Minor Changes
+
+- 7e6db68: A new record's form opens with the values an app held for it through `prefillDraft`, and uses them up.
+
+### Patch Changes
+
+- Updated dependencies [7e6db68]
+  - @stonecrop/stonecrop@0.53.0
+  - @stonecrop/aform@0.53.0
+  - @stonecrop/schema@0.53.0
+  - @stonecrop/themes@0.53.0
+
+## 0.52.0
+
+### Patch Changes
+
+- @stonecrop/aform@0.52.0
+  - @stonecrop/schema@0.52.0
+  - @stonecrop/stonecrop@0.52.0
+  - @stonecrop/themes@0.52.0
+
+## 0.51.0
+
+### Minor Changes
+
+- e8842fb: A record not created yet is offered only the actions the server guard runs on one (a self-transition, or an action declaring no `allowedStates` and no `nextState`), a rule now exported as `isActionAllowedOnNewRecord`, so Desktop no longer offers a new record a transition the server refuses.
+
+### Patch Changes
+
+- Updated dependencies [e8842fb]
+- Updated dependencies [e8842fb]
+  - @stonecrop/schema@0.51.0
+  - @stonecrop/stonecrop@0.51.0
+  - @stonecrop/aform@0.51.0
+  - @stonecrop/themes@0.51.0
+
+## 0.50.1
+
+### Patch Changes
+
+- @stonecrop/aform@0.50.1
+  - @stonecrop/stonecrop@0.50.1
+  - @stonecrop/schema@0.50.1
+  - @stonecrop/themes@0.50.1
+
+## 0.50.0
+
+### Minor Changes
+
+- b6d6f9a: A new record's edits in Desktop now run the doctype's field triggers before its first save, and a trigger reads and sets its own record, saved or not, with `context.get` and `context.set`; `stonecrop.editRecord(doctype, recordId)` gives a form that record.
+
+### Patch Changes
+
+- Updated dependencies [b6d6f9a]
+- Updated dependencies [b6d6f9a]
+  - @stonecrop/stonecrop@0.50.0
+  - @stonecrop/aform@0.50.0
+  - @stonecrop/schema@0.50.0
+  - @stonecrop/themes@0.50.0
+
+## 0.49.0
+
+### Patch Changes
+
+- Updated dependencies [d5fbd9a]
+  - @stonecrop/schema@0.49.0
+  - @stonecrop/aform@0.49.0
+  - @stonecrop/stonecrop@0.49.0
+  - @stonecrop/themes@0.49.0
+
 ## 0.48.1
 
 ### Patch Changes

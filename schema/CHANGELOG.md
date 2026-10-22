@@ -1,5 +1,25 @@
 # Change Log - @stonecrop/schema
 
+## 0.53.0
+
+## 0.52.0
+
+## 0.51.0
+
+### Minor Changes
+
+- e8842fb: A record not created yet is offered only the actions the server guard runs on one (a self-transition, or an action declaring no `allowedStates` and no `nextState`), a rule now exported as `isActionAllowedOnNewRecord`, so Desktop no longer offers a new record a transition the server refuses.
+
+## 0.50.1
+
+## 0.50.0
+
+## 0.49.0
+
+### Minor Changes
+
+- d5fbd9a: An action now reduces a link picked inside the rows of a declared relation, such as a job's tasks, to its id before any handler sees it, as it already did for a record's own links; `unwrapInlineLinks` now takes the doctype's meta rather than its fields, plus an optional lookup for each relation's target.
+
 ## 0.48.1
 
 ### Patch Changes

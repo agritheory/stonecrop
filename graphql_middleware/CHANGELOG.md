@@ -1,5 +1,50 @@
 # Change Log - @stonecrop/graphql-middleware
 
+## 0.53.0
+
+### Patch Changes
+
+- @stonecrop/schema@0.53.0
+
+## 0.52.0
+
+### Minor Changes
+
+- 4753b5b: A server-side handler registered on a Save (a `selfTransition`) is now that save's whole write: it runs on a record not created yet and creates it, the adapter no longer writes the form's values after it on a saved record, and it must return the record it saved or the save fails.
+
+### Patch Changes
+
+- 4753b5b: A Save sent with the id of a record that no longer exists now reports `Save failed: record <id> no longer exists.`, in place of a longer message written for developers.
+- 4753b5b: A Save on a doctype with no identity field (no field declaring `primaryKey` and none named `id`) now fails with an error naming both repairs, instead of reporting success with no record the page can file.
+- @stonecrop/schema@0.52.0
+
+## 0.51.0
+
+### Patch Changes
+
+- Updated dependencies [e8842fb]
+  - @stonecrop/schema@0.51.0
+
+## 0.50.1
+
+### Patch Changes
+
+- @stonecrop/schema@0.50.1
+
+## 0.50.0
+
+### Patch Changes
+
+- @stonecrop/schema@0.50.0
+
+## 0.49.0
+
+### Patch Changes
+
+- d5fbd9a: An action now reduces a link picked inside the rows of a declared relation, such as a job's tasks, to its id before any handler sees it, as it already did for a record's own links; `unwrapInlineLinks` now takes the doctype's meta rather than its fields, plus an optional lookup for each relation's target.
+- Updated dependencies [d5fbd9a]
+  - @stonecrop/schema@0.49.0
+
 ## 0.48.1
 
 ### Patch Changes
