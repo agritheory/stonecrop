@@ -48,16 +48,23 @@ const mountTable = <Row extends TableRow>(column: TableColumn, row: Row) => {
 	return { rows }
 }
 
-const quantityColumn: TableColumn = {
+// Arithmetic is on by default; off, a cell keeps its mask.
+type Mode = { arithmetic?: false }
+const modes = [
+	{ arithmetic: 'on', mode: {} as Mode },
+	{ arithmetic: 'off', mode: { arithmetic: false } as Mode },
+]
+
+const quantityColumn = (mode: Mode = {}): TableColumn => ({
 	name: 'qty',
 	label: 'Qty',
 	component: 'AQuantityInput',
-	options: { uoms: ['Nos', 'Box'], stockUom: 'Nos', conversionFactors: { Box: 10 } },
-}
+	options: { uoms: ['Nos', 'Box'], stockUom: 'Nos', conversionFactors: { Box: 10 }, ...mode },
+})
 
 // Two boxes of ten.
-const mountQuantityTable = () =>
-	mountTable<QuantityRow>(quantityColumn, {
+const mountQuantityTable = (mode: Mode = {}) =>
+	mountTable<QuantityRow>(quantityColumn(mode), {
 		product: 'Widget',
 		note: 'Fragile',
 		qty: { qty: 2, uom: 'Box', stockQty: 20, stockUom: 'Nos', conversionFactor: 10 },
@@ -70,16 +77,16 @@ const usd = { id: 'USD', displayText: 'US Dollar', symbol: '$' }
 const eur = { id: 'EUR', displayText: 'Euro', symbol: '€' }
 const jpy = { id: 'JPY', displayText: 'Yen', symbol: '¥' }
 
-const priceColumn = (currency = usd): TableColumn => ({
+const priceColumn = (currency = usd, mode: Mode = {}): TableColumn => ({
 	name: 'price',
 	label: 'Price',
 	component: 'ACurrencyInput',
-	options: { baseCurrency: currency },
+	options: { baseCurrency: currency, ...mode },
 })
 
 // Fifty dollars, or fifty of another currency.
-const mountPriceTable = (currency = usd) =>
-	mountTable<PriceRow>(priceColumn(currency), {
+const mountPriceTable = (currency = usd, mode: Mode = {}) =>
+	mountTable<PriceRow>(priceColumn(currency, mode), {
 		product: 'Widget',
 		note: 'Fragile',
 		price: { amount: 50, currency, baseAmount: 50, baseCurrency: currency, exchangeRate: 1 },
@@ -124,10 +131,10 @@ const pickUnit = async (unit: string) => {
 	await userEvent.click(option!)
 }
 
-describe('a quantity cell in a table', { tags: ['browser'] }, () => {
+describe.each(modes)('a quantity cell in a table with arithmetic $arithmetic', { tags: ['browser'] }, ({ mode }) => {
 	// The form's quantity box refuses a key that is not part of a number; the table's must not wipe the quantity for one.
 	it('refuses a letter typed into the quantity', async () => {
-		const { rows } = mountQuantityTable()
+		const { rows } = mountQuantityTable(mode)
 		await startEditingCell()
 		await userEvent.keyboard('12a')
 		await userEvent.click(outside())
@@ -140,7 +147,7 @@ describe('a quantity cell in a table', { tags: ['browser'] }, () => {
 		['1.5', 1.5],
 		['-5', -5],
 	])('keeps %s typed into the quantity', async (typed, qty) => {
-		const { rows } = mountQuantityTable()
+		const { rows } = mountQuantityTable(mode)
 		await startEditingCell()
 		await userEvent.keyboard(typed)
 		await userEvent.click(outside())
@@ -149,7 +156,7 @@ describe('a quantity cell in a table', { tags: ['browser'] }, () => {
 	})
 
 	it('takes a quantity typed into a new row', async () => {
-		const { rows } = mountNewRow(quantityColumn)
+		const { rows } = mountNewRow(quantityColumn(mode))
 		await startEditingCell()
 		await userEvent.keyboard('3')
 		await userEvent.click(outside())
@@ -159,7 +166,7 @@ describe('a quantity cell in a table', { tags: ['browser'] }, () => {
 
 	// A spreadsheet cell is copied with a line break after it.
 	it('takes a quantity pasted from a spreadsheet', async () => {
-		const { rows } = mountQuantityTable()
+		const { rows } = mountQuantityTable(mode)
 		await copy('12\r\n')
 		await startEditingCell()
 		await userEvent.paste()
@@ -169,7 +176,7 @@ describe('a quantity cell in a table', { tags: ['browser'] }, () => {
 	})
 
 	it('returns focus to the cell once a unit is picked', async () => {
-		mountQuantityTable()
+		mountQuantityTable(mode)
 		await startEditingCell()
 		await pickUnit('Nos')
 
@@ -177,7 +184,7 @@ describe('a quantity cell in a table', { tags: ['browser'] }, () => {
 	})
 
 	it('stops editing the cell when focus leaves it after a unit is picked', async () => {
-		mountQuantityTable()
+		mountQuantityTable(mode)
 		await startEditingCell()
 		await pickUnit('Nos')
 		await userEvent.click(outside())
@@ -187,7 +194,7 @@ describe('a quantity cell in a table', { tags: ['browser'] }, () => {
 
 	// The unit list holds focus while it is open, so the cell must still learn that focus has gone elsewhere.
 	it('stops editing the cell when another cell is clicked with the unit list open', async () => {
-		mountQuantityTable()
+		mountQuantityTable(mode)
 		await startEditingCell()
 		await openUnitList()
 		await userEvent.click(document.querySelector<HTMLElement>('td[data-colindex="2"]')!)
@@ -196,7 +203,7 @@ describe('a quantity cell in a table', { tags: ['browser'] }, () => {
 	})
 
 	it('keeps editing the cell when its handle is clicked with the unit list open', async () => {
-		mountQuantityTable()
+		mountQuantityTable(mode)
 		await startEditingCell()
 		await openUnitList()
 		await userEvent.click(tupleCell().querySelector<HTMLElement>('.atable-tuple-shell__handle')!)
@@ -207,7 +214,7 @@ describe('a quantity cell in a table', { tags: ['browser'] }, () => {
 
 	// Arrows move through the list in a loop; Enter picks the highlighted unit.
 	it.each(['{ArrowDown}{Enter}', '{ArrowUp}{ArrowUp}{Enter}'])('picks a unit with %s', async keys => {
-		const { rows } = mountQuantityTable()
+		const { rows } = mountQuantityTable(mode)
 		await startEditingCell()
 		await userEvent.keyboard('{Shift>}{ArrowDown}{/Shift}')
 		await expect.poll(unitList).not.toBeNull()
@@ -218,7 +225,7 @@ describe('a quantity cell in a table', { tags: ['browser'] }, () => {
 	})
 
 	it('closes the unit list when Tab moves focus out of it', async () => {
-		mountQuantityTable()
+		mountQuantityTable(mode)
 		await startEditingCell()
 		await openUnitList()
 		await userEvent.keyboard('{Tab}')
@@ -228,10 +235,10 @@ describe('a quantity cell in a table', { tags: ['browser'] }, () => {
 	})
 })
 
-describe('a price cell in a table', { tags: ['browser'] }, () => {
+describe.each(modes)('a price cell in a table with arithmetic $arithmetic', { tags: ['browser'] }, ({ mode }) => {
 	// The box shows the price as typed; formatting it as "1.00" after the first key would push the rest past the cents.
 	it('keeps a price typed with cents', async () => {
-		const { rows } = mountPriceTable()
+		const { rows } = mountPriceTable(usd, mode)
 		await startEditingCell()
 		await userEvent.keyboard('12.75')
 		await userEvent.click(outside())
@@ -245,7 +252,7 @@ describe('a price cell in a table', { tags: ['browser'] }, () => {
 		['12.5.0', 12.5],
 		['-12', -12],
 	])('reads %s typed into a price as %s', async (typed, amount) => {
-		const { rows } = mountPriceTable()
+		const { rows } = mountPriceTable(usd, mode)
 		await startEditingCell()
 		await userEvent.keyboard(typed)
 		await userEvent.click(outside())
@@ -254,7 +261,7 @@ describe('a price cell in a table', { tags: ['browser'] }, () => {
 	})
 
 	it('takes a price typed into a new row', async () => {
-		const { rows } = mountNewRow(priceColumn())
+		const { rows } = mountNewRow(priceColumn(usd, mode))
 		await startEditingCell()
 		await userEvent.keyboard('12.5')
 		await userEvent.click(outside())
@@ -264,7 +271,7 @@ describe('a price cell in a table', { tags: ['browser'] }, () => {
 
 	// Arrow keys move between cells in a table, as in any editable cell.
 	it('keeps a price typed before an arrow key moves to the next cell', async () => {
-		const { rows } = mountPriceTable()
+		const { rows } = mountPriceTable(usd, mode)
 		await startEditingCell()
 		await userEvent.keyboard('12{ArrowRight}')
 
@@ -283,7 +290,10 @@ describe('a price cell in a table', { tags: ['browser'] }, () => {
 		],
 		['a new row', { product: 'Widget', note: 'Fragile' }],
 	])('keeps a price typed into a plain number box, in %s', async (_, row) => {
-		const { rows } = mountTable<TableRow>({ ...priceColumn(), options: { baseCurrency: usd, amountMask: false } }, row)
+		const { rows } = mountTable<TableRow>(
+			{ ...priceColumn(), options: { baseCurrency: usd, amountMask: false, ...mode } },
+			row
+		)
 		await startEditingCell()
 		await userEvent.keyboard('12.75')
 		await userEvent.click(outside())
@@ -292,7 +302,7 @@ describe('a price cell in a table', { tags: ['browser'] }, () => {
 	})
 
 	it('refuses a decimal point in a price without decimals', async () => {
-		const { rows } = mountPriceTable(jpy)
+		const { rows } = mountPriceTable(jpy, mode)
 		await startEditingCell()
 		await userEvent.keyboard('1.5')
 		await userEvent.click(outside())
@@ -302,7 +312,7 @@ describe('a price cell in a table', { tags: ['browser'] }, () => {
 
 	// The cell writes a price the browser's way whatever its currency, so the box reads it the same way.
 	it('keeps a euro price typed the way the browser writes numbers', async () => {
-		const { rows } = mountPriceTable(eur)
+		const { rows } = mountPriceTable(eur, mode)
 		await startEditingCell()
 		await userEvent.keyboard(new Intl.NumberFormat(undefined, { minimumFractionDigits: 2 }).format(1234.56))
 		await userEvent.click(outside())
@@ -312,7 +322,7 @@ describe('a price cell in a table', { tags: ['browser'] }, () => {
 
 	// The form's price box refuses a paste that is not an amount; the table's must not save it as 0.
 	it('refuses a pasted price that is not an amount', async () => {
-		const { rows } = mountPriceTable()
+		const { rows } = mountPriceTable(usd, mode)
 		await copy('abc')
 		await startEditingCell()
 		await userEvent.paste()
@@ -323,7 +333,7 @@ describe('a price cell in a table', { tags: ['browser'] }, () => {
 
 	// Read with the browser's separators it would be 1.23456.
 	it('refuses a pasted price written with the separators the other way round', async () => {
-		const { rows } = mountPriceTable()
+		const { rows } = mountPriceTable(usd, mode)
 		await copy(writtenTheOtherWay())
 		await startEditingCell()
 		await userEvent.paste()

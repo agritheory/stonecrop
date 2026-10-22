@@ -275,6 +275,19 @@ describe('AQuantityInput', () => {
 	})
 
 	describe('qty input restriction', () => {
+		it('converts a quantity typed into the plain box to the stock unit', async () => {
+			const wrapper = mount(AQuantityInput, {
+				props: {
+					options: plainOptions,
+					modelValue: { qty: 1, uom: 'Box', stockQty: 10, stockUom: 'Nos', conversionFactor: 10 },
+				},
+			})
+			await wrapper.find('.aquantity__qty').setValue(3)
+
+			const emitted = wrapper.emitted('update:modelValue')!
+			expect(emitted[emitted.length - 1][0]).toMatchObject({ qty: 3, uom: 'Box', stockQty: 30 })
+		})
+
 		it('allows digit keys', () => {
 			const wrapper = mount(AQuantityInput, { props: { options: plainOptions } })
 			expect(dispatchKey(wrapper, '7').defaultPrevented).toBe(false)

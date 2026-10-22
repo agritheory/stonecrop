@@ -223,6 +223,13 @@ describe('AQuantityInput arithmetic', { tags: ['component'] }, () => {
 	it('refuses exponent keys', () => {
 		expect(keyPrevented(mountQuantity(), box, 'e')).toBe(true)
 	})
+
+	it('refuses a paste with an exponent or letters', () => {
+		const wrapper = mountQuantity()
+		expect(pastePrevented(wrapper, box, '1e3')).toBe(true)
+		expect(pastePrevented(wrapper, box, 'abc')).toBe(true)
+		expect(pastePrevented(wrapper, box, '(12*3)+4')).toBe(false)
+	})
 })
 
 describe('ACurrencyInput arithmetic', { tags: ['component'] }, () => {
