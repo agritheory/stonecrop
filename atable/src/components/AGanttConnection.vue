@@ -56,11 +56,10 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-import { createTableStore } from '../stores/table'
-import type { ConnectionPath } from '../types'
+import type { ConnectionPath, TableStore } from '../types'
 
 const { store } = defineProps<{
-	store: ReturnType<typeof createTableStore>
+	store: TableStore
 }>()
 
 const emit = defineEmits<{

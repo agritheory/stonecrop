@@ -39,7 +39,7 @@
 				:schema="componentObj"
 				:data="dataModel[componentObj.fieldname]"
 				:mode="resolvedMode(componentObj)"
-				:errors="errors?.[componentObj.fieldname]"
+				:errors="fieldErrors(componentObj)"
 				v-bind="componentProps(componentObj)">
 				<template v-if="isListExpansionTable(componentObj)" #content="{ row, rowIndex }">
 					<AForm
@@ -55,9 +55,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed, watchEffect, watch, ref } from 'vue'
+import { computed, watchEffect, watch, ref, useId } from 'vue'
 
 import type { ResolvedField, ResolvedLink, ResolvedFieldset, ResolvedTable } from '../types'
+import { partsPatch, readParts } from '@stonecrop/schema'
 import type { ColumnSchema, InteractionMode } from '@stonecrop/schema'
 
 const emit = defineEmits(['update:schema', 'update:data'])
@@ -101,8 +102,7 @@ watch(
 	{ immediate: true }
 )
 
-// Called by the nested <AForm>'s @update:data handler.
-// Updates nestedData locally and propagates upward in one step,
+// A nested form's edits: updates nestedData locally and propagates upward in one step,
 // avoiding the watchEffect feedback loop that occurred with v-model.
 const updateNestedData = (fieldname: string, val: any) => {
 	nestedData.value[fieldname] = val
@@ -112,7 +112,7 @@ const updateNestedData = (fieldname: string, val: any) => {
 	}
 }
 
-// Called by a fieldset's @update:data handler. Its form holds this record, so its edits are this record's.
+// A fieldset's edits. Its form holds this record, so its edits are this record's.
 const updateFieldsetData = (val: Record<string, any>) => {
 	if (dataModel.value) {
 		Object.assign(dataModel.value, val)
@@ -141,15 +141,22 @@ const updateTableRow = (fieldname: string, rowIndex: number, val: Record<string,
 	updateTableRows(fieldname, rows)
 }
 
+// Each field's `uuid` ties its label and error message to its input; one id per form keeps them
+// unique when several forms, or a fieldset's nested form, share a page.
+const formId = useId()
+
 const componentProps = (componentObj: ResolvedField) => {
 	const propsToPass: Record<string, any> = {}
 	for (const [key, value] of Object.entries(componentObj)) {
 		// 'mode' is excluded here because it is handled by resolvedMode()
 		// and passed explicitly via :mode to avoid conflicting with the form-level defaults.
-		if (!['component', 'primaryKey', 'computed', 'language', 'hidden', 'mode', 'width', 'height'].includes(key)) {
+		if (
+			!['component', 'primaryKey', 'computed', 'language', 'hidden', 'mode', 'width', 'height', 'parts'].includes(key)
+		) {
 			propsToPass[key] = value
 		}
 	}
+	propsToPass['uuid'] ??= `${formId}-${componentObj.fieldname}`
 
 	// A table sources its rows from the data model, never from the schema, and its edits come back
 	// through `update:rows`. `kind` is the only check: every path into AForm sets it (Zod's
@@ -188,6 +195,17 @@ function resolvedMode(componentObj: ResolvedField): InteractionMode {
 	return effectiveFormMode.value
 }
 
+// A field declaring `parts` binds the value its component edits, read part by part from the fields
+// that hold them and written back only where a part changed.
+const fieldParts = (field: ResolvedField): Record<string, string> | undefined =>
+	field.kind === 'field' ? field.parts : undefined
+
+const fieldErrors = (field: ResolvedField): string[] | undefined => {
+	const parts = fieldParts(field)
+	if (!parts) return errors?.[field.fieldname]
+	return Object.values(parts).flatMap(fieldname => errors?.[fieldname] ?? [])
+}
+
 // Create stable computed refs array to avoid recreation on every access
 const childModelsCache = ref<ReturnType<typeof computed>[]>([])
 
@@ -197,14 +215,20 @@ watchEffect(() => {
 
 	// Recreate cache only if length changed
 	if (childModelsCache.value.length !== schema.length) {
-		childModelsCache.value = schema.map((_val, i) => {
+		childModelsCache.value = schema.map((_field, index) => {
 			return computed({
 				get() {
-					return dataModel.value?.[schema[i].fieldname]
+					const parts = fieldParts(schema[index])
+					if (parts) return readParts(parts, dataModel.value ?? {})
+					return dataModel.value?.[schema[index].fieldname]
 				},
-				set: newValue => {
-					const fieldname = schema[i].fieldname
-					if (fieldname && dataModel.value) {
+				set: (newValue: any) => {
+					const parts = fieldParts(schema[index])
+					const fieldname = schema[index].fieldname
+					if (parts && dataModel.value) {
+						Object.assign(dataModel.value, partsPatch(parts, dataModel.value, newValue))
+						emit('update:data', { ...dataModel.value })
+					} else if (fieldname && dataModel.value) {
 						dataModel.value[fieldname] = newValue
 						emit('update:data', { ...dataModel.value })
 					}
@@ -299,6 +323,7 @@ const childModels = computed(() => childModelsCache.value)
 .aform_form-element > .aform_field-label {
 	top: var(--sc-form-label-offset);
 }
+
 .aform_input-field:disabled,
 .aform_checkbox-container:has(.aform_checkbox:disabled) {
 	background: var(--sc-input-field-disabled-background);

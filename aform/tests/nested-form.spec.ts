@@ -1,5 +1,5 @@
 import { mount, flushPromises } from '@vue/test-utils'
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect } from 'vite-plus/test'
 
 import AForm from '../src/components/AForm.vue'
 import AFieldset from '../src/components/form/AFieldset.vue'

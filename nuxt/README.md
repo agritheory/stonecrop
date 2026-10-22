@@ -125,7 +125,7 @@ export default defineNuxtPlugin(() => {
 })
 ```
 
-This wires record loading to your GraphQL (or any other) backend. It is the seam Desktop reads through as well. There is no fallback: without a registered client, `getRecord` and `getRecords` throw naming `setClient`, and Desktop skips the read and renders empty.
+This wires record loading to your GraphQL (or any other) backend. It is the seam Desktop reads through as well. There is no fallback: without a registered client, `getRecord` and `getRecords` throw naming `setClient`, and Desktop skips the read, rendering empty lists and leaving a record on its loading state.
 
 ### Use the Stonecrop Composable
 

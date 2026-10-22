@@ -1,6 +1,6 @@
 import { List } from 'immutable'
 import { mount } from '@vue/test-utils'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vite-plus/test'
 import { nextTick } from 'vue'
 
 import { Doctype, Registry, Stonecrop } from '@stonecrop/stonecrop'
@@ -39,7 +39,7 @@ describe('Desktop — link values on write', { tags: ['component'] }, () => {
 		const doctype = buildDoctype('order', 'draft', { draft: {} }, [
 			{ kind: 'field' as const, fieldname: 'customer', label: 'Customer', component: 'AForm', doctype: 'party' },
 			{ kind: 'field' as const, fieldname: 'agentId', label: 'Agent', component: 'AFormLink', doctype: 'party' },
-		] as any)
+		])
 		registry.addDoctype(doctype)
 		stonecrop.addRecord('order', 'o-1', {
 			id: 'o-1',
@@ -123,7 +123,7 @@ describe('Desktop — link values on write', { tags: ['component'] }, () => {
 			[
 				{ kind: 'field' as const, fieldname: 'customer', label: 'Customer', component: 'AForm', doctype: 'party' },
 				{ kind: 'field' as const, fieldname: 'agentId', label: 'Agent', component: 'AFormLink', doctype: 'party' },
-			] as any
+			]
 		)
 		registry.addDoctype(doctype)
 		stonecrop.addRecord('order', 'o-1', {

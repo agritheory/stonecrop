@@ -1,8 +1,9 @@
 import { resolve } from 'node:path'
-import { coverageConfigDefaults, defineConfig } from 'vitest/config'
+import { coverageConfigDefaults, defineConfig } from 'vite-plus'
 
 import { buildTask } from '../tools/vite/build-task.ts'
 import { testTags } from '../tools/vite/test-tags.ts'
+import { fsModuleCachePath } from '../tools/vite/fs-module-cache.ts'
 
 export default defineConfig({
 	plugins: [],
@@ -23,6 +24,9 @@ export default defineConfig({
 				// drags Zod along with it. It does not, and must not: Zod in a Nitro SSR entry
 				// collides with the `process` Nitro imports there and 500s every request.
 				record: resolve(import.meta.dirname, 'src/record.ts'),
+				// The same for the naming rules: stonecrop's `Registry`, which server bundles include, keys doctypes
+				// by `toSlug`.
+				naming: resolve(import.meta.dirname, 'src/naming.ts'),
 			},
 			name: '@stonecrop/schema',
 			formats: ['es'],
@@ -33,6 +37,7 @@ export default defineConfig({
 		},
 	},
 	test: {
+		fsModuleCachePath,
 		globals: true,
 		tags: testTags,
 		environment: 'jsdom',

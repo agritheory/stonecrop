@@ -24,11 +24,16 @@ import AForm from './components/AForm.vue'
 import AFormLink from './components/form/AFormLink.vue'
 import ANumericInput from './components/form/ANumericInput.vue'
 import AQuantityInput from './components/form/AQuantityInput.vue'
+import ASemverInput from './components/form/ASemverInput.vue'
 import ATextInput from './components/form/ATextInput.vue'
 import ATextboxInput from './components/form/ATextboxInput.vue'
 import Login from './components/utilities/Login.vue'
 import AFormLoading from './components/AFormLoading.vue'
 import ExpandButton from './components/base/ExpandButton.vue'
+import ATableTupleCurrencyPicker from './components/table/ATableTupleCurrencyPicker.vue'
+import ATableTupleQuantityPicker from './components/table/ATableTupleQuantityPicker.vue'
+import ATupleCellEditor from './components/table/ATupleCellEditor.vue'
+import ATupleCellShell from './components/table/ATupleCellShell.vue'
 
 export type * from './types'
 
@@ -57,11 +62,16 @@ function install(app: App /* options */) {
 	app.component('AFormLink', AFormLink)
 	app.component('ANumericInput', ANumericInput)
 	app.component('AQuantityInput', AQuantityInput)
+	app.component('ASemverInput', ASemverInput)
 	app.component('ATextInput', ATextInput)
 	app.component('ATextboxInput', ATextboxInput)
 	app.component('ADuration', ADuration)
 	app.component('AFormLoading', AFormLoading)
 	app.component('ExpandButton', ExpandButton)
+	app.component('ATableTupleQuantityPicker', ATableTupleQuantityPicker)
+	app.component('ATableTupleCurrencyPicker', ATableTupleCurrencyPicker)
+	app.component('ATupleCellEditor', ATupleCellEditor)
+	app.component('ATupleCellShell', ATupleCellShell)
 }
 
 export {
@@ -83,10 +93,15 @@ export {
 	AFormLink,
 	ANumericInput,
 	AQuantityInput,
+	ASemverInput,
 	ATextInput,
 	ATextboxInput,
 	Login,
 	AFormLoading,
 	ExpandButton,
+	ATableTupleQuantityPicker,
+	ATableTupleCurrencyPicker,
+	ATupleCellEditor,
+	ATupleCellShell,
 	install,
 }

@@ -28,11 +28,11 @@ const preset: GraphileConfig.Preset = {
 }
 ```
 
-`createStonecropPreset()` makes two corrections to the schema PostGraphile would otherwise build.
-It moves Relay's global identifier to `nodeId` so a real `id` column keeps its own name, and it
-exposes the many side of any foreign key declared `ON DELETE CASCADE` — so a parent type carries a
-collection field for the rows it owns, and `stonecrop-schema generate` can turn that into a child
-table. A foreign key without a cascade is a reference, not ownership, and stays one-directional.
+`createStonecropPreset()` makes three changes to the schema PostGraphile would otherwise build:
+
+- It moves Relay's global identifier to `nodeId`, so a real `id` column keeps its own name.
+- It exposes the many side of any foreign key declared `ON DELETE CASCADE`, so a parent type carries a collection field for the rows it owns and `stonecrop-schema generate` can turn that into a child table. A foreign key without a cascade is a reference, not ownership, and stays one-directional.
+- It turns off the mutations Amber generates, a create, update and delete for every table and one for every `VOLATILE` database function, so `stonecropAction` is the only write the API offers.
 
 `createStonecropPlugin()` discovers the `PgExecutor` automatically from `pgServices` — no executor argument is needed. An optional `StonecropPluginOptions` object accepts:
 
@@ -153,17 +153,19 @@ Actions are declared per doctype in `workflow.actions`. Each action names the st
 }
 ```
 
-The `stonecropAction(doctype, action, args)` mutation dispatches through `applyGuardedTransition`: it reads the record's `status`, rejects the action if the current state is not in `allowedStates` (`isActionAllowedInState`), then writes `nextState`. The record is identified by `args[0].id`. Self-transitions (`selfTransition: true`) have no state target and no data-write path on this backend, so they are rejected rather than silently succeeding.
+The `stonecropAction(doctype, action, args)` mutation dispatches through `applyGuardedTransition`: it reads the record's `status`, rejects the action if the current state is not in `allowedStates` (`isActionAllowedInState`), then writes `nextState`. The record is identified by `args[0].id`. A self-transition (`selfTransition: true`) keeps the state and writes the record's data instead: the Postgres adapter sets each declared field that has a column, except `status` and any column the database fills itself (a generated column, or an identity generated always), and lists each key it left out in `droppedFields`. When a server-side handler is registered for the self-transition (`actionHandlers`), the handler does that write instead, creating the record too, and must return the record it saved.
 
 An action against a record that does not exist is reported as such, before the guard runs. This depends on the backend distinguishing the two things `undefined` used to mean — `GuardedTransitionIO.readState` returns `null` for a lookup that missed, and `undefined` only for a row that exists with no workflow state. A backend that returns `undefined` for both makes a bad id look like a workflow violation, or, when the action declares no `allowedStates`, makes it look like a success.
 
 ### Creating a record
 
-There is no create mutation, no create action, and no separate create write. **Saving a record that does not exist creates it**, because "persist this record's data" is one request whether or not the row is there yet. `GuardedTransitionIO.writeData` is an upsert: it receives an `exists` flag the dispatcher already knows, having read the record's state to run the guard. A backend that omits `writeData` declines both saving and creating, which is the Postgres adapter's position today; the two nuxt hosts implement it.
+There is no create mutation, no create action, and no separate create write. **Saving a record not created yet creates it**, because "persist this record's data" is one request whether or not the row is there yet. `GuardedTransitionIO.writeData` is an upsert: it receives an `exists` flag the dispatcher already knows, having read the record's state to run the guard. A backend that omits `writeData` declines both saving and creating, unless server code is registered for the Save (`runEffect`), which then does both; the Postgres adapter and the two nuxt hosts implement it.
+
+A Save sent with an id that matches no record is not a create: the record was deleted since the client read it, and creating it would report a lost update as a success. For a self-transition, `readState` throws in that case instead of returning `null`, so nothing is created.
 
 `allowedStates` is deliberately not consulted on creation — it constrains movement between states, and a record being created is not in one. Its initial state is the backend's to set. Only a self-transition creates: a `nextState` transition against a missing record is a bad id, not a request to create one.
 
-Identity belongs to `writeData`, not the dispatcher. Read the declared `primaryKey` out of the submitted data for a natural-keyed doctype — that value is a field the user filled in — and mint one only when the doctype is surrogate-keyed. The New Record flow dispatches with **no** `id` in the envelope, because an unsaved record has no identity to send; the created record comes back carrying the one the backend assigned.
+Identity belongs to `writeData`, or to a Save's handler when one is registered, not the dispatcher. Read the declared `primaryKey` out of the submitted data for a natural-keyed doctype — that value is a field the user filled in — and mint one only when the doctype is surrogate-keyed. The New Record flow dispatches with **no** `id` in the envelope, because an unsaved record has no identity to send; the created record comes back carrying the one the backend assigned.
 
 A `writeData` that only knows how to patch will match no row and return nothing. The dispatcher treats an empty return on the create path as exactly that and fails loudly, rather than letting a save that stored nothing report success.
 

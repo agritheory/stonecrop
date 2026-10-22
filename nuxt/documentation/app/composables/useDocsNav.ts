@@ -7,6 +7,11 @@ export function useDocsNav() {
 
 	const navTitlesByPath = computed(() => docsNavTitleMap())
 
+	// A section index links to its pages as `./name`, which resolves inside the section only from the
+	// slash form. Prerendering follows a `/components` crumb too, and its render of the index, every
+	// sibling link pointing at `/name`, replaces the one at `/components/`.
+	const indexPaths = new Set(useRuntimeConfig().public.docsIndexPaths)
+
 	const breadcrumbs = computed(() => {
 		if (route.path === '/' || route.path === '') return []
 
@@ -23,7 +28,7 @@ export function useDocsNav() {
 					.split('-')
 					.map(word => word.charAt(0).toUpperCase() + word.slice(1))
 					.join(' ')
-			crumbs.push({ title, to: currentPath })
+			crumbs.push({ title, to: indexPaths.has(`${currentPath}/`) ? `${currentPath}/` : currentPath })
 		}
 
 		return crumbs

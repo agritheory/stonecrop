@@ -7,7 +7,7 @@
  * mutated it in place — any invalidation discarded the edits silently. Seeding the node instead
  * makes the draft a phantom row, because `getRecords` lists every key under the doctype.
  *
- * So a draft is held off-HST by whoever renders the form, and reaches the server as an action
+ * So a draft is held off-HST, by the record `Stonecrop.editRecord` returns for it, and reaches the server as an action
  * carrying no record id, which the write path already reads as "create".
  */
 

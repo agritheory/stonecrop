@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test'
 import { List } from 'immutable'
 import { createRouter, createWebHistory } from 'vue-router'
 import type { UnknownMachineConfig } from 'xstate'
@@ -17,7 +17,7 @@ const createDoctypeWithLinks = (name: string, links?: Record<string, any>) => {
 		states: { draft: {} },
 	}
 
-	return new Doctype(name, mockSchema as any, mockWorkflow, undefined, links)
+	return new Doctype(name, mockSchema, mockWorkflow, undefined, links)
 }
 
 function createMockDoctype(name: string) {
@@ -423,7 +423,7 @@ describe('Registry class', { tags: ['unit'] }, () => {
 				{ kind: 'field' as const, fieldname: 'qty', component: 'ATextInput', label: 'Qty' },
 			])
 			const taskWorkflow = { id: 'task', initial: 'draft', states: { draft: {} } }
-			const task = new Doctype('Task', taskSchema as any, taskWorkflow as any)
+			const task = new Doctype('Task', taskSchema, taskWorkflow as any)
 
 			const parentSchema = List([
 				{ kind: 'field' as const, fieldname: 'title', component: 'ATextInput', label: 'Title' },
@@ -466,11 +466,7 @@ describe('Registry class', { tags: ['unit'] }, () => {
 					schema: [{ kind: 'field' as const, fieldname: 'rate', component: 'AFloat', label: 'Rate' }],
 				},
 			])
-			const line = new Doctype(
-				'Line',
-				lineSchema as any,
-				{ id: 'line', initial: 'draft', states: { draft: {} } } as any
-			)
+			const line = new Doctype('Line', lineSchema, { id: 'line', initial: 'draft', states: { draft: {} } } as any)
 
 			const orderSchema = List([
 				{ kind: 'field' as const, fieldname: 'title', component: 'ATextInput', label: 'Title' },
@@ -497,7 +493,7 @@ describe('Registry class', { tags: ['unit'] }, () => {
 			registry = new Registry()
 			const note = new Doctype(
 				'Note',
-				List([{ kind: 'field' as const, fieldname: 'body', component: 'ATextInput', label: 'Body' }]) as any,
+				List([{ kind: 'field' as const, fieldname: 'body', component: 'ATextInput', label: 'Body' }]),
 				{ id: 'note', initial: 'draft', states: { draft: {} } } as any
 			)
 			const line = new Doctype(
@@ -546,7 +542,7 @@ describe('Registry class', { tags: ['unit'] }, () => {
 				{ kind: 'field' as const, fieldname: 'street', component: 'ATextInput', label: 'Street' },
 			])
 			const addressWorkflow = { id: 'address', initial: 'draft', states: { draft: {} } }
-			const address = new Doctype('Address', addressSchema as any, addressWorkflow as any)
+			const address = new Doctype('Address', addressSchema, addressWorkflow as any)
 
 			const personSchema = List([
 				{ kind: 'field' as const, fieldname: 'name', component: 'ATextInput', label: 'Name' },
@@ -605,29 +601,41 @@ describe('Registry class', { tags: ['unit'] }, () => {
 				{
 					kind: 'fieldset' as const,
 					fieldname: 'details',
-					schema: [{ kind: 'field' as const, fieldname: 'email', component: 'ATextInput' }],
+					schema: [
+						{
+							kind: 'table' as const,
+							fieldname: 'items',
+							component: 'ATable',
+							schema: [],
+							config: { view: 'list' as const },
+						},
+					],
 				},
 			]
-			expect(registry.initializeRecord(schema)).toEqual({ email: '' })
+			expect(registry.initializeRecord(schema)).toStrictEqual({ items: [] })
 		})
 
-		// An ISO 8601 duration has no empty text, and an `interval` column refuses `''`.
-		it('initializes a duration field to null', () => {
-			registry = new Registry()
-			const schema = [{ kind: 'field' as const, fieldname: 'took', component: 'ADuration' }]
-			const record = registry.initializeRecord(schema)
-			expect(record.took).toBeNull()
-		})
-
-		it('initializes a field with kind: "field" and an explicit default to that default value', () => {
+		// An insert gives a column its database default only when it leaves the column out, and `''`, 0, false and
+		// null each override that default. The table is the control: it still starts as an empty list.
+		it('gives a plain field no value, whatever its component', () => {
 			registry = new Registry()
 			const schema = [
-				{ kind: 'field' as const, fieldname: 'status', component: 'ADropdown', default: 'Draft' },
-				{ kind: 'field' as const, fieldname: 'active', component: 'ACheckbox', default: true },
+				{ kind: 'field' as const, fieldname: 'name', component: 'ATextInput' },
+				{ kind: 'field' as const, fieldname: 'count', component: 'ANumericInput' },
+				{ kind: 'field' as const, fieldname: 'active', component: 'ACheckbox' },
+				{ kind: 'field' as const, fieldname: 'due', component: 'ADate' },
+				{ kind: 'field' as const, fieldname: 'took', component: 'ADuration' },
+				{ kind: 'field' as const, fieldname: 'meta', component: 'ACodeEditor', language: 'json' },
+				{ kind: 'field' as const, fieldname: 'custom', component: 'SomeAppComponent' },
+				{
+					kind: 'table' as const,
+					fieldname: 'items',
+					component: 'ATable',
+					schema: [],
+					config: { view: 'list' as const },
+				},
 			]
-			const record = registry.initializeRecord(schema)
-			expect(record.status).toBe('Draft')
-			expect(record.active).toBe(true)
+			expect(registry.initializeRecord(schema)).toStrictEqual({ items: [] })
 		})
 	})
 })

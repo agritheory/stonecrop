@@ -1,11 +1,11 @@
 import { mount, flushPromises } from '@vue/test-utils'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test'
 import { nextTick } from 'vue'
 import { List } from 'immutable'
 import { createPinia, setActivePinia } from 'pinia'
 
 import { AForm } from '@stonecrop/aform'
-import { Doctype, Registry, Stonecrop } from '@stonecrop/stonecrop'
+import { Doctype, Registry, Stonecrop, getGlobalTriggerEngine } from '@stonecrop/stonecrop'
 
 import Desktop from '../../src/components/Desktop.vue'
 import type { RouteAdapter } from '../../src/types'
@@ -16,10 +16,13 @@ function buildTaskDoctype() {
 	const fields = List([
 		{ kind: 'field' as const, fieldname: 'id', label: 'ID', component: 'ATextInput', primaryKey: true },
 		{ kind: 'field' as const, fieldname: 'title', label: 'Title', component: 'ATextInput' },
-		{ kind: 'field' as const, fieldname: 'status', label: 'Status', component: 'ATextInput', default: 'draft' },
+		{ kind: 'field' as const, fieldname: 'status', label: 'Status', component: 'ATextInput' },
+		{ kind: 'field' as const, fieldname: 'estimate', label: 'Estimate', component: 'ANumericInput' },
+		{ kind: 'field' as const, fieldname: 'billable', label: 'Billable', component: 'ACheckbox' },
+		{ kind: 'field' as const, fieldname: 'due', label: 'Due', component: 'ADate' },
 	])
 	const workflow = { states: ['draft'], actions: { save: { label: 'Save', selfTransition: true } } }
-	return new Doctype('task', fields as any, workflow as any)
+	return new Doctype('task', fields, workflow as any, undefined, undefined, undefined, { status: 'draft' })
 }
 
 const adapterFor = (recordId: string, view: 'record' | 'records' = 'record'): RouteAdapter => ({
@@ -62,28 +65,45 @@ describe('Desktop draft records', { tags: ['component'] }, () => {
 		// cached from the getter. `addRecord` for any record invalidated that cache and the typed
 		// fields were silently dropped — a create then persisted an empty record.
 		const wrapper = mountAt('new')
-		await nextTick()
+		await flushPromises()
 
 		const aform = wrapper.findComponent(AForm)
 		aform.vm.$emit('update:data', { title: 'Buy milk' })
 		await flushPromises()
 
 		stonecrop.addRecord('task', '999', { id: '999', title: 'unrelated' })
-		await nextTick()
+		await flushPromises()
 
 		expect(aform.props('data')).toMatchObject({ title: 'Buy milk' })
 	})
 
+	it('sends no value on create for a field nobody filled in', async () => {
+		// An insert gives a column its database default only when it leaves the column out: `''` in an
+		// identity column fails the insert, `0` creates a row keyed 0, and false or null overrides the default.
+		const wrapper = mountAt('new')
+		await flushPromises()
+		wrapper.findComponent(AForm).vm.$emit('update:data', { title: 'Buy milk' })
+		await flushPromises()
+
+		const elements = wrapper.findComponent({ name: 'ActionSet' }).props('elements') as any[]
+		const save = elements.find(element => element.type === 'dropdown')?.actions.find((a: any) => a.label === 'Save')
+		save.action()
+		await nextTick()
+
+		const [payload] = wrapper.emitted('action')!.at(-1) as [{ data: Record<string, unknown> }]
+		expect(payload.data).toStrictEqual({ title: 'Buy milk', status: 'draft' })
+	})
+
 	it('seeds a draft with the doctype declared defaults', async () => {
 		const wrapper = mountAt('new')
-		await nextTick()
+		await flushPromises()
 
 		expect(wrapper.findComponent(AForm).props('data')).toMatchObject({ status: 'draft' })
 	})
 
 	it('writes no HST node for a draft, so it cannot appear as a list row', async () => {
 		const wrapper = mountAt('new')
-		await nextTick()
+		await flushPromises()
 
 		const aform = wrapper.findComponent(AForm)
 		aform.vm.$emit('update:data', { title: 'Buy milk' })
@@ -98,13 +118,13 @@ describe('Desktop draft records', { tags: ['component'] }, () => {
 		// Every draft routes to the same `/task/new`, so a buffer left behind would open the next
 		// New Record pre-filled with the abandoned one.
 		const first = mountAt('new')
-		await nextTick()
+		await flushPromises()
 		first.findComponent(AForm).vm.$emit('update:data', { title: 'Abandoned' })
 		await flushPromises()
 		first.unmount()
 
 		const second = mountAt('new')
-		await nextTick()
+		await flushPromises()
 
 		expect(second.findComponent(AForm).props('data')).not.toMatchObject({ title: 'Abandoned' })
 	})
@@ -116,5 +136,185 @@ describe('Desktop draft records', { tags: ['component'] }, () => {
 		await nextTick()
 
 		expect(wrapper.findComponent(AForm).props('data')).toMatchObject({ title: 'Saved' })
+	})
+
+	// A new form is filled once, with every starting value. Until then Desktop shows its loading state rather
+	// than a form whose typing a late value could overwrite, and offers no action on a record not yet there.
+	it('shows the loading state, not the form, until the starting values arrive', async () => {
+		let release!: () => void
+		registry.registerDefaults(
+			'task',
+			() => new Promise(resolve => (release = () => resolve({ title: 'Call the supplier' })))
+		)
+		const wrapper = mountAt('new')
+		await flushPromises()
+
+		expect(wrapper.findComponent(AForm).exists()).toBe(false)
+		expect(wrapper.find('.loading').text()).toBe('Preparing new Task...')
+		expect(wrapper.findComponent({ name: 'ActionSet' }).props('elements')).toEqual([])
+
+		release()
+		await flushPromises()
+		expect(wrapper.findComponent(AForm).props('data')).toMatchObject({ title: 'Call the supplier', status: 'draft' })
+	})
+
+	it("opens the form with the doctype's defaults when the app's fail", async () => {
+		registry.registerDefaults('task', () => Promise.reject(new Error('defaults endpoint 500')))
+		const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
+		const wrapper = mountAt('new')
+		await flushPromises()
+		warn.mockRestore()
+
+		expect(wrapper.findComponent(AForm).props('data')).toMatchObject({ status: 'draft' })
+	})
+
+	// A script fills a new record (a sales order made from a quotation) and then moves to its form.
+	describe('values the app filled in', () => {
+		it('open the new form with them, and are used up by it', async () => {
+			registry.prefillDraft('Task', { title: 'From the quotation' })
+			const filled = mountAt('new')
+			await flushPromises()
+
+			expect(filled.findComponent(AForm).props('data')).toMatchObject({ title: 'From the quotation', status: 'draft' })
+			filled.unmount()
+
+			const next = mountAt('new')
+			await flushPromises()
+			expect(next.findComponent(AForm).props('data')).not.toMatchObject({ title: 'From the quotation' })
+		})
+
+		it('reach the form of a doctype whose name and slug differ', async () => {
+			const fields = List([{ kind: 'field' as const, fieldname: 'title', label: 'Title', component: 'ATextInput' }])
+			registry.addDoctype(new Doctype('SalesNote', fields, { states: ['draft'], actions: {} } as any))
+			registry.prefillDraft('SalesNote', { title: 'From the quotation' })
+			const wrapper = mount(Desktop, {
+				props: {
+					routeAdapter: {
+						getCurrentDoctype: () => 'sales-note',
+						getCurrentRecordId: () => 'new',
+						getCurrentView: () => 'record',
+						navigate: vi.fn(),
+					},
+				},
+				global: {
+					plugins: [makeStonecropPlugin(registry, stonecrop), pinia],
+					stubs: { AForm: true, ActionSet: true, SheetNav: true, CommandPalette: true },
+				},
+			})
+			await flushPromises()
+
+			expect(wrapper.findComponent(AForm).props('data')).toMatchObject({ title: 'From the quotation' })
+		})
+
+		it("are not used by another doctype's new form", async () => {
+			const noteFields = List([{ kind: 'field' as const, fieldname: 'title', label: 'Title', component: 'ATextInput' }])
+			registry.addDoctype(new Doctype('note', noteFields, { states: ['draft'], actions: {} } as any))
+			registry.prefillDraft('note', { title: 'A note' })
+			const wrapper = mountAt('new')
+			await flushPromises()
+
+			expect(wrapper.findComponent(AForm).props('data')).not.toMatchObject({ title: 'A note' })
+			expect(registry.takePrefill('note')).toEqual({ title: 'A note' })
+		})
+	})
+
+	describe("a field's rules", () => {
+		afterEach(() => {
+			getGlobalTriggerEngine().registerDoctypeActions('task', {})
+		})
+
+		const estimateFromTitle = () => {
+			getGlobalTriggerEngine().registerAction('estimateFromTitle', context => {
+				context.set('estimate', String(context.get('title')).length)
+			})
+			getGlobalTriggerEngine().registerDoctypeActions('task', { title: ['estimateFromTitle'] })
+		}
+
+		it('run on a new record, and the form shows what a rule set, without touching the store', async () => {
+			estimateFromTitle()
+			const wrapper = mountAt('new')
+			await flushPromises()
+
+			wrapper.findComponent(AForm).vm.$emit('update:data', { title: 'Buy milk' })
+			await flushPromises()
+
+			expect(wrapper.findComponent(AForm).props('data')).toMatchObject({ title: 'Buy milk', estimate: 8 })
+			expect(stonecrop.getRecordIds('task')).toEqual([])
+		})
+
+		it('do not run for a starting value, which is in the form as it opens', async () => {
+			estimateFromTitle()
+			registry.registerDefaults('task', { title: 'Call the supplier' })
+			const wrapper = mountAt('new')
+			await flushPromises()
+
+			const data = wrapper.findComponent(AForm).props('data')
+			expect(data).toMatchObject({ title: 'Call the supplier', status: 'draft' })
+			expect(data).not.toHaveProperty('estimate')
+		})
+
+		it('still run on a saved record, through the store', async () => {
+			estimateFromTitle()
+			stonecrop.addRecord('task', '7', { id: '7', title: 'Saved', status: 'draft' })
+			const wrapper = mountAt('7')
+			await flushPromises()
+
+			wrapper.findComponent(AForm).vm.$emit('update:data', { title: 'Saved again' })
+			await flushPromises()
+
+			expect(stonecrop.getRecordById('task', '7')?.get('estimate')).toBe(11)
+		})
+	})
+
+	describe('the actions it offers', () => {
+		const jobWorkflow = {
+			states: ['draft', 'planned', 'cancelled'],
+			actions: {
+				save: { label: 'Save', selfTransition: true, allowedStates: ['draft', 'planned'] },
+				plan: { label: 'Plan', allowedStates: ['draft'], nextState: 'planned' },
+				cancel: { label: 'Cancel', allowedStates: ['draft', 'planned'], nextState: 'cancelled' },
+				reload: { label: 'Reload tasks', allowedStates: ['draft', 'planned'] },
+				import: { label: 'Import' },
+				help: { label: 'Help', stateless: true },
+			},
+		}
+
+		const mountJobAt = (recordId: string) => {
+			registry.addDoctype(new Doctype('job', buildTaskDoctype().schema, jobWorkflow as any))
+			return mount(Desktop, {
+				props: {
+					routeAdapter: {
+						getCurrentDoctype: () => 'job',
+						getCurrentRecordId: () => recordId,
+						getCurrentView: () => 'record',
+						navigate: vi.fn(),
+					},
+				},
+				global: {
+					plugins: [makeStonecropPlugin(registry, stonecrop), pinia],
+					stubs: { AForm: true, ActionSet: true, SheetNav: true, CommandPalette: true },
+				},
+			})
+		}
+
+		const offeredLabels = (wrapper: ReturnType<typeof mountJobAt>) => {
+			const elements = wrapper.findComponent({ name: 'ActionSet' }).props('elements') as any[]
+			return elements.find(element => element.type === 'dropdown')?.actions.map((action: any) => action.label)
+		}
+
+		it('are only the ones the server runs on a record not created yet', async () => {
+			const wrapper = mountJobAt('new')
+			await flushPromises()
+
+			expect(offeredLabels(wrapper)).toEqual(['Save', 'Import', 'Help'])
+		})
+
+		it('are still every action allowed in the state of a saved record', async () => {
+			stonecrop.addRecord('job', '7', { id: '7', title: 'Saved', status: 'draft' })
+			const wrapper = mountJobAt('7')
+			await flushPromises()
+
+			expect(offeredLabels(wrapper)).toEqual(['Save', 'Plan', 'Cancel', 'Reload tasks', 'Import', 'Help'])
+		})
 	})
 })

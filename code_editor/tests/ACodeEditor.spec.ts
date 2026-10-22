@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vite-plus/test'
 import { flushPromises, mount } from '@vue/test-utils'
 
 import ACodeEditor from '../src/components/ACodeEditor.vue'
@@ -197,6 +197,46 @@ describe('ACodeEditor', { tag: 'component' }, () => {
 		// Parent echoes the same value back via v-model; the guard should prevent a setValue loop
 		await wrapper.setProps({ modelValue: 'user typed this' })
 		expect(mockEditorInstance.setValue).not.toHaveBeenCalled()
+	})
+
+	describe('a JSON field whose value is an object', () => {
+		beforeEach(() => {
+			// The editor holds whatever text its model was created with.
+			mockMonaco.editor.createModel.mockImplementation((text: string) => {
+				mockEditorInstance.getValue.mockReturnValue(text)
+				return mockModel
+			})
+		})
+
+		it('accepts the object without a prop type warning', async () => {
+			const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+			mount(ACodeEditor, { props: { modelValue: { a: 1 }, schema: { language: 'json' } } })
+			await flushPromises()
+			const propWarnings = warn.mock.calls.filter(([message]) => String(message).includes('Invalid prop'))
+			warn.mockRestore()
+			expect(propWarnings).toEqual([])
+		})
+
+		it('leaves the editor alone once the model shows the object as text', async () => {
+			mount(ACodeEditor, { props: { modelValue: { a: 1 }, schema: { language: 'json' } } })
+			await flushPromises()
+			expect(mockMonaco.editor.createModel).toHaveBeenCalledWith('{\n  "a": 1\n}', 'json', expect.any(String))
+			expect(mockEditorInstance.setValue).not.toHaveBeenCalled()
+		})
+
+		it('shows an object arriving after load as text', async () => {
+			const wrapper = mount(ACodeEditor, { props: { modelValue: '{}', schema: { language: 'json' } } })
+			await flushPromises()
+			await wrapper.setProps({ modelValue: { b: 2 } })
+			expect(mockEditorInstance.setValue).toHaveBeenCalledWith('{\n  "b": 2\n}')
+		})
+
+		it('does not reset the editor when an arriving object matches its text', async () => {
+			const wrapper = mount(ACodeEditor, { props: { modelValue: '{\n  "b": 2\n}', schema: { language: 'json' } } })
+			await flushPromises()
+			await wrapper.setProps({ modelValue: { b: 2 } })
+			expect(mockEditorInstance.setValue).not.toHaveBeenCalled()
+		})
 	})
 
 	it('sets readOnly: true when mode is read', async () => {

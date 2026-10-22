@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect } from 'vite-plus/test'
 import { validateField, validateDoctype, parseField, parseDoctype } from '../src/validation'
 import type { ValueField } from '../src/field'
 import { ActionDefinition, TriggerDefinition } from '../src/doctype'
@@ -176,7 +176,6 @@ describe('Field Validation', { tags: ['unit'] }, () => {
 				readOnly: false,
 				edit: true,
 				hidden: false,
-				default: 'pending',
 				options: ['pending', 'active', 'completed'],
 				mask: '###-###',
 			}

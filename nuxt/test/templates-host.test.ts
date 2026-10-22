@@ -21,10 +21,10 @@ import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 
 import { loadDoctypesFromObject, clearRegistry } from '@stonecrop/graphql-middleware'
 
-import projectDoctype from '../templates/Project.json'
-import taskDoctype from '../templates/Task.json'
+import projectDoctype from '../templates/project.json'
+import taskDoctype from '../templates/task.json'
 import { tasks } from '../templates/data'
-import { resolvers } from '../templates/resolvers'
+import { actionHandlers, resolvers } from '../templates/resolvers'
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 
@@ -89,16 +89,34 @@ describe('templates host — actions', { tags: ['unit', 'graphql'] }, () => {
 		expect(readBack.data?.stonecropRecord?.data?.title).toBe('brand new')
 	})
 
-	it('creates the record when the save targets an id that does not exist', async () => {
-		// Distinct from the draft case: an id was sent and matched nothing. Save is an upsert, so
-		// this creates too. It used to report `{ success: true, data: {} }` and persist nothing.
+	it('refuses a save that targets an id that does not exist, and creates nothing', async () => {
+		// Distinct from the draft case: an id was sent and matched nothing, so the record was
+		// deleted since the client read it. Creating it would report a lost update as a success.
 		const result = await run(
-			`mutation { stonecropAction(doctype: "Task", action: "save", args: [{ id: "no-such-task", data: { title: "revived", projectId: "1" } }]) { success data error } }`
+			`mutation { stonecropAction(doctype: "Task", action: "save", args: [{ id: "no-such-task", data: { title: "revived", projectId: "1" } }]) { success error } }`
 		)
-		const action = result.data?.stonecropAction
-		expect(action?.error).toBeNull()
-		expect(action?.success).toBe(true)
-		expect(action?.data?.title).toBe('revived')
+		expect(result.data?.stonecropAction).toEqual({
+			success: false,
+			error: 'Save failed: record no-such-task no longer exists.',
+		})
+		expect([...tasks.values()].some(task => task.title === 'revived')).toBe(false)
+	})
+
+	// With no record back the page stays on its draft, and its next save creates a second task.
+	it('fails a save whose handler replies without the record key', async () => {
+		actionHandlers.Task.save = async ({ data }) => Promise.resolve({ title: data.title })
+		try {
+			const result = await run(
+				`mutation { stonecropAction(doctype: "Task", action: "save", args: [{ data: { title: "keyless", projectId: "1" } }]) { success error record } }`
+			)
+			expect(result.data?.stonecropAction).toEqual({
+				success: false,
+				error: 'Save failed: the server did not say which record it saved.',
+				record: null,
+			})
+		} finally {
+			delete actionHandlers.Task.save
+		}
 	})
 
 	it('refuses a transition against a record that does not exist', async () => {

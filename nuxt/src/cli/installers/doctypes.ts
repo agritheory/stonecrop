@@ -4,10 +4,21 @@
  */
 
 import { existsSync } from 'node:fs'
-import { mkdir, writeFile } from 'node:fs/promises'
+import { mkdir, readdir, writeFile } from 'node:fs/promises'
 import { join } from 'pathe'
 import consola from 'consola'
 import { loadTemplate } from '../utils/templates'
+
+const SAMPLE_DOCTYPES = ['project.json', 'task.json']
+
+/**
+ * The file in `dir` named `fileName` in any letter case. An app scaffolded when the samples were `Project.json` and
+ * `Task.json` already has them, and a second copy under the new name would declare each doctype twice.
+ */
+async function findInAnyCase(dir: string, fileName: string): Promise<string | undefined> {
+	const files = await readdir(dir).catch(() => [] as string[])
+	return files.find(file => file.toLowerCase() === fileName.toLowerCase())
+}
 
 export interface DoctypesInstallerOptions {
 	cwd: string
@@ -30,24 +41,14 @@ export async function installDoctypes(options: DoctypesInstallerOptions): Promis
 			consola.info('Created doctypes/ directory')
 		}
 
-		// Scaffold Project.json
-		const projectPath = join(doctypesDir, 'Project.json')
-		if (!existsSync(projectPath)) {
-			const projectTemplate = await loadTemplate('Project.json')
-			await writeFile(projectPath, projectTemplate, 'utf-8')
-			consola.info('Created doctypes/Project.json')
-		} else {
-			consola.info('doctypes/Project.json already exists, skipping')
-		}
-
-		// Scaffold Task.json
-		const taskPath = join(doctypesDir, 'Task.json')
-		if (!existsSync(taskPath)) {
-			const taskTemplate = await loadTemplate('Task.json')
-			await writeFile(taskPath, taskTemplate, 'utf-8')
-			consola.info('Created doctypes/Task.json')
-		} else {
-			consola.info('doctypes/Task.json already exists, skipping')
+		for (const fileName of SAMPLE_DOCTYPES) {
+			const existing = await findInAnyCase(doctypesDir, fileName)
+			if (existing) {
+				consola.info(`doctypes/${existing} already exists, skipping`)
+				continue
+			}
+			await writeFile(join(doctypesDir, fileName), await loadTemplate(fileName), 'utf-8')
+			consola.info(`Created doctypes/${fileName}`)
 		}
 
 		consola.success('Sample doctypes created successfully')

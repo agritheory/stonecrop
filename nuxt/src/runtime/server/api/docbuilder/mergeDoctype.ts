@@ -1,4 +1,5 @@
-import { stripFieldKind } from '@stonecrop/schema'
+import { flattenFields, normalizeFieldKind, stripFieldKind, validateDoctype } from '@stonecrop/schema'
+import type { DoctypeField } from '@stonecrop/schema'
 
 // Pure helpers for the docbuilder save merge. Kept free of `#imports`/h3 so they can be unit-tested
 // outside a Nuxt server context (save.post.ts itself can't be imported in a plain vitest run).
@@ -36,6 +37,8 @@ export function orderKeysByReference<T>(
 export interface SaveDoctypeBody {
 	fields: unknown[]
 	workflow?: unknown
+	/** The fields the builder renamed since the file was read, from the name on disk to the new one. */
+	renamedFields?: Record<string, string>
 }
 
 /**
@@ -52,6 +55,8 @@ export interface SaveDoctypeBody {
  *   `links`, `primaryKey`, `source`, a consumer's own key — is carried through untouched.
  * - **Field-level keys are NOT this hop's job.** `fields` is replaced wholesale with what the
  *   client sent, so a key dropped in the browser is dropped here too. Hop 3 owns that.
+ * - **`defaults` follows the field edits.** It is keyed by fieldname and the builder never shows it, so a renamed
+ *   field's entry moves to its new name and a deleted field's entry goes with the field.
  *
  * @param existing - The parsed doctype already on disk, or `{}` when creating one
  * @param body - The builder's submission
@@ -93,8 +98,60 @@ export function mergeSavedDoctype(
 		doctypeData.name = requestedName
 	}
 
+	if (isRecord(existing.defaults)) {
+		doctypeData.defaults = carryFieldEdits(existing.defaults, existing.fields, body)
+	}
+
 	// Remove legacy 'schema' key if present — standardise on 'fields'
 	delete doctypeData.schema
 
 	return doctypeData
+}
+
+/**
+ * Carry the builder's field edits into `defaults`. Left behind, an entry names no field, and the server refuses the
+ * doctype when it next loads it. An entry moves with its field's rename; it is dropped when its field is gone, either
+ * deleted or renamed away with another field now holding its name. Any other entry is kept as it is, so one that was
+ * already stale on disk is still reported.
+ */
+function carryFieldEdits(
+	defaults: Record<string, unknown>,
+	fieldsOnDisk: unknown,
+	body: SaveDoctypeBody
+): Record<string, unknown> {
+	const renamed = body.renamedFields ?? {}
+	const renamedTo = new Set(Object.values(renamed))
+	const before = recordKeys(fieldsOnDisk)
+	const after = recordKeys(body.fields)
+	const carried: Record<string, unknown> = {}
+	for (const [key, value] of Object.entries(defaults)) {
+		const target = Object.hasOwn(renamed, key) ? renamed[key] : undefined
+		if (target !== undefined) carried[target] = value
+		else if (renamedTo.has(key) || (before.has(key) && !after.has(key))) continue
+		else carried[key] = value
+	}
+	return carried
+}
+
+/** The record's keys: every field's name, grouped sections flattened, as a new record is built from. */
+function recordKeys(fields: unknown): Set<string> {
+	if (!Array.isArray(fields)) return new Set()
+	// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- raw JSON; normalizeFieldKind supplies the `kind` flattenFields reads
+	const normalized = fields.map(normalizeFieldKind) as DoctypeField[]
+	return new Set(flattenFields(normalized).map(f => f.fieldname))
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+	return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+/**
+ * Why the server would refuse to load this doctype, or `undefined` when it would load it. The save writes nothing the
+ * server's load check refuses: that check is `validateDoctype`, and the builder's own checks cover only parts of it.
+ */
+export function saveRefusal(doctype: Record<string, unknown>): string | undefined {
+	const result = validateDoctype(doctype)
+	if (result.success) return undefined
+	const problems = result.errors.map(e => (e.path.length > 0 ? `${e.path.join('.')}: ${e.message}` : e.message))
+	return `Not saved, because the server would refuse to load this doctype. ${problems.join('; ')}`
 }

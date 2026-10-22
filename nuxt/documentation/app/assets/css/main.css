@@ -43,6 +43,17 @@ a {
 	color: var(--sc-color-brand);
 }
 
+/* UA focus rings (color and radius) differ by browser; doc chrome uses product tokens instead. */
+.doc-shell .doc-content a:focus {
+	outline: none;
+}
+
+.doc-shell .doc-content a:focus-visible {
+	outline: 1px solid var(--sc-input-active-border-color);
+	outline-offset: 2px;
+	border-radius: 0;
+}
+
 /* MDC injects an anchor link into every h2-h4, so the bare `a` rule above turns each heading into
    coloured underlined link text. Headings keep their own colour; the anchor is still clickable. */
 .doc-content :is(h1, h2, h3, h4) a {

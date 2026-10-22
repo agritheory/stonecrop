@@ -1,5 +1,6 @@
 import { z } from 'zod'
 
+import type { DoctypeField, FieldsetField, ValueField } from './field'
 import { DoctypeFieldSchema, flattenFields, getDisplayField } from './field'
 import { toSlug } from './naming'
 
@@ -91,9 +92,13 @@ export type CustomFetch = z.infer<typeof CustomFetch>
 
 /**
  * Fetch strategy for link data loading.
+ *
  * - sync: fetched in the initial query
+ *
  * - lazy: fetched on demand in a separate query
+ *
  * - custom: uses a custom handler function
+ *
  * @public
  */
 export const FetchStrategy = z.discriminatedUnion('method', [SyncFetch, LazyFetch, CustomFetch]).meta({
@@ -242,6 +247,26 @@ export function isActionAllowedInState(action: { allowedStates?: string[] | null
 }
 
 /**
+ * Whether a workflow action may run on a record not created yet.
+ *
+ * A record not created yet is in no state, so the server-side dispatch guard runs two kinds of
+ * action on it: a self-transition, which creates it, and an action that declares no
+ * `allowedStates` and does not move the record, which never reads a state. This is that rule for
+ * the frontend (`getAvailableTransitions`, `getAvailableCommands`); a test against the guard keeps
+ * the two in step.
+ *
+ * @public
+ */
+export function isActionAllowedOnNewRecord(action: {
+	allowedStates?: string[] | null
+	nextState?: string | null
+	selfTransition?: boolean | null
+}): boolean {
+	if (action.selfTransition === true) return true
+	return action.nextState == null && !action.allowedStates?.length
+}
+
+/**
  * DocBuilder graph layout — node positions for the workflow-state graph, keyed by state name.
  * Pure authoring view-state: persisted in the doctype JSON so an author's manual arrangement
  * survives reloads, but — exactly like {@link (WorkflowMeta:type)}'s `triggers` — it is client-only
@@ -329,7 +354,20 @@ export const DoctypeMeta = z
 		route: z.string().startsWith('/').optional(),
 
 		/** Field definitions (a link field is one carrying `doctype`) */
-		fields: z.array(DoctypeFieldSchema),
+		fields: z.array(DoctypeFieldSchema).superRefine((fields, context) => {
+			// Here rather than on the field: a part may name any field of the record, fieldsets included.
+			const valueFields = flattenFields(fields).filter((field): field is ValueField => field.kind === 'field')
+			const fieldnames = new Set(valueFields.map(field => field.fieldname))
+			for (const field of valueFields) {
+				for (const fieldname of Object.values(field.parts ?? {})) {
+					if (fieldnames.has(fieldname)) continue
+					context.addIssue({
+						code: 'custom',
+						message: `a part of "${field.fieldname}" names "${fieldname}", which is not a field of this doctype`,
+					})
+				}
+			}
+		}),
 
 		/** Relationship links to other doctypes */
 		links: z.record(z.string(), LinkDeclaration).optional(),
@@ -339,12 +377,19 @@ export const DoctypeMeta = z
 
 		/** Parent doctype for inheritance */
 		inherits: z.string().optional(),
+
+		/**
+		 * Starting values for new records, nested like the record itself (including child-table rows). The one place a
+		 * doctype gives them: a field has no default of its own. Serialized JSON cannot contain functions; see
+		 * superRefine on `defaults`.
+		 */
+		defaults: z.record(z.string(), z.unknown()).optional(),
 	})
 	.meta({
 		title: 'DoctypeMeta',
 		description: 'Doctype metadata - complete definition of a doctype',
 	})
-	.superRefine((doctype, ctx) => {
+	.superRefine((doctype, context) => {
 		// A record is identified by exactly one field here, and that is the design rather than a
 		// limitation awaiting composite support. A doctype describes the **API surface** a client
 		// interacts with, not the table behind it; how a composite database key maps onto a single
@@ -362,13 +407,13 @@ export const DoctypeMeta = z
 		//
 		// Zero keys stays legal and is not an omission: a surrogate-key doctype declares none and
 		// resolves through `getRecordIdField`'s documented `id` fallback.
-		const declared = flattenFields(doctype.fields).filter(f => f.kind === 'field' && f.primaryKey)
+		const declared = flattenFields(doctype.fields).filter(field => field.kind === 'field' && field.primaryKey)
 		if (declared.length > 1) {
-			ctx.addIssue({
+			context.addIssue({
 				code: 'custom',
 				path: ['fields'],
 				message: `Doctype declares ${declared.length} primaryKey fields (${declared
-					.map(f => (f.kind === 'field' ? f.fieldname : ''))
+					.map(field => (field.kind === 'field' ? field.fieldname : ''))
 					.join(
 						', '
 					)}); a record is identified by exactly one field. A composite database key is mapped to a single identity by the adapter, so a doctype never declares its parts`,
@@ -381,8 +426,8 @@ export const DoctypeMeta = z
 		// have worked, while neither side excluded `computed` fields, so a nomination naming one
 		// passed the gate and then failed as a missing column at query time.
 		if (doctype.displayField && !getDisplayField(doctype.fields, doctype.displayField)) {
-			const named = flattenFields(doctype.fields).find(f => f.fieldname === doctype.displayField)
-			ctx.addIssue({
+			const named = flattenFields(doctype.fields).find(field => field.fieldname === doctype.displayField)
+			context.addIssue({
 				code: 'custom',
 				path: ['displayField'],
 				message: named
@@ -390,7 +435,71 @@ export const DoctypeMeta = z
 					: `displayField "${doctype.displayField}" is not declared on this doctype`,
 			})
 		}
+
+		if (doctype.defaults !== undefined) {
+			rejectFunctionsInDefaultsTree(doctype.defaults, [], context)
+			rejectUnknownDefaultsKeys(doctype.defaults, doctype.fields, context)
+		}
 	})
+
+/**
+ * Refuse a `defaults` key that names no field of the record, so a typo is reported where it is written rather than
+ * skipped when a new record is composed. The record's keys are `flattenFields`, the same set a new record is built
+ * from. A grouped section's name is refused too: a section only groups fields, and each takes its own entry.
+ *
+ * Only the top level: a row's or an embedded record's keys belong to the linked doctype, which this doctype alone
+ * cannot see.
+ */
+function rejectUnknownDefaultsKeys(
+	defaults: Record<string, unknown>,
+	fields: readonly DoctypeField[],
+	context: z.RefinementCtx
+): void {
+	const keys = new Set(flattenFields(fields).map(field => field.fieldname))
+	for (const key of Object.keys(defaults)) {
+		if (keys.has(key)) continue
+		const section = findSection(fields, key)
+		const sectionFields = section ? flattenFields(section.schema).map(field => field.fieldname) : []
+		context.addIssue({
+			code: 'custom',
+			path: ['defaults', key],
+			message: section
+				? `defaults key "${key}" names a grouped section, which holds no value of its own; give each of its fields (${sectionFields.join(', ')}) its own entry`
+				: `defaults key "${key}" is not a field of this doctype`,
+		})
+	}
+}
+
+function findSection(fields: readonly DoctypeField[], fieldname: string): FieldsetField | undefined {
+	for (const field of fields) {
+		if (field.kind !== 'fieldset') continue
+		if (field.fieldname === fieldname) return field
+		const inner = findSection(field.schema, fieldname)
+		if (inner) return inner
+	}
+	return undefined
+}
+
+function rejectFunctionsInDefaultsTree(value: unknown, path: Array<string | number>, context: z.RefinementCtx): void {
+	if (typeof value === 'function') {
+		const pathLabel = path.length ? path.join('.') : '(root)'
+		context.addIssue({
+			code: 'custom',
+			path: ['defaults', ...path],
+			message: `defaults cannot contain a function at ${pathLabel}; register code defaults on the client instead`,
+		})
+		return
+	}
+	if (Array.isArray(value)) {
+		value.forEach((item, index) => rejectFunctionsInDefaultsTree(item, [...path, index], context))
+		return
+	}
+	if (value !== null && typeof value === 'object') {
+		for (const [key, child] of Object.entries(value)) {
+			rejectFunctionsInDefaultsTree(child, [...path, key], context)
+		}
+	}
+}
 
 /**
  * Doctype metadata type inferred from Zod schema
@@ -462,7 +571,6 @@ export function linkDisplayFieldname(fieldname: string): string {
 
 /**
  * Context for identifying what doctype/record we're working with.
- * Used by graphql-middleware and graphql-client to resolve schema metadata.
  * @public
  */
 export interface DoctypeContext {
@@ -492,10 +600,8 @@ export interface DoctypeRef {
  */
 export interface GetRecordOptions {
 	/**
-	 * Include nested link sub-selections.
-	 * - `true`: include all descendant links
-	 * - `string[]`: include only named links
-	 * - `false` / omitted: scalar fields only (default)
+	 * Include nested link sub-selections: `true` includes all descendant links, a `string[]` only
+	 * the named links, and `false` or omitted scalar fields only (the default).
 	 */
 	includeNested?: boolean | string[]
 

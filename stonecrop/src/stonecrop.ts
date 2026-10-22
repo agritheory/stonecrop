@@ -9,9 +9,12 @@ import { reactive } from 'vue'
 
 import Doctype from './doctype'
 import { isDraftRecordId } from './draft'
+import { newRecord } from './edit-record'
+import { recordInStore } from './record-access'
 import Registry from './registry'
 import { createHST, type HSTNode } from './stores/hst'
 import { useOperationLogStore } from './stores/operation-log'
+import type { EditableRecord } from './types/editable-record'
 import type { OperationLogConfig } from './types/operation-log'
 import type { RouteContext } from './types/registry'
 import type { PageInfo, StonecropOptions } from './types/stonecrop'
@@ -170,6 +173,26 @@ export class Stonecrop {
 	}
 
 	/**
+	 * The record a form is editing, read and set by field name; setting a field runs its rules. A
+	 * saved record is read and set through the store. A record not saved yet (`recordId` is
+	 * {@link DRAFT_RECORD_ID}) is held by the object returned, never in the store, and each call
+	 * returns a new one, holding only its starting values.
+	 * @param doctype - The doctype
+	 * @param recordId - The record ID, or {@link DRAFT_RECORD_ID} for a record not saved yet
+	 * @param startingValues - A record not saved yet's values before anything is set, such as
+	 * {@link Registry.composeNewRecord} gives; they run no rules. Only a new record takes them.
+	 * @returns The record to read and set
+	 */
+	editRecord(doctype: string | Doctype, recordId: string, startingValues?: Record<string, unknown>): EditableRecord {
+		const slug = typeof doctype === 'string' ? doctype : doctype.slug
+		if (isDraftRecordId(recordId)) return newRecord(slug, this.hstStore, startingValues)
+		if (startingValues) throw new Error(`Starting values are only for a new record, not ${slug} ${recordId}`)
+
+		this.ensureDoctypeExists(slug)
+		return recordInStore(this.hstStore, `${slug}.${recordId}`)
+	}
+
+	/**
 	 * Get a specific record
 	 * @param doctype - The doctype
 	 * @param recordId - The record ID
@@ -262,7 +285,7 @@ export class Stonecrop {
 			return link.blockWorkflows
 		}
 		// TODO: For custom fetch handlers, this returns false (not blocking), but the custom handler
-		// may still be invoked by useLazyLink. Future: custom handlers should be able to declare they
+		// may still run when the link loads lazily. Future: custom handlers should be able to declare they
 		// satisfy blockWorkflows, or validation should reject custom + blockWorkflows: true.
 		return link.fetch?.method === 'sync'
 	}
@@ -392,9 +415,13 @@ export class Stonecrop {
 	 *
 	 * @param doctype - The doctype slug string or Doctype object
 	 * @param recordId - The record ID
+	 * A record the server does not find is an error, not an empty answer: a caller drawing what is in
+	 * HST would otherwise show it as a blank record.
+	 *
 	 * @param options - Query options (includeNested, maxDepth), forwarded to the client
 	 * @throws Error if no data client has been configured
 	 * @throws Error if a slug string is given and no matching doctype is found in the registry
+	 * @throws Error with code `"RECORD_NOT_FOUND"` if the server returns no record
 	 * @public
 	 */
 	async getRecord(doctype: string | Doctype, recordId: string, options?: GetRecordOptions): Promise<void> {
@@ -422,9 +449,10 @@ export class Stonecrop {
 
 		const result = await this._client.getRecord(resolved, recordId, options)
 
-		if (result?.record) {
-			this.addRecord(resolved, recordId, result.record)
+		if (!result?.record) {
+			throw recordNotFound(resolved, recordId)
 		}
+		this.addRecord(resolved, recordId, result.record)
 	}
 
 	/**
@@ -511,19 +539,25 @@ export class Stonecrop {
 	 * Determine the current workflow state for a record.
 	 *
 	 * Reads the record's `status` field from the HST store. If the field is absent or
-	 * empty the doctype's declared `workflow.initial` state is used as the fallback,
+	 * empty the workflow's first listed state (an XState workflow's `initial`) is used as the fallback,
 	 * giving callers a reliable state name without having to duplicate that logic.
+	 *
+	 * A record not created yet ({@link DRAFT_RECORD_ID}) is in no state, as the server guard
+	 * treats it: pass the `null` returned to `Doctype.getAvailableTransitions` and
+	 * `Doctype.getAvailableCommands` to list the actions that can run on it.
 	 *
 	 * @param doctype - The doctype slug or Doctype instance
 	 * @param recordId - The record identifier
-	 * @returns The current state name, or an empty string if the doctype has no workflow
+	 * @returns The current state name, `null` for a record not created yet, or an empty string if
+	 * the doctype has no workflow
 	 *
 	 * @public
 	 */
-	getRecordState(doctype: string | Doctype, recordId: string): string {
+	getRecordState(doctype: string | Doctype, recordId: string): string | null {
 		const slug = typeof doctype === 'string' ? doctype : doctype.slug
 		const meta = this.registry.getDoctype(slug)
 		if (!meta?.workflow) return ''
+		if (isDraftRecordId(recordId)) return null
 
 		const record = this.getRecordById(slug, recordId)
 		// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- HSTNode.get returns any; status is always string in workflow records
@@ -590,22 +624,20 @@ export class Stonecrop {
 	}
 
 	/**
-	 * Scaffold empty descendant records from defaults for all descendant links.
-	 *
-	 * Initializes all scalar and link fields at their HST paths with default values.
+	 * Scaffold a new descendant record at `path`: its node, so edits under it land, and its starting values, each at
+	 * its own HST path. A field with no starting value gets no path until someone fills it in.
 	 * For new records, call this after setting up the doctype to ensure all paths exist.
 	 *
 	 * @param path - HST path (e.g., "customer.new")
 	 * @param doctype - The doctype to initialize
 	 * @public
 	 */
-	initializeNestedData(path: string, doctype: Doctype): void {
+	async initializeNestedData(path: string, doctype: Doctype): Promise<void> {
 		const slug = doctype.slug
 		this.ensureDoctypeExists(slug)
 
-		// Resolve schema and initialize with defaults
-		const resolvedSchema = this.registry.resolveSchema(doctype)
-		const record = this.registry.initializeRecord(resolvedSchema)
+		// Composed once, with every starting value in, so nothing later lands on what a user types here.
+		const { record } = await this.registry.composeNewRecord(doctype)
 
 		// Ensure the ancestor path exists in HST before setting descendant fields
 		const existingData = this.hstStore.get(path)
@@ -652,7 +684,7 @@ export class Stonecrop {
 		})
 
 		if (!result?.record) {
-			throw createCodedError(`Record not found: ${doctype.doctype} ${recordId}`, 'RECORD_NOT_FOUND')
+			throw recordNotFound(doctype, recordId)
 		}
 
 		// Store each scalar field at its own HST path, descendants at link-level path
@@ -718,4 +750,9 @@ function createCodedError(message: string, code: string): CodedError {
 	const error = new Error(message) as CodedError
 	error.code = code
 	return error
+}
+
+/** The one error both record reads throw when the server returns no record. */
+function recordNotFound(doctype: Doctype, recordId: string): CodedError {
+	return createCodedError(`Record not found: ${doctype.doctype} ${recordId}`, 'RECORD_NOT_FOUND')
 }

@@ -4,6 +4,26 @@
 
 ## Functions
 
+### composeNewRecord
+
+Build a new record, once, from every starting value: the doctype's `defaults`, then the source the app registered for it, then any values the app filled the record in with (`prefill`), over the record's tables and embedded records. Layers apply in that order, so a later one wins however long an earlier one took. A field none sets has no value, so a save leaves it to the database's default.
+
+Nothing is returned until every value is in, so nothing is written to the record after a user can see it. A value that throws, rejects, or has not arrived within `timeoutMs` (default `DEFAULTS_TIMEOUT_MS`) is skipped and reported with `console.warn`; the record still opens with everything else.
+
+**Signature:**
+
+```typescript
+export declare function composeNewRecord(registry: Registry, doctype: Doctype, options?: ComposeNewRecordOptions): Promise<ComposeNewRecordResult>;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| registry | `Registry` |  |
+| doctype | `Doctype` |  |
+| options | `ComposeNewRecordOptions` |  |
+
 ### createHST
 
 Factory function for HST creation Creates a new HSTNode proxy for hierarchical state tree navigation.
@@ -190,9 +210,9 @@ export declare function triggerTransition(doctype: string, transition: string, o
 
 ### useClientAction
 
-Shared executor for doctype action clicks. A host's Desktop `@action` handler delegates here so every host runs the same logic from one definition:
+Shared executor for doctype action clicks. A host's Desktop `@action` handler delegates here so every host runs the same logic from one definition.
 
-- If the clicked action carries a `clientHandler`, run it. The handler **owns orchestration** — it calls `runAction` itself when it needs the server, navigates via `router`, reads `record`, or queries `graphql`. It supersedes the default dispatch. - Otherwise dispatch the action to its server `handler` (the pre-existing behavior), so actions without a `clientHandler` are unchanged.
+If the clicked action carries a `clientHandler`, it runs and **owns orchestration**: it calls `runAction` itself when it needs the server, navigates via `router`, reads `record`, or queries `graphql`, in place of the default dispatch. Otherwise the action is dispatched to the server.
 
 `runAction` is the only blessed write: it dispatches **and** leaves the store consistent, filing the returned record under the identity the *server* settled on and following the route there when that differs from the one dispatched. For a created record those are never the same, which is what makes hand-rolling this reliably wrong.
 
@@ -218,9 +238,25 @@ export declare function useClientAction(options?: UseClientActionOptions): {
 
 Get the lazy link state for a specific link field on a doctype record.
 
-This composable provides reactive state for lazy-loaded links: - `loading`: true while fetching - `loaded`: true after successful fetch (permanent until reload) - `error`: error state if any - `reload()`: explicitly trigger a fetch - `data`: computed from HST, or undefined if not loaded
+This composable provides reactive state for lazy-loaded links:
 
-The reload() function respects the link's fetch strategy: - `sync`: fetches via GraphQL query through fetchNestedData - `lazy`: fetches via GraphQL query through fetchNestedData - `custom`: invokes the serialized handler function directly
+- `loading`: true while fetching
+
+- `loaded`: true after successful fetch (permanent until reload)
+
+- `error`: error state if any
+
+- `reload()`: explicitly trigger a fetch
+
+- `data`: computed from HST, or undefined if not loaded
+
+The reload() function respects the link's fetch strategy:
+
+- `sync`: fetches via GraphQL query through fetchNestedData
+
+- `lazy`: fetches via GraphQL query through fetchNestedData
+
+- `custom`: invokes the serialized handler function directly
 
 **Signature:**
 
@@ -559,9 +595,22 @@ export interface CrossTabMessage {
 | timestamp | `Date` | When the message was sent |
 | type | `CrossTabMessageType` | Type of cross-tab message |
 
+### EditableRecord
+
+The record a form is editing, read and set by field name. Setting a field runs that field's rules, whether the record is saved or not saved yet.
+
+**Definition:**
+
+```typescript
+export interface EditableRecord {
+  get(fieldname: string): any;
+  set(fieldname: string, value: any): void;
+}
+```
+
 ### FieldChangeContext
 
-Context provided to action functions when field changes occur
+Context provided to action functions when field changes occur. Its `get` and `set` reach the record whose field changed, saved or not saved yet.
 
 **Definition:**
 
@@ -572,7 +621,7 @@ export interface FieldChangeContext {
   doctype: string;
   fieldname: string;
   operation: 'set' | 'delete' | 'patch';
-  path: string;
+  path?: string;
   recordId?: string;
   store?: HSTNode;
   timestamp: Date;
@@ -588,8 +637,8 @@ export interface FieldChangeContext {
 | doctype | `string` | The doctype of the record being changed |
 | fieldname | `string` | The field name (last segment of path) |
 | operation | `'set' \| 'delete' \| 'patch'` | The operation type |
-| path | `string` | The HST path that was changed |
-| recordId? | `string` | The record ID if applicable |
+| path? | `string` | The HST path that was changed; absent for a record not saved yet, which is not in the store |
+| recordId? | `string` | The record ID; absent for a record not saved yet |
 | store? | `HSTNode` | Reference to the HST store for state access (optional) |
 | timestamp | `Date` | Timestamp of the change |
 
@@ -631,7 +680,7 @@ Result of executing all actions for a field change
 export interface FieldTriggerExecutionResult {
   actionResults: ActionExecutionResult[];
   allSucceeded: boolean;
-  path: string;
+  path?: string;
   rolledBack: boolean;
   snapshot?: any;
   stoppedOnError: boolean;
@@ -645,7 +694,7 @@ export interface FieldTriggerExecutionResult {
 |----------|------|-------------|
 | actionResults | `ActionExecutionResult[]` | Results for each action that was executed |
 | allSucceeded | `boolean` | Whether all actions succeeded |
-| path | `string` | The path that triggered the actions |
+| path? | `string` | The path that triggered the actions; absent for a record not saved yet |
 | rolledBack | `boolean` | Whether a rollback was performed |
 | snapshot? | `any` | The snapshot that was captured before execution |
 | stoppedOnError | `boolean` | Whether execution was stopped due to an error |
@@ -1142,12 +1191,40 @@ export type BaseStonecropReturn = {
 
 ### ClientHandlerApi
 
-Named capabilities injected into a clientHandler body as function parameters. The caller (the assembly composable) owns what each name resolves to — typically `router`, `record`, `runAction`, and a read-only `graphql`.
+Named capabilities injected into a clientHandler body as function parameters. The caller (the assembly composable) owns what each name resolves to — typically `router`, `record`, `runAction`, a read-only `graphql`, and `prefillDraft`.
 
 **Definition:**
 
 ```typescript
 export type ClientHandlerApi = Record<string, unknown>;
+```
+
+### ComposeNewRecordOptions
+
+Options for composing a new record.
+
+**Definition:**
+
+```typescript
+export type ComposeNewRecordOptions = {
+    now?: Date;
+    timeoutMs?: number;
+    prefill?: {
+        [field: string]: DefaultsData;
+    };
+};
+```
+
+### ComposeNewRecordResult
+
+A composed new record, complete: every starting value that arrived in time is in it.
+
+**Definition:**
+
+```typescript
+export type ComposeNewRecordResult = {
+    record: Record<string, unknown>;
+};
 ```
 
 ### CrossTabMessageType
@@ -1158,6 +1235,64 @@ Cross-tab message types
 
 ```typescript
 export type CrossTabMessageType = 'operation' | 'undo' | 'redo' | 'sync-request' | 'sync-response';
+```
+
+### DefaultsContext
+
+Context passed to defaults functions at document or field level.
+
+**Definition:**
+
+```typescript
+export type DefaultsContext = {
+    doctype: Doctype;
+    record: Record<string, unknown>;
+    fieldname?: string;
+};
+```
+
+### DefaultsData
+
+A fixed starting value, as a doctype file can hold it: plain data, nested like the record.
+
+**Definition:**
+
+```typescript
+export type DefaultsData = string | number | boolean | null | DefaultsData[] | {
+    [field: string]: DefaultsData;
+};
+```
+
+### DefaultsDocument
+
+Nested object in the same shape as a composed record (HST / formData).
+
+**Definition:**
+
+```typescript
+export type DefaultsDocument = {
+    [field: string]: DefaultsValue;
+};
+```
+
+### DefaultsSource
+
+Static document or a function that returns one (sync blocks, promise loads).
+
+**Definition:**
+
+```typescript
+export type DefaultsSource = DefaultsDocument | ((ctx: DefaultsContext) => DefaultsDocument | Promise<DefaultsDocument>);
+```
+
+### DefaultsValue
+
+A value inside a registered defaults document.
+
+**Definition:**
+
+```typescript
+export type DefaultsValue = string | number | boolean | null | DefaultsDocument | DefaultsValue[] | ((ctx: DefaultsContext) => DefaultsValue | Promise<DefaultsValue>);
 ```
 
 ### DoctypeConfig
@@ -1175,6 +1310,19 @@ export type DoctypeConfig = {
     links?: Record<string, LinkDeclaration>;
     workflow?: UnknownMachineConfig | WorkflowMeta;
     inherits?: string;
+    defaults?: DoctypeDefaults;
+};
+```
+
+### DoctypeDefaults
+
+A doctype's own starting values for a new record: fixed data in the shape of the record. Anything worked out when a record is made (today's date, a value looked up for the user's company) is registered on the registry instead.
+
+**Definition:**
+
+```typescript
+export type DoctypeDefaults = {
+    [field: string]: DefaultsData;
 };
 ```
 
@@ -1268,7 +1416,7 @@ export type HSTStonecropReturn = BaseStonecropReturn & {
     hstStore: Ref<HSTNode | undefined>;
     formData: Ref<Record<string, any>>;
     resolvedSchema: Ref<ResolvedField[]>;
-    initializeNestedData: (path: string, doctype: Doctype) => void;
+    initializeNestedData: (path: string, doctype: Doctype) => Promise<void>;
     fetchNestedData: (path: string, doctype: Doctype, recordId: string, options?: {
         includeNested?: boolean | string[];
     }) => Promise<void>;
@@ -1405,7 +1553,7 @@ Doctype runtime class with Immutable.js collections for HST change tracking.
 **Constructor:**
 
 ```typescript
-new Doctype(doctype: string, schema: ImmutableDoctype['schema'], workflow: ImmutableDoctype['workflow'], component: Component, links: Record<string, LinkDeclaration>, displayField: string)
+new Doctype(doctype: string, schema: ImmutableDoctype['schema'], workflow: ImmutableDoctype['workflow'], component: Component, links: Record<string, LinkDeclaration>, displayField: string, defaults: DoctypeDefaults)
 ```
 
 **Parameters:**
@@ -1418,19 +1566,21 @@ new Doctype(doctype: string, schema: ImmutableDoctype['schema'], workflow: Immut
 | component | `Component` | Optional Vue component for rendering the doctype |
 | links | `Record<string, LinkDeclaration>` | Optional relationship links to other doctypes |
 | displayField | `string` | Optional field used when displaying references to this doctype |
+| defaults | `DoctypeDefaults` |  |
 
 **Properties:**
 
 | Property | Type | Description |
 |----------|------|-------------|
 | component | `Component` | The doctype component |
+| defaults | `DoctypeDefaults` | Starting values for new records: fixed data in the shape of the record. |
 | displayField | `string` | Field on this doctype used when displaying a reference to one of its records. |
 | doctype | `string` | The doctype name |
 | links | `Record<string, LinkDeclaration>` | Relationship links to other doctypes |
 | name | `string` | Alias for doctype (for DoctypeLike interface compatibility) |
 | recordIdField | `string` | The field a record of this doctype is identified by: the declared `primaryKey`, or `id` when nothing is declared. The client-side twin of the adapters' `recordLookupField`. Both are the same call to `@stonecrop/schema`'s `getRecordIdField`, so the field a caller reads an identity out of is the same field the adapter builds its lookup predicate on. Use this to ask whether a record *states* its own identity. `getRecordId` deliberately falls back to `id` when the declared key is missing, which is right for resolving a link from a record already in hand and wrong for deciding whether a server response settled on a new identity: a response that omits a natural key would resolve through that fallback to a surrogate the adapter cannot look up. |
 | schema | `ImmutableDoctype['schema']` | The doctype schema |
-| slug | `string` | Converts the registered doctype string to a slug (kebab-case). The following conversions are made: - It replaces camelCase and PascalCase with kebab-case strings - It replaces spaces and underscores with hyphens - It converts the string to lowercase |
+| slug | `string` | Converts the registered doctype string to a slug (kebab-case): camelCase and PascalCase become kebab-case, spaces and underscores become hyphens, and the result is lowercased. |
 | workflow | `ImmutableDoctype['workflow']` | The doctype workflow |
 
 **Methods:**
@@ -1476,7 +1626,7 @@ Returns the stateless **Commands** available in a given workflow state — side-
 Only meaningful for WorkflowMeta format; XState workflows have no Commands.
 
 ```typescript
-getAvailableCommands(currentState: string): Array<{
+getAvailableCommands(currentState: string | null): Array<{
         name: string;
     }>
 ```
@@ -1485,14 +1635,16 @@ getAvailableCommands(currentState: string): Array<{
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| currentState | `string` | The record's current state, used to honor a Command's `allowedStates` |
+| currentState | `string \| null` | The record's current state, used to honor a Command's `allowedStates`, or `null` for a record not created yet, which lists the Commands that can run on one (`isActionAllowedOnNewRecord`) |
 
 #### getAvailableTransitions
 
 Returns the transitions available from a given workflow state, derived from the doctype's workflow configuration. Supports both XState format and WorkflowMeta format.
 
+A record not created yet is in no state: given `null`, only the actions that can run on it are listed (`isActionAllowedOnNewRecord`), and since none of them moves it, each has a `targetState` of `''`.
+
 ```typescript
-getAvailableTransitions(currentState: string): Array<{
+getAvailableTransitions(currentState: string | null): Array<{
         name: string;
         targetState: string;
     }>
@@ -1502,7 +1654,7 @@ getAvailableTransitions(currentState: string): Array<{
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| currentState | `string` | The state name to read transitions from |
+| currentState | `string \| null` | The state name to read transitions from, or `null` for a record not created yet |
 
 #### getRecordId
 
@@ -1749,6 +1901,14 @@ addDoctype(doctype: Doctype): void
 |-----------|------|-------------|
 | doctype | `Doctype` | The doctype to fetch metadata for |
 
+#### composeNewRecord
+
+Compose a new record, once, from every starting value. See `composeNewRecord`.
+
+```typescript
+composeNewRecord(doctype: Doctype, options: ComposeNewRecordOptions): Promise<ComposeNewRecordResult>
+```
+
 #### getAncestorLinks
 
 Get links on other doctypes that target the given doctype.
@@ -1798,9 +1958,17 @@ getDoctype(slug: string): Doctype | undefined
 
 #### initializeRecord
 
-Initialize a new record with default values based on a resolved schema. Narrows by `kind` discriminator for precise branch selection.
+The shape of a new record before any starting value: the containers its fields need, and no values. Narrows by `kind` discriminator for precise branch selection.
 
-- `kind: 'table'` or `kind: 'link'` → `[]` or `{}` - `kind: 'fieldset'` → its children, at the top level of the record: a fieldset is layout - `kind: 'field'` → derives the default from the component's category; falls back to `null`
+- `kind: 'table'` → `[]`
+
+- `kind: 'link'` → the embedded record, built the same way
+
+- `kind: 'fieldset'` → its children, at the top level of the record: a fieldset is layout
+
+- `kind: 'field'` → no key at all
+
+Starting values (the doctype's `defaults` and the app's) are laid over this.
 
 ```typescript
 initializeRecord(schema: ResolvedField[]): Record<string, any>
@@ -1810,13 +1978,43 @@ initializeRecord(schema: ResolvedField[]): Record<string, any>
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| schema | `ResolvedField[]` | The resolved schema array to derive defaults from |
+| schema | `ResolvedField[]` | The resolved schema array to derive the record from |
+
+#### prefillDraft
+
+Hold values for a doctype's next new record, by any name it is registered under, so its form opens filled in; the caller then opens that form. The doctype must be registered already, and so must every doctype its tables and embedded records hold, or what they hold is copied unchecked. The values are checked against its fields and copied; values its fields cannot hold, or anything that is not plain data, throw and change nothing. A field given as `undefined` is skipped, and a later call for the same doctype replaces an earlier one.
+
+```typescript
+prefillDraft(doctype: string, values: Record<string, unknown>): void
+```
+
+#### registerDefaults
+
+Register the app's starting values for a doctype, by its name or its slug (typically from app bootstrap). Either one is keyed the way `slug` is, so `'OrderItem'` and `'order-item'` register for the same doctype, whether or not it has been added yet.
+
+They apply over the doctype's own `defaults` for every new record, and a function here runs for each one, so it can work out what a doctype file cannot (today's date, a value looked up for the user's company). A doctype takes one registration: a second replaces the first, with a warning.
+
+```typescript
+registerDefaults(doctype: string, source: DefaultsSource): void
+```
 
 #### resolveSchema
 
 Resolve a Doctype's authoring schema into a rendered schema array suitable for AForm.
 
-Transforms `DoctypeField[]` (authoring space) → `ResolvedField[]` (rendering space): - `kind: 'field'` (not Link) → `ResolvedScalar` - `kind: 'field'` (Link, no declaration) → `ResolvedScalar` with `component: 'AFormLink'` - `kind: 'field'` (Link, `noneOrMany`/`atLeastOne`) → `ResolvedTable` - `kind: 'field'` (Link, `one`/`atMostOne`) → `ResolvedLink` - `kind: 'fieldset'` → `ResolvedFieldset` (children resolved recursively) - `kind: 'table'` → `ResolvedTable` (columns as `ColumnSchema[]`)
+Transforms `DoctypeField[]` (authoring space) → `ResolvedField[]` (rendering space):
+
+- `kind: 'field'` (not Link) → `ResolvedScalar`
+
+- `kind: 'field'` (Link, no declaration) → `ResolvedScalar` with `component: 'AFormLink'`
+
+- `kind: 'field'` (Link, `noneOrMany`/`atLeastOne`) → `ResolvedTable`
+
+- `kind: 'field'` (Link, `one`/`atMostOne`) → `ResolvedLink`
+
+- `kind: 'fieldset'` → `ResolvedFieldset` (children resolved recursively)
+
+- `kind: 'table'` → `ResolvedTable` (columns as `ColumnSchema[]`)
 
 Circular references are protected against via the `visited` set.
 
@@ -1830,6 +2028,16 @@ resolveSchema(doctype: Doctype, visited: Set<string>): ResolvedField[]
 |-----------|------|-------------|
 | doctype | `Doctype` | The doctype to resolve |
 | visited | `Set<string>` | Internal — set of already-visited doctype slugs for cycle detection |
+
+#### takePrefill
+
+Take the values held for a doctype's next new record, by any name it is registered under, so no later form opens with them. Desktop passes them to `composeNewRecord` as `prefill`.
+
+```typescript
+takePrefill(doctype: string): {
+        [field: string]: DefaultsData;
+    } | undefined
+```
 
 ### SchemaValidator
 
@@ -1960,6 +2168,22 @@ dispatchAction(doctype: Doctype, action: string, args: unknown[]): Promise<Actio
 | action | `string` | Action name to execute (e.g., 'SUBMIT', 'APPROVE', 'save') |
 | args | `unknown[]` | Action arguments (typically record ID and/or form data) |
 
+#### editRecord
+
+The record a form is editing, read and set by field name; setting a field runs its rules. A saved record is read and set through the store. A record not saved yet (`recordId` is `DRAFT_RECORD_ID`) is held by the object returned, never in the store, and each call returns a new one, holding only its starting values.
+
+```typescript
+editRecord(doctype: string | Doctype, recordId: string, startingValues: Record<string, unknown>): EditableRecord
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| doctype | `string \| Doctype` | The doctype |
+| recordId | `string` | The record ID, or `DRAFT_RECORD_ID` for a record not saved yet |
+| startingValues | `Record<string, unknown>` | A record not saved yet's values before anything is set, such as `composeNewRecord` gives; they run no rules. Only a new record takes them. |
+
 #### fetchNestedData
 
 Fetch a record and its nested data from the server.
@@ -2036,7 +2260,7 @@ getRecord(doctype: string | Doctype, recordId: string, options: GetRecordOptions
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | doctype | `string \| Doctype` | The doctype slug string or Doctype object |
-| recordId | `string` | The record ID |
+| recordId | `string` | The record ID A record the server does not find is an error, not an empty answer: a caller drawing what is in HST would otherwise show it as a blank record. |
 | options | `GetRecordOptions` | Query options (includeNested, maxDepth), forwarded to the client |
 
 #### getRecordById
@@ -2095,10 +2319,12 @@ getRecords(doctype: Doctype, options: GetRecordsOptions): Promise<GetRecordsResu
 
 Determine the current workflow state for a record.
 
-Reads the record's `status` field from the HST store. If the field is absent or empty the doctype's declared `workflow.initial` state is used as the fallback, giving callers a reliable state name without having to duplicate that logic.
+Reads the record's `status` field from the HST store. If the field is absent or empty the workflow's first listed state (an XState workflow's `initial`) is used as the fallback, giving callers a reliable state name without having to duplicate that logic.
+
+A record not created yet (`DRAFT_RECORD_ID`) is in no state, as the server guard treats it: pass the `null` returned to `Doctype.getAvailableTransitions` and `Doctype.getAvailableCommands` to list the actions that can run on it.
 
 ```typescript
-getRecordState(doctype: string | Doctype, recordId: string): string
+getRecordState(doctype: string | Doctype, recordId: string): string | null
 ```
 
 **Parameters:**
@@ -2118,12 +2344,10 @@ getStore(): HSTNode
 
 #### initializeNestedData
 
-Scaffold empty descendant records from defaults for all descendant links.
-
-Initializes all scalar and link fields at their HST paths with default values. For new records, call this after setting up the doctype to ensure all paths exist.
+Scaffold a new descendant record at `path`: its node, so edits under it land, and its starting values, each at its own HST path. A field with no starting value gets no path until someone fills it in. For new records, call this after setting up the doctype to ensure all paths exist.
 
 ```typescript
-initializeNestedData(path: string, doctype: Doctype): void
+initializeNestedData(path: string, doctype: Doctype): Promise<void>
 ```
 
 **Parameters:**
@@ -2209,6 +2433,16 @@ setup(doctype: Doctype): void
 | doctype | `Doctype` | The doctype to setup |
 
 ## Variables
+
+### DEFAULTS_TIMEOUT_MS
+
+How long a new record waits for a starting value that has not arrived. A value still missing by then is skipped and reported, and the record opens without it.
+
+**Type:**
+
+```typescript
+export const DEFAULTS_TIMEOUT_MS: 
+```
 
 ### DRAFT_RECORD_ID
 
@@ -2323,7 +2557,7 @@ export const useOperationLogStore: import("pinia").StoreDefinition<"hst-operatio
     getSnapshot: () => OperationLogSnapshot;
     markIrreversible: (operationId: string, reason: string) => void;
     logAction: (doctype: string, actionName: string, recordIds?: string[], result?: "success" | "failure" | "pending", error?: string) => string;
-}, "config" | "operations" | "clientId" | "currentIndex">, Pick<{
+}, "config" | "operations" | "currentIndex" | "clientId">, Pick<{
     operations: import("vue").Ref<{
         id: string;
         type: import("..").HSTOperationType;
@@ -2500,7 +2734,7 @@ Reactive per-field validation error store + the advisory field-validation trigge
 
 Holds the errors produced by field-validation triggers (see `TriggerDefinition` in `@stonecrop/schema`) and runs a trigger's `clientHandler` on demand. Errors are **namespaced by trigger**: re-running a trigger clears its own prior contributions before repopulating, so a corrected value clears its stale error without disturbing other triggers.
 
-The engine is **advisory** and does **no rollback** — an invalid value stays in the record so the user can fix it; validity is reported separately via `isValid` (read by the save gate) and the per-field messages are surfaced via `errorsByField` / `errorsFor` for display.
+The engine is **advisory** and does **no rollback** — an invalid value stays in the record so the user can fix it; validity is reported separately via `isValid`, and the per-field messages are surfaced via `errorsByField` / `errorsFor` for display.
 
 **Type:**
 

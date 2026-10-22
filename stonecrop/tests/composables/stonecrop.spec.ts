@@ -2,7 +2,7 @@ import { mount } from '@vue/test-utils'
 import { List } from 'immutable'
 import type { DoctypeField } from '@stonecrop/schema'
 import { createPinia, setActivePinia } from 'pinia'
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test'
 import { createRouter, createMemoryHistory } from 'vue-router'
 import { defineComponent } from 'vue'
 import { type MachineConfig } from 'xstate'
@@ -195,7 +195,7 @@ describe('useStonecrop composable', { tags: ['unit'] }, () => {
 		// the instance, so each of those fetches was paid for output nobody read.
 		const mockGetMeta = vi.fn().mockResolvedValue(createMockDoctype('Task'))
 		registry.getMeta = mockGetMeta
-		const getRecord = vi.spyOn(stonecrop, 'getRecord').mockResolvedValue(undefined as any)
+		const getRecord = vi.spyOn(stonecrop, 'getRecord').mockResolvedValue(undefined)
 
 		vi.spyOn(mockRouter, 'currentRoute', 'get').mockReturnValue({
 			value: { path: '/task/123', params: {} },
@@ -557,5 +557,45 @@ describe('useStonecrop with string doctype lazy-loading', { tags: ['unit'] }, ()
 
 		// After lazy load, HST path should work
 		expect(wrapper.vm.hstPath).toBe('task.test-123.title')
+	})
+})
+
+describe('useStonecrop new record', { tags: ['unit'] }, () => {
+	let registry: Registry
+	let stonecrop: Stonecrop
+
+	beforeEach(() => {
+		setActivePinia(createPinia())
+		Registry._root = undefined as any
+		Stonecrop._root = undefined as any
+		;(HST as any).instance = undefined
+		registry = new Registry()
+		stonecrop = new Stonecrop(registry)
+	})
+
+	// The form is filled once: until every starting value is in, it reports loading and holds nothing.
+	it('reports loading until its starting values arrive, then holds them', async () => {
+		const doctype = createMockDoctype('Task')
+		registry.addDoctype(doctype)
+		registry.registerDefaults('task', {
+			title: () => new Promise(resolve => setTimeout(() => resolve('Call the supplier'), 10)) as any,
+		})
+
+		const TestComponent = defineComponent({
+			setup() {
+				return useStonecrop({ doctype, recordId: 'new' })
+			},
+			template: '<div>test</div>',
+		})
+		const wrapper = mount(TestComponent, {
+			global: { provide: { $registry: registry, $stonecrop: stonecrop } },
+		})
+
+		expect(wrapper.vm.isLoading).toBe(true)
+		expect(wrapper.vm.formData.title).toBeUndefined()
+
+		await new Promise(resolve => setTimeout(resolve, 30))
+		expect(wrapper.vm.isLoading).toBe(false)
+		expect(wrapper.vm.formData.title).toBe('Call the supplier')
 	})
 })

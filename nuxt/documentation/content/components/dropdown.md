@@ -15,7 +15,7 @@ import { ADropdown } from '@stonecrop/aform'
 
 ## Basic
 
-`v-model` binds to the current text value. `options` is the flat list of choices shown in the dropdown — try typing to filter it.
+`v-model` binds to the picked choice. `options` is the flat list of choices shown in the dropdown — try typing to filter it. Typing only searches: the value changes when a choice is picked, or typed out in full.
 
 ::demo-panel
 :::client-only
@@ -87,14 +87,14 @@ const data = ref({ fruit: 'Orange' })
 ---
 headers: ['Name', 'Type', 'Default', 'Description']
 rows:
-  - ['`v-model`', '`string | undefined`', '—', "The input's current text value."]
+  - ['`v-model`', '`string | undefined`', '—', 'The picked choice. Text typed to search reaches it only as the choice it picks; clearing the box empties it.']
   - ['`label`', '`string`', '—', 'Label text rendered next to the input.']
   - ['`options`', '`string[]`', '`[]`', 'The full list of candidate results shown in the dropdown.']
   - ['`isAsync`', '`boolean`', '`false`', 'Shows a "Loading results..." row while a supplied `filterFunction` resolves.']
   - ['`filterFunction`', '`(search: string) => string[] | Promise<string[]>`', '—', "Overrides the built-in substring match with caller-supplied filtering (e.g. an API request) against `options`."]
-  - ['`required`', '`boolean`', '`false`', "Part of the shared field prop type; not applied to the native input by this component's current implementation."]
+  - ['`required`', '`boolean`', '`false`', 'Marks the input `required`.']
   - ['`mode`', "`'edit' | 'read' | 'display'`", "`'edit'`", 'See [Modes](#modes) below.']
-  - ['`uuid`', '`string`', '—', "Part of the shared field prop type; this component does not link its label to its input via `id`/`for`."]
+  - ['`uuid`', '`string`', '—', "The input's `id`, which the label's `for` points at."]
   - ['`validation`', '`{ errorMessage: string }`', "`{ errorMessage: '' }`", 'Static error message shown below the field.']
   - ['`errors`', '`string[]`', '—', 'Dynamic validation errors (e.g. from a trigger). Takes precedence over `validation.errorMessage` whenever the list is non-empty.']
 ---
@@ -114,6 +114,6 @@ rows:
 
 ## Accessibility
 
-The input and its label are not linked via `id`/`for` — `uuid` is part of the shared field prop type but is not read by this component, so screen readers do not get the same label association that `ACheckbox` or `ACurrencyInput` provide. Once the dropdown is open, Arrow Down/Up move the highlighted result, Enter commits it, and Escape or Tab closes the list and reverts to the last committed value; the result list itself carries no ARIA roles (no `role="listbox"`/`"option"`, no `aria-activedescendant`), so assistive technology is not told it is a listbox.
+Given a `uuid`, the label is linked to the input through `id`/`for`. The input is a `combobox` that controls its result list (`role="listbox"`, each result `role="option"`), and `aria-activedescendant` names the highlighted result. Arrow Down/Up move the highlight, and Enter picks the highlighted result, or the first. Escape or Tab closes the list: a choice typed out in full is picked, anything else puts back the last choice.
 
 Source: [`aform/src/components/form/ADropdown.vue`](https://github.com/agritheory/stonecrop/blob/development/aform/src/components/form/ADropdown.vue)

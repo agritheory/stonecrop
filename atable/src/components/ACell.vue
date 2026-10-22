@@ -11,24 +11,47 @@
 		class="atable-cell"
 		:class="cellClasses"
 		@focus="onFocus"
+		@focusout="onFocusOut"
+		@keydown="onArithmeticKeydown"
 		@paste="updateCellData"
 		@input="debouncedUpdateCellData"
 		@click="onCellClick">
 		<component :is="column.cellComponent" v-if="column.cellComponent" v-bind="cellComponentBindings" />
+		<component
+			:is="'ATupleCellEditor'"
+			v-else-if="tupleCategory && column.edit"
+			ref="tupleEditor"
+			:category="tupleCategory"
+			:col-index="colIndex"
+			:row-index="rowIndex"
+			:store="store"
+			:active="tupleCellActive"
+			:display-text="String(renderedValue ?? '')"
+			:input-id="tupleInputId"
+			@deactivate="tupleCellActive = false" />
 		<component :is="'ABadge'" v-else-if="badgeFromFormat" v-bind="badgeFromFormat" presentation="cell-fill" />
 		<component :is="'ABadge'" v-else-if="badgeFromOptions" v-bind="badgeFromOptions" />
 		<span v-else-if="isHtmlValue" v-html="renderedValue" />
-		<span v-else>{{ renderedValue }}</span>
+		<span v-else ref="textSpan">{{ renderedValue }}</span>
 	</td>
 </template>
 
 <script setup lang="ts">
-import { KeypressHandlers, defaultKeypressHandlers, useKeyboardNav } from '@stonecrop/utilities'
-import { isBadgeDescriptor, hasBadgeOptions } from '@stonecrop/schema'
+import {
+	KeypressHandlers,
+	defaultKeypressHandlers,
+	isArithmeticKey,
+	roundToPrecision,
+	useArithmeticInput,
+	useKeyboardNav,
+} from '@stonecrop/utilities'
+import { componentCategory, isBadgeDescriptor, hasBadgeOptions } from '@stonecrop/schema'
 import { useDebounceFn, useElementBounding } from '@vueuse/core'
-import { computed, type CSSProperties, onMounted, ref, useTemplateRef, nextTick } from 'vue'
+import { computed, type CSSProperties, onMounted, ref, useTemplateRef, nextTick, watch } from 'vue'
 
-import { createTableStore, getIndent } from '../stores/table'
+import { getIndent } from '../stores/table'
+import type { TableStore } from '../types'
+import { isTableTuplePickerModal } from '../tuplePickerModal'
 import { isHtmlString } from '../utils'
 
 const {
@@ -42,7 +65,7 @@ const {
 } = defineProps<{
 	colIndex: number
 	rowIndex: number
-	store: ReturnType<typeof createTableStore>
+	store: TableStore
 	addNavigation?: boolean | KeypressHandlers
 	tabIndex?: number
 	pinned?: boolean
@@ -50,11 +73,12 @@ const {
 }>()
 
 const cellRef = useTemplateRef<HTMLTableCellElement>('cell')
+const tupleEditor = useTemplateRef<{ focusInput: () => void; commitNumber: () => void }>('tupleEditor')
 
-// keep a shallow copy of the original cell value for comparison
 const originalData = store.getCellData(colIndex, rowIndex)
 const currentData = ref('')
 const cellModified = ref(false)
+const tupleCellActive = ref(false)
 
 const column = store.columns[colIndex]
 const row = store.rows[rowIndex]
@@ -64,31 +88,80 @@ const cellWidth = column.width || '40ch'
 
 const displayValue = computed(() => store.getCellDisplayValue(colIndex, rowIndex))
 
-// Resolved display text for Link columns with bare string IDs.
-// null = not yet resolved or not applicable; non-null overrides displayValue.
 const resolvedText = ref<string | null>(null)
 
+const tupleCategory = computed((): 'quantity' | 'currency' | undefined => {
+	if (column.cellComponent) return undefined
+	const category = componentCategory(column.component)
+	if (category === 'quantity' || category === 'currency') return category
+	return undefined
+})
+
+// A number column takes arithmetic, as the form's ANumericInput does: `12*3+4` is read as 40 once the cell is left
+// or Enter is pressed. Until then the cell holds the text as typed. `options.arithmetic: false` turns it off.
+const arithmeticCell = computed(
+	() =>
+		componentCategory(column.component) === 'number' &&
+		!(column.options && !Array.isArray(column.options) && column.options.arithmetic === false)
+)
+
+// Typing into a contenteditable cell can replace the rendered span with bare text nodes, and Vue patches only the
+// span it rendered: a committed result puts that span back to show it.
+const textSpan = useTemplateRef<HTMLSpanElement>('textSpan')
+
+// The same arithmetic as the form's ANumericInput, with the cell's text as the box. It is read once the cell is left
+// or Enter is pressed, never as it is typed ("12*" is no number yet), and only an edit writes to the row. The cell
+// renders its own text, so the composable never writes it.
+const arithmetic = useArithmeticInput({
+	value: () => store.getCellData(colIndex, rowIndex),
+	commit: value => {
+		store.setCellData(colIndex, rowIndex, value)
+		cellModified.value = value !== originalData
+	},
+	// A column with a fixed scale says so with `options.precision`: at 2, `10/3` is saved as 3.33.
+	round: value =>
+		column.options && !Array.isArray(column.options) && typeof column.options.precision === 'number'
+			? roundToPrecision(value, column.options.precision)
+			: value,
+	live: false,
+	enabled: () => false,
+})
+
+const tupleInputId = computed(() => `atable-${String(rowIndex)}-${String(colIndex)}-${column.name}`)
+
+// A link cell shows the name of the link it holds now, so it follows the cell's data, and a name that arrives
+// for a link it no longer holds is dropped.
 onMounted(() => {
-	if (!column.linkDoctype) return
-	const raw = store.getCellData(colIndex, rowIndex)
+	const linkDoctype = column.linkDoctype
+	if (!linkDoctype) return
 
-	// Server returns link fields as { id, displayText } objects.
-	if (raw !== null && raw !== undefined && typeof raw === 'object') {
-		const obj = raw as Record<string, unknown>
-		const display = obj.displayText ?? obj.id
-		if (typeof display === 'string' || typeof display === 'number') {
-			resolvedText.value = String(display)
-		}
-		return
-	}
+	watch(
+		() => store.getCellData(colIndex, rowIndex),
+		(raw, _previous, onCleanup) => {
+			resolvedText.value = null
 
-	// Bare string ID — call the resolver if available.
-	const resolver = store.linkResolver
-	if (!resolver || typeof raw !== 'string' || raw === '') return
-	void resolver(column.linkDoctype, raw).then(text => {
-		if (text != null) resolvedText.value = text
-		return text
-	})
+			if (raw !== null && raw !== undefined && typeof raw === 'object') {
+				const obj = raw as Record<string, unknown>
+				const display = obj.displayText ?? obj.id
+				if (typeof display === 'string' || typeof display === 'number') {
+					resolvedText.value = String(display)
+				}
+				return
+			}
+
+			const resolver = store.linkResolver
+			if (!resolver || typeof raw !== 'string' || raw === '') return
+			let current = true
+			onCleanup(() => {
+				current = false
+			})
+			void resolver(linkDoctype, raw).then(text => {
+				if (current && text != null) resolvedText.value = text
+				return text
+			})
+		},
+		{ immediate: true }
+	)
 })
 
 const renderedValue = computed(() => resolvedText.value ?? displayValue.value)
@@ -113,7 +186,7 @@ const usesBadgeDisplay = computed(
 	() => !!column.cellComponent || badgeFromFormat.value !== undefined || hasBadgeOptions(column.options)
 )
 
-const isContentEditable = computed(() => column.edit && !usesBadgeDisplay.value)
+const isContentEditable = computed(() => column.edit && !usesBadgeDisplay.value && !tupleCategory.value)
 
 const cellComponentBindings = computed(() => {
 	const props = { ...column.cellComponentProps }
@@ -123,8 +196,6 @@ const cellComponentBindings = computed(() => {
 	if (isBadgeDescriptor(renderedValue.value)) {
 		return { presentation: 'cell-fill' as const, ...props, ...renderedValue.value }
 	}
-	// ABadge resolves its own label, so it needs the badge map as well as the value — and the value
-	// has to be the stored one, because badge maps are keyed on that rather than on formatted text.
 	return {
 		presentation: 'cell-fill' as const,
 		options: column.options,
@@ -134,7 +205,6 @@ const cellComponentBindings = computed(() => {
 })
 
 const isHtmlValue = computed(() => {
-	// TODO: check if display value is a native DOM element
 	return typeof renderedValue.value === 'string' ? isHtmlString(renderedValue.value) : false
 })
 
@@ -152,50 +222,43 @@ const cellClasses = computed(() => {
 		'sticky-column': pinned,
 		'cell-modified': cellModified.value,
 		'atable-cell--badge-fill': usesBadgeDisplay.value,
+		'atable-cell--tuple': !!tupleCategory.value && !!column.edit,
+		'atable-cell--tuple-active': tupleCellActive.value,
 	}
 })
 
 const onCellClick = () => {
-	// First, select all text if the cell is editable
+	if (tupleCategory.value && column.edit) {
+		tupleCellActive.value = true
+		void nextTick(() => tupleEditor.value?.focusInput())
+		return
+	}
 	selectAllText()
-
-	// Then handle modal display (original showModal behavior)
 	showModal()
 }
 
 const showModal = () => {
-	const { left, bottom, width, height } = useElementBounding(cellRef)
-
 	if (column.mask) {
 		// TODO: add masking to cell values
-		// column.mask(event)
 	}
 
-	if (column.modalComponent) {
-		store.$patch(state => {
-			state.modal.visible = true
-			state.modal.colIndex = colIndex
-			state.modal.rowIndex = rowIndex
-			// Snapshot the cell's box as it was when the modal opened. These are refs, and assigning
-			// them raw happened to work only because reactive reads unwrap refs — which also left the
-			// stored values live, tracking the cell for as long as the modal stayed open.
-			state.modal.left = left.value
-			state.modal.bottom = bottom.value
-			state.modal.width = width.value
-			state.modal.height = height.value
-			state.modal.cell = cellRef.value
+	const cell = cellRef.value
+	if (!column.modalComponent || !cell) return
 
-			if (typeof column.modalComponent === 'function') {
-				// `table` is a computed, so Pinia exposes it as a getter — it is not on `$state`, which
-				// is what $patch hands back. Reading it off the store is what passes a real table.
-				state.modal.component = column.modalComponent({ table: store.table, row, column })
-			} else {
-				state.modal.component = column.modalComponent
-			}
+	const { left, bottom, width, height } = useElementBounding(cellRef)
+	const component =
+		typeof column.modalComponent === 'function'
+			? column.modalComponent({ table: store.table, row, column })
+			: column.modalComponent
 
-			state.modal.componentProps = column.modalComponentExtraProps
-		})
-	}
+	store.openCellShell(
+		colIndex,
+		rowIndex,
+		cell,
+		{ left: left.value, bottom: bottom.value, width: width.value, height: height.value },
+		component,
+		column.modalComponentExtraProps ?? {}
+	)
 }
 
 if (addNavigation) {
@@ -223,19 +286,8 @@ if (addNavigation) {
 	])
 }
 
-// const updateData = (event: Event) => {
-// 	if (event) {
-// 		// custom components need to handle their own updateData, this is the default
-// 		if (!column.component) {
-// 			store.setCellData(colIndex, rowIndex, cell.value.innerHTML)
-// 		}
-// 		cellModified.value = true
-// 	}
-// }
-
 const selectAllText = () => {
-	if (cellRef.value && column.edit) {
-		// Use the Selection API to select all text content in the contenteditable cell
+	if (cellRef.value && column.edit && isContentEditable.value) {
 		const selection = window.getSelection()
 		if (selection) {
 			try {
@@ -247,18 +299,125 @@ const selectAllText = () => {
 				}
 			} catch {
 				// Fallback for environments where Range API is not fully supported
-				// This is expected in some test environments
 			}
 		}
 	}
 }
 
 const onFocus = () => {
+	if (tupleCategory.value && column.edit) {
+		tupleCellActive.value = true
+		void nextTick(() => tupleEditor.value?.focusInput())
+		return
+	}
 	if (cellRef.value) {
 		currentData.value = cellRef.value.textContent!
-		// Select all text when the cell receives focus
+		if (arithmeticCell.value) arithmetic.begin(currentData.value)
 		selectAllText()
 	}
+}
+
+const commitArithmetic = () => {
+	const cell = cellRef.value
+	if (!cell || !arithmeticCell.value || !isContentEditable.value) return
+	const typed = cell.textContent ?? ''
+	if (typed === currentData.value) return
+	arithmetic.update(typed)
+	// An unfinished expression ("12*") commits nothing, and the cell goes back to its last number.
+	arithmetic.settle()
+	// Show the result now, not on the next render: focus may already be on its way to the next row, and the text
+	// left in the cell is what the next edit starts from.
+	const span = textSpan.value
+	if (span) {
+		cell.replaceChildren(span)
+		span.textContent = String(renderedValue.value ?? '')
+	}
+	currentData.value = cell.textContent ?? ''
+	arithmetic.rebase(currentData.value)
+	// Still editing (Enter on the last row, with no row to move to): carry on from the end of the result, so `+1`
+	// typed after `40` is `40+1`.
+	if (document.activeElement === cell) placeCaretAtEnd(cell)
+}
+
+const placeCaretAtEnd = (cell: HTMLElement) => {
+	try {
+		const range = document.createRange()
+		range.selectNodeContents(cell)
+		range.collapse(false)
+		const selection = window.getSelection()
+		selection?.removeAllRanges()
+		selection?.addRange(range)
+	} catch {
+		// Fallback for environments where the Range API is not fully supported
+	}
+}
+
+const onArithmeticKeydown = (event: KeyboardEvent) => {
+	if (!arithmeticCell.value || !isContentEditable.value) return
+	if (event.ctrlKey || event.metaKey || event.altKey) return
+	if (event.key === 'Enter') {
+		commitArithmetic()
+		return
+	}
+	if (event.key.length !== 1) return
+	// The cell's text once typed in, as `=` may only start it.
+	const next = cellTextWith(event.key)
+	const allowed = next === undefined ? isArithmeticKey(event.key) : arithmetic.accepts(next)
+	if (!allowed) event.preventDefault()
+}
+
+// The cell's text once `inserted` replaces its selection, or undefined where the selection can't be read.
+const cellTextWith = (inserted: string): string | undefined => {
+	const cell = cellRef.value
+	const range = window.getSelection()?.rangeCount ? window.getSelection()!.getRangeAt(0) : undefined
+	if (!cell || !range || !cell.contains(range.startContainer) || !cell.contains(range.endContainer)) return
+	try {
+		const offset = (node: Node, at: number) => {
+			const before = document.createRange()
+			before.selectNodeContents(cell)
+			before.setEnd(node, at)
+			return before.toString().length
+		}
+		const text = cell.textContent ?? ''
+		return (
+			text.slice(0, offset(range.startContainer, range.startOffset)) +
+			inserted +
+			text.slice(offset(range.endContainer, range.endOffset))
+		)
+	} catch {
+		// Fallback for environments where the Range API is not fully supported
+		return
+	}
+}
+
+const onFocusOut = (event: FocusEvent) => {
+	commitArithmetic()
+	if (!tupleCategory.value || !column.edit || !tupleCellActive.value) return
+
+	const related = event.relatedTarget
+	const cell = cellRef.value
+
+	if (related instanceof Node && document.querySelector('.amodal')?.contains(related)) return
+
+	if (
+		store.modal.visible &&
+		store.modal.colIndex === colIndex &&
+		store.modal.rowIndex === rowIndex &&
+		isTableTuplePickerModal(store.modal)
+	) {
+		return
+	}
+
+	if (related instanceof Node && cell?.contains(related)) {
+		if (related instanceof Element) {
+			if (related.closest('.atable-tuple-shell__input')) return
+			if (related.closest('.atable-tuple-shell__handle')) return
+		}
+	}
+
+	tupleEditor.value?.commitNumber?.()
+	tupleCellActive.value = false
+	store.closeTuplePicker()
 }
 
 const saveCursorPosition = () => {
@@ -266,7 +425,6 @@ const saveCursorPosition = () => {
 		const selection = window.getSelection()
 		if (selection && selection.rangeCount > 0 && cellRef.value) {
 			const range = selection.getRangeAt(0)
-			// Save the offset from the start of the cell
 			const preCaretRange = range.cloneRange()
 			if (preCaretRange.selectNodeContents && preCaretRange.setEnd) {
 				preCaretRange.selectNodeContents(cellRef.value)
@@ -322,29 +480,31 @@ const restoreCursorPosition = (position: number) => {
 }
 
 const updateCellData = (payload: Event) => {
-	if (!column.edit) return
+	if (!column.edit || tupleCategory.value) return
+	// An arithmetic cell is read once it is left, not as it is typed: "12*" is no number yet.
+	if (arithmeticCell.value) {
+		const pasted = (payload as ClipboardEvent).clipboardData?.getData('text') ?? ''
+		if (pasted && !arithmetic.accepts(cellTextWith(pasted) ?? pasted)) payload.preventDefault()
+		return
+	}
 
 	const target = payload.target as HTMLTableCellElement
 	if (target.textContent === currentData.value) {
 		return
 	}
 
-	// Save cursor position before updating
 	const cursorPosition = saveCursorPosition()
 
 	currentData.value = target.textContent!
 
-	// only apply changes if the cell value has changed after being mounted
 	if (column.format) {
 		cellModified.value = target.textContent !== store.getFormattedValue(colIndex, rowIndex, originalData)
-		// TODO: need to setup reverse format function?
 		store.setCellText(colIndex, rowIndex, target.textContent)
 	} else {
 		cellModified.value = target.textContent !== originalData
 		store.setCellData(colIndex, rowIndex, target.textContent)
 	}
 
-	// Use nextTick to restore cursor position after Vue's reactive updates but before browser repaint
 	void nextTick().then(() => {
 		return restoreCursorPosition(cursorPosition)
 	})
@@ -407,5 +567,19 @@ defineExpose({
 .atable-cell--badge-fill {
 	padding: 0 !important;
 	margin-left: 0;
+}
+
+.atable-cell--tuple {
+	padding-left: 0 !important;
+	padding-right: 0.5ch !important;
+}
+
+/* Same inset ring as other cells (.atable-cell:focus-within); inner controls must not add a second ring. */
+.atable-cell--tuple :deep(.atable-tuple-shell__input:focus),
+.atable-cell--tuple :deep(.atable-tuple-shell__input:focus-visible),
+.atable-cell--tuple :deep(.atable-tuple-shell__handle:focus),
+.atable-cell--tuple :deep(.atable-tuple-shell__handle:focus-visible) {
+	outline: none;
+	box-shadow: none;
 }
 </style>

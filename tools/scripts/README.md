@@ -1,6 +1,6 @@
 # Workspace scripts
 
-This directory holds the scripts the workspace runs outside any one package: the build wrapper, the dependency, publish and trusted-publishing checks, and the documentation pipeline. The rest of this file covers the documentation pipeline, which generates API reference from TypeScript source.
+This directory holds the scripts the workspace runs outside any one package: the build wrapper, the dependency, publish and trusted-publishing checks, the release's version bump, and the documentation pipeline. The rest of this file covers the documentation pipeline, which generates API reference from TypeScript source.
 
 It is a private workspace member, `stonecrop-scripts`, which is what puts `tests/` within reach of `vp run -r test`. `vp run` selects members only, and `vp lint` rejects a `..` path, so nothing outside this directory can run a task against it. CI runs the suite through a `Test Shared Tooling` step, since the package matrix in `pr.yml` is paths-filtered and coverage-gated.
 
@@ -106,7 +106,7 @@ export default defineConfig({
 })
 ```
 
-`vite build` runs first so `emptyOutDir` clears `dist`. A leading `rm -rf dist` is its own cached
+`vp build` runs first so `emptyOutDir` clears `dist`. A leading `rm -rf dist` is its own cached
 sub-task, and a cache hit replays a snapshot instead of deleting, which ships stale chunks.
 
 ## Repo-wide Commands

@@ -20,6 +20,7 @@ import { InputHTMLAttributes } from 'vue';
 import { InteractionMode } from '@stonecrop/schema';
 import { PublicProps } from 'vue';
 import { Ref } from 'vue';
+import { TableStore } from '@stonecrop/atable';
 import type { TableViewConfig } from '@stonecrop/schema';
 import type { ValueField } from '@stonecrop/schema';
 
@@ -84,7 +85,7 @@ export interface AFormLinkValue {
 }
 
 // @public (undocumented)
-export const AFormLoading: typeof __VLS_export_22;
+export const AFormLoading: typeof __VLS_export_23;
 
 // @public (undocumented)
 export const ANumericInput: typeof __VLS_export_17;
@@ -96,10 +97,25 @@ export const AQuantityInput: typeof __VLS_export_18;
 export const ASegmentedControl: typeof __VLS_export_5;
 
 // @public (undocumented)
-export const ATextboxInput: typeof __VLS_export_20;
+export const ASemverInput: typeof __VLS_export_19;
 
 // @public (undocumented)
-export const ATextInput: typeof __VLS_export_19;
+export const ATableTupleCurrencyPicker: typeof __VLS_export_26;
+
+// @public (undocumented)
+export const ATableTupleQuantityPicker: typeof __VLS_export_25;
+
+// @public (undocumented)
+export const ATextboxInput: typeof __VLS_export_21;
+
+// @public (undocumented)
+export const ATextInput: typeof __VLS_export_20;
+
+// @public (undocumented)
+export const ATupleCellEditor: typeof __VLS_export_27;
+
+// @public (undocumented)
+export const ATupleCellShell: typeof __VLS_export_28;
 
 // @public
 export type BadgeFormatContext = {
@@ -131,6 +147,8 @@ export type ComponentProps = {
 
 // @public
 export interface CurrencyOptions {
+    amountMask?: boolean;
+    arithmetic?: boolean;
     baseCurrency?: AFormLinkValue | string;
     doctype?: string;
     exchangeRates?: Record<string, number>;
@@ -152,7 +170,7 @@ export interface CurrencyValue {
 export function deserializeFunction<T extends (...args: any[]) => any>(source: string): T;
 
 // @public (undocumented)
-export const ExpandButton: typeof __VLS_export_23;
+export const ExpandButton: typeof __VLS_export_24;
 
 // @public
 export function install(app: App): void;
@@ -160,10 +178,17 @@ export function install(app: App): void;
 export { InteractionMode }
 
 // @public (undocumented)
-export const Login: typeof __VLS_export_21;
+export const Login: typeof __VLS_export_22;
+
+// @public
+export interface NumericOptions {
+    arithmetic?: boolean;
+    precision?: number;
+}
 
 // @public
 export interface QuantityOptions {
+    arithmetic?: boolean;
     conversionFactors?: Record<string, number>;
     stockUom?: string;
     uoms?: string[];
@@ -198,7 +223,6 @@ export function resolvedFieldsToColumns(fields: readonly ResolvedField[]): Colum
 // @public
 export interface ResolvedLink {
     component: string;
-    default?: unknown;
     fieldname: string;
     hidden?: boolean;
     kind: 'link';
@@ -219,7 +243,6 @@ export type ResolvedScalar = Omit<ValueField, 'cardinality'> & {
 export interface ResolvedTable {
     component: string;
     config: TableViewConfig;
-    default?: unknown;
     fieldname: string;
     getRecords?: (options?: GetRecordsOptions) => Promise<GetRecordsResult>;
     hidden?: boolean;

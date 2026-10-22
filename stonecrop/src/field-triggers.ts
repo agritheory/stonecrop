@@ -1,4 +1,5 @@
 import type { Map as ImmutableMap } from 'immutable'
+import { noRecord } from './record-access'
 import { useOperationLogStore } from './stores/operation-log'
 import type {
 	FieldAction,
@@ -658,6 +659,7 @@ export async function triggerTransition(
 		doctype,
 		recordId: options?.recordId,
 		timestamp: new Date(),
+		...noRecord(`Transition "${transition}" was triggered without a store, so it has no record to read or set`),
 		transition,
 		currentState: options?.currentState,
 		targetState: options?.targetState,

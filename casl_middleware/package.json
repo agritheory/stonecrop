@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/casl-middleware",
-	"version": "0.39.0",
+	"version": "0.54.0",
 	"description": "CASL authorization middleware for GraphQL servers",
 	"keywords": [
 		"authorization",
@@ -40,16 +40,16 @@
 		"./package.json": "./package.json"
 	},
 	"scripts": {
-		"dev": "vite build --watch",
+		"dev": "vp build --watch",
 		"docs": "bash ../tools/scripts/run-docs.sh casl_middleware",
-		"lint": "oxlint",
-		"lint:fix": "oxlint --fix",
+		"lint": "vp lint",
+		"lint:fix": "vp lint --fix",
 		"prepublishOnly": "vp run build",
-		"preview": "vite preview",
-		"test": "vitest run --coverage.enabled false",
-		"test:coverage": "vitest run --coverage",
-		"test:ui": "vitest --ui",
-		"test:watch": "vitest watch"
+		"preview": "vp preview",
+		"test": "vp test run --coverage.enabled false",
+		"test:coverage": "vp test run --coverage",
+		"test:ui": "vp test --ui",
+		"test:watch": "vp test watch"
 	},
 	"dependencies": {
 		"@casl/ability": "^6.8.0",
@@ -68,8 +68,6 @@
 		"graphql-middleware": "^6.1.35",
 		"graphql-yoga": "catalog:",
 		"jsdom": "catalog:",
-		"oxlint": "catalog:",
-		"oxlint-tsgolint": "catalog:",
 		"postgraphile": "catalog:",
 		"typescript": "catalog:",
 		"vite": "catalog:",

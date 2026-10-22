@@ -9,6 +9,193 @@ description: Shared utility functions
 
 ## Functions
 
+### arithmeticEntryPattern
+
+What an arithmetic number box may hold while it is typed in: digits, a decimal point, whitespace, `+ - * / %` and parentheses, plus the given separators, after an optional leading `=` (as a spreadsheet formula starts). Exponents (`e`, `^`) and any other letter are refused, and so is `=` anywhere but first.
+
+**Signature:**
+
+```typescript
+export declare function arithmeticEntryPattern(separators?: NumberSeparators): RegExp;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| separators | `NumberSeparators` |  |
+
+### compareSemver
+
+Orders two versions by SemVer 2.0.0 precedence: major, minor and patch as numbers, a prerelease before its release, and prerelease identifiers one by one. Build metadata does not count, so `1.4.0+a` and `1.4.0+b` compare equal. Text that is not a version comes after every version.
+
+**Signature:**
+
+```typescript
+export declare function compareSemver(a: string, b: string): number;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| a | `string` | The first version |
+| b | `string` | The second version |
+
+### currencyAmountEntryPattern
+
+What a masked currency amount field may hold while it is typed in: digits and grouping marks, then at most one decimal point followed by digits.
+
+**Signature:**
+
+```typescript
+export declare function currencyAmountEntryPattern(currencyId: string | undefined, locale?: string): RegExp;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| currencyId | `string \| undefined` |  |
+| locale | `string` | The browser's own when omitted |
+
+### currencyAmountSeparators
+
+The separators a currency amount field writes amounts with: the locale's grouping and decimal marks.
+
+**Signature:**
+
+```typescript
+export declare function currencyAmountSeparators(locale?: string): {
+    group: string;
+    decimal: string;
+};
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| locale | `string` | The browser's own when omitted |
+
+### currencyInputFractionDigits
+
+Fraction digits for a currency in amount inputs (e.g. JPY → 0).
+
+**Signature:**
+
+```typescript
+export declare function currencyInputFractionDigits(currencyId: string | undefined): number;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| currencyId | `string \| undefined` |  |
+
+### evaluateArithmetic
+
+Evaluate the arithmetic typed into a number box: `12*3+4` is `40`. Supports `+ - * / %` (remainder, as JavaScript's `%`), parentheses, signed numbers and decimals; nothing else, so no exponents, functions or names. A leading `=` or `+` is read as a spreadsheet reads it, so `=12*3` and `+12*3` are both `36`.
+
+The result is rounded to 15 significant digits to shed binary floating-point noise (`0.1*3` is `0.3`, not `0.30000000000000004`).
+
+**Signature:**
+
+```typescript
+export declare function evaluateArithmetic(text: string, separators?: NumberSeparators): number | null;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| text | `string` | The box's text |
+| separators | `NumberSeparators` | The marks the box writes numbers with; a plain `.` decimal point with no grouping when omitted |
+
+### formatCurrencyAmount
+
+Format a currency amount for display (forms, table cells). Uses `Intl` when `currency.id` is a valid ISO code; otherwise falls back to symbol, display text, or id.
+
+**Signature:**
+
+```typescript
+export declare function formatCurrencyAmount(amount: number | null | undefined, currency: CurrencyLike | undefined): string;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| amount | `number \| null \| undefined` |  |
+| currency | `CurrencyLike \| undefined` |  |
+
+### formatCurrencyAmountInput
+
+Format a numeric amount for display in a currency amount field (no currency symbol). The currency sets the decimals; the separators are the locale's, as in the table cell.
+
+**Signature:**
+
+```typescript
+export declare function formatCurrencyAmountInput(amount: number | null | undefined, currencyId: string | undefined, locale?: string): string;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| amount | `number \| null \| undefined` |  |
+| currencyId | `string \| undefined` |  |
+| locale | `string` | The browser's own when omitted |
+
+### formatCurrencyCell
+
+Render a composite currency value for table cells.
+
+**Signature:**
+
+```typescript
+export declare function formatCurrencyCell(value: unknown): string;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| value | `unknown` |  |
+
+### formatCurrencySymbol
+
+The mark that names a currency beside an amount: the symbol `Intl` formats a valid ISO code with, as `formatCurrencyAmount` does; otherwise its symbol, display text, or id.
+
+**Signature:**
+
+```typescript
+export declare function formatCurrencySymbol(currency: CurrencyLike | undefined): string;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| currency | `CurrencyLike \| undefined` |  |
+
+### formatQuantityCell
+
+Render a composite quantity value for table cells. Omits the UOM when it matches `stockUom`.
+
+**Signature:**
+
+```typescript
+export declare function formatQuantityCell(value: unknown): string;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| value | `unknown` |  |
+
 ### fromISODate
 
 Reads a `YYYY-MM-DD` day. Anything that is not a real day written exactly that way reads as no day.
@@ -43,6 +230,154 @@ declare function install(_app: App): void;
 |-----------|------|-------------|
 | _app | `App` | Vue app instance |
 
+### isArithmeticEntry
+
+Whether an arithmetic number box may hold `text` while it is typed in: what `arithmeticEntryPattern` allows, with each number in it well formed (grouping marks only in the whole part, then at most one decimal mark).
+
+**Signature:**
+
+```typescript
+export declare function isArithmeticEntry(text: string, separators?: NumberSeparators, fractionDigits?: number): boolean;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| text | `string` |  |
+| separators | `NumberSeparators` |  |
+| fractionDigits | `number` | The field's decimal places; at `0` (as for JPY) a decimal mark is refused |
+
+### isArithmeticKey
+
+Whether a single typed character may go into an arithmetic number box. `=` is one, though only as the box's first character: check the box's text with `arithmeticEntryPattern` where the caret is known.
+
+**Signature:**
+
+```typescript
+export declare function isArithmeticKey(key: string, separators?: NumberSeparators): boolean;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| key | `string` |  |
+| separators | `NumberSeparators` |  |
+
+### isSemver
+
+Whether the text is a version under SemVer 2.0.0: `1.4.0`, `1.4.0-beta.2`, `1.4.0+build.5`. A `v` prefix, a missing part (`1.4`) and a leading zero (`01.4.0`) are not.
+
+**Signature:**
+
+```typescript
+export declare function isSemver(text: string): boolean;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| text | `string` | The text to check |
+
+### isSemverPrefix
+
+Whether typing more could still make the text a version: `1.`, `1.4.0-` and the empty text can, while `v1`, `01` and `1.4-beta` cannot. Every version passes, so a box that refuses any edit failing this one never stops someone typing a version.
+
+**Signature:**
+
+```typescript
+export declare function isSemverPrefix(text: string): boolean;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| text | `string` | The text so far |
+
+### parseCurrencyAmountInput
+
+Parse user-entered text in a currency amount field back to a number, read with the separators the field writes it with.
+
+**Signature:**
+
+```typescript
+export declare function parseCurrencyAmountInput(text: string, locale?: string): number | null;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| text | `string` |  |
+| locale | `string` | The browser's own when omitted |
+
+### roundToPrecision
+
+Round a number to a field's decimal places, as a column with a fixed scale holds it: `3.3333333333333` at 2 is `3.33`. A missing or unusable precision (not a whole number from 0 to 100) leaves the number as it is.
+
+**Signature:**
+
+```typescript
+export declare function roundToPrecision(value: number, precision?: number): number;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| value | `number` |  |
+| precision | `number` |  |
+
+### useArithmeticInput
+
+A number box that takes arithmetic: `12*3+4` is read as `40`, and a leading `=` or `+` as a spreadsheet reads it. The box holds the typed text while it is edited and settles to the result on blur or Enter; text that is no expression by then (`12*`) leaves the model at its last number.
+
+Only an edit writes: a box focused and left as it was commits nothing, so a value is never rewritten (or rounded) by being looked at. "Edited" means the text differs from what the box last showed or saved.
+
+An `<input>` binds the returned `inputAttrs` (`v-bind="arithmetic.inputAttrs"`); an attribute written after the bind overrides it, and a listener written beside it runs as well. A box that is no `<input>` (a contenteditable table cell), or one that is not always an arithmetic box, drives `begin`, `update`, `settle`, `end` and `accepts` itself.
+
+**Signature:**
+
+```typescript
+export declare function useArithmeticInput(input: ArithmeticInputOptions): {
+    inputAttrs: {
+        value: string;
+        type: "text";
+        inputmode: "decimal";
+        autocomplete: "off";
+        onFocus: (event: FocusEvent) => void;
+        onInput: (event: Event) => void;
+        onKeydown: (event: KeyboardEvent) => void;
+        onPaste: (event: ClipboardEvent) => void;
+        onBlur: () => void;
+    };
+    text: Ref<string, string>;
+    focused: Ref<boolean, boolean>;
+    accepts: (next: string) => boolean;
+    begin: (current?: string) => void;
+    update: (next: string) => void;
+    settle: () => void;
+    end: () => void;
+    rebase: (current: string) => void;
+    syncText: () => void;
+    onFocus: (event: FocusEvent) => void;
+    onInput: (event: Event) => void;
+    onKeydown: (event: KeyboardEvent) => void;
+    onPaste: (event: ClipboardEvent) => void;
+    onBlur: () => void;
+};
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| { value, commit, format, separators, fractionDigits, round, live, text, enabled, selectOnFocus, } | `` |  |
+| input | `ArithmeticInputOptions` |  |
+
 ### useKeyboardNav
 
 Keyboard navigation composable
@@ -60,6 +395,27 @@ export declare function useKeyboardNav(options: KeyboardNavigationOptions[]): vo
 | options | `KeyboardNavigationOptions[]` | Keyboard navigation options |
 
 ## Type Aliases
+
+### ArithmeticInputOptions
+
+Configuration for `useArithmeticInput`.
+
+**Definition:**
+
+```typescript
+export type ArithmeticInputOptions = {
+    value: () => unknown;
+    commit: (value: number | null) => void;
+    format?: (value: number | null) => string;
+    separators?: () => NumberSeparators;
+    fractionDigits?: () => number | undefined;
+    round?: (value: number) => number;
+    live?: boolean;
+    text?: Ref<string>;
+    enabled?: () => boolean;
+    selectOnFocus?: boolean;
+};
+```
 
 ### KeyboardNavigationOptions
 
@@ -84,6 +440,19 @@ Key press handlers
 ```typescript
 export type KeypressHandlers = {
     [key: string]: (ev: KeyboardEvent) => any;
+};
+```
+
+### NumberSeparators
+
+The marks a number box writes numbers with. The decimal mark is read as the decimal point and the group mark is dropped, so `1.000,5*2` reads as `1000.5*2` with German separators.
+
+**Definition:**
+
+```typescript
+export type NumberSeparators = {
+    group?: string;
+    decimal?: string;
 };
 ```
 

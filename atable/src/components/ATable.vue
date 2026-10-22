@@ -1,5 +1,5 @@
 <template>
-	<div class="atable-container" style="position: relative" v-on-click-outside="store.closeModal">
+	<div class="atable-container" style="position: relative" v-on-click-outside="store.closeOverlays">
 		<!-- Main table view -->
 		<table
 			ref="table"
@@ -12,7 +12,8 @@
 				<ATableHeader :columns="store.columns" :store="store" />
 			</slot>
 			<tbody>
-				<slot name="body" :data="store">
+				<!-- Rows held when the first page fails are an earlier read's, not this one's answer. -->
+				<slot v-if="!firstPageFailed" name="body" :data="store">
 					<ARow
 						v-for="(row, filteredIndex) in visibleRows"
 						:key="`${row.originalIndex}-${filteredIndex}`"
@@ -72,7 +73,10 @@
 					:loaded-count="loadedCount"
 					:loading="paginationLoading"
 					:next="paginationNext"
-					:prev="paginationPrev" />
+					:prev="paginationPrev"
+					:error-message="paginationError?.message"
+					:first-page-failed="firstPageFailed"
+					:retry="paginationRetry" />
 			</slot>
 		</table>
 
@@ -128,6 +132,7 @@ import type {
 	TableColumn,
 	TableConfig,
 	TableRow,
+	TableStore,
 } from '../types'
 
 const rows = defineModel<TableRow[]>('rows', { required: true })
@@ -170,7 +175,7 @@ const emit = defineEmits<{
 const tableRef = useTemplateRef<HTMLTableElement>('table')
 const resolvedColumns = columns.value?.length ? columns.value : schemaToColumns(schema ?? [])
 const injectedLinkResolver = inject<LinkResolverFn | null>('aformLinkResolver', null)
-const store = createTableStore({
+const store: TableStore = createTableStore({
 	columns: resolvedColumns,
 	// A copy, as the watcher below takes: the host's list changes only through `update:rows`.
 	rows: [...rows.value],
@@ -198,6 +203,9 @@ const {
 	loading: paginationLoading,
 	next: paginationNext,
 	prev: paginationPrev,
+	error: paginationError,
+	firstPageFailed,
+	retry: paginationRetry,
 } = pagination
 
 const footerColumnCount = computed(() => store.columns.length + (store.zeroColumn ? 1 : 0))
@@ -316,10 +324,8 @@ window.addEventListener('keydown', (event: KeyboardEvent) => {
 		if (store.modal.visible) {
 			store.modal.visible = false
 
-			// focus on the parent cell again
 			const $parent = store.modal.parent
 			if ($parent) {
-				// wait for the modal to close before focusing
 				void nextTick().then(() => {
 					return $parent.focus()
 				})

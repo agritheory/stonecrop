@@ -5,7 +5,7 @@ description: A currency amount input with automatic base-currency conversion.
 
 # Currency
 
-`ACurrencyInput` pairs an amount with a currency picker, and derives a read-only base-currency amount and exchange rate alongside it. It's built for invoice/line-item style fields where a value can be entered in one currency but needs to be tracked in the record's base currency too.
+`ACurrencyInput` pairs an amount with a currency picker and derives base-currency figures on the value. When the entered currency differs from the record's base currency, a compact helper line under the field shows the conversion (for example `≈ $110.00 · 1 EUR = 1.10 US Dollar`). It's built for invoice/line-item style fields where a value can be entered in one currency but needs to be tracked in the record's base currency too.
 
 ## Import
 
@@ -15,7 +15,9 @@ import { ACurrencyInput } from '@stonecrop/aform'
 
 ## Basic
 
-`v-model` binds to a [`CurrencyValue`](#currencyvalue) object. The base amount and exchange rate below the input are derived automatically — try changing the currency or amount.
+`v-model` binds to a [`CurrencyValue`](#currencyvalue) object. The base-currency helper below the input updates automatically when the currency or amount changes and the currency differs from the base.
+
+By default the amount field is **masked**: it writes and reads amounts with the browser's separators, as a table cell shows them (`10,050.45` in English, `10.050,45` in German), whatever the currency. The currency sets the decimals: JPY shows whole yen without grouping or decimals (`10050`). Set `options.amountMask` to `false` for unformatted amounts (`10050.45`); with `options.arithmetic` also `false`, the box is a plain `type="number"` input.
 
 ::demo-panel
 :::client-only
@@ -35,21 +37,23 @@ const CURRENCIES = [
 	{ id: 'USD', displayText: 'US Dollar', symbol: '$' },
 	{ id: 'EUR', displayText: 'Euro', symbol: '€' },
 	{ id: 'GBP', displayText: 'British Pound', symbol: '£' },
+	{ id: 'NZD', displayText: 'New Zealand Dollar', symbol: 'NZD' },
+	{ id: 'JPY', displayText: 'Japanese Yen', symbol: '¥' },
 ]
 
 const currencyOptions = {
 	doctype: 'currency',
 	baseCurrency: { id: 'USD', displayText: 'US Dollar' },
-	exchangeRates: { EUR: 1.1, GBP: 1.3 },
+	exchangeRates: { EUR: 1.1, GBP: 1.3, NZD: 0.60, JPY: 0.0067 },
 	precision: 2,
 	filterFunction: (search: string) =>
 		CURRENCIES.filter(c => c.displayText.toLowerCase().includes(search.toLowerCase())),
 }
 
 const total = ref({
-	amount: 100,
+	amount: 10050.45,
 	currency: { id: 'EUR', displayText: 'Euro', symbol: '€' },
-	baseAmount: 110,
+	baseAmount: 11055.495,
 	baseCurrency: { id: 'USD', displayText: 'US Dollar', symbol: '$' },
 	exchangeRate: 1.1,
 })
@@ -116,6 +120,38 @@ const data = ref({
 </template>
 ```
 
+## An order's totals in its one currency
+
+An order usually keeps one currency and one exchange rate for all its totals, in fields of their own. Each total's `parts` names those shared fields, so every box shows the order's currency, and choosing another in any box changes it for all of them. The base amounts are worked out from the stored rate, since no field holds them.
+
+::demo-panel
+:::client-only
+:currency-parts-demo
+:::
+
+#code
+```json
+[
+	{
+		"fieldname": "netTotal",
+		"component": "ACurrencyInput",
+		"label": "Net Total",
+		"parts": { "amount": "netTotal", "currency": "currencyCode", "exchangeRate": "exchangeRate" },
+		"options": { "doctype": "currency", "baseCurrency": "USD" }
+	},
+	{
+		"fieldname": "grandTotal",
+		"component": "ACurrencyInput",
+		"label": "Grand Total",
+		"parts": { "amount": "grandTotal", "currency": "currencyCode", "exchangeRate": "exchangeRate" },
+		"options": { "doctype": "currency", "baseCurrency": "USD" }
+	},
+	{ "fieldname": "currencyCode", "component": "AFormLink", "doctype": "currency", "hidden": true },
+	{ "fieldname": "exchangeRate", "component": "ANumericInput", "hidden": true }
+]
+```
+::
+
 ## API Reference
 
 ### Props
@@ -124,16 +160,13 @@ const data = ref({
 ---
 headers: ['Name', 'Type', 'Default', 'Description']
 rows:
-  - ['`v-model`', '[`CurrencyValue`](#currencyvalue)', 'see below', 'The current amount, currency, and derived base-currency figures.']
+  - ['`v-model`', '[`CurrencyValue`](#currencyvalue) or `null`', '—', 'The current amount, currency, and derived base-currency figures. No value or `null` shows every box empty.']
   - ['`label`', '`string`', '—', 'Label for the amount input.']
   - ['`options`', '[`CurrencyOptions`](#options)', '`{}`', 'Type-specific configuration — base currency, exchange rates, precision, currency search.']
   - ['`required`', '`boolean`', '`false`', 'Marks the amount and currency inputs as required (`edit` mode only).']
   - ['`mode`', "`'edit' | 'read' | 'display'`", "`'edit'`", 'See [Modes](#modes) below.']
   - ['`uuid`', '`string`', 'none', "`id`/`for` pair linking the amount input to its label. Nothing generates one, so the pairing exists only when you pass it."]
   - ['`currencyLabel`', '`string`', "`'Currency'`", "Label for the embedded currency picker."]
-  - ['`baseCurrencyLabel`', '`string`', "`'Base Currency'`", "Label for the read-only base currency field."]
-  - ['`baseAmountLabel`', '`string`', "`'Base Amount'`", "Label for the read-only derived base amount field."]
-  - ['`exchangeRateLabel`', '`string`', "`'Exchange Rate'`", "Label for the read-only exchange rate field."]
   - ['`validation`', '`{ errorMessage: string }`', "`{ errorMessage: '' }`", 'Static error message shown below the field.']
   - ['`errors`', '`string[]`', '—', 'Dynamic validation errors (e.g. from a trigger). Takes precedence over `validation.errorMessage` whenever the list is non-empty.']
 ---
@@ -151,6 +184,7 @@ rows:
   - ['`precision`', '`number`', '—', 'Decimal places to round the derived `baseAmount` to (JPY carries 0, most currencies 2, KWD 3). Only affects `baseAmount` — the entered `amount` is left as typed. Omitted or invalid values round only enough to shed floating-point noise.']
   - ['`filterFunction`', '`(search: string) => AFormLinkValue[] | Promise<AFormLinkValue[]>`', '—', "Search function backing the currency picker's autocomplete dropdown."]
   - ['`isAsync`', '`boolean`', '`false`', 'Whether `filterFunction` results should show a loading state.']
+  - ['`arithmetic`', '`boolean`', '`true`', 'Whether the amount box takes arithmetic: `12*3+4` is read as `40` once the box is left or Enter is pressed. Digits, `.`, `+ - * / %` and parentheses only; `e`, `^` and other letters are refused. With the mask on, numbers in the expression use the same separators as the amount (`1,000.50*2`). An unfinished expression (`12*`) leaves the last number in place. See [Numeric Input](/components/numeric-input#arithmetic). A worked-out amount is rounded to the currency's decimals (`10/3` in USD is `3.33`).']
 ---
 ::
 
@@ -174,14 +208,14 @@ rows:
 ---
 headers: ['Mode', 'Rendering']
 rows:
-  - ['`edit`', 'Interactive amount input with an embedded currency picker.']
+  - ['`edit`', 'Interactive amount input with an embedded currency picker; when `currency` differs from `baseCurrency`, a helper line shows the base conversion beneath the field.']
   - ['`read`', 'Same layout, all inputs disabled.']
-  - ['`display`', 'Static text: `amount currency` (with the base-currency equivalent in parentheses, if it differs; `—` if no amount or currency is set).']
+  - ['`display`', 'Formatted currency amount via `Intl` (with the base-currency equivalent in parentheses when they differ; `—` if no amount or currency is set).']
 ---
 ::
 
 ## Accessibility
 
-The amount input and its label are linked via `id`/`for` (backed by `uuid`). The derived Base Currency, Base Amount, and Exchange Rate fields are always rendered as disabled inputs rather than plain text, so screen readers announce them consistently with the rest of the field group. `required` sets the native `required` attribute on the amount input and the embedded currency picker.
+The amount input and its label are linked via `id`/`for` (backed by `uuid`). When a conversion helper is visible, it is included in `aria-describedby` on the amount input (unless an error is shown, in which case the error id takes precedence). `required` sets the native `required` attribute on the amount input and the embedded currency picker.
 
 Source: [`aform/src/components/form/ACurrencyInput.vue`](https://github.com/agritheory/stonecrop/blob/development/aform/src/components/form/ACurrencyInput.vue)

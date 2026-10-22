@@ -32,6 +32,7 @@ export const GET_META_QUERY = `
 				format
 				mode
 				options
+				parts
 				required
 				readOnly
 				hidden
@@ -69,7 +70,47 @@ export const RUN_ACTION_MUTATION = `
 			data
 			error
 			record
-			droppedFields
+		}
+	}
+`
+
+/**
+ * Query document for fetching one record, through the `stonecropRecord` resolver.
+ * @public
+ */
+export const GET_RECORD_QUERY = `
+	query GetRecord($doctype: String!, $id: String!, $options: JSON) {
+		stonecropRecord(doctype: $doctype, id: $id, options: $options) {
+			data
+			unknownLinks
+		}
+	}
+`
+
+/**
+ * Query document for fetching a page of records, through the `stonecropRecords` resolver.
+ * @public
+ */
+export const GET_RECORDS_QUERY = `
+	query GetRecords(
+		$doctype: String!
+		$filters: JSON
+		$orderBy: String
+		$limit: Int
+		$offset: Int
+		$includeTotal: Boolean
+	) {
+		stonecropRecords(
+			doctype: $doctype
+			filters: $filters
+			orderBy: $orderBy
+			limit: $limit
+			offset: $offset
+			includeTotal: $includeTotal
+		) {
+			data
+			hasMore
+			count
 		}
 	}
 `
@@ -101,6 +142,7 @@ export const GET_ALL_META_QUERY = `
 				format
 				mode
 				options
+				parts
 				required
 				readOnly
 				hidden

@@ -162,8 +162,8 @@ export async function runInstaller(options: InstallerOptions): Promise<void> {
 
 	if (selectedFeatures.doctypes) {
 		consola.info(`${stepNum}. Customize your doctypes:`)
-		consola.info(`   - doctypes/Project.json`)
-		consola.info(`   - doctypes/Task.json`)
+		consola.info(`   - doctypes/project.json`)
+		consola.info(`   - doctypes/task.json`)
 		console.log()
 	}
 

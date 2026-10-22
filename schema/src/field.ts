@@ -1,6 +1,7 @@
 import { z } from 'zod'
 
 import type { ColumnSchema } from './column-schema'
+import { componentParts } from './component-meta'
 import { flattenFields } from './flatten'
 import type { InteractionMode } from './mode'
 import { TableViewConfig } from './table'
@@ -10,13 +11,9 @@ import { TableViewConfig } from './table'
 export { flattenFields }
 
 /**
- * Field options - flexible bag for type-specific configuration.
- *
- * Usage:
- * - Select: array of choices (["Draft", "Submitted", "Cancelled"])
- * - Select with badges: \{ choices: [...], badges: \{ Open: "warning", ... \} \} or bare map
- * - Decimal: config object (\{ precision: 10, scale: 2 \})
- * - Code: config object (\{ language: "python" \})
+ * Field options - flexible bag for component-specific configuration. Each component reads its own
+ * shape: a dropdown takes an array of choices (["Draft", "Submitted", "Cancelled"]), or
+ * \{ choices: [...], badges: \{ Open: "warning", ... \} \}, or a bare badge map.
  *
  * Deliberately *not* a bare string: a string once meant "link target", which made the value's
  * shape encode its meaning. That job belongs to `ValueField.doctype`, leaving this a plain
@@ -102,7 +99,7 @@ export interface ValueField {
 	label?: string
 	/** CSS width (e.g. `"40ch"`, `"200px"`) */
 	width?: string
-	/** CSS height (e.g. `"100%"`, `"40vh"`) — used by full-viewport fields such as Planner */
+	/** CSS height (e.g. `"100%"`, `"40vh"`), for fields that fill the viewport */
 	height?: string
 	/** Text alignment */
 	align?: 'left' | 'center' | 'right' | 'start' | 'end'
@@ -120,14 +117,19 @@ export interface ValueField {
 	/** Type-specific options: Select choices, Decimal precision config, etc. A link's target is not
 	 *  here — it is `doctype`. */
 	options?: FieldOptions
+	/**
+	 * For a component that edits a value made of several parts, the field holding each part, keyed
+	 * by part: `{ qty: 'quantity', uom: 'uom' }` for `AQuantityInput`. One part is this field itself;
+	 * the others are fields of the same record, which several fields may share (an order's totals
+	 * share its currency). The component reads each part from its field and writes it back there.
+	 */
+	parts?: Record<string, string>
 	/** Whether the field is required */
 	required?: boolean
 	/** Whether the field is read-only */
 	readOnly?: boolean
 	/** Whether the field is hidden from the UI */
 	hidden?: boolean
-	/** Default value for new records */
-	default?: unknown
 	/** Validation configuration */
 	validation?: FieldValidation
 	/** Cardinality for Link fields — authoritative value on LinkDeclaration takes precedence */
@@ -248,14 +250,14 @@ export function inferFieldKind(field: unknown): DoctypeField['kind'] {
 function injectKind(data: unknown): unknown {
 	if (typeof data !== 'object' || data === null || Array.isArray(data)) return data
 	// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- safe: non-null, non-array object verified by guards above
-	const obj = data as Record<string, unknown>
+	const fieldObject = data as Record<string, unknown>
 	// An explicit `kind` is left exactly as it was found: this is the one place a declaration still
 	// beats the shape, and only so an already-parsed object survives a second pass unchanged.
 	// Returning `data` itself rather than rebuilding it also preserves identity and key order.
 	// Nothing outside this function shares that precedence — a reader classifying a file on disk
 	// wants `inferFieldKind`, because `kind` is ours and no author writes it.
-	if ('kind' in obj) return data
-	return { kind: inferFieldKind(obj), ...obj }
+	if ('kind' in fieldObject) return data
+	return { kind: inferFieldKind(fieldObject), ...fieldObject }
 }
 
 /**
@@ -277,9 +279,9 @@ export function normalizeFieldKind(field: unknown): unknown {
 	const injected = injectKind(field)
 	if (typeof injected !== 'object' || injected === null) return injected
 	// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- injectKind returns a non-null object for object input; guarded above
-	const obj = injected as Record<string, unknown>
-	if (obj.kind === 'fieldset' && Array.isArray(obj.schema)) {
-		return { ...obj, schema: obj.schema.map(normalizeFieldKind) }
+	const fieldObject = injected as Record<string, unknown>
+	if (fieldObject.kind === 'fieldset' && Array.isArray(fieldObject.schema)) {
+		return { ...fieldObject, schema: fieldObject.schema.map(normalizeFieldKind) }
 	}
 	return injected
 }
@@ -307,11 +309,11 @@ export function normalizeFieldKind(field: unknown): unknown {
 export function stripFieldKind(field: unknown): unknown {
 	if (typeof field !== 'object' || field === null || Array.isArray(field)) return field
 	// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- safe: non-null, non-array object verified by the guard above
-	const obj = field as Record<string, unknown>
+	const fieldObject = field as Record<string, unknown>
 
-	if (obj.kind !== undefined && obj.kind !== inferFieldKind(obj)) return field
+	if (fieldObject.kind !== undefined && fieldObject.kind !== inferFieldKind(fieldObject)) return field
 
-	const { kind: _kind, ...rest } = obj
+	const { kind: _kind, ...rest } = fieldObject
 	if (Array.isArray(rest.schema)) {
 		return { ...rest, schema: rest.schema.map(stripFieldKind) }
 	}
@@ -348,11 +350,13 @@ export const INTROSPECTED_IDENTITY_PROPS = [
  * drift and the client will key records by a column the server never queried.
  *
  * Two deliberate rules, both matching the shape `primaryKey` actually has:
+ *
  * - Fieldset children are **included**, via {@link flattenFields}. A fieldset is layout, not
  *   scope: its children are fields of the doctype with columns of their own, which is why the
  *   adapter's SELECT already descends and why `getDisplayField` does too. Scanning top level only
  *   did not *refuse* a nested declaration — it ignored one, so an author marked identity and
  *   nothing honoured it and nothing said so.
+ *
  * - The **first** match in document order wins. Identity is single-valued by design — a doctype
  *   describes the API surface, and mapping a composite database key onto one identity there is the
  *   adapter's job — so a doctype declaring several is malformed rather than composite.
@@ -364,7 +368,7 @@ export const INTROSPECTED_IDENTITY_PROPS = [
  * @public
  */
 export function getPrimaryKeyField(fields: readonly DoctypeField[]): ValueField | undefined {
-	return flattenFields(fields).find((f): f is ValueField => f.kind === 'field' && Boolean(f.primaryKey))
+	return flattenFields(fields).find((field): field is ValueField => field.kind === 'field' && Boolean(field.primaryKey))
 }
 
 /**
@@ -377,7 +381,9 @@ export function getPrimaryKeyField(fields: readonly DoctypeField[]): ValueField 
  * disagree about which nominations are legal — which they did, in both directions at once.
  *
  * Two things disqualify a nomination, and both are the doctype saying so itself:
+ *
  * - it names no field at all, fieldset children included
+ *
  * - it names a `computed` field, which is declared precisely to state it has no column, so a
  *   SELECT built from it would reference a column the database does not have
  *
@@ -392,7 +398,7 @@ export function getDisplayField(
 ): ValueField | undefined {
 	if (!displayField) return undefined
 	return flattenFields(fields).find(
-		(f): f is ValueField => f.kind === 'field' && !f.computed && f.fieldname === displayField
+		(field): field is ValueField => field.kind === 'field' && !field.computed && field.fieldname === displayField
 	)
 }
 
@@ -468,14 +474,39 @@ function createDoctypeFieldSchemas() {
 			format: z.string().optional(),
 			mode: z.enum(['edit', 'read', 'display']).optional(),
 			options: FieldOptions.optional(),
+			parts: z.record(z.string(), z.string().min(1)).optional(),
 			required: z.boolean().optional(),
 			readOnly: z.boolean().optional(),
 			hidden: z.boolean().optional(),
-			default: z.unknown().optional(),
+			// Refused rather than dropped, so a file written with one says so instead of silently losing the value.
+			default: z
+				.never({ error: "a field has no default of its own; give its starting value in the doctype's defaults" })
+				.optional(),
 			validation: FieldValidation.optional(),
 			cardinality: z.enum(['atMostOne', 'one', 'noneOrMany', 'atLeastOne']).optional(),
 			source: z.literal('introspected').optional(),
 			config: TableViewConfig.optional(),
+		})
+		// Whether each part names a field the doctype has is checked with the doctype (`DoctypeMeta`),
+		// which alone can see the other fields.
+		.superRefine((field, context) => {
+			if (!field.parts) return
+			const refuse = (message: string) => context.addIssue({ code: 'custom', path: ['parts'], message })
+			const expected = componentParts(field.component)
+			if (!expected) {
+				refuse(`${field.component} edits a single value, so its field declares no parts`)
+				return
+			}
+			const declared = Object.keys(field.parts)
+			for (const part of expected) if (!declared.includes(part)) refuse(`${field.component} needs a "${part}" part`)
+			for (const part of declared) if (!expected.includes(part)) refuse(`${field.component} has no "${part}" part`)
+
+			const named = Object.values(field.parts)
+			if (!named.includes(field.fieldname)) refuse(`one part must be "${field.fieldname}" itself`)
+			for (const fieldname of new Set(named)) {
+				if (named.filter(other => other === fieldname).length > 1)
+					refuse(`"${fieldname}" is named by more than one part`)
+			}
 		})
 		.meta({ title: 'ValueField' })
 
@@ -496,8 +527,7 @@ function createDoctypeFieldSchemas() {
 	// callback can close over it. The placeholder is overwritten below; the callback
 	// only runs at parse time, after the real discriminated union is assigned.
 	// See: https://zod.dev/api?id=discriminated-unions#discriminated-unions
-	// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- required by Zod's recursive schema pattern; z.never() placeholder is overwritten before any parse call
-	let DoctypeFieldSchema: z.ZodType<DoctypeField> = z.never() as unknown as z.ZodType<DoctypeField>
+	let DoctypeFieldSchema: z.ZodType<DoctypeField> = z.never()
 
 	// FieldsetFieldSchema stays as a plain ZodObject (not z.ZodType<T>) so that
 	// z.discriminatedUnion can inspect its 'kind' discriminant property.
@@ -518,8 +548,7 @@ function createDoctypeFieldSchemas() {
 	// Overwrite the placeholder with the preprocessed schema. Because z.lazy captures
 	// DoctypeFieldSchema by closure reference, the lazy callback in FieldsetFieldSchema
 	// will resolve to this preprocessed version — so nested fieldsets also inject `kind`.
-	// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- ZodPipe output is DoctypeField; same pattern as the z.never() placeholder above
-	DoctypeFieldSchema = z.preprocess(injectKind, rawUnion) as unknown as z.ZodType<DoctypeField>
+	DoctypeFieldSchema = z.preprocess(injectKind, rawUnion)
 
 	return { ValueFieldSchema, TableFieldSchema, FieldsetFieldSchema, DoctypeFieldSchema }
 }

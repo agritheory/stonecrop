@@ -36,7 +36,7 @@ pnpm exec vp cache clean
 pnpm install --force
 ```
 
-Flags go before the task name in a `vp run`. Anything after it is passed to the task itself, so `vp run -r build --no-cache` runs `vite build --no-cache`, which clears every `dist` and then fails.
+Flags go before the task name in a `vp run`. Anything after it is passed to the task itself, so `vp run -r build --no-cache` runs `vp build --no-cache`, which rejects the flag and fails.
 
 Always build through `pnpm run build`, never `vp run -r build` directly. `dev:prepare` leaves `nuxt/dist/runtime` as a symlink into `nuxt/src/runtime`, and a warm cache replays real files through it, overwriting tracked sources with generated output. `pnpm run build` removes that symlink first; a bare `vp run` does not, and the damage looks like an unexplained diff across several `.vue` files.
 
@@ -45,7 +45,7 @@ Always build through `pnpm run build`, never `vp run -r build` directly. `dev:pr
 `pnpm install` runs `vp config`, which installs the Vite+ hook dispatcher from `.vite-hooks/`. On every commit the hook runs, in order:
 
 1. `node --run format`: formats the whole tree (not just staged files), then stages the result
-2. `node --run check:deps`: dependency range check
+2. `node --run check:deps`: dependency range checks, including that every package depending on Vite accepts the Vite inside Vite+
 3. `node --run build`: full workspace build; stages regenerated `nuxt/documentation/content/reference/`
 4. `node --run lint`: oxlint after declarations exist
 
@@ -63,9 +63,6 @@ pnpm exec changeset
 
 # The same thing in one line
 pnpm exec changeset --minor @stonecrop/aform -m "What changed, in one sentence"
-
-# For a change that releases nothing
-pnpm exec changeset --empty
 ```
 
 That writes a file to `.changeset/`, which you can equally well write by hand:
@@ -82,10 +79,13 @@ What changed, in one sentence.
 - All publishable packages are one lockstep group, so the bump level applies to every one of them. Naming a package decides whose changelog gets your summary, not who gets released.
 - `git add` new files before running it. It finds changed packages with `git diff`, which does not report untracked files, so a new file's package is offered as unchanged.
 - It compares against the merge base with `development`. On a branch that has diverged far every package reads as changed, so pass `--since` a nearer ref when the grouping stops being useful.
-- CI fails when a pull request changes packages and has no changeset at all. It does not check that the package you touched has one.
+- CI fails when a pull request changes any file inside a published package and has no changeset, even a file that never ships, such as `vite.config.ts`. It does not check that the package you touched has one.
+- A change that releases nothing gets no changeset, never an empty one, though CI's error suggests `changeset add --empty`: an empty one satisfies CI while telling users nothing. If it touches a published package, put it on a branch that already carries a real changeset, or CI fails it.
 
 ## Releases
 
-- Merging to `development` runs the publish workflow: it versions the packages, writes the changelogs, publishes to npm and pushes tags.
+- Merging to `development` runs the publish workflow: it versions the packages, writes the changelogs, publishes to npm and pushes tags. A merge with no changeset does none of that, and its run stops before building.
+- The run starts once per push to `development`, so a stack merged whole publishes once. It shows on that commit, under Actions, not on the pull request.
+- Publishes run one at a time, each releasing every changeset `development` holds, so pull requests merged close together can also come out as one version.
 - `changeset version` consumes the files in `.changeset/`, so a changeset lives only until the next release. The changelog entry is what survives.
 - Every publishable package comes out on the same version, whichever packages the changesets named.

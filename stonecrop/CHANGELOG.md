@@ -1,5 +1,221 @@
 # Change Log - @stonecrop/stonecrop
 
+## 0.54.0
+
+### Patch Changes
+
+- Updated dependencies [6496bcc]
+- Updated dependencies [6496bcc]
+  - @stonecrop/aform@0.54.0
+  - @stonecrop/atable@0.54.0
+  - @stonecrop/schema@0.54.0
+
+## 0.53.0
+
+### Minor Changes
+
+- 7e6db68: Add `prefillDraft(doctype, values)`, also given to scripts, which checks values against a doctype's fields and holds them for its next new record; `takePrefill` returns them once, and `composeNewRecord` applies them over every default as `prefill`.
+
+### Patch Changes
+
+- @stonecrop/aform@0.53.0
+  - @stonecrop/atable@0.53.0
+  - @stonecrop/schema@0.53.0
+
+## 0.52.0
+
+### Patch Changes
+
+- @stonecrop/aform@0.52.0
+  - @stonecrop/atable@0.52.0
+  - @stonecrop/schema@0.52.0
+
+## 0.51.0
+
+### Minor Changes
+
+- e8842fb: A record not created yet is offered only the actions the server guard runs on one (a self-transition, or an action declaring no `allowedStates` and no `nextState`), a rule now exported as `isActionAllowedOnNewRecord`, so Desktop no longer offers a new record a transition the server refuses.
+- e8842fb: `Stonecrop.getRecordState` returns `null` for a record not created yet instead of the workflow's first state, and `Doctype.getAvailableTransitions` and `getAvailableCommands` take that `null` to list the actions that can run on one.
+
+### Patch Changes
+
+- Updated dependencies [e8842fb]
+  - @stonecrop/schema@0.51.0
+  - @stonecrop/aform@0.51.0
+  - @stonecrop/atable@0.51.0
+
+## 0.50.1
+
+### Patch Changes
+
+- Updated dependencies [7d84fb8]
+  - @stonecrop/atable@0.50.1
+  - @stonecrop/aform@0.50.1
+  - @stonecrop/schema@0.50.1
+
+## 0.50.0
+
+### Minor Changes
+
+- b6d6f9a: Code that builds a `FieldChangeContext` by hand, such as a test, now supplies `get` and `set`, and code that reads `context.path` or a `FieldTriggerExecutionResult`'s `path` allows for it being absent, as it is on a record not saved yet.
+- b6d6f9a: A new record's edits in Desktop now run the doctype's field triggers before its first save, and a trigger reads and sets its own record, saved or not, with `context.get` and `context.set`; `stonecrop.editRecord(doctype, recordId)` gives a form that record.
+
+### Patch Changes
+
+- @stonecrop/aform@0.50.0
+  - @stonecrop/atable@0.50.0
+  - @stonecrop/schema@0.50.0
+
+## 0.49.0
+
+### Patch Changes
+
+- Updated dependencies [d5fbd9a]
+  - @stonecrop/schema@0.49.0
+  - @stonecrop/aform@0.49.0
+  - @stonecrop/atable@0.49.0
+
+## 0.48.1
+
+### Patch Changes
+
+- Updated dependencies [620acb0]
+  - @stonecrop/schema@0.48.1
+  - @stonecrop/aform@0.48.1
+  - @stonecrop/atable@0.48.1
+
+## 0.48.0
+
+### Patch Changes
+
+- Updated dependencies [d5b5a74]
+- Updated dependencies [d5b5a74]
+  - @stonecrop/aform@0.48.0
+  - @stonecrop/atable@0.48.0
+  - @stonecrop/schema@0.48.0
+
+## 0.47.0
+
+### Patch Changes
+
+- Updated dependencies [a5df570]
+  - @stonecrop/schema@0.47.0
+  - @stonecrop/aform@0.47.0
+  - @stonecrop/atable@0.47.0
+
+## 0.46.1
+
+### Patch Changes
+
+- @stonecrop/aform@0.46.1
+  - @stonecrop/atable@0.46.1
+  - @stonecrop/schema@0.46.1
+
+## 0.46.0
+
+### Patch Changes
+
+- @stonecrop/aform@0.46.0
+  - @stonecrop/atable@0.46.0
+  - @stonecrop/schema@0.46.0
+
+## 0.45.1
+
+### Patch Changes
+
+- Updated dependencies [6db7b3f]
+  - @stonecrop/aform@0.45.1
+  - @stonecrop/atable@0.45.1
+  - @stonecrop/schema@0.45.1
+
+## 0.45.0
+
+### Patch Changes
+
+- @stonecrop/aform@0.45.0
+  - @stonecrop/atable@0.45.0
+  - @stonecrop/schema@0.45.0
+
+## 0.44.0
+
+### Patch Changes
+
+- Updated dependencies [358ecaf]
+- Updated dependencies [358ecaf]
+- Updated dependencies [358ecaf]
+- Updated dependencies [358ecaf]
+- Updated dependencies [358ecaf]
+- Updated dependencies [358ecaf]
+- Updated dependencies [358ecaf]
+- Updated dependencies [358ecaf]
+- Updated dependencies [358ecaf]
+  - @stonecrop/aform@0.44.0
+  - @stonecrop/atable@0.44.0
+  - @stonecrop/schema@0.44.0
+
+## 0.43.0
+
+### Minor Changes
+
+- 63f68d7: A new record (`initializeRecord`) or table row (`addRow`) no longer gives a field a value nobody entered, so a save leaves it to the database's default instead of sending `''`, 0, false or null.
+
+### Patch Changes
+
+- Updated dependencies [63f68d7]
+- Updated dependencies [63f68d7]
+  - @stonecrop/atable@0.43.0
+  - @stonecrop/aform@0.43.0
+  - @stonecrop/schema@0.43.0
+
+## 0.42.0
+
+### Minor Changes
+
+- f5d09ad: `Stonecrop.getRecord` throws a `RECORD_NOT_FOUND` error when the server has no such record, as `fetchNestedData` already did, and `useStonecrop` reports a failed record read through `isLoading` and `error`, leaving `formData` empty instead of filling it with empty values.
+
+### Patch Changes
+
+- Updated dependencies [f5d09ad]
+  - @stonecrop/atable@0.42.0
+  - @stonecrop/aform@0.42.0
+  - @stonecrop/schema@0.42.0
+
+## 0.41.1
+
+### Patch Changes
+
+- @stonecrop/aform@0.41.1
+  - @stonecrop/atable@0.41.1
+  - @stonecrop/schema@0.41.1
+
+## 0.41.0
+
+### Patch Changes
+
+- Updated dependencies [863c853]
+- Updated dependencies [863c853]
+  - @stonecrop/schema@0.41.0
+  - @stonecrop/atable@0.41.0
+  - @stonecrop/aform@0.41.0
+
+## 0.40.0
+
+### Minor Changes
+
+- a5f8744: `validateDoctype` refuses a `defaults` key that names no field of the doctype, such as a typo or a grouped section's name, and says which. `registry.registerDefaults` takes a doctype's name as well as its slug (`'OrderItem'` or `'order-item'`), so defaults registered under the name apply instead of being ignored.
+- a5f8744: A doctype gives its starting values in one place, its `defaults`, which hold fixed data only. A field no longer has a `default` of its own: `validateDoctype` refuses one and points to `defaults`, and DocBuilder no longer offers the column. Embedded records and table rows start from their own doctype's `defaults`. The app's starting values come from one registration per doctype, `registry.registerDefaults`, whose functions run for every new record; registering a doctype a second time warns. `registry.setDefaultsLoader` and `composeNewRecord`'s `overlay` option are removed.
+- a5f8744: A new record reads its starting values through the doctype's declarations: a field inside a grouped section is filled like any other field (a date there set to `"now"` starts as today), and a table's rows take their own doctype's starting values however the link is keyed, including inside an embedded record. A starting value whose key names no field of the record, such as a typo or a section's name, is skipped and reported instead of being added to the record, as is a table row that is not a document of field values.
+- a5f8744: Add document-level defaults for new records: doctype defaults JSON, registry providers, and compose-time now and uuidv7 tokens. A new record is filled once, after every starting value has arrived: Desktop shows its loading state until then, a value that fails or takes longer than 5 seconds is skipped and reported, and nothing is written to the form afterwards.
+
+### Patch Changes
+
+- a5f8744: A date field set to `"now"` starts as today in the user's own time zone. It used the UTC date, which is tomorrow in the evening in the Americas and yesterday in the morning in Asia.
+- Updated dependencies [a5f8744]
+- Updated dependencies [a5f8744]
+  - @stonecrop/schema@0.40.0
+  - @stonecrop/aform@0.40.0
+  - @stonecrop/atable@0.40.0
+
 ## 0.39.0
 
 ### Minor Changes

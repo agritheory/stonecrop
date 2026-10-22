@@ -1,5 +1,5 @@
 import { mount } from '@vue/test-utils'
-import { describe, it, expect, beforeAll, afterAll, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeAll, afterAll, beforeEach, vi } from 'vite-plus/test'
 import { defineComponent, h, nextTick, ref } from 'vue'
 
 import { defaultKeypressHandlers, useKeyboardNav } from '../src'
@@ -131,6 +131,16 @@ describe('defaultKeypressHandlers', { tags: ['component'] }, () => {
 
 		defaultKeypressHandlers['keydown.shift.tab'](keydownOn(cells[0][1], { shiftKey: true }))
 		expect(document.activeElement).toBe(cells[0][0])
+	})
+
+	it('moves to the next cell on tab when focus is on an input inside the cell', () => {
+		const $input = document.createElement('input')
+		$input.tabIndex = -1
+		cells[0][0].appendChild($input)
+		$input.focus()
+
+		defaultKeypressHandlers['keydown.tab'](keydownOn($input))
+		expect(document.activeElement).toBe(cells[0][1])
 	})
 
 	it('skips unfocusable cells when navigating', () => {

@@ -1,26 +1,33 @@
 name: Publish Packages
 
 on:
+  # Reaches the publish. development is protected, so a push to it is a merge landing, and a
+  # stack merged whole lands as one push, so it publishes once rather than once per pull
+  # request. The version bump this workflow pushes starts nothing: GitHub never starts a
+  # workflow from a push made with the job's own token.
+  push:
+    branches:
+      - development
   pull_request:
     branches:
       - development
-    # The open-PR actions reach the rehearsal below; `closed` reaches the publish. A pull
-    # request runs its own head's copy of this file, so the rehearsal needs nothing merged
-    # first — which is the whole reason it is not on workflow_dispatch alone.
+    # Reaches the rehearsal below. A pull request runs its own head's copy of this file, so
+    # the rehearsal needs nothing merged first, which is the whole reason it is not on
+    # workflow_dispatch alone.
     types:
       - opened
       - synchronize
       - reopened
-      - closed
   # Kept for rehearsing a branch with no open PR. GitHub registers this trigger from the
   # default branch only, so it does nothing until it has reached development.
   workflow_dispatch:
 
-# Supersedes a rehearsal when the PR is pushed again. Closed runs sit in their own group
-# and never set cancel-in-progress, so a merge can never cancel or be cancelled by one.
+# Supersedes a rehearsal when the PR is pushed again. Each push run sits in a group of its own
+# and never sets cancel-in-progress, so nothing can cancel a publish; publish-npm's own group
+# below is what puts them in order.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}-${{ github.event.action == 'closed' }}
-  cancel-in-progress: ${{ github.event.action != 'closed' }}
+  group: ${{ github.workflow }}-${{ github.event_name == 'push' && github.run_id || github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name != 'push' }}
 
 permissions:
   contents: read
@@ -29,11 +36,17 @@ env:
   VP_GIT_HOOKS: 0
 
 jobs:
-  # Unchanged by the open-PR triggers above: an open pull request carries merged: false and
-  # a dispatch carries no pull_request at all, so neither can reach the registry.
+  # Only a push reaches the registry: an open pull request or a dispatch runs the rehearsal.
   publish-npm:
-    if: github.event_name == 'pull_request' && github.event.pull_request.merged == true
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
+
+    # One publish at a time across every push to development, so two merges close together
+    # never publish at once. `max` keeps each waiting run; the default, `single`, cancels a
+    # waiting run when the next arrives.
+    concurrency:
+      group: publish-npm
+      queue: max
 
     permissions:
       # Must be job-level: a job's permissions block replaces the workflow's, it does
@@ -45,24 +58,46 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         name: Checkout
+        with:
+          # The branch's tip when this run's turn comes, not the commit that started it, which
+          # lacks the version bump of any publish that ran while this one waited: it would
+          # release those changesets again.
+          ref: development
+
+      # A run with no changeset to release stops here, before installing anything. Publishing
+      # anyway retries any version npm does not show yet, and npm can take minutes to show the
+      # versions the run before this one just published. Actions cannot end a job early as a
+      # success, so every step below repeats the condition, and a new one must too.
+      - name: Find Changesets
+        id: changesets
+        run: |
+          pending=$(bash tools/scripts/has-changesets.sh)
+          echo "pending=$pending" >> "$GITHUB_OUTPUT"
+          if [ "$pending" != true ]; then
+            echo "::notice::no changesets, so there is nothing to version or release"
+          fi
 
       # No registry-url: it exports NPM_CONFIG_USERCONFIG, which shadows the repo's own .npmrc.
       - uses: actions/setup-node@v6
         name: Install Node.js
+        if: steps.changesets.outputs.pending == 'true'
         with:
           node-version: 24
           package-manager-cache: false
 
       # Supplies the pnpm pinned by the root package.json's "packageManager" field.
       - name: Enable Corepack
+        if: steps.changesets.outputs.pending == 'true'
         run: corepack enable
 
       - name: Set Git User
+        if: steps.changesets.outputs.pending == 'true'
         run: |
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git config user.name "github-actions[bot]"
 
       - name: Cache pnpm Store
+        if: steps.changesets.outputs.pending == 'true'
         uses: actions/cache@v5
         with:
           path: ~/.local/share/pnpm/store
@@ -70,50 +105,67 @@ jobs:
           restore-keys: pnpm-${{ runner.os }}-
 
       - name: Install
+        if: steps.changesets.outputs.pending == 'true'
         run: pnpm install --frozen-lockfile
 
       - name: Build Stonecrop
+        if: steps.changesets.outputs.pending == 'true'
         run: pnpm run build
 
       # Must run before the version bump: a bad trusted publisher only surfaces
       # mid-publish, after the bump is pushed, leaving lockstep packages depending on
       # siblings that were never published. Publishes nothing.
       - name: Validate Trusted Publishing
+        if: steps.changesets.outputs.pending == 'true'
         run: bash tools/scripts/validate-trusted-publishing.sh
 
       # Rewrites every package.json version and CHANGELOG.md and consumes the changeset files.
       # `commit: false` in .changeset/config.json means this leaves the result in the working
       # tree, so the commit below is what records it.
       - name: Bump Version for Packages
-        run: pnpm exec changeset version
+        if: steps.changesets.outputs.pending == 'true'
+        run: bash tools/scripts/version-packages.sh
 
       # Before the push, not after. A publish that dies partway leaves development untouched,
-      # so a re-run replays the same bump and pnpm skips whatever already landed. Pushing
-      # first strands the re-run: the push below then fails non-fast-forward.
+      # so a re-run versions the same changesets and pnpm skips whatever already landed.
+      # Pushing first strands the re-run, which then finds no changeset to publish.
       #
       # No auth token: pnpm exchanges the job's id-token for a registry credential.
       # Each package needs a trusted publisher on npmjs.com naming this workflow.
       - name: Publish Packages
+        if: steps.changesets.outputs.pending == 'true'
         run: pnpm -r publish --access public --no-git-checks
 
       # `pnpm -r publish` does not tag, where Rush did, so a release would otherwise land
       # untagged with nothing reporting it.
-      # The empty check lets a merge with no changeset through: `git commit` on an empty index
-      # exits non-zero, which under `bash -e` fails the job after the publish has already run.
       - name: Commit Version Bump
+        if: steps.changesets.outputs.pending == 'true'
         run: |
           git add -A
-          if git diff --cached --quiet; then
-            echo "::notice::no version bump to commit, so nothing to tag or push"
-            exit 0
-          fi
           git commit -m "Bump versions [skip ci]"
+          # A merge can land while this run publishes. The bump goes on top of it, and again if
+          # another lands between the rebase and the push: a lost bump makes the next run release
+          # these changesets a second time, under a version npm already holds.
+          pushed=false
+          for attempt in 1 2 3; do
+            git pull --rebase origin development
+            if git push origin HEAD:development; then
+              pushed=true
+              break
+            fi
+          done
+          if [ "$pushed" != true ]; then
+            echo "::error::development kept moving, so this published version bump never reached it"
+            exit 1
+          fi
+          # Tagged after the push, so every tag names a commit development holds.
           pnpm exec changeset git-tag
           git push --follow-tags origin HEAD:development
 
   # A rehearsal of publish-npm that stops one step short of the registry. It runs on every
   # open pull request, so the path is exercised before the merge that would publish it:
-  # publish-npm runs only on merge, which would make the first real release the first test.
+  # publish-npm runs only once a merge lands, which would make the first real release the
+  # first test.
   #
   # It lives in this file rather than its own because npm matches a trusted publisher on
   # the workflow filename. A separate file authenticates as nothing and reports it as a 404.
@@ -123,7 +175,7 @@ jobs:
   release-dry-run:
     if: >-
       github.event_name == 'workflow_dispatch' ||
-      (github.event.action != 'closed' &&
+      (github.event_name == 'pull_request' &&
       github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: ubuntu-latest
 
@@ -163,7 +215,7 @@ jobs:
         run: bash tools/scripts/validate-trusted-publishing.sh
 
       - name: Bump Version for Packages
-        run: pnpm exec changeset version
+        run: bash tools/scripts/version-packages.sh
 
       # Asserts the "fixed" group in .changeset/config.json held. A convention check, not a
       # safety one: pnpm rewrites `workspace:*` to the version a sibling actually carries, so
@@ -194,11 +246,30 @@ jobs:
 
       # Rehearses the tagging publish-npm does, so it cannot regress unnoticed until a release
       # depends on it. The tags stay in the runner's tree; this job has no push.
+      # Expects exactly one tag per publishable package whose version the bump moved, read from
+      # HEAD since nothing here is committed. "At least one tag" failed every pull request that
+      # releases nothing, and passed a release that left a package untagged.
       - name: Tag Release (Dry Run)
         run: |
+          set -o pipefail
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git config user.name "github-actions[bot]"
+          packages=$(pnpm list -r --depth -1 --json | jq -r --arg root "$PWD/" '.[] | select(.private == false) | "\(.path | ltrimstr($root))\t\(.version)"')
+          if [ -z "$packages" ]; then
+            echo "::error::listed no publishable packages, so the tags were never checked"
+            exit 1
+          fi
+          bumped=0
+          while IFS=$'\t' read -r package_dir version; do
+            committed_version=$(git show "HEAD:${package_dir}/package.json" | jq -r .version)
+            if [ "$committed_version" != "$version" ]; then
+              bumped=$((bumped + 1))
+            fi
+          done <<< "$packages"
           pnpm exec changeset git-tag
-          count=$(git tag --list --points-at HEAD | wc -l)
-          echo "::notice::tagged ${count} packages"
-          [ "${count}" -gt 0 ]
+          tagged=$(git tag --list --points-at HEAD | wc -l)
+          if [ "$tagged" -ne "$bumped" ]; then
+            echo "::error::the bump moved ${bumped} packages but ${tagged} were tagged"
+            exit 1
+          fi
+          echo "::notice::tagged all ${tagged} packages the bump moved"

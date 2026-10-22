@@ -40,11 +40,8 @@ export type AuthoredDoctype = Record<string, unknown>;
 
 // @public
 export interface BadgeDescriptor {
-    // (undocumented)
     color?: string;
-    // (undocumented)
     label: string;
-    // (undocumented)
     variant?: BadgeVariant;
 }
 
@@ -56,11 +53,8 @@ export type BadgeSpec = BadgeVariant | BadgeSpecObject;
 
 // @public
 export interface BadgeSpecObject {
-    // (undocumented)
     color?: string;
-    // (undocumented)
     label?: string;
-    // (undocumented)
     variant?: BadgeVariant;
 }
 
@@ -86,10 +80,10 @@ export const CANONICAL_COMPONENTS: readonly string[];
 
 // @public
 export const Cardinality: z.ZodEnum<{
-    atMostOne: "atMostOne";
-    one: "one";
     noneOrMany: "noneOrMany";
     atLeastOne: "atLeastOne";
+    atMostOne: "atMostOne";
+    one: "one";
 }>;
 
 // @public
@@ -133,13 +127,19 @@ export const COMPONENT_CATEGORY: Record<string, ComponentCategory>;
 export const COMPONENT_LINK_EXPANSION: Record<string, LinkExpansion>;
 
 // @public
-export type ComponentCategory = 'text' | 'number' | 'boolean' | 'date' | 'datetime' | 'duration' | 'select' | 'code' | 'link' | 'attach' | 'quantity' | 'currency';
+export const COMPONENT_PARTS: Record<string, readonly string[]>;
+
+// @public
+export type ComponentCategory = 'text' | 'number' | 'boolean' | 'date' | 'datetime' | 'duration' | 'select' | 'code' | 'link' | 'attach' | 'quantity' | 'currency' | 'semver';
 
 // @public
 export function componentCategory(component?: string): ComponentCategory | undefined;
 
 // @public
 export function componentLinkExpansion(component?: string): LinkExpansion | undefined;
+
+// @public
+export function componentParts(component?: string): readonly string[] | undefined;
 
 // @public
 export interface ConvertedGraphQLDoctype extends Omit<DoctypeMeta, 'fields'> {
@@ -209,10 +209,10 @@ export const DoctypeMeta: z.ZodObject<{
     links: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodObject<{
         target: z.ZodString;
         cardinality: z.ZodEnum<{
-            atMostOne: "atMostOne";
-            one: "one";
             noneOrMany: "noneOrMany";
             atLeastOne: "atLeastOne";
+            atMostOne: "atMostOne";
+            one: "one";
         }>;
         backlink: z.ZodOptional<z.ZodString>;
         component: z.ZodOptional<z.ZodString>;
@@ -264,6 +264,7 @@ export const DoctypeMeta: z.ZodObject<{
         }, z.core.$strip>>>;
     }, z.core.$strip>>;
     inherits: z.ZodOptional<z.ZodString>;
+    defaults: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodUnknown>>;
 }, z.core.$strip>;
 
 // @public
@@ -441,6 +442,13 @@ export function isActionAllowedInState(action: {
 }, currentState: string): boolean;
 
 // @public
+export function isActionAllowedOnNewRecord(action: {
+    allowedStates?: string[] | null;
+    nextState?: string | null;
+    selfTransition?: boolean | null;
+}): boolean;
+
+// @public
 export function isBadgeDescriptor(value: unknown): value is BadgeDescriptor;
 
 // @public
@@ -464,10 +472,10 @@ export const LINK_DISPLAY_SUFFIX = "__display";
 export const LinkDeclaration: z.ZodObject<{
     target: z.ZodString;
     cardinality: z.ZodEnum<{
-        atMostOne: "atMostOne";
-        one: "one";
         noneOrMany: "noneOrMany";
         atLeastOne: "atLeastOne";
+        atMostOne: "atMostOne";
+        one: "one";
     }>;
     backlink: z.ZodOptional<z.ZodString>;
     component: z.ZodOptional<z.ZodString>;
@@ -523,10 +531,16 @@ export function parseDoctype(data: unknown): DoctypeMeta;
 export function parseField(data: unknown): DoctypeField;
 
 // @public
+export function partsPatch(parts: Readonly<Record<string, string>>, record: Readonly<Record<string, unknown>>, value: Readonly<Record<string, unknown>>): Record<string, unknown>;
+
+// @public
 export function pascalToSnake(pascal: string): string;
 
 // @public
 export function planGeneration(entities: readonly ConvertedGraphQLDoctype[], options?: GenerationPlanOptions): GenerationPlanEntry[];
+
+// @public
+export function readParts(parts: Readonly<Record<string, string>>, record: Readonly<Record<string, unknown>>): Record<string, unknown>;
 
 // @public
 export function resolveLinkRenderMode(link: {
@@ -539,9 +553,7 @@ export function selectChoices(options: FieldOptions | undefined): string[];
 
 // @public
 export interface SelectOptions extends Record<string, unknown> {
-    // (undocumented)
     badges?: Record<string, BadgeSpec>;
-    // (undocumented)
     choices: string[];
 }
 
@@ -649,7 +661,7 @@ export const TriggerDefinition: z.ZodObject<{
 export type TriggerDefinition = z.infer<typeof TriggerDefinition>;
 
 // @public
-export function unwrapInlineLinks(fields: readonly DoctypeField[], record: Record<string, any>): Record<string, any>;
+export function unwrapInlineLinks(meta: DoctypeMeta, record: Record<string, any>, resolve?: (target: string) => DoctypeMeta | undefined): Record<string, any>;
 
 // @public
 export function validateDoctype(data: unknown): ValidationResult;
@@ -676,7 +688,6 @@ export interface ValueField {
     component: string;
     computed?: boolean;
     config?: TableViewConfig;
-    default?: unknown;
     doctype?: string;
     edit?: boolean;
     fieldname: string;
@@ -689,6 +700,7 @@ export interface ValueField {
     mask?: string;
     mode?: InteractionMode;
     options?: FieldOptions;
+    parts?: Record<string, string>;
     primaryKey?: boolean;
     readOnly?: boolean;
     required?: boolean;
@@ -725,18 +737,19 @@ export const ValueFieldSchema: z.ZodObject<{
         display: "display";
     }>>;
     options: z.ZodOptional<z.ZodUnion<readonly [z.ZodArray<z.ZodString>, z.ZodRecord<z.ZodString, z.ZodUnknown>]>>;
+    parts: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodString>>;
     required: z.ZodOptional<z.ZodBoolean>;
     readOnly: z.ZodOptional<z.ZodBoolean>;
     hidden: z.ZodOptional<z.ZodBoolean>;
-    default: z.ZodOptional<z.ZodUnknown>;
+    default: z.ZodOptional<z.ZodNever>;
     validation: z.ZodOptional<z.ZodObject<{
         errorMessage: z.ZodString;
     }, z.core.$loose>>;
     cardinality: z.ZodOptional<z.ZodEnum<{
-        atMostOne: "atMostOne";
-        one: "one";
         noneOrMany: "noneOrMany";
         atLeastOne: "atLeastOne";
+        atMostOne: "atMostOne";
+        one: "one";
     }>>;
     source: z.ZodOptional<z.ZodLiteral<"introspected">>;
     config: z.ZodOptional<z.ZodObject<{

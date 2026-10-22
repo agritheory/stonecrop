@@ -67,14 +67,13 @@
 <script setup lang="ts">
 import { ref, reactive, computed } from 'vue'
 
-import { createTableStore } from '../stores/table'
 import { resolveFilterType } from '../resolveFilterType'
-import type { TableColumn } from '../types'
+import type { TableColumn, TableStore } from '../types'
 
 const { column, colIndex, store } = defineProps<{
 	column: TableColumn
 	colIndex: number
-	store: ReturnType<typeof createTableStore>
+	store: TableStore
 }>()
 
 const filterValue = ref<any>('')

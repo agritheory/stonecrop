@@ -1,5 +1,5 @@
 import { createPinia, setActivePinia } from 'pinia'
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test'
 
 import { useLazyLink } from '../../src/composables/lazy-link'
 import { DRAFT_RECORD_ID } from '../../src/draft'

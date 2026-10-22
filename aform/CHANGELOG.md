@@ -1,5 +1,239 @@
 # Change Log - @stonecrop/aform
 
+## 0.54.0
+
+### Minor Changes
+
+- 6496bcc: Number fields and number table cells take arithmetic, such as `12*3+4`, saved as `40` when you leave the box or press Enter; `options.arithmetic: false` turns it off.
+
+### Patch Changes
+
+- 6496bcc: `ANumericInput` no longer shows spinner arrows: a number is typed, not stepped.
+- Updated dependencies [6496bcc]
+- Updated dependencies [6496bcc]
+  - @stonecrop/utilities@0.54.0
+  - @stonecrop/atable@0.54.0
+  - @stonecrop/schema@0.54.0
+  - @stonecrop/themes@0.54.0
+
+## 0.53.0
+
+### Patch Changes
+
+- @stonecrop/atable@0.53.0
+  - @stonecrop/schema@0.53.0
+  - @stonecrop/themes@0.53.0
+  - @stonecrop/utilities@0.53.0
+
+## 0.52.0
+
+### Patch Changes
+
+- @stonecrop/atable@0.52.0
+  - @stonecrop/schema@0.52.0
+  - @stonecrop/themes@0.52.0
+  - @stonecrop/utilities@0.52.0
+
+## 0.51.0
+
+### Patch Changes
+
+- Updated dependencies [e8842fb]
+  - @stonecrop/schema@0.51.0
+  - @stonecrop/atable@0.51.0
+  - @stonecrop/themes@0.51.0
+  - @stonecrop/utilities@0.51.0
+
+## 0.50.1
+
+### Patch Changes
+
+- Updated dependencies [7d84fb8]
+  - @stonecrop/atable@0.50.1
+  - @stonecrop/schema@0.50.1
+  - @stonecrop/themes@0.50.1
+  - @stonecrop/utilities@0.50.1
+
+## 0.50.0
+
+### Patch Changes
+
+- @stonecrop/atable@0.50.0
+  - @stonecrop/schema@0.50.0
+  - @stonecrop/themes@0.50.0
+  - @stonecrop/utilities@0.50.0
+
+## 0.49.0
+
+### Patch Changes
+
+- Updated dependencies [d5fbd9a]
+  - @stonecrop/schema@0.49.0
+  - @stonecrop/atable@0.49.0
+  - @stonecrop/themes@0.49.0
+  - @stonecrop/utilities@0.49.0
+
+## 0.48.1
+
+### Patch Changes
+
+- Updated dependencies [620acb0]
+  - @stonecrop/schema@0.48.1
+  - @stonecrop/atable@0.48.1
+  - @stonecrop/themes@0.48.1
+  - @stonecrop/utilities@0.48.1
+
+## 0.48.0
+
+### Patch Changes
+
+- d5b5a74: A money box's currency slot shows the currency's symbol, such as "$", whenever its id is an ISO 4217 code, instead of its name cut short, and `formatCurrencySymbol` in `@stonecrop/utilities` returns that symbol.
+- d5b5a74: A link field or a money box's currency picker that looks up a bare id's name now only shows it, so opening a form no longer changes the record.
+- Updated dependencies [d5b5a74]
+  - @stonecrop/utilities@0.48.0
+  - @stonecrop/atable@0.48.0
+  - @stonecrop/schema@0.48.0
+  - @stonecrop/themes@0.48.0
+
+## 0.47.0
+
+### Minor Changes
+
+- a5df570: A field can declare `parts`, naming the fields that hold each part of its component's value, so `AQuantityInput` and `ACurrencyInput` edit a record's own quantity, unit, amount, currency and rate fields, which several fields may share.
+
+### Patch Changes
+
+- Updated dependencies [a5df570]
+  - @stonecrop/schema@0.47.0
+  - @stonecrop/atable@0.47.0
+  - @stonecrop/themes@0.47.0
+  - @stonecrop/utilities@0.47.0
+
+## 0.46.1
+
+### Patch Changes
+
+- @stonecrop/atable@0.46.1
+  - @stonecrop/schema@0.46.1
+  - @stonecrop/themes@0.46.1
+  - @stonecrop/utilities@0.46.1
+
+## 0.46.0
+
+### Patch Changes
+
+- @stonecrop/atable@0.46.0
+  - @stonecrop/schema@0.46.0
+  - @stonecrop/themes@0.46.0
+  - @stonecrop/utilities@0.46.0
+
+## 0.45.1
+
+### Patch Changes
+
+- 6db7b3f: `AForm` gives each field an id, so a field's label and its error message are tied to its input for screen readers and label clicks.
+- @stonecrop/atable@0.45.1
+  - @stonecrop/schema@0.45.1
+  - @stonecrop/themes@0.45.1
+  - @stonecrop/utilities@0.45.1
+
+## 0.45.0
+
+### Patch Changes
+
+- @stonecrop/atable@0.45.0
+  - @stonecrop/schema@0.45.0
+  - @stonecrop/themes@0.45.0
+  - @stonecrop/utilities@0.45.0
+
+## 0.44.0
+
+### Minor Changes
+
+- 358ecaf: `ACurrencyInput`'s amount box and a currency cell being edited write and read amounts with the browser's separators, as a table cell shows them (`1,234.56` in English, `1.234,56` in German), and with the currency's decimals. `options.amountMask: false` turns this off. `@stonecrop/utilities` exports the helpers: `formatCurrencyAmountInput`, `parseCurrencyAmountInput`, `currencyAmountEntryPattern` and `currencyInputFractionDigits`.
+- 358ecaf: Replace read-only conversion rows on `ACurrencyInput` and `AQuantityInput` with a compact helper line when the entered unit differs from the base. Remove `stockUomLabel`, `stockQtyLabel`, `conversionFactorLabel`, `baseCurrencyLabel`, `baseAmountLabel`, and `exchangeRateLabel` props.
+  
+  Table quantity and currency formatters omit redundant units and use `Intl` for currency cells. Quantity column sort/filter compares on `stockQty`. `AQuantityInput` accepts negative quantities.
+- 358ecaf: `ADropdown` picks a linked record when given `link`: it binds the record through `v-model:link-value` and searches with `linkFilterFunction`. `ACurrencyInput`'s currency box is one, so it shows its currency whether or not the field has a lookup, and names a bare currency id through `aformLinkResolver`, as before.
+- 358ecaf: `ADropdown` sends `update:modelValue` when a choice is picked from the list or typed out in full, instead of with each keystroke, so a record never holds a partly typed value such as `Pend`. Clearing the box empties the field.
+- 358ecaf: An editable quantity or currency column is edited in its cell: the number is typed in place, and the unit or currency is picked from a list opened with the cell's ▾ handle or Shift+ArrowDown. The cell editor and its lists come from `@stonecrop/aform`, which registers them when installed.
+
+### Patch Changes
+
+- 358ecaf: `ACurrencyInput`'s amount box and a currency cell being edited refuse a second decimal point, typed or pasted, which would leave no amount. `currencyAmountEntryPattern` allows one, followed only by digits.
+- 358ecaf: `AQuantityInput`'s unit button names its list in `aria-controls`, and two quantity fields without a `uuid` no longer share element ids.
+- Updated dependencies [358ecaf]
+- Updated dependencies [358ecaf]
+- Updated dependencies [358ecaf]
+- Updated dependencies [358ecaf]
+- Updated dependencies [358ecaf]
+- Updated dependencies [358ecaf]
+- Updated dependencies [358ecaf]
+  - @stonecrop/utilities@0.44.0
+  - @stonecrop/atable@0.44.0
+  - @stonecrop/themes@0.44.0
+  - @stonecrop/schema@0.44.0
+
+## 0.43.0
+
+### Patch Changes
+
+- 63f68d7: `AQuantityInput` and `ACurrencyInput` given no value show every box empty, as they do for `null`, instead of a conversion factor or exchange rate of 1 nobody entered.
+- Updated dependencies [63f68d7]
+  - @stonecrop/atable@0.43.0
+  - @stonecrop/schema@0.43.0
+  - @stonecrop/themes@0.43.0
+  - @stonecrop/utilities@0.43.0
+
+## 0.42.0
+
+### Patch Changes
+
+- Updated dependencies [f5d09ad]
+  - @stonecrop/atable@0.42.0
+  - @stonecrop/schema@0.42.0
+  - @stonecrop/themes@0.42.0
+  - @stonecrop/utilities@0.42.0
+
+## 0.41.1
+
+### Patch Changes
+
+- @stonecrop/atable@0.41.1
+  - @stonecrop/schema@0.41.1
+  - @stonecrop/themes@0.41.1
+  - @stonecrop/utilities@0.41.1
+
+## 0.41.0
+
+### Minor Changes
+
+- 863c853: `ASemverInput` is a text field for a SemVer 2.0.0 version such as `1.4.0-beta.2`. It holds the version as a string, or null while the box is empty or the version is half-typed, and refuses any edit that no version could start with, so a `v` prefix, a leading zero or a fourth number never gets in.
+
+### Patch Changes
+
+- Updated dependencies [863c853]
+- Updated dependencies [863c853]
+  - @stonecrop/schema@0.41.0
+  - @stonecrop/atable@0.41.0
+  - @stonecrop/utilities@0.41.0
+  - @stonecrop/themes@0.41.0
+
+## 0.40.0
+
+### Minor Changes
+
+- a5f8744: A doctype gives its starting values in one place, its `defaults`, which hold fixed data only. A field no longer has a `default` of its own: `validateDoctype` refuses one and points to `defaults`, and DocBuilder no longer offers the column. Embedded records and table rows start from their own doctype's `defaults`. The app's starting values come from one registration per doctype, `registry.registerDefaults`, whose functions run for every new record; registering a doctype a second time warns. `registry.setDefaultsLoader` and `composeNewRecord`'s `overlay` option are removed.
+
+### Patch Changes
+
+- Updated dependencies [a5f8744]
+- Updated dependencies [a5f8744]
+  - @stonecrop/schema@0.40.0
+  - @stonecrop/atable@0.40.0
+  - @stonecrop/themes@0.40.0
+  - @stonecrop/utilities@0.40.0
+
 ## 0.39.0
 
 ### Minor Changes

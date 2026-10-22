@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/utilities",
-	"version": "0.39.0",
+	"version": "0.54.0",
 	"description": "Shared utility functions for Stonecrop",
 	"keywords": [
 		"helpers",
@@ -40,15 +40,15 @@
 		"access": "public"
 	},
 	"scripts": {
-		"dev": "vite build --watch",
+		"dev": "vp build --watch",
 		"docs": "bash ../tools/scripts/run-docs.sh utilities",
-		"lint": "oxlint",
-		"lint:fix": "oxlint --fix",
+		"lint": "vp lint",
+		"lint:fix": "vp lint --fix",
 		"prepublishOnly": "vp run build",
-		"preview": "vite preview",
-		"test": "vitest run --coverage.enabled false",
-		"test:coverage": "vitest run --coverage",
-		"test:watch": "vitest watch"
+		"preview": "vp preview",
+		"test": "vp test run --coverage.enabled false",
+		"test:coverage": "vp test run --coverage",
+		"test:watch": "vp test watch"
 	},
 	"dependencies": {
 		"@vueuse/core": "catalog:",
@@ -60,8 +60,6 @@
 		"@vitest/coverage-istanbul": "catalog:",
 		"@vue/test-utils": "catalog:",
 		"jsdom": "catalog:",
-		"oxlint": "catalog:",
-		"oxlint-tsgolint": "catalog:",
 		"typescript": "catalog:",
 		"vite": "catalog:",
 		"vitest": "catalog:",

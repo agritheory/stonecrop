@@ -2,12 +2,12 @@ import { existsSync, readdirSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-import type { UserConfig } from 'vitest/config'
+import type { UserConfig } from 'vite-plus'
 
 /**
  * The `build` task every publishable package runs, previously 13 copies of the same block.
  *
- * A task rather than a package.json script so `input` can exclude dist. The steps write into dist
+ * A task rather than a package.json script so `cache.input` can exclude dist. The steps write into dist
  * and later ones read it, so tracking it as an input self-invalidates the cache on every run.
  *
  * Vite runs first so `emptyOutDir` clears dist. A leading `rm -rf dist` is its own cached sub-task,
@@ -47,7 +47,7 @@ function nuxtApps(configUrl: string): string[] {
  * the app set is derived rather than listed: an app missing from the exclusions never caches, and
  * a build that silently stopped caching looks exactly like one that works.
  *
- * `.nuxt` is deliberately not an `output`. Vite+ reports a removed generated directory as a miss
+ * `.nuxt` is deliberately not in `cache.output`. Vite+ reports a removed generated directory as a miss
  * and re-runs the command, so declaring it would only snapshot the tree into the cache to restore
  * something the command rebuilds anyway.
  *
@@ -66,14 +66,16 @@ export function nuxtModuleBuildTask(configUrl: string): NonNullable<UserConfig['
 				...apps.map(app => `nuxi prepare ${app}`),
 				'nuxt-module-build build',
 			].join(' && '),
-			input: [
-				{ auto: true },
-				{ pattern: 'tools/vite/**', base: 'workspace' },
-				'!dist/**',
-				'!.nuxt/**',
-				...generatedTrees.map(tree => `!${tree}`),
-			],
-			output: ['dist/**'],
+			cache: {
+				input: [
+					{ auto: true },
+					{ pattern: 'tools/vite/**', base: 'workspace' },
+					'!dist/**',
+					'!.nuxt/**',
+					...generatedTrees.map(tree => `!${tree}`),
+				],
+				output: ['dist/**'],
+			},
 		},
 	}
 }
@@ -82,18 +84,21 @@ export function buildTask(declarations: 'tsc' | 'vue-tsc'): NonNullable<UserConf
 	return {
 		build: {
 			command: [
-				'vite build --logLevel warn',
+				'vp build --logLevel warn',
 				`${declarations} -b --force`,
 				'node ../tools/scripts/run-api-extractor.mjs run --local -c config/api-extractor.json',
 				'node --run docs',
 			].join(' && '),
-			// Both this file and the package's own config are tracked explicitly. `{ auto: true }`
-			// records what each sub-task read, and only `vite build` reads a config, so editing either
-			// re-ran vite and then let the later sub-tasks replay a `dist/**` snapshot over its fresh
-			// output. Measured: dropping `vue` from a package's externals rebuilt, exited 0, shipped
-			// the old bundle, and the dist-contract test read that bundle and passed.
-			input: [{ auto: true }, { pattern: 'tools/vite/**', base: 'workspace' }, 'vite.config.ts', '!dist/**'],
-			output: ['dist/**'],
+			cache: {
+				input: [{ auto: true }, '!dist/**'],
+				// No `output`: left to automatic tracking, a cache hit restores only the files that
+				// sub-task itself wrote. `output: ['dist/**']` gave every sub-task the whole directory,
+				// so whenever `vp build` re-ran but the declarations did not change, api-extractor and
+				// docs hit the cache and replayed an older bundle over the new one, and the build exited
+				// 0. A source edit inside a function did it, and so did a config edit: dropping `vue`
+				// from a package's externals shipped the old bundle, and the dist-contract test read that
+				// bundle and passed.
+			},
 		},
 	}
 }

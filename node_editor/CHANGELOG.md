@@ -1,5 +1,132 @@
 # Change Log - @stonecrop/node-editor
 
+## 0.54.0
+
+### Patch Changes
+
+- @stonecrop/schema@0.54.0
+
+## 0.53.0
+
+### Patch Changes
+
+- @stonecrop/schema@0.53.0
+
+## 0.52.0
+
+### Patch Changes
+
+- @stonecrop/schema@0.52.0
+
+## 0.51.0
+
+### Patch Changes
+
+- Updated dependencies [e8842fb]
+  - @stonecrop/schema@0.51.0
+
+## 0.50.1
+
+### Patch Changes
+
+- @stonecrop/schema@0.50.1
+
+## 0.50.0
+
+### Patch Changes
+
+- @stonecrop/schema@0.50.0
+
+## 0.49.0
+
+### Patch Changes
+
+- Updated dependencies [d5fbd9a]
+  - @stonecrop/schema@0.49.0
+
+## 0.48.1
+
+### Patch Changes
+
+- Updated dependencies [620acb0]
+  - @stonecrop/schema@0.48.1
+
+## 0.48.0
+
+### Patch Changes
+
+- @stonecrop/schema@0.48.0
+
+## 0.47.0
+
+### Patch Changes
+
+- Updated dependencies [a5df570]
+  - @stonecrop/schema@0.47.0
+
+## 0.46.1
+
+### Patch Changes
+
+- @stonecrop/schema@0.46.1
+
+## 0.46.0
+
+### Patch Changes
+
+- @stonecrop/schema@0.46.0
+
+## 0.45.1
+
+### Patch Changes
+
+- @stonecrop/schema@0.45.1
+
+## 0.45.0
+
+### Patch Changes
+
+- @stonecrop/schema@0.45.0
+
+## 0.44.0
+
+### Patch Changes
+
+- @stonecrop/schema@0.44.0
+
+## 0.43.0
+
+### Patch Changes
+
+- @stonecrop/schema@0.43.0
+
+## 0.42.0
+
+### Patch Changes
+
+- @stonecrop/schema@0.42.0
+
+## 0.41.1
+
+### Patch Changes
+
+- @stonecrop/schema@0.41.1
+
+## 0.41.0
+
+### Patch Changes
+
+- Updated dependencies [863c853]
+  - @stonecrop/schema@0.41.0
+
+## 0.40.0
+
+### Patch Changes
+
+- Updated dependencies [a5f8744]
+- Updated dependencies [a5f8744]
+  - @stonecrop/schema@0.40.0
+
 ## 0.39.0
 
 ### Patch Changes

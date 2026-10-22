@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { componentCategory } from '@stonecrop/schema'
 import type { BadgeDescriptor } from '@stonecrop/schema'
-import { fromISODate } from '@stonecrop/utilities'
+import { compareSemver, fromISODate } from '@stonecrop/utilities'
 import { Temporal } from 'temporal-polyfill'
 import { type CSSProperties, computed, ref } from 'vue'
 
@@ -15,10 +15,12 @@ import type {
 	TableColumn,
 	TableConfig,
 	TableDisplay,
+	CellShellBounds,
 	TableModal,
 	TableRow,
 } from '../types'
 import { resolveFilterType } from '../resolveFilterType'
+import { isTableTuplePickerModal, tableTuplePickerModalComponent } from '../tuplePickerModal'
 import { formatCurrency, formatQuantity, generateHash } from '../utils'
 
 /**
@@ -40,24 +42,16 @@ export interface FilterState {
  */
 export type FilterStateRecord = Record<number, FilterState>
 
-// Quantity columns hold a composite `{ qty, uom, ... }` value (see `QuantityValue` in
-// `@stonecrop/aform`); numeric comparisons (filtering, sorting) operate on `qty`.
-//
-// Currency columns hold a composite `{ amount, currency, baseAmount, ... }` value (see
-// `CurrencyValue` in `@stonecrop/aform`), and a single column routinely mixes currencies —
-// comparing raw `amount` would rank 5 EUR equal to 5 USD and match 100 JPY against a `> 100`
-// filter. `baseAmount` is the whole reason the value carries one: it restates every row in the
-// record's base currency, which is the only axis on which they are comparable. Fall back to
-// `amount` for a value that predates the base conversion (or was authored without one).
-function toComparableNumber(cellValue: unknown): number {
-	if (cellValue !== null && typeof cellValue === 'object') {
-		if ('qty' in cellValue) return Number(cellValue.qty)
-		if ('baseAmount' in cellValue && (cellValue as { baseAmount: unknown }).baseAmount != null) {
-			return Number((cellValue as { baseAmount: unknown }).baseAmount)
-		}
-		if ('amount' in cellValue) return Number((cellValue as { amount: unknown }).amount)
-	}
-	return Number(cellValue)
+// Quantity and currency columns, as their component declares, hold composite values (see `QuantityValue` and
+// `CurrencyValue` in `@stonecrop/aform`). Rows may be entered in one unit but compared in a common baseline:
+// `stockQty` for quantities, `baseAmount` for currencies, or the entered `qty` or `amount` when baseline figures are
+// missing. An emptied one has neither, and compares as a blank cell does. Other cells compare as they are.
+function comparableValue(cellValue: unknown, column: TableColumn): unknown {
+	const category = componentCategory(column.component)
+	if (category !== 'quantity' && category !== 'currency') return cellValue
+	const field = (key: string) =>
+		cellValue !== null && typeof cellValue === 'object' && key in cellValue ? Reflect.get(cellValue, key) : undefined
+	return category === 'quantity' ? (field('stockQty') ?? field('qty')) : (field('baseAmount') ?? field('amount'))
 }
 
 function isNodeOpen(rowIndex: number, treeDisplay: TableDisplay[]): boolean {
@@ -113,7 +107,7 @@ function applyFilter(cellValue: any, filter: FilterState, column: TableColumn): 
 		}
 
 		case 'number': {
-			const numValue = toComparableNumber(cellValue)
+			const numValue = Number(comparableValue(cellValue, column))
 			const filterNum = Number(value)
 			return !isNaN(numValue) && !isNaN(filterNum) && numValue === filterNum
 		}
@@ -378,14 +372,20 @@ export const createTableStore = (initData: {
 				const direction = sortState.value.direction
 
 				filtered.sort((a, b) => {
-					let aVal = a[column.name]
-					let bVal = b[column.name]
+					let aVal = comparableValue(a[column.name], column)
+					let bVal = comparableValue(b[column.name], column)
 
 					if (aVal === null || aVal === undefined) aVal = ''
 					if (bVal === null || bVal === undefined) bVal = ''
 
-					const aNum = toComparableNumber(aVal)
-					const bNum = toComparableNumber(bVal)
+					// By version precedence, the order the `semver` Postgres type sorts in: 1.2.0 before 1.10.0.
+					if (componentCategory(column.component) === 'semver') {
+						const cmp = compareSemver(String(aVal), String(bVal))
+						return direction === 'asc' ? cmp : -cmp
+					}
+
+					const aNum = Number(aVal)
+					const bNum = Number(bVal)
 					const isNumeric = !isNaN(aNum) && !isNaN(bNum) && aVal !== '' && bVal !== ''
 
 					if (isNumeric) {
@@ -575,6 +575,58 @@ export const createTableStore = (initData: {
 			}
 		}
 
+		/** Opens a cell-anchored overlay in {@link ACellShell} (positioned like legacy {@link ATableModal}). */
+		const openCellShell = (
+			colIndex: number,
+			rowIndex: number,
+			cell: HTMLTableCellElement,
+			bounds: CellShellBounds,
+			component: string,
+			componentProps: Record<string, unknown> = {}
+		) => {
+			const parent = cell.closest('.atable-container')
+			modal.value = {
+				visible: true,
+				colIndex,
+				rowIndex,
+				cell,
+				parent: parent instanceof HTMLElement ? parent : undefined,
+				left: bounds.left,
+				bottom: bounds.bottom,
+				width: bounds.width,
+				height: bounds.height,
+				component,
+				componentProps,
+			}
+		}
+
+		const closeCellShell = () => {
+			if (modal.value.visible) modal.value.visible = false
+		}
+
+		const openTuplePicker = (
+			colIndex: number,
+			rowIndex: number,
+			cell: HTMLTableCellElement,
+			bounds: CellShellBounds
+		) => {
+			openCellShell(
+				colIndex,
+				rowIndex,
+				cell,
+				bounds,
+				tableTuplePickerModalComponent(columns.value[colIndex]?.component)
+			)
+		}
+
+		const closeTuplePicker = () => {
+			if (isTableTuplePickerModal(modal.value)) closeCellShell()
+		}
+
+		const closeOverlays = (event: MouseEvent) => {
+			closeModal(event)
+		}
+
 		const updateGanttBar = (event: GanttDragEvent) => {
 			// update the local gantt bar cache
 			const ganttBar = rows.value[event.rowIndex]?.gantt
@@ -725,16 +777,9 @@ export const createTableStore = (initData: {
 		 * @returns The index of the newly added row
 		 */
 		const addRow = (rowData?: Partial<TableRow>, position: 'start' | 'end' | number = 'end'): number => {
-			// Create a new row with default empty values for each column
-			const newRow: TableRow = {}
-			for (const column of columns.value) {
-				newRow[column.name] = ''
-			}
-
-			// Merge in any provided row data
-			if (rowData) {
-				Object.assign(newRow, rowData)
-			}
+			// Only what the caller gives: a column nobody filled in has no value, so a save leaves it to the database's
+			// default. Never seed `''`, which an insert stores over that default and a date cell shows as "Invalid Date".
+			const newRow: TableRow = { ...rowData }
 
 			let insertIndex: number
 			if (position === 'start') {
@@ -944,6 +989,8 @@ export const createTableStore = (initData: {
 			addRow,
 			clearFilter,
 			closeModal,
+			closeCellShell,
+			closeOverlays,
 			createConnection,
 			deleteConnection,
 			deleteRow,
@@ -958,6 +1005,9 @@ export const createTableStore = (initData: {
 			insertRowAbove,
 			insertRowBelow,
 			isRowGantt,
+			openCellShell,
+			openTuplePicker,
+			closeTuplePicker,
 			isRowVisible,
 			moveRow,
 			registerConnectionHandle,

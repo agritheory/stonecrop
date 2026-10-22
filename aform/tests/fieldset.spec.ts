@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect } from 'vite-plus/test'
 import { flushPromises, mount } from '@vue/test-utils'
 
 import AForm from '../src/components/AForm.vue'
@@ -89,8 +89,13 @@ describe('fieldset input component', { tags: ['component'] }, () => {
 // A fieldset is layout: its fields are the record's own, so a form reads and writes them at the
 // record's top level, exactly as the store and the server hold them.
 describe('a fieldset inside a form', { tags: ['component'] }, () => {
-	const contact = (schema: ResolvedField[]): ResolvedField =>
-		({ kind: 'fieldset', fieldname: 'contact', component: 'AFieldset', label: 'Contact', schema }) as ResolvedField
+	const contact = (schema: ResolvedField[]): ResolvedField => ({
+		kind: 'fieldset',
+		fieldname: 'contact',
+		component: 'AFieldset',
+		label: 'Contact',
+		schema,
+	})
 	const email: ResolvedField = { kind: 'field', fieldname: 'email', component: 'ATextInput', label: 'Email' }
 
 	const mountForm = (schema: ResolvedField[], data: Record<string, any>) =>

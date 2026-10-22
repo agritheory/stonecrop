@@ -60,7 +60,7 @@ graph TB
         PHST[provideHSTPath]
         HHST[handleHSTChange]
         SDUP[setupDeepReactivity]
-        INR[initializeRecord]
+        CNR[composeNewRecord]
     end
 
     subgraph "HST Path Management"
@@ -169,8 +169,12 @@ sequenceDiagram
         US->>SC: getRecordById(doctype, recordId)
         SC->>HST: get record data
         HST-->>US: existing formData
+        opt Not in HST yet
+            US->>SC: getRecord(doctype, recordId)
+            Note over US: a failed read sets error and leaves formData empty
+        end
     else New record
-        US->>US: initializeRecord(resolvedSchema)
+        US->>REG: composeNewRecord(doctype)
     end
 
     US->>US: setupDeepReactivity(formData, hstStore)

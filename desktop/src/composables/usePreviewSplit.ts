@@ -56,6 +56,8 @@ export function usePreviewSplit(workspace: Ref<HTMLElement | null>) {
 		return (rect.right - clientX) / rect.width
 	}
 
+	const onMove = (move: PointerEvent) => setFraction(fractionAt(move.clientX))
+
 	// Ends the drag in progress, keeping or dropping its width. Held so Escape, or the pane closing, can end it.
 	let endDrag: ((keep: boolean) => void) | null = null
 
@@ -68,7 +70,6 @@ export function usePreviewSplit(workspace: Ref<HTMLElement | null>) {
 		resizing.value = true
 		const start = preferred.value
 
-		const onMove = (move: PointerEvent) => setFraction(fractionAt(move.clientX))
 		const onEnd = () => endDrag?.(true)
 		endDrag = keep => {
 			endDrag = null

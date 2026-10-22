@@ -16,9 +16,9 @@ import { ABadge } from '@stonecrop/aform'
 
 | Prop | Type | Required | Default | Description |
 |------|------|----------|---------|-------------|
-| label | `string \| undefined` | no |  |  |
-| variant | `BadgeVariant \| undefined` | no |  |  |
-| color | `string \| undefined` | no |  |  |
+| label | `string \| undefined` | no |  | Text the badge shows |
+| variant | `BadgeVariant \| undefined` | no |  | Semantic variant, painted with the theme's `--sc-badge-{variant}-*` tokens |
+| color | `string \| undefined` | no |  | A CSS color painted over the variant's background, text and accent |
 | presentation | `BadgePresentation \| undefined` | no |  | Defaults to `cell-fill`: every call site fully determines this, so omitting it should degrade to the common case rather than rendering an unstyled badge. |
 | value | `unknown` | no |  | Stored field value — used with `options` when `label` is omitted. |
 | options | `string[] \| Record<string, unknown> \| undefined` | no |  |  |
@@ -75,16 +75,13 @@ import { ACurrencyInput } from '@stonecrop/aform'
 | errors | `string[] \| undefined` | no |  | Inline validation error messages to display on this field. Fed by the host (e.g. mapped from the core validation store) — the renderer stays dumb and just shows what it is given. Takes precedence over the static `validation.errorMessage`. |
 | options | `CurrencyOptions \| undefined` | no | `{}` |  |
 | currencyLabel | `string \| undefined` | no | `"Currency"` |  |
-| baseCurrencyLabel | `string \| undefined` | no | `"Base Currency"` |  |
-| baseAmountLabel | `string \| undefined` | no | `"Base Amount"` |  |
-| exchangeRateLabel | `string \| undefined` | no | `"Exchange Rate"` |  |
-| modelValue | `CurrencyValue \| null \| undefined` | no | `{ amount: null, currency: { id: "" }, baseAmount: null, baseCurrency: { id: "" }, exchangeRate: 1, }` |  |
+| modelValue | `CurrencyValue \| null \| undefined` | no |  |  |
 
 **Events:**
 
 | Event | Payload | Description |
 |-------|---------|-------------|
-| update:modelValue | `[value: CurrencyValue \| null]` |  |
+| update:modelValue | `[value: CurrencyValue \| null \| undefined]` |  |
 
 ### ADate
 
@@ -295,13 +292,37 @@ import { ADropdown } from '@stonecrop/aform'
 | format | `string \| undefined` | no |  |  |
 | isAsync | `boolean \| undefined` | no | `false` |  |
 | filterFunction | `((search: string) => string[] \| Promise<string[]>) \| undefined` | no | `undefined` |  |
+| link | `boolean \| undefined` | no | `false` | Picks a linked record, bound through `v-model:link-value` as an `AFormLinkValue` (embedded currency, etc.). |
+| linkFilterFunction | `string \| ((search: string) => AFormLinkValue[] \| Promise<AFormLinkValue[]>) \| undefined` | no | `undefined` | Searches the records a `link` picker lists. |
+| formatter | `((value: AFormLinkValue) => string) \| undefined` | no | `undefined` |  |
+| doctype | `string \| undefined` | no | `undefined` |  |
+| embedded | `boolean \| undefined` | no | `false` |  |
+| trigger | `"combobox" \| "button" \| undefined` | no | `"combobox"` |  |
+| listAnchor | `"field" \| "group" \| undefined` | no | `"field"` |  |
+| placeholder | `string \| undefined` | no | `undefined` |  |
+| ariaLabel | `string \| undefined` | no | `undefined` |  |
 | modelValue | `string \| undefined` | no |  |  |
+| linkValue | `AFormLinkModelValue \| undefined` | no |  |  |
 
 **Events:**
 
 | Event | Payload | Description |
 |-------|---------|-------------|
 | update:modelValue | `[value: string \| undefined]` |  |
+| update:linkValue | `[value: AFormLinkModelValue \| undefined]` |  |
+| update:open | `[open: boolean]` |  |
+
+**Slots:**
+
+| Slot | Props | Description |
+|------|-------|-------------|
+| option | `{ option: { [x: string]: any; id: string \| number; displayText?: string \| undefined; }; }` |  |
+
+**Exposed:**
+
+| Name | Type |
+|------|------|
+| openCurrencyList | `() => void` |
 
 ### ADuration
 
@@ -488,6 +509,7 @@ import { ANumericInput } from '@stonecrop/aform'
 | uuid | `string \| undefined` | no |  | Set a unique identifier for elements inside the component |
 | validation | `{ [key: string]: any; errorMessage: string; } \| undefined` | no | `{ errorMessage: "" }` | Validation options for elements inside the component |
 | errors | `string[] \| undefined` | no |  | Inline validation error messages to display on this field. Fed by the host (e.g. mapped from the core validation store) — the renderer stays dumb and just shows what it is given. Takes precedence over the static `validation.errorMessage`. |
+| options | `NumericOptions \| undefined` | no | `{}` |  |
 | modelValue | `number \| null \| undefined` | no |  |  |
 
 **Events:**
@@ -519,16 +541,13 @@ import { AQuantityInput } from '@stonecrop/aform'
 | errors | `string[] \| undefined` | no |  | Inline validation error messages to display on this field. Fed by the host (e.g. mapped from the core validation store) — the renderer stays dumb and just shows what it is given. Takes precedence over the static `validation.errorMessage`. |
 | options | `QuantityOptions \| undefined` | no | `{}` |  |
 | uomLabel | `string \| undefined` | no | `"UOM"` |  |
-| stockUomLabel | `string \| undefined` | no | `"Stock UOM"` |  |
-| stockQtyLabel | `string \| undefined` | no | `"Stock Qty"` |  |
-| conversionFactorLabel | `string \| undefined` | no | `"Conversion Factor"` |  |
-| modelValue | `QuantityValue \| null \| undefined` | no | `{ qty: null, uom: "", stockQty: null, stockUom: "", conversionFactor: 1 }` |  |
+| modelValue | `QuantityValue \| null \| undefined` | no |  |  |
 
 **Events:**
 
 | Event | Payload | Description |
 |-------|---------|-------------|
-| update:modelValue | `[value: QuantityValue \| null]` |  |
+| update:modelValue | `[value: QuantityValue \| null \| undefined]` |  |
 
 ### ASegmentedControl
 
@@ -565,6 +584,63 @@ import { ASegmentedControl } from '@stonecrop/aform'
 | Event | Payload | Description |
 |-------|---------|-------------|
 | update:modelValue | `[value: string \| string[]]` |  |
+
+### ASemverInput
+
+Vue component exported from @stonecrop/aform.
+
+```typescript
+import { ASemverInput } from '@stonecrop/aform'
+```
+
+**Props:**
+
+| Prop | Type | Required | Default | Description |
+|------|------|----------|---------|-------------|
+| schema | `ResolvedField \| undefined` | no |  | The schema object to pass to the component |
+| label | `string \| undefined` | no |  | The label to display in the component |
+| selectRange | `boolean \| undefined` | no |  |  |
+| mask | `string \| undefined` | no |  | The mask to apply to inputs inside the component. Accepts either a plain mask string (e.g. `"(###) ###-####"`) or a stringified arrow function that receives `locale` and returns a mask string (e.g. `"(locale) => locale === 'en-US' ? '(###) ###-####' : '####-######'"`). |
+| required | `boolean \| undefined` | no |  | Indicate whether input is required for text and/or select elements inside the component |
+| mode | `InteractionMode \| undefined` | no |  | The rendering mode for the component |
+| uuid | `string \| undefined` | no |  | Set a unique identifier for elements inside the component |
+| validation | `{ [key: string]: any; errorMessage: string; } \| undefined` | no | `{ errorMessage: "" }` | Validation options for elements inside the component |
+| errors | `string[] \| undefined` | no |  | Inline validation error messages to display on this field. Fed by the host (e.g. mapped from the core validation store) — the renderer stays dumb and just shows what it is given. Takes precedence over the static `validation.errorMessage`. |
+| modelValue | `string \| null \| undefined` | no |  |  |
+
+**Events:**
+
+| Event | Payload | Description |
+|-------|---------|-------------|
+| update:modelValue | `[value: string \| null \| undefined]` |  |
+
+### ATableTupleCurrencyPicker
+
+Vue component exported from @stonecrop/aform.
+
+```typescript
+import { ATableTupleCurrencyPicker } from '@stonecrop/aform'
+```
+
+**Props:**
+
+| Prop | Type | Required | Default | Description |
+|------|------|----------|---------|-------------|
+| store | `TableStore` | yes |  |  |
+
+### ATableTupleQuantityPicker
+
+Vue component exported from @stonecrop/aform.
+
+```typescript
+import { ATableTupleQuantityPicker } from '@stonecrop/aform'
+```
+
+**Props:**
+
+| Prop | Type | Required | Default | Description |
+|------|------|----------|---------|-------------|
+| store | `TableStore` | yes |  |  |
 
 ### ATextboxInput
 
@@ -626,6 +702,69 @@ import { ATextInput } from '@stonecrop/aform'
 | Event | Payload | Description |
 |-------|---------|-------------|
 | update:modelValue | `[value: string \| number \| undefined]` |  |
+
+### ATupleCellEditor
+
+Vue component exported from @stonecrop/aform.
+
+```typescript
+import { ATupleCellEditor } from '@stonecrop/aform'
+```
+
+**Props:**
+
+| Prop | Type | Required | Default | Description |
+|------|------|----------|---------|-------------|
+| category | `"quantity" \| "currency"` | yes |  |  |
+| colIndex | `number` | yes |  |  |
+| rowIndex | `number` | yes |  |  |
+| store | `TableStore` | yes |  |  |
+| active | `boolean` | yes |  |  |
+| displayText | `string` | yes |  |  |
+| inputId | `string` | yes |  |  |
+
+**Events:**
+
+| Event | Payload | Description |
+|-------|---------|-------------|
+| deactivate | `[]` |  |
+
+**Exposed:**
+
+| Name | Type |
+|------|------|
+| focusInput | `() => void` |
+| openPicker | `() => void` |
+| commitNumber | `() => void` |
+
+### ATupleCellShell
+
+Vue component exported from @stonecrop/aform.
+
+```typescript
+import { ATupleCellShell } from '@stonecrop/aform'
+```
+
+**Props:**
+
+| Prop | Type | Required | Default | Description |
+|------|------|----------|---------|-------------|
+| active | `boolean` | yes |  |  |
+| displayText | `string` | yes |  |  |
+| pickerLabel | `string` | yes |  |  |
+| pickerOpen | `boolean` | yes |  |  |
+
+**Events:**
+
+| Event | Payload | Description |
+|-------|---------|-------------|
+| open-picker | `[]` |  |
+
+**Slots:**
+
+| Slot | Props | Description |
+|------|-------|-------------|
+| default | `{}` |  |
 
 ### ExpandButton
 
@@ -723,7 +862,7 @@ A cell renders one value, so only `kind: 'field'` qualifies. The other three kin
 
 A fieldset's *children* are real columns, so it is flattened rather than dropped; losing them is the same silent defect in the other direction.
 
-One definition, called by both consumers: `Registry.buildTableConfig` (a child table's columns, from its target's resolved schema) and Desktop's records list. Re-deriving it at either call site produced exactly one of the two failures above at each.
+This is the one definition, for a child table's columns and a records list alike. Call it; never re-derive it at a call site, which produced exactly one of the two failures above at each.
 
 **Signature:**
 
@@ -798,6 +937,8 @@ Type-specific configuration for ACurrencyInput, passed via the field's `options`
 
 ```typescript
 export interface CurrencyOptions {
+  amountMask?: boolean;
+  arithmetic?: boolean;
   baseCurrency?: AFormLinkValue | string;
   doctype?: string;
   exchangeRates?: Record<string, number>;
@@ -811,6 +952,8 @@ export interface CurrencyOptions {
 
 | Property | Type | Description |
 |----------|------|-------------|
+| amountMask? | `boolean` | When true (default), the amount field uses a locale- and currency-aware display mask (grouping and decimal separators follow the selected currency). Set false for unformatted amounts; with `arithmetic` also false, the field is a plain `type="number"` input. |
+| arithmetic? | `boolean` | Whether the box takes arithmetic (default `true`): `12*3+4` is read as `40` once the box is left or Enter is pressed. Digits, `.`, `+ - * / %` and parentheses only; exponents and letters are refused. Set `false` for a plain `type="number"` box. |
 | baseCurrency? | `AFormLinkValue \| string` | The record's base currency — fixed, not user-editable. A bare id resolves to displayText via `aformLinkResolver`. |
 | doctype? | `string` | Currency doctype name, used for FK resolution via `aformLinkResolver`. The currency picker is embedded, so it renders no navigate button. |
 | exchangeRates? | `Record<string, number>` | Exchange rate lookup for each non-base currency id, relative to `baseCurrency` (which is implicitly `1`) |
@@ -844,6 +987,26 @@ export interface CurrencyValue {
 | currency | `AFormLinkValue` | FK reference to the Currency doctype the user entered `amount` in |
 | exchangeRate | `number` | Multiplier from `currency` to `baseCurrency` — hidden from the UI, drives `baseAmount` |
 
+### NumericOptions
+
+Type-specific configuration for ANumericInput, passed via the field's `options` property.
+
+**Definition:**
+
+```typescript
+export interface NumericOptions {
+  arithmetic?: boolean;
+  precision?: number;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| arithmetic? | `boolean` | Whether the box takes arithmetic (default `true`): `12*3+4` is read as `40` once the box is left or Enter is pressed. Digits, `.`, `+ - * / %` and parentheses only; exponents and letters are refused. Set `false` for a plain `type="number"` box. |
+| precision? | `number` | Decimal places to round the number to, as a column with a fixed scale holds it: at `2`, `10/3` is `3.33`. Omit to keep every digit the box works out. A non-integer or out-of-range value is ignored. |
+
 ### QuantityOptions
 
 Type-specific configuration for AQuantityInput, passed via the field's `options` property.
@@ -852,6 +1015,7 @@ Type-specific configuration for AQuantityInput, passed via the field's `options`
 
 ```typescript
 export interface QuantityOptions {
+  arithmetic?: boolean;
   conversionFactors?: Record<string, number>;
   stockUom?: string;
   uoms?: string[];
@@ -862,6 +1026,7 @@ export interface QuantityOptions {
 
 | Property | Type | Description |
 |----------|------|-------------|
+| arithmetic? | `boolean` | Whether the box takes arithmetic (default `true`): `12*3+4` is read as `40` once the box is left or Enter is pressed. Digits, `.`, `+ - * / %` and parentheses only; exponents and letters are refused. Set `false` for a plain `type="number"` box. |
 | conversionFactors? | `Record<string, number>` | Conversion factor lookup for each non-stock UOM, relative to `stockUom` (which is implicitly `1`) |
 | stockUom? | `string` | The item's base/stock unit of measure — fixed, not user-editable |
 | uoms? | `string[]` | Dropdown choices for the `uom` field |
@@ -931,7 +1096,6 @@ A resolved Link field with cardinality `one` or `atMostOne` — embedded as a ne
 ```typescript
 export interface ResolvedLink {
   component: string;
-  default?: unknown;
   fieldname: string;
   hidden?: boolean;
   kind: 'link';
@@ -949,7 +1113,6 @@ export interface ResolvedLink {
 | Property | Type | Description |
 |----------|------|-------------|
 | component | `string` | Component to render; defaults to `'AForm'` |
-| default? | `unknown` | Preserved from the original ValueField |
 | fieldname | `string` | Field identifier |
 | hidden? | `boolean` | Preserved from the original ValueField |
 | kind | `'link'` | Discriminator |
@@ -974,7 +1137,6 @@ Rows are never part of the schema. AForm sources them from the data model at `da
 export interface ResolvedTable {
   component: string;
   config: TableViewConfig;
-  default?: unknown;
   fieldname: string;
   getRecords?: (options?: GetRecordsOptions) => Promise<GetRecordsResult>;
   hidden?: boolean;
@@ -995,7 +1157,6 @@ export interface ResolvedTable {
 |----------|------|-------------|
 | component | `string` | Component to render; defaults to `'ATable'` |
 | config | `TableViewConfig` | View configuration — always present; defaults to `{ view: 'list' }` |
-| default? | `unknown` | Preserved from the original ValueField or TableField |
 | fieldname | `string` | Field identifier |
 | getRecords? | `(options?: GetRecordsOptions) => Promise<GetRecordsResult>` | When set, ATable fetches list pages through this callback (server paging). |
 | hidden? | `boolean` | Preserved from the original ValueField or TableField |
@@ -1084,7 +1245,7 @@ export type ResolvedField = ResolvedScalar | ResolvedLink | ResolvedTable | Reso
 
 ### ResolvedScalar
 
-A resolved scalar field. Derived from ValueField with `cardinality` omitted (consumed by resolveSchema) and an optional `doctype` added for unresolved Link fields.
+A resolved scalar field. Derived from ValueField with `cardinality` omitted (resolution has already applied it) and an optional `doctype` added for unresolved Link fields.
 
 **Definition:**
 
@@ -1248,6 +1409,30 @@ export const AQuantityInput: typeof __VLS_export
 export const ASegmentedControl: typeof __VLS_export
 ```
 
+### ASemverInput
+
+**Type:**
+
+```typescript
+export const ASemverInput: typeof __VLS_export
+```
+
+### ATableTupleCurrencyPicker
+
+**Type:**
+
+```typescript
+export const ATableTupleCurrencyPicker: typeof __VLS_export
+```
+
+### ATableTupleQuantityPicker
+
+**Type:**
+
+```typescript
+export const ATableTupleQuantityPicker: typeof __VLS_export
+```
+
 ### ATextboxInput
 
 **Type:**
@@ -1262,6 +1447,22 @@ export const ATextboxInput: typeof __VLS_export
 
 ```typescript
 export const ATextInput: typeof __VLS_export
+```
+
+### ATupleCellEditor
+
+**Type:**
+
+```typescript
+export const ATupleCellEditor: typeof __VLS_export
+```
+
+### ATupleCellShell
+
+**Type:**
+
+```typescript
+export const ATupleCellShell: typeof __VLS_export
 ```
 
 ### ExpandButton

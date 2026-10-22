@@ -27,6 +27,7 @@ type StonecropField {
 	format: String
 	mode: String
 	options: JSON
+	parts: JSON
 	required: Boolean
 	readOnly: Boolean
 	hidden: Boolean
@@ -67,6 +68,7 @@ Complete doctype metadata
 type DoctypeMeta {
 	name: String!
 	slug: String
+	displayField: String
 	fields: [StonecropField!]!
 	workflow: WorkflowMeta
 	inherits: String

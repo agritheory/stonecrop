@@ -1,17 +1,23 @@
 import vue from '@vitejs/plugin-vue'
-import { playwright } from '@vitest/browser-playwright'
+import { playwright } from 'vite-plus/test/browser-playwright'
 import { resolve } from 'path'
 import { libInjectCss } from 'vite-plugin-lib-inject-css'
-import { configDefaults, coverageConfigDefaults, defineConfig } from 'vitest/config'
+import { configDefaults, coverageConfigDefaults, defineConfig } from 'vite-plus'
 
 import { buildTask } from '../tools/vite/build-task.ts'
 import { playwrightLaunchOptions } from '../tools/vite/playwright-launch-options.ts'
 import { testTags } from '../tools/vite/test-tags.ts'
+import { fsModuleCachePath } from '../tools/vite/fs-module-cache.ts'
 
 const projectRootDir = resolve(import.meta.dirname)
 
 export default defineConfig({
 	run: { tasks: buildTask('vue-tsc') },
+	resolve: {
+		alias: {
+			'@stonecrop/utilities': resolve(projectRootDir, '../utilities/src/index.ts'),
+		},
+	},
 	plugins: [vue(), libInjectCss()],
 	build: {
 		emptyOutDir: true,
@@ -36,6 +42,7 @@ export default defineConfig({
 		},
 	},
 	test: {
+		fsModuleCachePath,
 		globals: true,
 		tags: testTags,
 		projects: [
@@ -53,6 +60,9 @@ export default defineConfig({
 				test: {
 					name: 'browser',
 					include: ['tests/**/*.browser.spec.ts'],
+					// One file at a time: the clipboard is the browser's, so paste tests in two files at once read each
+					// other's copy.
+					fileParallelism: false,
 					browser: {
 						enabled: true,
 						headless: true,
@@ -83,7 +93,7 @@ export default defineConfig({
 			exclude: [
 				...coverageConfigDefaults.exclude,
 				'src/index.ts', // ignore the entry file
-				'types/**', // ignore types
+				'src/types/**', // ignore types
 			],
 		},
 	},

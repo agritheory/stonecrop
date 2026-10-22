@@ -14,9 +14,8 @@ import type { ResolvedField } from '../types'
  * A fieldset's *children* are real columns, so it is flattened rather than dropped; losing them is
  * the same silent defect in the other direction.
  *
- * One definition, called by both consumers: `Registry.buildTableConfig` (a child table's columns,
- * from its target's resolved schema) and Desktop's records list. Re-deriving it at either call
- * site produced exactly one of the two failures above at each.
+ * This is the one definition, for a child table's columns and a records list alike. Call it; never
+ * re-derive it at a call site, which produced exactly one of the two failures above at each.
  *
  * @param fields - resolved fields, as produced by `resolveSchema`
  * @returns column definitions, with the `kind` discriminator stripped

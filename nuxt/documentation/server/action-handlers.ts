@@ -18,6 +18,7 @@
 
 import type { DoctypeMeta } from '@stonecrop/schema'
 
+import { playgroundMoneyUsd, sumPlaygroundMoney } from './playground-denominated'
 import { mockExecutor } from './mock-executor'
 
 /** What a handler in this host is given. Mirrors the middleware's `ActionHandlerContext`, minus `pgClient`. */
@@ -28,17 +29,18 @@ export interface FullstackActionContext {
 	action: string
 	/** Resolved doctype metadata. */
 	meta: DoctypeMeta
-	/** The target record's identity, from the argument envelope. Absent for a record-less command. */
+	/** The target record's identity, from the argument envelope. Absent for a record not created yet, and for a record-less command. */
 	recordId?: string | number
 	/** Record field data the client sent. Unvalidated browser input — `args` is an opaque JSON scalar. */
 	data: Record<string, unknown>
-	/** The state the guard read, or `undefined` when nothing about the action required reading it. */
+	/** The state the guard read (`''` for a record with no state), or `undefined` when nothing required reading it or the record does not exist yet. */
 	currentState?: string
 }
 
 /**
  * What it returns becomes the result's `data`; the client stores the record as a read returns it
- * after the action. Throwing rejects the action, and no state is written.
+ * after the action. A Save's handler must return the record it saved. Throwing rejects the action,
+ * and no state is written.
  */
 export type FullstackActionHandler = (context: FullstackActionContext) => Promise<unknown>
 
@@ -56,13 +58,14 @@ export const actionHandlers: Record<string, Record<string, FullstackActionHandle
 		async recalculateTotal({ recordId }) {
 			if (recordId == null) throw new Error('recalculateTotal needs an order id')
 
-			const read = await mockExecutor.query<{ orderById?: { items?: { total?: number }[] } }>('orderById', {
+			const read = await mockExecutor.query<{ orderById?: { items?: { total?: unknown }[] } }>('orderById', {
 				id: recordId,
 			})
 			const order = read.orderById
 			if (!order) throw new Error(`Order ${String(recordId)} not found`)
 
-			const total = (order.items ?? []).reduce((sum, item) => sum + (Number(item.total) || 0), 0)
+			const totalAmount = sumPlaygroundMoney((order.items ?? []).map(item => item.total))
+			const total = playgroundMoneyUsd(totalAmount)
 
 			const written = await mockExecutor.mutate<{ updateOrderById?: { order?: Record<string, unknown> } }>(
 				'updateOrderById',

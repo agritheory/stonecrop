@@ -1,14 +1,14 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { mount } from '@vue/test-utils'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it } from 'vite-plus/test'
 
 import ACurrencyInput from '../src/components/form/ACurrencyInput.vue'
 import AFormLink from '../src/components/form/AFormLink.vue'
 import type { AFormLinkValue } from '../src/types'
 
 /*
-The currency group is two inputs in one bordered box: the currency picker (an embedded AFormLink)
+The currency group is two inputs in one bordered box: the currency picker (embedded ADropdown link mode)
 and the amount. Its text must sit where every other field's text sits, and the picker must be as
 wide as what it shows rather than the browser's default input width.
 */
@@ -32,7 +32,11 @@ const declared = (sfcPath: string, selector: string): CSSStyleDeclaration[] => {
 const value = (declarations: CSSStyleDeclaration[], property: string): string =>
 	declarations.map(declaration => declaration.getPropertyValue(property)).findLast(Boolean) ?? ''
 
-const options = { doctype: 'currency', baseCurrency: { id: 'USD', displayText: 'US Dollar' } }
+const options = {
+	doctype: 'currency',
+	baseCurrency: { id: 'USD', displayText: 'US Dollar' },
+	filterFunction: (_: string) => [],
+}
 
 const prefixInput = (currency: AFormLinkValue) =>
 	mount(ACurrencyInput, {
@@ -46,7 +50,7 @@ const prefixInput = (currency: AFormLinkValue) =>
 describe('currency group layout', { tags: ['component'] }, () => {
 	it.each([
 		['a symbol', { id: 'EUR', displayText: 'Euro', symbol: '€' }, '1'],
-		['a name, when the currency has no symbol', { id: 'USD', displayText: 'US Dollar' }, '9'],
+		['a name, when the currency is no ISO code and has no symbol', { id: 'cur-usd', displayText: 'US Dollar' }, '9'],
 		['the placeholder, when no currency is picked', { id: '' }, '8'],
 	])('sizes the currency picker to %s', (_, currency, size) => {
 		expect(prefixInput(currency).attributes('size')).toBe(size)
@@ -58,7 +62,11 @@ describe('currency group layout', { tags: ['component'] }, () => {
 	})
 
 	it('gives the embedded picker no room for a label it does not render', () => {
-		expect(value(declared('form/AFormLink.vue', '.aform_form-element--embedded'), 'padding-top')).toBe('0px')
+		expect(value(declared('form/ADropdown.vue', '.aform_form-element--embedded'), 'padding-top')).toBe('0px')
+	})
+
+	it('does not outline the UOM trigger; merged groups own focus via :focus-within', () => {
+		expect(value(declared('form/ADropdown.vue', '.aform_dropdown-button'), 'outline')).toBe('none')
 	})
 
 	it.each([
@@ -67,15 +75,17 @@ describe('currency group layout', { tags: ['component'] }, () => {
 			'.acurrency__amount',
 			['padding-top', 'padding-bottom', 'font-size', 'font-family', 'color'],
 		],
-		['form/AFormLink.vue', '.aform_input-field--embedded', ['padding-top', 'padding-bottom']],
-		['form/ACurrencyInput.vue', '.acurrency__base-field', ['padding-top', 'padding-bottom', 'font-size']],
+		['form/ADropdown.vue', '.aform_input-field--embedded', ['padding-top', 'padding-bottom']],
 		[
 			'form/AQuantityInput.vue',
 			'.aquantity__qty',
 			['padding-top', 'padding-bottom', 'font-size', 'font-family', 'color'],
 		],
-		['form/AQuantityInput.vue', '.aquantity__stock-field', ['padding-top', 'padding-bottom', 'font-size']],
-		['form/AQuantityInput.vue', '.aquantity__uom-toggle', ['font-size', 'font-family', 'color']],
+		[
+			'form/ADropdown.vue',
+			'.aform_dropdown-button',
+			['padding-top', 'padding-bottom', 'font-size', 'font-family', 'color'],
+		],
 		['form/AFormLink.vue', '.aform_form-btn', ['padding-top', 'padding-bottom', 'font-size', 'font-family']],
 	])('sets %s %s like every other field', (sfcPath, selector, properties) => {
 		const field = declared('AForm.vue', '.aform_input-field')

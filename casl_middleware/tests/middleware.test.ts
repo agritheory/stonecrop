@@ -1,6 +1,6 @@
 import { PureAbility, AbilityBuilder, type AbilityClass } from '@casl/ability'
 import type { GraphQLResolveInfo } from 'graphql'
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test'
 
 import type { AppAbility } from '../src/middleware/ability'
 import { createCaslMiddleware } from '../src/middleware/graphql'

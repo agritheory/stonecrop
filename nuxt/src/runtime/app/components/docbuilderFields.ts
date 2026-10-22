@@ -59,3 +59,45 @@ export function setOrDelete(field: Field, key: string, val: unknown): Field {
 export function updateFieldAt(fields: readonly Field[], realIndex: number, key: string, val: unknown): Field[] {
 	return fields.map((f, i) => (i === realIndex ? setOrDelete(f, key, val) : f))
 }
+
+/**
+ * Which field is which across edits, so a save can say which fields were renamed: the server moves each one's entry in
+ * the doctype's `defaults`, which the builder never shows. The panel edits `fieldname` like any other cell, and every
+ * edit rebuilds the field; a symbol key rides along on every spread above, and `JSON.stringify` never writes it.
+ */
+const FIELD_ID = Symbol('field id')
+let lastId = 0
+
+type IdentifiedField = Field & { [FIELD_ID]?: number }
+
+/** Give each field that has no id yet a new one. Call it on load and on each save, before reading the fields' ids. */
+export function withFieldIds(fields: readonly Field[]): Field[] {
+	return fields.map(f => ((f as IdentifiedField)[FIELD_ID] === undefined ? { ...f, [FIELD_ID]: ++lastId } : f))
+}
+
+/** Each field's name as the file now has it, by id: from the fields loaded, or the fields a save wrote. */
+export function savedNames(fields: readonly Field[]): ReadonlyMap<number, string> {
+	const names = new Map<number, string>()
+	for (const field of fields) {
+		const id = (field as IdentifiedField)[FIELD_ID]
+		if (id !== undefined) names.set(id, String(field.fieldname))
+	}
+	return names
+}
+
+/** The fields renamed since `saved` was taken, from the name in the file to the current one. */
+export function renamedFields(fields: readonly Field[], saved: ReadonlyMap<number, string>): Record<string, string> {
+	const renamed: Record<string, string> = {}
+	for (const field of fields) {
+		const id = (field as IdentifiedField)[FIELD_ID]
+		const before = id === undefined ? undefined : saved.get(id)
+		if (before !== undefined && before !== field.fieldname) renamed[before] = String(field.fieldname)
+	}
+	return renamed
+}
+
+/** A new field copied from `field`: every key but its name, its introspected marker and its id. */
+export function copyField(field: Field, fieldname: string): Field {
+	const { source: _source, [FIELD_ID]: _id, ...rest } = field as IdentifiedField
+	return { ...rest, fieldname }
+}

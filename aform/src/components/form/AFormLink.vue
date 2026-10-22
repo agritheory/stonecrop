@@ -15,7 +15,6 @@
 						aria-autocomplete="list"
 						:class="['aform_input-field', { 'aform_input-field--embedded': embedded }]"
 						:placeholder="placeholder"
-						:size="embeddedSize"
 						:aria-label="ariaLabel"
 						:required="required"
 						:aria-expanded="dropdownOpen"
@@ -47,27 +46,28 @@
 						<span class="aform_form-btn-name">{{ icon === 'chevron-right' ? '›' : '→' }}</span>
 					</button>
 				</div>
-				<ul
-					v-if="dropdownOpen"
-					:id="listboxId"
-					ref="results"
-					class="autocomplete-results"
-					role="listbox"
-					:aria-label="ariaLabel">
-					<li v-if="loading" class="autocomplete-result loading">Loading…</li>
+				<ADropdownList
+					v-if="mode !== 'read'"
+					:listbox-id="listboxId"
+					:ariaLabel="ariaLabel ?? label ?? ''"
+					:open="dropdownOpen"
+					:option-count="() => dropdownResults.length"
+					:active-index="() => activeIndex">
+					<li v-if="loading" class="loading autocomplete-result">Loading…</li>
 					<li
 						v-for="(option, i) in dropdownResults"
 						v-else
 						:id="`${listboxId}-opt-${i}`"
 						:key="String(option.id)"
 						role="option"
-						:aria-selected="i === activeIndex"
+						:aria-selected="isResultSelected(option)"
 						class="autocomplete-result"
-						:class="{ 'is-active': i === activeIndex }"
-						@mousedown.prevent="selectOption(option)">
+						:class="{ 'is-active': i === activeIndex, 'is-selected': isResultSelected(option) }"
+						@mousedown.prevent="selectOption(option)"
+						@mouseenter="activeIndex = i">
 						<slot name="option" :option="option">{{ option.displayText ?? String(option.id) }}</slot>
 					</li>
-				</ul>
+				</ADropdownList>
 			</div>
 			<label v-if="label && !embedded" class="aform_field-label">{{ label }}</label>
 		</template>
@@ -76,11 +76,12 @@
 
 <script setup lang="ts">
 import { vOnClickOutside } from '@vueuse/components'
-import { computed, inject, ref, useId, useTemplateRef, watch } from 'vue'
+import { computed, inject, ref, useId, watch } from 'vue'
 
-import { fitDropdownList } from '../../composables/dropdownList'
 import type { AFormLinkModelValue, AFormLinkNavigator, AFormLinkValue, ComponentProps } from '../../types'
 import { deserializeFunction } from '../../utils/deserialize'
+import { asLinkValue, linkDisplayText, linkId } from '../../utils/linkValue'
+import ADropdownList from './ADropdownList.vue'
 
 const {
 	label,
@@ -104,9 +105,9 @@ const {
 		disabled?: boolean
 		filterFunction?: string | ((search: string) => AFormLinkValue[] | Promise<AFormLinkValue[]>)
 		isAsync?: boolean
-		// Bare rendering for compositing into another component's own bordered container
-		// (e.g. ACurrencyInput's merged amount+currency group): suppresses this component's
-		// own outline/border and floating label so the parent supplies both exactly once.
+		// Bare rendering for compositing into another component's own bordered container:
+		// suppresses this component's own outline/border and floating label so the parent
+		// supplies both exactly once.
 		embedded?: boolean
 		placeholder?: string
 		// Accessible name for the search input. Needed in `embedded` mode, where the visible
@@ -125,30 +126,40 @@ const modelValue = defineModel<AFormLinkModelValue>({ default: () => ({ id: '', 
 
 const hasValidId = computed(() => linkId(modelValue.value) !== undefined)
 
+// The record a link names, as last seen with its text: the value itself, a pick, or this field's own
+// lookup. Kept here and never written into the record: a lookup is not a pick, and Save's reply hands
+// the id back bare.
+const knownLink = ref<AFormLinkValue>()
+
+watch(
+	() => modelValue.value,
+	value => {
+		if (linkDisplayText(value)) knownLink.value = asLinkValue(value)
+	},
+	{ immediate: true }
+)
+
+const shownLink = computed<AFormLinkModelValue>(() => {
+	const value = modelValue.value
+	if (linkDisplayText(value)) return value
+	const id = linkId(value)
+	const known = knownLink.value
+	return known && id !== undefined && String(known.id) === String(id) ? known : value
+})
+
 const displayedText = computed(() => {
-	const id = linkId(modelValue.value)
+	const id = linkId(shownLink.value)
 	if (id === undefined) return '—'
-	if (formatter) return formatter(asLinkValue(modelValue.value))
-	return linkDisplayText(modelValue.value) ?? id
+	if (formatter) return formatter(asLinkValue(shownLink.value))
+	return linkDisplayText(shownLink.value) ?? id
 })
 
 const searchText = ref(hasValidId.value ? displayedText.value : '')
 
-// An embedded input is as wide as the text it shows; left to the browser it is 20 characters wide
-// whatever it holds, which made the currency prefix half the group.
-const embeddedSize = computed(() =>
-	embedded ? Math.max((searchText.value || placeholder || '').length, 1) : undefined
-)
 const dropdownOpen = ref(false)
 const loading = ref(false)
 const dropdownResults = ref<AFormLinkValue[]>([])
 const activeIndex = ref<number | null>(null)
-
-fitDropdownList(useTemplateRef<HTMLElement>('results'), {
-	isOpen: () => dropdownOpen.value,
-	optionCount: () => dropdownResults.value.length,
-	activeIndex: () => activeIndex.value,
-})
 
 const navigator = inject<AFormLinkNavigator | null>('aformLinkNavigator', null)
 
@@ -165,27 +176,6 @@ const resolver = inject<ResolverFn | null>('aformLinkResolver', null)
 // It survives only until the parent writes its scalar back, so it fixed a scalar passed once at
 // mount and nothing else, and it emitted an `update:modelValue` the user never made on every
 // mount of a scalar-valued link field.
-function linkId(value: AFormLinkModelValue | null | undefined): string | undefined {
-	if (value == null) return undefined
-	if (typeof value === 'string') return value === '' ? undefined : value
-	if (typeof value === 'number') return String(value)
-	const id = value.id
-	if (id === null || id === undefined || id === '') return undefined
-	return String(id)
-}
-
-function linkDisplayText(value: AFormLinkModelValue | null | undefined): string | undefined {
-	if (value == null || typeof value !== 'object') return undefined
-	const text = value.displayText
-	return typeof text === 'string' || typeof text === 'number' ? String(text) : undefined
-}
-
-function asLinkValue(value: AFormLinkModelValue | null | undefined): AFormLinkValue {
-	if (value != null && typeof value === 'object') return value
-	const id = linkId(value)
-	return id !== undefined ? { id } : { id: '' }
-}
-
 // When the id changes (including on first render), resolve its display text.
 // Tries filterFunction first (returns a list of candidates to search); falls back to the
 // injected resolver (a direct doctype+id lookup). Skips if displayText is already set.
@@ -197,7 +187,7 @@ watch(
 		// and by `closeDropdown` — and at setup a record's value has not arrived yet. So a link the
 		// server resolved for us (the middleware returns `{ id, displayText }` for an inline link)
 		// rendered blank, while a bare id rendered fine because it took the resolve branch.
-		if (id && linkDisplayText(modelValue.value)) {
+		if (id && linkDisplayText(shownLink.value)) {
 			// Through `displayedText` rather than the raw text, for the reason the resolve branch
 			// formats too: the same value must not render differently depending on how it arrived.
 			searchText.value = displayedText.value
@@ -223,17 +213,15 @@ watch(
 				displayText = (await resolver(doctype, id.toString())) ?? undefined
 			}
 			if (displayText) {
-				// Merge the whole matched record, not just its display text — the extra properties
-				// an AFormLinkValue carries are part of the value (ACurrencyInput's `symbol`, which
-				// its formatter renders, is one). `id` is pinned to the value we already hold so a
-				// loosely-typed match (1 vs '1') can't change the FK's type underneath the record.
-				const resolved: AFormLinkValue = { ...asLinkValue(modelValue.value), ...match, id, displayText }
+				// Keep the whole matched record, not just its display text: a formatter may render the
+				// extra properties an AFormLinkValue carries. `id` is pinned to the value we already
+				// hold so a loosely-typed match (1 vs '1') can't stand for a different record.
+				knownLink.value = { ...asLinkValue(modelValue.value), ...match, id, displayText }
 				// Format for the same reason selectOption does: the input shows `formatter`'s output
 				// everywhere else (initial render, blur), so assigning the raw displayText here would
 				// make a value that arrived as a bare id render differently from the identical value
 				// picked by hand — e.g. "Euro" instead of "€".
-				searchText.value = formatter ? formatter(resolved) : displayText
-				modelValue.value = resolved
+				searchText.value = displayedText.value
 			}
 		} catch {
 			// silent — fall back to showing the raw id
@@ -252,6 +240,11 @@ const handleNavigate = () => {
 				`Add \`options\` (or \`doctype\`) to the Link field definition to enable navigation.`
 		)
 	}
+}
+
+const isResultSelected = (option: AFormLinkValue) => {
+	const id = linkId(modelValue.value)
+	return id !== undefined && String(option.id) === String(id)
 }
 
 const openDropdown = async (text: string) => {
@@ -336,13 +329,17 @@ const selectCurrent = () => {
 /* No top padding: the shared rule reserves it for a floating label, which embedded mode never renders. */
 .aform_form-element--embedded {
 	min-width: 0;
-	flex-grow: 0;
+	flex: 1 1 auto;
+	width: 100%;
 	padding-top: 0;
 }
 
 /* Embedded mode: the host component's own container supplies the border, so this input goes
    borderless. Its vertical padding stays the standalone field's, so its text lines up with the host's. */
 .aform_input-field--embedded {
+	box-sizing: border-box;
+	width: 100%;
+	min-width: 0;
 	outline: none;
 	background: transparent;
 	padding: 0.5rem 1ch;
@@ -353,7 +350,6 @@ const selectCurrent = () => {
    dropdown flush with the input, so a long display text can't overhang a narrow form column. */
 .aform_form-element--embedded .autocomplete-results {
 	min-width: 100%;
-	width: max-content;
 }
 
 /* Give the button the same outline as the input, then slide it 2px left so the outlines
@@ -403,33 +399,5 @@ const selectCurrent = () => {
 .aform_form-btn:focus,
 .input-group:focus-within .aform_form-btn {
 	outline-color: var(--sc-input-active-border-color);
-}
-
-.autocomplete-results {
-	position: absolute;
-	box-sizing: border-box;
-	width: 100%;
-	z-index: 100;
-	padding: 0;
-	margin: 0;
-	list-style: none;
-	border: 1px solid var(--sc-input-active-border-color);
-	border-top: none;
-	border-radius: 0 0 var(--sc-border-radius) var(--sc-border-radius);
-	background: var(--sc-overlay-background);
-	box-shadow: var(--sc-overlay-shadow);
-	max-height: var(--sc-dropdown-max-height);
-	overflow-y: auto;
-}
-
-.autocomplete-result {
-	padding: 4px 6px;
-	cursor: pointer;
-}
-
-.autocomplete-result.is-active,
-.autocomplete-result:hover {
-	background-color: var(--sc-row-color-zebra-light);
-	color: var(--sc-input-active-border-color);
 }
 </style>

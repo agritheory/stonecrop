@@ -1,6 +1,6 @@
 import type { DoctypeField } from '@stonecrop/schema'
 import { List } from 'immutable'
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test'
 import { createRouter, createMemoryHistory } from 'vue-router'
 
 import Doctype from '../../src/doctype'
@@ -11,7 +11,7 @@ import type { StonecropOptions } from '../../src/types/stonecrop'
 import { ImmutableDoctype } from '../../src/types'
 
 // Mock fetch globally
-globalThis.fetch = vi.fn() as unknown as typeof fetch
+globalThis.fetch = vi.fn()
 
 function createDoctype(name: string, fields?: DoctypeField[], links?: Record<string, any>) {
 	const schema = List<DoctypeField>(
@@ -480,27 +480,32 @@ describe('Stonecrop class with HST integration', { tags: ['unit'] }, () => {
 			await expect(localStonecrop.getRecords(mockDoctype)).rejects.toThrow('No data client configured')
 		})
 
-		it('getRecord does not add record to HST when client returns null', async () => {
+		it.each([
+			['no result', null],
+			['a null record', { record: null, unknownLinks: [] }],
+		])('getRecord rejects with RECORD_NOT_FOUND and stores nothing when the server answers %s', async (_, answer) => {
+			// Returning quietly left every caller to draw the missing record as an empty, editable one.
 			const mockClient = {
 				getMeta: vi.fn(),
-				getRecord: vi.fn().mockResolvedValue(null),
+				getRecord: vi.fn().mockResolvedValue(answer),
 				getRecords: vi.fn(),
 				runAction: vi.fn(),
 			}
 			const options: StonecropOptions = { client: mockClient }
 			const localStonecrop = new Stonecrop(registry, undefined, options)
 
-			await localStonecrop.getRecord(mockDoctype, 'missing-id')
-
-			const stored = localStonecrop.getRecordById('task', 'missing-id')
-			expect(stored).toBeUndefined()
+			await expect(localStonecrop.getRecord(mockDoctype, 'missing-id')).rejects.toMatchObject({
+				code: 'RECORD_NOT_FOUND',
+				message: 'Record not found: Task missing-id',
+			})
+			expect(localStonecrop.getRecordById('task', 'missing-id')).toBeUndefined()
 		})
 
 		it('setClient allows deferred client configuration', async () => {
 			const mockRecord = { id: 'deferred', title: 'Deferred Task' }
 			const mockClient = {
 				getMeta: vi.fn(),
-				getRecord: vi.fn().mockResolvedValue(mockRecord),
+				getRecord: vi.fn().mockResolvedValue({ record: mockRecord, unknownLinks: [] }),
 				getRecords: vi.fn(),
 				runAction: vi.fn(),
 			}
@@ -517,6 +522,7 @@ describe('Stonecrop class with HST integration', { tags: ['unit'] }, () => {
 			// Now getRecord should work
 			await localStonecrop.getRecord(mockDoctype, 'deferred')
 			expect(mockClient.getRecord).toHaveBeenCalledOnce()
+			expect(localStonecrop.getRecordById('task', 'deferred')?.get('title')).toBe('Deferred Task')
 		})
 
 		it('dispatchAction delegates to client.runAction', async () => {
@@ -586,7 +592,7 @@ describe('Stonecrop class with HST integration', { tags: ['unit'] }, () => {
 					getRecords: vi.fn(),
 					runAction: vi.fn().mockResolvedValue({ success: true, error: null, ...reply }),
 				}
-				return { doctype, sc: new Stonecrop(registry, undefined, { client } as StonecropOptions) }
+				return { doctype, sc: new Stonecrop(registry, undefined, { client }) }
 			}
 
 			it('files the returned record under the identity the server settled on, not the one dispatched', async () => {
@@ -652,7 +658,7 @@ describe('Stonecrop class with HST integration', { tags: ['unit'] }, () => {
 						.fn()
 						.mockResolvedValue({ success: false, data: { id: '7' }, record: { id: '7' }, error: 'refused' }),
 				}
-				const sc2 = new Stonecrop(registry, undefined, { client } as StonecropOptions)
+				const sc2 = new Stonecrop(registry, undefined, { client })
 				await sc2.dispatchAction(refused, 'save', [{ data: {} }])
 				expect(sc2.getRecordIds('user')).toEqual([])
 			})
@@ -734,6 +740,11 @@ describe('Stonecrop class with HST integration', { tags: ['unit'] }, () => {
 			// record 'ghost' was never added
 			const state = stonecrop.getRecordState('task', 'ghost')
 			expect(state).toBe('draft')
+		})
+
+		it('gives no state for a record not created yet', () => {
+			// The server treats such a record as in no state, so assuming the first one offered actions it refuses.
+			expect(stonecrop.getRecordState('task', DRAFT_RECORD_ID)).toBeNull()
 		})
 
 		describe('WorkflowMeta format support', () => {
@@ -912,6 +923,36 @@ describe('Stonecrop class with HST integration', { tags: ['unit'] }, () => {
 			const record = second.getRecordById('task', '123')
 			expect(record).toBeDefined()
 			expect(record!.get('title')).toBe('Test Task')
+		})
+	})
+
+	describe('initializeNestedData', () => {
+		// A section is filled once, after its starting values arrive, so a slow value never lands on what was typed.
+		it('keeps what was typed after a slow starting value arrives', async () => {
+			const nestedRegistry = new Registry()
+			const task = createDoctype('Task')
+			const address = createDoctype('Address', [
+				{ kind: 'field', fieldname: 'street', component: 'ATextInput' },
+				{ kind: 'field', fieldname: 'city', component: 'ATextInput' },
+			])
+			nestedRegistry.addDoctype(task)
+			nestedRegistry.addDoctype(address)
+			nestedRegistry.registerDefaults('address', {
+				city: () => new Promise(resolve => setTimeout(() => resolve('Default City'), 10)) as any,
+			})
+			const sc = new Stonecrop(nestedRegistry)
+			;(sc as any).ensureDoctypeExists('task')
+
+			await sc.initializeNestedData('task.new', address)
+			expect(sc.getStore().get('task.new.city')).toBe('Default City')
+			sc.getStore().set('task.new.street', '12 Elm St')
+			sc.getStore().set('task.new.city', 'Portland')
+			await new Promise(resolve => setTimeout(resolve, 30))
+
+			expect([sc.getStore().get('task.new.street'), sc.getStore().get('task.new.city')]).toEqual([
+				'12 Elm St',
+				'Portland',
+			])
 		})
 	})
 

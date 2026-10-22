@@ -28,11 +28,11 @@ import { useNuxtApp } from 'nuxt/app'
  *
  * ## RouteContext vs DoctypeContext
  *
- * - **RouteContext** (`{ path, segments }`): Raw URL routing context. Used by the router
- *   layer to identify "where we are" in the application (e.g., `/plan/123` → segments `['plan', '123']`).
+ * - **RouteContext** (`{ path, segments }`): Raw URL routing context, "where we are" in the
+ *   application (e.g., `/plan/123` → segments `['plan', '123']`).
  *
- * - **DoctypeContext** (`{ doctype, recordId? }`): Semantic doctype context. Used by the
- *   data layer to identify "what we're working with" (e.g., `{ doctype: 'Plan', recordId: '123' }`).
+ * - **DoctypeContext** (`{ doctype, recordId? }`): Semantic doctype context, "what we're working
+ *   with" (e.g., `{ doctype: 'Plan', recordId: '123' }`).
  *
  * Your `setMeta` implementation (configured via `useStonecropSetup()`) bridges these:
  * extract doctype/recordId from the route segments and pass `DoctypeContext` to your data client.
@@ -192,8 +192,8 @@ export function useStonecropRegistry() {
 		},
 
 		/**
-		 * Set the `getMeta` function on the Registry.
-		 * Called by `useStonecrop({ doctype: 'slug' })` to lazy-load that doctype's metadata.
+		 * Set the `getMeta` function on the Registry, which loads a doctype's metadata the first
+		 * time the doctype is asked for by slug.
 		 *
 		 * You must bridge `RouteContext` → `DoctypeContext`:
 		 * - Extract doctype name from `segments` (e.g., `segments[0]`)

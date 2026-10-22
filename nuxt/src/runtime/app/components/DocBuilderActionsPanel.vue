@@ -59,7 +59,6 @@
 									:model-value="(row.__action ?? row.__trigger)?.clientHandler ?? ''"
 									:extra-libs="row.kind === 'trigger' ? TRIGGER_API_STUBS : INJECTED_API_STUBS"
 									:libs="EDITOR_LIBS"
-									:vs-path="VS_PATH"
 									:options="row.kind === 'trigger' ? TRIGGER_EDITOR_OPTIONS : EDITOR_OPTIONS"
 									language="javascript"
 									height="200px"
@@ -120,13 +119,13 @@ declare const graphql: {
   query(query: string, variables?: Record<string, unknown>): Promise<unknown>
 }
 declare const record: Record<string, unknown>
+declare function prefillDraft(doctype: string, values: Record<string, unknown>): void
 `
 const TRIGGER_API_STUBS = `
 declare const record: Record<string, unknown>
 declare const value: unknown
 declare function setError(field: string, message: string): void
 `
-const VS_PATH = '/stonecrop-monaco/vs'
 const EDITOR_OPTIONS = {
 	placeholder: "e.g.  await runAction('Submit');  router.push(`/issue/${record.id}`)",
 }

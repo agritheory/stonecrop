@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect } from 'vite-plus/test'
 import {
 	CANONICAL_COMPONENTS,
 	componentCategory,
@@ -21,11 +21,12 @@ describe('component-meta', { tags: ['unit'] }, () => {
 		expect(componentCategory('ASegmentedControl')).toBe('select')
 		expect(componentCategory('ACodeEditor')).toBe('code')
 		expect(componentCategory('AFormLink')).toBe('link')
+		expect(componentCategory('ASemverInput')).toBe('semver')
 	})
 
 	it('categorizes the date components that previously had no category', () => {
 		// The component is the only thing that says what a field means, so an uncategorised
-		// `ADatePicker` (e.g. Task.json.dueDate) would silently lose its date formatting.
+		// `ADatePicker` (e.g. task.json's dueDate) would silently lose its date formatting.
 		expect(componentCategory('ADatePicker')).toBe('date')
 		expect(componentCategory('ADateSelection')).toBe('date')
 	})

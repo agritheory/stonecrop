@@ -1,7 +1,7 @@
 import type { PgCodec, PgExecutor } from '@dataplan/pg'
 import { LIST_TYPES, TYPES, domainOfCodec, listOfCodec } from '@dataplan/pg'
 import { sql } from 'postgraphile/pg-sql2'
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect } from 'vite-plus/test'
 
 import { createColumnReader } from '../src/columns'
 import { fakeExecutor } from './helpers/fakePgResources'
@@ -167,7 +167,7 @@ describe('createColumnReader', { tags: ['unit', 'graphql'] }, () => {
 			...TYPES.date,
 			castFromPg: (fragment: unknown) => sql`to_char(${fragment as never}, ${sql.value('YYYY')})`,
 		}
-		const bound = tableCodec('public', 'sc_period', { starts_on: boundCast as unknown as PgCodec })
+		const bound = tableCodec('public', 'sc_period', { starts_on: boundCast })
 		expect(() =>
 			createColumnReader({ bound }, fakeExecutor).select('ScPeriod', [{ column: 'starts_on', alias: 'startsOn' }])
 		).toThrow('casts with a bound value')

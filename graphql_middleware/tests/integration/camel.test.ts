@@ -6,7 +6,7 @@ import { makeSchema } from 'postgraphile'
 import { PostGraphileAmberPreset } from 'postgraphile/presets/amber'
 import { execute, hookArgs } from 'postgraphile/grafast'
 import { makePgService, makeWithPgClientViaPgClientAlreadyInTransaction } from 'postgraphile/adaptors/pg'
-import { describe, it, expect, beforeAll, afterAll, inject } from 'vitest'
+import { describe, it, expect, beforeAll, afterAll, inject } from 'vite-plus/test'
 
 import { createStonecropPlugin } from '../../src/plugin/postgraphile'
 import { loadDoctypesFromObject, clearRegistry } from '../../src/registry/doctypes'

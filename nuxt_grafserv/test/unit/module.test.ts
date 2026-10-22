@@ -1,4 +1,5 @@
 import { createRequire } from 'node:module'
+import { fileURLToPath } from 'node:url'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { addServerHandler, addServerPlugin } from '@nuxt/kit'
 
@@ -229,6 +230,10 @@ describe('Grafserv Module', { tags: ['unit', 'nuxt', 'graphql'] }, () => {
 		// scaffolded resolvers.ts from bare `grafast` — so they have to land on the same file for the
 		// single-instance guarantee above to mean anything.
 		it('lands every spelling of grafast and graphql on the same file', async () => {
+			// The `postgraphile/*` aliases exist only when PostGraphile resolves from the host app, so
+			// the host here is this package, which installs it. `/test/project` resolved it only through
+			// the store-wide NODE_PATH that pnpm's `vitest` shim exported, and `vp test` exports none.
+			mockNuxt.options.rootDir = fileURLToPath(new URL('../..', import.meta.url))
 			const options: ModuleOptions = {
 				type: 'schema',
 				schema: 'server/**/*.graphql',

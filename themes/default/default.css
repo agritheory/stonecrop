@@ -51,6 +51,15 @@ before all other rules.
 		--sc-form-field-max-width: 50ch;
 		--sc-form-label-offset: var(--sc-space-2);
 		--sc-dropdown-max-height: 17rem; /* about ten rows */
+		/* Dropdown lists sit on --sc-overlay-background (white). Pointer and keyboard highlight share one fill. */
+		--sc-dropdown-option-hover-background: color-mix(in srgb, var(--sc-gray-50) 28%, var(--sc-overlay-background));
+		--sc-dropdown-option-active-background: var(--sc-dropdown-option-hover-background);
+		/* Same family as ATable row borders; softened on white overlay (full gray-50 reads heavy). */
+		--sc-dropdown-option-selected-accent: color-mix(
+			in srgb,
+			var(--sc-row-border-color) 45%,
+			var(--sc-overlay-background)
+		);
 
 		/* Semantic: brand aliases */
 		--sc-primary-color: var(--sc-color-primary);

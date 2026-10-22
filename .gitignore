@@ -22,9 +22,8 @@ coverage/
 # nyc test coverage
 .nyc_output/
 
-# Vitest browser mode failure screenshots, and the copies it attaches to test reports
-__screenshots__/
-.vitest-attachments/
+# Vitest's artifact root: browser failure screenshots, test attachments and reporter output
+.vitest/
 
 # Grunt intermediate storage (http://gruntjs.com/creating-plugins#storing-task-files)
 .grunt/

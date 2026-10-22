@@ -1,5 +1,68 @@
 # Change Log - @stonecrop/utilities
 
+## 0.54.0
+
+### Minor Changes
+
+- 6496bcc: Exports `useArithmeticInput`, the number box that takes arithmetic, with `evaluateArithmetic` and the helpers it uses.
+
+## 0.53.0
+
+## 0.52.0
+
+## 0.51.0
+
+## 0.50.1
+
+## 0.50.0
+
+## 0.49.0
+
+## 0.48.1
+
+## 0.48.0
+
+### Minor Changes
+
+- d5b5a74: A money box's currency slot shows the currency's symbol, such as "$", whenever its id is an ISO 4217 code, instead of its name cut short, and `formatCurrencySymbol` in `@stonecrop/utilities` returns that symbol.
+
+## 0.47.0
+
+## 0.46.1
+
+## 0.46.0
+
+## 0.45.1
+
+## 0.45.0
+
+## 0.44.0
+
+### Minor Changes
+
+- 358ecaf: `ACurrencyInput`'s amount box and a currency cell being edited write and read amounts with the browser's separators, as a table cell shows them (`1,234.56` in English, `1.234,56` in German), and with the currency's decimals. `options.amountMask: false` turns this off. `@stonecrop/utilities` exports the helpers: `formatCurrencyAmountInput`, `parseCurrencyAmountInput`, `currencyAmountEntryPattern` and `currencyInputFractionDigits`.
+- 358ecaf: Replace read-only conversion rows on `ACurrencyInput` and `AQuantityInput` with a compact helper line when the entered unit differs from the base. Remove `stockUomLabel`, `stockQtyLabel`, `conversionFactorLabel`, `baseCurrencyLabel`, `baseAmountLabel`, and `exchangeRateLabel` props.
+  
+  Table quantity and currency formatters omit redundant units and use `Intl` for currency cells. Quantity column sort/filter compares on `stockQty`. `AQuantityInput` accepts negative quantities.
+
+### Patch Changes
+
+- 358ecaf: `ACurrencyInput`'s amount box and a currency cell being edited refuse a second decimal point, typed or pasted, which would leave no amount. `currencyAmountEntryPattern` allows one, followed only by digits.
+
+## 0.43.0
+
+## 0.42.0
+
+## 0.41.1
+
+## 0.41.0
+
+### Minor Changes
+
+- 863c853: `isSemver` and `compareSemver` check and order versions under SemVer 2.0.0, the grammar and precedence of the pg-semver Postgres type, and `isSemverPrefix` says whether typing more could still make a text a version.
+
+## 0.40.0
+
 ## 0.39.0
 
 ## 0.38.1

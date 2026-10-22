@@ -4,6 +4,8 @@ A three-view UI shell for Stonecrop applications. Renders a doctype list → rec
 
 Desktop reads through Stonecrop: on navigating to a list or a record it calls `Stonecrop.getRecords` / `Stonecrop.getRecord`, which fetch through the host's registered `DataClient` and write into HST. Writes are the host's: Desktop emits `action` and the host dispatches it.
 
+A record shows as a form only once it is in HST. Until then the record view says it is loading, that the server does not have the record, or why the read failed (with **Try again**), and offers none of the record's actions.
+
 ## Features
 
 - **Three-view layout**: doctypes → records → record form, navigated by route or adapter

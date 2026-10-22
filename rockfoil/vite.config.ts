@@ -1,8 +1,9 @@
 import { resolve } from 'path'
-import { coverageConfigDefaults, defineConfig } from 'vitest/config'
+import { coverageConfigDefaults, defineConfig } from 'vite-plus'
 
 import { buildTask } from '../tools/vite/build-task.ts'
 import { testTags } from '../tools/vite/test-tags.ts'
+import { fsModuleCachePath } from '../tools/vite/fs-module-cache.ts'
 
 const projectRootDir = resolve(import.meta.dirname)
 
@@ -29,6 +30,7 @@ export default defineConfig({
 		},
 	},
 	test: {
+		fsModuleCachePath,
 		globals: true,
 		tags: testTags,
 		environment: 'jsdom',
@@ -48,7 +50,7 @@ export default defineConfig({
 			exclude: [
 				...coverageConfigDefaults.exclude,
 				'src/index.ts', // ignore the entry file
-				'types/**', // ignore types
+				'src/types/**', // ignore types
 			],
 		},
 	},

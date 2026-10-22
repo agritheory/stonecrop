@@ -1,8 +1,16 @@
 import type { DoctypeField, LinkDeclaration, TriggerDefinition, WorkflowMeta } from '@stonecrop/schema'
-import { getRecordIdentity, getRecordIdField, isActionAllowedInState, normalizeFieldKind } from '@stonecrop/schema'
+import {
+	getRecordIdentity,
+	getRecordIdField,
+	isActionAllowedInState,
+	isActionAllowedOnNewRecord,
+	normalizeFieldKind,
+	toSlug,
+} from '@stonecrop/schema'
 import { List } from 'immutable'
 import { Component } from 'vue'
 
+import type { DoctypeDefaults } from './types/defaults'
 import type { DoctypeConfig, ImmutableDoctype } from './types/doctype'
 
 /**
@@ -62,6 +70,13 @@ export default class Doctype {
 	readonly displayField?: string
 
 	/**
+	 * Starting values for new records: fixed data in the shape of the record.
+	 * @public
+	 * @readonly
+	 */
+	readonly defaults?: DoctypeDefaults
+
+	/**
 	 * Creates a new Doctype instance
 	 * @param doctype - The doctype name
 	 * @param schema - The doctype schema definition
@@ -76,7 +91,8 @@ export default class Doctype {
 		workflow: ImmutableDoctype['workflow'],
 		component?: Component,
 		links?: Record<string, LinkDeclaration>,
-		displayField?: string
+		displayField?: string,
+		defaults?: DoctypeDefaults
 	) {
 		this.doctype = doctype
 		this.schema = schema
@@ -84,6 +100,7 @@ export default class Doctype {
 		this.component = component
 		this.links = links
 		this.displayField = displayField
+		this.defaults = defaults
 	}
 
 	/**
@@ -133,7 +150,15 @@ export default class Doctype {
 		const fields = config.fields?.map(normalizeFieldKind) as DoctypeField[] | undefined
 		const schema = fields ? List(fields) : List<DoctypeField>()
 
-		return new Doctype(config.name, schema, config.workflow, undefined, config.links, config.displayField)
+		return new Doctype(
+			config.name,
+			schema,
+			config.workflow,
+			undefined,
+			config.links,
+			config.displayField,
+			config.defaults
+		)
 	}
 
 	/**
@@ -198,7 +223,11 @@ export default class Doctype {
 	 * Returns the transitions available from a given workflow state, derived from the
 	 * doctype's workflow configuration. Supports both XState format and WorkflowMeta format.
 	 *
-	 * @param currentState - The state name to read transitions from
+	 * A record not created yet is in no state: given `null`, only the actions that can run on it
+	 * are listed (`isActionAllowedOnNewRecord`), and since none of them moves it, each has a
+	 * `targetState` of `''`.
+	 *
+	 * @param currentState - The state name to read transitions from, or `null` for a record not created yet
 	 * @returns Array of transition descriptors with `name` and `targetState`
 	 *
 	 * @example
@@ -209,19 +238,25 @@ export default class Doctype {
 	 *
 	 * @public
 	 */
-	getAvailableTransitions(currentState: string): Array<{ name: string; targetState: string }> {
+	getAvailableTransitions(currentState: string | null): Array<{ name: string; targetState: string }> {
 		const workflow = this.workflow
 		if (!workflow) return []
 
 		// Check if this is WorkflowMeta format (states is an array) or XState format (states is an object)
 		if (Array.isArray(workflow.states)) {
-			// WorkflowMeta format: validate state exists and filter actions by allowedStates
-			const states = workflow.states
-			if (!states.includes(currentState)) return []
-
 			// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Array.isArray(workflow.states) confirms WorkflowMeta format above
 			const actions = (workflow as WorkflowMeta).actions
 			if (!actions) return []
+
+			if (currentState === null) {
+				return Object.entries(actions)
+					.filter(([, actionDef]) => !actionDef.stateless && isActionAllowedOnNewRecord(actionDef))
+					.map(([name]) => ({ name, targetState: '' }))
+			}
+
+			// WorkflowMeta format: validate state exists and filter actions by allowedStates
+			const states = workflow.states
+			if (!states.includes(currentState)) return []
 
 			return (
 				Object.entries(actions)
@@ -235,9 +270,10 @@ export default class Doctype {
 			)
 		}
 
-		// XState format: use the on property of the state
+		// XState format: use the on property of the state. An XState event declares none of what
+		// `isActionAllowedOnNewRecord` reads, so a record not created yet has none.
 		const states = workflow.states
-		if (!states) return []
+		if (!states || currentState === null) return []
 		const stateConfig = states[currentState]
 		if (!stateConfig?.on) return []
 		return Object.entries(stateConfig.on).map(([name, target]) => ({
@@ -254,7 +290,9 @@ export default class Doctype {
 	 *
 	 * Only meaningful for WorkflowMeta format; XState workflows have no Commands.
 	 *
-	 * @param currentState - The record's current state, used to honor a Command's `allowedStates`
+	 * @param currentState - The record's current state, used to honor a Command's `allowedStates`,
+	 * or `null` for a record not created yet, which lists the Commands that can run on one
+	 * (`isActionAllowedOnNewRecord`)
 	 * @returns Array of command descriptors with `name`
 	 *
 	 * @example
@@ -265,7 +303,7 @@ export default class Doctype {
 	 *
 	 * @public
 	 */
-	getAvailableCommands(currentState?: string): Array<{ name: string }> {
+	getAvailableCommands(currentState?: string | null): Array<{ name: string }> {
 		const workflow = this.workflow
 		if (!workflow) return []
 
@@ -275,7 +313,13 @@ export default class Doctype {
 		if (!actions) return []
 
 		return Object.entries(actions)
-			.filter(([, actionDef]) => actionDef.stateless === true && isActionAllowedInState(actionDef, currentState ?? ''))
+			.filter(
+				([, actionDef]) =>
+					actionDef.stateless === true &&
+					(currentState === null
+						? isActionAllowedOnNewRecord(actionDef)
+						: isActionAllowedInState(actionDef, currentState ?? ''))
+			)
 			.map(([name]) => ({ name }))
 	}
 
@@ -336,10 +380,8 @@ export default class Doctype {
 	}
 
 	/**
-	 * Converts the registered doctype string to a slug (kebab-case). The following conversions are made:
-	 * - It replaces camelCase and PascalCase with kebab-case strings
-	 * - It replaces spaces and underscores with hyphens
-	 * - It converts the string to lowercase
+	 * Converts the registered doctype string to a slug (kebab-case): camelCase and PascalCase become
+	 * kebab-case, spaces and underscores become hyphens, and the result is lowercased.
 	 *
 	 * @returns The slugified doctype string
 	 *
@@ -352,9 +394,6 @@ export default class Doctype {
 	 * @public
 	 */
 	get slug() {
-		return this.doctype
-			.replace(/([a-z])([A-Z])/g, '$1-$2')
-			.replace(/[\s_]+/g, '-')
-			.toLowerCase()
+		return toSlug(this.doctype)
 	}
 }

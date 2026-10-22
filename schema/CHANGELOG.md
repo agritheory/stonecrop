@@ -1,5 +1,70 @@
 # Change Log - @stonecrop/schema
 
+## 0.54.0
+
+## 0.53.0
+
+## 0.52.0
+
+## 0.51.0
+
+### Minor Changes
+
+- e8842fb: A record not created yet is offered only the actions the server guard runs on one (a self-transition, or an action declaring no `allowedStates` and no `nextState`), a rule now exported as `isActionAllowedOnNewRecord`, so Desktop no longer offers a new record a transition the server refuses.
+
+## 0.50.1
+
+## 0.50.0
+
+## 0.49.0
+
+### Minor Changes
+
+- d5fbd9a: An action now reduces a link picked inside the rows of a declared relation, such as a job's tasks, to its id before any handler sees it, as it already did for a record's own links; `unwrapInlineLinks` now takes the doctype's meta rather than its fields, plus an optional lookup for each relation's target.
+
+## 0.48.1
+
+### Patch Changes
+
+- 620acb0: Packages are now built with the Vite and Rolldown that Vite+ bundles, so the `pluralize` copy inside schema runs with CommonJS's `this` set to its exports, and desktop's bundle inlines a constant selector and drops an unused statement.
+
+## 0.48.0
+
+## 0.47.0
+
+### Minor Changes
+
+- a5df570: A field can declare `parts`, naming the fields that hold each part of its component's value, so `AQuantityInput` and `ACurrencyInput` edit a record's own quantity, unit, amount, currency and rate fields, which several fields may share.
+
+## 0.46.1
+
+## 0.46.0
+
+## 0.45.1
+
+## 0.45.0
+
+## 0.44.0
+
+## 0.43.0
+
+## 0.42.0
+
+## 0.41.1
+
+## 0.41.0
+
+### Minor Changes
+
+- 863c853: `ASemverInput` has its own `semver` component category, so atable filters a semver column as text and sorts it by version precedence: `1.2.0` before `1.10.0`, and a prerelease before its release.
+
+## 0.40.0
+
+### Minor Changes
+
+- a5f8744: `validateDoctype` refuses a `defaults` key that names no field of the doctype, such as a typo or a grouped section's name, and says which. `registry.registerDefaults` takes a doctype's name as well as its slug (`'OrderItem'` or `'order-item'`), so defaults registered under the name apply instead of being ignored.
+- a5f8744: A doctype gives its starting values in one place, its `defaults`, which hold fixed data only. A field no longer has a `default` of its own: `validateDoctype` refuses one and points to `defaults`, and DocBuilder no longer offers the column. Embedded records and table rows start from their own doctype's `defaults`. The app's starting values come from one registration per doctype, `registry.registerDefaults`, whose functions run for every new record; registering a doctype a second time warns. `registry.setDefaultsLoader` and `composeNewRecord`'s `overlay` option are removed.
+
 ## 0.39.0
 
 ### Minor Changes

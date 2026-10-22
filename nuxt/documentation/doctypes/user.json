@@ -3,17 +3,116 @@
 	"slug": "user",
 	"fields": [
 		{
-			"label": "Username",
-			"fieldname": "username",
+			"fieldname": "id",
 			"primaryKey": true,
+			"label": "ID",
+			"component": "ATextInput",
+			"mode": "display"
+		},
+		{
+			"fieldname": "email",
+			"label": "Email",
 			"component": "ATextInput",
 			"required": true
 		},
 		{
-			"label": "Disabled",
-			"fieldname": "disabled",
-			"component": "ACheckbox",
-			"default": false
+			"fieldname": "name",
+			"label": "Name",
+			"component": "ATextInput",
+			"required": true
+		},
+		{
+			"fieldname": "role",
+			"label": "Role",
+			"component": "ADropdown",
+			"options": [
+				"ADMIN",
+				"MANAGER",
+				"USER",
+				"GUEST"
+			]
+		},
+		{
+			"fieldname": "status",
+			"label": "Status",
+			"component": "ADropdown",
+			"options": [
+				"ACTIVE",
+				"SUSPENDED",
+				"PENDING",
+				"DELETED"
+			]
+		},
+		{
+			"fieldname": "createdAt",
+			"label": "Created At",
+			"component": "ADateTime",
+			"mode": "display"
+		},
+		{
+			"fieldname": "updatedAt",
+			"label": "Updated At",
+			"component": "ADateTime",
+			"mode": "display"
+		},
+		{
+			"fieldname": "lastLogin",
+			"label": "Last Login",
+			"component": "ADateTime",
+			"mode": "display"
+		},
+		{
+			"fieldname": "bio",
+			"label": "Bio",
+			"component": "ATextboxInput"
+		},
+		{
+			"fieldname": "phone",
+			"label": "Phone",
+			"component": "ATextInput"
 		}
-	]
+	],
+	"defaults": {
+		"role": "USER",
+		"status": "PENDING"
+	},
+	"workflow": {
+		"states": [
+			"PENDING",
+			"ACTIVE",
+			"SUSPENDED",
+			"DELETED"
+		],
+		"actions": {
+			"save": {
+				"label": "Save",
+				"stateless": true,
+				"selfTransition": true
+			},
+			"activate": {
+				"label": "Activate User",
+				"allowedStates": [
+					"PENDING",
+					"SUSPENDED"
+				],
+				"nextState": "ACTIVE"
+			},
+			"suspend": {
+				"label": "Suspend User",
+				"allowedStates": [
+					"ACTIVE"
+				],
+				"nextState": "SUSPENDED"
+			},
+			"delete": {
+				"label": "Delete User",
+				"allowedStates": [
+					"ACTIVE",
+					"SUSPENDED",
+					"PENDING"
+				],
+				"nextState": "DELETED"
+			}
+		}
+	}
 }

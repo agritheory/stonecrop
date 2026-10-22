@@ -25,23 +25,13 @@ import { typeDefs } from '../typeDefs'
  */
 export interface ActionHandlerContext {
 	/**
-	 * Active database client for the current request. **It is inside the action's transaction.**
+	 * The database client for this action, inside the action's transaction: throwing rolls back
+	 * everything the handler wrote, and returning commits it.
 	 *
-	 * The guard read, this handler, and the state write all run on this client inside one
-	 * transaction, so the action is atomic: throw, and everything this handler wrote is rolled
-	 * back along with the state change. Returning normally commits the lot.
-	 *
-	 * Do **not** open your own `BEGIN`/`COMMIT` around these statements. A `COMMIT` here would
-	 * close the action's transaction early, committing work the guard may still reject. If you
-	 * need to undo part of your own work without failing the action, use a `SAVEPOINT`.
-	 *
-	 * Work sent to a *different* connection is outside all of this and will not be rolled back —
-	 * so use this client rather than opening one of your own.
-	 *
-	 * Rows from a raw `pgClient.query()` carry snake_case **column** names, while the middleware's
-	 * own read paths alias them to camelCase fieldnames at the SQL layer (ADR 0004). A handler that
-	 * returns raw rows therefore leaks snake_case keys to the client. Alias in SQL
-	 * (`"display_name" AS "displayName"`) or convert with `snakeToCamel` from `@stonecrop/schema`.
+	 * Never run `BEGIN` or `COMMIT` on it, which would commit work the action may still reject (a
+	 * `SAVEPOINT` undoes part of your work), and never open another connection, whose work would
+	 * not roll back. Its rows carry snake_case column names: return camelCase field names, by
+	 * aliasing in SQL or with `snakeToCamel` from `@stonecrop/schema` (ADR 0004).
 	 */
 	pgClient: PgClient
 	/** The doctype the action was dispatched against, as the client sent it. */
@@ -50,7 +40,7 @@ export interface ActionHandlerContext {
 	action: string
 	/** The resolved doctype metadata, for field names, the primary key, and the workflow. */
 	meta: DoctypeMeta
-	/** The target record's identity, taken from the first argument envelope. Absent for a record-less command. */
+	/** The record's key from the request. Absent for a record not created yet, and for a command on no record. */
 	recordId?: string | number
 	/**
 	 * The record field data the client sent (`args[0].data`).
@@ -62,20 +52,16 @@ export interface ActionHandlerContext {
 	data: Record<string, unknown>
 	/** The full argument envelope, for the actions that need more than the first record. */
 	args: unknown[]
-	/** The state the guard read, or `undefined` when nothing about the action required reading it. */
+	/** The state the guard read (`''` for a record with no state), or `undefined` when nothing required reading it or the record does not exist yet. */
 	currentState?: string
 }
 
 /**
- * A server-side effect for one doctype action, supplied by whoever owns the database.
+ * A server-side handler for one doctype action, registered in `actionHandlers`.
  *
- * Throwing rejects the action and no state is written. The client stores the result's `record`,
- * the adapter's read of the record after the action, never this return; a return carrying the
- * doctype's declared key names the record read, which is how a handler that creates one says so.
- *
- * The return value is passed through verbatim as `StonecropActionResult.data`, so it must be
- * API-layer data — camelCase fieldname keys, not raw snake_case columns. See `pgClient` above and
- * ADR 0007.
+ * Throwing fails the action and rolls back what it wrote. The return becomes the result's `data`,
+ * so use camelCase field names (ADR 0007). The client stores the record read back afterwards, by
+ * the doctype's key in this return or else by the request's id.
  * @public
  */
 export type ActionHandler = (context: ActionHandlerContext) => Promise<unknown>
@@ -100,24 +86,14 @@ export interface StonecropPluginOptions {
 	 */
 	tables?: Record<string, string>
 	/**
-	 * Server-side effects for workflow actions, keyed `[doctype name][action key]`.
+	 * Server-side handlers for workflow actions, keyed by the doctype's `name` (not its slug), then
+	 * the action's key. A handler runs only once the action passes its `allowedStates` check, which a
+	 * Save creating a record skips. A stateless command (no `nextState`, no `selfTransition`) fails
+	 * without one, and a transition's runs before the new state is written.
 	 *
-	 * This is the seam that makes a stateless Command executable. `applyGuardedTransition` can
-	 * apply a doctype's own outcome — a `nextState` transition, or a `selfTransition` data write —
-	 * but an action that is neither has nothing to apply and fails loudly. Registering a handler
-	 * here supplies the missing half.
-	 *
-	 * **The doctype never names a handler, and a handler never overrides the guard.** The two are
-	 * authored by different people: a doctype is runtime data edited in DocBuilder by whoever
-	 * models the workflow, while these run behind the GraphQL surface and belong to whoever owns
-	 * the database. So the doctype keeps `allowedStates` (may this run) and `nextState` (what state
-	 * results), and this keeps the effect (what actually happens). Routing between them is
-	 * resolved here, on the server, and is never published to the client.
-	 *
-	 * Handlers are looked up by `meta.name` — the doctype's canonical name, not its slug. An
-	 * unregistered action is not an error in itself: a transition needs no handler. It fails only
-	 * when the doctype gave the action no outcome either, and the error then names the action and
-	 * both ways to fix it, so a typo'd key reports as a missing effect rather than a silent no-op.
+	 * A Save's (`selfTransition`) handler is the whole save: it runs on a record not created yet
+	 * too, with no `recordId`, and must return the record it saved, with its key, or the save
+	 * fails. A Save sent with an id that matches no row is refused before the handler runs.
 	 *
 	 * @example
 	 * ```ts
@@ -138,26 +114,13 @@ export interface StonecropPluginOptions {
 	 */
 	actionHandlers?: Record<string, Record<string, ActionHandler>>
 	/**
-	 * Row cap applied when nothing else names one: to `stonecropRecords` when the caller requests
-	 * no `limit`, and to a many-side link when its declaration carries no `fetch.limit`. Defaults
-	 * to 200.
+	 * Row cap when nothing else names one: for `stonecropRecords` called without a `limit`, and for
+	 * a many-side link whose declaration has no `fetch.limit`. Defaults to 200; `null` removes it,
+	 * so an unqualified list returns the whole table and a link the whole relation.
 	 *
-	 * A row cap is a statement about what this database can afford to serve, so it belongs to
-	 * whoever owns the database — not to a doctype (which describes the API surface, not the
-	 * table) and not to a page (which cannot know the size of an arbitrary table). Callers stay
-	 * free to ask for less; they cannot ask for an unbounded scan by omission.
-	 *
-	 * One number covers both reads because a link *is* a list, fetched a different way. It used to
-	 * be capped at a hard-coded 50 that no option could reach, which is how an operator watching a
-	 * slow query found there was no knob to turn.
-	 *
-	 * Truncation is always reported — `hasMore` for a list, `truncatedLinks` for a record — so a
-	 * partial answer is distinguishable from a complete one without asking for a count. That
-	 * matters more for a link than for a list: a link cannot be paged, so a client that writes
-	 * back a truncated relation deletes the rows it was never sent.
-	 *
-	 * Set to `null` for no default cap. That is the pre-0.17 behaviour for lists, and it means an
-	 * unqualified list query returns the whole table and a link returns the whole relation.
+	 * A truncated answer is always reported: `hasMore` for a list, `truncatedLinks` for a record.
+	 * A link cannot be paged, so a client that writes back a truncated link deletes the rows it was
+	 * never sent.
 	 */
 	defaultRecordLimit?: number | null
 }
@@ -239,7 +202,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 	// about it is exactly how a link came to be capped by a different number than a list.
 	const defaultRowLimit: number | null = options.defaultRecordLimit === undefined ? 200 : options.defaultRecordLimit
 
-	return extendSchema(build => {
+	const schemaPlugin = extendSchema(build => {
 		// Obtain the PgExecutor from pgExecutors — one entry exists per configured pgService.
 		// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- build.input.pgRegistry is a PostGraphile internal not in the public Build type
 		const pgRegistry = (build as any).input?.pgRegistry as
@@ -721,13 +684,19 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 										data?: Record<string, unknown>
 									}>
 									// An inline link arrives as `{ id, displayText }`; a column takes the id alone.
-									// Reduced here so no client has to know what storage accepts.
+									// Reduced here so no client has to know what storage accepts, in the rows of
+									// each declared relation too.
 									//
 									// The whole envelope, not just `recordData` below — handlers read `ctx.args`.
 									// Copied, not mutated: `spec.actionArgs` is the request's own value.
 									// oxlint-disable-next-line oxc/no-map-spread
 									const argList = rawArgs.map(entry =>
-										entry?.data ? { ...entry, data: unwrapInlineLinks(meta.fields, entry.data) } : entry
+										entry?.data
+											? {
+													...entry,
+													data: unwrapInlineLinks(meta, entry.data, getMeta),
+												}
+											: entry
 									)
 									const recordId = argList[0]?.id
 									const recordData = argList[0]?.data ?? {}
@@ -744,7 +713,9 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 									//
 									// The same derivation the read path uses, so what a record exposes is what a
 									// record accepts. `status` is removed because state is the workflow's to
-									// move, never the patch's.
+									// move, never the patch's. A column the database fills itself is refused in
+									// `partitionPatch`, which asks the table only when there is a row to write:
+									// this map is built for every action, including one on a doctype with no table.
 									const writable = new Map(
 										columnBackedFields(meta.fields)
 											.filter(f => camelToSnake(f.fieldname) !== STATE_COLUMN)
@@ -764,7 +735,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 										const cols: string[] = []
 										const values: unknown[] = []
 										for (const [key, value] of Object.entries(patch)) {
-											if (!writable.has(key)) {
+											if (!writable.has(key) || !columns.writable(meta.name, camelToSnake(key))) {
 												droppedFields.push(key)
 												continue
 											}
@@ -796,6 +767,9 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 												actionDef,
 												{
 													readState: async () => {
+														// A save is filed under the record's key, so a doctype without one
+														// cannot save, even a record not created yet.
+														if (actionDef.selfTransition === true) pkColumn()
 														// No id in the envelope means no record was targeted at all, which is
 														// the same answer as a lookup that misses: `null`, not `undefined`.
 														if (recordId == null) return null
@@ -816,7 +790,24 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 															values: [String(recordId)],
 														})
 														// No row at all vs. a row whose `status` is NULL — see GuardedTransitionIO.
-														if (rows.length === 0) return null
+														if (rows.length === 0) {
+															// An id that was dispatched and matched nothing is a record that has
+															// gone away since the client read it, and saving it as a create mints
+															// a second row under a new identity while the client believes it
+															// updated the first: a lost update that reports success. Refused here,
+															// before the adapter's write or a registered handler can run.
+															//
+															// The dispatcher cannot make this call: it never receives the id,
+															// deliberately, since identity is the backend's business. So the
+															// distinction its `readState` contract collapses is restored here,
+															// where the id is in scope.
+															if (actionDef.selfTransition === true) {
+																throw new Error(
+																	`${actionDef.label ?? spec.action} failed: record ${String(recordId)} no longer exists.`
+																)
+															}
+															return null
+														}
 														if (!declaresState) return undefined
 														return rows[0][STATE_COLUMN] ?? undefined
 													},
@@ -826,8 +817,9 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 															values: [nextState, String(recordId)],
 														})
 													},
-													// The upsert, and the only write path for record data. `exists`
-													// comes from the guard's own read, so no second lookup decides it.
+													// The upsert, and the write path for record data unless a handler is
+													// registered for the Save. `exists` comes from the guard's own read,
+													// so no second lookup decides it.
 													//
 													// Returns the same projection the read path selects, never
 													// `RETURNING *`: raw columns come back snake_case, and the client
@@ -840,23 +832,9 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 														const returning = columns.select(meta.name, getColumnSelections(meta))
 
 														if (!exists) {
-															// Creating is what the *absence* of an id means. An id that was
-															// dispatched and matched nothing is a record that has gone away
-															// since the client read it, and treating that as a create mints a
-															// second row under a new identity while the client believes it
-															// updated the first — a lost update that reports success.
+															// Creating is what the *absence* of an id means; `readState` has
+															// already refused an id that matched no row.
 															//
-															// The dispatcher cannot make this call: it never receives the id,
-															// deliberately, since identity is the backend's business. So the
-															// distinction its `readState` contract collapses is restored here,
-															// where the id is in scope.
-															if (recordId != null) {
-																throw new Error(
-																	`Action "${actionDef.label ?? spec.action}" targets ${meta.name} "${String(recordId)}", ` +
-																		`which no longer exists. Nothing was created — a record dispatched with an ` +
-																		`identity is an update, and creating one is what dispatching no identity means.`
-																)
-															}
 															// No identity is minted here. A declared key present in the
 															// patch is a natural key the user filled in and passes
 															// through the whitelist like any other column; absent, the
@@ -921,6 +899,15 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 											// what makes the rollback happen; the envelope is carried across so the
 											// caller still gets `success: false` rather than a GraphQL error.
 											if (!outcome.success) throw new ActionRolledBack(outcome)
+
+											// The identity the reply states, read before enrichment below turns a key
+											// that is also a link into `{ id, displayText }`, which no read can look up.
+											const pkField = getPkMeta(meta)?.fieldname
+											const repliedId: unknown =
+												pkField !== undefined && outcome.data !== null && typeof outcome.data === 'object'
+													? Reflect.get(outcome.data, pkField)
+													: undefined
+
 											// A record a write returns is a record, so it carries the links a read
 											// resolves. Enriching one path and not the other changes a record's
 											// shape depending on how the client came by it: a link rendered its
@@ -944,16 +931,21 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 											// never `data`, which stays the handler's own. Keyed by the declared identity
 											// the reply states when it states one, since an action may create or re-key
 											// the record, and by the dispatched id otherwise.
-											const pkField = getPkMeta(meta)?.fieldname
-											const repliedId: unknown =
-												pkField !== undefined && outcome.data !== null && typeof outcome.data === 'object'
-													? Reflect.get(outcome.data, pkField)
-													: undefined
 											const readId = repliedId ?? recordId
 											const record =
 												readId == null
 													? null
 													: ((await readRecords(tx, [{ doctype: meta.name, id: readId }]))[0]?.data ?? null)
+
+											// A save with no record to file leaves the page on its draft, whose next save
+											// creates a second record.
+											if (actionDef.selfTransition === true && record === null) {
+												throw new ActionRolledBack({
+													success: false,
+													data: null,
+													error: `${actionDef.label ?? spec.action} failed: the server did not say which record it saved.`,
+												})
+											}
 
 											// Attached here rather than carried through `applyGuardedTransition`:
 											// which keys a backend can store is a storage question, and the
@@ -978,6 +970,26 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 			},
 		}
 	})
+
+	return {
+		...schemaPlugin,
+		gather: {
+			hooks: {
+				// Marks a column Postgres generates as neither insertable nor updatable, as PostGraphile
+				// itself marks an identity generated always. PostGraphile reads `attgenerated` only into
+				// `hasDefault`, which a plain default shares, so without this the data write cannot tell
+				// the two apart. On the adapter's plugin rather than the preset, so it holds wherever the
+				// write runs.
+				pgCodecs_attribute(_info, event) {
+					const { attgenerated } = event.pgAttribute
+					if (attgenerated == null || attgenerated === '') return
+					event.attribute.extensions ??= {}
+					event.attribute.extensions.isInsertable = false
+					event.attribute.extensions.isUpdatable = false
+				},
+			},
+		},
+	}
 }
 
 // ===========================================================================
@@ -995,7 +1007,7 @@ function collectColumns(fields: DoctypeField[], links: Map<string, LinkDeclarati
 	for (const f of columnBackedFields(fields)) {
 		// Only an *expanding* link is a relation rather than a column. An inline link (a picker)
 		// keeps its FK on this table and must still be selected — `resolveLinkRenderMode` is the
-		// shared rule, also used by the client resolver; never re-derive it here.
+		// rule both sides of the wire share; never re-derive it here.
 		const link = links.get(f.fieldname)
 		if (link && resolveLinkRenderMode(link, f.component) !== 'inline') continue
 		columns.push({ column: camelToSnake(f.fieldname), alias: f.fieldname })

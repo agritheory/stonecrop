@@ -19,7 +19,7 @@ This guide covers the wiring needed to integrate Desktop in a Nuxt app, but appl
 
 - `@stonecrop/stonecrop` installed and `StonecropPlugin` mounted
 - Doctypes registered in Registry before the component is rendered
-- A `DataClient` registered (§2 below). Without one, Desktop renders empty lists and blank forms.
+- A `DataClient` registered (§2 below). Without one, Desktop renders empty lists, and a record stays on its loading state until something puts it in HST.
 
 ---
 
@@ -70,7 +70,9 @@ registerClient(new StonecropClient({ endpoint: '/graphql' }))
 
 Nothing about this seam assumes GraphQL — a `DataClient` over plain `fetch` is as valid. The documentation playground's countries section ships one over a third-party API whose schema shares nothing with Stonecrop's.
 
-Register it before Desktop renders. Desktop skips the read entirely when no client is configured, so a missing one shows up as permanently empty lists and blank forms rather than as an error. (`Stonecrop.getRecord` and `getRecords` do throw, naming `setClient`, for a host that calls them directly.)
+Register it before Desktop renders. Desktop skips the read entirely when no client is configured, so a missing one shows up as permanently empty lists and records that never finish loading rather than as an error. (`Stonecrop.getRecord` and `getRecords` do throw, naming `setClient`, for a host that calls them directly.)
+
+With a client, a read that fails is shown rather than drawn as empty: a record the server does not have says so, a record that fails to load shows the server's message with **Try again**, and in both cases neither a form nor the record's actions appear. A list whose first page fails says so in place of its rows; a failed **Load more** keeps the rows already shown.
 
 ---
 
@@ -224,7 +226,9 @@ Desktop builds that list from two sources on the doctype:
 
 Both are resolved against `Stonecrop.getRecordState(doctype, recordId)`, and each entry's label comes from `Doctype.getActionMeta(name)?.label`, falling back to the raw action name. Choosing an item emits `@action` with the action name and current form data; Desktop never dispatches on its own.
 
-`getRecordState` reads the record's `status` field from HST and falls back to `workflow.initial` when the field is absent. This means:
+A record not created yet has no state, as the server guard treats it: `getRecordState` returns `null`, and both lists then hold only the actions that can run on such a record (`isActionAllowedOnNewRecord` from `@stonecrop/schema`, the rule the server guard applies, kept in step with it by a test). Those are a self-transition, which creates the record, and an action that declares no `allowedStates` and no `nextState`, which never reads a state. So a new record is never offered an action the server refuses because the record is not created yet, such as a transition.
+
+For a saved record, `getRecordState` reads the record's `status` field from HST and falls back to the workflow's first listed state (an XState workflow's `initial`) when the field is absent. This means:
 
 - **Server response should include `status`**: when the action result is written back, include the `status` field so Desktop renders the correct available actions.
 - **No special wiring needed**: Desktop reads `status` automatically — no extra setup required.

@@ -1,3 +1,4 @@
+import { StonecropClient } from '@stonecrop/graphql-client'
 import { Doctype } from '@stonecrop/stonecrop'
 
 import { DocumentationDataClient } from '~/composables/useDocumentationDataClient'
@@ -36,6 +37,20 @@ export default defineNuxtPlugin({
 				registry!.registry[slug] = doctypeInstance
 			}
 		}
+
+		const grafservClient = new StonecropClient({ endpoint: '/graphql/' })
+
+		registry!.registerDefaults('order', {
+			userId: async () => {
+				const { data } = await grafservClient.getRecords({ name: 'User', slug: 'user' })
+				const first = data[0]
+				return first && typeof first.id === 'string' ? first.id : ''
+			},
+		})
+
+		registry!.registerDefaults('user', () => ({
+			bio: `Joined in ${new Intl.DateTimeFormat(undefined, { month: 'long', year: 'numeric' }).format(new Date())}`,
+		}))
 
 		return {
 			provide: {

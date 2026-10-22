@@ -1,5 +1,148 @@
 # Change Log - @stonecrop/graphql-middleware
 
+## 0.54.0
+
+### Patch Changes
+
+- @stonecrop/schema@0.54.0
+
+## 0.53.0
+
+### Patch Changes
+
+- @stonecrop/schema@0.53.0
+
+## 0.52.0
+
+### Minor Changes
+
+- 4753b5b: A server-side handler registered on a Save (a `selfTransition`) is now that save's whole write: it runs on a record not created yet and creates it, the adapter no longer writes the form's values after it on a saved record, and it must return the record it saved or the save fails.
+
+### Patch Changes
+
+- 4753b5b: A Save sent with the id of a record that no longer exists now reports `Save failed: record <id> no longer exists.`, in place of a longer message written for developers.
+- 4753b5b: A Save on a doctype with no identity field (no field declaring `primaryKey` and none named `id`) now fails with an error naming both repairs, instead of reporting success with no record the page can file.
+- @stonecrop/schema@0.52.0
+
+## 0.51.0
+
+### Patch Changes
+
+- Updated dependencies [e8842fb]
+  - @stonecrop/schema@0.51.0
+
+## 0.50.1
+
+### Patch Changes
+
+- @stonecrop/schema@0.50.1
+
+## 0.50.0
+
+### Patch Changes
+
+- @stonecrop/schema@0.50.0
+
+## 0.49.0
+
+### Patch Changes
+
+- d5fbd9a: An action now reduces a link picked inside the rows of a declared relation, such as a job's tasks, to its id before any handler sees it, as it already did for a record's own links; `unwrapInlineLinks` now takes the doctype's meta rather than its fields, plus an optional lookup for each relation's target.
+- Updated dependencies [d5fbd9a]
+  - @stonecrop/schema@0.49.0
+
+## 0.48.1
+
+### Patch Changes
+
+- Updated dependencies [620acb0]
+  - @stonecrop/schema@0.48.1
+
+## 0.48.0
+
+### Patch Changes
+
+- @stonecrop/schema@0.48.0
+
+## 0.47.0
+
+### Minor Changes
+
+- a5df570: A field can declare `parts`, naming the fields that hold each part of its component's value, so `AQuantityInput` and `ACurrencyInput` edit a record's own quantity, unit, amount, currency and rate fields, which several fields may share.
+
+### Patch Changes
+
+- Updated dependencies [a5df570]
+  - @stonecrop/schema@0.47.0
+
+## 0.46.1
+
+### Patch Changes
+
+- @stonecrop/schema@0.46.1
+
+## 0.46.0
+
+### Patch Changes
+
+- @stonecrop/schema@0.46.0
+
+## 0.45.1
+
+### Patch Changes
+
+- @stonecrop/schema@0.45.1
+
+## 0.45.0
+
+### Minor Changes
+
+- d3dc42c: `createStonecropPreset()` turns off the mutations PostGraphile generates for every table and every `VOLATILE` database function, so `stonecropAction` is the only write an app's API offers; an app calling one of them should dispatch an action instead.
+
+### Patch Changes
+
+- 39c00e4: A save no longer writes a column the database fills itself (a generated column, or an identity generated always), which Postgres refused, and PostGraphile's generated mutations stop offering generated columns as inputs too.
+- @stonecrop/schema@0.45.0
+
+## 0.44.0
+
+### Patch Changes
+
+- @stonecrop/schema@0.44.0
+
+## 0.43.0
+
+### Patch Changes
+
+- @stonecrop/schema@0.43.0
+
+## 0.42.0
+
+### Patch Changes
+
+- @stonecrop/schema@0.42.0
+
+## 0.41.1
+
+### Patch Changes
+
+- @stonecrop/schema@0.41.1
+
+## 0.41.0
+
+### Patch Changes
+
+- Updated dependencies [863c853]
+  - @stonecrop/schema@0.41.0
+
+## 0.40.0
+
+### Patch Changes
+
+- Updated dependencies [a5f8744]
+- Updated dependencies [a5f8744]
+  - @stonecrop/schema@0.40.0
+
 ## 0.39.0
 
 ### Patch Changes

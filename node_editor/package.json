@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/node-editor",
-	"version": "0.39.0",
+	"version": "0.54.0",
 	"description": "Node editor UI for Stonecrop",
 	"keywords": [
 		"components",
@@ -45,16 +45,16 @@
 		"access": "public"
 	},
 	"scripts": {
-		"dev": "vite build --watch",
+		"dev": "vp build --watch",
 		"docs": "bash ../tools/scripts/run-docs.sh node_editor",
-		"lint": "oxlint",
-		"lint:fix": "oxlint --fix",
+		"lint": "vp lint",
+		"lint:fix": "vp lint --fix",
 		"prepublishOnly": "vp run build",
-		"preview": "vite preview",
-		"test": "vitest run --coverage.enabled false",
-		"test:coverage": "vitest run --coverage",
+		"preview": "vp preview",
+		"test": "vp test run --coverage.enabled false",
+		"test:coverage": "vp test run --coverage",
 		"test:types": "vue-tsc --noEmit",
-		"test:watch": "vitest watch"
+		"test:watch": "vp test watch"
 	},
 	"dependencies": {
 		"@dagrejs/dagre": "^3.0.0",
@@ -65,8 +65,6 @@
 		"@microsoft/api-extractor": "catalog:",
 		"@vitejs/plugin-vue": "catalog:",
 		"@vitest/coverage-istanbul": "catalog:",
-		"oxlint": "catalog:",
-		"oxlint-tsgolint": "catalog:",
 		"typescript": "catalog:",
 		"vite": "catalog:",
 		"vite-plugin-lib-inject-css": "catalog:",

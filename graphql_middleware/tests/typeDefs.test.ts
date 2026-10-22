@@ -1,5 +1,5 @@
 import { parse, Kind, type DocumentNode } from 'graphql'
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect } from 'vite-plus/test'
 
 import { ActionDefinition, ValueFieldSchema } from '@stonecrop/schema'
 import { typeDefs } from '../src/typeDefs'

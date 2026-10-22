@@ -72,6 +72,13 @@ function toMutationName(doctypeName: string, operation: 'create' | 'update'): st
 	return `${operation}${pascalName}ById`
 }
 
+/** A record as `stonecropRecord` serves it, or null when there is none. */
+async function readRecord(meta: DoctypeMeta, id: unknown): Promise<unknown> {
+	const queryName = toQueryName(meta.name)
+	const result = await mockExecutor.query(queryName, { id, lookupField: recordLookupField(meta) })
+	return result[queryName] ?? null
+}
+
 export function formatDoctypeMeta(meta: DoctypeMeta) {
 	// Fields and actions pass through verbatim — the SDL alone decides what is
 	// selectable. Enumerating keys here silently drops any field the schema gains
@@ -133,14 +140,9 @@ export default {
 								throw new Error(`Unknown doctype: ${spec.doctype}`)
 							}
 
-							const queryName = toQueryName(meta.name)
 							try {
-								const result = await mockExecutor.query(queryName, {
-									id: spec.id,
-									lookupField: recordLookupField(meta),
-								})
 								return {
-									data: result[queryName] ?? null,
+									data: await readRecord(meta, spec.id),
 									doctype: spec.doctype,
 									unknownLinks: undefined,
 								}
@@ -272,12 +274,13 @@ export default {
 									// The server owns the transition: read current state, guard against
 									// allowedStates, write nextState. Reads/writes go through this app's
 									// mock executor; a PostGraphile setup swaps in pgClient SQL instead.
-									return await applyGuardedTransition(
+									const outcome = await applyGuardedTransition(
 										actionDef,
 										{
 											readState: async () => {
 												// `null` means "no such record" and `undefined` means "exists, no
-												// state" — the dispatcher rejects the first outright. Returning
+												// state": the dispatcher refuses an action on the first, except a
+												// self-transition, which creates the record. Returning
 												// `undefined` for both is what let a Save on a record that was
 												// never created report success while persisting nothing.
 												if (recordId == null) return null
@@ -287,7 +290,16 @@ export default {
 													{ status?: string | null } | undefined
 												>
 												const record = result[queryName]
-												if (!record) return null
+												if (!record) {
+													// An id that matches nothing is a record deleted since it was read, and
+													// saving it as a create would report a lost update as a success.
+													if (actionDef.selfTransition === true) {
+														throw new Error(
+															`${actionDef.label ?? spec.action} failed: record ${String(recordId)} no longer exists.`
+														)
+													}
+													return null
+												}
 												return record.status == null ? undefined : String(record.status)
 											},
 											writeState: async (nextState: string) => {
@@ -301,7 +313,7 @@ export default {
 											// one interface, whether or not the row exists yet. Updating patches the
 											// record's field data (status untouched); creating lets the backend assign
 											// the identity, which is why a draft dispatches no id at all. Either way the
-											// full record comes back for the writeback.
+											// full record comes back, stating its identity.
 											// Verbatim patch; column-whitelisting is the (deferred) PostGraphile concern.
 											writeData: async (patch: Record<string, unknown>, exists: boolean) => {
 												const mutationName = toMutationName(meta.name, exists ? 'update' : 'create')
@@ -330,6 +342,25 @@ export default {
 										},
 										recordData
 									)
+									// The record as `stonecropRecord` returns it: the client stores this, never
+									// `data`. Keyed by the identity the reply states, since a save may create it.
+									const repliedId: unknown =
+										outcome.data !== null && typeof outcome.data === 'object'
+											? Reflect.get(outcome.data, recordLookupField(meta))
+											: undefined
+									const readId = repliedId ?? recordId
+									const record = outcome.success && readId != null ? await readRecord(meta, readId) : null
+									// A save with no record to file leaves the page on its draft, whose next save
+									// creates a second record. This store cannot undo what a handler wrote.
+									if (outcome.success && actionDef.selfTransition === true && record === null) {
+										return {
+											success: false,
+											data: null,
+											error: `${actionDef.label ?? spec.action} failed: the server did not say which record it saved.`,
+											record: null,
+										}
+									}
+									return { ...outcome, record }
 								} catch (err) {
 									return {
 										success: false,

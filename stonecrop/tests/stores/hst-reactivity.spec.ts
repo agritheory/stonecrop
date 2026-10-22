@@ -1,7 +1,7 @@
 import { mount, VueWrapper } from '@vue/test-utils'
 import { List } from 'immutable'
 import type { DoctypeField } from '@stonecrop/schema'
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach } from 'vite-plus/test'
 import { nextTick, defineComponent, ref, type PropType } from 'vue'
 import type { UnknownMachineConfig } from 'xstate'
 
@@ -582,9 +582,8 @@ describe('HST Vue Reactivity', { tags: ['unit'] }, () => {
 			const LargeForm = defineComponent({
 				props: ['doctype', 'recordId'],
 				setup(props) {
-					const composableReturn = useStonecrop(props)
-					// Use the doctype directly from props since meta isn't exposed
-					return { ...composableReturn, doctype: props.doctype }
+					// The template reads `doctype` straight from props, since meta isn't exposed.
+					return useStonecrop(props)
 				},
 				template: `
 					<div>

@@ -1,5 +1,5 @@
 import type { PgClient } from '@dataplan/pg'
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach } from 'vite-plus/test'
 
 import type { ColumnReader } from '../src/columns'
 import { enrichLinkDisplayFields } from '../src/link-display'

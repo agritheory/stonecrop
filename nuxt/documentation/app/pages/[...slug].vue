@@ -1,7 +1,12 @@
 <script setup lang="ts">
 const route = useRoute()
 
-const { data: page } = await useAsyncData(route.path, () => queryCollection('docs').path(route.path).first())
+// A page reads the same at `/x` and `/x/`. Prerendering saves `/x` as `x/index.html`, which a static
+// host such as GitHub Pages serves only by redirecting to `/x/`; keyed on that form, the page missed
+// both its prerendered payload and its content, and hydrated empty.
+const path = route.path.length > 1 ? route.path.replace(/\/$/, '') : route.path
+
+const { data: page } = await useAsyncData(path, () => queryCollection('docs').path(path).first())
 
 if (!page.value) {
 	throw createError({ statusCode: 404, statusMessage: 'Page not found', fatal: true })

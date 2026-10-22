@@ -1,5 +1,237 @@
 # Change Log - @stonecrop/desktop
 
+## 0.54.0
+
+### Patch Changes
+
+- Updated dependencies [6496bcc]
+- Updated dependencies [6496bcc]
+  - @stonecrop/aform@0.54.0
+  - @stonecrop/stonecrop@0.54.0
+  - @stonecrop/schema@0.54.0
+  - @stonecrop/themes@0.54.0
+
+## 0.53.0
+
+### Minor Changes
+
+- 7e6db68: A new record's form opens with the values an app held for it through `prefillDraft`, and uses them up.
+
+### Patch Changes
+
+- Updated dependencies [7e6db68]
+  - @stonecrop/stonecrop@0.53.0
+  - @stonecrop/aform@0.53.0
+  - @stonecrop/schema@0.53.0
+  - @stonecrop/themes@0.53.0
+
+## 0.52.0
+
+### Patch Changes
+
+- @stonecrop/aform@0.52.0
+  - @stonecrop/schema@0.52.0
+  - @stonecrop/stonecrop@0.52.0
+  - @stonecrop/themes@0.52.0
+
+## 0.51.0
+
+### Minor Changes
+
+- e8842fb: A record not created yet is offered only the actions the server guard runs on one (a self-transition, or an action declaring no `allowedStates` and no `nextState`), a rule now exported as `isActionAllowedOnNewRecord`, so Desktop no longer offers a new record a transition the server refuses.
+
+### Patch Changes
+
+- Updated dependencies [e8842fb]
+- Updated dependencies [e8842fb]
+  - @stonecrop/schema@0.51.0
+  - @stonecrop/stonecrop@0.51.0
+  - @stonecrop/aform@0.51.0
+  - @stonecrop/themes@0.51.0
+
+## 0.50.1
+
+### Patch Changes
+
+- @stonecrop/aform@0.50.1
+  - @stonecrop/stonecrop@0.50.1
+  - @stonecrop/schema@0.50.1
+  - @stonecrop/themes@0.50.1
+
+## 0.50.0
+
+### Minor Changes
+
+- b6d6f9a: A new record's edits in Desktop now run the doctype's field triggers before its first save, and a trigger reads and sets its own record, saved or not, with `context.get` and `context.set`; `stonecrop.editRecord(doctype, recordId)` gives a form that record.
+
+### Patch Changes
+
+- Updated dependencies [b6d6f9a]
+- Updated dependencies [b6d6f9a]
+  - @stonecrop/stonecrop@0.50.0
+  - @stonecrop/aform@0.50.0
+  - @stonecrop/schema@0.50.0
+  - @stonecrop/themes@0.50.0
+
+## 0.49.0
+
+### Patch Changes
+
+- Updated dependencies [d5fbd9a]
+  - @stonecrop/schema@0.49.0
+  - @stonecrop/aform@0.49.0
+  - @stonecrop/stonecrop@0.49.0
+  - @stonecrop/themes@0.49.0
+
+## 0.48.1
+
+### Patch Changes
+
+- 620acb0: Packages are now built with the Vite and Rolldown that Vite+ bundles, so the `pluralize` copy inside schema runs with CommonJS's `this` set to its exports, and desktop's bundle inlines a constant selector and drops an unused statement.
+- Updated dependencies [620acb0]
+  - @stonecrop/schema@0.48.1
+  - @stonecrop/aform@0.48.1
+  - @stonecrop/stonecrop@0.48.1
+  - @stonecrop/themes@0.48.1
+
+## 0.48.0
+
+### Patch Changes
+
+- Updated dependencies [d5b5a74]
+- Updated dependencies [d5b5a74]
+  - @stonecrop/aform@0.48.0
+  - @stonecrop/stonecrop@0.48.0
+  - @stonecrop/schema@0.48.0
+  - @stonecrop/themes@0.48.0
+
+## 0.47.0
+
+### Patch Changes
+
+- Updated dependencies [a5df570]
+  - @stonecrop/schema@0.47.0
+  - @stonecrop/aform@0.47.0
+  - @stonecrop/stonecrop@0.47.0
+  - @stonecrop/themes@0.47.0
+
+## 0.46.1
+
+### Patch Changes
+
+- @stonecrop/aform@0.46.1
+  - @stonecrop/schema@0.46.1
+  - @stonecrop/stonecrop@0.46.1
+  - @stonecrop/themes@0.46.1
+
+## 0.46.0
+
+### Patch Changes
+
+- @stonecrop/aform@0.46.0
+  - @stonecrop/schema@0.46.0
+  - @stonecrop/stonecrop@0.46.0
+  - @stonecrop/themes@0.46.0
+
+## 0.45.1
+
+### Patch Changes
+
+- Updated dependencies [6db7b3f]
+  - @stonecrop/aform@0.45.1
+  - @stonecrop/stonecrop@0.45.1
+  - @stonecrop/schema@0.45.1
+  - @stonecrop/themes@0.45.1
+
+## 0.45.0
+
+### Patch Changes
+
+- @stonecrop/aform@0.45.0
+  - @stonecrop/schema@0.45.0
+  - @stonecrop/stonecrop@0.45.0
+  - @stonecrop/themes@0.45.0
+
+## 0.44.0
+
+### Patch Changes
+
+- Updated dependencies [358ecaf]
+- Updated dependencies [358ecaf]
+- Updated dependencies [358ecaf]
+- Updated dependencies [358ecaf]
+- Updated dependencies [358ecaf]
+- Updated dependencies [358ecaf]
+- Updated dependencies [358ecaf]
+- Updated dependencies [358ecaf]
+  - @stonecrop/aform@0.44.0
+  - @stonecrop/themes@0.44.0
+  - @stonecrop/stonecrop@0.44.0
+  - @stonecrop/schema@0.44.0
+
+## 0.43.0
+
+### Patch Changes
+
+- Updated dependencies [63f68d7]
+- Updated dependencies [63f68d7]
+  - @stonecrop/stonecrop@0.43.0
+  - @stonecrop/aform@0.43.0
+  - @stonecrop/schema@0.43.0
+  - @stonecrop/themes@0.43.0
+
+## 0.42.0
+
+### Minor Changes
+
+- f5d09ad: A record that is still loading, that the server does not have, or that fails to load now shows that state (a failure with the server's message and **Try again**) and offers none of its actions, instead of a blank, editable form.
+
+### Patch Changes
+
+- Updated dependencies [f5d09ad]
+  - @stonecrop/stonecrop@0.42.0
+  - @stonecrop/aform@0.42.0
+  - @stonecrop/schema@0.42.0
+  - @stonecrop/themes@0.42.0
+
+## 0.41.1
+
+### Patch Changes
+
+- @stonecrop/aform@0.41.1
+  - @stonecrop/schema@0.41.1
+  - @stonecrop/stonecrop@0.41.1
+  - @stonecrop/themes@0.41.1
+
+## 0.41.0
+
+### Patch Changes
+
+- Updated dependencies [863c853]
+- Updated dependencies [863c853]
+  - @stonecrop/schema@0.41.0
+  - @stonecrop/aform@0.41.0
+  - @stonecrop/stonecrop@0.41.0
+  - @stonecrop/themes@0.41.0
+
+## 0.40.0
+
+### Minor Changes
+
+- a5f8744: Add document-level defaults for new records: doctype defaults JSON, registry providers, and compose-time now and uuidv7 tokens. A new record is filled once, after every starting value has arrived: Desktop shows its loading state until then, a value that fails or takes longer than 5 seconds is skipped and reported, and nothing is written to the form afterwards.
+
+### Patch Changes
+
+- Updated dependencies [a5f8744]
+- Updated dependencies [a5f8744]
+- Updated dependencies [a5f8744]
+- Updated dependencies [a5f8744]
+- Updated dependencies [a5f8744]
+  - @stonecrop/schema@0.40.0
+  - @stonecrop/stonecrop@0.40.0
+  - @stonecrop/aform@0.40.0
+  - @stonecrop/themes@0.40.0
+
 ## 0.39.0
 
 ### Minor Changes

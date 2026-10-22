@@ -210,10 +210,44 @@ export function useStonecrop(options?: {
 		hstStore.value = stonecrop.value.getStore()
 		resolvedSchema.value = registry.resolveSchema(options.doctype)
 		if (!options.recordId || isDraftRecordId(options.recordId)) {
-			formData.value = registry.initializeRecord(resolvedSchema.value)
+			// Filled once, when every starting value is in; until then the form reports that it is loading.
+			isLoading.value = true
+			void registry
+				.composeNewRecord(options.doctype)
+				.then(({ record }) => {
+					formData.value = record
+					return undefined
+				})
+				.finally(() => {
+					isLoading.value = false
+				})
 		}
 		if (hstStore.value) {
 			setupDeepReactivity(options.doctype, options.recordId || 'new', formData, hstStore.value)
+		}
+	}
+
+	// A read that fails or finds nothing is reported through `error` and leaves the form empty. Never
+	// fill it with an empty record instead: that draws the real one as blank and editable.
+	const loadExistingRecord = async (doctype: Doctype, recordId: string): Promise<void> => {
+		if (!stonecrop.value) return
+		const existingRecord = stonecrop.value.getRecordById(doctype, recordId)
+		if (existingRecord) {
+			formData.value = existingRecord.get('') || {}
+			return
+		}
+		// Without a client the host fills the store itself, as Desktop's loaders assume.
+		if (!stonecrop.value.getClient()) return
+
+		isLoading.value = true
+		error.value = null
+		try {
+			await stonecrop.value.getRecord(doctype, recordId)
+			formData.value = stonecrop.value.getRecordById(doctype, recordId)?.get('') || {}
+		} catch (e) {
+			error.value = e instanceof Error ? e : new Error(String(e))
+		} finally {
+			isLoading.value = false
 		}
 	}
 
@@ -273,22 +307,14 @@ export function useStonecrop(options?: {
 				resolvedSchema.value = registry.resolveSchema(doctype)
 
 				if (recordId && !isDraftRecordId(recordId)) {
-					const existingRecord = stonecrop.value.getRecordById(doctype, recordId)
-					if (existingRecord) {
-						formData.value = existingRecord.get('') || {}
-					} else {
-						try {
-							await stonecrop.value.getRecord(doctype, recordId)
-							const loadedRecord = stonecrop.value.getRecordById(doctype, recordId)
-							if (loadedRecord) {
-								formData.value = loadedRecord.get('') || {}
-							}
-						} catch {
-							formData.value = registry.initializeRecord(resolvedSchema.value)
-						}
-					}
+					await loadExistingRecord(doctype, recordId)
 				} else {
-					formData.value = registry.initializeRecord(resolvedSchema.value)
+					isLoading.value = true
+					try {
+						formData.value = (await registry.composeNewRecord(doctype)).record
+					} finally {
+						isLoading.value = false
+					}
 				}
 
 				if (hstStore.value) {
@@ -298,21 +324,7 @@ export function useStonecrop(options?: {
 				// Doctype instance — sync init was done during setup().
 				// Only handle the async path: fetching an existing record from the server.
 				if (recordId && !isDraftRecordId(recordId)) {
-					const doctype = options.doctype
-					const existingRecord = stonecrop.value.getRecordById(doctype, recordId)
-					if (existingRecord) {
-						formData.value = existingRecord.get('') || {}
-					} else {
-						try {
-							await stonecrop.value.getRecord(doctype, recordId)
-							const loadedRecord = stonecrop.value.getRecordById(doctype, recordId)
-							if (loadedRecord) {
-								formData.value = loadedRecord.get('') || {}
-							}
-						} catch {
-							formData.value = registry.initializeRecord(resolvedSchema.value)
-						}
-					}
+					await loadExistingRecord(options.doctype, recordId)
 				}
 			}
 		}
@@ -389,7 +401,7 @@ export function useStonecrop(options?: {
 	 * @param path - The HST path where initialized data should be stored
 	 * @param doctype - The doctype to initialize
 	 */
-	const initializeNestedData = (path: string, doctype: Doctype): void => {
+	const initializeNestedData = async (path: string, doctype: Doctype): Promise<void> => {
 		if (!stonecrop.value) {
 			throw new Error('Stonecrop instance not available')
 		}

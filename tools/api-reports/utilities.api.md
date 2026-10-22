@@ -10,13 +10,77 @@ import { Ref } from 'vue';
 import { Temporal } from 'temporal-polyfill';
 
 // @public
+export function arithmeticEntryPattern(separators?: NumberSeparators): RegExp;
+
+// @public
+export type ArithmeticInputOptions = {
+    value: () => unknown;
+    commit: (value: number | null) => void;
+    format?: (value: number | null) => string;
+    separators?: () => NumberSeparators;
+    fractionDigits?: () => number | undefined;
+    round?: (value: number) => number;
+    live?: boolean;
+    text?: Ref<string>;
+    enabled?: () => boolean;
+    selectOnFocus?: boolean;
+};
+
+// @public
+export function compareSemver(a: string, b: string): number;
+
+// @public
+export function currencyAmountEntryPattern(currencyId: string | undefined, locale?: string): RegExp;
+
+// @public
+export function currencyAmountSeparators(locale?: string): {
+    group: string;
+    decimal: string;
+};
+
+// @public
+export function currencyInputFractionDigits(currencyId: string | undefined): number;
+
+// @public
 export const defaultKeypressHandlers: KeypressHandlers;
+
+// @public
+export function evaluateArithmetic(text: string, separators?: NumberSeparators): number | null;
+
+// Warning: (ae-forgotten-export) The symbol "CurrencyLike" needs to be exported by the entry point index.d.ts
+//
+// @public
+export function formatCurrencyAmount(amount: number | null | undefined, currency: CurrencyLike | undefined): string;
+
+// @public
+export function formatCurrencyAmountInput(amount: number | null | undefined, currencyId: string | undefined, locale?: string): string;
+
+// @public
+export function formatCurrencyCell(value: unknown): string;
+
+// @public
+export function formatCurrencySymbol(currency: CurrencyLike | undefined): string;
+
+// @public
+export function formatQuantityCell(value: unknown): string;
 
 // @public
 export function fromISODate(day: string): Temporal.PlainDate | undefined;
 
 // @public
 export function install(_app: App): void;
+
+// @public
+export function isArithmeticEntry(text: string, separators?: NumberSeparators, fractionDigits?: number): boolean;
+
+// @public
+export function isArithmeticKey(key: string, separators?: NumberSeparators): boolean;
+
+// @public
+export function isSemver(text: string): boolean;
+
+// @public
+export function isSemverPrefix(text: string): boolean;
 
 // @public
 export type KeyboardNavigationOptions = {
@@ -28,6 +92,47 @@ export type KeyboardNavigationOptions = {
 // @public
 export type KeypressHandlers = {
     [key: string]: (ev: KeyboardEvent) => any;
+};
+
+// @public
+export type NumberSeparators = {
+    group?: string;
+    decimal?: string;
+};
+
+// @public
+export function parseCurrencyAmountInput(text: string, locale?: string): number | null;
+
+// @public
+export function roundToPrecision(value: number, precision?: number): number;
+
+// @public
+export function useArithmeticInput(input: ArithmeticInputOptions): {
+    inputAttrs: {
+        value: string;
+        type: "text";
+        inputmode: "decimal";
+        autocomplete: "off";
+        onFocus: (event: FocusEvent) => void;
+        onInput: (event: Event) => void;
+        onKeydown: (event: KeyboardEvent) => void;
+        onPaste: (event: ClipboardEvent) => void;
+        onBlur: () => void;
+    };
+    text: Ref<string, string>;
+    focused: Ref<boolean, boolean>;
+    accepts: (next: string) => boolean;
+    begin: (current?: string) => void;
+    update: (next: string) => void;
+    settle: () => void;
+    end: () => void;
+    rebase: (current: string) => void;
+    syncText: () => void;
+    onFocus: (event: FocusEvent) => void;
+    onInput: (event: Event) => void;
+    onKeydown: (event: KeyboardEvent) => void;
+    onPaste: (event: ClipboardEvent) => void;
+    onBlur: () => void;
 };
 
 // @public

@@ -12,6 +12,7 @@
  */
 
 const { existsSync, readFileSync } = require('fs')
+// oxlint-disable-next-line typescript/unbound-method -- path's functions never read `this`
 const { dirname, join, relative, resolve } = require('path')
 const ts = require('typescript')
 

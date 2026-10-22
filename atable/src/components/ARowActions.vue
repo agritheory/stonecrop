@@ -56,12 +56,11 @@ import { useResizeObserver, onClickOutside } from '@vueuse/core'
 import { computed, ref, useTemplateRef } from 'vue'
 
 import { actionIcons } from '../icons'
-import { createTableStore } from '../stores/table'
-import type { RowActionsConfig, RowActionType } from '../types'
+import type { RowActionsConfig, RowActionType, TableStore } from '../types'
 
 const props = defineProps<{
 	rowIndex: number
-	store: ReturnType<typeof createTableStore>
+	store: TableStore
 	config: RowActionsConfig
 	position?: 'before-index' | 'after-index' | 'end'
 }>()

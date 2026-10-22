@@ -1,5 +1,205 @@
 # Change Log - @stonecrop/atable
 
+## 0.54.0
+
+### Minor Changes
+
+- 6496bcc: Number fields and number table cells take arithmetic, such as `12*3+4`, saved as `40` when you leave the box or press Enter; `options.arithmetic: false` turns it off.
+
+### Patch Changes
+
+- Updated dependencies [6496bcc]
+  - @stonecrop/utilities@0.54.0
+  - @stonecrop/schema@0.54.0
+  - @stonecrop/themes@0.54.0
+
+## 0.53.0
+
+### Patch Changes
+
+- @stonecrop/schema@0.53.0
+  - @stonecrop/themes@0.53.0
+  - @stonecrop/utilities@0.53.0
+
+## 0.52.0
+
+### Patch Changes
+
+- @stonecrop/schema@0.52.0
+  - @stonecrop/themes@0.52.0
+  - @stonecrop/utilities@0.52.0
+
+## 0.51.0
+
+### Patch Changes
+
+- Updated dependencies [e8842fb]
+  - @stonecrop/schema@0.51.0
+  - @stonecrop/themes@0.51.0
+  - @stonecrop/utilities@0.51.0
+
+## 0.50.1
+
+### Patch Changes
+
+- 7d84fb8: A link cell shows the name of the link it holds now, so a row whose link changes, such as a job task's picked workstation, no longer shows the old name until the page reloads.
+- @stonecrop/schema@0.50.1
+  - @stonecrop/themes@0.50.1
+  - @stonecrop/utilities@0.50.1
+
+## 0.50.0
+
+### Patch Changes
+
+- @stonecrop/schema@0.50.0
+  - @stonecrop/themes@0.50.0
+  - @stonecrop/utilities@0.50.0
+
+## 0.49.0
+
+### Patch Changes
+
+- Updated dependencies [d5fbd9a]
+  - @stonecrop/schema@0.49.0
+  - @stonecrop/themes@0.49.0
+  - @stonecrop/utilities@0.49.0
+
+## 0.48.1
+
+### Patch Changes
+
+- Updated dependencies [620acb0]
+  - @stonecrop/schema@0.48.1
+  - @stonecrop/themes@0.48.1
+  - @stonecrop/utilities@0.48.1
+
+## 0.48.0
+
+### Patch Changes
+
+- Updated dependencies [d5b5a74]
+  - @stonecrop/utilities@0.48.0
+  - @stonecrop/schema@0.48.0
+  - @stonecrop/themes@0.48.0
+
+## 0.47.0
+
+### Patch Changes
+
+- Updated dependencies [a5df570]
+  - @stonecrop/schema@0.47.0
+  - @stonecrop/themes@0.47.0
+  - @stonecrop/utilities@0.47.0
+
+## 0.46.1
+
+### Patch Changes
+
+- @stonecrop/schema@0.46.1
+  - @stonecrop/themes@0.46.1
+  - @stonecrop/utilities@0.46.1
+
+## 0.46.0
+
+### Patch Changes
+
+- @stonecrop/schema@0.46.0
+  - @stonecrop/themes@0.46.0
+  - @stonecrop/utilities@0.46.0
+
+## 0.45.1
+
+### Patch Changes
+
+- @stonecrop/schema@0.45.1
+  - @stonecrop/themes@0.45.1
+  - @stonecrop/utilities@0.45.1
+
+## 0.45.0
+
+### Patch Changes
+
+- @stonecrop/schema@0.45.0
+  - @stonecrop/themes@0.45.0
+  - @stonecrop/utilities@0.45.0
+
+## 0.44.0
+
+### Minor Changes
+
+- 358ecaf: Replace read-only conversion rows on `ACurrencyInput` and `AQuantityInput` with a compact helper line when the entered unit differs from the base. Remove `stockUomLabel`, `stockQtyLabel`, `conversionFactorLabel`, `baseCurrencyLabel`, `baseAmountLabel`, and `exchangeRateLabel` props.
+  
+  Table quantity and currency formatters omit redundant units and use `Intl` for currency cells. Quantity column sort/filter compares on `stockQty`. `AQuantityInput` accepts negative quantities.
+- 358ecaf: An editable quantity or currency column is edited in its cell: the number is typed in place, and the unit or currency is picked from a list opened with the cell's ▾ handle or Shift+ArrowDown. The cell editor and its lists come from `@stonecrop/aform`, which registers them when installed.
+- 358ecaf: Exports `TableStore`, the type of a table's store. The components and row actions that take a store use it, so their declarations and docs name it instead of writing out the store's whole type: atable's API docs shrink from 8 MB to 180 KB.
+
+### Patch Changes
+
+- 358ecaf: Sorting a quantity or currency column puts an emptied value with the blank cells, rather than ranking it as 0. A column's `component` decides how its cells compare, not the keys its values carry.
+- Updated dependencies [358ecaf]
+- Updated dependencies [358ecaf]
+- Updated dependencies [358ecaf]
+- Updated dependencies [358ecaf]
+  - @stonecrop/utilities@0.44.0
+  - @stonecrop/themes@0.44.0
+  - @stonecrop/schema@0.44.0
+
+## 0.43.0
+
+### Minor Changes
+
+- 63f68d7: A new record (`initializeRecord`) or table row (`addRow`) no longer gives a field a value nobody entered, so a save leaves it to the database's default instead of sending `''`, 0, false or null.
+
+### Patch Changes
+
+- @stonecrop/schema@0.43.0
+  - @stonecrop/themes@0.43.0
+  - @stonecrop/utilities@0.43.0
+
+## 0.42.0
+
+### Minor Changes
+
+- f5d09ad: A server-backed table whose first page fails to load says so, with the server's message and **Try again**, in place of its rows, and a failed **Load more** keeps the rows and says why, where both failed silently before.
+
+### Patch Changes
+
+- @stonecrop/schema@0.42.0
+  - @stonecrop/themes@0.42.0
+  - @stonecrop/utilities@0.42.0
+
+## 0.41.1
+
+### Patch Changes
+
+- @stonecrop/schema@0.41.1
+  - @stonecrop/themes@0.41.1
+  - @stonecrop/utilities@0.41.1
+
+## 0.41.0
+
+### Minor Changes
+
+- 863c853: `ASemverInput` has its own `semver` component category, so atable filters a semver column as text and sorts it by version precedence: `1.2.0` before `1.10.0`, and a prerelease before its release.
+
+### Patch Changes
+
+- Updated dependencies [863c853]
+- Updated dependencies [863c853]
+  - @stonecrop/schema@0.41.0
+  - @stonecrop/utilities@0.41.0
+  - @stonecrop/themes@0.41.0
+
+## 0.40.0
+
+### Patch Changes
+
+- Updated dependencies [a5f8744]
+- Updated dependencies [a5f8744]
+  - @stonecrop/schema@0.40.0
+  - @stonecrop/themes@0.40.0
+  - @stonecrop/utilities@0.40.0
+
 ## 0.39.0
 
 ### Minor Changes

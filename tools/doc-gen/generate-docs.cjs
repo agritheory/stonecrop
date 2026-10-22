@@ -4,6 +4,7 @@
 
 const { ApiModel } = require('@microsoft/api-extractor-model')
 const { writeFileSync } = require('fs')
+// oxlint-disable-next-line typescript/unbound-method -- path's functions never read `this`
 const { join } = require('path')
 const {
 	collectComponents,
