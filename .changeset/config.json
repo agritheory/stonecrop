@@ -6,6 +6,7 @@
 	"baseBranch": "development",
 	"updateInternalDependencies": "patch",
 	"ignore": [],
+	"changedFilePatterns": ["**", "!tests/**", "!test/**"],
 	"fixed": [
 		[
 			"@stonecrop/aform",

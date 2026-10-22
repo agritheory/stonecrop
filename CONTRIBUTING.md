@@ -79,8 +79,8 @@ What changed, in one sentence.
 - All publishable packages are one lockstep group, so the bump level applies to every one of them. Naming a package decides whose changelog gets your summary, not who gets released.
 - `git add` new files before running it. It finds changed packages with `git diff`, which does not report untracked files, so a new file's package is offered as unchanged.
 - It compares against the merge base with `development`. On a branch that has diverged far every package reads as changed, so pass `--since` a nearer ref when the grouping stops being useful.
-- CI fails when a pull request changes any file inside a published package and has no changeset, even a file that never ships, such as `vite.config.ts`. It does not check that the package you touched has one.
-- A change that releases nothing gets no changeset, never an empty one, though CI's error suggests `changeset add --empty`: an empty one satisfies CI while telling users nothing. If it touches a published package, put it on a branch that already carries a real changeset, or CI fails it.
+- CI fails when a pull request changes any file inside a published package and has no changeset, even a file that never ships, such as `vite.config.ts`. A package's `tests/` and `test/` folders are the exception (`changedFilePatterns` in `.changeset/config.json`), so a change to tests alone needs none. CI does not check that the package you touched has one.
+- A change that releases nothing gets no changeset, never an empty one, though CI's error suggests `changeset add --empty`: an empty one satisfies CI while telling users nothing. If it touches a published package outside its tests, put it on a branch that already carries a real changeset, or CI fails it.
 
 ## Releases
 
