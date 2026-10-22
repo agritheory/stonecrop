@@ -2,4 +2,4 @@
 '@stonecrop/desktop': minor
 ---
 
-A preview presented from a slot drawer now takes the drawer's place, and closing the preview reopens that drawer. The preview pane is resizable: drag, arrow keys or double-click on its left edge, with the width kept for the session.
+`present()` takes `replacesDrawer: true` to let a preview take the slot drawer's place. The drawer is hidden rather than closed, so the slot keeps its state, and closing the preview shows it again. The preview pane is resizable: drag, arrow keys or double-click on its left edge, with the width kept for the session.

@@ -76,7 +76,7 @@ const actionSetSlots = computed<ActionSetSlot[]>(() => [
 ])
 ```
 
-Inside a slot component, call `useActionSet().present({ view, props })` to open the preview pane. The preview takes the drawer's place: the drawer collapses while it is open, and closing the preview (its × button or Escape) reopens the slot it came from. Opening another tile, or navigating to another record, closes the preview without reopening it.
+Inside a slot component, call `useActionSet().present({ view, props })` to open the preview pane beside the drawer. Pass `replacesDrawer: true` to have the preview take the drawer's place instead: the drawer is hidden while the preview is open, and closing the preview (its × button, Escape, or the slot's own tile) shows it again. The slot stays mounted throughout, so a half-written comment or an upload in progress survives. Opening another tile, or navigating to another record, closes the preview.
 
 The pane opens at half the workspace. Its left edge is a separator the user can drag, move with the arrow keys (Home and End for the widest and narrowest) or double-click to reset; the width is kept for the rest of the session.
 
@@ -102,8 +102,8 @@ rows:
   - ['`doctype`', 'Computed ref of the active doctype.']
   - ['`recordId`', 'Computed ref of the active record id.']
   - ['`activeSlotId`', 'Currently open host slot, or null.']
-  - ['`present(subject)`', 'Open a preview flyin with `ActionSetPreview` `{ view, props?, id? }`, collapsing an open slot drawer in its place.']
-  - ['`closePreview()`', 'Close the preview pane and reopen the slot drawer it replaced, if any.']
+  - ['`present(subject)`', 'Open a preview flyin with `ActionSetPreview` `{ view, props?, id?, replacesDrawer? }`. With `replacesDrawer`, the open slot drawer is hidden, not closed, while the preview is shown.']
+  - ['`closePreview()`', 'Close the preview pane, showing again a slot drawer it replaced.']
   - ['`close()`', 'Close the drawer and preview.']
 ---
 ::

@@ -1,7 +1,8 @@
 <template>
 	<div class="action-set">
 		<aside
-			v-if="drawerOpen"
+			v-if="drawerMounted"
+			v-show="drawerOpen"
 			ref="drawerEl"
 			class="action-set__drawer"
 			aria-label="Side panel"
@@ -210,7 +211,9 @@ const activeTabId = computed(() => {
 	if (controller.isActionsOpen.value) return ACTIONS_TAB_ID
 	return controller.activeSlotId.value
 })
-const drawerOpen = computed(() => controller.isDrawerOpen.value)
+// Mounted while something has the drawer; shown unless a preview has taken its place.
+const drawerMounted = computed(() => controller.isDrawerOpen.value)
+const drawerOpen = computed(() => controller.isDrawerShown.value)
 
 const tileRail = useTemplateRef('tileRail')
 const dragHandle = useTemplateRef('dragHandle')
@@ -440,6 +443,9 @@ function onActionClick(label: string, action: (() => void) | undefined) {
 watch(drawerOpen, async open => {
 	if (typeof document === 'undefined') return
 	if (open) {
+		// Shown again after a preview that replaced it: the preview has put focus back, and the
+		// place to return to when the drawer closes is still the one from when it first opened.
+		if (lastFocusedBeforeDrawer.value) return
 		lastFocusedBeforeDrawer.value = document.activeElement instanceof HTMLElement ? document.activeElement : null
 		await nextTick()
 		if (controller.isSearchOpen.value) {
@@ -449,6 +455,8 @@ watch(drawerOpen, async open => {
 		drawerEl.value?.querySelector<HTMLElement>('button:not([disabled]), [href], input, select, textarea')?.focus()
 		return
 	}
+	// Hidden by a preview, not closed: the preview takes focus, and this drawer may come back.
+	if (controller.isDrawerOpen.value) return
 	lastFocusedBeforeDrawer.value?.focus()
 	lastFocusedBeforeDrawer.value = null
 })

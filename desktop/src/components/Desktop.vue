@@ -21,15 +21,15 @@
 				</div>
 			</div>
 
-			<aside v-if="actionSetPreviewSubject" class="desktop__preview" :style="previewStyle">
+			<aside v-if="actionSetPreviewSubject" ref="previewEl" class="desktop__preview" :style="previewStyle">
 				<div
 					class="desktop__preview-resize"
 					role="separator"
 					aria-orientation="vertical"
 					aria-label="Resize preview"
 					:aria-valuenow="Math.round(previewFraction * 100)"
-					:aria-valuemin="Math.round(PREVIEW_MIN_FRACTION * 100)"
-					:aria-valuemax="Math.round(PREVIEW_MAX_FRACTION * 100)"
+					:aria-valuemin="Math.round(previewBounds.min * 100)"
+					:aria-valuemax="Math.round(previewBounds.max * 100)"
 					tabindex="0"
 					title="Drag to resize · double-click to reset"
 					@pointerdown="onPreviewResizeStart"
@@ -38,6 +38,7 @@
 				<header class="desktop__preview-header">
 					<button
 						type="button"
+						ref="previewCloseEl"
 						class="desktop__preview-close"
 						aria-label="Close preview"
 						@click="closeActionSetPreview">
@@ -86,12 +87,12 @@ import {
 	type ResolvedField,
 	type ResolvedTable,
 } from '@stonecrop/aform'
-import { computed, markRaw, onMounted, onUnmounted, provide, ref, toRaw, unref, watch } from 'vue'
+import { computed, markRaw, nextTick, onMounted, onUnmounted, provide, ref, toRaw, unref, watch } from 'vue'
 
 import ActionSet from './ActionSet.vue'
 import SheetNav from './SheetNav.vue'
 import { createActionSet, actionSetKey } from '../composables/useActionSet'
-import { PREVIEW_MAX_FRACTION, PREVIEW_MIN_FRACTION, usePreviewSplit } from '../composables/usePreviewSplit'
+import { usePreviewSplit } from '../composables/usePreviewSplit'
 import type {
 	ActionElements,
 	RouteAdapter,
@@ -1007,6 +1008,12 @@ const handleKeydown = (event: KeyboardEvent) => {
 		actionSetController.openSearch()
 	}
 	if (event.key === 'Escape') {
+		// Mid-drag, Escape abandons the resize; the preview stays open.
+		if (previewResizing.value) {
+			event.preventDefault()
+			cancelPreviewResize()
+			return
+		}
 		if (actionSetController.isPreviewOpen.value) {
 			actionSetController.closePreview()
 			return
@@ -1032,7 +1039,7 @@ const visibleActionSetSlots = computed(() =>
 const actionSetController = createActionSet({ doctype: currentDoctype, recordId: currentRecordId })
 provide(actionSetKey, actionSetController)
 
-const actionSetDrawerOpen = computed(() => actionSetController.isDrawerOpen.value)
+const actionSetDrawerOpen = computed(() => actionSetController.isDrawerShown.value)
 const actionSetPreviewOpen = computed(() => actionSetController.isPreviewOpen.value)
 const actionSetPreviewSubject = computed(() => actionSetController.previewSubject.value)
 
@@ -1047,12 +1054,40 @@ function closeActionSetPreview() {
 const workspace = ref<HTMLElement | null>(null)
 const {
 	fraction: previewFraction,
+	bounds: previewBounds,
 	resizing: previewResizing,
 	previewStyle,
 	onPointerDown: onPreviewResizeStart,
 	onKeydown: onPreviewResizeKeydown,
 	reset: resetPreviewWidth,
+	cancel: cancelPreviewResize,
 } = usePreviewSplit(workspace)
+
+const previewEl = ref<HTMLElement | null>(null)
+const previewCloseEl = ref<HTMLElement | null>(null)
+// Whatever had focus when the preview opened, usually the control in the drawer that opened it.
+let previewOpener: HTMLElement | null = null
+
+// Runs before the DOM updates, so on close the preview, and whether it holds focus, is still there.
+watch(actionSetPreviewOpen, async open => {
+	if (typeof document === 'undefined') return
+	if (open) {
+		previewOpener = document.activeElement instanceof HTMLElement ? document.activeElement : null
+		await nextTick()
+		// A preview that replaced the drawer has hidden the control that opened it, taking focus with it.
+		if (actionSetController.isDrawerOpen.value && !actionSetController.isDrawerShown.value) {
+			previewCloseEl.value?.focus()
+		}
+		return
+	}
+	cancelPreviewResize()
+	const opener = previewOpener
+	previewOpener = null
+	// Only when the preview held focus: closing it otherwise leaves focus where the user put it.
+	if (!previewEl.value?.contains(document.activeElement)) return
+	await nextTick()
+	if (opener?.isConnected) opener.focus()
+})
 
 onMounted(() => {
 	document.addEventListener('keydown', handleKeydown)
