@@ -108,6 +108,17 @@ export function roundToPrecision(value: number, precision?: number): number;
 
 // @public
 export function useArithmeticInput(input: ArithmeticInputOptions): {
+    inputAttrs: {
+        value: string;
+        type: "text";
+        inputmode: "decimal";
+        autocomplete: "off";
+        onFocus: (event: FocusEvent) => void;
+        onInput: (event: Event) => void;
+        onKeydown: (event: KeyboardEvent) => void;
+        onPaste: (event: ClipboardEvent) => void;
+        onBlur: () => void;
+    };
     text: Ref<string, string>;
     focused: Ref<boolean, boolean>;
     accepts: (next: string) => boolean;

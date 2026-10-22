@@ -31,21 +31,13 @@
 						<div class="acurrency__amount-wrap">
 							<input
 								v-if="options.arithmetic !== false"
+								v-bind="arithmetic.inputAttrs"
 								:id="uuid"
-								:value="arithmetic.text.value"
 								class="acurrency__amount"
-								type="text"
-								inputmode="decimal"
-								autocomplete="off"
 								:disabled="mode === 'read'"
 								:required="required"
 								:aria-invalid="invalid"
-								:aria-describedby="describedBy"
-								@focus="arithmetic.onFocus"
-								@blur="arithmetic.onBlur"
-								@input="arithmetic.onInput"
-								@keydown="arithmetic.onKeydown"
-								@paste="arithmetic.onPaste" />
+								:aria-describedby="describedBy" />
 							<input
 								v-else-if="amountMaskEnabled"
 								:id="uuid"

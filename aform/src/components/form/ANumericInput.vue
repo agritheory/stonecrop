@@ -7,21 +7,13 @@
 		<template v-else>
 			<input
 				v-if="options.arithmetic !== false"
+				v-bind="arithmetic.inputAttrs"
 				:id="uuid"
-				:value="arithmetic.text.value"
 				class="aform_input-field anumeric__input"
-				type="text"
-				inputmode="decimal"
-				autocomplete="off"
 				:disabled="mode === 'read'"
 				:required="required"
 				:aria-invalid="invalid"
-				:aria-describedby="describedBy"
-				@input="arithmetic.onInput"
-				@keydown="arithmetic.onKeydown"
-				@paste="arithmetic.onPaste"
-				@focus="arithmetic.onFocus"
-				@blur="arithmetic.onBlur" />
+				:aria-describedby="describedBy" />
 			<input
 				v-else
 				:id="uuid"

@@ -423,3 +423,81 @@ describe('arithmetic in table quantity and currency cells', { tags: ['component'
 		expect(keyPrevented(table, 'input.atable-tuple-shell__input', '*')).toBe(false)
 	})
 })
+
+// Each form box binds the composable's `inputAttrs`: a box missing any of its attributes or listeners fails here.
+const usd = { id: 'USD', displayText: 'US Dollar' }
+type Listener = { 'onUpdate:modelValue': (value: unknown) => void }
+describe.each([
+	{
+		name: 'ANumericInput',
+		box: '.aform_input-field',
+		mountWith: (listener: Listener) => mount(ANumericInput, { props: { label: 'Amount', modelValue: 5, ...listener } }),
+		amountOf: (value: unknown) => value,
+	},
+	{
+		name: 'AQuantityInput',
+		box: '.aquantity__qty',
+		mountWith: (listener: Listener) =>
+			mount(AQuantityInput, {
+				props: {
+					label: 'Amount',
+					options: { uoms: ['Nos'], stockUom: 'Nos' },
+					modelValue: { qty: 5, uom: 'Nos', stockQty: 5, stockUom: 'Nos', conversionFactor: 1 },
+					...listener,
+				},
+			}),
+		amountOf: (value: unknown) => (value as { qty?: number } | undefined)?.qty,
+	},
+	{
+		name: 'ACurrencyInput',
+		box: '.acurrency__amount',
+		mountWith: (listener: Listener) =>
+			mount(ACurrencyInput, {
+				props: {
+					label: 'Amount',
+					options: { baseCurrency: usd },
+					modelValue: { amount: 5, currency: usd, baseAmount: 5, baseCurrency: usd, exchangeRate: 1 },
+					...listener,
+				},
+			}),
+		amountOf: (value: unknown) => (value as { amount?: number } | undefined)?.amount,
+	},
+])('$name binds the arithmetic box', { tags: ['component'] }, ({ box, mountWith, amountOf }) => {
+	// A parent holding the model, as `v-model` does, so a commit comes back to the box.
+	const mountBox = () => {
+		const wrapper: VueWrapper = mountWith({
+			'onUpdate:modelValue': (value: unknown) => void wrapper.setProps({ modelValue: value }),
+		})
+		return wrapper
+	}
+
+	it('as a text box with a decimal keyboard and no autocomplete', () => {
+		const input = mountBox().find(box)
+		expect([input.attributes('type'), input.attributes('inputmode'), input.attributes('autocomplete')]).toEqual([
+			'text',
+			'decimal',
+			'off',
+		])
+	})
+
+	it('refusing a letter typed or pasted', () => {
+		const wrapper = mountBox()
+		expect(keyPrevented(wrapper, box, 'e')).toBe(true)
+		expect(pastePrevented(wrapper, box, 'abc')).toBe(true)
+	})
+
+	it('holding the expression while focused, then showing the result once left', async () => {
+		const wrapper = mountBox()
+		const input = wrapper.find<HTMLInputElement>(box)
+		await input.trigger('focus')
+		input.element.value = '2*3'
+		await input.trigger('input')
+		await nextTick()
+		expect(amountOf(lastEmitted(wrapper))).toBe(6)
+		expect(input.element.value).toBe('2*3')
+
+		await input.trigger('blur')
+		await nextTick()
+		expect(input.element.value).toMatch(/^6/)
+	})
+})

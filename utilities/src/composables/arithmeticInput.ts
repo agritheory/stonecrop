@@ -1,4 +1,4 @@
-import { ref, watch, type Ref } from 'vue'
+import { reactive, ref, watch, type Ref } from 'vue'
 
 import { evaluateArithmetic, isArithmeticEntry, type NumberSeparators } from '../arithmetic'
 
@@ -51,8 +51,9 @@ const textWith = (input: HTMLInputElement, inserted: string) =>
  * Only an edit writes: a box focused and left as it was commits nothing, so a value is never rewritten (or rounded)
  * by being looked at. "Edited" means the text differs from what the box last showed or saved.
  *
- * Form inputs bind the returned `onFocus`, `onInput`, `onKeydown`, `onPaste` and `onBlur`. A box that is no
- * `<input>` (a contenteditable table cell) drives `begin`, `update`, `settle`, `end` and `accepts` itself.
+ * An `<input>` binds the returned `inputAttrs` (`v-bind="arithmetic.inputAttrs"`); an attribute written after the bind
+ * overrides it, and a listener written beside it runs as well. A box that is no `<input>` (a contenteditable table
+ * cell), or one that is not always an arithmetic box, drives `begin`, `update`, `settle`, `end` and `accepts` itself.
  *
  * @public
  */
@@ -161,7 +162,21 @@ export function useArithmeticInput({
 
 	const onBlur = () => end()
 
+	// Text, not `type="number"`, which refuses an operator.
+	const inputAttrs = reactive({
+		value: text,
+		type: 'text' as const,
+		inputmode: 'decimal' as const,
+		autocomplete: 'off' as const,
+		onFocus,
+		onInput,
+		onKeydown,
+		onPaste,
+		onBlur,
+	})
+
 	return {
+		inputAttrs,
 		text,
 		focused,
 		accepts,

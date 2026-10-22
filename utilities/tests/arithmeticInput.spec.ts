@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { effectScope, ref } from 'vue'
+import { effectScope, nextTick, ref } from 'vue'
 
 import { useArithmeticInput, type ArithmeticInputOptions } from '../src/composables/arithmeticInput'
 
@@ -22,6 +22,23 @@ const setup = (initial: unknown, options: Partial<ArithmeticInputOptions> = {}) 
 }
 
 describe('useArithmeticInput', () => {
+	it("gives an <input> the box's attributes and listeners as one object, its value following the box", async () => {
+		const { box, model } = setup(40)
+		const { inputAttrs } = box
+		expect(inputAttrs).toMatchObject({ value: '40', type: 'text', inputmode: 'decimal', autocomplete: 'off' })
+		expect([
+			inputAttrs.onFocus,
+			inputAttrs.onInput,
+			inputAttrs.onKeydown,
+			inputAttrs.onPaste,
+			inputAttrs.onBlur,
+		]).toEqual([box.onFocus, box.onInput, box.onKeydown, box.onPaste, box.onBlur])
+
+		model.value = 12
+		await nextTick()
+		expect(inputAttrs.value).toBe('12')
+	})
+
 	it('shows the model in the box', () => {
 		expect(setup(40).box.text.value).toBe('40')
 		expect(setup(null).box.text.value).toBe('')
