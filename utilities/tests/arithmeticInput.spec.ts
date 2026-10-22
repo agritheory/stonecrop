@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { effectScope, nextTick, ref } from 'vue'
 
 import { useArithmeticInput, type ArithmeticInputOptions } from '../src/composables/arithmeticInput'
@@ -149,5 +149,96 @@ describe('useArithmeticInput', () => {
 		expect(box.accepts('=12*3')).toBe(true)
 		expect(box.accepts('12=3')).toBe(false)
 		expect(box.accepts('1e3')).toBe(false)
+	})
+})
+
+// The listeners `inputAttrs` gives an `<input>`, on a real one, as `v-bind` attaches them.
+describe('useArithmeticInput on an <input>', () => {
+	afterEach(() => {
+		document.body.replaceChildren()
+	})
+
+	const inputFor = (box: ReturnType<typeof setup>['box'], value: string) => {
+		const input = document.createElement('input')
+		input.value = value
+		for (const [name, listener] of Object.entries(box.inputAttrs)) {
+			if (name.startsWith('on')) input.addEventListener(name.slice(2).toLowerCase(), listener as EventListener)
+		}
+		document.body.append(input)
+		return input
+	}
+
+	const keyRefused = (input: HTMLInputElement, key: string, init: KeyboardEventInit = {}) => {
+		const event = new KeyboardEvent('keydown', { key, cancelable: true, ...init })
+		input.dispatchEvent(event)
+		return event.defaultPrevented
+	}
+
+	const pasteRefused = (input: HTMLInputElement, text: string) => {
+		const event = new Event('paste', { cancelable: true })
+		Object.defineProperty(event, 'clipboardData', { value: { getData: () => text } })
+		input.dispatchEvent(event)
+		return event.defaultPrevented
+	}
+
+	it('refuses a key that would leave no expression, reading the text where the caret is', () => {
+		const input = inputFor(setup(null).box, '12')
+		input.setSelectionRange(2, 2)
+		expect([keyRefused(input, '3'), keyRefused(input, '*'), keyRefused(input, 'e')]).toEqual([false, false, true])
+		// `=` may only start the box.
+		expect(keyRefused(input, '=')).toBe(true)
+		input.setSelectionRange(0, 0)
+		expect(keyRefused(input, '=')).toBe(false)
+	})
+
+	it('lets a shortcut and a key that types nothing through', () => {
+		const input = inputFor(setup(null).box, '12')
+		expect(keyRefused(input, 'a', { ctrlKey: true })).toBe(false)
+		expect(keyRefused(input, 'ArrowLeft')).toBe(false)
+	})
+
+	it('refuses a paste that would leave no expression', () => {
+		const input = inputFor(setup(null).box, '12')
+		input.setSelectionRange(2, 2)
+		expect(pasteRefused(input, '*3')).toBe(false)
+		expect(pasteRefused(input, 'abc')).toBe(true)
+	})
+
+	it('holds the expression while focused, and settles to the result on Enter, committing once', () => {
+		const { box, commits } = setup(5, { live: false })
+		const input = inputFor(box, '5')
+		input.dispatchEvent(new FocusEvent('focus'))
+		input.value = '2*3'
+		input.dispatchEvent(new Event('input'))
+		expect([commits, box.text.value]).toEqual([[], '2*3'])
+
+		keyRefused(input, 'Enter')
+		expect([commits, box.text.value]).toEqual([[6], '6'])
+		// Leaving the box after Enter is no second edit.
+		input.dispatchEvent(new FocusEvent('blur'))
+		expect(commits).toEqual([6])
+	})
+
+	it('settles to the result once left, then follows the model again', async () => {
+		const { box, model } = setup(5)
+		const input = inputFor(box, '5')
+		input.dispatchEvent(new FocusEvent('focus'))
+		input.value = '2*3'
+		input.dispatchEvent(new Event('input'))
+		await nextTick()
+		expect([model.value, box.text.value]).toEqual([6, '2*3'])
+
+		input.dispatchEvent(new FocusEvent('blur'))
+		model.value = 9
+		await nextTick()
+		expect(box.text.value).toBe('9')
+	})
+
+	it('selects the text on focus with selectOnFocus', async () => {
+		const input = inputFor(setup(5, { selectOnFocus: true }).box, '5')
+		const select = vi.spyOn(input, 'select')
+		input.dispatchEvent(new FocusEvent('focus'))
+		await new Promise(resolve => requestAnimationFrame(resolve))
+		expect(select).toHaveBeenCalledOnce()
 	})
 })
