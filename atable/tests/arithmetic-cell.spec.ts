@@ -27,7 +27,7 @@ describe('arithmetic number cells', { tags: ['component'] }, () => {
 		})
 
 	type Table = ReturnType<typeof mountTable>
-	const qtyCell = (wrapper: Table) => wrapper.find('td[data-colindex="0"]')
+	const qtyCell = (wrapper: Table) => wrapper.find<HTMLTableCellElement>('td[data-colindex="0"]')
 
 	// Focuses the cell, types `text` over its contents and returns the keydown's default-prevented flag per key.
 	const typeInto = async (wrapper: Table, text: string) => {
@@ -197,6 +197,51 @@ describe('arithmetic number cells', { tags: ['component'] }, () => {
 		})()
 		expect(prevented).toBe(false)
 		expect(wrapper.vm.store.getCellData(0, 0)).not.toBe(36)
+		wrapper.unmount()
+	})
+
+	// A doctype declares its format as a function's source, and a database numeric reaches the table as text at its
+	// column's scale: '5.000000', shown as 5.
+	const mountFormatted = () =>
+		mount(ATable, {
+			props: {
+				rows: [{ qty: '5.000000' }],
+				columns: [
+					{
+						name: 'qty',
+						label: 'Qty',
+						component: 'ANumericInput',
+						edit: true,
+						format: "(value) => (value == null || value === '' ? '' : String(Number(value)))",
+					},
+				],
+				config: { view: 'list' },
+			},
+			attachTo: document.body,
+			global: { components: { ACell } },
+		})
+
+	it.each([
+		['9', 9],
+		['12*3', 36],
+	])('writes %s typed into a column with a format to the row as the number %d', async (typed, expected) => {
+		const wrapper = mountFormatted()
+		await typeInto(wrapper, typed)
+		await qtyCell(wrapper).trigger('focusout')
+
+		expect(wrapper.vm.store.getCellData(0, 0)).toBe(expected)
+		expect(wrapper.emitted('update:rows')?.at(-1)?.[0]).toEqual([{ qty: expected }])
+		wrapper.unmount()
+	})
+
+	it('leaves a value with a format held as text when its cell is focused and left without an edit', async () => {
+		const wrapper = mountFormatted()
+		await qtyCell(wrapper).trigger('focus')
+		await qtyCell(wrapper).trigger('focusout')
+
+		expect(qtyCell(wrapper).text()).toBe('5')
+		expect(wrapper.vm.store.getCellData(0, 0)).toBe('5.000000')
+		expect(wrapper.emitted('update:rows')).toBeUndefined()
 		wrapper.unmount()
 	})
 })
