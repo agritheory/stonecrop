@@ -1,5 +1,19 @@
 # Change Log - @stonecrop/desktop
 
+## 0.53.0
+
+### Minor Changes
+
+- 7e6db68: A new record's form opens with the values an app held for it through `prefillDraft`, and uses them up.
+
+### Patch Changes
+
+- Updated dependencies [7e6db68]
+  - @stonecrop/stonecrop@0.53.0
+  - @stonecrop/aform@0.53.0
+  - @stonecrop/schema@0.53.0
+  - @stonecrop/themes@0.53.0
+
 ## 0.52.0
 
 ### Patch Changes

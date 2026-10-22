@@ -1,5 +1,25 @@
 # Change Log - @stonecrop/nuxt
 
+## 0.53.0
+
+### Patch Changes
+
+- 7e6db68: DocBuilder's script editor knows `prefillDraft`, so a script that calls it type-checks.
+- Updated dependencies [7e6db68]
+- Updated dependencies [7e6db68]
+  - @stonecrop/desktop@0.53.0
+  - @stonecrop/stonecrop@0.53.0
+  - @stonecrop/aform@0.53.0
+  - @stonecrop/atable@0.53.0
+  - @stonecrop/casl-middleware@0.53.0
+  - @stonecrop/code-editor@0.53.0
+  - @stonecrop/graphql-client@0.53.0
+  - @stonecrop/graphql-middleware@0.53.0
+  - @stonecrop/node-editor@0.53.0
+  - @stonecrop/nuxt-grafserv@0.53.0
+  - @stonecrop/schema@0.53.0
+  - @stonecrop/themes@0.53.0
+
 ## 0.52.0
 
 ### Patch Changes

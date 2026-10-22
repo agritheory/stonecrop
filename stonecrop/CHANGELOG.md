@@ -1,5 +1,17 @@
 # Change Log - @stonecrop/stonecrop
 
+## 0.53.0
+
+### Minor Changes
+
+- 7e6db68: Add `prefillDraft(doctype, values)`, also given to scripts, which checks values against a doctype's fields and holds them for its next new record; `takePrefill` returns them once, and `composeNewRecord` applies them over every default as `prefill`.
+
+### Patch Changes
+
+- @stonecrop/aform@0.53.0
+  - @stonecrop/atable@0.53.0
+  - @stonecrop/schema@0.53.0
+
 ## 0.52.0
 
 ### Patch Changes
