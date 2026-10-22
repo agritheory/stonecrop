@@ -1,5 +1,11 @@
 # Change Log - @stonecrop/utilities
 
+## 0.54.0
+
+### Minor Changes
+
+- 6496bcc: Exports `useArithmeticInput`, the number box that takes arithmetic, with `evaluateArithmetic` and the helpers it uses.
+
 ## 0.53.0
 
 ## 0.52.0

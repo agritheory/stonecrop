@@ -1,5 +1,18 @@
 # Change Log - @stonecrop/atable
 
+## 0.54.0
+
+### Minor Changes
+
+- 6496bcc: Number fields and number table cells take arithmetic, such as `12*3+4`, saved as `40` when you leave the box or press Enter; `options.arithmetic: false` turns it off.
+
+### Patch Changes
+
+- Updated dependencies [6496bcc]
+  - @stonecrop/utilities@0.54.0
+  - @stonecrop/schema@0.54.0
+  - @stonecrop/themes@0.54.0
+
 ## 0.53.0
 
 ### Patch Changes
