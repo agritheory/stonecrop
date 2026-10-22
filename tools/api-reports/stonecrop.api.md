@@ -97,6 +97,9 @@ export function composeNewRecord(registry: Registry, doctype: Doctype, options?:
 export type ComposeNewRecordOptions = {
     now?: Date;
     timeoutMs?: number;
+    prefill?: {
+        [field: string]: DefaultsData;
+    };
 };
 
 // @public
@@ -506,11 +509,15 @@ export class Registry {
     getRegisteredDefaults(slug: string): DefaultsSource | undefined;
     initializeRecord(schema: ResolvedField[]): Record<string, any>;
     readonly name: string;
+    prefillDraft(doctype: string, values: Record<string, unknown>): void;
     registerDefaults(doctype: string, source: DefaultsSource): void;
     readonly registry: Record<string, Doctype>;
     resolveSchema(doctype: Doctype, visited?: Set<string>): ResolvedField[];
     static _root: Registry;
     readonly router?: Router;
+    takePrefill(doctype: string): {
+        [field: string]: DefaultsData;
+    } | undefined;
 }
 
 // @public

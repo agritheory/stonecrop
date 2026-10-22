@@ -232,6 +232,42 @@ describe('useClientAction onError', { tags: ['unit'] }, () => {
 	})
 })
 
+// A script opens a new record already filled in: it hands the values to the registry, then moves to the form.
+describe('useClientAction prefillDraft', { tags: ['unit'] }, () => {
+	const script = "prefillDraft('sales-order', { customer: 'C-1' }); await router.push('/sales-order/new')"
+
+	it('hands a clientHandler the registry prefillDraft, so the values are held before it moves', async () => {
+		mocks.router = makeRouter()
+		mocks.sc = makeSc({ actions: { MakeOrder: { clientHandler: script } } })
+		// The real method reads `this`, so record it: a capability handed over unbound would lose the registry.
+		const calls: unknown[][] = []
+		mocks.sc.registry.prefillDraft = function (this: unknown, ...args: unknown[]) {
+			calls.push([this, ...args])
+		}
+
+		await useClientAction().run(payload('MakeOrder'))
+
+		expect(calls).toEqual([[mocks.sc.registry, 'sales-order', { customer: 'C-1' }]])
+		expect(mocks.router.push).toHaveBeenCalledWith('/sales-order/new')
+		expect(mocks.sc.dispatchAction).not.toHaveBeenCalled()
+	})
+
+	it('stops a clientHandler whose values are refused, and reports the refusal once', async () => {
+		const onError = vi.fn()
+		mocks.router = makeRouter()
+		mocks.sc = makeSc({ actions: { MakeOrder: { clientHandler: script } } })
+		mocks.sc.registry.prefillDraft = vi.fn(() => {
+			throw new Error('sales-order has no field colour')
+		})
+
+		await useClientAction({ onError }).run(payload('MakeOrder'))
+
+		expect(onError).toHaveBeenCalledTimes(1)
+		expect(onError.mock.calls[0]?.[0]).toMatchObject({ message: 'sales-order has no field colour' })
+		expect(mocks.router.push).not.toHaveBeenCalled()
+	})
+})
+
 // Desktop's "New Record" routes to `/{doctype}/new` and the backend assigns the identity when the
 // Save creates the record. Leaving the route on the draft segment would offer a form that creates
 // a second record, and the stale key would leave a row nothing can fetch.

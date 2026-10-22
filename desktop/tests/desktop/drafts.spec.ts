@@ -168,6 +168,56 @@ describe('Desktop draft records', { tags: ['component'] }, () => {
 		expect(wrapper.findComponent(AForm).props('data')).toMatchObject({ status: 'draft' })
 	})
 
+	// A script fills a new record (a sales order made from a quotation) and then moves to its form.
+	describe('values the app filled in', () => {
+		it('open the new form with them, and are used up by it', async () => {
+			registry.prefillDraft('Task', { title: 'From the quotation' })
+			const filled = mountAt('new')
+			await flushPromises()
+
+			expect(filled.findComponent(AForm).props('data')).toMatchObject({ title: 'From the quotation', status: 'draft' })
+			filled.unmount()
+
+			const next = mountAt('new')
+			await flushPromises()
+			expect(next.findComponent(AForm).props('data')).not.toMatchObject({ title: 'From the quotation' })
+		})
+
+		it('reach the form of a doctype whose name and slug differ', async () => {
+			const fields = List([{ kind: 'field' as const, fieldname: 'title', label: 'Title', component: 'ATextInput' }])
+			registry.addDoctype(new Doctype('SalesNote', fields, { states: ['draft'], actions: {} } as any))
+			registry.prefillDraft('SalesNote', { title: 'From the quotation' })
+			const wrapper = mount(Desktop, {
+				props: {
+					routeAdapter: {
+						getCurrentDoctype: () => 'sales-note',
+						getCurrentRecordId: () => 'new',
+						getCurrentView: () => 'record',
+						navigate: vi.fn(),
+					},
+				},
+				global: {
+					plugins: [makeStonecropPlugin(registry, stonecrop), pinia],
+					stubs: { AForm: true, ActionSet: true, SheetNav: true, CommandPalette: true },
+				},
+			})
+			await flushPromises()
+
+			expect(wrapper.findComponent(AForm).props('data')).toMatchObject({ title: 'From the quotation' })
+		})
+
+		it("are not used by another doctype's new form", async () => {
+			const noteFields = List([{ kind: 'field' as const, fieldname: 'title', label: 'Title', component: 'ATextInput' }])
+			registry.addDoctype(new Doctype('note', noteFields, { states: ['draft'], actions: {} } as any))
+			registry.prefillDraft('note', { title: 'A note' })
+			const wrapper = mountAt('new')
+			await flushPromises()
+
+			expect(wrapper.findComponent(AForm).props('data')).not.toMatchObject({ title: 'A note' })
+			expect(registry.takePrefill('note')).toEqual({ title: 'A note' })
+		})
+	})
+
 	describe("a field's rules", () => {
 		afterEach(() => {
 			getGlobalTriggerEngine().registerDoctypeActions('task', {})

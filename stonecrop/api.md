@@ -6,7 +6,7 @@
 
 ### composeNewRecord
 
-Build a new record, once, from every starting value: the doctype's `defaults`, then the source the app registered for it, over the record's tables and embedded records. Layers apply in that order, so the registered source wins however long the doctype's took. A field neither sets has no value, so a save leaves it to the database's default.
+Build a new record, once, from every starting value: the doctype's `defaults`, then the source the app registered for it, then any values the app filled the record in with (`prefill`), over the record's tables and embedded records. Layers apply in that order, so a later one wins however long an earlier one took. A field none sets has no value, so a save leaves it to the database's default.
 
 Nothing is returned until every value is in, so nothing is written to the record after a user can see it. A value that throws, rejects, or has not arrived within `timeoutMs` (default `DEFAULTS_TIMEOUT_MS`) is skipped and reported with `console.warn`; the record still opens with everything else.
 
@@ -1191,7 +1191,7 @@ export type BaseStonecropReturn = {
 
 ### ClientHandlerApi
 
-Named capabilities injected into a clientHandler body as function parameters. The caller (the assembly composable) owns what each name resolves to — typically `router`, `record`, `runAction`, and a read-only `graphql`.
+Named capabilities injected into a clientHandler body as function parameters. The caller (the assembly composable) owns what each name resolves to — typically `router`, `record`, `runAction`, a read-only `graphql`, and `prefillDraft`.
 
 **Definition:**
 
@@ -1209,6 +1209,9 @@ Options for composing a new record.
 export type ComposeNewRecordOptions = {
     now?: Date;
     timeoutMs?: number;
+    prefill?: {
+        [field: string]: DefaultsData;
+    };
 };
 ```
 
@@ -1977,6 +1980,14 @@ initializeRecord(schema: ResolvedField[]): Record<string, any>
 |-----------|------|-------------|
 | schema | `ResolvedField[]` | The resolved schema array to derive the record from |
 
+#### prefillDraft
+
+Hold values for a doctype's next new record, by any name it is registered under, so its form opens filled in; the caller then opens that form. The doctype must be registered already, and so must every doctype its tables and embedded records hold, or what they hold is copied unchecked. The values are checked against its fields and copied; values its fields cannot hold, or anything that is not plain data, throw and change nothing. A field given as `undefined` is skipped, and a later call for the same doctype replaces an earlier one.
+
+```typescript
+prefillDraft(doctype: string, values: Record<string, unknown>): void
+```
+
 #### registerDefaults
 
 Register the app's starting values for a doctype, by its name or its slug (typically from app bootstrap). Either one is keyed the way `slug` is, so `'OrderItem'` and `'order-item'` register for the same doctype, whether or not it has been added yet.
@@ -2017,6 +2028,16 @@ resolveSchema(doctype: Doctype, visited: Set<string>): ResolvedField[]
 |-----------|------|-------------|
 | doctype | `Doctype` | The doctype to resolve |
 | visited | `Set<string>` | Internal — set of already-visited doctype slugs for cycle detection |
+
+#### takePrefill
+
+Take the values held for a doctype's next new record, by any name it is registered under, so no later form opens with them. Desktop passes them to `composeNewRecord` as `prefill`.
+
+```typescript
+takePrefill(doctype: string): {
+        [field: string]: DefaultsData;
+    } | undefined
+```
 
 ### SchemaValidator
 

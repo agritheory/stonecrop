@@ -7,7 +7,7 @@
 /**
  * Named capabilities injected into a clientHandler body as function parameters.
  * The caller (the assembly composable) owns what each name resolves to — typically
- * `router`, `record`, `runAction`, and a read-only `graphql`.
+ * `router`, `record`, `runAction`, a read-only `graphql`, and `prefillDraft`.
  *
  * @public
  */

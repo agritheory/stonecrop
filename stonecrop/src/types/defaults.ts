@@ -59,6 +59,8 @@ export type ComposeNewRecordOptions = {
 	now?: Date
 	/** How long to wait for starting values that have not arrived, in milliseconds. */
 	timeoutMs?: number
+	/** Values the app filled the record in with, applied over every default; Desktop passes what `prefillDraft` held. */
+	prefill?: { [field: string]: DefaultsData }
 }
 
 /**
