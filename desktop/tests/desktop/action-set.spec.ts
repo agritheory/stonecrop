@@ -681,6 +681,44 @@ describe('Desktop ActionSet drawer state', { tags: ['component'] }, () => {
 		expect(document.activeElement).toBe(tile.element)
 	})
 
+	it('treats another tile opened over a replacing preview as a fresh open for focus', async () => {
+		const { wrapper } = mountOnRoute({
+			actionSetSlots: [{ id: 'files', label: 'Files', component: ReplacingPreviewSlot }],
+		})
+		await nextTick()
+		await openReplacingPreview(wrapper)
+
+		const actions = wrapper.find<HTMLElement>('.action-set__item[aria-label="Actions"]')
+		actions.element.focus()
+		await actions.trigger('click')
+		await nextTick()
+		await nextTick()
+		expect(wrapper.find('.action-set__drawer').element.contains(document.activeElement)).toBe(true)
+
+		await wrapper.find('.action-set__drawer-close').trigger('click')
+		await nextTick()
+		await nextTick()
+		expect(document.activeElement).toBe(actions.element)
+	})
+
+	it('forgets a hidden drawer’s focus return when navigation closes it', async () => {
+		const { wrapper, recordId } = mountOnRoute({
+			actionSetSlots: [{ id: 'files', label: 'Files', component: ReplacingPreviewSlot }],
+		})
+		await nextTick()
+		const tile = await openReplacingPreview(wrapper)
+
+		recordId.value = 'rec-2'
+		await nextTick()
+		await nextTick()
+
+		tile.element.focus()
+		await tile.trigger('click')
+		await nextTick()
+		await nextTick()
+		expect(wrapper.find('.action-set__drawer').element.contains(document.activeElement)).toBe(true)
+	})
+
 	it('closes the preview first, then the drawer, on successive Escapes', async () => {
 		const { wrapper } = mountOnRoute({ actionSetSlots: [{ id: 'files', label: 'Files', component: PreviewSlot }] })
 		await nextTick()

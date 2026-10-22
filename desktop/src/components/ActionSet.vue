@@ -203,6 +203,8 @@ const railLayoutReady = ref(false)
 const drawerEl = ref<HTMLElement | null>(null)
 const searchEl = ref<{ reset: () => void; focus: () => void } | null>(null)
 const lastFocusedBeforeDrawer = ref<HTMLElement | null>(null)
+// The tab a preview hid the drawer on, while it stays hidden. Only that tab coming back is a return.
+let hiddenTabId: string | null = null
 
 const activeSlot = computed(() => slots.find(slot => slot.id === controller.activeSlotId.value) ?? null)
 const hasActions = computed(() => elements.length > 0)
@@ -443,9 +445,12 @@ function onActionClick(label: string, action: (() => void) | undefined) {
 watch(drawerOpen, async open => {
 	if (typeof document === 'undefined') return
 	if (open) {
-		// Shown again after a preview that replaced it: the preview has put focus back, and the
-		// place to return to when the drawer closes is still the one from when it first opened.
-		if (lastFocusedBeforeDrawer.value) return
+		// Shown again on the tab a preview hid: the preview has put focus back, and the place to
+		// return to when the drawer closes is still the one from when it first opened. Any other
+		// tab is a fresh open, even one that takes over from the preview.
+		const returning = hiddenTabId !== null && hiddenTabId === activeTabId.value
+		hiddenTabId = null
+		if (returning) return
 		lastFocusedBeforeDrawer.value = document.activeElement instanceof HTMLElement ? document.activeElement : null
 		await nextTick()
 		if (controller.isSearchOpen.value) {
@@ -456,10 +461,24 @@ watch(drawerOpen, async open => {
 		return
 	}
 	// Hidden by a preview, not closed: the preview takes focus, and this drawer may come back.
-	if (controller.isDrawerOpen.value) return
+	if (controller.isDrawerOpen.value) {
+		hiddenTabId = activeTabId.value
+		return
+	}
 	lastFocusedBeforeDrawer.value?.focus()
 	lastFocusedBeforeDrawer.value = null
 })
+
+// A drawer can also close while a preview hides it, as on navigating away. The watcher above never
+// sees that, since the drawer was already off screen, so what it kept for the return goes here.
+watch(
+	() => controller.isDrawerOpen.value,
+	open => {
+		if (open || hiddenTabId === null) return
+		hiddenTabId = null
+		lastFocusedBeforeDrawer.value = null
+	}
+)
 
 watch(
 	() => controller.isSearchOpen.value,
