@@ -1,5 +1,18 @@
 # Change Log - @stonecrop/desktop
 
+## 0.55.0
+
+### Minor Changes
+
+- cdc0691: `present()` takes `replacesDrawer: true` to let a preview take the slot drawer's place. The drawer is hidden rather than closed, so the slot keeps its state, and closing the preview shows it again. The preview pane is resizable: drag, arrow keys or double-click on its left edge, with the width kept for the session.
+
+### Patch Changes
+
+- @stonecrop/aform@0.55.0
+  - @stonecrop/schema@0.55.0
+  - @stonecrop/stonecrop@0.55.0
+  - @stonecrop/themes@0.55.0
+
 ## 0.54.0
 
 ### Patch Changes
