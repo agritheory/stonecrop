@@ -60,6 +60,9 @@ export default defineConfig({
 				test: {
 					name: 'browser',
 					include: ['tests/**/*.browser.spec.ts'],
+					// One file at a time: the clipboard is the browser's, so paste tests in two files at once read each
+					// other's copy.
+					fileParallelism: false,
 					browser: {
 						enabled: true,
 						headless: true,

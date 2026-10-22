@@ -12,6 +12,7 @@
 		:class="cellClasses"
 		@focus="onFocus"
 		@focusout="onFocusOut"
+		@keydown="onArithmeticKeydown"
 		@paste="updateCellData"
 		@input="debouncedUpdateCellData"
 		@click="onCellClick">
@@ -31,12 +32,19 @@
 		<component :is="'ABadge'" v-else-if="badgeFromFormat" v-bind="badgeFromFormat" presentation="cell-fill" />
 		<component :is="'ABadge'" v-else-if="badgeFromOptions" v-bind="badgeFromOptions" />
 		<span v-else-if="isHtmlValue" v-html="renderedValue" />
-		<span v-else>{{ renderedValue }}</span>
+		<span v-else ref="textSpan">{{ renderedValue }}</span>
 	</td>
 </template>
 
 <script setup lang="ts">
-import { KeypressHandlers, defaultKeypressHandlers, useKeyboardNav } from '@stonecrop/utilities'
+import {
+	KeypressHandlers,
+	defaultKeypressHandlers,
+	isArithmeticKey,
+	roundToPrecision,
+	useArithmeticInput,
+	useKeyboardNav,
+} from '@stonecrop/utilities'
 import { componentCategory, isBadgeDescriptor, hasBadgeOptions } from '@stonecrop/schema'
 import { useDebounceFn, useElementBounding } from '@vueuse/core'
 import { computed, type CSSProperties, onMounted, ref, useTemplateRef, nextTick, watch } from 'vue'
@@ -87,6 +95,36 @@ const tupleCategory = computed((): 'quantity' | 'currency' | undefined => {
 	const category = componentCategory(column.component)
 	if (category === 'quantity' || category === 'currency') return category
 	return undefined
+})
+
+// A number column takes arithmetic, as the form's ANumericInput does: `12*3+4` is read as 40 once the cell is left
+// or Enter is pressed. Until then the cell holds the text as typed. `options.arithmetic: false` turns it off.
+const arithmeticCell = computed(
+	() =>
+		componentCategory(column.component) === 'number' &&
+		!(column.options && !Array.isArray(column.options) && column.options.arithmetic === false)
+)
+
+// Typing into a contenteditable cell can replace the rendered span with bare text nodes, and Vue patches only the
+// span it rendered: a committed result puts that span back to show it.
+const textSpan = useTemplateRef<HTMLSpanElement>('textSpan')
+
+// The same arithmetic as the form's ANumericInput, with the cell's text as the box. It is read once the cell is left
+// or Enter is pressed, never as it is typed ("12*" is no number yet), and only an edit writes to the row. The cell
+// renders its own text, so the composable never writes it.
+const arithmetic = useArithmeticInput({
+	value: () => store.getCellData(colIndex, rowIndex),
+	commit: value => {
+		store.setCellData(colIndex, rowIndex, value)
+		cellModified.value = value !== originalData
+	},
+	// A column with a fixed scale says so with `options.precision`: at 2, `10/3` is saved as 3.33.
+	round: value =>
+		column.options && !Array.isArray(column.options) && typeof column.options.precision === 'number'
+			? roundToPrecision(value, column.options.precision)
+			: value,
+	live: false,
+	enabled: () => false,
 })
 
 const tupleInputId = computed(() => `atable-${String(rowIndex)}-${String(colIndex)}-${column.name}`)
@@ -274,11 +312,86 @@ const onFocus = () => {
 	}
 	if (cellRef.value) {
 		currentData.value = cellRef.value.textContent!
+		if (arithmeticCell.value) arithmetic.begin(currentData.value)
 		selectAllText()
 	}
 }
 
+const commitArithmetic = () => {
+	const cell = cellRef.value
+	if (!cell || !arithmeticCell.value || !isContentEditable.value) return
+	const typed = cell.textContent ?? ''
+	if (typed === currentData.value) return
+	arithmetic.update(typed)
+	// An unfinished expression ("12*") commits nothing, and the cell goes back to its last number.
+	arithmetic.settle()
+	// Show the result now, not on the next render: focus may already be on its way to the next row, and the text
+	// left in the cell is what the next edit starts from.
+	const span = textSpan.value
+	if (span) {
+		cell.replaceChildren(span)
+		span.textContent = String(renderedValue.value ?? '')
+	}
+	currentData.value = cell.textContent ?? ''
+	arithmetic.rebase(currentData.value)
+	// Still editing (Enter on the last row, with no row to move to): carry on from the end of the result, so `+1`
+	// typed after `40` is `40+1`.
+	if (document.activeElement === cell) placeCaretAtEnd(cell)
+}
+
+const placeCaretAtEnd = (cell: HTMLElement) => {
+	try {
+		const range = document.createRange()
+		range.selectNodeContents(cell)
+		range.collapse(false)
+		const selection = window.getSelection()
+		selection?.removeAllRanges()
+		selection?.addRange(range)
+	} catch {
+		// Fallback for environments where the Range API is not fully supported
+	}
+}
+
+const onArithmeticKeydown = (event: KeyboardEvent) => {
+	if (!arithmeticCell.value || !isContentEditable.value) return
+	if (event.ctrlKey || event.metaKey || event.altKey) return
+	if (event.key === 'Enter') {
+		commitArithmetic()
+		return
+	}
+	if (event.key.length !== 1) return
+	// The cell's text once typed in, as `=` may only start it.
+	const next = cellTextWith(event.key)
+	const allowed = next === undefined ? isArithmeticKey(event.key) : arithmetic.accepts(next)
+	if (!allowed) event.preventDefault()
+}
+
+// The cell's text once `inserted` replaces its selection, or undefined where the selection can't be read.
+const cellTextWith = (inserted: string): string | undefined => {
+	const cell = cellRef.value
+	const range = window.getSelection()?.rangeCount ? window.getSelection()!.getRangeAt(0) : undefined
+	if (!cell || !range || !cell.contains(range.startContainer) || !cell.contains(range.endContainer)) return
+	try {
+		const offset = (node: Node, at: number) => {
+			const before = document.createRange()
+			before.selectNodeContents(cell)
+			before.setEnd(node, at)
+			return before.toString().length
+		}
+		const text = cell.textContent ?? ''
+		return (
+			text.slice(0, offset(range.startContainer, range.startOffset)) +
+			inserted +
+			text.slice(offset(range.endContainer, range.endOffset))
+		)
+	} catch {
+		// Fallback for environments where the Range API is not fully supported
+		return
+	}
+}
+
 const onFocusOut = (event: FocusEvent) => {
+	commitArithmetic()
 	if (!tupleCategory.value || !column.edit || !tupleCellActive.value) return
 
 	const related = event.relatedTarget
@@ -368,6 +481,12 @@ const restoreCursorPosition = (position: number) => {
 
 const updateCellData = (payload: Event) => {
 	if (!column.edit || tupleCategory.value) return
+	// An arithmetic cell is read once it is left, not as it is typed: "12*" is no number yet.
+	if (arithmeticCell.value) {
+		const pasted = (payload as ClipboardEvent).clipboardData?.getData('text') ?? ''
+		if (pasted && !arithmetic.accepts(cellTextWith(pasted) ?? pasted)) payload.preventDefault()
+		return
+	}
 
 	const target = payload.target as HTMLTableCellElement
 	if (target.textContent === currentData.value) {

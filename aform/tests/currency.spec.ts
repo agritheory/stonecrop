@@ -93,9 +93,9 @@ describe('ACurrencyInput', { tags: ['component'] }, () => {
 			)
 		})
 
-		it('uses a plain number input when amountMask is false', () => {
+		it('uses a plain number input when amountMask and arithmetic are false', () => {
 			const wrapper = mount(ACurrencyInput, {
-				props: { label: 'Amount', options: { ...options, amountMask: false } },
+				props: { label: 'Amount', options: { ...options, amountMask: false, arithmetic: false } },
 			})
 			expect(wrapper.find('input[type="number"].acurrency__amount').exists()).toBe(true)
 		})

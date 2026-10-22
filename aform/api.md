@@ -509,6 +509,7 @@ import { ANumericInput } from '@stonecrop/aform'
 | uuid | `string \| undefined` | no |  | Set a unique identifier for elements inside the component |
 | validation | `{ [key: string]: any; errorMessage: string; } \| undefined` | no | `{ errorMessage: "" }` | Validation options for elements inside the component |
 | errors | `string[] \| undefined` | no |  | Inline validation error messages to display on this field. Fed by the host (e.g. mapped from the core validation store) — the renderer stays dumb and just shows what it is given. Takes precedence over the static `validation.errorMessage`. |
+| options | `NumericOptions \| undefined` | no | `{}` |  |
 | modelValue | `number \| null \| undefined` | no |  |  |
 
 **Events:**
@@ -937,6 +938,7 @@ Type-specific configuration for ACurrencyInput, passed via the field's `options`
 ```typescript
 export interface CurrencyOptions {
   amountMask?: boolean;
+  arithmetic?: boolean;
   baseCurrency?: AFormLinkValue | string;
   doctype?: string;
   exchangeRates?: Record<string, number>;
@@ -950,7 +952,8 @@ export interface CurrencyOptions {
 
 | Property | Type | Description |
 |----------|------|-------------|
-| amountMask? | `boolean` | When true (default), the amount field uses a locale- and currency-aware display mask (grouping and decimal separators follow the selected currency). Set false for a plain `type="number"` input. |
+| amountMask? | `boolean` | When true (default), the amount field uses a locale- and currency-aware display mask (grouping and decimal separators follow the selected currency). Set false for unformatted amounts; with `arithmetic` also false, the field is a plain `type="number"` input. |
+| arithmetic? | `boolean` | Whether the box takes arithmetic (default `true`): `12*3+4` is read as `40` once the box is left or Enter is pressed. Digits, `.`, `+ - * / %` and parentheses only; exponents and letters are refused. Set `false` for a plain `type="number"` box. |
 | baseCurrency? | `AFormLinkValue \| string` | The record's base currency — fixed, not user-editable. A bare id resolves to displayText via `aformLinkResolver`. |
 | doctype? | `string` | Currency doctype name, used for FK resolution via `aformLinkResolver`. The currency picker is embedded, so it renders no navigate button. |
 | exchangeRates? | `Record<string, number>` | Exchange rate lookup for each non-base currency id, relative to `baseCurrency` (which is implicitly `1`) |
@@ -984,6 +987,26 @@ export interface CurrencyValue {
 | currency | `AFormLinkValue` | FK reference to the Currency doctype the user entered `amount` in |
 | exchangeRate | `number` | Multiplier from `currency` to `baseCurrency` — hidden from the UI, drives `baseAmount` |
 
+### NumericOptions
+
+Type-specific configuration for ANumericInput, passed via the field's `options` property.
+
+**Definition:**
+
+```typescript
+export interface NumericOptions {
+  arithmetic?: boolean;
+  precision?: number;
+}
+```
+
+**Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| arithmetic? | `boolean` | Whether the box takes arithmetic (default `true`): `12*3+4` is read as `40` once the box is left or Enter is pressed. Digits, `.`, `+ - * / %` and parentheses only; exponents and letters are refused. Set `false` for a plain `type="number"` box. |
+| precision? | `number` | Decimal places to round the number to, as a column with a fixed scale holds it: at `2`, `10/3` is `3.33`. Omit to keep every digit the box works out. A non-integer or out-of-range value is ignored. |
+
 ### QuantityOptions
 
 Type-specific configuration for AQuantityInput, passed via the field's `options` property.
@@ -992,6 +1015,7 @@ Type-specific configuration for AQuantityInput, passed via the field's `options`
 
 ```typescript
 export interface QuantityOptions {
+  arithmetic?: boolean;
   conversionFactors?: Record<string, number>;
   stockUom?: string;
   uoms?: string[];
@@ -1002,6 +1026,7 @@ export interface QuantityOptions {
 
 | Property | Type | Description |
 |----------|------|-------------|
+| arithmetic? | `boolean` | Whether the box takes arithmetic (default `true`): `12*3+4` is read as `40` once the box is left or Enter is pressed. Digits, `.`, `+ - * / %` and parentheses only; exponents and letters are refused. Set `false` for a plain `type="number"` box. |
 | conversionFactors? | `Record<string, number>` | Conversion factor lookup for each non-stock UOM, relative to `stockUom` (which is implicitly `1`) |
 | stockUom? | `string` | The item's base/stock unit of measure — fixed, not user-editable |
 | uoms? | `string[]` | Dropdown choices for the `uom` field |

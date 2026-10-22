@@ -17,7 +17,7 @@ import { ACurrencyInput } from '@stonecrop/aform'
 
 `v-model` binds to a [`CurrencyValue`](#currencyvalue) object. The base-currency helper below the input updates automatically when the currency or amount changes and the currency differs from the base.
 
-By default the amount field is **masked**: it writes and reads amounts with the browser's separators, as a table cell shows them (`10,050.45` in English, `10.050,45` in German), whatever the currency. The currency sets the decimals: JPY shows whole yen without grouping or decimals (`10050`). Set `options.amountMask` to `false` for an unformatted `type="number"` input.
+By default the amount field is **masked**: it writes and reads amounts with the browser's separators, as a table cell shows them (`10,050.45` in English, `10.050,45` in German), whatever the currency. The currency sets the decimals: JPY shows whole yen without grouping or decimals (`10050`). Set `options.amountMask` to `false` for unformatted amounts (`10050.45`); with `options.arithmetic` also `false`, the box is a plain `type="number"` input.
 
 ::demo-panel
 :::client-only
@@ -184,6 +184,7 @@ rows:
   - ['`precision`', '`number`', '—', 'Decimal places to round the derived `baseAmount` to (JPY carries 0, most currencies 2, KWD 3). Only affects `baseAmount` — the entered `amount` is left as typed. Omitted or invalid values round only enough to shed floating-point noise.']
   - ['`filterFunction`', '`(search: string) => AFormLinkValue[] | Promise<AFormLinkValue[]>`', '—', "Search function backing the currency picker's autocomplete dropdown."]
   - ['`isAsync`', '`boolean`', '`false`', 'Whether `filterFunction` results should show a loading state.']
+  - ['`arithmetic`', '`boolean`', '`true`', 'Whether the amount box takes arithmetic: `12*3+4` is read as `40` once the box is left or Enter is pressed. Digits, `.`, `+ - * / %` and parentheses only; `e`, `^` and other letters are refused. With the mask on, numbers in the expression use the same separators as the amount (`1,000.50*2`). An unfinished expression (`12*`) leaves the last number in place. See [Numeric Input](/components/numeric-input#arithmetic). A worked-out amount is rounded to the currency's decimals (`10/3` in USD is `3.33`).']
 ---
 ::
 

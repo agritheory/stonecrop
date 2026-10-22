@@ -258,6 +258,17 @@ export interface AFormLinkNavigator {
 }
 
 /**
+ * Type-specific configuration for ANumericInput, passed via the field's `options` property.
+ * @public
+ */
+export interface NumericOptions {
+	/** Whether the box takes arithmetic (default `true`): `12*3+4` is read as `40` once the box is left or Enter is pressed. Digits, `.`, `+ - * / %` and parentheses only; exponents and letters are refused. Set `false` for a plain `type="number"` box. */
+	arithmetic?: boolean
+	/** Decimal places to round the number to, as a column with a fixed scale holds it: at `2`, `10/3` is `3.33`. Omit to keep every digit the box works out. A non-integer or out-of-range value is ignored. */
+	precision?: number
+}
+
+/**
  * The value shape for AQuantityInput — a quantity paired with its unit of measure, plus the
  * derived stock-equivalent quantity/UOM. `conversionFactor` is carried on the value so it
  * round-trips with the record even though it is never shown in the UI.
@@ -287,6 +298,8 @@ export interface QuantityOptions {
 	stockUom?: string
 	/** Conversion factor lookup for each non-stock UOM, relative to `stockUom` (which is implicitly `1`) */
 	conversionFactors?: Record<string, number>
+	/** Whether the box takes arithmetic (default `true`): `12*3+4` is read as `40` once the box is left or Enter is pressed. Digits, `.`, `+ - * / %` and parentheses only; exponents and letters are refused. Set `false` for a plain `type="number"` box. */
+	arithmetic?: boolean
 }
 
 /**
@@ -328,8 +341,10 @@ export interface CurrencyOptions {
 	isAsync?: boolean
 	/**
 	 * When true (default), the amount field uses a locale- and currency-aware display mask
-	 * (grouping and decimal separators follow the selected currency). Set false for a plain
-	 * `type="number"` input.
+	 * (grouping and decimal separators follow the selected currency). Set false for unformatted
+	 * amounts; with `arithmetic` also false, the field is a plain `type="number"` input.
 	 */
 	amountMask?: boolean
+	/** Whether the box takes arithmetic (default `true`): `12*3+4` is read as `40` once the box is left or Enter is pressed. Digits, `.`, `+ - * / %` and parentheses only; exponents and letters are refused. Set `false` for a plain `type="number"` box. */
+	arithmetic?: boolean
 }

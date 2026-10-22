@@ -67,45 +67,54 @@ const listText = () => document.querySelector('.acurrency__currency [role="listb
 const lookupAsText =
 	"async () => [{ id: 'USD', displayText: 'US Dollar', symbol: '$' }, { id: 'INR', displayText: 'Rupee', symbol: '₹' }]"
 
-describe('typing a price', { tags: ['browser'] }, () => {
+// With arithmetic off the box keeps its mask, or the plain number box with `amountMask: false`, and reads a minus after
+// a number as a refused key rather than a subtraction.
+describe.each([
+	{ arithmetic: 'on', mode: {}, oneMinusTwo: -1 },
+	{ arithmetic: 'off', mode: { arithmetic: false }, oneMinusTwo: 12 },
+])('typing a price with arithmetic $arithmetic', { tags: ['browser'] }, ({ mode, oneMinusTwo }) => {
+	const mountTyped = (amount: number | null, currency: AFormLinkValue = usd, options: CurrencyOptions = {}) =>
+		mountPrice(amount, currency, { ...mode, ...options })
+
 	// A refused key leaves the rest of what was typed.
 	it.each([
 		['12a', 12],
-		['1-2', 12],
+		['1^2', 12],
+		['1-2', oneMinusTwo],
 		// A second decimal point would make the text no number, and so no price.
 		['12.5.0', 12.5],
 		// Credits and refunds are negative.
 		['-12', -12],
 	])('reads %s as %s', async (typed, amount) => {
-		const { model } = mountPrice(null)
+		const { model } = mountTyped(null)
 		await typeAmount(typed)
 
 		expect(model.value?.amount).toBe(amount)
 	})
 
 	it('takes a price typed with grouping separators', async () => {
-		const { model } = mountPrice(null)
+		const { model } = mountTyped(null)
 		await typeAmount(new Intl.NumberFormat().format(1234567))
 
 		expect(model.value?.amount).toBe(1234567)
 	})
 
 	it('refuses a decimal point in a currency without decimals', async () => {
-		const { model } = mountPrice(null, jpy)
+		const { model } = mountTyped(null, jpy)
 		await typeAmount('1.5')
 
 		expect(model.value?.amount).toBe(15)
 	})
 
 	it('moves the caret with the arrow keys to fix a typo', async () => {
-		const { model } = mountPrice(null)
+		const { model } = mountTyped(null)
 		await typeAmount('15{ArrowLeft}2')
 
 		expect(model.value?.amount).toBe(125)
 	})
 
 	it('lets keyboard shortcuts through', async () => {
-		const { model } = mountPrice(null)
+		const { model } = mountTyped(null)
 		await userEvent.click(amountBox())
 		await userEvent.keyboard('12{Control>}a{/Control}7')
 		await userEvent.click(outside())
@@ -114,7 +123,7 @@ describe('typing a price', { tags: ['browser'] }, () => {
 	})
 
 	it('takes a pasted amount written the way the browser writes numbers', async () => {
-		const { model } = mountPrice(50)
+		const { model } = mountTyped(50)
 		await copy(new Intl.NumberFormat(undefined, { minimumFractionDigits: 2 }).format(1234.56))
 		await userEvent.click(amountBox())
 		await userEvent.paste()
@@ -124,7 +133,7 @@ describe('typing a price', { tags: ['browser'] }, () => {
 	})
 
 	it('refuses a pasted price that is not an amount', async () => {
-		const { model } = mountPrice(50)
+		const { model } = mountTyped(50)
 		await copy('abc')
 		await userEvent.click(amountBox())
 		await userEvent.paste()
@@ -135,7 +144,7 @@ describe('typing a price', { tags: ['browser'] }, () => {
 
 	// Read with the browser's separators it would be 1.23456.
 	it('refuses a pasted amount written with the separators the other way round', async () => {
-		const { model } = mountPrice(50)
+		const { model } = mountTyped(50)
 		await copy(writtenTheOtherWay())
 		await userEvent.click(amountBox())
 		await userEvent.paste()
@@ -146,7 +155,7 @@ describe('typing a price', { tags: ['browser'] }, () => {
 
 	// The paste is checked with what the box already holds, as a table cell checks it.
 	it('refuses a pasted decimal point after the one already typed', async () => {
-		const { model } = mountPrice(null)
+		const { model } = mountTyped(null)
 		await copy('.5')
 		await userEvent.click(amountBox())
 		await userEvent.keyboard('12.3')
@@ -164,7 +173,7 @@ describe('typing a price', { tags: ['browser'] }, () => {
 		['15{ArrowLeft}2', 125],
 		['12{Control>}a{/Control}7', 7],
 	])('reads %s as %s in a plain number box', async (typed, amount) => {
-		const { model } = mountPrice(null, usd, { amountMask: false })
+		const { model } = mountTyped(null, usd, { amountMask: false })
 		await typeAmount(typed)
 
 		expect(model.value?.amount).toBe(amount)
@@ -174,7 +183,7 @@ describe('typing a price', { tags: ['browser'] }, () => {
 		['12.5', 12.5],
 		['abc', 50],
 	])('reads %s pasted into a plain number box as %s', async (pasted, amount) => {
-		const { model } = mountPrice(50, usd, { amountMask: false })
+		const { model } = mountTyped(50, usd, { amountMask: false })
 		await copy(pasted)
 		await userEvent.click(amountBox())
 		await userEvent.keyboard('{Control>}a{/Control}')

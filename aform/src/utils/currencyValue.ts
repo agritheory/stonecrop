@@ -1,7 +1,17 @@
+import { currencyInputFractionDigits } from '@stonecrop/utilities'
+
 import type { AFormLinkValue, CurrencyOptions, CurrencyValue } from '../types'
 import { linkId } from './linkValue'
 
 const FLOAT_NOISE_DECIMALS = 6
+
+/**
+ * An amount worked out in a currency box, rounded to the currency's decimals as the box shows it: `10/3` in USD is
+ * `3.33`, not `3.3333333333333`.
+ */
+export function roundToCurrency(amount: number, currencyId: string | undefined): number {
+	return Number(amount.toFixed(currencyInputFractionDigits(currencyId)))
+}
 
 export function normalizeBaseCurrency(
 	options: CurrencyOptions,

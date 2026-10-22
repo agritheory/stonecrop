@@ -5,7 +5,7 @@ description: A plain numeric input rendered from an AForm schema field.
 
 # Numeric Input
 
-`ANumericInput` renders a single numeric field — a native `type="number"` input paired with a floating label — either standalone or as a field inside an [AForm](/reference/aform) schema. It supports the same `edit` / `read` / `display` interaction modes as every other Stonecrop field component.
+`ANumericInput` renders a single numeric field — a number input without spinner arrows, paired with a floating label — either standalone or as a field inside an [AForm](/reference/aform) schema. It supports the same `edit` / `read` / `display` interaction modes as every other Stonecrop field component.
 
 ## Import
 
@@ -78,6 +78,36 @@ const data = ref({ quantity: 0 })
 </template>
 ```
 
+## Arithmetic
+
+The box takes arithmetic as well as plain numbers: type `12*3+4` and the field holds `40`. The model takes each complete result as you type. When you leave the box or press Enter, the box shows the result in place of the expression.
+
+- Allowed: digits, `.`, `+`, `-`, `*`, `/`, `%` (remainder) and parentheses. `*` and `/` bind tighter than `+` and `-`.
+- A leading `=` or `+` works as it does in a spreadsheet: `=12*3` and `+12*3` are both `36`. `=` is refused anywhere but first.
+- Refused: `e`/`E`, `^` and any other letter, whether typed or pasted.
+- An unfinished or impossible expression (`12*`, `(3+4`, `5/0`) leaves the last number in place.
+- A result keeps every digit it works out (`10/3` is `3.33333333333333`) unless the field sets `options.precision`: at `2`, `10/3` is `3.33`. A currency field rounds to its currency's decimals by itself.
+
+::demo-panel
+:::client-only
+:arithmetic-input-demo
+:::
+::
+
+Set `options.arithmetic: false` for a plain `type="number"` box. The same applies to [Quantity Input](/components/quantity-input), [Currency](/components/currency), and the matching [Table](/components/table#quantity-and-currency-columns) columns (including `ANumericInput` columns).
+
+```ts
+const schema = [
+	{
+		fieldname: 'quantity',
+		kind: 'field',
+		component: 'ANumericInput',
+		label: 'Quantity',
+		options: { arithmetic: false }, // a plain number box
+	},
+]
+```
+
 ## API Reference
 
 ### Props
@@ -96,13 +126,24 @@ rows:
 ---
 ::
 
+### Options
+
+::api-data-table
+---
+headers: ['Name', 'Type', 'Default', 'Description']
+rows:
+  - ['`arithmetic`', '`boolean`', '`true`', 'Whether the box takes arithmetic: `12*3+4` is read as `40` once the box is left or Enter is pressed. Digits, `.`, `+ - * / %` and parentheses only; `e`, `^` and other letters are refused. Set `false` for a plain `type="number"` box. An unfinished expression (`12*`) leaves the last number in place. See [Arithmetic](#arithmetic).']
+  - ['`precision`', '`number`', '—', 'Decimal places to round the number to, as a column with a fixed scale holds it: at `2`, `10/3` is `3.33`. Omit to keep every digit the box works out. A non-integer or out-of-range value is ignored.']
+---
+::
+
 ### Modes
 
 ::api-data-table
 ---
 headers: ['Mode', 'Rendering']
 rows:
-  - ['`edit`', 'Interactive `type="number"` input.']
+  - ['`edit`', 'Interactive input: `type="text"` with `inputmode="decimal"` that takes arithmetic, or `type="number"` when `options.arithmetic` is `false`.']
   - ['`read`', 'Number input, disabled.']
   - ['`display`', 'Static label with the value in place of the input (empty string if unset).']
 ---

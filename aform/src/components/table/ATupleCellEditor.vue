@@ -25,16 +25,18 @@
 <script setup lang="ts">
 import {
 	currencyAmountEntryPattern,
+	currencyAmountSeparators,
 	currencyInputFractionDigits,
 	formatCurrencyAmountInput,
 	parseCurrencyAmountInput,
+	useArithmeticInput,
 } from '@stonecrop/utilities'
 import { isTableTuplePickerModal, type TableStore } from '@stonecrop/atable'
 import { useElementBounding } from '@vueuse/core'
 import { computed, nextTick, ref, useTemplateRef, watch } from 'vue'
 
 import type { CurrencyOptions, CurrencyValue, QuantityOptions, QuantityValue } from '../../types'
-import { normalizeBaseCurrency, patchCurrencyAmount } from '../../utils/currencyValue'
+import { normalizeBaseCurrency, patchCurrencyAmount, roundToCurrency } from '../../utils/currencyValue'
 import { patchQuantityQty, quantityEntryPattern } from '../../utils/quantityValue'
 import ATupleCellShell from './ATupleCellShell.vue'
 
@@ -62,6 +64,10 @@ const amountMaskEnabled = computed(
 
 const column = computed(() => store.columns[colIndex])
 const options = computed(() => column.value?.options ?? {})
+
+// As the form's field: the box takes arithmetic (`12*3+4`), read with the separators the amount is shown with.
+const arithmeticEnabled = computed(() => (options.value as QuantityOptions | CurrencyOptions).arithmetic !== false)
+const arithmeticSeparators = () => (amountMaskEnabled.value ? currencyAmountSeparators() : {})
 const cellValue = computed(() => store.getCellData(colIndex, rowIndex))
 
 const pickerLabel = computed(() => (category === 'currency' ? 'Choose currency' : 'Choose unit'))
@@ -94,6 +100,10 @@ watch(pickerOpenForCell, (open, wasOpen) => {
 })
 
 const syncDraftFromModel = () => {
+	if (arithmeticEnabled.value) {
+		arithmetic.syncText()
+		return
+	}
 	const v = cellValue.value
 	if (category === 'quantity') {
 		const q = v as QuantityValue | null | undefined
@@ -134,8 +144,7 @@ const parseDraftAmount = (): number | null => {
 	return Number.isFinite(n) ? n : null
 }
 
-const commitNumber = () => {
-	const parsed = parseDraftAmount()
+const saveNumber = (parsed: number | null) => {
 	if (category === 'quantity') {
 		store.setCellData(
 			colIndex,
@@ -152,7 +161,38 @@ const commitNumber = () => {
 	)
 }
 
+// The same arithmetic as the form's fields, kept in `draftText`. Only an edit saves: leaving the cell as it was
+// writes nothing to the row.
+const arithmetic = useArithmeticInput({
+	value: () =>
+		category === 'quantity'
+			? (cellValue.value as QuantityValue | null | undefined)?.qty
+			: (cellValue.value as CurrencyValue | null | undefined)?.amount,
+	commit: saveNumber,
+	format: value =>
+		amountMaskEnabled.value
+			? formatCurrencyAmountInput(value, selectedCurrencyId.value)
+			: value === null
+				? ''
+				: String(value),
+	separators: () => arithmeticSeparators(),
+	// As the mask does: a currency without decimals (JPY) refuses a decimal point.
+	fractionDigits: () => (amountMaskEnabled.value ? currencyInputFractionDigits(selectedCurrencyId.value) : undefined),
+	round: value => (category === 'currency' ? roundToCurrency(value, selectedCurrencyId.value) : value),
+	text: draftText,
+	enabled: () => arithmeticEnabled.value,
+})
+
+const commitNumber = () => {
+	if (arithmeticEnabled.value) arithmetic.settle()
+	else saveNumber(parseDraftAmount())
+}
+
 const onInput = () => {
+	if (arithmeticEnabled.value) {
+		arithmetic.update(draftText.value)
+		return
+	}
 	if (category === 'currency' && amountMaskEnabled.value) {
 		const parsed = parseCurrencyAmountInput(draftText.value)
 		if (draftText.value.trim() === '' || draftText.value.trim() === '-' || parsed !== null) {
@@ -175,8 +215,11 @@ const shouldStayActiveAfterBlur = (related: EventTarget | null): boolean => {
 }
 
 const onInputBlur = (event: FocusEvent) => {
-	commitNumber()
-	if (category === 'currency' && amountMaskEnabled.value) syncDraftFromModel()
+	if (arithmeticEnabled.value) arithmetic.end()
+	else {
+		commitNumber()
+		if (category === 'currency' && amountMaskEnabled.value) syncDraftFromModel()
+	}
 	if (!shouldStayActiveAfterBlur(event.relatedTarget)) emit('deactivate')
 }
 
@@ -196,6 +239,10 @@ const onKeydown = (event: KeyboardEvent) => {
 		event.preventDefault()
 		event.stopPropagation()
 		openPicker()
+		return
+	}
+	if (arithmeticEnabled.value) {
+		arithmetic.onKeydown(event)
 		return
 	}
 	if (category === 'currency' && amountMaskEnabled.value && !pickerOpenForCell.value) {
@@ -224,11 +271,12 @@ const entryPattern = computed(() => {
 // A number copied from a spreadsheet cell comes with a line break or tab: what is pasted is the number without them.
 const onPaste = (event: ClipboardEvent) => {
 	const pattern = entryPattern.value
-	if (!pattern) return
+	if (!arithmeticEnabled.value && !pattern) return
 	event.preventDefault()
 	const input = event.target as HTMLInputElement
 	const pasted = (event.clipboardData?.getData('text') ?? '').trim()
-	if (!pattern.test(textWith(input, pasted))) return
+	const next = textWith(input, pasted)
+	if (arithmeticEnabled.value ? !arithmetic.accepts(next) : !pattern!.test(next)) return
 	input.setRangeText(pasted, input.selectionStart ?? 0, input.selectionEnd ?? 0, 'end')
 	input.dispatchEvent(new Event('input', { bubbles: true }))
 }
@@ -275,6 +323,7 @@ const onCurrencyKeydownMasked = (event: KeyboardEvent): boolean => {
 }
 
 const onInputFocus = () => {
+	if (arithmeticEnabled.value) arithmetic.begin()
 	if (selectOnFocus.value) {
 		void nextTick(() => {
 			inputRef.value?.select()

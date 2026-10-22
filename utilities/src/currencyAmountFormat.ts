@@ -17,7 +17,12 @@ export function currencyInputFractionDigits(currencyId: string | undefined): num
 	}
 }
 
-function separatorsForLocale(locale: string | undefined): { group: string; decimal: string } {
+/**
+ * The separators a currency amount field writes amounts with: the locale's grouping and decimal marks.
+ * @param locale - The browser's own when omitted
+ * @public
+ */
+export function currencyAmountSeparators(locale?: string): { group: string; decimal: string } {
 	const parts = new Intl.NumberFormat(locale).formatToParts(1234567.89)
 	return {
 		group: parts.find(part => part.type === 'group')?.value ?? ',',
@@ -53,7 +58,7 @@ export function formatCurrencyAmountInput(
  * @public
  */
 export function parseCurrencyAmountInput(text: string, locale?: string): number | null {
-	const { group, decimal } = separatorsForLocale(locale)
+	const { group, decimal } = currencyAmountSeparators(locale)
 	const normalized = text
 		.replace(/\s/g, '')
 		.replace(/[^\d.,\-+]/g, '')
@@ -72,7 +77,7 @@ export function parseCurrencyAmountInput(text: string, locale?: string): number 
  * @public
  */
 export function currencyAmountEntryPattern(currencyId: string | undefined, locale?: string): RegExp {
-	const { group, decimal } = separatorsForLocale(locale)
+	const { group, decimal } = currencyAmountSeparators(locale)
 	const escape = (mark: string) => mark.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 	const whole = `-?[\\d${escape(group)}]*`
 	if (currencyInputFractionDigits(currencyId) === 0) return new RegExp(`^${whole}$`)

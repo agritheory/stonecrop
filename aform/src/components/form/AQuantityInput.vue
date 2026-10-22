@@ -9,6 +9,16 @@
 				<div class="aquantity__field aquantity__field--qty">
 					<div class="aquantity__group">
 						<input
+							v-if="options.arithmetic !== false"
+							v-bind="arithmetic.inputAttrs"
+							:id="uuid"
+							class="aquantity__qty"
+							:disabled="mode === 'read'"
+							:required="required"
+							:aria-invalid="invalid"
+							:aria-describedby="describedBy" />
+						<input
+							v-else
 							:id="uuid"
 							v-model.number="qty"
 							class="aquantity__qty"
@@ -42,6 +52,7 @@
 </template>
 
 <script setup lang="ts">
+import { useArithmeticInput } from '@stonecrop/utilities'
 import { computed } from 'vue'
 
 import { fieldErrorA11y } from '../../composables/fieldErrorA11y'
@@ -86,6 +97,11 @@ const uoms = computed(() => options.uoms ?? [])
 const qty = computed({
 	get: () => modelValue.value?.qty ?? null,
 	set: (value: number | '') => (modelValue.value = patchQuantityQty(modelValue.value, numberFromBox(value), options)),
+})
+
+const arithmetic = useArithmeticInput({
+	value: () => modelValue.value?.qty,
+	commit: value => (modelValue.value = patchQuantityQty(modelValue.value, value, options)),
 })
 
 const uom = computed({
