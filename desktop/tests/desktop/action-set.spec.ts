@@ -4,6 +4,7 @@ import { defineComponent, nextTick, reactive, ref, type Component } from 'vue'
 
 import { Registry, Stonecrop } from '@stonecrop/stonecrop'
 
+import { resetActionSetLayoutSessionForTests } from '../../src/action-set-layout-session'
 import Desktop from '../../src/components/Desktop.vue'
 import { useActionSet } from '../../src/composables/useActionSet'
 import type { ActionElements, ActionSetSlot, RouteAdapter } from '../../src/types'
@@ -16,6 +17,7 @@ afterEach(() => {
 	Registry._root = undefined as any
 	Stonecrop._root = undefined as any
 	consoleWarn.mockClear()
+	resetActionSetLayoutSessionForTests()
 })
 
 const reactiveComponentWarnings = () =>
@@ -37,6 +39,22 @@ const PreviewSlot = defineComponent({
 	},
 	template: '<button type="button" class="open-preview" @click="open">Open preview</button>',
 })
+
+const ReplacingPreviewSlot = defineComponent({
+	setup() {
+		const actionSet = useActionSet()
+		return {
+			open: () => actionSet.present({ id: 'preview-1', view: StubPreview, replacesDrawer: true }),
+		}
+	},
+	template: '<button type="button" class="open-preview" @click="open">Open preview</button>',
+})
+
+// Read from the inline style v-show writes: jsdom's computed style goes stale on a detached tree.
+const drawerShown = (wrapper: VueWrapper) => {
+	const drawer = wrapper.find('.action-set__drawer')
+	return drawer.exists() && !(drawer.element as HTMLElement).style.display
+}
 
 function recordAdapter(): RouteAdapter {
 	return {
@@ -200,12 +218,124 @@ describe('Desktop ActionSet', { tags: ['component'] }, () => {
 
 		expect(wrapper.find('.desktop').classes()).toContain('desktop--preview-open')
 		expect(wrapper.find('.stub-preview').text()).toBe('Invoice.pdf')
+		expect(wrapper.find('.desktop').classes()).toContain('desktop--action-set-open')
+		expect(drawerShown(wrapper)).toBe(true)
 
 		await wrapper.find('.desktop__preview-close').trigger('click')
 		await nextTick()
 
 		expect(wrapper.find('.stub-preview').exists()).toBe(false)
 		expect(wrapper.find('.desktop').classes()).not.toContain('desktop--preview-open')
+	})
+
+	it('replaces the drawer with a preview that asks to, and brings it back when the preview closes', async () => {
+		const wrapper = mountDesktop([{ id: 'files', label: 'Files', component: ReplacingPreviewSlot }])
+		await nextTick()
+
+		const filesItem = wrapper.findAll('.action-set__item').find(i => i.attributes('aria-label') === 'Files')
+		await filesItem!.trigger('click')
+		await nextTick()
+		await wrapper.find('.open-preview').trigger('click')
+		await nextTick()
+
+		expect(wrapper.find('.desktop').classes()).toContain('desktop--preview-open')
+		expect(wrapper.find('.desktop').classes()).not.toContain('desktop--action-set-open')
+		expect(drawerShown(wrapper)).toBe(false)
+		expect(wrapper.find('.open-preview').exists()).toBe(true)
+
+		await wrapper.find('.desktop__preview-close').trigger('click')
+		await nextTick()
+
+		expect(wrapper.find('.desktop').classes()).toContain('desktop--action-set-open')
+		expect(drawerShown(wrapper)).toBe(true)
+	})
+
+	it("brings back a replaced drawer from its slot's tile", async () => {
+		const wrapper = mountDesktop([{ id: 'files', label: 'Files', component: ReplacingPreviewSlot }])
+		await nextTick()
+
+		const filesItem = wrapper.findAll('.action-set__item').find(i => i.attributes('aria-label') === 'Files')
+		await filesItem!.trigger('click')
+		await nextTick()
+		await wrapper.find('.open-preview').trigger('click')
+		await nextTick()
+		await filesItem!.trigger('click')
+		await nextTick()
+
+		expect(wrapper.find('.desktop').classes()).not.toContain('desktop--preview-open')
+		expect(wrapper.find('.desktop').classes()).toContain('desktop--action-set-open')
+		expect(drawerShown(wrapper)).toBe(true)
+	})
+
+	it('keeps the slot mounted while its preview replaces the drawer', async () => {
+		const DraftSlot = defineComponent({
+			setup() {
+				const actionSet = useActionSet()
+				const draft = ref('')
+				return {
+					draft,
+					open: () => actionSet.present({ id: 'preview-1', view: StubPreview, replacesDrawer: true }),
+				}
+			},
+			template:
+				'<div><input v-model="draft" class="draft"><button type="button" class="open-preview" @click="open">Open</button></div>',
+		})
+		const wrapper = mountDesktop([{ id: 'collaboration', label: 'Collaboration', component: DraftSlot }])
+		await nextTick()
+
+		const tile = wrapper.findAll('.action-set__item').find(i => i.attributes('aria-label') === 'Collaboration')
+		await tile!.trigger('click')
+		await nextTick()
+		await wrapper.find('.draft').setValue('half-written comment')
+		await wrapper.find('.open-preview').trigger('click')
+		await nextTick()
+		await wrapper.find('.desktop__preview-close').trigger('click')
+		await nextTick()
+
+		expect((wrapper.find('.draft').element as HTMLInputElement).value).toBe('half-written comment')
+	})
+
+	it('does not reopen the drawer when another tile takes over from the preview', async () => {
+		const wrapper = mountDesktop([
+			{ id: 'files', label: 'Files', component: ReplacingPreviewSlot },
+			{ id: 'email', label: 'Email' },
+		])
+		await nextTick()
+
+		const tile = (label: string) =>
+			wrapper.findAll('.action-set__item').find(i => i.attributes('aria-label') === label)!
+		await tile('Files').trigger('click')
+		await nextTick()
+		await wrapper.find('.open-preview').trigger('click')
+		await nextTick()
+		await tile('Email').trigger('click')
+		await nextTick()
+
+		expect(wrapper.find('.desktop').classes()).not.toContain('desktop--preview-open')
+		expect(wrapper.find('.open-preview').exists()).toBe(false)
+	})
+
+	it('resizes the preview from the keyboard within its bounds', async () => {
+		const wrapper = mountDesktop([{ id: 'files', label: 'Files', component: PreviewSlot }])
+		await nextTick()
+
+		const filesItem = wrapper.findAll('.action-set__item').find(i => i.attributes('aria-label') === 'Files')
+		await filesItem!.trigger('click')
+		await nextTick()
+		await wrapper.find('.open-preview').trigger('click')
+		await nextTick()
+
+		const handle = wrapper.find('.desktop__preview-resize')
+		expect(handle.attributes('aria-valuenow')).toBe('50')
+
+		await handle.trigger('keydown', { key: 'ArrowLeft' })
+		expect(handle.attributes('aria-valuenow')).toBe('55')
+
+		await handle.trigger('keydown', { key: 'Home' })
+		expect(handle.attributes('aria-valuenow')).toBe('80')
+
+		await handle.trigger('dblclick')
+		expect(handle.attributes('aria-valuenow')).toBe('50')
 	})
 
 	// A host keeping its slots or views in reactive state hands Desktop proxies of its components.
@@ -477,6 +607,116 @@ describe('Desktop ActionSet drawer state', { tags: ['component'] }, () => {
 		last.dispatchEvent(tab)
 
 		expect(tab.defaultPrevented).toBe(false)
+	})
+
+	const openReplacingPreview = async (wrapper: VueWrapper) => {
+		const tile = wrapper.find<HTMLElement>('.action-set__item[aria-label="Files"]')
+		tile.element.focus()
+		await tile.trigger('click')
+		await nextTick()
+		const opener = wrapper.find<HTMLElement>('.open-preview')
+		opener.element.focus()
+		await opener.trigger('click')
+		await nextTick()
+		return tile
+	}
+
+	it('cancels a preview resize on Escape instead of leaving the desktop stuck resizing', async () => {
+		const { wrapper } = mountOnRoute({ actionSetSlots: [{ id: 'files', label: 'Files', component: PreviewSlot }] })
+		await nextTick()
+		await openReplacingPreview(wrapper)
+		const handle = wrapper.find('.desktop__preview-resize')
+		await handle.trigger('keydown', { key: 'ArrowLeft' })
+		const before = handle.attributes('aria-valuenow')
+
+		await handle.trigger('pointerdown')
+		expect(wrapper.find('.desktop').classes()).toContain('desktop--preview-resizing')
+
+		await escape()
+
+		expect(wrapper.find('.desktop').classes()).not.toContain('desktop--preview-resizing')
+		expect(wrapper.find('.stub-preview').exists()).toBe(true)
+		expect(wrapper.find('.desktop__preview-resize').attributes('aria-valuenow')).toBe(before)
+	})
+
+	it('reports and steps the preview width within the bounds the pane can be drawn at', async () => {
+		const { wrapper } = mountOnRoute({ actionSetSlots: [{ id: 'files', label: 'Files', component: PreviewSlot }] })
+		await nextTick()
+		// 1000px workspace: the pane keeps 320px for itself and 360px for the page, so 32%–64%.
+		vi.spyOn(wrapper.find('.desktop__workspace').element, 'getBoundingClientRect').mockReturnValue(
+			new DOMRect(0, 0, 1000, 800)
+		)
+		await openReplacingPreview(wrapper)
+		const handle = wrapper.find('.desktop__preview-resize')
+
+		await handle.trigger('keydown', { key: 'Home' })
+		expect(handle.attributes('aria-valuenow')).toBe('64')
+		expect(handle.attributes('aria-valuemax')).toBe('64')
+
+		await handle.trigger('keydown', { key: 'ArrowRight' })
+		expect(handle.attributes('aria-valuenow')).toBe('59')
+
+		await handle.trigger('keydown', { key: 'End' })
+		expect(handle.attributes('aria-valuenow')).toBe('32')
+		expect(handle.attributes('aria-valuemin')).toBe('32')
+	})
+
+	it('returns focus to the tile that opened the drawer after closing a replacing preview with the mouse', async () => {
+		const { wrapper } = mountOnRoute({
+			actionSetSlots: [{ id: 'files', label: 'Files', component: ReplacingPreviewSlot }],
+		})
+		await nextTick()
+		const tile = await openReplacingPreview(wrapper)
+
+		const previewClose = wrapper.find<HTMLElement>('.desktop__preview-close')
+		previewClose.element.focus()
+		await previewClose.trigger('click')
+		await nextTick()
+		await nextTick()
+		expect(document.activeElement).not.toBe(document.body)
+
+		await wrapper.find('.action-set__drawer-close').trigger('click')
+		await nextTick()
+		await nextTick()
+		expect(document.activeElement).toBe(tile.element)
+	})
+
+	it('treats another tile opened over a replacing preview as a fresh open for focus', async () => {
+		const { wrapper } = mountOnRoute({
+			actionSetSlots: [{ id: 'files', label: 'Files', component: ReplacingPreviewSlot }],
+		})
+		await nextTick()
+		await openReplacingPreview(wrapper)
+
+		const actions = wrapper.find<HTMLElement>('.action-set__item[aria-label="Actions"]')
+		actions.element.focus()
+		await actions.trigger('click')
+		await nextTick()
+		await nextTick()
+		expect(wrapper.find('.action-set__drawer').element.contains(document.activeElement)).toBe(true)
+
+		await wrapper.find('.action-set__drawer-close').trigger('click')
+		await nextTick()
+		await nextTick()
+		expect(document.activeElement).toBe(actions.element)
+	})
+
+	it('forgets a hidden drawer’s focus return when navigation closes it', async () => {
+		const { wrapper, recordId } = mountOnRoute({
+			actionSetSlots: [{ id: 'files', label: 'Files', component: ReplacingPreviewSlot }],
+		})
+		await nextTick()
+		const tile = await openReplacingPreview(wrapper)
+
+		recordId.value = 'rec-2'
+		await nextTick()
+		await nextTick()
+
+		tile.element.focus()
+		await tile.trigger('click')
+		await nextTick()
+		await nextTick()
+		expect(wrapper.find('.action-set__drawer').element.contains(document.activeElement)).toBe(true)
 	})
 
 	it('closes the preview first, then the drawer, on successive Escapes', async () => {

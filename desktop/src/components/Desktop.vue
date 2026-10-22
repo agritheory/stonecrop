@@ -4,9 +4,10 @@
 		:class="{
 			'desktop--action-set-open': actionSetDrawerOpen,
 			'desktop--preview-open': actionSetPreviewOpen,
+			'desktop--preview-resizing': previewResizing,
 		}"
 		@click="handleClick">
-		<div class="desktop__workspace">
+		<div ref="workspace" class="desktop__workspace">
 			<div class="desktop__main">
 				<slot v-if="$slots.default" />
 				<AForm
@@ -40,10 +41,24 @@
 				</div>
 			</div>
 
-			<aside v-if="actionSetPreviewSubject" class="desktop__preview">
+			<aside v-if="actionSetPreviewSubject" ref="previewEl" class="desktop__preview" :style="previewStyle">
+				<div
+					class="desktop__preview-resize"
+					role="separator"
+					aria-orientation="vertical"
+					aria-label="Resize preview"
+					:aria-valuenow="Math.round(previewFraction * 100)"
+					:aria-valuemin="Math.round(previewBounds.min * 100)"
+					:aria-valuemax="Math.round(previewBounds.max * 100)"
+					tabindex="0"
+					title="Drag to resize · double-click to reset"
+					@pointerdown="onPreviewResizeStart"
+					@dblclick="resetPreviewWidth"
+					@keydown="onPreviewResizeKeydown" />
 				<header class="desktop__preview-header">
 					<button
 						type="button"
+						ref="previewCloseEl"
 						class="desktop__preview-close"
 						aria-label="Close preview"
 						@click="closeActionSetPreview">
@@ -98,11 +113,12 @@ import {
 	type ResolvedField,
 	type ResolvedTable,
 } from '@stonecrop/aform'
-import { computed, markRaw, onMounted, onUnmounted, provide, ref, shallowRef, toRaw, unref, watch } from 'vue'
+import { computed, markRaw, nextTick, onMounted, onUnmounted, provide, ref, shallowRef, toRaw, unref, watch } from 'vue'
 
 import ActionSet from './ActionSet.vue'
 import SheetNav from './SheetNav.vue'
 import { createActionSet, actionSetKey } from '../composables/useActionSet'
+import { usePreviewSplit } from '../composables/usePreviewSplit'
 import type {
 	ActionElements,
 	RouteAdapter,
@@ -1056,6 +1072,12 @@ const handleKeydown = (event: KeyboardEvent) => {
 		actionSetController.openSearch()
 	}
 	if (event.key === 'Escape') {
+		// Mid-drag, Escape abandons the resize; the preview stays open.
+		if (previewResizing.value) {
+			event.preventDefault()
+			cancelPreviewResize()
+			return
+		}
 		if (actionSetController.isPreviewOpen.value) {
 			actionSetController.closePreview()
 			return
@@ -1081,7 +1103,7 @@ const visibleActionSetSlots = computed(() =>
 const actionSetController = createActionSet({ doctype: currentDoctype, recordId: currentRecordId })
 provide(actionSetKey, actionSetController)
 
-const actionSetDrawerOpen = computed(() => actionSetController.isDrawerOpen.value)
+const actionSetDrawerOpen = computed(() => actionSetController.isDrawerShown.value)
 const actionSetPreviewOpen = computed(() => actionSetController.isPreviewOpen.value)
 const actionSetPreviewSubject = computed(() => actionSetController.previewSubject.value)
 
@@ -1092,6 +1114,44 @@ watch([currentDoctype, currentRecordId], () => {
 function closeActionSetPreview() {
 	actionSetController.closePreview()
 }
+
+const workspace = ref<HTMLElement | null>(null)
+const {
+	fraction: previewFraction,
+	bounds: previewBounds,
+	resizing: previewResizing,
+	previewStyle,
+	onPointerDown: onPreviewResizeStart,
+	onKeydown: onPreviewResizeKeydown,
+	reset: resetPreviewWidth,
+	cancel: cancelPreviewResize,
+} = usePreviewSplit(workspace)
+
+const previewEl = ref<HTMLElement | null>(null)
+const previewCloseEl = ref<HTMLElement | null>(null)
+// Whatever had focus when the preview opened, usually the control in the drawer that opened it.
+let previewOpener: HTMLElement | null = null
+
+// Runs before the DOM updates, so on close the preview, and whether it holds focus, is still there.
+watch(actionSetPreviewOpen, async open => {
+	if (typeof document === 'undefined') return
+	if (open) {
+		previewOpener = document.activeElement instanceof HTMLElement ? document.activeElement : null
+		await nextTick()
+		// A preview that replaced the drawer has hidden the control that opened it, taking focus with it.
+		if (actionSetController.isDrawerOpen.value && !actionSetController.isDrawerShown.value) {
+			previewCloseEl.value?.focus()
+		}
+		return
+	}
+	cancelPreviewResize()
+	const opener = previewOpener
+	previewOpener = null
+	// Only when the preview held focus: closing it otherwise leaves focus where the user put it.
+	if (!previewEl.value?.contains(document.activeElement)) return
+	await nextTick()
+	if (opener?.isConnected) opener.focus()
+})
 
 onMounted(() => {
 	document.addEventListener('keydown', handleKeydown)
@@ -1152,13 +1212,12 @@ onUnmounted(() => {
 }
 
 .desktop--preview-open .desktop__main {
-	flex: 0 0 calc(50% - 10px);
-	max-width: calc(50% - 10px);
+	flex: 1 1 0;
 }
 
 .desktop__preview {
+	position: relative;
 	flex: 0 0 50%;
-	max-width: 50%;
 	min-width: 0;
 	min-height: 0;
 	display: flex;
@@ -1166,6 +1225,47 @@ onUnmounted(() => {
 	border-left: 1px solid var(--sc-gray-20);
 	background: var(--sc-form-background);
 	overflow: hidden;
+}
+
+.desktop__preview-resize {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	z-index: 1;
+	width: 8px;
+	cursor: col-resize;
+	touch-action: none;
+}
+
+.desktop__preview-resize::before {
+	content: '';
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	width: 2px;
+	background: transparent;
+	transition: background-color 0.15s ease;
+}
+
+.desktop__preview-resize:hover::before,
+.desktop__preview-resize:focus-visible::before,
+.desktop--preview-resizing .desktop__preview-resize::before {
+	background: var(--sc-primary-color);
+}
+
+.desktop__preview-resize:focus-visible {
+	outline: none;
+}
+
+.desktop--preview-resizing {
+	cursor: col-resize;
+	user-select: none;
+}
+
+.desktop--preview-resizing .desktop__preview-body {
+	pointer-events: none;
 }
 
 .desktop__preview-header {
