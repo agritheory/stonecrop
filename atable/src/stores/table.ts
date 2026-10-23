@@ -21,7 +21,7 @@ import type {
 } from '../types'
 import { resolveFilterType } from '../resolveFilterType'
 import { isTableTuplePickerModal, tableTuplePickerModalComponent } from '../tuplePickerModal'
-import { formatCurrency, formatQuantity, generateHash } from '../utils'
+import { formatCurrency, formatQuantity, formatRichText, generateHash } from '../utils'
 
 /**
  * Represents the state of a single filter
@@ -100,9 +100,11 @@ function applyFilter(cellValue: any, filter: FilterState, column: TableColumn): 
 		case 'text': {
 			const searchableText = column.linkDoctype
 				? linkSearchableText(cellValue)
-				: typeof cellValue === 'object' && cellValue !== null
-					? Object.values(cellValue).join(' ')
-					: String(cellValue || '')
+				: componentCategory(column.component) === 'richtext'
+					? formatRichText(cellValue)
+					: typeof cellValue === 'object' && cellValue !== null
+						? Object.values(cellValue).join(' ')
+						: String(cellValue || '')
 			return searchableText.toLowerCase().includes(String(value).toLowerCase())
 		}
 
@@ -548,6 +550,7 @@ export const createTableStore = (initData: {
 				if (category === 'datetime') return value != null ? new Date(String(value)).toLocaleString() : value
 				if (category === 'quantity') return formatQuantity(value)
 				if (category === 'currency') return formatCurrency(value)
+				if (category === 'richtext') return formatRichText(value)
 				return value
 			}
 

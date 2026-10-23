@@ -23,6 +23,7 @@ export type ComponentCategory =
 	| 'quantity'
 	| 'currency'
 	| 'semver'
+	| 'richtext'
 
 /**
  * Canonical component → semantic category. Only the components Stonecrop ships with appear here;
@@ -48,6 +49,7 @@ export const COMPONENT_CATEGORY: Record<string, ComponentCategory> = {
 	AQuantityInput: 'quantity',
 	ACurrencyInput: 'currency',
 	ASemverInput: 'semver',
+	AEditor: 'richtext',
 }
 
 /**

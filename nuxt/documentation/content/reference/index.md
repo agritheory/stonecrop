@@ -25,6 +25,7 @@ Looking for a specific `aform` field's props and a live demo rather than a packa
 | [@stonecrop/desktop](./desktop) | Desktop navigation and command palette | Prototype |
 | [@stonecrop/node-editor](./node-editor) | Visual FSM workflow editor | Prototype |
 | [@stonecrop/code-editor](./code-editor) | Monaco-based code editor component | Prototype |
+| [@stonecrop/editor](./editor) | Editor.js block editor component | Prototype |
 
 ## Backend / Middleware
 

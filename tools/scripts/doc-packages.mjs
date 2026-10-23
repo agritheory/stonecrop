@@ -42,6 +42,7 @@ export const docPackages = [
 	{ folder: 'rockfoil', name: 'rockfoil', title: 'Rockfoil', description: 'Server-side utilities' },
 	{ folder: 'node_editor', name: 'node-editor', title: 'Node Editor', description: 'Visual FSM workflow editor' },
 	{ folder: 'code_editor', name: 'code-editor', title: 'Code Editor', description: 'Monaco-based code editor' },
+	{ folder: 'editor', name: 'editor', title: 'Editor', description: 'Editor.js block editor' },
 	{ folder: 'utilities', name: 'utilities', title: 'Utilities', description: 'Shared utility functions' },
 	{
 		folder: 'nuxt',

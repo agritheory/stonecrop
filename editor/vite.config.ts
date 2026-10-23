@@ -1,0 +1,56 @@
+import vue from '@vitejs/plugin-vue'
+import { resolve } from 'path'
+import { libInjectCss } from 'vite-plugin-lib-inject-css'
+import { coverageConfigDefaults, defineConfig } from 'vite-plus'
+
+import { buildTask } from '../tools/vite/build-task.ts'
+import { testTags } from '../tools/vite/test-tags.ts'
+import { fsModuleCachePath } from '../tools/vite/fs-module-cache.ts'
+
+const projectRootDir = resolve(import.meta.dirname)
+
+export default defineConfig({
+	run: { tasks: buildTask('vue-tsc') },
+	plugins: [vue(), libInjectCss()],
+	build: {
+		emptyOutDir: true,
+		// Libraries ship unminified; the consumer's bundler minifies.
+		minify: false,
+		sourcemap: true,
+		lib: {
+			entry: resolve(projectRootDir, 'src/index.ts'),
+			name: '@stonecrop/editor',
+			formats: ['es'],
+		},
+		rollupOptions: {
+			external: ['vue', /^@editorjs\//],
+			output: {
+				assetFileNames: 'assets/[name].[ext]',
+				globals: {
+					vue: 'Vue',
+				},
+			},
+		},
+	},
+	test: {
+		fsModuleCachePath,
+		globals: true,
+		tags: testTags,
+		environment: 'jsdom',
+		coverage: {
+			enabled: true,
+			provider: 'istanbul',
+			reporter: ['text', 'json-summary', 'json'],
+			reportOnFailure: true,
+			skipFull: true,
+			thresholds: {
+				lines: 70,
+				branches: 70,
+				functions: 70,
+				statements: 70,
+			},
+			include: ['src/**/*.{ts,vue}'],
+			exclude: [...coverageConfigDefaults.exclude, 'src/index.ts'],
+		},
+	},
+})

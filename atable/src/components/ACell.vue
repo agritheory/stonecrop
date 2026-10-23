@@ -186,7 +186,11 @@ const usesBadgeDisplay = computed(
 	() => !!column.cellComponent || badgeFromFormat.value !== undefined || hasBadgeOptions(column.options)
 )
 
-const isContentEditable = computed(() => column.edit && !usesBadgeDisplay.value && !tupleCategory.value)
+// A rich-text cell shows its document's plain text. Typing there would replace the document with a string, so the
+// cell is not editable: the document is edited in a form, through AEditor.
+const isRichText = componentCategory(column.component) === 'richtext'
+
+const isContentEditable = computed(() => column.edit && !usesBadgeDisplay.value && !tupleCategory.value && !isRichText)
 
 const cellComponentBindings = computed(() => {
 	const props = { ...column.cellComponentProps }

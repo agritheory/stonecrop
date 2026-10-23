@@ -74,6 +74,11 @@ export const searchIndex: SearchEntry[] = [
 		url: '/reference/code-editor',
 	},
 	{
+		title: 'Editor API Reference',
+		description: 'Editor.js block editor',
+		url: '/reference/editor',
+	},
+	{
 		title: 'Schema API Reference',
 		description: 'Doctype schema definitions and validation',
 		url: '/reference/schema',
