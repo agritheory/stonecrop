@@ -22,6 +22,7 @@ describe('component-meta', { tags: ['unit'] }, () => {
 		expect(componentCategory('ACodeEditor')).toBe('code')
 		expect(componentCategory('AFormLink')).toBe('link')
 		expect(componentCategory('ASemverInput')).toBe('semver')
+		expect(componentCategory('AEditor')).toBe('richtext')
 	})
 
 	it('categorizes the date components that previously had no category', () => {

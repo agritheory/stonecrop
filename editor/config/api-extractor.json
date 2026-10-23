@@ -1,0 +1,9 @@
+{
+	"$schema": "https://developer.microsoft.com/json-schemas/api-extractor/v7/api-extractor.schema.json",
+	"extends": "../../tools/config/api-extractor-vue-base.json",
+
+	"docModel": {
+		"enabled": true,
+		"projectFolderUrl": "https://github.com/agritheory/stonecrop/tree/development/editor"
+	}
+}

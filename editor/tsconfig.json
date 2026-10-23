@@ -1,0 +1,7 @@
+{
+	"extends": "../tsconfig.json",
+	"compilerOptions": {
+		"tsBuildInfoFile": "./temp/editor.tsbuildinfo"
+	},
+	"include": ["src/**/*.ts", "src/**/*.vue", "src/**/*.json"]
+}

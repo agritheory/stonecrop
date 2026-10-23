@@ -41,6 +41,7 @@ const PACKAGES = [
 	{ folder: 'beam', name: '@stonecrop/beam' },
 	{ folder: 'desktop', name: '@stonecrop/desktop' },
 	{ folder: 'code_editor', name: '@stonecrop/code-editor' },
+	{ folder: 'editor', name: '@stonecrop/editor' },
 	{ folder: 'node_editor', name: '@stonecrop/node-editor' },
 ]
 

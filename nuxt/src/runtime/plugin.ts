@@ -1,5 +1,6 @@
 import { install as AForm } from '@stonecrop/aform'
 import { install as CodeEditor } from '@stonecrop/code-editor'
+import { install as Editor } from '@stonecrop/editor'
 import { install as NodeEditor } from '@stonecrop/node-editor'
 import StonecropPlugin, { type Registry, type Stonecrop } from '@stonecrop/stonecrop'
 import { createPinia } from 'pinia'
@@ -24,6 +25,7 @@ export default defineNuxtPlugin({
 		const { monacoPath } = nuxt.$config.public.stonecrop as { monacoPath: string }
 		app.use(CodeEditor, { vsPath: `${nuxt.$config.app.baseURL.replace(/\/+$/, '')}${monacoPath}/vs` })
 		app.use(NodeEditor)
+		app.use(Editor)
 		app.use(StonecropPlugin, { router })
 
 		// Extract from globalProperties (set by Stonecrop Vue plugin)
