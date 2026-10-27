@@ -38,7 +38,6 @@ const ts = req('typescript')
 const PACKAGES = [
 	{ folder: 'aform', name: '@stonecrop/aform' },
 	{ folder: 'atable', name: '@stonecrop/atable' },
-	{ folder: 'beam', name: '@stonecrop/beam' },
 	{ folder: 'desktop', name: '@stonecrop/desktop' },
 	{ folder: 'code_editor', name: '@stonecrop/code-editor' },
 	{ folder: 'node_editor', name: '@stonecrop/node-editor' },

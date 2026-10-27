@@ -5,7 +5,6 @@
 	"references": [
 		{ "path": "./aform" },
 		{ "path": "./atable" },
-		{ "path": "./beam" },
 		{ "path": "./casl_middleware" },
 		{ "path": "./code_editor" },
 		{ "path": "./desktop" },

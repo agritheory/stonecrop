@@ -3,7 +3,7 @@
 /**
  * Runs api-extractor and drops its per-package boilerplate, forwarding every other line.
  *
- * The banner is four lines plus blanks in each of the thirteen packages that build a report. What
+ * The banner is four lines plus blanks in each of the twelve packages that build a report. What
  * has to survive is the compiler-mismatch line: api-extractor pins its own TypeScript, one major
  * behind the catalog, and that line is the only sign the surface was analysed by the older one.
  *

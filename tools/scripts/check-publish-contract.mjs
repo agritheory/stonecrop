@@ -25,7 +25,6 @@ const rootDir = join(dirname(fileURLToPath(import.meta.url)), '../..')
 const ATTW_EXPECTED_FAILURES = new Map([
 	['@stonecrop/aform', 'ships .vue specifiers in its declarations; bundler-only by construction'],
 	['@stonecrop/atable', 'ships .vue specifiers in its declarations; bundler-only by construction'],
-	['@stonecrop/beam', 'ships .vue specifiers in its declarations; bundler-only by construction'],
 	['@stonecrop/code-editor', 'ships .vue specifiers in its declarations; bundler-only by construction'],
 	['@stonecrop/desktop', 'ships .vue specifiers in its declarations; bundler-only by construction'],
 	['@stonecrop/node-editor', 'ships .vue specifiers in its declarations; bundler-only by construction'],

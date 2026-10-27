@@ -95,7 +95,6 @@ export const docsNavSections: DocsNavSection[] = [
 				links: [
 					{ text: 'aform', to: '/reference/aform' },
 					{ text: 'atable', to: '/reference/atable' },
-					{ text: 'beam', to: '/reference/beam' },
 					{ text: 'desktop', to: '/reference/desktop' },
 					{ text: 'node-editor', to: '/reference/node-editor' },
 					{ text: 'code-editor', to: '/reference/code-editor' },

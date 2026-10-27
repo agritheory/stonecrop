@@ -24,7 +24,7 @@
 			/**
 			 * `__VLS_export` is a compiler-internal alias vue-tsc generates per component. It is not
 			 * something an author can export, so the advice this message gives cannot be taken — it
-			 * would otherwise fire once per component, 63 times across these six packages.
+			 * would otherwise fire once per component, 63 times across these five packages.
 			 */
 			"ae-forgotten-export": {
 				"logLevel": "none",

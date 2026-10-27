@@ -1,8 +1,0 @@
-{
-	"extends": "../tsconfig.json",
-	"compilerOptions": {
-		"tsBuildInfoFile": "./temp/beam.tsbuildinfo",
-		"types": ["node", "vitest/globals", "vitest/jsdom"]
-	},
-	"include": ["src/**/*.ts", "src/**/*.vue"]
-}
