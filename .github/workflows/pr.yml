@@ -277,8 +277,10 @@ jobs:
             --jq '.[0].databaseId // empty')
           echo "run-id=${RUN_ID}" >> $GITHUB_OUTPUT
 
+      # A package new in this PR has no baseline on development yet; report without one.
       - name: Download Baseline Coverage
         if: always() && steps.baseline-run.outputs.run-id != ''
+        continue-on-error: true
         uses: actions/download-artifact@v8
         with:
           name: coverage-${{ matrix.package }}-development
