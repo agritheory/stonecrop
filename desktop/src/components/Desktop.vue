@@ -113,12 +113,27 @@ import {
 	type ResolvedField,
 	type ResolvedTable,
 } from '@stonecrop/aform'
-import { computed, markRaw, nextTick, onMounted, onUnmounted, provide, ref, shallowRef, toRaw, unref, watch } from 'vue'
+import {
+	computed,
+	getCurrentInstance,
+	markRaw,
+	nextTick,
+	onMounted,
+	onUnmounted,
+	provide,
+	ref,
+	shallowRef,
+	toRaw,
+	unref,
+	watch,
+} from 'vue'
 
 import ActionSet from './ActionSet.vue'
+import DesktopRowLink from './DesktopRowLink.vue'
 import SheetNav from './SheetNav.vue'
 import { createActionSet, actionSetKey } from '../composables/useActionSet'
 import { usePreviewSplit } from '../composables/usePreviewSplit'
+import { ROW_LINK_COMPONENT, openListRowKey } from '../row-link'
 import type {
 	ActionElements,
 	RouteAdapter,
@@ -738,6 +753,7 @@ const getDoctypesSchema = (): ResolvedField[] => {
 					fieldname: 'actions',
 					label: 'Actions',
 					component: 'ATextInput',
+					cellComponent: ROW_LINK_COMPONENT,
 					align: 'center' as const,
 					edit: false,
 					width: '20ch',
@@ -773,7 +789,10 @@ const getRecordsSchema = (): ResolvedField[] => {
 			// Which resolved fields a cell can render is answered once, in @stonecrop/aform; never
 			// re-derive it here. Flattening alone is not the rule: it kept the expanding links, whose
 			// value is a nested record or an array of them.
-			schema: [...resolvedFieldsToColumns(schema), { fieldname: 'actions', label: 'Actions', component: 'ATextInput' }],
+			schema: [
+				...resolvedFieldsToColumns(schema),
+				{ fieldname: 'actions', label: 'Actions', component: 'ATextInput', cellComponent: ROW_LINK_COMPONENT },
+			],
 			config: { view: 'list' as const, fullWidth: true },
 			...(clientConfigured ? { getRecords: listRecordsFetcher, sourceKey: doctypeSlug } : {}),
 		} satisfies ResolvedTable,
@@ -852,22 +871,15 @@ const resolveRecordId = (record: Record<string, unknown>): string | undefined =>
 	return stonecrop.value.registry.registry[currentDoctype.value]?.getRecordId(record)
 }
 
-// Event handlers
-const getRecordIdFromRow = (rowElement: HTMLTableRowElement): string | null => {
-	const cell = rowElement.querySelector('td[data-rowindex]')
-	if (!cell) return null
-
-	const rowIndexAttr = cell.getAttribute('data-rowindex')
-	if (rowIndexAttr === null) return null
-
-	const rowIndex = parseInt(rowIndexAttr, 10)
-	if (isNaN(rowIndex)) return null
-
-	const records = getRecords()
-	const record = records[rowIndex]
-	if (!record) return null
-
-	return resolveRecordId(record) ?? null
+// What a list's link opens. Each link is handed its own row, so nothing reads a cell's text to learn what
+// was clicked: a records list's row is a record, and a doctypes list's row a doctype.
+const openListRow = async (row: Record<string, unknown>) => {
+	if (currentView.value === 'doctypes') {
+		await navigateToDoctype(String(row.doctype))
+		return
+	}
+	const recordId = resolveRecordId(row)
+	if (recordId) await openRecord(recordId)
 }
 
 const handleClick = async (event: Event) => {
@@ -876,32 +888,6 @@ const handleClick = async (event: Event) => {
 
 	if (action === 'create') {
 		await createNewRecord()
-	}
-
-	const cell = target.closest('td, th')
-	if (cell) {
-		const cellText = cell.textContent?.trim()
-		const row = cell.closest('tr')
-
-		if (cellText === 'View Records' && row) {
-			// Get the doctype from the row data
-			const cells = row.querySelectorAll('td')
-			if (cells.length > 0) {
-				const doctypeCell = cells[1] // Assuming doctype is in second column (first column is index)
-				const doctype = doctypeCell.textContent?.trim()
-				if (doctype) {
-					await navigateToDoctype(doctype)
-				}
-			}
-		} else if (cellText === 'Edit' && row) {
-			// Matched exactly, not by substring. This handler is bound to the whole desktop, so a
-			// substring match fired on any cell whose *data* happened to contain the word — a task
-			// titled "Delete old backups" popped a delete confirmation when you clicked it.
-			const recordId = getRecordIdFromRow(row)
-			if (recordId) {
-				await openRecord(recordId)
-			}
-		}
 	}
 }
 
@@ -1030,6 +1016,12 @@ const desktopMethods = {
 }
 
 provide('desktopMethods', desktopMethods)
+
+// ATable finds a column's cell component only by a name registered on the app, and hosts mount Desktop
+// without installing its plugin, so Desktop registers its list link itself.
+const app = getCurrentInstance()?.appContext.app
+if (app && !app.component(ROW_LINK_COMPONENT)) app.component(ROW_LINK_COMPONENT, DesktopRowLink)
+provide(openListRowKey, openListRow)
 
 // Provide a navigator for AFormLink so the arrow button navigates to the linked record.
 provide('aformLinkNavigator', {
