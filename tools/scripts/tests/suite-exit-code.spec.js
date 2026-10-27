@@ -6,7 +6,6 @@ import { stripVTControlCharacters } from 'node:util'
 import { describe, expect, it } from 'vite-plus/test'
 
 const rootDir = join(dirname(fileURLToPath(import.meta.url)), '../../..')
-const graphqlMiddleware = join(rootDir, 'graphql_middleware')
 
 describe('graphql_middleware test run', { tags: ['integration'] }, () => {
 	// Coverage stays off: on one file its thresholds fail the run whatever the tests do.
