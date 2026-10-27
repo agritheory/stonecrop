@@ -3,6 +3,7 @@ import { mount } from '@vue/test-utils'
 import { afterEach, describe, expect, it, vi } from 'vite-plus/test'
 import { nextTick } from 'vue'
 
+import type { AFormLinkNavigator } from '@stonecrop/aform'
 import { Doctype, Registry, Stonecrop } from '@stonecrop/stonecrop'
 
 import Desktop from '../../src/components/Desktop.vue'
@@ -210,6 +211,26 @@ describe('Desktop — link values on write', { tags: ['component'] }, () => {
 		expect(payload.data.agentId).toEqual({ id: 'p-2', displayText: 'Globex' })
 		// An expanded link crosses the wire whole — it is the record, not a reference to one.
 		expect(payload.data.customer).toEqual({ id: 'p-1', partyName: 'Acme Corp' })
+	})
+})
+
+describe('Desktop: link navigation', { tags: ['component'] }, () => {
+	it("opens the linked record from a link field's arrow button", async () => {
+		const registry = new Registry()
+		const stonecrop = new Stonecrop(registry)
+		registry.addDoctype(buildDoctype('order', 'draft', { draft: {} }))
+		stonecrop.addRecord('order', 'o-1', { id: 'o-1' })
+
+		const adapter = recordAdapter('order', 'o-1')
+		const wrapper = mountDesktop(registry, stonecrop, adapter)
+		await nextTick()
+
+		const navigator = wrapper.vm.$.provides['aformLinkNavigator'] as AFormLinkNavigator
+		// A foreign key column can arrive as a number; the route's record id is a string.
+		navigator.navigate('party', 42)
+		await nextTick()
+
+		expect(vi.mocked(adapter.navigate).mock.calls).toEqual([[{ view: 'record', doctype: 'party', recordId: '42' }]])
 	})
 })
 
