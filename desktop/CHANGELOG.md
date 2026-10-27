@@ -1,5 +1,15 @@
 # Change Log - @stonecrop/desktop
 
+## 0.55.1
+
+### Patch Changes
+
+- 2fdf332: A list's "Edit" and "View Records" links open their own row, and a table cell that merely reads "Edit" no longer opens a record.
+- @stonecrop/aform@0.55.1
+  - @stonecrop/schema@0.55.1
+  - @stonecrop/stonecrop@0.55.1
+  - @stonecrop/themes@0.55.1
+
 ## 0.55.0
 
 ### Minor Changes
