@@ -52,6 +52,7 @@ export const docsNavSections: DocsNavSection[] = [
 				title: 'Editors',
 				links: [
 					{ text: 'Code Editor', to: '/components/code-editor' },
+					{ text: 'Editor', to: '/components/editor' },
 					{ text: 'Node Editor', to: '/components/node-editor' },
 				],
 			},

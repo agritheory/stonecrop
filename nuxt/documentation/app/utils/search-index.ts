@@ -281,6 +281,11 @@ export const searchIndex: SearchEntry[] = [
 		url: '/components/code-editor',
 	},
 	{
+		title: 'Editor',
+		description: 'An Editor.js block editor for rich-text fields, rendered by AForm and summarised in ATable',
+		url: '/components/editor',
+	},
+	{
 		title: 'Node Editor',
 		description: 'A visual, drag-and-drop editor for finite-state-machine workflows',
 		url: '/components/node-editor',
