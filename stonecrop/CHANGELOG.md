@@ -1,5 +1,17 @@
 # Change Log - @stonecrop/stonecrop
 
+## 0.56.0
+
+### Minor Changes
+
+- e331ffe: `useClientAction` runs an action raised with no record, as a list's is, only through its `clientHandler`, which gets no `record` or `runAction`, so `ActionEventPayload.recordId` is now optional; `Doctype.getActions()` lists every action a workflow declares.
+
+### Patch Changes
+
+- @stonecrop/aform@0.56.0
+  - @stonecrop/atable@0.56.0
+  - @stonecrop/schema@0.56.0
+
 ## 0.55.2
 
 ### Patch Changes

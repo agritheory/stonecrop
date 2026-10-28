@@ -1,5 +1,20 @@
 # Change Log - @stonecrop/desktop
 
+## 0.56.0
+
+### Minor Changes
+
+- e331ffe: BREAKING: a list shows every action its doctype declares, one button each, and the command palette offers a list page's actions; where a list and its records share a doctype, pass the list's own as `hostActions` on list views, as the starter template does for New.
+- e435204: BREAKING: Desktop no longer adds a New Record button to lists or Create New to the command palette; an app offers New itself, declared on a list doctype or passed as `hostActions`.
+
+### Patch Changes
+
+- Updated dependencies [e331ffe]
+  - @stonecrop/stonecrop@0.56.0
+  - @stonecrop/aform@0.56.0
+  - @stonecrop/schema@0.56.0
+  - @stonecrop/themes@0.56.0
+
 ## 0.55.2
 
 ### Patch Changes

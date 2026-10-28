@@ -1,5 +1,13 @@
 # Change Log - @stonecrop/atable
 
+## 0.56.0
+
+### Patch Changes
+
+- @stonecrop/schema@0.56.0
+  - @stonecrop/themes@0.56.0
+  - @stonecrop/utilities@0.56.0
+
 ## 0.55.2
 
 ### Patch Changes
