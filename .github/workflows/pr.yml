@@ -136,6 +136,13 @@ jobs:
       - name: Dependency Consistency
         run: pnpm run check:deps
 
+      # The site's parser drops the errors in a component's YAML props and renders whatever part
+      # parsed, so a mis-quoted table row merges green and fails only when docs.yml prerenders the
+      # page, after merge. Generating the site here would cost a full build; this reads the content
+      # with that same parser and needs only the install.
+      - name: Documentation Content
+        run: pnpm --filter @stonecrop/nuxt --fail-if-no-match run check:documentation
+
       # Type-aware oxlint (oxlint-tsgolint) requires compiled .d.ts files from dependency packages
       # to exist before lint runs; without this build step, unresolvable imports appear as
       # "error typed" and trigger false positives.
