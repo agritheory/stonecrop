@@ -6,8 +6,10 @@ import {
 	ActionSetIconEmail,
 	ActionSetIconFiles,
 	ActionSetIconReports,
+	type ActionElements,
 	type ActionSetSlot,
 } from '@stonecrop/desktop'
+import { DRAFT_RECORD_ID } from '@stonecrop/stonecrop'
 import ApprovalsPanel from '~/components/rail/ApprovalsPanel.vue'
 import AttachmentsPanel from '~/components/rail/AttachmentsPanel.vue'
 import ChatPanel from '~/components/rail/ChatPanel.vue'
@@ -24,6 +26,21 @@ const routeAdapter = usePlaygroundRouteAdapter()
 const { run } = useClientAction()
 
 const availableDoctypes = computed(() => Array.from(doctypeMap.keys()))
+
+// Desktop offers no New of its own, so these lists get the playground's: the only doctypes the docs
+// server can create. Unset on other views, never `[]`, which would hide a record's own actions.
+const creatableDoctypes = new Set(['order', 'user'])
+const hostActions = computed((): ActionElements[] | undefined => {
+	const doctype = routeAdapter.getCurrentDoctype()
+	if (routeAdapter.getCurrentView() !== 'records' || !creatableDoctypes.has(doctype)) return undefined
+	return [
+		{
+			type: 'button',
+			label: 'New Record',
+			action: () => void routeAdapter.navigate({ view: 'record', doctype, recordId: DRAFT_RECORD_ID }),
+		},
+	]
+})
 
 const onOrderRecord = computed(
 	() => routeAdapter.getCurrentDoctype() === 'order' && Boolean(routeAdapter.getCurrentRecordId())
@@ -52,6 +69,7 @@ const actionSetSlots = computed<ActionSetSlot[]>(() => [
 				:available-doctypes="availableDoctypes"
 				:route-adapter="routeAdapter"
 				:action-set-slots="actionSetSlots"
+				:host-actions="hostActions"
 				@action="run" />
 			<template #fallback>
 				<div class="playground-loading">

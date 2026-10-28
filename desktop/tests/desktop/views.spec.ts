@@ -1,7 +1,7 @@
 import { mount } from '@vue/test-utils'
 import { List } from 'immutable'
 import { afterEach, describe, expect, it, vi } from 'vite-plus/test'
-import { nextTick } from 'vue'
+import { nextTick, ref } from 'vue'
 
 import { Doctype, Registry, Stonecrop } from '@stonecrop/stonecrop'
 
@@ -53,7 +53,7 @@ describe('Desktop views', { tags: ['component'] }, () => {
 	})
 
 	describe('records view', () => {
-		it('renders "New Record" button in the action set when on records view', async () => {
+		it('shows no actions on a list the host gives none', async () => {
 			const registry = new Registry()
 			const stonecrop = new Stonecrop(registry)
 
@@ -85,32 +85,35 @@ describe('Desktop views', { tags: ['component'] }, () => {
 
 			await nextTick()
 
-			// ActionSet receives elements with a 'New Record' button
-			const actionSet = wrapper.findComponent({ name: 'ActionSet' })
-			const elements = actionSet.props('elements') as any[]
-			expect(elements?.some((e: any) => e.label === 'New Record')).toBe(true)
+			expect(wrapper.findComponent({ name: 'ActionSet' }).props('elements')).toEqual([])
 		})
 
-		it('navigates when "New Record" action button is triggered', async () => {
+		// How an app offers New: on its list views only, so its record views keep the actions Desktop
+		// builds from the doctype.
+		it("shows a host's actions on its list and Desktop's own on its record", async () => {
 			const registry = new Registry()
 			const stonecrop = new Stonecrop(registry)
-			const navigateFn = vi.fn()
 
 			const doctype = buildDoctype('task', 'draft', {
 				draft: { on: { SUBMIT: 'submitted' } },
 				submitted: { type: 'final' },
 			})
 			registry.addDoctype(doctype)
+			stonecrop.addRecord('task', 'r-1', { id: 'r-1', title: 'T1', status: 'draft' })
 
+			const view = ref<'records' | 'record'>('records')
 			const adapter: RouteAdapter = {
 				getCurrentDoctype: () => 'task',
-				getCurrentRecordId: () => '',
-				getCurrentView: () => 'records',
-				navigate: navigateFn,
+				getCurrentRecordId: () => (view.value === 'record' ? 'r-1' : ''),
+				getCurrentView: () => view.value,
+				navigate: vi.fn(),
 			}
 
 			const wrapper = mount(Desktop, {
-				props: { routeAdapter: adapter },
+				props: {
+					routeAdapter: adapter,
+					hostActions: [{ type: 'button', label: 'New Record', action: vi.fn() }],
+				},
 				global: {
 					plugins: [makeStonecropPlugin(registry, stonecrop)],
 					stubs: {
@@ -120,19 +123,21 @@ describe('Desktop views', { tags: ['component'] }, () => {
 					},
 				},
 			})
+			const elements = () =>
+				wrapper.findComponent({ name: 'ActionSet' }).props('elements') as {
+					label: string
+					actions?: { label: string }[]
+				}[]
 
 			await nextTick()
+			expect(elements().map(element => element.label)).toEqual(['New Record'])
 
-			const actionSet = wrapper.findComponent({ name: 'ActionSet' })
-			const elements = actionSet.props('elements') as any[]
-			const newRecordBtn = elements?.find((e: any) => e.label === 'New Record')
-			expect(newRecordBtn).toBeDefined()
-
-			// Grab the action and call it
-			await newRecordBtn.action()
+			view.value = 'record'
+			await wrapper.setProps({ hostActions: undefined })
 			await nextTick()
-
-			expect(navigateFn).toHaveBeenCalledWith(expect.objectContaining({ view: 'record' }))
+			expect(elements().map(element => [element.label, element.actions?.map(action => action.label)])).toEqual([
+				['Actions', ['SUBMIT']],
+			])
 		})
 	})
 

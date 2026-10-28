@@ -233,6 +233,24 @@ For a saved record, `getRecordState` reads the record's `status` field from HST 
 - **Server response should include `status`**: when the action result is written back, include the `status` field so Desktop renders the correct available actions.
 - **No special wiring needed**: Desktop reads `status` automatically — no extra setup required.
 
+### New on a list
+
+A list has no actions of its own: whether it offers New is the app's decision. Pass New as `hostActions` on list views only, and leave `hostActions` unset on other views, since `[]` means no actions and would hide a record's own. Offer it only where the doctype can create a record (a self-transition such as Save), or the form it opens can never be saved. The starter app's `app/pages/index.vue` does this, and passes it as `:host-actions="hostActions"`:
+
+```ts
+const hostActions = computed((): ActionElements[] | undefined => {
+	if (routeAdapter.getCurrentView() !== 'records') return undefined
+	const doctype = routeAdapter.getCurrentDoctype()
+	return [
+		{
+			type: 'button',
+			label: 'New Record',
+			action: () => void routeAdapter.navigate({ view: 'record', doctype, recordId: DRAFT_RECORD_ID }),
+		},
+	]
+})
+```
+
 ---
 
 ## 7. Custom ActionSet slots and host pages
