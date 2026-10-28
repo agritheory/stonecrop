@@ -89,7 +89,7 @@ The pane opens at half the workspace. Its left edge is a separator the user can 
 headers: ['Name', 'Type', 'Description']
 rows:
   - ['`actionSetSlots`', '`ActionSetSlot[]`', 'Host drawer slots shown as tiles alongside Search and Actions.']
-  - ['`hostActions`', '`ActionElements[]`', 'Actions listed in the Actions drawer in place of those derived from the doctype; `[]` lists none. A list derives none, so pass New here on list views and leave this unset on others.']
+  - ['`hostActions`', '`ActionElements[]`', 'Actions listed in the Actions drawer in place of those derived from the doctype; `[]` lists none. A list shows every action its doctype declares, so where a list and its records share a doctype, pass the actions for the list here on list views and leave this unset on others.']
 ---
 ::
 

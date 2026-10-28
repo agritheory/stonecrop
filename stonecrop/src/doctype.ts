@@ -324,6 +324,22 @@ export default class Doctype {
 	}
 
 	/**
+	 * Returns every action this doctype's workflow declares, in declaration order, whatever its kind
+	 * or state. A list shows these, since a list has no record whose state could narrow them. An
+	 * XState workflow declares none.
+	 *
+	 * @returns Array of action descriptors with `name`
+	 *
+	 * @public
+	 */
+	getActions(): Array<{ name: string }> {
+		// Only WorkflowMeta carries an `actions` map; XState workflows have none.
+		// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- probing the workflow union for the optional WorkflowMeta actions map
+		const actions = (this.workflow as WorkflowMeta | undefined)?.actions
+		return Object.keys(actions ?? {}).map(name => ({ name }))
+	}
+
+	/**
 	 * Returns the field-validation **triggers** declared on this doctype's workflow (advisory,
 	 * client-side). Keyed by trigger name. Returns undefined when the workflow is absent, is an
 	 * XState machine (no triggers), or simply declares none.

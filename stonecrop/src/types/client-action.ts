@@ -12,7 +12,8 @@ export type ActionEventPayload = {
 	/** The declared action name (e.g. 'SAVE', 'SUBMIT', 'APPROVE') */
 	name: string
 	doctype: string
-	recordId: string
+	/** Absent for an action raised on a list, which has no record. */
+	recordId?: string
 	/** Snapshot of the form data at the time the action was triggered */
 	data: Record<string, any>
 }
@@ -35,8 +36,8 @@ export interface ActionFailure {
 	action: string
 	/** Slug of the doctype the action was raised on. */
 	doctype: string
-	/** Record the action was raised against; the `new` route segment for an unsaved record. */
-	recordId: string
+	/** Record the action was raised against; the `new` route segment for an unsaved record; absent on a list. */
+	recordId?: string
 	/** The thrown value, present only when the failure was a throw rather than a refused dispatch. */
 	cause?: unknown
 }

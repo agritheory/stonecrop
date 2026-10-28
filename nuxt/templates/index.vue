@@ -34,8 +34,9 @@ const { run } = useClientAction()
 // which is how a hardcoded `record.id` once dropped every row of a natural-keyed doctype.
 const availableDoctypes = computed(() => Array.from(doctypeMap.keys()))
 
-// Desktop offers no New of its own, so a list gets this app's. Unset on other views, never `[]`,
-// which would hide a record's own actions.
+// A list shows every action its doctype declares, and task and project are records' doctypes too, so a
+// list gets this app's New instead, which keeps Save and the rest off it. Unset on other views, never
+// `[]`, which would hide a record's own actions.
 const hostActions = computed((): ActionElements[] | undefined => {
 	if (routeAdapter.getCurrentView() !== 'records') return undefined
 	const doctype = routeAdapter.getCurrentDoctype()

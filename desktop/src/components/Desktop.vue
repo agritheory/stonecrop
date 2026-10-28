@@ -164,8 +164,8 @@ const {
 	actionSetSlots?: ActionSetSlot[]
 	/**
 	 * When provided, the Actions drawer lists exactly these, in place of the actions Desktop derives from the doctype;
-	 * `[]` lists none. A list derives none, so a host offers New by passing it on list views and leaving this unset on
-	 * others.
+	 * `[]` lists none. A list shows every action its doctype declares, so an app whose list and record share a doctype
+	 * passes its list's actions (New, say) on list views, and leaves this unset on others.
 	 */
 	hostActions?: ActionElements[]
 	/** When provided, replaces Desktop's default doctype-navigation breadcrumbs in SheetNav. */
@@ -531,6 +531,20 @@ const getAvailableCommands = () => {
 	}
 }
 
+// Every action a list's doctype declares, one button each. A list has no record, so each is raised
+// without a `recordId`.
+const getListActions = (): ActionElements[] => {
+	const doctypeSlug = currentDoctype.value
+	const doctype = doctypeSlug ? stonecrop.value?.registry.getDoctype(doctypeSlug) : undefined
+	if (!doctype) return []
+
+	return doctype.getActions().map(({ name }) => ({
+		type: 'button' as const,
+		label: doctype.getActionMeta(name)?.label ?? name,
+		action: () => emit('action', { name, doctype: doctypeSlug, data: {} }),
+	}))
+}
+
 const actionElements = computed(() => {
 	if (hostActions) {
 		return hostActions
@@ -538,8 +552,10 @@ const actionElements = computed(() => {
 
 	const elements: ActionElements[] = []
 
-	// A list has no actions of its own: whether one offers New is the app's to decide, through `hostActions`.
 	switch (currentView.value) {
+		case 'records':
+			elements.push(...getListActions())
+			break
 		case 'record': {
 			// No actions until there is a record on screen to act on: a new record's starting values, or
 			// an existing record read into the store.
@@ -622,6 +638,18 @@ const searchCommands = (query: string): Command[] => {
 			description: `Navigate to ${routeDoctype.value} list`,
 			action: () => void doNavigate({ view: 'records', doctype: routeDoctype.value }),
 		})
+	}
+
+	// A list page offers each action its drawer shows, the host's included.
+	if (currentView.value === 'records') {
+		const listActions = actionElements.value.flatMap(element => {
+			if (element.type === 'dropdown') return element.actions
+			return element.disabled ? [] : [element]
+		})
+		for (const { label, action, show } of listActions) {
+			if (!action || show === false) continue
+			commands.push({ title: label, description: `Run on the ${routeDoctype.value} list`, action })
+		}
 	}
 
 	// Add available doctypes as commands
