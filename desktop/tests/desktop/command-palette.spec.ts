@@ -128,10 +128,10 @@ describe('Desktop command search', { tags: ['component'] }, () => {
 		expect(navigateFn).toHaveBeenCalled()
 	})
 
-	it('executes "Create New" command', async () => {
+	// An app that wants a create command in the palette passes `commandSearch`.
+	it('offers no command to create a record', async () => {
 		const registry = new Registry()
 		const stonecrop = new Stonecrop(registry)
-		const navigateFn = vi.fn()
 
 		const doctype = buildDoctype('task', 'draft', {
 			draft: { on: { SUBMIT: 'submitted' } },
@@ -143,7 +143,7 @@ describe('Desktop command search', { tags: ['component'] }, () => {
 			getCurrentDoctype: () => 'task',
 			getCurrentRecordId: () => '',
 			getCurrentView: () => 'records',
-			navigate: navigateFn,
+			navigate: vi.fn(),
 		}
 
 		const wrapper = mount(Desktop, {
@@ -161,14 +161,68 @@ describe('Desktop command search', { tags: ['component'] }, () => {
 		await nextTick()
 
 		const actionSet = wrapper.findComponent({ name: 'ActionSet' })
-		const searchFn = actionSet.props('search') as (query: string) => any[]
-		const commands = searchFn('Create New Task')
+		const searchFn = actionSet.props('search') as (query: string) => { title: string }[]
 
-		expect(commands.length).toBeGreaterThan(0)
+		expect(searchFn('').map(command => command.title)).toEqual(['Go Home', 'Toggle Search', 'View Task Records'])
+	})
 
-		await commands[0].action()
+	it("lists a host's commands in place of Desktop's own", async () => {
+		const registry = new Registry()
+		const stonecrop = new Stonecrop(registry)
+		registry.addDoctype(buildDoctype('task', 'draft', { draft: {} }))
+
+		const adapter: RouteAdapter = {
+			getCurrentDoctype: () => 'task',
+			getCurrentRecordId: () => '',
+			getCurrentView: () => 'records',
+			navigate: vi.fn(),
+		}
+		const newTask = { title: 'New Task', description: 'Create a task', action: vi.fn() }
+
+		const wrapper = mount(Desktop, {
+			props: { routeAdapter: adapter, commandSearch: () => [newTask] },
+			global: {
+				plugins: [makeStonecropPlugin(registry, stonecrop)],
+				stubs: { AForm: true, ActionSet: true, SheetNav: true },
+			},
+		})
 		await nextTick()
-		expect(navigateFn).toHaveBeenCalledWith(expect.objectContaining({ view: 'record' }))
+
+		const searchFn = wrapper.findComponent({ name: 'ActionSet' }).props('search') as (query: string) => unknown[]
+		expect(searchFn('')).toEqual([newTask])
+	})
+
+	it('runs a command picked in the search drawer, and closes the drawer', async () => {
+		const registry = new Registry()
+		const stonecrop = new Stonecrop(registry)
+		registry.addDoctype(buildDoctype('task', 'draft', { draft: {} }))
+
+		const navigate = vi.fn()
+		const adapter: RouteAdapter = {
+			getCurrentDoctype: () => 'task',
+			getCurrentRecordId: () => '',
+			getCurrentView: () => 'records',
+			navigate,
+		}
+
+		const wrapper = mount(Desktop, {
+			props: { routeAdapter: adapter },
+			global: {
+				plugins: [makeStonecropPlugin(registry, stonecrop)],
+				stubs: { AForm: true, SheetNav: true, CommandPalette: true },
+			},
+		})
+		await nextTick()
+
+		const searchTile = wrapper.findAll('.action-set__item').find(item => item.attributes('aria-label') === 'Search')
+		await searchTile!.trigger('click')
+		await wrapper.find('.command-search-input').setValue('View Task')
+		const result = wrapper.findAll('.command-search-result').find(item => item.text().includes('View Task Records'))
+		await result!.trigger('click')
+		await nextTick()
+
+		expect(navigate.mock.calls).toEqual([[{ view: 'records', doctype: 'task' }]])
+		expect(wrapper.find('.action-set__drawer').exists()).toBe(false)
 	})
 })
 

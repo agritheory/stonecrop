@@ -5,8 +5,7 @@
 			'desktop--action-set-open': actionSetDrawerOpen,
 			'desktop--preview-open': actionSetPreviewOpen,
 			'desktop--preview-resizing': previewResizing,
-		}"
-		@click="handleClick">
+		}">
 		<div ref="workspace" class="desktop__workspace">
 			<div class="desktop__main">
 				<slot v-if="$slots.default" />
@@ -99,13 +98,7 @@
 // The draft segment comes from @stonecrop/stonecrop rather than being spelled out here: that
 // package guards fetching, field initialization and workflow readiness on the same question, and
 // when the two were written separately they disagreed and every guard over there went dead.
-import {
-	DRAFT_RECORD_ID,
-	isDraftRecordId,
-	useStonecrop,
-	useValidationStore,
-	type EditableRecord,
-} from '@stonecrop/stonecrop'
+import { isDraftRecordId, useStonecrop, useValidationStore, type EditableRecord } from '@stonecrop/stonecrop'
 import {
 	AForm,
 	type AFormLinkNavigator,
@@ -169,7 +162,11 @@ const {
 	routeAdapter?: RouteAdapter
 	/** Host drawer slots, each shown as a tile in the ActionSet column. */
 	actionSetSlots?: ActionSetSlot[]
-	/** When provided, the Actions drawer lists exactly these, in place of the actions Desktop derives from the doctype. */
+	/**
+	 * When provided, the Actions drawer lists exactly these, in place of the actions Desktop derives from the doctype;
+	 * `[]` lists none. A list derives none, so a host offers New by passing it on list views and leaving this unset on
+	 * others.
+	 */
 	hostActions?: ActionElements[]
 	/** When provided, replaces Desktop's default doctype-navigation breadcrumbs in SheetNav. */
 	breadcrumbs?: { title: string; to: string }[]
@@ -541,14 +538,8 @@ const actionElements = computed(() => {
 
 	const elements: ActionElements[] = []
 
+	// A list has no actions of its own: whether one offers New is the app's to decide, through `hostActions`.
 	switch (currentView.value) {
-		case 'records':
-			elements.push({
-				type: 'button',
-				label: 'New Record',
-				action: () => void createNewRecord(),
-			})
-			break
 		case 'record': {
 			// No actions until there is a record on screen to act on: a new record's starting values, or
 			// an existing record read into the store.
@@ -631,12 +622,6 @@ const searchCommands = (query: string): Command[] => {
 			description: `Navigate to ${routeDoctype.value} list`,
 			action: () => void doNavigate({ view: 'records', doctype: routeDoctype.value }),
 		})
-
-		commands.push({
-			title: `Create New ${formatDoctypeName(routeDoctype.value)}`,
-			description: `Create a new ${routeDoctype.value} record`,
-			action: () => void createNewRecord(),
-		})
 	}
 
 	// Add available doctypes as commands
@@ -712,10 +697,6 @@ const openRecord = async (recordId: string) => {
 	const doctype = routeDoctype.value
 	emit('record:open', { doctype, recordId })
 	await doNavigate({ view: 'record', doctype, recordId })
-}
-
-const createNewRecord = async () => {
-	await doNavigate({ view: 'record', doctype: routeDoctype.value, recordId: DRAFT_RECORD_ID })
 }
 
 // Schema generator functions - moved here to be available to computed properties
@@ -882,15 +863,6 @@ const openListRow = async (row: Record<string, unknown>) => {
 	if (recordId) await openRecord(recordId)
 }
 
-const handleClick = async (event: Event) => {
-	const target = event.target as HTMLElement
-	const action = target.getAttribute('data-action')
-
-	if (action === 'create') {
-		await createNewRecord()
-	}
-}
-
 // Reads go through Stonecrop, which owns whether to fetch, how to key the result, and where to
 // put it. Desktop asks for data and renders what arrives; it decides none of that itself.
 //
@@ -947,7 +919,7 @@ watch([currentDoctype, currentRecordId], () => {
 
 // Seeding on entry gives a new record the doctype's declared defaults, which it never used to get.
 // Discarding on exit matters as much: the draft segment is one shared literal, so a reused record
-// would open the next New Record pre-filled with the abandoned one's values.
+// would open the next new record pre-filled with the abandoned one's values.
 watch(
 	[currentDoctype, currentRecordId],
 	() => {
@@ -1000,7 +972,6 @@ watch(
 const desktopMethods = {
 	navigateToDoctype,
 	openRecord,
-	createNewRecord,
 	/**
 	 * Convenience wrapper so child components (e.g. slot content) can emit
 	 * an action event without needing a direct reference to the emit function.

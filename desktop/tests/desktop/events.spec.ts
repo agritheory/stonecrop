@@ -287,7 +287,7 @@ describe('Desktop desktopMethods injection', { tags: ['component'] }, () => {
 		stonecrop.addRecord('task', 'rec-1', { id: 'rec-1', title: 'My Task' })
 	})
 
-	it('provides desktopMethods.emitAction to child components', async () => {
+	it('provides navigation and emitAction to child components, and nothing that creates a record', async () => {
 		const adapter: RouteAdapter = {
 			getCurrentDoctype: () => 'task',
 			getCurrentRecordId: () => 'rec-1',
@@ -346,11 +346,7 @@ describe('Desktop desktopMethods injection', { tags: ['component'] }, () => {
 		// in the test environment due to mounting quirks)
 		const vmProvides = (wrapper.vm as any).$.provides
 		const methods = vmProvides?.desktopMethods
-		expect(methods).toBeDefined()
-		expect(typeof methods.navigateToDoctype).toBe('function')
-		expect(typeof methods.openRecord).toBe('function')
-		expect(typeof methods.createNewRecord).toBe('function')
-		expect(typeof methods.emitAction).toBe('function')
+		expect(Object.keys(methods).toSorted()).toEqual(['emitAction', 'navigateToDoctype', 'openRecord'])
 	})
 
 	it('desktopMethods.emitAction emits an action event', async () => {
@@ -407,9 +403,6 @@ describe('Desktop – doNavigate without routeAdapter', { tags: ['component'] },
 		await methods.navigateToDoctype('task')
 		await nextTick()
 		expect(wrapper.emitted('navigate')).toBeTruthy()
-
-		await methods.createNewRecord()
-		await nextTick()
 
 		await methods.openRecord('rec-1')
 		await nextTick()

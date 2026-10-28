@@ -268,7 +268,7 @@ describe('useClientAction prefillDraft', { tags: ['unit'] }, () => {
 	})
 })
 
-// Desktop's "New Record" routes to `/{doctype}/new` and the backend assigns the identity when the
+// An app's New Record routes to `/{doctype}/new` and the backend assigns the identity when the
 // Save creates the record. Leaving the route on the draft segment would offer a form that creates
 // a second record, and the stale key would leave a row nothing can fetch.
 describe('useClientAction record identity', { tags: ['unit'] }, () => {
