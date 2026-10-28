@@ -121,7 +121,8 @@ export function useClientAction(options: UseClientActionOptions = {}) {
 
 	/**
 	 * Handle a Desktop `@action` event: run the action's `clientHandler` if present,
-	 * else dispatch to the server handler.
+	 * else dispatch to the server handler. An action raised with no record, as a list's is,
+	 * runs only through its `clientHandler`.
 	 */
 	async function run(payload: ActionEventPayload): Promise<void> {
 		const sc = stonecrop.value
@@ -138,6 +139,40 @@ export function useClientAction(options: UseClientActionOptions = {}) {
 		const clientHandler = workflow?.actions?.[name]?.clientHandler
 
 		try {
+			// Read-only GraphQL escape hatch — no mutation is injected (a raw mutation would
+			// bypass the dispatch and leave HST stale). `query` is the GraphQL transport's
+			// method, not part of the abstract DataClient interface (a non-GraphQL client may
+			// not support it), so probe for it structurally and reject if unsupported.
+			const graphql = {
+				query<T = unknown>(query: string, variables?: Record<string, unknown>): Promise<T> {
+					// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- probing DataClient for the GraphQL transport's `query`, which the abstract interface deliberately does not declare
+					const client = sc.getClient() as unknown as
+						| { query?: <R>(q: string, v?: Record<string, unknown>) => Promise<R> }
+						| undefined
+					if (!client?.query) {
+						return Promise.reject(new Error('The configured data client does not support graphql.query'))
+					}
+					return client.query<T>(query, variables)
+				},
+			}
+
+			const prefillDraft = (target: string, values: Record<string, unknown>) => sc.registry.prefillDraft(target, values)
+
+			if (recordId === undefined) {
+				// A list's action: its script is given nothing that reads or writes a record. Never dispatched,
+				// because with no id the server reads a save as a create.
+				if (!clientHandler) {
+					onError({
+						message: `Action "${name}" has no script, so it cannot run on a list.`,
+						action: name,
+						doctype: doctypeSlug,
+					})
+					return
+				}
+				await executeClientHandler(clientHandler, { router: resolveRouter(), graphql, prefillDraft })
+				return
+			}
+
 			if (!clientHandler) {
 				// No client handler — preserve the existing server-dispatch behavior.
 				const result = await dispatchAndWriteback(doctypeSlug, recordId, data, name)
@@ -159,25 +194,6 @@ export function useClientAction(options: UseClientActionOptions = {}) {
 
 			const runAction = (action: string, extra?: Record<string, unknown>) =>
 				dispatchAndWriteback(doctypeSlug, recordId, data, action, extra)
-
-			// Read-only GraphQL escape hatch — no mutation is injected (a raw mutation would
-			// bypass the dispatch and leave HST stale). `query` is the GraphQL transport's
-			// method, not part of the abstract DataClient interface (a non-GraphQL client may
-			// not support it), so probe for it structurally and reject if unsupported.
-			const graphql = {
-				query<T = unknown>(query: string, variables?: Record<string, unknown>): Promise<T> {
-					// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- probing DataClient for the GraphQL transport's `query`, which the abstract interface deliberately does not declare
-					const client = sc.getClient() as unknown as
-						| { query?: <R>(q: string, v?: Record<string, unknown>) => Promise<R> }
-						| undefined
-					if (!client?.query) {
-						return Promise.reject(new Error('The configured data client does not support graphql.query'))
-					}
-					return client.query<T>(query, variables)
-				},
-			}
-
-			const prefillDraft = (target: string, values: Record<string, unknown>) => sc.registry.prefillDraft(target, values)
 
 			await executeClientHandler(clientHandler, {
 				router: resolveRouter(),

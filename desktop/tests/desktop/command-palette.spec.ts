@@ -1,8 +1,9 @@
 import { mount } from '@vue/test-utils'
+import { List } from 'immutable'
 import { afterEach, describe, expect, it, vi } from 'vite-plus/test'
 import { defineComponent, nextTick } from 'vue'
 
-import { Registry, Stonecrop } from '@stonecrop/stonecrop'
+import { Doctype, Registry, Stonecrop } from '@stonecrop/stonecrop'
 
 import Desktop from '../../src/components/Desktop.vue'
 import type { RouteAdapter } from '../../src/types'
@@ -128,8 +129,7 @@ describe('Desktop command search', { tags: ['component'] }, () => {
 		expect(navigateFn).toHaveBeenCalled()
 	})
 
-	// An app that wants a create command in the palette passes `commandSearch`.
-	it('offers no command to create a record', async () => {
+	it('offers no create command of its own', async () => {
 		const registry = new Registry()
 		const stonecrop = new Stonecrop(registry)
 
@@ -164,6 +164,87 @@ describe('Desktop command search', { tags: ['component'] }, () => {
 		const searchFn = actionSet.props('search') as (query: string) => { title: string }[]
 
 		expect(searchFn('').map(command => command.title)).toEqual(['Go Home', 'Toggle Search', 'View Task Records'])
+	})
+
+	it("offers each action a list's doctype declares, and raises it with no record", async () => {
+		const registry = new Registry()
+		const stonecrop = new Stonecrop(registry)
+		const schema = List([{ kind: 'field' as const, fieldname: 'id', label: 'ID', component: 'ATextInput' }])
+		const workflow = {
+			actions: { new: { label: 'New Record', stateless: true, clientHandler: "await router.push('/task/new')" } },
+		}
+		registry.addDoctype(new Doctype('tasks', schema, workflow as any))
+
+		const adapter: RouteAdapter = {
+			getCurrentDoctype: () => 'tasks',
+			getCurrentRecordId: () => '',
+			getCurrentView: () => 'records',
+			navigate: vi.fn(),
+		}
+
+		const wrapper = mount(Desktop, {
+			props: { routeAdapter: adapter },
+			global: {
+				plugins: [makeStonecropPlugin(registry, stonecrop)],
+				stubs: { AForm: true, ActionSet: true, SheetNav: true },
+			},
+		})
+		await nextTick()
+
+		const searchFn = wrapper.findComponent({ name: 'ActionSet' }).props('search') as (
+			query: string
+		) => { title: string; description: string; action: () => void }[]
+		const commands = searchFn('')
+		expect(commands.map(command => [command.title, command.description])).toEqual([
+			['Go Home', 'Navigate to the home page'],
+			['Toggle Search', 'Open/close the search panel'],
+			['View Tasks Records', 'Navigate to tasks list'],
+			['New Record', 'Run on the tasks list'],
+		])
+
+		commands[3].action()
+		expect(wrapper.emitted('action')).toStrictEqual([[{ name: 'new', doctype: 'tasks', data: {} }]])
+	})
+
+	it("offers a host's actions on its list page", async () => {
+		const registry = new Registry()
+		const stonecrop = new Stonecrop(registry)
+		registry.addDoctype(buildDoctype('task', 'draft', { draft: {} }))
+
+		const adapter: RouteAdapter = {
+			getCurrentDoctype: () => 'task',
+			getCurrentRecordId: () => '',
+			getCurrentView: () => 'records',
+			navigate: vi.fn(),
+		}
+		const newTask = vi.fn()
+
+		const wrapper = mount(Desktop, {
+			props: {
+				routeAdapter: adapter,
+				hostActions: [
+					{ type: 'button', label: 'New Record', action: newTask },
+					{ type: 'button', label: 'Archive All', disabled: true, action: vi.fn() },
+					{ type: 'button', label: 'Hidden', show: false, action: vi.fn() },
+					{ type: 'button', label: 'Help', link: '/help' },
+					{ type: 'dropdown', label: 'More', actions: [{ label: 'Export', action: vi.fn() }] },
+				],
+			},
+			global: {
+				plugins: [makeStonecropPlugin(registry, stonecrop)],
+				stubs: { AForm: true, ActionSet: true, SheetNav: true },
+			},
+		})
+		await nextTick()
+
+		const searchFn = wrapper.findComponent({ name: 'ActionSet' }).props('search') as (
+			query: string
+		) => { title: string; description: string; action: () => void }[]
+		const listCommands = searchFn('').filter(command => command.description === 'Run on the task list')
+		expect(listCommands.map(command => command.title)).toEqual(['New Record', 'Export'])
+
+		listCommands[0].action()
+		expect(newTask).toHaveBeenCalledOnce()
 	})
 
 	it("lists a host's commands in place of Desktop's own", async () => {

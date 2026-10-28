@@ -27,12 +27,14 @@ const { run } = useClientAction()
 
 const availableDoctypes = computed(() => Array.from(doctypeMap.keys()))
 
-// Desktop offers no New of its own, so these lists get the playground's: the only doctypes the docs
-// server can create. Unset on other views, never `[]`, which would hide a record's own actions.
+// A list shows every action its doctype declares, and each doctype here is a record's too, so every list
+// gets the playground's actions instead: New on the only doctypes the docs server can create, none on the
+// rest. Unset on other views, never `[]`, which would hide a record's own actions.
 const creatableDoctypes = new Set(['order', 'user'])
 const hostActions = computed((): ActionElements[] | undefined => {
 	const doctype = routeAdapter.getCurrentDoctype()
-	if (routeAdapter.getCurrentView() !== 'records' || !creatableDoctypes.has(doctype)) return undefined
+	if (routeAdapter.getCurrentView() !== 'records') return undefined
+	if (!creatableDoctypes.has(doctype)) return []
 	return [
 		{
 			type: 'button',

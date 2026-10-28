@@ -181,6 +181,71 @@ describe('useClientAction', { tags: ['unit'] }, () => {
 
 // A host with its own notification system must be able to take the failure surface over. Without
 // this, converging a host onto `useClientAction` newly imposes a blocking alert on its users.
+// A list page has no record, so Desktop raises its actions without a `recordId`.
+describe('useClientAction on a list', { tags: ['unit'] }, () => {
+	const onList = (name: string) => ({ name, doctype: 'user', data: {} })
+
+	it("runs a list action's script, and reads no record and dispatches nothing", async () => {
+		mocks.router = makeRouter()
+		mocks.sc = makeSc({ actions: { new: { clientHandler: "await router.push('/user/new')" } } })
+		const onError = vi.fn()
+
+		await useClientAction({ onError }).run(onList('new'))
+
+		expect(mocks.router.push).toHaveBeenCalledWith('/user/new')
+		expect(onError).not.toHaveBeenCalled()
+		expect(mocks.sc.getRecordById).not.toHaveBeenCalled()
+		expect(mocks.sc.dispatchAction).not.toHaveBeenCalled()
+	})
+
+	it('hands a list script prefillDraft and graphql', async () => {
+		mocks.router = makeRouter()
+		const query = vi.fn(async () => ({ users: [] }))
+		mocks.sc = makeSc({
+			actions: { copy: { clientHandler: "await graphql.query('{ users }'); prefillDraft('user', { title: 'x' })" } },
+			client: { query },
+		})
+		mocks.sc.registry.prefillDraft = vi.fn()
+		const onError = vi.fn()
+
+		await useClientAction({ onError }).run(onList('copy'))
+
+		expect(onError).not.toHaveBeenCalled()
+		expect(query).toHaveBeenCalledWith('{ users }', undefined)
+		expect(mocks.sc.registry.prefillDraft).toHaveBeenCalledWith('user', { title: 'x' })
+	})
+
+	it.each([
+		['record', 'return record.id'],
+		['runAction', "await runAction('save')"],
+	])('gives a list script no %s', async (missing, script) => {
+		mocks.router = makeRouter()
+		mocks.sc = makeSc({ actions: { act: { clientHandler: script } } })
+		const onError = vi.fn()
+
+		await useClientAction({ onError }).run(onList('act'))
+
+		expect(onError).toHaveBeenCalledOnce()
+		expect(onError.mock.calls[0][0].message).toBe(`${missing} is not defined`)
+		expect(mocks.sc.dispatchAction).not.toHaveBeenCalled()
+	})
+
+	it('refuses a list action with no script, and sends nothing to the server', async () => {
+		mocks.router = makeRouter()
+		mocks.sc = makeSc({ actions: { export: {} } })
+		const onError = vi.fn()
+
+		await useClientAction({ onError }).run(onList('export'))
+
+		expect(onError).toHaveBeenCalledWith({
+			message: 'Action "export" has no script, so it cannot run on a list.',
+			action: 'export',
+			doctype: 'user',
+		})
+		expect(mocks.sc.dispatchAction).not.toHaveBeenCalled()
+	})
+})
+
 describe('useClientAction onError', { tags: ['unit'] }, () => {
 	it('routes a refused dispatch to onError with the action context, and replaces the default', async () => {
 		const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})

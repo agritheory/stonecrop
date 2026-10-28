@@ -284,6 +284,29 @@ describe('Doctype class', { tags: ['unit'] }, () => {
 		})
 	})
 
+	describe('getActions', () => {
+		it('returns every declared action in declaration order, whatever its kind or states', () => {
+			const workflow: WorkflowMeta = {
+				states: ['draft', 'submitted'],
+				actions: {
+					submit: { label: 'Submit', allowedStates: ['draft'], nextState: 'submitted' },
+					save: { label: 'Save', selfTransition: true },
+					new: { label: 'New Record', stateless: true, clientHandler: "await router.push('/doc/new')" },
+				},
+			}
+			const doctype = new Doctype('Doc', mockSchema, workflow)
+
+			expect(doctype.getActions()).toEqual([{ name: 'submit' }, { name: 'save' }, { name: 'new' }])
+		})
+
+		it('returns an empty array for an XState workflow, and for none', () => {
+			const xstate = { id: 'w', initial: 'draft', states: { draft: { on: { SUBMIT: 'submitted' } }, submitted: {} } }
+
+			expect(new Doctype('Doc', mockSchema, xstate as any).getActions()).toEqual([])
+			expect(new Doctype('Doc', mockSchema, undefined as any).getActions()).toEqual([])
+		})
+	})
+
 	describe('getAvailableCommands', () => {
 		const workflowWithCommands: WorkflowMeta = {
 			states: ['draft', 'submitted'],

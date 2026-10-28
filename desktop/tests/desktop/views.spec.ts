@@ -53,7 +53,7 @@ describe('Desktop views', { tags: ['component'] }, () => {
 	})
 
 	describe('records view', () => {
-		it('shows no actions on a list the host gives none', async () => {
+		it('shows no actions on a list whose doctype declares none', async () => {
 			const registry = new Registry()
 			const stonecrop = new Stonecrop(registry)
 
@@ -88,8 +88,82 @@ describe('Desktop views', { tags: ['component'] }, () => {
 			expect(wrapper.findComponent({ name: 'ActionSet' }).props('elements')).toEqual([])
 		})
 
-		// How an app offers New: on its list views only, so its record views keep the actions Desktop
-		// builds from the doctype.
+		it("shows each action a list's doctype declares as its own button, and raises it with no record", async () => {
+			const registry = new Registry()
+			const stonecrop = new Stonecrop(registry)
+
+			const schema = List([{ kind: 'field' as const, fieldname: 'id', label: 'ID', component: 'ATextInput' }])
+			const workflow = {
+				actions: {
+					new: { label: 'New Record', stateless: true, clientHandler: "await router.push('/task/new')" },
+					export: { label: 'Export', stateless: true, clientHandler: 'return true' },
+				},
+			}
+			registry.addDoctype(new Doctype('tasks', schema, workflow as any))
+			stonecrop.addRecord('tasks', 'r-1', { id: 'r-1' })
+
+			const adapter: RouteAdapter = {
+				getCurrentDoctype: () => 'tasks',
+				getCurrentRecordId: () => '',
+				getCurrentView: () => 'records',
+				navigate: vi.fn(),
+			}
+
+			const wrapper = mount(Desktop, {
+				props: { routeAdapter: adapter },
+				global: {
+					plugins: [makeStonecropPlugin(registry, stonecrop)],
+					stubs: { AForm: true, SheetNav: true, CommandPalette: true },
+				},
+			})
+
+			await nextTick()
+
+			const elements = wrapper.findComponent({ name: 'ActionSet' }).props('elements') as {
+				type: string
+				label: string
+				action: () => void
+			}[]
+			expect(elements.map(element => [element.type, element.label])).toEqual([
+				['button', 'New Record'],
+				['button', 'Export'],
+			])
+
+			elements[0].action()
+			expect(wrapper.emitted('action')).toStrictEqual([[{ name: 'new', doctype: 'tasks', data: {} }]])
+		})
+
+		it("shows a host's actions on a list in place of those its doctype declares", async () => {
+			const registry = new Registry()
+			const stonecrop = new Stonecrop(registry)
+
+			const schema = List([{ kind: 'field' as const, fieldname: 'id', label: 'ID', component: 'ATextInput' }])
+			const workflow = { actions: { snooze: { label: 'Snooze', stateless: true } } }
+			registry.addDoctype(new Doctype('task', schema, workflow as any))
+
+			const adapter: RouteAdapter = {
+				getCurrentDoctype: () => 'task',
+				getCurrentRecordId: () => '',
+				getCurrentView: () => 'records',
+				navigate: vi.fn(),
+			}
+
+			const wrapper = mount(Desktop, {
+				props: { routeAdapter: adapter, hostActions: [{ type: 'button', label: 'New Record', action: vi.fn() }] },
+				global: {
+					plugins: [makeStonecropPlugin(registry, stonecrop)],
+					stubs: { AForm: true, SheetNav: true, CommandPalette: true },
+				},
+			})
+
+			await nextTick()
+
+			const elements = wrapper.findComponent({ name: 'ActionSet' }).props('elements') as { label: string }[]
+			expect(elements.map(element => element.label)).toEqual(['New Record'])
+		})
+
+		// How an app whose list and record share a doctype offers New: on its list views only, which keeps
+		// the record's actions off its lists and leaves its record views the actions Desktop builds.
 		it("shows a host's actions on its list and Desktop's own on its record", async () => {
 			const registry = new Registry()
 			const stonecrop = new Stonecrop(registry)
