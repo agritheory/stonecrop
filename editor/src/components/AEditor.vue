@@ -165,9 +165,10 @@ onBeforeUnmount(() => {
 </script>
 
 <style>
+/* Editor.js hangs the + and drag handle left of the text (right: 100%); the left padding keeps them inside the outline. */
 .a-editor__holder {
 	min-height: 6rem;
-	padding: 0.5rem 0.75rem;
+	padding: 0.5rem 0.75rem 0.5rem 4rem;
 }
 
 .a-editor__holder .codex-editor__redactor {

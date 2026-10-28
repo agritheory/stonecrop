@@ -15,7 +15,7 @@ import { AEditor, install } from '@stonecrop/editor'
 
 ## In a form
 
-Switch the mode to see the field mount Editor.js (`edit`) or render the saved blocks as static HTML (`read`, `display`). Type in **Notes** and watch the stored value change. **Summary** has never been edited, so it holds `null`, and clicking into it without typing leaves it `null`.
+Switch the mode to see the field mount Editor.js (`edit`) or render the saved blocks as static HTML (`read`, `display`). Type in **Notes** and watch the stored value change.
 
 ::demo-panel
 :::client-only

@@ -8,14 +8,9 @@ import type { ResolvedField } from '@stonecrop/aform'
 const modes = ['edit', 'read', 'display'] as const
 const mode = ref<(typeof modes)[number]>('edit')
 
-const schema = ref<ResolvedField[]>([
-	{ fieldname: 'title', kind: 'field', component: 'ATextInput', label: 'Title' },
-	{ fieldname: 'notes', kind: 'field', component: 'AEditor', label: 'Notes' },
-	{ fieldname: 'summary', kind: 'field', component: 'AEditor', label: 'Summary (never edited)' },
-])
+const schema = ref<ResolvedField[]>([{ fieldname: 'notes', kind: 'field', component: 'AEditor', label: 'Notes' }])
 
 const data = ref<Record<string, unknown>>({
-	title: 'Delivery instructions',
 	notes: {
 		time: 1735000000000,
 		version: '2.31.7',
@@ -40,14 +35,13 @@ const data = ref<Record<string, unknown>>({
 			{ type: 'quote', data: { text: 'Handle with care', caption: 'Warehouse', alignment: 'left' } },
 		],
 	},
-	summary: null,
 })
 
-const stored = computed(() => JSON.stringify({ notes: data.value.notes, summary: data.value.summary }, null, 2))
+const stored = computed(() => JSON.stringify({ notes: data.value.notes }, null, 2))
 </script>
 
 <template>
-	<div class="stonecrop-demo">
+	<div class="stonecrop-demo editor-demo">
 		<div class="editor-demo__modes" role="radiogroup" aria-label="Form mode">
 			<label v-for="m in modes" :key="m">
 				<input v-model="mode" type="radio" name="editor-demo-mode" :value="m" />
@@ -75,6 +69,12 @@ const stored = computed(() => JSON.stringify({ notes: data.value.notes, summary:
 	align-items: center;
 	gap: 0.35rem;
 	cursor: pointer;
+}
+
+/* AForm caps each field at one field width; Notes spans two, gap included. */
+.editor-demo :deep(.a-editor) {
+	flex-basis: 100%;
+	max-width: calc(2 * var(--sc-form-field-max-width) + 1rem);
 }
 
 .editor-demo__stored {
