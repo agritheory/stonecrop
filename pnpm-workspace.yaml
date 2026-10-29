@@ -1,7 +1,6 @@
 packages:
   - aform
   - atable
-  - beam
   - casl_middleware
   - code_editor
   - desktop

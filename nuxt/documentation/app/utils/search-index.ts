@@ -57,7 +57,6 @@ export const searchIndex: SearchEntry[] = [
 		description: 'Advanced table with tree and Gantt views',
 		url: '/reference/atable',
 	},
-	{ title: 'Beam API Reference', description: 'Mobile-first scanning and MQTT', url: '/reference/beam' },
 	{
 		title: 'Desktop API Reference',
 		description: 'Desktop navigation and command palette',

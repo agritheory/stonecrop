@@ -149,13 +149,6 @@ export default defineConfig({
 				},
 			},
 			{
-				files: ['beam/**'],
-				rules: {
-					'no-underscore-dangle': ['error', { allow: sharedUnderscoreNames }],
-					'typescript/consistent-return': 'error',
-				},
-			},
-			{
 				files: ['casl_middleware/**'],
 				rules: {
 					'no-underscore-dangle': ['error', { allow: sharedUnderscoreNames }],
