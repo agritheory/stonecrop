@@ -1,12 +1,12 @@
 name: Nuxt Tests
 
+# No paths filter: one on nuxt/** never saw a change to a package nuxt depends on. A pull request
+# asks affected-packages.mjs instead, and every push to development runs, as coverage-baseline does.
 on:
   push:
     branches:
       - development
-    paths: [nuxt/**]
   pull_request:
-    paths: [nuxt/**]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -16,8 +16,44 @@ env:
   VP_GIT_HOOKS: 0
 
 jobs:
+  changes:
+    name: Detect Changes
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    outputs:
+      affected: ${{ steps.affected.outputs.affected }}
+
+    steps:
+      # The merge commit and its first parent, the base branch, as in pr.yml.
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 2
+
+      - name: Install Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Check Whether nuxt Is Affected
+        id: affected
+        run: |
+          set -o pipefail
+          affected=$(node tools/scripts/affected-packages.mjs HEAD^1 | jq 'index("nuxt") != null')
+          echo "affected=${affected}" >> "$GITHUB_OUTPUT"
+
   test:
     name: nuxt
+    needs: [changes]
+    # `!cancelled()`, or the push run, where `changes` is skipped, would skip this too.
+    if: ${{ !cancelled() && (github.event_name == 'push' || needs.changes.outputs.affected == 'true') }}
     runs-on: ubuntu-latest
 
     permissions:

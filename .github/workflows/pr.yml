@@ -24,69 +24,38 @@ jobs:
     runs-on: ubuntu-latest
 
     permissions:
-      pull-requests: read
+      contents: read
 
     outputs:
-      packages: ${{ steps.filter.outputs.changes }}
+      packages: ${{ steps.affected.outputs.packages }}
 
     steps:
-      # Every entry carries the two shared trees, or a PR touching only those selects no package.
-      # Narrower than `tools/**`: the reports under `tools/api-reports` change on any build.
-      - uses: dorny/paths-filter@v4
-        id: filter
+      # Two commits: a pull_request run checks out the merge commit, whose first parent is the base
+      # branch, so HEAD^1 is exactly what the pull request changes.
+      - name: Checkout
+        uses: actions/checkout@v6
         with:
-          filters: |
-            aform:
-              - 'aform/**'
-              - 'themes/**'
-              - 'tools/vite/**'
-              - 'tools/test-support/**'
-            atable:
-              - 'atable/**'
-              - 'themes/**'
-              - 'tools/vite/**'
-              - 'tools/test-support/**'
-            casl_middleware:
-              - 'casl_middleware/**'
-              - 'tools/vite/**'
-              - 'tools/test-support/**'
-            code_editor:
-              - 'code_editor/**'
-              - 'tools/vite/**'
-              - 'tools/test-support/**'
-            desktop:
-              - 'desktop/**'
-              - 'themes/**'
-              - 'tools/vite/**'
-              - 'tools/test-support/**'
-            graphql_client:
-              - 'graphql_client/**'
-              - 'tools/vite/**'
-              - 'tools/test-support/**'
-            graphql_middleware:
-              - 'graphql_middleware/**'
-              - 'tools/vite/**'
-              - 'tools/test-support/**'
-            node_editor:
-              - 'node_editor/**'
-              - 'tools/vite/**'
-              - 'tools/test-support/**'
-            rockfoil:
-              - 'rockfoil/**'
-              - 'tools/vite/**'
-              - 'tools/test-support/**'
-            schema:
-              - 'schema/**'
-              - 'tools/vite/**'
-              - 'tools/test-support/**'
-            stonecrop:
-              - 'stonecrop/**'
-              - 'tools/vite/**'
-              - 'tools/test-support/**'
-            utilities:
-              - 'utilities/**'
-              - 'tools/vite/**'
-              - 'tools/test-support/**'
+          fetch-depth: 2
+
+      - name: Install Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      # Each package whose files changed, each package depending on one of them, and every package
+      # when a tree they all read changed. nuxt and nuxt_grafserv ask the same question in their
+      # own workflows.
+      - name: Select Packages
+        id: affected
+        run: |
+          set -o pipefail
+          packages=$(node tools/scripts/affected-packages.mjs HEAD^1 --with-script test:coverage |
+            jq -c 'map(select(. != "nuxt" and . != "nuxt_grafserv"))')
+          echo "packages=${packages}" >> "$GITHUB_OUTPUT"
+          echo "::notice::testing ${packages}"
 
   pr-checks:
     name: Lint & Change Verify
