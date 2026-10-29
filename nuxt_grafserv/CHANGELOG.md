@@ -1,5 +1,14 @@
 # Change Log - @stonecrop/nuxt-grafserv
 
+## 0.56.2
+
+### Patch Changes
+
+- 9a372b4: Build the Nuxt modules in `prepublishOnly`, as every other package does, rather than on every `pack`, and drop nuxt's deprecated `prepublish` hook, which built it a second time on publish. The published files are unchanged.
+- @stonecrop/casl-middleware@0.56.2
+  - @stonecrop/graphql-middleware@0.56.2
+  - @stonecrop/rockfoil@0.56.2
+
 ## 0.56.1
 
 ### Patch Changes

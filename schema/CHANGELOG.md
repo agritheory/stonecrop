@@ -1,5 +1,7 @@
 # Change Log - @stonecrop/schema
 
+## 0.56.2
+
 ## 0.56.1
 
 ## 0.56.0

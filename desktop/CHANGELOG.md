@@ -1,5 +1,14 @@
 # Change Log - @stonecrop/desktop
 
+## 0.56.2
+
+### Patch Changes
+
+- @stonecrop/aform@0.56.2
+  - @stonecrop/schema@0.56.2
+  - @stonecrop/stonecrop@0.56.2
+  - @stonecrop/themes@0.56.2
+
 ## 0.56.1
 
 ### Patch Changes
