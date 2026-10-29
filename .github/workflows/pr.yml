@@ -199,6 +199,10 @@ jobs:
       # node_editor or code_editor and still merge green. Projects opt in by defining a
       # `test:types` script, exactly as `lint` works. Runs after Build because vue-tsc needs
       # dependencies' .d.ts files, and both nuxt builds prepare every app, so .nuxt exists by now.
+      #
+      # The root script passes `--parallel`. Every check is `--noEmit` and writes only its own
+      # tsbuildinfo, so none waits on another, and ordering them by the dependency graph made aform,
+      # stonecrop, desktop and nuxt run one after another with free CPUs beside them.
       - name: Typecheck
         run: pnpm run test:types
 

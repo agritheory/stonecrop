@@ -17,6 +17,12 @@ import type { UserConfig } from 'vite-plus'
  * ambient `*.vue` shim and emits no declaration for it, so every component shipped as
  * `ComponentOptions` — `any` to a consumer, with the rollup importing `.vue` paths absent from the
  * tarball.
+ *
+ * Scratch output — tsbuildinfo, api-extractor's report and doc model — goes under each package's
+ * `node_modules/.temp`, never a `temp/` beside the sources. Compiling an SFC makes TypeScript expand
+ * the tsconfig `include`, which lists the package root, and Vite+ fingerprints that listing: a folder
+ * the build creates there invalidated `vp build` on the next run, so on a fresh checkout the second
+ * build — a release's prepublishOnly — always missed.
  */
 /**
  * The Nuxt apps in a module package, derived from the presence of a nuxt.config.ts.
