@@ -342,6 +342,28 @@ describe('Doctype Validation', { tags: ['unit'] }, () => {
 			expect(action.selfTransition).toBe(true)
 		})
 
+		it('should reject a stateless action that also declares nextState', () => {
+			const doctype = {
+				name: 'Order',
+				fields: [{ kind: 'field', fieldname: 'id', component: 'ATextInput' }],
+				workflow: {
+					states: ['Draft', 'Submitted'],
+					actions: {
+						submit: { label: 'Submit', stateless: true, nextState: 'Submitted', allowedStates: ['Draft'] },
+					},
+				},
+			}
+			const result = validateDoctype(doctype)
+
+			expect(result.success).toBe(false)
+			expect(result.errors.some(error => error.message.includes('stateless'))).toBe(true)
+		})
+
+		it('should accept a stateless self-transition', () => {
+			const action = ActionDefinition.safeParse({ label: 'Save', stateless: true, selfTransition: true })
+			expect(action.success).toBe(true)
+		})
+
 		it('should reject doctype with invalid workflow action', () => {
 			const doctype = {
 				name: 'Order',

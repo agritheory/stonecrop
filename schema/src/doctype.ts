@@ -187,6 +187,19 @@ export const ActionDefinition = z
 		title: 'ActionDefinition',
 		description: 'Action definition within a workflow',
 	})
+	.superRefine((action, context) => {
+		// The browser reads `stateless` and runs the action as a command that changes nothing; the
+		// server reads `nextState` and moves the record. Declaring both leaves the two sides doing
+		// different things, so refuse it here. `stateless` with `selfTransition` stays legal: it moves
+		// no state, and is the starter template's Save.
+		if (action.stateless === true && action.nextState !== undefined) {
+			context.addIssue({
+				code: 'custom',
+				path: ['nextState'],
+				message: `action "${action.label}" is stateless and also declares nextState "${action.nextState}"; a stateless action never moves the record, so drop one of them`,
+			})
+		}
+	})
 
 /**
  * Action definition type inferred from Zod schema
