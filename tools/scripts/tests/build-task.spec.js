@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
@@ -28,6 +29,32 @@ describe('the Nuxt module build tasks', { tags: ['unit'] }, () => {
 		],
 	])('build %s without a stub, preparing each app first', async (packageDir, command) => {
 		expect(await buildCommand(packageDir)).toBe(command)
+	})
+})
+
+// `build` is what a release runs, so it has to make the `types` each package publishes, and only
+// a `tsc` package publishes api-extractor's rollup. Leaving api-extractor to `reports` there would
+// ship no types; keeping it in `build` for a `vue-tsc` package only slows every release.
+describe('api-extractor in the build', { tags: ['unit'] }, () => {
+	const libraries = [
+		'aform',
+		'atable',
+		'casl_middleware',
+		'code_editor',
+		'desktop',
+		'graphql_client',
+		'graphql_middleware',
+		'node_editor',
+		'rockfoil',
+		'schema',
+		'stonecrop',
+		'utilities',
+	]
+
+	it.each(libraries)('runs in %s exactly when its published types are the rollup', async packageDir => {
+		const { types } = JSON.parse(readFileSync(join(rootDir, packageDir, 'package.json'), 'utf8'))
+		const publishesRollup = !types.startsWith('./dist/src/')
+		expect((await buildCommand(packageDir)).includes('run-api-extractor.mjs')).toBe(publishesRollup)
 	})
 })
 

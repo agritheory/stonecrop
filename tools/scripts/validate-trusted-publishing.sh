@@ -104,6 +104,28 @@ package_is_public() {
 		jq -r '.public // false')" = "true" ]
 }
 
+# Prints one package's row, and fails when the package would not authenticate or would publish
+# without provenance.
+check_package() {
+	local pkg="$1"
+	exchange_token "${pkg}"
+
+	if [ -z "${MINTED}" ]; then
+		printf '  %-34s %-8s %s\n' "${pkg}" "FAIL" "-"
+		echo "      ${FAILURE}"
+		return 1
+	fi
+	echo "::add-mask::${MINTED}"
+
+	if package_is_public "${pkg}" "${MINTED}"; then
+		printf '  %-34s %-8s %s\n' "${pkg}" "ok" "ok"
+	else
+		printf '  %-34s %-8s %s\n' "${pkg}" "ok" "FAIL"
+		echo "      package is not public, so it would publish without provenance"
+		return 1
+	fi
+}
+
 main() {
 	mint_id_token
 	echo "::add-mask::${ID_TOKEN}"
@@ -116,29 +138,34 @@ main() {
 		die "Repository visibility is '${repo_visibility}', so npm will not attach provenance to any package."
 	fi
 
-	local failed=0 checked=0 pkg
+	local failed=0 checked=0 pkg index results
+	local -a pids=() names=()
+	results=$(mktemp -d)
 	printf '  %-34s %-8s %s\n' "PACKAGE" "AUTH" "PROVENANCE"
 
+	# Every package at once, each in a subshell of its own, so MINTED and FAILURE stay per package.
+	# One after another, the gate took as long as two round trips per package.
 	while read -r pkg; do
+		check_package "${pkg}" >"${results}/${checked}" 2>&1 &
+		pids+=("$!")
+		names+=("${pkg}")
 		checked=$((checked + 1))
-		exchange_token "${pkg}"
-
-		if [ -z "${MINTED}" ]; then
-			printf '  %-34s %-8s %s\n' "${pkg}" "FAIL" "-"
-			echo "      ${FAILURE}"
-			failed=1
-			continue
-		fi
-		echo "::add-mask::${MINTED}"
-
-		if package_is_public "${pkg}" "${MINTED}"; then
-			printf '  %-34s %-8s %s\n' "${pkg}" "ok" "ok"
-		else
-			printf '  %-34s %-8s %s\n' "${pkg}" "ok" "FAIL"
-			echo "      package is not public, so it would publish without provenance"
-			failed=1
-		fi
 	done < <(list_publishable_packages)
+
+	# In listing order, whatever order the checks finished in.
+	for index in "${!pids[@]}"; do
+		if ! wait "${pids[${index}]}"; then
+			failed=1
+		fi
+		cat "${results}/${index}"
+		# A check that died before printing its row would otherwise fail without naming its package.
+		if [ ! -s "${results}/${index}" ]; then
+			printf '  %-34s %-8s %s\n' "${names[${index}]}" "FAIL" "-"
+			echo "      the check stopped before reporting"
+			failed=1
+		fi
+	done
+	rm -rf "${results}"
 
 	# A process substitution's failure never reaches "set -e", so a producer that lists nothing runs
 	# the loop body zero times and leaves every counter clean. Without this the gate announces that
