@@ -1,5 +1,23 @@
 # Change Log - @stonecrop/nuxt
 
+## 0.56.1
+
+### Patch Changes
+
+- a658572: Remove Beam from the monorepo and docs site; components now live in the consuming project.
+- @stonecrop/aform@0.56.1
+  - @stonecrop/atable@0.56.1
+  - @stonecrop/casl-middleware@0.56.1
+  - @stonecrop/code-editor@0.56.1
+  - @stonecrop/desktop@0.56.1
+  - @stonecrop/graphql-client@0.56.1
+  - @stonecrop/graphql-middleware@0.56.1
+  - @stonecrop/node-editor@0.56.1
+  - @stonecrop/nuxt-grafserv@0.56.1
+  - @stonecrop/schema@0.56.1
+  - @stonecrop/stonecrop@0.56.1
+  - @stonecrop/themes@0.56.1
+
 ## 0.56.0
 
 ### Patch Changes
