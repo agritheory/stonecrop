@@ -1,5 +1,44 @@
 # Change Log - @stonecrop/nuxt
 
+## 0.56.0
+
+### Patch Changes
+
+- e435204: BREAKING: Desktop no longer adds a New Record button to lists or Create New to the command palette; an app offers New itself, declared on a list doctype or passed as `hostActions`.
+- Updated dependencies [e331ffe]
+- Updated dependencies [e331ffe]
+- Updated dependencies [e435204]
+  - @stonecrop/stonecrop@0.56.0
+  - @stonecrop/desktop@0.56.0
+  - @stonecrop/aform@0.56.0
+  - @stonecrop/atable@0.56.0
+  - @stonecrop/casl-middleware@0.56.0
+  - @stonecrop/code-editor@0.56.0
+  - @stonecrop/graphql-client@0.56.0
+  - @stonecrop/graphql-middleware@0.56.0
+  - @stonecrop/node-editor@0.56.0
+  - @stonecrop/nuxt-grafserv@0.56.0
+  - @stonecrop/schema@0.56.0
+  - @stonecrop/themes@0.56.0
+
+## 0.55.2
+
+### Patch Changes
+
+- Updated dependencies [8fbae19]
+  - @stonecrop/stonecrop@0.55.2
+  - @stonecrop/desktop@0.55.2
+  - @stonecrop/aform@0.55.2
+  - @stonecrop/atable@0.55.2
+  - @stonecrop/casl-middleware@0.55.2
+  - @stonecrop/code-editor@0.55.2
+  - @stonecrop/graphql-client@0.55.2
+  - @stonecrop/graphql-middleware@0.55.2
+  - @stonecrop/node-editor@0.55.2
+  - @stonecrop/nuxt-grafserv@0.55.2
+  - @stonecrop/schema@0.55.2
+  - @stonecrop/themes@0.55.2
+
 ## 0.55.1
 
 ### Patch Changes

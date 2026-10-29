@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/nuxt",
-	"version": "0.55.1",
+	"version": "0.56.0",
 	"description": "Nuxt module for Stonecrop",
 	"keywords": [
 		"nuxt",
@@ -52,6 +52,7 @@
 		"./package.json": "./package.json"
 	},
 	"scripts": {
+		"check:documentation": "node scripts/check-documentation-content.mjs",
 		"dev": "node --run dev:documentation",
 		"dev:build": "nuxi build documentation",
 		"dev:documentation": "node --run dev:prepare:documentation && nuxi dev documentation --host",

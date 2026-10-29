@@ -513,7 +513,7 @@ export interface ActionFailure {
   cause?: unknown;
   doctype: string;
   message: string;
-  recordId: string;
+  recordId?: string;
 }
 ```
 
@@ -525,7 +525,7 @@ export interface ActionFailure {
 | cause? | `unknown` | The thrown value, present only when the failure was a throw rather than a refused dispatch. |
 | doctype | `string` | Slug of the doctype the action was raised on. |
 | message | `string` | Human-readable reason — the server's own message where there is one. |
-| recordId | `string` | Record the action was raised against; the `new` route segment for an unsaved record. |
+| recordId? | `string` | Record the action was raised against; the `new` route segment for an unsaved record; absent on a list. |
 
 ### ActionRegistry
 
@@ -1171,7 +1171,7 @@ Defined here rather than in `@stonecrop/desktop` because the shell that *emits* 
 export type ActionEventPayload = {
     name: string;
     doctype: string;
-    recordId: string;
+    recordId?: string;
     data: Record<string, any>;
 };
 ```
@@ -1618,6 +1618,16 @@ getActionMeta(actionName: string): {
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | actionName | `string` | The action name to get metadata for |
+
+#### getActions
+
+Returns every action this doctype's workflow declares, in declaration order, whatever its kind or state. A list shows these, since a list has no record whose state could narrow them. An XState workflow declares none.
+
+```typescript
+getActions(): Array<{
+        name: string;
+    }>
+```
 
 #### getAvailableCommands
 

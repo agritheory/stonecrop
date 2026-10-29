@@ -56,7 +56,7 @@ import { Desktop } from '@stonecrop/desktop'
 | availableDoctypes | `string[] \| undefined` | no | `[]` |  |
 | routeAdapter | `RouteAdapter \| undefined` | no |  | Pluggable router adapter. When provided, Desktop uses these functions for all routing instead of reaching into the registry's internal Vue Router instance. Nuxt hosts (or any host with custom route conventions) should supply this. |
 | actionSetSlots | `ActionSetSlot[] \| undefined` | no |  | Host drawer slots, each shown as a tile in the ActionSet column. |
-| hostActions | `ActionElements[] \| undefined` | no |  | When provided, the Actions drawer lists exactly these, in place of the actions Desktop derives from the doctype. |
+| hostActions | `ActionElements[] \| undefined` | no |  | When provided, the Actions drawer lists exactly these, in place of the actions Desktop derives from the doctype; `[]` lists none. A list shows every action its doctype declares, so an app whose list and record share a doctype passes its list's actions (New, say) on list views, and leaves this unset on others. |
 | breadcrumbs | `{ title: string; to: string; }[] \| undefined` | no |  | When provided, replaces Desktop's default doctype-navigation breadcrumbs in SheetNav. |
 | commandSearch | `((query: string) => CommandSearchResult[]) \| undefined` | no |  | When provided, replaces Desktop's built-in command palette search (e.g. documentation site pages). |
 | commandSearchPlaceholder | `string \| undefined` | no | `"Type a command or search..."` |  |

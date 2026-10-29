@@ -1,5 +1,26 @@
 # Change Log - @stonecrop/stonecrop
 
+## 0.56.0
+
+### Minor Changes
+
+- e331ffe: `useClientAction` runs an action raised with no record, as a list's is, only through its `clientHandler`, which gets no `record` or `runAction`, so `ActionEventPayload.recordId` is now optional; `Doctype.getActions()` lists every action a workflow declares.
+
+### Patch Changes
+
+- @stonecrop/aform@0.56.0
+  - @stonecrop/atable@0.56.0
+  - @stonecrop/schema@0.56.0
+
+## 0.55.2
+
+### Patch Changes
+
+- 8fbae19: Reading, writing or removing a record with an empty ID, or one holding a dot, now throws instead of reaching every record of the doctype or part of another record.
+- @stonecrop/aform@0.55.2
+  - @stonecrop/atable@0.55.2
+  - @stonecrop/schema@0.55.2
+
 ## 0.55.1
 
 ### Patch Changes

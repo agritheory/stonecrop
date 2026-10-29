@@ -1,6 +1,10 @@
 <template>
 	<ClientOnly>
-		<Desktop :available-doctypes="availableDoctypes" :route-adapter="routeAdapter" @action="run" />
+		<Desktop
+			:available-doctypes="availableDoctypes"
+			:route-adapter="routeAdapter"
+			:host-actions="hostActions"
+			@action="run" />
 		<template #fallback>
 			<div class="sc-loading">
 				<p>Loading...</p>
@@ -10,7 +14,8 @@
 </template>
 
 <script setup lang="ts">
-import { Desktop } from '@stonecrop/desktop'
+import { Desktop, type ActionElements } from '@stonecrop/desktop'
+import { DRAFT_RECORD_ID } from '@stonecrop/stonecrop'
 
 import { useRouteAdapter } from '~/composables/useRouteAdapter'
 import { doctypeMap } from '~/composables/useDoctypes'
@@ -28,6 +33,21 @@ const { run } = useClientAction()
 // declared identity. A handler here would only race that fetch with a second copy of the same rule,
 // which is how a hardcoded `record.id` once dropped every row of a natural-keyed doctype.
 const availableDoctypes = computed(() => Array.from(doctypeMap.keys()))
+
+// A list shows every action its doctype declares, and task and project are records' doctypes too, so a
+// list gets this app's New instead, which keeps Save and the rest off it. Unset on other views, never
+// `[]`, which would hide a record's own actions.
+const hostActions = computed((): ActionElements[] | undefined => {
+	if (routeAdapter.getCurrentView() !== 'records') return undefined
+	const doctype = routeAdapter.getCurrentDoctype()
+	return [
+		{
+			type: 'button',
+			label: 'New Record',
+			action: () => void routeAdapter.navigate({ view: 'record', doctype, recordId: DRAFT_RECORD_ID }),
+		},
+	]
+})
 </script>
 
 <style>
