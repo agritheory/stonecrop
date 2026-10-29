@@ -19,6 +19,7 @@ const CATEGORY_FILTER: Record<ComponentCategory, Exclude<ResolvedFilterType, 'co
 	quantity: 'number',
 	currency: 'number',
 	semver: 'text',
+	richtext: 'text',
 }
 
 /**

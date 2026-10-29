@@ -74,6 +74,11 @@ export const searchIndex: SearchEntry[] = [
 		url: '/reference/code-editor',
 	},
 	{
+		title: 'Editor API Reference',
+		description: 'Editor.js block editor',
+		url: '/reference/editor',
+	},
+	{
 		title: 'Schema API Reference',
 		description: 'Doctype schema definitions and validation',
 		url: '/reference/schema',
@@ -274,6 +279,11 @@ export const searchIndex: SearchEntry[] = [
 		title: 'Code Editor',
 		description: 'A Monaco-based code editor with language, theming, and read-only support',
 		url: '/components/code-editor',
+	},
+	{
+		title: 'Editor',
+		description: 'An Editor.js block editor for rich-text fields, rendered by AForm and summarised in ATable',
+		url: '/components/editor',
 	},
 	{
 		title: 'Node Editor',

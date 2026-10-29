@@ -76,6 +76,7 @@
 		"@stonecrop/casl-middleware": "workspace:*",
 		"@stonecrop/code-editor": "workspace:*",
 		"@stonecrop/desktop": "workspace:*",
+		"@stonecrop/editor": "workspace:*",
 		"@stonecrop/graphql-client": "workspace:*",
 		"@stonecrop/graphql-middleware": "workspace:*",
 		"@stonecrop/node-editor": "workspace:*",

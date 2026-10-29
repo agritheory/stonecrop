@@ -1611,7 +1611,7 @@ Semantic category for a rendering component.
 **Definition:**
 
 ```typescript
-export type ComponentCategory = 'text' | 'number' | 'boolean' | 'date' | 'datetime' | 'duration' | 'select' | 'code' | 'link' | 'attach' | 'quantity' | 'currency' | 'semver';
+export type ComponentCategory = 'text' | 'number' | 'boolean' | 'date' | 'datetime' | 'duration' | 'select' | 'code' | 'link' | 'attach' | 'quantity' | 'currency' | 'semver' | 'richtext';
 ```
 
 ### CustomFetch

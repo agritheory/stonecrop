@@ -41,6 +41,7 @@ pnpm run test
 - [`@stonecrop/casl-middleware`](./casl_middleware/README.md) — CASL-based authorization middleware
 - [`@stonecrop/code-editor`](./code_editor/CHANGELOG.md) — Code editor component
 - [`@stonecrop/desktop`](./desktop/README.md) — Desktop-specific UI patterns and command palette
+- [`@stonecrop/editor`](./editor/README.md) — Block editor (Editor.js) for rich-text fields
 - [`@stonecrop/graphql-client`](./graphql_client/README.md) — Vue composables for GraphQL data fetching
 - [`@stonecrop/graphql-middleware`](./graphql_middleware/README.md) — GraphQL query/mutation middleware using doctype schemas
 - [`@stonecrop/node-editor`](./node_editor/README.md) — Visual FSM editor with Vue Flow integration

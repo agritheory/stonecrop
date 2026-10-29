@@ -5,7 +5,7 @@ description: Live, interactive documentation for Stonecrop's Vue components.
 
 # Components
 
-Interactive documentation for individual Stonecrop components — live demos alongside their source and API reference. This is a companion to the [API Reference](/reference/), which documents every package's full public surface; pages here go deeper on one component at a time, covering every field component in `@stonecrop/aform`, plus the primary public components of `@stonecrop/atable`, `@stonecrop/desktop`, `@stonecrop/code-editor`, and `@stonecrop/node-editor`.
+Interactive documentation for individual Stonecrop components — live demos alongside their source and API reference. This is a companion to the [API Reference](/reference/), which documents every package's full public surface; pages here go deeper on one component at a time, covering every field component in `@stonecrop/aform`, plus the primary public components of `@stonecrop/atable`, `@stonecrop/desktop`, `@stonecrop/code-editor`, `@stonecrop/editor`, and `@stonecrop/node-editor`.
 
 ## Form
 
@@ -45,4 +45,5 @@ Interactive documentation for individual Stonecrop components — live demos alo
 ## Editors
 
 - [Code Editor](./code-editor) — `ACodeEditor`, a Monaco-based code editor
+- [Editor](./editor) — `AEditor`, an Editor.js block editor for rich-text fields
 - [Node Editor](./node-editor) — `StateEditor`, a visual editor for FSM workflows

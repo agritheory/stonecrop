@@ -63,6 +63,10 @@ jobs:
               - 'themes/**'
               - 'tools/vite/**'
               - 'tools/test-support/**'
+            editor:
+              - 'editor/**'
+              - 'tools/vite/**'
+              - 'tools/test-support/**'
             graphql_client:
               - 'graphql_client/**'
               - 'tools/vite/**'
@@ -200,7 +204,7 @@ jobs:
       # package breakage. `tsc -b` compiles only .ts and `vp build` does not typecheck, so
       # vue-tsc is the only thing that reads a .vue file — meaning a change confined to schema/**
       # could break a <script setup> block or a template binding in desktop, aform, atable,
-      # node_editor, code_editor or beam and still merge green. Projects opt in by defining a
+      # node_editor, code_editor, editor or beam and still merge green. Projects opt in by defining a
       # `test:types` script, exactly as `lint` works. Runs after Build because vue-tsc needs
       # dependencies' .d.ts files, and both nuxt builds prepare every app, so .nuxt exists by now.
       - name: Typecheck
@@ -280,8 +284,10 @@ jobs:
             --jq '.[0].databaseId // empty')
           echo "run-id=${RUN_ID}" >> $GITHUB_OUTPUT
 
+      # A package new in this PR has no baseline on development yet; report without one.
       - name: Download Baseline Coverage
         if: always() && steps.baseline-run.outputs.run-id != ''
+        continue-on-error: true
         uses: actions/download-artifact@v8
         with:
           name: coverage-${{ matrix.package }}-development

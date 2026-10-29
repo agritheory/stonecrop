@@ -65,6 +65,9 @@ export function formatCurrencySymbol(currency: CurrencyLike | undefined): string
 export function formatQuantityCell(value: unknown): string;
 
 // @public
+export function formatRichTextCell(value: unknown): string;
+
+// @public
 export function fromISODate(day: string): Temporal.PlainDate | undefined;
 
 // @public
