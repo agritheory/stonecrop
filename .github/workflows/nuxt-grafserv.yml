@@ -1,10 +1,10 @@
 name: Nuxt Grafserv Tests
 
 on:
+  # Every push, for the reason nuxt.yml gives.
   push:
     branches:
       - development
-    paths: [nuxt_grafserv/**]
   pull_request:
     paths: [nuxt_grafserv/**]
 

@@ -1,10 +1,11 @@
 name: Nuxt Tests
 
 on:
+  # Every push, not only nuxt/**: a change to a package nuxt depends on, or to the lockfile, can
+  # break it, and coverage-baseline does not test it.
   push:
     branches:
       - development
-    paths: [nuxt/**]
   pull_request:
     paths: [nuxt/**]
 
@@ -52,8 +53,12 @@ jobs:
 
       # `{dir}` keeps the traversal suffix that `./dir` drops, so this builds the dependency closure.
       # --fail-if-no-match, or a filter matching nothing exits zero.
+      #
+      # `^...` leaves nuxt itself out. Prepare Playground stubs its dist over whatever a build put
+      # there, and every test fixture imports `src/module`, so its own build was discarded unread.
+      # PR Checks builds the module on every pull request.
       - name: Build
-        run: pnpm exec vp run --filter '{nuxt}...' --fail-if-no-match build
+        run: pnpm exec vp run --filter '{nuxt}^...' --fail-if-no-match build
 
       - name: Prepare Playground
         working-directory: nuxt/

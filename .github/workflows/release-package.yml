@@ -108,10 +108,6 @@ jobs:
         if: steps.changesets.outputs.pending == 'true'
         run: pnpm install --frozen-lockfile
 
-      - name: Build Stonecrop
-        if: steps.changesets.outputs.pending == 'true'
-        run: pnpm run build
-
       # Must run before the version bump: a bad trusted publisher only surfaces
       # mid-publish, after the bump is pushed, leaving lockstep packages depending on
       # siblings that were never published. Publishes nothing.
@@ -125,6 +121,14 @@ jobs:
       - name: Bump Version for Packages
         if: steps.changesets.outputs.pending == 'true'
         run: bash tools/scripts/version-packages.sh
+
+      # After the bump, not before. Each package's prepublishOnly builds it again, and the bump
+      # rewrites every package.json the build cache keys on, so a build ahead of it was thrown away
+      # and repeated one package at a time. Built here, prepublishOnly replays this build instead.
+      # --skip-reports: nothing published reads the API reports or api.md.
+      - name: Build Stonecrop
+        if: steps.changesets.outputs.pending == 'true'
+        run: node tools/scripts/run-build.mjs --skip-reports
 
       # Before the push, not after. A publish that dies partway leaves development untouched,
       # so a re-run versions the same changesets and pnpm skips whatever already landed.
@@ -161,6 +165,20 @@ jobs:
           # Tagged after the push, so every tag names a commit development holds.
           pnpm exec changeset git-tag
           git push --follow-tags origin HEAD:development
+
+      # Seeds the task cache PR Checks restores. Every release rewrites each package.json the cache
+      # keys on, so a pull request opened after one finds nothing older to replay. After the push,
+      # so it never delays a release, and on the tree development now holds, reports included.
+      - name: Warm the PR Checks Build Cache
+        if: steps.changesets.outputs.pending == 'true'
+        run: pnpm run build
+
+      - name: Save the PR Checks Build Cache
+        if: steps.changesets.outputs.pending == 'true'
+        uses: actions/cache/save@v5
+        with:
+          path: node_modules/.vite/task-cache
+          key: vp-tasks-${{ runner.os }}-${{ github.run_id }}
 
   # A rehearsal of publish-npm that stops one step short of the registry. It runs on every
   # open pull request, so the path is exercised before the merge that would publish it:
@@ -208,14 +226,15 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile
 
-      - name: Build Stonecrop
-        run: pnpm run build
-
       - name: Validate Trusted Publishing
         run: bash tools/scripts/validate-trusted-publishing.sh
 
       - name: Bump Version for Packages
         run: bash tools/scripts/version-packages.sh
+
+      # After the bump, as in publish-npm, so the publish below replays this build.
+      - name: Build Stonecrop
+        run: node tools/scripts/run-build.mjs --skip-reports
 
       # Asserts the "fixed" group in .changeset/config.json held. A convention check, not a
       # safety one: pnpm rewrites `workspace:*` to the version a sibling actually carries, so
@@ -239,8 +258,8 @@ jobs:
           git --no-pager diff --stat
 
       # Nothing above this point was committed or pushed, so the bump exists only in the
-      # runner's tree. --dry-run still runs each package's prepublishOnly, which is the
-      # clean-and-rebuild the real publish performs, so this covers everything but the PUT.
+      # runner's tree. --dry-run still runs each package's prepublishOnly, exactly as the real
+      # publish does, so this covers everything but the PUT.
       - name: Publish Packages (Dry Run)
         run: pnpm -r publish --access public --no-git-checks --dry-run
 

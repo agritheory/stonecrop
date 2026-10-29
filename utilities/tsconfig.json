@@ -1,7 +1,7 @@
 {
 	"extends": "../tsconfig.json",
 	"compilerOptions": {
-		"tsBuildInfoFile": "./temp/utilities.tsbuildinfo"
+		"tsBuildInfoFile": "./node_modules/.temp/utilities.tsbuildinfo"
 	},
 	"include": ["src/**/*.ts"]
 }

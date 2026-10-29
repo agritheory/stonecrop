@@ -114,18 +114,29 @@ const requireFromRoot = createRequire(join(rootDir, 'package.json'))
 const viteplusManifest = requireFromRoot.resolve('vite-plus/package.json')
 const vpBin = join(dirname(viteplusManifest), requireFromRoot(viteplusManifest).bin.vp)
 
+// `build` makes what is published, then `reports` the API reports, each `api.md` and the reference
+// tree (tools/vite/build-task.ts). `--skip-reports` stops after `build`, for the release jobs, which
+// ship none of them.
+const skipReports = process.argv.includes('--skip-reports')
+
 // Ahead of the task specifier, because vp appends anything following it to the task's own command:
 // `-r build --no-cache` runs `vp build --no-cache`, which rejects the flag and fails.
-const forwardedFlags = process.argv.slice(2)
+const forwardedFlags = process.argv.slice(2).filter(flag => flag !== '--skip-reports')
 
-const child = spawn(
-	process.execPath,
-	[vpBin, 'run', '--log', 'labeled', '--verbose', ...forwardedFlags, '-r', 'build'],
-	{
-		cwd: rootDir,
-		stdio: ['inherit', 'pipe', 'pipe'],
-	}
-)
+const runTask = task => {
+	inSummary = false
+	const child = spawn(
+		process.execPath,
+		[vpBin, 'run', '--log', 'labeled', '--verbose', ...forwardedFlags, '-r', task],
+		{
+			cwd: rootDir,
+			stdio: ['inherit', 'pipe', 'pipe'],
+		}
+	)
+	consume(child.stdout)
+	consume(child.stderr)
+	return new Promise(resolve => child.on('close', resolve))
+}
 
 const transcript = []
 const seen = new Map()
@@ -218,10 +229,10 @@ function handle(line) {
 	seen.set(text, { sources: new Set(source ? [source] : []), text })
 }
 
-consume(child.stdout)
-consume(child.stderr)
+let code = await runTask('build')
+if (code === 0 && !skipReports) code = await runTask('reports')
 
-child.on('close', code => {
+{
 	clearStatus()
 	mkdirSync(dirname(logPath), { recursive: true })
 	writeFileSync(logPath, `${transcript.join('\n')}\n`, 'utf8')
@@ -287,4 +298,4 @@ child.on('close', code => {
 				? `Built all ${packages.size} packages in ${seconds}s`
 				: `Rebuilt ${built.length} of ${packages.size} packages in ${seconds}s`
 	process.stdout.write(`${green(outcome)}. ${dim(`Full log: ${logPath}`)}\n`)
-})
+}

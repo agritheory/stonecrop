@@ -451,7 +451,7 @@ export default defineNuxtModule<ModuleOptions>({
 			})
 		}
 
-		// Do not add the extension since the `.ts` will be transpiled to `.mjs` after `npm run prepack`
+		// Do not add the extension since the `.ts` will be transpiled to `.mjs` by the module build
 		const pluginPath = resolve('./runtime/plugin')
 		try {
 			addPlugin(pluginPath)

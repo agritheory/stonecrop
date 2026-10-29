@@ -1,7 +1,7 @@
 {
 	"extends": "../tsconfig.json",
 	"compilerOptions": {
-		"tsBuildInfoFile": "./temp/aform.tsbuildinfo",
+		"tsBuildInfoFile": "./node_modules/.temp/aform.tsbuildinfo",
 		"types": ["node", "vitest/globals", "vitest/jsdom"]
 	},
 	"include": ["src/**/*.ts", "src/**/*.vue"]

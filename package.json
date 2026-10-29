@@ -14,7 +14,7 @@
 		"lint": "vp run --log labeled -r lint",
 		"prepare": "vp config --no-agent",
 		"test": "vp run --log labeled -r test",
-		"test:types": "vp run --log labeled -r test:types"
+		"test:types": "vp run --log labeled --parallel --concurrency-limit 4 -r test:types"
 	},
 	"devDependencies": {
 		"@arethetypeswrong/cli": "0.18.5",

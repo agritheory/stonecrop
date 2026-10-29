@@ -121,6 +121,17 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile
 
+      # Vite+'s task cache, kept across runs. Restored after Install, which creates node_modules.
+      # The newest from this pull request wins, else the one publish-npm saves on development after
+      # each release: a release rewrites every package.json the cache keys on, so an older one would
+      # match nothing. Saved under a key of its own each run, so a later push starts warm.
+      - name: Cache Build Tasks
+        uses: actions/cache@v5
+        with:
+          path: node_modules/.vite/task-cache
+          key: vp-tasks-${{ runner.os }}-${{ github.run_id }}
+          restore-keys: vp-tasks-${{ runner.os }}-
+
       # Oxfmt sorts package.json as part of formatting, so this is also the gate that a committed
       # package.json is in canonical key order.
       - name: Format Check
@@ -143,14 +154,10 @@ jobs:
       # to exist before lint runs; without this build step, unresolvable imports appear as
       # "error typed" and trigger false positives.
       #
-      # No cross-run task cache, deliberately. Restoring node_modules/.vite/task-cache across runs
-      # meets its documented precondition — an immediate second run is now a full hit, since
-      # `!dist/**` left the tracked inputs — so this is a choice rather than a blocker.
-      #
-      # The reason is that replay is additive: it restores an output snapshot without first
-      # deleting what is there, so anything that once reached dist/ survives every warm build. A
-      # cold runner is the only place that property cannot bite, and a full build is short enough
-      # that keeping it is worth more than the seconds a warm one would save.
+      # Warm from Cache Build Tasks. Replay is additive — it restores a snapshot without deleting what
+      # is there — which is why this once ran cold, but that bites only a dist/ that already holds
+      # stale files, and a checkout has no dist/ at all. Replayed into one, the output is byte-identical
+      # to a cold build. A dependency's files are tracked inputs, so a lockfile change misses.
       - name: Build
         run: pnpm run build
 
@@ -199,6 +206,10 @@ jobs:
       # node_editor or code_editor and still merge green. Projects opt in by defining a
       # `test:types` script, exactly as `lint` works. Runs after Build because vue-tsc needs
       # dependencies' .d.ts files, and both nuxt builds prepare every app, so .nuxt exists by now.
+      #
+      # The root script passes `--parallel`. Every check is `--noEmit` and writes only its own
+      # tsbuildinfo, so none waits on another, and ordering them by the dependency graph made aform,
+      # stonecrop, desktop and nuxt run one after another with free CPUs beside them.
       - name: Typecheck
         run: pnpm run test:types
 
