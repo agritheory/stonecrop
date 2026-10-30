@@ -42,7 +42,6 @@ jobs:
         uses: actions/setup-node@v7
         with:
           node-version: 24
-          registry-url: https://registry.npmjs.org/
 
       # Supplies the pnpm pinned by the root package.json's "packageManager" field.
       - name: Enable Corepack

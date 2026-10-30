@@ -73,11 +73,16 @@ export function nuxtModuleBuildTask(configUrl: string): NonNullable<UserConfig['
 				'nuxt-module-build build',
 			].join(' && '),
 			cache: {
+				// jiti caches under `node_modules/.cache`, which a checkout lacks, so tracked, every fresh CI
+				// run missed `nuxt-module-build prepare` on the folder the last run created. `nuxi prepare`
+				// still misses there: Nuxt writes `<app>/node_modules/.cache/nuxt`, which creates the app's
+				// `node_modules`, and excluding `<app>/node_modules` did not stop the app folder's miss.
 				input: [
 					{ auto: true },
 					{ pattern: 'tools/vite/**', base: 'workspace' },
 					'!dist/**',
 					'!.nuxt/**',
+					'!node_modules/.cache/**',
 					...generatedTrees.map(tree => `!${tree}`),
 				],
 				output: ['dist/**'],
