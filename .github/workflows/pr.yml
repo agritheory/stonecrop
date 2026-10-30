@@ -94,12 +94,12 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
       - name: Install Node
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: 24
           registry-url: https://registry.npmjs.org/
@@ -112,7 +112,7 @@ jobs:
       # setup-node's `cache: pnpm`, which runs `pnpm store path` during setup — before corepack
       # has materialized the pinned pnpm.
       - name: Cache pnpm Store
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: ~/.local/share/pnpm/store
           key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
@@ -126,7 +126,7 @@ jobs:
       # each release: a release rewrites every package.json the cache keys on, so an older one would
       # match nothing. Saved under a key of its own each run, so a later push starts warm.
       - name: Cache Build Tasks
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: node_modules/.vite/task-cache
           key: vp-tasks-${{ runner.os }}-${{ github.run_id }}
@@ -231,10 +231,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Install Node
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: 24
           registry-url: https://registry.npmjs.org/
@@ -243,7 +243,7 @@ jobs:
         run: corepack enable
 
       - name: Cache pnpm Store
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: ~/.local/share/pnpm/store
           key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
@@ -255,7 +255,7 @@ jobs:
       # The cache Cache Build Tasks restores in pr-checks, so only what this pull request changed
       # builds. Restore only: pr-checks builds every package, so its save holds all this would add.
       - name: Restore Build Tasks
-        uses: actions/cache/restore@v5
+        uses: actions/cache/restore@v6
         with:
           path: node_modules/.vite/task-cache
           key: vp-tasks-${{ runner.os }}-${{ github.run_id }}

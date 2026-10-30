@@ -21,10 +21,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Install Node
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: 24
           registry-url: https://registry.npmjs.org/
@@ -37,7 +37,7 @@ jobs:
       # setup-node's `cache: pnpm`, which runs `pnpm store path` during setup — before corepack
       # has materialized the pinned pnpm.
       - name: Cache pnpm Store
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: ~/.local/share/pnpm/store
           key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
@@ -48,7 +48,7 @@ jobs:
 
       # Restored for the reason nuxt.yml gives.
       - name: Restore Build Tasks
-        uses: actions/cache/restore@v5
+        uses: actions/cache/restore@v6
         with:
           path: node_modules/.vite/task-cache
           key: vp-tasks-${{ runner.os }}-${{ github.run_id }}
