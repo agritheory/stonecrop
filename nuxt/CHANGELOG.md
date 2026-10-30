@@ -1,5 +1,24 @@
 # Change Log - @stonecrop/nuxt
 
+## 0.56.3
+
+### Patch Changes
+
+- ff8f5da: `@stonecrop/nuxt-grafserv` no longer depends on `@graphql-tools/stitch`, which it never imported, so an app installing it stops getting the `@graphql-tools/utils` that GHSA-7mx3-vvmw-hjmv and GHSA-c4qx-w738-7hr3 affect. The scaffolded `server/resolvers.ts` declares the type of an action's reply, which the newer Grafast's `loadOne` no longer infers.
+- Updated dependencies [ff8f5da]
+  - @stonecrop/nuxt-grafserv@0.56.3
+  - @stonecrop/aform@0.56.3
+  - @stonecrop/atable@0.56.3
+  - @stonecrop/casl-middleware@0.56.3
+  - @stonecrop/code-editor@0.56.3
+  - @stonecrop/desktop@0.56.3
+  - @stonecrop/graphql-client@0.56.3
+  - @stonecrop/graphql-middleware@0.56.3
+  - @stonecrop/node-editor@0.56.3
+  - @stonecrop/schema@0.56.3
+  - @stonecrop/stonecrop@0.56.3
+  - @stonecrop/themes@0.56.3
+
 ## 0.56.2
 
 ### Patch Changes

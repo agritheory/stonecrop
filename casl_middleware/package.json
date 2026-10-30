@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/casl-middleware",
-	"version": "0.56.2",
+	"version": "0.56.3",
 	"description": "CASL authorization middleware for GraphQL servers",
 	"keywords": [
 		"authorization",
