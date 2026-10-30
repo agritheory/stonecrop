@@ -94,15 +94,14 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
       - name: Install Node
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: 24
-          registry-url: https://registry.npmjs.org/
 
       # Supplies the pnpm pinned by the root package.json's "packageManager" field.
       - name: Enable Corepack
@@ -112,7 +111,7 @@ jobs:
       # setup-node's `cache: pnpm`, which runs `pnpm store path` during setup — before corepack
       # has materialized the pinned pnpm.
       - name: Cache pnpm Store
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: ~/.local/share/pnpm/store
           key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
@@ -126,7 +125,7 @@ jobs:
       # each release: a release rewrites every package.json the cache keys on, so an older one would
       # match nothing. Saved under a key of its own each run, so a later push starts warm.
       - name: Cache Build Tasks
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: node_modules/.vite/task-cache
           key: vp-tasks-${{ runner.os }}-${{ github.run_id }}
@@ -160,6 +159,11 @@ jobs:
       # to a cold build. A dependency's files are tracked inputs, so a lockfile change misses.
       - name: Build
         run: pnpm run build
+
+      # Why each step that missed the cache missed it. run-build.mjs prints only a count, so a change
+      # that stops the cache matching would otherwise show only as a slower Build.
+      - name: Show Build Cache Misses
+        run: grep -h 'cache miss' node_modules/.vite/last-build.log || echo "every step replayed"
 
       # Each build runs "api-extractor run --local", which rewrites tools/api-reports/ in place, so
       # drift only ever surfaces as a dirty working tree. The same holds for the generated docs: the
@@ -231,19 +235,18 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Install Node
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: 24
-          registry-url: https://registry.npmjs.org/
 
       - name: Enable Corepack
         run: corepack enable
 
       - name: Cache pnpm Store
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: ~/.local/share/pnpm/store
           key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
@@ -251,6 +254,15 @@ jobs:
 
       - name: Install
         run: pnpm install --frozen-lockfile
+
+      # The cache Cache Build Tasks restores in pr-checks, so only what this pull request changed
+      # builds. Restore only: pr-checks builds every package, so its save holds all this would add.
+      - name: Restore Build Tasks
+        uses: actions/cache/restore@v6
+        with:
+          path: node_modules/.vite/task-cache
+          key: vp-tasks-${{ runner.os }}-${{ github.run_id }}
+          restore-keys: vp-tasks-${{ runner.os }}-
 
       # Build only the dependency closure for this package, not the whole repo.
       #

@@ -56,7 +56,7 @@ jobs:
       packages: write
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         name: Checkout
         with:
           # The branch's tip when this run's turn comes, not the commit that started it, which
@@ -78,7 +78,7 @@ jobs:
           fi
 
       # No registry-url: it exports NPM_CONFIG_USERCONFIG, which shadows the repo's own .npmrc.
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         name: Install Node.js
         if: steps.changesets.outputs.pending == 'true'
         with:
@@ -98,7 +98,7 @@ jobs:
 
       - name: Cache pnpm Store
         if: steps.changesets.outputs.pending == 'true'
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: ~/.local/share/pnpm/store
           key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
@@ -175,7 +175,7 @@ jobs:
 
       - name: Save the PR Checks Build Cache
         if: steps.changesets.outputs.pending == 'true'
-        uses: actions/cache/save@v5
+        uses: actions/cache/save@v6
         with:
           path: node_modules/.vite/task-cache
           key: vp-tasks-${{ runner.os }}-${{ github.run_id }}
@@ -204,10 +204,10 @@ jobs:
       contents: read
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         name: Checkout
 
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         name: Install Node.js
         with:
           node-version: 24
@@ -217,7 +217,7 @@ jobs:
         run: corepack enable
 
       - name: Cache pnpm Store
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: ~/.local/share/pnpm/store
           key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}

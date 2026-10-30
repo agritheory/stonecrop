@@ -73,11 +73,16 @@ export function nuxtModuleBuildTask(configUrl: string): NonNullable<UserConfig['
 				'nuxt-module-build build',
 			].join(' && '),
 			cache: {
+				// jiti caches under `node_modules/.cache`, which a checkout lacks, so tracked, every fresh CI
+				// run missed `nuxt-module-build prepare` on the folder the last run created. `nuxi prepare`
+				// still misses there: Nuxt writes `<app>/node_modules/.cache/nuxt`, which creates the app's
+				// `node_modules`, and excluding `<app>/node_modules` did not stop the app folder's miss.
 				input: [
 					{ auto: true },
 					{ pattern: 'tools/vite/**', base: 'workspace' },
 					'!dist/**',
 					'!.nuxt/**',
+					'!node_modules/.cache/**',
 					...generatedTrees.map(tree => `!${tree}`),
 				],
 				output: ['dist/**'],
@@ -104,7 +109,10 @@ export function buildTask(declarations: 'tsc' | 'vue-tsc'): NonNullable<UserConf
 				' && '
 			),
 			cache: {
-				input: [{ auto: true }, '!dist/**'],
+				// `node_modules/.temp` holds the declarations step's tsbuildinfo. A run that creates it
+				// records a `node_modules` listing with `.temp` in it, so a fresh checkout, which has
+				// none, missed the cache for that step on every CI run.
+				input: [{ auto: true }, '!dist/**', '!node_modules/.temp/**'],
 				// No `output`: left to automatic tracking, a cache hit restores only the files that
 				// sub-task itself wrote. `output: ['dist/**']` gave every sub-task the whole directory,
 				// so whenever `vp build` re-ran but the declarations did not change, api-extractor and

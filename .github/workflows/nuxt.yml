@@ -26,13 +26,12 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Install Node
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: 24
-          registry-url: https://registry.npmjs.org/
 
       # Supplies the pnpm pinned by the root package.json's "packageManager" field.
       - name: Enable Corepack
@@ -42,7 +41,7 @@ jobs:
       # setup-node's `cache: pnpm`, which runs `pnpm store path` during setup — before corepack
       # has materialized the pinned pnpm.
       - name: Cache pnpm Store
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: ~/.local/share/pnpm/store
           key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
@@ -50,6 +49,16 @@ jobs:
 
       - name: Install
         run: pnpm install --frozen-lockfile
+
+      # Vite+'s task cache, restored after Install, which creates node_modules. On a pull request the
+      # newest one PR Checks saved for it, else, as on a push, the one publish-npm saves on development
+      # after each release. Restore only: neither builds less than this job.
+      - name: Restore Build Tasks
+        uses: actions/cache/restore@v6
+        with:
+          path: node_modules/.vite/task-cache
+          key: vp-tasks-${{ runner.os }}-${{ github.run_id }}
+          restore-keys: vp-tasks-${{ runner.os }}-
 
       # `{dir}` keeps the traversal suffix that `./dir` drops, so this builds the dependency closure.
       # --fail-if-no-match, or a filter matching nothing exits zero.
@@ -68,6 +77,9 @@ jobs:
         working-directory: nuxt/
         run: pnpm run test
 
+      # Push only. On a pull request, PR Checks' Typecheck runs this same script after a full build, so
+      # it ran twice; a push to development runs no PR Checks, so there this is the only typecheck.
       - name: Type Check
+        if: github.event_name != 'pull_request'
         working-directory: nuxt/
         run: pnpm run test:types

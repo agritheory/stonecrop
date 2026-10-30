@@ -36,13 +36,12 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Install Node
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: 24
-          registry-url: https://registry.npmjs.org/
 
       # Supplies the pnpm pinned by the root package.json's "packageManager" field.
       - name: Enable Corepack
@@ -55,7 +54,7 @@ jobs:
       # setup-node's `cache: pnpm`, which runs `pnpm store path` during setup — before corepack
       # has materialized the pinned pnpm.
       - name: Cache pnpm Store
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: ~/.local/share/pnpm/store
           key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}

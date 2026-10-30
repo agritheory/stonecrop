@@ -64,7 +64,6 @@
 	"dependencies": {
 		"@graphql-tools/graphql-file-loader": "^8.1.14",
 		"@graphql-tools/load": "^8.1.10",
-		"@graphql-tools/stitch": "^10.1.18",
 		"@graphql-tools/wrap": "^11.1.14",
 		"@stonecrop/graphql-middleware": "workspace:*",
 		"grafast": "^1.0.2",

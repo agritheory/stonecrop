@@ -58,14 +58,11 @@
 		"jsonwebtoken": "^9.0.3"
 	},
 	"devDependencies": {
-		"@graphql-tools/merge": "^9.1.7",
 		"@graphql-tools/schema": "^10.0.31",
-		"@graphql-tools/utils": "^11.0.0",
 		"@microsoft/api-extractor": "catalog:",
 		"@types/jsonwebtoken": "~9.0.10",
 		"@types/node": "catalog:",
 		"@vitest/coverage-istanbul": "catalog:",
-		"graphql-middleware": "^6.1.35",
 		"graphql-yoga": "catalog:",
 		"jsdom": "catalog:",
 		"postgraphile": "catalog:",
