@@ -104,7 +104,10 @@ export function buildTask(declarations: 'tsc' | 'vue-tsc'): NonNullable<UserConf
 				' && '
 			),
 			cache: {
-				input: [{ auto: true }, '!dist/**'],
+				// `node_modules/.temp` holds the declarations step's tsbuildinfo. A run that creates it
+				// records a `node_modules` listing with `.temp` in it, so a fresh checkout, which has
+				// none, missed the cache for that step on every CI run.
+				input: [{ auto: true }, '!dist/**', '!node_modules/.temp/**'],
 				// No `output`: left to automatic tracking, a cache hit restores only the files that
 				// sub-task itself wrote. `output: ['dist/**']` gave every sub-task the whole directory,
 				// so whenever `vp build` re-ran but the declarations did not change, api-extractor and
