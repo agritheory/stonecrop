@@ -181,6 +181,11 @@ export const actionHandlers: Record<string, Record<string, ActionHandler>> = {
 // Resolvers (Grafast plan format)
 // ============================================================
 
+// One action's reply: the dispatcher's outcome, and the record as `stonecropRecord` returns it.
+// Declared because, left to infer it, `loadOne` settles on the shape of an early failure, which
+// carries no `record`, and rejects the replies that do.
+type ActionReply = { success: boolean; data: unknown; error: string | null; record?: Project | Task | null }
+
 export const resolvers = {
 	Query: {
 		plans: {
@@ -258,7 +263,7 @@ export const resolvers = {
 					object({ doctype: $doctype, action: $action, actionArgs: $actionArgs }),
 					async (specs: readonly any[]) => {
 						return Promise.all(
-							specs.map(async spec => {
+							specs.map(async (spec): Promise<ActionReply> => {
 								const meta = getMeta(spec.doctype)
 								if (!meta) return { success: false, data: null, error: `Unknown doctype: ${spec.doctype}` }
 

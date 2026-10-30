@@ -161,6 +161,11 @@ jobs:
       - name: Build
         run: pnpm run build
 
+      # Why each step that missed the cache missed it. run-build.mjs prints only a count, so a change
+      # that stops the cache matching would otherwise show only as a slower Build.
+      - name: Show Build Cache Misses
+        run: grep -h 'cache miss' node_modules/.vite/last-build.log || echo "every step replayed"
+
       # Each build runs "api-extractor run --local", which rewrites tools/api-reports/ in place, so
       # drift only ever surfaces as a dirty working tree. The same holds for the generated docs: the
       # root build regenerates every api.md and aggregates them into the reference tree, and all
