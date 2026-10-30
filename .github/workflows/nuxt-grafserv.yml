@@ -46,6 +46,14 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile
 
+      # Restored for the reason nuxt.yml gives.
+      - name: Restore Build Tasks
+        uses: actions/cache/restore@v5
+        with:
+          path: node_modules/.vite/task-cache
+          key: vp-tasks-${{ runner.os }}-${{ github.run_id }}
+          restore-keys: vp-tasks-${{ runner.os }}-
+
       # `{dir}` keeps the traversal suffix that `./dir` drops, so this builds the dependency closure.
       # --fail-if-no-match, or a filter matching nothing exits zero.
       - name: Build
@@ -59,9 +67,10 @@ jobs:
         working-directory: nuxt_grafserv/
         run: pnpm run test
 
-      # Mirrors nuxt.yml. `pr-checks` now runs test:types repo-wide, but only on
-      # pull_request — this workflow also runs on push to development, where nothing else would
-      # typecheck this package. Its absence is how 28 type errors accumulated here unseen.
+      # Push only, as in nuxt.yml. On a pull request `pr-checks` runs test:types repo-wide; a push to
+      # development runs no `pr-checks`, so nothing else would typecheck this package there. Its
+      # absence is how 28 type errors accumulated here unseen.
       - name: Type Check
+        if: github.event_name != 'pull_request'
         working-directory: nuxt_grafserv/
         run: pnpm run test:types

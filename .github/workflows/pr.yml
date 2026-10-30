@@ -252,6 +252,15 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile
 
+      # The cache Cache Build Tasks restores in pr-checks, so only what this pull request changed
+      # builds. Restore only: pr-checks builds every package, so its save holds all this would add.
+      - name: Restore Build Tasks
+        uses: actions/cache/restore@v5
+        with:
+          path: node_modules/.vite/task-cache
+          key: vp-tasks-${{ runner.os }}-${{ github.run_id }}
+          restore-keys: vp-tasks-${{ runner.os }}-
+
       # Build only the dependency closure for this package, not the whole repo.
       #
       # `{dir}` is the directory filter that keeps its traversal suffix. The other directory form,
