@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/rockfoil",
-	"version": "0.56.3",
+	"version": "0.56.4",
 	"description": "PostGraphile plugin for Stonecrop schema integration",
 	"keywords": [
 		"graphql",
