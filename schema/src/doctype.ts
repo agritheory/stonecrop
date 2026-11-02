@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-import type { DoctypeField, FieldsetField, ValueField } from './field'
+import type { DoctypeField, FieldsetField } from './field'
 import { DoctypeFieldSchema, flattenFields, getDisplayField } from './field'
 import { toSlug } from './naming'
 
@@ -355,10 +355,10 @@ export const DoctypeMeta = z
 
 		/** Field definitions (a link field is one carrying `doctype`) */
 		fields: z.array(DoctypeFieldSchema).superRefine((fields, context) => {
-			// Here rather than on the field: a part may name any field of the record, fieldsets included.
-			const valueFields = flattenFields(fields).filter((field): field is ValueField => field.kind === 'field')
-			const fieldnames = new Set(valueFields.map(field => field.fieldname))
-			for (const field of valueFields) {
+			// Here rather than on the field: a part may name any field of the record, fieldsets and tables included.
+			const recordFields = flattenFields(fields)
+			const fieldnames = new Set(recordFields.map(field => field.fieldname))
+			for (const field of recordFields) {
 				for (const fieldname of Object.values(field.parts ?? {})) {
 					if (fieldnames.has(fieldname)) continue
 					context.addIssue({

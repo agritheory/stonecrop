@@ -196,14 +196,18 @@ function resolvedMode(componentObj: ResolvedField): InteractionMode {
 }
 
 // A field declaring `parts` binds the value its component edits, read part by part from the fields
-// that hold them and written back only where a part changed.
+// that hold them and written back only where a part changed. They are read from the record this form
+// edits, so they work for a record not yet saved. A table declares them for an app's own component,
+// which still takes its rows as `rows`.
 const fieldParts = (field: ResolvedField): Record<string, string> | undefined =>
-	field.kind === 'field' ? field.parts : undefined
+	field.kind === 'field' || field.kind === 'table' ? field.parts : undefined
 
 const fieldErrors = (field: ResolvedField): string[] | undefined => {
 	const parts = fieldParts(field)
 	if (!parts) return errors?.[field.fieldname]
-	return Object.values(parts).flatMap(fieldname => errors?.[fieldname] ?? [])
+	// An app's own component need not name its own field as a part, but that field's errors are still its own.
+	const fieldnames = new Set([field.fieldname, ...Object.values(parts)])
+	return [...fieldnames].flatMap(fieldname => errors?.[fieldname] ?? [])
 }
 
 // Create stable computed refs array to avoid recreation on every access
