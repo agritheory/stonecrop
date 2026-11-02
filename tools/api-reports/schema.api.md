@@ -226,6 +226,7 @@ export const DoctypeMeta: z.ZodObject<{
             method: z.ZodLiteral<"custom">;
             handler: z.ZodString;
         }, z.core.$strip>], "method">>;
+        orderBy: z.ZodOptional<z.ZodString>;
         blockWorkflows: z.ZodOptional<z.ZodBoolean>;
     }, z.core.$strip>>>;
     workflow: z.ZodOptional<z.ZodObject<{
@@ -489,6 +490,7 @@ export const LinkDeclaration: z.ZodObject<{
         method: z.ZodLiteral<"custom">;
         handler: z.ZodString;
     }, z.core.$strip>], "method">>;
+    orderBy: z.ZodOptional<z.ZodString>;
     blockWorkflows: z.ZodOptional<z.ZodBoolean>;
 }, z.core.$strip>;
 
@@ -529,6 +531,12 @@ export function parseDoctype(data: unknown): DoctypeMeta;
 
 // @public
 export function parseField(data: unknown): DoctypeField;
+
+// @public
+export function parseOrderBy(orderBy: string): {
+    fieldname: string;
+    direction: 'ASC' | 'DESC';
+};
 
 // @public
 export function partsPatch(parts: Readonly<Record<string, string>>, record: Readonly<Record<string, unknown>>, value: Readonly<Record<string, unknown>>): Record<string, unknown>;

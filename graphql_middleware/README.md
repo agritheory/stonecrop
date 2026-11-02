@@ -126,10 +126,25 @@ Each entry in `links` can declare a `fetch` strategy:
 | Strategy | Behaviour |
 |----------|-----------|
 | `{ "method": "sync", "limit": N }` | Linked records are fetched in the same resolver call and merged into `data` |
-| `{ "method": "lazy" }` | Link is absent from the response; client retrieves it via `stonecropRecords` with `filters` |
+| `{ "method": "lazy" }` | Link is absent from the response; client retrieves it via `stonecropRecord` with `includeNested` naming the link |
 | `{ "method": "custom", "handler": "myHandler" }` | Calls a registered fetch handler (see below) |
 
-When `fetch` is omitted, `noneOrMany`/`atLeastOne` links default to `sync` (limit 50) and `atMostOne`/`one` links default to `lazy`.
+When `fetch` is omitted, `noneOrMany`/`atLeastOne` links default to `sync` (limit 200, the `defaultRecordLimit`) and `atMostOne`/`one` links default to `lazy`.
+
+### Link order
+
+A `noneOrMany`/`atLeastOne` link reads its rows in identity order. Rows that keep their own position, such as an order's lines, name it with `orderBy`, in the list query's `FIELD_ASC` or `FIELD_DESC` form:
+
+```json
+"items": {
+  "target": "sales-order-item",
+  "cardinality": "noneOrMany",
+  "backlink": "salesOrderId",
+  "orderBy": "rowOrder_ASC"
+}
+```
+
+Identity breaks ties, and a capped link keeps the head of this order. A malformed `orderBy` is refused when the doctype loads; one naming a field the target doctype does not declare is refused when the record is read. A `custom` link orders its own rows.
 
 ### Display-only fields
 

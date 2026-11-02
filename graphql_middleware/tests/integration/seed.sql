@@ -93,6 +93,22 @@ CREATE TABLE sc_bulk_child (
 INSERT INTO sc_bulk (name) VALUES ('Bulk Parent');
 INSERT INTO sc_bulk_child (bulk_id, label) SELECT 1, 'child ' || g FROM generate_series(1, 64) g;
 
+-- Ordered many-side link fixture. The lines' ids run against their positions, so a read in
+-- identity order and one in position order cannot be mistaken for each other. The positions
+-- cross a digit, so they also sort differently as numbers (9, 10, 30) and as text (10, 30, 9).
+CREATE TABLE sc_lined (
+	id serial PRIMARY KEY,
+	name text NOT NULL
+);
+CREATE TABLE sc_lined_line (
+	id serial PRIMARY KEY,
+	lined_id integer REFERENCES sc_lined(id) ON DELETE CASCADE,
+	position integer NOT NULL,
+	label text NOT NULL
+);
+INSERT INTO sc_lined (name) VALUES ('Lined Parent');
+INSERT INTO sc_lined_line (lined_id, position, label) VALUES (1, 30, 'third'), (1, 9, 'first'), (1, 10, 'second');
+
 -- Cross-adapter conformance fixture: a NATURAL-key table (no `id` column at all).
 -- The rest of this seed is surrogate-keyed, which cannot expose a disagreement about
 -- which field a record is looked up by. See conformance.test.ts.

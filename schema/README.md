@@ -158,7 +158,7 @@ const doctype: DoctypeMeta = {
 
 ### Link Declarations
 
-`links` on `DoctypeMeta` declares relationships to other doctypes. Each link has a `target`, `cardinality`, and optional `backlink`:
+`links` on `DoctypeMeta` declares relationships to other doctypes. Each link has a `target`, `cardinality`, and optional `backlink`; a many-side link can also name the order of its rows with `orderBy` (`FIELD_ASC` or `FIELD_DESC`, read by `parseOrderBy`):
 
 ```typescript
 import { LinkDeclaration, Cardinality } from '@stonecrop/schema'
@@ -175,6 +175,7 @@ const links: Record<string, LinkDeclaration> = {
     target: 'recipe-task',
     cardinality: 'noneOrMany',
     backlink: 'recipe', // fieldname on recipe-task that points back
+    orderBy: 'sequence_ASC', // rows read in this order; identity order when omitted
   },
   // Self-referential — version lineage
   supersededBy: {

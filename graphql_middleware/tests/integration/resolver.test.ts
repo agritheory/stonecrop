@@ -443,6 +443,83 @@ beforeAll(async () => {
 				},
 			},
 		},
+		// Ordered-link fixtures over the one table whose ids run against its positions, differing only
+		// in the order their link names.
+		ScLinedLine: {
+			name: 'ScLinedLine',
+			fields: [
+				{ kind: 'field', fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
+				{ kind: 'field', fieldname: 'position', component: 'ANumericInput', label: 'Position' },
+				{ kind: 'field', fieldname: 'label', component: 'ATextInput', label: 'Label' },
+				{ kind: 'field', fieldname: 'lined_id', component: 'ATextInput', label: 'Lined ID' },
+			],
+		},
+		ScLined: {
+			name: 'ScLined',
+			fields: [
+				{ kind: 'field', fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
+				{ kind: 'field', fieldname: 'name', component: 'ATextInput', label: 'Name' },
+			],
+			links: {
+				lines: {
+					target: 'ScLinedLine',
+					cardinality: 'noneOrMany' as const,
+					backlink: 'lined_id',
+					orderBy: 'position_ASC',
+				},
+			},
+		},
+		ScLinedDescending: {
+			name: 'ScLinedDescending',
+			fields: [
+				{ kind: 'field', fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
+				{ kind: 'field', fieldname: 'name', component: 'ATextInput', label: 'Name' },
+			],
+			links: {
+				lines: {
+					target: 'ScLinedLine',
+					cardinality: 'noneOrMany' as const,
+					backlink: 'lined_id',
+					orderBy: 'position_DESC',
+				},
+			},
+		},
+		ScLinedUnordered: {
+			name: 'ScLinedUnordered',
+			fields: [
+				{ kind: 'field', fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
+				{ kind: 'field', fieldname: 'name', component: 'ATextInput', label: 'Name' },
+			],
+			links: {
+				lines: { target: 'ScLinedLine', cardinality: 'noneOrMany' as const, backlink: 'lined_id' },
+			},
+		},
+		ScLinedCapped: {
+			name: 'ScLinedCapped',
+			fields: [
+				{ kind: 'field', fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
+				{ kind: 'field', fieldname: 'name', component: 'ATextInput', label: 'Name' },
+			],
+			links: {
+				lines: {
+					target: 'ScLinedLine',
+					cardinality: 'noneOrMany' as const,
+					backlink: 'lined_id',
+					orderBy: 'position_ASC',
+					fetch: { method: 'sync' as const, limit: 2 },
+				},
+			},
+		},
+		ScLinedUnknownField: {
+			name: 'ScLinedUnknownField',
+			fields: [
+				{ kind: 'field', fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
+				{ kind: 'field', fieldname: 'name', component: 'ATextInput', label: 'Name' },
+			],
+			links: {
+				lines: { target: 'ScLinedLine', cardinality: 'noneOrMany' as const, backlink: 'lined_id', orderBy: 'rank_ASC' },
+			},
+		},
 		ScProduct: {
 			name: 'ScProduct',
 			fields: [
@@ -670,6 +747,10 @@ beforeAll(async () => {
 					ScLinkLazy: 'sc_tag',
 					ScBulkSync: 'sc_bulk',
 					ScBulkCapped: 'sc_bulk',
+					ScLinedDescending: 'sc_lined',
+					ScLinedUnordered: 'sc_lined',
+					ScLinedCapped: 'sc_lined',
+					ScLinedUnknownField: 'sc_lined',
 					ScPartyWithOrders: 'sc_party',
 					ScPeriodWithEntries: 'sc_period',
 					ScPeriodReviews: 'sc_period',
@@ -1072,6 +1153,23 @@ describe('stonecropRecords', { tags: ['integration', 'graphql'] }, () => {
 		const result = await runQuery(`query { stonecropRecords(doctype: "ScItem", orderBy: "name_DESC") { data } }`)
 		const data = (result as any).data?.stonecropRecords?.data
 		expect(data[0].name).toBe('Gamma')
+	})
+
+	// `position` is both a fieldname and a column, and the select returns it as text under that name.
+	// An unqualified ORDER BY resolved to that text, so 10 sorted before 9.
+	it('orders a number field by its value, not its text', async () => {
+		const result = await runQuery(
+			`query { stonecropRecords(doctype: "ScLinedLine", orderBy: "position_ASC") { data } }`
+		)
+		const labels = (result as any).data?.stonecropRecords?.data.map((line: any) => line.label)
+		expect(labels).toEqual(['first', 'second', 'third'])
+	})
+
+	// The identity breaks ties and orders an unordered page; it is compared as a number too.
+	it('pages by identity as a number', async () => {
+		const result = await runQuery(`query { stonecropRecords(doctype: "ScBulkChild", limit: 10) { data } }`)
+		const labels = (result as any).data?.stonecropRecords?.data.map((child: any) => child.label)
+		expect(labels).toEqual(Array.from({ length: 10 }, (_, i) => `child ${i + 1}`))
 	})
 })
 
@@ -1801,6 +1899,53 @@ describe('many-side link row cap', { tags: ['integration', 'graphql'] }, () => {
 		const childQuery = sql.find(text => text.includes('FROM "sc_bulk_child"') && text.includes('LIMIT'))
 		expect(childQuery).toBeDefined()
 		expect(childQuery).toMatch(/ORDER BY .* LIMIT/)
+	})
+
+	// The ten it keeps are the first ten by identity as a number. Each column is selected as text
+	// under its fieldname, and `id` is both, so an unqualified ORDER BY sorted the text: 1, 10, 11, …
+	it('keeps the first children by identity, compared as numbers', async () => {
+		const result = await runQuery(`query { stonecropRecord(doctype: "ScBulkCapped", id: "1") { data } }`)
+		const labels = (result as any).data?.stonecropRecord?.data?.children.map((child: any) => child.label)
+		expect(labels).toEqual(Array.from({ length: 10 }, (_, i) => `child ${i + 1}`))
+	})
+
+	const lineLabels = async (doctype: string) => {
+		const result = await runQuery(`query { stonecropRecord(doctype: "${doctype}", id: "1") { data truncatedLinks } }`)
+		const record = (result as any).data?.stonecropRecord
+		return {
+			labels: (record?.data?.lines ?? []).map((line: any) => line.label),
+			record,
+			errors: (result as any).errors,
+		}
+	}
+
+	// Rows that keep their own position, such as an order's lines, read in the order their link names.
+	// The fixture's ids run against its positions, so identity order cannot pass for it.
+	it('reads a link in the order it names', async () => {
+		expect((await lineLabels('ScLined')).labels).toEqual(['first', 'second', 'third'])
+		expect((await lineLabels('ScLinedDescending')).labels).toEqual(['third', 'second', 'first'])
+	})
+
+	// The control: a link that names no order still reads in identity order.
+	it('reads a link that names no order in identity order', async () => {
+		expect((await lineLabels('ScLinedUnordered')).labels).toEqual(['third', 'first', 'second'])
+	})
+
+	// A cap keeps the head of the order the link names, so the rows kept are the first ones the
+	// author arranged, not the oldest.
+	it('keeps the head of the named order when the link is capped', async () => {
+		const { labels, record } = await lineLabels('ScLinedCapped')
+		expect(labels).toEqual(['first', 'second'])
+		expect(record?.truncatedLinks).toEqual(['lines'])
+	})
+
+	// An order naming a field the target does not declare is refused by name, like the list query's.
+	it('refuses a link order naming a field the target lacks', async () => {
+		const { record, errors } = await lineLabels('ScLinedUnknownField')
+		expect(record).toBeNull()
+		const message = String(errors?.[0]?.message ?? '')
+		expect(message).toContain('rank')
+		expect(message).toContain('ScLinedLine')
 	})
 })
 

@@ -625,6 +625,29 @@ export declare function parseField(data: unknown): import('./field').DoctypeFiel
 |-----------|------|-------------|
 | data | `unknown` | Data to parse |
 
+### parseOrderBy
+
+Split an `orderBy` value into the field it names and its direction. The form is `FIELD_ASC` or `FIELD_DESC`, the direction in either case, and the field is everything before the last underscore, so a field name may hold underscores of its own.
+
+The one reading of the form: the list query takes it from its caller, and a link declares it for its rows, where the load gate refuses a malformed one before any record is read.
+
+A module of its own, importing nothing, so the adapter can call it without taking on Zod.
+
+**Signature:**
+
+```typescript
+export declare function parseOrderBy(orderBy: string): {
+    fieldname: string;
+    direction: 'ASC' | 'DESC';
+};
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| orderBy | `string` | the value to read, such as `rowOrder_ASC` |
+
 ### partsPatch
 
 The fields to set after a field's component edits its value: one per part that changed. A part left alone keeps exactly what the record holds, and anything the component derives (a stock quantity, a conversion factor) is no part, so it is never written.
@@ -1951,6 +1974,7 @@ export const DoctypeMeta: z.ZodObject<{
             method: z.ZodLiteral<"custom">;
             handler: z.ZodString;
         }, z.core.$strip>], "method">>;
+        orderBy: z.ZodOptional<z.ZodString>;
         blockWorkflows: z.ZodOptional<z.ZodBoolean>;
     }, z.core.$strip>>>;
     workflow: z.ZodOptional<z.ZodObject<{
@@ -2146,6 +2170,7 @@ export const LinkDeclaration: z.ZodObject<{
         method: z.ZodLiteral<"custom">;
         handler: z.ZodString;
     }, z.core.$strip>], "method">>;
+    orderBy: z.ZodOptional<z.ZodString>;
     blockWorkflows: z.ZodOptional<z.ZodBoolean>;
 }, z.core.$strip>
 ```

@@ -536,6 +536,42 @@ describe('Doctype Validation', { tags: ['unit'] }, () => {
 			expect(result.errors).toEqual([])
 		})
 
+		it('should accept a link that names its order', () => {
+			const doctype = {
+				name: 'SalesOrder',
+				fields: [{ kind: 'field', fieldname: 'name', component: 'ATextInput' }],
+				links: {
+					items: {
+						target: 'sales-order-item',
+						cardinality: 'noneOrMany',
+						backlink: 'salesOrderId',
+						orderBy: 'rowOrder_ASC',
+					},
+				},
+			}
+			const result = validateDoctype(doctype)
+
+			expect(result.success).toBe(true)
+			expect(result.errors).toEqual([])
+		})
+
+		// Refused when the doctype loads, rather than on the first read of a record.
+		it('should reject a link order that is not FIELD_ASC or FIELD_DESC', () => {
+			for (const orderBy of ['rowOrder', 'rowOrder_UP', '_ASC']) {
+				const doctype = {
+					name: 'SalesOrder',
+					fields: [{ kind: 'field', fieldname: 'name', component: 'ATextInput' }],
+					links: {
+						items: { target: 'sales-order-item', cardinality: 'noneOrMany', backlink: 'salesOrderId', orderBy },
+					},
+				}
+				const result = validateDoctype(doctype)
+
+				expect(result.success, orderBy).toBe(false)
+				expect(result.errors.map(error => error.message).join(' '), orderBy).toContain('orderBy')
+			}
+		})
+
 		it('should reject link with missing target', () => {
 			const doctype = {
 				name: 'Recipe',

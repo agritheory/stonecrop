@@ -3,6 +3,7 @@ import { z } from 'zod'
 import type { DoctypeField, FieldsetField, ValueField } from './field'
 import { DoctypeFieldSchema, flattenFields, getDisplayField } from './field'
 import { toSlug } from './naming'
+import { parseOrderBy } from './order'
 
 /**
  * Cardinality for relationship links.
@@ -135,6 +136,22 @@ export const LinkDeclaration = z
 
 		/** Fetch strategy for loading nested data */
 		fetch: FetchStrategy.optional(),
+
+		/**
+		 * Order of a many-side link's rows, as `FIELD_ASC` or `FIELD_DESC` naming a field of the target
+		 * doctype, such as `rowOrder_ASC`. Rows read in identity order when it is omitted, and identity
+		 * breaks ties when it is given.
+		 */
+		orderBy: z
+			.string()
+			.superRefine((orderBy, context) => {
+				try {
+					parseOrderBy(orderBy)
+				} catch (error) {
+					context.addIssue({ code: 'custom', message: error instanceof Error ? error.message : String(error) })
+				}
+			})
+			.optional(),
 
 		/** Whether to block workflow actions until nested data is loaded (default: true) */
 		blockWorkflows: z.boolean().optional(),
