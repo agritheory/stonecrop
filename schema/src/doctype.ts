@@ -3,7 +3,6 @@ import { z } from 'zod'
 import type { DoctypeField, FieldsetField, ValueField } from './field'
 import { DoctypeFieldSchema, flattenFields, getDisplayField } from './field'
 import { toSlug } from './naming'
-import { parseOrderBy } from './order'
 
 /**
  * Cardinality for relationship links.
@@ -138,18 +137,16 @@ export const LinkDeclaration = z
 		fetch: FetchStrategy.optional(),
 
 		/**
-		 * Order of a many-side link's rows, as `FIELD_ASC` or `FIELD_DESC` naming a field of the target
-		 * doctype, such as `rowOrder_ASC`. Rows read in identity order when it is omitted, and identity
-		 * breaks ties when it is given.
+		 * Order of a many-side link's rows: a field of the target doctype, ascending unless `direction` is
+		 * `desc`. Rows read in identity order when it is omitted, and identity breaks ties when it is given.
+		 *
+		 * Strict, unlike the declarations around it: a misspelt `direction` ignored would read the rows the
+		 * other way round without a word.
 		 */
 		orderBy: z
-			.string()
-			.superRefine((orderBy, context) => {
-				try {
-					parseOrderBy(orderBy)
-				} catch (error) {
-					context.addIssue({ code: 'custom', message: error instanceof Error ? error.message : String(error) })
-				}
+			.strictObject({
+				fieldname: z.string().min(1),
+				direction: z.enum(['asc', 'desc']).optional(),
 			})
 			.optional(),
 

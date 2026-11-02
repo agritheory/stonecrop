@@ -133,14 +133,14 @@ When `fetch` is omitted, `noneOrMany`/`atLeastOne` links default to `sync` (limi
 
 ### Link order
 
-A `noneOrMany`/`atLeastOne` link reads its rows in identity order. Rows that keep their own position, such as an order's lines, name it with `orderBy`, in the list query's `FIELD_ASC` or `FIELD_DESC` form:
+A `noneOrMany`/`atLeastOne` link reads its rows in identity order. Rows that keep their own position, such as an order's lines, name it with `orderBy`: a field of the target doctype, ascending unless `direction` is `desc`:
 
 ```json
 "items": {
   "target": "sales-order-item",
   "cardinality": "noneOrMany",
   "backlink": "salesOrderId",
-  "orderBy": "rowOrder_ASC"
+  "orderBy": { "fieldname": "rowOrder" }
 }
 ```
 

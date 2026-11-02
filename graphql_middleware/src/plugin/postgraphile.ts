@@ -1,11 +1,5 @@
 import type { DoctypeField, DoctypeMeta, LinkDeclaration, ValueField, GetRecordOptions } from '@stonecrop/schema'
-import {
-	camelToSnake,
-	getRecordIdField,
-	parseOrderBy,
-	resolveLinkRenderMode,
-	unwrapInlineLinks,
-} from '@stonecrop/schema'
+import { camelToSnake, getRecordIdField, resolveLinkRenderMode, unwrapInlineLinks } from '@stonecrop/schema'
 import { loadOneWithPgClient, sideEffectWithPgClient } from '@dataplan/pg'
 import type { PgClient, PgCodec, PgExecutor } from '@dataplan/pg'
 import { constant, lambda, object } from 'postgraphile/grafast'
@@ -553,7 +547,11 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 											if (spec.orderBy != null && typeof spec.orderBy !== 'string') {
 												throw new Error(`Invalid orderBy: expected string, got ${typeof spec.orderBy}`)
 											}
-											const orderByClause = orderClause(meta, spec.orderBy ?? undefined, select.table)
+											const orderByClause = orderClause(
+												meta,
+												spec.orderBy == null ? undefined : readListOrderBy(spec.orderBy),
+												select.table
+											)
 
 											// LIMIT / OFFSET. A caller that names no limit gets the configured default rather
 											// than the whole table: omission is how an unbounded scan used to happen, and the
@@ -1033,7 +1031,7 @@ function getPkMeta(meta: DoctypeMeta): ValueField | undefined {
 }
 
 /**
- * The ORDER BY clause for reading a doctype's rows: the field `orderBy` names, then the declared identity
+ * The ORDER BY clause for reading a doctype's rows: the field `order` names, then the declared identity
  * to break ties, or the identity alone when nothing is named. Empty when the doctype declares no identity
  * and nothing is named.
  *
@@ -1047,22 +1045,36 @@ function getPkMeta(meta: DoctypeMeta): ValueField | undefined {
  * a bare name as the output column first, so it sorted that text and 10 came before 9. Qualified, the name
  * can only mean the column, compared as its own type.
  */
-function orderClause(meta: DoctypeMeta, orderBy: string | undefined, table: string): string {
+function orderClause(meta: DoctypeMeta, order: LinkDeclaration['orderBy'], table: string): string {
 	const terms: string[] = []
-	let orderedField: string | undefined
-	if (orderBy !== undefined) {
-		const { fieldname, direction } = parseOrderBy(orderBy)
-		if (!flattenFields(meta.fields).some(field => field.fieldname === fieldname)) {
-			throw new Error(`Unknown orderBy field: "${fieldname}" for doctype ${meta.name}`)
+	if (order !== undefined) {
+		if (!flattenFields(meta.fields).some(field => field.fieldname === order.fieldname)) {
+			throw new Error(`Unknown orderBy field: "${order.fieldname}" for doctype ${meta.name}`)
 		}
-		orderedField = fieldname
-		terms.push(`${table}."${camelToSnake(fieldname)}" ${direction}`)
+		terms.push(`${table}."${camelToSnake(order.fieldname)}" ${order.direction === 'desc' ? 'DESC' : 'ASC'}`)
 	}
 	const pkMeta = getPkMeta(meta)
-	if (pkMeta && pkMeta.fieldname !== orderedField) {
+	if (pkMeta && pkMeta.fieldname !== order?.fieldname) {
 		terms.push(`${table}."${camelToSnake(pkMeta.fieldname)}" ASC`)
 	}
 	return terms.length > 0 ? ` ORDER BY ${terms.join(', ')}` : ''
+}
+
+/**
+ * The list query's `orderBy` argument, `FIELD_ASC` or `FIELD_DESC` with the direction in either case, read
+ * as the order a link declares. The field is everything before the last underscore, so it may hold
+ * underscores of its own.
+ */
+function readListOrderBy(orderBy: string): NonNullable<LinkDeclaration['orderBy']> {
+	const lastUnder = orderBy.lastIndexOf('_')
+	if (lastUnder <= 0) {
+		throw new Error(`Invalid orderBy format: "${orderBy}". Expected FIELD_ASC or FIELD_DESC`)
+	}
+	const direction = orderBy.slice(lastUnder + 1).toLowerCase()
+	if (direction !== 'asc' && direction !== 'desc') {
+		throw new Error(`Invalid orderBy direction: "${direction.toUpperCase()}". Must be ASC or DESC`)
+	}
+	return { fieldname: orderBy.slice(0, lastUnder), direction }
 }
 
 /**

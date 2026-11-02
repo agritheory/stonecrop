@@ -39,9 +39,6 @@ export {
 // Field descent, kept a leaf so a caller needing only the descent does not take on zod
 export { flattenFields } from './flatten'
 
-// The `FIELD_ASC` / `FIELD_DESC` form of an order, kept a leaf for the same reason
-export { parseOrderBy } from './order'
-
 // Record shaping — the single definition of what a record looks like on its way to the server
 export { partsPatch, readParts, unwrapInlineLinks } from './record'
 
