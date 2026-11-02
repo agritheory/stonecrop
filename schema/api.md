@@ -176,6 +176,22 @@ export declare function componentParts(component?: string): readonly string[] | 
 |-----------|------|-------------|
 | component | `string` |  |
 
+### componentTakesParts
+
+Whether a field rendered by this component may declare `parts`: a component Stonecrop ships only when `COMPONENT_PARTS` names its parts, and an app's own component always. An app's component is how a field reads other fields of its record (a lines table reading the order's delivery date), and `parts` is the one way to read them that works for a record not yet saved.
+
+**Signature:**
+
+```typescript
+export declare function componentTakesParts(component: string): boolean;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| component | `string` | the field's component; a table with none renders as `ATable` |
+
 ### convertGraphQLSchema
 
 Convert a GraphQL schema to Stonecrop doctype schemas.
@@ -1405,6 +1421,7 @@ export interface TableField {
   kind: 'table';
   label?: string;
   mode?: InteractionMode;
+  parts?: Record<string, string>;
 }
 ```
 
@@ -1419,6 +1436,7 @@ export interface TableField {
 | kind | `'table'` | Discriminator — identifies this as an inline table |
 | label? | `string` | Human-readable label |
 | mode? | `InteractionMode` | Interaction mode for all cells inside this table |
+| parts? | `Record<string, string>` | For an app's own table component, the other fields of the record it reads, keyed by part, as on a value field: a lines table showing each line's due date declares `{ deliveryDate: 'deliveryDate' }` to read the order's. The rows still arrive as `rows`. |
 
 ### ValidationError
 
@@ -1516,7 +1534,7 @@ export interface ValueField {
 | mask? | `string` | Input mask pattern or serialized function |
 | mode? | `InteractionMode` | Per-field interaction mode override |
 | options? | `FieldOptions` | Type-specific options: Select choices, Decimal precision config, etc. A link's target is not here — it is `doctype`. |
-| parts? | `Record<string, string>` | For a component that edits a value made of several parts, the field holding each part, keyed by part: `{ qty: 'quantity', uom: 'uom' }` for `AQuantityInput`. One part is this field itself; the others are fields of the same record, which several fields may share (an order's totals share its currency). The component reads each part from its field and writes it back there. |
+| parts? | `Record<string, string>` | For a component that edits a value made of several parts, the field holding each part, keyed by part: `{ qty: 'quantity', uom: 'uom' }` for `AQuantityInput`. One part is this field itself; the others are fields of the same record, which several fields may share (an order's totals share its currency). The component reads each part from its field and writes it back there. An app's own component names whatever parts it reads, under names of its own choosing: a chart following its plan's range declares `{ start: 'startDate', end: 'endDate' }`. Its value is then those parts, read from the record the form edits, saved or not; this field itself is a part only when the component names it. |
 | primaryKey? | `boolean` | True for the field that identifies the record's primary-key column. |
 | readOnly? | `boolean` | Whether the field is read-only |
 | required? | `boolean` | Whether the field is required |
@@ -1887,7 +1905,7 @@ export const COMPONENT_LINK_EXPANSION: Record<string, LinkExpansion>
 
 ### COMPONENT_PARTS
 
-The parts of its value each component edits, each held in a field of the record (a field's `parts` names which). A component absent here edits a single value, so its field declares no parts.
+The parts of its value each component edits, each held in a field of the record (a field's `parts` names which). Any other component Stonecrop ships edits a single value, so its field declares no parts. An app's own component is in neither list: it may declare whatever parts it reads, since only the app knows what its component needs (`componentTakesParts`).
 
 **Type:**
 
@@ -2200,6 +2218,7 @@ export const TableFieldSchema: z.ZodObject<{
         read: "read";
         display: "display";
     }>>;
+    parts: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodString>>;
 }, z.core.$strip>
 ```
 
