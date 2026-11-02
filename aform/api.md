@@ -460,13 +460,13 @@ import { AFormLink } from '@stonecrop/aform'
 | embedded | `boolean \| undefined` | no | `false` |  |
 | placeholder | `string \| undefined` | no | `undefined` |  |
 | ariaLabel | `string \| undefined` | no | `undefined` |  |
-| modelValue | `AFormLinkModelValue \| undefined` | no | `{ id: "", displayText: "" }` |  |
+| modelValue | `AFormLinkModelValue \| null \| undefined` | no | `{ id: "", displayText: "" }` |  |
 
 **Events:**
 
 | Event | Payload | Description |
 |-------|---------|-------------|
-| update:modelValue | `[value: AFormLinkModelValue]` |  |
+| update:modelValue | `[value: AFormLinkModelValue \| null]` |  |
 
 **Slots:**
 
