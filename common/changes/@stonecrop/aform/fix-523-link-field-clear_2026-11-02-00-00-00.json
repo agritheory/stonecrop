@@ -1,0 +1,10 @@
+{
+	"changes": [
+		{
+			"packageName": "@stonecrop/aform",
+			"comment": "[AForm] Let a link field be emptied: clearing its text and leaving the field sets the value to null",
+			"type": "none"
+		}
+	],
+	"packageName": "@stonecrop/aform"
+}

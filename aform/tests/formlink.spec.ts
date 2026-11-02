@@ -17,16 +17,16 @@ function mountScalarHost(filterFunction: (search: string) => Promise<AFormLinkVa
 	const raw = ref('CUST-001')
 	const Host = defineComponent({
 		setup() {
-			const model = computed<AFormLinkModelValue>({
+			const model = computed<AFormLinkModelValue | null>({
 				get: () => raw.value,
-				set: (value: AFormLinkModelValue) => {
-					raw.value = typeof value === 'object' ? String(value.id) : String(value)
+				set: (value: AFormLinkModelValue | null) => {
+					raw.value = value === null ? '' : typeof value === 'object' ? String(value.id) : String(value)
 				},
 			})
 			return () =>
 				h(AFormLink, {
 					modelValue: model.value,
-					'onUpdate:modelValue': (value: AFormLinkModelValue) => {
+					'onUpdate:modelValue': (value: AFormLinkModelValue | null) => {
 						model.value = value
 					},
 					filterFunction,
@@ -391,6 +391,53 @@ describe('AFormLink component', { tags: ['component'] }, () => {
 		await input.trigger('keydown.esc')
 		await wrapper.vm.$nextTick()
 
+		expect(input.element.value).toBe('Acme Corp')
+	})
+
+	it('clearing the text and leaving the field unsets the link', async () => {
+		const wrapper = mount(AFormLink, { props: { modelValue: validValue } })
+
+		const input = wrapper.find('input')
+		await input.setValue('')
+		await input.trigger('blur')
+
+		expect(wrapper.emitted('update:modelValue')?.at(-1)).toEqual([null])
+		expect(input.element.value).toBe('')
+	})
+
+	it('clearing the text and tabbing out unsets the link', async () => {
+		const filterFunction = vi.fn((_: string): AFormLinkValue[] => [validValue])
+		const wrapper = mount(AFormLink, { props: { modelValue: validValue, filterFunction } })
+
+		const input = wrapper.find('input')
+		await input.trigger('focus')
+		await input.setValue('')
+		await input.trigger('keydown.tab')
+
+		expect(wrapper.emitted('update:modelValue')?.at(-1)).toEqual([null])
+		expect(input.element.value).toBe('')
+	})
+
+	it('Esc after clearing the text keeps the link', async () => {
+		const wrapper = mount(AFormLink, { props: { modelValue: validValue } })
+
+		const input = wrapper.find('input')
+		await input.setValue('')
+		await input.trigger('keydown.esc')
+		await input.trigger('blur')
+
+		expect(wrapper.emitted('update:modelValue')).toBeUndefined()
+		expect(input.element.value).toBe('Acme Corp')
+	})
+
+	it('leaving with partial text keeps the link and restores its text', async () => {
+		const wrapper = mount(AFormLink, { props: { modelValue: validValue } })
+
+		const input = wrapper.find('input')
+		await input.setValue('Ac')
+		await input.trigger('blur')
+
+		expect(wrapper.emitted('update:modelValue')).toBeUndefined()
 		expect(input.element.value).toBe('Acme Corp')
 	})
 
