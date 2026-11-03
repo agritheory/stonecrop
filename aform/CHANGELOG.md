@@ -1,5 +1,15 @@
 # Change Log - @stonecrop/aform
 
+## 0.58.1
+
+### Patch Changes
+
+- b46e712: A link field can now be emptied: clearing its text and leaving the field sets its value to `null`.
+- @stonecrop/atable@0.58.1
+  - @stonecrop/schema@0.58.1
+  - @stonecrop/themes@0.58.1
+  - @stonecrop/utilities@0.58.1
+
 ## 0.58.0
 
 ### Minor Changes
