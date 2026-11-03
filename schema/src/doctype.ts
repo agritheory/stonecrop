@@ -136,6 +136,20 @@ export const LinkDeclaration = z
 		/** Fetch strategy for loading nested data */
 		fetch: FetchStrategy.optional(),
 
+		/**
+		 * Order of a many-side link's rows: a field of the target doctype, ascending unless `direction` is
+		 * `desc`. Rows read in identity order when it is omitted, and identity breaks ties when it is given.
+		 *
+		 * Strict, unlike the declarations around it: a misspelt `direction` ignored would read the rows the
+		 * other way round without a word.
+		 */
+		orderBy: z
+			.strictObject({
+				fieldname: z.string().min(1),
+				direction: z.enum(['asc', 'desc']).optional(),
+			})
+			.optional(),
+
 		/** Whether to block workflow actions until nested data is loaded (default: true) */
 		blockWorkflows: z.boolean().optional(),
 	})
@@ -632,7 +646,7 @@ export interface GetRecordOptions {
 export interface GetRecordsOptions {
 	/** Filter expression (field-value pairs) */
 	filters?: Record<string, unknown>
-	/** Order by expression (e.g. 'NAME_ASC') */
+	/** A field and a direction, `FIELD_ASC` or `FIELD_DESC`; the field as the doctype spells it (e.g. 'name_ASC') */
 	orderBy?: string
 	/** Maximum number of records to return */
 	limit?: number

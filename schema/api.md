@@ -1250,7 +1250,7 @@ export interface GetRecordsOptions {
 | includeTotal? | `boolean` | Ask the backend for the total matching the filters as well as the page. Off by default because it costs a second query — a full scan on Postgres — and knowing *whether* more exist (`hasMore`) is what a list view actually needs. Turn it on for a "showing 20 of 4,312" style display. |
 | limit? | `number` | Maximum number of records to return |
 | offset? | `number` | Number of records to skip |
-| orderBy? | `string` | Order by expression (e.g. 'NAME_ASC') |
+| orderBy? | `string` | A field and a direction, `FIELD_ASC` or `FIELD_DESC`; the field as the doctype spells it (e.g. 'name_ASC') |
 
 ### GetRecordsResult
 
@@ -1951,6 +1951,13 @@ export const DoctypeMeta: z.ZodObject<{
             method: z.ZodLiteral<"custom">;
             handler: z.ZodString;
         }, z.core.$strip>], "method">>;
+        orderBy: z.ZodOptional<z.ZodObject<{
+            fieldname: z.ZodString;
+            direction: z.ZodOptional<z.ZodEnum<{
+                asc: "asc";
+                desc: "desc";
+            }>>;
+        }, z.core.$strict>>;
         blockWorkflows: z.ZodOptional<z.ZodBoolean>;
     }, z.core.$strip>>>;
     workflow: z.ZodOptional<z.ZodObject<{
@@ -2146,6 +2153,13 @@ export const LinkDeclaration: z.ZodObject<{
         method: z.ZodLiteral<"custom">;
         handler: z.ZodString;
     }, z.core.$strip>], "method">>;
+    orderBy: z.ZodOptional<z.ZodObject<{
+        fieldname: z.ZodString;
+        direction: z.ZodOptional<z.ZodEnum<{
+            asc: "asc";
+            desc: "desc";
+        }>>;
+    }, z.core.$strict>>;
     blockWorkflows: z.ZodOptional<z.ZodBoolean>;
 }, z.core.$strip>
 ```

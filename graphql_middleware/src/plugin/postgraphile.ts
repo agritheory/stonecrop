@@ -382,15 +382,9 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 								const backlinkCol = camelToSnake(link.backlink)
 								let sql = `SELECT ${targetSelect.list} FROM ${targetSelect.table} WHERE "${backlinkCol}"::text = $1`
 								const linkValues: unknown[] = [specId]
-								// Same reason the list path orders: a capped relation without a fixed order
-								// returns an arbitrary subset of the children, and a different one each time
-								// a child row is updated. `truncatedLinks` says the tail was cut; it cannot
-								// say the head kept changing. Skipped when the target declares no identity —
-								// there is no stable key to order by, and inventing one would be a guess.
-								const linkPkMeta = getPkMeta(targetMeta)
-								if (linkPkMeta) {
-									sql += ` ORDER BY "${camelToSnake(linkPkMeta.fieldname)}" ASC`
-								}
+								// In the order the link names, so rows that keep their own position read in
+								// it; `truncatedLinks` says the tail was cut, and the order says which tail.
+								sql += orderClause(targetMeta, link.orderBy, targetSelect.table)
 								if (effectiveLimit != null) {
 									// One row more than the cap, same probe the list path uses: its presence
 									// is the whole truncation answer and costs no second query.
@@ -545,42 +539,19 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 											const values: unknown[] = [...filterValues]
 
 											// ORDER BY (field name whitelisted — column names cannot be parameterised)
-											let orderByClause = ''
-											if (spec.orderBy != null) {
-												if (typeof spec.orderBy !== 'string')
-													throw new Error(`Invalid orderBy: expected string, got ${typeof spec.orderBy}`)
-												const orderByStr = spec.orderBy
-												const lastUnder = orderByStr.lastIndexOf('_')
-												if (lastUnder <= 0) {
-													throw new Error(`Invalid orderBy format: "${orderByStr}". Expected FIELD_ASC or FIELD_DESC`)
-												}
-												const dir = orderByStr.slice(lastUnder + 1).toUpperCase()
-												if (dir !== 'ASC' && dir !== 'DESC') {
-													throw new Error(`Invalid orderBy direction: "${dir}". Must be ASC or DESC`)
-												}
-												const fieldName = orderByStr.slice(0, lastUnder)
-												if (!knownFields.has(fieldName)) {
-													throw new Error(`Unknown orderBy field: "${fieldName}" for doctype ${meta.name}`)
-												}
-												orderByClause = ` ORDER BY "${camelToSnake(fieldName)}" ${dir}`
-											}
-
 											// A page is only meaningful against a fixed order, and LIMIT/OFFSET without one
 											// is two independent scans of heap order — an UPDATE between them moves that row
 											// to the tail, so the row it displaced is never returned and nothing in the
-											// payload says a record was skipped. The declared identity is the right default
-											// because it is unique: it gives a total order, which is what makes page 2 start
-											// exactly where page 1 stopped.
-											//
-											// Only when the doctype declares an identity. Without one there is no stable key
-											// to order by, and inventing one here would be a guess; such a doctype cannot be
-											// paged stably by any means.
-											if (orderByClause === '') {
-												const listPkMeta = getPkMeta(meta)
-												if (listPkMeta) {
-													orderByClause = ` ORDER BY "${camelToSnake(listPkMeta.fieldname)}" ASC`
-												}
+											// payload says a record was skipped. The identity makes the order total, which is
+											// what makes page 2 start exactly where page 1 stopped.
+											if (spec.orderBy != null && typeof spec.orderBy !== 'string') {
+												throw new Error(`Invalid orderBy: expected string, got ${typeof spec.orderBy}`)
 											}
+											const orderByClause = orderClause(
+												meta,
+												spec.orderBy == null ? undefined : readListOrderBy(spec.orderBy),
+												select.table
+											)
 
 											// LIMIT / OFFSET. A caller that names no limit gets the configured default rather
 											// than the whole table: omission is how an unbounded scan used to happen, and the
@@ -1060,6 +1031,58 @@ function getPkMeta(meta: DoctypeMeta): ValueField | undefined {
 }
 
 /**
+ * The ORDER BY clause for reading a doctype's rows: the field `order` names, then the declared identity
+ * to break ties, or the identity alone when nothing is named. Empty when the doctype declares no identity
+ * and nothing is named.
+ *
+ * One definition for the list query and for a many-side link, which both cap what they read. A capped read
+ * without a total order keeps an arbitrary set of rows, a different one whenever a row is updated and moves
+ * in the heap, and only the identity is unique. Without an identity there is no stable key, and inventing
+ * one would be a guess.
+ *
+ * Each term names its column through `table`, the statement's FROM. The select returns every column as text
+ * under its fieldname, and a field named as its column (`position`, `id`, `created_at`) shares that name;
+ * ORDER BY reads a bare name as the output column first, so it sorted that text and 10 came before 9.
+ * Qualified, the name can only mean the column, compared as its own type.
+ *
+ * The named field must have a column (`columnBackedFields`): a computed field has none, and naming one would
+ * reach Postgres as a missing column instead of being refused by name.
+ */
+function orderClause(meta: DoctypeMeta, order: LinkDeclaration['orderBy'], table: string): string {
+	const terms: string[] = []
+	if (order !== undefined) {
+		if (!columnBackedFields(meta.fields).some(field => field.fieldname === order.fieldname)) {
+			throw new Error(
+				`Unknown orderBy field: "${order.fieldname}" for doctype ${meta.name}; an order names a field with a database column`
+			)
+		}
+		terms.push(`${table}."${camelToSnake(order.fieldname)}" ${order.direction === 'desc' ? 'DESC' : 'ASC'}`)
+	}
+	const pkMeta = getPkMeta(meta)
+	if (pkMeta && pkMeta.fieldname !== order?.fieldname) {
+		terms.push(`${table}."${camelToSnake(pkMeta.fieldname)}" ASC`)
+	}
+	return terms.length > 0 ? ` ORDER BY ${terms.join(', ')}` : ''
+}
+
+/**
+ * The list query's `orderBy` argument, `FIELD_ASC` or `FIELD_DESC` with the direction in either case, read
+ * as the order a link declares. The field is everything before the last underscore, so it may hold
+ * underscores of its own.
+ */
+function readListOrderBy(orderBy: string): NonNullable<LinkDeclaration['orderBy']> {
+	const lastUnder = orderBy.lastIndexOf('_')
+	if (lastUnder <= 0) {
+		throw new Error(`Invalid orderBy format: "${orderBy}". Expected FIELD_ASC or FIELD_DESC`)
+	}
+	const direction = orderBy.slice(lastUnder + 1).toLowerCase()
+	if (direction !== 'asc' && direction !== 'desc') {
+		throw new Error(`Invalid orderBy direction: "${direction.toUpperCase()}". Must be ASC or DESC`)
+	}
+	return { fieldname: orderBy.slice(0, lastUnder), direction }
+}
+
+/**
  * Assert that every registered action handler names a doctype and an action that exist.
  *
  * An unregistered action is fine — a transition needs no effect. The reverse is not: a handler
@@ -1125,7 +1148,8 @@ function assertActionHandlersResolve(actionHandlers: Record<string, Record<strin
 }
 
 /**
- * Refuse a doctype set whose links or `inherits` name a doctype nobody registered.
+ * Refuse a doctype set whose links or `inherits` name a doctype nobody registered, or whose links
+ * bind or order by a field that cannot serve (see `validateReferences`).
  *
  * What it prevents is silent: the link read does `const targetMeta = getMeta(link.target)` followed
  * by `if (!targetMeta) continue`, so an unresolvable target drops the relation from the response
@@ -1147,7 +1171,7 @@ function assertReferencesResolve(): void {
 
 	throw new Error(
 		`StonecropPlugin: ${broken.length} doctype reference${broken.length === 1 ? '' : 's'} ` +
-			`cannot be resolved and would silently drop the relation:\n  ` +
+			`cannot be resolved; each says what it breaks:\n  ` +
 			broken.map(e => `${e.path.join('.')}: ${e.message}`).join('\n  ')
 	)
 }

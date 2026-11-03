@@ -226,6 +226,13 @@ export const DoctypeMeta: z.ZodObject<{
             method: z.ZodLiteral<"custom">;
             handler: z.ZodString;
         }, z.core.$strip>], "method">>;
+        orderBy: z.ZodOptional<z.ZodObject<{
+            fieldname: z.ZodString;
+            direction: z.ZodOptional<z.ZodEnum<{
+                asc: "asc";
+                desc: "desc";
+            }>>;
+        }, z.core.$strict>>;
         blockWorkflows: z.ZodOptional<z.ZodBoolean>;
     }, z.core.$strip>>>;
     workflow: z.ZodOptional<z.ZodObject<{
@@ -489,6 +496,13 @@ export const LinkDeclaration: z.ZodObject<{
         method: z.ZodLiteral<"custom">;
         handler: z.ZodString;
     }, z.core.$strip>], "method">>;
+    orderBy: z.ZodOptional<z.ZodObject<{
+        fieldname: z.ZodString;
+        direction: z.ZodOptional<z.ZodEnum<{
+            asc: "asc";
+            desc: "desc";
+        }>>;
+    }, z.core.$strict>>;
     blockWorkflows: z.ZodOptional<z.ZodBoolean>;
 }, z.core.$strip>;
 
