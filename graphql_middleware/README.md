@@ -126,10 +126,29 @@ Each entry in `links` can declare a `fetch` strategy:
 | Strategy | Behaviour |
 |----------|-----------|
 | `{ "method": "sync", "limit": N }` | Linked records are fetched in the same resolver call and merged into `data` |
-| `{ "method": "lazy" }` | Link is absent from the response; client retrieves it via `stonecropRecords` with `filters` |
+| `{ "method": "lazy" }` | Link is absent from the response; client retrieves it via `stonecropRecord` with `includeNested` naming the link |
 | `{ "method": "custom", "handler": "myHandler" }` | Calls a registered fetch handler (see below) |
 
-When `fetch` is omitted, `noneOrMany`/`atLeastOne` links default to `sync` (limit 50) and `atMostOne`/`one` links default to `lazy`.
+When `fetch` is omitted, `noneOrMany`/`atLeastOne` links default to `sync` (limit 200, the `defaultRecordLimit`) and `atMostOne`/`one` links default to `lazy`.
+
+### Link order
+
+A `noneOrMany`/`atLeastOne` link reads its rows in identity order: by the target's field marked `primaryKey`, or else its field named `id`. A target with neither reads in no fixed order, and a capped read of it can keep different rows each time. Rows that keep their own position, such as an order's lines, name it with `orderBy`: a field of the target doctype with a database column, ascending unless `direction` is `desc`:
+
+```json
+"items": {
+  "target": "sales-order-item",
+  "cardinality": "noneOrMany",
+  "backlink": "salesOrderId",
+  "orderBy": { "fieldname": "rowOrder" }
+}
+```
+
+Values compare as the column's own type, the target's identity breaks ties when it has one, and a capped link keeps the head of this order. Rows with no value in the order field come last ascending and first descending, as Postgres orders them. Ordering by a `json` field fails in Postgres, which has no order for that type (`jsonb` sorts).
+
+A malformed `orderBy` is refused when the doctype loads. Building the schema refuses one naming a field the target lacks or a field with no column, and an `orderBy` on a one-side link, which reads one row. For a doctype loaded after the schema is built, a many-side link's field is checked when the record is read, and a one-side link's `orderBy` is ignored.
+
+A `lazy` link reads in the same order when the client loads it, through `stonecropRecord` with `includeNested`. A `custom` many-side link hands its rows to its handler, which applies `orderBy` itself if it uses it; its field is not checked.
 
 ### Display-only fields
 
@@ -193,6 +212,6 @@ registerFetchHandler('loadLineItems', async (pgClient, parentRecord, link) => {
 | `stonecropAllMeta` | Fetch all registered doctype metadata |
 | `stonecropAction(doctype, action, args?)` | Execute a doctype action |
 
-`stonecropRecords` accepts `orderBy` as `FIELD_ASC` or `FIELD_DESC` (e.g. `"status_ASC"`). The field name is validated against the doctype's known fields before interpolation.
+`stonecropRecords` accepts `orderBy` as `FIELD_ASC` or `FIELD_DESC` (e.g. `"status_ASC"`). The field must be one of the doctype's fields with a database column, checked before it reaches the SQL; values compare as the column's own type, and identity breaks ties. Without `orderBy`, a list reads in identity order. A doctype with no identity has nothing to break ties with: rows tied on the named field, or every row when none is named, come in no fixed order, so its pages can skip or repeat rows.
 
 For full type signatures see [API Reference](./api.md).

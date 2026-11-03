@@ -1,5 +1,82 @@
 # Change Log - @stonecrop/nuxt
 
+## 0.57.0
+
+### Patch Changes
+
+- Updated dependencies [e816b7b]
+- Updated dependencies [e816b7b]
+- Updated dependencies [e816b7b]
+- Updated dependencies [e816b7b]
+  - @stonecrop/schema@0.57.0
+  - @stonecrop/graphql-middleware@0.57.0
+  - @stonecrop/aform@0.57.0
+  - @stonecrop/atable@0.57.0
+  - @stonecrop/desktop@0.57.0
+  - @stonecrop/graphql-client@0.57.0
+  - @stonecrop/node-editor@0.57.0
+  - @stonecrop/stonecrop@0.57.0
+  - @stonecrop/nuxt-grafserv@0.57.0
+  - @stonecrop/casl-middleware@0.57.0
+  - @stonecrop/code-editor@0.57.0
+  - @stonecrop/themes@0.57.0
+
+## 0.56.4
+
+### Patch Changes
+
+- Updated dependencies [e02c837]
+  - @stonecrop/schema@0.56.4
+  - @stonecrop/aform@0.56.4
+  - @stonecrop/atable@0.56.4
+  - @stonecrop/desktop@0.56.4
+  - @stonecrop/graphql-client@0.56.4
+  - @stonecrop/graphql-middleware@0.56.4
+  - @stonecrop/node-editor@0.56.4
+  - @stonecrop/stonecrop@0.56.4
+  - @stonecrop/nuxt-grafserv@0.56.4
+  - @stonecrop/casl-middleware@0.56.4
+  - @stonecrop/code-editor@0.56.4
+  - @stonecrop/themes@0.56.4
+
+## 0.56.3
+
+### Patch Changes
+
+- ff8f5da: `@stonecrop/nuxt-grafserv` no longer depends on `@graphql-tools/stitch`, which it never imported, so an app installing it stops getting the `@graphql-tools/utils` that GHSA-7mx3-vvmw-hjmv and GHSA-c4qx-w738-7hr3 affect. The scaffolded `server/resolvers.ts` declares the type of an action's reply, which the newer Grafast's `loadOne` no longer infers.
+- Updated dependencies [ff8f5da]
+  - @stonecrop/nuxt-grafserv@0.56.3
+  - @stonecrop/aform@0.56.3
+  - @stonecrop/atable@0.56.3
+  - @stonecrop/casl-middleware@0.56.3
+  - @stonecrop/code-editor@0.56.3
+  - @stonecrop/desktop@0.56.3
+  - @stonecrop/graphql-client@0.56.3
+  - @stonecrop/graphql-middleware@0.56.3
+  - @stonecrop/node-editor@0.56.3
+  - @stonecrop/schema@0.56.3
+  - @stonecrop/stonecrop@0.56.3
+  - @stonecrop/themes@0.56.3
+
+## 0.56.2
+
+### Patch Changes
+
+- 9a372b4: Build the Nuxt modules in `prepublishOnly`, as every other package does, rather than on every `pack`, and drop nuxt's deprecated `prepublish` hook, which built it a second time on publish. The published files are unchanged.
+- Updated dependencies [9a372b4]
+  - @stonecrop/nuxt-grafserv@0.56.2
+  - @stonecrop/aform@0.56.2
+  - @stonecrop/atable@0.56.2
+  - @stonecrop/casl-middleware@0.56.2
+  - @stonecrop/code-editor@0.56.2
+  - @stonecrop/desktop@0.56.2
+  - @stonecrop/graphql-client@0.56.2
+  - @stonecrop/graphql-middleware@0.56.2
+  - @stonecrop/node-editor@0.56.2
+  - @stonecrop/schema@0.56.2
+  - @stonecrop/stonecrop@0.56.2
+  - @stonecrop/themes@0.56.2
+
 ## 0.56.1
 
 ### Patch Changes

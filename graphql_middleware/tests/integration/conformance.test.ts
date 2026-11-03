@@ -181,9 +181,15 @@ function buildInMemorySchema(): GraphQLSchema {
 									if (dir !== 'ASC' && dir !== 'DESC') {
 										throw new Error(`Invalid orderBy direction: "${dir}". Must be ASC or DESC`)
 									}
+									// The named field in its direction, compared as its own type, then identity
+									// ascending to break ties, as the Postgres adapter orders. Reversing the whole
+									// sort for DESC would reverse the ties too.
 									const col = spec.orderBy.slice(0, lastUnder)
-									rows = rows.toSorted((a, b) => String(a[col]).localeCompare(String(b[col])))
-									if (dir === 'DESC') rows.reverse()
+									const identity = lookupField(doctype)
+									const compare = (a: unknown, b: unknown) =>
+										typeof a === 'number' && typeof b === 'number' ? a - b : String(a).localeCompare(String(b))
+									const sign = dir === 'DESC' ? -1 : 1
+									rows = rows.toSorted((a, b) => sign * compare(a[col], b[col]) || compare(a[identity], b[identity]))
 								}
 								const offset = typeof spec.offset === 'number' ? spec.offset : 0
 								const limit = typeof spec.limit === 'number' ? spec.limit : rows.length
@@ -354,6 +360,14 @@ const CASES: Array<{
 		nonEmpty: true,
 		document: RECORDS,
 		variables: { doctype: 'ScCode', orderBy: 'code_DESC', limit: 2, offset: 1 },
+	},
+	{
+		// Two rows share a status. Descending applies to the named field only; identity breaks the tie
+		// ascending either way.
+		label: 'records, ordered descending by a column two rows share',
+		nonEmpty: true,
+		document: RECORDS,
+		variables: { doctype: 'ScCode', orderBy: 'status_DESC' },
 	},
 	{
 		label: 'records for an unknown doctype',

@@ -7,11 +7,12 @@
  * resolution modes are invisible to them.
  */
 
-import { execFileSync } from 'node:child_process'
-import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync } from 'node:fs'
-import { tmpdir } from 'node:os'
+import { execFile } from 'node:child_process'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync } from 'node:fs'
+import { availableParallelism, tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { promisify } from 'node:util'
 
 import { workspaceMembers } from './workspace-members.mjs'
 
@@ -32,14 +33,31 @@ const ATTW_EXPECTED_FAILURES = new Map([
 
 const readJson = path => JSON.parse(readFileSync(path, 'utf8'))
 
-function run(command, args, cwd) {
+const execFileAsync = promisify(execFile)
+
+async function run(command, args, cwd) {
 	try {
-		const stdout = execFileSync(command, args, { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] })
+		const { stdout } = await execFileAsync(command, args, { cwd, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 })
 		return { code: 0, output: stdout }
 	} catch (error) {
-		return { code: error.status ?? 1, output: `${error.stdout ?? ''}${error.stderr ?? ''}` }
+		return {
+			code: typeof error.code === 'number' ? error.code : 1,
+			output: `${error.stdout ?? ''}${error.stderr ?? ''}`,
+		}
 	}
 }
+
+/**
+ * A CLI's entry point, run with this Node rather than through `pnpm exec`, which spent most of each
+ * check starting pnpm. Read off disk because publint's `exports` hides its package.json from require.
+ */
+function binOf(packageName, binName) {
+	const packageDir = join(rootDir, 'node_modules', packageName)
+	return join(packageDir, readJson(join(packageDir, 'package.json')).bin[binName])
+}
+
+const publintBin = binOf('publint', 'publint')
+const attwBin = binOf('@arethetypeswrong/cli', 'attw')
 
 const publishable = workspaceMembers()
 	.map(dir => ({ dir, manifestPath: join(rootDir, dir, 'package.json') }))
@@ -49,42 +67,66 @@ const publishable = workspaceMembers()
 
 if (publishable.length === 0) throw new Error('Found no publishable packages; the member parse is wrong')
 
-const staging = mkdtempSync(join(tmpdir(), 'stonecrop-publish-'))
-const publintFailures = []
-const attwFailures = []
-const attwSkipped = []
+/** Checks one package. Each one packs into its own folder, so the tarball is the only file there. */
+async function check({ dir, manifest }, staging) {
+	const cwd = join(rootDir, dir)
+	const result = { name: manifest.name, publint: null, attw: null, skipped: false }
 
-try {
-	for (const { dir, manifest } of publishable) {
-		const cwd = join(rootDir, dir)
+	const publint = await run(process.execPath, [publintBin], cwd)
+	if (publint.code !== 0) result.publint = publint.output.trim()
 
-		const publint = run('pnpm', ['exec', 'publint'], cwd)
-		if (publint.code !== 0) publintFailures.push({ name: manifest.name, output: publint.output.trim() })
-
-		// `themes` ships only CSS, so attw has nothing to resolve.
-		const declaresTypes = Boolean(manifest.types) || JSON.stringify(manifest.exports ?? {}).includes('"types"')
-		if (!declaresTypes) {
-			attwSkipped.push(manifest.name)
-			continue
-		}
-
-		const before = new Set(readdirSync(staging))
-		const packed = run('pnpm', ['pack', '--pack-destination', staging], cwd)
-		if (packed.code !== 0) {
-			publintFailures.push({ name: manifest.name, output: `pnpm pack failed:\n${packed.output.trim()}` })
-			continue
-		}
-		const tarball = readdirSync(staging).find(file => !before.has(file))
-		if (!tarball) throw new Error(`pnpm pack produced no new tarball for ${manifest.name}`)
-
-		// esm-only: the default profile also fails these on the require()-from-CJS path, which no
-		// package here claims to support.
-		const attw = run('pnpm', ['exec', 'attw', join(staging, tarball), '--profile', 'esm-only'], cwd)
-		if (attw.code !== 0) attwFailures.push({ name: manifest.name, output: attw.output.trim() })
+	// `themes` ships only CSS, so attw has nothing to resolve.
+	const declaresTypes = Boolean(manifest.types) || JSON.stringify(manifest.exports ?? {}).includes('"types"')
+	if (!declaresTypes) {
+		result.skipped = true
+		return result
 	}
+
+	const destination = join(staging, dir.replaceAll('/', '_'))
+	mkdirSync(destination)
+	const packed = await run('pnpm', ['pack', '--pack-destination', destination], cwd)
+	if (packed.code !== 0) {
+		result.publint = [result.publint, `pnpm pack failed:\n${packed.output.trim()}`].filter(Boolean).join('\n\n')
+		return result
+	}
+	const [tarball] = readdirSync(destination)
+	if (!tarball) throw new Error(`pnpm pack produced no tarball for ${manifest.name}`)
+
+	// esm-only: the default profile also fails these on the require()-from-CJS path, which no
+	// package here claims to support.
+	const attw = await run(process.execPath, [attwBin, join(destination, tarball), '--profile', 'esm-only'], cwd)
+	if (attw.code !== 0) result.attw = attw.output.trim()
+	return result
+}
+
+/** Runs `task` over `items` at most `limit` at a time, keeping results in input order. */
+async function mapConcurrently(items, limit, task) {
+	const results = Array.from({ length: items.length })
+	let next = 0
+	const worker = async () => {
+		while (next < items.length) {
+			const index = next++
+			// oxlint-disable-next-line eslint/no-await-in-loop -- each worker takes one package at a time; the workers run concurrently
+			results[index] = await task(items[index])
+		}
+	}
+	await Promise.all(Array.from({ length: Math.min(limit, items.length) }, worker))
+	return results
+}
+
+// The packages share nothing, so they are checked side by side. One at a time, this was the
+// longest step in pr-checks after the build itself.
+const staging = mkdtempSync(join(tmpdir(), 'stonecrop-publish-'))
+let results
+try {
+	results = await mapConcurrently(publishable, availableParallelism(), entry => check(entry, staging))
 } finally {
 	rmSync(staging, { recursive: true, force: true })
 }
+
+const publintFailures = results.filter(r => r.publint !== null).map(r => ({ name: r.name, output: r.publint }))
+const attwFailures = results.filter(r => r.attw !== null).map(r => ({ name: r.name, output: r.attw }))
+const attwSkipped = results.filter(r => r.skipped).map(r => r.name)
 
 const problems = []
 

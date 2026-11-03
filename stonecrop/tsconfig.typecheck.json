@@ -2,7 +2,7 @@
 	"extends": "./tsconfig.json",
 	"compilerOptions": {
 		"noEmit": true,
-		"tsBuildInfoFile": "./temp/stonecrop.typecheck.tsbuildinfo",
+		"tsBuildInfoFile": "./node_modules/.temp/stonecrop.typecheck.tsbuildinfo",
 		"types": ["vitest/globals"]
 	},
 	"include": ["src/**/*.ts", "tests/**/*.ts"],

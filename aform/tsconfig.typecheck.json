@@ -15,7 +15,7 @@
 		// TypeScript check that every input is under `rootDir`, and that would otherwise be inferred
 		// as this folder — so widen it to the repo root. Safe because this config emits nothing.
 		"rootDir": "..",
-		"tsBuildInfoFile": "./temp/aform.typecheck.tsbuildinfo",
+		"tsBuildInfoFile": "./node_modules/.temp/aform.typecheck.tsbuildinfo",
 		"types": ["node", "vitest/globals", "vitest/jsdom"]
 	},
 	"include": ["src/**/*.ts", "src/**/*.vue", "tests/**/*.ts", "../tools/test-support/**/*.ts"],

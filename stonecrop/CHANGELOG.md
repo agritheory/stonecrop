@@ -1,5 +1,39 @@
 # Change Log - @stonecrop/stonecrop
 
+## 0.57.0
+
+### Patch Changes
+
+- Updated dependencies [e816b7b]
+  - @stonecrop/schema@0.57.0
+  - @stonecrop/aform@0.57.0
+  - @stonecrop/atable@0.57.0
+
+## 0.56.4
+
+### Patch Changes
+
+- Updated dependencies [e02c837]
+  - @stonecrop/schema@0.56.4
+  - @stonecrop/aform@0.56.4
+  - @stonecrop/atable@0.56.4
+
+## 0.56.3
+
+### Patch Changes
+
+- @stonecrop/aform@0.56.3
+  - @stonecrop/atable@0.56.3
+  - @stonecrop/schema@0.56.3
+
+## 0.56.2
+
+### Patch Changes
+
+- @stonecrop/aform@0.56.2
+  - @stonecrop/atable@0.56.2
+  - @stonecrop/schema@0.56.2
+
 ## 0.56.1
 
 ### Patch Changes

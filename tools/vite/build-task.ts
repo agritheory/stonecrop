@@ -17,6 +17,12 @@ import type { UserConfig } from 'vite-plus'
  * ambient `*.vue` shim and emits no declaration for it, so every component shipped as
  * `ComponentOptions` — `any` to a consumer, with the rollup importing `.vue` paths absent from the
  * tarball.
+ *
+ * Scratch output — tsbuildinfo, api-extractor's report and doc model — goes under each package's
+ * `node_modules/.temp`, never a `temp/` beside the sources. Compiling an SFC makes TypeScript expand
+ * the tsconfig `include`, which lists the package root, and Vite+ fingerprints that listing: a folder
+ * the build creates there invalidated `vp build` on the next run, so on a fresh checkout the second
+ * build — a release's prepublishOnly — always missed.
  */
 /**
  * The Nuxt apps in a module package, derived from the presence of a nuxt.config.ts.
@@ -67,11 +73,16 @@ export function nuxtModuleBuildTask(configUrl: string): NonNullable<UserConfig['
 				'nuxt-module-build build',
 			].join(' && '),
 			cache: {
+				// jiti caches under `node_modules/.cache`, which a checkout lacks, so tracked, every fresh CI
+				// run missed `nuxt-module-build prepare` on the folder the last run created. `nuxi prepare`
+				// still misses there: Nuxt writes `<app>/node_modules/.cache/nuxt`, which creates the app's
+				// `node_modules`, and excluding `<app>/node_modules` did not stop the app folder's miss.
 				input: [
 					{ auto: true },
 					{ pattern: 'tools/vite/**', base: 'workspace' },
 					'!dist/**',
 					'!.nuxt/**',
+					'!node_modules/.cache/**',
 					...generatedTrees.map(tree => `!${tree}`),
 				],
 				output: ['dist/**'],
@@ -80,17 +91,28 @@ export function nuxtModuleBuildTask(configUrl: string): NonNullable<UserConfig['
 	}
 }
 
+const apiExtractor = 'node ../tools/scripts/run-api-extractor.mjs run --local -c config/api-extractor.json'
+
+/**
+ * `build` makes what is published; `reports` makes the API report and `api.md`, which are not. Only
+ * the root build runs `reports`, so a release, `prepublishOnly` and a package's test job skip it.
+ *
+ * api-extractor stays in `build` for a `tsc` package because its rollup is the `types` that
+ * package publishes. A `vue-tsc` package publishes vue-tsc's `dist/src` tree and turns the rollup
+ * off (tools/config/api-extractor-vue-base.json), so there api-extractor only reports.
+ */
 export function buildTask(declarations: 'tsc' | 'vue-tsc'): NonNullable<UserConfig['run']>['tasks'] {
+	const rollup = declarations === 'tsc'
 	return {
 		build: {
-			command: [
-				'vp build --logLevel warn',
-				`${declarations} -b --force`,
-				'node ../tools/scripts/run-api-extractor.mjs run --local -c config/api-extractor.json',
-				'node --run docs',
-			].join(' && '),
+			command: ['vp build --logLevel warn', `${declarations} -b --force`, ...(rollup ? [apiExtractor] : [])].join(
+				' && '
+			),
 			cache: {
-				input: [{ auto: true }, '!dist/**'],
+				// `node_modules/.temp` holds the declarations step's tsbuildinfo. A run that creates it
+				// records a `node_modules` listing with `.temp` in it, so a fresh checkout, which has
+				// none, missed the cache for that step on every CI run.
+				input: [{ auto: true }, '!dist/**', '!node_modules/.temp/**'],
 				// No `output`: left to automatic tracking, a cache hit restores only the files that
 				// sub-task itself wrote. `output: ['dist/**']` gave every sub-task the whole directory,
 				// so whenever `vp build` re-ran but the declarations did not change, api-extractor and
@@ -99,6 +121,10 @@ export function buildTask(declarations: 'tsc' | 'vue-tsc'): NonNullable<UserConf
 				// from a package's externals shipped the old bundle, and the dist-contract test read that
 				// bundle and passed.
 			},
+		},
+		reports: {
+			command: [...(rollup ? [] : [apiExtractor]), 'node --run docs'].join(' && '),
+			dependsOn: ['build'],
 		},
 	}
 }

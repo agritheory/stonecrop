@@ -1,5 +1,21 @@
 # Change Log - @stonecrop/schema
 
+## 0.57.0
+
+### Minor Changes
+
+- e816b7b: A many-side link can name the order of its rows with `orderBy`, a field of the target and an optional direction (`{ "fieldname": "rowOrder" }`), so rows that keep their own position, such as an order's lines, load in that order instead of by id. The target's identity breaks ties. Building the schema refuses an `orderBy` naming a field the target lacks or one with no database column, except on a custom link, whose handler applies its own order, and an `orderBy` on any one-side link, which reads one row.
+
+## 0.56.4
+
+### Patch Changes
+
+- e02c837: A workflow action that declares both `stateless: true` and a `nextState` is now refused when the doctype loads, instead of the browser running it as a command that changes nothing while the server moves the record to the next state. `stateless` together with `selfTransition` stays allowed.
+
+## 0.56.3
+
+## 0.56.2
+
 ## 0.56.1
 
 ## 0.56.0

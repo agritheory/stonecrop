@@ -1,7 +1,7 @@
 {
 	"extends": "../tsconfig.json",
 	"compilerOptions": {
-		"tsBuildInfoFile": "./temp/schema.tsbuildinfo",
+		"tsBuildInfoFile": "./node_modules/.temp/schema.tsbuildinfo",
 		"types": ["node", "vitest/globals", "vitest/jsdom"]
 	},
 	"include": ["src/**/*.ts"]

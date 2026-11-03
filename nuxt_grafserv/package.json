@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/nuxt-grafserv",
-	"version": "0.56.1",
+	"version": "0.57.0",
 	"description": "Pluggable Grafserv GraphQL server as Nuxt Module",
 	"keywords": [
 		"grafserv",
@@ -47,13 +47,13 @@
 		"./package.json": "./package.json"
 	},
 	"scripts": {
-		"build:module": "node --run dev:prepare && node --run prepack",
+		"build:module": "vp run build",
 		"dev": "node playground/scripts/bootstrap.mjs && nuxi dev playground --host",
 		"dev:build": "nuxi build playground",
 		"dev:prepare": "nuxt-module-build build --stub && nuxt-module-build prepare && nuxi prepare playground",
 		"docs": "echo 'Nuxt modules use custom build system - skipping API docs generation'",
 		"lint": "eslint .",
-		"prepack": "nuxt-module-build build",
+		"prepublishOnly": "vp run build",
 		"test": "vp test run",
 		"test:ci": "vp test run --run",
 		"test:coverage": "vp test run --coverage.enabled --coverage.provider=istanbul",
@@ -64,7 +64,6 @@
 	"dependencies": {
 		"@graphql-tools/graphql-file-loader": "^8.1.14",
 		"@graphql-tools/load": "^8.1.10",
-		"@graphql-tools/stitch": "^10.1.18",
 		"@graphql-tools/wrap": "^11.1.14",
 		"@stonecrop/graphql-middleware": "workspace:*",
 		"grafast": "^1.0.2",

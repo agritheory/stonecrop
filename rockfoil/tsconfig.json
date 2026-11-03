@@ -1,7 +1,7 @@
 {
 	"extends": "../tsconfig.json",
 	"compilerOptions": {
-		"tsBuildInfoFile": "./temp/rockfoil.tsbuildinfo",
+		"tsBuildInfoFile": "./node_modules/.temp/rockfoil.tsbuildinfo",
 		"types": ["node", "vitest/globals", "vitest/jsdom"]
 	},
 	"include": ["src/**/*.ts"]

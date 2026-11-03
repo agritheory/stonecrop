@@ -29,6 +29,9 @@ interface MockConnection {
 /** A mutation payload. The mock nests the record under a camelCased type key. */
 type MockMutationPayload = Record<string, unknown>
 
+/** One action's reply, declared for the reason `templates/resolvers.ts` gives its own. */
+type ActionReply = { success: boolean; data: unknown; error: string | null; record?: unknown }
+
 // ============================================
 // Type Helpers
 // ============================================
@@ -244,7 +247,7 @@ export default {
 					}),
 					async (specs: readonly any[]) => {
 						return Promise.all(
-							specs.map(async spec => {
+							specs.map(async (spec): Promise<ActionReply> => {
 								const meta = getMeta(spec.doctype)
 								if (!meta) {
 									return {

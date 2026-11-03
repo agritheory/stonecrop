@@ -76,11 +76,11 @@ This package may not export public APIs, or documentation hasn't been generated 
 - **Package**: \`@stonecrop/${pkg.name}\`
 - **Source**: [GitHub](https://github.com/agritheory/stonecrop/tree/development/${pkg.folder})
 
-To generate API documentation, ensure the package has been built:
+To generate API documentation, run the package's reports:
 
 \`\`\`bash
 cd ${pkg.folder}
-pnpm exec vp run build
+pnpm exec vp run reports
 \`\`\`
 `
 
