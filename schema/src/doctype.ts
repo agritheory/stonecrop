@@ -646,7 +646,7 @@ export interface GetRecordOptions {
 export interface GetRecordsOptions {
 	/** Filter expression (field-value pairs) */
 	filters?: Record<string, unknown>
-	/** Order by expression (e.g. 'NAME_ASC') */
+	/** A field and a direction, `FIELD_ASC` or `FIELD_DESC`; the field as the doctype spells it (e.g. 'name_ASC') */
 	orderBy?: string
 	/** Maximum number of records to return */
 	limit?: number

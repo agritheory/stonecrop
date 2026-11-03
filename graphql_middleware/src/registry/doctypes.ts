@@ -182,6 +182,12 @@ export function clearRegistry(): void {
  * table does not have already fails loudly — Postgres rejects the SELECT — so it is left alone;
  * the check exists for the silent cases, not to restate the database's own errors.
  *
+ * A many-side link's `orderBy` is the exception, because the doctypes alone can decide it: it names
+ * a field of the target, which must have a column. A misspelt one fails every read and save of this
+ * doctype, and the read's error names the target rather than this link, so it is refused here, once.
+ * The read keeps its own check for doctypes loaded after the schema is built. A one-side link reads
+ * one row, so its `orderBy` would be ignored without a word.
+ *
  * Returns rather than throws so the caller decides; `assertReferencesResolve` in the plugin is that
  * caller. Kept out of the package's public exports: it reads a module-level registry, so it is only
  * meaningful after this module's own loaders have run.
@@ -251,7 +257,33 @@ export function validateReferences(): ValidationError[] {
 								`that points back to this doctype.`,
 						})
 					}
+					const order = link.orderBy
+					const targetMeta = getMeta(link.target)
+					if (
+						order &&
+						targetMeta &&
+						!columnBackedFields(targetMeta.fields).some(f => f.fieldname === order.fieldname)
+					) {
+						const targetDeclares = flattenFields(targetMeta.fields).some(f => f.fieldname === order.fieldname)
+						errors.push({
+							path: [doctype.name, 'links', key, 'orderBy', 'fieldname'],
+							message: targetDeclares
+								? `Link "${key}" orders its rows by "${order.fieldname}", which has no database column on ` +
+									`"${link.target}" (it is computed, or a container rather than a value), so every read of ` +
+									`this doctype fails. Order by a field with a column.`
+								: `Link "${key}" orders its rows by "${order.fieldname}", which "${link.target}" does not ` +
+									`declare, so every read of this doctype fails. Name a field of "${link.target}".`,
+						})
+					}
 					continue
+				}
+
+				// One row has no order, so a one-side link's `orderBy` would be ignored without a word.
+				if (link.orderBy) {
+					errors.push({
+						path: [doctype.name, 'links', key, 'orderBy'],
+						message: `Link "${key}" is ${link.cardinality} and reads one row, so its \`orderBy\` is never read. Remove it.`,
+					})
 				}
 
 				// One-side: the foreign key is a column on *this* table, read as

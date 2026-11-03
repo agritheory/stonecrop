@@ -92,6 +92,8 @@ CREATE TABLE sc_bulk_child (
 );
 INSERT INTO sc_bulk (name) VALUES ('Bulk Parent');
 INSERT INTO sc_bulk_child (bulk_id, label) SELECT 1, 'child ' || g FROM generate_series(1, 64) g;
+-- Moved to the end of the heap, so a read with no ORDER BY does not come back in id order by luck.
+UPDATE sc_bulk_child SET label = label WHERE id = 1;
 
 -- Ordered many-side link fixture. The lines' ids run against their positions, so a read in
 -- identity order and one in position order cannot be mistaken for each other. The positions
@@ -108,6 +110,29 @@ CREATE TABLE sc_lined_line (
 );
 INSERT INTO sc_lined (name) VALUES ('Lined Parent');
 INSERT INTO sc_lined_line (lined_id, position, label) VALUES (1, 30, 'third'), (1, 9, 'first'), (1, 10, 'second');
+-- Moved to the end of the heap, so a read with no ORDER BY does not come back in id order by luck.
+UPDATE sc_lined_line SET label = label WHERE id = 1;
+
+-- Lines that share one position, for the identity tie-break. The first is updated after the
+-- others are written, so it sits last in the heap and a read without the tie-break returns it last.
+CREATE TABLE sc_tied_line (
+	id serial PRIMARY KEY,
+	lined_id integer REFERENCES sc_lined(id) ON DELETE CASCADE,
+	position integer NOT NULL,
+	label text NOT NULL
+);
+INSERT INTO sc_tied_line (lined_id, position, label) VALUES (1, 5, 'first'), (1, 5, 'second'), (1, 5, 'third');
+UPDATE sc_tied_line SET label = label WHERE id = 1;
+
+-- An enum whose declared order differs from both its text order and the rows' id order, so a sort
+-- by the enum, as text, or by identity each give a different answer.
+CREATE TYPE sc_rank AS ENUM ('low', 'high', 'medium');
+CREATE TABLE sc_ranked (
+	id serial PRIMARY KEY,
+	rank sc_rank NOT NULL,
+	label text NOT NULL
+);
+INSERT INTO sc_ranked (rank, label) VALUES ('medium', 'medium'), ('low', 'low'), ('high', 'high');
 
 -- Cross-adapter conformance fixture: a NATURAL-key table (no `id` column at all).
 -- The rest of this seed is surrogate-keyed, which cannot expose a disagreement about

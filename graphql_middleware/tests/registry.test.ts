@@ -326,6 +326,88 @@ describe('validateReferences', { tags: ['unit', 'graphql'] }, () => {
 		expect(validateReferences()).toHaveLength(0)
 	})
 
+	// =======================================================================
+	// A many-side link's order names a column of the target. Every read of
+	// the parent sorts by it, so a name with no column fails every read and
+	// every save of that doctype; refused here, it fails once, at startup.
+	// =======================================================================
+
+	/** Task with a many-side link to Line ordered as `orderBy` says, Line having `lineFields`. */
+	const withOrderedLink = (orderBy: unknown, lineFields?: unknown[]) => ({
+		Task: {
+			slug: 'task',
+			fields: [],
+			links: { lines: { target: 'line', cardinality: 'noneOrMany', backlink: 'taskId', orderBy } },
+		},
+		Line: {
+			slug: 'line',
+			fields: lineFields ?? [{ kind: 'field', fieldname: 'position', component: 'ANumericInput', label: 'Position' }],
+		},
+	})
+
+	it('accepts an order naming a column field of the target', () => {
+		loadDoctypesFromObject(withOrderedLink({ fieldname: 'position', direction: 'desc' }))
+		expect(validateReferences()).toHaveLength(0)
+	})
+
+	it('accepts an order naming a target field nested inside a fieldset', () => {
+		loadDoctypesFromObject(
+			withOrderedLink({ fieldname: 'position' }, [
+				{
+					kind: 'fieldset',
+					fieldname: 'details',
+					label: 'Details',
+					schema: [{ kind: 'field', fieldname: 'position', component: 'ANumericInput', label: 'Position' }],
+				},
+			])
+		)
+		expect(validateReferences()).toHaveLength(0)
+	})
+
+	it('reports an order naming a field the target does not declare', () => {
+		loadDoctypesFromObject(withOrderedLink({ fieldname: 'rank' }))
+		const errors = validateReferences()
+		expect(errors).toHaveLength(1)
+		expect(errors[0].path).toEqual(['Task', 'links', 'lines', 'orderBy', 'fieldname'])
+		expect(errors[0].message).toContain('"rank"')
+		expect(errors[0].message).toContain('"line"')
+	})
+
+	it('reports an order naming a computed field of the target', () => {
+		loadDoctypesFromObject(
+			withOrderedLink({ fieldname: 'shown' }, [
+				{ kind: 'field', fieldname: 'shown', component: 'ATextInput', computed: true, label: 'Shown' },
+			])
+		)
+		const errors = validateReferences()
+		expect(errors).toHaveLength(1)
+		expect(errors[0].message).toContain('no database column')
+	})
+
+	it('reports an order on a one-side link, which reads no rows to order', () => {
+		loadDoctypesFromObject(
+			withLinks({ ownerId: { target: 'owner', cardinality: 'one', orderBy: { fieldname: 'name' } } })
+		)
+		const errors = validateReferences()
+		expect(errors).toHaveLength(1)
+		expect(errors[0].path).toEqual(['Task', 'links', 'ownerId', 'orderBy'])
+	})
+
+	it('reports an order only once when the target itself is unknown', () => {
+		loadDoctypesFromObject({
+			Task: {
+				slug: 'task',
+				fields: [],
+				links: {
+					lines: { target: 'nonesuch', cardinality: 'noneOrMany', backlink: 'taskId', orderBy: { fieldname: 'rank' } },
+				},
+			},
+		})
+		const errors = validateReferences()
+		expect(errors).toHaveLength(1)
+		expect(errors[0].path).toEqual(['Task', 'links', 'lines', 'target'])
+	})
+
 	it('exempts a custom fetch strategy from both binding checks', () => {
 		// A custom handler is handed the row and the declaration and finds the target however it
 		// likes; the runtime returns before consulting either binding.

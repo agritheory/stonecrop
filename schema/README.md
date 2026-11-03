@@ -234,7 +234,7 @@ const records = await client.getRecords(
   { name: 'Recipe' },
   {
     filters: { status: 'Active' },
-    orderBy: 'name',
+    orderBy: 'name_ASC',
     limit: 20,
     offset: 0,
   }

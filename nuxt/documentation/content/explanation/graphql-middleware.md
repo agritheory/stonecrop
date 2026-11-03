@@ -27,7 +27,9 @@ The `PgExecutor` — the object that provides the database connection — is dis
 
 A many-side link is capped at `fetch.limit` if the declaration names one, and otherwise at the server's `defaultRecordLimit` — the same option that caps `stonecropRecords`, because a link is a list fetched a different way. When a cap cuts a relation short, the field's name appears in `truncatedLinks` on the result. Guard on it: a link cannot be paged, so writing back a relation you only partly received deletes the rest.
 
-**`lazy`** means the link is absent from the response entirely. The client retrieves it separately via `stonecropRecords` with a `filters` argument pointing back at the parent. For `atMostOne` and `one` links (many-to-one or one-to-one), the default strategy is `lazy`. Lazy is appropriate when the linked data is large, rarely needed, or retrieved conditionally.
+A many-side link reads its rows in the order its declaration names with `orderBy`, a field of the target with a database column, such as an order line's position; otherwise in identity order, by the target's field marked `primaryKey` or else its field named `id`. Identity breaks ties, so a capped link keeps the same head for the same rows. A target with no identity reads in no fixed order. Building the schema refuses an `orderBy` naming a field the target lacks, or one with no column.
+
+**`lazy`** means the link is absent from the response entirely. The client loads it later through `stonecropRecord`, naming the link in `includeNested`, so it reads as a `sync` link would: capped, and in the link's order. For `atMostOne` and `one` links (many-to-one or one-to-one), the default strategy is `lazy`. Lazy is appropriate when the linked data is large, rarely needed, or retrieved conditionally.
 
 **`custom`** delegates fetching to a registered handler function. Custom strategies are for cases that neither `sync` nor `lazy` can express cleanly — aggregations, multi-table joins, remote service calls. The handler receives the active `PgClient`, the parent record, and the link declaration, and returns a record or array of records.
 

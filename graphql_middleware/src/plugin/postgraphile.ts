@@ -1041,15 +1041,20 @@ function getPkMeta(meta: DoctypeMeta): ValueField | undefined {
  * one would be a guess.
  *
  * Each term names its column through `table`, the statement's FROM. The select returns every column as text
- * under its fieldname, and a one-word fieldname is the column's own name (`position`, `id`); ORDER BY reads
- * a bare name as the output column first, so it sorted that text and 10 came before 9. Qualified, the name
- * can only mean the column, compared as its own type.
+ * under its fieldname, and a field named as its column (`position`, `id`, `created_at`) shares that name;
+ * ORDER BY reads a bare name as the output column first, so it sorted that text and 10 came before 9.
+ * Qualified, the name can only mean the column, compared as its own type.
+ *
+ * The named field must have a column (`columnBackedFields`): a computed field has none, and naming one would
+ * reach Postgres as a missing column instead of being refused by name.
  */
 function orderClause(meta: DoctypeMeta, order: LinkDeclaration['orderBy'], table: string): string {
 	const terms: string[] = []
 	if (order !== undefined) {
-		if (!flattenFields(meta.fields).some(field => field.fieldname === order.fieldname)) {
-			throw new Error(`Unknown orderBy field: "${order.fieldname}" for doctype ${meta.name}`)
+		if (!columnBackedFields(meta.fields).some(field => field.fieldname === order.fieldname)) {
+			throw new Error(
+				`Unknown orderBy field: "${order.fieldname}" for doctype ${meta.name}; an order names a field with a database column`
+			)
 		}
 		terms.push(`${table}."${camelToSnake(order.fieldname)}" ${order.direction === 'desc' ? 'DESC' : 'ASC'}`)
 	}
@@ -1143,7 +1148,8 @@ function assertActionHandlersResolve(actionHandlers: Record<string, Record<strin
 }
 
 /**
- * Refuse a doctype set whose links or `inherits` name a doctype nobody registered.
+ * Refuse a doctype set whose links or `inherits` name a doctype nobody registered, or whose links
+ * bind or order by a field that cannot serve (see `validateReferences`).
  *
  * What it prevents is silent: the link read does `const targetMeta = getMeta(link.target)` followed
  * by `if (!targetMeta) continue`, so an unresolvable target drops the relation from the response
@@ -1165,7 +1171,7 @@ function assertReferencesResolve(): void {
 
 	throw new Error(
 		`StonecropPlugin: ${broken.length} doctype reference${broken.length === 1 ? '' : 's'} ` +
-			`cannot be resolved and would silently drop the relation:\n  ` +
+			`cannot be resolved; each says what it breaks:\n  ` +
 			broken.map(e => `${e.path.join('.')}: ${e.message}`).join('\n  ')
 	)
 }

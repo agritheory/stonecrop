@@ -161,6 +161,8 @@ stonecropRecords(doctype: "Invoice", orderBy: "status_ASC")
 stonecropRecords(doctype: "Invoice", orderBy: "created_at_DESC")
 ```
 
+The field is named as the doctype spells it and must have a database column; values compare as the column's own type. Identity breaks ties, so the order is total: pages read while the rows stay unchanged neither overlap nor skip a row. A row added or removed between two page reads still shifts the pages after it. Without `orderBy`, a list reads in identity order: the doctype's field marked `primaryKey`, or else its field named `id`. A doctype with neither reads in no fixed order, and its pages can skip or repeat rows.
+
 ---
 
 ## Configuring the database connection
