@@ -225,7 +225,7 @@ const record = await client.getRecord({ name: 'Recipe' }, 'r1', {
 })
 
 // Fetch only specific links
-const record = await client.getRecord({ name: 'Recipe' }, 'r1', {
+const withTasks = await client.getRecord({ name: 'Recipe' }, 'r1', {
   includeNested: ['tasks'], // fetch only the tasks link
 })
 

@@ -186,7 +186,8 @@ export function clearRegistry(): void {
  * a field of the target, which must have a column. A misspelt one fails every read and save of this
  * doctype, and the read's error names the target rather than this link, so it is refused here, once.
  * The read keeps its own check for doctypes loaded after the schema is built. A one-side link reads
- * one row, so its `orderBy` would be ignored without a word.
+ * one row, so its `orderBy` would be ignored without a word, custom or not. A custom many-side link's
+ * order is its handler's to apply, so it is not checked.
  *
  * Returns rather than throws so the caller decides; `assertReferencesResolve` in the plugin is that
  * caller. Kept out of the package's public exports: it reads a module-level registry, so it is only
@@ -236,15 +237,26 @@ export function validateReferences(): ValidationError[] {
 					})
 				}
 
+				const isMany = link.cardinality === 'noneOrMany' || link.cardinality === 'atLeastOne'
+
+				// One row has no order, however it is fetched, so a one-side link's `orderBy` would be
+				// ignored without a word.
+				if (!isMany && link.orderBy) {
+					errors.push({
+						path: [doctype.name, 'links', key, 'orderBy'],
+						message: `Link "${key}" is ${link.cardinality} and reads one row, so its \`orderBy\` is never read. Remove it.`,
+					})
+				}
+
 				// A custom fetch strategy hands the whole read to its handler, which is given the
-				// row and the declaration and finds the target however it likes. The runtime returns
-				// before consulting either binding below, so requiring one would refuse a link that
-				// works.
+				// row and the declaration and finds the target however it likes, in the order it
+				// likes. The runtime returns before consulting either binding below, or the order,
+				// so requiring one would refuse a link that works.
 				if (link.fetch?.method === 'custom') continue
 
 				// The two cardinalities bind through different halves of the declaration, so the
 				// check has to split the same way the reader does.
-				if (link.cardinality === 'noneOrMany' || link.cardinality === 'atLeastOne') {
+				if (isMany) {
 					// Many-side: the target rows are found by a column on the *target* table, so
 					// this doctype needs no field of its own — and the in-repo hosts disagree on
 					// whether one exists, which is why only `backlink` can be required here.
@@ -276,14 +288,6 @@ export function validateReferences(): ValidationError[] {
 						})
 					}
 					continue
-				}
-
-				// One row has no order, so a one-side link's `orderBy` would be ignored without a word.
-				if (link.orderBy) {
-					errors.push({
-						path: [doctype.name, 'links', key, 'orderBy'],
-						message: `Link "${key}" is ${link.cardinality} and reads one row, so its \`orderBy\` is never read. Remove it.`,
-					})
 				}
 
 				// One-side: the foreign key is a column on *this* table, read as

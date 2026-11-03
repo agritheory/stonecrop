@@ -144,11 +144,11 @@ A `noneOrMany`/`atLeastOne` link reads its rows in identity order: by the target
 }
 ```
 
-Values compare as the column's own type, identity breaks ties, and a capped link keeps the head of this order. Rows with no value in the order field come last ascending and first descending, as Postgres orders them. Ordering by a `json` field fails in Postgres, which has no order for that type (`jsonb` sorts).
+Values compare as the column's own type, the target's identity breaks ties when it has one, and a capped link keeps the head of this order. Rows with no value in the order field come last ascending and first descending, as Postgres orders them. Ordering by a `json` field fails in Postgres, which has no order for that type (`jsonb` sorts).
 
 A malformed `orderBy` is refused when the doctype loads. Building the schema refuses one naming a field the target lacks or a field with no column, and an `orderBy` on a one-side link, which reads one row. For a doctype loaded after the schema is built, a many-side link's field is checked when the record is read, and a one-side link's `orderBy` is ignored.
 
-A `lazy` link reads in the same order when the client loads it, through `stonecropRecord` with `includeNested`. A `custom` link orders its own rows.
+A `lazy` link reads in the same order when the client loads it, through `stonecropRecord` with `includeNested`. A `custom` many-side link hands its rows to its handler, which applies `orderBy` itself if it uses it; its field is not checked.
 
 ### Display-only fields
 
@@ -212,6 +212,6 @@ registerFetchHandler('loadLineItems', async (pgClient, parentRecord, link) => {
 | `stonecropAllMeta` | Fetch all registered doctype metadata |
 | `stonecropAction(doctype, action, args?)` | Execute a doctype action |
 
-`stonecropRecords` accepts `orderBy` as `FIELD_ASC` or `FIELD_DESC` (e.g. `"status_ASC"`). The field must be one of the doctype's fields with a database column, checked before it reaches the SQL; values compare as the column's own type, and identity breaks ties. Without `orderBy`, a list reads in identity order. A doctype with no identity reads in no fixed order, so its pages can skip or repeat rows.
+`stonecropRecords` accepts `orderBy` as `FIELD_ASC` or `FIELD_DESC` (e.g. `"status_ASC"`). The field must be one of the doctype's fields with a database column, checked before it reaches the SQL; values compare as the column's own type, and identity breaks ties. Without `orderBy`, a list reads in identity order. A doctype with no identity has nothing to break ties with: rows tied on the named field, or every row when none is named, come in no fixed order, so its pages can skip or repeat rows.
 
 For full type signatures see [API Reference](./api.md).

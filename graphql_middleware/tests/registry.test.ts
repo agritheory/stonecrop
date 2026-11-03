@@ -393,6 +393,39 @@ describe('validateReferences', { tags: ['unit', 'graphql'] }, () => {
 		expect(errors[0].path).toEqual(['Task', 'links', 'ownerId', 'orderBy'])
 	})
 
+	// One row has no order whatever fetches it, so a custom handler is no exception.
+	it('reports an order on a custom one-side link too', () => {
+		loadDoctypesFromObject(
+			withLinks({
+				owner: {
+					target: 'owner',
+					cardinality: 'one',
+					fetch: { method: 'custom', handler: 'h' },
+					orderBy: { fieldname: 'name' },
+				},
+			})
+		)
+		const errors = validateReferences()
+		expect(errors).toHaveLength(1)
+		expect(errors[0].path).toEqual(['Task', 'links', 'owner', 'orderBy'])
+	})
+
+	// A custom many-side link hands its rows to its handler, which applies the order itself; the
+	// middleware never reads the field, so it does not check it.
+	it('leaves a custom many-side link order to its handler', () => {
+		loadDoctypesFromObject(
+			withLinks({
+				owners: {
+					target: 'owner',
+					cardinality: 'noneOrMany',
+					fetch: { method: 'custom', handler: 'h' },
+					orderBy: { fieldname: 'rank' },
+				},
+			})
+		)
+		expect(validateReferences()).toHaveLength(0)
+	})
+
 	it('reports an order only once when the target itself is unknown', () => {
 		loadDoctypesFromObject({
 			Task: {
