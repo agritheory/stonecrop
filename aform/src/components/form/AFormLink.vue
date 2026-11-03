@@ -194,7 +194,13 @@ watch(
 			searchText.value = displayedText.value
 			return
 		}
-		if (!id) return
+		// The link was unset (emptied here, or by the record). Under a real v-model, `leaveField` ran
+		// while the prop still held the old record, so `closeDropdown` put that record's text back;
+		// clear it now that the value has caught up.
+		if (!id) {
+			searchText.value = ''
+			return
+		}
 		try {
 			let match: AFormLinkValue | undefined
 			let displayText: string | undefined
@@ -272,8 +278,9 @@ const closeDropdown = () => {
 
 // Leaving the field (Tab, blur, a click outside) with its text cleared unsets the link: a value is
 // otherwise written only by picking an option, so a picked record could never be removed. Esc keeps
-// its meaning of "cancel" and still reverts the text to the record. An emptied link holds null, as
-// every other emptied field does.
+// its meaning of "cancel" and still reverts the text to the record. An emptied link holds null rather
+// than the '' a text field empties to: a link names a record or none, its FK column stores no record
+// as null, and '' would read as an id.
 const leaveField = () => {
 	if (hasValidId.value && searchText.value.trim() === '' && mode !== 'read' && !disabled) {
 		modelValue.value = null

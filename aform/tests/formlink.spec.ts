@@ -405,6 +405,43 @@ describe('AFormLink component', { tags: ['component'] }, () => {
 		expect(input.element.value).toBe('')
 	})
 
+	it('stays empty after clearing under a parent that coerces the link to a scalar', async () => {
+		const filterFunction = vi.fn(async (_: string): Promise<AFormLinkValue[]> => [validValue])
+		const { host, raw } = mountScalarHost(filterFunction)
+		await flushPromises()
+
+		const input = host.find('input')
+		expect(input.element.value).toBe('Acme Corp')
+		await input.setValue('')
+		await input.trigger('blur')
+		await flushPromises()
+
+		expect(raw.value).toBe('')
+		expect(input.element.value).toBe('')
+	})
+
+	it('stays empty after clearing under a v-model parent', async () => {
+		const model = ref<AFormLinkModelValue | null>(validValue)
+		const Host = defineComponent({
+			setup: () => () =>
+				h(AFormLink, {
+					modelValue: model.value,
+					'onUpdate:modelValue': (value: AFormLinkModelValue | null) => {
+						model.value = value
+					},
+				}),
+		})
+		const host = mount(Host)
+
+		const input = host.find('input')
+		await input.setValue('')
+		await input.trigger('blur')
+		await flushPromises()
+
+		expect(model.value).toBeNull()
+		expect(input.element.value).toBe('')
+	})
+
 	it('clearing the text and tabbing out unsets the link', async () => {
 		const filterFunction = vi.fn((_: string): AFormLinkValue[] => [validValue])
 		const wrapper = mount(AFormLink, { props: { modelValue: validValue, filterFunction } })

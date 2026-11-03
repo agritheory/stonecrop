@@ -1177,7 +1177,7 @@ What AFormLink accepts as its `v-model`.
 
 Wider than `AFormLinkValue` because a link is as often bound straight to its FK column as to a resolved reference: a record loaded from the DB carries the raw scalar, and a parent bound to that column coerces every update it receives back to a scalar. The component reads through `linkId`/`linkDisplayText`/`asLinkValue`, so all three shapes render and resolve identically.
 
-Emitting is narrower — AFormLink always writes back an `AFormLinkValue`.
+Emitting is narrower — AFormLink writes back an `AFormLinkValue` when an option is picked, or `null` when the user empties the field.
 
 **Definition:**
 
