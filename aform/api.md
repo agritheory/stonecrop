@@ -1143,6 +1143,7 @@ export interface ResolvedTable {
   kind: 'table';
   label?: string;
   mode?: import('@stonecrop/schema').InteractionMode;
+  parts?: Record<string, string>;
   readOnly?: boolean;
   required?: boolean;
   schema: ColumnSchema[];
@@ -1163,6 +1164,7 @@ export interface ResolvedTable {
 | kind | `'table'` | Discriminator |
 | label? | `string` | Human-readable label |
 | mode? | `import('@stonecrop/schema').InteractionMode` | Interaction mode for all cells |
+| parts? | `Record<string, string>` | Preserved from the original ValueField or TableField: the fields an app's own table component reads, handed to it as its value. Its rows still arrive as `rows`. |
 | readOnly? | `boolean` | Preserved from the original ValueField or TableField |
 | required? | `boolean` | Preserved from the original ValueField or TableField |
 | schema | `ColumnSchema[]` | Column definitions — passed to ATable's `:schema` prop |

@@ -95,8 +95,9 @@ export function componentLinkExpansion(component?: string): LinkExpansion | unde
 
 /**
  * The parts of its value each component edits, each held in a field of the record (a field's
- * `parts` names which). A component absent here edits a single value, so its field declares no
- * parts.
+ * `parts` names which). Any other component Stonecrop ships edits a single value, so its field
+ * declares no parts. An app's own component is in neither list: it may declare whatever parts it
+ * reads, since only the app knows what its component needs ({@link componentTakesParts}).
  * @public
  */
 export const COMPONENT_PARTS: Record<string, readonly string[]> = {
@@ -167,3 +168,16 @@ export function resolveLinkRenderMode(
 export const CANONICAL_COMPONENTS: readonly string[] = [
 	...new Set([...Object.keys(COMPONENT_CATEGORY), ...Object.keys(COMPONENT_LINK_EXPANSION)]),
 ].toSorted()
+
+/**
+ * Whether a field rendered by this component may declare `parts`: a component Stonecrop ships only
+ * when {@link COMPONENT_PARTS} names its parts, and an app's own component always. An app's component
+ * is how a field reads other fields of its record (a lines table reading the order's delivery date),
+ * and `parts` is the one way to read them that works for a record not yet saved.
+ *
+ * @param component - the field's component; a table with none renders as `ATable`
+ * @public
+ */
+export function componentTakesParts(component: string): boolean {
+	return Boolean(componentParts(component)) || !CANONICAL_COMPONENTS.includes(component)
+}
