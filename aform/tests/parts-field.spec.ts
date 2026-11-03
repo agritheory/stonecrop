@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vite-plus/test'
 import { flushPromises, mount } from '@vue/test-utils'
-import { toRaw } from 'vue'
+import { defineComponent, h, toRaw, type PropType } from 'vue'
 
 import AForm from '../src/components/AForm.vue'
 import ACurrencyInput from '../src/components/form/ACurrencyInput.vue'
@@ -248,5 +248,73 @@ describe('parts holding the values a server sends', { tags: ['component'] }, () 
 		await flushPromises()
 		expect(lookups).toContain('EUR')
 		expect((lastData(wrapper) ?? data).exchangeRate).toBe(1.25)
+	})
+})
+
+// A new record lives only in the form's data, so a component reads the rest of it through `parts`.
+describe('an app’s own component reading other fields of a new record', { tags: ['component'] }, () => {
+	const PlanChart = defineComponent({
+		props: { modelValue: { type: Object, default: undefined } },
+		setup: props => () => h('div', { class: 'plan-chart' }, `${props.modelValue?.start}–${props.modelValue?.end}`),
+	})
+
+	const OrderLines = defineComponent({
+		props: {
+			modelValue: { type: Object, default: undefined },
+			rows: { type: Array as PropType<Record<string, unknown>[]>, default: () => [] },
+		},
+		setup: props => () =>
+			h(
+				'ul',
+				props.rows.map(row => h('li', { class: 'due' }, String(row.deliveryDate ?? props.modelValue?.deliveryDate)))
+			),
+	})
+
+	const chart: ResolvedField = {
+		kind: 'field',
+		fieldname: 'chart',
+		component: 'PlanChart',
+		parts: { start: 'startDate', end: 'endDate' },
+	}
+
+	const lines: ResolvedField = {
+		kind: 'table',
+		fieldname: 'lines',
+		component: 'OrderLines',
+		schema: [{ fieldname: 'deliveryDate', label: 'Delivery Date' }],
+		config: { view: 'list' },
+		parts: { deliveryDate: 'deliveryDate' },
+	}
+
+	it('follows the range of a plan not yet saved', async () => {
+		const wrapper = mount(AForm, {
+			props: { schema: [chart], data: { startDate: '2026-01-01', endDate: '2026-03-31' } },
+			global: { components: { PlanChart } },
+		})
+		expect(wrapper.find('.plan-chart').text()).toBe('2026-01-01–2026-03-31')
+
+		await wrapper.setProps({ data: { startDate: '2026-01-01', endDate: '2026-06-30' } })
+		expect(wrapper.find('.plan-chart').text()).toBe('2026-01-01–2026-06-30')
+	})
+
+	it('shows each line’s due date, falling back to the order’s, before the order is saved', () => {
+		const data = { deliveryDate: '2026-11-15', lines: [{ deliveryDate: '2026-11-01' }, {}] }
+		const wrapper = mount(AForm, {
+			props: { schema: [lines], data },
+			global: { components: { OrderLines } },
+		})
+		expect(wrapper.findAll('.due').map(due => due.text())).toEqual(['2026-11-01', '2026-11-15'])
+	})
+
+	it('shows the errors of its own field beside those of the fields it reads', () => {
+		const wrapper = mount(AForm, {
+			props: {
+				schema: [chart],
+				data: { startDate: null, endDate: null },
+				errors: { chart: ['Pick a range'], endDate: ['Ends before it starts'] },
+			},
+			global: { components: { PlanChart } },
+		})
+		expect(wrapper.findComponent(PlanChart).vm.$attrs.errors).toEqual(['Pick a range', 'Ends before it starts'])
 	})
 })

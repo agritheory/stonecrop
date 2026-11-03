@@ -249,6 +249,7 @@ export interface ResolvedTable {
     kind: 'table';
     label?: string;
     mode?: InteractionMode;
+    parts?: Record<string, string>;
     readOnly?: boolean;
     required?: boolean;
     schema: ColumnSchema[];
