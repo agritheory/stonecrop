@@ -536,6 +536,51 @@ describe('Doctype Validation', { tags: ['unit'] }, () => {
 			expect(result.errors).toEqual([])
 		})
 
+		it('should accept a link that names its order', () => {
+			for (const orderBy of [{ fieldname: 'rowOrder' }, { fieldname: 'rowOrder', direction: 'desc' }]) {
+				const doctype = {
+					name: 'SalesOrder',
+					fields: [{ kind: 'field', fieldname: 'name', component: 'ATextInput' }],
+					links: {
+						items: { target: 'sales-order-item', cardinality: 'noneOrMany', backlink: 'salesOrderId', orderBy },
+					},
+				}
+				const result = validateDoctype(doctype)
+
+				expect(result.success, JSON.stringify(orderBy)).toBe(true)
+				expect(result.errors).toEqual([])
+			}
+		})
+
+		// Refused when the doctype loads, rather than on the first read of a record. A misspelt key is refused
+		// too: ignored, it would read the rows in the other direction without a word.
+		it('should reject a link order that is not a fieldname and a direction', () => {
+			for (const orderBy of [
+				'rowOrder_ASC',
+				{},
+				{ fieldname: '' },
+				{ direction: 'asc' },
+				{ fieldname: 'rowOrder', direction: 'up' },
+				{ fieldname: 'rowOrder', direction: 'ASC' },
+				{ fieldname: 'rowOrder', dirction: 'desc' },
+			]) {
+				const doctype = {
+					name: 'SalesOrder',
+					fields: [{ kind: 'field', fieldname: 'name', component: 'ATextInput' }],
+					links: {
+						items: { target: 'sales-order-item', cardinality: 'noneOrMany', backlink: 'salesOrderId', orderBy },
+					},
+				}
+				const result = validateDoctype(doctype)
+
+				expect(result.success, JSON.stringify(orderBy)).toBe(false)
+				expect(
+					result.errors.some(error => error.path.includes('orderBy')),
+					JSON.stringify(orderBy)
+				).toBe(true)
+			}
+		})
+
 		it('should reject link with missing target', () => {
 			const doctype = {
 				name: 'Recipe',
