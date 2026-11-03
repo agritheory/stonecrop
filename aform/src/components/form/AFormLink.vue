@@ -29,7 +29,7 @@
 						@keydown.esc="closeDropdown"
 						@keydown.tab="closeDropdown" />
 					<button
-						v-if="hasValidId && !disabled && !embedded"
+						v-if="canNavigate && !disabled && !embedded"
 						type="button"
 						class="aform_form-btn"
 						@click="handleNavigate"
@@ -163,6 +163,11 @@ const activeIndex = ref<number | null>(null)
 
 const navigator = inject<AFormLinkNavigator | null>('aformLinkNavigator', null)
 
+// The open-record arrow needs a record to open: an id, a doctype to open it in, and an app that
+// provides a way to open records. A link with no doctype (e.g. a unit stored by its name) or one
+// mounted outside an app that injects a navigator has nothing to open, so it shows no arrow.
+const canNavigate = computed(() => hasValidId.value && !!doctype && !!navigator)
+
 type FilterFn = (search: string) => AFormLinkValue[] | Promise<AFormLinkValue[]>
 type ResolverFn = (doctype: string, id: string) => string | undefined | Promise<string | undefined>
 const resolver = inject<ResolverFn | null>('aformLinkResolver', null)
@@ -232,14 +237,7 @@ watch(
 
 const handleNavigate = () => {
 	const id = linkId(modelValue.value)
-	if (navigator && doctype && id !== undefined) {
-		navigator.navigate(doctype, id)
-	} else if (navigator && !doctype) {
-		console.warn(
-			`[AFormLink] Navigation requested but \`doctype\` prop is missing. ` +
-				`Add \`options\` (or \`doctype\`) to the Link field definition to enable navigation.`
-		)
-	}
+	if (navigator && doctype && id !== undefined) navigator.navigate(doctype, id)
 }
 
 const isResultSelected = (option: AFormLinkValue) => {
