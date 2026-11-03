@@ -17,6 +17,8 @@
 						:placeholder="placeholder"
 						:aria-label="ariaLabel"
 						:required="required"
+						:aria-invalid="invalid"
+						:aria-describedby="describedBy"
 						:aria-expanded="dropdownOpen"
 						:aria-controls="dropdownOpen ? listboxId : undefined"
 						:aria-activedescendant="activeIndex === null ? undefined : `${listboxId}-opt-${activeIndex}`"
@@ -70,6 +72,7 @@
 				</ADropdownList>
 			</div>
 			<label v-if="label && !embedded" class="aform_field-label">{{ label }}</label>
+			<p v-if="!embedded" v-show="errorText" :id="errorId" class="aform_error" role="alert">{{ errorText }}</p>
 		</template>
 	</div>
 </template>
@@ -78,6 +81,7 @@
 import { vOnClickOutside } from '@vueuse/components'
 import { computed, inject, ref, useId, watch } from 'vue'
 
+import { fieldErrorA11y } from '../../composables/fieldErrorA11y'
 import type { AFormLinkModelValue, AFormLinkNavigator, AFormLinkValue, ComponentProps } from '../../types'
 import { deserializeFunction } from '../../utils/deserialize'
 import { asLinkValue, linkDisplayText, linkId } from '../../utils/linkValue'
@@ -88,6 +92,8 @@ const {
 	mode,
 	uuid,
 	required,
+	errors,
+	validation = { errorMessage: '' },
 	doctype = undefined,
 	formatter = undefined,
 	icon = 'arrow-right',
@@ -121,6 +127,11 @@ const {
 // `uuid` is per-field when AForm supplies it; the fallback keeps the ids unique for a standalone
 // mount so two pickers on one page can't cross-wire their ARIA relationships.
 const listboxId = `${uuid ?? `aform-link-${useId()}`}-listbox`
+
+// Dynamic trigger errors take precedence over a static schema errorMessage; empty means the slot hides.
+// Embedded mode renders no error slot (the host owns it, as with its label), so it gets no ARIA wiring either.
+const errorText = computed(() => (embedded ? '' : errors?.length ? errors.join('; ') : (validation.errorMessage ?? '')))
+const { errorId, describedBy, invalid } = fieldErrorA11y(uuid, errorText)
 
 const modelValue = defineModel<AFormLinkModelValue>({ default: () => ({ id: '', displayText: '' }) })
 
