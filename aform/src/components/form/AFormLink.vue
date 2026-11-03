@@ -23,11 +23,12 @@
 						:disabled="disabled || mode === 'read'"
 						@input="onInput"
 						@focus="onFocus"
+						@blur="leaveField"
 						@keydown.down.prevent="selectNext"
 						@keydown.up.prevent="selectPrev"
 						@keydown.enter.prevent="selectCurrent"
 						@keydown.esc="closeDropdown"
-						@keydown.tab="closeDropdown" />
+						@keydown.tab="leaveField" />
 					<button
 						v-if="hasValidId && !disabled && !embedded"
 						type="button"
@@ -122,7 +123,7 @@ const {
 // mount so two pickers on one page can't cross-wire their ARIA relationships.
 const listboxId = `${uuid ?? `aform-link-${useId()}`}-listbox`
 
-const modelValue = defineModel<AFormLinkModelValue>({ default: () => ({ id: '', displayText: '' }) })
+const modelValue = defineModel<AFormLinkModelValue | null>({ default: () => ({ id: '', displayText: '' }) })
 
 const hasValidId = computed(() => linkId(modelValue.value) !== undefined)
 
@@ -139,7 +140,7 @@ watch(
 	{ immediate: true }
 )
 
-const shownLink = computed<AFormLinkModelValue>(() => {
+const shownLink = computed<AFormLinkModelValue | null>(() => {
 	const value = modelValue.value
 	if (linkDisplayText(value)) return value
 	const id = linkId(value)
@@ -193,7 +194,13 @@ watch(
 			searchText.value = displayedText.value
 			return
 		}
-		if (!id) return
+		// The link was unset (emptied here, or by the record). Under a real v-model, `leaveField` ran
+		// while the prop still held the old record, so `closeDropdown` put that record's text back;
+		// clear it now that the value has caught up.
+		if (!id) {
+			searchText.value = ''
+			return
+		}
 		try {
 			let match: AFormLinkValue | undefined
 			let displayText: string | undefined
@@ -269,8 +276,21 @@ const closeDropdown = () => {
 	searchText.value = hasValidId.value ? displayedText.value : ''
 }
 
+// Leaving the field (Tab, blur, a click outside) with its text cleared unsets the link: a value is
+// otherwise written only by picking an option, so a picked record could never be removed. Esc keeps
+// its meaning of "cancel" and still reverts the text to the record. An emptied link holds null rather
+// than the '' a text field empties to: a link names a record or none, its FK column stores no record
+// as null, and '' would read as an id.
+const leaveField = () => {
+	if (hasValidId.value && searchText.value.trim() === '' && mode !== 'read' && !disabled) {
+		modelValue.value = null
+		knownLink.value = undefined
+	}
+	closeDropdown()
+}
+
 const onClickOutside = () => {
-	if (dropdownOpen.value) closeDropdown()
+	if (dropdownOpen.value) leaveField()
 }
 
 const onFocus = () => openDropdown(searchText.value)

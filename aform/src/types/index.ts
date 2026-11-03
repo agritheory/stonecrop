@@ -246,7 +246,8 @@ export interface AFormLinkValue {
  * to that column coerces every update it receives back to a scalar. The component reads through
  * `linkId`/`linkDisplayText`/`asLinkValue`, so all three shapes render and resolve identically.
  *
- * Emitting is narrower — AFormLink always writes back an {@link AFormLinkValue}.
+ * Emitting is narrower — AFormLink writes back an {@link AFormLinkValue} when an option is picked,
+ * or `null` when the user empties the field.
  * @public
  */
 export type AFormLinkModelValue = AFormLinkValue | string | number
