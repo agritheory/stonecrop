@@ -1,5 +1,24 @@
 # Change Log - @stonecrop/nuxt
 
+## 0.58.2
+
+### Patch Changes
+
+- 4a1a274: `NodeEditor` and `StateEditor` now load the first time a page renders one, instead of with every page: the Nuxt module put Vue Flow and dagre, about 200 kB minified, in every app's entry chunk. Both stay registered by name, so a doctype naming either still renders it.
+- Updated dependencies [4a1a274]
+  - @stonecrop/atable@0.58.2
+  - @stonecrop/aform@0.58.2
+  - @stonecrop/stonecrop@0.58.2
+  - @stonecrop/desktop@0.58.2
+  - @stonecrop/casl-middleware@0.58.2
+  - @stonecrop/code-editor@0.58.2
+  - @stonecrop/graphql-client@0.58.2
+  - @stonecrop/graphql-middleware@0.58.2
+  - @stonecrop/node-editor@0.58.2
+  - @stonecrop/nuxt-grafserv@0.58.2
+  - @stonecrop/schema@0.58.2
+  - @stonecrop/themes@0.58.2
+
 ## 0.58.1
 
 ### Patch Changes
