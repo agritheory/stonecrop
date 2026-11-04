@@ -109,6 +109,9 @@ export interface ResolvedTable {
 	hidden?: boolean
 	/** Preserved from the original ValueField or TableField */
 	validation?: FieldValidation
+	/** Preserved from the original ValueField or TableField: the fields an app's own table component
+	 *  reads, handed to it as its value. Its rows still arrive as `rows`. */
+	parts?: Record<string, string>
 	/** When set, ATable fetches list pages through this callback (server paging). */
 	getRecords?: (options?: GetRecordsOptions) => Promise<GetRecordsResult>
 	/** When this changes, ATable refetches from offset 0. */
@@ -243,7 +246,8 @@ export interface AFormLinkValue {
  * to that column coerces every update it receives back to a scalar. The component reads through
  * `linkId`/`linkDisplayText`/`asLinkValue`, so all three shapes render and resolve identically.
  *
- * Emitting is narrower — AFormLink always writes back an {@link AFormLinkValue}.
+ * Emitting is narrower — AFormLink writes back an {@link AFormLinkValue} when an option is picked,
+ * or `null` when the user empties the field.
  * @public
  */
 export type AFormLinkModelValue = AFormLinkValue | string | number

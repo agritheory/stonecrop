@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
 import type { ColumnSchema } from './column-schema'
-import { componentParts } from './component-meta'
+import { componentParts, componentTakesParts } from './component-meta'
 import { flattenFields } from './flatten'
 import type { InteractionMode } from './mode'
 import { TableViewConfig } from './table'
@@ -122,6 +122,11 @@ export interface ValueField {
 	 * by part: `{ qty: 'quantity', uom: 'uom' }` for `AQuantityInput`. One part is this field itself;
 	 * the others are fields of the same record, which several fields may share (an order's totals
 	 * share its currency). The component reads each part from its field and writes it back there.
+	 *
+	 * An app's own component names whatever parts it reads, under names of its own choosing: a
+	 * chart following its plan's range declares `{ start: 'startDate', end: 'endDate' }`. Its value
+	 * is then those parts, read from the record the form edits, saved or not; this field itself is a
+	 * part only when the component names it.
 	 */
 	parts?: Record<string, string>
 	/** Whether the field is required */
@@ -187,6 +192,12 @@ export interface TableField {
 	config?: TableViewConfig
 	/** Interaction mode for all cells inside this table */
 	mode?: InteractionMode
+	/**
+	 * For an app's own table component, the other fields of the record it reads, keyed by part, as
+	 * on a value field: a lines table showing each line's due date declares
+	 * `{ deliveryDate: 'deliveryDate' }` to read the order's. The rows still arrive as `rows`.
+	 */
+	parts?: Record<string, string>
 }
 
 /**
@@ -455,6 +466,35 @@ export function getRecordIdentity(
 	return undefined
 }
 
+// Whether each part names a field the doctype has is checked with the doctype (`DoctypeMeta`), which
+// alone can see the other fields.
+function refuseInvalidParts(
+	field: { fieldname: string; component?: string; parts?: Record<string, string> },
+	context: z.RefinementCtx
+) {
+	if (!field.parts) return
+	const refuse = (message: string) => context.addIssue({ code: 'custom', path: ['parts'], message })
+	// A table naming no component renders as ATable.
+	const component = field.component ?? 'ATable'
+	if (!componentTakesParts(component)) {
+		refuse(`${component} edits a single value, so its field declares no parts`)
+		return
+	}
+
+	const named = Object.values(field.parts)
+	for (const fieldname of new Set(named)) {
+		if (named.filter(other => other === fieldname).length > 1) refuse(`"${fieldname}" is named by more than one part`)
+	}
+
+	// An app's own component names the parts it reads; only a component Stonecrop ships has a fixed set.
+	const expected = componentParts(component)
+	if (!expected) return
+	const declared = Object.keys(field.parts)
+	for (const part of expected) if (!declared.includes(part)) refuse(`${component} needs a "${part}" part`)
+	for (const part of declared) if (!expected.includes(part)) refuse(`${component} has no "${part}" part`)
+	if (!named.includes(field.fieldname)) refuse(`one part must be "${field.fieldname}" itself`)
+}
+
 function createDoctypeFieldSchemas() {
 	const ValueFieldSchema = z
 		.object({
@@ -487,27 +527,7 @@ function createDoctypeFieldSchemas() {
 			source: z.literal('introspected').optional(),
 			config: TableViewConfig.optional(),
 		})
-		// Whether each part names a field the doctype has is checked with the doctype (`DoctypeMeta`),
-		// which alone can see the other fields.
-		.superRefine((field, context) => {
-			if (!field.parts) return
-			const refuse = (message: string) => context.addIssue({ code: 'custom', path: ['parts'], message })
-			const expected = componentParts(field.component)
-			if (!expected) {
-				refuse(`${field.component} edits a single value, so its field declares no parts`)
-				return
-			}
-			const declared = Object.keys(field.parts)
-			for (const part of expected) if (!declared.includes(part)) refuse(`${field.component} needs a "${part}" part`)
-			for (const part of declared) if (!expected.includes(part)) refuse(`${field.component} has no "${part}" part`)
-
-			const named = Object.values(field.parts)
-			if (!named.includes(field.fieldname)) refuse(`one part must be "${field.fieldname}" itself`)
-			for (const fieldname of new Set(named)) {
-				if (named.filter(other => other === fieldname).length > 1)
-					refuse(`"${fieldname}" is named by more than one part`)
-			}
-		})
+		.superRefine(refuseInvalidParts)
 		.meta({ title: 'ValueField' })
 
 	const TableFieldSchema = z
@@ -520,7 +540,9 @@ function createDoctypeFieldSchemas() {
 			columns: z.array(z.object({ fieldname: z.string().min(1) }).passthrough()),
 			config: TableViewConfig.optional(),
 			mode: z.enum(['edit', 'read', 'display']).optional(),
+			parts: z.record(z.string(), z.string().min(1)).optional(),
 		})
+		.superRefine(refuseInvalidParts)
 		.meta({ title: 'TableField' })
 
 	// DoctypeFieldSchema must be declared before FieldsetFieldSchema so the z.lazy

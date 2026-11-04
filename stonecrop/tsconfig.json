@@ -1,7 +1,7 @@
 {
 	"extends": "../tsconfig.json",
 	"compilerOptions": {
-		"tsBuildInfoFile": "./temp/stonecrop.tsbuildinfo"
+		"tsBuildInfoFile": "./node_modules/.temp/stonecrop.tsbuildinfo"
 	},
 	"include": ["src/**/*.ts"]
 }

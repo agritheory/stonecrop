@@ -4,9 +4,9 @@
 		:class="{
 			'desktop--action-set-open': actionSetDrawerOpen,
 			'desktop--preview-open': actionSetPreviewOpen,
-		}"
-		@click="handleClick">
-		<div class="desktop__workspace">
+			'desktop--preview-resizing': previewResizing,
+		}">
+		<div ref="workspace" class="desktop__workspace">
 			<div class="desktop__main">
 				<slot v-if="$slots.default" />
 				<AForm
@@ -40,10 +40,24 @@
 				</div>
 			</div>
 
-			<aside v-if="actionSetPreviewSubject" class="desktop__preview">
+			<aside v-if="actionSetPreviewSubject" ref="previewEl" class="desktop__preview" :style="previewStyle">
+				<div
+					class="desktop__preview-resize"
+					role="separator"
+					aria-orientation="vertical"
+					aria-label="Resize preview"
+					:aria-valuenow="Math.round(previewFraction * 100)"
+					:aria-valuemin="Math.round(previewBounds.min * 100)"
+					:aria-valuemax="Math.round(previewBounds.max * 100)"
+					tabindex="0"
+					title="Drag to resize · double-click to reset"
+					@pointerdown="onPreviewResizeStart"
+					@dblclick="resetPreviewWidth"
+					@keydown="onPreviewResizeKeydown" />
 				<header class="desktop__preview-header">
 					<button
 						type="button"
+						ref="previewCloseEl"
 						class="desktop__preview-close"
 						aria-label="Close preview"
 						@click="closeActionSetPreview">
@@ -84,13 +98,7 @@
 // The draft segment comes from @stonecrop/stonecrop rather than being spelled out here: that
 // package guards fetching, field initialization and workflow readiness on the same question, and
 // when the two were written separately they disagreed and every guard over there went dead.
-import {
-	DRAFT_RECORD_ID,
-	isDraftRecordId,
-	useStonecrop,
-	useValidationStore,
-	type EditableRecord,
-} from '@stonecrop/stonecrop'
+import { isDraftRecordId, useStonecrop, useValidationStore, type EditableRecord } from '@stonecrop/stonecrop'
 import {
 	AForm,
 	type AFormLinkNavigator,
@@ -98,11 +106,27 @@ import {
 	type ResolvedField,
 	type ResolvedTable,
 } from '@stonecrop/aform'
-import { computed, markRaw, onMounted, onUnmounted, provide, ref, shallowRef, toRaw, unref, watch } from 'vue'
+import {
+	computed,
+	getCurrentInstance,
+	markRaw,
+	nextTick,
+	onMounted,
+	onUnmounted,
+	provide,
+	ref,
+	shallowRef,
+	toRaw,
+	unref,
+	watch,
+} from 'vue'
 
 import ActionSet from './ActionSet.vue'
+import DesktopRowLink from './DesktopRowLink.vue'
 import SheetNav from './SheetNav.vue'
 import { createActionSet, actionSetKey } from '../composables/useActionSet'
+import { usePreviewSplit } from '../composables/usePreviewSplit'
+import { ROW_LINK_COMPONENT, openListRowKey } from '../row-link'
 import type {
 	ActionElements,
 	RouteAdapter,
@@ -138,7 +162,11 @@ const {
 	routeAdapter?: RouteAdapter
 	/** Host drawer slots, each shown as a tile in the ActionSet column. */
 	actionSetSlots?: ActionSetSlot[]
-	/** When provided, the Actions drawer lists exactly these, in place of the actions Desktop derives from the doctype. */
+	/**
+	 * When provided, the Actions drawer lists exactly these, in place of the actions Desktop derives from the doctype;
+	 * `[]` lists none. A list shows every action its doctype declares, so an app whose list and record share a doctype
+	 * passes its list's actions (New, say) on list views, and leaves this unset on others.
+	 */
 	hostActions?: ActionElements[]
 	/** When provided, replaces Desktop's default doctype-navigation breadcrumbs in SheetNav. */
 	breadcrumbs?: { title: string; to: string }[]
@@ -503,6 +531,20 @@ const getAvailableCommands = () => {
 	}
 }
 
+// Every action a list's doctype declares, one button each. A list has no record, so each is raised
+// without a `recordId`.
+const getListActions = (): ActionElements[] => {
+	const doctypeSlug = currentDoctype.value
+	const doctype = doctypeSlug ? stonecrop.value?.registry.getDoctype(doctypeSlug) : undefined
+	if (!doctype) return []
+
+	return doctype.getActions().map(({ name }) => ({
+		type: 'button' as const,
+		label: doctype.getActionMeta(name)?.label ?? name,
+		action: () => emit('action', { name, doctype: doctypeSlug, data: {} }),
+	}))
+}
+
 const actionElements = computed(() => {
 	if (hostActions) {
 		return hostActions
@@ -512,11 +554,7 @@ const actionElements = computed(() => {
 
 	switch (currentView.value) {
 		case 'records':
-			elements.push({
-				type: 'button',
-				label: 'New Record',
-				action: () => void createNewRecord(),
-			})
+			elements.push(...getListActions())
 			break
 		case 'record': {
 			// No actions until there is a record on screen to act on: a new record's starting values, or
@@ -600,12 +638,18 @@ const searchCommands = (query: string): Command[] => {
 			description: `Navigate to ${routeDoctype.value} list`,
 			action: () => void doNavigate({ view: 'records', doctype: routeDoctype.value }),
 		})
+	}
 
-		commands.push({
-			title: `Create New ${formatDoctypeName(routeDoctype.value)}`,
-			description: `Create a new ${routeDoctype.value} record`,
-			action: () => void createNewRecord(),
+	// A list page offers each action its drawer shows, the host's included.
+	if (currentView.value === 'records') {
+		const listActions = actionElements.value.flatMap(element => {
+			if (element.type === 'dropdown') return element.actions
+			return element.disabled ? [] : [element]
 		})
+		for (const { label, action, show } of listActions) {
+			if (!action || show === false) continue
+			commands.push({ title: label, description: `Run on the ${routeDoctype.value} list`, action })
+		}
 	}
 
 	// Add available doctypes as commands
@@ -683,10 +727,6 @@ const openRecord = async (recordId: string) => {
 	await doNavigate({ view: 'record', doctype, recordId })
 }
 
-const createNewRecord = async () => {
-	await doNavigate({ view: 'record', doctype: routeDoctype.value, recordId: DRAFT_RECORD_ID })
-}
-
 // Schema generator functions - moved here to be available to computed properties
 const getDoctypesSchema = (): ResolvedField[] => {
 	if (!availableDoctypes?.length) return []
@@ -722,6 +762,7 @@ const getDoctypesSchema = (): ResolvedField[] => {
 					fieldname: 'actions',
 					label: 'Actions',
 					component: 'ATextInput',
+					cellComponent: ROW_LINK_COMPONENT,
 					align: 'center' as const,
 					edit: false,
 					width: '20ch',
@@ -757,7 +798,10 @@ const getRecordsSchema = (): ResolvedField[] => {
 			// Which resolved fields a cell can render is answered once, in @stonecrop/aform; never
 			// re-derive it here. Flattening alone is not the rule: it kept the expanding links, whose
 			// value is a nested record or an array of them.
-			schema: [...resolvedFieldsToColumns(schema), { fieldname: 'actions', label: 'Actions', component: 'ATextInput' }],
+			schema: [
+				...resolvedFieldsToColumns(schema),
+				{ fieldname: 'actions', label: 'Actions', component: 'ATextInput', cellComponent: ROW_LINK_COMPONENT },
+			],
 			config: { view: 'list' as const, fullWidth: true },
 			...(clientConfigured ? { getRecords: listRecordsFetcher, sourceKey: doctypeSlug } : {}),
 		} satisfies ResolvedTable,
@@ -836,57 +880,15 @@ const resolveRecordId = (record: Record<string, unknown>): string | undefined =>
 	return stonecrop.value.registry.registry[currentDoctype.value]?.getRecordId(record)
 }
 
-// Event handlers
-const getRecordIdFromRow = (rowElement: HTMLTableRowElement): string | null => {
-	const cell = rowElement.querySelector('td[data-rowindex]')
-	if (!cell) return null
-
-	const rowIndexAttr = cell.getAttribute('data-rowindex')
-	if (rowIndexAttr === null) return null
-
-	const rowIndex = parseInt(rowIndexAttr, 10)
-	if (isNaN(rowIndex)) return null
-
-	const records = getRecords()
-	const record = records[rowIndex]
-	if (!record) return null
-
-	return resolveRecordId(record) ?? null
-}
-
-const handleClick = async (event: Event) => {
-	const target = event.target as HTMLElement
-	const action = target.getAttribute('data-action')
-
-	if (action === 'create') {
-		await createNewRecord()
+// What a list's link opens. Each link is handed its own row, so nothing reads a cell's text to learn what
+// was clicked: a records list's row is a record, and a doctypes list's row a doctype.
+const openListRow = async (row: Record<string, unknown>) => {
+	if (currentView.value === 'doctypes') {
+		await navigateToDoctype(String(row.doctype))
+		return
 	}
-
-	const cell = target.closest('td, th')
-	if (cell) {
-		const cellText = cell.textContent?.trim()
-		const row = cell.closest('tr')
-
-		if (cellText === 'View Records' && row) {
-			// Get the doctype from the row data
-			const cells = row.querySelectorAll('td')
-			if (cells.length > 0) {
-				const doctypeCell = cells[1] // Assuming doctype is in second column (first column is index)
-				const doctype = doctypeCell.textContent?.trim()
-				if (doctype) {
-					await navigateToDoctype(doctype)
-				}
-			}
-		} else if (cellText === 'Edit' && row) {
-			// Matched exactly, not by substring. This handler is bound to the whole desktop, so a
-			// substring match fired on any cell whose *data* happened to contain the word — a task
-			// titled "Delete old backups" popped a delete confirmation when you clicked it.
-			const recordId = getRecordIdFromRow(row)
-			if (recordId) {
-				await openRecord(recordId)
-			}
-		}
-	}
+	const recordId = resolveRecordId(row)
+	if (recordId) await openRecord(recordId)
 }
 
 // Reads go through Stonecrop, which owns whether to fetch, how to key the result, and where to
@@ -945,7 +947,7 @@ watch([currentDoctype, currentRecordId], () => {
 
 // Seeding on entry gives a new record the doctype's declared defaults, which it never used to get.
 // Discarding on exit matters as much: the draft segment is one shared literal, so a reused record
-// would open the next New Record pre-filled with the abandoned one's values.
+// would open the next new record pre-filled with the abandoned one's values.
 watch(
 	[currentDoctype, currentRecordId],
 	() => {
@@ -998,7 +1000,6 @@ watch(
 const desktopMethods = {
 	navigateToDoctype,
 	openRecord,
-	createNewRecord,
 	/**
 	 * Convenience wrapper so child components (e.g. slot content) can emit
 	 * an action event without needing a direct reference to the emit function.
@@ -1014,6 +1015,12 @@ const desktopMethods = {
 }
 
 provide('desktopMethods', desktopMethods)
+
+// ATable finds a column's cell component only by a name registered on the app, and hosts mount Desktop
+// without installing its plugin, so Desktop registers its list link itself.
+const app = getCurrentInstance()?.appContext.app
+if (app && !app.component(ROW_LINK_COMPONENT)) app.component(ROW_LINK_COMPONENT, DesktopRowLink)
+provide(openListRowKey, openListRow)
 
 // Provide a navigator for AFormLink so the arrow button navigates to the linked record.
 provide('aformLinkNavigator', {
@@ -1056,6 +1063,12 @@ const handleKeydown = (event: KeyboardEvent) => {
 		actionSetController.openSearch()
 	}
 	if (event.key === 'Escape') {
+		// Mid-drag, Escape abandons the resize; the preview stays open.
+		if (previewResizing.value) {
+			event.preventDefault()
+			cancelPreviewResize()
+			return
+		}
 		if (actionSetController.isPreviewOpen.value) {
 			actionSetController.closePreview()
 			return
@@ -1081,7 +1094,7 @@ const visibleActionSetSlots = computed(() =>
 const actionSetController = createActionSet({ doctype: currentDoctype, recordId: currentRecordId })
 provide(actionSetKey, actionSetController)
 
-const actionSetDrawerOpen = computed(() => actionSetController.isDrawerOpen.value)
+const actionSetDrawerOpen = computed(() => actionSetController.isDrawerShown.value)
 const actionSetPreviewOpen = computed(() => actionSetController.isPreviewOpen.value)
 const actionSetPreviewSubject = computed(() => actionSetController.previewSubject.value)
 
@@ -1092,6 +1105,44 @@ watch([currentDoctype, currentRecordId], () => {
 function closeActionSetPreview() {
 	actionSetController.closePreview()
 }
+
+const workspace = ref<HTMLElement | null>(null)
+const {
+	fraction: previewFraction,
+	bounds: previewBounds,
+	resizing: previewResizing,
+	previewStyle,
+	onPointerDown: onPreviewResizeStart,
+	onKeydown: onPreviewResizeKeydown,
+	reset: resetPreviewWidth,
+	cancel: cancelPreviewResize,
+} = usePreviewSplit(workspace)
+
+const previewEl = ref<HTMLElement | null>(null)
+const previewCloseEl = ref<HTMLElement | null>(null)
+// Whatever had focus when the preview opened, usually the control in the drawer that opened it.
+let previewOpener: HTMLElement | null = null
+
+// Runs before the DOM updates, so on close the preview, and whether it holds focus, is still there.
+watch(actionSetPreviewOpen, async open => {
+	if (typeof document === 'undefined') return
+	if (open) {
+		previewOpener = document.activeElement instanceof HTMLElement ? document.activeElement : null
+		await nextTick()
+		// A preview that replaced the drawer has hidden the control that opened it, taking focus with it.
+		if (actionSetController.isDrawerOpen.value && !actionSetController.isDrawerShown.value) {
+			previewCloseEl.value?.focus()
+		}
+		return
+	}
+	cancelPreviewResize()
+	const opener = previewOpener
+	previewOpener = null
+	// Only when the preview held focus: closing it otherwise leaves focus where the user put it.
+	if (!previewEl.value?.contains(document.activeElement)) return
+	await nextTick()
+	if (opener?.isConnected) opener.focus()
+})
 
 onMounted(() => {
 	document.addEventListener('keydown', handleKeydown)
@@ -1152,13 +1203,12 @@ onUnmounted(() => {
 }
 
 .desktop--preview-open .desktop__main {
-	flex: 0 0 calc(50% - 10px);
-	max-width: calc(50% - 10px);
+	flex: 1 1 0;
 }
 
 .desktop__preview {
+	position: relative;
 	flex: 0 0 50%;
-	max-width: 50%;
 	min-width: 0;
 	min-height: 0;
 	display: flex;
@@ -1166,6 +1216,47 @@ onUnmounted(() => {
 	border-left: 1px solid var(--sc-gray-20);
 	background: var(--sc-form-background);
 	overflow: hidden;
+}
+
+.desktop__preview-resize {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	z-index: 1;
+	width: 8px;
+	cursor: col-resize;
+	touch-action: none;
+}
+
+.desktop__preview-resize::before {
+	content: '';
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	width: 2px;
+	background: transparent;
+	transition: background-color 0.15s ease;
+}
+
+.desktop__preview-resize:hover::before,
+.desktop__preview-resize:focus-visible::before,
+.desktop--preview-resizing .desktop__preview-resize::before {
+	background: var(--sc-primary-color);
+}
+
+.desktop__preview-resize:focus-visible {
+	outline: none;
+}
+
+.desktop--preview-resizing {
+	cursor: col-resize;
+	user-select: none;
+}
+
+.desktop--preview-resizing .desktop__preview-body {
+	pointer-events: none;
 }
 
 .desktop__preview-header {

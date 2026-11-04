@@ -37,7 +37,6 @@ pnpm run test
 
 - [`@stonecrop/aform`](./aform/CHANGELOG.md) — Schema-driven form components with validation
 - [`@stonecrop/atable`](./atable/README.md) — Advanced data table with Excel-like navigation and editing
-- [`@stonecrop/beam`](./beam/README.md) — UI component library with consistent theming
 - [`@stonecrop/casl-middleware`](./casl_middleware/README.md) — CASL-based authorization middleware
 - [`@stonecrop/code-editor`](./code_editor/CHANGELOG.md) — Code editor component
 - [`@stonecrop/desktop`](./desktop/README.md) — Desktop-specific UI patterns and command palette

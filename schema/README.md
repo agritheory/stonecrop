@@ -158,7 +158,7 @@ const doctype: DoctypeMeta = {
 
 ### Link Declarations
 
-`links` on `DoctypeMeta` declares relationships to other doctypes. Each link has a `target`, `cardinality`, and optional `backlink`:
+`links` on `DoctypeMeta` declares relationships to other doctypes. Each link has a `target`, `cardinality`, and optional `backlink`; a many-side link can also name the order of its rows with `orderBy` (a `fieldname`, and `direction: 'desc'` to reverse it):
 
 ```typescript
 import { LinkDeclaration, Cardinality } from '@stonecrop/schema'
@@ -175,6 +175,7 @@ const links: Record<string, LinkDeclaration> = {
     target: 'recipe-task',
     cardinality: 'noneOrMany',
     backlink: 'recipe', // fieldname on recipe-task that points back
+    orderBy: { fieldname: 'sequence' }, // rows read in this order; identity order when omitted
   },
   // Self-referential — version lineage
   supersededBy: {
@@ -224,7 +225,7 @@ const record = await client.getRecord({ name: 'Recipe' }, 'r1', {
 })
 
 // Fetch only specific links
-const record = await client.getRecord({ name: 'Recipe' }, 'r1', {
+const withTasks = await client.getRecord({ name: 'Recipe' }, 'r1', {
   includeNested: ['tasks'], // fetch only the tasks link
 })
 
@@ -233,7 +234,7 @@ const records = await client.getRecords(
   { name: 'Recipe' },
   {
     filters: { status: 'Active' },
-    orderBy: 'name',
+    orderBy: 'name_ASC',
     limit: 20,
     offset: 0,
   }

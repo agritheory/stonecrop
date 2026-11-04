@@ -42,7 +42,7 @@ export { ActionDispatchResult }
 export type ActionEventPayload = {
     name: string;
     doctype: string;
-    recordId: string;
+    recordId?: string;
     data: Record<string, any>;
 };
 
@@ -60,7 +60,7 @@ export interface ActionFailure {
     cause?: unknown;
     doctype: string;
     message: string;
-    recordId: string;
+    recordId?: string;
 }
 
 // @public
@@ -164,6 +164,9 @@ export class Doctype {
         requiredFields?: string[];
         allowedStates?: string[];
     } | undefined;
+    getActions(): Array<{
+        name: string;
+    }>;
     getAvailableCommands(currentState?: string | null): Array<{
         name: string;
     }>;

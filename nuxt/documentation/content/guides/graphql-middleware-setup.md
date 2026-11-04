@@ -133,13 +133,13 @@ export default {
 
 ### Primary key
 
-The primary key is declared per doctype, not globally — mark the identifying field with `primaryKey: true` in the doctype's `fields`. The middleware detects it via `meta.fields.find(f => f.primaryKey)`:
+The primary key is declared per doctype, not globally: mark the identifying field with `primaryKey: true` in the doctype's `fields`, at any depth inside its fieldsets. A doctype that marks none is identified by its field named `id`:
 
 ```json
 { "fieldname": "id", "component": "ATextInput", "primaryKey": true }
 ```
 
-A doctype with no `primaryKey` field cannot be fetched by id — `stonecropRecord` returns `{ data: null }` — but still supports list/filter/sort via `stonecropRecords`. The plugin compares primary keys using text equality (`pkColumn::text = $1`), so the GraphQL `id: String!` argument works with any underlying column type — `integer`, `uuid`, `text`, or `bigint`.
+A doctype with neither cannot be fetched by id: `stonecropRecord` answers with an error naming both repairs. It can still be listed, filtered and sorted through `stonecropRecords`. The plugin compares primary keys using text equality (`pkColumn::text = $1`), so the GraphQL `id: String!` argument works with any underlying column type — `integer`, `uuid`, `text`, or `bigint`.
 
 ### Table name
 
@@ -156,10 +156,13 @@ The `stonecropRecords` field accepts an `orderBy: String` argument. The format i
 ```graphql
 # Correct
 stonecropRecords(doctype: "Invoice", orderBy: "status_ASC")
+stonecropRecords(doctype: "Invoice", orderBy: "createdAt_DESC")
 
-# For columns with underscores in their name, the LAST underscore separates field and direction
-stonecropRecords(doctype: "Invoice", orderBy: "created_at_DESC")
+# The LAST underscore separates field and direction, so a field whose name holds underscores works too
+stonecropRecords(doctype: "Invoice", orderBy: "line_count_DESC")
 ```
+
+The field is named as the doctype spells it and must have a database column; values compare as the column's own type. The doctype's identity (above) breaks ties, so the order is total: pages read while the rows stay unchanged neither overlap nor skip a row. A row added or removed between two page reads still shifts the pages after it. Without `orderBy`, a list reads in identity order. A doctype with no identity has nothing to break ties with: rows tied on the named field, or every row when none is named, come in no fixed order, and its pages can skip or repeat rows.
 
 ---
 

@@ -36,7 +36,6 @@ export default defineConfig({
 		pool: 'forks',
 		globalSetup: ['./tests/integration/globalSetup.ts'],
 		tags: testTags,
-		environment: 'jsdom',
 		include: ['tests/**/*.{test,spec}.{ts,js}'],
 		coverage: {
 			enabled: true,

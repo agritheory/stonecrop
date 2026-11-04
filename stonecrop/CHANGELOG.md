@@ -1,5 +1,111 @@
 # Change Log - @stonecrop/stonecrop
 
+## 0.58.2
+
+### Patch Changes
+
+- Updated dependencies [4a1a274]
+  - @stonecrop/atable@0.58.2
+  - @stonecrop/aform@0.58.2
+  - @stonecrop/schema@0.58.2
+
+## 0.58.1
+
+### Patch Changes
+
+- Updated dependencies [b46e712]
+  - @stonecrop/aform@0.58.1
+  - @stonecrop/atable@0.58.1
+  - @stonecrop/schema@0.58.1
+
+## 0.58.0
+
+### Patch Changes
+
+- Updated dependencies [246be00]
+  - @stonecrop/schema@0.58.0
+  - @stonecrop/aform@0.58.0
+  - @stonecrop/atable@0.58.0
+
+## 0.57.0
+
+### Patch Changes
+
+- Updated dependencies [e816b7b]
+  - @stonecrop/schema@0.57.0
+  - @stonecrop/aform@0.57.0
+  - @stonecrop/atable@0.57.0
+
+## 0.56.4
+
+### Patch Changes
+
+- Updated dependencies [e02c837]
+  - @stonecrop/schema@0.56.4
+  - @stonecrop/aform@0.56.4
+  - @stonecrop/atable@0.56.4
+
+## 0.56.3
+
+### Patch Changes
+
+- @stonecrop/aform@0.56.3
+  - @stonecrop/atable@0.56.3
+  - @stonecrop/schema@0.56.3
+
+## 0.56.2
+
+### Patch Changes
+
+- @stonecrop/aform@0.56.2
+  - @stonecrop/atable@0.56.2
+  - @stonecrop/schema@0.56.2
+
+## 0.56.1
+
+### Patch Changes
+
+- @stonecrop/aform@0.56.1
+  - @stonecrop/atable@0.56.1
+  - @stonecrop/schema@0.56.1
+
+## 0.56.0
+
+### Minor Changes
+
+- e331ffe: `useClientAction` runs an action raised with no record, as a list's is, only through its `clientHandler`, which gets no `record` or `runAction`, so `ActionEventPayload.recordId` is now optional; `Doctype.getActions()` lists every action a workflow declares.
+
+### Patch Changes
+
+- @stonecrop/aform@0.56.0
+  - @stonecrop/atable@0.56.0
+  - @stonecrop/schema@0.56.0
+
+## 0.55.2
+
+### Patch Changes
+
+- 8fbae19: Reading, writing or removing a record with an empty ID, or one holding a dot, now throws instead of reaching every record of the doctype or part of another record.
+- @stonecrop/aform@0.55.2
+  - @stonecrop/atable@0.55.2
+  - @stonecrop/schema@0.55.2
+
+## 0.55.1
+
+### Patch Changes
+
+- @stonecrop/aform@0.55.1
+  - @stonecrop/atable@0.55.1
+  - @stonecrop/schema@0.55.1
+
+## 0.55.0
+
+### Patch Changes
+
+- @stonecrop/aform@0.55.0
+  - @stonecrop/atable@0.55.0
+  - @stonecrop/schema@0.55.0
+
 ## 0.54.0
 
 ### Patch Changes

@@ -1,5 +1,80 @@
 # Change Log - @stonecrop/graphql-client
 
+## 0.58.2
+
+### Patch Changes
+
+- @stonecrop/schema@0.58.2
+
+## 0.58.1
+
+### Patch Changes
+
+- @stonecrop/schema@0.58.1
+
+## 0.58.0
+
+### Patch Changes
+
+- Updated dependencies [246be00]
+  - @stonecrop/schema@0.58.0
+
+## 0.57.0
+
+### Patch Changes
+
+- Updated dependencies [e816b7b]
+  - @stonecrop/schema@0.57.0
+
+## 0.56.4
+
+### Patch Changes
+
+- Updated dependencies [e02c837]
+  - @stonecrop/schema@0.56.4
+
+## 0.56.3
+
+### Patch Changes
+
+- @stonecrop/schema@0.56.3
+
+## 0.56.2
+
+### Patch Changes
+
+- @stonecrop/schema@0.56.2
+
+## 0.56.1
+
+### Patch Changes
+
+- @stonecrop/schema@0.56.1
+
+## 0.56.0
+
+### Patch Changes
+
+- @stonecrop/schema@0.56.0
+
+## 0.55.2
+
+### Patch Changes
+
+- @stonecrop/schema@0.55.2
+
+## 0.55.1
+
+### Patch Changes
+
+- @stonecrop/schema@0.55.1
+
+## 0.55.0
+
+### Patch Changes
+
+- @stonecrop/schema@0.55.0
+
 ## 0.54.0
 
 ### Patch Changes

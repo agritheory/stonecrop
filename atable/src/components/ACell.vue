@@ -578,11 +578,13 @@ defineExpose({
 	padding-right: 0.5ch !important;
 }
 
-/* Same inset ring as other cells (.atable-cell:focus-within); inner controls must not add a second ring. */
-.atable-cell--tuple :deep(.atable-tuple-shell__input:focus),
-.atable-cell--tuple :deep(.atable-tuple-shell__input:focus-visible),
-.atable-cell--tuple :deep(.atable-tuple-shell__handle:focus),
-.atable-cell--tuple :deep(.atable-tuple-shell__handle:focus-visible) {
+/* Same inset ring as other cells (.atable-cell:focus-within); inner controls must not add a second ring.
+   This block is not scoped, so plain descendant selectors reach the shell: a `:deep()` here ships
+   uncompiled, and the browser drops the whole rule over one selector it cannot parse. */
+.atable-cell--tuple .atable-tuple-shell__input:focus,
+.atable-cell--tuple .atable-tuple-shell__input:focus-visible,
+.atable-cell--tuple .atable-tuple-shell__handle:focus,
+.atable-cell--tuple .atable-tuple-shell__handle:focus-visible {
 	outline: none;
 	box-shadow: none;
 }

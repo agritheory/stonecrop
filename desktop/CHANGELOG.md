@@ -1,5 +1,129 @@
 # Change Log - @stonecrop/desktop
 
+## 0.58.2
+
+### Patch Changes
+
+- @stonecrop/aform@0.58.2
+  - @stonecrop/stonecrop@0.58.2
+  - @stonecrop/schema@0.58.2
+  - @stonecrop/themes@0.58.2
+
+## 0.58.1
+
+### Patch Changes
+
+- Updated dependencies [b46e712]
+  - @stonecrop/aform@0.58.1
+  - @stonecrop/stonecrop@0.58.1
+  - @stonecrop/schema@0.58.1
+  - @stonecrop/themes@0.58.1
+
+## 0.58.0
+
+### Patch Changes
+
+- Updated dependencies [246be00]
+  - @stonecrop/schema@0.58.0
+  - @stonecrop/aform@0.58.0
+  - @stonecrop/stonecrop@0.58.0
+  - @stonecrop/themes@0.58.0
+
+## 0.57.0
+
+### Patch Changes
+
+- Updated dependencies [e816b7b]
+  - @stonecrop/schema@0.57.0
+  - @stonecrop/aform@0.57.0
+  - @stonecrop/stonecrop@0.57.0
+  - @stonecrop/themes@0.57.0
+
+## 0.56.4
+
+### Patch Changes
+
+- Updated dependencies [e02c837]
+  - @stonecrop/schema@0.56.4
+  - @stonecrop/aform@0.56.4
+  - @stonecrop/stonecrop@0.56.4
+  - @stonecrop/themes@0.56.4
+
+## 0.56.3
+
+### Patch Changes
+
+- @stonecrop/aform@0.56.3
+  - @stonecrop/schema@0.56.3
+  - @stonecrop/stonecrop@0.56.3
+  - @stonecrop/themes@0.56.3
+
+## 0.56.2
+
+### Patch Changes
+
+- @stonecrop/aform@0.56.2
+  - @stonecrop/schema@0.56.2
+  - @stonecrop/stonecrop@0.56.2
+  - @stonecrop/themes@0.56.2
+
+## 0.56.1
+
+### Patch Changes
+
+- @stonecrop/aform@0.56.1
+  - @stonecrop/schema@0.56.1
+  - @stonecrop/stonecrop@0.56.1
+  - @stonecrop/themes@0.56.1
+
+## 0.56.0
+
+### Minor Changes
+
+- e331ffe: BREAKING: a list shows every action its doctype declares, one button each, and the command palette offers a list page's actions; where a list and its records share a doctype, pass the list's own as `hostActions` on list views, as the starter template does for New.
+- e435204: BREAKING: Desktop no longer adds a New Record button to lists or Create New to the command palette; an app offers New itself, declared on a list doctype or passed as `hostActions`.
+
+### Patch Changes
+
+- Updated dependencies [e331ffe]
+  - @stonecrop/stonecrop@0.56.0
+  - @stonecrop/aform@0.56.0
+  - @stonecrop/schema@0.56.0
+  - @stonecrop/themes@0.56.0
+
+## 0.55.2
+
+### Patch Changes
+
+- Updated dependencies [8fbae19]
+  - @stonecrop/stonecrop@0.55.2
+  - @stonecrop/aform@0.55.2
+  - @stonecrop/schema@0.55.2
+  - @stonecrop/themes@0.55.2
+
+## 0.55.1
+
+### Patch Changes
+
+- 2fdf332: A list's "Edit" and "View Records" links open their own row, and a table cell that merely reads "Edit" no longer opens a record.
+- @stonecrop/aform@0.55.1
+  - @stonecrop/schema@0.55.1
+  - @stonecrop/stonecrop@0.55.1
+  - @stonecrop/themes@0.55.1
+
+## 0.55.0
+
+### Minor Changes
+
+- cdc0691: `present()` takes `replacesDrawer: true` to let a preview take the slot drawer's place. The drawer is hidden rather than closed, so the slot keeps its state, and closing the preview shows it again. The preview pane is resizable: drag, arrow keys or double-click on its left edge, with the width kept for the session.
+
+### Patch Changes
+
+- @stonecrop/aform@0.55.0
+  - @stonecrop/schema@0.55.0
+  - @stonecrop/stonecrop@0.55.0
+  - @stonecrop/themes@0.55.0
+
 ## 0.54.0
 
 ### Patch Changes

@@ -465,13 +465,13 @@ import { AFormLink } from '@stonecrop/aform'
 | embedded | `boolean \| undefined` | no | `false` |  |
 | placeholder | `string \| undefined` | no | `undefined` |  |
 | ariaLabel | `string \| undefined` | no | `undefined` |  |
-| modelValue | `AFormLinkModelValue \| undefined` | no | `{ id: "", displayText: "" }` |  |
+| modelValue | `AFormLinkModelValue \| null \| undefined` | no | `{ id: "", displayText: "" }` |  |
 
 **Events:**
 
 | Event | Payload | Description |
 |-------|---------|-------------|
-| update:modelValue | `[value: AFormLinkModelValue]` |  |
+| update:modelValue | `[value: AFormLinkModelValue \| null]` |  |
 
 **Slots:**
 
@@ -1148,6 +1148,7 @@ export interface ResolvedTable {
   kind: 'table';
   label?: string;
   mode?: import('@stonecrop/schema').InteractionMode;
+  parts?: Record<string, string>;
   readOnly?: boolean;
   required?: boolean;
   schema: ColumnSchema[];
@@ -1168,6 +1169,7 @@ export interface ResolvedTable {
 | kind | `'table'` | Discriminator |
 | label? | `string` | Human-readable label |
 | mode? | `import('@stonecrop/schema').InteractionMode` | Interaction mode for all cells |
+| parts? | `Record<string, string>` | Preserved from the original ValueField or TableField: the fields an app's own table component reads, handed to it as its value. Its rows still arrive as `rows`. |
 | readOnly? | `boolean` | Preserved from the original ValueField or TableField |
 | required? | `boolean` | Preserved from the original ValueField or TableField |
 | schema | `ColumnSchema[]` | Column definitions — passed to ATable's `:schema` prop |
@@ -1182,7 +1184,7 @@ What AFormLink accepts as its `v-model`.
 
 Wider than `AFormLinkValue` because a link is as often bound straight to its FK column as to a resolved reference: a record loaded from the DB carries the raw scalar, and a parent bound to that column coerces every update it receives back to a scalar. The component reads through `linkId`/`linkDisplayText`/`asLinkValue`, so all three shapes render and resolve identically.
 
-Emitting is narrower — AFormLink always writes back an `AFormLinkValue`.
+Emitting is narrower — AFormLink writes back an `AFormLinkValue` when an option is picked, or `null` when the user empties the field.
 
 **Definition:**
 

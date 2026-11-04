@@ -35,7 +35,6 @@ Stonecrop pairs AForm's schema-driven fields with ATable's advanced grid, backed
 | [@stonecrop/stonecrop](/reference/stonecrop) | Core orchestration with Registry, HST, and composables |
 | [@stonecrop/aform](/reference/aform) | Schema-driven form components |
 | [@stonecrop/atable](/reference/atable) | Advanced table with tree/Gantt views |
-| [@stonecrop/beam](/reference/beam) | Mobile-first scanning and MQTT |
 | [@stonecrop/desktop](/reference/desktop) | Desktop navigation and command palette |
 | [@stonecrop/schema](/reference/schema) | Doctype schema definitions |
 | [@stonecrop/graphql-client](/reference/graphql-client) | GraphQL client utilities |

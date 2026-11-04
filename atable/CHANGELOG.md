@@ -1,5 +1,105 @@
 # Change Log - @stonecrop/atable
 
+## 0.58.2
+
+### Patch Changes
+
+- 4a1a274: A quantity or currency cell being edited now shows only the cell's own focus ring: its picker handle no longer draws the browser's ring inside it. The rule removing that ring was dropped by the browser, and printed a warning in every app's production build.
+- @stonecrop/schema@0.58.2
+  - @stonecrop/themes@0.58.2
+  - @stonecrop/utilities@0.58.2
+
+## 0.58.1
+
+### Patch Changes
+
+- @stonecrop/schema@0.58.1
+  - @stonecrop/themes@0.58.1
+  - @stonecrop/utilities@0.58.1
+
+## 0.58.0
+
+### Patch Changes
+
+- Updated dependencies [246be00]
+  - @stonecrop/schema@0.58.0
+  - @stonecrop/themes@0.58.0
+  - @stonecrop/utilities@0.58.0
+
+## 0.57.0
+
+### Patch Changes
+
+- Updated dependencies [e816b7b]
+  - @stonecrop/schema@0.57.0
+  - @stonecrop/themes@0.57.0
+  - @stonecrop/utilities@0.57.0
+
+## 0.56.4
+
+### Patch Changes
+
+- Updated dependencies [e02c837]
+  - @stonecrop/schema@0.56.4
+  - @stonecrop/themes@0.56.4
+  - @stonecrop/utilities@0.56.4
+
+## 0.56.3
+
+### Patch Changes
+
+- @stonecrop/schema@0.56.3
+  - @stonecrop/themes@0.56.3
+  - @stonecrop/utilities@0.56.3
+
+## 0.56.2
+
+### Patch Changes
+
+- @stonecrop/schema@0.56.2
+  - @stonecrop/themes@0.56.2
+  - @stonecrop/utilities@0.56.2
+
+## 0.56.1
+
+### Patch Changes
+
+- @stonecrop/schema@0.56.1
+  - @stonecrop/themes@0.56.1
+  - @stonecrop/utilities@0.56.1
+
+## 0.56.0
+
+### Patch Changes
+
+- @stonecrop/schema@0.56.0
+  - @stonecrop/themes@0.56.0
+  - @stonecrop/utilities@0.56.0
+
+## 0.55.2
+
+### Patch Changes
+
+- @stonecrop/schema@0.55.2
+  - @stonecrop/themes@0.55.2
+  - @stonecrop/utilities@0.55.2
+
+## 0.55.1
+
+### Patch Changes
+
+- @stonecrop/schema@0.55.1
+  - @stonecrop/themes@0.55.1
+  - @stonecrop/utilities@0.55.1
+
+## 0.55.0
+
+### Patch Changes
+
+- @stonecrop/schema@0.55.0
+  - @stonecrop/themes@0.55.0
+  - @stonecrop/utilities@0.55.0
+
 ## 0.54.0
 
 ### Minor Changes

@@ -126,6 +126,11 @@ export type ActionSetPreview = {
 	id?: string
 	view: Component
 	props?: Record<string, unknown>
+	/**
+	 * Hide the open slot drawer while this preview is shown, giving the preview its space. The
+	 * slot stays mounted, so what it holds survives, and closing the preview shows it again.
+	 */
+	replacesDrawer?: boolean
 }
 
 /** Instance-scoped ActionSet API provided by Desktop to slot content. @public */

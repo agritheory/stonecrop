@@ -2,6 +2,7 @@ import { existsSync, realpathSync } from 'node:fs'
 import { readFile, readdir } from 'node:fs/promises'
 import { createRequire } from 'node:module'
 import { dirname, extname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import {
 	addComponent,
 	addImportsDir,
@@ -452,13 +453,21 @@ export default defineNuxtModule<ModuleOptions>({
 			})
 		}
 
-		// Do not add the extension since the `.ts` will be transpiled to `.mjs` after `npm run prepack`
+		// Do not add the extension since the `.ts` will be transpiled to `.mjs` by the module build
 		const pluginPath = resolve('./runtime/plugin')
 		try {
 			addPlugin(pluginPath)
 		} catch (pluginError) {
 			logger.error('Error adding plugin:', pluginError)
 			throw new Error(`[@stonecrop/nuxt] Failed to add plugin at ${pluginPath}`, { cause: pluginError })
+		}
+
+		// NodeEditor and StateEditor stay resolvable by name, so a doctype can render either, but load
+		// on first use: installed eagerly, they put Vue Flow and dagre in every app's entry chunk.
+		// Resolved from this module, as the app need not depend on node-editor itself.
+		const nodeEditorPath = fileURLToPath(import.meta.resolve('@stonecrop/node-editor'))
+		for (const name of ['NodeEditor', 'StateEditor']) {
+			addComponent({ name, export: name, filePath: nodeEditorPath, global: true })
 		}
 
 		// Register all composables in runtime/app/composables/ for auto-import.

@@ -12,7 +12,6 @@
 export const docPackages = [
 	{ folder: 'aform', name: 'aform', title: 'AForm', description: 'Schema-driven form components' },
 	{ folder: 'atable', name: 'atable', title: 'ATable', description: 'Advanced table with tree and Gantt views' },
-	{ folder: 'beam', name: 'beam', title: 'Beam', description: 'Mobile-first scanning and MQTT' },
 	{ folder: 'desktop', name: 'desktop', title: 'Desktop', description: 'Desktop navigation and command palette' },
 	{
 		folder: 'stonecrop',
