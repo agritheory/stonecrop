@@ -1,5 +1,15 @@
 # Change Log - @stonecrop/aform
 
+## 0.58.3
+
+### Patch Changes
+
+- 44b7eb5: A link field now shows its open-record arrow only when it has a value, a `doctype` and an app-provided `aformLinkNavigator`. A link with no doctype (e.g. a unit stored by its name) no longer shows an arrow that does nothing but log a warning.
+- @stonecrop/atable@0.58.3
+  - @stonecrop/schema@0.58.3
+  - @stonecrop/themes@0.58.3
+  - @stonecrop/utilities@0.58.3
+
 ## 0.58.2
 
 ### Patch Changes

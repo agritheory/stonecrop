@@ -1,5 +1,23 @@
 # Change Log - @stonecrop/nuxt
 
+## 0.58.3
+
+### Patch Changes
+
+- Updated dependencies [44b7eb5]
+  - @stonecrop/aform@0.58.3
+  - @stonecrop/desktop@0.58.3
+  - @stonecrop/stonecrop@0.58.3
+  - @stonecrop/atable@0.58.3
+  - @stonecrop/casl-middleware@0.58.3
+  - @stonecrop/code-editor@0.58.3
+  - @stonecrop/graphql-client@0.58.3
+  - @stonecrop/graphql-middleware@0.58.3
+  - @stonecrop/node-editor@0.58.3
+  - @stonecrop/nuxt-grafserv@0.58.3
+  - @stonecrop/schema@0.58.3
+  - @stonecrop/themes@0.58.3
+
 ## 0.58.2
 
 ### Patch Changes
