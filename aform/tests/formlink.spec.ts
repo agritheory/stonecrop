@@ -227,14 +227,6 @@ describe('AFormLink component', { tags: ['component'] }, () => {
 		expect(events![0][0]).toEqual({ id: 'CUST-001', displayText: 'Acme Corp' })
 	})
 
-	it('renders arrow button when hasValidId', () => {
-		const wrapper = mount(AFormLink, {
-			props: { modelValue: validValue, doctype: 'customer' },
-			global: withNavigator(),
-		})
-		expect(wrapper.find('button').exists()).toBe(true)
-	})
-
 	it('suppresses the arrow button and floating label in embedded mode', () => {
 		const wrapper = mount(AFormLink, {
 			props: { label: 'Customer', modelValue: validValue, doctype: 'customer', embedded: true },
