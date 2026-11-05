@@ -344,10 +344,10 @@ props: {
   embedded?: boolean \| undefined
   placeholder?: string \| undefined
   ariaLabel?: string \| undefined
-  modelValue?: AFormLinkModelValue \| undefined
+  modelValue?: AFormLinkModelValue \| null \| undefined
 }
 emits: {
-  update:modelValue: [value: AFormLinkModelValue]
+  update:modelValue: [value: AFormLinkModelValue \| null]
 }
 slots: {
   option: { option: { [x: string]: any; id: string \| number; displayText?: string \| undefined; }; }

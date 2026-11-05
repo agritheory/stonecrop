@@ -1,5 +1,81 @@
 # Change Log - @stonecrop/nuxt
 
+## 0.58.2
+
+### Patch Changes
+
+- 4a1a274: `NodeEditor` and `StateEditor` now load the first time a page renders one, instead of with every page: the Nuxt module put Vue Flow and dagre, about 200 kB minified, in every app's entry chunk. Both stay registered by name, so a doctype naming either still renders it.
+- Updated dependencies [4a1a274]
+  - @stonecrop/atable@0.58.2
+  - @stonecrop/aform@0.58.2
+  - @stonecrop/stonecrop@0.58.2
+  - @stonecrop/desktop@0.58.2
+  - @stonecrop/casl-middleware@0.58.2
+  - @stonecrop/code-editor@0.58.2
+  - @stonecrop/graphql-client@0.58.2
+  - @stonecrop/graphql-middleware@0.58.2
+  - @stonecrop/node-editor@0.58.2
+  - @stonecrop/nuxt-grafserv@0.58.2
+  - @stonecrop/schema@0.58.2
+  - @stonecrop/themes@0.58.2
+
+## 0.58.1
+
+### Patch Changes
+
+- Updated dependencies [b46e712]
+  - @stonecrop/aform@0.58.1
+  - @stonecrop/desktop@0.58.1
+  - @stonecrop/stonecrop@0.58.1
+  - @stonecrop/atable@0.58.1
+  - @stonecrop/casl-middleware@0.58.1
+  - @stonecrop/code-editor@0.58.1
+  - @stonecrop/graphql-client@0.58.1
+  - @stonecrop/graphql-middleware@0.58.1
+  - @stonecrop/node-editor@0.58.1
+  - @stonecrop/nuxt-grafserv@0.58.1
+  - @stonecrop/schema@0.58.1
+  - @stonecrop/themes@0.58.1
+
+## 0.58.0
+
+### Patch Changes
+
+- Updated dependencies [246be00]
+  - @stonecrop/schema@0.58.0
+  - @stonecrop/aform@0.58.0
+  - @stonecrop/atable@0.58.0
+  - @stonecrop/desktop@0.58.0
+  - @stonecrop/graphql-client@0.58.0
+  - @stonecrop/graphql-middleware@0.58.0
+  - @stonecrop/node-editor@0.58.0
+  - @stonecrop/stonecrop@0.58.0
+  - @stonecrop/nuxt-grafserv@0.58.0
+  - @stonecrop/casl-middleware@0.58.0
+  - @stonecrop/code-editor@0.58.0
+  - @stonecrop/themes@0.58.0
+
+## 0.57.0
+
+### Patch Changes
+
+- Updated dependencies [e816b7b]
+- Updated dependencies [e816b7b]
+- Updated dependencies [e816b7b]
+- Updated dependencies [e816b7b]
+  - @stonecrop/schema@0.57.0
+  - @stonecrop/graphql-middleware@0.57.0
+  - @stonecrop/aform@0.57.0
+  - @stonecrop/atable@0.57.0
+  - @stonecrop/desktop@0.57.0
+  - @stonecrop/graphql-client@0.57.0
+  - @stonecrop/node-editor@0.57.0
+  - @stonecrop/stonecrop@0.57.0
+  - @stonecrop/nuxt-grafserv@0.57.0
+  - @stonecrop/casl-middleware@0.57.0
+  - @stonecrop/code-editor@0.57.0
+  - @stonecrop/themes@0.57.0
+
 ## 0.56.4
 
 ### Patch Changes

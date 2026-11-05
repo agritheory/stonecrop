@@ -7,29 +7,37 @@
 		<template v-else>
 			<div v-on-click-outside="onClickOutside" class="aform_form-link-wrapper">
 				<div class="input-group">
-					<input
-						v-model="searchText"
-						type="text"
-						role="combobox"
-						autocomplete="off"
-						aria-autocomplete="list"
-						:class="['aform_input-field', { 'aform_input-field--embedded': embedded }]"
-						:placeholder="placeholder"
-						:aria-label="ariaLabel"
-						:required="required"
-						:aria-invalid="invalid"
-						:aria-describedby="describedBy"
-						:aria-expanded="dropdownOpen"
-						:aria-controls="dropdownOpen ? listboxId : undefined"
-						:aria-activedescendant="activeIndex === null ? undefined : `${listboxId}-opt-${activeIndex}`"
-						:disabled="disabled || mode === 'read'"
-						@input="onInput"
-						@focus="onFocus"
-						@keydown.down.prevent="selectNext"
-						@keydown.up.prevent="selectPrev"
-						@keydown.enter.prevent="selectCurrent"
-						@keydown.esc="closeDropdown"
-						@keydown.tab="closeDropdown" />
+					<!-- Anchors the error to the input rather than the whole field, so it ends short of the
+					     navigate button instead of being cut through by the button's divider. -->
+					<div class="aform_form-link-field">
+						<input
+							v-model="searchText"
+							type="text"
+							role="combobox"
+							autocomplete="off"
+							aria-autocomplete="list"
+							:class="['aform_input-field', { 'aform_input-field--embedded': embedded }]"
+							:placeholder="placeholder"
+							:aria-label="ariaLabel"
+							:required="required"
+							:aria-invalid="invalid"
+							:aria-describedby="describedBy"
+							:aria-expanded="dropdownOpen"
+							:aria-controls="dropdownOpen ? listboxId : undefined"
+							:aria-activedescendant="activeIndex === null ? undefined : `${listboxId}-opt-${activeIndex}`"
+							:disabled="disabled || mode === 'read'"
+							@input="onInput"
+							@focus="onFocus"
+							@blur="leaveField"
+							@keydown.down.prevent="selectNext"
+							@keydown.up.prevent="selectPrev"
+							@keydown.enter.prevent="selectCurrent"
+							@keydown.esc="closeDropdown"
+							@keydown.tab="leaveField" />
+						<p v-if="!embedded" v-show="errorText" :id="errorId" class="aform_error" role="alert">
+							{{ errorText }}
+						</p>
+					</div>
 					<button
 						v-if="hasValidId && !disabled && !embedded"
 						type="button"
@@ -72,7 +80,6 @@
 				</ADropdownList>
 			</div>
 			<label v-if="label && !embedded" class="aform_field-label">{{ label }}</label>
-			<p v-if="!embedded" v-show="errorText" :id="errorId" class="aform_error" role="alert">{{ errorText }}</p>
 		</template>
 	</div>
 </template>
@@ -133,7 +140,7 @@ const listboxId = `${uuid ?? `aform-link-${useId()}`}-listbox`
 const errorText = computed(() => (embedded ? '' : errors?.length ? errors.join('; ') : (validation.errorMessage ?? '')))
 const { errorId, describedBy, invalid } = fieldErrorA11y(uuid, errorText)
 
-const modelValue = defineModel<AFormLinkModelValue>({ default: () => ({ id: '', displayText: '' }) })
+const modelValue = defineModel<AFormLinkModelValue | null>({ default: () => ({ id: '', displayText: '' }) })
 
 const hasValidId = computed(() => linkId(modelValue.value) !== undefined)
 
@@ -150,7 +157,7 @@ watch(
 	{ immediate: true }
 )
 
-const shownLink = computed<AFormLinkModelValue>(() => {
+const shownLink = computed<AFormLinkModelValue | null>(() => {
 	const value = modelValue.value
 	if (linkDisplayText(value)) return value
 	const id = linkId(value)
@@ -204,7 +211,13 @@ watch(
 			searchText.value = displayedText.value
 			return
 		}
-		if (!id) return
+		// The link was unset (emptied here, or by the record). Under a real v-model, `leaveField` ran
+		// while the prop still held the old record, so `closeDropdown` put that record's text back;
+		// clear it now that the value has caught up.
+		if (!id) {
+			searchText.value = ''
+			return
+		}
 		try {
 			let match: AFormLinkValue | undefined
 			let displayText: string | undefined
@@ -280,8 +293,21 @@ const closeDropdown = () => {
 	searchText.value = hasValidId.value ? displayedText.value : ''
 }
 
+// Leaving the field (Tab, blur, a click outside) with its text cleared unsets the link: a value is
+// otherwise written only by picking an option, so a picked record could never be removed. Esc keeps
+// its meaning of "cancel" and still reverts the text to the record. An emptied link holds null rather
+// than the '' a text field empties to: a link names a record or none, its FK column stores no record
+// as null, and '' would read as an id.
+const leaveField = () => {
+	if (hasValidId.value && searchText.value.trim() === '' && mode !== 'read' && !disabled) {
+		modelValue.value = null
+		knownLink.value = undefined
+	}
+	closeDropdown()
+}
+
 const onClickOutside = () => {
-	if (dropdownOpen.value) closeDropdown()
+	if (dropdownOpen.value) leaveField()
 }
 
 const onFocus = () => openDropdown(searchText.value)
@@ -332,9 +358,23 @@ const selectCurrent = () => {
 	align-items: stretch;
 }
 
+.aform_form-link-field {
+	position: relative;
+	display: flex;
+	flex: 1;
+	min-width: 0;
+}
+
 .aform_input-field {
 	flex: 1;
 	min-width: 0;
+}
+
+/* The shared rule offsets the error from the field's top, past the label's padding; here it is placed
+   against the input itself, whose top border is this box's top. Its right edge is the input's, so the
+   message ends before the navigate button. */
+.aform_form-link-field > p.aform_error {
+	top: 0;
 }
 
 /* No top padding: the shared rule reserves it for a floating label, which embedded mode never renders. */

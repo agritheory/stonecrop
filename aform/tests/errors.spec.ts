@@ -295,7 +295,7 @@ describe('inline field errors', { tags: ['component'] }, () => {
 			expect(w.find('input').attributes('aria-invalid')).toBeUndefined()
 		})
 
-		it('shows a required error routed from AForm', () => {
+		it('shows an error AForm routes to a link field', () => {
 			const w = mount(AForm, {
 				props: {
 					schema: [{ fieldname: 'customer', component: 'AFormLink', label: 'Customer' }] as ResolvedField[],

@@ -142,6 +142,9 @@ export function componentLinkExpansion(component?: string): LinkExpansion | unde
 export function componentParts(component?: string): readonly string[] | undefined;
 
 // @public
+export function componentTakesParts(component: string): boolean;
+
+// @public
 export interface ConvertedGraphQLDoctype extends Omit<DoctypeMeta, 'fields'> {
     fields: ValueField[];
     _graphqlTypeName?: string;
@@ -226,6 +229,13 @@ export const DoctypeMeta: z.ZodObject<{
             method: z.ZodLiteral<"custom">;
             handler: z.ZodString;
         }, z.core.$strip>], "method">>;
+        orderBy: z.ZodOptional<z.ZodObject<{
+            fieldname: z.ZodString;
+            direction: z.ZodOptional<z.ZodEnum<{
+                asc: "asc";
+                desc: "desc";
+            }>>;
+        }, z.core.$strict>>;
         blockWorkflows: z.ZodOptional<z.ZodBoolean>;
     }, z.core.$strip>>>;
     workflow: z.ZodOptional<z.ZodObject<{
@@ -489,6 +499,13 @@ export const LinkDeclaration: z.ZodObject<{
         method: z.ZodLiteral<"custom">;
         handler: z.ZodString;
     }, z.core.$strip>], "method">>;
+    orderBy: z.ZodOptional<z.ZodObject<{
+        fieldname: z.ZodString;
+        direction: z.ZodOptional<z.ZodEnum<{
+            asc: "asc";
+            desc: "desc";
+        }>>;
+    }, z.core.$strict>>;
     blockWorkflows: z.ZodOptional<z.ZodBoolean>;
 }, z.core.$strip>;
 
@@ -587,6 +604,7 @@ export interface TableField {
     kind: 'table';
     label?: string;
     mode?: InteractionMode;
+    parts?: Record<string, string>;
 }
 
 // @public
@@ -620,6 +638,7 @@ export const TableFieldSchema: z.ZodObject<{
         read: "read";
         display: "display";
     }>>;
+    parts: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodString>>;
 }, z.core.$strip>;
 
 // @public

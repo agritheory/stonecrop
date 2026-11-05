@@ -1,5 +1,49 @@
 # Change Log - @stonecrop/aform
 
+## 0.58.2
+
+### Patch Changes
+
+- Updated dependencies [4a1a274]
+  - @stonecrop/atable@0.58.2
+  - @stonecrop/schema@0.58.2
+  - @stonecrop/themes@0.58.2
+  - @stonecrop/utilities@0.58.2
+
+## 0.58.1
+
+### Patch Changes
+
+- b46e712: A link field can now be emptied: clearing its text and leaving the field sets its value to `null`.
+- @stonecrop/atable@0.58.1
+  - @stonecrop/schema@0.58.1
+  - @stonecrop/themes@0.58.1
+  - @stonecrop/utilities@0.58.1
+
+## 0.58.0
+
+### Minor Changes
+
+- 246be00: A field rendered by an app's own component, a table among them, may declare `parts` naming the other fields of its record it reads. AForm hands them to the component from the record it edits, so they work before the record is first saved. Stonecrop's own single-value inputs and ATable still declare none.
+
+### Patch Changes
+
+- Updated dependencies [246be00]
+  - @stonecrop/schema@0.58.0
+  - @stonecrop/atable@0.58.0
+  - @stonecrop/themes@0.58.0
+  - @stonecrop/utilities@0.58.0
+
+## 0.57.0
+
+### Patch Changes
+
+- Updated dependencies [e816b7b]
+  - @stonecrop/schema@0.57.0
+  - @stonecrop/atable@0.57.0
+  - @stonecrop/themes@0.57.0
+  - @stonecrop/utilities@0.57.0
+
 ## 0.56.4
 
 ### Patch Changes

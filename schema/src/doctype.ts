@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-import type { DoctypeField, FieldsetField, ValueField } from './field'
+import type { DoctypeField, FieldsetField } from './field'
 import { DoctypeFieldSchema, flattenFields, getDisplayField } from './field'
 import { toSlug } from './naming'
 
@@ -135,6 +135,20 @@ export const LinkDeclaration = z
 
 		/** Fetch strategy for loading nested data */
 		fetch: FetchStrategy.optional(),
+
+		/**
+		 * Order of a many-side link's rows: a field of the target doctype, ascending unless `direction` is
+		 * `desc`. Rows read in identity order when it is omitted, and identity breaks ties when it is given.
+		 *
+		 * Strict, unlike the declarations around it: a misspelt `direction` ignored would read the rows the
+		 * other way round without a word.
+		 */
+		orderBy: z
+			.strictObject({
+				fieldname: z.string().min(1),
+				direction: z.enum(['asc', 'desc']).optional(),
+			})
+			.optional(),
 
 		/** Whether to block workflow actions until nested data is loaded (default: true) */
 		blockWorkflows: z.boolean().optional(),
@@ -368,10 +382,10 @@ export const DoctypeMeta = z
 
 		/** Field definitions (a link field is one carrying `doctype`) */
 		fields: z.array(DoctypeFieldSchema).superRefine((fields, context) => {
-			// Here rather than on the field: a part may name any field of the record, fieldsets included.
-			const valueFields = flattenFields(fields).filter((field): field is ValueField => field.kind === 'field')
-			const fieldnames = new Set(valueFields.map(field => field.fieldname))
-			for (const field of valueFields) {
+			// Here rather than on the field: a part may name any field of the record, fieldsets and tables included.
+			const recordFields = flattenFields(fields)
+			const fieldnames = new Set(recordFields.map(field => field.fieldname))
+			for (const field of recordFields) {
 				for (const fieldname of Object.values(field.parts ?? {})) {
 					if (fieldnames.has(fieldname)) continue
 					context.addIssue({
@@ -632,7 +646,7 @@ export interface GetRecordOptions {
 export interface GetRecordsOptions {
 	/** Filter expression (field-value pairs) */
 	filters?: Record<string, unknown>
-	/** Order by expression (e.g. 'NAME_ASC') */
+	/** A field and a direction, `FIELD_ASC` or `FIELD_DESC`; the field as the doctype spells it (e.g. 'name_ASC') */
 	orderBy?: string
 	/** Maximum number of records to return */
 	limit?: number
