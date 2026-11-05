@@ -28,10 +28,10 @@ import { fieldErrorA11y, fieldErrorText } from '../../composables/fieldErrorA11y
 import { useStringMask as vMask } from '../../directives/mask'
 import { ComponentProps } from '../../types'
 
-const { label, mask, required, mode, uuid, errors, validation = { errorMessage: '' } } = defineProps<ComponentProps>()
+const { label, mask, required, mode, uuid, errors } = defineProps<ComponentProps>()
 
-// Only the errors the host reports; the schema's errorMessage words one that has no text. Empty hides the slot.
-const errorText = computed(() => fieldErrorText(errors, validation))
+// The errors this field is handed, already worded by AForm. Empty hides the slot.
+const errorText = computed(() => fieldErrorText(errors))
 const { errorId, describedBy, invalid } = fieldErrorA11y(uuid, errorText)
 
 // TODO: setup maskFilled as a computed property

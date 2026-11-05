@@ -285,7 +285,7 @@ rows:
   - ['`schema`', '[`ResolvedField[]`](#schema-field-shape)', '—', 'The resolved field descriptors to render, in order. Required.']
   - ['`data`', '`Record<string, any>`', '—', "The form's data object, bound with `v-model:data`. Required — each field reads/writes `data[fieldname]` through it."]
   - ['`mode`', "`'edit' | 'read' | 'display'`", "`'edit'`", "Cascades to every resolved field unless a field's own schema entry sets its own `mode`. See [Modes](#modes) above."]
-  - ['`errors`', '`Record<string, string[]>`', '—', "Validation errors keyed by `fieldname`, passed through to the matching field's `errors` prop. `AForm` stays store-agnostic — the host is responsible for populating this."]
+  - ['`errors`', '`Record<string, string[]>`', '—', "Validation errors keyed by `fieldname`, passed to the matching field's `errors` prop. An error reported without a message (`''`) is first worded with that field's `validation.errorMessage`, fieldset children included; one with no wording is dropped. `AForm` stays store-agnostic — the host is responsible for populating this."]
 ---
 ::
 
@@ -311,7 +311,7 @@ rows:
   - ['`hidden`', '`boolean`', "Skips rendering the field entirely; its value stays present in `data`."]
   - ['`readOnly`', '`boolean`', 'Present on the type and preserved through schema resolution, but not currently read by `AForm` or any field component — use `mode` (or a per-field `mode` override) to control interactivity instead.']
   - ['`width`', '`string`', "CSS width (e.g. `'40ch'`) applied to the field's flex basis."]
-  - ['`validation`', '`{ errorMessage: string }`', 'Wording for an error the host reports without text of its own (an empty string in `errors`). Never shown on its own.']
+  - ['`validation`', '`{ errorMessage: string }`', 'Shown when a trigger reports an error on this field without a message (`setError(field)`). AForm applies it to the errors it routes; never shown on its own.']
 ---
 ::
 

@@ -73,7 +73,6 @@ const {
 	mode,
 	uuid,
 	errors,
-	validation = { errorMessage: '' },
 	options = {},
 	uomLabel = 'UOM',
 } = defineProps<
@@ -83,8 +82,8 @@ const {
 	}
 >()
 
-// Only the errors the host reports; the schema's errorMessage words one that has no text. Empty hides the slot.
-const errorText = computed(() => fieldErrorText(errors, validation))
+// The errors this field is handed, already worded by AForm. Empty hides the slot.
+const errorText = computed(() => fieldErrorText(errors))
 const helperId = computed(() => (uuid ? `${uuid}-helper` : undefined))
 const helperDescribedBy = computed(() => (showStock.value && !errorText.value ? helperId.value : undefined))
 const { errorId, describedBy, invalid } = fieldErrorA11y(uuid, errorText, helperDescribedBy)

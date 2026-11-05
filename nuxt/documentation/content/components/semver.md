@@ -106,8 +106,8 @@ rows:
   - ['`required`', '`boolean`', '`false`', 'Marks the input as required (`edit` mode only).']
   - ['`mode`', "`'edit' | 'read' | 'display'`", "`'edit'`", 'See [Modes](#modes) below.']
   - ['`uuid`', '`string`', 'none', "`id`/`for` pair linking the input to its label."]
-  - ['`validation`', '`{ errorMessage: string }`', "`{ errorMessage: '' }`", 'Wording for an error the host reports without text of its own (an empty string in `errors`). Never shown on its own.']
-  - ['`errors`', '`string[]`', '—', 'Dynamic validation errors. The field shows these and nothing else; an empty entry is worded with `validation.errorMessage`.']
+  - ['`validation`', '`{ errorMessage: string }`', '—', 'Not read by this component. Inside `AForm`, `errorMessage` words an error a trigger reports on this field without a message (`setError(field)`); it is never shown on its own.']
+  - ['`errors`', '`string[]`', '—', 'Dynamic validation errors. Shown joined with `; `, and nothing is shown without them. Inside `AForm` they arrive already worded: an error reported without a message carries the `validation.errorMessage` of its field.']
 ---
 ::
 

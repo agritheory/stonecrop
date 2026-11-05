@@ -208,8 +208,8 @@ export type ComponentProps = {
 	 */
 	validation?: {
 		/**
-		 * Wording for an error the host reports without text of its own (an empty string in `errors`).
-		 * Never shown on its own: a field shows an error only when its host reports one.
+		 * Shown when a trigger reports an error on this field without a message: `setError(field)`.
+		 * Applied by AForm, which words the errors it is handed before routing them; never shown on its own.
 		 * @public
 		 */
 		errorMessage: string
@@ -220,7 +220,8 @@ export type ComponentProps = {
 	/**
 	 * Inline validation error messages to display on this field. Fed by the host
 	 * (e.g. mapped from the core validation store) — the renderer stays dumb and just
-	 * shows what it is given. An empty entry is worded with `validation.errorMessage`.
+	 * shows what it is given. Inside AForm, an error reported without a message arrives worded with the
+	 * field's `validation.errorMessage`.
 	 * @public
 	 */
 	errors?: string[]

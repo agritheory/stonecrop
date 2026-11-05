@@ -114,7 +114,6 @@ const {
 	mode,
 	uuid,
 	errors,
-	validation = { errorMessage: '' },
 	options = {},
 	currencyLabel = 'Currency',
 } = defineProps<
@@ -124,8 +123,8 @@ const {
 	}
 >()
 
-// Only the errors the host reports; the schema's errorMessage words one that has no text. Empty hides the slot.
-const errorText = computed(() => fieldErrorText(errors, validation))
+// The errors this field is handed, already worded by AForm. Empty hides the slot.
+const errorText = computed(() => fieldErrorText(errors))
 const helperId = computed(() => (uuid ? `${uuid}-helper` : undefined))
 
 // No default: a field with no value shows empty, as null does, rather than a rate nobody entered.

@@ -37,7 +37,6 @@ const {
 	placeholder = '',
 	rows = 4,
 	maxlength,
-	validation = { errorMessage: '' },
 } = defineProps<
 	ComponentProps & {
 		/** Placeholder shown when the field is empty */
@@ -49,8 +48,8 @@ const {
 	}
 >()
 
-// Only the errors the host reports; the schema's errorMessage words one that has no text. Empty hides the slot.
-const errorText = computed(() => fieldErrorText(errors, validation))
+// The errors this field is handed, already worded by AForm. Empty hides the slot.
+const errorText = computed(() => fieldErrorText(errors))
 const { errorId, describedBy, invalid } = fieldErrorA11y(uuid, errorText)
 
 const inputText = defineModel<string | null>()

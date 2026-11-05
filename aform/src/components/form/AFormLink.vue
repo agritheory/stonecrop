@@ -7,30 +7,39 @@
 		<template v-else>
 			<div v-on-click-outside="onClickOutside" class="aform_form-link-wrapper">
 				<div class="input-group">
-					<input
-						v-model="searchText"
-						type="text"
-						role="combobox"
-						autocomplete="off"
-						aria-autocomplete="list"
-						:class="['aform_input-field', { 'aform_input-field--embedded': embedded }]"
-						:placeholder="placeholder"
-						:aria-label="ariaLabel"
-						:required="required"
-						:aria-expanded="dropdownOpen"
-						:aria-controls="dropdownOpen ? listboxId : undefined"
-						:aria-activedescendant="activeIndex === null ? undefined : `${listboxId}-opt-${activeIndex}`"
-						:disabled="disabled || mode === 'read'"
-						@input="onInput"
-						@focus="onFocus"
-						@blur="leaveField"
-						@keydown.down.prevent="selectNext"
-						@keydown.up.prevent="selectPrev"
-						@keydown.enter.prevent="selectCurrent"
-						@keydown.esc="closeDropdown"
-						@keydown.tab="leaveField" />
+					<!-- Anchors the error to the input rather than the whole field, so it ends short of the
+					     navigate button instead of being cut through by the button's divider. -->
+					<div class="aform_form-link-field">
+						<input
+							v-model="searchText"
+							type="text"
+							role="combobox"
+							autocomplete="off"
+							aria-autocomplete="list"
+							:class="['aform_input-field', { 'aform_input-field--embedded': embedded }]"
+							:placeholder="placeholder"
+							:aria-label="ariaLabel"
+							:required="required"
+							:aria-invalid="invalid"
+							:aria-describedby="describedBy"
+							:aria-expanded="dropdownOpen"
+							:aria-controls="dropdownOpen ? listboxId : undefined"
+							:aria-activedescendant="activeIndex === null ? undefined : `${listboxId}-opt-${activeIndex}`"
+							:disabled="disabled || mode === 'read'"
+							@input="onInput"
+							@focus="onFocus"
+							@blur="leaveField"
+							@keydown.down.prevent="selectNext"
+							@keydown.up.prevent="selectPrev"
+							@keydown.enter.prevent="selectCurrent"
+							@keydown.esc="closeDropdown"
+							@keydown.tab="leaveField" />
+						<p v-if="!embedded" v-show="errorText" :id="errorId" class="aform_error" role="alert">
+							{{ errorText }}
+						</p>
+					</div>
 					<button
-						v-if="hasValidId && !disabled && !embedded"
+						v-if="canNavigate && !disabled && !embedded"
 						type="button"
 						class="aform_form-btn"
 						@click="handleNavigate"
@@ -79,6 +88,7 @@
 import { vOnClickOutside } from '@vueuse/components'
 import { computed, inject, ref, useId, watch } from 'vue'
 
+import { fieldErrorA11y, fieldErrorText } from '../../composables/fieldErrorA11y'
 import type { AFormLinkModelValue, AFormLinkNavigator, AFormLinkValue, ComponentProps } from '../../types'
 import { deserializeFunction } from '../../utils/deserialize'
 import { asLinkValue, linkDisplayText, linkId } from '../../utils/linkValue'
@@ -89,6 +99,7 @@ const {
 	mode,
 	uuid,
 	required,
+	errors,
 	doctype = undefined,
 	formatter = undefined,
 	icon = 'arrow-right',
@@ -122,6 +133,11 @@ const {
 // `uuid` is per-field when AForm supplies it; the fallback keeps the ids unique for a standalone
 // mount so two pickers on one page can't cross-wire their ARIA relationships.
 const listboxId = `${uuid ?? `aform-link-${useId()}`}-listbox`
+
+// The errors this field is handed, already worded by AForm. Empty hides the slot.
+// Embedded mode renders no error slot (the host owns it, as with its label), so it gets no ARIA wiring either.
+const errorText = computed(() => (embedded ? '' : fieldErrorText(errors)))
+const { errorId, describedBy, invalid } = fieldErrorA11y(uuid, errorText)
 
 const modelValue = defineModel<AFormLinkModelValue | null>({ default: () => ({ id: '', displayText: '' }) })
 
@@ -163,6 +179,11 @@ const dropdownResults = ref<AFormLinkValue[]>([])
 const activeIndex = ref<number | null>(null)
 
 const navigator = inject<AFormLinkNavigator | null>('aformLinkNavigator', null)
+
+// The open-record arrow needs a record to open: an id, a doctype to open it in, and an app that
+// provides a way to open records. A link with no doctype (e.g. a unit stored by its name) or one
+// mounted outside an app that injects a navigator has nothing to open, so it shows no arrow.
+const canNavigate = computed(() => hasValidId.value && !!doctype && !!navigator)
 
 type FilterFn = (search: string) => AFormLinkValue[] | Promise<AFormLinkValue[]>
 type ResolverFn = (doctype: string, id: string) => string | undefined | Promise<string | undefined>
@@ -239,14 +260,7 @@ watch(
 
 const handleNavigate = () => {
 	const id = linkId(modelValue.value)
-	if (navigator && doctype && id !== undefined) {
-		navigator.navigate(doctype, id)
-	} else if (navigator && !doctype) {
-		console.warn(
-			`[AFormLink] Navigation requested but \`doctype\` prop is missing. ` +
-				`Add \`options\` (or \`doctype\`) to the Link field definition to enable navigation.`
-		)
-	}
+	if (navigator && doctype && id !== undefined) navigator.navigate(doctype, id)
 }
 
 const isResultSelected = (option: AFormLinkValue) => {
@@ -341,9 +355,23 @@ const selectCurrent = () => {
 	align-items: stretch;
 }
 
+.aform_form-link-field {
+	position: relative;
+	display: flex;
+	flex: 1;
+	min-width: 0;
+}
+
 .aform_input-field {
 	flex: 1;
 	min-width: 0;
+}
+
+/* The shared rule offsets the error from the field's top, past the label's padding; here it is placed
+   against the input itself, whose top border is this box's top. Its right edge is the input's, so the
+   message ends before the navigate button. */
+.aform_form-link-field > p.aform_error {
+	top: 0;
 }
 
 /* No top padding: the shared rule reserves it for a floating label, which embedded mode never renders. */

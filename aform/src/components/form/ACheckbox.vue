@@ -28,10 +28,10 @@ import { computed, InputHTMLAttributes } from 'vue'
 import { fieldErrorA11y, fieldErrorText } from '../../composables/fieldErrorA11y'
 import { ComponentProps } from '../../types'
 
-const { label, required, mode, uuid, errors, validation = { errorMessage: '' } } = defineProps<ComponentProps>()
+const { label, required, mode, uuid, errors } = defineProps<ComponentProps>()
 
-// Only the errors the host reports; the schema's errorMessage words one that has no text. Empty hides the slot.
-const errorText = computed(() => fieldErrorText(errors, validation))
+// The errors this field is handed, already worded by AForm. Empty hides the slot.
+const errorText = computed(() => fieldErrorText(errors))
 const { errorId, describedBy, invalid } = fieldErrorA11y(uuid, errorText)
 
 const checkbox = defineModel<InputHTMLAttributes['checked']>()

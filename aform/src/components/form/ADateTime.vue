@@ -64,7 +64,6 @@ const {
 	mode,
 	uuid,
 	errors,
-	validation = { errorMessage: '' },
 	allowMilitaryTime = false,
 	useSeconds = true,
 } = defineProps<
@@ -74,7 +73,7 @@ const {
 	}
 >()
 
-const errorText = computed(() => fieldErrorText(errors, validation))
+const errorText = computed(() => fieldErrorText(errors))
 const { errorId, describedBy, invalid } = fieldErrorA11y(uuid, errorText)
 
 const modelValue = defineModel<string | Date | null>()

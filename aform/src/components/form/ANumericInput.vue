@@ -44,12 +44,11 @@ const {
 	mode,
 	uuid,
 	errors,
-	validation = { errorMessage: '' },
 	options = {},
 } = defineProps<ComponentProps & { options?: NumericOptions }>()
 
-// Only the errors the host reports; the schema's errorMessage words one that has no text. Empty hides the slot.
-const errorText = computed(() => fieldErrorText(errors, validation))
+// The errors this field is handed, already worded by AForm. Empty hides the slot.
+const errorText = computed(() => fieldErrorText(errors))
 const { errorId, describedBy, invalid } = fieldErrorA11y(uuid, errorText)
 
 const inputNumber = defineModel<number | null>()

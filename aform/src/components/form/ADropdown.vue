@@ -148,7 +148,6 @@ const {
 	mode,
 	uuid,
 	errors,
-	validation = { errorMessage: '' },
 	embedded = false,
 	trigger = 'combobox',
 	listAnchor = 'field',
@@ -195,7 +194,7 @@ const inputAccentStyle = computed(() => badgeInputAccentStyle(badgeDescriptor.va
 
 const displayAccentStyle = computed(() => badgeInputAccentStyle(badgeDescriptor.value ?? undefined))
 
-const errorText = computed(() => fieldErrorText(errors, validation))
+const errorText = computed(() => fieldErrorText(errors))
 const { errorId, describedBy, invalid } = fieldErrorA11y(uuid, errorText)
 
 const modelValue = defineModel<string>()

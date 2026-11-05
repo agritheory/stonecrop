@@ -105,7 +105,11 @@
 								<input
 									type="text"
 									:value="str(validationMessage(row.__field))"
+									:aria-describedby="`validation-hint-${row.__realIndex}`"
 									@input="updateValidation(row.__realIndex, value($event))" />
+								<small :id="`validation-hint-${row.__realIndex}`" class="field-prop-hint">
+									Shown when a trigger calls <code>setError('{{ row.__field.fieldname }}')</code> with no message
+								</small>
 							</label>
 						</div>
 						<div v-if="isLocked(row.__field)" class="field-detail-actions">
@@ -402,6 +406,10 @@ function bool(v) {
 }
 .field-prop-wide {
 	grid-column: 1/-1;
+}
+.field-prop-hint {
+	color: var(--sc-input-label-color);
+	font-style: italic;
 }
 .field-detail-actions {
 	align-items: center;

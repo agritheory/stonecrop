@@ -85,17 +85,10 @@ import { readTypedDay, writeTypedDay } from '../../utils/typedDay'
 const numberOfRows = 6
 const numberOfColumns = 7
 
-const {
-	mode,
-	label,
-	selectRange = false,
-	uuid,
-	errors,
-	validation = { errorMessage: '' },
-} = defineProps<ComponentProps>()
+const { mode, label, selectRange = false, uuid, errors } = defineProps<ComponentProps>()
 
-// Only the errors the host reports; the schema's errorMessage words one that has no text. Empty hides the slot.
-const errorText = computed(() => fieldErrorText(errors, validation))
+// The errors this field is handed, already worded by AForm. Empty hides the slot.
+const errorText = computed(() => fieldErrorText(errors))
 const { errorId } = fieldErrorA11y(uuid, errorText)
 
 // The calendar holds a `YYYY-MM-DD` day, and opens on today when it holds none it can read. No default

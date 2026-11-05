@@ -74,7 +74,6 @@ const {
 	mode,
 	uuid,
 	errors,
-	validation = { errorMessage: '' },
 	size = 'sm',
 	equal = false,
 	hideLabel = false,
@@ -102,7 +101,7 @@ const selectedMany = computed({
 	},
 })
 
-const errorText = computed(() => fieldErrorText(errors, validation))
+const errorText = computed(() => fieldErrorText(errors))
 const { errorId, describedBy, invalid } = fieldErrorA11y(uuid, errorText)
 
 const fallbackId = useId()
