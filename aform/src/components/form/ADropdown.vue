@@ -126,7 +126,7 @@ import { selectChoices } from '@stonecrop/schema'
 import { vOnClickOutside } from '@vueuse/components'
 import { computed, inject, reactive, ref, useId, watch } from 'vue'
 
-import { fieldErrorA11y } from '../../composables/fieldErrorA11y'
+import { fieldErrorA11y, fieldErrorText } from '../../composables/fieldErrorA11y'
 import type { AFormLinkModelValue, AFormLinkValue, ComponentProps } from '../../types'
 import type { BadgeFormatFn } from '../../utils/badge'
 import { badgeInputAccentStyle, resolveFieldBadge } from '../../utils/badge'
@@ -195,7 +195,7 @@ const inputAccentStyle = computed(() => badgeInputAccentStyle(badgeDescriptor.va
 
 const displayAccentStyle = computed(() => badgeInputAccentStyle(badgeDescriptor.value ?? undefined))
 
-const errorText = computed(() => (errors?.length ? errors.join('; ') : (validation.errorMessage ?? '')))
+const errorText = computed(() => fieldErrorText(errors, validation))
 const { errorId, describedBy, invalid } = fieldErrorA11y(uuid, errorText)
 
 const modelValue = defineModel<string>()

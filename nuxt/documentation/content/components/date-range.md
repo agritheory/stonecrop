@@ -89,8 +89,8 @@ rows:
   - ['`label`', '`string`', "`'Date Range'`", 'Label rendered next to the input.']
   - ['`mode`', "`'edit' | 'read' | 'display'`", "`'edit'`", 'See [Modes](#modes) below.']
   - ['`uuid`', '`string`', 'none', "`id`/`for` pair linking the input to its label. Nothing generates one, so the pairing exists only when you pass it."]
-  - ['`validation`', '`{ errorMessage: string }`', "`{ errorMessage: '' }`", 'Static error message shown below the field.']
-  - ['`errors`', '`string[]`', '—', 'Dynamic validation errors (e.g. from a trigger). Takes precedence over `validation.errorMessage` whenever the list is non-empty.']
+  - ['`validation`', '`{ errorMessage: string }`', "`{ errorMessage: '' }`", 'Wording for an error the host reports without text of its own (an empty string in `errors`). Never shown on its own.']
+  - ['`errors`', '`string[]`', '—', 'Dynamic validation errors (e.g. from a trigger). The field shows these and nothing else; an empty entry is worded with `validation.errorMessage`.']
 ---
 ::
 

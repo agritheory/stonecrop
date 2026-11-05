@@ -43,7 +43,7 @@ export type FieldOptions = z.infer<typeof FieldOptions>
  */
 export const FieldValidation = z
 	.looseObject({
-		/** Error message to display when validation fails */
+		/** Wording for a reported error that has no text of its own; never shown on its own */
 		errorMessage: z.string(),
 	})
 	.meta({

@@ -311,7 +311,7 @@ rows:
   - ['`hidden`', '`boolean`', "Skips rendering the field entirely; its value stays present in `data`."]
   - ['`readOnly`', '`boolean`', 'Present on the type and preserved through schema resolution, but not currently read by `AForm` or any field component — use `mode` (or a per-field `mode` override) to control interactivity instead.']
   - ['`width`', '`string`', "CSS width (e.g. `'40ch'`) applied to the field's flex basis."]
-  - ['`validation`', '`{ errorMessage: string }`', 'Static error message shown below the field.']
+  - ['`validation`', '`{ errorMessage: string }`', 'Wording for an error the host reports without text of its own (an empty string in `errors`). Never shown on its own.']
 ---
 ::
 

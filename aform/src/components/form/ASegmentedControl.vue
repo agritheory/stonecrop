@@ -64,7 +64,7 @@ import type { BadgeVariant, FieldOptions } from '@stonecrop/schema'
 import { hasBadgeOptions, lookupBadge, selectChoices } from '@stonecrop/schema'
 import { computed, useId, type CSSProperties } from 'vue'
 
-import { fieldErrorA11y } from '../../composables/fieldErrorA11y'
+import { fieldErrorA11y, fieldErrorText } from '../../composables/fieldErrorA11y'
 import type { ComponentProps } from '../../types'
 import ABadge from './ABadge.vue'
 
@@ -102,7 +102,7 @@ const selectedMany = computed({
 	},
 })
 
-const errorText = computed(() => (errors?.length ? errors.join('; ') : (validation.errorMessage ?? '')))
+const errorText = computed(() => fieldErrorText(errors, validation))
 const { errorId, describedBy, invalid } = fieldErrorA11y(uuid, errorText)
 
 const fallbackId = useId()

@@ -208,7 +208,8 @@ export type ComponentProps = {
 	 */
 	validation?: {
 		/**
-		 * The error message to display when validation fails
+		 * Wording for an error the host reports without text of its own (an empty string in `errors`).
+		 * Never shown on its own: a field shows an error only when its host reports one.
 		 * @public
 		 */
 		errorMessage: string
@@ -219,7 +220,7 @@ export type ComponentProps = {
 	/**
 	 * Inline validation error messages to display on this field. Fed by the host
 	 * (e.g. mapped from the core validation store) — the renderer stays dumb and just
-	 * shows what it is given. Takes precedence over the static `validation.errorMessage`.
+	 * shows what it is given. An empty entry is worded with `validation.errorMessage`.
 	 * @public
 	 */
 	errors?: string[]

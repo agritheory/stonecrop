@@ -9,8 +9,14 @@ import ADate from '../src/components/form/ADate.vue'
 import ADatePicker from '../src/components/form/ADatePicker.vue'
 import ADateTime from '../src/components/form/ADateTime.vue'
 import ADateRange from '../src/components/form/ADateRange.vue'
+import ACheckbox from '../src/components/form/ACheckbox.vue'
 import ADropdown from '../src/components/form/ADropdown.vue'
+import ANumericInput from '../src/components/form/ANumericInput.vue'
+import ASegmentedControl from '../src/components/form/ASegmentedControl.vue'
+import ASemverInput from '../src/components/form/ASemverInput.vue'
+import ATextboxInput from '../src/components/form/ATextboxInput.vue'
 import ATextInput from '../src/components/form/ATextInput.vue'
+import { fieldErrorText } from '../src/composables/fieldErrorA11y'
 import type { ResolvedField } from '../src/types'
 
 describe('inline field errors', { tags: ['component'] }, () => {
@@ -58,11 +64,100 @@ describe('inline field errors', { tags: ['component'] }, () => {
 			expect(w.find('.aform_error').text()).toBe('dynamic')
 		})
 
-		it('falls back to static validation.errorMessage when there are no dynamic errors', () => {
+		it('does not show a static validation.errorMessage when the host reports no error', () => {
 			const w = mount(ATextInput, {
-				props: { label: 'x', modelValue: '', validation: { errorMessage: 'static' } },
+				props: { uuid: 'x', label: 'x', modelValue: '', validation: { errorMessage: 'static' } },
+			})
+			const err = w.find('.aform_error')
+			expect(err.text()).toBe('')
+			expect(err.attributes('style') ?? '').toContain('display: none')
+			expect(w.find('input').attributes('aria-invalid')).toBeUndefined()
+			expect(w.find('input').attributes('aria-describedby')).toBeUndefined()
+		})
+
+		it('words a reported error that has no text with validation.errorMessage', () => {
+			const w = mount(ATextInput, {
+				props: { uuid: 'x', label: 'x', modelValue: '', errors: [''], validation: { errorMessage: 'static' } },
 			})
 			expect(w.find('.aform_error').text()).toBe('static')
+			expect(w.find('input').attributes('aria-invalid')).toBe('true')
+		})
+	})
+
+	// A field cannot tell that its value failed validation, so a static message shown on its own would sit on
+	// every record, valid or not, and announce the field as invalid.
+	describe('a static validation.errorMessage is never an error on its own', () => {
+		const fields = [
+			['ATextInput', ATextInput, {}],
+			['ATextboxInput', ATextboxInput, {}],
+			['ANumericInput', ANumericInput, {}],
+			['ASemverInput', ASemverInput, {}],
+			['ACheckbox', ACheckbox, {}],
+			['ADate', ADate, {}],
+			['ADateRange', ADateRange, {}],
+			['ADateTime', ADateTime, {}],
+			['ADatePicker', ADatePicker, {}],
+			['ADropdown', ADropdown, { options: ['A', 'B'] }],
+			['ASegmentedControl', ASegmentedControl, { options: ['A', 'B'], modelValue: 'A' }],
+			[
+				'ACurrencyInput',
+				ACurrencyInput,
+				{
+					modelValue: {
+						amount: 1,
+						currency: { id: 'USD' },
+						baseAmount: 1,
+						baseCurrency: { id: 'USD' },
+						exchangeRate: 1,
+					},
+					options: { baseCurrency: { id: 'USD' } },
+				},
+			],
+			[
+				'AQuantityInput',
+				AQuantityInput,
+				{
+					modelValue: { qty: 1, uom: 'Nos', stockQty: 1, stockUom: 'Nos', conversionFactor: 1 },
+					options: { uoms: ['Nos'], stockUom: 'Nos' },
+				},
+			],
+		] as const
+
+		// The components take different props, so the table's rows are mounted untyped.
+		const mountField = (component: Component, props: Record<string, unknown>) =>
+			mount(component, { props: { uuid: 'f', label: 'F', validation: { errorMessage: 'static' }, ...props } })
+
+		it.each(fields)('%s shows nothing and stays valid', (_name, component, props) => {
+			const w = mountField(component, props)
+			const err = w.find('.aform_error')
+			expect(err.text()).toBe('')
+			expect(err.attributes('style') ?? '').toContain('display: none')
+			expect(w.find('[aria-invalid]').exists()).toBe(false)
+		})
+
+		it.each(fields)('%s words a reported error that has no text', (_name, component, props) => {
+			const w = mountField(component, { ...props, errors: [''] })
+			expect(w.find('.aform_error').text()).toBe('static')
+		})
+	})
+
+	describe('fieldErrorText', () => {
+		it('is empty when the host reports no error, whatever the static message', () => {
+			expect(fieldErrorText(undefined, { errorMessage: 'static' })).toBe('')
+			expect(fieldErrorText([], { errorMessage: 'static' })).toBe('')
+		})
+
+		it("shows the host's own messages, joined", () => {
+			expect(fieldErrorText(['A', 'B'], { errorMessage: 'static' })).toBe('A; B')
+		})
+
+		it('words a reported error that has no text with the static message, once', () => {
+			expect(fieldErrorText(['', 'A', ''], { errorMessage: 'static' })).toBe('static; A')
+		})
+
+		it('drops a reported error that has no text when there is no static message', () => {
+			expect(fieldErrorText([''], undefined)).toBe('')
+			expect(fieldErrorText(['', 'A'], { errorMessage: '' })).toBe('A')
 		})
 	})
 
@@ -215,8 +310,8 @@ describe('inline field errors', { tags: ['component'] }, () => {
 		)
 
 		it.each(grouped)(
-			'%s falls back to a static validation.errorMessage',
-			(_name, component, _input, modelValue, options) => {
+			'%s does not show a static validation.errorMessage on its own',
+			(_name, component, input, modelValue, options) => {
 				const w = mountGrouped(component, {
 					uuid: 'f',
 					label: 'F',
@@ -224,7 +319,8 @@ describe('inline field errors', { tags: ['component'] }, () => {
 					options,
 					validation: { errorMessage: 'static' },
 				})
-				expect(w.find('.aform_error').text()).toBe('static')
+				expect(w.find('.aform_error').text()).toBe('')
+				expect(w.find(input).attributes('aria-invalid')).toBeUndefined()
 			}
 		)
 

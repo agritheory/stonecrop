@@ -34,7 +34,7 @@
 import { roundToPrecision, useArithmeticInput } from '@stonecrop/utilities'
 import { computed } from 'vue'
 
-import { fieldErrorA11y } from '../../composables/fieldErrorA11y'
+import { fieldErrorA11y, fieldErrorText } from '../../composables/fieldErrorA11y'
 import type { ComponentProps, NumericOptions } from '../../types'
 import { numberFromBox } from '../../utils/emptiedBox'
 
@@ -48,8 +48,8 @@ const {
 	options = {},
 } = defineProps<ComponentProps & { options?: NumericOptions }>()
 
-// Dynamic trigger errors take precedence over a static schema errorMessage; empty means the slot hides.
-const errorText = computed(() => (errors?.length ? errors.join('; ') : (validation.errorMessage ?? '')))
+// Only the errors the host reports; the schema's errorMessage words one that has no text. Empty hides the slot.
+const errorText = computed(() => fieldErrorText(errors, validation))
 const { errorId, describedBy, invalid } = fieldErrorA11y(uuid, errorText)
 
 const inputNumber = defineModel<number | null>()

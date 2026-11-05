@@ -42,7 +42,7 @@
 import { type ComponentPublicInstance, useTemplateRef, computed } from 'vue'
 import { fromISODate } from '@stonecrop/utilities'
 
-import { fieldErrorA11y } from '../../composables/fieldErrorA11y'
+import { fieldErrorA11y, fieldErrorText } from '../../composables/fieldErrorA11y'
 import ADateSelection from './ADateSelection.vue'
 import type { ComponentProps } from '../../types'
 import { dayFromBox } from '../../utils/emptiedBox'
@@ -57,8 +57,8 @@ const {
 	validation = { errorMessage: '' },
 } = defineProps<ComponentProps>()
 
-// Dynamic trigger errors take precedence over a static schema errorMessage; empty means the slot hides.
-const errorText = computed(() => (errors?.length ? errors.join('; ') : (validation.errorMessage ?? '')))
+// Only the errors the host reports; the schema's errorMessage words one that has no text. Empty hides the slot.
+const errorText = computed(() => fieldErrorText(errors, validation))
 const { errorId, describedBy, invalid } = fieldErrorA11y(uuid, errorText)
 
 // The field holds a `YYYY-MM-DD` day, which is also the date input's own value; a Date would be an instant.
