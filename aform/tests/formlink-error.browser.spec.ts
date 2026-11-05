@@ -18,13 +18,18 @@ const mountLink = (data: Record<string, unknown>) => {
 		setup: () => () =>
 			h('div', { style: `width: 600px; ${labelOffset}` }, [
 				h(AForm, {
-					schema: [{ fieldname: 'customer', component: 'AFormLink', label: 'Customer' }] as ResolvedField[],
+					schema: [
+						{ fieldname: 'customer', component: 'AFormLink', label: 'Customer', doctype: 'customer' },
+					] as ResolvedField[],
 					data,
 					errors: { customer: ['Must be empty while the method is Cash'] },
 				}),
 			]),
 	})
-	wrapper = mount(Host, { attachTo: document.body, global: { components: { AFormLink } } })
+	wrapper = mount(Host, {
+		attachTo: document.body,
+		global: { components: { AFormLink }, provide: { aformLinkNavigator: { navigate: () => {} } } },
+	})
 }
 
 // Needs real layout: whether the message and the button overlap is a matter of where the browser puts them.
