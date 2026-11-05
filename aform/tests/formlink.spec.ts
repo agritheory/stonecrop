@@ -500,6 +500,66 @@ describe('AFormLink component', { tags: ['component'] }, () => {
 		expect(wrapper.find('.loading').exists()).toBe(false)
 	})
 
+	it('ignores an older search that answers after a newer one', async () => {
+		const resolvers: Record<string, (val: AFormLinkValue[]) => void> = {}
+		const filterFunction = vi.fn(
+			(search: string) =>
+				new Promise<AFormLinkValue[]>(r => {
+					resolvers[search] = r
+				})
+		)
+
+		const wrapper = mount(AFormLink, {
+			props: { modelValue: { id: '' }, filterFunction, isAsync: true },
+		})
+
+		const input = wrapper.find('input')
+		await input.setValue('Ac')
+		await input.setValue('Acme')
+
+		// The newer search answers first…
+		resolvers['Acme']([{ id: 'CUST-001', displayText: 'Acme Corp' }])
+		await flushPromises()
+		// …then the older one lands; it must not replace the newer results.
+		resolvers['Ac']([
+			{ id: 'CUST-002', displayText: 'Ace Hardware' },
+			{ id: 'CUST-003', displayText: 'Acorn Ltd' },
+		])
+		await flushPromises()
+
+		const options = wrapper.findAll('[role="option"]')
+		expect(options).toHaveLength(1)
+		expect(options[0].text()).toBe('Acme Corp')
+	})
+
+	it('keeps loading until the latest search answers', async () => {
+		const resolvers: Record<string, (val: AFormLinkValue[]) => void> = {}
+		const filterFunction = vi.fn(
+			(search: string) =>
+				new Promise<AFormLinkValue[]>(r => {
+					resolvers[search] = r
+				})
+		)
+
+		const wrapper = mount(AFormLink, {
+			props: { modelValue: { id: '' }, filterFunction, isAsync: true },
+		})
+
+		const input = wrapper.find('input')
+		await input.setValue('Ac')
+		await input.setValue('Acme')
+
+		resolvers['Ac']([{ id: 'CUST-002', displayText: 'Ace Hardware' }])
+		await flushPromises()
+		expect(wrapper.find('.loading').exists()).toBe(true)
+		expect(wrapper.findAll('[role="option"]')).toHaveLength(0)
+
+		resolvers['Acme']([{ id: 'CUST-001', displayText: 'Acme Corp' }])
+		await flushPromises()
+		expect(wrapper.find('.loading').exists()).toBe(false)
+		expect(wrapper.findAll('[role="option"]').map(o => o.text())).toEqual(['Acme Corp'])
+	})
+
 	it('arrow click calls navigator.navigate with doctype and id', async () => {
 		const navigate = vi.fn()
 		const wrapper = mount(AFormLink, {
