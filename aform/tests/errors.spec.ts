@@ -10,6 +10,7 @@ import ADatePicker from '../src/components/form/ADatePicker.vue'
 import ADateTime from '../src/components/form/ADateTime.vue'
 import ADateRange from '../src/components/form/ADateRange.vue'
 import ADropdown from '../src/components/form/ADropdown.vue'
+import AFormLink from '../src/components/form/AFormLink.vue'
 import ATextInput from '../src/components/form/ATextInput.vue'
 import type { ResolvedField } from '../src/types'
 
@@ -252,6 +253,58 @@ describe('inline field errors', { tags: ['component'] }, () => {
 		it('hides the error slot when there are no errors', () => {
 			const w = mount(ADropdown, { props: { label: 'Pick' } })
 			expect(w.find('.aform_error').attributes('style') ?? '').toContain('display: none')
+		})
+	})
+
+	describe('field component (AFormLink)', () => {
+		it('renders a dynamic error and wires it to the input', () => {
+			const w = mount(AFormLink, { props: { uuid: 'customer', label: 'Customer', errors: ['Required'] } })
+			const input = w.find('input')
+			const err = w.find('.aform_error')
+			expect(err.text()).toBe('Required')
+			expect(err.attributes('style') ?? '').not.toContain('display: none')
+			expect(err.attributes('id')).toBe('customer-error')
+			expect(err.attributes('role')).toBe('alert')
+			expect(input.attributes('aria-invalid')).toBe('true')
+			expect(input.attributes('aria-describedby')).toBe('customer-error')
+		})
+
+		it('joins multiple errors and prefers them over a static validation.errorMessage', () => {
+			const w = mount(AFormLink, {
+				props: { label: 'Customer', errors: ['A', 'B'], validation: { errorMessage: 'static' } },
+			})
+			expect(w.find('.aform_error').text()).toBe('A; B')
+		})
+
+		it('falls back to static validation.errorMessage when there are no dynamic errors', () => {
+			const w = mount(AFormLink, { props: { label: 'Customer', validation: { errorMessage: 'static' } } })
+			expect(w.find('.aform_error').text()).toBe('static')
+		})
+
+		it('hides the error slot and leaves the input valid when there are no errors', () => {
+			const w = mount(AFormLink, { props: { uuid: 'customer', label: 'Customer' } })
+			const input = w.find('input')
+			expect(w.find('.aform_error').attributes('style') ?? '').toContain('display: none')
+			expect(input.attributes('aria-invalid')).toBeUndefined()
+			expect(input.attributes('aria-describedby')).toBeUndefined()
+		})
+
+		it('renders no error slot in embedded mode', () => {
+			const w = mount(AFormLink, { props: { label: 'Currency', embedded: true, errors: ['Required'] } })
+			expect(w.find('.aform_error').exists()).toBe(false)
+			expect(w.find('input').attributes('aria-invalid')).toBeUndefined()
+		})
+
+		it('shows an error AForm routes to a link field', () => {
+			const w = mount(AForm, {
+				props: {
+					schema: [{ fieldname: 'customer', component: 'AFormLink', label: 'Customer' }] as ResolvedField[],
+					data: { customer: '' },
+					errors: { customer: ['Required'] },
+				},
+				global: { components: { AFormLink } },
+			})
+			expect(w.findComponent(AFormLink).find('.aform_error').text()).toBe('Required')
 		})
 	})
 

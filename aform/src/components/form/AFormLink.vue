@@ -7,28 +7,37 @@
 		<template v-else>
 			<div v-on-click-outside="onClickOutside" class="aform_form-link-wrapper">
 				<div class="input-group">
-					<input
-						v-model="searchText"
-						type="text"
-						role="combobox"
-						autocomplete="off"
-						aria-autocomplete="list"
-						:class="['aform_input-field', { 'aform_input-field--embedded': embedded }]"
-						:placeholder="placeholder"
-						:aria-label="ariaLabel"
-						:required="required"
-						:aria-expanded="dropdownOpen"
-						:aria-controls="dropdownOpen ? listboxId : undefined"
-						:aria-activedescendant="activeIndex === null ? undefined : `${listboxId}-opt-${activeIndex}`"
-						:disabled="disabled || mode === 'read'"
-						@input="onInput"
-						@focus="onFocus"
-						@blur="leaveField"
-						@keydown.down.prevent="selectNext"
-						@keydown.up.prevent="selectPrev"
-						@keydown.enter.prevent="selectCurrent"
-						@keydown.esc="closeDropdown"
-						@keydown.tab="leaveField" />
+					<!-- Anchors the error to the input rather than the whole field, so it ends short of the
+					     navigate button instead of being cut through by the button's divider. -->
+					<div class="aform_form-link-field">
+						<input
+							v-model="searchText"
+							type="text"
+							role="combobox"
+							autocomplete="off"
+							aria-autocomplete="list"
+							:class="['aform_input-field', { 'aform_input-field--embedded': embedded }]"
+							:placeholder="placeholder"
+							:aria-label="ariaLabel"
+							:required="required"
+							:aria-invalid="invalid"
+							:aria-describedby="describedBy"
+							:aria-expanded="dropdownOpen"
+							:aria-controls="dropdownOpen ? listboxId : undefined"
+							:aria-activedescendant="activeIndex === null ? undefined : `${listboxId}-opt-${activeIndex}`"
+							:disabled="disabled || mode === 'read'"
+							@input="onInput"
+							@focus="onFocus"
+							@blur="leaveField"
+							@keydown.down.prevent="selectNext"
+							@keydown.up.prevent="selectPrev"
+							@keydown.enter.prevent="selectCurrent"
+							@keydown.esc="closeDropdown"
+							@keydown.tab="leaveField" />
+						<p v-if="!embedded" v-show="errorText" :id="errorId" class="aform_error" role="alert">
+							{{ errorText }}
+						</p>
+					</div>
 					<button
 						v-if="canNavigate && !disabled && !embedded"
 						type="button"
@@ -79,6 +88,7 @@
 import { vOnClickOutside } from '@vueuse/components'
 import { computed, inject, ref, useId, watch } from 'vue'
 
+import { fieldErrorA11y } from '../../composables/fieldErrorA11y'
 import type { AFormLinkModelValue, AFormLinkNavigator, AFormLinkValue, ComponentProps } from '../../types'
 import { deserializeFunction } from '../../utils/deserialize'
 import { asLinkValue, linkDisplayText, linkId } from '../../utils/linkValue'
@@ -89,6 +99,8 @@ const {
 	mode,
 	uuid,
 	required,
+	errors,
+	validation = { errorMessage: '' },
 	doctype = undefined,
 	formatter = undefined,
 	icon = 'arrow-right',
@@ -122,6 +134,11 @@ const {
 // `uuid` is per-field when AForm supplies it; the fallback keeps the ids unique for a standalone
 // mount so two pickers on one page can't cross-wire their ARIA relationships.
 const listboxId = `${uuid ?? `aform-link-${useId()}`}-listbox`
+
+// Dynamic trigger errors take precedence over a static schema errorMessage; empty means the slot hides.
+// Embedded mode renders no error slot (the host owns it, as with its label), so it gets no ARIA wiring either.
+const errorText = computed(() => (embedded ? '' : errors?.length ? errors.join('; ') : (validation.errorMessage ?? '')))
+const { errorId, describedBy, invalid } = fieldErrorA11y(uuid, errorText)
 
 const modelValue = defineModel<AFormLinkModelValue | null>({ default: () => ({ id: '', displayText: '' }) })
 
@@ -339,9 +356,23 @@ const selectCurrent = () => {
 	align-items: stretch;
 }
 
+.aform_form-link-field {
+	position: relative;
+	display: flex;
+	flex: 1;
+	min-width: 0;
+}
+
 .aform_input-field {
 	flex: 1;
 	min-width: 0;
+}
+
+/* The shared rule offsets the error from the field's top, past the label's padding; here it is placed
+   against the input itself, whose top border is this box's top. Its right edge is the input's, so the
+   message ends before the navigate button. */
+.aform_form-link-field > p.aform_error {
+	top: 0;
 }
 
 /* No top padding: the shared rule reserves it for a floating label, which embedded mode never renders. */

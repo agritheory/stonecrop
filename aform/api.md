@@ -449,7 +449,7 @@ import { AFormLink } from '@stonecrop/aform'
 | required | `boolean \| undefined` | no |  | Indicate whether input is required for text and/or select elements inside the component |
 | mode | `InteractionMode \| undefined` | no |  | The rendering mode for the component |
 | uuid | `string \| undefined` | no |  | Set a unique identifier for elements inside the component |
-| validation | `{ [key: string]: any; errorMessage: string; } \| undefined` | no |  | Validation options for elements inside the component |
+| validation | `{ [key: string]: any; errorMessage: string; } \| undefined` | no | `{ errorMessage: "" }` | Validation options for elements inside the component |
 | errors | `string[] \| undefined` | no |  | Inline validation error messages to display on this field. Fed by the host (e.g. mapped from the core validation store) — the renderer stays dumb and just shows what it is given. Takes precedence over the static `validation.errorMessage`. |
 | doctype | `string \| undefined` | no | `undefined` |  |
 | formatter | `((value: AFormLinkValue) => string) \| undefined` | no | `undefined` |  |
