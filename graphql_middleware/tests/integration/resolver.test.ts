@@ -344,6 +344,16 @@ beforeAll(async () => {
 			// nested record while its column holds a scalar foreign key.
 			workflow: { actions: { save: { label: 'Save', selfTransition: true } } },
 		},
+		// The same expanding link, declared by the field's own `doctype` rather than a `links` entry.
+		ScLinkExpandByField: {
+			name: 'ScLinkExpandByField',
+			fields: [
+				{ kind: 'field', fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
+				{ kind: 'field', fieldname: 'label', component: 'ATextInput', label: 'Label' },
+				{ kind: 'field', fieldname: 'itemId', component: 'AForm', doctype: 'ScItem', label: 'Item' },
+			],
+			workflow: { actions: { save: { label: 'Save', selfTransition: true } } },
+		},
 		ScLinkInline: {
 			name: 'ScLinkInline',
 			fields: [
@@ -687,6 +697,30 @@ beforeAll(async () => {
 			],
 			workflow: { actions: { save: { label: 'Save', selfTransition: true } } },
 		},
+		ScShape: {
+			name: 'ScShape',
+			fields: [
+				{ kind: 'field', fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
+				{ kind: 'field', fieldname: 'label', component: 'ATextInput', label: 'Label' },
+				{ kind: 'field', fieldname: 'settings', component: 'ATextInput', label: 'Settings' },
+				{ kind: 'field', fieldname: 'raw', component: 'ATextInput', label: 'Raw' },
+				{ kind: 'field', fieldname: 'events', component: 'ATextInput', label: 'Events' },
+				{ kind: 'field', fieldname: 'tags', component: 'ATextInput', label: 'Tags' },
+				{ kind: 'field', fieldname: 'seenAt', component: 'ATextInput', label: 'Seen At' },
+				{ kind: 'field', fieldname: 'took', component: 'ADuration', label: 'Took' },
+				{ kind: 'field', fieldname: 'laps', component: 'ATextInput', label: 'Laps' },
+				{ kind: 'field', fieldname: 'ruler', component: 'ATextInput', label: 'Ruler' },
+				{ kind: 'field', fieldname: 'span', component: 'ATextInput', label: 'Span' },
+				{ kind: 'field', fieldname: 'validDuring', component: 'ATextInput', label: 'Valid During' },
+				{ kind: 'field', fieldname: 'season', component: 'ATextInput', label: 'Season' },
+				{ kind: 'field', fieldname: 'pair', component: 'ATextInput', label: 'Pair' },
+				{ kind: 'field', fieldname: 'pairs', component: 'ATextInput', label: 'Pairs' },
+				{ kind: 'field', fieldname: 'windows', component: 'ATextInput', label: 'Windows' },
+				{ kind: 'field', fieldname: 'blob', component: 'ATextInput', label: 'Blob' },
+				{ kind: 'field', fieldname: 'ratio', component: 'ANumericInput', label: 'Ratio' },
+			],
+			workflow: { actions: { save: { label: 'Save', selfTransition: true } } },
+		},
 		ScLine: {
 			name: 'ScLine',
 			fields: [
@@ -776,6 +810,7 @@ beforeAll(async () => {
 					ScNestedKey: 'sc_code',
 					ScAmbiguous: 'sc_note',
 					ScLinkExpand: 'sc_tag',
+					ScLinkExpandByField: 'sc_tag',
 					ScLinkInline: 'sc_tag',
 					ScLinkAliased: 'sc_tag',
 					ScLinkLazy: 'sc_tag',
@@ -1504,6 +1539,44 @@ describe('self-transition data write', { tags: ['integration', 'graphql'] }, () 
 		expect((scalar as any).data?.stonecropAction?.droppedFields).toBeNull()
 	})
 
+	it('drops an expanded record for a field declaring its doctype, rather than refusing the save', async () => {
+		const [expanded] = await runSequence([
+			`mutation { stonecropAction(doctype: "ScLinkExpandByField", action: "save", args: [{ id: "1", data: { label: "kept", itemId: { id: 2, name: "Beta" } } }]) { success error droppedFields } }`,
+		])
+		expect((expanded as any).data?.stonecropAction).toMatchObject({
+			success: true,
+			error: null,
+			droppedFields: ['itemId'],
+		})
+	})
+
+	// The read serves an expanding link's key as the linked record, so the stored row the save compares
+	// against has to carry the key itself, or an empty link never counts as unchanged.
+	it('writes nothing when a record whose expanding link is empty is saved back unchanged', async () => {
+		const unchanged = { id: 3, label: 'approved', itemId: null }
+		const {
+			results: [emptied, read, saved],
+			rows: [logged],
+		} = await runSequenceInDatabaseZone(
+			'UTC',
+			[
+				`mutation { stonecropAction(doctype: "ScLinkExpand", action: "save", args: [{ id: "3", data: { itemId: null } }]) { success error } }`,
+				`query { stonecropRecord(doctype: "ScLinkExpand", id: "3") { data } }`,
+				`mutation { stonecropAction(doctype: "ScLinkExpand", action: "save", args: [{ id: "3", data: { label: "approved", itemId: null } }]) { success error data } }`,
+			],
+			`SELECT count(*)::int AS writes FROM sc_tag_write_log WHERE tag_id = 3`
+		)
+		expect((emptied as any).data.stonecropAction).toMatchObject({ success: true, error: null })
+		expect((read as any).data.stonecropRecord.data).toEqual(unchanged)
+		// The reply is the stored record, without the key column read to compare the link.
+		expect((saved as any).data.stonecropAction).toEqual({
+			success: true,
+			error: null,
+			data: { id: 3, label: 'approved' },
+		})
+		expect(logged).toEqual({ writes: 1 })
+	})
+
 	// `sc_line.line_no` is an identity generated always and `amount` is generated from quantity and
 	// rate: Postgres refuses any statement that sets either. A record read back carries both, so a
 	// client that edits one and saves it sends them back.
@@ -1644,13 +1717,19 @@ describe('temporal columns', { tags: ['integration', 'graphql'] }, () => {
 			expect(asHost((await readRecord('ScPeriodEntryWithPeriod')).periodId)).toEqual(await readHost())
 		})
 
-		it('leaves the row unchanged when a read is saved back as it came', async () => {
+		// The row is moved off its values first: a save writes only what changed, so saving the read back
+		// onto the row it came from would write nothing and prove nothing.
+		it('writes a read back as the values it came from', async () => {
 			const before = await readHost()
 			const period = await readRecord('ScPeriod')
-			const [save, after] = await runSequence([
+			const [moved, movedRow, save, after] = await runSequence([
+				`mutation { stonecropAction(doctype: "ScPeriod", action: "save", args: [{ id: "1", data: { startsOn: "2030-05-05", openedAt: "2030-05-05T05:05:05.000Z" } }]) { success error } }`,
+				hostRead,
 				`mutation { stonecropAction(doctype: "ScPeriod", action: "save", args: [{ id: "1", data: { startsOn: ${JSON.stringify(period.startsOn)}, openedAt: ${JSON.stringify(period.openedAt)} } }]) { success error } }`,
 				hostRead,
 			])
+			expect((moved as any).data?.stonecropAction?.success).toBe(true)
+			expect((movedRow as any).data.scPeriodByRowId.startsOn).toBe('2030-05-05')
 			expect((save as any).data?.stonecropAction?.success).toBe(true)
 			expect(inDatabaseZone((after as any).data.scPeriodByRowId)).toEqual(before)
 		})
@@ -1811,6 +1890,268 @@ describe('interval columns', { tags: ['integration', 'graphql'] }, () => {
 		expect((create as any).data.stonecropAction).toMatchObject({ success: true, error: null })
 		expect(stored.exact).toBe(true)
 		expect((create as any).data.stonecropAction.data.took).toBe('P1DT12H15S')
+	})
+})
+
+// ===========================================================================
+// Structured columns
+// ===========================================================================
+
+// JSON, lists and ranges read as the objects and arrays PostGraphile decodes them into, so a save writes
+// such a value back as the column holds it. Each write is checked in SQL, never through the adapter's own
+// read, which shares the codecs under test.
+describe('structured columns', { tags: ['integration', 'graphql'] }, () => {
+	// A value as a GraphQL literal, since the `args` scalar takes one.
+	const graphqlLiteral = (value: unknown): string =>
+		Array.isArray(value)
+			? `[${value.map(graphqlLiteral).join(', ')}]`
+			: value !== null && typeof value === 'object'
+				? `{ ${Object.entries(value)
+						.map(([key, entry]) => `${key}: ${graphqlLiteral(entry)}`)
+						.join(', ')} }`
+				: JSON.stringify(value)
+	const saveShape = (id: string | undefined, data: Record<string, unknown>) =>
+		`mutation { stonecropAction(doctype: "ScShape", action: "save", args: [{ ${id === undefined ? '' : `id: "${id}", `}data: ${graphqlLiteral(data)} }]) { success error droppedFields } }`
+	const readShape = async (id: number): Promise<Record<string, unknown>> =>
+		JSON.parse(JSON.stringify(await runQuery(`query { stonecropRecord(doctype: "ScShape", id: "${id}") { data } }`)))
+			.data.stonecropRecord.data
+	const writesTo = (id: number) =>
+		`SELECT count(*) FILTER (WHERE kind = 'row')::int AS rows, count(*) FILTER (WHERE kind = 'took')::int AS took FROM sc_shape_write_log WHERE shape_id = ${id}`
+
+	// [what, field, value sent, SQL true when the column holds it]
+	const writes: [string, string, unknown, string][] = [
+		['a jsonb object', 'settings', { level: 7 }, `settings = '{"level": 7}'::jsonb`],
+		[
+			'a nested jsonb object',
+			'settings',
+			{ nested: { a: [1, { b: null }] } },
+			`settings = '{"nested": {"a": [1, {"b": null}]}}'::jsonb`,
+		],
+		['a jsonb array', 'settings', [1, 'two'], `settings = '[1, "two"]'::jsonb`],
+		['a jsonb number', 'settings', 5, `settings = '5'::jsonb`],
+		['a json object', 'raw', { b: 2 }, `raw::jsonb = '{"b": 2}'::jsonb`],
+		['a list of text', 'tags', ['x', 'y'], `tags = ARRAY['x', 'y']`],
+		['a list of jsonb', 'events', [{ x: 2 }, { y: 3 }], `events = ARRAY['{"x": 2}', '{"y": 3}']::jsonb[]`],
+		['a list of ISO 8601 durations', 'laps', ['PT1M', 'P1D'], `laps = ARRAY['1 minute', '1 day']::interval[]`],
+		[
+			'an integer range',
+			'span',
+			{ start: { value: 2, inclusive: true }, end: { value: 5, inclusive: false } },
+			`span = '[2,5)'::int4range`,
+		],
+		[
+			'a date range open at its end',
+			'season',
+			{ start: { value: '2026-02-01', inclusive: true }, end: null },
+			`season = '[2026-02-01,)'::daterange`,
+		],
+		[
+			'a timestamp range',
+			'validDuring',
+			{
+				start: { value: '2026-03-01T08:00:00', inclusive: true },
+				end: { value: '2026-03-02T08:00:00', inclusive: true },
+			},
+			`valid_during = '[2026-03-01 08:00, 2026-03-02 08:00]'::tsrange`,
+		],
+		['a composite', 'pair', { a: 3, b: 'z' }, `pair = ROW(3, 'z')::sc_pair`],
+		['a list of composites', 'pairs', [{ a: 4, b: null }], `pairs = ARRAY[ROW(4, NULL)]::sc_pair[]`],
+		[
+			'a list of timestamp ranges',
+			'windows',
+			[{ start: { value: '2026-05-01T00:00:00', inclusive: true }, end: null }, null],
+			`windows IS NOT DISTINCT FROM ARRAY['[2026-05-01 00:00,)', NULL]::tsrange[]`,
+		],
+	]
+
+	it.each(writes)('saves %s', async (_, field, value, holds) => {
+		const {
+			results: [save],
+			rows: [stored],
+		} = await runSequenceInDatabaseZone(
+			'UTC',
+			[saveShape('1', { [field]: value })],
+			`SELECT ${holds} AS holds FROM sc_shape WHERE id = 1`
+		)
+		expect((save as any).data.stonecropAction).toMatchObject({ success: true, error: null, droppedFields: null })
+		expect(stored.holds).toBe(true)
+	})
+
+	it.each(writes)('creates a record with %s', async (_, field, value, holds) => {
+		const {
+			results: [create],
+			rows: [stored],
+		} = await runSequenceInDatabaseZone(
+			'UTC',
+			[saveShape(undefined, { label: 'created', [field]: value })],
+			`SELECT ${holds} AS holds FROM sc_shape WHERE label = 'created'`
+		)
+		expect((create as any).data.stonecropAction).toMatchObject({ success: true, error: null, droppedFields: null })
+		expect(stored.holds).toBe(true)
+	})
+
+	// 04:30 UTC is 10:00 in Kolkata (+05:30), a zone unlike both UTC and the test process's own.
+	it.each([
+		['saves', '1', `id = 1`],
+		['creates', undefined, `label = 'created'`],
+	])('%s a list of moments as the clock readings they name in the database zone', async (_, id, row) => {
+		const {
+			results: [save],
+			rows: [stored],
+		} = await runSequenceInDatabaseZone(
+			'Asia/Kolkata',
+			[saveShape(id, { label: 'created', seenAt: ['2026-01-05T04:30:00.000Z'] })],
+			`SELECT seen_at = ARRAY['2026-01-05 10:00:00']::timestamp[] AS holds FROM sc_shape WHERE ${row}`
+		)
+		expect((save as any).data.stonecropAction).toMatchObject({ success: true, error: null, droppedFields: null })
+		expect(stored.holds).toBe(true)
+	})
+
+	// A bound the read cannot serve comes back as no bound at all, so writing the read back would turn
+	// `[-infinity, …)` into `(, …)`, a different range.
+	it('edits one bound of a range and keeps the other bound infinite', async () => {
+		const validDuring = (await readShape(2)).validDuring as { end: { value: string } }
+		validDuring.end.value = '2026-07-01T00:00:00'
+		const {
+			results: [save],
+			rows: [stored],
+		} = await runSequenceInDatabaseZone(
+			'UTC',
+			[saveShape('2', { validDuring })],
+			`SELECT valid_during = '[-infinity, 2026-07-01 00:00)'::tsrange AS holds FROM sc_shape WHERE id = 2`
+		)
+		expect((save as any).data.stonecropAction).toMatchObject({ success: true, error: null })
+		expect(stored.holds).toBe(true)
+	})
+
+	// A list is written whole, so editing one range in it writes the others as the read served them.
+	it('edits one range in a list and keeps the others, an infinite bound and a NULL range included', async () => {
+		const windows = (await readShape(2)).windows as [unknown, unknown, { end: { value: string } }]
+		windows[2].end.value = '2026-04-01T00:00:00'
+		const {
+			results: [save],
+			rows: [stored],
+		} = await runSequenceInDatabaseZone(
+			'UTC',
+			[saveShape('2', { windows })],
+			`SELECT windows IS NOT DISTINCT FROM ARRAY[NULL, '[-infinity, 2026-01-01 00:00)', '[2026-02-01 00:00, 2026-04-01 00:00)']::tsrange[] AS holds FROM sc_shape WHERE id = 2`
+		)
+		expect((save as any).data.stonecropAction).toMatchObject({ success: true, error: null })
+		expect(stored.holds).toBe(true)
+	})
+
+	it('reads a NULL range as null, alone and in a list', async () => {
+		expect((await readShape(2)).windows).toEqual([
+			null,
+			{
+				start: { value: '-infinity', inclusive: true },
+				end: { value: '2026-01-01T00:00:00.000000', inclusive: false },
+			},
+			{
+				start: { value: '2026-02-01T00:00:00.000000', inclusive: true },
+				end: { value: '2026-03-01T00:00:00.000000', inclusive: false },
+			},
+		])
+		const shape = await readShape(3)
+		expect(shape.validDuring).toBeNull()
+		expect(shape.season).toBeNull()
+		expect(shape.windows).toBeNull()
+	})
+
+	it('reads a negative fraction of a second exactly', async () => {
+		const shape = await readShape(3)
+		expect(shape.took).toBe('-PT1.5S')
+		expect(shape.laps).toEqual(['-P1D', '-PT1.5S'])
+	})
+
+	// Postgres refuses an ISO 8601 duration signed as a whole (`-P1D`), the way Temporal writes one.
+	it.each([
+		['alone', { took: '-P1D' }, `took = interval '-1 day'`],
+		['in a list', { laps: ['-PT1H', 'PT2M'] }, `laps = ARRAY['-1 hour', '2 minutes']::interval[]`],
+	])('saves a negative interval %s', async (_, data, holds) => {
+		const {
+			results: [save],
+			rows: [stored],
+		} = await runSequenceInDatabaseZone(
+			'UTC',
+			[saveShape('1', data)],
+			`SELECT ${holds} AS holds FROM sc_shape WHERE id = 1`
+		)
+		expect((save as any).data.stonecropAction).toMatchObject({ success: true, error: null, droppedFields: null })
+		expect(stored.holds).toBe(true)
+	})
+
+	it.each([
+		['a range with no bounds named', 'span', {}],
+		['a range named by other keys', 'span', { lower: 1, upper: 5 }],
+		['a list sent as text', 'tags', 'x,y'],
+		['a list of lists', 'tags', [['x'], ['y']]],
+		['a line, which no read serves as it is', 'ruler', '{2,-1,0}'],
+		['an object for a text field', 'label', { text: 'x' }],
+		['a range bound with no value', 'span', { start: { value: null, inclusive: true }, end: null }],
+		['a composite missing a field', 'pair', { a: 5 }],
+		['a composite named by other keys', 'pair', { aa: 5, bb: 'y' }],
+		['a composite holding an object', 'pair', { a: { n: 1 }, b: 'x' }],
+		['a list of composites, one missing a field', 'pairs', [{ a: 5 }]],
+		['a list of ranges, one with no bounds named', 'windows', [{}]],
+		['a list of ranges, one named by other keys', 'windows', [{ lower: 1, upper: 2 }]],
+	])('refuses %s, naming the field', async (_, field, value) => {
+		const [save] = await runSequence([saveShape('1', { [field]: value })])
+		const result = (save as any).data.stonecropAction
+		expect(result.success).toBe(false)
+		expect(String(result.error)).toContain(`"${field}"`)
+	})
+
+	it('writes nothing when a read is saved back unchanged', async () => {
+		const shape = await readShape(1)
+		const {
+			results: [save],
+			rows: [logged],
+		} = await runSequenceInDatabaseZone('UTC', [saveShape('1', shape)], writesTo(1))
+		expect((save as any).data.stonecropAction).toMatchObject({ success: true, error: null })
+		expect(logged).toEqual({ rows: 0, took: 0 })
+	})
+
+	it('writes only the column that changed, so an update naming another column does not fire', async () => {
+		const shape = await readShape(1)
+		const {
+			results: [save],
+			rows: [logged],
+		} = await runSequenceInDatabaseZone('UTC', [saveShape('1', { ...shape, label: 'relabelled' })], writesTo(1))
+		expect((save as any).data.stonecropAction).toMatchObject({ success: true, error: null })
+		expect(logged).toEqual({ rows: 1, took: 0 })
+	})
+
+	// The values a read loses: kept as stored, because nothing about them changed.
+	it('leaves every value a read cannot serve as it was when the read is saved back', async () => {
+		const shape = await readShape(2)
+		const {
+			results: [save],
+			rows: [stored],
+		} = await runSequenceInDatabaseZone(
+			'UTC',
+			[saveShape('2', shape)],
+			`SELECT span = 'empty'::int4range AND seen_at = ARRAY['infinity', '2026-01-01 00:00:00']::timestamp[]
+				AND valid_during = '[-infinity, 2026-06-01 00:00)'::tsrange AND season = '[-infinity, infinity)'::daterange
+				AND blob = '\\x0102'::bytea AND ratio = 'NaN'::float8
+				AS holds FROM sc_shape WHERE id = 2`
+		)
+		expect((save as any).data.stonecropAction).toMatchObject({ success: true, error: null })
+		expect(stored.holds).toBe(true)
+	})
+
+	// The code editor sends JSON as text.
+	it('saves JSON text as the value it names', async () => {
+		const {
+			results: [save],
+			rows: [stored],
+		} = await runSequenceInDatabaseZone(
+			'UTC',
+			[saveShape('1', { settings: '{"level": 9}' })],
+			`SELECT settings = '{"level": 9}'::jsonb AS holds FROM sc_shape WHERE id = 1`
+		)
+		expect((save as any).data.stonecropAction).toMatchObject({ success: true, error: null })
+		expect(stored.holds).toBe(true)
 	})
 })
 

@@ -66,9 +66,24 @@ const DOCTYPES = {
 			{ kind: 'field' as const, fieldname: 'status', component: 'ATextInput', label: 'Status' },
 		],
 	},
+	// Structured values, which the in-memory host holds as the objects and lists a save sends.
+	ScShape: {
+		name: 'ScShape',
+		slug: 'sc-shape',
+		fields: [
+			{ kind: 'field' as const, fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
+			{ kind: 'field' as const, fieldname: 'label', component: 'ATextInput', label: 'Label' },
+			{ kind: 'field' as const, fieldname: 'settings', component: 'ATextInput', label: 'Settings' },
+			{ kind: 'field' as const, fieldname: 'tags', component: 'ATextInput', label: 'Tags' },
+			{ kind: 'field' as const, fieldname: 'took', component: 'ADuration', label: 'Took' },
+			{ kind: 'field' as const, fieldname: 'span', component: 'ATextInput', label: 'Span' },
+			{ kind: 'field' as const, fieldname: 'validDuring', component: 'ATextInput', label: 'Valid During' },
+			{ kind: 'field' as const, fieldname: 'season', component: 'ATextInput', label: 'Season' },
+		],
+	},
 }
 
-/** Mirrors seed.sql exactly. Host B reads these; Host A reads the same rows from PGlite. */
+/** Mirrors seed.sql exactly (sc_shape's first row only). Host B reads these; Host A reads the same rows from PGlite. */
 const IN_MEMORY: Record<string, Map<string, Record<string, unknown>>> = {
 	ScCode: new Map([
 		['ALPHA', { code: 'ALPHA', name: 'Alpha Region', status: 'Draft' }],
@@ -79,6 +94,24 @@ const IN_MEMORY: Record<string, Map<string, Record<string, unknown>>> = {
 		['1', { id: 1, name: 'Alpha', status: 'Draft' }],
 		['2', { id: 2, name: 'Beta', status: 'Active' }],
 		['3', { id: 3, name: 'Gamma', status: 'Draft' }],
+	]),
+	ScShape: new Map([
+		[
+			'1',
+			{
+				id: 1,
+				label: 'plain',
+				settings: { level: 2, nested: { a: [1, 2] } },
+				tags: ['a', 'b'],
+				took: 'PT1H',
+				span: { start: { value: 1, inclusive: true }, end: { value: 10, inclusive: false } },
+				validDuring: {
+					start: { value: '2026-01-01T09:00:00.000000', inclusive: true },
+					end: { value: '2026-06-01T00:00:00.000000', inclusive: false },
+				},
+				season: { start: { value: '2026-01-01', inclusive: true }, end: { value: '2026-04-01', inclusive: false } },
+			},
+		],
 	]),
 }
 
@@ -342,6 +375,12 @@ const CASES: Array<{
 		nonEmpty: true,
 		document: RECORD,
 		variables: { doctype: 'ScItem', id: '2' },
+	},
+	{
+		label: 'record holding JSON, a list, an interval and ranges',
+		nonEmpty: true,
+		document: RECORD,
+		variables: { doctype: 'ScShape', id: '1' },
 	},
 	{
 		label: 'records, unfiltered',
