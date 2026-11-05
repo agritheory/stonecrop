@@ -1,5 +1,15 @@
 # Change Log - @stonecrop/aform
 
+## 0.58.4
+
+### Patch Changes
+
+- 07be796: A link field now shows its `errors` (or a static `validation.errorMessage`) the way text inputs do, and marks its input `aria-invalid` with `aria-describedby` pointing at the message. Embedded link fields still leave the error to their host.
+- @stonecrop/atable@0.58.4
+  - @stonecrop/schema@0.58.4
+  - @stonecrop/themes@0.58.4
+  - @stonecrop/utilities@0.58.4
+
 ## 0.58.3
 
 ### Patch Changes
