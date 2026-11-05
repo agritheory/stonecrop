@@ -126,7 +126,7 @@ rows:
 ---
 ::
 
-`AFormLink` also participates in navigation: when `doctype` is set and an `aformLinkNavigator` has been provided (via `app.provide('aformLinkNavigator', { navigate(doctype, id) { ... } })`), the arrow button calls it with the linked record's doctype and id. Without a provided navigator, the arrow still renders whenever the field holds a valid id, but clicks are no-ops.
+`AFormLink` also participates in navigation: when `doctype` is set and an `aformLinkNavigator` has been provided (via `app.provide('aformLinkNavigator', { navigate(doctype, id) { ... } })`), the arrow button calls it with the linked record's doctype and id. The arrow is shown only when the field holds a valid id, has a `doctype`, and a navigator has been provided; a link with no `doctype` (e.g. a unit stored by its name), or one mounted without a navigator, has nothing to open and shows no arrow.
 
 ### AFormLinkValue
 
@@ -146,8 +146,8 @@ rows:
 ---
 headers: ['Mode', 'Rendering']
 rows:
-  - ['`edit`', 'Interactive input. Dropdown opens on focus or typing (if `filterFunction` is set). Navigate arrow shown when the value has a valid id.']
-  - ['`read`', 'Input disabled; dropdown never opens even on focus. Navigate arrow still shown when the value has a valid id.']
+  - ['`edit`', 'Interactive input. Dropdown opens on focus or typing (if `filterFunction` is set). Navigate arrow shown when the value has a valid id, `doctype` is set and a navigator is provided (see above).']
+  - ['`read`', 'Input disabled; dropdown never opens even on focus. Navigate arrow still shown, under the same rule as `edit`.']
   - ['`display`', 'Static text only — the formatted value, or `—` when the value has no id. No input, no navigate arrow.']
 ---
 ::
