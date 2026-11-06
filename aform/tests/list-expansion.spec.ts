@@ -1,10 +1,10 @@
-import { mount } from '@vue/test-utils'
 import { describe, expect, it } from 'vite-plus/test'
 import { defineComponent } from 'vue'
 
 import AForm from '../src/components/AForm.vue'
 import ATextInput from '../src/components/form/ATextInput.vue'
 import type { ResolvedField } from '../src/types'
+import { mountBound } from './mount-bound'
 
 /*
 A `list-expansion` table renders each expanded row as a nested AForm: the table's columns that
@@ -35,7 +35,7 @@ const lines = {
 } as unknown as ResolvedField
 
 const mountForm = (config: Record<string, unknown> = { view: 'list-expansion' }) =>
-	mount(AForm, {
+	mountBound({
 		props: {
 			schema: [{ ...lines, config } as ResolvedField],
 			data: {

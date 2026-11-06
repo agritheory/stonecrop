@@ -1,9 +1,10 @@
-import { mount, flushPromises } from '@vue/test-utils'
+import { flushPromises } from '@vue/test-utils'
 import { describe, it, expect } from 'vite-plus/test'
 
 import AForm from '../src/components/AForm.vue'
 import AFieldset from '../src/components/form/AFieldset.vue'
 import ATextInput from '../src/components/form/ATextInput.vue'
+import { mountBound } from './mount-bound'
 
 describe('AForm Nested Schema Rendering', { tags: ['component'] }, () => {
 	const addressSchema = [
@@ -28,7 +29,7 @@ describe('AForm Nested Schema Rendering', { tags: ['component'] }, () => {
 	]
 
 	it('renders a nested AForm when field has schema property', async () => {
-		const wrapper = mount(AForm, {
+		const wrapper = mountBound({
 			props: {
 				schema: nestedSchema,
 				data: {
@@ -71,7 +72,7 @@ describe('AForm Nested Schema Rendering', { tags: ['component'] }, () => {
 			},
 		]
 
-		const wrapper = mount(AForm, {
+		const wrapper = mountBound({
 			props: {
 				schema: schemaWithoutLabel,
 				data: {
@@ -96,7 +97,7 @@ describe('AForm Nested Schema Rendering', { tags: ['component'] }, () => {
 	})
 
 	it('initializes nested data from parent dataModel', async () => {
-		const wrapper = mount(AForm, {
+		const wrapper = mountBound({
 			props: {
 				schema: nestedSchema,
 				data: {
@@ -122,7 +123,7 @@ describe('AForm Nested Schema Rendering', { tags: ['component'] }, () => {
 	})
 
 	it('initializes nested data as empty object when no parent data exists', async () => {
-		const wrapper = mount(AForm, {
+		const wrapper = mountBound({
 			props: {
 				schema: nestedSchema,
 				data: {
@@ -149,7 +150,7 @@ describe('AForm Nested Schema Rendering', { tags: ['component'] }, () => {
 			address: { street: '123 Main St', city: 'Springfield' },
 		}
 
-		const wrapper = mount(AForm, {
+		const wrapper = mountBound({
 			props: {
 				schema: nestedSchema,
 				data,
@@ -169,7 +170,7 @@ describe('AForm Nested Schema Rendering', { tags: ['component'] }, () => {
 	})
 
 	it('propagates nested form changes to parent via updateNestedData', async () => {
-		const wrapper = mount(AForm, {
+		const wrapper = mountBound({
 			props: {
 				schema: nestedSchema,
 				data: {
@@ -221,7 +222,7 @@ describe('AForm Nested Schema Rendering', { tags: ['component'] }, () => {
 			},
 		]
 
-		const wrapper = mount(AForm, {
+		const wrapper = mountBound({
 			props: {
 				schema: schemaWithEmptyNested,
 				data: { name: 'John' },
@@ -256,7 +257,7 @@ describe('AForm Nested Schema Rendering', { tags: ['component'] }, () => {
 			},
 		]
 
-		const wrapper = mount(AForm, {
+		const wrapper = mountBound({
 			props: {
 				schema: plainSchema,
 				data: { name: 'John' },
@@ -273,7 +274,7 @@ describe('AForm Nested Schema Rendering', { tags: ['component'] }, () => {
 	})
 
 	it('passes mode to nested AForm', async () => {
-		const wrapper = mount(AForm, {
+		const wrapper = mountBound({
 			props: {
 				schema: nestedSchema,
 				data: {
@@ -314,7 +315,7 @@ describe('AForm Nested Schema Rendering', { tags: ['component'] }, () => {
 			},
 		]
 
-		const wrapper = mount(AForm, {
+		const wrapper = mountBound({
 			props: {
 				schema: schemaWithMode,
 				data: {
@@ -369,7 +370,7 @@ describe('AForm Nested Schema Rendering', { tags: ['component'] }, () => {
 			},
 		]
 
-		const wrapper = mount(AForm, {
+		const wrapper = mountBound({
 			props: {
 				schema: multiNestedSchema,
 				data: {
@@ -409,7 +410,7 @@ describe('AForm Nested Schema Rendering', { tags: ['component'] }, () => {
 			} as any,
 		]
 
-		const wrapper = mount(AForm, {
+		const wrapper = mountBound({
 			props: {
 				schema: tableSchema,
 				data: { name: 'Test', items: [] },
@@ -433,7 +434,7 @@ describe('AForm Nested Schema Rendering', { tags: ['component'] }, () => {
 			},
 		]
 
-		const wrapper = mount(AForm, {
+		const wrapper = mountBound({
 			props: {
 				schema: simpleSchema,
 				data: { first_name: '' },
@@ -465,7 +466,7 @@ describe('AForm Nested Schema Rendering', { tags: ['component'] }, () => {
 			},
 		]
 
-		const wrapper = mount(AForm, {
+		const wrapper = mountBound({
 			props: {
 				schema: schema1,
 				data: { first_name: '' },
@@ -500,7 +501,7 @@ describe('AForm Nested Schema Rendering', { tags: ['component'] }, () => {
 	})
 
 	it('re-syncs nestedData when dataModel reference is replaced (e.g. form reset)', async () => {
-		const wrapper = mount(AForm, {
+		const wrapper = mountBound({
 			props: {
 				schema: nestedSchema,
 				data: {
@@ -553,7 +554,7 @@ describe('AForm Nested Schema Rendering', { tags: ['component'] }, () => {
 			},
 		]
 
-		const wrapper = mount(AForm, {
+		const wrapper = mountBound({
 			props: {
 				schema: tableSchema,
 				data: {
@@ -585,7 +586,7 @@ describe('AForm Nested Schema Rendering', { tags: ['component'] }, () => {
 		const fieldsetSchema = [{ fieldname: 'first_name', component: 'ATextInput', label: 'First Name' }]
 
 		it('renders the fieldset legend text when component is AFieldset', async () => {
-			const wrapper = mount(AForm, {
+			const wrapper = mountBound({
 				props: {
 					schema: [
 						{
@@ -608,7 +609,7 @@ describe('AForm Nested Schema Rendering', { tags: ['component'] }, () => {
 		})
 
 		it('does not render h4 aform-nested-label when the nested component is AFieldset', async () => {
-			const wrapper = mount(AForm, {
+			const wrapper = mountBound({
 				props: {
 					schema: [
 						{
@@ -630,7 +631,7 @@ describe('AForm Nested Schema Rendering', { tags: ['component'] }, () => {
 		})
 
 		it('passes collapsible prop to nested AFieldset', async () => {
-			const wrapper = mount(AForm, {
+			const wrapper = mountBound({
 				props: {
 					schema: [
 						{
@@ -668,7 +669,7 @@ describe('AForm Nested Schema Rendering', { tags: ['component'] }, () => {
 				},
 			]
 
-			const wrapper = mount(AForm, {
+			const wrapper = mountBound({
 				props: {
 					schema: schemaWithFieldset,
 					data: { details: {} },

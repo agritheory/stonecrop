@@ -13,6 +13,7 @@ import ADropdown from '../src/components/form/ADropdown.vue'
 import AFormLink from '../src/components/form/AFormLink.vue'
 import ATextInput from '../src/components/form/ATextInput.vue'
 import type { ResolvedField } from '../src/types'
+import { mountBound } from './mount-bound'
 
 describe('inline field errors', { tags: ['component'] }, () => {
 	describe('field component (ATextInput)', () => {
@@ -296,7 +297,7 @@ describe('inline field errors', { tags: ['component'] }, () => {
 		})
 
 		it('shows an error AForm routes to a link field', () => {
-			const w = mount(AForm, {
+			const w = mountBound({
 				props: {
 					schema: [{ fieldname: 'customer', component: 'AFormLink', label: 'Customer' }] as ResolvedField[],
 					data: { customer: '' },
@@ -310,7 +311,7 @@ describe('inline field errors', { tags: ['component'] }, () => {
 
 	describe('AForm wiring', () => {
 		it('routes errors to the correct field by fieldname', () => {
-			const w = mount(AForm, {
+			const w = mountBound({
 				props: {
 					schema: [
 						{ fieldname: 'start_date', component: 'ATextInput', label: 'Start' },
@@ -334,8 +335,8 @@ describe('inline field errors', { tags: ['component'] }, () => {
 			] as ResolvedField[]
 			const twoForms = defineComponent({
 				render: () => [
-					h(AForm, { schema, data: {}, errors: { end_date: ['End before start'] } }),
-					h(AForm, { schema, data: {} }),
+					h(AForm, { schema, data: {}, errors: { end_date: ['End before start'] }, 'onUpdate:data': () => {} }),
+					h(AForm, { schema, data: {}, 'onUpdate:data': () => {} }),
 				],
 			})
 			const w = mount(twoForms, { global: { components: { ATextInput, ADate } } })

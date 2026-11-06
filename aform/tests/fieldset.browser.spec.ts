@@ -24,6 +24,7 @@ describe('a fieldset in a form', { tags: ['component'] }, () => {
 					h(AForm, {
 						schema: [fieldset('outer', [email, fieldset('inner', [email])])],
 						data: { email: 'ana@example.com' },
+						'onUpdate:data': () => {},
 					}),
 				]),
 		})

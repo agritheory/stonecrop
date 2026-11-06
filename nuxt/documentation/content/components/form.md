@@ -283,13 +283,13 @@ const data = ref({
 headers: ['Name', 'Type', 'Default', 'Description']
 rows:
   - ['`schema`', '[`ResolvedField[]`](#schema-field-shape)', '—', 'The resolved field descriptors to render, in order. Required.']
-  - ['`data`', '`Record<string, any>`', '—', "The form's data object, bound with `v-model:data`. Required — each field reads/writes `data[fieldname]` through it."]
-  - ['`mode`', "`'edit' | 'read' | 'display'`", "`'edit'`", "Cascades to every resolved field unless a field's own schema entry sets its own `mode`. See [Modes](#modes) above."]
+  - ['`data`', '`Record<string, any>`', '—', "The form's data object, bound with `v-model:data`. Required. Each field reads `data[fieldname]`; an edit comes back as a new object through `update:data`, and the object passed in is never written into. Each edit builds on the record the form was last handed, so take each record before the next edit, as `v-model:data` does; a script filling several fields at once must let Vue update between them, or only the last is kept. With nothing listening for `update:data`, an edit would reach no one, so the form is read-only."]
+  - ['`mode`', "`'edit' | 'read' | 'display'`", "`'edit'`", "Cascades to every resolved field unless a field's own schema entry sets its own `mode`. `edit`, the form's or a field's, shows as `read` while nothing listens for `update:data`. See [Modes](#modes) above."]
   - ['`errors`', '`Record<string, string[]>`', '—', "Validation errors keyed by `fieldname`, passed through to the matching field's `errors` prop. `AForm` stays store-agnostic — the host is responsible for populating this."]
 ---
 ::
 
-`AForm` also emits `update:data` (fired on every field change, alongside the `v-model:data` sync) and `update:schema` (fired whenever a field's value changes, re-emitting the current `schema` unchanged — useful for hosts that keep schema and data in the same reactive store).
+`AForm` also emits `update:data` (fired on every field change with the new record, which is how `v-model:data` syncs) and `update:schema` (fired when one of the form's own fields changes, not a fieldset's, a linked record's or a table's, re-emitting the current `schema` unchanged — useful for hosts that keep schema and data in the same reactive store).
 
 ## Schema field shape
 
