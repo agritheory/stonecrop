@@ -48,6 +48,10 @@ describe('the runtime plugin', { tags: ['unit', 'nuxt'] }, () => {
 		expect([...generated].filter(name => !app.component(name))).toEqual([])
 	})
 
+	it('registers the block editor a rich-text field names', () => {
+		expect(setUp().component('AEditor')).toBeDefined()
+	})
+
 	it('points the code editor at the Monaco files the module serves', () => {
 		const app = setUp()
 		expect(installCodeEditor).toHaveBeenCalledWith(app, { vsPath: '/stonecrop-monaco/9.9.9/vs' })

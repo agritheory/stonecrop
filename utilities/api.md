@@ -191,6 +191,22 @@ export declare function formatQuantityCell(value: unknown): string;
 |-----------|------|-------------|
 | value | `unknown` |  |
 
+### formatRichTextCell
+
+The visible text of an Editor.js document (`{ time, blocks, version }`), its blocks joined by spaces, for a table cell or a text filter. Empty for a field never edited (`null`) or any value that is not such a document.
+
+**Signature:**
+
+```typescript
+export declare function formatRichTextCell(value: unknown): string;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| value | `unknown` |  |
+
 ### fromISODate
 
 Reads a `YYYY-MM-DD` day. Anything that is not a real day written exactly that way reads as no day.

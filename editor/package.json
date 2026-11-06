@@ -1,0 +1,85 @@
+{
+	"name": "@stonecrop/editor",
+	"version": "0.48.1",
+	"description": "Editor.js-based block editor component for Stonecrop",
+	"keywords": [
+		"block-editor",
+		"components",
+		"editorjs",
+		"rich-text",
+		"stonecrop",
+		"vue"
+	],
+	"homepage": "https://github.com/agritheory/stonecrop#readme",
+	"bugs": {
+		"url": "https://github.com/agritheory/stonecrop/issues"
+	},
+	"license": "MIT",
+	"author": {
+		"name": "Tyler Matteson",
+		"email": "tyler@agritheory.com"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/agritheory/stonecrop",
+		"directory": "editor"
+	},
+	"files": [
+		"dist"
+	],
+	"type": "module",
+	"sideEffects": [
+		"**/*.vue",
+		"**/*.css"
+	],
+	"types": "./dist/src/index.d.ts",
+	"exports": {
+		".": {
+			"types": "./dist/src/index.d.ts",
+			"import": "./dist/editor.js"
+		},
+		"./styles": "./dist/assets/index.css",
+		"./package.json": "./package.json"
+	},
+	"publishConfig": {
+		"access": "public"
+	},
+	"scripts": {
+		"dev": "vp build --watch",
+		"docs": "bash ../tools/scripts/run-docs.sh editor",
+		"lint": "vp lint",
+		"lint:fix": "vp lint --fix",
+		"prepublishOnly": "vp run build",
+		"preview": "vp preview",
+		"test": "vp test run",
+		"test:coverage": "vp test run --coverage",
+		"test:types": "vue-tsc --noEmit",
+		"test:watch": "vp test"
+	},
+	"dependencies": {
+		"@editorjs/delimiter": "^1.4.2",
+		"@editorjs/editorjs": "^2.31.7",
+		"@editorjs/header": "^2.8.9",
+		"@editorjs/list": "^2.0.9",
+		"@editorjs/quote": "^2.7.6"
+	},
+	"devDependencies": {
+		"@microsoft/api-extractor": "catalog:",
+		"@vitejs/plugin-vue": "catalog:",
+		"@vue/test-utils": "catalog:",
+		"jsdom": "catalog:",
+		"typescript": "catalog:",
+		"vite": "catalog:",
+		"vite-plugin-lib-inject-css": "catalog:",
+		"vue": "catalog:",
+		"vue-component-meta": "catalog:",
+		"vue-router": "catalog:",
+		"vue-tsc": "catalog:"
+	},
+	"peerDependencies": {
+		"vue": "^3.5.33"
+	},
+	"engines": {
+		"node": ">=24.0.0"
+	}
+}

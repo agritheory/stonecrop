@@ -263,6 +263,20 @@ describe('table store', { tags: ['component'] }, () => {
 				)
 			})
 
+			it('shows an editor document as the plain text of its blocks', () => {
+				store.columns[0] = { name: 'id', component: 'AEditor' }
+				const doc = {
+					time: 1,
+					version: '2.31.7',
+					blocks: [
+						{ type: 'header', data: { text: 'Notes', level: 2 } },
+						{ type: 'paragraph', data: { text: 'Keep <b>dry</b>' } },
+					],
+				}
+				expect(store.getFormattedValue(0, 0, doc)).toBe('Notes Keep dry')
+				expect(store.getFormattedValue(0, 0, null)).toBe('')
+			})
+
 			it('passes value through for an unknown component', () => {
 				store.columns[0] = { name: 'id', component: 'ATextInput' }
 				expect(store.getFormattedValue(0, 0, 'hello')).toBe('hello')

@@ -35,6 +35,7 @@ jobs:
           - casl_middleware
           - code_editor
           - desktop
+          - editor
           - graphql_client
           - graphql_middleware
           - node_editor
