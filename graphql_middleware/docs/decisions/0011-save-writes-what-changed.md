@@ -48,7 +48,8 @@ Chosen option: "Option 2", decided by Rohan Bansal.
 * Good, because a Save that changes nothing writes nothing.
 * Bad, because every update reads the row once more before writing it.
 * Bad, because a page holding values older than the stored row still overwrites what changed since, now for structured values as for scalars.
-* Bad, because the lossy reads stay wrong on screen: an empty range shows as unbounded, an infinite date as empty, `json` text normalised, large jsonb numbers rounded. A JSON string or JSON null at the top of a `json` column cannot be written as such.
+* Bad, because the lossy reads stay wrong on screen: an empty range shows as unbounded, an infinite date as empty, `json` text normalised, large jsonb numbers rounded.
+* Bad, because a string sent for a JSON column is read as JSON text, as the code editor sends it. A top-level JSON string that a read served and a Save sends back is written as the value its text names (`"5"` becomes the number 5), or fails when the text is not JSON; a string inside a list of JSON values stays a string; null is written as SQL NULL, never JSON null.
 * Bad, because a changed field is written whole, so editing one item of a list, one attribute of a composite or one key of a JSON value writes the parts the read lost as they were read: an infinite date in a list becomes NULL, a large jsonb number is rounded.
 * Bad, because a stored value that fails to decode (an interval whose parts differ in sign) now fails the Save before the write, where the write used to repair it.
 * Neutral, because a Save with a server-side handler is unaffected: the handler is that Save's whole write ([ADR 0010](0010-save-handler-is-the-whole-write.md)).

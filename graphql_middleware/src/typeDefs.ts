@@ -100,11 +100,11 @@ export const typeDefs = gql`
 		record: JSON
 		"""
 		Keys the write discarded because the doctype declares no column for them, because the
-		database fills the column itself, or because the value was a linked record rather than the
-		link's key. Null when everything sent was
-		stored. The action still succeeded — this is what it did not keep, and a client that
-		reports an unqualified success without checking it tells the user data was saved that
-		was not.
+		field is the workflow state, which only a transition moves, because the database fills the
+		column itself, or because the value was a linked record rather than the link's key. Null
+		when everything sent was stored. The action still succeeded — this is what it did not
+		keep, and a client that reports an unqualified success without checking it tells the user
+		data was saved that was not.
 		"""
 		droppedFields: [String!]
 	}
