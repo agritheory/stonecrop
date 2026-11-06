@@ -1077,7 +1077,7 @@ export interface ValidationError {
 | Property | Type | Description |
 |----------|------|-------------|
 | field | `string` | The fieldname the error displays on (the `setError` target, not necessarily a fired field) |
-| message | `string` | The message to display |
+| message | `string` | The message to display; `''` when the trigger left it out (`setError(field)`), which the form words with the field's own `validation.errorMessage` |
 | trigger | `string` | The trigger that produced this error — the namespace a re-run clears before repopulating |
 
 ### ValidationIssue
@@ -2767,7 +2767,7 @@ export const useValidationStore: import("pinia").StoreDefinition<"stonecrop-vali
     isValid: import("vue").ComputedRef<boolean>;
     errorsByField: import("vue").ComputedRef<Record<string, string[]>>;
     errorsFor: (field: string) => string[];
-    setError: (trigger: string, field: string, message: string) => void;
+    setError: (trigger: string, field: string, message?: string) => void;
     clearTrigger: (trigger: string) => void;
     clearAll: () => void;
     validateField: (triggers: Record<string, TriggerDefinition>, changedField: string, record: Record<string, unknown>) => Promise<void>;
@@ -2785,7 +2785,7 @@ export const useValidationStore: import("pinia").StoreDefinition<"stonecrop-vali
     isValid: import("vue").ComputedRef<boolean>;
     errorsByField: import("vue").ComputedRef<Record<string, string[]>>;
     errorsFor: (field: string) => string[];
-    setError: (trigger: string, field: string, message: string) => void;
+    setError: (trigger: string, field: string, message?: string) => void;
     clearTrigger: (trigger: string) => void;
     clearAll: () => void;
     validateField: (triggers: Record<string, TriggerDefinition>, changedField: string, record: Record<string, unknown>) => Promise<void>;
@@ -2803,7 +2803,7 @@ export const useValidationStore: import("pinia").StoreDefinition<"stonecrop-vali
     isValid: import("vue").ComputedRef<boolean>;
     errorsByField: import("vue").ComputedRef<Record<string, string[]>>;
     errorsFor: (field: string) => string[];
-    setError: (trigger: string, field: string, message: string) => void;
+    setError: (trigger: string, field: string, message?: string) => void;
     clearTrigger: (trigger: string) => void;
     clearAll: () => void;
     validateField: (triggers: Record<string, TriggerDefinition>, changedField: string, record: Record<string, unknown>) => Promise<void>;

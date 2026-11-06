@@ -124,7 +124,8 @@ declare function prefillDraft(doctype: string, values: Record<string, unknown>):
 const TRIGGER_API_STUBS = `
 declare const record: Record<string, unknown>
 declare const value: unknown
-declare function setError(field: string, message: string): void
+/** Flag \`field\` as invalid. Leave out \`message\` to show the field's own Validation message. */
+declare function setError(field: string, message?: string): void
 `
 const EDITOR_OPTIONS = {
 	placeholder: "e.g.  await runAction('Submit');  router.push(`/issue/${record.id}`)",

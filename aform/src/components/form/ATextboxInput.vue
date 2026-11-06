@@ -25,7 +25,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-import { fieldErrorA11y } from '../../composables/fieldErrorA11y'
+import { fieldErrorA11y, fieldErrorText } from '../../composables/fieldErrorA11y'
 import { ComponentProps } from '../../types'
 
 const {
@@ -37,7 +37,6 @@ const {
 	placeholder = '',
 	rows = 4,
 	maxlength,
-	validation = { errorMessage: '' },
 } = defineProps<
 	ComponentProps & {
 		/** Placeholder shown when the field is empty */
@@ -49,8 +48,8 @@ const {
 	}
 >()
 
-// Dynamic trigger errors take precedence over a static schema errorMessage; empty means the slot hides.
-const errorText = computed(() => (errors?.length ? errors.join('; ') : (validation.errorMessage ?? '')))
+// The errors this field is handed, already worded by AForm. Empty hides the slot.
+const errorText = computed(() => fieldErrorText(errors))
 const { errorId, describedBy, invalid } = fieldErrorA11y(uuid, errorText)
 
 const inputText = defineModel<string | null>()

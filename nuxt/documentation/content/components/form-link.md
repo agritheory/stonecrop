@@ -123,8 +123,8 @@ rows:
   - ['`required`', '`boolean`', '`false`', "Sets the native `required` attribute on the input (`edit` mode only)."]
   - ['`mode`', "`'edit' | 'read' | 'display'`", "`'edit'`", 'See [Modes](#modes) below.']
   - ['`uuid`', '`string`', 'none', "Used to build the autocomplete listbox's id, wired to the input via `aria-controls`/`aria-activedescendant`, and the error message's id (`<uuid>-error`), wired to the input via `aria-describedby`. Nothing generates one, so pass it for those attributes to resolve."]
-  - ['`validation`', '`{ errorMessage: string }`', "`{ errorMessage: '' }`", 'Static error message shown on the field. Not shown in `embedded` mode.']
-  - ['`errors`', '`string[]`', '—', 'Dynamic validation errors (e.g. from a trigger), joined with `; `. Takes precedence over `validation.errorMessage` whenever the list is non-empty. Not shown in `embedded` mode, where the host component shows its own error.']
+  - ['`validation`', '`{ errorMessage: string }`', '—', 'Not read by this component. Inside `AForm`, `errorMessage` words an error a trigger reports on this field without a message (`setError(field)`); it is never shown on its own.']
+  - ['`errors`', '`string[]`', '—', 'Dynamic validation errors (e.g. from a trigger). Shown joined with `; `, and nothing is shown without them. Inside `AForm` they arrive already worded: an error reported without a message carries the `validation.errorMessage` of its field. Not shown in `embedded` mode, where the host component shows its own error.']
 ---
 ::
 
@@ -158,6 +158,6 @@ rows:
 
 The input has `role="combobox"` with `aria-autocomplete="list"`, and toggles `aria-expanded`; the dropdown is a `role="listbox"` linked via `aria-controls`, with each option as `role="option"` and the highlighted option tracked with `aria-activedescendant`/`aria-selected`. Arrow Down/Up move the highlighted option, Enter selects it, and Escape (or a click outside) closes the dropdown and reverts the input's text to the current value. Unlike other Stonecrop field components, the visible `label` is rendered next to the input rather than wrapping it or being linked via `for`/`id` — pass `ariaLabel` for a dependable accessible name, which is effectively required in `embedded` mode since the visible label is suppressed there entirely.
 
-When the field has an error (`errors` or `validation.errorMessage`), the message is rendered with `role="alert"` and the input gets `aria-invalid="true"` and an `aria-describedby` pointing at it, as on the text input; the id comes from `uuid`, so pass one for the link to resolve.
+When the field is handed `errors`, the message is rendered with `role="alert"` and the input gets `aria-invalid="true"` and an `aria-describedby` pointing at it, as on the text input; the id comes from `uuid`, so pass one for the link to resolve.
 
 Source: [`aform/src/components/form/AFormLink.vue`](https://github.com/agritheory/stonecrop/blob/development/aform/src/components/form/AFormLink.vue)

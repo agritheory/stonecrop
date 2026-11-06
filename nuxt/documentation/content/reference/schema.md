@@ -271,17 +271,23 @@ Lives here rather than in the adapter because both sides need it: the middleware
 
 A module of its own, importing nothing at runtime, because callers need the descent without needing the rest of `field.ts` — which defines the Zod schemas, so a runtime edge to it is a runtime edge to Zod. Zod reaching a Nitro SSR entry collides with the `process` Nitro imports there and takes the server down with a `SyntaxError` per request, which no build reports. `field.ts` still calls this and `index.ts` still exports it, so nothing outside moves.
 
+Generic over the field shape, so the same walk serves authored `DoctypeField`s and the resolved fields a form renders (AForm words its errors from every field it holds, fieldset children included). Any entry with `kind: 'fieldset'` is replaced by its `schema`, which holds fields of the same shape.
+
 **Signature:**
 
 ```typescript
-export declare function flattenFields(fields: readonly DoctypeField[]): (ValueField | TableField)[];
+export declare function flattenFields<F extends {
+    kind: string;
+}>(fields: readonly F[]): Exclude<F, {
+    kind: 'fieldset';
+}>[];
 ```
 
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| fields | `readonly DoctypeField[]` | the doctype's top-level fields |
+| fields | `readonly F[]` | the doctype's top-level fields |
 
 ### formatDoctypeDrift
 
@@ -2275,7 +2281,7 @@ Reactive field-validation trigger — advisory, client-side only.
 
 A Trigger is a docbuilder-authored validator: when any field in `on` is edited, its `clientHandler` runs (client-side, no rollback) and may flag a field inline to block save in the UI. It is deliberately a **sibling** to `ActionDefinition`, not a member of it — a reactive validator is not a user-invoked action, so it lives in the `triggers` map on `WorkflowMeta` and never appears to action readers (transition/command dropdowns, the FSM graph).
 
-The two bindings are independent: `on` is the fire-set (which fields' edits run it), while the `setError(field, msg)` call inside `clientHandler` chooses which field displays the error.
+The two bindings are independent: `on` is the fire-set (which fields' edits run it), while the `setError(field, msg)` call inside `clientHandler` chooses which field displays the error. Leave the message out, `setError(field)`, to show that field's own `validation.errorMessage`.
 
 **Type:**
 
