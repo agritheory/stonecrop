@@ -173,6 +173,47 @@ const LINK_FK_ALIAS = '__stonecropLinkFk_'
  */
 const STATE_COLUMN = 'status'
 
+/** Whether a link finds its rows by a column on the target, rather than by a key on this record. */
+const isManySide = (link: LinkDeclaration): boolean =>
+	link.cardinality === 'noneOrMany' || link.cardinality === 'atLeastOne'
+
+/**
+ * The key column of each expanding one-side link, under its `LINK_FK_ALIAS` alias. A many-side link
+ * finds its rows by a column on the target, and an inline link keeps its key as a scalar that
+ * `getColumnSelections` already selects under its own name.
+ */
+function linkKeySelections(meta: DoctypeMeta): Array<ColumnSelection & { fieldname: string }> {
+	const fieldByName = new Map(flattenFields(meta.fields).map(f => [f.fieldname, f]))
+	return Object.entries(meta.links ?? {}).flatMap(([linkName, link]) => {
+		const fieldname = link.fieldname ?? linkName
+		if (isManySide(link) || resolveLinkRenderMode(link, fieldByName.get(fieldname)?.component) === 'inline') return []
+		return [{ fieldname, column: camelToSnake(fieldname), alias: `${LINK_FK_ALIAS}${fieldname}` }]
+	})
+}
+
+/**
+ * Whether two values are the same JSON value: object keys in any order, list items in order, and no
+ * coercion (`"5"` is not `5`).
+ */
+const sameJsonValue = (left: unknown, right: unknown): boolean => {
+	if (Array.isArray(left) || Array.isArray(right)) {
+		return (
+			Array.isArray(left) &&
+			Array.isArray(right) &&
+			left.length === right.length &&
+			left.every((entry, index) => sameJsonValue(entry, right[index]))
+		)
+	}
+	if (left !== null && typeof left === 'object' && right !== null && typeof right === 'object') {
+		const leftKeys = Object.keys(left)
+		return (
+			leftKeys.length === Object.keys(right).length &&
+			leftKeys.every(key => Object.hasOwn(right, key) && sameJsonValue(Reflect.get(left, key), Reflect.get(right, key)))
+		)
+	}
+	return left === right
+}
+
 /**
  * Create a PostGraphile plugin that extends the GraphQL schema with Stonecrop functionality.
  *
@@ -252,21 +293,8 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 				// are indexed by name — flattened, because a link's field may sit inside a
 				// fieldset and `getColumnSelections` already descends to select it.
 				const fieldByName = new Map(flattenFields(meta.fields).map(f => [f.fieldname, f]))
-				const linkFkAliases: Array<{ fieldname: string; alias: string }> = []
-				for (const [linkName, link] of Object.entries(meta.links ?? {})) {
-					// Many-side links find their rows by a column on the *target*; only a one-side
-					// link reads a foreign key off this row.
-					if (link.cardinality === 'noneOrMany' || link.cardinality === 'atLeastOne') continue
-					const fieldname = link.fieldname ?? linkName
-					// An inline link keeps its FK as a scalar, so `getColumnSelections` already selected
-					// it under its own name and no alias is needed.
-					if (resolveLinkRenderMode(link, fieldByName.get(fieldname)?.component) === 'inline') continue
-					linkFkAliases.push({ fieldname, alias: `${LINK_FK_ALIAS}${fieldname}` })
-				}
-				const select = columns.select(meta.name, [
-					...getColumnSelections(meta),
-					...linkFkAliases.map(({ fieldname, alias }) => ({ column: camelToSnake(fieldname), alias })),
-				])
+				const linkFkAliases = linkKeySelections(meta)
+				const select = columns.select(meta.name, [...getColumnSelections(meta), ...linkFkAliases])
 
 				// TODO(perf): queries per doctype group could be parallelized with Promise.all across doctype groups;
 				// requires refactoring the grouped-by-doctype loop to collect promises before resolving results
@@ -333,7 +361,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 							// in this repo — hence latent until now.
 							const fieldname = link.fieldname ?? linkName
 							const fetch = link.fetch
-							const isMany = link.cardinality === 'noneOrMany' || link.cardinality === 'atLeastOne'
+							const isMany = isManySide(link)
 							const effectiveMethod = fetch?.method ?? (isMany ? 'sync' : 'lazy')
 							// Two questions, kept apart. `method === 'sync'` is a *type narrowing* — only
 							// `SyncFetch` carries a `limit` — and the server default used to hang off its
@@ -702,24 +730,47 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 									// believes was saved, which is the same data-loss signal `truncatedLinks`
 									// carries for a truncated read.
 									const droppedFields: string[] = []
-									const partitionPatch = (patch: Record<string, unknown>) => {
+									// The fields whose read value can be a linked record while the column holds
+									// its key: one declaring a `doctype`, and one a one-side `links` entry names.
+									const linkFields = new Set([
+										...flattenFields(meta.fields)
+											.filter(field => field.kind === 'field' && Boolean(field.doctype))
+											.map(field => field.fieldname),
+										...Object.entries(meta.links ?? {})
+											.filter(([, link]) => !isManySide(link))
+											.map(([linkName, link]) => link.fieldname ?? linkName),
+									])
+									// `stored` is the row as a read serves it, for an update; each field equal to
+									// it is left out, so a save sending the whole record back writes what changed.
+									const partitionPatch = (patch: Record<string, unknown>, stored?: unknown) => {
 										const cols: string[] = []
 										const values: unknown[] = []
 										for (const [key, value] of Object.entries(patch)) {
-											if (!writable.has(key) || !columns.writable(meta.name, camelToSnake(key))) {
+											const column = camelToSnake(key)
+											if (!writable.has(key) || !columns.writable(meta.name, column)) {
 												droppedFields.push(key)
 												continue
 											}
 											// An expanding link reads back as a nested record while its column
 											// holds a scalar foreign key, so a read-modify-write hands this loop
-											// an object bound for a uuid column. The name resolving is not
-											// enough; the shape has to match a column value too.
-											if (value !== null && typeof value === 'object') {
+											// an object bound for a key column.
+											if (linkFields.has(key) && value !== null && typeof value === 'object') {
 												droppedFields.push(key)
 												continue
 											}
-											cols.push(camelToSnake(key))
-											values.push(value)
+											if (
+												stored instanceof Object &&
+												Object.hasOwn(stored, key) &&
+												sameJsonValue(Reflect.get(stored, key), value)
+											) {
+												continue
+											}
+											const encoded = columns.encode(meta.name, column, value)
+											if ('refused' in encoded) {
+												throw new Error(`${actionDef.label ?? spec.action} failed: "${key}" ${encoded.refused}.`)
+											}
+											cols.push(column)
+											values.push(encoded.value)
 										}
 										return { cols, values }
 									}
@@ -799,10 +850,10 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 													// created record nowhere — which is that exact bug, already once
 													// shipped and patched downstream.
 													writeData: async (patch: Record<string, unknown>, exists: boolean) => {
-														const { cols, values } = partitionPatch(patch)
 														const returning = columns.select(meta.name, getColumnSelections(meta))
 
 														if (!exists) {
+															const { cols, values } = partitionPatch(patch)
 															// Creating is what the *absence* of an id means; `readState` has
 															// already refused an id that matched no row.
 															//
@@ -819,19 +870,32 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 															return rows[0] ?? {}
 														}
 
-														// Nothing writable survived the patch. `SET` with no assignments
-														// is a syntax error, and reporting failure would be wrong — the
-														// record is fine, it just has no new data. Read it back so the
-														// client still gets the record, with `droppedFields` saying why
-														// nothing changed.
-														if (cols.length === 0) {
-															const { rows } = await debugSql<Record<string, unknown>>(tx, {
-																text: `SELECT ${returning.list} FROM ${table} WHERE "${pkColumn()}"::text = $1`,
-																values: [String(recordId)],
-															})
-															returning.decodeRows(rows)
-															return rows[0] ?? {}
+														// The row as a read serves it, locked by the guard's read, to tell what
+														// the patch changes. An expanding link's field is compared with its key,
+														// since the read serves it as the linked record, so an empty link is null
+														// on both sides. Put through JSON as the client's copy was, so a value
+														// JSON cannot hold (a Buffer, NaN) compares as it arrives.
+														const linkKeys = linkKeySelections(meta)
+														const storedSelect = columns.select(meta.name, [...getColumnSelections(meta), ...linkKeys])
+														const { rows: storedRows } = await debugSql<Record<string, unknown>>(tx, {
+															text: `SELECT ${storedSelect.list} FROM ${table} WHERE "${pkColumn()}"::text = $1`,
+															values: [String(recordId)],
+														})
+														storedSelect.decodeRows(storedRows)
+														const stored = storedRows[0] ?? {}
+														const compared: Record<string, unknown> = { ...stored }
+														for (const { fieldname, alias } of linkKeys) {
+															compared[fieldname] = stored[alias]
+															delete compared[alias]
+															delete stored[alias]
 														}
+														const { cols, values } = partitionPatch(patch, JSON.parse(JSON.stringify(compared)))
+
+														// Nothing changed, or nothing writable survived the patch. `SET` with
+														// no assignments is a syntax error, and reporting failure would be
+														// wrong: the record is fine and unchanged, so it is what the reply
+														// carries, with `droppedFields` saying what was left out.
+														if (cols.length === 0) return stored
 
 														const assignments = cols
 															.map((c, i) => `"${c}" = ${columns.bind(meta.name, c, `$${i + 1}`)}`)
