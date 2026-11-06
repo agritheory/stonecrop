@@ -161,3 +161,128 @@ describe('AForm adds up edits', { tags: ['component'] }, () => {
 		expect(row).toEqual({ name: 'Bee', age: '40' })
 	})
 })
+
+// Sets the currency of a value made of parts, as a second total sharing that currency would.
+const CurrencyInput = defineComponent({
+	name: 'CurrencyInput',
+	props: [...fieldProps, 'parts'],
+	emits: ['update:modelValue'],
+	template: `<button class="currency-input" type="button" @click="$emit('update:modelValue', { ...modelValue, currency: 'USD' })">currency</button>`,
+})
+
+// Edits made before Vue re-renders, as a browser filling several fields at once makes them: a host's new
+// record reaches the form only on the next render, so each later edit must still build on the earlier ones.
+const typeNow = (input: Element, text: string) => {
+	;(input as HTMLInputElement).value = text
+	input.dispatchEvent(new Event('input', { bubbles: true }))
+}
+
+const mountBound = (schema: Record<string, unknown>[], data: Record<string, unknown>) => {
+	const record = ref(data)
+	const Host = defineComponent({
+		components: { AForm },
+		setup: () => ({ record, schema }),
+		template: `<AForm v-model:data="record" :schema="schema" />`,
+	})
+	const wrapper = mount(Host, {
+		global: { components: { AForm, AFieldset, ATextInput, PartsInput, CurrencyInput, ExpandingTable } },
+	})
+	return { wrapper, record }
+}
+
+describe('AForm keeps edits made before it re-renders', { tags: ['component'] }, () => {
+	it('keeps two fields filled at once', async () => {
+		const { wrapper, record } = mountBound(twoFields, { name: 'Ada', age: '36' })
+		const [name, age] = wrapper.findAll('input').map(found => found.element)
+		typeNow(name, 'Bea')
+		typeNow(age, '37')
+		await flushPromises()
+
+		expect(record.value).toEqual({ name: 'Bea', age: '37' })
+		expect(wrapper.findAll('input').map(found => (found.element as HTMLInputElement).value)).toEqual(['Bea', '37'])
+	})
+
+	it('keeps two fields filled at once for a host that replaces the record itself', async () => {
+		const record = ref<Record<string, unknown>>({ name: 'Ada', age: '36' })
+		const Host = defineComponent({
+			components: { AForm },
+			setup: () => ({ record, schema: twoFields, take: (next: Record<string, unknown>) => (record.value = next) }),
+			template: `<AForm :data="record" :schema="schema" @update:data="take" />`,
+		})
+		const wrapper = mount(Host, { global: { components: { ATextInput } } })
+		const [name, age] = wrapper.findAll('input').map(found => found.element)
+		typeNow(name, 'Bea')
+		typeNow(age, '37')
+		await flushPromises()
+
+		expect(record.value).toEqual({ name: 'Bea', age: '37' })
+	})
+
+	it("keeps a field and a fieldset's field filled at once", async () => {
+		const { wrapper, record } = mountBound(
+			[
+				nameField,
+				{
+					kind: 'fieldset',
+					fieldname: 'address',
+					label: 'Address',
+					schema: [{ ...nameField, fieldname: 'city', label: 'City' }],
+				},
+			],
+			{ name: 'Ada', city: 'Leeds' }
+		)
+		const [name, city] = wrapper.findAll('input').map(found => found.element)
+		typeNow(name, 'Bea')
+		typeNow(city, 'York')
+		await flushPromises()
+
+		expect(record.value).toEqual({ name: 'Bea', city: 'York' })
+	})
+
+	it('keeps two edits to values made of parts that share a part', async () => {
+		const { wrapper, record } = mountBound(
+			[
+				{
+					kind: 'field',
+					fieldname: 'grandTotal',
+					component: 'CurrencyInput',
+					parts: { amount: 'grand', currency: 'currency' },
+				},
+				{
+					kind: 'field',
+					fieldname: 'netTotal',
+					component: 'PartsInput',
+					parts: { amount: 'net', currency: 'currency' },
+				},
+			],
+			{ grand: 1, net: 2, currency: 'EUR' }
+		)
+		;(wrapper.find('.currency-input').element as HTMLButtonElement).click()
+		;(wrapper.find('.parts-input').element as HTMLButtonElement).click()
+		await flushPromises()
+
+		expect(record.value).toEqual({ grand: 1, net: 5, currency: 'USD' })
+	})
+
+	it('keeps edits to two expanded rows made at once', async () => {
+		const { wrapper, record } = mountBound(
+			[
+				{
+					kind: 'table',
+					fieldname: 'lines',
+					component: 'ExpandingTable',
+					label: 'Lines',
+					config: { view: 'list-expansion' },
+					schema: [{ fieldname: 'sku', label: 'SKU', component: 'ATextInput' }],
+				},
+			],
+			{ lines: [{ sku: 'A-1' }, { sku: 'B-2' }] }
+		)
+		const [first, second] = wrapper.findAll('.aform-table-expansion input').map(found => found.element)
+		typeNow(first, 'A-9')
+		typeNow(second, 'B-9')
+		await flushPromises()
+
+		expect(record.value).toEqual({ lines: [{ sku: 'A-9' }, { sku: 'B-9' }] })
+	})
+})

@@ -136,7 +136,7 @@ In your page or component:
 import taskDoctype from '~/doctypes/task.json'
 
 // HST-reactive form setup — pass doctype + recordId for full integration
-const { stonecrop, provideHSTPath, handleHSTChange, formData } = useStonecrop({
+const { stonecrop, formData } = useStonecrop({
   doctype: taskDoctype,
   recordId: 'task-123' // or undefined for new records
 })
@@ -147,11 +147,7 @@ const taskTitle = store?.get('task.task-123.title')
 </script>
 
 <template>
-  <AForm
-    :schema="taskDoctype.fields"
-    :data="formData"
-    @update="handleHSTChange"
-  />
+  <AForm :schema="taskDoctype.fields" v-model:data="formData" />
 </template>
 ```
 
@@ -184,7 +180,7 @@ const validate = () => {
 ```vue
 <!-- Schema generates form automatically -->
 <template>
-  <AForm :schema="taskSchema" :data="formData" />
+  <AForm :schema="taskSchema" v-model:data="formData" />
 </template>
 
 <script setup>
