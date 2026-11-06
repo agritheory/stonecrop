@@ -83,12 +83,17 @@ const isLinkSection = (componentObj: ResolvedField): componentObj is ResolvedLin
 const isFieldsetSection = (componentObj: ResolvedField): componentObj is ResolvedFieldset =>
 	componentObj.kind === 'fieldset' && hasChildSchema(componentObj)
 
+// An edit, reported as a new record. `data` is the caller's, often the store's own object, so it is
+// never written into: an edit reaches it only through the caller's handling of `update:data`.
+const applyChanges = (changes: Record<string, any>) => {
+	if (dataModel.value) dataModel.value = { ...dataModel.value, ...changes }
+}
+
 // Reactive nested data refs for two-way binding with the forms of linked records
 const nestedData = ref<Record<string, any>>({})
 
-// Sync external dataModel changes into nestedData (one-way, no emit back).
-// Uses a shallow watch so only top-level object replacement (e.g. parent reset)
-// triggers a sync — property mutations from within are handled by updateNestedData.
+// Sync each record the form is given into nestedData (one-way, no emit back). A shallow watch sees a
+// record replaced, as every edit here replaces it; a caller that writes into a record in place is not seen.
 watch(
 	() => dataModel.value,
 	newData => {
@@ -106,19 +111,11 @@ watch(
 // avoiding the watchEffect feedback loop that occurred with v-model.
 const updateNestedData = (fieldname: string, val: any) => {
 	nestedData.value[fieldname] = val
-	if (dataModel.value) {
-		dataModel.value[fieldname] = val
-		emit('update:data', { ...dataModel.value })
-	}
+	applyChanges({ [fieldname]: val })
 }
 
 // A fieldset's edits. Its form holds this record, so its edits are this record's.
-const updateFieldsetData = (val: Record<string, any>) => {
-	if (dataModel.value) {
-		Object.assign(dataModel.value, val)
-		emit('update:data', { ...dataModel.value })
-	}
-}
+const updateFieldsetData = (val: Record<string, any>) => applyChanges(val)
 
 const isListExpansionTable = (componentObj: ResolvedField): componentObj is ResolvedTable =>
 	componentObj.kind === 'table' && componentObj.config?.view === 'list-expansion'
@@ -128,12 +125,7 @@ const tableExpansionSchema = (table: ResolvedTable): ResolvedField[] =>
 		.filter((col): col is ColumnSchema & { component: string } => Boolean(col.component))
 		.map(({ fieldname, component, ...rest }) => Object.assign(rest, { kind: 'field' as const, fieldname, component }))
 
-const updateTableRows = (fieldname: string, rows: Record<string, unknown>[]) => {
-	if (dataModel.value) {
-		dataModel.value[fieldname] = rows
-		emit('update:data', { ...dataModel.value })
-	}
-}
+const updateTableRows = (fieldname: string, rows: Record<string, unknown>[]) => applyChanges({ [fieldname]: rows })
 
 const updateTableRow = (fieldname: string, rowIndex: number, val: Record<string, unknown>) => {
 	const rows = Array.isArray(dataModel.value?.[fieldname]) ? [...dataModel.value[fieldname]] : []
@@ -230,11 +222,9 @@ watchEffect(() => {
 					const parts = fieldParts(schema[index])
 					const fieldname = schema[index].fieldname
 					if (parts && dataModel.value) {
-						Object.assign(dataModel.value, partsPatch(parts, dataModel.value, newValue))
-						emit('update:data', { ...dataModel.value })
-					} else if (fieldname && dataModel.value) {
-						dataModel.value[fieldname] = newValue
-						emit('update:data', { ...dataModel.value })
+						applyChanges(partsPatch(parts, dataModel.value, newValue))
+					} else if (fieldname) {
+						applyChanges({ [fieldname]: newValue })
 					}
 					emit('update:schema', schema)
 				},
