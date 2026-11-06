@@ -1,5 +1,21 @@
 # Change Log - @stonecrop/aform
 
+## 0.60.0
+
+### Minor Changes
+
+- aea0baf: AForm reports an edit as a new record and no longer writes into the data it was given, so undo restores an edit made in the form's own expanded rows.
+- aea0baf: A form that nothing listens to for `update:data` shows its fields read-only, since an edit made in it would reach no one.
+
+### Patch Changes
+
+- aea0baf: A table inside a form in `read` or `display` mode no longer lets its editable columns' cells be edited.
+- Updated dependencies [aea0baf]
+  - @stonecrop/atable@0.60.0
+  - @stonecrop/schema@0.60.0
+  - @stonecrop/themes@0.60.0
+  - @stonecrop/utilities@0.60.0
+
 ## 0.59.0
 
 ### Patch Changes
