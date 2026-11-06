@@ -13,7 +13,7 @@
 					:schema="componentObj.schema"
 					:label="componentObj.label"
 					:errors="errors"
-					@update:data="(val: any) => updateNestedData(componentObj.fieldname, val)" />
+					v-on="listenersWhenHeard((val: any) => updateNestedData(componentObj.fieldname, val))" />
 			</div>
 
 			<!-- A fieldset is layout: its fields are this record's own, so it binds this record.
@@ -27,7 +27,7 @@
 					:label="componentObj.label"
 					:collapsible="componentObj.collapsible"
 					:errors="errors"
-					@update:data="updateFieldsetData" />
+					v-on="listenersWhenHeard(updateFieldsetData)" />
 			</div>
 
 			<!-- Regular field -->
@@ -47,7 +47,11 @@
 						:data="row"
 						:schema="tableExpansionSchema(componentObj)"
 						:mode="resolvedMode(componentObj)"
-						@update:data="val => updateTableRow(componentObj.fieldname, rowIndex, val)" />
+						v-on="
+							listenersWhenHeard((val: Record<string, unknown>) =>
+								updateTableRow(componentObj.fieldname, rowIndex, val)
+							)
+						" />
 				</template>
 			</component>
 		</template>
@@ -67,12 +71,21 @@ const {
 	schema,
 	mode = 'edit',
 	errors,
+	'onUpdate:data': updateListener,
 } = defineProps<{
 	schema: ResolvedField[]
 	mode?: InteractionMode
 	/** Inline validation errors keyed by fieldname. Fed by the host; the form stays store-agnostic. */
 	errors?: Record<string, string[]>
+	/** The caller's `update:data` listener. Without one an edit reaches nobody, so the form shows `edit` as `read`. */
+	'onUpdate:data'?: (record: Record<string, any>) => void
 }>()
+
+// Whether anyone hears this form's edits: they go only to `update:data`, never into `data`.
+const heard = computed(() => Boolean(updateListener))
+
+// A nested form's edits are this form's, so someone hears them only when someone hears this form.
+const listenersWhenHeard = (handler: (record: any) => void) => (heard.value ? { 'update:data': handler } : {})
 
 const hasChildSchema = (componentObj: ResolvedField) =>
 	'schema' in componentObj && Array.isArray(componentObj.schema) && componentObj.schema.length > 0
@@ -157,6 +170,10 @@ const componentProps = (componentObj: ResolvedField) => {
 	if (componentObj.kind === 'table') {
 		propsToPass['rows'] = dataModel.value[componentObj.fieldname] || []
 		propsToPass['onUpdate:rows'] = (rows: Record<string, unknown>[]) => updateTableRows(componentObj.fieldname, rows)
+		// A table takes no `mode`: each column's own `edit` decides whether its cells can be edited.
+		if (resolvedMode(componentObj) !== 'edit') {
+			propsToPass['schema'] = componentObj.schema.map(column => Object.assign({}, column, { edit: false }))
+		}
 	}
 
 	return propsToPass
@@ -180,11 +197,10 @@ const fieldStyle = (componentObj: ResolvedField): Record<string, string> => {
 
 const effectiveFormMode = computed(() => mode ?? 'edit')
 
-// Resolve the effective mode for a schema field, allowing per-field overrides
+// A field's own mode, or the form's. `edit` shows as `read` while nobody hears the form's edits.
 function resolvedMode(componentObj: ResolvedField): InteractionMode {
-	const fieldMode = componentObj.mode
-	if (fieldMode) return fieldMode
-	return effectiveFormMode.value
+	const declared = componentObj.mode ?? effectiveFormMode.value
+	return declared === 'edit' && !heard.value ? 'read' : declared
 }
 
 // A field declaring `parts` binds the value its component edits, read part by part from the fields

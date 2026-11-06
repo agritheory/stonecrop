@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it } from 'vite-plus/test'
 import { page } from 'vite-plus/test/browser'
 import { mount, type VueWrapper } from '@vue/test-utils'
-import { defineComponent, h, nextTick } from 'vue'
+import { defineComponent, h, nextTick, ref } from 'vue'
 
 import AForm from '../src/components/AForm.vue'
 import ACurrencyInput from '../src/components/form/ACurrencyInput.vue'
@@ -31,11 +31,16 @@ const borderTokens = '--sc-input-border-color: gray; --sc-input-active-border-co
 // `spaceAbove` pushes the form down the window, for a field near the window's bottom.
 const mountInForm = (component: string, props: Record<string, unknown>, spaceAbove = 0) => {
 	const field = { kind: 'field', fieldname: 'value', label: 'Value', component, ...props } as ResolvedField
+	const record = ref<Record<string, unknown>>({})
 	const Host = defineComponent({
 		setup: () => () =>
 			h('div', { style: `width: 800px; ${borderTokens}` }, [
 				h('div', { style: `height: ${spaceAbove}px` }),
-				h(AForm, { schema: [field], data: {} }),
+				h(AForm, {
+					schema: [field],
+					data: record.value,
+					'onUpdate:data': (next: Record<string, unknown>) => (record.value = next),
+				}),
 			]),
 	})
 	wrapper = mount(Host, {

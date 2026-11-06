@@ -114,7 +114,7 @@ rows:
   - ['`schema`', '`ResolvedField[]`', '—', 'Child fields rendered by the built-in nested `AForm` when the default slot is not overridden. Required, even if a custom slot makes it unused.']
   - ['`label`', '`string`', '—', 'Legend text. The `<legend>` element only renders at all when `label` or `collapsible` is set.']
   - ['`collapsible`', '`boolean`', '—', "Whether clicking the legend toggles the group's collapsed state. Falsy (no toggle) when omitted."]
-  - ['`data`', '`Record<string, any>`', '`{}`', 'The record the fieldset belongs to, bound with `v-model:data`. The built-in nested `AForm` reports each edit as a new record through `update:data`.']
+  - ['`data`', '`Record<string, any>`', '`{}`', 'The record the fieldset belongs to, bound with `v-model:data`. The built-in nested `AForm` reports each edit as a new record through `update:data`, and is read-only while nothing listens for it.']
   - ['`mode`', '`InteractionMode`', "`'edit'`", "Interaction mode forwarded to the built-in nested `AForm` (and, via the default slot's `AForm`, to every child field)."]
   - ['`errors`', '`Record<string, string[]>`', '—', 'Inline validation errors keyed by fieldname, forwarded to the built-in nested `AForm` so each field inside shows its own.']
 ---

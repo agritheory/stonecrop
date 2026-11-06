@@ -3,7 +3,6 @@ import { join, relative } from 'node:path'
 import { mount } from '@vue/test-utils'
 import { afterEach, beforeAll, describe, expect, it } from 'vite-plus/test'
 
-import AForm from '../src/components/AForm.vue'
 import ACheckbox from '../src/components/form/ACheckbox.vue'
 import ACurrencyInput from '../src/components/form/ACurrencyInput.vue'
 import ADate from '../src/components/form/ADate.vue'
@@ -18,6 +17,7 @@ import ATextboxInput from '../src/components/form/ATextboxInput.vue'
 import ATextInput from '../src/components/form/ATextInput.vue'
 import Login from '../src/components/utilities/Login.vue'
 import type { ResolvedField } from '../src/types'
+import { mountBound } from './mount-bound'
 
 /*
 A floating label or field error straddles its field's top border. Above the border it paints the
@@ -165,7 +165,7 @@ describe('floating label and error background', { tags: ['component'] }, () => {
 		['display', {}],
 		['edit', { errors }],
 	] as const)('paints only the form colour, and only above the border, in %s mode %j', (mode, extra) => {
-		const wrapper = mount(AForm, {
+		const wrapper = mountBound({
 			props: { schema, data: {}, mode, ...extra },
 			global: { components },
 			attachTo: document.body,
