@@ -100,6 +100,12 @@ export {
 	INTERNAL_SCALARS,
 	mergeIntrospectedDoctype,
 	planGeneration,
+	attachWorkflows,
+	fromMachineConfig,
+	fromStonecropBridge,
+	fetchWorkflowMachines,
+	machinesFromCatalog,
+	machineToWorkflow,
 	WELL_KNOWN_SCALARS,
 	type AuthoredDoctype,
 	type ConvertedGraphQLDoctype,
@@ -111,6 +117,10 @@ export {
 	type IntrospectionSource,
 	type MergeOptions,
 	type MergeResult,
+	type MachineConfigJson,
+	type StateMachineCatalogNode,
+	type StateMachineConfig,
+	type StonecropBridgeWorkflow,
 } from './converter'
 
 // Naming utilities
