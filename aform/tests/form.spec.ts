@@ -1,13 +1,12 @@
 import { describe, it, expect } from 'vite-plus/test'
 import { defineComponent } from 'vue'
-import { mount } from '@vue/test-utils'
 
-import AForm from '../src/components/AForm.vue'
 import ATextInput from '../src/components/form/ATextInput.vue'
 import type { ResolvedField } from '../src/types'
+import { mountBound } from './mount-bound'
 
 describe('AForm Component', { tags: ['component'] }, () => {
-	const wrapper = mount(AForm, {
+	const wrapper = mountBound({
 		props: {
 			schema: [
 				{
@@ -46,7 +45,7 @@ describe('AForm Component', { tags: ['component'] }, () => {
 			template: '<div class="mock-table"></div>',
 		})
 
-		const localWrapper = mount(AForm, {
+		const localWrapper = mountBound({
 			props: {
 				schema: [
 					{
@@ -75,7 +74,7 @@ describe('AForm Component', { tags: ['component'] }, () => {
 	// table component but carrying no `kind` still mounts. The rows themselves are asserted by the
 	// `kind: table row injection` block below.
 	it('mounts a field that names a table component but declares no kind', () => {
-		const wrapperWithTable = mount(AForm, {
+		const wrapperWithTable = mountBound({
 			props: {
 				schema: [
 					{
@@ -104,7 +103,7 @@ describe('AForm Component', { tags: ['component'] }, () => {
 				template: '<div class="mock-table"></div>',
 			})
 
-			const localWrapper = mount(AForm, {
+			const localWrapper = mountBound({
 				props: {
 					schema: [
 						{
@@ -129,7 +128,7 @@ describe('AForm Component', { tags: ['component'] }, () => {
 	})
 
 	it('should handle mode prop', () => {
-		const modeWrapper = mount(AForm, {
+		const modeWrapper = mountBound({
 			props: {
 				schema: [
 					{
@@ -151,7 +150,7 @@ describe('AForm Component', { tags: ['component'] }, () => {
 
 	describe('hidden field behavior', () => {
 		it('does not render a field with hidden: true', async () => {
-			const localWrapper = mount(AForm, {
+			const localWrapper = mountBound({
 				props: {
 					schema: [
 						{
@@ -176,7 +175,7 @@ describe('AForm Component', { tags: ['component'] }, () => {
 		})
 
 		it('renders a field with hidden: false', async () => {
-			const localWrapper = mount(AForm, {
+			const localWrapper = mountBound({
 				props: {
 					schema: [
 						{
@@ -207,7 +206,7 @@ describe('AForm Component', { tags: ['component'] }, () => {
 				} as ResolvedField,
 			]
 
-			const localWrapper = mount(AForm, {
+			const localWrapper = mountBound({
 				props: { schema, data: {} },
 				components: { ATextInput },
 			})
@@ -227,7 +226,7 @@ describe('AForm Component', { tags: ['component'] }, () => {
 				} as ResolvedField,
 			]
 
-			const localWrapper = mount(AForm, {
+			const localWrapper = mountBound({
 				props: { schema, data: { phone: '5551234567' } },
 				components: { ATextInput },
 			})
@@ -247,7 +246,7 @@ describe('AForm Component', { tags: ['component'] }, () => {
 				} as ResolvedField,
 			]
 
-			const localWrapper = mount(AForm, {
+			const localWrapper = mountBound({
 				props: { schema, data: {} },
 				components: { ATextInput },
 			})
@@ -266,7 +265,7 @@ describe('AForm Component', { tags: ['component'] }, () => {
 				template: '<div class="aform_form-element mock-field"></div>',
 			})
 
-			const localWrapper = mount(AForm, {
+			const localWrapper = mountBound({
 				props: {
 					schema: [
 						{
@@ -295,7 +294,7 @@ describe('AForm Component', { tags: ['component'] }, () => {
 				template: '<div class="aform_form-element mock-field"></div>',
 			})
 
-			const localWrapper = mount(AForm, {
+			const localWrapper = mountBound({
 				props: {
 					schema: [
 						{
@@ -324,7 +323,7 @@ describe('AForm Component', { tags: ['component'] }, () => {
 				template: '<div class="aform_form-element mock-field"></div>',
 			})
 
-			const localWrapper = mount(AForm, {
+			const localWrapper = mountBound({
 				props: {
 					schema: [
 						{
@@ -357,7 +356,7 @@ describe('AForm Component', { tags: ['component'] }, () => {
 				template: '<div class="aform_form-element mock-field"></div>',
 			})
 
-			const localWrapper = mount(AForm, {
+			const localWrapper = mountBound({
 				props: {
 					schema: [
 						{
@@ -386,7 +385,7 @@ describe('AForm Component', { tags: ['component'] }, () => {
 				template: '<div class="aform_form-element mock-field"></div>',
 			})
 
-			const localWrapper = mount(AForm, {
+			const localWrapper = mountBound({
 				props: {
 					schema: [
 						{
@@ -429,7 +428,7 @@ describe('AForm mode forwarding', { tags: ['component'] }, () => {
 			},
 		]
 
-		const wrapper = mount(AForm, {
+		const wrapper = mountBound({
 			props: {
 				schema: tableSchema,
 				data: { line_items: [] },

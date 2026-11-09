@@ -1,5 +1,24 @@
 # Change Log - @stonecrop/graphql-middleware
 
+## 0.60.0
+
+### Patch Changes
+
+- @stonecrop/schema@0.60.0
+
+## 0.59.0
+
+### Minor Changes
+
+- 35dc2f5: A Save writes only the fields whose value changed, so a Save that changes nothing issues no `UPDATE` and fires no update trigger.
+- 35dc2f5: A Save writes JSON, list, range and composite values instead of dropping them while reporting success, and refuses a value of the wrong shape, naming the field.
+
+### Patch Changes
+
+- 35dc2f5: A date or time range, alone or in a list, keeps an infinite bound through a read and a Save, where it read as no bound and saved as one, and a NULL range reads as null rather than as a range with no bounds.
+- 35dc2f5: A negative interval reads exactly, a fraction of a second included, and saves, where Postgres refused the duration as Temporal writes it.
+- @stonecrop/schema@0.59.0
+
 ## 0.58.4
 
 ### Patch Changes

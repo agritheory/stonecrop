@@ -17,6 +17,7 @@ import { fieldErrorText } from '../src/composables/fieldErrorA11y'
 import { install } from '../src/index'
 import { wordErrors } from '../src/utils/fieldErrors'
 import type { ResolvedField } from '../src/types'
+import { mountBound } from './mount-bound'
 
 describe('inline field errors', { tags: ['component'] }, () => {
 	describe('field component (ATextInput)', () => {
@@ -504,7 +505,7 @@ describe('inline field errors', { tags: ['component'] }, () => {
 		})
 
 		it('shows an error AForm routes to a link field', () => {
-			const w = mount(AForm, {
+			const w = mountBound({
 				props: {
 					schema: [{ fieldname: 'customer', component: 'AFormLink', label: 'Customer' }] as ResolvedField[],
 					data: { customer: '' },
@@ -518,7 +519,7 @@ describe('inline field errors', { tags: ['component'] }, () => {
 
 	describe('AForm wiring', () => {
 		it('routes errors to the correct field by fieldname', () => {
-			const w = mount(AForm, {
+			const w = mountBound({
 				props: {
 					schema: [
 						{ fieldname: 'start_date', component: 'ATextInput', label: 'Start' },
@@ -542,8 +543,8 @@ describe('inline field errors', { tags: ['component'] }, () => {
 			] as ResolvedField[]
 			const twoForms = defineComponent({
 				render: () => [
-					h(AForm, { schema, data: {}, errors: { end_date: ['End before start'] } }),
-					h(AForm, { schema, data: {} }),
+					h(AForm, { schema, data: {}, errors: { end_date: ['End before start'] }, 'onUpdate:data': () => {} }),
+					h(AForm, { schema, data: {}, 'onUpdate:data': () => {} }),
 				],
 			})
 			const w = mount(twoForms, { global: { components: { ATextInput, ADate } } })

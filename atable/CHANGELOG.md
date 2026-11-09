@@ -1,5 +1,22 @@
 # Change Log - @stonecrop/atable
 
+## 0.60.0
+
+### Patch Changes
+
+- aea0baf: A table handed a new list with one row replaced redraws only that row's cells, not every cell in the table.
+- @stonecrop/schema@0.60.0
+  - @stonecrop/themes@0.60.0
+  - @stonecrop/utilities@0.60.0
+
+## 0.59.0
+
+### Patch Changes
+
+- @stonecrop/schema@0.59.0
+  - @stonecrop/themes@0.59.0
+  - @stonecrop/utilities@0.59.0
+
 ## 0.58.4
 
 ### Patch Changes

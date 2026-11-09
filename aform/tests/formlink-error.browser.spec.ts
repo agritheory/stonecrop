@@ -23,6 +23,7 @@ const mountLink = (data: Record<string, unknown>) => {
 					] as ResolvedField[],
 					data,
 					errors: { customer: ['Must be empty while the method is Cash'] },
+					'onUpdate:data': () => {},
 				}),
 			]),
 	})

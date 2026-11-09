@@ -2,10 +2,10 @@ import { mount, flushPromises } from '@vue/test-utils'
 import { describe, it, expect, vi } from 'vite-plus/test'
 import { defineComponent, h } from 'vue'
 
-import AForm from '../src/components/AForm.vue'
 import ADropdown from '../src/components/form/ADropdown.vue'
 import AQuantityInput from '../src/components/form/AQuantityInput.vue'
 import type { ResolvedField } from '../src/types'
+import { mountBound } from './mount-bound'
 
 describe('dropdown input component', { tags: ['component'] }, () => {
 	const dropdownData = {
@@ -398,7 +398,7 @@ describe('a dropdown in a form', { tags: ['component'] }, () => {
 
 	// Types into the status box, then presses `key`; returns each status the form sent.
 	const typeStatus = async (typed: string, key: string) => {
-		const wrapper = mount(AForm, {
+		const wrapper = mountBound({
 			props: { schema: [status], data: { status: 'Open' } },
 			global: { components: { ADropdown } },
 		})
