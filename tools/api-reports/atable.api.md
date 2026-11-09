@@ -28,7 +28,7 @@ import { WritableComputedRef } from 'vue';
 export const ACell: typeof __VLS_export;
 
 // @public (undocumented)
-export const ACellShell: typeof __VLS_export_9;
+export const ACellShell: typeof __VLS_export_10;
 
 // @public
 export const actionIcons: Record<string, string>;
@@ -49,22 +49,26 @@ export const ARowActions: typeof __VLS_export_4;
 export const ATable: typeof __VLS_export_5;
 
 // @public (undocumented)
-export const ATableHeader: typeof __VLS_export_6;
+export const ATableEmptyRow: typeof __VLS_export_6;
 
 // @public (undocumented)
-export const ATableLoading: typeof __VLS_export_7;
+export const ATableHeader: typeof __VLS_export_7;
 
 // @public (undocumented)
-export const ATableLoadingBar: typeof __VLS_export_8;
+export const ATableLoading: typeof __VLS_export_8;
 
 // @public (undocumented)
-export const ATableModal: typeof __VLS_export_10;
+export const ATableLoadingBar: typeof __VLS_export_9;
 
 // @public (undocumented)
-export const ATablePaginationFooter: typeof __VLS_export_11;
+export const ATableModal: typeof __VLS_export_11;
+
+// @public (undocumented)
+export const ATablePaginationFooter: typeof __VLS_export_12;
 
 // @public
 export interface BaseTableConfig {
+    addable?: boolean;
     clickable?: boolean;
     fullWidth?: boolean;
     pageSize?: number;
@@ -284,6 +288,7 @@ disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 } | undefined;
 } | undefined;
+addable?: boolean | undefined;
 pageSize?: number | undefined;
 zebra?: boolean | undefined;
 } | {
@@ -362,6 +367,7 @@ disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 } | undefined;
 } | undefined;
+addable?: boolean | undefined;
 pageSize?: number | undefined;
 zebra?: boolean | undefined;
 } | {
@@ -440,6 +446,7 @@ disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 } | undefined;
 } | undefined;
+addable?: boolean | undefined;
 pageSize?: number | undefined;
 zebra?: boolean | undefined;
 } | {
@@ -519,6 +526,7 @@ disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 } | undefined;
 } | undefined;
+addable?: boolean | undefined;
 pageSize?: number | undefined;
 zebra?: boolean | undefined;
 }, TableConfig | {
@@ -596,6 +604,7 @@ disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 } | undefined;
 } | undefined;
+addable?: boolean | undefined;
 pageSize?: number | undefined;
 zebra?: boolean | undefined;
 } | {
@@ -674,6 +683,7 @@ disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 } | undefined;
 } | undefined;
+addable?: boolean | undefined;
 pageSize?: number | undefined;
 zebra?: boolean | undefined;
 } | {
@@ -752,6 +762,7 @@ disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 } | undefined;
 } | undefined;
+addable?: boolean | undefined;
 pageSize?: number | undefined;
 zebra?: boolean | undefined;
 } | {
@@ -831,6 +842,7 @@ disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 } | undefined;
 } | undefined;
+addable?: boolean | undefined;
 pageSize?: number | undefined;
 zebra?: boolean | undefined;
 }>;
@@ -1179,6 +1191,7 @@ disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 } | undefined;
 } | undefined;
+addable?: boolean | undefined;
 pageSize?: number | undefined;
 zebra?: boolean | undefined;
 } | {
@@ -1257,6 +1270,7 @@ disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 } | undefined;
 } | undefined;
+addable?: boolean | undefined;
 pageSize?: number | undefined;
 zebra?: boolean | undefined;
 } | {
@@ -1335,6 +1349,7 @@ disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 } | undefined;
 } | undefined;
+addable?: boolean | undefined;
 pageSize?: number | undefined;
 zebra?: boolean | undefined;
 } | {
@@ -1414,6 +1429,7 @@ disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 } | undefined;
 } | undefined;
+addable?: boolean | undefined;
 pageSize?: number | undefined;
 zebra?: boolean | undefined;
 }, TableConfig | {
@@ -1491,6 +1507,7 @@ disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 } | undefined;
 } | undefined;
+addable?: boolean | undefined;
 pageSize?: number | undefined;
 zebra?: boolean | undefined;
 } | {
@@ -1569,6 +1586,7 @@ disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 } | undefined;
 } | undefined;
+addable?: boolean | undefined;
 pageSize?: number | undefined;
 zebra?: boolean | undefined;
 } | {
@@ -1647,6 +1665,7 @@ disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 } | undefined;
 } | undefined;
+addable?: boolean | undefined;
 pageSize?: number | undefined;
 zebra?: boolean | undefined;
 } | {
@@ -1726,6 +1745,7 @@ disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 } | undefined;
 } | undefined;
+addable?: boolean | undefined;
 pageSize?: number | undefined;
 zebra?: boolean | undefined;
 }>;
@@ -2074,6 +2094,7 @@ disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 } | undefined;
 } | undefined;
+addable?: boolean | undefined;
 pageSize?: number | undefined;
 zebra?: boolean | undefined;
 } | {
@@ -2152,6 +2173,7 @@ disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 } | undefined;
 } | undefined;
+addable?: boolean | undefined;
 pageSize?: number | undefined;
 zebra?: boolean | undefined;
 } | {
@@ -2230,6 +2252,7 @@ disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 } | undefined;
 } | undefined;
+addable?: boolean | undefined;
 pageSize?: number | undefined;
 zebra?: boolean | undefined;
 } | {
@@ -2309,6 +2332,7 @@ disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 } | undefined;
 } | undefined;
+addable?: boolean | undefined;
 pageSize?: number | undefined;
 zebra?: boolean | undefined;
 }, TableConfig | {
@@ -2386,6 +2410,7 @@ disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 } | undefined;
 } | undefined;
+addable?: boolean | undefined;
 pageSize?: number | undefined;
 zebra?: boolean | undefined;
 } | {
@@ -2464,6 +2489,7 @@ disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 } | undefined;
 } | undefined;
+addable?: boolean | undefined;
 pageSize?: number | undefined;
 zebra?: boolean | undefined;
 } | {
@@ -2542,6 +2568,7 @@ disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 } | undefined;
 } | undefined;
+addable?: boolean | undefined;
 pageSize?: number | undefined;
 zebra?: boolean | undefined;
 } | {
@@ -2621,6 +2648,7 @@ disabled?: ((rowIndex: number, store: TableStore) => boolean) | undefined;
 } | undefined;
 } | undefined;
 } | undefined;
+addable?: boolean | undefined;
 pageSize?: number | undefined;
 zebra?: boolean | undefined;
 }>;
