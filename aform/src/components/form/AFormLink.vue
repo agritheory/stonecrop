@@ -316,13 +316,19 @@ const selectOption = (option: AFormLinkValue) => {
 	activeIndex.value = null
 }
 
+// The keys act only on the list on screen: while "Loading…" shows, or after Esc closes the list,
+// dropdownResults still holds the previous results, and ↓ Enter would pick one the user can't see.
+const listShown = () => dropdownOpen.value && !loading.value
+
 const selectNext = () => {
+	if (!listShown()) return
 	const len = dropdownResults.value.length
 	if (!len) return
 	activeIndex.value = activeIndex.value === null ? 0 : (activeIndex.value + 1) % len
 }
 
 const selectPrev = () => {
+	if (!listShown()) return
 	const len = dropdownResults.value.length
 	if (!len) return
 	if (activeIndex.value === null || activeIndex.value === 0) {
@@ -333,6 +339,7 @@ const selectPrev = () => {
 }
 
 const selectCurrent = () => {
+	if (!listShown()) return
 	if (activeIndex.value !== null && dropdownResults.value[activeIndex.value]) {
 		selectOption(dropdownResults.value[activeIndex.value])
 	}
