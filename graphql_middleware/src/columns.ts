@@ -28,6 +28,13 @@ export interface ColumnReader {
 	/** `placeholder` as the value for `column`, cast where the column needs its value converted. */
 	bind(doctype: string, column: string, placeholder: string): string
 	/**
+	 * A condition matching rows whose `column` is one of the ids in `placeholder`, compared by the
+	 * column's own type so Postgres can use its index. `placeholder` binds one id as text, or a list of
+	 * them as `text[]` when `many` is set. An id the column's type cannot hold (`abc` for a `uuid`, an
+	 * empty string) matches nothing rather than failing the query.
+	 */
+	matchKey(doctype: string, column: string, placeholder: string, many?: boolean): string
+	/**
 	 * `value` encoded for `column` with the codec its read decodes it with, so a value a read served is
 	 * written back as the same value. One of the wrong shape is refused, never written as another value.
 	 */
@@ -324,6 +331,26 @@ export function createColumnReader(
 		bind(doctype, column, placeholder) {
 			const conversion = momentConversion(findAttribute(doctype, findTableCodec(doctype), column).codec)
 			return conversion ? `${placeholder}::${conversion.type}` : placeholder
+		},
+
+		matchKey(doctype, column, placeholder, many = false) {
+			const { sqlType } = findAttribute(doctype, findTableCodec(doctype), column).codec
+			const compiled = sql.compile(sqlType)
+			if (compiled.values.length > 0) {
+				throw new Error(
+					`The type of ${resolveTableName(doctype, tables)}."${column}" names a bound value, which this adapter cannot compare with.`
+				)
+			}
+			const type = compiled.text
+			const ids = many ? `${placeholder}::text[]` : `ARRAY[${placeholder}::text]`
+			// Not `"id"::text = $1`, which reads the whole table: the index is on the column's own type.
+			// Not `"id" = $1::uuid` either, which fails the query on a malformed id, even inside a `CASE`,
+			// since Postgres converts a constant before the check runs. Each id is converted from a row of
+			// `unnest`, so the conversion runs only for the ids `pg_input_is_valid` admits.
+			return (
+				`${sql.compile(sql.identifier(column)).text} = ANY(ARRAY(SELECT sent::${type} FROM unnest(${ids}) sent ` +
+				`WHERE pg_input_is_valid(sent, '${type.replaceAll("'", "''")}')))`
+			)
 		},
 
 		encode(doctype, column, value) {

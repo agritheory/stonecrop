@@ -95,7 +95,7 @@ export async function enrichLinkDisplayFields(
 			])
 
 			const { rows: displayRows } = await debugSql(pgClient, {
-				text: `SELECT ${select.list} FROM ${select.table} WHERE "${pkColumn}"::text = ANY($1::text[])`,
+				text: `SELECT ${select.list} FROM ${select.table} WHERE ${columns.matchKey(spec.targetDoctype, pkColumn, '$1', true)}`,
 				values: [Array.from(ids)],
 			})
 			select.decodeRows(displayRows)

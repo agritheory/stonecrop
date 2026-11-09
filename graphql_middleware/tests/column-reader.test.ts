@@ -43,6 +43,22 @@ describe('createColumnReader', { tags: ['unit', 'graphql'] }, () => {
 		])
 	})
 
+	it('matches a key by its own type, converting only the ids that type admits', () => {
+		const reader = createColumnReader({ period }, fakeExecutor)
+		expect(reader.matchKey('ScPeriod', 'id', '$1', true)).toBe(
+			`"id" = ANY(ARRAY(SELECT sent::"int4" FROM unnest($1::text[]) sent WHERE pg_input_is_valid(sent, '"int4"')))`
+		)
+		expect(reader.matchKey('ScPeriod', 'id', '$2')).toBe(
+			`"id" = ANY(ARRAY(SELECT sent::"int4" FROM unnest(ARRAY[$2::text]) sent WHERE pg_input_is_valid(sent, '"int4"')))`
+		)
+	})
+
+	it('refuses to match a column the table does not have', () => {
+		expect(() => createColumnReader({ period }, fakeExecutor).matchKey('ScPeriod', 'missing', '$1')).toThrow(
+			'declares a field for column "missing"'
+		)
+	})
+
 	it('refuses to decode a value that is not the text its select returns', () => {
 		const select = createColumnReader({ period }, fakeExecutor).select('ScPeriod', [{ column: 'id', alias: 'id' }])
 		const rows = [{ id: '7' }]

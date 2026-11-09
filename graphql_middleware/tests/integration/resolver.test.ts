@@ -1048,6 +1048,16 @@ describe('stonecropRecord', { tags: ['integration', 'graphql'] }, () => {
 		expect(record?.data).toBeNull()
 	})
 
+	// The key is compared by its own type so its index is used; an id that type cannot hold is not
+	// one any row has, so it is a miss, not a failed query.
+	it.each(['abc', '', '1.5'])('returns null data for an id the key column cannot hold (%j)', async id => {
+		const result = await runQuery(
+			`query { stonecropRecord(doctype: "ScItem", id: ${JSON.stringify(id)}) { doctype data } }`
+		)
+		expect((result as any).errors).toBeUndefined()
+		expect((result as any).data?.stonecropRecord?.data).toBeNull()
+	})
+
 	it('includes sync-linked records when strategy is sync', async () => {
 		const result = await runQuery(`query { stonecropRecord(doctype: "ScItem", id: "1") { data } }`)
 		const data = (result as any).data?.stonecropRecord?.data

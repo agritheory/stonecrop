@@ -300,7 +300,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 				// requires refactoring the grouped-by-doctype loop to collect promises before resolving results
 				// oxlint-disable-next-line eslint/no-await-in-loop -- sequential per-doctype SQL; see TODO above
 				const { rows } = await debugSql<Record<string, unknown>>(pgClient, {
-					text: `SELECT ${select.list} FROM ${select.table} WHERE "${pkColumn}"::text = ANY($1::text[])`,
+					text: `SELECT ${select.list} FROM ${select.table} WHERE ${columns.matchKey(meta.name, pkColumn, '$1', true)}`,
 					values: [ids],
 				})
 				select.decodeRows(rows)
@@ -408,7 +408,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 							if (isMany) {
 								if (!link.backlink) continue
 								const backlinkCol = camelToSnake(link.backlink)
-								let sql = `SELECT ${targetSelect.list} FROM ${targetSelect.table} WHERE "${backlinkCol}"::text = $1`
+								let sql = `SELECT ${targetSelect.list} FROM ${targetSelect.table} WHERE ${columns.matchKey(targetMeta.name, backlinkCol, '$1')}`
 								const linkValues: unknown[] = [specId]
 								// In the order the link names, so rows that keep their own position read in
 								// it; `truncatedLinks` says the tail was cut, and the order says which tail.
@@ -808,7 +808,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 														// and acting on it too. Without it the guard is a check-then-act
 														// race: two concurrent approvals both read PENDING and both proceed.
 														const { rows } = await debugSql<Record<string, string | null>>(tx, {
-															text: `SELECT ${projection} FROM ${table} WHERE "${pkColumn()}"::text = $1 FOR UPDATE`,
+															text: `SELECT ${projection} FROM ${table} WHERE ${columns.matchKey(meta.name, pkColumn(), '$1')} FOR UPDATE`,
 															values: [String(recordId)],
 														})
 														// No row at all vs. a row whose `status` is NULL — see GuardedTransitionIO.
@@ -835,7 +835,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 													},
 													writeState: async (nextState: string) => {
 														await debugSql(tx, {
-															text: `UPDATE ${table} SET "${STATE_COLUMN}" = $1 WHERE "${pkColumn()}"::text = $2`,
+															text: `UPDATE ${table} SET "${STATE_COLUMN}" = $1 WHERE ${columns.matchKey(meta.name, pkColumn(), '$2')}`,
 															values: [nextState, String(recordId)],
 														})
 													},
@@ -878,7 +878,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 														const linkKeys = linkKeySelections(meta)
 														const storedSelect = columns.select(meta.name, [...getColumnSelections(meta), ...linkKeys])
 														const { rows: storedRows } = await debugSql<Record<string, unknown>>(tx, {
-															text: `SELECT ${storedSelect.list} FROM ${table} WHERE "${pkColumn()}"::text = $1`,
+															text: `SELECT ${storedSelect.list} FROM ${table} WHERE ${columns.matchKey(meta.name, pkColumn(), '$1')}`,
 															values: [String(recordId)],
 														})
 														storedSelect.decodeRows(storedRows)
@@ -901,7 +901,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 															.map((c, i) => `"${c}" = ${columns.bind(meta.name, c, `$${i + 1}`)}`)
 															.join(', ')
 														const { rows } = await debugSql<Record<string, unknown>>(tx, {
-															text: `UPDATE ${table} SET ${assignments} WHERE "${pkColumn()}"::text = $${cols.length + 1} RETURNING ${returning.list}`,
+															text: `UPDATE ${table} SET ${assignments} WHERE ${columns.matchKey(meta.name, pkColumn(), `$${cols.length + 1}`)} RETURNING ${returning.list}`,
 															values: [...values, String(recordId)],
 														})
 														returning.decodeRows(rows)
