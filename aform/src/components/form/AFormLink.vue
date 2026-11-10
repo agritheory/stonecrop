@@ -268,20 +268,28 @@ const isResultSelected = (option: AFormLinkValue) => {
 	return id !== undefined && String(option.id) === String(id)
 }
 
+// Every keystroke starts a search, and an async filterFunction can answer out of order. Number each
+// search and let only the latest one write its results (or clear `loading`): otherwise the answer for
+// the first few letters, arriving last, would replace the matches for what was actually typed.
+let latestSearch = 0
+
 const openDropdown = async (text: string) => {
 	if (!filterFunction || mode === 'read') return
+	const search = ++latestSearch
 	activeIndex.value = null
 	dropdownOpen.value = true
 	if (isAsync) loading.value = true
+	let results: AFormLinkValue[]
 	try {
 		const fn: FilterFn =
 			typeof filterFunction === 'string' ? deserializeFunction<FilterFn>(filterFunction) : filterFunction
-		dropdownResults.value = (await fn(text)) ?? []
+		results = (await fn(text)) ?? []
 	} catch {
-		dropdownResults.value = []
-	} finally {
-		loading.value = false
+		results = []
 	}
+	if (search !== latestSearch) return
+	dropdownResults.value = results
+	loading.value = false
 }
 
 const closeDropdown = () => {
@@ -322,13 +330,19 @@ const selectOption = (option: AFormLinkValue) => {
 	activeIndex.value = null
 }
 
+// The keys act only on the list on screen: while "Loading…" shows, or after Esc closes the list,
+// dropdownResults still holds the previous results, and ↓ Enter would pick one the user can't see.
+const listShown = () => dropdownOpen.value && !loading.value
+
 const selectNext = () => {
+	if (!listShown()) return
 	const len = dropdownResults.value.length
 	if (!len) return
 	activeIndex.value = activeIndex.value === null ? 0 : (activeIndex.value + 1) % len
 }
 
 const selectPrev = () => {
+	if (!listShown()) return
 	const len = dropdownResults.value.length
 	if (!len) return
 	if (activeIndex.value === null || activeIndex.value === 0) {
@@ -339,6 +353,7 @@ const selectPrev = () => {
 }
 
 const selectCurrent = () => {
+	if (!listShown()) return
 	if (activeIndex.value !== null && dropdownResults.value[activeIndex.value]) {
 		selectOption(dropdownResults.value[activeIndex.value])
 	}
