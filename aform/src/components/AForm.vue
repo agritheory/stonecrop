@@ -26,7 +26,7 @@
 					:schema="componentObj.schema"
 					:label="componentObj.label"
 					:collapsible="componentObj.collapsible"
-					:errors="errors"
+					:errors="formErrors"
 					v-on="listenersWhenHeard(updateFieldsetData)" />
 			</div>
 
@@ -62,7 +62,8 @@
 import { computed, watchEffect, watch, ref, useId } from 'vue'
 
 import type { ResolvedField, ResolvedLink, ResolvedFieldset, ResolvedTable } from '../types'
-import { partsPatch, readParts } from '@stonecrop/schema'
+import { wordErrors } from '../utils/fieldErrors'
+import { flattenFields, partsPatch, readParts } from '@stonecrop/schema'
 import type { ColumnSchema, InteractionMode } from '@stonecrop/schema'
 
 const emit = defineEmits(['update:schema', 'update:data'])
@@ -210,12 +211,29 @@ function resolvedMode(componentObj: ResolvedField): InteractionMode {
 const fieldParts = (field: ResolvedField): Record<string, string> | undefined =>
 	field.kind === 'field' || field.kind === 'table' ? field.parts : undefined
 
+// Every field this form holds, fieldset children included, by name: the source of each error's wording.
+const fieldsByName = computed(() => new Map(flattenFields(schema).map(field => [field.fieldname, field])))
+
+// The host's errors, each worded by the field it was reported on, before they are routed anywhere. Worded
+// here and not in the component: a component bound to several fields' parts is handed all of their errors
+// (a shared currency part's among each total's) and could word one only with its own field's message.
+// Fieldsets are handed this map; a linked record's form is handed the host's, to word by its own schema.
+const formErrors = computed(() => {
+	if (!errors) return undefined
+	return Object.fromEntries(
+		Object.entries(errors).map(([fieldname, list]) => {
+			const field = fieldsByName.value.get(fieldname)
+			return [fieldname, wordErrors(list, field && 'validation' in field ? field.validation : undefined)]
+		})
+	)
+})
+
 const fieldErrors = (field: ResolvedField): string[] | undefined => {
 	const parts = fieldParts(field)
-	if (!parts) return errors?.[field.fieldname]
+	if (!parts) return formErrors.value?.[field.fieldname]
 	// An app's own component need not name its own field as a part, but that field's errors are still its own.
 	const fieldnames = new Set([field.fieldname, ...Object.values(parts)])
-	return [...fieldnames].flatMap(fieldname => errors?.[fieldname] ?? [])
+	return [...fieldnames].flatMap(fieldname => formErrors.value?.[fieldname] ?? [])
 }
 
 // Create stable computed refs array to avoid recreation on every access

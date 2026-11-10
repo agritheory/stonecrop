@@ -43,7 +43,7 @@ export type FieldOptions = z.infer<typeof FieldOptions>
  */
 export const FieldValidation = z
 	.looseObject({
-		/** Error message to display when validation fails */
+		/** Shown when a trigger reports an error on this field without a message: `setError(field)`. Never shown on its own. */
 		errorMessage: z.string(),
 	})
 	.meta({

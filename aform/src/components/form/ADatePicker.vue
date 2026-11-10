@@ -78,24 +78,17 @@ import { fromISODate } from '@stonecrop/utilities'
 import { Temporal } from 'temporal-polyfill'
 import { computed, nextTick, ref, useTemplateRef, watch } from 'vue'
 
-import { fieldErrorA11y } from '../../composables/fieldErrorA11y'
+import { fieldErrorA11y, fieldErrorText } from '../../composables/fieldErrorA11y'
 import type { ComponentProps } from '../../types'
 import { readTypedDay, writeTypedDay } from '../../utils/typedDay'
 
 const numberOfRows = 6
 const numberOfColumns = 7
 
-const {
-	mode,
-	label,
-	selectRange = false,
-	uuid,
-	errors,
-	validation = { errorMessage: '' },
-} = defineProps<ComponentProps>()
+const { mode, label, selectRange = false, uuid, errors } = defineProps<ComponentProps>()
 
-// Dynamic trigger errors take precedence over a static schema errorMessage; empty means the slot hides.
-const errorText = computed(() => (errors?.length ? errors.join('; ') : (validation.errorMessage ?? '')))
+// The errors this field is handed, already worded by AForm. Empty hides the slot.
+const errorText = computed(() => fieldErrorText(errors))
 const { errorId } = fieldErrorA11y(uuid, errorText)
 
 // The calendar holds a `YYYY-MM-DD` day, and opens on today when it holds none it can read. No default

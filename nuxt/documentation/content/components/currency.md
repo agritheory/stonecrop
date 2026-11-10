@@ -167,8 +167,8 @@ rows:
   - ['`mode`', "`'edit' | 'read' | 'display'`", "`'edit'`", 'See [Modes](#modes) below.']
   - ['`uuid`', '`string`', 'none', "`id`/`for` pair linking the amount input to its label. Nothing generates one, so the pairing exists only when you pass it."]
   - ['`currencyLabel`', '`string`', "`'Currency'`", "Label for the embedded currency picker."]
-  - ['`validation`', '`{ errorMessage: string }`', "`{ errorMessage: '' }`", 'Static error message shown below the field.']
-  - ['`errors`', '`string[]`', '—', 'Dynamic validation errors (e.g. from a trigger). Takes precedence over `validation.errorMessage` whenever the list is non-empty.']
+  - ['`validation`', '`{ errorMessage: string }`', '—', 'Not read by this component. Inside `AForm`, `errorMessage` words an error a trigger reports on this field without a message (`setError(field)`); it is never shown on its own.']
+  - ['`errors`', '`string[]`', '—', 'Dynamic validation errors (e.g. from a trigger). Shown joined with `; `, and nothing is shown without them. Inside `AForm` they arrive already worded: an error reported without a message carries the `validation.errorMessage` of its field.']
 ---
 ::
 

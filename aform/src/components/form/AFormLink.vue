@@ -88,7 +88,7 @@
 import { vOnClickOutside } from '@vueuse/components'
 import { computed, inject, ref, useId, watch } from 'vue'
 
-import { fieldErrorA11y } from '../../composables/fieldErrorA11y'
+import { fieldErrorA11y, fieldErrorText } from '../../composables/fieldErrorA11y'
 import type { AFormLinkModelValue, AFormLinkNavigator, AFormLinkValue, ComponentProps } from '../../types'
 import { deserializeFunction } from '../../utils/deserialize'
 import { asLinkValue, linkDisplayText, linkId } from '../../utils/linkValue'
@@ -100,7 +100,6 @@ const {
 	uuid,
 	required,
 	errors,
-	validation = { errorMessage: '' },
 	doctype = undefined,
 	formatter = undefined,
 	icon = 'arrow-right',
@@ -135,9 +134,9 @@ const {
 // mount so two pickers on one page can't cross-wire their ARIA relationships.
 const listboxId = `${uuid ?? `aform-link-${useId()}`}-listbox`
 
-// Dynamic trigger errors take precedence over a static schema errorMessage; empty means the slot hides.
+// The errors this field is handed, already worded by AForm. Empty hides the slot.
 // Embedded mode renders no error slot (the host owns it, as with its label), so it gets no ARIA wiring either.
-const errorText = computed(() => (embedded ? '' : errors?.length ? errors.join('; ') : (validation.errorMessage ?? '')))
+const errorText = computed(() => (embedded ? '' : fieldErrorText(errors)))
 const { errorId, describedBy, invalid } = fieldErrorA11y(uuid, errorText)
 
 const modelValue = defineModel<AFormLinkModelValue | null>({ default: () => ({ id: '', displayText: '' }) })
