@@ -1,3 +1,5 @@
+import { richTextBlocks, type RichTextBlockParts, type RichTextListItem } from '@stonecrop/utilities'
+
 import type { EditorBlock, EditorDocument } from '../types'
 
 // The inline markup Editor.js writes into a block's text: its bold, italic and link tools, and line breaks.
@@ -40,63 +42,41 @@ export function sanitizeInline(html: unknown): string {
 	return out + escapeText(html.slice(last))
 }
 
-type ListItemData = {
-	content?: unknown
-	text?: unknown
-	checked?: unknown
-	meta?: { checked?: unknown }
-	items?: unknown
-}
-
-function renderListItems(items: unknown, tag: 'ol' | 'ul', checklist: boolean): string {
-	if (!Array.isArray(items)) return ''
-	const list: unknown[] = items
-	return list
-		.map(item => {
-			// The older List tool stored each item as a string.
-			if (typeof item === 'string') return `<li>${sanitizeInline(item)}</li>`
-			if (item === null || typeof item !== 'object') return ''
-			const { content, text, checked, meta, items: nested } = item as ListItemData
-			const done = Boolean(meta?.checked ?? checked)
+function renderListItems(items: RichTextListItem[], tag: 'ol' | 'ul', checklist: boolean): string {
+	return items
+		.map(({ html, checked, items: nested }) => {
 			const box = checklist
-				? `<span class="a-editor__check" role="img" aria-label="${done ? 'done' : 'not done'}">${done ? '☑' : '☐'}</span> `
+				? `<span class="a-editor__check" role="img" aria-label="${checked ? 'done' : 'not done'}">${checked ? '☑' : '☐'}</span> `
 				: ''
-			const sublist = Array.isArray(nested) && nested.length ? renderList(nested, tag, checklist) : ''
-			return `<li${checklist && done ? ' class="a-editor__checked"' : ''}>${box}${sanitizeInline(content ?? text)}${sublist}</li>`
+			const sublist = nested.length ? renderList(nested, tag, checklist) : ''
+			return `<li${checklist && checked ? ' class="a-editor__checked"' : ''}>${box}${sanitizeInline(html)}${sublist}</li>`
 		})
 		.join('')
 }
 
-function renderList(items: unknown, tag: 'ol' | 'ul', checklist: boolean, start?: unknown): string {
-	const startAttr = tag === 'ol' && typeof start === 'number' && start !== 1 ? ` start="${Math.trunc(start)}"` : ''
+function renderList(items: RichTextListItem[], tag: 'ol' | 'ul', checklist: boolean, start?: number): string {
+	const startAttr = tag === 'ol' && start !== undefined ? ` start="${start}"` : ''
 	const cls = checklist ? ' class="a-editor__checklist"' : ''
 	return `<${tag}${cls}${startAttr}>${renderListItems(items, tag, checklist)}</${tag}>`
 }
 
-function renderBlock({ type, data }: EditorBlock): string {
-	const block = data ?? {}
-	switch (type) {
+// Which blocks there are, and what each shows, is `richTextBlockParts`'s to say, which the table cell's text reads too.
+function renderBlock(block: RichTextBlockParts): string {
+	switch (block.kind) {
 		case 'paragraph':
-			return `<p>${sanitizeInline(block.text)}</p>`
-		case 'header': {
-			const level = Math.min(6, Math.max(1, Math.trunc(Number(block.level)) || 2))
-			return `<h${level}>${sanitizeInline(block.text)}</h${level}>`
-		}
-		case 'list': {
-			const style = block.style
-			const meta = (block.meta ?? {}) as { start?: unknown }
-			return renderList(block.items, style === 'ordered' ? 'ol' : 'ul', style === 'checklist', meta.start)
-		}
+			return `<p>${sanitizeInline(block.html)}</p>`
+		case 'header':
+			return `<h${block.level}>${sanitizeInline(block.html)}</h${block.level}>`
+		case 'list':
+			return renderList(block.items, block.style === 'ordered' ? 'ol' : 'ul', block.style === 'checklist', block.start)
 		case 'quote': {
-			const align = block.alignment === 'center' ? ' class="a-editor__quote--center"' : ''
+			const align = block.centered ? ' class="a-editor__quote--center"' : ''
 			const caption = sanitizeInline(block.caption)
-			return `<blockquote${align}><p>${sanitizeInline(block.text)}</p>${caption ? `<cite>${caption}</cite>` : ''}</blockquote>`
+			return `<blockquote${align}><p>${sanitizeInline(block.html)}</p>${caption ? `<cite>${caption}</cite>` : ''}</blockquote>`
 		}
-		case 'delimiter':
-			return '<hr>'
+		// The delimiter, the one kind left.
 		default:
-			// A block from a tool this package does not ship. Its text, if it has any, is still shown.
-			return typeof block.text === 'string' ? `<p>${sanitizeInline(block.text)}</p>` : ''
+			return '<hr>'
 	}
 }
 
@@ -106,9 +86,31 @@ function renderBlock({ type, data }: EditorBlock): string {
  * @public
  */
 export function renderBlocks(value: EditorDocument | null | undefined): string {
-	if (!value || !Array.isArray(value.blocks)) return ''
-	return value.blocks
-		.filter(block => block && typeof block === 'object')
-		.map(renderBlock)
-		.join('')
+	return richTextBlocks(value).map(renderBlock).join('')
+}
+
+/** A value with every string in it, however deep, passed through `sanitizeInline`. */
+function sanitizeData(value: unknown): unknown {
+	if (typeof value === 'string') return sanitizeInline(value)
+	if (Array.isArray(value)) return value.map(sanitizeData)
+	if (value !== null && typeof value === 'object') return sanitizeFields(value)
+	return value
+}
+
+const sanitizeFields = (value: object): Record<string, unknown> =>
+	Object.fromEntries(Object.entries(value).map(([key, entry]) => [key, sanitizeData(entry)]))
+
+/**
+ * A copy of a document that is safe to hand Editor.js, which puts each block's HTML on the page as it is. Every
+ * string in each block's data passes through `sanitizeInline`, whatever tool the block is from, so a stored
+ * `<img onerror=…>` reaches the editor as text.
+ */
+export function sanitizeDocument(value: EditorDocument): EditorDocument {
+	const blocks: unknown[] = Array.isArray(value.blocks) ? value.blocks : []
+	return {
+		...value,
+		blocks: blocks
+			.filter((block): block is EditorBlock => block !== null && typeof block === 'object')
+			.map(block => ({ ...block, data: sanitizeFields(block.data ?? {}) })),
+	}
 }

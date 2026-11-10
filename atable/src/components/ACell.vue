@@ -208,7 +208,10 @@ const cellComponentBindings = computed(() => {
 	}
 })
 
+// A rich-text cell's default text is the document's plain text, with its entities decoded, so text typed as
+// `<img …>` reads back as a tag. It is always shown as text; only a column's own `format` can return HTML.
 const isHtmlValue = computed(() => {
+	if (isRichText && !column.format) return false
 	return typeof renderedValue.value === 'string' ? isHtmlString(renderedValue.value) : false
 })
 

@@ -11,6 +11,11 @@ const projectRootDir = resolve(import.meta.dirname)
 
 export default defineConfig({
 	run: { tasks: buildTask('vue-tsc') },
+	resolve: {
+		alias: {
+			'@stonecrop/utilities': resolve(projectRootDir, '../utilities/src/index.ts'),
+		},
+	},
 	plugins: [vue(), libInjectCss()],
 	build: {
 		emptyOutDir: true,
@@ -23,7 +28,7 @@ export default defineConfig({
 			formats: ['es'],
 		},
 		rollupOptions: {
-			external: ['vue', /^@editorjs\//],
+			external: ['vue', /^@editorjs\//, /^@stonecrop\//],
 			output: {
 				assetFileNames: 'assets/[name].[ext]',
 				globals: {

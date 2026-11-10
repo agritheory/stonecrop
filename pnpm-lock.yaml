@@ -669,6 +669,9 @@ importers:
       '@editorjs/quote':
         specifier: ^2.7.6
         version: 2.7.6
+      '@stonecrop/utilities':
+        specifier: workspace:*
+        version: link:../utilities
     devDependencies:
       '@microsoft/api-extractor':
         specifier: 'catalog:'

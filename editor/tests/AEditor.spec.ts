@@ -162,6 +162,53 @@ describe('AEditor', { tags: ['component'] }, () => {
 		expect(FakeEditor.instances[0].destroyed).toBe(true)
 	})
 
+	it('hands Editor.js sanitized blocks, on the first render and on a later one', async () => {
+		const unsafe = doc(paragraph('hi <img src=x onerror="alert(1)"><b>there</b>'))
+		const wrapper = mountEditor({ mode: 'edit', modelValue: unsafe })
+		await flushPromises()
+		const instance = FakeEditor.instances[0]
+		expect(instance.config.data?.blocks[0].data.text).toBe('hi <b>there</b>')
+
+		await wrapper.setProps({ modelValue: doc(paragraph('<script>alert(2)</script>ok')) })
+		await flushPromises()
+		expect(instance.rendered).toEqual([doc(paragraph('alert(2)ok'))])
+	})
+
+	it('holds null once every block is deleted', async () => {
+		const wrapper = mountEditor({ mode: 'edit', modelValue: doc(paragraph('x')) })
+		await flushPromises()
+
+		await FakeEditor.instances[0].change([])
+		expect(wrapper.emitted('update:modelValue')).toEqual([[null]])
+	})
+
+	it('emits an edit Editor.js has not reported yet when the field stops being editable', async () => {
+		const wrapper = mountEditor({ mode: 'edit', modelValue: doc(paragraph('a')) })
+		await flushPromises()
+		const instance = FakeEditor.instances[0]
+
+		// Typed, but Editor.js's debounce has not called onChange yet.
+		instance.blocks = [paragraph('ab')]
+		await wrapper.setProps({ mode: 'read' })
+		await flushPromises()
+
+		expect(instance.destroyed).toBe(true)
+		const emitted = wrapper.emitted('update:modelValue')!
+		expect(emitted).toHaveLength(1)
+		expect(emitted[0][0]).toMatchObject({ blocks: [paragraph('ab')] })
+	})
+
+	it('emits nothing on teardown when the editor holds no unreported edit', async () => {
+		const wrapper = mountEditor({ mode: 'edit', modelValue: doc(paragraph('a')) })
+		await flushPromises()
+		await wrapper.setProps({ modelValue: doc(paragraph('from outside')) })
+		await flushPromises()
+
+		await wrapper.setProps({ mode: 'display' })
+		await flushPromises()
+		expect(wrapper.emitted('update:modelValue')).toBeUndefined()
+	})
+
 	it('ties its label and errors to the editor', async () => {
 		const wrapper = mountEditor({ mode: 'edit', modelValue: null, errors: ['Required'] })
 		const holder = wrapper.find('.a-editor__holder')

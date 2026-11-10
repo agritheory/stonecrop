@@ -29,7 +29,7 @@ import { computed, onBeforeUnmount, onMounted, shallowRef, useTemplateRef, watch
 
 import type { EditorDocument } from '../types'
 import { loadEditor } from '../utils/load'
-import { renderBlocks } from '../utils/render'
+import { renderBlocks, sanitizeDocument } from '../utils/render'
 
 const {
 	label = '',
@@ -57,8 +57,9 @@ const {
 }>()
 
 /**
- * The document: Editor.js `OutputData` (`time`, `blocks`, `version`), or `null` for a field never edited. Each
- * change is emitted as the new object `save()` returns, and nothing here mutates an object once it is emitted.
+ * The document: Editor.js `OutputData` (`time`, `blocks`, `version`), or `null` for a field never edited or
+ * emptied of every block. Each change is emitted as the new object `save()` returns, and nothing here mutates an
+ * object once it is emitted.
  */
 const model = defineModel<EditorDocument | null>({ default: null })
 
@@ -78,16 +79,30 @@ const blocksKey = (value: EditorDocument | null | undefined) => JSON.stringify(v
 
 /**
  * A copy of the bound value for Editor.js to hold. Editor.js keeps the object it is handed, and the bound one may
- * be the record's own value, which the operation log keeps by reference for undo.
+ * be the record's own value, which the operation log keeps by reference for undo. Editor.js also puts each
+ * block's HTML on the page unsanitized, so the copy's text is sanitized as the static view's is.
  */
 const editorData = (value: EditorDocument | null | undefined): EditorDocument | undefined =>
-	value?.blocks?.length ? (JSON.parse(JSON.stringify(value)) as EditorDocument) : undefined
+	value?.blocks?.length ? sanitizeDocument(JSON.parse(JSON.stringify(value)) as EditorDocument) : undefined
+
+/** What a saved document is bound as: `null` once no blocks are left, as every other emptied field holds. */
+const boundValue = (saved: EditorDocument): EditorDocument | null => (saved.blocks.length ? saved : null)
 
 // Each mount gets its own number, so a mode change that destroys an editor while another is still starting
 // leaves the newer one alone.
 let generation = 0
 // The last document this editor emitted. When it comes back bound, the editor already shows it.
-let lastEmitted: EditorDocument | undefined
+let lastEmitted: EditorDocument | null | undefined
+// The blocks the editor showed when it last agreed with the bound value: after it started, rendered a value set
+// from outside, or emitted. Blocks that differ from these on the way out are an edit not yet emitted.
+let syncedKey: string | undefined
+
+function emit(saved: EditorDocument) {
+	syncedKey = blocksKey(saved)
+	const value = boundValue(saved)
+	lastEmitted = value
+	model.value = value
+}
 
 async function mountEditor() {
 	const current = ++generation
@@ -107,12 +122,12 @@ async function mountEditor() {
 			// Editor.js reports a change for a render or a focus as well as an edit. Only a change to the blocks is
 			// emitted, so a field the user has not edited stays null.
 			if (current !== generation || blocksKey(saved) === blocksKey(model.value)) return
-			lastEmitted = saved
-			model.value = saved
+			emit(saved)
 		},
 	})
 	editor.value = instance
 	await instance.isReady
+	if (current === generation) syncedKey = blocksKey(await instance.save())
 }
 
 async function destroyEditor() {
@@ -122,6 +137,11 @@ async function destroyEditor() {
 	if (!instance) return
 	try {
 		await instance.isReady
+		// Editor.js reports a change only once typing has paused, so an edit made just before the mode changes has
+		// not been emitted yet. It is saved once more here, or the edit would be lost with the editor.
+		const saved = await instance.save()
+		if (syncedKey !== undefined && blocksKey(saved) !== syncedKey) emit(saved)
+		syncedKey = undefined
 		instance.destroy()
 	} catch {
 		// It failed to start, so there is nothing to tear down.
@@ -138,10 +158,14 @@ watch(
 		await instance.isReady
 		if (instance !== editor.value) return
 		const shown = await instance.save()
-		if (blocksKey(shown) === blocksKey(value)) return
+		if (blocksKey(shown) === blocksKey(value)) {
+			syncedKey = blocksKey(shown)
+			return
+		}
 		const data = editorData(value)
 		if (data) await instance.render(data)
 		else instance.clear()
+		if (instance === editor.value) syncedKey = blocksKey(await instance.save())
 	}
 )
 

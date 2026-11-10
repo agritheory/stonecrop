@@ -48,6 +48,8 @@ export type FilterStateRecord = Record<number, FilterState>
 // missing. An emptied one has neither, and compares as a blank cell does. Other cells compare as they are.
 function comparableValue(cellValue: unknown, column: TableColumn): unknown {
 	const category = componentCategory(column.component)
+	// A rich-text document compares by the text it shows, not as `[object Object]`.
+	if (category === 'richtext') return formatRichText(cellValue)
 	if (category !== 'quantity' && category !== 'currency') return cellValue
 	const field = (key: string) =>
 		cellValue !== null && typeof cellValue === 'object' && key in cellValue ? Reflect.get(cellValue, key) : undefined

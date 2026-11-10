@@ -29,5 +29,11 @@ export {
 	parseCurrencyAmountInput,
 } from './currencyAmountFormat'
 export { formatCurrencyAmount, formatCurrencyCell, formatCurrencySymbol, formatQuantityCell } from './denominatedFormat'
-export { formatRichTextCell } from './richText'
+export {
+	formatRichTextCell,
+	richTextBlockParts,
+	richTextBlocks,
+	type RichTextBlockParts,
+	type RichTextListItem,
+} from './richText'
 export { compareSemver, defaultKeypressHandlers, fromISODate, install, isSemver, isSemverPrefix, useKeyboardNav }

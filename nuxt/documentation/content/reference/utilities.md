@@ -198,7 +198,9 @@ export declare function formatQuantityCell(value: unknown): string;
 
 ### formatRichTextCell
 
-The visible text of an Editor.js document (`{ time, blocks, version }`), its blocks joined by spaces, for a table cell or a text filter. Empty for a field never edited (`null`) or any value that is not such a document.
+The visible text of an Editor.js document (`{ time, blocks, version }`), its blocks joined by spaces, for a table cell, a text filter or a sort. Empty for a field never edited (`null`) or any value that is not such a document.
+
+The result is plain text, not HTML: entities are decoded, so text typed as `<img …>` comes back as those characters. Show it as text, never with `v-html` or `innerHTML`.
 
 **Signature:**
 
@@ -329,6 +331,38 @@ export declare function parseCurrencyAmountInput(text: string, locale?: string):
 |-----------|------|-------------|
 | text | `string` |  |
 | locale | `string` | The browser's own when omitted |
+
+### richTextBlockParts
+
+What a block of an Editor.js document shows, for the editor's static view and the table cell alike, so the two agree on every block. A block from a tool not known here is shown as a paragraph of its `text`, or not at all.
+
+**Signature:**
+
+```typescript
+export declare function richTextBlockParts(block: unknown): RichTextBlockParts | undefined;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| block | `unknown` |  |
+
+### richTextBlocks
+
+The blocks of an Editor.js document (`{ time, blocks, version }`), read by `richTextBlockParts`. None for a field never edited (`null`) or any value that is not such a document.
+
+**Signature:**
+
+```typescript
+export declare function richTextBlocks(value: unknown): RichTextBlockParts[];
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| value | `unknown` |  |
 
 ### roundToPrecision
 
@@ -469,6 +503,49 @@ The marks a number box writes numbers with. The decimal mark is read as the deci
 export type NumberSeparators = {
     group?: string;
     decimal?: string;
+};
+```
+
+### RichTextBlockParts
+
+One block of an Editor.js document, read into the parts that are shown. Every `html` is the block's inline HTML exactly as stored, so whoever puts it on a page sanitizes it first.
+
+**Definition:**
+
+```typescript
+export type RichTextBlockParts = {
+    kind: 'paragraph';
+    html: string;
+} | {
+    kind: 'header';
+    html: string;
+    level: number;
+} | {
+    kind: 'list';
+    style: 'ordered' | 'unordered' | 'checklist';
+    start?: number;
+    items: RichTextListItem[];
+} | {
+    kind: 'quote';
+    html: string;
+    caption: string;
+    centered: boolean;
+} | {
+    kind: 'delimiter';
+};
+```
+
+### RichTextListItem
+
+An item of a list block: its inline HTML as stored, whether it is ticked (a checklist's), and the items nested in it.
+
+**Definition:**
+
+```typescript
+export type RichTextListItem = {
+    html: string;
+    checked: boolean;
+    items: RichTextListItem[];
 };
 ```
 

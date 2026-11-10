@@ -107,6 +107,41 @@ export type NumberSeparators = {
 export function parseCurrencyAmountInput(text: string, locale?: string): number | null;
 
 // @public
+export type RichTextBlockParts = {
+    kind: 'paragraph';
+    html: string;
+} | {
+    kind: 'header';
+    html: string;
+    level: number;
+} | {
+    kind: 'list';
+    style: 'ordered' | 'unordered' | 'checklist';
+    start?: number;
+    items: RichTextListItem[];
+} | {
+    kind: 'quote';
+    html: string;
+    caption: string;
+    centered: boolean;
+} | {
+    kind: 'delimiter';
+};
+
+// @public
+export function richTextBlockParts(block: unknown): RichTextBlockParts | undefined;
+
+// @public
+export function richTextBlocks(value: unknown): RichTextBlockParts[];
+
+// @public
+export type RichTextListItem = {
+    html: string;
+    checked: boolean;
+    items: RichTextListItem[];
+};
+
+// @public
 export function roundToPrecision(value: number, precision?: number): number;
 
 // @public

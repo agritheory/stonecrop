@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vite-plus/test'
 
-import { renderBlocks, sanitizeInline } from '../src/utils/render'
+import { renderBlocks, sanitizeDocument, sanitizeInline } from '../src/utils/render'
 
 const doc = (...blocks: { type: string; data: Record<string, unknown> }[]) => ({ time: 1, blocks, version: '2.31.7' })
 
@@ -52,6 +52,24 @@ describe('renderBlocks', { tags: ['unit'] }, () => {
 		)
 	})
 
+	it("renders the Checklist tool's own block as a checklist", () => {
+		const html = renderBlocks(
+			doc({
+				type: 'checklist',
+				data: {
+					items: [
+						{ text: 'Pack', checked: true },
+						{ text: 'Ship', checked: false },
+					],
+				},
+			})
+		)
+		expect(html).toContain('<ul class="a-editor__checklist">')
+		expect(html).toContain('<li class="a-editor__checked">')
+		expect(html).toContain('Pack')
+		expect(html).toContain('Ship')
+	})
+
 	it('shows the text of a block from a tool it does not ship', () => {
 		expect(renderBlocks(doc({ type: 'warning', data: { text: 'careful', title: 't' } }))).toBe('<p>careful</p>')
 		expect(renderBlocks(doc({ type: 'image', data: { url: 'x.png' } }))).toBe('')
@@ -80,5 +98,26 @@ describe('sanitizeInline', { tags: ['unit'] }, () => {
 	it('escapes a stray angle bracket and leaves entities as they are', () => {
 		expect(sanitizeInline('1 < 2 &amp; 3 > 2')).toBe('1 &lt; 2 &amp; 3 &gt; 2')
 		expect(sanitizeInline('<<b>>x</b>')).toBe('&lt;<b>&gt;x</b>')
+	})
+})
+
+describe('sanitizeDocument', { tags: ['unit'] }, () => {
+	it('sanitizes every string in every block, nested list items included', () => {
+		const value = doc(
+			{ type: 'paragraph', data: { text: '<img src=x onerror=alert(1)>a' } },
+			{
+				type: 'list',
+				data: {
+					style: 'unordered',
+					items: [{ content: '<b onclick=x>b</b>', items: [{ content: '<svg>c', items: [] }] }],
+				},
+			},
+			{ type: 'warning', data: { title: '<script>t</script>', message: 'm' } }
+		)
+		expect(sanitizeDocument(value).blocks.map(block => block.data)).toEqual([
+			{ text: 'a' },
+			{ style: 'unordered', items: [{ content: '<b>b</b>', items: [{ content: 'c', items: [] }] }] },
+			{ title: 't', message: 'm' },
+		])
 	})
 })

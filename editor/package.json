@@ -61,7 +61,8 @@
 		"@editorjs/editorjs": "^2.31.7",
 		"@editorjs/header": "^2.8.9",
 		"@editorjs/list": "^2.0.9",
-		"@editorjs/quote": "^2.7.6"
+		"@editorjs/quote": "^2.7.6",
+		"@stonecrop/utilities": "workspace:*"
 	},
 	"devDependencies": {
 		"@microsoft/api-extractor": "catalog:",

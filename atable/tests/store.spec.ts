@@ -1722,6 +1722,29 @@ describe('table store', { tags: ['component'] }, () => {
 		})
 	})
 
+	describe('rich-text column sorting', () => {
+		const note = (text: string) => ({ time: 1, version: '2.31.7', blocks: [{ type: 'paragraph', data: { text } }] })
+
+		it('sorts an AEditor column by the text each document shows', () => {
+			const richStore = createTableStore({
+				columns: [
+					{ name: 'item', label: 'Item' },
+					{ name: 'notes', label: 'Notes', component: 'AEditor' },
+				],
+				rows: [
+					{ item: 'A', notes: note('Cherry') },
+					{ item: 'B', notes: note('<b>apple</b>') },
+					{ item: 'C', notes: null },
+					{ item: 'D', notes: note('banana') },
+				],
+			})
+			richStore.sortByColumn(1)
+			expect(richStore.filteredRows.map(r => r.item)).toEqual(['C', 'B', 'D', 'A'])
+			richStore.sortByColumn(1)
+			expect(richStore.filteredRows.map(r => r.item)).toEqual(['A', 'D', 'B', 'C'])
+		})
+	})
+
 	describe('date filters compare the days the table shows', () => {
 		// Pinned zones, because a day read as UTC midnight only shifts outside UTC, and CI runs in UTC.
 		describe.each(['Asia/Kolkata', 'America/New_York'])('in %s', zone => {
