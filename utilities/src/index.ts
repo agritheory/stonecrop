@@ -2,7 +2,7 @@ import { App } from 'vue'
 
 import { defaultKeypressHandlers, useKeyboardNav } from './composables/keyboard'
 export { useArithmeticInput, type ArithmeticInputOptions } from './composables/arithmeticInput'
-import { fromISODate } from './dates'
+import { fromISODate, today, zonedNow } from './dates'
 import { compareSemver, isSemver, isSemverPrefix } from './semver'
 export type * from './types'
 
@@ -29,4 +29,14 @@ export {
 	parseCurrencyAmountInput,
 } from './currencyAmountFormat'
 export { formatCurrencyAmount, formatCurrencyCell, formatCurrencySymbol, formatQuantityCell } from './denominatedFormat'
-export { compareSemver, defaultKeypressHandlers, fromISODate, install, isSemver, isSemverPrefix, useKeyboardNav }
+export {
+	compareSemver,
+	defaultKeypressHandlers,
+	fromISODate,
+	install,
+	isSemver,
+	isSemverPrefix,
+	today,
+	useKeyboardNav,
+	zonedNow,
+}

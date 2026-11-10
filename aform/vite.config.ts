@@ -60,6 +60,7 @@ export default defineConfig({
 				test: {
 					name: 'browser',
 					include: ['tests/**/*.browser.spec.ts'],
+					exclude: [...configDefaults.exclude, '**/*.fr.browser.spec.ts'],
 					// One file at a time: the clipboard is the browser's, so paste tests in two files at once read each
 					// other's copy.
 					fileParallelism: false,
@@ -71,6 +72,24 @@ export default defineConfig({
 						provider: playwright({
 							launchOptions: playwrightLaunchOptions(),
 							contextOptions: { locale: 'en-US' },
+						}),
+						instances: [{ browser: 'chromium' }],
+					},
+				},
+			},
+			// A browser whose locale is French, for the dates a French user reads and types.
+			{
+				extends: true,
+				test: {
+					name: 'browser-fr',
+					include: ['tests/**/*.fr.browser.spec.ts'],
+					fileParallelism: false,
+					browser: {
+						enabled: true,
+						headless: true,
+						provider: playwright({
+							launchOptions: playwrightLaunchOptions(),
+							contextOptions: { locale: 'fr-FR' },
 						}),
 						instances: [{ browser: 'chromium' }],
 					},

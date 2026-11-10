@@ -1,7 +1,7 @@
 import { Temporal } from 'temporal-polyfill'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test'
 
-import { fromISODate } from '../src/dates'
+import { fromISODate, today, zonedNow } from '../src/dates'
 
 describe('ISO dates', { tags: ['unit'] }, () => {
 	// Pinned zones, because the runner's own zone hides these: CI runs in UTC, where a UTC reading passes.
@@ -30,5 +30,31 @@ describe('ISO dates', { tags: ['unit'] }, () => {
 		'+002026-01-10',
 	])('reads %j as no day', value => {
 		expect(fromISODate(value)).toBeUndefined()
+	})
+})
+
+describe('now', { tags: ['unit'] }, () => {
+	// 9pm in New York, when UTC has already reached the next day. Faked through `Date`, which a runtime's
+	// own `Temporal.Now` does not read.
+	beforeEach(() => {
+		vi.stubEnv('TZ', 'America/New_York')
+		vi.useFakeTimers({ toFake: ['Date'] })
+		vi.setSystemTime(new Date(2026, 0, 10, 21, 30))
+	})
+
+	afterEach(() => {
+		vi.useRealTimers()
+		vi.unstubAllEnvs()
+	})
+
+	it("reads now from the clock, on the user's clock", () => {
+		const now = zonedNow()
+		expect(now.epochMilliseconds).toBe(Date.now())
+		expect(now.timeZoneId).toBe('America/New_York')
+		expect(now.toPlainDateTime().toString()).toBe('2026-01-10T21:30:00')
+	})
+
+	it("reads today as the user's day, not UTC's", () => {
+		expect(today().toString()).toBe('2026-01-10')
 	})
 })
