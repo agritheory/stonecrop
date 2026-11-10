@@ -341,7 +341,11 @@ export const FieldValidation: z.ZodObject<{
 export type FieldValidation = z.infer<typeof FieldValidation>;
 
 // @public
-export function flattenFields(fields: readonly DoctypeField[]): (ValueField | TableField)[];
+export function flattenFields<F extends {
+    kind: string;
+}>(fields: readonly F[]): Exclude<F, {
+    kind: 'fieldset';
+}>[];
 
 // @public
 export function formatDoctypeDrift(drift: DoctypeDrift): string[];

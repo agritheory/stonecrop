@@ -3,7 +3,6 @@ import { join } from 'node:path'
 import { mount } from '@vue/test-utils'
 import { afterEach, beforeAll, describe, expect, it } from 'vite-plus/test'
 
-import AForm from '../src/components/AForm.vue'
 import ACheckbox from '../src/components/form/ACheckbox.vue'
 import ACurrencyInput from '../src/components/form/ACurrencyInput.vue'
 import ADate from '../src/components/form/ADate.vue'
@@ -18,6 +17,7 @@ import ATextboxInput from '../src/components/form/ATextboxInput.vue'
 import ATextInput from '../src/components/form/ATextInput.vue'
 import Login from '../src/components/utilities/Login.vue'
 import type { ResolvedField } from '../src/types'
+import { mountBound } from './mount-bound'
 
 /*
 A field's label takes the active colour while the field holds focus. The rules are read from every
@@ -105,7 +105,7 @@ describe('label focus colour', { tags: ['component'] }, () => {
 	})
 
 	it('darkens the label of whichever control holds focus, and no other label', () => {
-		const wrapper = mount(AForm, {
+		const wrapper = mountBound({
 			props: { schema, data: {}, mode: 'edit' },
 			global: { components },
 			attachTo: document.body,

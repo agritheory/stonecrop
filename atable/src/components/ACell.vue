@@ -215,12 +215,15 @@ const isHtmlValue = computed(() => {
 	return typeof renderedValue.value === 'string' ? isHtmlString(renderedValue.value) : false
 })
 
+// Its own computed, so a rebuilt row state with this row's indent unchanged does not redraw the cell.
+const rowIndent = computed(() => store.display[rowIndex]?.indent)
+
 const cellStyle = computed((): CSSProperties => {
 	return {
 		textAlign,
 		width: cellWidth,
 		fontWeight: !cellModified.value ? 'inherit' : 'bold',
-		paddingLeft: getIndent(colIndex, store.display[rowIndex]?.indent),
+		paddingLeft: getIndent(colIndex, rowIndent.value),
 	}
 })
 

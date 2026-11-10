@@ -1,5 +1,122 @@
 # Change Log - @stonecrop/nuxt
 
+## 0.60.2
+
+### Patch Changes
+
+- Updated dependencies [a8c9d8c]
+  - @stonecrop/aform@0.60.2
+  - @stonecrop/desktop@0.60.2
+  - @stonecrop/stonecrop@0.60.2
+  - @stonecrop/atable@0.60.2
+  - @stonecrop/casl-middleware@0.60.2
+  - @stonecrop/code-editor@0.60.2
+  - @stonecrop/graphql-client@0.60.2
+  - @stonecrop/graphql-middleware@0.60.2
+  - @stonecrop/node-editor@0.60.2
+  - @stonecrop/nuxt-grafserv@0.60.2
+  - @stonecrop/schema@0.60.2
+  - @stonecrop/themes@0.60.2
+
+## 0.60.1
+
+### Patch Changes
+
+- 35ea6ea: A field's static `validation.errorMessage` is no longer shown as an error on its own. Before, a field with one showed it on every record, valid or not, and marked its input `aria-invalid`, so a "Validation message" set in DocBuilder sat on every record and a screen reader announced the field as invalid.
+  
+  The message now words an error a trigger reports without one: `setError(field)`, with the message left out, shows that field's own Validation message. AForm applies the wording before it routes errors, so a field bound to another field's part (totals sharing one currency) shows that part's own message, and fieldset children and link fields are covered too; a field component only shows the errors it is handed. `flattenFields` is generic, so it walks resolved fields as well as authored ones. DocBuilder's trigger editor shows `setError(field, message?)`, and the Validation message input says when it is shown.
+- Updated dependencies [35ea6ea]
+  - @stonecrop/aform@0.60.1
+  - @stonecrop/schema@0.60.1
+  - @stonecrop/stonecrop@0.60.1
+  - @stonecrop/desktop@0.60.1
+  - @stonecrop/atable@0.60.1
+  - @stonecrop/graphql-client@0.60.1
+  - @stonecrop/graphql-middleware@0.60.1
+  - @stonecrop/node-editor@0.60.1
+  - @stonecrop/nuxt-grafserv@0.60.1
+  - @stonecrop/casl-middleware@0.60.1
+  - @stonecrop/code-editor@0.60.1
+  - @stonecrop/themes@0.60.1
+
+## 0.60.0
+
+### Patch Changes
+
+- Updated dependencies [aea0baf]
+- Updated dependencies [aea0baf]
+- Updated dependencies [aea0baf]
+- Updated dependencies [aea0baf]
+  - @stonecrop/aform@0.60.0
+  - @stonecrop/atable@0.60.0
+  - @stonecrop/desktop@0.60.0
+  - @stonecrop/stonecrop@0.60.0
+  - @stonecrop/casl-middleware@0.60.0
+  - @stonecrop/code-editor@0.60.0
+  - @stonecrop/graphql-client@0.60.0
+  - @stonecrop/graphql-middleware@0.60.0
+  - @stonecrop/node-editor@0.60.0
+  - @stonecrop/nuxt-grafserv@0.60.0
+  - @stonecrop/schema@0.60.0
+  - @stonecrop/themes@0.60.0
+
+## 0.59.0
+
+### Patch Changes
+
+- Updated dependencies [35dc2f5]
+- Updated dependencies [35dc2f5]
+- Updated dependencies [35dc2f5]
+- Updated dependencies [35dc2f5]
+  - @stonecrop/graphql-middleware@0.59.0
+  - @stonecrop/graphql-client@0.59.0
+  - @stonecrop/nuxt-grafserv@0.59.0
+  - @stonecrop/aform@0.59.0
+  - @stonecrop/atable@0.59.0
+  - @stonecrop/casl-middleware@0.59.0
+  - @stonecrop/code-editor@0.59.0
+  - @stonecrop/desktop@0.59.0
+  - @stonecrop/node-editor@0.59.0
+  - @stonecrop/schema@0.59.0
+  - @stonecrop/stonecrop@0.59.0
+  - @stonecrop/themes@0.59.0
+
+## 0.58.4
+
+### Patch Changes
+
+- Updated dependencies [07be796]
+  - @stonecrop/aform@0.58.4
+  - @stonecrop/desktop@0.58.4
+  - @stonecrop/stonecrop@0.58.4
+  - @stonecrop/atable@0.58.4
+  - @stonecrop/casl-middleware@0.58.4
+  - @stonecrop/code-editor@0.58.4
+  - @stonecrop/graphql-client@0.58.4
+  - @stonecrop/graphql-middleware@0.58.4
+  - @stonecrop/node-editor@0.58.4
+  - @stonecrop/nuxt-grafserv@0.58.4
+  - @stonecrop/schema@0.58.4
+  - @stonecrop/themes@0.58.4
+
+## 0.58.3
+
+### Patch Changes
+
+- Updated dependencies [44b7eb5]
+  - @stonecrop/aform@0.58.3
+  - @stonecrop/desktop@0.58.3
+  - @stonecrop/stonecrop@0.58.3
+  - @stonecrop/atable@0.58.3
+  - @stonecrop/casl-middleware@0.58.3
+  - @stonecrop/code-editor@0.58.3
+  - @stonecrop/graphql-client@0.58.3
+  - @stonecrop/graphql-middleware@0.58.3
+  - @stonecrop/node-editor@0.58.3
+  - @stonecrop/nuxt-grafserv@0.58.3
+  - @stonecrop/schema@0.58.3
+  - @stonecrop/themes@0.58.3
+
 ## 0.58.2
 
 ### Patch Changes

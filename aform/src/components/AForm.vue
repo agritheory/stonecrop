@@ -13,7 +13,7 @@
 					:schema="componentObj.schema"
 					:label="componentObj.label"
 					:errors="errors"
-					@update:data="(val: any) => updateNestedData(componentObj.fieldname, val)" />
+					v-on="listenersWhenHeard((val: any) => updateNestedData(componentObj.fieldname, val))" />
 			</div>
 
 			<!-- A fieldset is layout: its fields are this record's own, so it binds this record.
@@ -26,8 +26,8 @@
 					:schema="componentObj.schema"
 					:label="componentObj.label"
 					:collapsible="componentObj.collapsible"
-					:errors="errors"
-					@update:data="updateFieldsetData" />
+					:errors="formErrors"
+					v-on="listenersWhenHeard(updateFieldsetData)" />
 			</div>
 
 			<!-- Regular field -->
@@ -47,7 +47,11 @@
 						:data="row"
 						:schema="tableExpansionSchema(componentObj)"
 						:mode="resolvedMode(componentObj)"
-						@update:data="val => updateTableRow(componentObj.fieldname, rowIndex, val)" />
+						v-on="
+							listenersWhenHeard((val: Record<string, unknown>) =>
+								updateTableRow(componentObj.fieldname, rowIndex, val)
+							)
+						" />
 				</template>
 			</component>
 		</template>
@@ -58,7 +62,8 @@
 import { computed, watchEffect, watch, ref, useId } from 'vue'
 
 import type { ResolvedField, ResolvedLink, ResolvedFieldset, ResolvedTable } from '../types'
-import { partsPatch, readParts } from '@stonecrop/schema'
+import { wordErrors } from '../utils/fieldErrors'
+import { flattenFields, partsPatch, readParts } from '@stonecrop/schema'
 import type { ColumnSchema, InteractionMode } from '@stonecrop/schema'
 
 const emit = defineEmits(['update:schema', 'update:data'])
@@ -67,12 +72,21 @@ const {
 	schema,
 	mode = 'edit',
 	errors,
+	'onUpdate:data': updateListener,
 } = defineProps<{
 	schema: ResolvedField[]
 	mode?: InteractionMode
 	/** Inline validation errors keyed by fieldname. Fed by the host; the form stays store-agnostic. */
 	errors?: Record<string, string[]>
+	/** The caller's `update:data` listener. Without one an edit reaches nobody, so the form shows `edit` as `read`. */
+	'onUpdate:data'?: (record: Record<string, any>) => void
 }>()
+
+// Whether anyone hears this form's edits: they go only to `update:data`, never into `data`.
+const heard = computed(() => Boolean(updateListener))
+
+// A nested form's edits are this form's, so someone hears them only when someone hears this form.
+const listenersWhenHeard = (handler: (record: any) => void) => (heard.value ? { 'update:data': handler } : {})
 
 const hasChildSchema = (componentObj: ResolvedField) =>
 	'schema' in componentObj && Array.isArray(componentObj.schema) && componentObj.schema.length > 0
@@ -83,12 +97,17 @@ const isLinkSection = (componentObj: ResolvedField): componentObj is ResolvedLin
 const isFieldsetSection = (componentObj: ResolvedField): componentObj is ResolvedFieldset =>
 	componentObj.kind === 'fieldset' && hasChildSchema(componentObj)
 
+// An edit, reported as a new record. `data` is the caller's, often the store's own object, so it is
+// never written into: an edit reaches it only through the caller's handling of `update:data`.
+const applyChanges = (changes: Record<string, any>) => {
+	if (dataModel.value) dataModel.value = { ...dataModel.value, ...changes }
+}
+
 // Reactive nested data refs for two-way binding with the forms of linked records
 const nestedData = ref<Record<string, any>>({})
 
-// Sync external dataModel changes into nestedData (one-way, no emit back).
-// Uses a shallow watch so only top-level object replacement (e.g. parent reset)
-// triggers a sync — property mutations from within are handled by updateNestedData.
+// Sync each record the form is given into nestedData (one-way, no emit back). A shallow watch sees a
+// record replaced, as every edit here replaces it; a caller that writes into a record in place is not seen.
 watch(
 	() => dataModel.value,
 	newData => {
@@ -106,19 +125,11 @@ watch(
 // avoiding the watchEffect feedback loop that occurred with v-model.
 const updateNestedData = (fieldname: string, val: any) => {
 	nestedData.value[fieldname] = val
-	if (dataModel.value) {
-		dataModel.value[fieldname] = val
-		emit('update:data', { ...dataModel.value })
-	}
+	applyChanges({ [fieldname]: val })
 }
 
 // A fieldset's edits. Its form holds this record, so its edits are this record's.
-const updateFieldsetData = (val: Record<string, any>) => {
-	if (dataModel.value) {
-		Object.assign(dataModel.value, val)
-		emit('update:data', { ...dataModel.value })
-	}
-}
+const updateFieldsetData = (val: Record<string, any>) => applyChanges(val)
 
 const isListExpansionTable = (componentObj: ResolvedField): componentObj is ResolvedTable =>
 	componentObj.kind === 'table' && componentObj.config?.view === 'list-expansion'
@@ -128,12 +139,7 @@ const tableExpansionSchema = (table: ResolvedTable): ResolvedField[] =>
 		.filter((col): col is ColumnSchema & { component: string } => Boolean(col.component))
 		.map(({ fieldname, component, ...rest }) => Object.assign(rest, { kind: 'field' as const, fieldname, component }))
 
-const updateTableRows = (fieldname: string, rows: Record<string, unknown>[]) => {
-	if (dataModel.value) {
-		dataModel.value[fieldname] = rows
-		emit('update:data', { ...dataModel.value })
-	}
-}
+const updateTableRows = (fieldname: string, rows: Record<string, unknown>[]) => applyChanges({ [fieldname]: rows })
 
 const updateTableRow = (fieldname: string, rowIndex: number, val: Record<string, unknown>) => {
 	const rows = Array.isArray(dataModel.value?.[fieldname]) ? [...dataModel.value[fieldname]] : []
@@ -165,6 +171,10 @@ const componentProps = (componentObj: ResolvedField) => {
 	if (componentObj.kind === 'table') {
 		propsToPass['rows'] = dataModel.value[componentObj.fieldname] || []
 		propsToPass['onUpdate:rows'] = (rows: Record<string, unknown>[]) => updateTableRows(componentObj.fieldname, rows)
+		// A table takes no `mode`: each column's own `edit` decides whether its cells can be edited.
+		if (resolvedMode(componentObj) !== 'edit') {
+			propsToPass['schema'] = componentObj.schema.map(column => Object.assign({}, column, { edit: false }))
+		}
 	}
 
 	return propsToPass
@@ -188,11 +198,10 @@ const fieldStyle = (componentObj: ResolvedField): Record<string, string> => {
 
 const effectiveFormMode = computed(() => mode ?? 'edit')
 
-// Resolve the effective mode for a schema field, allowing per-field overrides
+// A field's own mode, or the form's. `edit` shows as `read` while nobody hears the form's edits.
 function resolvedMode(componentObj: ResolvedField): InteractionMode {
-	const fieldMode = componentObj.mode
-	if (fieldMode) return fieldMode
-	return effectiveFormMode.value
+	const declared = componentObj.mode ?? effectiveFormMode.value
+	return declared === 'edit' && !heard.value ? 'read' : declared
 }
 
 // A field declaring `parts` binds the value its component edits, read part by part from the fields
@@ -202,12 +211,29 @@ function resolvedMode(componentObj: ResolvedField): InteractionMode {
 const fieldParts = (field: ResolvedField): Record<string, string> | undefined =>
 	field.kind === 'field' || field.kind === 'table' ? field.parts : undefined
 
+// Every field this form holds, fieldset children included, by name: the source of each error's wording.
+const fieldsByName = computed(() => new Map(flattenFields(schema).map(field => [field.fieldname, field])))
+
+// The host's errors, each worded by the field it was reported on, before they are routed anywhere. Worded
+// here and not in the component: a component bound to several fields' parts is handed all of their errors
+// (a shared currency part's among each total's) and could word one only with its own field's message.
+// Fieldsets are handed this map; a linked record's form is handed the host's, to word by its own schema.
+const formErrors = computed(() => {
+	if (!errors) return undefined
+	return Object.fromEntries(
+		Object.entries(errors).map(([fieldname, list]) => {
+			const field = fieldsByName.value.get(fieldname)
+			return [fieldname, wordErrors(list, field && 'validation' in field ? field.validation : undefined)]
+		})
+	)
+})
+
 const fieldErrors = (field: ResolvedField): string[] | undefined => {
 	const parts = fieldParts(field)
-	if (!parts) return errors?.[field.fieldname]
+	if (!parts) return formErrors.value?.[field.fieldname]
 	// An app's own component need not name its own field as a part, but that field's errors are still its own.
 	const fieldnames = new Set([field.fieldname, ...Object.values(parts)])
-	return [...fieldnames].flatMap(fieldname => errors?.[fieldname] ?? [])
+	return [...fieldnames].flatMap(fieldname => formErrors.value?.[fieldname] ?? [])
 }
 
 // Create stable computed refs array to avoid recreation on every access
@@ -230,11 +256,9 @@ watchEffect(() => {
 					const parts = fieldParts(schema[index])
 					const fieldname = schema[index].fieldname
 					if (parts && dataModel.value) {
-						Object.assign(dataModel.value, partsPatch(parts, dataModel.value, newValue))
-						emit('update:data', { ...dataModel.value })
-					} else if (fieldname && dataModel.value) {
-						dataModel.value[fieldname] = newValue
-						emit('update:data', { ...dataModel.value })
+						applyChanges(partsPatch(parts, dataModel.value, newValue))
+					} else if (fieldname) {
+						applyChanges({ [fieldname]: newValue })
 					}
 					emit('update:schema', schema)
 				},

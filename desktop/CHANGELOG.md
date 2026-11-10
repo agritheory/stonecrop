@@ -1,5 +1,66 @@
 # Change Log - @stonecrop/desktop
 
+## 0.60.2
+
+### Patch Changes
+
+- Updated dependencies [a8c9d8c]
+  - @stonecrop/aform@0.60.2
+  - @stonecrop/stonecrop@0.60.2
+  - @stonecrop/schema@0.60.2
+  - @stonecrop/themes@0.60.2
+
+## 0.60.1
+
+### Patch Changes
+
+- Updated dependencies [35ea6ea]
+  - @stonecrop/aform@0.60.1
+  - @stonecrop/schema@0.60.1
+  - @stonecrop/stonecrop@0.60.1
+  - @stonecrop/themes@0.60.1
+
+## 0.60.0
+
+### Patch Changes
+
+- Updated dependencies [aea0baf]
+- Updated dependencies [aea0baf]
+- Updated dependencies [aea0baf]
+  - @stonecrop/aform@0.60.0
+  - @stonecrop/stonecrop@0.60.0
+  - @stonecrop/schema@0.60.0
+  - @stonecrop/themes@0.60.0
+
+## 0.59.0
+
+### Patch Changes
+
+- @stonecrop/aform@0.59.0
+  - @stonecrop/schema@0.59.0
+  - @stonecrop/stonecrop@0.59.0
+  - @stonecrop/themes@0.59.0
+
+## 0.58.4
+
+### Patch Changes
+
+- Updated dependencies [07be796]
+  - @stonecrop/aform@0.58.4
+  - @stonecrop/stonecrop@0.58.4
+  - @stonecrop/schema@0.58.4
+  - @stonecrop/themes@0.58.4
+
+## 0.58.3
+
+### Patch Changes
+
+- Updated dependencies [44b7eb5]
+  - @stonecrop/aform@0.58.3
+  - @stonecrop/stonecrop@0.58.3
+  - @stonecrop/schema@0.58.3
+  - @stonecrop/themes@0.58.3
+
 ## 0.58.2
 
 ### Patch Changes

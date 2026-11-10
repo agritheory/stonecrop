@@ -7,6 +7,9 @@ import type { AFormLinkModelValue, AFormLinkValue } from '../src/types'
 
 const idFormatter = (v: AFormLinkValue) => `#${String(v.id)}`
 
+// What an app provides so a link's arrow has somewhere to go.
+const withNavigator = (navigate = vi.fn()) => ({ provide: { aformLinkNavigator: { navigate } } })
+
 /**
  * Mount AFormLink under a parent that stores the link as a bare FK scalar — the shape a record
  * loaded from the DB actually carries — and coerces every `update:modelValue` back to a scalar
@@ -30,10 +33,11 @@ function mountScalarHost(filterFunction: (search: string) => Promise<AFormLinkVa
 						model.value = value
 					},
 					filterFunction,
+					doctype: 'customer',
 				})
 		},
 	})
-	return { host: mount(Host), raw }
+	return { host: mount(Host, { global: withNavigator() }), raw }
 }
 
 describe('AFormLink component', { tags: ['component'] }, () => {
@@ -51,7 +55,10 @@ describe('AFormLink component', { tags: ['component'] }, () => {
 		['arrow-right', '→'],
 		['chevron-right', '›'],
 	] as const)('draws the %s navigate icon, keeping its glyph as the spoken name', (icon, glyph) => {
-		const wrapper = mount(AFormLink, { props: { label: 'Customer', modelValue: validValue, icon } })
+		const wrapper = mount(AFormLink, {
+			props: { label: 'Customer', modelValue: validValue, doctype: 'customer', icon },
+			global: withNavigator(),
+		})
 		const button = wrapper.find('.aform_form-btn')
 		expect(button.find(`svg[data-icon="${icon}"][aria-hidden="true"]`).exists()).toBe(true)
 		expect(button.find('.aform_form-btn-name').text()).toBe(glyph)
@@ -220,16 +227,10 @@ describe('AFormLink component', { tags: ['component'] }, () => {
 		expect(events![0][0]).toEqual({ id: 'CUST-001', displayText: 'Acme Corp' })
 	})
 
-	it('renders arrow button when hasValidId', () => {
-		const wrapper = mount(AFormLink, {
-			props: { modelValue: validValue },
-		})
-		expect(wrapper.find('button').exists()).toBe(true)
-	})
-
 	it('suppresses the arrow button and floating label in embedded mode', () => {
 		const wrapper = mount(AFormLink, {
-			props: { label: 'Customer', modelValue: validValue, embedded: true },
+			props: { label: 'Customer', modelValue: validValue, doctype: 'customer', embedded: true },
+			global: withNavigator(),
 		})
 		expect(wrapper.find('button').exists()).toBe(false)
 		expect(wrapper.find('.aform_field-label').exists()).toBe(false)
@@ -281,14 +282,16 @@ describe('AFormLink component', { tags: ['component'] }, () => {
 
 	it('does not render arrow button when id is falsy', () => {
 		const wrapper = mount(AFormLink, {
-			props: { modelValue: { id: '' } },
+			props: { modelValue: { id: '' }, doctype: 'customer' },
+			global: withNavigator(),
 		})
 		expect(wrapper.find('button').exists()).toBe(false)
 	})
 
 	it('disabled prop hides arrow and disables input', () => {
 		const wrapper = mount(AFormLink, {
-			props: { modelValue: validValue, disabled: true },
+			props: { modelValue: validValue, doctype: 'customer', disabled: true },
+			global: withNavigator(),
 		})
 		expect(wrapper.find('input').attributes('disabled')).toBeDefined()
 		expect(wrapper.find('button').exists()).toBe(false)
@@ -296,7 +299,8 @@ describe('AFormLink component', { tags: ['component'] }, () => {
 
 	it('read mode disables input but keeps arrow visible', () => {
 		const wrapper = mount(AFormLink, {
-			props: { modelValue: validValue, mode: 'read' },
+			props: { modelValue: validValue, doctype: 'customer', mode: 'read' },
+			global: withNavigator(),
 		})
 		expect(wrapper.find('input').attributes('disabled')).toBeDefined()
 		expect(wrapper.find('button').exists()).toBe(true)
@@ -304,7 +308,8 @@ describe('AFormLink component', { tags: ['component'] }, () => {
 
 	it('display mode shows plain text only — no input, no arrow', () => {
 		const wrapper = mount(AFormLink, {
-			props: { modelValue: validValue, mode: 'display' },
+			props: { modelValue: validValue, doctype: 'customer', mode: 'display' },
+			global: withNavigator(),
 		})
 		expect(wrapper.find('input').exists()).toBe(false)
 		expect(wrapper.find('button').exists()).toBe(false)
@@ -498,6 +503,95 @@ describe('AFormLink component', { tags: ['component'] }, () => {
 		await flushPromises()
 
 		expect(wrapper.find('.loading').exists()).toBe(false)
+	})
+
+	it('ignores an older search that answers after a newer one', async () => {
+		const resolvers: Record<string, (val: AFormLinkValue[]) => void> = {}
+		const filterFunction = vi.fn(
+			(search: string) =>
+				new Promise<AFormLinkValue[]>(r => {
+					resolvers[search] = r
+				})
+		)
+
+		const wrapper = mount(AFormLink, {
+			props: { modelValue: { id: '' }, filterFunction, isAsync: true },
+		})
+
+		const input = wrapper.find('input')
+		await input.setValue('Ac')
+		await input.setValue('Acme')
+
+		// The newer search answers first…
+		resolvers['Acme']([{ id: 'CUST-001', displayText: 'Acme Corp' }])
+		await flushPromises()
+		// …then the older one lands; it must not replace the newer results.
+		resolvers['Ac']([
+			{ id: 'CUST-002', displayText: 'Ace Hardware' },
+			{ id: 'CUST-003', displayText: 'Acorn Ltd' },
+		])
+		await flushPromises()
+
+		const options = wrapper.findAll('[role="option"]')
+		expect(options).toHaveLength(1)
+		expect(options[0].text()).toBe('Acme Corp')
+	})
+
+	it('keeps loading until the latest search answers', async () => {
+		const resolvers: Record<string, (val: AFormLinkValue[]) => void> = {}
+		const filterFunction = vi.fn(
+			(search: string) =>
+				new Promise<AFormLinkValue[]>(r => {
+					resolvers[search] = r
+				})
+		)
+
+		const wrapper = mount(AFormLink, {
+			props: { modelValue: { id: '' }, filterFunction, isAsync: true },
+		})
+
+		const input = wrapper.find('input')
+		await input.setValue('Ac')
+		await input.setValue('Acme')
+
+		resolvers['Ac']([{ id: 'CUST-002', displayText: 'Ace Hardware' }])
+		await flushPromises()
+		expect(wrapper.find('.loading').exists()).toBe(true)
+		expect(wrapper.findAll('[role="option"]')).toHaveLength(0)
+
+		resolvers['Acme']([{ id: 'CUST-001', displayText: 'Acme Corp' }])
+		await flushPromises()
+		expect(wrapper.find('.loading').exists()).toBe(false)
+		expect(wrapper.findAll('[role="option"]').map(o => o.text())).toEqual(['Acme Corp'])
+	})
+
+	it("an older search that fails does not end the newer one's loading state", async () => {
+		const resolvers: Record<string, (val: AFormLinkValue[]) => void> = {}
+		const rejecters: Record<string, (err: Error) => void> = {}
+		const filterFunction = vi.fn(
+			(search: string) =>
+				new Promise<AFormLinkValue[]>((resolve, reject) => {
+					resolvers[search] = resolve
+					rejecters[search] = reject
+				})
+		)
+
+		const wrapper = mount(AFormLink, {
+			props: { modelValue: { id: '' }, filterFunction, isAsync: true },
+		})
+
+		const input = wrapper.find('input')
+		await input.setValue('Ac')
+		await input.setValue('Acme')
+
+		rejecters['Ac'](new Error('network'))
+		await flushPromises()
+		expect(wrapper.find('.loading').exists()).toBe(true)
+
+		resolvers['Acme']([{ id: 'CUST-001', displayText: 'Acme Corp' }])
+		await flushPromises()
+		expect(wrapper.find('.loading').exists()).toBe(false)
+		expect(wrapper.findAll('[role="option"]').map(o => o.text())).toEqual(['Acme Corp'])
 	})
 
 	it('arrow click calls navigator.navigate with doctype and id', async () => {
@@ -747,6 +841,53 @@ describe('AFormLink component', { tags: ['component'] }, () => {
 		expect(wrapper.findAll('.is-active')).toHaveLength(0)
 	})
 
+	it('arrow-down and Enter do not pick a result while a newer search is loading', async () => {
+		const resolvers: Record<string, (val: AFormLinkValue[]) => void> = {}
+		const filterFunction = vi.fn(
+			(search: string) =>
+				new Promise<AFormLinkValue[]>(r => {
+					resolvers[search] = r
+				})
+		)
+		const wrapper = mount(AFormLink, {
+			props: { modelValue: { id: '' }, filterFunction, isAsync: true },
+		})
+
+		const input = wrapper.find('input')
+		await input.setValue('Ac')
+		resolvers['Ac']([{ id: 'CUST-002', displayText: 'Ace Hardware' }])
+		await flushPromises()
+
+		// A newer search is pending: the list shows "Loading…", not Ace Hardware.
+		await input.setValue('Acme')
+		expect(wrapper.find('.loading').exists()).toBe(true)
+
+		await input.trigger('keydown.down')
+		await input.trigger('keydown.enter')
+		await wrapper.vm.$nextTick()
+
+		expect(wrapper.emitted('update:modelValue')).toBeFalsy()
+	})
+
+	it('arrow-down and Enter do not pick a result after Esc closes the list', async () => {
+		const filterFunction = vi.fn((_: string) => [{ id: 'CUST-001', displayText: 'Acme Corp' }])
+		const wrapper = mount(AFormLink, {
+			props: { modelValue: { id: '' }, filterFunction },
+		})
+
+		const input = wrapper.find('input')
+		await input.trigger('focus')
+		await flushPromises()
+
+		await input.trigger('keydown.esc')
+		await input.trigger('keydown.down')
+		await input.trigger('keydown.enter')
+		await wrapper.vm.$nextTick()
+
+		expect(wrapper.emitted('update:modelValue')).toBeFalsy()
+		expect(wrapper.findAll('.is-active')).toHaveLength(0)
+	})
+
 	describe('aformLinkResolver injection', () => {
 		it('resolves display text via injected aformLinkResolver when filterFunction is absent', async () => {
 			const resolver = vi.fn(async (_doctype: string, id: string) => `Resolved: ${id}`)
@@ -801,19 +942,40 @@ describe('AFormLink component', { tags: ['component'] }, () => {
 		})
 	})
 
-	it('navigation is silent when no doctype is configured', async () => {
-		const navigate = vi.fn()
-		const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
-		const wrapper = mount(AFormLink, {
-			props: { modelValue: validValue },
-			global: { provide: { aformLinkNavigator: { navigate } } },
+	describe('open-record arrow', () => {
+		it('is hidden when the field has no doctype, e.g. a unit stored by its name', () => {
+			const navigate = vi.fn()
+			const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+			const wrapper = mount(AFormLink, {
+				props: { modelValue: { id: 'kg', displayText: 'Kilogram' } },
+				global: withNavigator(navigate),
+			})
+
+			expect(wrapper.find('.aform_form-btn').exists()).toBe(false)
+			expect(navigate).not.toHaveBeenCalled()
+			expect(warnSpy).not.toHaveBeenCalled()
+			warnSpy.mockRestore()
 		})
 
-		await wrapper.find('button').trigger('click')
+		it('is hidden when the app provides no way to open records', () => {
+			const wrapper = mount(AFormLink, { props: { modelValue: validValue, doctype: 'customer' } })
+			expect(wrapper.find('.aform_form-btn').exists()).toBe(false)
+		})
 
-		expect(navigate).not.toHaveBeenCalled()
-		expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('doctype'))
-		warnSpy.mockRestore()
+		it('is shown when the field has a value, a doctype and a navigator', () => {
+			const wrapper = mount(AFormLink, {
+				props: { modelValue: validValue, doctype: 'customer' },
+				global: withNavigator(),
+			})
+			expect(wrapper.find('.aform_form-btn').exists()).toBe(true)
+		})
+
+		it('appears once a doctype is set on a field that had none', async () => {
+			const wrapper = mount(AFormLink, { props: { modelValue: validValue }, global: withNavigator() })
+			expect(wrapper.find('.aform_form-btn').exists()).toBe(false)
+			await wrapper.setProps({ doctype: 'customer' })
+			expect(wrapper.find('.aform_form-btn').exists()).toBe(true)
+		})
 	})
 
 	it('logs a console warning when filterFunction resolves no matching displayText', async () => {

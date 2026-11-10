@@ -1,5 +1,73 @@
 # Change Log - @stonecrop/aform
 
+## 0.60.2
+
+### Patch Changes
+
+- a8c9d8c: A link field now shows only the results of its latest search: with an async `filterFunction`, an earlier search that answered after a later one replaced the later one's matches, so typing a name quickly could leave the matches for its first few letters on screen. An older search also no longer clears the loading state while the latest is still pending.
+- @stonecrop/atable@0.60.2
+  - @stonecrop/schema@0.60.2
+  - @stonecrop/themes@0.60.2
+  - @stonecrop/utilities@0.60.2
+
+## 0.60.1
+
+### Patch Changes
+
+- 35ea6ea: A field's static `validation.errorMessage` is no longer shown as an error on its own. Before, a field with one showed it on every record, valid or not, and marked its input `aria-invalid`, so a "Validation message" set in DocBuilder sat on every record and a screen reader announced the field as invalid.
+  
+  The message now words an error a trigger reports without one: `setError(field)`, with the message left out, shows that field's own Validation message. AForm applies the wording before it routes errors, so a field bound to another field's part (totals sharing one currency) shows that part's own message, and fieldset children and link fields are covered too; a field component only shows the errors it is handed. `flattenFields` is generic, so it walks resolved fields as well as authored ones. DocBuilder's trigger editor shows `setError(field, message?)`, and the Validation message input says when it is shown.
+- Updated dependencies [35ea6ea]
+  - @stonecrop/schema@0.60.1
+  - @stonecrop/atable@0.60.1
+  - @stonecrop/themes@0.60.1
+  - @stonecrop/utilities@0.60.1
+
+## 0.60.0
+
+### Minor Changes
+
+- aea0baf: AForm reports an edit as a new record and no longer writes into the data it was given, so undo restores an edit made in the form's own expanded rows.
+- aea0baf: A form that nothing listens to for `update:data` shows its fields read-only, since an edit made in it would reach no one.
+
+### Patch Changes
+
+- aea0baf: A table inside a form in `read` or `display` mode no longer lets its editable columns' cells be edited.
+- Updated dependencies [aea0baf]
+  - @stonecrop/atable@0.60.0
+  - @stonecrop/schema@0.60.0
+  - @stonecrop/themes@0.60.0
+  - @stonecrop/utilities@0.60.0
+
+## 0.59.0
+
+### Patch Changes
+
+- @stonecrop/atable@0.59.0
+  - @stonecrop/schema@0.59.0
+  - @stonecrop/themes@0.59.0
+  - @stonecrop/utilities@0.59.0
+
+## 0.58.4
+
+### Patch Changes
+
+- 07be796: A link field now shows its `errors` (or a static `validation.errorMessage`) the way text inputs do, and marks its input `aria-invalid` with `aria-describedby` pointing at the message. Embedded link fields still leave the error to their host.
+- @stonecrop/atable@0.58.4
+  - @stonecrop/schema@0.58.4
+  - @stonecrop/themes@0.58.4
+  - @stonecrop/utilities@0.58.4
+
+## 0.58.3
+
+### Patch Changes
+
+- 44b7eb5: A link field now shows its open-record arrow only when it has a value, a `doctype` and an app-provided `aformLinkNavigator`. A link with no doctype (e.g. a unit stored by its name) no longer shows an arrow that does nothing but log a warning.
+- @stonecrop/atable@0.58.3
+  - @stonecrop/schema@0.58.3
+  - @stonecrop/themes@0.58.3
+  - @stonecrop/utilities@0.58.3
+
 ## 0.58.2
 
 ### Patch Changes

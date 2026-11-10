@@ -46,16 +46,16 @@ import { type ComponentPublicInstance, ref, computed, useTemplateRef, watch } fr
 import { fromISODate } from '@stonecrop/utilities'
 import { Temporal } from 'temporal-polyfill'
 import ADateSelection from './ADateSelection.vue'
-import { fieldErrorA11y } from '../../composables/fieldErrorA11y'
+import { fieldErrorA11y, fieldErrorText } from '../../composables/fieldErrorA11y'
 import type { ComponentProps } from '../../types'
 import { useFieldCalendar } from '../../utils/fieldCalendar'
 
 const fmt = (d: string) => fromISODate(d)?.toLocaleString() ?? 'Invalid Date'
 
-const { label = 'Date Range', mode, uuid, errors, validation = { errorMessage: '' } } = defineProps<ComponentProps>()
+const { label = 'Date Range', mode, uuid, errors } = defineProps<ComponentProps>()
 
-// Dynamic trigger errors take precedence over a static schema errorMessage; empty means the slot hides.
-const errorText = computed(() => (errors?.length ? errors.join('; ') : (validation.errorMessage ?? '')))
+// The errors this field is handed, already worded by AForm. Empty hides the slot.
+const errorText = computed(() => fieldErrorText(errors))
 const { errorId, describedBy, invalid } = fieldErrorA11y(uuid, errorText)
 
 export interface DateRangeValue {

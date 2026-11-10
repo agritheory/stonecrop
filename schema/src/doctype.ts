@@ -231,7 +231,8 @@ export type ActionDefinition = z.infer<typeof ActionDefinition>
  * {@link (WorkflowMeta:type)} and never appears to action readers (transition/command dropdowns, the FSM graph).
  *
  * The two bindings are independent: `on` is the fire-set (which fields' edits run it), while the
- * `setError(field, msg)` call inside `clientHandler` chooses which field displays the error.
+ * `setError(field, msg)` call inside `clientHandler` chooses which field displays the error. Leave the
+ * message out, `setError(field)`, to show that field's own `validation.errorMessage`.
  * @public
  */
 export const TriggerDefinition = z

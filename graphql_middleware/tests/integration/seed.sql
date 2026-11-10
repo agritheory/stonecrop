@@ -203,6 +203,66 @@ INSERT INTO sc_run (label, took, laps) VALUES
 	('mixed signs', '1 day -01:00:00', NULL),
 	('months and a fraction', '1 year 2 mons 00:00:01.5', NULL);
 
+-- Structured columns, which a read decodes into objects, arrays and ISO 8601 durations. Row 2 holds what
+-- a read loses (infinite range bounds, an infinite list element, an empty range) and what JSON cannot
+-- hold (bytes, NaN); row 3 holds negative intervals, one with a fraction of a second, and NULL ranges.
+CREATE TYPE sc_pair AS (a integer, b text);
+CREATE TABLE sc_shape (
+	id serial PRIMARY KEY,
+	label text NOT NULL,
+	settings jsonb,
+	raw json,
+	events jsonb[],
+	tags text[],
+	seen_at timestamp[],
+	took interval,
+	laps interval[],
+	ruler line,
+	span int4range,
+	valid_during tsrange,
+	season daterange,
+	pair sc_pair,
+	pairs sc_pair[],
+	windows tsrange[],
+	blob bytea,
+	ratio double precision
+);
+INSERT INTO sc_shape (label, settings, raw, events, tags, seen_at, took, laps, ruler, span, valid_during, season,
+		pair, pairs, windows, blob, ratio) VALUES
+	('plain', '{"level": 2, "nested": {"a": [1, 2]}}', '{"b": 1}', ARRAY['{"x": 1}']::jsonb[], ARRAY['a', 'b'],
+		ARRAY['2026-01-02 10:30:00']::timestamp[], '01:00:00', ARRAY['00:01:30']::interval[], '{1,-1,0}', '[1,10)',
+		'[2026-01-01 09:00, 2026-06-01 00:00)', '[2026-01-01, 2026-04-01)', '(1,x)', ARRAY['(2,y)']::sc_pair[],
+		ARRAY['[2026-01-01 00:00, 2026-02-01 00:00)']::tsrange[], '\x00ff', 1.5),
+	('unbounded', NULL, NULL, NULL, NULL, ARRAY['infinity', '2026-01-01 00:00:00']::timestamp[], NULL, NULL, NULL,
+		'empty', '[-infinity, 2026-06-01 00:00)', '[-infinity, infinity)', NULL, NULL,
+		ARRAY[NULL, '[-infinity, 2026-01-01 00:00)', '[2026-02-01 00:00, 2026-03-01 00:00)']::tsrange[], '\x0102', 'NaN'),
+	('negative', NULL, NULL, NULL, NULL, NULL, '-00:00:01.5', ARRAY['-1 day', '-00:00:01.5']::interval[], NULL,
+		NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+-- One row per update of sc_shape, and one more when the update names `took`, so a test can count what
+-- a save wrote.
+CREATE TABLE sc_shape_write_log (
+	id serial PRIMARY KEY,
+	shape_id integer NOT NULL,
+	kind text NOT NULL
+);
+CREATE FUNCTION sc_log_shape_write() RETURNS trigger
+	LANGUAGE plpgsql
+	AS $$ BEGIN INSERT INTO sc_shape_write_log (shape_id, kind) VALUES (NEW.id, TG_ARGV[0]); RETURN NEW; END $$;
+CREATE TRIGGER sc_shape_written AFTER UPDATE ON sc_shape
+	FOR EACH ROW EXECUTE FUNCTION sc_log_shape_write('row');
+CREATE TRIGGER sc_shape_took_written AFTER UPDATE OF took ON sc_shape
+	FOR EACH ROW EXECUTE FUNCTION sc_log_shape_write('took');
+-- One row per update of sc_tag, which `ScLinkExpand` reads with an expanding link.
+CREATE TABLE sc_tag_write_log (
+	id serial PRIMARY KEY,
+	tag_id integer NOT NULL
+);
+CREATE FUNCTION sc_log_tag_write() RETURNS trigger
+	LANGUAGE plpgsql
+	AS $$ BEGIN INSERT INTO sc_tag_write_log (tag_id) VALUES (NEW.id); RETURN NEW; END $$;
+CREATE TRIGGER sc_tag_written AFTER UPDATE ON sc_tag
+	FOR EACH ROW EXECUTE FUNCTION sc_log_tag_write();
+
 -- Columns Postgres fills itself and refuses to let any statement set: an identity generated always,
 -- and a column generated from two others.
 CREATE TABLE sc_line (
