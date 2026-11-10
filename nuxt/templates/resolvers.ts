@@ -168,12 +168,8 @@ export const actionHandlers: Record<string, Record<string, ActionHandler>> = {
 			const task = recordId != null ? tasks.get(recordId) : undefined
 			if (!task) throw new Error(`Task ${recordId ?? '(none)'} not found`)
 
-			// A task with no due date is snoozed from the server's today. Read from `Date.now()`, not
-			// `Temporal.Now`: on a runtime with its own Temporal (Node 26), the polyfill hands that one out,
-			// and it reads a clock that faked or mocked time does not reach.
-			const from = task.dueDate
-				? Temporal.PlainDate.from(task.dueDate)
-				: Temporal.Instant.fromEpochMilliseconds(Date.now()).toZonedDateTimeISO(Temporal.Now.timeZoneId()).toPlainDate()
+			// A task with no due date is snoozed from the server's today.
+			const from = task.dueDate ? Temporal.PlainDate.from(task.dueDate) : Temporal.Now.plainDateISO()
 			const updated: Task = { ...task, dueDate: from.add({ weeks: 1 }).toString() }
 			tasks.set(task.id, updated)
 			return Promise.resolve(updated)

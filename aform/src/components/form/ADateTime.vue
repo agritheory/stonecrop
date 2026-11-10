@@ -52,7 +52,7 @@
 
 <script setup lang="ts">
 import { type ComponentPublicInstance, ref, computed, useTemplateRef, watch } from 'vue'
-import { fromISODate, zonedNow } from '@stonecrop/utilities'
+import { fromISODate } from '@stonecrop/utilities'
 import { Temporal } from 'temporal-polyfill'
 import ADateSelection from './ADateSelection.vue'
 import { fieldErrorA11y } from '../../composables/fieldErrorA11y'
@@ -80,7 +80,8 @@ const { errorId, describedBy, invalid } = fieldErrorA11y(uuid, errorText)
 const modelValue = defineModel<string | Date | null>()
 
 /** Now, cut down to the smallest unit the picker shows, so a pick that leaves the time alone saves the time shown. */
-const now = () => zonedNow().round({ smallestUnit: useSeconds ? 'second' : 'minute', roundingMode: 'trunc' })
+const now = () =>
+	Temporal.Now.zonedDateTimeISO().round({ smallestUnit: useSeconds ? 'second' : 'minute', roundingMode: 'trunc' })
 
 /** The field's moment on the user's clock, or null when the value names no moment. */
 const readMoment = (value: string | Date): Temporal.ZonedDateTime | null => {

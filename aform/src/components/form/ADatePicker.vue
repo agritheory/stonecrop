@@ -74,7 +74,7 @@
 </template>
 
 <script setup lang="ts">
-import { fromISODate, today } from '@stonecrop/utilities'
+import { fromISODate } from '@stonecrop/utilities'
 import { Temporal } from 'temporal-polyfill'
 import { computed, nextTick, ref, useTemplateRef, watch } from 'vue'
 
@@ -101,7 +101,7 @@ const { errorId } = fieldErrorA11y(uuid, errorText)
 // The calendar holds a `YYYY-MM-DD` day, and opens on today when it holds none it can read. No default
 // value: picking today on an empty calendar must still set it, and a model only reports a change.
 const date = defineModel<string | null>()
-const selectedDate = ref<Temporal.PlainDate>(fromISODate(date.value ?? '') ?? today())
+const selectedDate = ref<Temporal.PlainDate>(fromISODate(date.value ?? '') ?? Temporal.Now.plainDateISO())
 // 0 for January.
 const currentMonth = ref<number>(selectedDate.value.month - 1)
 const currentYear = ref<number>(selectedDate.value.year)
@@ -154,9 +154,9 @@ Functions
 const boxText = (day: Temporal.PlainDate | null) => (day ? writeTypedDay(day) : '')
 
 const isTodaysDate = (day: Temporal.PlainDate): boolean => {
-	const current = today()
-	if (currentMonth.value !== current.month - 1) return false
-	return day.equals(current)
+	const today = Temporal.Now.plainDateISO()
+	if (currentMonth.value !== today.month - 1) return false
+	return day.equals(today)
 }
 
 const isSelectedDate = (day: Temporal.PlainDate) => {

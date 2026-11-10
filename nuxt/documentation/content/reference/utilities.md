@@ -331,16 +331,6 @@ export declare function roundToPrecision(value: number, precision?: number): num
 | value | `number` |  |
 | precision | `number` |  |
 
-### today
-
-Today, on the user's clock. Read through `zonedNow`, for the same reason.
-
-**Signature:**
-
-```typescript
-export declare function today(): Temporal.PlainDate;
-```
-
 ### useArithmeticInput
 
 A number box that takes arithmetic: `12*3+4` is read as `40`, and a leading `=` or `+` as a spreadsheet reads it. The box holds the typed text while it is edited and settles to the result on blur or Enter; text that is no expression by then (`12*`) leaves the model at its last number.
@@ -403,18 +393,6 @@ export declare function useKeyboardNav(options: KeyboardNavigationOptions[]): vo
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | options | `KeyboardNavigationOptions[]` | Keyboard navigation options |
-
-### zonedNow
-
-Now, on the user's clock.
-
-Not `Temporal.Now`: where the runtime has its own `Temporal` (Node 26, newer browsers), `temporal-polyfill` hands that one out, and it reads the system clock directly. `Date.now()` is the one clock every runtime, and a faked clock in tests, agrees on.
-
-**Signature:**
-
-```typescript
-export declare function zonedNow(): Temporal.ZonedDateTime;
-```
 
 ## Type Aliases
 

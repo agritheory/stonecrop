@@ -31,7 +31,7 @@
 </template>
 
 <script setup lang="ts">
-import { fromISODate, today } from '@stonecrop/utilities'
+import { fromISODate } from '@stonecrop/utilities'
 import { Temporal } from 'temporal-polyfill'
 import { provide, ref } from 'vue'
 import ADatePicker from './ADatePicker.vue'
@@ -76,8 +76,9 @@ const emit = defineEmits<{
 
 provide('select-range', selectRange)
 
-const pickerStart = ref<Temporal.PlainDate>(today())
-const pickerEnd = ref<Temporal.PlainDate>(today())
+const today = Temporal.Now.plainDateISO()
+const pickerStart = ref<Temporal.PlainDate>(today)
+const pickerEnd = ref<Temporal.PlainDate>(today)
 const startTimeMs = ref<number>(0)
 const endTimeMs = ref<number>(0)
 
@@ -115,8 +116,8 @@ const tryEmitRange = (source: 'init' | 'user') => {
 const handleDate = (data: { start: string | null; end: string | null; selected: string }) => {
 	emit('get-date', data)
 	if (selectRange) {
-		pickerStart.value = fromISODate(data.start ?? data.selected) ?? today()
-		pickerEnd.value = fromISODate(data.end ?? data.selected) ?? today()
+		pickerStart.value = fromISODate(data.start ?? data.selected) ?? today
+		pickerEnd.value = fromISODate(data.end ?? data.selected) ?? today
 		// Picking a day on the calendar is unambiguously a user action.
 		tryEmitRange('user')
 	}

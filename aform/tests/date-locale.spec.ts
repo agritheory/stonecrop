@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test'
+import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test'
 import { mount } from '@vue/test-utils'
 import { nextTick } from 'vue'
 
@@ -6,8 +6,18 @@ import ADatePicker from '../src/components/form/ADatePicker.vue'
 import ADateRange from '../src/components/form/ADateRange.vue'
 import ADateTime from '../src/components/form/ADateTime.vue'
 
-// Runs in the `browser-fr` project, a browser whose locale is French. Not a replaced `Intl.DateTimeFormat`:
-// a runtime's own `Temporal` formats through the runtime's own `Intl`, which a replacement does not reach.
+// A browser whose locale is French. Set before any import runs, because the Temporal polyfill keeps the
+// `Intl.DateTimeFormat` it finds when it loads.
+const runtimeDateTimeFormat = vi.hoisted(() => {
+	const browserDateTimeFormat = Intl.DateTimeFormat
+	Intl.DateTimeFormat = class extends browserDateTimeFormat {
+		constructor(locales?: Intl.LocalesArgument, options?: Intl.DateTimeFormatOptions) {
+			super(locales ?? 'fr-FR', options)
+		}
+	} as typeof Intl.DateTimeFormat
+	return browserDateTimeFormat
+})
+
 describe('dates in a French browser', { tags: ['component'] }, () => {
 	beforeEach(() => {
 		vi.useFakeTimers({ toFake: ['Date'] })
@@ -15,6 +25,10 @@ describe('dates in a French browser', { tags: ['component'] }, () => {
 	})
 
 	afterEach(() => vi.useRealTimers())
+
+	afterAll(() => {
+		Intl.DateTimeFormat = runtimeDateTimeFormat
+	})
 
 	it("names the calendar's weekdays in French", () => {
 		const wrapper = mount(ADatePicker)

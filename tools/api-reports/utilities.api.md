@@ -107,9 +107,6 @@ export function parseCurrencyAmountInput(text: string, locale?: string): number 
 export function roundToPrecision(value: number, precision?: number): number;
 
 // @public
-export function today(): Temporal.PlainDate;
-
-// @public
 export function useArithmeticInput(input: ArithmeticInputOptions): {
     inputAttrs: {
         value: string;
@@ -140,9 +137,6 @@ export function useArithmeticInput(input: ArithmeticInputOptions): {
 
 // @public
 export function useKeyboardNav(options: KeyboardNavigationOptions[]): void;
-
-// @public
-export function zonedNow(): Temporal.ZonedDateTime;
 
 // (No @packageDocumentation comment for this package)
 
