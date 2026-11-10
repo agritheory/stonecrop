@@ -1,5 +1,14 @@
 # Change Log - @stonecrop/stonecrop
 
+## 0.60.2
+
+### Patch Changes
+
+- Updated dependencies [a8c9d8c]
+  - @stonecrop/aform@0.60.2
+  - @stonecrop/atable@0.60.2
+  - @stonecrop/schema@0.60.2
+
 ## 0.60.1
 
 ### Patch Changes
