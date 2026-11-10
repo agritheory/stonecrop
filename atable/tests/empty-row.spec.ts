@@ -24,6 +24,7 @@ vi.mock('@vueuse/components', () => ({
 import ACell from '../src/components/ACell.vue'
 import ARow from '../src/components/ARow.vue'
 import ATable from '../src/components/ATable.vue'
+import ATablePaginationFooter from '../src/components/ATablePaginationFooter.vue'
 import type { TableColumn, TableConfig, TableRow } from '../src/types'
 
 const columns: TableColumn[] = [
@@ -71,6 +72,31 @@ describe('ATable empty-state row', { tags: ['component'] }, () => {
 	] as [TableConfig, number][])('spans the full table width for %o', (tableConfig, colspan) => {
 		const wrapper = mountTable([], tableConfig)
 		expect(wrapper.find('.atable-empty-row td').attributes('colspan')).toBe(String(colspan))
+	})
+
+	it.each([
+		[{}, 2],
+		[{ view: 'list' }, 3],
+		[{ view: 'list', rowActions: { enabled: true } }, 4],
+		[{ view: 'uncounted', rowActions: { enabled: true } }, 3],
+	] as [TableConfig, number][])('spans as many columns as the footer for %o', (tableConfig, colspan) => {
+		const wrapper = mountTable([], tableConfig)
+
+		expect(wrapper.find('.atable-empty-row td').attributes('colspan')).toBe(String(colspan))
+		expect(wrapper.findComponent(ATablePaginationFooter).props('columnCount')).toBe(colspan)
+	})
+
+	it('sizes pinned headers from the first data row, never from the empty row', async () => {
+		const pinned: TableColumn[] = [{ ...columns[0], pinned: true }, columns[1]]
+		const wrapper = mount(ATable, { props: { rows: [], columns: pinned, config: { view: 'list', addable: true } } })
+		const headerIndex = wrapper.find('thead th').element as HTMLElement
+		expect(headerIndex.style.width).toBe('')
+
+		await findAddButton(wrapper)!.trigger('click')
+		await flushPromises()
+
+		const indexCell = wrapper.find('tbody tr.atable-row td').element as HTMLElement
+		expect(headerIndex.style.width).toBe(`${indexCell.offsetWidth}px`)
 	})
 
 	it('adds a row through store.addRow and row:add when addable, after which the empty row goes away', async () => {

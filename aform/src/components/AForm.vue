@@ -170,9 +170,11 @@ const componentProps = (componentObj: ResolvedField) => {
 	if (componentObj.kind === 'table') {
 		propsToPass['rows'] = dataModel.value[componentObj.fieldname] || []
 		propsToPass['onUpdate:rows'] = (rows: Record<string, unknown>[]) => updateTableRows(componentObj.fieldname, rows)
-		// A table takes no `mode`: each column's own `edit` decides whether its cells can be edited.
+		// A table takes no `mode`: each column's own `edit` decides whether its cells can be edited,
+		// and `addable` whether it can take a new row. A record this form can't edit takes neither.
 		if (resolvedMode(componentObj) !== 'edit') {
 			propsToPass['schema'] = componentObj.schema.map(column => Object.assign({}, column, { edit: false }))
+			propsToPass['config'] = Object.assign({}, componentObj.config, { addable: false })
 		}
 	}
 

@@ -1220,6 +1220,7 @@ createTableStore: (initData: {
     }>;
     table: import("vue").ComputedRef<Record<string, any>>;
     updates: import("vue").Ref<Record<string, string>, Record<string, string>>;
+    columnCount: import("vue").ComputedRef<number>;
     filteredRows: import("vue").ComputedRef<(TableRow & {
         originalIndex: number;
     })[]>;
@@ -2123,6 +2124,7 @@ createTableStore: (initData: {
     }>;
     table: import("vue").ComputedRef<Record<string, any>>;
     updates: import("vue").Ref<Record<string, string>, Record<string, string>>;
+    columnCount: import("vue").ComputedRef<number>;
     filteredRows: import("vue").ComputedRef<(TableRow & {
         originalIndex: number;
     })[]>;
@@ -2198,7 +2200,7 @@ createTableStore: (initData: {
     unregisterGanttBar: (barId: string) => void;
     updateGanttBar: (event: GanttDragEvent) => void;
     updateRows: (newRows: TableRow[]) => void;
-}, "display" | "table" | "filteredRows" | "hasPinnedColumns" | "isGanttView" | "isTreeView" | "isDependencyGraphEnabled" | "numberedRowWidth" | "zeroColumn">, Pick<{
+}, "display" | "table" | "columnCount" | "filteredRows" | "hasPinnedColumns" | "isGanttView" | "isTreeView" | "isDependencyGraphEnabled" | "numberedRowWidth" | "zeroColumn">, Pick<{
     columns: import("vue").Ref<{
         name: string;
         format?: string | ((value: any, context: CellContext) => string | BadgeDescriptor) | undefined;
@@ -3026,6 +3028,7 @@ createTableStore: (initData: {
     }>;
     table: import("vue").ComputedRef<Record<string, any>>;
     updates: import("vue").Ref<Record<string, string>, Record<string, string>>;
+    columnCount: import("vue").ComputedRef<number>;
     filteredRows: import("vue").ComputedRef<(TableRow & {
         originalIndex: number;
     })[]>;

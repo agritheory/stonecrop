@@ -985,6 +985,7 @@ direction: "asc" | "desc" | null;
 }>;
 table: ComputedRef<Record<string, any>>;
 updates: Ref<Record<string, string>, Record<string, string>>;
+columnCount: ComputedRef<number>;
 filteredRows: ComputedRef<(TableRow & {
 originalIndex: number;
 })[]>;
@@ -1888,6 +1889,7 @@ direction: "asc" | "desc" | null;
 }>;
 table: ComputedRef<Record<string, any>>;
 updates: Ref<Record<string, string>, Record<string, string>>;
+columnCount: ComputedRef<number>;
 filteredRows: ComputedRef<(TableRow & {
 originalIndex: number;
 })[]>;
@@ -1963,7 +1965,7 @@ unregisterConnectionHandle: (handleId: string) => void;
 unregisterGanttBar: (barId: string) => void;
 updateGanttBar: (event: GanttDragEvent) => void;
 updateRows: (newRows: TableRow[]) => void;
-}, "display" | "table" | "filteredRows" | "hasPinnedColumns" | "isGanttView" | "isTreeView" | "isDependencyGraphEnabled" | "numberedRowWidth" | "zeroColumn">, Pick<{
+}, "display" | "table" | "columnCount" | "filteredRows" | "hasPinnedColumns" | "isGanttView" | "isTreeView" | "isDependencyGraphEnabled" | "numberedRowWidth" | "zeroColumn">, Pick<{
 columns: Ref<    {
 name: string;
 format?: string | ((value: any, context: CellContext) => string | BadgeDescriptor) | undefined;
@@ -2791,6 +2793,7 @@ direction: "asc" | "desc" | null;
 }>;
 table: ComputedRef<Record<string, any>>;
 updates: Ref<Record<string, string>, Record<string, string>>;
+columnCount: ComputedRef<number>;
 filteredRows: ComputedRef<(TableRow & {
 originalIndex: number;
 })[]>;

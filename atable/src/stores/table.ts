@@ -338,6 +338,12 @@ export const createTableStore = (initData: {
 			config.value.view ? ['list', 'tree', 'tree-gantt', 'list-expansion'].includes(config.value.view) : false
 		)
 
+		// How many cells one rendered row spans: data columns, the index/chevron column (`zeroColumn`) and the
+		// row-actions column when enabled. Every full-width row (empty state, footer, expanded panel) reads this.
+		const columnCount = computed(
+			() => columns.value.length + (zeroColumn.value ? 1 : 0) + (config.value.rowActions?.enabled ? 1 : 0)
+		)
+
 		const filteredRows = computed(() => {
 			let filtered: Array<TableRow & { originalIndex: number }> = rows.value.map((row, originalIndex) => ({
 				...row,
@@ -974,6 +980,7 @@ export const createTableStore = (initData: {
 			updates,
 
 			// getters
+			columnCount,
 			filteredRows,
 			hasPinnedColumns,
 			isGanttView,

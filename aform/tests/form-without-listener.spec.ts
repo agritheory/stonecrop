@@ -226,3 +226,25 @@ describe("A read-only form's table", { tags: ['component'] }, () => {
 		expect(wrapper.find('td[data-editable="true"]').exists()).toBe(what.includes('control'))
 	})
 })
+
+describe("A read-only form's empty table", { tags: ['component'] }, () => {
+	const addableTable = { ...contactsTable, config: { view: 'list', addable: true } }
+
+	it.each([
+		['in mode="read"', `<AForm v-model:data="data" :schema="schema" mode="read" />`],
+		['with nothing listening', `<AForm :data="data" :schema="schema" />`],
+		['with v-model:data, as a control', `<AForm v-model:data="data" :schema="schema" />`],
+	])('%s offers Add row only when the form is editable', async (what, template) => {
+		const data = ref({ contacts: [] })
+		const wrapper = mount(
+			defineComponent({ components: { AForm }, setup: () => ({ data, schema: [addableTable] }), template }),
+			{
+				global: { plugins: [createPinia(), { install: installATable }] },
+			}
+		)
+		await flushPromises()
+
+		expect(wrapper.find('.atable-empty-row').exists()).toBe(true)
+		expect(wrapper.find('.atable-empty-add').exists()).toBe(what.includes('control'))
+	})
+})

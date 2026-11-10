@@ -61,7 +61,7 @@
 				</slot>
 				<slot v-if="showEmptyRow" name="empty" :data="store" :filtered="emptyIsFiltered" :add="addFirstRow">
 					<ATableEmptyRow
-						:colspan="emptyRowColspan"
+						:colspan="store.columnCount"
 						:addable="store.config.addable"
 						:filtered="emptyIsFiltered"
 						@add="addFirstRow" />
@@ -70,7 +70,7 @@
 
 			<slot name="footer" :data="store" :page="pagination">
 				<ATablePaginationFooter
-					:column-count="footerColumnCount"
+					:column-count="store.columnCount"
 					:show-footer="showFooter"
 					:has-more="hasMore"
 					:has-prev="hasPrev"
@@ -216,8 +216,6 @@ const {
 	retry: paginationRetry,
 } = pagination
 
-const footerColumnCount = computed(() => store.columns.length + (store.zeroColumn ? 1 : 0))
-
 // Loading belongs to ATableLoading and a failed first page to the footer; the empty row speaks only
 // once a read has answered with nothing to show.
 const showEmptyRow = computed(
@@ -225,13 +223,6 @@ const showEmptyRow = computed(
 )
 // Rows are held but the filters hide them all — a different message from a truly empty list.
 const emptyIsFiltered = computed(() => store.rows.length > 0)
-// Same rule as list-expansion's expanded content: data columns + the index/chevron column (absent
-// only in uncounted) + the row-actions column when enabled.
-const emptyRowColspan = computed(() => {
-	const indexCol = store.config.view === 'uncounted' ? 0 : 1
-	const actionsCol = store.config.rowActions?.enabled ? 1 : 0
-	return store.columns.length + indexCol + actionsCol
-})
 
 store.$onAction(({ name, store: storeInstance, args, after }) => {
 	if (name === 'setCellData' || name === 'setCellText') {
@@ -304,6 +295,16 @@ onMounted(() => {
 	}
 })
 
+// A table that mounts empty has no data row to size its pinned columns from; size them once rows arrive.
+watch(
+	() => visibleRows.value.length > 0,
+	(hasRows, hadRows) => {
+		if (hasRows && !hadRows && store.hasPinnedColumns) {
+			void nextTick(assignStickyCellWidths)
+		}
+	}
+)
+
 const pinnedColumnCount = computed(() => {
 	return store.columns.filter(column => column.pinned).length
 })
@@ -313,7 +314,9 @@ const assignStickyCellWidths = () => {
 
 	// set header cell width to match sticky cells' width
 	const headerRow = table?.rows[0]
-	const firstDataRow = table?.rows[1]
+	// The first data row, not the table's second row: that may be the filters row or the empty-state row,
+	// whose one cell spans the whole table. With no data row yet, the header keeps its own widths.
+	const firstDataRow = table?.querySelector<HTMLTableRowElement>('tbody tr.atable-row')
 	const headerCells = headerRow ? Array.from(headerRow.cells) : []
 	for (const [index, headerCell] of headerCells.entries()) {
 		const rowCell = firstDataRow?.cells[index]
