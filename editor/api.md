@@ -23,7 +23,7 @@ import { AEditor } from '@stonecrop/editor'
 | errors | `string[] \| undefined` | no | `undefined` | Errors for this field, as AForm passes them |
 | placeholder | `string \| undefined` | no | `""` | Shown in the first empty block |
 | validation | `{ errorMessage?: string \| undefined; } \| undefined` | no | `undefined` | A static error message from the schema, shown when there are no `errors` |
-| modelValue | `EditorDocument \| null \| undefined` | no | `null` | The document: Editor.js `OutputData` (`time`, `blocks`, `version`), or `null` for a field never edited. Each change is emitted as the new object `save()` returns, and nothing here mutates an object once it is emitted. |
+| modelValue | `EditorDocument \| null \| undefined` | no | `null` | The document: Editor.js `OutputData` (`time`, `blocks`, `version`), or `null` for a field never edited or emptied of every block. Each change is emitted as the new object `save()` returns, and nothing here mutates an object once it is emitted. |
 
 **Events:**
 
