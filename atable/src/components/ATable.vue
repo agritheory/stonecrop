@@ -59,11 +59,18 @@
 						</template>
 					</ARow>
 				</slot>
+				<slot v-if="showEmptyRow" name="empty" :data="store" :filtered="emptyIsFiltered" :add="addFirstRow">
+					<ATableEmptyRow
+						:colspan="store.columnCount"
+						:addable="store.config.addable"
+						:filtered="emptyIsFiltered"
+						@add="addFirstRow" />
+				</slot>
 			</tbody>
 
 			<slot name="footer" :data="store" :page="pagination">
 				<ATablePaginationFooter
-					:column-count="footerColumnCount"
+					:column-count="store.columnCount"
 					:show-footer="showFooter"
 					:has-more="hasMore"
 					:has-prev="hasPrev"
@@ -110,6 +117,7 @@ import { computed, inject, nextTick, onMounted, useTemplateRef, watch } from 'vu
 
 import AGanttConnection from './AGanttConnection.vue'
 import ARow from './ARow.vue'
+import ATableEmptyRow from './ATableEmptyRow.vue'
 import ATableHeader from './ATableHeader.vue'
 import ATableModal from './ATableModal.vue'
 import ATablePaginationFooter from './ATablePaginationFooter.vue'
@@ -208,7 +216,13 @@ const {
 	retry: paginationRetry,
 } = pagination
 
-const footerColumnCount = computed(() => store.columns.length + (store.zeroColumn ? 1 : 0))
+// Loading belongs to ATableLoading and a failed first page to the footer; the empty row speaks only
+// once a read has answered with nothing to show.
+const showEmptyRow = computed(
+	() => !paginationLoading.value && !firstPageFailed.value && visibleRows.value.length === 0
+)
+// Rows are held but the filters hide them all — a different message from a truly empty list.
+const emptyIsFiltered = computed(() => store.rows.length > 0)
 
 store.$onAction(({ name, store: storeInstance, args, after }) => {
 	if (name === 'setCellData' || name === 'setCellText') {
@@ -281,6 +295,16 @@ onMounted(() => {
 	}
 })
 
+// A table that mounts empty has no data row to size its pinned columns from; size them once rows arrive.
+watch(
+	() => visibleRows.value.length > 0,
+	(hasRows, hadRows) => {
+		if (hasRows && !hadRows && store.hasPinnedColumns) {
+			void nextTick(assignStickyCellWidths)
+		}
+	}
+)
+
 const pinnedColumnCount = computed(() => {
 	return store.columns.filter(column => column.pinned).length
 })
@@ -290,7 +314,9 @@ const assignStickyCellWidths = () => {
 
 	// set header cell width to match sticky cells' width
 	const headerRow = table?.rows[0]
-	const firstDataRow = table?.rows[1]
+	// The first data row, not the table's second row: that may be the filters row or the empty-state row,
+	// whose one cell spans the whole table. With no data row yet, the header keeps its own widths.
+	const firstDataRow = table?.querySelector<HTMLTableRowElement>('tbody tr.atable-row')
 	const headerCells = headerRow ? Array.from(headerRow.cells) : []
 	for (const [index, headerCell] of headerCells.entries()) {
 		const rowCell = firstDataRow?.cells[index]
@@ -379,14 +405,25 @@ const handleRowClick = (rowIndex: number, event: MouseEvent) => {
  * Handle row action events from ARow components.
  * Performs the default action and emits the appropriate event.
  */
+const addRowAt = (position: 'start' | 'end' | number) => {
+	const newIndex = store.addRow({}, position)
+	const newRow = store.rows[newIndex]
+	rows.value = [...store.rows]
+	emit('row:add', { rowIndex: newIndex, row: newRow })
+}
+
+/**
+ * Add row from the empty-state row: the same path as the row action's add, so hosts see one `row:add`.
+ */
+const addFirstRow = () => {
+	addRowAt('end')
+}
+
 const handleRowAction = (actionType: RowActionType, rowIndex: number, event?: MouseEvent) => {
 	switch (actionType) {
 		case 'add': {
 			// Add a new row after the current row
-			const newIndex = store.addRow({}, rowIndex + 1)
-			const newRow = store.rows[newIndex]
-			rows.value = [...store.rows]
-			emit('row:add', { rowIndex: newIndex, row: newRow })
+			addRowAt(rowIndex + 1)
 			break
 		}
 		case 'delete': {

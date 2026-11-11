@@ -217,6 +217,15 @@ export interface BaseTableConfig {
 	rowActions?: RowActionsConfig
 
 	/**
+	 * Whether the host lets this table take a new row. When true and the table has no rows, the
+	 * empty-state row shows an "Add row" control that adds a row and emits `row:add`. Set it from
+	 * the host's workflow and permissions; the table never infers it.
+	 *
+	 * @defaultValue false
+	 */
+	addable?: boolean
+
+	/**
 	 * When set, slice the held rows into in-memory windows of this size.
 	 * Omit to show the whole held list as one window (server paging uses the backend cap).
 	 */

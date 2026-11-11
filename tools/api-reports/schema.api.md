@@ -636,6 +636,7 @@ export const TableFieldSchema: z.ZodObject<{
             leaf: "leaf";
         }>>;
         dependencyGraph: z.ZodOptional<z.ZodBoolean>;
+        addable: z.ZodOptional<z.ZodBoolean>;
     }, z.core.$strip>>;
     mode: z.ZodOptional<z.ZodEnum<{
         edit: "edit";
@@ -662,6 +663,7 @@ export const TableViewConfig: z.ZodObject<{
         leaf: "leaf";
     }>>;
     dependencyGraph: z.ZodOptional<z.ZodBoolean>;
+    addable: z.ZodOptional<z.ZodBoolean>;
 }, z.core.$strip>;
 
 // @public
@@ -791,6 +793,7 @@ export const ValueFieldSchema: z.ZodObject<{
             leaf: "leaf";
         }>>;
         dependencyGraph: z.ZodOptional<z.ZodBoolean>;
+        addable: z.ZodOptional<z.ZodBoolean>;
     }, z.core.$strip>>;
 }, z.core.$strip>;
 
