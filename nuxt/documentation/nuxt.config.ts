@@ -76,7 +76,7 @@ export default defineNuxtConfig({
 		transform: {
 			exclude: [
 				/[\\/]node_modules[\\/]/,
-				/[\\/](aform|atable|desktop|schema|stonecrop|utilities|themes|rockfoil|casl_middleware|graphql_client|graphql_middleware|node_editor|code_editor)[\\/](dist|src)[\\/]/,
+				/[\\/](aform|atable|desktop|schema|stonecrop|utilities|themes|rockfoil|casl_middleware|graphql_client|graphql_middleware|node_editor|code_editor|block_editor)[\\/](dist|src)[\\/]/,
 			],
 		},
 	},
@@ -155,6 +155,7 @@ export default defineNuxtConfig({
 				'@stonecrop/utilities',
 				'@stonecrop/atable',
 				'@stonecrop/code-editor',
+				'@stonecrop/block-editor',
 				'@stonecrop/node-editor',
 			],
 		},

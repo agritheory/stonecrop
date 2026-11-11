@@ -4,6 +4,7 @@ packages:
   - casl_middleware
   - code_editor
   - desktop
+  - block_editor
   - graphql_client
   - graphql_middleware
   - node_editor

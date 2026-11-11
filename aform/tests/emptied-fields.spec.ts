@@ -31,8 +31,12 @@ const SAMPLE_VALUES: Record<string, unknown> = {
 	ASemverInput: '1.2.3',
 }
 
+// Fields whose component another package ships, so aform cannot mount it here. `AEditor` (`@stonecrop/block-editor`) holds
+// null once its blocks are deleted, as these fields do; block_editor/tests/AEditor.spec.ts checks it.
+const OTHER_PACKAGES = new Set(['AEditor'])
+
 const typedFields = Object.entries(COMPONENT_CATEGORY)
-	.filter(([, category]) => !TEXT_CATEGORIES.has(category))
+	.filter(([name, category]) => !TEXT_CATEGORIES.has(category) && !OTHER_PACKAGES.has(name))
 	.map(([name]) => name)
 
 const mountField = (name: string) => {

@@ -186,7 +186,11 @@ const usesBadgeDisplay = computed(
 	() => !!column.cellComponent || badgeFromFormat.value !== undefined || hasBadgeOptions(column.options)
 )
 
-const isContentEditable = computed(() => column.edit && !usesBadgeDisplay.value && !tupleCategory.value)
+// A rich-text cell shows its document's plain text. Typing there would replace the document with a string, so the
+// cell is not editable: the document is edited in a form, through AEditor.
+const isRichText = componentCategory(column.component) === 'richtext'
+
+const isContentEditable = computed(() => column.edit && !usesBadgeDisplay.value && !tupleCategory.value && !isRichText)
 
 const cellComponentBindings = computed(() => {
 	const props = { ...column.cellComponentProps }
@@ -204,7 +208,10 @@ const cellComponentBindings = computed(() => {
 	}
 })
 
+// A rich-text cell's default text is the document's plain text, with its entities decoded, so text typed as
+// `<img …>` reads back as a tag. It is always shown as text; only a column's own `format` can return HTML.
 const isHtmlValue = computed(() => {
+	if (isRichText && !column.format) return false
 	return typeof renderedValue.value === 'string' ? isHtmlString(renderedValue.value) : false
 })
 

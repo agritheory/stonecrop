@@ -130,7 +130,7 @@ export const COMPONENT_LINK_EXPANSION: Record<string, LinkExpansion>;
 export const COMPONENT_PARTS: Record<string, readonly string[]>;
 
 // @public
-export type ComponentCategory = 'text' | 'number' | 'boolean' | 'date' | 'datetime' | 'duration' | 'select' | 'code' | 'link' | 'attach' | 'quantity' | 'currency' | 'semver';
+export type ComponentCategory = 'text' | 'number' | 'boolean' | 'date' | 'datetime' | 'duration' | 'select' | 'code' | 'link' | 'attach' | 'quantity' | 'currency' | 'semver' | 'richtext';
 
 // @public
 export function componentCategory(component?: string): ComponentCategory | undefined;

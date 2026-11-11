@@ -21,7 +21,7 @@ import type {
 } from '../types'
 import { resolveFilterType } from '../resolveFilterType'
 import { isTableTuplePickerModal, tableTuplePickerModalComponent } from '../tuplePickerModal'
-import { formatCurrency, formatQuantity, generateHash } from '../utils'
+import { formatCurrency, formatQuantity, formatRichText, generateHash } from '../utils'
 
 /**
  * Represents the state of a single filter
@@ -48,6 +48,8 @@ export type FilterStateRecord = Record<number, FilterState>
 // missing. An emptied one has neither, and compares as a blank cell does. Other cells compare as they are.
 function comparableValue(cellValue: unknown, column: TableColumn): unknown {
 	const category = componentCategory(column.component)
+	// A rich-text document compares by the text it shows, not as `[object Object]`.
+	if (category === 'richtext') return formatRichText(cellValue)
 	if (category !== 'quantity' && category !== 'currency') return cellValue
 	const field = (key: string) =>
 		cellValue !== null && typeof cellValue === 'object' && key in cellValue ? Reflect.get(cellValue, key) : undefined
@@ -100,9 +102,11 @@ function applyFilter(cellValue: any, filter: FilterState, column: TableColumn): 
 		case 'text': {
 			const searchableText = column.linkDoctype
 				? linkSearchableText(cellValue)
-				: typeof cellValue === 'object' && cellValue !== null
-					? Object.values(cellValue).join(' ')
-					: String(cellValue || '')
+				: componentCategory(column.component) === 'richtext'
+					? formatRichText(cellValue)
+					: typeof cellValue === 'object' && cellValue !== null
+						? Object.values(cellValue).join(' ')
+						: String(cellValue || '')
 			return searchableText.toLowerCase().includes(String(value).toLowerCase())
 		}
 
@@ -548,6 +552,7 @@ export const createTableStore = (initData: {
 				if (category === 'datetime') return value != null ? new Date(String(value)).toLocaleString() : value
 				if (category === 'quantity') return formatQuantity(value)
 				if (category === 'currency') return formatCurrency(value)
+				if (category === 'richtext') return formatRichText(value)
 				return value
 			}
 

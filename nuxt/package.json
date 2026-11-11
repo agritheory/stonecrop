@@ -72,6 +72,7 @@
 		"@nuxt/kit": "catalog:",
 		"@stonecrop/aform": "workspace:*",
 		"@stonecrop/atable": "workspace:*",
+		"@stonecrop/block-editor": "workspace:*",
 		"@stonecrop/casl-middleware": "workspace:*",
 		"@stonecrop/code-editor": "workspace:*",
 		"@stonecrop/desktop": "workspace:*",

@@ -11,6 +11,7 @@
 		[
 			"@stonecrop/aform",
 			"@stonecrop/atable",
+			"@stonecrop/block-editor",
 			"@stonecrop/casl-middleware",
 			"@stonecrop/code-editor",
 			"@stonecrop/desktop",
