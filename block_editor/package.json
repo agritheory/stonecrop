@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/block-editor",
-	"version": "0.61.0",
+	"version": "0.62.0",
 	"description": "Editor.js-based block editor component for Stonecrop",
 	"keywords": [
 		"block-editor",

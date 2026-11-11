@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/nuxt",
-	"version": "0.61.0",
+	"version": "0.62.0",
 	"description": "Nuxt module for Stonecrop",
 	"keywords": [
 		"nuxt",

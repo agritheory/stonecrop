@@ -1,5 +1,11 @@
 # @stonecrop/block-editor
 
+## 0.62.0
+
+### Patch Changes
+
+- @stonecrop/utilities@0.62.0
+
 ## 0.61.0
 
 ### Minor Changes
