@@ -1,5 +1,5 @@
 {
-	"name": "@stonecrop/editor",
+	"name": "@stonecrop/block-editor",
 	"version": "0.48.1",
 	"description": "Editor.js-based block editor component for Stonecrop",
 	"keywords": [
@@ -22,7 +22,7 @@
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/agritheory/stonecrop",
-		"directory": "editor"
+		"directory": "block_editor"
 	},
 	"files": [
 		"dist"
@@ -36,7 +36,7 @@
 	"exports": {
 		".": {
 			"types": "./dist/src/index.d.ts",
-			"import": "./dist/editor.js"
+			"import": "./dist/block-editor.js"
 		},
 		"./styles": "./dist/assets/index.css",
 		"./package.json": "./package.json"
@@ -46,7 +46,7 @@
 	},
 	"scripts": {
 		"dev": "vp build --watch",
-		"docs": "bash ../tools/scripts/run-docs.sh editor",
+		"docs": "bash ../tools/scripts/run-docs.sh block_editor",
 		"lint": "vp lint",
 		"lint:fix": "vp lint --fix",
 		"prepublishOnly": "vp run build",

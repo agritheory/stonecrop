@@ -11,10 +11,10 @@
 		[
 			"@stonecrop/aform",
 			"@stonecrop/atable",
+			"@stonecrop/block-editor",
 			"@stonecrop/casl-middleware",
 			"@stonecrop/code-editor",
 			"@stonecrop/desktop",
-			"@stonecrop/editor",
 			"@stonecrop/graphql-client",
 			"@stonecrop/graphql-middleware",
 			"@stonecrop/node-editor",

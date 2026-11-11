@@ -34,7 +34,7 @@ export async function installFrontend(options: FrontendInstallerOptions): Promis
 			'@stonecrop/graphql-client': 'latest',
 			'@stonecrop/stonecrop': 'latest',
 			'@stonecrop/node-editor': 'latest',
-			'@stonecrop/editor': 'latest',
+			'@stonecrop/block-editor': 'latest',
 			'@stonecrop/schema': 'latest',
 			'@stonecrop/utilities': 'latest',
 			'@stonecrop/desktop': 'latest',

@@ -24,7 +24,7 @@ export default defineConfig({
 		sourcemap: true,
 		lib: {
 			entry: resolve(projectRootDir, 'src/index.ts'),
-			name: '@stonecrop/editor',
+			name: '@stonecrop/block-editor',
 			formats: ['es'],
 		},
 		rollupOptions: {

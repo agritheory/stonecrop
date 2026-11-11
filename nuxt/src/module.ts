@@ -88,7 +88,7 @@ export const STONECROP_PACKAGES = [
 	'@stonecrop/atable',
 	'@stonecrop/code-editor',
 	'@stonecrop/desktop',
-	'@stonecrop/editor',
+	'@stonecrop/block-editor',
 	'@stonecrop/stonecrop',
 	'@stonecrop/node-editor',
 	'@stonecrop/utilities',

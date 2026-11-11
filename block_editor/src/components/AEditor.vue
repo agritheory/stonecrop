@@ -155,6 +155,9 @@ watch(
 	async value => {
 		const instance = editor.value
 		if (!instance || value === lastEmitted) return
+		// The bound value has moved on from this editor's last emission, so a later value equal to it (a redo
+		// bringing back a null emitted earlier) comes from outside and must be shown.
+		lastEmitted = undefined
 		await instance.isReady
 		if (instance !== editor.value) return
 		const shown = await instance.save()

@@ -1,6 +1,6 @@
 import { install as AForm } from '@stonecrop/aform'
+import { install as BlockEditor } from '@stonecrop/block-editor'
 import { install as CodeEditor } from '@stonecrop/code-editor'
-import { install as Editor } from '@stonecrop/editor'
 import StonecropPlugin, { type Registry, type Stonecrop } from '@stonecrop/stonecrop'
 import { createPinia } from 'pinia'
 
@@ -23,7 +23,7 @@ export default defineNuxtPlugin({
 		// Where the module serves Monaco, below the app's base URL.
 		const { monacoPath } = nuxt.$config.public.stonecrop as { monacoPath: string }
 		app.use(CodeEditor, { vsPath: `${nuxt.$config.app.baseURL.replace(/\/+$/, '')}${monacoPath}/vs` })
-		app.use(Editor)
+		app.use(BlockEditor)
 		// No `app.use(NodeEditor)`: module.ts registers its components to load on first use, since an
 		// eager install puts Vue Flow and dagre in every app's entry chunk.
 		app.use(StonecropPlugin, { router })

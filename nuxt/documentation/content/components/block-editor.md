@@ -1,16 +1,16 @@
 ---
-title: Editor
+title: Block Editor
 description: An Editor.js block editor for rich-text fields, rendered by AForm and summarised in ATable.
 ---
 
-# Editor
+# Block Editor
 
 `AEditor` wraps [Editor.js](https://editorjs.io) as a `v-model`-bound field component. AForm renders it for any field whose schema names `component: 'AEditor'`; the Stonecrop Nuxt module registers it globally. It ships the Paragraph, Header, List, Quote and Delimiter blocks.
 
 ## Import
 
 ```ts
-import { AEditor, install } from '@stonecrop/editor'
+import { AEditor, install } from '@stonecrop/block-editor'
 ```
 
 ## In a form
@@ -19,7 +19,7 @@ Switch the mode to see the field mount Editor.js (`edit`) or render the saved bl
 
 ::demo-panel
 :::client-only
-:editor-demo
+:block-editor-demo
 :::
 
 #code
@@ -68,7 +68,7 @@ A column whose component is `AEditor` shows the document's plain text, and its t
 
 ::demo-panel
 :::client-only
-:editor-table-demo
+:block-editor-table-demo
 :::
 
 #code
@@ -99,4 +99,4 @@ rows:
 
 The editor area is a `group` labelled by the field's label, with `aria-invalid` and `aria-describedby` pointing at the error message when there is one. Editor.js provides the keyboard interaction inside the blocks.
 
-Source: [`editor/src/components/AEditor.vue`](https://github.com/agritheory/stonecrop/blob/development/editor/src/components/AEditor.vue)
+Source: [`block_editor/src/components/AEditor.vue`](https://github.com/agritheory/stonecrop/blob/development/block_editor/src/components/AEditor.vue)

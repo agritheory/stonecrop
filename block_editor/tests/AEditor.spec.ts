@@ -182,6 +182,22 @@ describe('AEditor', { tags: ['component'] }, () => {
 		expect(wrapper.emitted('update:modelValue')).toEqual([[null]])
 	})
 
+	// Undo and redo set the bound value from outside, as a host's operation log does.
+	it('clears the editor when a redo brings back a null it emitted earlier', async () => {
+		const wrapper = mountEditor({ mode: 'edit', modelValue: doc(paragraph('x')) })
+		await flushPromises()
+		const instance = FakeEditor.instances[0]
+
+		await instance.change([])
+		await wrapper.setProps({ modelValue: null })
+		await wrapper.setProps({ modelValue: doc(paragraph('x')) })
+		await flushPromises()
+		await wrapper.setProps({ modelValue: null })
+		await flushPromises()
+
+		expect(instance.blocks).toEqual([])
+	})
+
 	it('emits an edit Editor.js has not reported yet when the field stops being editable', async () => {
 		const wrapper = mountEditor({ mode: 'edit', modelValue: doc(paragraph('a')) })
 		await flushPromises()

@@ -1,4 +1,4 @@
-# @stonecrop/editor
+# @stonecrop/block-editor
 
 A block editor for rich-text fields, built on [Editor.js](https://editorjs.io). It ships one component, `AEditor`, which AForm renders for any field whose schema names it:
 
@@ -11,9 +11,9 @@ A block editor for rich-text fields, built on [Editor.js](https://editorjs.io). 
 The Stonecrop Nuxt module installs it for you. Elsewhere, register the component with `install`:
 
 ```ts
-import { install as Editor } from '@stonecrop/editor'
+import { install as BlockEditor } from '@stonecrop/block-editor'
 
-app.use(Editor)
+app.use(BlockEditor)
 ```
 
 ## The value

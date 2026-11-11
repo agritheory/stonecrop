@@ -40,7 +40,7 @@ const PACKAGES = [
 	{ folder: 'atable', name: '@stonecrop/atable' },
 	{ folder: 'desktop', name: '@stonecrop/desktop' },
 	{ folder: 'code_editor', name: '@stonecrop/code-editor' },
-	{ folder: 'editor', name: '@stonecrop/editor' },
+	{ folder: 'block_editor', name: '@stonecrop/block-editor' },
 	{ folder: 'node_editor', name: '@stonecrop/node-editor' },
 ]
 

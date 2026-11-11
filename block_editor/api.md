@@ -1,4 +1,4 @@
-# Editor API Reference
+# Block_editor API Reference
 
 > This documentation is automatically generated from the TypeScript API.
 
@@ -6,10 +6,10 @@
 
 ### AEditor
 
-Vue component exported from @stonecrop/editor.
+Vue component exported from @stonecrop/block-editor.
 
 ```typescript
-import { AEditor } from '@stonecrop/editor'
+import { AEditor } from '@stonecrop/block-editor'
 ```
 
 **Props:**
