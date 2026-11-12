@@ -15,6 +15,8 @@ This guide walks through configuring `@stonecrop/graphql-middleware` in a new or
 pnpm add @stonecrop/graphql-middleware
 ```
 
+The middleware requires **PostgreSQL 16 or later**. It looks rows up by id with `pg_input_is_valid`, which Postgres added in 16; on 15 or older every record read and action fails with `function pg_input_is_valid(text, unknown) does not exist`.
+
 ---
 
 ## Minimal setup
@@ -139,7 +141,7 @@ The primary key is declared per doctype, not globally: mark the identifying fiel
 { "fieldname": "id", "component": "ATextInput", "primaryKey": true }
 ```
 
-A doctype with neither cannot be fetched by id: `stonecropRecord` answers with an error naming both repairs. It can still be listed, filtered and sorted through `stonecropRecords`. The plugin compares primary keys using text equality (`pkColumn::text = $1`), so the GraphQL `id: String!` argument works with any underlying column type — `integer`, `uuid`, `text`, or `bigint`.
+A doctype with neither cannot be fetched by id: `stonecropRecord` answers with an error naming both repairs. It can still be listed, filtered and sorted through `stonecropRecords`. The GraphQL `id: String!` argument works with any underlying column type — `integer`, `uuid`, `text`, or `bigint`. The plugin converts the id to the column's own type before comparing, so Postgres finds the row through the primary key's index instead of reading the whole table. An id the type cannot hold (`abc` for a `uuid`, an empty string) matches no record, and so does one spelled differently from how the server serves it (`01` for record `1`, an upper-case uuid): reads, saves and actions all treat it as missing. This needs PostgreSQL 16 or later; see [Install the package](#install-the-package).
 
 ### Table name
 

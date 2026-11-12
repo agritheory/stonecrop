@@ -43,13 +43,13 @@ describe('createColumnReader', { tags: ['unit', 'graphql'] }, () => {
 		])
 	})
 
-	it('matches a key by its own type, converting only the ids that type admits', () => {
+	it('matches a key by its own type, converting only the ids that type admits, and by the text it reads back as', () => {
 		const reader = createColumnReader({ period }, fakeExecutor)
 		expect(reader.matchKey('ScPeriod', 'id', '$1', true)).toBe(
-			`"id" = ANY(ARRAY(SELECT sent::"int4" FROM unnest($1::text[]) sent WHERE pg_input_is_valid(sent, '"int4"')))`
+			`"id" = ANY(ARRAY(SELECT sent::"int4" FROM unnest($1::text[]) sent WHERE pg_input_is_valid(sent, '"int4"'))) AND "id"::text = ANY($1::text[])`
 		)
 		expect(reader.matchKey('ScPeriod', 'id', '$2')).toBe(
-			`"id" = ANY(ARRAY(SELECT sent::"int4" FROM unnest(ARRAY[$2::text]) sent WHERE pg_input_is_valid(sent, '"int4"')))`
+			`"id" = ANY(ARRAY(SELECT sent::"int4" FROM unnest(ARRAY[$2::text]) sent WHERE pg_input_is_valid(sent, '"int4"'))) AND "id"::text = ANY(ARRAY[$2::text])`
 		)
 	})
 

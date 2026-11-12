@@ -347,9 +347,15 @@ export function createColumnReader(
 			// Not `"id" = $1::uuid` either, which fails the query on a malformed id, even inside a `CASE`,
 			// since Postgres converts a constant before the check runs. Each id is converted from a row of
 			// `unnest`, so the conversion runs only for the ids `pg_input_is_valid` admits.
+			// The text match after it keeps an id meaning the row whose key reads back as that exact text:
+			// `01` or an upper-case uuid converts to an existing key, but is not how the server serves it,
+			// so it is a miss here as it is on read, not a write to a record the read says is missing.
+			// It filters the rows the index found, so the index is still used.
+			const key = sql.compile(sql.identifier(column)).text
 			return (
-				`${sql.compile(sql.identifier(column)).text} = ANY(ARRAY(SELECT sent::${type} FROM unnest(${ids}) sent ` +
-				`WHERE pg_input_is_valid(sent, '${type.replaceAll("'", "''")}')))`
+				`${key} = ANY(ARRAY(SELECT sent::${type} FROM unnest(${ids}) sent ` +
+				`WHERE pg_input_is_valid(sent, '${type.replaceAll("'", "''")}'))) ` +
+				`AND ${key}::text = ANY(${ids})`
 			)
 		},
 

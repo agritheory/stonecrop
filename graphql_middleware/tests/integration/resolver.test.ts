@@ -1058,6 +1058,60 @@ describe('stonecropRecord', { tags: ['integration', 'graphql'] }, () => {
 		expect((result as any).data?.stonecropRecord?.data).toBeNull()
 	})
 
+	// `01` converts to the key 1, but the server serves record 1 as `1`. Read, save and submit must
+	// agree that `01` names no record: a read that misses while a write lands would save or move a
+	// record the client was just told does not exist.
+	it('treats an id spelled differently from how the server serves it as missing, on read and on write', async () => {
+		const [read, save, submit, after] = await runSequence([
+			`query { stonecropRecord(doctype: "ScItem", id: "01") { data } }`,
+			`mutation { stonecropAction(doctype: "ScItem", action: "save", args: [{ id: "01", data: { name: "Renamed" } }]) { success error } }`,
+			`mutation { stonecropAction(doctype: "ScItem", action: "submit", args: [{ id: "01" }]) { success error record } }`,
+			`query { stonecropRecord(doctype: "ScItem", id: "1") { data } }`,
+		])
+		expect((read as any).data?.stonecropRecord?.data).toBeNull()
+
+		const saved = (save as any).data?.stonecropAction
+		expect(saved?.success).toBe(false)
+		expect(saved?.error).toBe('Save failed: record 01 no longer exists.')
+
+		const submitted = (submit as any).data?.stonecropAction
+		expect(submitted?.success).toBe(false)
+		expect(submitted?.error).toContain('does not exist')
+
+		// The oracle that matters: record 1 is neither renamed nor moved out of Draft.
+		const record = (after as any).data?.stonecropRecord?.data
+		expect(record?.name).toBe('Alpha')
+		expect(record?.status).toBe('Draft')
+	})
+
+	// The tests above pass whether the key is compared by its type or as text; only the plan tells
+	// them apart. `"id"::text = $1` cannot be answered from the primary key's index, so with
+	// sequential scans priced out the planner still has to scan the table, and the plan says so.
+	it('finds a row by its id through the key index, on read, save and submit', async () => {
+		const { sql } = await runSequenceCapturingSql([
+			`query { stonecropRecord(doctype: "ScItem", id: "1") { data } }`,
+			`mutation { stonecropAction(doctype: "ScItem", action: "save", args: [{ id: "1", data: { name: "Renamed" } }]) { success } }`,
+			`mutation { stonecropAction(doctype: "ScItem", action: "submit", args: [{ id: "1" }]) { success } }`,
+		])
+		const byId = sql.filter(text => text.includes('WHERE "id"'))
+		expect(byId.length).toBeGreaterThan(0)
+
+		const client = await pool.connect()
+		try {
+			await client.query('BEGIN')
+			await client.query('SET LOCAL enable_seqscan = off')
+			for (const text of byId) {
+				// oxlint-disable-next-line eslint/no-await-in-loop -- one pooled client; each plan is read in turn
+				const { rows } = await client.query<{ 'QUERY PLAN': string }>(`EXPLAIN (GENERIC_PLAN) ${text}`)
+				const plan = rows.map(row => row['QUERY PLAN']).join('\n')
+				expect(plan, text).not.toContain('Seq Scan')
+			}
+		} finally {
+			await client.query('ROLLBACK')
+			client.release()
+		}
+	})
+
 	it('includes sync-linked records when strategy is sync', async () => {
 		const result = await runQuery(`query { stonecropRecord(doctype: "ScItem", id: "1") { data } }`)
 		const data = (result as any).data?.stonecropRecord?.data
