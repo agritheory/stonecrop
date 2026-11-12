@@ -55,14 +55,14 @@
 		"temporal-polyfill": "catalog:"
 	},
 	"devDependencies": {
-		"@electric-sql/pglite": "^0.5.8",
+		"@electric-sql/pglite": "^0.5.14",
+		"@electric-sql/pglite-socket": "^0.2.17",
 		"@microsoft/api-extractor": "catalog:",
 		"@types/node": "catalog:",
 		"@types/pg": "^8.11.0",
 		"@vitest/coverage-istanbul": "catalog:",
 		"@vitest/ui": "catalog:",
 		"pg": "^8.20.0",
-		"pglite-server": "^0.1.5",
 		"typescript": "catalog:",
 		"vite": "catalog:",
 		"vitest": "catalog:"

@@ -1,10 +1,8 @@
 import { readFileSync } from 'node:fs'
-import type { AddressInfo } from 'node:net'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { PGlite } from '@electric-sql/pglite'
-import { createServer, LogLevel } from 'pglite-server'
-import type { Server } from 'node:net'
+import { PGLiteSocketServer } from '@electric-sql/pglite-socket'
 import type { TestProject } from 'vite-plus/test/node'
 
 declare module 'vitest' {
@@ -20,7 +18,16 @@ declare module 'vitest' {
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
-async function createTestDb(): Promise<{ url: string; server: Server; db: PGlite }> {
+/**
+ * Serve a freshly seeded PGlite over a socket. `@electric-sql/pglite-socket` passes PGlite's
+ * answers through unchanged; `pglite-server` sent its own "ready for query" after a failed message,
+ * so after a failed query with parameters every later answer on that connection arrived one query
+ * late (#544).
+ *
+ * `maxConnections` is how many connections the test files using this database hold at once — the
+ * server turns away any connection past it, so a file that opens more must raise it here.
+ */
+async function createTestDb(maxConnections: number): Promise<{ url: string; server: PGLiteSocketServer; db: PGlite }> {
 	const db = new PGlite()
 	await db.waitReady
 
@@ -30,25 +37,26 @@ async function createTestDb(): Promise<{ url: string; server: Server; db: PGlite
 	// developer's zone locally. A test that needs another zone sets it for its own transaction.
 	await db.exec(`SET TIME ZONE 'UTC'`)
 
-	const server = createServer(db, { logLevel: LogLevel.Error })
-	await new Promise<void>(resolve => server.listen(0, () => resolve()))
-	const port = (server.address() as AddressInfo).port
+	const server = new PGLiteSocketServer({ db, host: '127.0.0.1', port: 0, maxConnections })
+	await server.start()
 
-	return { url: `postgresql://localhost:${port}/postgres`, server, db }
+	return { url: `postgresql://${server.getServerConn()}/postgres`, server, db }
 }
 
 export async function setup(project: TestProject) {
-	// Each integration test file calls makeSchema(), which triggers heavy PostGraphile
-	// catalog introspection. A single pglite-server can't survive multiple sequential
-	// introspection rounds without corruption. Give each file its own isolated instance.
-	// Spin up one instance at a time: five PGlite servers in parallel can OOM when `vp run -r test`
+	// Each integration test file calls makeSchema(), which runs PostGraphile's catalog
+	// introspection, so each file gets its own isolated instance.
+	// Spin up one instance at a time: several PGlite instances in parallel can OOM when `vp run -r test`
 	// executes this package alongside other Vitest jobs on a memory-tight machine.
-	const resolver = await createTestDb()
-	const camel = await createTestDb()
-	const inflection = await createTestDb()
-	const conformance = await createTestDb()
-	const naturalId = await createTestDb()
-	const generatedMutations = await createTestDb()
+	// resolver.test.ts: its own `pool`, plus the pg services its schemas build on.
+	const resolver = await createTestDb(4)
+	// camel, inflection, conformance: their own `pool`, plus one pg service.
+	const camel = await createTestDb(2)
+	const inflection = await createTestDb(2)
+	const conformance = await createTestDb(2)
+	// natural-id and owned-relations (run one after the other), generated-mutations: one pg service.
+	const naturalId = await createTestDb(1)
+	const generatedMutations = await createTestDb(1)
 
 	project.provide('testDatabaseUrl', resolver.url)
 	project.provide('camelTestDatabaseUrl', camel.url)
@@ -59,9 +67,9 @@ export async function setup(project: TestProject) {
 
 	return async () => {
 		for (const { server, db } of [resolver, camel, inflection, conformance, naturalId, generatedMutations]) {
-			server.unref()
-			server.close()
 			// oxlint-disable-next-line eslint/no-await-in-loop -- sequential teardown intentional; parallel close risks race conditions on shared DB state
+			await server.stop()
+			// oxlint-disable-next-line eslint/no-await-in-loop -- as above
 			await db.close()
 		}
 	}
