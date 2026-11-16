@@ -44,8 +44,8 @@
 									width: store.config.fullWidth ? 'auto' : null,
 								}"
 								@connection:create="handleConnectionCreate" />
-							<component
-								:is="column.cellComponent || 'ACell'"
+							<!-- ACell draws a column's own cell component inside the cell, handing it the cell's value and the column's props. -->
+							<ACell
 								v-else
 								:store="store"
 								:pinned="column.pinned"
@@ -115,6 +115,7 @@ import { vOnClickOutside } from '@vueuse/components'
 import { useMutationObserver } from '@vueuse/core'
 import { computed, inject, nextTick, onMounted, useTemplateRef, watch } from 'vue'
 
+import ACell from './ACell.vue'
 import AGanttConnection from './AGanttConnection.vue'
 import ARow from './ARow.vue'
 import ATableEmptyRow from './ATableEmptyRow.vue'

@@ -195,7 +195,9 @@ const isContentEditable = computed(() => column.edit && !usesBadgeDisplay.value 
 const cellComponentBindings = computed(() => {
 	const props = { ...column.cellComponentProps }
 	if (column.cellComponent !== 'ABadge') {
-		return { ...props, value: renderedValue.value }
+		// The row's position and the table stay reachable, so a cell that acts on its row (a link that opens the
+		// row's record) can tell which row it is in.
+		return { store, rowIndex, colIndex, ...props, value: renderedValue.value }
 	}
 	if (isBadgeDescriptor(renderedValue.value)) {
 		return { presentation: 'cell-fill' as const, ...props, ...renderedValue.value }
