@@ -3108,3 +3108,23 @@ describe('doctype reference resolution', { tags: ['integration', 'graphql'] }, (
 		await expect(build()).resolves.toBeUndefined()
 	})
 })
+
+// Every suite above shares `pool`'s single connection, so a server that answers one step late after
+// a failure would fail the test after the failing one, under that test's name (#544).
+describe('the test database after a failed query', { tags: ['integration'] }, () => {
+	it('answers the next query on the same connection with its own result', async () => {
+		const client = await pool.connect()
+		try {
+			await client.query('BEGIN')
+			await expect(client.query('SELECT missing_column FROM sc_item WHERE id = $1', [1])).rejects.toThrow(
+				/missing_column/
+			)
+			await client.query('ROLLBACK')
+
+			const { rows } = await client.query<{ answer: number }>('SELECT $1::int AS answer', [42])
+			expect(rows).toEqual([{ answer: 42 }])
+		} finally {
+			client.release()
+		}
+	})
+})
