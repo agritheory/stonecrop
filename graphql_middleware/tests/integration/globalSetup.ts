@@ -24,10 +24,14 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
  * so after a failed query with parameters every later answer on that connection arrived one query
  * late (#544).
  *
- * `maxConnections` is how many connections the test files using this database hold at once — the
- * server turns away any connection past it, so a file that opens more must raise it here.
+ * The server turns away any connection past `maxConnections`, and the tests that connect next fail
+ * with "Connection terminated unexpectedly" or "read ECONNRESET" without naming the limit. A closed
+ * connection also keeps its slot for a moment. So every database gets the same roomy limit rather
+ * than a count of what each test file opens.
  */
-async function createTestDb(maxConnections: number): Promise<{ url: string; server: PGLiteSocketServer; db: PGlite }> {
+const MAX_CONNECTIONS = 10
+
+async function createTestDb(): Promise<{ url: string; server: PGLiteSocketServer; db: PGlite }> {
 	const db = new PGlite()
 	await db.waitReady
 
@@ -37,7 +41,7 @@ async function createTestDb(maxConnections: number): Promise<{ url: string; serv
 	// developer's zone locally. A test that needs another zone sets it for its own transaction.
 	await db.exec(`SET TIME ZONE 'UTC'`)
 
-	const server = new PGLiteSocketServer({ db, host: '127.0.0.1', port: 0, maxConnections })
+	const server = new PGLiteSocketServer({ db, host: '127.0.0.1', port: 0, maxConnections: MAX_CONNECTIONS })
 	await server.start()
 
 	return { url: `postgresql://${server.getServerConn()}/postgres`, server, db }
@@ -48,15 +52,12 @@ export async function setup(project: TestProject) {
 	// introspection, so each file gets its own isolated instance.
 	// Spin up one instance at a time: several PGlite instances in parallel can OOM when `vp run -r test`
 	// executes this package alongside other Vitest jobs on a memory-tight machine.
-	// resolver.test.ts: its own `pool`, plus the pg services its schemas build on.
-	const resolver = await createTestDb(4)
-	// camel, inflection, conformance: their own `pool`, plus one pg service.
-	const camel = await createTestDb(2)
-	const inflection = await createTestDb(2)
-	const conformance = await createTestDb(2)
-	// natural-id and owned-relations (run one after the other), generated-mutations: one pg service.
-	const naturalId = await createTestDb(1)
-	const generatedMutations = await createTestDb(1)
+	const resolver = await createTestDb()
+	const camel = await createTestDb()
+	const inflection = await createTestDb()
+	const conformance = await createTestDb()
+	const naturalId = await createTestDb()
+	const generatedMutations = await createTestDb()
 
 	project.provide('testDatabaseUrl', resolver.url)
 	project.provide('camelTestDatabaseUrl', camel.url)
