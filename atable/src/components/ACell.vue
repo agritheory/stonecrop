@@ -492,7 +492,9 @@ const restoreCursorPosition = (position: number) => {
 }
 
 const updateCellData = (payload: Event) => {
-	if (!column.edit || tupleCategory.value) return
+	// Only typing into the cell itself writes the row. A cell component's own controls (a select, an input) sit
+	// inside the cell, so their input and paste events bubble up here too and must not overwrite the row's value.
+	if (!isContentEditable.value) return
 	// An arithmetic cell is read once it is left, not as it is typed: "12*" is no number yet.
 	if (arithmeticCell.value) {
 		const pasted = (payload as ClipboardEvent).clipboardData?.getData('text') ?? ''

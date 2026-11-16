@@ -121,9 +121,11 @@ export interface ColumnSchema {
 	 * Registered component name rendered inside the table cell instead of the default display.
 	 * When absent, the table renders the value as plain text in a `<td>`.
 	 *
-	 * The component receives the cell's display value as `value`, every entry of
+	 * An app's own component receives the cell's display value as `value`, every entry of
 	 * `cellComponentProps`, and the table's `store` with the cell's `rowIndex` and `colIndex`,
 	 * so a cell that acts on its row can read it as `store.rows[rowIndex]`.
+	 * `'ABadge'` instead receives the stored value with the column's `options` (or the badge
+	 * descriptor its `format` returns), and no `store`, `rowIndex` or `colIndex`.
 	 */
 	cellComponent?: string
 
