@@ -1,5 +1,16 @@
 # Change Log - @stonecrop/desktop
 
+## 0.62.4
+
+### Patch Changes
+
+- 624a7d8: A column's `cellComponent` is now drawn inside the table cell and receives the cell's value as `value` and the column's `cellComponentProps`, as the schema says (#510). Before, ATable drew the component in place of the cell and passed it neither, so a custom status chip showed up empty and uncoloured. The component also gets the table's `store` and the cell's `rowIndex` and `colIndex`, so a cell that acts on its row can still find it. Desktop's list link no longer draws its own cell.
+- Updated dependencies [624a7d8]
+  - @stonecrop/schema@0.62.4
+  - @stonecrop/aform@0.62.4
+  - @stonecrop/stonecrop@0.62.4
+  - @stonecrop/themes@0.62.4
+
 ## 0.62.3
 
 ### Patch Changes
