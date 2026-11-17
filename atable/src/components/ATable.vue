@@ -543,7 +543,10 @@ td.sticky-index {
 	box-sizing: border-box;
 	table-layout: auto;
 	width: auto;
-	overflow: clip;
+	/* Clip sideways only: a dropdown opened in a row's cell or expanded panel near the table's
+	   bottom edge runs past it, and must show in full (#522). */
+	overflow-x: clip;
+	overflow-y: visible;
 	height: 1px;
 	/* border-left:4px solid var(--sc-form-border); */
 }
