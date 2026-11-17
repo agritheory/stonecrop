@@ -77,6 +77,38 @@ describe('ADateTimeInput as a form field', { tags: ['component'] }, () => {
 		expect(wrapper.emitted('update:data')).toBeUndefined()
 	})
 
+	it('holds null once someone empties a box of its time', async () => {
+		const wrapper = mountBound({ props: { schema: timeField(), data: { start_time: '09:30' } }, global })
+		const hours = wrapper.findAll('input[type="text"]')[0]
+		await hours.setValue('')
+		await hours.trigger('blur')
+		expect(wrapper.props('data')).toEqual({ start_time: null })
+		expect(timeInputs(wrapper)).toEqual(['', '', ''])
+	})
+
+	it('holds null when its boxes are emptied one at a time, and writes nothing more', async () => {
+		const wrapper = mountBound({ props: { schema: timeField(), data: { start_time: '09:30:15' } }, global })
+		for (const index of [0, 1, 2]) {
+			const box = wrapper.findAll('input[type="text"]')[index]
+			await box.setValue('')
+			await box.trigger('blur')
+		}
+		const written = (wrapper.emitted('update:data') ?? []).map(([record]) => record)
+		expect(written).toEqual([{ start_time: null }])
+		expect(timeInputs(wrapper)).toEqual(['', '', ''])
+	})
+
+	it('writes a time typed into an empty field without seconds', async () => {
+		const wrapper = mountBound({
+			props: { schema: timeField({ useSeconds: false } as Partial<ResolvedField>), data: { start_time: null } },
+			global,
+		})
+		const minutes = wrapper.findAll('input[type="text"]')[1]
+		await minutes.setValue('45')
+		await minutes.trigger('blur')
+		expect(wrapper.props('data')).toEqual({ start_time: '00:45' })
+	})
+
 	it('crosses noon with an arrow key without writing a minute of 60', async () => {
 		const wrapper = mountBound({ props: { schema: timeField(), data: { start_time: '11:59:00' } }, global })
 		await wrapper.findAll('input[type="text"]')[1].trigger('keydown', { key: 'ArrowUp' })
@@ -113,6 +145,22 @@ describe('ABadge as a form field', { tags: ['component'] }, () => {
 		const badge = wrapper.find('.abadge')
 		expect(badge.text()).toBe('Closed')
 		expect(badge.classes()).toContain('abadge--success')
+	})
+
+	it("paints the badge its field's format returns, as ADropdown does", () => {
+		const schema = [
+			{
+				kind: 'field',
+				fieldname: 'status',
+				label: 'Status',
+				component: 'ABadge',
+				format: "(value) => ({ label: value === 'Open' ? 'To Do' : value, variant: 'danger' })",
+			},
+		] as ResolvedField[]
+		const wrapper = mountBound({ props: { schema, data: { status: 'Open' } }, global })
+		const badge = wrapper.find('.abadge')
+		expect(badge.text()).toBe('To Do')
+		expect(badge.classes()).toContain('abadge--danger')
 	})
 
 	it('leaves a badge drawn on its own reading its label', () => {

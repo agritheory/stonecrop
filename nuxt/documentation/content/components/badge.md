@@ -81,7 +81,7 @@ An options map entry can also be an object (`{ variant, color, label }`) instead
 
 ## In a form
 
-A schema field can name `ABadge` as its component. AForm draws it as a form field: the field's `label` sits above the badge, and the badge shows the value the record holds, painted from the field's `options` when they carry a badge for it and plainly when they don't. The badge's own `label` is never the field's label.
+A schema field can name `ABadge` as its component. AForm draws it as a form field: the field's `label` sits above the badge, and the badge shows the value the record holds. It is painted as the field's `format` returns it, else from the field's `options` when they carry a badge for it, else plainly — the same resolution [ADropdown](/components/dropdown) uses. The badge's own `label` is never the field's label.
 
 ```ts
 const schema = [{ fieldname: 'status', label: 'Status', component: 'ABadge', options: { Open: 'warning', Closed: 'success' } }]

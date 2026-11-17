@@ -156,7 +156,10 @@ const clearTime = () => {
 	meridiem.value = 'AM'
 }
 
-const isEmpty = () => timeData.hours === '' && timeData.minutes === '' && timeData.seconds === ''
+// The boxes the widget shows: the seconds only with `useSeconds`.
+const shownBoxes = () => [timeData.hours, timeData.minutes, ...(useSeconds ? [timeData.seconds] : [])]
+
+const isEmpty = () => shownBoxes().every(box => box === '')
 
 watch(
 	modelValue,
@@ -190,12 +193,20 @@ onMounted(() => {
 })
 
 const confirmTime = () => {
-	// Leaving a bound widget's empty boxes is not an edit: there is no time to write.
-	if (bound.value && isEmpty()) return
+	if (bound.value && shownBoxes().some(box => box === '')) {
+		// Emptying any box of a time the record holds empties the field: it holds null, as every field
+		// someone empties does, never the start of the box's unit. A field already empty stays as it is.
+		if (parseTime(modelValue.value)) {
+			modelValue.value = null
+			return
+		}
+		// Leaving a bound widget's empty boxes is not an edit: there is no time to write.
+		if (isEmpty()) return
+	}
 
 	const maxHours = allowMilitaryTime ? 23 : 12
 	const minHours = allowMilitaryTime ? 0 : 1
-	// A bound widget's box left empty beside one that was typed in is the start of its unit: 12 AM, :00.
+	// Typing into an empty field, a box left empty beside one typed in is the start of its unit: 12 AM, :00.
 	// An unbound widget's empty box is the end of its unit, as it always has been.
 	if (bound.value) {
 		if (timeData.hours === '') timeData.hours = allowMilitaryTime ? '00' : '12'
@@ -364,6 +375,11 @@ const pasteInput = (event: ClipboardEvent, pasteAllFields = false) => {
 .adate_time.aform_form-element {
 	padding: var(--sc-form-label-offset) 0 0;
 	background: none;
+}
+/* Solid form surface behind the label, as on the currency and quantity groups: the shared gradient masks
+   only the label's top half, and below it the boxes' side edges and the gaps between them run through the text. */
+.adate_time.aform_form-element > .aform_field-label {
+	background: var(--sc-form-background);
 }
 .adate_time_fields {
 	display: flex;

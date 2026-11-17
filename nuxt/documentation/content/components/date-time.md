@@ -107,7 +107,7 @@ A schema field can name `ADateTimeInput` as its component. AForm binds it to the
 const schema = [{ fieldname: 'start_time', label: 'Start Time', component: 'ADateTimeInput' }]
 ```
 
-It reads `HH:MM`, `HH:MM:SS` or Postgres' `HH:MM:SS.ffffff`, and writes `HH:MM:SS`, or `HH:MM` with `useSeconds` off. It writes only when someone changes the time: mounting it, or leaving a box unchanged, leaves the record alone. A record with no time shows empty boxes, and nothing is written until someone types; a box left empty beside one typed in counts from the start of its unit, so `9` in the hours writes `09:00:00`. In `read` mode the boxes are disabled, and in `display` mode the time shows as text.
+It reads `HH:MM`, `HH:MM:SS` or Postgres' `HH:MM:SS.ffffff`, and writes `HH:MM:SS`, or `HH:MM` with `useSeconds` off. It writes only when someone changes the time: mounting it, or leaving a box unchanged, leaves the record alone. A record with no time shows empty boxes, and nothing is written until someone types; a box left empty beside one typed in counts from the start of its unit, so `9` in the hours writes `09:00:00`. Emptying any box of a time the record holds empties the field, which then holds `null`. In `read` mode the boxes are disabled, and in `display` mode the time shows as text.
 
 A widget counts as bound when its caller listens for `update:modelValue`, as `v-model` and AForm do. Without a listener it starts at its `default*` time, as inside `ADateSelection`.
 
