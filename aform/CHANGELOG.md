@@ -1,5 +1,15 @@
 # Change Log - @stonecrop/aform
 
+## 0.62.2
+
+### Patch Changes
+
+- 6ad5ee5: A fieldset's indent no longer reaches forms nested deeper inside it. Only the form a fieldset or a linked record holds directly is indented, with its thinner left border. A table's expanded row inside a fieldset now starts its fields where it would outside one, instead of 8px further right.
+- @stonecrop/atable@0.62.2
+  - @stonecrop/schema@0.62.2
+  - @stonecrop/themes@0.62.2
+  - @stonecrop/utilities@0.62.2
+
 ## 0.62.1
 
 ### Patch Changes
