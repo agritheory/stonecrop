@@ -1001,7 +1001,7 @@ export interface ColumnSchema {
 | Property | Type | Description |
 |----------|------|-------------|
 | align? | `'left' \| 'right' \| 'center' \| 'start' \| 'end'` | Horizontal text alignment for the column cell and header. |
-| cellComponent? | `string` | Registered component name rendered inside the table cell instead of the default display. When absent, the table renders the value as plain text in a `<td>`. |
+| cellComponent? | `string` | Registered component name rendered inside the table cell instead of the default display. When absent, the table renders the value as plain text in a `<td>`. An app's own component receives the cell's display value as `value`, every entry of `cellComponentProps`, and the table's `store` with the cell's `rowIndex` and `colIndex`, so a cell that acts on its row can read it as `store.rows[rowIndex]`. `'ABadge'` instead receives the stored value with the column's `options` (or the badge descriptor its `format` returns), and no `store`, `rowIndex` or `colIndex`. |
 | cellComponentProps? | `Record<string, any>` | Additional props passed to `cellComponent`. Only applicable when `cellComponent` is set. |
 | colspan? | `number` | Number of columns this Gantt bar spans across. When absent, the bar stretches to cover all non-pinned columns in the table. Only applicable for Gantt tables. |
 | component? | `string` | Rendering component (e.g. `'ATextInput'`, `'ANumericInput'`, `'ADate'`). Default cell formatting and filter widgets derive from its `ComponentCategory`. Optional here, unlike `ValueField.component`: absence is what marks an entry as non-scalar (a nested table or fieldset), which `schemaToColumns` excludes — it has no column equivalent. |

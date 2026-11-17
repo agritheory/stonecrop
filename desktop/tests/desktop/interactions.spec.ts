@@ -231,10 +231,10 @@ describe('Desktop user interactions', { tags: ['component'] }, () => {
 			const navigateFn = vi.fn()
 			const wrapper = await mountWithTables(registry, stonecrop, tasksListAdapter(navigateFn))
 
-			const link = rowLinks(wrapper)[0]
-			const titleCell = wrapper
-				.findAll('tbody td')
-				.find(cell => cell.text() === 'Edit' && cell.element !== link.element)
+			// The link is drawn inside its ACell, so its own cell is the one to rule out, not the link itself.
+			const linkCell = rowLinks(wrapper)[0].element.closest('td')
+			expect(linkCell).not.toBeNull()
+			const titleCell = wrapper.findAll('tbody td').find(cell => cell.text() === 'Edit' && cell.element !== linkCell)
 			expect(titleCell?.exists()).toBe(true)
 			await titleCell!.trigger('click')
 			await flushPromises()

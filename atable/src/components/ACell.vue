@@ -195,7 +195,9 @@ const isContentEditable = computed(() => column.edit && !usesBadgeDisplay.value 
 const cellComponentBindings = computed(() => {
 	const props = { ...column.cellComponentProps }
 	if (column.cellComponent !== 'ABadge') {
-		return { ...props, value: renderedValue.value }
+		// The row's position and the table stay reachable, so a cell that acts on its row (a link that opens the
+		// row's record) can tell which row it is in.
+		return { store, rowIndex, colIndex, ...props, value: renderedValue.value }
 	}
 	if (isBadgeDescriptor(renderedValue.value)) {
 		return { presentation: 'cell-fill' as const, ...props, ...renderedValue.value }
@@ -490,7 +492,9 @@ const restoreCursorPosition = (position: number) => {
 }
 
 const updateCellData = (payload: Event) => {
-	if (!column.edit || tupleCategory.value) return
+	// Only typing into the cell itself writes the row. A cell component's own controls (a select, an input) sit
+	// inside the cell, so their input and paste events bubble up here too and must not overwrite the row's value.
+	if (!isContentEditable.value) return
 	// An arithmetic cell is read once it is left, not as it is typed: "12*" is no number yet.
 	if (arithmeticCell.value) {
 		const pasted = (payload as ClipboardEvent).clipboardData?.getData('text') ?? ''
