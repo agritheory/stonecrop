@@ -1,5 +1,14 @@
 # Change Log - @stonecrop/atable
 
+## 0.62.3
+
+### Patch Changes
+
+- ce11081: A dropdown opened in a row's expanded panel near the table's bottom edge now shows its whole list. The table clipped everything drawn past its edges, so on a table with one row a link field's or currency picker's list stopped at the table's bottom and its lower options were hidden (#522). The table now clips only sideways.
+- @stonecrop/schema@0.62.3
+  - @stonecrop/themes@0.62.3
+  - @stonecrop/utilities@0.62.3
+
 ## 0.62.2
 
 ### Patch Changes

@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/utilities",
-	"version": "0.62.2",
+	"version": "0.62.3",
 	"description": "Shared utility functions for Stonecrop",
 	"keywords": [
 		"helpers",
