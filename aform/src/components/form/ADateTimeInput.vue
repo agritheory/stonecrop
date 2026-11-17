@@ -1,10 +1,15 @@
 <template>
-	<div class="adate_time">
-		<div class="adate_time_fields">
+	<div class="adate_time" :class="{ 'aform_form-element': label }">
+		<template v-if="mode === 'display'">
+			<span class="aform_display-value">{{ displayValue }}</span>
+		</template>
+		<div v-else class="adate_time_fields">
 			<input
+				:id="uuid"
 				v-model="timeData.hours"
 				type="text"
 				inputmode="numeric"
+				:disabled="mode === 'read'"
 				@paste="pasteInput($event, true)"
 				@focus="focusInput"
 				@blur="confirmTime"
@@ -16,6 +21,7 @@
 				v-model="timeData.minutes"
 				type="text"
 				inputmode="numeric"
+				:disabled="mode === 'read'"
 				@paste="pasteInput"
 				@focus="focusInput"
 				@blur="confirmTime"
@@ -28,6 +34,7 @@
 				v-model="timeData.seconds"
 				type="text"
 				inputmode="numeric"
+				:disabled="mode === 'read'"
 				@paste="pasteInput"
 				@focus="focusInput"
 				@blur="confirmTime"
@@ -39,16 +46,18 @@
 				ref="meridiem-selector"
 				v-model="meridiem"
 				class="aform-select meridiem-selector"
+				:disabled="mode === 'read'"
 				@change="confirmTime">
 				<option value="AM">AM</option>
 				<option value="PM">PM</option>
 			</select>
 		</div>
+		<label v-if="label" class="aform_field-label" :for="mode === 'display' ? undefined : uuid">{{ label }}</label>
 	</div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, useTemplateRef, watch, onMounted } from 'vue'
+import { computed, ref, reactive, useTemplateRef, watch, onMounted } from 'vue'
 
 const {
 	allowMilitaryTime = false,
@@ -57,6 +66,9 @@ const {
 	defaultSeconds = 0,
 	defaultMeridiem = 'AM',
 	useSeconds = true,
+	label,
+	mode = 'edit',
+	uuid,
 } = defineProps<{
 	allowMilitaryTime?: boolean
 	defaultHours?: number
@@ -64,7 +76,17 @@ const {
 	defaultSeconds?: number
 	defaultMeridiem?: string
 	useSeconds?: boolean
+	/** The field's label, shown when the widget is a form field */
+	label?: string
+	mode?: 'edit' | 'read' | 'display' | string
+	/** Ties the label to the hours input */
+	uuid?: string
 }>()
+
+// The time a form field holds, as a time of day: `HH:MM:SS`, or `HH:MM` without seconds. `HH:MM`,
+// `HH:MM:SS` and Postgres' `HH:MM:SS.ffffff` are all read. Written only on a user's edit that changes
+// the time, so mounting the widget, or leaving it unchanged, never marks the record as edited.
+const modelValue = defineModel<string | null>()
 
 // `get-time` carries the widget's CURRENT VALUE, not a commit: it fires once as the widget
 // mounts and again on every blur, Enter, arrow key and meridiem change — five times during one
@@ -93,6 +115,57 @@ const timeData = reactive({
 
 const meridiem = ref(defaultMeridiem == 'AM' ? 'AM' : 'PM')
 
+const parseTime = (value: unknown): { hours: number; minutes: number; seconds: number } | undefined => {
+	if (typeof value !== 'string') return undefined
+	const match = /^\s*(\d{1,2}):(\d{2})(?::(\d{2}))?/.exec(value)
+	if (!match) return undefined
+	const hours = Number(match[1])
+	const minutes = Number(match[2])
+	const seconds = Number(match[3] ?? 0)
+	if (hours > 23 || minutes > 59 || seconds > 59) return undefined
+	return { hours, minutes, seconds }
+}
+
+const pad = (n: number) => String(n).padStart(2, '0')
+
+// Shows the record's time in the widget's own clock.
+const showTime = (time: { hours: number; minutes: number; seconds: number }) => {
+	if (allowMilitaryTime) {
+		timeData.hours = pad(time.hours)
+	} else {
+		meridiem.value = time.hours >= 12 ? 'PM' : 'AM'
+		timeData.hours = pad(time.hours % 12 === 0 ? 12 : time.hours % 12)
+	}
+	timeData.minutes = pad(time.minutes)
+	timeData.seconds = pad(time.seconds)
+}
+
+watch(
+	modelValue,
+	value => {
+		const time = parseTime(value)
+		if (time) showTime(time)
+	},
+	{ immediate: true }
+)
+
+const displayValue = computed(() => {
+	if (!parseTime(modelValue.value)) return modelValue.value ?? ''
+	const time = [timeData.hours, timeData.minutes, ...(useSeconds ? [timeData.seconds] : [])].join(':')
+	return allowMilitaryTime ? time : `${time} ${meridiem.value}`
+})
+
+const writeModel = (militaryTime: number) => {
+	const minutes = Number(timeData.minutes)
+	const seconds = useSeconds ? Number(timeData.seconds) : 0
+	const held = parseTime(modelValue.value)
+	if (held && held.hours === militaryTime && held.minutes === minutes && (!useSeconds || held.seconds === seconds)) {
+		return
+	}
+	const time = [pad(militaryTime), pad(minutes), ...(useSeconds ? [pad(seconds)] : [])].join(':')
+	modelValue.value = time
+}
+
 onMounted(() => {
 	emitTime('init')
 })
@@ -120,14 +193,22 @@ const emitTime = (source: 'init' | 'user') => {
 	const hours = Number(timeData.hours)
 	const minutes = Number(timeData.minutes)
 	const seconds = Number(timeData.seconds)
+	const militaryTime = allowMilitaryTime
+		? hours
+		: meridiem.value === 'PM'
+			? hours === 12
+				? 12
+				: hours + 12
+			: hours % 12
 	emit('get-time', {
 		hours,
 		minutes,
 		seconds,
 		source,
 		meridiem: meridiem.value,
-		militaryTime: allowMilitaryTime ? hours : meridiem.value === 'PM' ? (hours === 12 ? 12 : hours + 12) : hours % 12,
+		militaryTime,
 	})
+	if (source === 'user') writeModel(militaryTime)
 }
 
 const focusInput = (event: FocusEvent) => {
