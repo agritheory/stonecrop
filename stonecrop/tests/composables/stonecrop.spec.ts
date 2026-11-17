@@ -2,7 +2,7 @@ import { mount } from '@vue/test-utils'
 import { List } from 'immutable'
 import type { DoctypeField } from '@stonecrop/schema'
 import { createPinia, setActivePinia } from 'pinia'
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test'
 import { createRouter, createMemoryHistory } from 'vue-router'
 import { defineComponent } from 'vue'
 import { type MachineConfig } from 'xstate'
@@ -195,7 +195,7 @@ describe('useStonecrop composable', { tags: ['unit'] }, () => {
 		// the instance, so each of those fetches was paid for output nobody read.
 		const mockGetMeta = vi.fn().mockResolvedValue(createMockDoctype('Task'))
 		registry.getMeta = mockGetMeta
-		const getRecord = vi.spyOn(stonecrop, 'getRecord').mockResolvedValue(undefined as any)
+		const getRecord = vi.spyOn(stonecrop, 'getRecord').mockResolvedValue(undefined)
 
 		vi.spyOn(mockRouter, 'currentRoute', 'get').mockReturnValue({
 			value: { path: '/task/123', params: {} },

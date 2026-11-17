@@ -226,10 +226,48 @@ Desktop builds that list from two sources on the doctype:
 
 Both are resolved against `Stonecrop.getRecordState(doctype, recordId)`, and each entry's label comes from `Doctype.getActionMeta(name)?.label`, falling back to the raw action name. Choosing an item emits `@action` with the action name and current form data; Desktop never dispatches on its own.
 
-`getRecordState` reads the record's `status` field from HST and falls back to `workflow.initial` when the field is absent. This means:
+A record not created yet has no state, as the server guard treats it: `getRecordState` returns `null`, and both lists then hold only the actions that can run on such a record (`isActionAllowedOnNewRecord` from `@stonecrop/schema`, the rule the server guard applies, kept in step with it by a test). Those are a self-transition, which creates the record, and an action that declares no `allowedStates` and no `nextState`, which never reads a state. So a new record is never offered an action the server refuses because the record is not created yet, such as a transition.
+
+For a saved record, `getRecordState` reads the record's `status` field from HST and falls back to the workflow's first listed state (an XState workflow's `initial`) when the field is absent. This means:
 
 - **Server response should include `status`**: when the action result is written back, include the `status` field so Desktop renders the correct available actions.
 - **No special wiring needed**: Desktop reads `status` automatically — no extra setup required.
+
+### Actions on a list
+
+- A list shows every action its doctype declares, one button each, and the command palette offers them on that list page.
+- A list has no record, so `@action` carries no `recordId`, and `useClientAction` runs the action only through its `clientHandler`.
+  - The script gets `router`, `graphql` and `prefillDraft`, but no `record` and no `runAction`.
+  - An action with no `clientHandler` shows an error when clicked.
+- A list doctype offers New by declaring it, with a script that opens its record doctype's new form:
+
+```json
+"workflow": {
+	"actions": {
+		"new": { "label": "New Record", "stateless": true, "clientHandler": "await router.push('/task/new')" }
+	}
+}
+```
+
+- Offer New only where the record doctype can create a record (a self-transition such as Save), or the form it opens can never be saved.
+- Where a list and its records share one doctype, the list would show the record's actions. Pass the list's own as `hostActions` on list views instead.
+  - Leave `hostActions` unset on other views: `[]` means no actions, and would hide a record's own.
+  - On a list view, `[]` shows no actions.
+  - The starter app's `app/pages/index.vue` does this for New, passing it as `:host-actions="hostActions"`:
+
+```ts
+const hostActions = computed((): ActionElements[] | undefined => {
+	if (routeAdapter.getCurrentView() !== 'records') return undefined
+	const doctype = routeAdapter.getCurrentDoctype()
+	return [
+		{
+			type: 'button',
+			label: 'New Record',
+			action: () => void routeAdapter.navigate({ view: 'record', doctype, recordId: DRAFT_RECORD_ID }),
+		},
+	]
+})
+```
 
 ---
 

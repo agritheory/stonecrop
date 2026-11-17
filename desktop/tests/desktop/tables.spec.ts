@@ -2,7 +2,7 @@ import { flushPromises, mount } from '@vue/test-utils'
 import type { VueWrapper } from '@vue/test-utils'
 import { List } from 'immutable'
 import { createPinia, setActivePinia } from 'pinia'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test'
 import { nextTick } from 'vue'
 
 import { install as installAForm } from '@stonecrop/aform'
@@ -25,7 +25,7 @@ function buildCrewDoctype() {
 		},
 	])
 	const workflow = { states: ['draft'], actions: { save: { label: 'Save', selfTransition: true } } }
-	return new Doctype('crew', fields as any, workflow as any)
+	return new Doctype('crew', fields, workflow as any)
 }
 
 const routeAdapter: RouteAdapter = {

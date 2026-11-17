@@ -25,13 +25,13 @@
 <script setup lang="ts">
 import { computed, InputHTMLAttributes } from 'vue'
 
-import { fieldErrorA11y } from '../../composables/fieldErrorA11y'
+import { fieldErrorA11y, fieldErrorText } from '../../composables/fieldErrorA11y'
 import { ComponentProps } from '../../types'
 
-const { label, required, mode, uuid, errors, validation = { errorMessage: '' } } = defineProps<ComponentProps>()
+const { label, required, mode, uuid, errors } = defineProps<ComponentProps>()
 
-// Dynamic trigger errors take precedence over a static schema errorMessage; empty means the slot hides.
-const errorText = computed(() => (errors?.length ? errors.join('; ') : (validation.errorMessage ?? '')))
+// The errors this field is handed, already worded by AForm. Empty hides the slot.
+const errorText = computed(() => fieldErrorText(errors))
 const { errorId, describedBy, invalid } = fieldErrorA11y(uuid, errorText)
 
 const checkbox = defineModel<InputHTMLAttributes['checked']>()

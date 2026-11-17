@@ -12,7 +12,6 @@ import { buildClientSchema, buildSchema, isObjectType, type GraphQLSchema } from
 import type { LinkDeclaration } from '../doctype'
 import { toSlug } from '../naming'
 import type { IntrospectionSource, GraphQLConversionOptions, ConvertedGraphQLDoctype } from './types'
-import type { ValueField } from '../field'
 import { defaultIsEntityType, defaultIsEntityField, classifyFieldType } from './heuristics'
 
 /**
@@ -180,7 +179,7 @@ export function convertGraphQLSchema(
 		const doctype: ConvertedGraphQLDoctype = {
 			name: doctypeName,
 			slug: toSlug(doctypeName),
-			fields: convertedFields as ValueField[],
+			fields: convertedFields,
 		}
 
 		if (Object.keys(links).length > 0) {

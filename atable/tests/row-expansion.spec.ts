@@ -1,5 +1,5 @@
 import { createPinia, setActivePinia } from 'pinia'
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach } from 'vite-plus/test'
 import { config, flushPromises, mount } from '@vue/test-utils'
 import { h } from 'vue'
 

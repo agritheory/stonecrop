@@ -65,6 +65,7 @@ export type ActionSetPreview = {
     id?: string;
     view: Component;
     props?: Record<string, unknown>;
+    replacesDrawer?: boolean;
 };
 
 // @public

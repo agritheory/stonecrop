@@ -53,3 +53,7 @@ Chosen option: "Option 2". The executor injects `router`, `record`, `runAction`,
 ## More Information
 
 The envelope contract is verified against the server handlers (`const [{ id }] = args`, `fullstack/server/plugins/stonecrop.ts`). An earlier plan example `runAction('Assign', [record.id])` was **broken** — it sent `['r1']`, so `args[0].id` was `undefined` — and was corrected to `runAction('Assign')`; the Monaco authoring stub's phantom `graphql.mutation` was removed to match. This contract is the client-side complement of the planned server-side "single state-writer" goal; when that lands, `runAction` is the call that rides its guard.
+
+## History
+
+* **2026-10-21**: a fifth capability, `prefillDraft(doctype, values)`, checks values against a doctype's fields and holds them for its next new record, so a script can open a form already filled in (a sales order made from a quotation). It writes nothing to the server or the store, so `runAction` is still the only write.

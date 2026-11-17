@@ -147,7 +147,7 @@ Provide `filterFunction` to enable the search dropdown. The function receives a 
 The function is called in two distinct situations:
 
 1. **On user interaction** — when the user focuses or types into the field, the current input text is passed as the search string.
-2. **On mount (and on id change)** — when the field has an `id` but no `displayText`, the function is called automatically with the existing `id` string so the display name can be resolved without user interaction. The first result whose `id` matches is used.
+2. **On mount (and on id change)** — when the field has an `id` but no `displayText`, the function is called automatically with the existing `id` string so the display name can be resolved without user interaction. The first result whose `id` matches is shown; the bound value keeps its bare `id`, since a lookup is not an edit.
 
 Because of case 2, implementations should handle both name-based searches (partial strings typed by the user) and exact id lookups (full id strings passed on mount). A common pattern is to attempt both:
 

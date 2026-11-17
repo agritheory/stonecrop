@@ -31,7 +31,7 @@ import { makeSchema } from 'postgraphile'
 import { PostGraphileAmberPreset } from 'postgraphile/presets/amber'
 import { execute, hookArgs, makeGrafastSchema, constant, lambda, loadOne, object } from 'postgraphile/grafast'
 import { makePgService, makeWithPgClientViaPgClientAlreadyInTransaction } from 'postgraphile/adaptors/pg'
-import { describe, it, expect, beforeAll, afterAll, inject } from 'vitest'
+import { describe, it, expect, beforeAll, afterAll, inject } from 'vite-plus/test'
 
 import { createStonecropPlugin } from '../../src/plugin/postgraphile'
 import { loadDoctypesFromObject, clearRegistry, getMeta, getAllMeta } from '../../src/registry/doctypes'
@@ -66,9 +66,24 @@ const DOCTYPES = {
 			{ kind: 'field' as const, fieldname: 'status', component: 'ATextInput', label: 'Status' },
 		],
 	},
+	// Structured values, which the in-memory host holds as the objects and lists a save sends.
+	ScShape: {
+		name: 'ScShape',
+		slug: 'sc-shape',
+		fields: [
+			{ kind: 'field' as const, fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
+			{ kind: 'field' as const, fieldname: 'label', component: 'ATextInput', label: 'Label' },
+			{ kind: 'field' as const, fieldname: 'settings', component: 'ATextInput', label: 'Settings' },
+			{ kind: 'field' as const, fieldname: 'tags', component: 'ATextInput', label: 'Tags' },
+			{ kind: 'field' as const, fieldname: 'took', component: 'ADuration', label: 'Took' },
+			{ kind: 'field' as const, fieldname: 'span', component: 'ATextInput', label: 'Span' },
+			{ kind: 'field' as const, fieldname: 'validDuring', component: 'ATextInput', label: 'Valid During' },
+			{ kind: 'field' as const, fieldname: 'season', component: 'ATextInput', label: 'Season' },
+		],
+	},
 }
 
-/** Mirrors seed.sql exactly. Host B reads these; Host A reads the same rows from PGlite. */
+/** Mirrors seed.sql exactly (sc_shape's first row only). Host B reads these; Host A reads the same rows from PGlite. */
 const IN_MEMORY: Record<string, Map<string, Record<string, unknown>>> = {
 	ScCode: new Map([
 		['ALPHA', { code: 'ALPHA', name: 'Alpha Region', status: 'Draft' }],
@@ -79,6 +94,24 @@ const IN_MEMORY: Record<string, Map<string, Record<string, unknown>>> = {
 		['1', { id: 1, name: 'Alpha', status: 'Draft' }],
 		['2', { id: 2, name: 'Beta', status: 'Active' }],
 		['3', { id: 3, name: 'Gamma', status: 'Draft' }],
+	]),
+	ScShape: new Map([
+		[
+			'1',
+			{
+				id: 1,
+				label: 'plain',
+				settings: { level: 2, nested: { a: [1, 2] } },
+				tags: ['a', 'b'],
+				took: 'PT1H',
+				span: { start: { value: 1, inclusive: true }, end: { value: 10, inclusive: false } },
+				validDuring: {
+					start: { value: '2026-01-01T09:00:00.000000', inclusive: true },
+					end: { value: '2026-06-01T00:00:00.000000', inclusive: false },
+				},
+				season: { start: { value: '2026-01-01', inclusive: true }, end: { value: '2026-04-01', inclusive: false } },
+			},
+		],
 	]),
 }
 
@@ -128,7 +161,7 @@ type PlanArgs = Record<`$${string}`, never>
 function buildInMemorySchema(): GraphQLSchema {
 	// `typeDefs` is a graphql-js DocumentNode (postgraphile's `gql` tag), so it is printed back to
 	// SDL rather than stringified — String() on it yields "[object Object]" and parses to nothing.
-	const sdl = `scalar JSON\n${print(typeDefs as unknown as DocumentNode).replace(/extend type (Query|Mutation)/g, 'type $1')}`
+	const sdl = `scalar JSON\n${print(typeDefs).replace(/extend type (Query|Mutation)/g, 'type $1')}`
 	return makeGrafastSchema({
 		typeDefs: sdl,
 		plans: {
@@ -181,9 +214,15 @@ function buildInMemorySchema(): GraphQLSchema {
 									if (dir !== 'ASC' && dir !== 'DESC') {
 										throw new Error(`Invalid orderBy direction: "${dir}". Must be ASC or DESC`)
 									}
+									// The named field in its direction, compared as its own type, then identity
+									// ascending to break ties, as the Postgres adapter orders. Reversing the whole
+									// sort for DESC would reverse the ties too.
 									const col = spec.orderBy.slice(0, lastUnder)
-									rows = rows.toSorted((a, b) => String(a[col]).localeCompare(String(b[col])))
-									if (dir === 'DESC') rows.reverse()
+									const identity = lookupField(doctype)
+									const compare = (a: unknown, b: unknown) =>
+										typeof a === 'number' && typeof b === 'number' ? a - b : String(a).localeCompare(String(b))
+									const sign = dir === 'DESC' ? -1 : 1
+									rows = rows.toSorted((a, b) => sign * compare(a[col], b[col]) || compare(a[identity], b[identity]))
 								}
 								const offset = typeof spec.offset === 'number' ? spec.offset : 0
 								const limit = typeof spec.limit === 'number' ? spec.limit : rows.length
@@ -338,6 +377,12 @@ const CASES: Array<{
 		variables: { doctype: 'ScItem', id: '2' },
 	},
 	{
+		label: 'record holding JSON, a list, an interval and ranges',
+		nonEmpty: true,
+		document: RECORD,
+		variables: { doctype: 'ScShape', id: '1' },
+	},
+	{
 		label: 'records, unfiltered',
 		nonEmpty: true,
 		document: RECORDS,
@@ -354,6 +399,14 @@ const CASES: Array<{
 		nonEmpty: true,
 		document: RECORDS,
 		variables: { doctype: 'ScCode', orderBy: 'code_DESC', limit: 2, offset: 1 },
+	},
+	{
+		// Two rows share a status. Descending applies to the named field only; identity breaks the tie
+		// ascending either way.
+		label: 'records, ordered descending by a column two rows share',
+		nonEmpty: true,
+		document: RECORDS,
+		variables: { doctype: 'ScCode', orderBy: 'status_DESC' },
 	},
 	{
 		label: 'records for an unknown doctype',

@@ -66,12 +66,11 @@
 import { computed } from 'vue'
 import { vResizeObserver } from '@vueuse/components'
 import ATableColumnFilter from './ATableColumnFilter.vue'
-import { createTableStore } from '../stores/table'
-import type { TableColumn } from '../types'
+import type { TableColumn, TableStore } from '../types'
 
 const { columns, store } = defineProps<{
 	columns: TableColumn[]
-	store: ReturnType<typeof createTableStore>
+	store: TableStore
 }>()
 
 const filterableColumns = computed(() => columns.filter(column => column.filterable))

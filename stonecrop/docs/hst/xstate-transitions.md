@@ -171,7 +171,7 @@ import { registerTransitionAction, triggerTransition } from '@stonecrop/stonecro
 
 // Define workflow actions
 registerTransitionAction('validateForm', async (context) => {
-  const record = context.store?.get(`${context.doctype}.${context.recordId}`)
+  const record = context.get('')
 
   if (!record.title || record.title.length < 3) {
     throw new Error('Title must be at least 3 characters')
@@ -183,7 +183,7 @@ registerTransitionAction('validateForm', async (context) => {
 })
 
 registerTransitionAction('saveToDB', async (context) => {
-  const record = context.store?.get(`${context.doctype}.${context.recordId}`)
+  const record = context.get('')
 
   await database.save({
     id: context.recordId,
@@ -265,7 +265,7 @@ interface TransitionChangeContext extends FieldChangeContext {
   fsmContext?: Record<string, any>
 
   // Inherited from FieldChangeContext
-  path: string
+  path?: string
   fieldname: string
   beforeValue: any
   afterValue: any
@@ -274,8 +274,12 @@ interface TransitionChangeContext extends FieldChangeContext {
   recordId?: string
   timestamp: Date
   store?: HSTNode
+  get(fieldname: string): any
+  set(fieldname: string, value: any): void
 }
 ```
+
+`get` and `set` reach the record the transition runs on (see [Reading and Setting the Record](./field-triggers.md#reading-and-setting-the-record)). A transition run by the standalone `triggerTransition` function has no store, and one triggered on a node above any record has no record, so there they throw, saying why.
 
 ## Error Handling
 

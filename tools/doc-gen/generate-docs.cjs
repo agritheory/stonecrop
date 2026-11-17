@@ -4,6 +4,7 @@
 
 const { ApiModel } = require('@microsoft/api-extractor-model')
 const { writeFileSync } = require('fs')
+// oxlint-disable-next-line typescript/unbound-method -- path's functions never read `this`
 const { join } = require('path')
 const {
 	collectComponents,
@@ -255,7 +256,7 @@ const normalizedProjectName = projectName.replace(/_/g, '-')
 
 // Path to the API model files, relative to the workspace root
 const rootDir = join(__dirname, '../..')
-const apiModelPath = join(rootDir, `${projectName}/temp/${normalizedProjectName}.api.json`)
+const apiModelPath = join(rootDir, `${projectName}/node_modules/.temp/${normalizedProjectName}.api.json`)
 const componentReportPath = join(rootDir, `tools/api-reports/${normalizedProjectName}.components.api.md`)
 const outputPath = join(rootDir, `${projectName}/api.md`)
 

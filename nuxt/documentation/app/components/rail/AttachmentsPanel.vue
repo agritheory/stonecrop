@@ -28,6 +28,8 @@ function open(item: (typeof items)[number]) {
 		id: item.id,
 		view: StubPreview,
 		props: { title: item.name, body: `Attachment preview for ${item.name}.` },
+		// A file preview takes the drawer's place; the list comes back when it closes.
+		replacesDrawer: true,
 	})
 }
 </script>

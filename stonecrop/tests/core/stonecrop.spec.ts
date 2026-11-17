@@ -1,6 +1,6 @@
 import type { DoctypeField } from '@stonecrop/schema'
 import { List } from 'immutable'
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test'
 import { createRouter, createMemoryHistory } from 'vue-router'
 
 import Doctype from '../../src/doctype'
@@ -11,7 +11,7 @@ import type { StonecropOptions } from '../../src/types/stonecrop'
 import { ImmutableDoctype } from '../../src/types'
 
 // Mock fetch globally
-globalThis.fetch = vi.fn() as unknown as typeof fetch
+globalThis.fetch = vi.fn()
 
 function createDoctype(name: string, fields?: DoctypeField[], links?: Record<string, any>) {
 	const schema = List<DoctypeField>(
@@ -214,6 +214,115 @@ describe('Stonecrop class with HST integration', { tags: ['unit'] }, () => {
 
 			expect(records.getPath()).toBe('newdoctype')
 			expect(stonecrop.getStore().has('newdoctype')).toBe(true)
+		})
+	})
+
+	// A record's path is its doctype and ID joined by a dot, and the store drops an empty segment, so
+	// an empty ID once addressed every record of the doctype.
+	describe('an empty record ID', () => {
+		const noRecordId = 'No record ID given for task'
+		const storedTasks = {
+			'123': { id: '123', title: 'Task 1', status: 'draft' },
+			'456': { id: '456', title: 'Task 2', status: 'pending' },
+		}
+		let mockDoctype: Doctype
+		let mockClient: { getMeta: any; getRecord: any; getRecords: any; runAction: any }
+
+		const expectTasksUntouched = () => expect(stonecrop.getStore().get('task')).toEqual(storedTasks)
+
+		beforeEach(() => {
+			mockDoctype = createMockDoctype('Task')
+			registry.addDoctype(mockDoctype)
+			stonecrop.addRecord('task', '123', { ...storedTasks['123'] })
+			stonecrop.addRecord('task', '456', { ...storedTasks['456'] })
+			mockClient = {
+				getMeta: vi.fn(),
+				getRecord: vi.fn().mockResolvedValue({ record: { id: '', title: 'From the server' }, unknownLinks: [] }),
+				getRecords: vi.fn(),
+				runAction: vi.fn(),
+			}
+			stonecrop.setClient(mockClient)
+			expectTasksUntouched()
+		})
+
+		it('addRecord refuses it, leaving the other records alone', () => {
+			expect(() => stonecrop.addRecord('task', '', { id: '', title: 'New' })).toThrow(noRecordId)
+			expectTasksUntouched()
+		})
+
+		it('editRecord refuses it', () => {
+			expect(() => stonecrop.editRecord('task', '')).toThrow(noRecordId)
+			expectTasksUntouched()
+		})
+
+		it('getRecordById refuses it', () => {
+			expect(() => stonecrop.getRecordById('task', '')).toThrow(noRecordId)
+		})
+
+		it('removeRecord refuses it, leaving the other records alone', () => {
+			expect(() => stonecrop.removeRecord('task', '')).toThrow(noRecordId)
+			expectTasksUntouched()
+		})
+
+		it('getRecordState refuses it', () => {
+			expect(() => stonecrop.getRecordState('task', '')).toThrow(noRecordId)
+		})
+
+		it('isWorkflowReady refuses it', () => {
+			expect(() => stonecrop.isWorkflowReady(mockDoctype, '')).toThrow(noRecordId)
+		})
+
+		it('collectRecordPayload refuses it', () => {
+			expect(() => stonecrop.collectRecordPayload(mockDoctype, '')).toThrow(noRecordId)
+		})
+
+		it('getRecord refuses it without asking the server', async () => {
+			await expect(stonecrop.getRecord('task', '')).rejects.toThrow(noRecordId)
+			expect(mockClient.getRecord).not.toHaveBeenCalled()
+			expectTasksUntouched()
+		})
+
+		it('fetchNestedData refuses it without asking the server, leaving the other records alone', async () => {
+			await expect(stonecrop.fetchNestedData('task', mockDoctype, '')).rejects.toThrow(noRecordId)
+			expect(mockClient.getRecord).not.toHaveBeenCalled()
+			expectTasksUntouched()
+		})
+
+		// The store splits a path on dots and brackets too, so such an ID once addressed part of another record.
+		describe('or one the store would split', () => {
+			it('addRecord refuses a dot, which would overwrite a field of another record', () => {
+				expect(() => stonecrop.addRecord('task', '123.title', { id: '123.title' })).toThrow(
+					"Record ID 123.title for task can't contain a dot"
+				)
+				expectTasksUntouched()
+			})
+
+			it('addRecord refuses a trailing dot, which would replace the record before it', () => {
+				expect(() => stonecrop.addRecord('task', '123.', { id: '123.' })).toThrow(
+					"Record ID 123. for task can't contain a dot"
+				)
+				expectTasksUntouched()
+			})
+
+			it('addRecord refuses a bracket, which would add a field to another record', () => {
+				expect(() => stonecrop.addRecord('task', '123[0]', { id: '123[0]' })).toThrow(
+					"Record ID 123[0] for task can't contain a dot"
+				)
+				expectTasksUntouched()
+			})
+
+			it('removeRecord refuses a dot, which would remove a field of another record', () => {
+				expect(() => stonecrop.removeRecord('task', '123.title')).toThrow(
+					"Record ID 123.title for task can't contain a dot"
+				)
+				expectTasksUntouched()
+			})
+
+			it('getRecordById refuses a dot, which would read a field of another record', () => {
+				expect(() => stonecrop.getRecordById('task', '123.title')).toThrow(
+					"Record ID 123.title for task can't contain a dot"
+				)
+			})
 		})
 	})
 
@@ -592,7 +701,7 @@ describe('Stonecrop class with HST integration', { tags: ['unit'] }, () => {
 					getRecords: vi.fn(),
 					runAction: vi.fn().mockResolvedValue({ success: true, error: null, ...reply }),
 				}
-				return { doctype, sc: new Stonecrop(registry, undefined, { client } as StonecropOptions) }
+				return { doctype, sc: new Stonecrop(registry, undefined, { client }) }
 			}
 
 			it('files the returned record under the identity the server settled on, not the one dispatched', async () => {
@@ -658,7 +767,7 @@ describe('Stonecrop class with HST integration', { tags: ['unit'] }, () => {
 						.fn()
 						.mockResolvedValue({ success: false, data: { id: '7' }, record: { id: '7' }, error: 'refused' }),
 				}
-				const sc2 = new Stonecrop(registry, undefined, { client } as StonecropOptions)
+				const sc2 = new Stonecrop(registry, undefined, { client })
 				await sc2.dispatchAction(refused, 'save', [{ data: {} }])
 				expect(sc2.getRecordIds('user')).toEqual([])
 			})
@@ -740,6 +849,11 @@ describe('Stonecrop class with HST integration', { tags: ['unit'] }, () => {
 			// record 'ghost' was never added
 			const state = stonecrop.getRecordState('task', 'ghost')
 			expect(state).toBe('draft')
+		})
+
+		it('gives no state for a record not created yet', () => {
+			// The server treats such a record as in no state, so assuming the first one offered actions it refuses.
+			expect(stonecrop.getRecordState('task', DRAFT_RECORD_ID)).toBeNull()
 		})
 
 		describe('WorkflowMeta format support', () => {

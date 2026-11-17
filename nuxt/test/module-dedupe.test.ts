@@ -67,7 +67,7 @@ async function runSetup() {
 			css: [],
 			alias: {},
 			vite: {},
-			runtimeConfig: {},
+			runtimeConfig: { public: {} },
 			build: { transpile: [] },
 			nitro: {},
 			modules: [],

@@ -1,5 +1,5 @@
 import { mount } from '@vue/test-utils'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test'
 import { createApp, nextTick } from 'vue'
 
 import { Registry, Stonecrop } from '@stonecrop/stonecrop'
@@ -108,43 +108,6 @@ describe('Desktop props', { tags: ['component'] }, () => {
 			// AForm should be rendered because currentViewSchema is non-empty for 'record' + valid doctype
 			// The stub renders, so just check it doesn't show the "Loading" fallback
 			expect(wrapper.text()).not.toContain('Initializing Stonecrop')
-		})
-
-		it('calls adapter.navigate when createNewRecord is triggered via data-action', async () => {
-			const navigateFn = vi.fn()
-			const adapter: RouteAdapter = {
-				getCurrentDoctype: () => 'task',
-				getCurrentRecordId: () => '',
-				getCurrentView: () => 'records',
-				navigate: navigateFn,
-			}
-
-			const wrapper = mount(Desktop, {
-				props: { routeAdapter: adapter },
-				global: {
-					plugins: [makeStonecropPlugin(registry, stonecrop)],
-					stubs: {
-						AForm: true,
-						ActionSet: true,
-						SheetNav: true,
-						CommandPalette: true,
-					},
-				},
-			})
-
-			await nextTick()
-
-			// Simulate a data-action="create" click
-			const div = wrapper.find('.desktop')
-			const btn = document.createElement('button')
-			btn.setAttribute('data-action', 'create')
-			;(div.element as HTMLElement).appendChild(btn)
-			btn.click()
-
-			await nextTick()
-
-			// navigate should have been called with a 'record' target
-			expect(navigateFn).toHaveBeenCalledWith(expect.objectContaining({ view: 'record' }))
 		})
 	})
 

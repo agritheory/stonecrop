@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, afterEach } from 'vitest'
+import { describe, it, expect, vi, afterEach } from 'vite-plus/test'
 import { effectScope, nextTick, ref } from 'vue'
 
 import { useElementVisibility } from '../src/composables/visibility'
@@ -21,7 +21,7 @@ function mockRect($el: HTMLElement, rect: Partial<DOMRect>) {
 		y: 0,
 		toJSON: () => ({}),
 		...rect,
-	} as DOMRect)
+	})
 }
 
 describe('useElementVisibility', { tags: ['component'] }, () => {

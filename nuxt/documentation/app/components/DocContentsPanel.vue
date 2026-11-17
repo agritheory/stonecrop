@@ -47,4 +47,14 @@ const { navGroups } = useDocsNav()
 .doc-contents__group a.router-link-exact-active {
 	color: var(--doc-c-brand-1);
 }
+
+.doc-contents__group a:focus {
+	outline: none;
+}
+
+.doc-contents__group a:focus-visible {
+	outline: 1px solid var(--sc-input-active-border-color);
+	outline-offset: 2px;
+	border-radius: 0;
+}
 </style>

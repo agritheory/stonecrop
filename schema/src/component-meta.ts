@@ -23,6 +23,7 @@ export type ComponentCategory =
 	| 'quantity'
 	| 'currency'
 	| 'semver'
+	| 'richtext'
 
 /**
  * Canonical component → semantic category. Only the components Stonecrop ships with appear here;
@@ -48,6 +49,7 @@ export const COMPONENT_CATEGORY: Record<string, ComponentCategory> = {
 	AQuantityInput: 'quantity',
 	ACurrencyInput: 'currency',
 	ASemverInput: 'semver',
+	AEditor: 'richtext',
 }
 
 /**
@@ -94,11 +96,33 @@ export function componentLinkExpansion(component?: string): LinkExpansion | unde
 }
 
 /**
+ * The parts of its value each component edits, each held in a field of the record (a field's
+ * `parts` names which). Any other component Stonecrop ships edits a single value, so its field
+ * declares no parts. An app's own component is in neither list: it may declare whatever parts it
+ * reads, since only the app knows what its component needs ({@link componentTakesParts}).
+ * @public
+ */
+export const COMPONENT_PARTS: Record<string, readonly string[]> = {
+	AQuantityInput: ['qty', 'uom'],
+	ACurrencyInput: ['amount', 'currency', 'exchangeRate'],
+}
+
+/**
+ * Resolve the parts a component edits, or `undefined` for one that edits a single value.
+ * @public
+ */
+export function componentParts(component?: string): readonly string[] | undefined {
+	return component ? COMPONENT_PARTS[component] : undefined
+}
+
+/**
  * How a link field renders.
  *
  * - `inline` — a scalar id-picker; the target is *not* expanded (the field keeps its own value
  *   and carries a `doctype` prop for async display-text resolution and navigation).
+ *
  * - `record` — the target doctype is resolved and embedded as a nested form.
+ *
  * - `table` — the target doctype is resolved and embedded as a child table.
  *
  * @public
@@ -112,10 +136,10 @@ export type LinkRenderMode = 'inline' | 'record' | 'table'
  * **cardinality** picks record vs table (many → table). The declaration's component wins over the
  * field's, matching the precedence the resolver already uses for the rendered component.
  *
- * This is the single definition of "does this link expand" — it is consumed by both the client
- * resolver (which builds the nested schema) and the server column builder (which must still
- * SELECT an `inline` link's FK column). Call it; never re-derive the rule at the call site, or
- * the two will drift and the client will render a table for a column the server never selected.
+ * This is the single definition of "does this link expand", on both sides of the wire: the client
+ * builds its nested schema from it, and the server must still SELECT an `inline` link's FK column.
+ * Call it; never re-derive the rule at the call site, or the two will drift and the client will
+ * render a table for a column the server never selected.
  *
  * @param link - the link declaration (only `component` and `cardinality` are consulted)
  * @param fieldComponent - the linked field's own `component`, used when the declaration names none
@@ -146,3 +170,16 @@ export function resolveLinkRenderMode(
 export const CANONICAL_COMPONENTS: readonly string[] = [
 	...new Set([...Object.keys(COMPONENT_CATEGORY), ...Object.keys(COMPONENT_LINK_EXPANSION)]),
 ].toSorted()
+
+/**
+ * Whether a field rendered by this component may declare `parts`: a component Stonecrop ships only
+ * when {@link COMPONENT_PARTS} names its parts, and an app's own component always. An app's component
+ * is how a field reads other fields of its record (a lines table reading the order's delivery date),
+ * and `parts` is the one way to read them that works for a record not yet saved.
+ *
+ * @param component - the field's component; a table with none renders as `ATable`
+ * @public
+ */
+export function componentTakesParts(component: string): boolean {
+	return Boolean(componentParts(component)) || !CANONICAL_COMPONENTS.includes(component)
+}

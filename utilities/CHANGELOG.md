@@ -1,5 +1,106 @@
 # Change Log - @stonecrop/utilities
 
+## 0.62.4
+
+## 0.62.3
+
+## 0.62.2
+
+## 0.62.1
+
+## 0.62.0
+
+## 0.61.0
+
+### Minor Changes
+
+- 3c3539d: Add `@stonecrop/block-editor`, an Editor.js block editor (`AEditor`) for rich-text fields, with the Paragraph, Header, List, Quote and Delimiter blocks. The field holds Editor.js `OutputData`; AForm binds it with `v-model`, and it renders as static HTML outside `edit` mode. `@stonecrop/schema` gives `AEditor` the new `richtext` category, `@stonecrop/utilities` adds `formatRichTextCell`, and ATable shows a rich-text column as its plain text, read-only. The Nuxt module installs the editor.
+
+## 0.60.2
+
+## 0.60.1
+
+## 0.60.0
+
+## 0.59.0
+
+## 0.58.4
+
+## 0.58.3
+
+## 0.58.2
+
+## 0.58.1
+
+## 0.58.0
+
+## 0.57.0
+
+## 0.56.4
+
+## 0.56.3
+
+## 0.56.2
+
+## 0.56.1
+
+## 0.56.0
+
+## 0.55.2
+
+## 0.55.1
+
+## 0.55.0
+
+## 0.54.0
+
+### Minor Changes
+
+- 6496bcc: Exports `useArithmeticInput`, the number box that takes arithmetic, with `evaluateArithmetic` and the helpers it uses.
+
+## 0.53.0
+
+## 0.52.0
+
+## 0.51.0
+
+## 0.50.1
+
+## 0.50.0
+
+## 0.49.0
+
+## 0.48.1
+
+## 0.48.0
+
+### Minor Changes
+
+- d5b5a74: A money box's currency slot shows the currency's symbol, such as "$", whenever its id is an ISO 4217 code, instead of its name cut short, and `formatCurrencySymbol` in `@stonecrop/utilities` returns that symbol.
+
+## 0.47.0
+
+## 0.46.1
+
+## 0.46.0
+
+## 0.45.1
+
+## 0.45.0
+
+## 0.44.0
+
+### Minor Changes
+
+- 358ecaf: `ACurrencyInput`'s amount box and a currency cell being edited write and read amounts with the browser's separators, as a table cell shows them (`1,234.56` in English, `1.234,56` in German), and with the currency's decimals. `options.amountMask: false` turns this off. `@stonecrop/utilities` exports the helpers: `formatCurrencyAmountInput`, `parseCurrencyAmountInput`, `currencyAmountEntryPattern` and `currencyInputFractionDigits`.
+- 358ecaf: Replace read-only conversion rows on `ACurrencyInput` and `AQuantityInput` with a compact helper line when the entered unit differs from the base. Remove `stockUomLabel`, `stockQtyLabel`, `conversionFactorLabel`, `baseCurrencyLabel`, `baseAmountLabel`, and `exchangeRateLabel` props.
+  
+  Table quantity and currency formatters omit redundant units and use `Intl` for currency cells. Quantity column sort/filter compares on `stockQty`. `AQuantityInput` accepts negative quantities.
+
+### Patch Changes
+
+- 358ecaf: `ACurrencyInput`'s amount box and a currency cell being edited refuse a second decimal point, typed or pasted, which would leave no amount. `currencyAmountEntryPattern` allows one, followed only by digits.
+
 ## 0.43.0
 
 ## 0.42.0

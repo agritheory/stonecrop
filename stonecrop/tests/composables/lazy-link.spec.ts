@@ -1,5 +1,5 @@
 import { createPinia, setActivePinia } from 'pinia'
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test'
 
 import { useLazyLink } from '../../src/composables/lazy-link'
 import { DRAFT_RECORD_ID } from '../../src/draft'
@@ -252,6 +252,16 @@ describe('useLazyLink', { tags: ['unit'] }, () => {
 
 		expect(state.loaded.value).toBe(true)
 		expect(state.data.value).toEqual([{ id: 't1', name: 'Lazy Task' }])
+	})
+
+	it('refuses an empty record ID', () => {
+		const doctype = createTestDoctype('Recipe', {
+			tasks: { target: 'recipe-task', cardinality: 'noneOrMany', fetch: { method: 'sync' } },
+		})
+		registry.addDoctype(doctype)
+		stonecrop.setup(doctype)
+
+		expect(() => useLazyLink(doctype, '', 'tasks')).toThrow('No record ID given for recipe')
 	})
 })
 

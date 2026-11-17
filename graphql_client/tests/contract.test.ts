@@ -1,5 +1,5 @@
 import { buildSchema, graphql, parse, print, validate } from 'graphql'
-import { afterEach, describe, it, expect, vi } from 'vitest'
+import { afterEach, describe, it, expect, vi } from 'vite-plus/test'
 
 import { typeDefs } from '@stonecrop/graphql-middleware'
 import { StonecropClient } from '../src/client'

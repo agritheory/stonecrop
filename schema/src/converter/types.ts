@@ -27,6 +27,7 @@ export interface FieldTemplate {
  * Accepts either a standard GraphQL introspection result or an SDL string.
  *
  * - `IntrospectionQuery`: The raw result of a GraphQL introspection query (from any server)
+ *
  * - `string`: An SDL (Schema Definition Language) string
  *
  * Note: URL fetching is intentionally not supported in the library API.

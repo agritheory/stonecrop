@@ -9,21 +9,30 @@ const CURRENCIES = [
 	{ id: 'USD', displayText: 'US Dollar', symbol: '$' },
 	{ id: 'EUR', displayText: 'Euro', symbol: '€' },
 	{ id: 'GBP', displayText: 'British Pound', symbol: '£' },
+	{ id: 'NZD', displayText: 'New Zealand Dollar', symbol: 'NZD' },
+	{ id: 'JPY', displayText: 'Japanese Yen', symbol: '¥' },
 ]
 
 const currencyOptions = {
 	doctype: 'currency',
 	baseCurrency: { id: 'USD', displayText: 'US Dollar' },
-	exchangeRates: { EUR: 1.1, GBP: 1.3 },
+	exchangeRates: { EUR: 1.1, GBP: 1.3, NZD: 0.6, JPY: 0.0067 },
 	precision: 2,
-	filterFunction: (search: string) =>
-		CURRENCIES.filter(c => c.displayText.toLowerCase().includes(search.toLowerCase())),
+	filterFunction: (search: string) => {
+		const q = search.toLowerCase()
+		return CURRENCIES.filter(
+			c =>
+				c.displayText.toLowerCase().includes(q) ||
+				String(c.id).toLowerCase().includes(q) ||
+				(c.symbol ?? '').toLowerCase().includes(q)
+		)
+	},
 }
 
 const total = ref({
-	amount: 100,
+	amount: 10050.45,
 	currency: { id: 'EUR', displayText: 'Euro', symbol: '€' },
-	baseAmount: 110,
+	baseAmount: 11055.495,
 	baseCurrency: { id: 'USD', displayText: 'US Dollar', symbol: '$' },
 	exchangeRate: 1.1,
 })
@@ -31,7 +40,11 @@ const total = ref({
 
 <template>
 	<div class="stonecrop-demo">
-		<ACurrencyInput v-model="total" label="Total" uuid="currency-demo" :options="currencyOptions" />
+		<ACurrencyInput
+			v-model="total"
+			label="Total but with more words to break the placement"
+			uuid="currency-demo"
+			:options="currencyOptions" />
 		<p class="stonecrop-demo__state">
 			<code>v-model</code> value: <strong>{{ total }}</strong>
 		</p>

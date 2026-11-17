@@ -92,9 +92,13 @@ export type CustomFetch = z.infer<typeof CustomFetch>
 
 /**
  * Fetch strategy for link data loading.
+ *
  * - sync: fetched in the initial query
+ *
  * - lazy: fetched on demand in a separate query
+ *
  * - custom: uses a custom handler function
+ *
  * @public
  */
 export const FetchStrategy = z.discriminatedUnion('method', [SyncFetch, LazyFetch, CustomFetch]).meta({
@@ -131,6 +135,20 @@ export const LinkDeclaration = z
 
 		/** Fetch strategy for loading nested data */
 		fetch: FetchStrategy.optional(),
+
+		/**
+		 * Order of a many-side link's rows: a field of the target doctype, ascending unless `direction` is
+		 * `desc`. Rows read in identity order when it is omitted, and identity breaks ties when it is given.
+		 *
+		 * Strict, unlike the declarations around it: a misspelt `direction` ignored would read the rows the
+		 * other way round without a word.
+		 */
+		orderBy: z
+			.strictObject({
+				fieldname: z.string().min(1),
+				direction: z.enum(['asc', 'desc']).optional(),
+			})
+			.optional(),
 
 		/** Whether to block workflow actions until nested data is loaded (default: true) */
 		blockWorkflows: z.boolean().optional(),
@@ -183,6 +201,19 @@ export const ActionDefinition = z
 		title: 'ActionDefinition',
 		description: 'Action definition within a workflow',
 	})
+	.superRefine((action, context) => {
+		// The browser reads `stateless` and runs the action as a command that changes nothing; the
+		// server reads `nextState` and moves the record. Declaring both leaves the two sides doing
+		// different things, so refuse it here. `stateless` with `selfTransition` stays legal: it moves
+		// no state, and is the starter template's Save.
+		if (action.stateless === true && action.nextState !== undefined) {
+			context.addIssue({
+				code: 'custom',
+				path: ['nextState'],
+				message: `action "${action.label}" is stateless and also declares nextState "${action.nextState}"; a stateless action never moves the record, so drop one of them`,
+			})
+		}
+	})
 
 /**
  * Action definition type inferred from Zod schema
@@ -200,7 +231,8 @@ export type ActionDefinition = z.infer<typeof ActionDefinition>
  * {@link (WorkflowMeta:type)} and never appears to action readers (transition/command dropdowns, the FSM graph).
  *
  * The two bindings are independent: `on` is the fire-set (which fields' edits run it), while the
- * `setError(field, msg)` call inside `clientHandler` chooses which field displays the error.
+ * `setError(field, msg)` call inside `clientHandler` chooses which field displays the error. Leave the
+ * message out, `setError(field)`, to show that field's own `validation.errorMessage`.
  * @public
  */
 export const TriggerDefinition = z
@@ -240,6 +272,26 @@ export function isActionAllowedInState(action: { allowedStates?: string[] | null
 	const allowedStates = action.allowedStates
 	if (!allowedStates || allowedStates.length === 0) return true
 	return allowedStates.includes(currentState)
+}
+
+/**
+ * Whether a workflow action may run on a record not created yet.
+ *
+ * A record not created yet is in no state, so the server-side dispatch guard runs two kinds of
+ * action on it: a self-transition, which creates it, and an action that declares no
+ * `allowedStates` and does not move the record, which never reads a state. This is that rule for
+ * the frontend (`getAvailableTransitions`, `getAvailableCommands`); a test against the guard keeps
+ * the two in step.
+ *
+ * @public
+ */
+export function isActionAllowedOnNewRecord(action: {
+	allowedStates?: string[] | null
+	nextState?: string | null
+	selfTransition?: boolean | null
+}): boolean {
+	if (action.selfTransition === true) return true
+	return action.nextState == null && !action.allowedStates?.length
 }
 
 /**
@@ -330,7 +382,20 @@ export const DoctypeMeta = z
 		route: z.string().startsWith('/').optional(),
 
 		/** Field definitions (a link field is one carrying `doctype`) */
-		fields: z.array(DoctypeFieldSchema),
+		fields: z.array(DoctypeFieldSchema).superRefine((fields, context) => {
+			// Here rather than on the field: a part may name any field of the record, fieldsets and tables included.
+			const recordFields = flattenFields(fields)
+			const fieldnames = new Set(recordFields.map(field => field.fieldname))
+			for (const field of recordFields) {
+				for (const fieldname of Object.values(field.parts ?? {})) {
+					if (fieldnames.has(fieldname)) continue
+					context.addIssue({
+						code: 'custom',
+						message: `a part of "${field.fieldname}" names "${fieldname}", which is not a field of this doctype`,
+					})
+				}
+			}
+		}),
 
 		/** Relationship links to other doctypes */
 		links: z.record(z.string(), LinkDeclaration).optional(),
@@ -352,7 +417,7 @@ export const DoctypeMeta = z
 		title: 'DoctypeMeta',
 		description: 'Doctype metadata - complete definition of a doctype',
 	})
-	.superRefine((doctype, ctx) => {
+	.superRefine((doctype, context) => {
 		// A record is identified by exactly one field here, and that is the design rather than a
 		// limitation awaiting composite support. A doctype describes the **API surface** a client
 		// interacts with, not the table behind it; how a composite database key maps onto a single
@@ -370,13 +435,13 @@ export const DoctypeMeta = z
 		//
 		// Zero keys stays legal and is not an omission: a surrogate-key doctype declares none and
 		// resolves through `getRecordIdField`'s documented `id` fallback.
-		const declared = flattenFields(doctype.fields).filter(f => f.kind === 'field' && f.primaryKey)
+		const declared = flattenFields(doctype.fields).filter(field => field.kind === 'field' && field.primaryKey)
 		if (declared.length > 1) {
-			ctx.addIssue({
+			context.addIssue({
 				code: 'custom',
 				path: ['fields'],
 				message: `Doctype declares ${declared.length} primaryKey fields (${declared
-					.map(f => (f.kind === 'field' ? f.fieldname : ''))
+					.map(field => (field.kind === 'field' ? field.fieldname : ''))
 					.join(
 						', '
 					)}); a record is identified by exactly one field. A composite database key is mapped to a single identity by the adapter, so a doctype never declares its parts`,
@@ -389,8 +454,8 @@ export const DoctypeMeta = z
 		// have worked, while neither side excluded `computed` fields, so a nomination naming one
 		// passed the gate and then failed as a missing column at query time.
 		if (doctype.displayField && !getDisplayField(doctype.fields, doctype.displayField)) {
-			const named = flattenFields(doctype.fields).find(f => f.fieldname === doctype.displayField)
-			ctx.addIssue({
+			const named = flattenFields(doctype.fields).find(field => field.fieldname === doctype.displayField)
+			context.addIssue({
 				code: 'custom',
 				path: ['displayField'],
 				message: named
@@ -400,8 +465,8 @@ export const DoctypeMeta = z
 		}
 
 		if (doctype.defaults !== undefined) {
-			rejectFunctionsInDefaultsTree(doctype.defaults, [], ctx)
-			rejectUnknownDefaultsKeys(doctype.defaults, doctype.fields, ctx)
+			rejectFunctionsInDefaultsTree(doctype.defaults, [], context)
+			rejectUnknownDefaultsKeys(doctype.defaults, doctype.fields, context)
 		}
 	})
 
@@ -416,14 +481,14 @@ export const DoctypeMeta = z
 function rejectUnknownDefaultsKeys(
 	defaults: Record<string, unknown>,
 	fields: readonly DoctypeField[],
-	ctx: z.RefinementCtx
+	context: z.RefinementCtx
 ): void {
-	const keys = new Set(flattenFields(fields).map(f => f.fieldname))
+	const keys = new Set(flattenFields(fields).map(field => field.fieldname))
 	for (const key of Object.keys(defaults)) {
 		if (keys.has(key)) continue
 		const section = findSection(fields, key)
-		const sectionFields = section ? flattenFields(section.schema).map(f => f.fieldname) : []
-		ctx.addIssue({
+		const sectionFields = section ? flattenFields(section.schema).map(field => field.fieldname) : []
+		context.addIssue({
 			code: 'custom',
 			path: ['defaults', key],
 			message: section
@@ -443,10 +508,10 @@ function findSection(fields: readonly DoctypeField[], fieldname: string): Fields
 	return undefined
 }
 
-function rejectFunctionsInDefaultsTree(value: unknown, path: Array<string | number>, ctx: z.RefinementCtx): void {
+function rejectFunctionsInDefaultsTree(value: unknown, path: Array<string | number>, context: z.RefinementCtx): void {
 	if (typeof value === 'function') {
 		const pathLabel = path.length ? path.join('.') : '(root)'
-		ctx.addIssue({
+		context.addIssue({
 			code: 'custom',
 			path: ['defaults', ...path],
 			message: `defaults cannot contain a function at ${pathLabel}; register code defaults on the client instead`,
@@ -454,12 +519,12 @@ function rejectFunctionsInDefaultsTree(value: unknown, path: Array<string | numb
 		return
 	}
 	if (Array.isArray(value)) {
-		value.forEach((item, index) => rejectFunctionsInDefaultsTree(item, [...path, index], ctx))
+		value.forEach((item, index) => rejectFunctionsInDefaultsTree(item, [...path, index], context))
 		return
 	}
 	if (value !== null && typeof value === 'object') {
 		for (const [key, child] of Object.entries(value)) {
-			rejectFunctionsInDefaultsTree(child, [...path, key], ctx)
+			rejectFunctionsInDefaultsTree(child, [...path, key], context)
 		}
 	}
 }
@@ -534,7 +599,6 @@ export function linkDisplayFieldname(fieldname: string): string {
 
 /**
  * Context for identifying what doctype/record we're working with.
- * Used by graphql-middleware and graphql-client to resolve schema metadata.
  * @public
  */
 export interface DoctypeContext {
@@ -564,10 +628,8 @@ export interface DoctypeRef {
  */
 export interface GetRecordOptions {
 	/**
-	 * Include nested link sub-selections.
-	 * - `true`: include all descendant links
-	 * - `string[]`: include only named links
-	 * - `false` / omitted: scalar fields only (default)
+	 * Include nested link sub-selections: `true` includes all descendant links, a `string[]` only
+	 * the named links, and `false` or omitted scalar fields only (the default).
 	 */
 	includeNested?: boolean | string[]
 
@@ -585,7 +647,7 @@ export interface GetRecordOptions {
 export interface GetRecordsOptions {
 	/** Filter expression (field-value pairs) */
 	filters?: Record<string, unknown>
-	/** Order by expression (e.g. 'NAME_ASC') */
+	/** A field and a direction, `FIELD_ASC` or `FIELD_DESC`; the field as the doctype spells it (e.g. 'name_ASC') */
 	orderBy?: string
 	/** Maximum number of records to return */
 	limit?: number

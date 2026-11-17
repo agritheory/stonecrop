@@ -4,10 +4,10 @@ import type { DoctypeField, LinkDeclaration, TableViewConfig, ValueField } from 
 import { componentLinkExpansion, resolveLinkRenderMode, toSlug } from '@stonecrop/schema'
 import { Router } from 'vue-router'
 
-import { composeNewRecord } from './compose-new-record'
+import { checkPrefill, composeNewRecord } from './compose-new-record'
 import Doctype from './doctype'
 import { expandedLink, linksByFieldname } from './record-fields'
-import type { ComposeNewRecordOptions, ComposeNewRecordResult, DefaultsSource } from './types/defaults'
+import type { ComposeNewRecordOptions, ComposeNewRecordResult, DefaultsData, DefaultsSource } from './types/defaults'
 import { RouteContext } from './types/registry'
 
 /**
@@ -58,6 +58,12 @@ export default class Registry {
 	 * @internal
 	 */
 	private registeredDefaults = new Map<string, DefaultsSource>()
+
+	/**
+	 * Values held for each doctype's next new record, by slug, until its form takes them.
+	 * @internal
+	 */
+	private prefilledDrafts = new Map<string, { [field: string]: DefaultsData }>()
 
 	/**
 	 * The Vue router instance
@@ -118,11 +124,17 @@ export default class Registry {
 	 * Resolve a Doctype's authoring schema into a rendered schema array suitable for AForm.
 	 *
 	 * Transforms `DoctypeField[]` (authoring space) → `ResolvedField[]` (rendering space):
+	 *
 	 * - `kind: 'field'` (not Link) → `ResolvedScalar`
+	 *
 	 * - `kind: 'field'` (Link, no declaration) → `ResolvedScalar` with `component: 'AFormLink'`
+	 *
 	 * - `kind: 'field'` (Link, `noneOrMany`/`atLeastOne`) → `ResolvedTable`
+	 *
 	 * - `kind: 'field'` (Link, `one`/`atMostOne`) → `ResolvedLink`
+	 *
 	 * - `kind: 'fieldset'` → `ResolvedFieldset` (children resolved recursively)
+	 *
 	 * - `kind: 'table'` → `ResolvedTable` (columns as `ColumnSchema[]`)
 	 *
 	 * Circular references are protected against via the `visited` set.
@@ -154,8 +166,7 @@ export default class Registry {
 	}
 
 	/**
-	 * Recursively resolve a `DoctypeField[]` using the provided link context.
-	 * Called by `resolveSchema` and recursively for fieldset children.
+	 * Recursively resolve a `DoctypeField[]`, fieldset children included, using the provided link context.
 	 * @internal
 	 */
 	private resolveFields(
@@ -276,11 +287,14 @@ export default class Registry {
 	 * Narrows by `kind` discriminator for precise branch selection.
 	 *
 	 * - `kind: 'table'` → `[]`
+	 *
 	 * - `kind: 'link'` → the embedded record, built the same way
+	 *
 	 * - `kind: 'fieldset'` → its children, at the top level of the record: a fieldset is layout
+	 *
 	 * - `kind: 'field'` → no key at all
 	 *
-	 * Starting values are the doctype's `defaults` and the app's, which `composeNewRecord` lays over this.
+	 * Starting values (the doctype's `defaults` and the app's) are laid over this.
 	 *
 	 * @param schema - The resolved schema array to derive the record from
 	 * @returns A plain object holding each table and embedded record, and no field values
@@ -426,6 +440,32 @@ export default class Registry {
 	 */
 	getRegisteredDefaults(slug: string): DefaultsSource | undefined {
 		return this.registeredDefaults.get(slug)
+	}
+
+	/**
+	 * Hold values for a doctype's next new record, by any name it is registered under, so its form opens filled in;
+	 * the caller then opens that form. The doctype must be registered already, and so must every doctype its tables
+	 * and embedded records hold, or what they hold is copied unchecked. The values are checked against its fields and
+	 * copied; values its fields cannot hold, or anything that is not plain data, throw and change nothing. A field
+	 * given as `undefined` is skipped, and a later call for the same doctype replaces an earlier one.
+	 * @public
+	 */
+	prefillDraft(doctype: string, values: Record<string, unknown>): void {
+		const target = this.getDoctype(toSlug(doctype))
+		if (!target) throw new Error(`Couldn't open a new ${doctype}: no doctype by that name is registered.`)
+		this.prefilledDrafts.set(target.slug, checkPrefill(this, target, values))
+	}
+
+	/**
+	 * Take the values held for a doctype's next new record, by any name it is registered under, so no later form
+	 * opens with them. Desktop passes them to {@link Registry.composeNewRecord} as `prefill`.
+	 * @public
+	 */
+	takePrefill(doctype: string): { [field: string]: DefaultsData } | undefined {
+		const slug = this.getDoctype(toSlug(doctype))?.slug ?? toSlug(doctype)
+		const values = this.prefilledDrafts.get(slug)
+		this.prefilledDrafts.delete(slug)
+		return values
 	}
 
 	/**

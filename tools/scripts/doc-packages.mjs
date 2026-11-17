@@ -12,7 +12,6 @@
 export const docPackages = [
 	{ folder: 'aform', name: 'aform', title: 'AForm', description: 'Schema-driven form components' },
 	{ folder: 'atable', name: 'atable', title: 'ATable', description: 'Advanced table with tree and Gantt views' },
-	{ folder: 'beam', name: 'beam', title: 'Beam', description: 'Mobile-first scanning and MQTT' },
 	{ folder: 'desktop', name: 'desktop', title: 'Desktop', description: 'Desktop navigation and command palette' },
 	{
 		folder: 'stonecrop',
@@ -42,6 +41,7 @@ export const docPackages = [
 	{ folder: 'rockfoil', name: 'rockfoil', title: 'Rockfoil', description: 'Server-side utilities' },
 	{ folder: 'node_editor', name: 'node-editor', title: 'Node Editor', description: 'Visual FSM workflow editor' },
 	{ folder: 'code_editor', name: 'code-editor', title: 'Code Editor', description: 'Monaco-based code editor' },
+	{ folder: 'block_editor', name: 'block-editor', title: 'Block Editor', description: 'Editor.js block editor' },
 	{ folder: 'utilities', name: 'utilities', title: 'Utilities', description: 'Shared utility functions' },
 	{
 		folder: 'nuxt',

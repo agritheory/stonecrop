@@ -1,5 +1,7 @@
+import { noRecord, recordInStore } from '../record-access'
 import { getGlobalTriggerEngine } from '../field-triggers'
 import { useOperationLogStore } from './operation-log'
+import { parsePath } from './path'
 import type { FieldChangeContext, TransitionChangeContext } from '../types/field-triggers'
 import type { HSTNode } from '../types/hst'
 
@@ -242,7 +244,7 @@ class HSTProxy implements HSTNode {
 				return true // empty path refers to the root object
 			}
 
-			const segments = this.parsePath(path)
+			const segments = parsePath(path)
 			let current = this.target
 
 			for (let i = 0; i < segments.length; i++) {
@@ -340,6 +342,9 @@ class HSTProxy implements HSTNode {
 			recordId,
 			timestamp: new Date(),
 			store: this.rootNode || undefined,
+			...(recordId
+				? recordInStore(this.rootNode ?? this, pathSegments.slice(0, 2).join('.'))
+				: noRecord(`Transition "${transition}" was triggered above any record, so it has no record to read or set`)),
 			transition,
 			currentState: context?.currentState,
 			targetState: context?.targetState,
@@ -386,7 +391,7 @@ class HSTProxy implements HSTNode {
 			return this.target
 		}
 
-		const segments = this.parsePath(path)
+		const segments = parsePath(path)
 		let current = this.target
 
 		for (const segment of segments) {
@@ -406,7 +411,7 @@ class HSTProxy implements HSTNode {
 			throw new Error('Cannot set value on empty path')
 		}
 
-		const segments = this.parsePath(path)
+		const segments = parsePath(path)
 		const lastSegment = segments.pop()!
 		let current = this.target
 
@@ -511,6 +516,7 @@ class HSTProxy implements HSTNode {
 				recordId,
 				timestamp: new Date(),
 				store: this.rootNode || undefined, // Pass the root store for snapshot/rollback capabilities
+				...recordInStore(this.rootNode ?? this, pathSegments.slice(0, 2).join('.')),
 			}
 
 			await triggerEngine.executeFieldTriggers(context)
@@ -589,22 +595,6 @@ class HSTProxy implements HSTNode {
 			typeof value === 'symbol' ||
 			typeof value === 'bigint'
 		)
-	}
-
-	/**
-	 * Parse a path string into segments, handling both dot notation and array bracket notation
-	 * @param path - The path string to parse (e.g., "order.456.line_items[0].product")
-	 * @returns Array of path segments (e.g., ['order', '456', 'line_items', '0', 'product'])
-	 */
-	private parsePath(path: string): string[] {
-		if (!path) return []
-
-		// Replace array bracket notation with dot notation
-		// items[0] → items.0
-		// items[0][1] → items.0.1
-		const normalizedPath = path.replace(/\[(\d+)\]/g, '.$1')
-
-		return normalizedPath.split('.').filter(segment => segment.length > 0)
 	}
 }
 

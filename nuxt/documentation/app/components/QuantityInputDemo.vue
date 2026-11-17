@@ -2,12 +2,13 @@
 import { ref } from 'vue'
 import { AQuantityInput } from '@stonecrop/aform'
 
-// "Widget" item: stocked in Nos, but this line was purchased/received in Box.
-// 1 Box = 10 Nos, 1 Kg = 25 Nos.
+// "Widget" item: stocked in Nos, but lines may use Box, weight, or sheet size.
+// 1 Box = 10 Nos, 1 Kg = 25 Nos, 1 sheet = 1 Nos.
+const sheetUom = "4' x 8' sheet"
 const quantityOptions = {
-	uoms: ['Nos', 'Box', 'Kg'],
+	uoms: ['Nos', 'Box', 'Kg', sheetUom],
 	stockUom: 'Nos',
-	conversionFactors: { Box: 10, Kg: 25 },
+	conversionFactors: { Box: 10, Kg: 25, [sheetUom]: 1 },
 }
 
 const item = ref({

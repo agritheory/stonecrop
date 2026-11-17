@@ -1,5 +1,376 @@
 # Change Log - @stonecrop/stonecrop
 
+## 0.62.4
+
+### Patch Changes
+
+- Updated dependencies [624a7d8]
+  - @stonecrop/atable@0.62.4
+  - @stonecrop/schema@0.62.4
+  - @stonecrop/aform@0.62.4
+
+## 0.62.3
+
+### Patch Changes
+
+- Updated dependencies [ce11081]
+  - @stonecrop/atable@0.62.3
+  - @stonecrop/aform@0.62.3
+  - @stonecrop/schema@0.62.3
+
+## 0.62.2
+
+### Patch Changes
+
+- Updated dependencies [6ad5ee5]
+  - @stonecrop/aform@0.62.2
+  - @stonecrop/atable@0.62.2
+  - @stonecrop/schema@0.62.2
+
+## 0.62.1
+
+### Patch Changes
+
+- @stonecrop/aform@0.62.1
+  - @stonecrop/atable@0.62.1
+  - @stonecrop/schema@0.62.1
+
+## 0.62.0
+
+### Patch Changes
+
+- Updated dependencies [3635b61]
+  - @stonecrop/atable@0.62.0
+  - @stonecrop/schema@0.62.0
+  - @stonecrop/aform@0.62.0
+
+## 0.61.0
+
+### Patch Changes
+
+- Updated dependencies [3c3539d]
+  - @stonecrop/schema@0.61.0
+  - @stonecrop/atable@0.61.0
+  - @stonecrop/aform@0.61.0
+
+## 0.60.2
+
+### Patch Changes
+
+- Updated dependencies [a8c9d8c]
+  - @stonecrop/aform@0.60.2
+  - @stonecrop/atable@0.60.2
+  - @stonecrop/schema@0.60.2
+
+## 0.60.1
+
+### Patch Changes
+
+- 35ea6ea: A field's static `validation.errorMessage` is no longer shown as an error on its own. Before, a field with one showed it on every record, valid or not, and marked its input `aria-invalid`, so a "Validation message" set in DocBuilder sat on every record and a screen reader announced the field as invalid.
+  
+  The message now words an error a trigger reports without one: `setError(field)`, with the message left out, shows that field's own Validation message. AForm applies the wording before it routes errors, so a field bound to another field's part (totals sharing one currency) shows that part's own message, and fieldset children and link fields are covered too; a field component only shows the errors it is handed. `flattenFields` is generic, so it walks resolved fields as well as authored ones. DocBuilder's trigger editor shows `setError(field, message?)`, and the Validation message input says when it is shown.
+- Updated dependencies [35ea6ea]
+  - @stonecrop/aform@0.60.1
+  - @stonecrop/schema@0.60.1
+  - @stonecrop/atable@0.60.1
+
+## 0.60.0
+
+### Patch Changes
+
+- Updated dependencies [aea0baf]
+- Updated dependencies [aea0baf]
+- Updated dependencies [aea0baf]
+- Updated dependencies [aea0baf]
+  - @stonecrop/aform@0.60.0
+  - @stonecrop/atable@0.60.0
+  - @stonecrop/schema@0.60.0
+
+## 0.59.0
+
+### Patch Changes
+
+- @stonecrop/aform@0.59.0
+  - @stonecrop/atable@0.59.0
+  - @stonecrop/schema@0.59.0
+
+## 0.58.4
+
+### Patch Changes
+
+- Updated dependencies [07be796]
+  - @stonecrop/aform@0.58.4
+  - @stonecrop/atable@0.58.4
+  - @stonecrop/schema@0.58.4
+
+## 0.58.3
+
+### Patch Changes
+
+- Updated dependencies [44b7eb5]
+  - @stonecrop/aform@0.58.3
+  - @stonecrop/atable@0.58.3
+  - @stonecrop/schema@0.58.3
+
+## 0.58.2
+
+### Patch Changes
+
+- Updated dependencies [4a1a274]
+  - @stonecrop/atable@0.58.2
+  - @stonecrop/aform@0.58.2
+  - @stonecrop/schema@0.58.2
+
+## 0.58.1
+
+### Patch Changes
+
+- Updated dependencies [b46e712]
+  - @stonecrop/aform@0.58.1
+  - @stonecrop/atable@0.58.1
+  - @stonecrop/schema@0.58.1
+
+## 0.58.0
+
+### Patch Changes
+
+- Updated dependencies [246be00]
+  - @stonecrop/schema@0.58.0
+  - @stonecrop/aform@0.58.0
+  - @stonecrop/atable@0.58.0
+
+## 0.57.0
+
+### Patch Changes
+
+- Updated dependencies [e816b7b]
+  - @stonecrop/schema@0.57.0
+  - @stonecrop/aform@0.57.0
+  - @stonecrop/atable@0.57.0
+
+## 0.56.4
+
+### Patch Changes
+
+- Updated dependencies [e02c837]
+  - @stonecrop/schema@0.56.4
+  - @stonecrop/aform@0.56.4
+  - @stonecrop/atable@0.56.4
+
+## 0.56.3
+
+### Patch Changes
+
+- @stonecrop/aform@0.56.3
+  - @stonecrop/atable@0.56.3
+  - @stonecrop/schema@0.56.3
+
+## 0.56.2
+
+### Patch Changes
+
+- @stonecrop/aform@0.56.2
+  - @stonecrop/atable@0.56.2
+  - @stonecrop/schema@0.56.2
+
+## 0.56.1
+
+### Patch Changes
+
+- @stonecrop/aform@0.56.1
+  - @stonecrop/atable@0.56.1
+  - @stonecrop/schema@0.56.1
+
+## 0.56.0
+
+### Minor Changes
+
+- e331ffe: `useClientAction` runs an action raised with no record, as a list's is, only through its `clientHandler`, which gets no `record` or `runAction`, so `ActionEventPayload.recordId` is now optional; `Doctype.getActions()` lists every action a workflow declares.
+
+### Patch Changes
+
+- @stonecrop/aform@0.56.0
+  - @stonecrop/atable@0.56.0
+  - @stonecrop/schema@0.56.0
+
+## 0.55.2
+
+### Patch Changes
+
+- 8fbae19: Reading, writing or removing a record with an empty ID, or one holding a dot, now throws instead of reaching every record of the doctype or part of another record.
+- @stonecrop/aform@0.55.2
+  - @stonecrop/atable@0.55.2
+  - @stonecrop/schema@0.55.2
+
+## 0.55.1
+
+### Patch Changes
+
+- @stonecrop/aform@0.55.1
+  - @stonecrop/atable@0.55.1
+  - @stonecrop/schema@0.55.1
+
+## 0.55.0
+
+### Patch Changes
+
+- @stonecrop/aform@0.55.0
+  - @stonecrop/atable@0.55.0
+  - @stonecrop/schema@0.55.0
+
+## 0.54.0
+
+### Patch Changes
+
+- Updated dependencies [6496bcc]
+- Updated dependencies [6496bcc]
+  - @stonecrop/aform@0.54.0
+  - @stonecrop/atable@0.54.0
+  - @stonecrop/schema@0.54.0
+
+## 0.53.0
+
+### Minor Changes
+
+- 7e6db68: Add `prefillDraft(doctype, values)`, also given to scripts, which checks values against a doctype's fields and holds them for its next new record; `takePrefill` returns them once, and `composeNewRecord` applies them over every default as `prefill`.
+
+### Patch Changes
+
+- @stonecrop/aform@0.53.0
+  - @stonecrop/atable@0.53.0
+  - @stonecrop/schema@0.53.0
+
+## 0.52.0
+
+### Patch Changes
+
+- @stonecrop/aform@0.52.0
+  - @stonecrop/atable@0.52.0
+  - @stonecrop/schema@0.52.0
+
+## 0.51.0
+
+### Minor Changes
+
+- e8842fb: A record not created yet is offered only the actions the server guard runs on one (a self-transition, or an action declaring no `allowedStates` and no `nextState`), a rule now exported as `isActionAllowedOnNewRecord`, so Desktop no longer offers a new record a transition the server refuses.
+- e8842fb: `Stonecrop.getRecordState` returns `null` for a record not created yet instead of the workflow's first state, and `Doctype.getAvailableTransitions` and `getAvailableCommands` take that `null` to list the actions that can run on one.
+
+### Patch Changes
+
+- Updated dependencies [e8842fb]
+  - @stonecrop/schema@0.51.0
+  - @stonecrop/aform@0.51.0
+  - @stonecrop/atable@0.51.0
+
+## 0.50.1
+
+### Patch Changes
+
+- Updated dependencies [7d84fb8]
+  - @stonecrop/atable@0.50.1
+  - @stonecrop/aform@0.50.1
+  - @stonecrop/schema@0.50.1
+
+## 0.50.0
+
+### Minor Changes
+
+- b6d6f9a: Code that builds a `FieldChangeContext` by hand, such as a test, now supplies `get` and `set`, and code that reads `context.path` or a `FieldTriggerExecutionResult`'s `path` allows for it being absent, as it is on a record not saved yet.
+- b6d6f9a: A new record's edits in Desktop now run the doctype's field triggers before its first save, and a trigger reads and sets its own record, saved or not, with `context.get` and `context.set`; `stonecrop.editRecord(doctype, recordId)` gives a form that record.
+
+### Patch Changes
+
+- @stonecrop/aform@0.50.0
+  - @stonecrop/atable@0.50.0
+  - @stonecrop/schema@0.50.0
+
+## 0.49.0
+
+### Patch Changes
+
+- Updated dependencies [d5fbd9a]
+  - @stonecrop/schema@0.49.0
+  - @stonecrop/aform@0.49.0
+  - @stonecrop/atable@0.49.0
+
+## 0.48.1
+
+### Patch Changes
+
+- Updated dependencies [620acb0]
+  - @stonecrop/schema@0.48.1
+  - @stonecrop/aform@0.48.1
+  - @stonecrop/atable@0.48.1
+
+## 0.48.0
+
+### Patch Changes
+
+- Updated dependencies [d5b5a74]
+- Updated dependencies [d5b5a74]
+  - @stonecrop/aform@0.48.0
+  - @stonecrop/atable@0.48.0
+  - @stonecrop/schema@0.48.0
+
+## 0.47.0
+
+### Patch Changes
+
+- Updated dependencies [a5df570]
+  - @stonecrop/schema@0.47.0
+  - @stonecrop/aform@0.47.0
+  - @stonecrop/atable@0.47.0
+
+## 0.46.1
+
+### Patch Changes
+
+- @stonecrop/aform@0.46.1
+  - @stonecrop/atable@0.46.1
+  - @stonecrop/schema@0.46.1
+
+## 0.46.0
+
+### Patch Changes
+
+- @stonecrop/aform@0.46.0
+  - @stonecrop/atable@0.46.0
+  - @stonecrop/schema@0.46.0
+
+## 0.45.1
+
+### Patch Changes
+
+- Updated dependencies [6db7b3f]
+  - @stonecrop/aform@0.45.1
+  - @stonecrop/atable@0.45.1
+  - @stonecrop/schema@0.45.1
+
+## 0.45.0
+
+### Patch Changes
+
+- @stonecrop/aform@0.45.0
+  - @stonecrop/atable@0.45.0
+  - @stonecrop/schema@0.45.0
+
+## 0.44.0
+
+### Patch Changes
+
+- Updated dependencies [358ecaf]
+- Updated dependencies [358ecaf]
+- Updated dependencies [358ecaf]
+- Updated dependencies [358ecaf]
+- Updated dependencies [358ecaf]
+- Updated dependencies [358ecaf]
+- Updated dependencies [358ecaf]
+- Updated dependencies [358ecaf]
+- Updated dependencies [358ecaf]
+  - @stonecrop/aform@0.44.0
+  - @stonecrop/atable@0.44.0
+  - @stonecrop/schema@0.44.0
+
 ## 0.43.0
 
 ### Minor Changes

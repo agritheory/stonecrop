@@ -16,7 +16,10 @@ export type ActionSetController = ActionSetContext & {
 	isPreviewOpen: ComputedRef<boolean>
 	isActionsOpen: ComputedRef<boolean>
 	isSearchOpen: ComputedRef<boolean>
+	/** Something has the drawer, so its content stays mounted, even while a preview hides it. */
 	isDrawerOpen: ComputedRef<boolean>
+	/** The drawer is on screen: open, and not replaced by a preview. */
+	isDrawerShown: ComputedRef<boolean>
 	openActions: () => void
 	openSearch: () => void
 	openSlot: (slotId: ActionSetSlotId) => void
@@ -30,6 +33,7 @@ export function createActionSet(options: CreateActionSetOptions): ActionSetContr
 	const searchOpen = ref(false)
 	const previewSubject = shallowRef<ActionSetPreview | null>(null)
 	const previewId = ref<string | undefined>(undefined)
+	const drawerReplaced = ref(false)
 
 	function openActions() {
 		activeSlotId.value = null
@@ -49,6 +53,10 @@ export function createActionSet(options: CreateActionSetOptions): ActionSetContr
 		actionsOpen.value = false
 		searchOpen.value = false
 		if (activeSlotId.value === slotId) {
+			// The slot's own tile brings back a drawer its preview replaced.
+			if (drawerReplaced.value) {
+				closePreview()
+			}
 			return
 		}
 		activeSlotId.value = slotId
@@ -60,6 +68,8 @@ export function createActionSet(options: CreateActionSetOptions): ActionSetContr
 			return
 		}
 		previewId.value = subject.id
+		// The drawer is hidden, not closed: closing it would unmount the slot and lose what it holds.
+		drawerReplaced.value = subject.replacesDrawer === true && activeSlotId.value !== null
 		// Unwrapped first: a view read from reactive state arrives as a proxy, which `markRaw` would keep.
 		previewSubject.value = { ...subject, view: markRaw(toRaw(subject.view)) }
 	}
@@ -67,6 +77,7 @@ export function createActionSet(options: CreateActionSetOptions): ActionSetContr
 	function closePreview() {
 		previewSubject.value = null
 		previewId.value = undefined
+		drawerReplaced.value = false
 	}
 
 	function close() {
@@ -76,6 +87,8 @@ export function createActionSet(options: CreateActionSetOptions): ActionSetContr
 		closePreview()
 	}
 
+	const isDrawerOpen = computed(() => actionsOpen.value || searchOpen.value || activeSlotId.value !== null)
+
 	return {
 		doctype: options.doctype,
 		recordId: options.recordId,
@@ -84,7 +97,8 @@ export function createActionSet(options: CreateActionSetOptions): ActionSetContr
 		isPreviewOpen: computed(() => previewSubject.value !== null),
 		isActionsOpen: computed(() => actionsOpen.value),
 		isSearchOpen: computed(() => searchOpen.value),
-		isDrawerOpen: computed(() => actionsOpen.value || searchOpen.value || activeSlotId.value !== null),
+		isDrawerOpen,
+		isDrawerShown: computed(() => isDrawerOpen.value && !drawerReplaced.value),
 		present,
 		closePreview,
 		close,

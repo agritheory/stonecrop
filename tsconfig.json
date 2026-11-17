@@ -5,10 +5,10 @@
 	"references": [
 		{ "path": "./aform" },
 		{ "path": "./atable" },
-		{ "path": "./beam" },
 		{ "path": "./casl_middleware" },
 		{ "path": "./code_editor" },
 		{ "path": "./desktop" },
+		{ "path": "./block_editor" },
 		{ "path": "./graphql_client" },
 		{ "path": "./graphql_middleware" },
 		{ "path": "./node_editor" },

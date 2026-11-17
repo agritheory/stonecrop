@@ -1,5 +1,5 @@
 import { mount } from '@vue/test-utils'
-import { describe, expect, it, afterEach } from 'vitest'
+import { describe, expect, it, afterEach } from 'vite-plus/test'
 import { nextTick } from 'vue'
 
 import CommandPalette from '../src/components/CommandPalette.vue'

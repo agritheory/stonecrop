@@ -30,5 +30,5 @@ export function useDoctypeConfig(slug: string): DoctypeConfig | undefined {
 
 // Actions are deliberately not dispatched from here. Dispatching is only half the job: the result
 // has to land in the store under the identity the server settled on, which is not always the id
-// that was dispatched — a Save against a record that does not exist creates one. `useClientAction`
+// that was dispatched — a Save on a record not created yet creates it. `useClientAction`
 // (auto-imported from @stonecrop/nuxt) owns both halves; app/pages/index.vue binds it directly.

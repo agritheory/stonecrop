@@ -1,6 +1,6 @@
 import { mount } from '@vue/test-utils'
 import { List } from 'immutable'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vite-plus/test'
 import { nextTick } from 'vue'
 
 import { Doctype, Registry, Stonecrop } from '@stonecrop/stonecrop'

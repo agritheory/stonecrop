@@ -1,8 +1,9 @@
 import vue from '@vitejs/plugin-vue'
-import { playwright } from '@vitest/browser-playwright'
+import { playwright } from 'vite-plus/test/browser-playwright'
 import { defineConfig } from 'vitest/config'
 
 import { playwrightLaunchOptions } from '../tools/vite/playwright-launch-options.ts'
+import { fsModuleCachePath } from '../tools/vite/fs-module-cache.ts'
 
 // Two projects: `node` for everything but layout, and `browser` for `*.browser.test.ts`, which mounts
 // runtime components in real Chrome. Neither runs under @nuxt/test-utils' `defineVitestConfig`.
@@ -31,11 +32,15 @@ export default defineConfig({
 		},
 	},
 	test: {
+		fsModuleCachePath,
 		projects: [
 			{
 				extends: true,
 				test: {
 					name: 'node',
+					// `temporal-polyfill` hands out a runtime's own `Temporal` where there is one (Node 26), whose
+					// `Temporal.Now` reads the system clock, which a faked `Date` doesn't reach. The polyfill itself reads `Date`.
+					alias: [{ find: /^temporal-polyfill$/, replacement: 'temporal-polyfill/implementation' }],
 					environment: 'node',
 					include: ['test/**/*.test.ts'],
 					exclude: ['**/node_modules/**', '**/fixtures/**', '**/*.browser.test.ts'],

@@ -13,10 +13,13 @@ const REFERENCE = join(NUXT, 'documentation', 'content', 'reference', 'themes.md
 
 const withoutComments = (css: string): string => css.replace(/\/\*[\s\S]*?\*\//g, '')
 
+// The formatter wraps a value too long for one line; the page writes it on one.
+const oneLine = (value: string): string => value.replace(/\s+/g, ' ').replace(/\( /g, '(').replace(/ \)/g, ')').trim()
+
 const floorDefaults = (): Map<string, string> => {
 	const declaration = /^\s*(--sc-[a-zA-Z0-9-]+)\s*:([^;]+);/gm
 	const css = withoutComments(readFileSync(FLOOR, 'utf8'))
-	return new Map(Array.from(css.matchAll(declaration), match => [match[1], match[2].trim()]))
+	return new Map(Array.from(css.matchAll(declaration), match => [match[1], oneLine(match[2])]))
 }
 
 const reference = readFileSync(REFERENCE, 'utf8')

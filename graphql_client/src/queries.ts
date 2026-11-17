@@ -32,6 +32,7 @@ export const GET_META_QUERY = `
 				format
 				mode
 				options
+				parts
 				required
 				readOnly
 				hidden
@@ -141,6 +142,7 @@ export const GET_ALL_META_QUERY = `
 				format
 				mode
 				options
+				parts
 				required
 				readOnly
 				hidden

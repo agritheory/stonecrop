@@ -5,7 +5,7 @@
 	"type": "module",
 	"scripts": {
 		"build": "node tools/scripts/run-build.mjs",
-		"check:deps": "node tools/scripts/check-dependency-consistency.mjs",
+		"check:deps": "node tools/scripts/check-dependency-consistency.mjs && node tools/scripts/check-vite-ranges.mjs",
 		"check:publish": "node tools/scripts/check-publish-contract.mjs",
 		"docs": "vp run --log labeled -r docs",
 		"docs:full": "bash tools/scripts/docs-full.sh",
@@ -14,14 +14,14 @@
 		"lint": "vp run --log labeled -r lint",
 		"prepare": "vp config --no-agent",
 		"test": "vp run --log labeled -r test",
-		"test:types": "vp run --log labeled -r test:types"
+		"test:types": "vp run --log labeled --parallel --concurrency-limit 4 -r test:types"
 	},
 	"devDependencies": {
 		"@arethetypeswrong/cli": "0.18.5",
 		"@changesets/cli": "3.0.1",
 		"publint": "0.3.24",
 		"typescript": "catalog:",
-		"vite-plus": "1.0.0"
+		"vite-plus": "catalog:"
 	},
 	"devEngines": {
 		"packageManager": {

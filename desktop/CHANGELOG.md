@@ -1,5 +1,418 @@
 # Change Log - @stonecrop/desktop
 
+## 0.62.4
+
+### Patch Changes
+
+- 624a7d8: A column's `cellComponent` is now drawn inside the table cell and receives the cell's value as `value` and the column's `cellComponentProps`, as the schema says (#510). Before, ATable drew the component in place of the cell and passed it neither, so a custom status chip showed up empty and uncoloured. The component also gets the table's `store` and the cell's `rowIndex` and `colIndex`, so a cell that acts on its row can still find it. Desktop's list link no longer draws its own cell.
+- Updated dependencies [624a7d8]
+  - @stonecrop/schema@0.62.4
+  - @stonecrop/aform@0.62.4
+  - @stonecrop/stonecrop@0.62.4
+  - @stonecrop/themes@0.62.4
+
+## 0.62.3
+
+### Patch Changes
+
+- @stonecrop/aform@0.62.3
+  - @stonecrop/stonecrop@0.62.3
+  - @stonecrop/schema@0.62.3
+  - @stonecrop/themes@0.62.3
+
+## 0.62.2
+
+### Patch Changes
+
+- Updated dependencies [6ad5ee5]
+  - @stonecrop/aform@0.62.2
+  - @stonecrop/stonecrop@0.62.2
+  - @stonecrop/schema@0.62.2
+  - @stonecrop/themes@0.62.2
+
+## 0.62.1
+
+### Patch Changes
+
+- @stonecrop/aform@0.62.1
+  - @stonecrop/schema@0.62.1
+  - @stonecrop/stonecrop@0.62.1
+  - @stonecrop/themes@0.62.1
+
+## 0.62.0
+
+### Patch Changes
+
+- Updated dependencies [3635b61]
+  - @stonecrop/schema@0.62.0
+  - @stonecrop/aform@0.62.0
+  - @stonecrop/stonecrop@0.62.0
+  - @stonecrop/themes@0.62.0
+
+## 0.61.0
+
+### Patch Changes
+
+- Updated dependencies [3c3539d]
+  - @stonecrop/schema@0.61.0
+  - @stonecrop/aform@0.61.0
+  - @stonecrop/stonecrop@0.61.0
+  - @stonecrop/themes@0.61.0
+
+## 0.60.2
+
+### Patch Changes
+
+- Updated dependencies [a8c9d8c]
+  - @stonecrop/aform@0.60.2
+  - @stonecrop/stonecrop@0.60.2
+  - @stonecrop/schema@0.60.2
+  - @stonecrop/themes@0.60.2
+
+## 0.60.1
+
+### Patch Changes
+
+- Updated dependencies [35ea6ea]
+  - @stonecrop/aform@0.60.1
+  - @stonecrop/schema@0.60.1
+  - @stonecrop/stonecrop@0.60.1
+  - @stonecrop/themes@0.60.1
+
+## 0.60.0
+
+### Patch Changes
+
+- Updated dependencies [aea0baf]
+- Updated dependencies [aea0baf]
+- Updated dependencies [aea0baf]
+  - @stonecrop/aform@0.60.0
+  - @stonecrop/stonecrop@0.60.0
+  - @stonecrop/schema@0.60.0
+  - @stonecrop/themes@0.60.0
+
+## 0.59.0
+
+### Patch Changes
+
+- @stonecrop/aform@0.59.0
+  - @stonecrop/schema@0.59.0
+  - @stonecrop/stonecrop@0.59.0
+  - @stonecrop/themes@0.59.0
+
+## 0.58.4
+
+### Patch Changes
+
+- Updated dependencies [07be796]
+  - @stonecrop/aform@0.58.4
+  - @stonecrop/stonecrop@0.58.4
+  - @stonecrop/schema@0.58.4
+  - @stonecrop/themes@0.58.4
+
+## 0.58.3
+
+### Patch Changes
+
+- Updated dependencies [44b7eb5]
+  - @stonecrop/aform@0.58.3
+  - @stonecrop/stonecrop@0.58.3
+  - @stonecrop/schema@0.58.3
+  - @stonecrop/themes@0.58.3
+
+## 0.58.2
+
+### Patch Changes
+
+- @stonecrop/aform@0.58.2
+  - @stonecrop/stonecrop@0.58.2
+  - @stonecrop/schema@0.58.2
+  - @stonecrop/themes@0.58.2
+
+## 0.58.1
+
+### Patch Changes
+
+- Updated dependencies [b46e712]
+  - @stonecrop/aform@0.58.1
+  - @stonecrop/stonecrop@0.58.1
+  - @stonecrop/schema@0.58.1
+  - @stonecrop/themes@0.58.1
+
+## 0.58.0
+
+### Patch Changes
+
+- Updated dependencies [246be00]
+  - @stonecrop/schema@0.58.0
+  - @stonecrop/aform@0.58.0
+  - @stonecrop/stonecrop@0.58.0
+  - @stonecrop/themes@0.58.0
+
+## 0.57.0
+
+### Patch Changes
+
+- Updated dependencies [e816b7b]
+  - @stonecrop/schema@0.57.0
+  - @stonecrop/aform@0.57.0
+  - @stonecrop/stonecrop@0.57.0
+  - @stonecrop/themes@0.57.0
+
+## 0.56.4
+
+### Patch Changes
+
+- Updated dependencies [e02c837]
+  - @stonecrop/schema@0.56.4
+  - @stonecrop/aform@0.56.4
+  - @stonecrop/stonecrop@0.56.4
+  - @stonecrop/themes@0.56.4
+
+## 0.56.3
+
+### Patch Changes
+
+- @stonecrop/aform@0.56.3
+  - @stonecrop/schema@0.56.3
+  - @stonecrop/stonecrop@0.56.3
+  - @stonecrop/themes@0.56.3
+
+## 0.56.2
+
+### Patch Changes
+
+- @stonecrop/aform@0.56.2
+  - @stonecrop/schema@0.56.2
+  - @stonecrop/stonecrop@0.56.2
+  - @stonecrop/themes@0.56.2
+
+## 0.56.1
+
+### Patch Changes
+
+- @stonecrop/aform@0.56.1
+  - @stonecrop/schema@0.56.1
+  - @stonecrop/stonecrop@0.56.1
+  - @stonecrop/themes@0.56.1
+
+## 0.56.0
+
+### Minor Changes
+
+- e331ffe: BREAKING: a list shows every action its doctype declares, one button each, and the command palette offers a list page's actions; where a list and its records share a doctype, pass the list's own as `hostActions` on list views, as the starter template does for New.
+- e435204: BREAKING: Desktop no longer adds a New Record button to lists or Create New to the command palette; an app offers New itself, declared on a list doctype or passed as `hostActions`.
+
+### Patch Changes
+
+- Updated dependencies [e331ffe]
+  - @stonecrop/stonecrop@0.56.0
+  - @stonecrop/aform@0.56.0
+  - @stonecrop/schema@0.56.0
+  - @stonecrop/themes@0.56.0
+
+## 0.55.2
+
+### Patch Changes
+
+- Updated dependencies [8fbae19]
+  - @stonecrop/stonecrop@0.55.2
+  - @stonecrop/aform@0.55.2
+  - @stonecrop/schema@0.55.2
+  - @stonecrop/themes@0.55.2
+
+## 0.55.1
+
+### Patch Changes
+
+- 2fdf332: A list's "Edit" and "View Records" links open their own row, and a table cell that merely reads "Edit" no longer opens a record.
+- @stonecrop/aform@0.55.1
+  - @stonecrop/schema@0.55.1
+  - @stonecrop/stonecrop@0.55.1
+  - @stonecrop/themes@0.55.1
+
+## 0.55.0
+
+### Minor Changes
+
+- cdc0691: `present()` takes `replacesDrawer: true` to let a preview take the slot drawer's place. The drawer is hidden rather than closed, so the slot keeps its state, and closing the preview shows it again. The preview pane is resizable: drag, arrow keys or double-click on its left edge, with the width kept for the session.
+
+### Patch Changes
+
+- @stonecrop/aform@0.55.0
+  - @stonecrop/schema@0.55.0
+  - @stonecrop/stonecrop@0.55.0
+  - @stonecrop/themes@0.55.0
+
+## 0.54.0
+
+### Patch Changes
+
+- Updated dependencies [6496bcc]
+- Updated dependencies [6496bcc]
+  - @stonecrop/aform@0.54.0
+  - @stonecrop/stonecrop@0.54.0
+  - @stonecrop/schema@0.54.0
+  - @stonecrop/themes@0.54.0
+
+## 0.53.0
+
+### Minor Changes
+
+- 7e6db68: A new record's form opens with the values an app held for it through `prefillDraft`, and uses them up.
+
+### Patch Changes
+
+- Updated dependencies [7e6db68]
+  - @stonecrop/stonecrop@0.53.0
+  - @stonecrop/aform@0.53.0
+  - @stonecrop/schema@0.53.0
+  - @stonecrop/themes@0.53.0
+
+## 0.52.0
+
+### Patch Changes
+
+- @stonecrop/aform@0.52.0
+  - @stonecrop/schema@0.52.0
+  - @stonecrop/stonecrop@0.52.0
+  - @stonecrop/themes@0.52.0
+
+## 0.51.0
+
+### Minor Changes
+
+- e8842fb: A record not created yet is offered only the actions the server guard runs on one (a self-transition, or an action declaring no `allowedStates` and no `nextState`), a rule now exported as `isActionAllowedOnNewRecord`, so Desktop no longer offers a new record a transition the server refuses.
+
+### Patch Changes
+
+- Updated dependencies [e8842fb]
+- Updated dependencies [e8842fb]
+  - @stonecrop/schema@0.51.0
+  - @stonecrop/stonecrop@0.51.0
+  - @stonecrop/aform@0.51.0
+  - @stonecrop/themes@0.51.0
+
+## 0.50.1
+
+### Patch Changes
+
+- @stonecrop/aform@0.50.1
+  - @stonecrop/stonecrop@0.50.1
+  - @stonecrop/schema@0.50.1
+  - @stonecrop/themes@0.50.1
+
+## 0.50.0
+
+### Minor Changes
+
+- b6d6f9a: A new record's edits in Desktop now run the doctype's field triggers before its first save, and a trigger reads and sets its own record, saved or not, with `context.get` and `context.set`; `stonecrop.editRecord(doctype, recordId)` gives a form that record.
+
+### Patch Changes
+
+- Updated dependencies [b6d6f9a]
+- Updated dependencies [b6d6f9a]
+  - @stonecrop/stonecrop@0.50.0
+  - @stonecrop/aform@0.50.0
+  - @stonecrop/schema@0.50.0
+  - @stonecrop/themes@0.50.0
+
+## 0.49.0
+
+### Patch Changes
+
+- Updated dependencies [d5fbd9a]
+  - @stonecrop/schema@0.49.0
+  - @stonecrop/aform@0.49.0
+  - @stonecrop/stonecrop@0.49.0
+  - @stonecrop/themes@0.49.0
+
+## 0.48.1
+
+### Patch Changes
+
+- 620acb0: Packages are now built with the Vite and Rolldown that Vite+ bundles, so the `pluralize` copy inside schema runs with CommonJS's `this` set to its exports, and desktop's bundle inlines a constant selector and drops an unused statement.
+- Updated dependencies [620acb0]
+  - @stonecrop/schema@0.48.1
+  - @stonecrop/aform@0.48.1
+  - @stonecrop/stonecrop@0.48.1
+  - @stonecrop/themes@0.48.1
+
+## 0.48.0
+
+### Patch Changes
+
+- Updated dependencies [d5b5a74]
+- Updated dependencies [d5b5a74]
+  - @stonecrop/aform@0.48.0
+  - @stonecrop/stonecrop@0.48.0
+  - @stonecrop/schema@0.48.0
+  - @stonecrop/themes@0.48.0
+
+## 0.47.0
+
+### Patch Changes
+
+- Updated dependencies [a5df570]
+  - @stonecrop/schema@0.47.0
+  - @stonecrop/aform@0.47.0
+  - @stonecrop/stonecrop@0.47.0
+  - @stonecrop/themes@0.47.0
+
+## 0.46.1
+
+### Patch Changes
+
+- @stonecrop/aform@0.46.1
+  - @stonecrop/schema@0.46.1
+  - @stonecrop/stonecrop@0.46.1
+  - @stonecrop/themes@0.46.1
+
+## 0.46.0
+
+### Patch Changes
+
+- @stonecrop/aform@0.46.0
+  - @stonecrop/schema@0.46.0
+  - @stonecrop/stonecrop@0.46.0
+  - @stonecrop/themes@0.46.0
+
+## 0.45.1
+
+### Patch Changes
+
+- Updated dependencies [6db7b3f]
+  - @stonecrop/aform@0.45.1
+  - @stonecrop/stonecrop@0.45.1
+  - @stonecrop/schema@0.45.1
+  - @stonecrop/themes@0.45.1
+
+## 0.45.0
+
+### Patch Changes
+
+- @stonecrop/aform@0.45.0
+  - @stonecrop/schema@0.45.0
+  - @stonecrop/stonecrop@0.45.0
+  - @stonecrop/themes@0.45.0
+
+## 0.44.0
+
+### Patch Changes
+
+- Updated dependencies [358ecaf]
+- Updated dependencies [358ecaf]
+- Updated dependencies [358ecaf]
+- Updated dependencies [358ecaf]
+- Updated dependencies [358ecaf]
+- Updated dependencies [358ecaf]
+- Updated dependencies [358ecaf]
+- Updated dependencies [358ecaf]
+  - @stonecrop/aform@0.44.0
+  - @stonecrop/themes@0.44.0
+  - @stonecrop/stonecrop@0.44.0
+  - @stonecrop/schema@0.44.0
+
 ## 0.43.0
 
 ### Patch Changes

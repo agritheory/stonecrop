@@ -4,9 +4,9 @@
 		:class="{
 			'desktop--action-set-open': actionSetDrawerOpen,
 			'desktop--preview-open': actionSetPreviewOpen,
-		}"
-		@click="handleClick">
-		<div class="desktop__workspace">
+			'desktop--preview-resizing': previewResizing,
+		}">
+		<div ref="workspace" class="desktop__workspace">
 			<div class="desktop__main">
 				<slot v-if="$slots.default" />
 				<AForm
@@ -40,10 +40,24 @@
 				</div>
 			</div>
 
-			<aside v-if="actionSetPreviewSubject" class="desktop__preview">
+			<aside v-if="actionSetPreviewSubject" ref="previewEl" class="desktop__preview" :style="previewStyle">
+				<div
+					class="desktop__preview-resize"
+					role="separator"
+					aria-orientation="vertical"
+					aria-label="Resize preview"
+					:aria-valuenow="Math.round(previewFraction * 100)"
+					:aria-valuemin="Math.round(previewBounds.min * 100)"
+					:aria-valuemax="Math.round(previewBounds.max * 100)"
+					tabindex="0"
+					title="Drag to resize · double-click to reset"
+					@pointerdown="onPreviewResizeStart"
+					@dblclick="resetPreviewWidth"
+					@keydown="onPreviewResizeKeydown" />
 				<header class="desktop__preview-header">
 					<button
 						type="button"
+						ref="previewCloseEl"
 						class="desktop__preview-close"
 						aria-label="Close preview"
 						@click="closeActionSetPreview">
@@ -84,7 +98,7 @@
 // The draft segment comes from @stonecrop/stonecrop rather than being spelled out here: that
 // package guards fetching, field initialization and workflow readiness on the same question, and
 // when the two were written separately they disagreed and every guard over there went dead.
-import { DRAFT_RECORD_ID, isDraftRecordId, useStonecrop, useValidationStore } from '@stonecrop/stonecrop'
+import { isDraftRecordId, useStonecrop, useValidationStore, type EditableRecord } from '@stonecrop/stonecrop'
 import {
 	AForm,
 	type AFormLinkNavigator,
@@ -92,11 +106,27 @@ import {
 	type ResolvedField,
 	type ResolvedTable,
 } from '@stonecrop/aform'
-import { computed, markRaw, onMounted, onUnmounted, provide, ref, toRaw, unref, watch } from 'vue'
+import {
+	computed,
+	getCurrentInstance,
+	markRaw,
+	nextTick,
+	onMounted,
+	onUnmounted,
+	provide,
+	ref,
+	shallowRef,
+	toRaw,
+	unref,
+	watch,
+} from 'vue'
 
 import ActionSet from './ActionSet.vue'
+import DesktopRowLink from './DesktopRowLink.vue'
 import SheetNav from './SheetNav.vue'
 import { createActionSet, actionSetKey } from '../composables/useActionSet'
+import { usePreviewSplit } from '../composables/usePreviewSplit'
+import { ROW_LINK_COMPONENT, openListRowKey } from '../row-link'
 import type {
 	ActionElements,
 	RouteAdapter,
@@ -132,7 +162,11 @@ const {
 	routeAdapter?: RouteAdapter
 	/** Host drawer slots, each shown as a tile in the ActionSet column. */
 	actionSetSlots?: ActionSetSlot[]
-	/** When provided, the Actions drawer lists exactly these, in place of the actions Desktop derives from the doctype. */
+	/**
+	 * When provided, the Actions drawer lists exactly these, in place of the actions Desktop derives from the doctype;
+	 * `[]` lists none. A list shows every action its doctype declares, so an app whose list and record share a doctype
+	 * passes its list's actions (New, say) on list views, and leaves this unset on others.
+	 */
 	hostActions?: ActionElements[]
 	/** When provided, replaces Desktop's default doctype-navigation breadcrumbs in SheetNav. */
 	breadcrumbs?: { title: string; to: string }[]
@@ -193,17 +227,17 @@ const fieldErrors = computed<Record<string, string[]>>(() =>
 // The last record read that failed, kept with the record it was for so it never shows on another.
 const recordLoadFailure = ref<{ doctype: string; recordId: string; error: unknown } | null>(null)
 
-// The record being composed on a `/{doctype}/new` route. Deliberately not in HST: a draft has no
-// identity to be keyed by, and both ways of faking one fail — see `DRAFT_RECORD_ID`.
-const draftRecord = ref<Record<string, any>>({})
+// The record the form edits, from `editRecord`: a saved record lives in HST, and one on a
+// `/{doctype}/new` route is held by this object instead, since a draft has no identity to be keyed by
+// (see `DRAFT_RECORD_ID`). Either way a field set through it runs that field's rules.
+const editedRecord = shallowRef<EditableRecord>()
 // True while a new record's starting values are still arriving. The form stays behind the loading state until
 // then, so no late value can land on top of what a user has typed.
 const draftLoading = ref(false)
 
 // Form/list data management — each view produces a different data shape.
 // List views (doctypes, records) return table row data keyed by fieldname.
-// Record view returns the record's fields for two-way binding — from HST, or from `draftRecord`
-// when the route is a draft.
+// Record view returns the record's fields for two-way binding, through `editedRecord`.
 const currentViewData = computed<Record<string, any>>({
 	get() {
 		// Doctypes list — rows come from availableDoctypes prop (reactive via availableDoctypes)
@@ -237,59 +271,34 @@ const currentViewData = computed<Record<string, any>>({
 			}
 		}
 
-		// Record form — read single record from HST
-		if (!stonecrop.value || !currentDoctype.value || !currentRecordId.value) {
-			return {}
-		}
+		// Record form: read through the record being edited
+		const record = editedRecord.value
+		if (!record) return {}
 
 		try {
-			const source = isNewRecord.value
-				? draftRecord.value
-				: (stonecrop.value.getRecordById(currentDoctype.value, currentRecordId.value)?.get('') as
-						| Record<string, any>
-						| undefined)
-			// Return a plain shallow copy so AForm mutations don't propagate directly into
-			// the HST reactive object, which would bypass field-trigger diffing and cause
-			// setupDeepReactivity to fire triggers for all fields on every keystroke.
-			return { ...source }
+			// A plain shallow copy, so a field AForm replaces reaches the record only through `set`, which
+			// is where a field's rules run.
+			return { ...(record.get('') as Record<string, any> | undefined) }
 		} catch {
 			return {}
 		}
 	},
 	set(newData: Record<string, any>) {
-		// List views are read-only from AForm's perspective — HST writes only apply to record form
+		// List views are read-only from AForm's perspective; writes only apply to the record form
 		if (currentView.value !== 'record') return
-		if (!stonecrop.value || !currentDoctype.value || !currentRecordId.value) {
-			return
-		}
+		const record = editedRecord.value
+		if (!record) return
 
 		try {
 			// Only update fields that actually changed. Never write undefined — AForm may emit
 			// schema fields absent from the record as undefined; writing them would silently
 			// clear values that exist. Explicit null is allowed (intentional clear).
 			const changedFields: string[] = []
-			if (isNewRecord.value) {
-				// Reassigned, not mutated, so the getter re-runs. Relying on in-place mutation of the
-				// cached object is what made a draft's edits vanish on any invalidation.
-				const next = { ...draftRecord.value }
-				for (const [fieldname, value] of Object.entries(newData)) {
-					if (value === undefined) continue
-					if (next[fieldname] !== value) {
-						next[fieldname] = value
-						changedFields.push(fieldname)
-					}
-				}
-				draftRecord.value = next
-			} else {
-				const hstStore = stonecrop.value.getStore()
-				for (const [fieldname, value] of Object.entries(newData)) {
-					if (value === undefined) continue
-					const fieldPath = `${currentDoctype.value}.${currentRecordId.value}.${fieldname}`
-					const currentValue = hstStore.has(fieldPath) ? hstStore.get(fieldPath) : undefined
-					if (currentValue !== value) {
-						hstStore.set(fieldPath, value)
-						changedFields.push(fieldname)
-					}
+			for (const [fieldname, value] of Object.entries(newData)) {
+				if (value === undefined) continue
+				if (record.get(fieldname) !== value) {
+					record.set(fieldname, value)
+					changedFields.push(fieldname)
 				}
 			}
 
@@ -314,15 +323,9 @@ function driveFieldValidation(changedFields: string[]) {
 	const triggers = doctype?.getTriggers()
 	if (!triggers || Object.keys(triggers).length === 0) return
 
-	// A draft's siblings come from the buffer; reading HST would hand every validator an empty record.
-	const record = isNewRecord.value
-		? { ...draftRecord.value }
-		: {
-				...(stonecrop.value.getRecordById(currentDoctype.value, currentRecordId.value)?.get('') as Record<
-					string,
-					unknown
-				>),
-			}
+	// Read through the edited record: a draft's siblings are not in HST, so reading there would hand
+	// every validator an empty record.
+	const record = { ...(editedRecord.value?.get('') as Record<string, unknown> | undefined) }
 
 	for (const field of changedFields) {
 		void validationStore.validateField(triggers, field, record)
@@ -454,7 +457,8 @@ const currentView = computed(() => {
 // Computed properties (now that all helper functions are defined)
 // Helper function to get available transitions for current record.
 // Reads the actual FSM state from the record's `status` field (or falls back to the
-// workflow initial state) so the available action buttons always reflect reality.
+// workflow's first state) so the available action buttons always reflect reality. A record
+// not created yet has no state, and is offered only the actions that can run on it.
 const getAvailableTransitions = () => {
 	if (!stonecrop.value || !currentDoctype.value || !currentRecordId.value) {
 		return []
@@ -464,7 +468,8 @@ const getAvailableTransitions = () => {
 		const doctype = stonecrop.value.registry.getDoctype(currentDoctype.value)
 		if (!doctype?.workflow) return []
 
-		// Delegate state resolution to Stonecrop — reads record 'status', falls back to workflow.initial
+		// Delegate state resolution to Stonecrop: reads record 'status', falls back to the workflow's
+		// first state, and is null for a record not created yet
 		const currentState = stonecrop.value.getRecordState(currentDoctype.value, currentRecordId.value)
 
 		// Delegate transition lookup to Doctype — no more manual workflow introspection
@@ -526,6 +531,20 @@ const getAvailableCommands = () => {
 	}
 }
 
+// Every action a list's doctype declares, one button each. A list has no record, so each is raised
+// without a `recordId`.
+const getListActions = (): ActionElements[] => {
+	const doctypeSlug = currentDoctype.value
+	const doctype = doctypeSlug ? stonecrop.value?.registry.getDoctype(doctypeSlug) : undefined
+	if (!doctype) return []
+
+	return doctype.getActions().map(({ name }) => ({
+		type: 'button' as const,
+		label: doctype.getActionMeta(name)?.label ?? name,
+		action: () => emit('action', { name, doctype: doctypeSlug, data: {} }),
+	}))
+}
+
 const actionElements = computed(() => {
 	if (hostActions) {
 		return hostActions
@@ -535,11 +554,7 @@ const actionElements = computed(() => {
 
 	switch (currentView.value) {
 		case 'records':
-			elements.push({
-				type: 'button',
-				label: 'New Record',
-				action: () => void createNewRecord(),
-			})
+			elements.push(...getListActions())
 			break
 		case 'record': {
 			// No actions until there is a record on screen to act on: a new record's starting values, or
@@ -623,12 +638,18 @@ const searchCommands = (query: string): Command[] => {
 			description: `Navigate to ${routeDoctype.value} list`,
 			action: () => void doNavigate({ view: 'records', doctype: routeDoctype.value }),
 		})
+	}
 
-		commands.push({
-			title: `Create New ${formatDoctypeName(routeDoctype.value)}`,
-			description: `Create a new ${routeDoctype.value} record`,
-			action: () => void createNewRecord(),
+	// A list page offers each action its drawer shows, the host's included.
+	if (currentView.value === 'records') {
+		const listActions = actionElements.value.flatMap(element => {
+			if (element.type === 'dropdown') return element.actions
+			return element.disabled ? [] : [element]
 		})
+		for (const { label, action, show } of listActions) {
+			if (!action || show === false) continue
+			commands.push({ title: label, description: `Run on the ${routeDoctype.value} list`, action })
+		}
 	}
 
 	// Add available doctypes as commands
@@ -706,10 +727,6 @@ const openRecord = async (recordId: string) => {
 	await doNavigate({ view: 'record', doctype, recordId })
 }
 
-const createNewRecord = async () => {
-	await doNavigate({ view: 'record', doctype: routeDoctype.value, recordId: DRAFT_RECORD_ID })
-}
-
 // Schema generator functions - moved here to be available to computed properties
 const getDoctypesSchema = (): ResolvedField[] => {
 	if (!availableDoctypes?.length) return []
@@ -745,6 +762,7 @@ const getDoctypesSchema = (): ResolvedField[] => {
 					fieldname: 'actions',
 					label: 'Actions',
 					component: 'ATextInput',
+					cellComponent: ROW_LINK_COMPONENT,
 					align: 'center' as const,
 					edit: false,
 					width: '20ch',
@@ -777,10 +795,13 @@ const getRecordsSchema = (): ResolvedField[] => {
 			kind: 'table' as const,
 			fieldname: 'records_table',
 			component: 'ATable',
-			// Which resolved fields a cell can render is answered once, in @stonecrop/aform, and
-			// called by the child-table builder too. Flattening alone is not the rule: it kept the
-			// expanding links, whose value is a nested record or an array of them.
-			schema: [...resolvedFieldsToColumns(schema), { fieldname: 'actions', label: 'Actions', component: 'ATextInput' }],
+			// Which resolved fields a cell can render is answered once, in @stonecrop/aform; never
+			// re-derive it here. Flattening alone is not the rule: it kept the expanding links, whose
+			// value is a nested record or an array of them.
+			schema: [
+				...resolvedFieldsToColumns(schema),
+				{ fieldname: 'actions', label: 'Actions', component: 'ATextInput', cellComponent: ROW_LINK_COMPONENT },
+			],
 			config: { view: 'list' as const, fullWidth: true },
 			...(clientConfigured ? { getRecords: listRecordsFetcher, sourceKey: doctypeSlug } : {}),
 		} satisfies ResolvedTable,
@@ -859,57 +880,15 @@ const resolveRecordId = (record: Record<string, unknown>): string | undefined =>
 	return stonecrop.value.registry.registry[currentDoctype.value]?.getRecordId(record)
 }
 
-// Event handlers
-const getRecordIdFromRow = (rowElement: HTMLTableRowElement): string | null => {
-	const cell = rowElement.querySelector('td[data-rowindex]')
-	if (!cell) return null
-
-	const rowIndexAttr = cell.getAttribute('data-rowindex')
-	if (rowIndexAttr === null) return null
-
-	const rowIndex = parseInt(rowIndexAttr, 10)
-	if (isNaN(rowIndex)) return null
-
-	const records = getRecords()
-	const record = records[rowIndex]
-	if (!record) return null
-
-	return resolveRecordId(record) ?? null
-}
-
-const handleClick = async (event: Event) => {
-	const target = event.target as HTMLElement
-	const action = target.getAttribute('data-action')
-
-	if (action === 'create') {
-		await createNewRecord()
+// What a list's link opens. Each link is handed its own row, so nothing reads a cell's text to learn what
+// was clicked: a records list's row is a record, and a doctypes list's row a doctype.
+const openListRow = async (row: Record<string, unknown>) => {
+	if (currentView.value === 'doctypes') {
+		await navigateToDoctype(String(row.doctype))
+		return
 	}
-
-	const cell = target.closest('td, th')
-	if (cell) {
-		const cellText = cell.textContent?.trim()
-		const row = cell.closest('tr')
-
-		if (cellText === 'View Records' && row) {
-			// Get the doctype from the row data
-			const cells = row.querySelectorAll('td')
-			if (cells.length > 0) {
-				const doctypeCell = cells[1] // Assuming doctype is in second column (first column is index)
-				const doctype = doctypeCell.textContent?.trim()
-				if (doctype) {
-					await navigateToDoctype(doctype)
-				}
-			}
-		} else if (cellText === 'Edit' && row) {
-			// Matched exactly, not by substring. This handler is bound to the whole desktop, so a
-			// substring match fired on any cell whose *data* happened to contain the word — a task
-			// titled "Delete old backups" popped a delete confirmation when you clicked it.
-			const recordId = getRecordIdFromRow(row)
-			if (recordId) {
-				await openRecord(recordId)
-			}
-		}
-	}
+	const recordId = resolveRecordId(row)
+	if (recordId) await openRecord(recordId)
 }
 
 // Reads go through Stonecrop, which owns whether to fetch, how to key the result, and where to
@@ -967,42 +946,45 @@ watch([currentDoctype, currentRecordId], () => {
 })
 
 // Seeding on entry gives a new record the doctype's declared defaults, which it never used to get.
-// Discarding on exit matters as much: the draft segment is one shared literal, so a stale buffer
-// would open the next New Record pre-filled with the abandoned one's values.
+// Discarding on exit matters as much: the draft segment is one shared literal, so a reused record
+// would open the next new record pre-filled with the abandoned one's values.
 watch(
 	[currentDoctype, currentRecordId],
 	() => {
 		draftLoading.value = false
-		if (!isNewRecord.value) {
-			draftRecord.value = {}
-			return
-		}
-		const registry = stonecrop.value?.registry
+		editedRecord.value = undefined
+		const app = stonecrop.value
 		const slug = currentDoctype.value
-		if (!registry || !slug) {
-			draftRecord.value = {}
+		const recordId = currentRecordId.value
+		if (!app || !slug || !recordId) return
+		if (!isNewRecord.value) {
+			editedRecord.value = app.editRecord(slug, recordId)
 			return
 		}
+		const registry = app.registry
 		const doctype = registry.getDoctype(slug)
 		if (!doctype) {
-			draftRecord.value = registry.initializeRecord(getRecordFormSchema())
+			editedRecord.value = app.editRecord(slug, recordId, registry.initializeRecord(getRecordFormSchema()))
 			return
 		}
-		draftRecord.value = {}
 		draftLoading.value = true
 		const stillHere = () => isNewRecord.value && currentDoctype.value === slug
+		// Taken before the build waits on anything, so only this form uses what the app filled in.
+		const prefill = registry.takePrefill(doctype.slug)
 		void registry
-			.composeNewRecord(doctype)
+			.composeNewRecord(doctype, { prefill })
 			.then(({ record }) => {
 				if (!stillHere()) return undefined
-				draftRecord.value = record
+				editedRecord.value = app.editRecord(slug, recordId, record)
 				return undefined
 			})
 			.catch((error: unknown) => {
 				// A failure outside any one starting value (those are skipped and reported where they fail): open the
 				// form with the schema's own values rather than leave it loading.
 				console.error(`[desktop] Could not prepare a new ${slug}:`, error)
-				if (stillHere()) draftRecord.value = registry.initializeRecord(getRecordFormSchema())
+				if (stillHere()) {
+					editedRecord.value = app.editRecord(slug, recordId, registry.initializeRecord(getRecordFormSchema()))
+				}
 			})
 			.finally(() => {
 				if (stillHere()) draftLoading.value = false
@@ -1018,7 +1000,6 @@ watch(
 const desktopMethods = {
 	navigateToDoctype,
 	openRecord,
-	createNewRecord,
 	/**
 	 * Convenience wrapper so child components (e.g. slot content) can emit
 	 * an action event without needing a direct reference to the emit function.
@@ -1034,6 +1015,12 @@ const desktopMethods = {
 }
 
 provide('desktopMethods', desktopMethods)
+
+// ATable finds a column's cell component only by a name registered on the app, and hosts mount Desktop
+// without installing its plugin, so Desktop registers its list link itself.
+const app = getCurrentInstance()?.appContext.app
+if (app && !app.component(ROW_LINK_COMPONENT)) app.component(ROW_LINK_COMPONENT, DesktopRowLink)
+provide(openListRowKey, openListRow)
 
 // Provide a navigator for AFormLink so the arrow button navigates to the linked record.
 provide('aformLinkNavigator', {
@@ -1076,6 +1063,12 @@ const handleKeydown = (event: KeyboardEvent) => {
 		actionSetController.openSearch()
 	}
 	if (event.key === 'Escape') {
+		// Mid-drag, Escape abandons the resize; the preview stays open.
+		if (previewResizing.value) {
+			event.preventDefault()
+			cancelPreviewResize()
+			return
+		}
 		if (actionSetController.isPreviewOpen.value) {
 			actionSetController.closePreview()
 			return
@@ -1101,7 +1094,7 @@ const visibleActionSetSlots = computed(() =>
 const actionSetController = createActionSet({ doctype: currentDoctype, recordId: currentRecordId })
 provide(actionSetKey, actionSetController)
 
-const actionSetDrawerOpen = computed(() => actionSetController.isDrawerOpen.value)
+const actionSetDrawerOpen = computed(() => actionSetController.isDrawerShown.value)
 const actionSetPreviewOpen = computed(() => actionSetController.isPreviewOpen.value)
 const actionSetPreviewSubject = computed(() => actionSetController.previewSubject.value)
 
@@ -1112,6 +1105,44 @@ watch([currentDoctype, currentRecordId], () => {
 function closeActionSetPreview() {
 	actionSetController.closePreview()
 }
+
+const workspace = ref<HTMLElement | null>(null)
+const {
+	fraction: previewFraction,
+	bounds: previewBounds,
+	resizing: previewResizing,
+	previewStyle,
+	onPointerDown: onPreviewResizeStart,
+	onKeydown: onPreviewResizeKeydown,
+	reset: resetPreviewWidth,
+	cancel: cancelPreviewResize,
+} = usePreviewSplit(workspace)
+
+const previewEl = ref<HTMLElement | null>(null)
+const previewCloseEl = ref<HTMLElement | null>(null)
+// Whatever had focus when the preview opened, usually the control in the drawer that opened it.
+let previewOpener: HTMLElement | null = null
+
+// Runs before the DOM updates, so on close the preview, and whether it holds focus, is still there.
+watch(actionSetPreviewOpen, async open => {
+	if (typeof document === 'undefined') return
+	if (open) {
+		previewOpener = document.activeElement instanceof HTMLElement ? document.activeElement : null
+		await nextTick()
+		// A preview that replaced the drawer has hidden the control that opened it, taking focus with it.
+		if (actionSetController.isDrawerOpen.value && !actionSetController.isDrawerShown.value) {
+			previewCloseEl.value?.focus()
+		}
+		return
+	}
+	cancelPreviewResize()
+	const opener = previewOpener
+	previewOpener = null
+	// Only when the preview held focus: closing it otherwise leaves focus where the user put it.
+	if (!previewEl.value?.contains(document.activeElement)) return
+	await nextTick()
+	if (opener?.isConnected) opener.focus()
+})
 
 onMounted(() => {
 	document.addEventListener('keydown', handleKeydown)
@@ -1172,13 +1203,12 @@ onUnmounted(() => {
 }
 
 .desktop--preview-open .desktop__main {
-	flex: 0 0 calc(50% - 10px);
-	max-width: calc(50% - 10px);
+	flex: 1 1 0;
 }
 
 .desktop__preview {
+	position: relative;
 	flex: 0 0 50%;
-	max-width: 50%;
 	min-width: 0;
 	min-height: 0;
 	display: flex;
@@ -1186,6 +1216,47 @@ onUnmounted(() => {
 	border-left: 1px solid var(--sc-gray-20);
 	background: var(--sc-form-background);
 	overflow: hidden;
+}
+
+.desktop__preview-resize {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	z-index: 1;
+	width: 8px;
+	cursor: col-resize;
+	touch-action: none;
+}
+
+.desktop__preview-resize::before {
+	content: '';
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	width: 2px;
+	background: transparent;
+	transition: background-color 0.15s ease;
+}
+
+.desktop__preview-resize:hover::before,
+.desktop__preview-resize:focus-visible::before,
+.desktop--preview-resizing .desktop__preview-resize::before {
+	background: var(--sc-primary-color);
+}
+
+.desktop__preview-resize:focus-visible {
+	outline: none;
+}
+
+.desktop--preview-resizing {
+	cursor: col-resize;
+	user-select: none;
+}
+
+.desktop--preview-resizing .desktop__preview-body {
+	pointer-events: none;
 }
 
 .desktop__preview-header {

@@ -57,7 +57,6 @@ export const searchIndex: SearchEntry[] = [
 		description: 'Advanced table with tree and Gantt views',
 		url: '/reference/atable',
 	},
-	{ title: 'Beam API Reference', description: 'Mobile-first scanning and MQTT', url: '/reference/beam' },
 	{
 		title: 'Desktop API Reference',
 		description: 'Desktop navigation and command palette',
@@ -72,6 +71,11 @@ export const searchIndex: SearchEntry[] = [
 		title: 'Code Editor API Reference',
 		description: 'Monaco-based code editor',
 		url: '/reference/code-editor',
+	},
+	{
+		title: 'Block Editor API Reference',
+		description: 'Editor.js block editor',
+		url: '/reference/block-editor',
 	},
 	{
 		title: 'Schema API Reference',
@@ -274,6 +278,11 @@ export const searchIndex: SearchEntry[] = [
 		title: 'Code Editor',
 		description: 'A Monaco-based code editor with language, theming, and read-only support',
 		url: '/components/code-editor',
+	},
+	{
+		title: 'Block Editor',
+		description: 'An Editor.js block editor for rich-text fields, rendered by AForm and summarised in ATable',
+		url: '/components/block-editor',
 	},
 	{
 		title: 'Node Editor',

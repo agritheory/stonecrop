@@ -5,7 +5,7 @@ description: A Monaco-based code editor with language, theming, and read-only su
 
 # Code Editor
 
-`ACodeEditor` wraps [Monaco](https://microsoft.github.io/monaco-editor/) (the editor behind VS Code) as a `v-model`-bound Vue component, with a Stonecrop-branded theme applied by default. Monaco itself is loaded lazily via `@monaco-editor/loader`, so the first mount on a page has a brief load delay.
+`ACodeEditor` wraps [Monaco](https://microsoft.github.io/monaco-editor/) (the editor behind VS Code) as a `v-model`-bound Vue component, with a Stonecrop-branded theme applied by default. Monaco itself is loaded lazily via `@monaco-editor/loader`, so the first mount on a page has a brief load delay. It loads from the jsDelivr CDN unless the app serves its own copy and installs the editor with `app.use(install, { vsPath })`; the Stonecrop Nuxt module serves Monaco and does this for you.
 
 ## Import
 

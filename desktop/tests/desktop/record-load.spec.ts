@@ -1,5 +1,5 @@
 import { mount, flushPromises } from '@vue/test-utils'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test'
 import { ref } from 'vue'
 import { List } from 'immutable'
 import { createPinia, setActivePinia } from 'pinia'
@@ -21,7 +21,7 @@ function buildTaskDoctype() {
 		{ kind: 'field' as const, fieldname: 'status', label: 'Status', component: 'ATextInput' },
 	])
 	const workflow = { states: ['draft'], actions: { save: { label: 'Save', selfTransition: true } } }
-	return new Doctype('task', fields as any, workflow as any)
+	return new Doctype('task', fields, workflow as any)
 }
 
 describe('Desktop reading a record', { tags: ['component'] }, () => {

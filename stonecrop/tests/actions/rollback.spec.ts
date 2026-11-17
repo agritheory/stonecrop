@@ -1,6 +1,6 @@
 import { Map } from 'immutable'
 import { setActivePinia, createPinia } from 'pinia'
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test'
 
 import Doctype from '../../src/doctype'
 import type { HSTNode } from '../../src/stores'
@@ -82,6 +82,8 @@ describe('Field Trigger Rollback', { tags: ['unit'] }, () => {
 				doctype: 'Contact',
 				recordId: 'contact-1',
 				timestamp: new Date(),
+				get: () => undefined,
+				set: () => undefined,
 				store,
 			}
 
@@ -128,6 +130,8 @@ describe('Field Trigger Rollback', { tags: ['unit'] }, () => {
 				doctype: 'Contact',
 				recordId: 'contact-1',
 				timestamp: new Date(),
+				get: () => undefined,
+				set: () => undefined,
 				store,
 			}
 
@@ -185,6 +189,8 @@ describe('Field Trigger Rollback', { tags: ['unit'] }, () => {
 				doctype: 'Contact',
 				recordId: 'contact-1',
 				timestamp: new Date(),
+				get: () => undefined,
+				set: () => undefined,
 				store,
 			}
 
@@ -233,6 +239,8 @@ describe('Field Trigger Rollback', { tags: ['unit'] }, () => {
 				doctype: 'Contact',
 				recordId: 'contact-1',
 				timestamp: new Date(),
+				get: () => undefined,
+				set: () => undefined,
 				store,
 			}
 
@@ -287,6 +295,8 @@ describe('Field Trigger Rollback', { tags: ['unit'] }, () => {
 				doctype: 'Contact',
 				recordId: 'contact-1',
 				timestamp: new Date(),
+				get: () => undefined,
+				set: () => undefined,
 				store,
 			}
 
@@ -326,6 +336,8 @@ describe('Field Trigger Rollback', { tags: ['unit'] }, () => {
 				doctype: 'Settings',
 				// No recordId
 				timestamp: new Date(),
+				get: () => undefined,
+				set: () => undefined,
 				store,
 			}
 
@@ -359,6 +371,8 @@ describe('Field Trigger Rollback', { tags: ['unit'] }, () => {
 				doctype: 'Contact',
 				recordId: 'contact-1',
 				timestamp: new Date(),
+				get: () => undefined,
+				set: () => undefined,
 				// No store
 			}
 
@@ -407,6 +421,8 @@ describe('Field Trigger Rollback', { tags: ['unit'] }, () => {
 				doctype: 'Contact',
 				recordId: 'contact-1',
 				timestamp: new Date(),
+				get: () => undefined,
+				set: () => undefined,
 				// deliberately partial mock — only get/set are exercised by the failing-rollback path
 				store: mockStore as unknown as HSTNode,
 			}
@@ -462,6 +478,8 @@ describe('Field Trigger Rollback', { tags: ['unit'] }, () => {
 				doctype: 'Contact',
 				recordId: 'contact-1',
 				timestamp: new Date(),
+				get: () => undefined,
+				set: () => undefined,
 				store,
 			}
 
@@ -516,6 +534,8 @@ describe('Field Trigger Rollback', { tags: ['unit'] }, () => {
 				doctype: 'Contact',
 				recordId: 'contact-1',
 				timestamp: new Date(),
+				get: () => undefined,
+				set: () => undefined,
 				store,
 			}
 
@@ -539,6 +559,8 @@ describe('Field Trigger Rollback', { tags: ['unit'] }, () => {
 				doctype: 'Contact',
 				recordId: 'contact-1',
 				timestamp: new Date(),
+				get: () => undefined,
+				set: () => undefined,
 				store,
 			}
 
@@ -583,6 +605,8 @@ describe('Field Trigger Rollback', { tags: ['unit'] }, () => {
 				doctype: 'Contact',
 				recordId: 'contact-1',
 				timestamp: new Date(),
+				get: () => undefined,
+				set: () => undefined,
 				store,
 			}
 
@@ -603,6 +627,8 @@ describe('Field Trigger Rollback', { tags: ['unit'] }, () => {
 				doctype: 'Contact',
 				recordId: 'contact-1',
 				timestamp: new Date(),
+				get: () => undefined,
+				set: () => undefined,
 				store,
 			}
 
@@ -651,6 +677,8 @@ describe('Field Trigger Rollback', { tags: ['unit'] }, () => {
 				doctype: 'Contact',
 				recordId: 'contact-1',
 				timestamp: new Date(),
+				get: () => undefined,
+				set: () => undefined,
 				store,
 			}
 

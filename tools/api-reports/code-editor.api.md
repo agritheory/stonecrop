@@ -15,7 +15,12 @@ import { PublicProps } from 'vue';
 export const ACodeEditor: typeof __VLS_export;
 
 // @public
-export function install(app: App): void;
+export function install(app: App, options?: InstallOptions): void;
+
+// @public
+export type InstallOptions = {
+    vsPath?: string;
+};
 
 // (No @packageDocumentation comment for this package)
 

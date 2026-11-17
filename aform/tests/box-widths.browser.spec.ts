@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it } from 'vite-plus/test'
 import { mount, type VueWrapper } from '@vue/test-utils'
 import { type Component, defineComponent, h, nextTick } from 'vue'
 

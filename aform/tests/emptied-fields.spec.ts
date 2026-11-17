@@ -1,6 +1,6 @@
 import { mount } from '@vue/test-utils'
 import { COMPONENT_CATEGORY, type ComponentCategory } from '@stonecrop/schema'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it } from 'vite-plus/test'
 import type { Component } from 'vue'
 
 import * as aform from '../src'
@@ -31,8 +31,12 @@ const SAMPLE_VALUES: Record<string, unknown> = {
 	ASemverInput: '1.2.3',
 }
 
+// Fields whose component another package ships, so aform cannot mount it here. `AEditor` (`@stonecrop/block-editor`) holds
+// null once its blocks are deleted, as these fields do; block_editor/tests/AEditor.spec.ts checks it.
+const OTHER_PACKAGES = new Set(['AEditor'])
+
 const typedFields = Object.entries(COMPONENT_CATEGORY)
-	.filter(([, category]) => !TEXT_CATEGORIES.has(category))
+	.filter(([name, category]) => !TEXT_CATEGORIES.has(category) && !OTHER_PACKAGES.has(name))
 	.map(([name]) => name)
 
 const mountField = (name: string) => {

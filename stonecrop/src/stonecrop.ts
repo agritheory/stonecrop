@@ -9,9 +9,12 @@ import { reactive } from 'vue'
 
 import Doctype from './doctype'
 import { isDraftRecordId } from './draft'
+import { newRecord } from './edit-record'
+import { recordInStore, recordPath } from './record-access'
 import Registry from './registry'
 import { createHST, type HSTNode } from './stores/hst'
 import { useOperationLogStore } from './stores/operation-log'
+import type { EditableRecord } from './types/editable-record'
 import type { OperationLogConfig } from './types/operation-log'
 import type { RouteContext } from './types/registry'
 import type { PageInfo, StonecropOptions } from './types/stonecrop'
@@ -159,14 +162,37 @@ export class Stonecrop {
 	 * @param doctype - The doctype
 	 * @param recordId - The record ID
 	 * @param recordData - The record data
+	 * @throws Error if `recordId` is empty, or holds a dot or a bracket
 	 */
 	addRecord(doctype: string | Doctype, recordId: string, recordData: any): void {
 		const slug = typeof doctype === 'string' ? doctype : doctype.slug
+		const path = recordPath(slug, recordId)
 
 		this.ensureDoctypeExists(slug)
 
 		// Store raw record data - let HST handle wrapping with proper hierarchy
-		this.hstStore.set(`${slug}.${recordId}`, recordData)
+		this.hstStore.set(path, recordData)
+	}
+
+	/**
+	 * The record a form is editing, read and set by field name; setting a field runs its rules. A
+	 * saved record is read and set through the store. A record not saved yet (`recordId` is
+	 * {@link DRAFT_RECORD_ID}) is held by the object returned, never in the store, and each call
+	 * returns a new one, holding only its starting values.
+	 * @param doctype - The doctype
+	 * @param recordId - The record ID, or {@link DRAFT_RECORD_ID} for a record not saved yet
+	 * @param startingValues - A record not saved yet's values before anything is set, such as
+	 * {@link Registry.composeNewRecord} gives; they run no rules. Only a new record takes them.
+	 * @returns The record to read and set
+	 * @throws Error if `recordId` is empty, or holds a dot or a bracket
+	 */
+	editRecord(doctype: string | Doctype, recordId: string, startingValues?: Record<string, unknown>): EditableRecord {
+		const slug = typeof doctype === 'string' ? doctype : doctype.slug
+		if (isDraftRecordId(recordId)) return newRecord(slug, this.hstStore, startingValues)
+		if (startingValues) throw new Error(`Starting values are only for a new record, not ${slug} ${recordId}`)
+
+		this.ensureDoctypeExists(slug)
+		return recordInStore(this.hstStore, recordPath(slug, recordId))
 	}
 
 	/**
@@ -174,39 +200,43 @@ export class Stonecrop {
 	 * @param doctype - The doctype
 	 * @param recordId - The record ID
 	 * @returns HST node for the record or undefined
+	 * @throws Error if `recordId` is empty, or holds a dot or a bracket
 	 */
 	getRecordById(doctype: string | Doctype, recordId: string): HSTNode | undefined {
 		const slug = typeof doctype === 'string' ? doctype : doctype.slug
+		const path = recordPath(slug, recordId)
 		this.ensureDoctypeExists(slug)
 
 		// First check if the record exists
-		const recordExists = this.hstStore.has(`${slug}.${recordId}`)
+		const recordExists = this.hstStore.has(path)
 		if (!recordExists) {
 			return undefined
 		}
 
 		// Check if the actual value is undefined (i.e., record was removed)
-		const recordValue = this.hstStore.get(`${slug}.${recordId}`)
+		const recordValue = this.hstStore.get(path)
 		if (recordValue === undefined) {
 			return undefined
 		}
 
 		// Use getNode to get the properly wrapped HST node with correct ancestor relationships
-		return this.hstStore.getNode(`${slug}.${recordId}`)
+		return this.hstStore.getNode(path)
 	}
 
 	/**
 	 * Remove a record from the store
 	 * @param doctype - The doctype
 	 * @param recordId - The record ID
+	 * @throws Error if `recordId` is empty, or holds a dot or a bracket
 	 */
 	removeRecord(doctype: string | Doctype, recordId: string): void {
 		const slug = typeof doctype === 'string' ? doctype : doctype.slug
+		const path = recordPath(slug, recordId)
 		this.ensureDoctypeExists(slug)
 
 		// Remove the specific record directly by setting to undefined
-		if (this.hstStore.has(`${slug}.${recordId}`)) {
-			this.hstStore.set(`${slug}.${recordId}`, undefined)
+		if (this.hstStore.has(path)) {
+			this.hstStore.set(path, undefined)
 		}
 	}
 
@@ -262,7 +292,7 @@ export class Stonecrop {
 			return link.blockWorkflows
 		}
 		// TODO: For custom fetch handlers, this returns false (not blocking), but the custom handler
-		// may still be invoked by useLazyLink. Future: custom handlers should be able to declare they
+		// may still run when the link loads lazily. Future: custom handlers should be able to declare they
 		// satisfy blockWorkflows, or validation should reject custom + blockWorkflows: true.
 		return link.fetch?.method === 'sync'
 	}
@@ -273,19 +303,21 @@ export class Stonecrop {
 	 * @param doctype - The doctype to check
 	 * @param recordId - The record ID
 	 * @returns Object with `ready: true` if all blocked links are loaded, or `ready: false` with `blockedLinks` array
+	 * @throws Error if `recordId` is empty, or holds a dot or a bracket
 	 */
 	isWorkflowReady(doctype: Doctype, recordId: string): { ready: boolean; blockedLinks?: string[] } {
 		// New records don't block workflows - they haven't been saved yet
 		if (isDraftRecordId(recordId)) {
 			return { ready: true }
 		}
+		const path = recordPath(doctype.slug, recordId)
 
 		const links = this.registry.getDescendantLinks(doctype.slug)
 		const blockedLinks: string[] = []
 
 		for (const link of links) {
 			if (this.getEffectiveBlockWorkflows(link)) {
-				const linkPath = `${doctype.slug}.${recordId}.${link.fieldname}`
+				const linkPath = `${path}.${link.fieldname}`
 				if (!this.hstStore.has(linkPath)) {
 					blockedLinks.push(link.fieldname)
 				}
@@ -399,6 +431,7 @@ export class Stonecrop {
 	 * @throws Error if no data client has been configured
 	 * @throws Error if a slug string is given and no matching doctype is found in the registry
 	 * @throws Error with code `"RECORD_NOT_FOUND"` if the server returns no record
+	 * @throws Error if `recordId` is empty, or holds a dot or a bracket
 	 * @public
 	 */
 	async getRecord(doctype: string | Doctype, recordId: string, options?: GetRecordOptions): Promise<void> {
@@ -516,19 +549,26 @@ export class Stonecrop {
 	 * Determine the current workflow state for a record.
 	 *
 	 * Reads the record's `status` field from the HST store. If the field is absent or
-	 * empty the doctype's declared `workflow.initial` state is used as the fallback,
+	 * empty the workflow's first listed state (an XState workflow's `initial`) is used as the fallback,
 	 * giving callers a reliable state name without having to duplicate that logic.
+	 *
+	 * A record not created yet ({@link DRAFT_RECORD_ID}) is in no state, as the server guard
+	 * treats it: pass the `null` returned to `Doctype.getAvailableTransitions` and
+	 * `Doctype.getAvailableCommands` to list the actions that can run on it.
 	 *
 	 * @param doctype - The doctype slug or Doctype instance
 	 * @param recordId - The record identifier
-	 * @returns The current state name, or an empty string if the doctype has no workflow
+	 * @returns The current state name, `null` for a record not created yet, or an empty string if
+	 * the doctype has no workflow
+	 * @throws Error if the doctype has a workflow and `recordId` is empty, or holds a dot or a bracket
 	 *
 	 * @public
 	 */
-	getRecordState(doctype: string | Doctype, recordId: string): string {
+	getRecordState(doctype: string | Doctype, recordId: string): string | null {
 		const slug = typeof doctype === 'string' ? doctype : doctype.slug
 		const meta = this.registry.getDoctype(slug)
 		if (!meta?.workflow) return ''
+		if (isDraftRecordId(recordId)) return null
 
 		const record = this.getRecordById(slug, recordId)
 		// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- HSTNode.get returns any; status is always string in workflow records
@@ -559,18 +599,19 @@ export class Stonecrop {
 	 * @param doctype - The doctype metadata
 	 * @param recordId - The record ID to collect
 	 * @returns The complete record payload ready for API submission
+	 * @throws Error if `recordId` is empty, or holds a dot or a bracket
 	 * @public
 	 */
 	collectRecordPayload(doctype: Doctype, recordId: string): Record<string, any> {
-		const recordPath = `${doctype.slug}.${recordId}`
-		const recordData = this.hstStore.get(recordPath) || {}
+		const path = recordPath(doctype.slug, recordId)
+		const recordData = this.hstStore.get(path) || {}
 
 		const payload: Record<string, any> = { ...recordData }
 
 		// Collect nested data from links
 		if (doctype.links) {
 			for (const [fieldname, link] of Object.entries(doctype.links)) {
-				const fieldPath = `${recordPath}.${fieldname}`
+				const fieldPath = `${path}.${fieldname}`
 				const isMany = link.cardinality === 'noneOrMany' || link.cardinality === 'atLeastOne'
 
 				if (isMany) {
@@ -634,6 +675,7 @@ export class Stonecrop {
 	 * @param options - Query options (includeNested to control which links are fetched)
 	 * @throws Error with code `"CLIENT_REQUIRED"` if no data client is configured
 	 * @throws Error with code `"RECORD_NOT_FOUND"` if the server returns null
+	 * @throws Error if `recordId` is empty, or holds a dot or a bracket
 	 * @public
 	 */
 	async fetchNestedData(
@@ -649,6 +691,7 @@ export class Stonecrop {
 				'CLIENT_REQUIRED'
 			)
 		}
+		const storePath = recordPath(doctype.slug, recordId)
 
 		const result = await this._client.getRecord({ name: doctype.doctype }, recordId, {
 			includeNested: options?.includeNested ?? true,
@@ -659,17 +702,16 @@ export class Stonecrop {
 		}
 
 		// Store each scalar field at its own HST path, descendants at link-level path
-		const slug = doctype.slug
-		this.ensureDoctypeExists(slug)
+		this.ensureDoctypeExists(doctype.slug)
 
 		// Ensure the ancestor path exists in HST before setting descendant fields
-		const existingData = this.hstStore.get(`${slug}.${recordId}`)
+		const existingData = this.hstStore.get(storePath)
 		if (!existingData) {
-			this.hstStore.set(`${slug}.${recordId}`, {}, 'system')
+			this.hstStore.set(storePath, {}, 'system')
 		}
 
 		for (const [key, value] of Object.entries(result.record)) {
-			this.hstStore.set(`${slug}.${recordId}.${key}`, value, 'system')
+			this.hstStore.set(`${storePath}.${key}`, value, 'system')
 		}
 	}
 

@@ -1,0 +1,5 @@
+{
+	"name": "registry-install",
+	"private": true,
+	"type": "module"
+}

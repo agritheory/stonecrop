@@ -29,6 +29,9 @@ interface MockConnection {
 /** A mutation payload. The mock nests the record under a camelCased type key. */
 type MockMutationPayload = Record<string, unknown>
 
+/** One action's reply, declared for the reason `templates/resolvers.ts` gives its own. */
+type ActionReply = { success: boolean; data: unknown; error: string | null; record?: unknown }
+
 // ============================================
 // Type Helpers
 // ============================================
@@ -244,7 +247,7 @@ export default {
 					}),
 					async (specs: readonly any[]) => {
 						return Promise.all(
-							specs.map(async spec => {
+							specs.map(async (spec): Promise<ActionReply> => {
 								const meta = getMeta(spec.doctype)
 								if (!meta) {
 									return {
@@ -279,7 +282,8 @@ export default {
 										{
 											readState: async () => {
 												// `null` means "no such record" and `undefined` means "exists, no
-												// state" — the dispatcher rejects the first outright. Returning
+												// state": the dispatcher refuses an action on the first, except a
+												// self-transition, which creates the record. Returning
 												// `undefined` for both is what let a Save on a record that was
 												// never created report success while persisting nothing.
 												if (recordId == null) return null
@@ -289,7 +293,16 @@ export default {
 													{ status?: string | null } | undefined
 												>
 												const record = result[queryName]
-												if (!record) return null
+												if (!record) {
+													// An id that matches nothing is a record deleted since it was read, and
+													// saving it as a create would report a lost update as a success.
+													if (actionDef.selfTransition === true) {
+														throw new Error(
+															`${actionDef.label ?? spec.action} failed: record ${String(recordId)} no longer exists.`
+														)
+													}
+													return null
+												}
 												return record.status == null ? undefined : String(record.status)
 											},
 											writeState: async (nextState: string) => {
@@ -340,6 +353,16 @@ export default {
 											: undefined
 									const readId = repliedId ?? recordId
 									const record = outcome.success && readId != null ? await readRecord(meta, readId) : null
+									// A save with no record to file leaves the page on its draft, whose next save
+									// creates a second record. This store cannot undo what a handler wrote.
+									if (outcome.success && actionDef.selfTransition === true && record === null) {
+										return {
+											success: false,
+											data: null,
+											error: `${actionDef.label ?? spec.action} failed: the server did not say which record it saved.`,
+											record: null,
+										}
+									}
 									return { ...outcome, record }
 								} catch (err) {
 									return {

@@ -3,7 +3,7 @@
 import { type GraphQLObjectType, type GraphQLSchema } from 'postgraphile/graphql'
 import { makeSchema } from 'postgraphile'
 import { makePgService } from 'postgraphile/adaptors/pg'
-import { describe, it, expect, beforeAll, inject } from 'vitest'
+import { describe, it, expect, beforeAll, inject } from 'vite-plus/test'
 
 import { convertGraphQLSchema } from '@stonecrop/schema'
 import { printSchema } from 'postgraphile/graphql'

@@ -2,6 +2,7 @@ import type { FetchStrategy, CustomFetch } from '@stonecrop/schema'
 import { computed, inject, ref } from 'vue'
 
 import Doctype from '../doctype'
+import { recordPath } from '../record-access'
 import { Stonecrop } from '../stonecrop'
 import type { LazyLink } from '../types/composable'
 
@@ -9,21 +10,30 @@ import type { LazyLink } from '../types/composable'
  * Get the lazy link state for a specific link field on a doctype record.
  *
  * This composable provides reactive state for lazy-loaded links:
+ *
  * - `loading`: true while fetching
+ *
  * - `loaded`: true after successful fetch (permanent until reload)
+ *
  * - `error`: error state if any
+ *
  * - `reload()`: explicitly trigger a fetch
+ *
  * - `data`: computed from HST, or undefined if not loaded
  *
  * The reload() function respects the link's fetch strategy:
+ *
  * - `sync`: fetches via GraphQL query through fetchNestedData
+ *
  * - `lazy`: fetches via GraphQL query through fetchNestedData
+ *
  * - `custom`: invokes the serialized handler function directly
  *
  * @param doctype - The doctype instance
  * @param recordId - The record ID
  * @param linkFieldname - The link fieldname to load
  * @returns LazyLink with loading, loaded, error, reload, and data
+ * @throws Error if `recordId` is empty, or holds a dot or a bracket
  * @public
  */
 export function useLazyLink(doctype: Doctype, recordId: string, linkFieldname: string): LazyLink {
@@ -32,6 +42,7 @@ export function useLazyLink(doctype: Doctype, recordId: string, linkFieldname: s
 	if (!stonecropInstance) {
 		throw new Error('Stonecrop instance not available. Ensure useStonecrop() has been called first.')
 	}
+	const storePath = recordPath(doctype.slug || doctype.doctype, recordId)
 
 	const loading = ref(false)
 	const loaded = ref(false)
@@ -42,10 +53,7 @@ export function useLazyLink(doctype: Doctype, recordId: string, linkFieldname: s
 	/**
 	 * Build the HST path for a lazy link field
 	 */
-	const getLinkPath = (): string => {
-		const slug = doctype.slug || doctype.doctype
-		return `${slug}.${recordId}.${linkFieldname}`
-	}
+	const getLinkPath = (): string => `${storePath}.${linkFieldname}`
 
 	/**
 	 * Get the link declaration from the doctype schema
@@ -82,12 +90,11 @@ export function useLazyLink(doctype: Doctype, recordId: string, linkFieldname: s
 	 */
 	const fetchLinkData = async (): Promise<void> => {
 		const linkFetch = getLinkDeclaration()
-		const ancestorPath = `${doctype.slug || doctype.doctype}.${recordId}`
 
 		if (linkFetch?.method === 'custom') {
 			// Ensure ancestor path exists before invoking custom handler
-			if (!hstStore.has(ancestorPath)) {
-				hstStore.set(ancestorPath, {}, 'system')
+			if (!hstStore.has(storePath)) {
+				hstStore.set(storePath, {}, 'system')
 			}
 
 			// Custom handler - invoke directly
@@ -98,7 +105,7 @@ export function useLazyLink(doctype: Doctype, recordId: string, linkFieldname: s
 		} else {
 			// sync or lazy (both use fetchNestedData but with different includeNested)
 			// For lazy links, we still use fetchNestedData but only for this specific link
-			await stonecropInstance.fetchNestedData(ancestorPath, doctype, recordId, { includeNested: [linkFieldname] })
+			await stonecropInstance.fetchNestedData(storePath, doctype, recordId, { includeNested: [linkFieldname] })
 		}
 	}
 

@@ -31,7 +31,7 @@ function stubNuxt() {
 			css: [],
 			alias: {},
 			vite: {},
-			runtimeConfig: {},
+			runtimeConfig: { public: {} },
 			build: { transpile: [] },
 			nitro: {},
 			modules: [],

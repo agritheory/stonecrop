@@ -66,8 +66,7 @@
 import { useDraggable, useElementBounding } from '@vueuse/core'
 import { ref, computed, onMounted, onUnmounted, useTemplateRef, type StyleValue } from 'vue'
 
-import { createTableStore } from '../stores/table'
-import type { ConnectionPath } from '../types'
+import type { ConnectionPath, TableStore } from '../types'
 
 const {
 	store,
@@ -80,7 +79,7 @@ const {
 	label = '',
 	color = '#cccccc',
 } = defineProps<{
-	store: ReturnType<typeof createTableStore>
+	store: TableStore
 	columnsCount: number
 	rowIndex: number
 	colIndex: number

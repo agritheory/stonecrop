@@ -1,5 +1,5 @@
 import { mount } from '@vue/test-utils'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it } from 'vite-plus/test'
 
 import ABadge from '../src/components/form/ABadge.vue'
 import { badgeInputAccentStyle, resolveFieldBadge } from '../src/utils/badge'

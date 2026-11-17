@@ -28,17 +28,18 @@ export interface FullstackActionContext {
 	action: string
 	/** Resolved doctype metadata. */
 	meta: DoctypeMeta
-	/** The target record's identity, from the argument envelope. Absent for a record-less command. */
+	/** The target record's identity, from the argument envelope. Absent for a record not created yet, and for a record-less command. */
 	recordId?: string | number
 	/** Record field data the client sent. Unvalidated browser input — `args` is an opaque JSON scalar. */
 	data: Record<string, unknown>
-	/** The state the guard read, or `undefined` when nothing about the action required reading it. */
+	/** The state the guard read (`''` for a record with no state), or `undefined` when nothing required reading it or the record does not exist yet. */
 	currentState?: string
 }
 
 /**
- * Returning the updated record makes it the client writeback payload; returning `undefined` leaves
- * the doctype's own outcome to decide. Throwing rejects the action, and no state is written.
+ * What it returns becomes the result's `data`; the client stores the record as a read returns it
+ * after the action. A Save's handler must return the record it saved. Throwing rejects the action,
+ * and no state is written.
  */
 export type FullstackActionHandler = (context: FullstackActionContext) => Promise<unknown>
 

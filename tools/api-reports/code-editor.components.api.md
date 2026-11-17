@@ -7,6 +7,7 @@
 ```ts
 // src/components/ACodeEditor.vue
 props: {
+  modelValue?: unknown
   height?: string \| undefined
   mode?: "edit" \| "read" \| "display" \| undefined
   schema?: EditorSchema \| undefined
@@ -15,10 +16,9 @@ props: {
   vsPath?: string \| undefined
   extraLibs?: string \| undefined
   libs?: string[] \| undefined
-  modelValue?: string \| undefined
 }
 emits: {
-  update:modelValue: [value: string \| undefined]
+  update:modelValue: [value: string]
 }
 slots: {}
 ```

@@ -1,7 +1,7 @@
 import { mount } from '@vue/test-utils'
 import { List } from 'immutable'
 import type { DoctypeField } from '@stonecrop/schema'
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach } from 'vite-plus/test'
 import { nextTick, defineComponent, computed, ref } from 'vue'
 import type { UnknownMachineConfig } from 'xstate'
 

@@ -3,15 +3,17 @@
  * @public
  */
 
+import type { EditableRecord } from './editable-record'
 import type { HSTNode } from './hst'
 
 /**
- * Context provided to action functions when field changes occur
+ * Context provided to action functions when field changes occur. Its `get` and `set` reach the
+ * record whose field changed, saved or not saved yet.
  * @public
  */
-export interface FieldChangeContext {
-	/** The HST path that was changed */
-	path: string
+export interface FieldChangeContext extends EditableRecord {
+	/** The HST path that was changed; absent for a record not saved yet, which is not in the store */
+	path?: string
 	/** The field name (last segment of path) */
 	fieldname: string
 	/** Value before the change */
@@ -22,7 +24,7 @@ export interface FieldChangeContext {
 	operation: 'set' | 'delete' | 'patch'
 	/** The doctype of the record being changed */
 	doctype: string
-	/** The record ID if applicable */
+	/** The record ID; absent for a record not saved yet */
 	recordId?: string
 	/** Timestamp of the change */
 	timestamp: Date
@@ -158,8 +160,8 @@ export interface TransitionExecutionResult {
  * @public
  */
 export interface FieldTriggerExecutionResult {
-	/** The path that triggered the actions */
-	path: string
+	/** The path that triggered the actions; absent for a record not saved yet */
+	path?: string
 	/** Results for each action that was executed */
 	actionResults: ActionExecutionResult[]
 	/** Total execution time for all actions */

@@ -1,5 +1,428 @@
 # Change Log - @stonecrop/aform
 
+## 0.62.4
+
+### Patch Changes
+
+- Updated dependencies [624a7d8]
+  - @stonecrop/atable@0.62.4
+  - @stonecrop/schema@0.62.4
+  - @stonecrop/themes@0.62.4
+  - @stonecrop/utilities@0.62.4
+
+## 0.62.3
+
+### Patch Changes
+
+- Updated dependencies [ce11081]
+  - @stonecrop/atable@0.62.3
+  - @stonecrop/schema@0.62.3
+  - @stonecrop/themes@0.62.3
+  - @stonecrop/utilities@0.62.3
+
+## 0.62.2
+
+### Patch Changes
+
+- 6ad5ee5: A fieldset's indent no longer reaches forms nested deeper inside it. Only the form a fieldset or a linked record holds directly is indented, with its thinner left border. A table's expanded row inside a fieldset now starts its fields where it would outside one, instead of 8px further right.
+- @stonecrop/atable@0.62.2
+  - @stonecrop/schema@0.62.2
+  - @stonecrop/themes@0.62.2
+  - @stonecrop/utilities@0.62.2
+
+## 0.62.1
+
+### Patch Changes
+
+- @stonecrop/atable@0.62.1
+  - @stonecrop/schema@0.62.1
+  - @stonecrop/themes@0.62.1
+  - @stonecrop/utilities@0.62.1
+
+## 0.62.0
+
+### Patch Changes
+
+- 3635b61: An empty table now shows a full-width "No data" row (or "No matching records" when filters hide every row) once its rows have loaded. When the host sets `config.addable`, the row also offers "Add row", which adds a row through `store.addRow()` and emits `row:add`. Hosts can replace the row through the `empty` slot.
+  
+  A doctype's table field can turn this on with `addable` in its `TableViewConfig`; AForm turns it off while the form can't edit the record.
+  
+  The empty row, the pagination footer and the list-expansion panel now span the same `store.columnCount`, so the footer no longer stops one column short with row actions on. A table with a pinned column that starts out empty now sizes the pinned column from its first data row once one arrives.
+- Updated dependencies [3635b61]
+  - @stonecrop/atable@0.62.0
+  - @stonecrop/schema@0.62.0
+  - @stonecrop/themes@0.62.0
+  - @stonecrop/utilities@0.62.0
+
+## 0.61.0
+
+### Patch Changes
+
+- Updated dependencies [3c3539d]
+  - @stonecrop/schema@0.61.0
+  - @stonecrop/utilities@0.61.0
+  - @stonecrop/atable@0.61.0
+  - @stonecrop/themes@0.61.0
+
+## 0.60.2
+
+### Patch Changes
+
+- a8c9d8c: A link field now shows only the results of its latest search: with an async `filterFunction`, an earlier search that answered after a later one replaced the later one's matches, so typing a name quickly could leave the matches for its first few letters on screen. An older search also no longer clears the loading state while the latest is still pending.
+- @stonecrop/atable@0.60.2
+  - @stonecrop/schema@0.60.2
+  - @stonecrop/themes@0.60.2
+  - @stonecrop/utilities@0.60.2
+
+## 0.60.1
+
+### Patch Changes
+
+- 35ea6ea: A field's static `validation.errorMessage` is no longer shown as an error on its own. Before, a field with one showed it on every record, valid or not, and marked its input `aria-invalid`, so a "Validation message" set in DocBuilder sat on every record and a screen reader announced the field as invalid.
+  
+  The message now words an error a trigger reports without one: `setError(field)`, with the message left out, shows that field's own Validation message. AForm applies the wording before it routes errors, so a field bound to another field's part (totals sharing one currency) shows that part's own message, and fieldset children and link fields are covered too; a field component only shows the errors it is handed. `flattenFields` is generic, so it walks resolved fields as well as authored ones. DocBuilder's trigger editor shows `setError(field, message?)`, and the Validation message input says when it is shown.
+- Updated dependencies [35ea6ea]
+  - @stonecrop/schema@0.60.1
+  - @stonecrop/atable@0.60.1
+  - @stonecrop/themes@0.60.1
+  - @stonecrop/utilities@0.60.1
+
+## 0.60.0
+
+### Minor Changes
+
+- aea0baf: AForm reports an edit as a new record and no longer writes into the data it was given, so undo restores an edit made in the form's own expanded rows.
+- aea0baf: A form that nothing listens to for `update:data` shows its fields read-only, since an edit made in it would reach no one.
+
+### Patch Changes
+
+- aea0baf: A table inside a form in `read` or `display` mode no longer lets its editable columns' cells be edited.
+- Updated dependencies [aea0baf]
+  - @stonecrop/atable@0.60.0
+  - @stonecrop/schema@0.60.0
+  - @stonecrop/themes@0.60.0
+  - @stonecrop/utilities@0.60.0
+
+## 0.59.0
+
+### Patch Changes
+
+- @stonecrop/atable@0.59.0
+  - @stonecrop/schema@0.59.0
+  - @stonecrop/themes@0.59.0
+  - @stonecrop/utilities@0.59.0
+
+## 0.58.4
+
+### Patch Changes
+
+- 07be796: A link field now shows its `errors` (or a static `validation.errorMessage`) the way text inputs do, and marks its input `aria-invalid` with `aria-describedby` pointing at the message. Embedded link fields still leave the error to their host.
+- @stonecrop/atable@0.58.4
+  - @stonecrop/schema@0.58.4
+  - @stonecrop/themes@0.58.4
+  - @stonecrop/utilities@0.58.4
+
+## 0.58.3
+
+### Patch Changes
+
+- 44b7eb5: A link field now shows its open-record arrow only when it has a value, a `doctype` and an app-provided `aformLinkNavigator`. A link with no doctype (e.g. a unit stored by its name) no longer shows an arrow that does nothing but log a warning.
+- @stonecrop/atable@0.58.3
+  - @stonecrop/schema@0.58.3
+  - @stonecrop/themes@0.58.3
+  - @stonecrop/utilities@0.58.3
+
+## 0.58.2
+
+### Patch Changes
+
+- Updated dependencies [4a1a274]
+  - @stonecrop/atable@0.58.2
+  - @stonecrop/schema@0.58.2
+  - @stonecrop/themes@0.58.2
+  - @stonecrop/utilities@0.58.2
+
+## 0.58.1
+
+### Patch Changes
+
+- b46e712: A link field can now be emptied: clearing its text and leaving the field sets its value to `null`.
+- @stonecrop/atable@0.58.1
+  - @stonecrop/schema@0.58.1
+  - @stonecrop/themes@0.58.1
+  - @stonecrop/utilities@0.58.1
+
+## 0.58.0
+
+### Minor Changes
+
+- 246be00: A field rendered by an app's own component, a table among them, may declare `parts` naming the other fields of its record it reads. AForm hands them to the component from the record it edits, so they work before the record is first saved. Stonecrop's own single-value inputs and ATable still declare none.
+
+### Patch Changes
+
+- Updated dependencies [246be00]
+  - @stonecrop/schema@0.58.0
+  - @stonecrop/atable@0.58.0
+  - @stonecrop/themes@0.58.0
+  - @stonecrop/utilities@0.58.0
+
+## 0.57.0
+
+### Patch Changes
+
+- Updated dependencies [e816b7b]
+  - @stonecrop/schema@0.57.0
+  - @stonecrop/atable@0.57.0
+  - @stonecrop/themes@0.57.0
+  - @stonecrop/utilities@0.57.0
+
+## 0.56.4
+
+### Patch Changes
+
+- Updated dependencies [e02c837]
+  - @stonecrop/schema@0.56.4
+  - @stonecrop/atable@0.56.4
+  - @stonecrop/themes@0.56.4
+  - @stonecrop/utilities@0.56.4
+
+## 0.56.3
+
+### Patch Changes
+
+- @stonecrop/atable@0.56.3
+  - @stonecrop/schema@0.56.3
+  - @stonecrop/themes@0.56.3
+  - @stonecrop/utilities@0.56.3
+
+## 0.56.2
+
+### Patch Changes
+
+- @stonecrop/atable@0.56.2
+  - @stonecrop/schema@0.56.2
+  - @stonecrop/themes@0.56.2
+  - @stonecrop/utilities@0.56.2
+
+## 0.56.1
+
+### Patch Changes
+
+- @stonecrop/atable@0.56.1
+  - @stonecrop/schema@0.56.1
+  - @stonecrop/themes@0.56.1
+  - @stonecrop/utilities@0.56.1
+
+## 0.56.0
+
+### Patch Changes
+
+- @stonecrop/atable@0.56.0
+  - @stonecrop/schema@0.56.0
+  - @stonecrop/themes@0.56.0
+  - @stonecrop/utilities@0.56.0
+
+## 0.55.2
+
+### Patch Changes
+
+- @stonecrop/atable@0.55.2
+  - @stonecrop/schema@0.55.2
+  - @stonecrop/themes@0.55.2
+  - @stonecrop/utilities@0.55.2
+
+## 0.55.1
+
+### Patch Changes
+
+- @stonecrop/atable@0.55.1
+  - @stonecrop/schema@0.55.1
+  - @stonecrop/themes@0.55.1
+  - @stonecrop/utilities@0.55.1
+
+## 0.55.0
+
+### Patch Changes
+
+- @stonecrop/atable@0.55.0
+  - @stonecrop/schema@0.55.0
+  - @stonecrop/themes@0.55.0
+  - @stonecrop/utilities@0.55.0
+
+## 0.54.0
+
+### Minor Changes
+
+- 6496bcc: Number fields and number table cells take arithmetic, such as `12*3+4`, saved as `40` when you leave the box or press Enter; `options.arithmetic: false` turns it off.
+
+### Patch Changes
+
+- 6496bcc: `ANumericInput` no longer shows spinner arrows: a number is typed, not stepped.
+- Updated dependencies [6496bcc]
+- Updated dependencies [6496bcc]
+  - @stonecrop/utilities@0.54.0
+  - @stonecrop/atable@0.54.0
+  - @stonecrop/schema@0.54.0
+  - @stonecrop/themes@0.54.0
+
+## 0.53.0
+
+### Patch Changes
+
+- @stonecrop/atable@0.53.0
+  - @stonecrop/schema@0.53.0
+  - @stonecrop/themes@0.53.0
+  - @stonecrop/utilities@0.53.0
+
+## 0.52.0
+
+### Patch Changes
+
+- @stonecrop/atable@0.52.0
+  - @stonecrop/schema@0.52.0
+  - @stonecrop/themes@0.52.0
+  - @stonecrop/utilities@0.52.0
+
+## 0.51.0
+
+### Patch Changes
+
+- Updated dependencies [e8842fb]
+  - @stonecrop/schema@0.51.0
+  - @stonecrop/atable@0.51.0
+  - @stonecrop/themes@0.51.0
+  - @stonecrop/utilities@0.51.0
+
+## 0.50.1
+
+### Patch Changes
+
+- Updated dependencies [7d84fb8]
+  - @stonecrop/atable@0.50.1
+  - @stonecrop/schema@0.50.1
+  - @stonecrop/themes@0.50.1
+  - @stonecrop/utilities@0.50.1
+
+## 0.50.0
+
+### Patch Changes
+
+- @stonecrop/atable@0.50.0
+  - @stonecrop/schema@0.50.0
+  - @stonecrop/themes@0.50.0
+  - @stonecrop/utilities@0.50.0
+
+## 0.49.0
+
+### Patch Changes
+
+- Updated dependencies [d5fbd9a]
+  - @stonecrop/schema@0.49.0
+  - @stonecrop/atable@0.49.0
+  - @stonecrop/themes@0.49.0
+  - @stonecrop/utilities@0.49.0
+
+## 0.48.1
+
+### Patch Changes
+
+- Updated dependencies [620acb0]
+  - @stonecrop/schema@0.48.1
+  - @stonecrop/atable@0.48.1
+  - @stonecrop/themes@0.48.1
+  - @stonecrop/utilities@0.48.1
+
+## 0.48.0
+
+### Patch Changes
+
+- d5b5a74: A money box's currency slot shows the currency's symbol, such as "$", whenever its id is an ISO 4217 code, instead of its name cut short, and `formatCurrencySymbol` in `@stonecrop/utilities` returns that symbol.
+- d5b5a74: A link field or a money box's currency picker that looks up a bare id's name now only shows it, so opening a form no longer changes the record.
+- Updated dependencies [d5b5a74]
+  - @stonecrop/utilities@0.48.0
+  - @stonecrop/atable@0.48.0
+  - @stonecrop/schema@0.48.0
+  - @stonecrop/themes@0.48.0
+
+## 0.47.0
+
+### Minor Changes
+
+- a5df570: A field can declare `parts`, naming the fields that hold each part of its component's value, so `AQuantityInput` and `ACurrencyInput` edit a record's own quantity, unit, amount, currency and rate fields, which several fields may share.
+
+### Patch Changes
+
+- Updated dependencies [a5df570]
+  - @stonecrop/schema@0.47.0
+  - @stonecrop/atable@0.47.0
+  - @stonecrop/themes@0.47.0
+  - @stonecrop/utilities@0.47.0
+
+## 0.46.1
+
+### Patch Changes
+
+- @stonecrop/atable@0.46.1
+  - @stonecrop/schema@0.46.1
+  - @stonecrop/themes@0.46.1
+  - @stonecrop/utilities@0.46.1
+
+## 0.46.0
+
+### Patch Changes
+
+- @stonecrop/atable@0.46.0
+  - @stonecrop/schema@0.46.0
+  - @stonecrop/themes@0.46.0
+  - @stonecrop/utilities@0.46.0
+
+## 0.45.1
+
+### Patch Changes
+
+- 6db7b3f: `AForm` gives each field an id, so a field's label and its error message are tied to its input for screen readers and label clicks.
+- @stonecrop/atable@0.45.1
+  - @stonecrop/schema@0.45.1
+  - @stonecrop/themes@0.45.1
+  - @stonecrop/utilities@0.45.1
+
+## 0.45.0
+
+### Patch Changes
+
+- @stonecrop/atable@0.45.0
+  - @stonecrop/schema@0.45.0
+  - @stonecrop/themes@0.45.0
+  - @stonecrop/utilities@0.45.0
+
+## 0.44.0
+
+### Minor Changes
+
+- 358ecaf: `ACurrencyInput`'s amount box and a currency cell being edited write and read amounts with the browser's separators, as a table cell shows them (`1,234.56` in English, `1.234,56` in German), and with the currency's decimals. `options.amountMask: false` turns this off. `@stonecrop/utilities` exports the helpers: `formatCurrencyAmountInput`, `parseCurrencyAmountInput`, `currencyAmountEntryPattern` and `currencyInputFractionDigits`.
+- 358ecaf: Replace read-only conversion rows on `ACurrencyInput` and `AQuantityInput` with a compact helper line when the entered unit differs from the base. Remove `stockUomLabel`, `stockQtyLabel`, `conversionFactorLabel`, `baseCurrencyLabel`, `baseAmountLabel`, and `exchangeRateLabel` props.
+  
+  Table quantity and currency formatters omit redundant units and use `Intl` for currency cells. Quantity column sort/filter compares on `stockQty`. `AQuantityInput` accepts negative quantities.
+- 358ecaf: `ADropdown` picks a linked record when given `link`: it binds the record through `v-model:link-value` and searches with `linkFilterFunction`. `ACurrencyInput`'s currency box is one, so it shows its currency whether or not the field has a lookup, and names a bare currency id through `aformLinkResolver`, as before.
+- 358ecaf: `ADropdown` sends `update:modelValue` when a choice is picked from the list or typed out in full, instead of with each keystroke, so a record never holds a partly typed value such as `Pend`. Clearing the box empties the field.
+- 358ecaf: An editable quantity or currency column is edited in its cell: the number is typed in place, and the unit or currency is picked from a list opened with the cell's ▾ handle or Shift+ArrowDown. The cell editor and its lists come from `@stonecrop/aform`, which registers them when installed.
+
+### Patch Changes
+
+- 358ecaf: `ACurrencyInput`'s amount box and a currency cell being edited refuse a second decimal point, typed or pasted, which would leave no amount. `currencyAmountEntryPattern` allows one, followed only by digits.
+- 358ecaf: `AQuantityInput`'s unit button names its list in `aria-controls`, and two quantity fields without a `uuid` no longer share element ids.
+- Updated dependencies [358ecaf]
+- Updated dependencies [358ecaf]
+- Updated dependencies [358ecaf]
+- Updated dependencies [358ecaf]
+- Updated dependencies [358ecaf]
+- Updated dependencies [358ecaf]
+- Updated dependencies [358ecaf]
+  - @stonecrop/utilities@0.44.0
+  - @stonecrop/atable@0.44.0
+  - @stonecrop/themes@0.44.0
+  - @stonecrop/schema@0.44.0
+
 ## 0.43.0
 
 ### Patch Changes

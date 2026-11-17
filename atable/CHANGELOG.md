@@ -1,5 +1,364 @@
 # Change Log - @stonecrop/atable
 
+## 0.62.4
+
+### Patch Changes
+
+- 624a7d8: A column's `cellComponent` is now drawn inside the table cell and receives the cell's value as `value` and the column's `cellComponentProps`, as the schema says (#510). Before, ATable drew the component in place of the cell and passed it neither, so a custom status chip showed up empty and uncoloured. The component also gets the table's `store` and the cell's `rowIndex` and `colIndex`, so a cell that acts on its row can still find it. Desktop's list link no longer draws its own cell.
+- Updated dependencies [624a7d8]
+  - @stonecrop/schema@0.62.4
+  - @stonecrop/themes@0.62.4
+  - @stonecrop/utilities@0.62.4
+
+## 0.62.3
+
+### Patch Changes
+
+- ce11081: A dropdown opened in a row's expanded panel near the table's bottom edge now shows its whole list. The table clipped everything drawn past its edges, so on a table with one row a link field's or currency picker's list stopped at the table's bottom and its lower options were hidden (#522). The table now clips only sideways.
+- @stonecrop/schema@0.62.3
+  - @stonecrop/themes@0.62.3
+  - @stonecrop/utilities@0.62.3
+
+## 0.62.2
+
+### Patch Changes
+
+- @stonecrop/schema@0.62.2
+  - @stonecrop/themes@0.62.2
+  - @stonecrop/utilities@0.62.2
+
+## 0.62.1
+
+### Patch Changes
+
+- @stonecrop/schema@0.62.1
+  - @stonecrop/themes@0.62.1
+  - @stonecrop/utilities@0.62.1
+
+## 0.62.0
+
+### Minor Changes
+
+- 3635b61: An empty table now shows a full-width "No data" row (or "No matching records" when filters hide every row) once its rows have loaded. When the host sets `config.addable`, the row also offers "Add row", which adds a row through `store.addRow()` and emits `row:add`. Hosts can replace the row through the `empty` slot.
+  
+  A doctype's table field can turn this on with `addable` in its `TableViewConfig`; AForm turns it off while the form can't edit the record.
+  
+  The empty row, the pagination footer and the list-expansion panel now span the same `store.columnCount`, so the footer no longer stops one column short with row actions on. A table with a pinned column that starts out empty now sizes the pinned column from its first data row once one arrives.
+
+### Patch Changes
+
+- Updated dependencies [3635b61]
+  - @stonecrop/schema@0.62.0
+  - @stonecrop/themes@0.62.0
+  - @stonecrop/utilities@0.62.0
+
+## 0.61.0
+
+### Minor Changes
+
+- 3c3539d: Add `@stonecrop/block-editor`, an Editor.js block editor (`AEditor`) for rich-text fields, with the Paragraph, Header, List, Quote and Delimiter blocks. The field holds Editor.js `OutputData`; AForm binds it with `v-model`, and it renders as static HTML outside `edit` mode. `@stonecrop/schema` gives `AEditor` the new `richtext` category, `@stonecrop/utilities` adds `formatRichTextCell`, and ATable shows a rich-text column as its plain text, read-only. The Nuxt module installs the editor.
+
+### Patch Changes
+
+- Updated dependencies [3c3539d]
+  - @stonecrop/schema@0.61.0
+  - @stonecrop/utilities@0.61.0
+  - @stonecrop/themes@0.61.0
+
+## 0.60.2
+
+### Patch Changes
+
+- @stonecrop/schema@0.60.2
+  - @stonecrop/themes@0.60.2
+  - @stonecrop/utilities@0.60.2
+
+## 0.60.1
+
+### Patch Changes
+
+- Updated dependencies [35ea6ea]
+  - @stonecrop/schema@0.60.1
+  - @stonecrop/themes@0.60.1
+  - @stonecrop/utilities@0.60.1
+
+## 0.60.0
+
+### Patch Changes
+
+- aea0baf: A table handed a new list with one row replaced redraws only that row's cells, not every cell in the table.
+- @stonecrop/schema@0.60.0
+  - @stonecrop/themes@0.60.0
+  - @stonecrop/utilities@0.60.0
+
+## 0.59.0
+
+### Patch Changes
+
+- @stonecrop/schema@0.59.0
+  - @stonecrop/themes@0.59.0
+  - @stonecrop/utilities@0.59.0
+
+## 0.58.4
+
+### Patch Changes
+
+- @stonecrop/schema@0.58.4
+  - @stonecrop/themes@0.58.4
+  - @stonecrop/utilities@0.58.4
+
+## 0.58.3
+
+### Patch Changes
+
+- @stonecrop/schema@0.58.3
+  - @stonecrop/themes@0.58.3
+  - @stonecrop/utilities@0.58.3
+
+## 0.58.2
+
+### Patch Changes
+
+- 4a1a274: A quantity or currency cell being edited now shows only the cell's own focus ring: its picker handle no longer draws the browser's ring inside it. The rule removing that ring was dropped by the browser, and printed a warning in every app's production build.
+- @stonecrop/schema@0.58.2
+  - @stonecrop/themes@0.58.2
+  - @stonecrop/utilities@0.58.2
+
+## 0.58.1
+
+### Patch Changes
+
+- @stonecrop/schema@0.58.1
+  - @stonecrop/themes@0.58.1
+  - @stonecrop/utilities@0.58.1
+
+## 0.58.0
+
+### Patch Changes
+
+- Updated dependencies [246be00]
+  - @stonecrop/schema@0.58.0
+  - @stonecrop/themes@0.58.0
+  - @stonecrop/utilities@0.58.0
+
+## 0.57.0
+
+### Patch Changes
+
+- Updated dependencies [e816b7b]
+  - @stonecrop/schema@0.57.0
+  - @stonecrop/themes@0.57.0
+  - @stonecrop/utilities@0.57.0
+
+## 0.56.4
+
+### Patch Changes
+
+- Updated dependencies [e02c837]
+  - @stonecrop/schema@0.56.4
+  - @stonecrop/themes@0.56.4
+  - @stonecrop/utilities@0.56.4
+
+## 0.56.3
+
+### Patch Changes
+
+- @stonecrop/schema@0.56.3
+  - @stonecrop/themes@0.56.3
+  - @stonecrop/utilities@0.56.3
+
+## 0.56.2
+
+### Patch Changes
+
+- @stonecrop/schema@0.56.2
+  - @stonecrop/themes@0.56.2
+  - @stonecrop/utilities@0.56.2
+
+## 0.56.1
+
+### Patch Changes
+
+- @stonecrop/schema@0.56.1
+  - @stonecrop/themes@0.56.1
+  - @stonecrop/utilities@0.56.1
+
+## 0.56.0
+
+### Patch Changes
+
+- @stonecrop/schema@0.56.0
+  - @stonecrop/themes@0.56.0
+  - @stonecrop/utilities@0.56.0
+
+## 0.55.2
+
+### Patch Changes
+
+- @stonecrop/schema@0.55.2
+  - @stonecrop/themes@0.55.2
+  - @stonecrop/utilities@0.55.2
+
+## 0.55.1
+
+### Patch Changes
+
+- @stonecrop/schema@0.55.1
+  - @stonecrop/themes@0.55.1
+  - @stonecrop/utilities@0.55.1
+
+## 0.55.0
+
+### Patch Changes
+
+- @stonecrop/schema@0.55.0
+  - @stonecrop/themes@0.55.0
+  - @stonecrop/utilities@0.55.0
+
+## 0.54.0
+
+### Minor Changes
+
+- 6496bcc: Number fields and number table cells take arithmetic, such as `12*3+4`, saved as `40` when you leave the box or press Enter; `options.arithmetic: false` turns it off.
+
+### Patch Changes
+
+- Updated dependencies [6496bcc]
+  - @stonecrop/utilities@0.54.0
+  - @stonecrop/schema@0.54.0
+  - @stonecrop/themes@0.54.0
+
+## 0.53.0
+
+### Patch Changes
+
+- @stonecrop/schema@0.53.0
+  - @stonecrop/themes@0.53.0
+  - @stonecrop/utilities@0.53.0
+
+## 0.52.0
+
+### Patch Changes
+
+- @stonecrop/schema@0.52.0
+  - @stonecrop/themes@0.52.0
+  - @stonecrop/utilities@0.52.0
+
+## 0.51.0
+
+### Patch Changes
+
+- Updated dependencies [e8842fb]
+  - @stonecrop/schema@0.51.0
+  - @stonecrop/themes@0.51.0
+  - @stonecrop/utilities@0.51.0
+
+## 0.50.1
+
+### Patch Changes
+
+- 7d84fb8: A link cell shows the name of the link it holds now, so a row whose link changes, such as a job task's picked workstation, no longer shows the old name until the page reloads.
+- @stonecrop/schema@0.50.1
+  - @stonecrop/themes@0.50.1
+  - @stonecrop/utilities@0.50.1
+
+## 0.50.0
+
+### Patch Changes
+
+- @stonecrop/schema@0.50.0
+  - @stonecrop/themes@0.50.0
+  - @stonecrop/utilities@0.50.0
+
+## 0.49.0
+
+### Patch Changes
+
+- Updated dependencies [d5fbd9a]
+  - @stonecrop/schema@0.49.0
+  - @stonecrop/themes@0.49.0
+  - @stonecrop/utilities@0.49.0
+
+## 0.48.1
+
+### Patch Changes
+
+- Updated dependencies [620acb0]
+  - @stonecrop/schema@0.48.1
+  - @stonecrop/themes@0.48.1
+  - @stonecrop/utilities@0.48.1
+
+## 0.48.0
+
+### Patch Changes
+
+- Updated dependencies [d5b5a74]
+  - @stonecrop/utilities@0.48.0
+  - @stonecrop/schema@0.48.0
+  - @stonecrop/themes@0.48.0
+
+## 0.47.0
+
+### Patch Changes
+
+- Updated dependencies [a5df570]
+  - @stonecrop/schema@0.47.0
+  - @stonecrop/themes@0.47.0
+  - @stonecrop/utilities@0.47.0
+
+## 0.46.1
+
+### Patch Changes
+
+- @stonecrop/schema@0.46.1
+  - @stonecrop/themes@0.46.1
+  - @stonecrop/utilities@0.46.1
+
+## 0.46.0
+
+### Patch Changes
+
+- @stonecrop/schema@0.46.0
+  - @stonecrop/themes@0.46.0
+  - @stonecrop/utilities@0.46.0
+
+## 0.45.1
+
+### Patch Changes
+
+- @stonecrop/schema@0.45.1
+  - @stonecrop/themes@0.45.1
+  - @stonecrop/utilities@0.45.1
+
+## 0.45.0
+
+### Patch Changes
+
+- @stonecrop/schema@0.45.0
+  - @stonecrop/themes@0.45.0
+  - @stonecrop/utilities@0.45.0
+
+## 0.44.0
+
+### Minor Changes
+
+- 358ecaf: Replace read-only conversion rows on `ACurrencyInput` and `AQuantityInput` with a compact helper line when the entered unit differs from the base. Remove `stockUomLabel`, `stockQtyLabel`, `conversionFactorLabel`, `baseCurrencyLabel`, `baseAmountLabel`, and `exchangeRateLabel` props.
+  
+  Table quantity and currency formatters omit redundant units and use `Intl` for currency cells. Quantity column sort/filter compares on `stockQty`. `AQuantityInput` accepts negative quantities.
+- 358ecaf: An editable quantity or currency column is edited in its cell: the number is typed in place, and the unit or currency is picked from a list opened with the cell's ▾ handle or Shift+ArrowDown. The cell editor and its lists come from `@stonecrop/aform`, which registers them when installed.
+- 358ecaf: Exports `TableStore`, the type of a table's store. The components and row actions that take a store use it, so their declarations and docs name it instead of writing out the store's whole type: atable's API docs shrink from 8 MB to 180 KB.
+
+### Patch Changes
+
+- 358ecaf: Sorting a quantity or currency column puts an emptied value with the blank cells, rather than ranking it as 0. A column's `component` decides how its cells compare, not the keys its values carry.
+- Updated dependencies [358ecaf]
+- Updated dependencies [358ecaf]
+- Updated dependencies [358ecaf]
+- Updated dependencies [358ecaf]
+  - @stonecrop/utilities@0.44.0
+  - @stonecrop/themes@0.44.0
+  - @stonecrop/schema@0.44.0
+
 ## 0.43.0
 
 ### Minor Changes

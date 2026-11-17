@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it } from 'vite-plus/test'
 
 import { convertGraphQLSchema } from '../src/converter/index'
 import { mergeIntrospectedDoctype, type AuthoredDoctype } from '../src/converter/merge'

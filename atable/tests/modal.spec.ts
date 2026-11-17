@@ -1,6 +1,6 @@
 import { config, mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test'
 
 import data from './data/http_logs.json'
 import ACell from '../src/components/ACell.vue'

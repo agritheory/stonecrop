@@ -23,8 +23,8 @@ import { toEditorString } from '../utils/serialization'
 
 type EditorSchema = { language?: string; [key: string]: unknown }
 
-const modelValue = defineModel<string>()
 const {
+	modelValue = undefined,
 	height = '300px',
 	mode = 'edit',
 	schema = undefined,
@@ -34,6 +34,8 @@ const {
 	extraLibs = undefined,
 	libs = undefined,
 } = defineProps<{
+	/** The text to show, or a JSON field's value (an object, array, number or boolean), shown as formatted JSON. */
+	modelValue?: unknown
 	height?: string
 	mode?: 'edit' | 'read' | 'display'
 	schema?: EditorSchema
@@ -51,13 +53,21 @@ const {
 	libs?: string[]
 }>()
 
+// The editor always reports text, whatever kind of value it was given.
+const emit = defineEmits<{ 'update:modelValue': [value: string] }>()
+
 const editorRef = useTemplateRef<HTMLDivElement>('aCodeEditor')
 const editorInstance = shallowRef<editor.IStandaloneCodeEditor | null>(null)
 
-watch(modelValue, val => {
-	const inst = editorInstance.value
-	if (inst && val !== inst.getValue()) inst.setValue(val ?? '')
-})
+// A JSON field's value arrives as an object, and Monaco's setValue takes only text.
+watch(
+	() => modelValue,
+	val => {
+		const inst = editorInstance.value
+		const text = toEditorString(val)
+		if (inst && text !== inst.getValue()) inst.setValue(text)
+	}
+)
 
 watch(
 	() => mode,
@@ -101,7 +111,7 @@ onMounted(async () => {
 	// run getSyntacticDiagnostics without throwing "Could not find source file".
 	const ext = lang === 'typescript' ? 'ts' : lang === 'json' ? 'json' : lang === 'python' ? 'py' : 'js'
 	const modelUri = monacoInstance.Uri.parse(`file:///stonecrop-editor-${++editorModelCounter}.${ext}`)
-	const editorModel = monacoInstance.editor.createModel(toEditorString(modelValue.value), lang, modelUri)
+	const editorModel = monacoInstance.editor.createModel(toEditorString(modelValue), lang, modelUri)
 
 	const inst = monacoInstance.editor.create(editorRef.value!, {
 		automaticLayout: true,
@@ -114,13 +124,13 @@ onMounted(async () => {
 	})
 
 	inst.onDidChangeModelContent(() => {
-		modelValue.value = inst.getValue()
+		emit('update:modelValue', inst.getValue())
 	})
 
 	editorInstance.value = inst
 
 	// Sync any modelValue change that arrived during the async CDN load
-	const current = modelValue.value ?? ''
+	const current = toEditorString(modelValue)
 	if (current !== inst.getValue()) inst.setValue(current)
 })
 

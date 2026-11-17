@@ -67,7 +67,7 @@
 
 	<!-- list-expansion content panel: a second row spanning the whole width -->
 	<tr v-if="isExpanded" :tabindex="tabIndex" class="atable-expanded-row">
-		<td :tabIndex="-1" :colspan="expandedColspan" class="atable-expanded-content">
+		<td :tabIndex="-1" :colspan="store.columnCount" class="atable-expanded-content">
 			<slot name="content" :row="store.rows[rowIndex]" :row-index="rowIndex" :store="store" />
 		</td>
 	</tr>
@@ -78,8 +78,7 @@ import { type KeypressHandlers, useKeyboardNav, defaultKeypressHandlers } from '
 import { computed, useTemplateRef } from 'vue'
 
 import ARowActions from './ARowActions.vue'
-import { createTableStore } from '../stores/table'
-import type { RowActionsConfig, RowActionType } from '../types'
+import type { RowActionsConfig, RowActionType, TableStore } from '../types'
 
 const {
 	rowIndex,
@@ -88,7 +87,7 @@ const {
 	addNavigation = false, // default to allowing cell navigation
 } = defineProps<{
 	rowIndex: number
-	store: ReturnType<typeof createTableStore>
+	store: TableStore
 	tabIndex?: number
 	addNavigation?: boolean | KeypressHandlers
 }>()
@@ -119,14 +118,6 @@ const actionsPosition = computed(() => {
 
 // list-expansion: this row owns an expandable content panel (a second <tr>).
 const isExpanded = computed(() => store.config.view === 'list-expansion' && Boolean(store.display[rowIndex]?.expanded))
-
-// The content panel spans every column the main row occupies: data columns + the
-// index/chevron column (absent only in uncounted) + the row-actions column when enabled.
-const expandedColspan = computed(() => {
-	const indexCol = store.config.view === 'uncounted' ? 0 : 1
-	const actionsCol = showRowActions.value ? 1 : 0
-	return store.columns.length + indexCol + actionsCol
-})
 
 const onRowAction = (actionType: RowActionType, index: number, event?: MouseEvent) => {
 	emit('row:action', actionType, index, event)

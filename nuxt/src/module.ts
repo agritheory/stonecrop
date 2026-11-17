@@ -1,6 +1,8 @@
 import { existsSync, realpathSync } from 'node:fs'
 import { readFile, readdir } from 'node:fs/promises'
-import { dirname, extname } from 'node:path'
+import { createRequire } from 'node:module'
+import { dirname, extname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import {
 	addComponent,
 	addImportsDir,
@@ -86,6 +88,7 @@ export const STONECROP_PACKAGES = [
 	'@stonecrop/atable',
 	'@stonecrop/code-editor',
 	'@stonecrop/desktop',
+	'@stonecrop/block-editor',
 	'@stonecrop/stonecrop',
 	'@stonecrop/node-editor',
 	'@stonecrop/utilities',
@@ -217,6 +220,27 @@ export default defineNuxtModule<ModuleOptions>({
 				logger.log(`Vite fs.allow updated with ${allowPaths.size} symlinked package path(s)`)
 			}
 		}
+
+		// Serve Monaco's AMD build so the code editor works without CDN access. The AMD build (min/vs)
+		// has its workers pre-bundled, so no separate worker interception is needed. Browsers keep these
+		// files for a year, so the path carries Monaco's version: after an upgrade, a cached fixed-name
+		// file such as `loader.js` would otherwise ask for hashed chunks that no longer exist.
+		const requireFromModule = createRequire(import.meta.url)
+		const monacoPackagePath = requireFromModule.resolve('monaco-editor/package.json')
+		const { version: monacoVersion } = requireFromModule(monacoPackagePath) as { version: string }
+		const monacoPath = `/stonecrop-monaco/${monacoVersion}`
+		nuxt.options.runtimeConfig.public.stonecrop = {
+			...((nuxt.options.runtimeConfig.public.stonecrop as Record<string, unknown>) ?? {}),
+			monacoPath,
+		}
+		nuxt.hook('nitro:config', nitroConfig => {
+			nitroConfig.publicAssets = nitroConfig.publicAssets ?? []
+			nitroConfig.publicAssets.push({
+				dir: join(dirname(monacoPackagePath), 'min'),
+				baseURL: monacoPath,
+				maxAge: 60 * 60 * 24 * 365,
+			})
+		})
 
 		// add the base Stonecrop layout from the module
 		const homepage = resolve('runtime/app/layouts/StonecropHome.vue')
@@ -376,21 +400,6 @@ export default defineNuxtModule<ModuleOptions>({
 				},
 			})
 
-			// Serve Monaco AMD build via Nitro publicAssets so the code editor works without CDN access.
-			// The AMD build (min/vs) has workers pre-bundled — no separate worker interception needed.
-			const { createRequire } = await import('node:module')
-			const { resolve: nodeResolve } = await import('node:path')
-			const req = createRequire(import.meta.url)
-			const monacoMinPath = nodeResolve(req.resolve('monaco-editor/package.json'), '../min')
-			nuxt.hook('nitro:config', nitroConfig => {
-				nitroConfig.publicAssets = nitroConfig.publicAssets ?? []
-				nitroConfig.publicAssets.push({
-					dir: monacoMinPath,
-					baseURL: '/stonecrop-monaco',
-					maxAge: 60 * 60 * 24 * 365,
-				})
-			})
-
 			const docBuilderIndex = resolve('runtime/app/pages/DocBuilderIndex.vue')
 			const docBuilderDetail = resolve('runtime/app/pages/DocBuilderDetail.vue')
 
@@ -444,13 +453,21 @@ export default defineNuxtModule<ModuleOptions>({
 			})
 		}
 
-		// Do not add the extension since the `.ts` will be transpiled to `.mjs` after `npm run prepack`
+		// Do not add the extension since the `.ts` will be transpiled to `.mjs` by the module build
 		const pluginPath = resolve('./runtime/plugin')
 		try {
 			addPlugin(pluginPath)
 		} catch (pluginError) {
 			logger.error('Error adding plugin:', pluginError)
 			throw new Error(`[@stonecrop/nuxt] Failed to add plugin at ${pluginPath}`, { cause: pluginError })
+		}
+
+		// NodeEditor and StateEditor stay resolvable by name, so a doctype can render either, but load
+		// on first use: installed eagerly, they put Vue Flow and dagre in every app's entry chunk.
+		// Resolved from this module, as the app need not depend on node-editor itself.
+		const nodeEditorPath = fileURLToPath(import.meta.resolve('@stonecrop/node-editor'))
+		for (const name of ['NodeEditor', 'StateEditor']) {
+			addComponent({ name, export: name, filePath: nodeEditorPath, global: true })
 		}
 
 		// Register all composables in runtime/app/composables/ for auto-import.

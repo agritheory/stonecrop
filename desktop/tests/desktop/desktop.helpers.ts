@@ -1,7 +1,7 @@
 import type { VueWrapper } from '@vue/test-utils'
 import { List } from 'immutable'
 import { App, nextTick } from 'vue'
-import { vi } from 'vitest'
+import { vi } from 'vite-plus/test'
 
 import type { DoctypeField } from '@stonecrop/schema'
 import { Doctype, Registry, Stonecrop } from '@stonecrop/stonecrop'

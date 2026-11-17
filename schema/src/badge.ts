@@ -17,8 +17,11 @@ export type BadgePresentation = 'cell-fill' | 'input-accent'
  * @public
  */
 export interface BadgeSpecObject {
+	/** Semantic variant, painted with the theme's `--sc-badge-{variant}-*` tokens */
 	variant?: BadgeVariant
+	/** A CSS color painted over the variant's background, text and accent */
 	color?: string
+	/** Text the badge shows; the choice value when omitted */
 	label?: string
 }
 
@@ -33,7 +36,9 @@ export type BadgeSpec = BadgeVariant | BadgeSpecObject
  * @public
  */
 export interface SelectOptions extends Record<string, unknown> {
+	/** The stored values a field can take, in the order a dropdown lists them */
 	choices: string[]
+	/** A badge per choice, keyed by the choice's stored value; a choice without one shows as plain text */
 	badges?: Record<string, BadgeSpec>
 }
 
@@ -42,8 +47,11 @@ export interface SelectOptions extends Record<string, unknown> {
  * @public
  */
 export interface BadgeDescriptor {
+	/** Text the badge shows */
 	label: string
+	/** Semantic variant, painted with the theme's `--sc-badge-{variant}-*` tokens */
 	variant?: BadgeVariant
+	/** A CSS color painted over the variant's background, text and accent */
 	color?: string
 }
 

@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it } from 'vite-plus/test'
 
 // Skipped unless `tools/scripts/tests/suite-exit-code.spec.js` asks for it: that check runs this file
 // to prove a failing test fails this suite, which a check inside the suite cannot prove, since the

@@ -1,4 +1,5 @@
 import { defineConfig } from 'vitest/config'
+import { fsModuleCachePath } from '../tools/vite/fs-module-cache.ts'
 
 export default defineConfig({
 	// This package's tests run in a plain `node` environment, NOT under @nuxt/test-utils'
@@ -24,6 +25,7 @@ export default defineConfig({
 		},
 	},
 	test: {
+		fsModuleCachePath,
 		environment: 'node',
 		tags: [
 			{ name: 'unit', description: 'Pure logic test — no DOM, network, or framework runtime.' },

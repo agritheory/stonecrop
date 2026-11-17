@@ -1,5 +1,5 @@
 import { mount, flushPromises } from '@vue/test-utils'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it } from 'vite-plus/test'
 import { nextTick } from 'vue'
 import { List } from 'immutable'
 import { createPinia, setActivePinia } from 'pinia'
@@ -28,7 +28,7 @@ function buildBookingDoctype() {
 			},
 		},
 	}
-	return new Doctype('booking', fields as any, workflow as any)
+	return new Doctype('booking', fields, workflow as any)
 }
 
 const recordAdapter: RouteAdapter = {

@@ -1,6 +1,6 @@
 import { makeSchema } from 'postgraphile'
 import { PostGraphileAmberPreset } from 'postgraphile/presets/amber'
-import { describe, it, expect, beforeAll, afterAll } from 'vitest'
+import { describe, it, expect, beforeAll, afterAll } from 'vite-plus/test'
 
 import { createStonecropPlugin } from '../src/plugin/postgraphile'
 import { clearRegistry, loadDoctypesFromObject } from '../src/registry/doctypes'

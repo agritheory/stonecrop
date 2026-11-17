@@ -6,6 +6,7 @@ import type {
 	ComposeNewRecordOptions,
 	ComposeNewRecordResult,
 	DefaultsContext,
+	DefaultsData,
 	DefaultsDocument,
 	DefaultsSource,
 } from './types/defaults'
@@ -198,8 +199,9 @@ async function applyLayer(
 
 /**
  * Build a new record, once, from every starting value: the doctype's `defaults`, then the source the app registered
- * for it, over the record's tables and embedded records. Layers apply in that order, so the registered source wins
- * however long the doctype's took. A field neither sets has no value, so a save leaves it to the database's default.
+ * for it, then any values the app filled the record in with (`prefill`), over the record's tables and embedded
+ * records. Layers apply in that order, so a later one wins however long an earlier one took. A field none sets has
+ * no value, so a save leaves it to the database's default.
  *
  * Nothing is returned until every value is in, so nothing is written to the record after a user can see it.
  * A value that throws, rejects, or has not arrived within `timeoutMs` (default {@link DEFAULTS_TIMEOUT_MS}) is
@@ -235,6 +237,7 @@ export async function composeNewRecord(
 		await applyLayer(working, registry.getRegisteredDefaults(doctype.slug), fields, run, 'registered defaults', [
 			doctype,
 		])
+		await applyLayer(working, options?.prefill, fields, run, 'filled values', [doctype])
 
 		Object.assign(working, resolveTokensInRecord(working, fields, registry, now))
 
@@ -249,4 +252,88 @@ export async function composeNewRecord(
 	} finally {
 		clearTimeout(timer)
 	}
+}
+
+/** What checking filled values shares: the registry their tables resolve through, and how a refusal reads. */
+type PrefillCheck = {
+	registry: Registry
+	refused: (reason: string) => Error
+}
+
+/**
+ * A record written as `{ ... }`, a reactive one included. A `Date`, a `Map` or a class instance is not one: copying
+ * its own fields would hand the form an empty object in its place.
+ */
+function isPlainRecord(value: unknown): value is Record<string, unknown> {
+	if (typeof value !== 'object' || value === null) return false
+	const prototype: unknown = Object.getPrototypeOf(value)
+	return prototype === Object.prototype || prototype === null
+}
+
+/** Copy a field's own value, refusing anything inside it but lists, records, strings, numbers, booleans and null. */
+function copyFilledValue(value: unknown, path: string, check: PrefillCheck): DefaultsData {
+	if (typeof value === 'function') throw check.refused(`"${path}" can't be a function`)
+	if (Array.isArray(value)) return value.map((item, index) => copyFilledValue(item, `${path}[${index}]`, check))
+	if (isPlainRecord(value)) {
+		return Object.fromEntries(
+			Object.entries(value)
+				.filter(([, item]) => item !== undefined)
+				.map(([key, item]) => [key, copyFilledValue(item, `${path}.${key}`, check)])
+		)
+	}
+	if (value === null || typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+		return value
+	}
+	throw check.refused(`"${path}" must be plain data`)
+}
+
+/** A field given as `undefined` is skipped, as JSON drops it, so its default stays. */
+function checkFilledDocument(
+	values: Record<string, unknown>,
+	fields: ReadonlyMap<string, RecordField>,
+	prefix: string,
+	check: PrefillCheck
+): { [field: string]: DefaultsData } {
+	const copy: { [field: string]: DefaultsData } = {}
+	for (const [key, value] of Object.entries(values)) {
+		if (value === undefined) continue
+		const path = `${prefix}${key}`
+		const field = fields.get(key)
+		if (!field) throw check.refused(`it has no field "${path}"`)
+		copy[key] = checkFilledField(field, value, path, check)
+	}
+	return copy
+}
+
+/** One field's filled value, held as the build will apply it: rows as a list of records, an embedded record as one. */
+function checkFilledField(field: RecordField, value: unknown, path: string, check: PrefillCheck): DefaultsData {
+	if (field.holds === 'rows' || field.holds === 'columns') {
+		if (!Array.isArray(value)) throw check.refused(`"${path}" must be a list`)
+		const rowFields = field.holds === 'rows' ? recordFields(check.registry, field.target) : columnFields(field.columns)
+		return value.map((row: unknown, index) => {
+			if (!isPlainRecord(row)) throw check.refused(`"${path}[${index}]" must be a record`)
+			return checkFilledDocument(row, rowFields, `${path}[${index}].`, check)
+		})
+	}
+	if (field.holds === 'record') {
+		// A read gives an absent embedded record as null.
+		if (value === null) return null
+		if (!isPlainRecord(value)) throw check.refused(`"${path}" must be a record`)
+		return checkFilledDocument(value, recordFields(check.registry, field.target), `${path}.`, check)
+	}
+	return copyFilledValue(value, path, check)
+}
+
+/**
+ * Check values an app fills a new record in with against the fields the build applies them to, and copy them, so a
+ * mistake fails where the app hands them over instead of opening a form with blanks.
+ * @internal
+ */
+export function checkPrefill(registry: Registry, doctype: Doctype, values: unknown): { [field: string]: DefaultsData } {
+	const check: PrefillCheck = {
+		registry,
+		refused: reason => new Error(`Couldn't open a new ${doctype.doctype}: ${reason}.`),
+	}
+	if (!isPlainRecord(values)) throw check.refused('its values must be a record')
+	return checkFilledDocument(values, recordFields(registry, doctype), '', check)
 }

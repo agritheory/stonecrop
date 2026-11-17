@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test'
 import { List } from 'immutable'
 import { createRouter, createWebHistory } from 'vue-router'
 import type { UnknownMachineConfig } from 'xstate'
@@ -17,7 +17,7 @@ const createDoctypeWithLinks = (name: string, links?: Record<string, any>) => {
 		states: { draft: {} },
 	}
 
-	return new Doctype(name, mockSchema as any, mockWorkflow, undefined, links)
+	return new Doctype(name, mockSchema, mockWorkflow, undefined, links)
 }
 
 function createMockDoctype(name: string) {
@@ -423,7 +423,7 @@ describe('Registry class', { tags: ['unit'] }, () => {
 				{ kind: 'field' as const, fieldname: 'qty', component: 'ATextInput', label: 'Qty' },
 			])
 			const taskWorkflow = { id: 'task', initial: 'draft', states: { draft: {} } }
-			const task = new Doctype('Task', taskSchema as any, taskWorkflow as any)
+			const task = new Doctype('Task', taskSchema, taskWorkflow as any)
 
 			const parentSchema = List([
 				{ kind: 'field' as const, fieldname: 'title', component: 'ATextInput', label: 'Title' },
@@ -466,11 +466,7 @@ describe('Registry class', { tags: ['unit'] }, () => {
 					schema: [{ kind: 'field' as const, fieldname: 'rate', component: 'AFloat', label: 'Rate' }],
 				},
 			])
-			const line = new Doctype(
-				'Line',
-				lineSchema as any,
-				{ id: 'line', initial: 'draft', states: { draft: {} } } as any
-			)
+			const line = new Doctype('Line', lineSchema, { id: 'line', initial: 'draft', states: { draft: {} } } as any)
 
 			const orderSchema = List([
 				{ kind: 'field' as const, fieldname: 'title', component: 'ATextInput', label: 'Title' },
@@ -497,7 +493,7 @@ describe('Registry class', { tags: ['unit'] }, () => {
 			registry = new Registry()
 			const note = new Doctype(
 				'Note',
-				List([{ kind: 'field' as const, fieldname: 'body', component: 'ATextInput', label: 'Body' }]) as any,
+				List([{ kind: 'field' as const, fieldname: 'body', component: 'ATextInput', label: 'Body' }]),
 				{ id: 'note', initial: 'draft', states: { draft: {} } } as any
 			)
 			const line = new Doctype(
@@ -546,7 +542,7 @@ describe('Registry class', { tags: ['unit'] }, () => {
 				{ kind: 'field' as const, fieldname: 'street', component: 'ATextInput', label: 'Street' },
 			])
 			const addressWorkflow = { id: 'address', initial: 'draft', states: { draft: {} } }
-			const address = new Doctype('Address', addressSchema as any, addressWorkflow as any)
+			const address = new Doctype('Address', addressSchema, addressWorkflow as any)
 
 			const personSchema = List([
 				{ kind: 'field' as const, fieldname: 'name', component: 'ATextInput', label: 'Name' },

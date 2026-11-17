@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it } from 'vite-plus/test'
 import { Temporal } from 'temporal-polyfill'
 
 import { readTypedDay, writeTypedDay } from '../src/utils/typedDay'

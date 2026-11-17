@@ -1,5 +1,255 @@
 # Change Log - @stonecrop/graphql-client
 
+## 0.62.4
+
+### Patch Changes
+
+- Updated dependencies [624a7d8]
+  - @stonecrop/schema@0.62.4
+
+## 0.62.3
+
+### Patch Changes
+
+- @stonecrop/schema@0.62.3
+
+## 0.62.2
+
+### Patch Changes
+
+- @stonecrop/schema@0.62.2
+
+## 0.62.1
+
+### Patch Changes
+
+- @stonecrop/schema@0.62.1
+
+## 0.62.0
+
+### Patch Changes
+
+- Updated dependencies [3635b61]
+  - @stonecrop/schema@0.62.0
+
+## 0.61.0
+
+### Patch Changes
+
+- Updated dependencies [3c3539d]
+  - @stonecrop/schema@0.61.0
+
+## 0.60.2
+
+### Patch Changes
+
+- @stonecrop/schema@0.60.2
+
+## 0.60.1
+
+### Patch Changes
+
+- Updated dependencies [35ea6ea]
+  - @stonecrop/schema@0.60.1
+
+## 0.60.0
+
+### Patch Changes
+
+- @stonecrop/schema@0.60.0
+
+## 0.59.0
+
+### Patch Changes
+
+- @stonecrop/schema@0.59.0
+
+## 0.58.4
+
+### Patch Changes
+
+- @stonecrop/schema@0.58.4
+
+## 0.58.3
+
+### Patch Changes
+
+- @stonecrop/schema@0.58.3
+
+## 0.58.2
+
+### Patch Changes
+
+- @stonecrop/schema@0.58.2
+
+## 0.58.1
+
+### Patch Changes
+
+- @stonecrop/schema@0.58.1
+
+## 0.58.0
+
+### Patch Changes
+
+- Updated dependencies [246be00]
+  - @stonecrop/schema@0.58.0
+
+## 0.57.0
+
+### Patch Changes
+
+- Updated dependencies [e816b7b]
+  - @stonecrop/schema@0.57.0
+
+## 0.56.4
+
+### Patch Changes
+
+- Updated dependencies [e02c837]
+  - @stonecrop/schema@0.56.4
+
+## 0.56.3
+
+### Patch Changes
+
+- @stonecrop/schema@0.56.3
+
+## 0.56.2
+
+### Patch Changes
+
+- @stonecrop/schema@0.56.2
+
+## 0.56.1
+
+### Patch Changes
+
+- @stonecrop/schema@0.56.1
+
+## 0.56.0
+
+### Patch Changes
+
+- @stonecrop/schema@0.56.0
+
+## 0.55.2
+
+### Patch Changes
+
+- @stonecrop/schema@0.55.2
+
+## 0.55.1
+
+### Patch Changes
+
+- @stonecrop/schema@0.55.1
+
+## 0.55.0
+
+### Patch Changes
+
+- @stonecrop/schema@0.55.0
+
+## 0.54.0
+
+### Patch Changes
+
+- @stonecrop/schema@0.54.0
+
+## 0.53.0
+
+### Patch Changes
+
+- @stonecrop/schema@0.53.0
+
+## 0.52.0
+
+### Patch Changes
+
+- @stonecrop/schema@0.52.0
+
+## 0.51.0
+
+### Patch Changes
+
+- Updated dependencies [e8842fb]
+  - @stonecrop/schema@0.51.0
+
+## 0.50.1
+
+### Patch Changes
+
+- @stonecrop/schema@0.50.1
+
+## 0.50.0
+
+### Patch Changes
+
+- @stonecrop/schema@0.50.0
+
+## 0.49.0
+
+### Patch Changes
+
+- Updated dependencies [d5fbd9a]
+  - @stonecrop/schema@0.49.0
+
+## 0.48.1
+
+### Patch Changes
+
+- Updated dependencies [620acb0]
+  - @stonecrop/schema@0.48.1
+
+## 0.48.0
+
+### Patch Changes
+
+- @stonecrop/schema@0.48.0
+
+## 0.47.0
+
+### Minor Changes
+
+- a5df570: A field can declare `parts`, naming the fields that hold each part of its component's value, so `AQuantityInput` and `ACurrencyInput` edit a record's own quantity, unit, amount, currency and rate fields, which several fields may share.
+- a5df570: An app that loads doctypes with `client.getMeta` or `getAllMeta` against its own copy of the server schema adds `parts: JSON` to `StonecropField`, or loading a doctype fails.
+
+### Patch Changes
+
+- Updated dependencies [a5df570]
+  - @stonecrop/schema@0.47.0
+
+## 0.46.1
+
+### Patch Changes
+
+- @stonecrop/schema@0.46.1
+
+## 0.46.0
+
+### Patch Changes
+
+- @stonecrop/schema@0.46.0
+
+## 0.45.1
+
+### Patch Changes
+
+- @stonecrop/schema@0.45.1
+
+## 0.45.0
+
+### Patch Changes
+
+- @stonecrop/schema@0.45.0
+
+## 0.44.0
+
+### Patch Changes
+
+- @stonecrop/schema@0.44.0
+
 ## 0.43.0
 
 ### Patch Changes

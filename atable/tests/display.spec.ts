@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach } from 'vite-plus/test'
 import { setActivePinia, createPinia } from 'pinia'
 import { createTableStore } from '../src/stores/table'
 import type { TableColumn, TableRow } from '../src/types'

@@ -16,11 +16,15 @@ definePageMeta({
 
 			<section>
 				<h2>Workflow (local grafserv)</h2>
-				<p>Orders and users with guarded transitions, rail panels on order records, and public DocBuilder.</p>
+				<p>
+					Orders and users with guarded transitions, rail panels on order records, and public DocBuilder. Order line
+					items use <code>AQuantityInput</code> and <code>ACurrencyInput</code> columns (mixed UOM / currency — sort and
+					filter on stock qty and base amount).
+				</p>
 				<ul>
 					<li><NuxtLink to="/playground/user">Users</NuxtLink></li>
 					<li><NuxtLink to="/playground/user/new">New User</NuxtLink> — sync registered default on Bio</li>
-					<li><NuxtLink to="/playground/order">Orders</NuxtLink></li>
+					<li><NuxtLink to="/playground/order">Orders</NuxtLink> — line-item quantity/currency table specimen</li>
 					<li>
 						<NuxtLink to="/playground/order/new">New Order</NuxtLink> — JSON defaults (`now`, one line item) plus
 						awaitable customer

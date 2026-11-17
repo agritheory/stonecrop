@@ -5,7 +5,7 @@ import { Pool, type PoolClient } from 'pg'
 import { makeSchema } from 'postgraphile'
 import { execute, hookArgs } from 'postgraphile/grafast'
 import { makePgService, makeWithPgClientViaPgClientAlreadyInTransaction } from 'postgraphile/adaptors/pg'
-import { describe, it, expect, beforeAll, afterAll, inject } from 'vitest'
+import { describe, it, expect, beforeAll, afterAll, inject } from 'vite-plus/test'
 
 import { createStonecropPlugin, createStonecropPreset } from '../../src'
 import { loadDoctypesFromObject, clearRegistry } from '../../src/registry/doctypes'

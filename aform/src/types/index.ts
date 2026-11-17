@@ -36,8 +36,8 @@ export type { InteractionMode } from '@stonecrop/schema'
 // ---------------------------------------------------------------------------
 
 /**
- * A resolved scalar field. Derived from ValueField with `cardinality` omitted
- * (consumed by resolveSchema) and an optional `doctype` added for unresolved Link fields.
+ * A resolved scalar field. Derived from ValueField with `cardinality` omitted (resolution has
+ * already applied it) and an optional `doctype` added for unresolved Link fields.
  * @public
  */
 export type ResolvedScalar = Omit<ValueField, 'cardinality'> & {
@@ -109,6 +109,9 @@ export interface ResolvedTable {
 	hidden?: boolean
 	/** Preserved from the original ValueField or TableField */
 	validation?: FieldValidation
+	/** Preserved from the original ValueField or TableField: the fields an app's own table component
+	 *  reads, handed to it as its value. Its rows still arrive as `rows`. */
+	parts?: Record<string, string>
 	/** When set, ATable fetches list pages through this callback (server paging). */
 	getRecords?: (options?: GetRecordsOptions) => Promise<GetRecordsResult>
 	/** When this changes, ATable refetches from offset 0. */
@@ -205,7 +208,8 @@ export type ComponentProps = {
 	 */
 	validation?: {
 		/**
-		 * The error message to display when validation fails
+		 * Shown when a trigger reports an error on this field without a message: `setError(field)`.
+		 * Applied by AForm, which words the errors it is handed before routing them; never shown on its own.
 		 * @public
 		 */
 		errorMessage: string
@@ -216,7 +220,8 @@ export type ComponentProps = {
 	/**
 	 * Inline validation error messages to display on this field. Fed by the host
 	 * (e.g. mapped from the core validation store) — the renderer stays dumb and just
-	 * shows what it is given. Takes precedence over the static `validation.errorMessage`.
+	 * shows what it is given. Inside AForm, an error reported without a message arrives worded with the
+	 * field's `validation.errorMessage`.
 	 * @public
 	 */
 	errors?: string[]
@@ -243,7 +248,8 @@ export interface AFormLinkValue {
  * to that column coerces every update it receives back to a scalar. The component reads through
  * `linkId`/`linkDisplayText`/`asLinkValue`, so all three shapes render and resolve identically.
  *
- * Emitting is narrower — AFormLink always writes back an {@link AFormLinkValue}.
+ * Emitting is narrower — AFormLink writes back an {@link AFormLinkValue} when an option is picked,
+ * or `null` when the user empties the field.
  * @public
  */
 export type AFormLinkModelValue = AFormLinkValue | string | number
@@ -255,6 +261,17 @@ export type AFormLinkModelValue = AFormLinkValue | string | number
 export interface AFormLinkNavigator {
 	/** Navigate to the linked document. Implementation is app-defined. */
 	navigate(doctype: string, id: string | number): void
+}
+
+/**
+ * Type-specific configuration for ANumericInput, passed via the field's `options` property.
+ * @public
+ */
+export interface NumericOptions {
+	/** Whether the box takes arithmetic (default `true`): `12*3+4` is read as `40` once the box is left or Enter is pressed. Digits, `.`, `+ - * / %` and parentheses only; exponents and letters are refused. Set `false` for a plain `type="number"` box. */
+	arithmetic?: boolean
+	/** Decimal places to round the number to, as a column with a fixed scale holds it: at `2`, `10/3` is `3.33`. Omit to keep every digit the box works out. A non-integer or out-of-range value is ignored. */
+	precision?: number
 }
 
 /**
@@ -287,6 +304,8 @@ export interface QuantityOptions {
 	stockUom?: string
 	/** Conversion factor lookup for each non-stock UOM, relative to `stockUom` (which is implicitly `1`) */
 	conversionFactors?: Record<string, number>
+	/** Whether the box takes arithmetic (default `true`): `12*3+4` is read as `40` once the box is left or Enter is pressed. Digits, `.`, `+ - * / %` and parentheses only; exponents and letters are refused. Set `false` for a plain `type="number"` box. */
+	arithmetic?: boolean
 }
 
 /**
@@ -326,4 +345,12 @@ export interface CurrencyOptions {
 	filterFunction?: string | ((search: string) => AFormLinkValue[] | Promise<AFormLinkValue[]>)
 	/** Whether `filterFunction` results should show a loading state — see AFormLink's `isAsync` */
 	isAsync?: boolean
+	/**
+	 * When true (default), the amount field uses a locale- and currency-aware display mask
+	 * (grouping and decimal separators follow the selected currency). Set false for unformatted
+	 * amounts; with `arithmetic` also false, the field is a plain `type="number"` input.
+	 */
+	amountMask?: boolean
+	/** Whether the box takes arithmetic (default `true`): `12*3+4` is read as `40` once the box is left or Enter is pressed. Digits, `.`, `+ - * / %` and parentheses only; exponents and letters are refused. Set `false` for a plain `type="number"` box. */
+	arithmetic?: boolean
 }

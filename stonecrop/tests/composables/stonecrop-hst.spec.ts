@@ -3,7 +3,7 @@ import { LinkDeclaration } from '@stonecrop/schema'
 import { mount, flushPromises } from '@vue/test-utils'
 import { List } from 'immutable'
 import { createPinia, setActivePinia } from 'pinia'
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test'
 import { defineComponent } from 'vue'
 import { type MachineConfig } from 'xstate'
 
@@ -50,7 +50,7 @@ const createDoctype = (name: string, fields?: DoctypeField[], links?: Record<str
 		},
 	}
 
-	return new Doctype(name, schema as any, workflow, undefined, links)
+	return new Doctype(name, schema, workflow, undefined, links)
 }
 
 describe('useStonecrop HST mode', { tags: ['unit'] }, () => {
@@ -422,7 +422,7 @@ describe('useStonecrop HST mode', { tags: ['unit'] }, () => {
 		})
 		await flushPromises()
 
-		stonecrop.setClient(mockClient as any)
+		stonecrop.setClient(mockClient)
 
 		const vm = wrapper.vm as any
 		await vm.fetchNestedData('task.t1', taskDoctype, 't1')
@@ -455,7 +455,7 @@ describe('useStonecrop HST mode', { tags: ['unit'] }, () => {
 		})
 		await flushPromises()
 
-		stonecrop.setClient(mockClient as any)
+		stonecrop.setClient(mockClient)
 
 		const vm = wrapper.vm as any
 		await expect(vm.fetchNestedData('task.t1', taskDoctype, 't1')).rejects.toThrow('Record not found')

@@ -1,12 +1,12 @@
 import { parse } from 'graphql'
-import type { GraphQLSchema } from 'graphql'
+import type { GraphQLInputObjectType, GraphQLSchema } from 'graphql'
 import type { GraphileConfig } from 'postgraphile/graphile-build'
 import { Pool, type PoolClient } from 'pg'
 import { makeSchema } from 'postgraphile'
 import { PostGraphileAmberPreset } from 'postgraphile/presets/amber'
 import { execute, hookArgs } from 'postgraphile/grafast'
 import { makePgService, makeWithPgClientViaPgClientAlreadyInTransaction } from 'postgraphile/adaptors/pg'
-import { describe, it, expect, beforeAll, afterAll, afterEach, beforeEach, inject, vi } from 'vitest'
+import { describe, it, expect, beforeAll, afterAll, afterEach, beforeEach, inject, vi } from 'vite-plus/test'
 
 import { snakeToCamel } from '@stonecrop/schema'
 
@@ -22,6 +22,8 @@ import { loadDoctypesFromObject, clearRegistry } from '../../src/registry/doctyp
 
 /** Records ids `ScItem.publish`'s effect ran against — its return value is empty by design. */
 const publishCalls: string[] = []
+/** Records ids `ScItemHandled.save` ran against, `(new)` for a record not created yet. */
+const handledSaveCalls: string[] = []
 
 const actionHandlers: Record<string, Record<string, ActionHandler>> = {
 	ScOrder: {
@@ -29,6 +31,12 @@ const actionHandlers: Record<string, Record<string, ActionHandler>> = {
 		echoLink({ args }) {
 			const first = (args as Array<{ data?: Record<string, unknown> }>)[0]
 			return Promise.resolve({ seenCustomerId: first?.data?.customerId, seenTitle: first?.data?.title })
+		},
+	},
+	ScPartyWithOrders: {
+		echoOrders({ args }) {
+			const first = (args as Array<{ data?: { orders?: Array<Record<string, unknown>> } }>)[0]
+			return Promise.resolve({ seenOrderCustomerIds: first?.data?.orders?.map(order => order.customerId) })
 		},
 	},
 	ScItem: {
@@ -80,6 +88,35 @@ const actionHandlers: Record<string, Record<string, ActionHandler>> = {
 				values: [String(recordId)],
 			})
 			return Object.fromEntries(Object.entries(rows[0]).map(([column, value]) => [snakeToCamel(column), value]))
+		},
+	},
+	// A save declared as a self-transition whose handler creates as well as updates. It marks the
+	// name, so a row shows whether the handler wrote it or the adapter's own write did.
+	ScItemHandled: {
+		async save({ pgClient, recordId, data }) {
+			handledSaveCalls.push(recordId == null ? '(new)' : String(recordId))
+			const name = `${String(data.name)} (handled)`
+			const { rows } =
+				recordId == null
+					? await pgClient.query<Record<string, unknown>>({
+							text: `INSERT INTO sc_item (name) VALUES ($1) RETURNING id, name, status`,
+							values: [name],
+						})
+					: await pgClient.query<Record<string, unknown>>({
+							text: `UPDATE sc_item SET name = $2 WHERE id::text = $1 RETURNING id, name, status`,
+							values: [String(recordId), name],
+						})
+			return rows[0]
+		},
+	},
+	// Creates the row but replies without its key, so nothing can be read back.
+	ScItemHandledKeyless: {
+		async save({ pgClient, data }) {
+			const { rows } = await pgClient.query<Record<string, unknown>>({
+				text: `INSERT INTO sc_item (name) VALUES ($1) RETURNING name, status`,
+				values: [String(data.name)],
+			})
+			return rows[0]
 		},
 	},
 	ScSignal: {
@@ -307,6 +344,16 @@ beforeAll(async () => {
 			// nested record while its column holds a scalar foreign key.
 			workflow: { actions: { save: { label: 'Save', selfTransition: true } } },
 		},
+		// The same expanding link, declared by the field's own `doctype` rather than a `links` entry.
+		ScLinkExpandByField: {
+			name: 'ScLinkExpandByField',
+			fields: [
+				{ kind: 'field', fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
+				{ kind: 'field', fieldname: 'label', component: 'ATextInput', label: 'Label' },
+				{ kind: 'field', fieldname: 'itemId', component: 'AForm', doctype: 'ScItem', label: 'Item' },
+			],
+			workflow: { actions: { save: { label: 'Save', selfTransition: true } } },
+		},
 		ScLinkInline: {
 			name: 'ScLinkInline',
 			fields: [
@@ -406,6 +453,117 @@ beforeAll(async () => {
 				},
 			},
 		},
+		// Ordered-link fixtures over the one table whose ids run against its positions, differing only
+		// in the order their link names.
+		ScLinedLine: {
+			name: 'ScLinedLine',
+			fields: [
+				{ kind: 'field', fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
+				{ kind: 'field', fieldname: 'position', component: 'ANumericInput', label: 'Position' },
+				{ kind: 'field', fieldname: 'label', component: 'ATextInput', label: 'Label' },
+				{ kind: 'field', fieldname: 'lined_id', component: 'ATextInput', label: 'Lined ID' },
+			],
+		},
+		ScLined: {
+			name: 'ScLined',
+			fields: [
+				{ kind: 'field', fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
+				{ kind: 'field', fieldname: 'name', component: 'ATextInput', label: 'Name' },
+			],
+			links: {
+				lines: {
+					target: 'ScLinedLine',
+					cardinality: 'noneOrMany' as const,
+					backlink: 'lined_id',
+					orderBy: { fieldname: 'position' },
+				},
+			},
+		},
+		ScLinedDescending: {
+			name: 'ScLinedDescending',
+			fields: [
+				{ kind: 'field', fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
+				{ kind: 'field', fieldname: 'name', component: 'ATextInput', label: 'Name' },
+			],
+			links: {
+				lines: {
+					target: 'ScLinedLine',
+					cardinality: 'noneOrMany' as const,
+					backlink: 'lined_id',
+					orderBy: { fieldname: 'position', direction: 'desc' as const },
+				},
+			},
+		},
+		ScLinedUnordered: {
+			name: 'ScLinedUnordered',
+			fields: [
+				{ kind: 'field', fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
+				{ kind: 'field', fieldname: 'name', component: 'ATextInput', label: 'Name' },
+			],
+			links: {
+				lines: { target: 'ScLinedLine', cardinality: 'noneOrMany' as const, backlink: 'lined_id' },
+			},
+		},
+		ScLinedCapped: {
+			name: 'ScLinedCapped',
+			fields: [
+				{ kind: 'field', fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
+				{ kind: 'field', fieldname: 'name', component: 'ATextInput', label: 'Name' },
+			],
+			links: {
+				lines: {
+					target: 'ScLinedLine',
+					cardinality: 'noneOrMany' as const,
+					backlink: 'lined_id',
+					orderBy: { fieldname: 'position' },
+					fetch: { method: 'sync' as const, limit: 2 },
+				},
+			},
+		},
+		// Lines sharing one position, the first of them last in the heap: only the identity tie-break
+		// reads them in id order.
+		ScTiedLine: {
+			name: 'ScTiedLine',
+			fields: [
+				{ kind: 'field', fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
+				{ kind: 'field', fieldname: 'position', component: 'ANumericInput', label: 'Position' },
+				{ kind: 'field', fieldname: 'label', component: 'ATextInput', label: 'Label' },
+				{ kind: 'field', fieldname: 'lined_id', component: 'ATextInput', label: 'Lined ID' },
+			],
+		},
+		ScLinedTied: {
+			name: 'ScLinedTied',
+			fields: [
+				{ kind: 'field', fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
+				{ kind: 'field', fieldname: 'name', component: 'ATextInput', label: 'Name' },
+			],
+			links: {
+				lines: {
+					target: 'ScTiedLine',
+					cardinality: 'noneOrMany' as const,
+					backlink: 'lined_id',
+					orderBy: { fieldname: 'position' },
+				},
+			},
+		},
+		ScRanked: {
+			name: 'ScRanked',
+			fields: [
+				{ kind: 'field', fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
+				{ kind: 'field', fieldname: 'rank', component: 'ATextInput', label: 'Rank' },
+				{ kind: 'field', fieldname: 'label', component: 'ATextInput', label: 'Label' },
+			],
+		},
+		// The lines with a computed field, which has no column to sort by.
+		ScLinedLineShown: {
+			name: 'ScLinedLineShown',
+			fields: [
+				{ kind: 'field', fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
+				{ kind: 'field', fieldname: 'position', component: 'ANumericInput', label: 'Position' },
+				{ kind: 'field', fieldname: 'label', component: 'ATextInput', label: 'Label' },
+				{ kind: 'field', fieldname: 'shown', component: 'ATextInput', computed: true, label: 'Shown' },
+			],
+		},
 		ScProduct: {
 			name: 'ScProduct',
 			fields: [
@@ -473,6 +631,54 @@ beforeAll(async () => {
 			],
 			workflow: { actions: { save: { label: 'Save', stateless: true } } },
 		},
+		// sc_item saved by a registered handler on a Save declared as a self-transition limited to a state.
+		ScItemHandled: {
+			name: 'ScItemHandled',
+			fields: [
+				{ kind: 'field', fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
+				{ kind: 'field', fieldname: 'name', component: 'ATextInput', label: 'Name' },
+				{ kind: 'field', fieldname: 'status', component: 'ATextInput', label: 'Status' },
+			],
+			workflow: {
+				states: ['Draft', 'Active'],
+				actions: { save: { label: 'Save', selfTransition: true, allowedStates: ['Draft'] } },
+			},
+		},
+		// sc_item read without its key: no field declares `primaryKey` and none is named `id`.
+		ScItemUnkeyed: {
+			name: 'ScItemUnkeyed',
+			fields: [
+				{ kind: 'field', fieldname: 'name', component: 'ATextInput', label: 'Name' },
+				{ kind: 'field', fieldname: 'status', component: 'ATextInput', label: 'Status' },
+			],
+			workflow: { actions: { save: { label: 'Save', selfTransition: true } } },
+		},
+		// sc_item keyed by a field that is also a link, so a written record's key comes back enriched.
+		ScItemLinkKeyed: {
+			name: 'ScItemLinkKeyed',
+			fields: [
+				{
+					kind: 'field',
+					fieldname: 'id',
+					component: 'AFormLink',
+					doctype: 'ScPeriod',
+					primaryKey: true,
+					label: 'ID',
+				},
+				{ kind: 'field', fieldname: 'name', component: 'ATextInput', label: 'Name' },
+				{ kind: 'field', fieldname: 'status', component: 'ATextInput', label: 'Status' },
+			],
+			workflow: { actions: { save: { label: 'Save', selfTransition: true } } },
+		},
+		ScItemHandledKeyless: {
+			name: 'ScItemHandledKeyless',
+			fields: [
+				{ kind: 'field', fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
+				{ kind: 'field', fieldname: 'name', component: 'ATextInput', label: 'Name' },
+				{ kind: 'field', fieldname: 'status', component: 'ATextInput', label: 'Status' },
+			],
+			workflow: { actions: { save: { label: 'Save', selfTransition: true } } },
+		},
 		// Reads sc_period's list of zone-free timestamps, which no other period fixture declares.
 		ScPeriodReviews: {
 			name: 'ScPeriodReviews',
@@ -488,6 +694,41 @@ beforeAll(async () => {
 				{ kind: 'field', fieldname: 'label', component: 'ATextInput', label: 'Label' },
 				{ kind: 'field', fieldname: 'took', component: 'ADuration', label: 'Took' },
 				{ kind: 'field', fieldname: 'laps', component: 'ATextInput', label: 'Laps' },
+			],
+			workflow: { actions: { save: { label: 'Save', selfTransition: true } } },
+		},
+		ScShape: {
+			name: 'ScShape',
+			fields: [
+				{ kind: 'field', fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
+				{ kind: 'field', fieldname: 'label', component: 'ATextInput', label: 'Label' },
+				{ kind: 'field', fieldname: 'settings', component: 'ATextInput', label: 'Settings' },
+				{ kind: 'field', fieldname: 'raw', component: 'ATextInput', label: 'Raw' },
+				{ kind: 'field', fieldname: 'events', component: 'ATextInput', label: 'Events' },
+				{ kind: 'field', fieldname: 'tags', component: 'ATextInput', label: 'Tags' },
+				{ kind: 'field', fieldname: 'seenAt', component: 'ATextInput', label: 'Seen At' },
+				{ kind: 'field', fieldname: 'took', component: 'ADuration', label: 'Took' },
+				{ kind: 'field', fieldname: 'laps', component: 'ATextInput', label: 'Laps' },
+				{ kind: 'field', fieldname: 'ruler', component: 'ATextInput', label: 'Ruler' },
+				{ kind: 'field', fieldname: 'span', component: 'ATextInput', label: 'Span' },
+				{ kind: 'field', fieldname: 'validDuring', component: 'ATextInput', label: 'Valid During' },
+				{ kind: 'field', fieldname: 'season', component: 'ATextInput', label: 'Season' },
+				{ kind: 'field', fieldname: 'pair', component: 'ATextInput', label: 'Pair' },
+				{ kind: 'field', fieldname: 'pairs', component: 'ATextInput', label: 'Pairs' },
+				{ kind: 'field', fieldname: 'windows', component: 'ATextInput', label: 'Windows' },
+				{ kind: 'field', fieldname: 'blob', component: 'ATextInput', label: 'Blob' },
+				{ kind: 'field', fieldname: 'ratio', component: 'ANumericInput', label: 'Ratio' },
+			],
+			workflow: { actions: { save: { label: 'Save', selfTransition: true } } },
+		},
+		ScLine: {
+			name: 'ScLine',
+			fields: [
+				{ kind: 'field', fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
+				{ kind: 'field', fieldname: 'lineNo', component: 'ANumericInput', label: 'Line No' },
+				{ kind: 'field', fieldname: 'quantity', component: 'ANumericInput', label: 'Quantity' },
+				{ kind: 'field', fieldname: 'rate', component: 'ANumericInput', label: 'Rate' },
+				{ kind: 'field', fieldname: 'amount', component: 'ANumericInput', label: 'Amount' },
 			],
 			workflow: { actions: { save: { label: 'Save', selfTransition: true } } },
 		},
@@ -547,6 +788,9 @@ beforeAll(async () => {
 					fetch: { method: 'sync' as const },
 				},
 			},
+			// `echoOrders` is a stateless command, so it shows what the envelope handed the handler
+			// for the rows of a relation.
+			workflow: { actions: { echoOrders: { label: 'Echo Orders' } } },
 		},
 	})
 
@@ -566,15 +810,26 @@ beforeAll(async () => {
 					ScNestedKey: 'sc_code',
 					ScAmbiguous: 'sc_note',
 					ScLinkExpand: 'sc_tag',
+					ScLinkExpandByField: 'sc_tag',
 					ScLinkInline: 'sc_tag',
 					ScLinkAliased: 'sc_tag',
 					ScLinkLazy: 'sc_tag',
 					ScBulkSync: 'sc_bulk',
 					ScBulkCapped: 'sc_bulk',
+					ScLinedDescending: 'sc_lined',
+					ScLinedUnordered: 'sc_lined',
+					ScLinedCapped: 'sc_lined',
+					ScLinedUnknownField: 'sc_lined',
+					ScLinedTied: 'sc_lined',
+					ScLinedLineShown: 'sc_lined_line',
 					ScPartyWithOrders: 'sc_party',
 					ScPeriodWithEntries: 'sc_period',
 					ScPeriodReviews: 'sc_period',
 					ScPeriodHandled: 'sc_period',
+					ScItemHandled: 'sc_item',
+					ScItemHandledKeyless: 'sc_item',
+					ScItemUnkeyed: 'sc_item',
+					ScItemLinkKeyed: 'sc_item',
 					ScPeriodEntryWithPeriod: 'sc_period_entry',
 				},
 			}),
@@ -793,6 +1048,70 @@ describe('stonecropRecord', { tags: ['integration', 'graphql'] }, () => {
 		expect(record?.data).toBeNull()
 	})
 
+	// The key is compared by its own type so its index is used; an id that type cannot hold is not
+	// one any row has, so it is a miss, not a failed query.
+	it.each(['abc', '', '1.5'])('returns null data for an id the key column cannot hold (%j)', async id => {
+		const result = await runQuery(
+			`query { stonecropRecord(doctype: "ScItem", id: ${JSON.stringify(id)}) { doctype data } }`
+		)
+		expect((result as any).errors).toBeUndefined()
+		expect((result as any).data?.stonecropRecord?.data).toBeNull()
+	})
+
+	// `01` converts to the key 1, but the server serves record 1 as `1`. Read, save and submit must
+	// agree that `01` names no record: a read that misses while a write lands would save or move a
+	// record the client was just told does not exist.
+	it('treats an id spelled differently from how the server serves it as missing, on read and on write', async () => {
+		const [read, save, submit, after] = await runSequence([
+			`query { stonecropRecord(doctype: "ScItem", id: "01") { data } }`,
+			`mutation { stonecropAction(doctype: "ScItem", action: "save", args: [{ id: "01", data: { name: "Renamed" } }]) { success error } }`,
+			`mutation { stonecropAction(doctype: "ScItem", action: "submit", args: [{ id: "01" }]) { success error record } }`,
+			`query { stonecropRecord(doctype: "ScItem", id: "1") { data } }`,
+		])
+		expect((read as any).data?.stonecropRecord?.data).toBeNull()
+
+		const saved = (save as any).data?.stonecropAction
+		expect(saved?.success).toBe(false)
+		expect(saved?.error).toBe('Save failed: record 01 no longer exists.')
+
+		const submitted = (submit as any).data?.stonecropAction
+		expect(submitted?.success).toBe(false)
+		expect(submitted?.error).toContain('does not exist')
+
+		// The oracle that matters: record 1 is neither renamed nor moved out of Draft.
+		const record = (after as any).data?.stonecropRecord?.data
+		expect(record?.name).toBe('Alpha')
+		expect(record?.status).toBe('Draft')
+	})
+
+	// The tests above pass whether the key is compared by its type or as text; only the plan tells
+	// them apart. `"id"::text = $1` cannot be answered from the primary key's index, so with
+	// sequential scans priced out the planner still has to scan the table, and the plan says so.
+	it('finds a row by its id through the key index, on read, save and submit', async () => {
+		const { sql } = await runSequenceCapturingSql([
+			`query { stonecropRecord(doctype: "ScItem", id: "1") { data } }`,
+			`mutation { stonecropAction(doctype: "ScItem", action: "save", args: [{ id: "1", data: { name: "Renamed" } }]) { success } }`,
+			`mutation { stonecropAction(doctype: "ScItem", action: "submit", args: [{ id: "1" }]) { success } }`,
+		])
+		const byId = sql.filter(text => text.includes('WHERE "id"'))
+		expect(byId.length).toBeGreaterThan(0)
+
+		const client = await pool.connect()
+		try {
+			await client.query('BEGIN')
+			await client.query('SET LOCAL enable_seqscan = off')
+			for (const text of byId) {
+				// oxlint-disable-next-line eslint/no-await-in-loop -- one pooled client; each plan is read in turn
+				const { rows } = await client.query<{ 'QUERY PLAN': string }>(`EXPLAIN (GENERIC_PLAN) ${text}`)
+				const plan = rows.map(row => row['QUERY PLAN']).join('\n')
+				expect(plan, text).not.toContain('Seq Scan')
+			}
+		} finally {
+			await client.query('ROLLBACK')
+			client.release()
+		}
+	})
+
 	it('includes sync-linked records when strategy is sync', async () => {
 		const result = await runQuery(`query { stonecropRecord(doctype: "ScItem", id: "1") { data } }`)
 		const data = (result as any).data?.stonecropRecord?.data
@@ -970,6 +1289,74 @@ describe('stonecropRecords', { tags: ['integration', 'graphql'] }, () => {
 		const data = (result as any).data?.stonecropRecords?.data
 		expect(data[0].name).toBe('Gamma')
 	})
+
+	// `position` is both a fieldname and a column, and the select returns it as text under that name.
+	// An unqualified ORDER BY resolved to that text, so 10 sorted before 9.
+	it('orders a number field by its value, not its text', async () => {
+		const result = await runQuery(
+			`query { stonecropRecords(doctype: "ScLinedLine", orderBy: "position_ASC") { data } }`
+		)
+		const labels = (result as any).data?.stonecropRecords?.data.map((line: any) => line.label)
+		expect(labels).toEqual(['first', 'second', 'third'])
+	})
+
+	// The identity breaks ties and orders an unordered page; it is compared as a number too.
+	it('pages by identity as a number', async () => {
+		const result = await runQuery(`query { stonecropRecords(doctype: "ScBulkChild", limit: 10) { data } }`)
+		const labels = (result as any).data?.stonecropRecords?.data.map((child: any) => child.label)
+		expect(labels).toEqual(Array.from({ length: 10 }, (_, i) => `child ${i + 1}`))
+	})
+
+	// The fixture's tied lines sit in the heap as second, third, first.
+	it('breaks ties in the named order by identity', async () => {
+		const result = await runQuery(`query { stonecropRecords(doctype: "ScTiedLine", orderBy: "position_ASC") { data } }`)
+		const labels = (result as any).data?.stonecropRecords?.data.map((line: any) => line.label)
+		expect(labels).toEqual(['first', 'second', 'third'])
+	})
+
+	const listLabels = async (doctype: string, orderBy: string) => {
+		const result = await runQuery(`query { stonecropRecords(doctype: "${doctype}", orderBy: "${orderBy}") { data } }`)
+		return {
+			labels: ((result as any).data?.stonecropRecords?.data ?? []).map((row: any) => row.label),
+			error: String((result as any).errors?.[0]?.message ?? ''),
+		}
+	}
+
+	// Declared order is low, high, medium; as text it would be high, low, medium.
+	it('orders an enum field in its declared order', async () => {
+		expect((await listLabels('ScRanked', 'rank_ASC')).labels).toEqual(['low', 'high', 'medium'])
+	})
+
+	// The field is everything before the last underscore. The three lines share a parent, so identity
+	// breaks the tie, ascending under a descending order.
+	it('reads a field whose name holds underscores', async () => {
+		const { labels, error } = await listLabels('ScLinedLine', 'lined_id_DESC')
+		expect(error).toBe('')
+		expect(labels).toEqual(['third', 'first', 'second'])
+	})
+
+	it('refuses a direction other than ASC or DESC', async () => {
+		const { labels, error } = await listLabels('ScLinedLine', 'position_UP')
+		expect(labels).toEqual([])
+		expect(error).toContain('Invalid orderBy direction')
+	})
+
+	// The field name becomes SQL, so only a declared field may reach it.
+	it('refuses a field the doctype does not declare, whatever it holds', async () => {
+		const { labels, error } = await listLabels('ScLinedLine', 'position\\" DESC; SELECT 1 --_ASC')
+		expect(labels).toEqual([])
+		expect(error).toContain('Unknown orderBy field')
+	})
+
+	// A computed field has no column, so it is refused by name before the query reaches Postgres.
+	it('refuses an order by a computed field', async () => {
+		const result = await runQuery(
+			`query { stonecropRecords(doctype: "ScLinedLineShown", orderBy: "shown_ASC") { data } }`
+		)
+		const message = String((result as any).errors?.[0]?.message ?? '')
+		expect(message).toContain('Unknown orderBy field: "shown"')
+		expect(message).not.toContain('does not exist')
+	})
 })
 
 // ===========================================================================
@@ -1018,10 +1405,8 @@ describe('lazy link retrieval via stonecropRecords', { tags: ['integration', 'gr
 // ===========================================================================
 
 describe('self-transition data write', { tags: ['integration', 'graphql'] }, () => {
-	// The adapter supplied `readState`/`writeState`/`runEffect` and no `writeData` at all, which
-	// `GuardedTransitionIO` documents as how a backend *declines* to write. So the reference
-	// Postgres backend was indistinguishable from a read-only one, and every save answered
-	// "which this backend does not support" — loud, but a lie.
+	// Saves through the adapter: its own `writeData`, which saves and creates (a backend without one
+	// declines to save), and a Save with a registered handler, which writes instead of it.
 	it('persists field data for a save against an existing record', async () => {
 		const [action, read] = await runSequence([
 			`mutation { stonecropAction(doctype: "ScItem", action: "save", args: [{ id: "1", data: { name: "Renamed" } }]) { success error data } }`,
@@ -1072,9 +1457,101 @@ describe('self-transition data write', { tags: ['integration', 'graphql'] }, () 
 		const result = (action as any).data?.stonecropAction
 		expect(result?.success).toBe(false)
 		// Naming the id is the difference between a usable report and "something went wrong".
-		expect(String(result?.error)).toContain('9999')
+		expect(result?.error).toBe('Save failed: record 9999 no longer exists.')
 		// The oracle that matters: the envelope could say failure while a row was still written.
 		expect((list as any).data?.stonecropRecords?.data.length).toBe(0)
+	})
+
+	// With no key to file the created record under, the page stays on its draft and the next save
+	// creates a second row.
+	it('refuses to save a doctype with no identity field, and writes nothing', async () => {
+		const [action, list] = await runSequence([
+			`mutation { stonecropAction(doctype: "ScItemUnkeyed", action: "save", args: [{ data: { name: "Unkeyed" } }]) { success error } }`,
+			`query { stonecropRecords(doctype: "ScItem", filters: { name: "Unkeyed" }) { data } }`,
+		])
+		const result = (action as any).data?.stonecropAction
+		expect(result?.success).toBe(false)
+		expect(String(result?.error)).toContain('has no identity field')
+		expect((list as any).data?.stonecropRecords?.data.length).toBe(0)
+	})
+
+	// A key that is also a link is read before links are expanded into `{ id, displayText }`, which no
+	// read can look up, so this save is read back rather than refused.
+	it('replies with the record when its key field is a link', async () => {
+		const [action] = await runSequence([
+			`mutation { stonecropAction(doctype: "ScItemLinkKeyed", action: "save", args: [{ id: "1", data: { name: "Linked" } }]) { success error record } }`,
+		])
+		const result = (action as any).data?.stonecropAction
+		expect(result?.error).toBeNull()
+		expect(result?.record?.name).toBe('Linked')
+	})
+
+	describe('with a registered handler', () => {
+		beforeEach(() => {
+			handledSaveCalls.length = 0
+		})
+
+		it('creates the record through the handler when no id is dispatched', async () => {
+			const [action, handled, plain] = await runSequence([
+				`mutation { stonecropAction(doctype: "ScItemHandled", action: "save", args: [{ data: { name: "Minted" } }]) { success error record } }`,
+				`query { stonecropRecords(doctype: "ScItemHandled", filters: { name: "Minted (handled)" }) { data } }`,
+				`query { stonecropRecords(doctype: "ScItemHandled", filters: { name: "Minted" }) { data } }`,
+			])
+			const result = (action as any).data?.stonecropAction
+			expect(result?.error).toBeNull()
+			// Read back by the identity the handler replied with, so the client files the new record.
+			expect(result?.record?.name).toBe('Minted (handled)')
+			expect(result?.record?.id).toBeDefined()
+			expect(handledSaveCalls).toEqual(['(new)'])
+			expect((handled as any).data?.stonecropRecords?.data.length).toBe(1)
+			// The adapter's own insert did not run beside the handler's.
+			expect((plain as any).data?.stonecropRecords?.data.length).toBe(0)
+		})
+
+		it('lets the handler be the write on a saved record', async () => {
+			const [action, read] = await runSequence([
+				`mutation { stonecropAction(doctype: "ScItemHandled", action: "save", args: [{ id: "1", data: { name: "Renamed" } }]) { success error record } }`,
+				`query { stonecropRecord(doctype: "ScItemHandled", id: "1") { data } }`,
+			])
+			expect((action as any).data?.stonecropAction?.error).toBeNull()
+			expect(handledSaveCalls).toEqual(['1'])
+			// The adapter's own write would have put "Renamed" back over the handler's value.
+			expect((read as any).data?.stonecropRecord?.data?.name).toBe('Renamed (handled)')
+		})
+
+		// With no record back the page stays on the draft, and its next save creates a second row.
+		it('fails a save whose handler replies without the key, and keeps nothing it wrote', async () => {
+			const [action, list] = await runSequence([
+				`mutation { stonecropAction(doctype: "ScItemHandledKeyless", action: "save", args: [{ data: { name: "Keyless" } }]) { success error record } }`,
+				`query { stonecropRecords(doctype: "ScItemHandledKeyless", filters: { name: "Keyless" }) { data } }`,
+			])
+			const result = (action as any).data?.stonecropAction
+			expect(result?.success).toBe(false)
+			expect(result?.error).toBe('Save failed: the server did not say which record it saved.')
+			expect((list as any).data?.stonecropRecords?.data.length).toBe(0)
+		})
+
+		it('refuses an id that matched no row before the handler runs', async () => {
+			const [action, list] = await runSequence([
+				`mutation { stonecropAction(doctype: "ScItemHandled", action: "save", args: [{ id: "9999", data: { name: "Ghost" } }]) { success error } }`,
+				`query { stonecropRecords(doctype: "ScItemHandled", filters: { name: "Ghost (handled)" }) { data } }`,
+			])
+			const result = (action as any).data?.stonecropAction
+			expect(result?.success).toBe(false)
+			expect(result?.error).toBe('Save failed: record 9999 no longer exists.')
+			expect(handledSaveCalls).toEqual([])
+			expect((list as any).data?.stonecropRecords?.data.length).toBe(0)
+		})
+
+		it('still refuses a saved record outside the states its save allows', async () => {
+			const [action, read] = await runSequence([
+				`mutation { stonecropAction(doctype: "ScItemHandled", action: "save", args: [{ id: "2", data: { name: "Renamed" } }]) { success error } }`,
+				`query { stonecropRecord(doctype: "ScItemHandled", id: "2") { data } }`,
+			])
+			expect((action as any).data?.stonecropAction?.success).toBe(false)
+			expect(handledSaveCalls).toEqual([])
+			expect((read as any).data?.stonecropRecord?.data?.name).toBe('Beta')
+		})
 	})
 
 	// The doctype owns state everywhere except creation, where `transition.ts` says the initial
@@ -1124,6 +1601,85 @@ describe('self-transition data write', { tags: ['integration', 'graphql'] }, () 
 		expect((expanded as any).data?.stonecropAction?.droppedFields).toContain('itemId')
 		expect((scalar as any).data?.stonecropAction?.success).toBe(true)
 		expect((scalar as any).data?.stonecropAction?.droppedFields).toBeNull()
+	})
+
+	it('drops an expanded record for a field declaring its doctype, rather than refusing the save', async () => {
+		const [expanded] = await runSequence([
+			`mutation { stonecropAction(doctype: "ScLinkExpandByField", action: "save", args: [{ id: "1", data: { label: "kept", itemId: { id: 2, name: "Beta" } } }]) { success error droppedFields } }`,
+		])
+		expect((expanded as any).data?.stonecropAction).toMatchObject({
+			success: true,
+			error: null,
+			droppedFields: ['itemId'],
+		})
+	})
+
+	// The read serves an expanding link's key as the linked record, so the stored row the save compares
+	// against has to carry the key itself, or an empty link never counts as unchanged.
+	it('writes nothing when a record whose expanding link is empty is saved back unchanged', async () => {
+		const unchanged = { id: 3, label: 'approved', itemId: null }
+		const {
+			results: [emptied, read, saved],
+			rows: [logged],
+		} = await runSequenceInDatabaseZone(
+			'UTC',
+			[
+				`mutation { stonecropAction(doctype: "ScLinkExpand", action: "save", args: [{ id: "3", data: { itemId: null } }]) { success error } }`,
+				`query { stonecropRecord(doctype: "ScLinkExpand", id: "3") { data } }`,
+				`mutation { stonecropAction(doctype: "ScLinkExpand", action: "save", args: [{ id: "3", data: { label: "approved", itemId: null } }]) { success error data } }`,
+			],
+			`SELECT count(*)::int AS writes FROM sc_tag_write_log WHERE tag_id = 3`
+		)
+		expect((emptied as any).data.stonecropAction).toMatchObject({ success: true, error: null })
+		expect((read as any).data.stonecropRecord.data).toEqual(unchanged)
+		// The reply is the stored record, without the key column read to compare the link.
+		expect((saved as any).data.stonecropAction).toEqual({
+			success: true,
+			error: null,
+			data: { id: 3, label: 'approved' },
+		})
+		expect(logged).toEqual({ writes: 1 })
+	})
+
+	// `sc_line.line_no` is an identity generated always and `amount` is generated from quantity and
+	// rate: Postgres refuses any statement that sets either. A record read back carries both, so a
+	// client that edits one and saves it sends them back.
+	it('saves a record carrying the columns the database generates, and leaves them to it', async () => {
+		const [action, read] = await runSequence([
+			`mutation { stonecropAction(doctype: "ScLine", action: "save", args: [{ id: "1", data: { lineNo: 1, quantity: 3, rate: 5, amount: 10 } }]) { success error droppedFields } }`,
+			`query { stonecropRecord(doctype: "ScLine", id: "1") { data } }`,
+		])
+		const result = (action as any).data?.stonecropAction
+		expect(result?.error).toBeNull()
+		expect(result?.droppedFields).toEqual(expect.arrayContaining(['lineNo', 'amount']))
+		const record = (read as any).data?.stonecropRecord?.data
+		expect(record?.quantity).toBe(3)
+		// The database's value, not the stale one the patch carried.
+		expect(record?.amount).toBe(15)
+		expect(record?.lineNo).toBe(1)
+	})
+
+	it('creates a record carrying them, and the database fills them', async () => {
+		const [action] = await runSequence([
+			`mutation { stonecropAction(doctype: "ScLine", action: "save", args: [{ data: { lineNo: 99, quantity: 2, rate: 4, amount: 0 } }]) { success error data } }`,
+		])
+		const result = (action as any).data?.stonecropAction
+		expect(result?.error).toBeNull()
+		expect(result?.data?.amount).toBe(8)
+		// The identity's own next value, which a rolled-back test still consumes, so only "not ours".
+		expect(typeof result?.data?.lineNo).toBe('number')
+		expect(result?.data?.lineNo).not.toBe(99)
+	})
+
+	// PostGraphile's own create and update read the same marks, so the two never disagree about
+	// which columns a write may set.
+	it('keeps them out of PostGraphile’s own create and update inputs', () => {
+		for (const typeName of ['ScLineInput', 'ScLinePatch']) {
+			const fields = Object.keys((schema.getType(typeName) as GraphQLInputObjectType).getFields())
+			expect(fields).toEqual(expect.arrayContaining(['quantity', 'rate']))
+			expect(fields).not.toContain('lineNo')
+			expect(fields).not.toContain('amount')
+		}
 	})
 })
 
@@ -1225,13 +1781,19 @@ describe('temporal columns', { tags: ['integration', 'graphql'] }, () => {
 			expect(asHost((await readRecord('ScPeriodEntryWithPeriod')).periodId)).toEqual(await readHost())
 		})
 
-		it('leaves the row unchanged when a read is saved back as it came', async () => {
+		// The row is moved off its values first: a save writes only what changed, so saving the read back
+		// onto the row it came from would write nothing and prove nothing.
+		it('writes a read back as the values it came from', async () => {
 			const before = await readHost()
 			const period = await readRecord('ScPeriod')
-			const [save, after] = await runSequence([
+			const [moved, movedRow, save, after] = await runSequence([
+				`mutation { stonecropAction(doctype: "ScPeriod", action: "save", args: [{ id: "1", data: { startsOn: "2030-05-05", openedAt: "2030-05-05T05:05:05.000Z" } }]) { success error } }`,
+				hostRead,
 				`mutation { stonecropAction(doctype: "ScPeriod", action: "save", args: [{ id: "1", data: { startsOn: ${JSON.stringify(period.startsOn)}, openedAt: ${JSON.stringify(period.openedAt)} } }]) { success error } }`,
 				hostRead,
 			])
+			expect((moved as any).data?.stonecropAction?.success).toBe(true)
+			expect((movedRow as any).data.scPeriodByRowId.startsOn).toBe('2030-05-05')
 			expect((save as any).data?.stonecropAction?.success).toBe(true)
 			expect(inDatabaseZone((after as any).data.scPeriodByRowId)).toEqual(before)
 		})
@@ -1396,6 +1958,268 @@ describe('interval columns', { tags: ['integration', 'graphql'] }, () => {
 })
 
 // ===========================================================================
+// Structured columns
+// ===========================================================================
+
+// JSON, lists and ranges read as the objects and arrays PostGraphile decodes them into, so a save writes
+// such a value back as the column holds it. Each write is checked in SQL, never through the adapter's own
+// read, which shares the codecs under test.
+describe('structured columns', { tags: ['integration', 'graphql'] }, () => {
+	// A value as a GraphQL literal, since the `args` scalar takes one.
+	const graphqlLiteral = (value: unknown): string =>
+		Array.isArray(value)
+			? `[${value.map(graphqlLiteral).join(', ')}]`
+			: value !== null && typeof value === 'object'
+				? `{ ${Object.entries(value)
+						.map(([key, entry]) => `${key}: ${graphqlLiteral(entry)}`)
+						.join(', ')} }`
+				: JSON.stringify(value)
+	const saveShape = (id: string | undefined, data: Record<string, unknown>) =>
+		`mutation { stonecropAction(doctype: "ScShape", action: "save", args: [{ ${id === undefined ? '' : `id: "${id}", `}data: ${graphqlLiteral(data)} }]) { success error droppedFields } }`
+	const readShape = async (id: number): Promise<Record<string, unknown>> =>
+		JSON.parse(JSON.stringify(await runQuery(`query { stonecropRecord(doctype: "ScShape", id: "${id}") { data } }`)))
+			.data.stonecropRecord.data
+	const writesTo = (id: number) =>
+		`SELECT count(*) FILTER (WHERE kind = 'row')::int AS rows, count(*) FILTER (WHERE kind = 'took')::int AS took FROM sc_shape_write_log WHERE shape_id = ${id}`
+
+	// [what, field, value sent, SQL true when the column holds it]
+	const writes: [string, string, unknown, string][] = [
+		['a jsonb object', 'settings', { level: 7 }, `settings = '{"level": 7}'::jsonb`],
+		[
+			'a nested jsonb object',
+			'settings',
+			{ nested: { a: [1, { b: null }] } },
+			`settings = '{"nested": {"a": [1, {"b": null}]}}'::jsonb`,
+		],
+		['a jsonb array', 'settings', [1, 'two'], `settings = '[1, "two"]'::jsonb`],
+		['a jsonb number', 'settings', 5, `settings = '5'::jsonb`],
+		['a json object', 'raw', { b: 2 }, `raw::jsonb = '{"b": 2}'::jsonb`],
+		['a list of text', 'tags', ['x', 'y'], `tags = ARRAY['x', 'y']`],
+		['a list of jsonb', 'events', [{ x: 2 }, { y: 3 }], `events = ARRAY['{"x": 2}', '{"y": 3}']::jsonb[]`],
+		['a list of ISO 8601 durations', 'laps', ['PT1M', 'P1D'], `laps = ARRAY['1 minute', '1 day']::interval[]`],
+		[
+			'an integer range',
+			'span',
+			{ start: { value: 2, inclusive: true }, end: { value: 5, inclusive: false } },
+			`span = '[2,5)'::int4range`,
+		],
+		[
+			'a date range open at its end',
+			'season',
+			{ start: { value: '2026-02-01', inclusive: true }, end: null },
+			`season = '[2026-02-01,)'::daterange`,
+		],
+		[
+			'a timestamp range',
+			'validDuring',
+			{
+				start: { value: '2026-03-01T08:00:00', inclusive: true },
+				end: { value: '2026-03-02T08:00:00', inclusive: true },
+			},
+			`valid_during = '[2026-03-01 08:00, 2026-03-02 08:00]'::tsrange`,
+		],
+		['a composite', 'pair', { a: 3, b: 'z' }, `pair = ROW(3, 'z')::sc_pair`],
+		['a list of composites', 'pairs', [{ a: 4, b: null }], `pairs = ARRAY[ROW(4, NULL)]::sc_pair[]`],
+		[
+			'a list of timestamp ranges',
+			'windows',
+			[{ start: { value: '2026-05-01T00:00:00', inclusive: true }, end: null }, null],
+			`windows IS NOT DISTINCT FROM ARRAY['[2026-05-01 00:00,)', NULL]::tsrange[]`,
+		],
+	]
+
+	it.each(writes)('saves %s', async (_, field, value, holds) => {
+		const {
+			results: [save],
+			rows: [stored],
+		} = await runSequenceInDatabaseZone(
+			'UTC',
+			[saveShape('1', { [field]: value })],
+			`SELECT ${holds} AS holds FROM sc_shape WHERE id = 1`
+		)
+		expect((save as any).data.stonecropAction).toMatchObject({ success: true, error: null, droppedFields: null })
+		expect(stored.holds).toBe(true)
+	})
+
+	it.each(writes)('creates a record with %s', async (_, field, value, holds) => {
+		const {
+			results: [create],
+			rows: [stored],
+		} = await runSequenceInDatabaseZone(
+			'UTC',
+			[saveShape(undefined, { label: 'created', [field]: value })],
+			`SELECT ${holds} AS holds FROM sc_shape WHERE label = 'created'`
+		)
+		expect((create as any).data.stonecropAction).toMatchObject({ success: true, error: null, droppedFields: null })
+		expect(stored.holds).toBe(true)
+	})
+
+	// 04:30 UTC is 10:00 in Kolkata (+05:30), a zone unlike both UTC and the test process's own.
+	it.each([
+		['saves', '1', `id = 1`],
+		['creates', undefined, `label = 'created'`],
+	])('%s a list of moments as the clock readings they name in the database zone', async (_, id, row) => {
+		const {
+			results: [save],
+			rows: [stored],
+		} = await runSequenceInDatabaseZone(
+			'Asia/Kolkata',
+			[saveShape(id, { label: 'created', seenAt: ['2026-01-05T04:30:00.000Z'] })],
+			`SELECT seen_at = ARRAY['2026-01-05 10:00:00']::timestamp[] AS holds FROM sc_shape WHERE ${row}`
+		)
+		expect((save as any).data.stonecropAction).toMatchObject({ success: true, error: null, droppedFields: null })
+		expect(stored.holds).toBe(true)
+	})
+
+	// A bound the read cannot serve comes back as no bound at all, so writing the read back would turn
+	// `[-infinity, …)` into `(, …)`, a different range.
+	it('edits one bound of a range and keeps the other bound infinite', async () => {
+		const validDuring = (await readShape(2)).validDuring as { end: { value: string } }
+		validDuring.end.value = '2026-07-01T00:00:00'
+		const {
+			results: [save],
+			rows: [stored],
+		} = await runSequenceInDatabaseZone(
+			'UTC',
+			[saveShape('2', { validDuring })],
+			`SELECT valid_during = '[-infinity, 2026-07-01 00:00)'::tsrange AS holds FROM sc_shape WHERE id = 2`
+		)
+		expect((save as any).data.stonecropAction).toMatchObject({ success: true, error: null })
+		expect(stored.holds).toBe(true)
+	})
+
+	// A list is written whole, so editing one range in it writes the others as the read served them.
+	it('edits one range in a list and keeps the others, an infinite bound and a NULL range included', async () => {
+		const windows = (await readShape(2)).windows as [unknown, unknown, { end: { value: string } }]
+		windows[2].end.value = '2026-04-01T00:00:00'
+		const {
+			results: [save],
+			rows: [stored],
+		} = await runSequenceInDatabaseZone(
+			'UTC',
+			[saveShape('2', { windows })],
+			`SELECT windows IS NOT DISTINCT FROM ARRAY[NULL, '[-infinity, 2026-01-01 00:00)', '[2026-02-01 00:00, 2026-04-01 00:00)']::tsrange[] AS holds FROM sc_shape WHERE id = 2`
+		)
+		expect((save as any).data.stonecropAction).toMatchObject({ success: true, error: null })
+		expect(stored.holds).toBe(true)
+	})
+
+	it('reads a NULL range as null, alone and in a list', async () => {
+		expect((await readShape(2)).windows).toEqual([
+			null,
+			{
+				start: { value: '-infinity', inclusive: true },
+				end: { value: '2026-01-01T00:00:00.000000', inclusive: false },
+			},
+			{
+				start: { value: '2026-02-01T00:00:00.000000', inclusive: true },
+				end: { value: '2026-03-01T00:00:00.000000', inclusive: false },
+			},
+		])
+		const shape = await readShape(3)
+		expect(shape.validDuring).toBeNull()
+		expect(shape.season).toBeNull()
+		expect(shape.windows).toBeNull()
+	})
+
+	it('reads a negative fraction of a second exactly', async () => {
+		const shape = await readShape(3)
+		expect(shape.took).toBe('-PT1.5S')
+		expect(shape.laps).toEqual(['-P1D', '-PT1.5S'])
+	})
+
+	// Postgres refuses an ISO 8601 duration signed as a whole (`-P1D`), the way Temporal writes one.
+	it.each([
+		['alone', { took: '-P1D' }, `took = interval '-1 day'`],
+		['in a list', { laps: ['-PT1H', 'PT2M'] }, `laps = ARRAY['-1 hour', '2 minutes']::interval[]`],
+	])('saves a negative interval %s', async (_, data, holds) => {
+		const {
+			results: [save],
+			rows: [stored],
+		} = await runSequenceInDatabaseZone(
+			'UTC',
+			[saveShape('1', data)],
+			`SELECT ${holds} AS holds FROM sc_shape WHERE id = 1`
+		)
+		expect((save as any).data.stonecropAction).toMatchObject({ success: true, error: null, droppedFields: null })
+		expect(stored.holds).toBe(true)
+	})
+
+	it.each([
+		['a range with no bounds named', 'span', {}],
+		['a range named by other keys', 'span', { lower: 1, upper: 5 }],
+		['a list sent as text', 'tags', 'x,y'],
+		['a list of lists', 'tags', [['x'], ['y']]],
+		['a line, which no read serves as it is', 'ruler', '{2,-1,0}'],
+		['an object for a text field', 'label', { text: 'x' }],
+		['a range bound with no value', 'span', { start: { value: null, inclusive: true }, end: null }],
+		['a composite missing a field', 'pair', { a: 5 }],
+		['a composite named by other keys', 'pair', { aa: 5, bb: 'y' }],
+		['a composite holding an object', 'pair', { a: { n: 1 }, b: 'x' }],
+		['a list of composites, one missing a field', 'pairs', [{ a: 5 }]],
+		['a list of ranges, one with no bounds named', 'windows', [{}]],
+		['a list of ranges, one named by other keys', 'windows', [{ lower: 1, upper: 2 }]],
+	])('refuses %s, naming the field', async (_, field, value) => {
+		const [save] = await runSequence([saveShape('1', { [field]: value })])
+		const result = (save as any).data.stonecropAction
+		expect(result.success).toBe(false)
+		expect(String(result.error)).toContain(`"${field}"`)
+	})
+
+	it('writes nothing when a read is saved back unchanged', async () => {
+		const shape = await readShape(1)
+		const {
+			results: [save],
+			rows: [logged],
+		} = await runSequenceInDatabaseZone('UTC', [saveShape('1', shape)], writesTo(1))
+		expect((save as any).data.stonecropAction).toMatchObject({ success: true, error: null })
+		expect(logged).toEqual({ rows: 0, took: 0 })
+	})
+
+	it('writes only the column that changed, so an update naming another column does not fire', async () => {
+		const shape = await readShape(1)
+		const {
+			results: [save],
+			rows: [logged],
+		} = await runSequenceInDatabaseZone('UTC', [saveShape('1', { ...shape, label: 'relabelled' })], writesTo(1))
+		expect((save as any).data.stonecropAction).toMatchObject({ success: true, error: null })
+		expect(logged).toEqual({ rows: 1, took: 0 })
+	})
+
+	// The values a read loses: kept as stored, because nothing about them changed.
+	it('leaves every value a read cannot serve as it was when the read is saved back', async () => {
+		const shape = await readShape(2)
+		const {
+			results: [save],
+			rows: [stored],
+		} = await runSequenceInDatabaseZone(
+			'UTC',
+			[saveShape('2', shape)],
+			`SELECT span = 'empty'::int4range AND seen_at = ARRAY['infinity', '2026-01-01 00:00:00']::timestamp[]
+				AND valid_during = '[-infinity, 2026-06-01 00:00)'::tsrange AND season = '[-infinity, infinity)'::daterange
+				AND blob = '\\x0102'::bytea AND ratio = 'NaN'::float8
+				AS holds FROM sc_shape WHERE id = 2`
+		)
+		expect((save as any).data.stonecropAction).toMatchObject({ success: true, error: null })
+		expect(stored.holds).toBe(true)
+	})
+
+	// The code editor sends JSON as text.
+	it('saves JSON text as the value it names', async () => {
+		const {
+			results: [save],
+			rows: [stored],
+		} = await runSequenceInDatabaseZone(
+			'UTC',
+			[saveShape('1', { settings: '{"level": 9}' })],
+			`SELECT settings = '{"level": 9}'::jsonb AS holds FROM sc_shape WHERE id = 1`
+		)
+		expect((save as any).data.stonecropAction).toMatchObject({ success: true, error: null })
+		expect(stored.holds).toBe(true)
+	})
+})
+
+// ===========================================================================
 // Link fields via stonecropRecord/stonecropRecords ({ id, displayText } enrichment)
 // ===========================================================================
 
@@ -1463,6 +2287,17 @@ describe('link fields ({ id, displayText })', { tags: ['integration', 'graphql']
 		const action = (result as any).data?.stonecropAction
 		expect(action?.error).toBeNull()
 		expect(action?.data?.seenCustomerId).toBe('2')
+	})
+
+	// Each row of a relation is a record of the target doctype, so a link picked inside a row is
+	// reduced by that doctype's fields, as the record's own links are.
+	it("hands a handler a relation's rows with their inline links reduced", async () => {
+		const result = await runQuery(
+			`mutation { stonecropAction(doctype: "ScPartyWithOrders", action: "echoOrders", args: [{ id: "1", data: { orders: [{ title: "A", customerId: { id: "2", displayText: "STALE" } }, { title: "B", customerId: "1" }] } }]) { success error data } }`
+		)
+		const action = (result as any).data?.stonecropAction
+		expect(action?.error).toBeNull()
+		expect(action?.data?.seenOrderCustomerIds).toEqual(['2', '1'])
 	})
 
 	// Keyed on the doctype's declaration, never on the value looking like `{ id, ... }`.
@@ -1556,6 +2391,82 @@ describe('many-side link row cap', { tags: ['integration', 'graphql'] }, () => {
 		const childQuery = sql.find(text => text.includes('FROM "sc_bulk_child"') && text.includes('LIMIT'))
 		expect(childQuery).toBeDefined()
 		expect(childQuery).toMatch(/ORDER BY .* LIMIT/)
+	})
+
+	// The ten it keeps are the first ten by identity as a number. Each column is selected as text
+	// under its fieldname, and `id` is both, so an unqualified ORDER BY sorted the text: 1, 10, 11, …
+	it('keeps the first children by identity, compared as numbers', async () => {
+		const result = await runQuery(`query { stonecropRecord(doctype: "ScBulkCapped", id: "1") { data } }`)
+		const labels = (result as any).data?.stonecropRecord?.data?.children.map((child: any) => child.label)
+		expect(labels).toEqual(Array.from({ length: 10 }, (_, i) => `child ${i + 1}`))
+	})
+
+	const lineLabels = async (doctype: string) => {
+		const result = await runQuery(`query { stonecropRecord(doctype: "${doctype}", id: "1") { data truncatedLinks } }`)
+		const record = (result as any).data?.stonecropRecord
+		return {
+			labels: (record?.data?.lines ?? []).map((line: any) => line.label),
+			record,
+			errors: (result as any).errors,
+		}
+	}
+
+	// Rows that keep their own position, such as an order's lines, read in the order their link names.
+	// The fixture's ids run against its positions, so identity order cannot pass for it.
+	it('reads a link in the order it names', async () => {
+		expect((await lineLabels('ScLined')).labels).toEqual(['first', 'second', 'third'])
+		expect((await lineLabels('ScLinedDescending')).labels).toEqual(['third', 'second', 'first'])
+	})
+
+	// The control: a link that names no order still reads in identity order.
+	it('reads a link that names no order in identity order', async () => {
+		expect((await lineLabels('ScLinedUnordered')).labels).toEqual(['third', 'first', 'second'])
+	})
+
+	// A cap keeps the head of the order the link names, so the rows kept are the first ones the
+	// author arranged, not the oldest.
+	it('keeps the head of the named order when the link is capped', async () => {
+		const { labels, record } = await lineLabels('ScLinedCapped')
+		expect(labels).toEqual(['first', 'second'])
+		expect(record?.truncatedLinks).toEqual(['lines'])
+	})
+
+	// The fixture's tied lines sit in the heap as second, third, first.
+	it('breaks ties in the order a link names by identity', async () => {
+		expect((await lineLabels('ScLinedTied')).labels).toEqual(['first', 'second', 'third'])
+	})
+
+	// Building the schema refuses such a link, so this one is registered after the build, as a host
+	// that loads doctypes later would; the read still refuses it by name. Put right afterwards, since
+	// every later schema build checks the whole registry.
+	it('refuses a link order naming a field the target lacks', async () => {
+		const linkOrderedBy = (fieldname: string) => ({
+			ScLinedUnknownField: {
+				name: 'ScLinedUnknownField',
+				fields: [
+					{ kind: 'field', fieldname: 'id', component: 'ATextInput', primaryKey: true, label: 'ID' },
+					{ kind: 'field', fieldname: 'name', component: 'ATextInput', label: 'Name' },
+				],
+				links: {
+					lines: {
+						target: 'ScLinedLine',
+						cardinality: 'noneOrMany' as const,
+						backlink: 'lined_id',
+						orderBy: { fieldname },
+					},
+				},
+			},
+		})
+		loadDoctypesFromObject(linkOrderedBy('rank'))
+		try {
+			const { record, errors } = await lineLabels('ScLinedUnknownField')
+			expect(record).toBeNull()
+			const message = String(errors?.[0]?.message ?? '')
+			expect(message).toContain('rank')
+			expect(message).toContain('ScLinedLine')
+		} finally {
+			loadDoctypesFromObject(linkOrderedBy('position'))
+		}
 	})
 })
 
@@ -2172,5 +3083,48 @@ describe('doctype reference resolution', { tags: ['integration', 'graphql'] }, (
 		// Same name, same link, but the field now has a column — repairs it and cleans up.
 		loadDoctypesFromObject(columnless(false))
 		await expect(build()).resolves.toBeUndefined()
+	})
+
+	// Every read of the doctype would fail on it, naming the target rather than the link, so the build
+	// names the link; the heading claims nothing about silence, since this one is anything but silent.
+	it('refuses a link ordered by a field the target lacks, then accepts it once repaired', async () => {
+		const orderedBy = (fieldname: string) => ({
+			ScLinedOrderTypo: {
+				slug: 'sc-lined-order-typo',
+				fields: [],
+				links: {
+					lines: { target: 'ScLinedLine', cardinality: 'noneOrMany', backlink: 'lined_id', orderBy: { fieldname } },
+				},
+			},
+		})
+		loadDoctypesFromObject(orderedBy('postion'))
+		const refusal = build()
+		await expect(refusal).rejects.toThrow(
+			/ScLinedOrderTypo\.links\.lines\.orderBy\.fieldname: Link "lines" orders its rows by "postion"/
+		)
+		await expect(refusal).rejects.not.toThrow(/silently/)
+
+		loadDoctypesFromObject(orderedBy('position'))
+		await expect(build()).resolves.toBeUndefined()
+	})
+})
+
+// Every suite above shares `pool`'s single connection, so a server that answers one step late after
+// a failure would fail the test after the failing one, under that test's name (#544).
+describe('the test database after a failed query', { tags: ['integration'] }, () => {
+	it('answers the next query on the same connection with its own result', async () => {
+		const client = await pool.connect()
+		try {
+			await client.query('BEGIN')
+			await expect(client.query('SELECT missing_column FROM sc_item WHERE id = $1', [1])).rejects.toThrow(
+				/missing_column/
+			)
+			await client.query('ROLLBACK')
+
+			const { rows } = await client.query<{ answer: number }>('SELECT $1::int AS answer', [42])
+			expect(rows).toEqual([{ answer: 42 }])
+		} finally {
+			client.release()
+		}
 	})
 })

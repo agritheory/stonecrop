@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test'
 import { markRaw } from 'vue'
 import { mount } from '@vue/test-utils'
 import ATableColumnFilter from '../src/components/ATableColumnFilter.vue'

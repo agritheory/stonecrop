@@ -1,7 +1,7 @@
 import { config, mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { nextTick } from 'vue'
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test'
+import { defineComponent, h, nextTick } from 'vue'
 import type { ColumnSchema } from '@stonecrop/schema'
 
 // Mock VueUse functions
@@ -33,7 +33,7 @@ import data from './data/http_logs.json'
 import ACell from '../src/components/ACell.vue'
 import ARow from '../src/components/ARow.vue'
 import ATable from '../src/components/ATable.vue'
-import type { GanttOptions, RowClickEvent, TableColumn, TableConfig, TableRow } from '../src/types'
+import type { RowClickEvent, TableColumn, TableConfig, TableRow } from '../src/types'
 
 function getBasicRows(): TableRow[] {
 	return [
@@ -337,7 +337,7 @@ describe('table component', { tags: ['component'] }, () => {
 					endIndex: 5,
 					color: '#ff0000',
 					colspan: 3,
-				} as GanttOptions,
+				},
 			},
 		]
 
@@ -368,7 +368,7 @@ describe('table component', { tags: ['component'] }, () => {
 					endIndex: 5,
 					color: '#ff0000',
 					colspan: 3,
-				} as GanttOptions,
+				},
 			},
 		]
 
@@ -403,7 +403,7 @@ describe('table component', { tags: ['component'] }, () => {
 					endIndex: 5,
 					color: '#ff0000',
 					colspan: 3,
-				} as GanttOptions,
+				},
 			},
 		]
 
@@ -440,7 +440,7 @@ describe('table component', { tags: ['component'] }, () => {
 					endIndex: 5,
 					color: '#ff0000',
 					colspan: 2,
-				} as GanttOptions,
+				},
 			},
 		]
 
@@ -512,7 +512,7 @@ describe('table component', { tags: ['component'] }, () => {
 					startIndex: 0,
 					endIndex: 5,
 					color: '#ff0000',
-				} as GanttOptions,
+				},
 			},
 		]
 
@@ -658,6 +658,65 @@ describe('table component', { tags: ['component'] }, () => {
 		expect(wrapper.vm.store.columns[0].cellComponent).toBe('CustomCell')
 	})
 
+	it("draws a column's cell component inside the cell with the cell's value and the column's props", () => {
+		const StatusChip = defineComponent({
+			props: { value: { type: null, default: undefined }, color: String, rowIndex: Number },
+			setup: props => () =>
+				h('span', { class: 'status-chip', 'data-color': props.color, 'data-row': props.rowIndex }, String(props.value)),
+		})
+		const customColumns: TableColumn[] = [
+			{ name: 'name', label: 'Name' },
+			{ name: 'status', label: 'Status', cellComponent: 'StatusChip', cellComponentProps: { color: 'green' } },
+		]
+
+		const wrapper = mount(ATable, {
+			props: { rows: getBasicRows(), columns: customColumns },
+			global: { components: { StatusChip } },
+		})
+
+		const chips = wrapper.findAll('td.atable-cell .status-chip')
+		expect(chips).toHaveLength(getBasicRows().length)
+		chips.forEach((chip, index) => {
+			expect(chip.text()).toBe(getBasicRows()[index].status)
+			expect(chip.attributes('data-color')).toBe('green')
+			expect(chip.attributes('data-row')).toBe(String(index))
+		})
+	})
+
+	it("keeps the value a cell component's select picks in an editable column", async () => {
+		const StatusSelect = defineComponent({
+			props: { value: { type: null, default: undefined }, store: Object, rowIndex: Number, colIndex: Number },
+			setup: props => () =>
+				h(
+					'select',
+					{
+						class: 'status-select',
+						value: props.value,
+						onChange: (event: Event) =>
+							props.store!.setCellData(props.colIndex!, props.rowIndex!, (event.target as HTMLSelectElement).value),
+					},
+					['active', 'inactive'].map(option => h('option', { value: option }, option))
+				),
+		})
+		const customColumns: TableColumn[] = [
+			{ name: 'name', label: 'Name' },
+			{ name: 'status', label: 'Status', edit: true, cellComponent: 'StatusSelect' },
+		]
+
+		const wrapper = mount(ATable, {
+			props: { rows: getBasicRows(), columns: customColumns },
+			global: { components: { StatusSelect } },
+		})
+
+		const setCellData = vi.spyOn(wrapper.vm.store, 'setCellData')
+		// Picking an option fires input, then change. The input bubbles to the cell holding the select; only the
+		// component's own change handler may write the row.
+		await wrapper.find('td.atable-cell .status-select').setValue('inactive')
+
+		expect(setCellData.mock.calls).toEqual([[1, 0, 'inactive']])
+		expect(wrapper.vm.store.getCellData(1, 0)).toBe('inactive')
+	})
+
 	it('should handle slots for header, body, footer, and modal', () => {
 		const wrapper = mount(ATable, {
 			props: {
@@ -794,7 +853,7 @@ describe('Gantt View', { tags: ['component'] }, () => {
 					startIndex: 0,
 					endIndex: 5,
 					color: '#ff0000',
-				} as GanttOptions,
+				},
 			},
 		]
 

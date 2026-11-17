@@ -1,5 +1,5 @@
 import type { PgClient } from '@dataplan/pg'
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach } from 'vite-plus/test'
 
 import type { ColumnReader } from '../src/columns'
 import { enrichLinkDisplayFields } from '../src/link-display'
@@ -13,6 +13,8 @@ const columns: ColumnReader = {
 		list: selections.map(({ column, alias }) => `"${column}" AS "${alias}"`).join(', '),
 		decodeRows: () => {},
 	}),
+	matchKey: (_doctype, column, placeholder, many) =>
+		many ? `"${column}" = ANY(${placeholder}::text[])` : `"${column}" = ${placeholder}`,
 }
 
 describe('enrichLinkDisplayFields', { tags: ['unit', 'graphql'] }, () => {
@@ -84,6 +86,7 @@ describe('enrichLinkDisplayFields', { tags: ['unit', 'graphql'] }, () => {
 			}),
 		} as unknown as PgClient
 		const decodingColumns: ColumnReader = {
+			...columns,
 			select: (doctype, selections) => ({
 				...columns.select(doctype, selections),
 				decodeRows: decodedRows => {

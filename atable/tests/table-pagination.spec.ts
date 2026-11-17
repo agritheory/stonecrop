@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it, vi } from 'vite-plus/test'
 import { nextTick, ref } from 'vue'
 
 import { useTablePagination, type FilteredTableRow } from '../src/composables/table-pagination'

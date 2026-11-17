@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, afterEach } from 'vitest'
+import { describe, it, expect, vi, afterEach } from 'vite-plus/test'
 
 // Capture the rules object that createDebugPlugin passes to wrapPlans so we can
 // invoke the plan wrappers directly and verify console.log + return-value behaviour.

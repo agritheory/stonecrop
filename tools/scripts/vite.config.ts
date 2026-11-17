@@ -1,6 +1,7 @@
-import { defineConfig } from 'vitest/config'
+import { defineConfig } from 'vite-plus'
 
 import { testTags } from '../vite/test-tags.ts'
+import { fsModuleCachePath } from '../vite/fs-module-cache.ts'
 
 /**
  * A workspace member so `vp run -r test` reaches these specs at all. `vp run` selects members only,
@@ -8,6 +9,7 @@ import { testTags } from '../vite/test-tags.ts'
  */
 export default defineConfig({
 	test: {
+		fsModuleCachePath,
 		tags: testTags,
 		environment: 'node',
 	},

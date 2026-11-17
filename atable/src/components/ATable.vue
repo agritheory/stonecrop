@@ -1,5 +1,5 @@
 <template>
-	<div class="atable-container" style="position: relative" v-on-click-outside="store.closeModal">
+	<div class="atable-container" style="position: relative" v-on-click-outside="store.closeOverlays">
 		<!-- Main table view -->
 		<table
 			ref="table"
@@ -44,8 +44,8 @@
 									width: store.config.fullWidth ? 'auto' : null,
 								}"
 								@connection:create="handleConnectionCreate" />
-							<component
-								:is="column.cellComponent || 'ACell'"
+							<!-- ACell draws a column's own cell component inside the cell, handing it the cell's value and the column's props. -->
+							<ACell
 								v-else
 								:store="store"
 								:pinned="column.pinned"
@@ -59,11 +59,18 @@
 						</template>
 					</ARow>
 				</slot>
+				<slot v-if="showEmptyRow" name="empty" :data="store" :filtered="emptyIsFiltered" :add="addFirstRow">
+					<ATableEmptyRow
+						:colspan="store.columnCount"
+						:addable="store.config.addable"
+						:filtered="emptyIsFiltered"
+						@add="addFirstRow" />
+				</slot>
 			</tbody>
 
 			<slot name="footer" :data="store" :page="pagination">
 				<ATablePaginationFooter
-					:column-count="footerColumnCount"
+					:column-count="store.columnCount"
 					:show-footer="showFooter"
 					:has-more="hasMore"
 					:has-prev="hasPrev"
@@ -108,8 +115,10 @@ import { vOnClickOutside } from '@vueuse/components'
 import { useMutationObserver } from '@vueuse/core'
 import { computed, inject, nextTick, onMounted, useTemplateRef, watch } from 'vue'
 
+import ACell from './ACell.vue'
 import AGanttConnection from './AGanttConnection.vue'
 import ARow from './ARow.vue'
+import ATableEmptyRow from './ATableEmptyRow.vue'
 import ATableHeader from './ATableHeader.vue'
 import ATableModal from './ATableModal.vue'
 import ATablePaginationFooter from './ATablePaginationFooter.vue'
@@ -132,6 +141,7 @@ import type {
 	TableColumn,
 	TableConfig,
 	TableRow,
+	TableStore,
 } from '../types'
 
 const rows = defineModel<TableRow[]>('rows', { required: true })
@@ -174,7 +184,7 @@ const emit = defineEmits<{
 const tableRef = useTemplateRef<HTMLTableElement>('table')
 const resolvedColumns = columns.value?.length ? columns.value : schemaToColumns(schema ?? [])
 const injectedLinkResolver = inject<LinkResolverFn | null>('aformLinkResolver', null)
-const store = createTableStore({
+const store: TableStore = createTableStore({
 	columns: resolvedColumns,
 	// A copy, as the watcher below takes: the host's list changes only through `update:rows`.
 	rows: [...rows.value],
@@ -207,7 +217,13 @@ const {
 	retry: paginationRetry,
 } = pagination
 
-const footerColumnCount = computed(() => store.columns.length + (store.zeroColumn ? 1 : 0))
+// Loading belongs to ATableLoading and a failed first page to the footer; the empty row speaks only
+// once a read has answered with nothing to show.
+const showEmptyRow = computed(
+	() => !paginationLoading.value && !firstPageFailed.value && visibleRows.value.length === 0
+)
+// Rows are held but the filters hide them all — a different message from a truly empty list.
+const emptyIsFiltered = computed(() => store.rows.length > 0)
 
 store.$onAction(({ name, store: storeInstance, args, after }) => {
 	if (name === 'setCellData' || name === 'setCellText') {
@@ -280,6 +296,16 @@ onMounted(() => {
 	}
 })
 
+// A table that mounts empty has no data row to size its pinned columns from; size them once rows arrive.
+watch(
+	() => visibleRows.value.length > 0,
+	(hasRows, hadRows) => {
+		if (hasRows && !hadRows && store.hasPinnedColumns) {
+			void nextTick(assignStickyCellWidths)
+		}
+	}
+)
+
 const pinnedColumnCount = computed(() => {
 	return store.columns.filter(column => column.pinned).length
 })
@@ -289,7 +315,9 @@ const assignStickyCellWidths = () => {
 
 	// set header cell width to match sticky cells' width
 	const headerRow = table?.rows[0]
-	const firstDataRow = table?.rows[1]
+	// The first data row, not the table's second row: that may be the filters row or the empty-state row,
+	// whose one cell spans the whole table. With no data row yet, the header keeps its own widths.
+	const firstDataRow = table?.querySelector<HTMLTableRowElement>('tbody tr.atable-row')
 	const headerCells = headerRow ? Array.from(headerRow.cells) : []
 	for (const [index, headerCell] of headerCells.entries()) {
 		const rowCell = firstDataRow?.cells[index]
@@ -323,10 +351,8 @@ window.addEventListener('keydown', (event: KeyboardEvent) => {
 		if (store.modal.visible) {
 			store.modal.visible = false
 
-			// focus on the parent cell again
 			const $parent = store.modal.parent
 			if ($parent) {
-				// wait for the modal to close before focusing
 				void nextTick().then(() => {
 					return $parent.focus()
 				})
@@ -380,14 +406,25 @@ const handleRowClick = (rowIndex: number, event: MouseEvent) => {
  * Handle row action events from ARow components.
  * Performs the default action and emits the appropriate event.
  */
+const addRowAt = (position: 'start' | 'end' | number) => {
+	const newIndex = store.addRow({}, position)
+	const newRow = store.rows[newIndex]
+	rows.value = [...store.rows]
+	emit('row:add', { rowIndex: newIndex, row: newRow })
+}
+
+/**
+ * Add row from the empty-state row: the same path as the row action's add, so hosts see one `row:add`.
+ */
+const addFirstRow = () => {
+	addRowAt('end')
+}
+
 const handleRowAction = (actionType: RowActionType, rowIndex: number, event?: MouseEvent) => {
 	switch (actionType) {
 		case 'add': {
 			// Add a new row after the current row
-			const newIndex = store.addRow({}, rowIndex + 1)
-			const newRow = store.rows[newIndex]
-			rows.value = [...store.rows]
-			emit('row:add', { rowIndex: newIndex, row: newRow })
+			addRowAt(rowIndex + 1)
 			break
 		}
 		case 'delete': {
@@ -507,7 +544,10 @@ td.sticky-index {
 	box-sizing: border-box;
 	table-layout: auto;
 	width: auto;
-	overflow: clip;
+	/* Clip sideways only: a dropdown opened in a row's cell or expanded panel near the table's
+	   bottom edge runs past it, and must show in full (#522). */
+	overflow-x: clip;
+	overflow-y: visible;
 	height: 1px;
 	/* border-left:4px solid var(--sc-form-border); */
 }

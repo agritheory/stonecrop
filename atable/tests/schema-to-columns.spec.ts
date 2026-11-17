@@ -1,4 +1,5 @@
-import { describe, it, expect } from 'vitest'
+import { formatCurrencyAmount } from '@stonecrop/utilities'
+import { describe, it, expect } from 'vite-plus/test'
 
 import { schemaToColumns } from '../src/schemaToColumns'
 import type { ColumnSchema } from '@stonecrop/schema'
@@ -82,7 +83,7 @@ describe('schemaToColumns', { tags: ['component'] }, () => {
 	describe('Link field handling', () => {
 		it('adds a display format function for Link fields without explicit format or cellComponent', () => {
 			const schema: ColumnSchema[] = [
-				{ fieldname: 'category_id', label: 'Category', component: 'AFormLink', doctype: 'category' } as any,
+				{ fieldname: 'category_id', label: 'Category', component: 'AFormLink', doctype: 'category' },
 			]
 			const columns = schemaToColumns(schema)
 			expect(typeof columns[0].format).toBe('function')
@@ -143,6 +144,15 @@ describe('schemaToColumns', { tags: ['component'] }, () => {
 			expect(columns[0].format).toBeUndefined()
 			expect(columns[0].linkDoctype).toBeUndefined()
 		})
+	})
+
+	// The app decides which cells may be edited: a column it doesn't declare editable isn't.
+	it('leaves a column not editable unless it declares edit', () => {
+		const columns = schemaToColumns([
+			{ fieldname: 'title', component: 'ATextInput', label: 'Title' },
+			{ fieldname: 'qty', component: 'AQuantityInput', label: 'Qty', edit: true },
+		])
+		expect(columns.map(column => column.edit)).toEqual([undefined, true])
 	})
 
 	describe('Quantity field handling', () => {
@@ -216,7 +226,7 @@ describe('schemaToColumns', { tags: ['component'] }, () => {
 			const columns = schemaToColumns(schema)
 			expect(typeof columns[0].format).toBe('function')
 			expect((columns[0].format as Function)({ amount: 5, currency: { id: 'USD', displayText: 'US Dollar' } })).toBe(
-				'5 US Dollar'
+				formatCurrencyAmount(5, { id: 'USD', displayText: 'US Dollar' })
 			)
 		})
 

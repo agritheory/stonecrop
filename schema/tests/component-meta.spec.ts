@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect } from 'vite-plus/test'
 import {
 	CANONICAL_COMPONENTS,
 	componentCategory,
@@ -22,6 +22,7 @@ describe('component-meta', { tags: ['unit'] }, () => {
 		expect(componentCategory('ACodeEditor')).toBe('code')
 		expect(componentCategory('AFormLink')).toBe('link')
 		expect(componentCategory('ASemverInput')).toBe('semver')
+		expect(componentCategory('AEditor')).toBe('richtext')
 	})
 
 	it('categorizes the date components that previously had no category', () => {

@@ -68,6 +68,7 @@ import { useRoute, useRouter } from 'nuxt/app'
 import DocBuilderActionsPanel from '../components/DocBuilderActionsPanel.vue'
 import DocBuilderFieldsPanel from '../components/DocBuilderFieldsPanel.vue'
 import { renamedFields, savedNames, withFieldIds } from '../components/docbuilderFields'
+import { useDocBuilderRouteAdapter } from '../composables/useDocBuilderRouteAdapter'
 const route = useRoute()
 const router = useRouter()
 const doctypeName = computed(() => route.params.doctype)

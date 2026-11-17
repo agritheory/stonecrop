@@ -15,10 +15,22 @@ const isFocusable = (element: HTMLElement) => {
 	return element.tabIndex >= 0
 }
 
+/** When focus is on a control inside a cell, grid navigation still uses the owning `<td>`. */
+const resolveNavCell = (element: HTMLElement): HTMLElement => {
+	if (element instanceof HTMLTableCellElement) {
+		return element
+	}
+	const cell = element.closest('td, th')
+	if (cell instanceof HTMLTableCellElement) {
+		return cell
+	}
+	return element
+}
+
 // navigation functions
 const getUpCell = (event: KeyboardEvent) => {
 	if (!(event.target instanceof HTMLElement)) return undefined
-	return getUpCellEl(event.target)
+	return getUpCellEl(resolveNavCell(event.target))
 }
 
 const getUpCellEl = (element: HTMLElement): HTMLElement | undefined => {
@@ -48,7 +60,7 @@ const getUpCellEl = (element: HTMLElement): HTMLElement | undefined => {
 
 const getTopCell = (event: KeyboardEvent) => {
 	if (!(event.target instanceof HTMLElement)) return undefined
-	const $target = event.target
+	const $target = resolveNavCell(event.target)
 	let $topCell: HTMLElement | undefined
 	if ($target instanceof HTMLTableCellElement) {
 		const $table = $target.parentElement?.parentElement
@@ -78,7 +90,7 @@ const getTopCell = (event: KeyboardEvent) => {
 
 const getDownCell = (event: KeyboardEvent) => {
 	if (!(event.target instanceof HTMLElement)) return undefined
-	return getDownCellEl(event.target)
+	return getDownCellEl(resolveNavCell(event.target))
 }
 
 const getDownCellEl = (element: HTMLElement): HTMLElement | undefined => {
@@ -108,7 +120,7 @@ const getDownCellEl = (element: HTMLElement): HTMLElement | undefined => {
 
 const getBottomCell = (event: KeyboardEvent) => {
 	if (!(event.target instanceof HTMLElement)) return undefined
-	const $target = event.target
+	const $target = resolveNavCell(event.target)
 	let $bottomCell: HTMLElement | undefined
 	if ($target instanceof HTMLTableCellElement) {
 		const $table = $target.parentElement?.parentElement
@@ -138,7 +150,7 @@ const getBottomCell = (event: KeyboardEvent) => {
 
 const getPrevCell = (event: KeyboardEvent) => {
 	if (!(event.target instanceof HTMLElement)) return undefined
-	return getPrevCellEl(event.target)
+	return getPrevCellEl(resolveNavCell(event.target))
 }
 
 const getPrevCellEl = (element: HTMLElement): HTMLElement | undefined => {
@@ -161,7 +173,7 @@ const getPrevCellEl = (element: HTMLElement): HTMLElement | undefined => {
 
 const getNextCell = (event: KeyboardEvent) => {
 	if (!(event.target instanceof HTMLElement)) return undefined
-	return getNextCellEl(event.target)
+	return getNextCellEl(resolveNavCell(event.target))
 }
 
 const getNextCellEl = (element: HTMLElement): HTMLElement | undefined => {
@@ -184,7 +196,7 @@ const getNextCellEl = (element: HTMLElement): HTMLElement | undefined => {
 
 const getFirstCell = (event: KeyboardEvent) => {
 	if (!(event.target instanceof HTMLElement)) return undefined
-	const $parent = event.target.parentElement
+	const $parent = resolveNavCell(event.target).parentElement
 	const $firstEl = $parent?.firstElementChild
 	const $firstCell = $firstEl instanceof HTMLElement ? $firstEl : null
 	if ($firstCell && (!isFocusable($firstCell) || !isVisible($firstCell))) {
@@ -195,7 +207,7 @@ const getFirstCell = (event: KeyboardEvent) => {
 
 const getLastCell = (event: KeyboardEvent) => {
 	if (!(event.target instanceof HTMLElement)) return undefined
-	const $parent = event.target.parentElement
+	const $parent = resolveNavCell(event.target).parentElement
 	const $lastEl = $parent?.lastElementChild
 	const $lastCell = $lastEl instanceof HTMLElement ? $lastEl : null
 	if ($lastCell && (!isFocusable($lastCell) || !isVisible($lastCell))) {
@@ -294,7 +306,7 @@ export const defaultKeypressHandlers: KeypressHandlers = {
 	},
 	'keydown.enter': (event: KeyboardEvent) => {
 		if (!(event.target instanceof HTMLElement)) return
-		const $target = event.target
+		const $target = resolveNavCell(event.target)
 		if ($target instanceof HTMLTableCellElement) {
 			event.preventDefault()
 			event.stopPropagation()
@@ -308,7 +320,7 @@ export const defaultKeypressHandlers: KeypressHandlers = {
 	},
 	'keydown.shift.enter': (event: KeyboardEvent) => {
 		if (!(event.target instanceof HTMLElement)) return
-		const $target = event.target
+		const $target = resolveNavCell(event.target)
 		if ($target instanceof HTMLTableCellElement) {
 			event.preventDefault()
 			event.stopPropagation()

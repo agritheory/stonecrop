@@ -48,7 +48,7 @@ const collect = (byField, fields) => {
 }
 
 const problems = []
-for (const [dep, byField] of [...declarations].sort()) {
+for (const [dep, byField] of [...declarations].sort(([a], [b]) => a.localeCompare(b))) {
 	// Installed ranges and peer ranges are two different claims, so they are checked as two separate
 	// sets rather than one. A peer range says what a consumer may pair this package with; an
 	// installed range says what the workspace builds against. Requiring them to match would forbid
@@ -74,8 +74,8 @@ if (problems.length === 0) {
 
 for (const { dep, kind, ranges } of problems) {
 	console.error(`::error::${dep} is ${kind}`)
-	for (const [range, pkgs] of [...ranges].sort()) {
-		console.error(`    ${range.padEnd(14)} ${[...new Set(pkgs)].sort().join(', ')}`)
+	for (const [range, pkgs] of [...ranges].sort(([a], [b]) => a.localeCompare(b))) {
+		console.error(`    ${range.padEnd(14)} ${[...new Set(pkgs)].sort((a, b) => a.localeCompare(b)).join(', ')}`)
 	}
 }
 console.error(

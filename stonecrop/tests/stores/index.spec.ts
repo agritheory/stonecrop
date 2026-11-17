@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach } from 'vite-plus/test'
 
 import Doctype from '../../src/doctype.js'
 import Registry from '../../src/registry.js'
