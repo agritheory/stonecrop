@@ -1,3 +1,4 @@
+import { mount } from '@vue/test-utils'
 import { describe, expect, it } from 'vite-plus/test'
 
 import ABadge from '../src/components/form/ABadge.vue'
@@ -48,6 +49,43 @@ describe('ADateTimeInput as a form field', { tags: ['component'] }, () => {
 		expect(wrapper.emitted('update:data')).toBeUndefined()
 	})
 
+	it('shows an empty time as empty boxes, and leaving them writes nothing', async () => {
+		const wrapper = mountBound({ props: { schema: timeField(), data: { start_time: null } }, global })
+		expect(timeInputs(wrapper)).toEqual(['', '', ''])
+		for (const input of wrapper.findAll('input[type="text"]')) await input.trigger('blur')
+		await wrapper.find('select').trigger('change')
+		expect(wrapper.emitted('update:data')).toBeUndefined()
+	})
+
+	it('writes the time once someone types into an empty field', async () => {
+		const wrapper = mountBound({ props: { schema: timeField(), data: { start_time: null } }, global })
+		const hours = wrapper.findAll('input[type="text"]')[0]
+		await hours.setValue('9')
+		await hours.trigger('blur')
+		expect(wrapper.props('data')).toEqual({ start_time: '09:00:00' })
+	})
+
+	it("empties its boxes when the record's time is cleared or another record comes in", async () => {
+		const wrapper = mountBound({ props: { schema: timeField(), data: { start_time: '09:30' } }, global })
+		await wrapper.setProps({ data: { start_time: null } })
+		expect(timeInputs(wrapper)).toEqual(['', '', ''])
+
+		await wrapper.setProps({ data: { start_time: '14:15:00' } })
+		await wrapper.setProps({ data: {} })
+		expect(timeInputs(wrapper)).toEqual(['', '', ''])
+		for (const input of wrapper.findAll('input[type="text"]')) await input.trigger('blur')
+		expect(wrapper.emitted('update:data')).toBeUndefined()
+	})
+
+	it('crosses noon with an arrow key without writing a minute of 60', async () => {
+		const wrapper = mountBound({ props: { schema: timeField(), data: { start_time: '11:59:00' } }, global })
+		await wrapper.findAll('input[type="text"]')[1].trigger('keydown', { key: 'ArrowUp' })
+		const written = (wrapper.emitted('update:data') ?? []).map(([record]) => record)
+		expect(written).toEqual([{ start_time: '12:00:00' }])
+		expect(timeInputs(wrapper)).toEqual(['12', '00', '00'])
+		expect(wrapper.find<HTMLSelectElement>('select').element.value).toBe('PM')
+	})
+
 	it('shows the time as text in display mode', () => {
 		const wrapper = mountBound({
 			props: { schema: timeField({ mode: 'display' }), data: { start_time: '17:00:00' } },
@@ -75,6 +113,12 @@ describe('ABadge as a form field', { tags: ['component'] }, () => {
 		const badge = wrapper.find('.abadge')
 		expect(badge.text()).toBe('Closed')
 		expect(badge.classes()).toContain('abadge--success')
+	})
+
+	it('leaves a badge drawn on its own reading its label', () => {
+		const wrapper = mount(ABadge, { props: { label: 'Open', value: 'Closed', options: { Closed: 'success' } } })
+		expect(wrapper.text()).toBe('Open')
+		expect(wrapper.classes()).toContain('abadge--cell-fill')
 	})
 
 	it('shows no badge for an empty value', () => {

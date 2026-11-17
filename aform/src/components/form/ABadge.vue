@@ -1,10 +1,5 @@
 <template>
-	<div v-if="isFormField" class="aform_form-element">
-		<span v-if="displayLabel" :class="[classes, 'aform_display-value']" :style="styleVars">{{ displayLabel }}</span>
-		<span v-else class="aform_display-value" />
-		<label v-if="label" class="aform_field-label">{{ label }}</label>
-	</div>
-	<span v-else-if="displayLabel" :class="classes" :style="styleVars">{{ displayLabel }}</span>
+	<span v-if="displayLabel" :class="classes" :style="styleVars">{{ displayLabel }}</span>
 </template>
 
 <script setup lang="ts">
@@ -20,32 +15,10 @@ const props = defineProps<
 		/** Stored field value — used with `options` when `label` is omitted. */
 		value?: unknown
 		options?: FieldOptions
-		/** The field AForm draws this badge for. Its presence makes the badge a form field. */
-		schema?: object
-		/** The value AForm binds a form field to */
-		modelValue?: unknown
 	}
 >()
 
-// AForm binds every field with its schema, its value as `modelValue` and its schema's keys as props,
-// so `label` there is the field's label, never the badge's text: the badge shows the field's value.
-const isFormField = computed(() => props.schema !== undefined)
-
-const badgeFor = (value: unknown): BadgeDescriptor | undefined => {
-	if (value === null || value === undefined || value === '') return undefined
-	const key = typeof value === 'string' ? value : String(value)
-	return lookupBadge(props.options, key)
-}
-
 const resolved = computed((): BadgeDescriptor | undefined => {
-	if (isFormField.value) {
-		const value = props.modelValue ?? props.value
-		const badge = badgeFor(value)
-		if (badge) return badge
-		// A value without a badge of its own still shows, plainly.
-		if (value === null || value === undefined || value === '') return undefined
-		return { label: String(value), variant: props.variant, color: props.color }
-	}
 	if (props.label?.trim()) {
 		return {
 			label: props.label.trim(),
@@ -53,7 +26,9 @@ const resolved = computed((): BadgeDescriptor | undefined => {
 			color: props.color,
 		}
 	}
-	return badgeFor(props.value)
+	if (props.value === null || props.value === undefined || props.value === '') return undefined
+	const key = typeof props.value === 'string' ? props.value : String(props.value)
+	return lookupBadge(props.options, key)
 })
 
 const displayLabel = computed(() => resolved.value?.label?.trim() ?? '')
@@ -64,8 +39,7 @@ const activeColor = computed(() => resolved.value?.color ?? props.color)
 
 const classes = computed(() => [
 	'abadge',
-	// A form field sits among inputs, so it is drawn as one unless told otherwise.
-	`abadge--${props.presentation ?? (isFormField.value ? 'input-accent' : 'cell-fill')}`,
+	`abadge--${props.presentation ?? 'cell-fill'}`,
 	`abadge--${activeVariant.value}`,
 ])
 

@@ -69,6 +69,7 @@ const {
 	label,
 	mode = 'edit',
 	uuid,
+	'onUpdate:modelValue': updateListener,
 } = defineProps<{
 	allowMilitaryTime?: boolean
 	defaultHours?: number
@@ -81,7 +82,14 @@ const {
 	mode?: 'edit' | 'read' | 'display' | string
 	/** Ties the label to the hours input */
 	uuid?: string
+	/** The caller's `update:modelValue` listener. With one, the widget holds the caller's time, empty included. */
+	'onUpdate:modelValue'?: (value: string | null) => void
 }>()
+
+// Whether the widget holds a caller's time, as a form field's does. A bound widget shows an empty time
+// as empty boxes and writes nothing until someone types; an unbound one, inside ADateSelection, starts
+// at its `default*` time as it always has. Read from the declared listener, never from a value arriving.
+const bound = computed(() => Boolean(updateListener))
 
 // The time a form field holds, as a time of day: `HH:MM:SS`, or `HH:MM` without seconds. `HH:MM`,
 // `HH:MM:SS` and Postgres' `HH:MM:SS.ffffff` are all read. Written only on a user's edit that changes
@@ -140,17 +148,28 @@ const showTime = (time: { hours: number; minutes: number; seconds: number }) => 
 	timeData.seconds = pad(time.seconds)
 }
 
+// A bound widget with no time to show, its record's emptied or another record's come in without one.
+const clearTime = () => {
+	timeData.hours = ''
+	timeData.minutes = ''
+	timeData.seconds = ''
+	meridiem.value = 'AM'
+}
+
+const isEmpty = () => timeData.hours === '' && timeData.minutes === '' && timeData.seconds === ''
+
 watch(
 	modelValue,
 	value => {
 		const time = parseTime(value)
 		if (time) showTime(time)
+		else if (bound.value) clearTime()
 	},
 	{ immediate: true }
 )
 
 const displayValue = computed(() => {
-	if (!parseTime(modelValue.value)) return modelValue.value ?? ''
+	if (!parseTime(modelValue.value)) return bound.value ? '' : (modelValue.value ?? '')
 	const time = [timeData.hours, timeData.minutes, ...(useSeconds ? [timeData.seconds] : [])].join(':')
 	return allowMilitaryTime ? time : `${time} ${meridiem.value}`
 })
@@ -171,8 +190,18 @@ onMounted(() => {
 })
 
 const confirmTime = () => {
+	// Leaving a bound widget's empty boxes is not an edit: there is no time to write.
+	if (bound.value && isEmpty()) return
+
 	const maxHours = allowMilitaryTime ? 23 : 12
 	const minHours = allowMilitaryTime ? 0 : 1
+	// A bound widget's box left empty beside one that was typed in is the start of its unit: 12 AM, :00.
+	// An unbound widget's empty box is the end of its unit, as it always has been.
+	if (bound.value) {
+		if (timeData.hours === '') timeData.hours = allowMilitaryTime ? '00' : '12'
+		if (timeData.minutes === '') timeData.minutes = '00'
+		if (timeData.seconds === '') timeData.seconds = '00'
+	}
 	let hours = Number(timeData.hours)
 	let minutes = Number(timeData.minutes)
 	let seconds = Number(timeData.seconds)
@@ -221,6 +250,7 @@ const focusInput = (event: FocusEvent) => {
 const tick = (target: 'hours' | 'minutes' | 'seconds', amount = 1) => {
 	const maxHours = allowMilitaryTime ? 23 : 12
 	const minHours = allowMilitaryTime ? 0 : 1
+	const startMeridiem = meridiem.value
 
 	if (target == 'hours') {
 		const oldHours = Number(timeData.hours)
@@ -252,6 +282,10 @@ const tick = (target: 'hours' | 'minutes' | 'seconds', amount = 1) => {
 	timeData.hours = String(formatTime(Number(timeData.hours), minHours, maxHours)).padStart(2, '0')
 	timeData.minutes = String(formatTime(Number(timeData.minutes), 0, 59)).padStart(2, '0')
 	timeData.seconds = String(formatTime(Number(timeData.seconds), 0, 59)).padStart(2, '0')
+
+	// Crossing noon or midnight is a new time of day, reported only once every box has wrapped:
+	// reported as the meridiem flips, it would carry 11:60 as 12:60.
+	if (meridiem.value !== startMeridiem) emitTime('user')
 }
 
 watch(
@@ -281,7 +315,6 @@ const formatTime = (target: number, min: number, max: number): number => {
 
 const changeMeridiem = () => {
 	meridiem.value = meridiem.value == 'PM' ? 'AM' : 'PM'
-	emitTime('user')
 }
 
 const pasteInput = (event: ClipboardEvent, pasteAllFields = false) => {
@@ -325,6 +358,12 @@ const pasteInput = (event: ClipboardEvent, pasteAllFields = false) => {
 	box-sizing: border-box;
 	font-size: 1rem;
 	background: var(--sc-input-field-background);
+}
+/* A form field's label straddles its boxes' top border, as every field's label straddles its input's:
+   the boxes start at the label's offset, not below the widget's own padding. */
+.adate_time.aform_form-element {
+	padding: var(--sc-form-label-offset) 0 0;
+	background: none;
 }
 .adate_time_fields {
 	display: flex;

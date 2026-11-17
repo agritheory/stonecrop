@@ -7,7 +7,7 @@ description: The segmented time-of-day input, and the schema-resolvable date-and
 
 Two components share this page, because they are two levels of the same control.
 
-`ADateTimeInput` renders a compact time-of-day input: separate numeric segments for hours, minutes, and (optionally) seconds, plus an AM/PM selector or a 24-hour "military time" segment. It has no `v-model` and communicates through an emitted `get-time` event, so it is most often composed inside a higher-level field such as [`ADateSelection`](/components/date-selection) rather than used on its own.
+`ADateTimeInput` renders a compact time-of-day input: separate numeric segments for hours, minutes, and (optionally) seconds, plus an AM/PM selector or a 24-hour "military time" segment. Inside a higher-level field such as [`ADateSelection`](/components/date-selection) it reports its value through an emitted `get-time` event. As a form field it binds a time of day with `v-model`, so a doctype can draw a time field with it (see [As a form field](#as-a-form-field)).
 
 `ADateTime` is the field a schema resolves to. It renders a read-only text input that opens an `ADateSelection` picker, and it binds with `v-model`.
 
@@ -99,6 +99,18 @@ const data = ref({ created_at: null })
 
 `ADateTime` declares a `v-model` of `string | Date | null`, so mounting it this way wires `created_at` to the field and no extra listener is needed. Clicking the input opens an `ADateSelection` picker, and the chosen date and time are written back through the model.
 
+## As a form field
+
+A schema field can name `ADateTimeInput` as its component. AForm binds it to the record's time of day, and it shows the field's `label` above its boxes:
+
+```ts
+const schema = [{ fieldname: 'start_time', label: 'Start Time', component: 'ADateTimeInput' }]
+```
+
+It reads `HH:MM`, `HH:MM:SS` or Postgres' `HH:MM:SS.ffffff`, and writes `HH:MM:SS`, or `HH:MM` with `useSeconds` off. It writes only when someone changes the time: mounting it, or leaving a box unchanged, leaves the record alone. A record with no time shows empty boxes, and nothing is written until someone types; a box left empty beside one typed in counts from the start of its unit, so `9` in the hours writes `09:00:00`. In `read` mode the boxes are disabled, and in `display` mode the time shows as text.
+
+A widget counts as bound when its caller listens for `update:modelValue`, as `v-model` and AForm do. Without a listener it starts at its `default*` time, as inside `ADateSelection`.
+
 ## API Reference
 
 The tables below describe `ADateTimeInput`. `ADateTime` takes the shared `ComponentProps` (`label`, `mode`, `uuid`, and the rest) plus `allowMilitaryTime` and `useSeconds`, which it forwards to the picker. With `useSeconds` off, the field's text leaves out seconds too, and a date picked on an empty field saves the time the picker shows, to the minute.
@@ -115,6 +127,10 @@ rows:
   - ['`defaultSeconds`', '`number`', '`0`', "Initial value of the seconds segment (only rendered when `useSeconds` is `true`)."]
   - ['`defaultMeridiem`', '`string`', "`'AM'`", "Initial AM/PM selector value; any value other than `'AM'` resolves to `'PM'`."]
   - ['`useSeconds`', '`boolean`', '`true`', 'Whether to render the seconds segment.']
+  - ['`modelValue`', '`string | null`', '—', 'The time of day it binds with `v-model`: `HH:MM:SS`, or `HH:MM` with `useSeconds` off. See [As a form field](#as-a-form-field).']
+  - ['`label`', '`string`', '—', 'The field label shown above the boxes, paired with the hours box through `uuid`.']
+  - ['`mode`', "`'edit' | 'read' | 'display'`", "`'edit'`", '`read` disables the boxes; `display` shows the time as text.']
+  - ['`uuid`', '`string`', '—', 'The hours box `id`, which the label points to.']
 ---
 ::
 
@@ -124,13 +140,14 @@ rows:
 ---
 headers: ['Name', 'Payload', 'Description']
 rows:
+  - ['`update:modelValue`', '`string`', 'The time of day, written when someone changes it. Never written as the widget mounts, or while a bound widget shows an empty time.']
   - ['`get-time`', "`{ hours: number; minutes: number; seconds: number; meridiem: string; militaryTime: number; source: 'init' | 'user' }`", 'Carries the current value rather than a commit. Emitted once on mount and again on every blur, Enter, arrow key, and meridiem change, so `source` is what separates the start-up announcement from a real edit. `militaryTime` is always the 24-hour hour value, regardless of `allowMilitaryTime`.']
 ---
 ::
 
 ## Accessibility
 
-Each segment is a native `<input type="text" inputmode="numeric">`, which prompts a numeric keyboard on mobile devices. Focusing a segment selects its existing text for easy overtyping, and the Up/Down arrow keys increment or decrement the focused segment, rolling over into adjacent segments (and toggling AM/PM) at the 12/24-hour and 59-minute/second boundaries. The AM/PM control is a native `<select>`, so it remains reachable and operable with standard keyboard interaction. `ADateTimeInput` does not accept a `label` prop and has no `id`/`for` pairing of its own, so an accessible name for the group must be supplied by the surrounding context (for example a wrapping `<fieldset>`/`<legend>`, or an `aria-label` added by the consumer). `ADateTime` does take a `label` and pairs it with the input it renders.
+Each segment is a native `<input type="text" inputmode="numeric">`, which prompts a numeric keyboard on mobile devices. Focusing a segment selects its existing text for easy overtyping, and the Up/Down arrow keys increment or decrement the focused segment, rolling over into adjacent segments (and toggling AM/PM) at the 12/24-hour and 59-minute/second boundaries. A roll-over that crosses noon or midnight is reported once every segment has wrapped, so Up at 11:59 AM reports 12:00 PM. The AM/PM control is a native `<select>`, so it remains reachable and operable with standard keyboard interaction. Given a `label` and a `uuid`, `ADateTimeInput` pairs the label with its hours box, as AForm does for a time field. Without one, an accessible name for the group must be supplied by the surrounding context (for example a wrapping `<fieldset>`/`<legend>`, or an `aria-label` added by the consumer), as inside `ADateSelection`. `ADateTime` does take a `label` and pairs it with the input it renders.
 
 A click, <kbd>Space</kbd>, <kbd>F4</kbd>, <kbd>Alt</kbd>+<kbd>Down</kbd> or <kbd>Down</kbd> on that input opens the picker, and a key also puts focus on the calendar's day, whose keys are on the [Date Picker](/components/date-picker#accessibility) page. Picking a day leaves the picker open for the time. <kbd>Escape</kbd> closes it and returns focus to the input, and it also closes on an outside click or when focus leaves the field. The input is a `combobox` that tells a screen reader it opens a dialog and whether that dialog is open, and the picker is a dialog named by the field's label.
 

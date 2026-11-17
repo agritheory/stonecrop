@@ -32,7 +32,7 @@
 
 			<!-- Regular field -->
 			<component
-				:is="componentObj.component"
+				:is="fieldComponent(componentObj)"
 				v-else-if="!componentObj.hidden"
 				v-model="childModels[key].value"
 				:style="fieldStyle(componentObj)"
@@ -61,6 +61,7 @@
 <script setup lang="ts">
 import { computed, watchEffect, watch, ref, useId } from 'vue'
 
+import ABadgeField from './form/ABadgeField.vue'
 import type { ResolvedField, ResolvedLink, ResolvedFieldset, ResolvedTable } from '../types'
 import { wordErrors } from '../utils/fieldErrors'
 import { flattenFields, partsPatch, readParts } from '@stonecrop/schema'
@@ -146,6 +147,11 @@ const updateTableRow = (fieldname: string, rowIndex: number, val: Record<string,
 	rows[rowIndex] = { ...rows[rowIndex], ...val }
 	updateTableRows(fieldname, rows)
 }
+
+// The component a field is drawn with. ABadge paints a badge from its own `label`; a field declaring it
+// is drawn through ABadgeField, which shows the record's value under the field's label.
+const fieldComponent = (componentObj: ResolvedField) =>
+	componentObj.component === 'ABadge' ? ABadgeField : componentObj.component
 
 // Each field's `uuid` ties its label and error message to its input; one id per form keeps them
 // unique when several forms, or a fieldset's nested form, share a page.

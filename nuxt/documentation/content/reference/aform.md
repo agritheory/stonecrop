@@ -27,8 +27,6 @@ import { ABadge } from '@stonecrop/aform'
 | presentation | `BadgePresentation \| undefined` | no |  | Defaults to `cell-fill`: every call site fully determines this, so omitting it should degrade to the common case rather than rendering an unstyled badge. |
 | value | `unknown` | no |  | Stored field value — used with `options` when `label` is omitted. |
 | options | `string[] \| Record<string, unknown> \| undefined` | no |  |  |
-| schema | `object \| undefined` | no |  | The field AForm draws this badge for. Its presence makes the badge a form field. |
-| modelValue | `unknown` | no |  | The value AForm binds a form field to |
 
 ### ACheckbox
 

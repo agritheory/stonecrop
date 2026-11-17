@@ -79,6 +79,16 @@ const status = ref('Open')
 
 An options map entry can also be an object (`{ variant, color, label }`) instead of a bare variant string — useful when a choice needs a custom color or a display label that differs from the stored value.
 
+## In a form
+
+A schema field can name `ABadge` as its component. AForm draws it as a form field: the field's `label` sits above the badge, and the badge shows the value the record holds, painted from the field's `options` when they carry a badge for it and plainly when they don't. The badge's own `label` is never the field's label.
+
+```ts
+const schema = [{ fieldname: 'status', label: 'Status', component: 'ABadge', options: { Open: 'warning', Closed: 'success' } }]
+```
+
+A form field shows as `input-accent`. On its own, `ABadge` still defaults to `cell-fill`, and a non-empty `label` still wins over `value`.
+
 ## Presentation
 
 `presentation` picks which of two visual treatments the resolved badge gets:
@@ -100,7 +110,7 @@ rows:
 ---
 headers: ["Name", "Type", "Default", "Description"]
 rows:
-  - ["`label?`", "`string`", "—", "Direct label. Takes precedence over `value`/`options` resolution when non-empty."]
+  - ["`label?`", "`string`", "—", "Direct label. Takes precedence over `value`/`options` resolution when non-empty. In a form, the field's label is shown above the badge instead; see In a form above."]
   - ["`variant?`", "`'neutral' | 'success' | 'warning' | 'danger' | 'brand'`", "`'neutral'`", "Theme-driven color, used when resolving from `label` directly."]
   - ["`color?`", "`string`", "—", "Custom color override, used when resolving from `label` directly. Takes precedence over `variant`'s theme color."]
   - ["`presentation?`", "`'cell-fill' | 'input-accent'`", "`'cell-fill'`", "See Presentation above."]
