@@ -417,7 +417,11 @@ p.aform_error {
 	color: var(--sc-input-label-color);
 }
 
-.aform-nested-section .aform {
+/* Only the section's own form is indented: a linked record's form sits directly in the section, a
+   fieldset's form directly in its fieldset. A descendant selector would reach every form nested
+   deeper too (a table's expanded row, say), pushing it out of line with the fields around it. */
+.aform-nested-section > .aform,
+.aform-nested-section > fieldset > .aform {
 	border-left-width: 2px;
 	margin-left: 0.5rem;
 }
