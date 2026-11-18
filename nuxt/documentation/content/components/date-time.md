@@ -140,7 +140,7 @@ rows:
 ---
 headers: ['Name', 'Payload', 'Description']
 rows:
-  - ['`update:modelValue`', '`string`', 'The time of day, written when someone changes it. Never written as the widget mounts, or while a bound widget shows an empty time.']
+  - ['`update:modelValue`', '`string | null`', 'The time of day, written when someone changes it, or `null` when someone empties a stored time. Never written as the widget mounts, or when an empty field is left empty.']
   - ['`get-time`', "`{ hours: number; minutes: number; seconds: number; meridiem: string; militaryTime: number; source: 'init' | 'user' }`", 'Carries the current value rather than a commit. Emitted once on mount and again on every blur, Enter, arrow key, and meridiem change, so `source` is what separates the start-up announcement from a real edit. `militaryTime` is always the 24-hour hour value, regardless of `allowMilitaryTime`.']
 ---
 ::

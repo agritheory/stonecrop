@@ -5,7 +5,7 @@ description: A combined calendar and time-of-day picker for selecting a single d
 
 # Date Selection
 
-`ADateSelection` composes a calendar (`ADatePicker`) with one or two time-of-day inputs (`ADateTimeInput`) into a single widget for picking a date — or a date range — together with a time of day. It underlies higher-level fields like `ADuration` and `ADateRange`, and like `ADateTimeInput`, it communicates purely through emitted events rather than a `v-model`.
+`ADateSelection` composes a calendar (`ADatePicker`) with one or two time-of-day inputs (`ADateTimeInput`) into a single widget for picking a date — or a date range — together with a time of day. It underlies higher-level fields like `ADuration` and `ADateRange`, and it communicates purely through emitted events rather than a `v-model`, as do the `ADateTimeInput`s inside it.
 
 ## Import
 
