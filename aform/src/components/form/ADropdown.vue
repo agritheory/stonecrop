@@ -235,9 +235,6 @@ const cancelSearch = () => {
 	dropdown.loading = false
 }
 
-const isPromise = <T>(value: T | Promise<T>): value is Promise<T> =>
-	!!value && typeof (value as Promise<T>).then === 'function'
-
 const committedValue = ref(modelValue.value ?? '')
 
 // The text a picked record shows: the formatter's, or else its name, or else its id.
@@ -350,13 +347,12 @@ const openLinkDropdown = async (text: string) => {
 	dropdown.activeItemIndex = null
 	dropdown.open = true
 	const searchId = startSearch()
+	if (isAsync) dropdown.loading = true
 	let results: AFormLinkValue[]
 	try {
 		const fn: FilterFn =
 			typeof linkFilterFunction === 'string' ? deserializeFunction<FilterFn>(linkFilterFunction) : linkFilterFunction
-		const answer = fn(text)
-		if (isPromise(answer)) dropdown.loading = true
-		results = (await answer) ?? []
+		results = (await fn(text)) ?? []
 	} catch {
 		results = []
 	}
@@ -387,11 +383,10 @@ const filter = async () => {
 	dropdown.activeItemIndex = null
 	const searchId = startSearch()
 	if (filterFunction) {
+		if (isAsync) dropdown.loading = true
 		let results: string[]
 		try {
-			const answer = filterFunction(search.value || '')
-			if (isPromise(answer)) dropdown.loading = true
-			results = (await answer) || []
+			results = (await filterFunction(search.value || '')) || []
 		} catch {
 			results = []
 		}
