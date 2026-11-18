@@ -171,9 +171,9 @@ const CurrencyInput = defineComponent({
 	template: `<button class="currency-input" type="button" @click="$emit('update:modelValue', { ...modelValue, currency: 'USD' })">currency</button>`,
 })
 
-// Edits made before Vue re-renders, as a script filling several fields at once makes them, keep only the last
-// (#559): each edit is built on the record the form was last handed, and a host's new record reaches the form
-// only on the next render. These pin that behaviour, so they fail once it changes; turn them round then.
+// Edits made before Vue re-renders, as a script filling several fields at once makes them (#559): a host's new
+// record reaches the form only on the next render, so each edit builds on the record last reported, not on the
+// record the form was last handed, and keeps the edits before it.
 const typeNow = (input: Element, text: string) => {
 	;(input as HTMLInputElement).value = text
 	input.dispatchEvent(new Event('input', { bubbles: true }))
@@ -193,18 +193,18 @@ const mountInHost = (schema: Record<string, unknown>[], data: Record<string, unk
 }
 
 describe('AForm given edits before it re-renders (#559)', { tags: ['component'] }, () => {
-	it('keeps only the last of two fields filled at once', async () => {
+	it('keeps both of two fields filled at once', async () => {
 		const { wrapper, record } = mountInHost(twoFields, { name: 'Ada', age: '36' })
 		const [name, age] = wrapper.findAll('input').map(found => found.element)
 		typeNow(name, 'Bea')
 		typeNow(age, '37')
 		await flushPromises()
 
-		expect(record.value).toEqual({ name: 'Ada', age: '37' })
-		expect(wrapper.findAll('input').map(found => (found.element as HTMLInputElement).value)).toEqual(['Ada', '37'])
+		expect(record.value).toEqual({ name: 'Bea', age: '37' })
+		expect(wrapper.findAll('input').map(found => (found.element as HTMLInputElement).value)).toEqual(['Bea', '37'])
 	})
 
-	it('keeps only the last of two fields filled at once for a host that replaces the record itself', async () => {
+	it('keeps both of two fields filled at once for a host that replaces the record itself', async () => {
 		const record = ref<Record<string, unknown>>({ name: 'Ada', age: '36' })
 		const Host = defineComponent({
 			components: { AForm },
@@ -217,10 +217,27 @@ describe('AForm given edits before it re-renders (#559)', { tags: ['component'] 
 		typeNow(age, '37')
 		await flushPromises()
 
-		expect(record.value).toEqual({ name: 'Ada', age: '37' })
+		expect(record.value).toEqual({ name: 'Bea', age: '37' })
 	})
 
-	it("keeps only the fieldset's field of a field and a fieldset's field filled at once", async () => {
+	it('does not carry an edit its host declined into a later one', async () => {
+		const record = ref<Record<string, unknown>>({ name: 'Ada', age: '36' })
+		const heard: Record<string, unknown>[] = []
+		const Host = defineComponent({
+			components: { AForm },
+			setup: () => ({ record, schema: twoFields, decline: (next: Record<string, unknown>) => heard.push(next) }),
+			template: `<AForm :data="record" :schema="schema" @update:data="decline" />`,
+		})
+		const wrapper = mount(Host, { global: { components: { ATextInput } } })
+		const [name, age] = wrapper.findAll('input').map(found => found.element)
+		typeNow(name, 'Bea')
+		await flushPromises()
+		typeNow(age, '37')
+
+		expect(heard.at(-1)).toEqual({ name: 'Ada', age: '37' })
+	})
+
+	it("keeps both of a field and a fieldset's field filled at once", async () => {
 		const { wrapper, record } = mountInHost(
 			[
 				nameField,
@@ -238,10 +255,10 @@ describe('AForm given edits before it re-renders (#559)', { tags: ['component'] 
 		typeNow(city, 'York')
 		await flushPromises()
 
-		expect(record.value).toEqual({ name: 'Ada', city: 'York' })
+		expect(record.value).toEqual({ name: 'Bea', city: 'York' })
 	})
 
-	it('keeps only the second of two edits to values made of parts that share a part', async () => {
+	it('keeps both of two edits to values made of parts that share a part', async () => {
 		const { wrapper, record } = mountInHost(
 			[
 				{
@@ -263,10 +280,10 @@ describe('AForm given edits before it re-renders (#559)', { tags: ['component'] 
 		;(wrapper.find('.parts-input').element as HTMLButtonElement).click()
 		await flushPromises()
 
-		expect(record.value).toEqual({ grand: 1, net: 5, currency: 'EUR' })
+		expect(record.value).toEqual({ grand: 1, net: 5, currency: 'USD' })
 	})
 
-	it('keeps only the second of edits to two expanded rows made at once', async () => {
+	it('keeps both of edits to two expanded rows made at once', async () => {
 		const { wrapper, record } = mountInHost(
 			[
 				{
@@ -285,6 +302,6 @@ describe('AForm given edits before it re-renders (#559)', { tags: ['component'] 
 		typeNow(second, 'B-9')
 		await flushPromises()
 
-		expect(record.value).toEqual({ lines: [{ sku: 'A-1' }, { sku: 'B-9' }] })
+		expect(record.value).toEqual({ lines: [{ sku: 'A-9' }, { sku: 'B-9' }] })
 	})
 })
