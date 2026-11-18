@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/graphql-client",
-	"version": "0.62.5",
+	"version": "0.62.6",
 	"description": "GraphQL client integration for Stonecrop",
 	"keywords": [
 		"client",

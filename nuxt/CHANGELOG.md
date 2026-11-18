@@ -1,5 +1,24 @@
 # Change Log - @stonecrop/nuxt
 
+## 0.62.6
+
+### Patch Changes
+
+- Updated dependencies [7fc5400]
+  - @stonecrop/aform@0.62.6
+  - @stonecrop/desktop@0.62.6
+  - @stonecrop/stonecrop@0.62.6
+  - @stonecrop/atable@0.62.6
+  - @stonecrop/block-editor@0.62.6
+  - @stonecrop/casl-middleware@0.62.6
+  - @stonecrop/code-editor@0.62.6
+  - @stonecrop/graphql-client@0.62.6
+  - @stonecrop/graphql-middleware@0.62.6
+  - @stonecrop/node-editor@0.62.6
+  - @stonecrop/nuxt-grafserv@0.62.6
+  - @stonecrop/schema@0.62.6
+  - @stonecrop/themes@0.62.6
+
 ## 0.62.5
 
 ### Patch Changes
