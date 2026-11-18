@@ -8,6 +8,7 @@ import ACurrencyInput from '../src/components/form/ACurrencyInput.vue'
 import ADate from '../src/components/form/ADate.vue'
 import ADateRange from '../src/components/form/ADateRange.vue'
 import ADateTime from '../src/components/form/ADateTime.vue'
+import ADateTimeInput from '../src/components/form/ADateTimeInput.vue'
 import ADropdown from '../src/components/form/ADropdown.vue'
 import AFormLink from '../src/components/form/AFormLink.vue'
 import ANumericInput from '../src/components/form/ANumericInput.vue'
@@ -36,7 +37,7 @@ const labelBackgroundAssertion = (element: Element, elementDesc: string, backgro
 			expected: { element: elementDesc, backgrounds: [FORM_ABOVE_THE_BORDER] },
 		}
 	}
-	if (element.closest('.acurrency__group') || element.closest('.aquantity__group')) {
+	if (element.closest('.acurrency__group') || element.closest('.aquantity__group') || element.closest('.adate_time')) {
 		return { actual: backgrounds.includes(FORM_SOLID_BACKGROUND), expected: true }
 	}
 	return { actual: backgrounds, expected: [FORM_ABOVE_THE_BORDER] }
@@ -56,6 +57,14 @@ const mergedGroupLabelRule = (relativePath: string): string => {
 	return match![0]
 }
 
+// The time field's boxes run through its label's lower half as the merged groups' do, so it paints the same way.
+const timeFieldLabelRule = (): string => {
+	const css = sfcStyles('components/form/ADateTimeInput.vue')
+	const match = css.match(/\.adate_time\.aform_form-element > \.aform_field-label\s*\{[^}]+\}/)
+	expect(match, 'time field label rule in ADateTimeInput.vue').toBeTruthy()
+	return match![0]
+}
+
 const globalStyles = (): string => {
 	const blocks = Array.from(
 		readFileSync(join(SRC, 'components', 'AForm.vue'), 'utf8').matchAll(/<style>([\s\S]*?)<\/style>/g),
@@ -68,6 +77,7 @@ const globalStyles = (): string => {
 		blocks[0],
 		mergedGroupLabelRule('components/form/ACurrencyInput.vue'),
 		mergedGroupLabelRule('components/form/AQuantityInput.vue'),
+		timeFieldLabelRule(),
 	].join('\n')
 }
 
@@ -103,6 +113,7 @@ const schema = [
 	schemaField('ADate', 'day'),
 	schemaField('ADateRange', 'window'),
 	schemaField('ADateTime', 'at'),
+	schemaField('ADateTimeInput', 'opens'),
 	schemaField('ACheckbox', 'paid'),
 	schemaField('ADropdown', 'status', { options: ['Draft', 'Closed'] }),
 	schemaField('AFormLink', 'customer', { doctype: 'customer' }),
@@ -117,6 +128,7 @@ const components = {
 	ADate,
 	ADateRange,
 	ADateTime,
+	ADateTimeInput,
 	ADropdown,
 	AFormLink,
 	ANumericInput,
@@ -240,6 +252,7 @@ describe('floating label and error background', { tags: ['component'] }, () => {
 			`components/AForm.vue .aform_field-label ${FORM_ABOVE_THE_BORDER}`,
 			`components/AForm.vue p.aform_error ${FORM_ABOVE_THE_BORDER}`,
 			`components/form/ACurrencyInput.vue .acurrency__group > .aform_field-label ${FORM_SOLID_BACKGROUND}`,
+			`components/form/ADateTimeInput.vue .adate_time.aform_form-element > .aform_field-label ${FORM_SOLID_BACKGROUND}`,
 			`components/form/AQuantityInput.vue .aquantity__group > .aform_field-label ${FORM_SOLID_BACKGROUND}`,
 		])
 	})

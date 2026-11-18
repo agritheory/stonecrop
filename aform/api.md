@@ -260,11 +260,16 @@ import { ADateTimeInput } from '@stonecrop/aform'
 | defaultSeconds | `number \| undefined` | no | `0` |  |
 | defaultMeridiem | `string \| undefined` | no | `"AM"` |  |
 | useSeconds | `boolean \| undefined` | no | `true` |  |
+| label | `string \| undefined` | no |  | The field's label, shown when the widget is a form field |
+| mode | `string \| undefined` | no | `"edit"` |  |
+| uuid | `string \| undefined` | no |  | Ties the label to the hours input |
+| modelValue | `string \| null \| undefined` | no |  |  |
 
 **Events:**
 
 | Event | Payload | Description |
 |-------|---------|-------------|
+| update:modelValue | `[value: string \| null \| undefined]` |  |
 | get-time | `[{ hours: number; minutes: number; seconds: number; meridiem: string; militaryTime: number; source: "init" \| "user"; }]` |  |
 
 ### ADropdown

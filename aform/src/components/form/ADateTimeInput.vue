@@ -1,10 +1,15 @@
 <template>
-	<div class="adate_time">
-		<div class="adate_time_fields">
+	<div class="adate_time" :class="{ 'aform_form-element': label }">
+		<template v-if="mode === 'display'">
+			<span class="aform_display-value">{{ displayValue }}</span>
+		</template>
+		<div v-else class="adate_time_fields">
 			<input
+				:id="uuid"
 				v-model="timeData.hours"
 				type="text"
 				inputmode="numeric"
+				:disabled="mode === 'read'"
 				@paste="pasteInput($event, true)"
 				@focus="focusInput"
 				@blur="confirmTime"
@@ -16,6 +21,7 @@
 				v-model="timeData.minutes"
 				type="text"
 				inputmode="numeric"
+				:disabled="mode === 'read'"
 				@paste="pasteInput"
 				@focus="focusInput"
 				@blur="confirmTime"
@@ -28,6 +34,7 @@
 				v-model="timeData.seconds"
 				type="text"
 				inputmode="numeric"
+				:disabled="mode === 'read'"
 				@paste="pasteInput"
 				@focus="focusInput"
 				@blur="confirmTime"
@@ -39,16 +46,18 @@
 				ref="meridiem-selector"
 				v-model="meridiem"
 				class="aform-select meridiem-selector"
+				:disabled="mode === 'read'"
 				@change="confirmTime">
 				<option value="AM">AM</option>
 				<option value="PM">PM</option>
 			</select>
 		</div>
+		<label v-if="label" class="aform_field-label" :for="mode === 'display' ? undefined : uuid">{{ label }}</label>
 	</div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, useTemplateRef, watch, onMounted } from 'vue'
+import { computed, ref, reactive, useTemplateRef, watch, onMounted } from 'vue'
 
 const {
 	allowMilitaryTime = false,
@@ -57,6 +66,10 @@ const {
 	defaultSeconds = 0,
 	defaultMeridiem = 'AM',
 	useSeconds = true,
+	label,
+	mode = 'edit',
+	uuid,
+	'onUpdate:modelValue': updateListener,
 } = defineProps<{
 	allowMilitaryTime?: boolean
 	defaultHours?: number
@@ -64,7 +77,24 @@ const {
 	defaultSeconds?: number
 	defaultMeridiem?: string
 	useSeconds?: boolean
+	/** The field's label, shown when the widget is a form field */
+	label?: string
+	mode?: 'edit' | 'read' | 'display' | string
+	/** Ties the label to the hours input */
+	uuid?: string
+	/** The caller's `update:modelValue` listener. With one, the widget holds the caller's time, empty included. */
+	'onUpdate:modelValue'?: (value: string | null) => void
 }>()
+
+// Whether the widget holds a caller's time, as a form field's does. A bound widget shows an empty time
+// as empty boxes and writes nothing until someone types; an unbound one, inside ADateSelection, starts
+// at its `default*` time as it always has. Read from the declared listener, never from a value arriving.
+const bound = computed(() => Boolean(updateListener))
+
+// The time a form field holds, as a time of day: `HH:MM:SS`, or `HH:MM` without seconds. `HH:MM`,
+// `HH:MM:SS` and Postgres' `HH:MM:SS.ffffff` are all read. Written only on a user's edit that changes
+// the time, so mounting the widget, or leaving it unchanged, never marks the record as edited.
+const modelValue = defineModel<string | null>()
 
 // `get-time` carries the widget's CURRENT VALUE, not a commit: it fires once as the widget
 // mounts and again on every blur, Enter, arrow key and meridiem change — five times during one
@@ -93,13 +123,96 @@ const timeData = reactive({
 
 const meridiem = ref(defaultMeridiem == 'AM' ? 'AM' : 'PM')
 
+const parseTime = (value: unknown): { hours: number; minutes: number; seconds: number } | undefined => {
+	if (typeof value !== 'string') return undefined
+	const match = /^\s*(\d{1,2}):(\d{2})(?::(\d{2}))?/.exec(value)
+	if (!match) return undefined
+	const hours = Number(match[1])
+	const minutes = Number(match[2])
+	const seconds = Number(match[3] ?? 0)
+	if (hours > 23 || minutes > 59 || seconds > 59) return undefined
+	return { hours, minutes, seconds }
+}
+
+const pad = (n: number) => String(n).padStart(2, '0')
+
+// Shows the record's time in the widget's own clock.
+const showTime = (time: { hours: number; minutes: number; seconds: number }) => {
+	if (allowMilitaryTime) {
+		timeData.hours = pad(time.hours)
+	} else {
+		meridiem.value = time.hours >= 12 ? 'PM' : 'AM'
+		timeData.hours = pad(time.hours % 12 === 0 ? 12 : time.hours % 12)
+	}
+	timeData.minutes = pad(time.minutes)
+	timeData.seconds = pad(time.seconds)
+}
+
+// A bound widget with no time to show, its record's emptied or another record's come in without one.
+const clearTime = () => {
+	timeData.hours = ''
+	timeData.minutes = ''
+	timeData.seconds = ''
+	meridiem.value = 'AM'
+}
+
+// The boxes the widget shows: the seconds only with `useSeconds`.
+const shownBoxes = () => [timeData.hours, timeData.minutes, ...(useSeconds ? [timeData.seconds] : [])]
+
+const isEmpty = () => shownBoxes().every(box => box === '')
+
+watch(
+	modelValue,
+	value => {
+		const time = parseTime(value)
+		if (time) showTime(time)
+		else if (bound.value) clearTime()
+	},
+	{ immediate: true }
+)
+
+const displayValue = computed(() => {
+	if (!parseTime(modelValue.value)) return bound.value ? '' : (modelValue.value ?? '')
+	const time = [timeData.hours, timeData.minutes, ...(useSeconds ? [timeData.seconds] : [])].join(':')
+	return allowMilitaryTime ? time : `${time} ${meridiem.value}`
+})
+
+const writeModel = (militaryTime: number) => {
+	const minutes = Number(timeData.minutes)
+	const seconds = useSeconds ? Number(timeData.seconds) : 0
+	const held = parseTime(modelValue.value)
+	if (held && held.hours === militaryTime && held.minutes === minutes && (!useSeconds || held.seconds === seconds)) {
+		return
+	}
+	const time = [pad(militaryTime), pad(minutes), ...(useSeconds ? [pad(seconds)] : [])].join(':')
+	modelValue.value = time
+}
+
 onMounted(() => {
 	emitTime('init')
 })
 
 const confirmTime = () => {
+	if (bound.value && shownBoxes().some(box => box === '')) {
+		// Emptying any box of a time the record holds empties the field: it holds null, as every field
+		// someone empties does, never the start of the box's unit. A field already empty stays as it is.
+		if (parseTime(modelValue.value)) {
+			modelValue.value = null
+			return
+		}
+		// Leaving a bound widget's empty boxes is not an edit: there is no time to write.
+		if (isEmpty()) return
+	}
+
 	const maxHours = allowMilitaryTime ? 23 : 12
 	const minHours = allowMilitaryTime ? 0 : 1
+	// Typing into an empty field, a box left empty beside one typed in is the start of its unit: 12 AM, :00.
+	// An unbound widget's empty box is the end of its unit, as it always has been.
+	if (bound.value) {
+		if (timeData.hours === '') timeData.hours = allowMilitaryTime ? '00' : '12'
+		if (timeData.minutes === '') timeData.minutes = '00'
+		if (timeData.seconds === '') timeData.seconds = '00'
+	}
 	let hours = Number(timeData.hours)
 	let minutes = Number(timeData.minutes)
 	let seconds = Number(timeData.seconds)
@@ -120,14 +233,22 @@ const emitTime = (source: 'init' | 'user') => {
 	const hours = Number(timeData.hours)
 	const minutes = Number(timeData.minutes)
 	const seconds = Number(timeData.seconds)
+	const militaryTime = allowMilitaryTime
+		? hours
+		: meridiem.value === 'PM'
+			? hours === 12
+				? 12
+				: hours + 12
+			: hours % 12
 	emit('get-time', {
 		hours,
 		minutes,
 		seconds,
 		source,
 		meridiem: meridiem.value,
-		militaryTime: allowMilitaryTime ? hours : meridiem.value === 'PM' ? (hours === 12 ? 12 : hours + 12) : hours % 12,
+		militaryTime,
 	})
+	if (source === 'user') writeModel(militaryTime)
 }
 
 const focusInput = (event: FocusEvent) => {
@@ -140,6 +261,7 @@ const focusInput = (event: FocusEvent) => {
 const tick = (target: 'hours' | 'minutes' | 'seconds', amount = 1) => {
 	const maxHours = allowMilitaryTime ? 23 : 12
 	const minHours = allowMilitaryTime ? 0 : 1
+	const startMeridiem = meridiem.value
 
 	if (target == 'hours') {
 		const oldHours = Number(timeData.hours)
@@ -171,6 +293,10 @@ const tick = (target: 'hours' | 'minutes' | 'seconds', amount = 1) => {
 	timeData.hours = String(formatTime(Number(timeData.hours), minHours, maxHours)).padStart(2, '0')
 	timeData.minutes = String(formatTime(Number(timeData.minutes), 0, 59)).padStart(2, '0')
 	timeData.seconds = String(formatTime(Number(timeData.seconds), 0, 59)).padStart(2, '0')
+
+	// Crossing noon or midnight is a new time of day, reported only once every box has wrapped:
+	// reported as the meridiem flips, it would carry 11:60 as 12:60.
+	if (meridiem.value !== startMeridiem) emitTime('user')
 }
 
 watch(
@@ -200,7 +326,6 @@ const formatTime = (target: number, min: number, max: number): number => {
 
 const changeMeridiem = () => {
 	meridiem.value = meridiem.value == 'PM' ? 'AM' : 'PM'
-	emitTime('user')
 }
 
 const pasteInput = (event: ClipboardEvent, pasteAllFields = false) => {
@@ -244,6 +369,17 @@ const pasteInput = (event: ClipboardEvent, pasteAllFields = false) => {
 	box-sizing: border-box;
 	font-size: 1rem;
 	background: var(--sc-input-field-background);
+}
+/* A form field's label straddles its boxes' top border, as every field's label straddles its input's:
+   the boxes start at the label's offset, not below the widget's own padding. */
+.adate_time.aform_form-element {
+	padding: var(--sc-form-label-offset) 0 0;
+	background: none;
+}
+/* Solid form surface behind the label, as on the currency and quantity groups: the shared gradient masks
+   only the label's top half, and below it the boxes' side edges and the gaps between them run through the text. */
+.adate_time.aform_form-element > .aform_field-label {
+	background: var(--sc-form-background);
 }
 .adate_time_fields {
 	display: flex;
