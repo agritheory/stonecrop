@@ -1,5 +1,7 @@
 # Change Log - @stonecrop/schema
 
+## 0.62.5
+
 ## 0.62.4
 
 ### Patch Changes
