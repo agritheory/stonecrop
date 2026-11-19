@@ -1,6 +1,6 @@
 import { createPinia, setActivePinia } from 'pinia'
 import { afterEach, beforeEach, describe, expect, it, vi, type MockInstance } from 'vite-plus/test'
-import { reactive } from 'vue'
+import { effectScope, nextTick, reactive } from 'vue'
 
 import { useOperationLogStore } from '../../src/stores/operation-log'
 import { createHST } from '../../src/stores/hst'
@@ -85,6 +85,62 @@ describe('A write straight into the store', { tags: ['unit'] }, () => {
 		log.redo(store)
 
 		expect(warnings()).toEqual([])
+	})
+
+	it('warns for a row or a key added through set(), when it is later written straight into', () => {
+		const store = createHST(reactive(order()), 'StonecropStore')
+
+		store.set('order.o-1.lines', [
+			{ sku: 'A-1', qty: 1 },
+			{ sku: 'B-2', qty: 2 },
+		])
+		store.set('order.o-2', { shipping_address: '3 Pine Rd', lines: [] })
+		expect(warnings()).toEqual([])
+
+		;(store.get('order.o-1.lines') as { qty: number }[])[1].qty = 7
+		;(store.get('order.o-2') as { shipping_address: string }).shipping_address = '4 Ash Ln'
+		;(store.get('order.o-1.lines') as { qty: number }[]).push({ qty: 3 })
+		;(store.get('order.o-1.lines') as { qty: number }[])[2].qty = 9
+
+		expect(warnings()[0]).toContain('order.o-1.lines.1.qty')
+		expect(warnings()[1]).toContain('order.o-2.shipping_address')
+		expect(warnings().at(-1)).toContain('order.o-1.lines.2.qty')
+	})
+
+	it('warns once per write', () => {
+		const store = createHST(reactive(order()), 'StonecropStore')
+		store.set('order.o-1.lines', [{ sku: 'A-1', qty: 1 }])
+		store.set('order.o-1.lines', [{ sku: 'A-1', qty: 2 }])
+
+		;(store.get('order.o-1.lines') as { qty: number }[])[0].qty = 5
+
+		expect(warnings()).toHaveLength(1)
+	})
+
+	it('does not walk the rest of the store again after each change', async () => {
+		const data = order() as Record<string, any>
+		let reads = 0
+		const other: Record<string, unknown> = {}
+		Object.defineProperty(other, 'name', { enumerable: true, configurable: true, get: () => (reads++, 'x') })
+		data.customer = { 'c-1': other }
+		const store = createHST(reactive(data), 'StonecropStore')
+		const readsAfterCreate = reads
+
+		for (let i = 0; i < 5; i++) store.set('order.o-1.lines.0.qty', i)
+		;(store.get('order.o-1.lines') as { qty: number }[])[0].qty = 9
+		await nextTick()
+
+		expect(reads).toBe(readsAfterCreate)
+	})
+
+	it('keeps warning after the scope that built the store is stopped', () => {
+		const scope = effectScope()
+		const store = scope.run(() => createHST(reactive(order()), 'StonecropStore'))!
+		scope.stop()
+
+		;(store.get('order.o-1.lines') as { qty: number }[])[0].qty = 5
+
+		expect(warnings()).toHaveLength(1)
 	})
 
 	it("is not watched in production, where the warning's cost is not paid", () => {

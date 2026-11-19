@@ -2,14 +2,16 @@
 
 ## Overview
 
-The HST Operation Log is a global Pinia-based store that tracks all HST mutations with comprehensive metadata, enabling:
+The HST Operation Log is a global Pinia-based store that tracks each change made through the HST (via `useStonecrop` or the store's `set()`) with comprehensive metadata, enabling:
 
 - **Time Travel**: Undo/redo operations with full state restoration
 - **Cross-Tab Synchronization**: Sync operations across browser tabs (via VueUse's `useBroadcastChannel`)
-- **Audit Trail**: Complete history of all changes
+- **Audit Trail**: Complete history of every change made through the store
 - **XState Integration**: Mark FSM transitions as irreversible
 - **Keyboard Shortcuts**: Built-in undo/redo shortcuts (via VueUse's `useMagicKeys`)
 - **Persistence**: Automatic localStorage persistence (via VueUse's `useLocalStorage`)
+
+> **Make changes through the store.** A write made straight into an object read from the store, such as a component setting `row.qty = 5` on a row it was handed, still changes the record, but it is not logged: Undo skips it and reverses the change before it. Outside production, Stonecrop logs a warning naming the path that was written.
 
 ## Architecture
 

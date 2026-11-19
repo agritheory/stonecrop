@@ -1,4 +1,4 @@
-import { isReactive, toRaw, watch, type DebuggerEvent } from 'vue'
+import { effectScope, isReactive, reactive, ReactiveEffect, toRaw, type DebuggerEvent } from 'vue'
 
 import { noRecord, recordInStore } from '../record-access'
 import { getGlobalTriggerEngine } from '../field-triggers'
@@ -48,28 +48,100 @@ function pathTo(root: unknown, target: object, seen = new Set<object>()): string
 	return undefined
 }
 
+// Only plain objects and arrays are walked: those are what records and their rows are made of.
+function isPlainContainer(value: unknown): value is Record<string, unknown> {
+	if (value === null || typeof value !== 'object') return false
+	return (
+		Array.isArray(value) || Object.getPrototypeOf(value) === Object.prototype || Object.getPrototypeOf(value) === null
+	)
+}
+
 /**
  * Warns the developer, outside production, when a value in `store` changes without going through
  * {@link HSTNode.set}: a component or app code wrote straight into an object it read from the store.
  * The write is let through, but the operation log never hears of it, so Undo skips it and reverses the
  * change made before it.
+ *
+ * A deep `watch` would walk the whole store again after every change, so each edit would get slower the
+ * more records the store holds. Instead, each key in the store is read once, by an effect that is never
+ * re-run: it stays subscribed to what it read, so a later write to that key reaches `onTrigger` without
+ * any walk. After a change, only the object that changed is looked at again, to start tracking keys and
+ * objects it did not have before. Each key is tracked by exactly one effect, so a write warns once.
+ *
+ * The effects live in their own detached scope: the store outlives the component that happened to build
+ * Stonecrop, and the warning must not stop when that component unmounts.
  */
 function warnOnWritesOutsideSet(store: object): void {
-	const raw = toRaw(store)
-	watch(store, () => {}, {
-		deep: true,
-		onTrigger(event: DebuggerEvent) {
-			if (writesThroughSet > 0) return
-			const owner = pathTo(raw, event.target)
-			const key = typeof event.key === 'symbol' ? undefined : String(event.key)
-			const path = [...(owner ?? []), ...(key === undefined ? [] : [key])].join('.') || '(store)'
-			console.warn(
-				`[Stonecrop] ${path} was changed by writing straight into an object read from the store, so the ` +
-					'operation log did not record it and Undo will skip it. Make the change through useStonecrop ' +
-					"(handleHSTChange) or the store's set() instead."
-			)
-		},
-	})
+	const root = toRaw(store)
+	// For each object already tracked, the keys whose values have been read inside an effect.
+	const trackedKeys = new WeakMap<object, Set<string>>()
+	// Objects that changed since their effect last ran its scheduler, to look at for new keys.
+	const changed = new Set<object>()
+	const scope = effectScope(true)
+	// Whether the effect running now has read anything new, so an effect that read nothing can be dropped.
+	let readSomething = false
+
+	const onTrigger = (event: DebuggerEvent) => {
+		changed.add(event.target)
+		if (writesThroughSet > 0) return
+		const owner = pathTo(root, event.target)
+		// A write into an object no longer in the store changes nothing the store holds.
+		if (!owner) return
+		const key = typeof event.key === 'symbol' ? undefined : String(event.key)
+		const path = [...owner, ...(key === undefined ? [] : [key])].join('.') || '(store)'
+		console.warn(
+			`[Stonecrop] ${path} was changed by writing straight into an object read from the store, so the ` +
+				'operation log did not record it and Undo will skip it. Make the change through useStonecrop ' +
+				"(handleHSTChange) or the store's set() instead."
+		)
+	}
+
+	// Reads, through the reactive proxy, every key of `raw` (and of the objects under it) not read before.
+	// Run inside an effect, so the effect subscribes to exactly those keys.
+	const visit = (raw: Record<string, unknown>) => {
+		const proxy = reactive(raw)
+		let keys = trackedKeys.get(raw)
+		if (!keys) {
+			keys = new Set()
+			trackedKeys.set(raw, keys)
+			readSomething = true
+			// Subscribes to keys being added or removed (an array's length).
+			Object.keys(proxy)
+		}
+		for (const key of Object.keys(raw)) {
+			let value: unknown
+			if (keys.has(key)) {
+				value = raw[key]
+			} else {
+				keys.add(key)
+				readSomething = true
+				value = toRaw(proxy[key])
+			}
+			if (isPlainContainer(value) && !trackedKeys.has(value)) visit(value)
+		}
+	}
+
+	const track = (targets: object[]) => {
+		scope.run(() => {
+			const effect = new ReactiveEffect(() => targets.forEach(target => isPlainContainer(target) && visit(target)))
+			effect.onTrigger = onTrigger
+			// Never re-run, so the effect keeps its subscriptions; only look at what changed.
+			effect.scheduler = flush
+			readSomething = false
+			effect.run()
+			// Nothing new was read: drop the effect rather than keep an empty one.
+			if (!readSomething) effect.stop()
+		})
+	}
+
+	function flush() {
+		if (changed.size === 0) return
+		const targets = [...changed]
+		changed.clear()
+		track(targets)
+	}
+
+	track([root])
 }
 
 // Type definitions for global Registry
