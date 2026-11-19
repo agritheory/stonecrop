@@ -49,7 +49,7 @@
 						:mode="resolvedMode(componentObj)"
 						v-on="
 							listenersWhenHeard((val: Record<string, unknown>) =>
-								updateTableRow(componentObj.fieldname, rowIndex, val)
+								updateTableRow(componentObj.fieldname, rowIndex, val, row)
 							)
 						" />
 				</template>
@@ -64,7 +64,7 @@ import { computed, watchEffect, watch, ref, useId } from 'vue'
 import ABadgeField from './form/ABadgeField.vue'
 import type { ResolvedField, ResolvedLink, ResolvedFieldset, ResolvedTable } from '../types'
 import { wordErrors } from '../utils/fieldErrors'
-import { latestRecord, noteReported } from '../utils/reportedRecords'
+import { changedFields, latestRecord, noteReported } from '../utils/reportedRecords'
 import { flattenFields, partsPatch, readParts } from '@stonecrop/schema'
 import type { ColumnSchema, InteractionMode } from '@stonecrop/schema'
 
@@ -135,8 +135,11 @@ const updateNestedData = (fieldname: string, val: any) => {
 	applyChanges({ [fieldname]: val })
 }
 
-// A fieldset's edits. Its form holds this record, so its edits are this record's.
-const updateFieldsetData = (val: Record<string, any>) => applyChanges(val)
+// A fieldset's edits. Its form holds this record, so its edits are this record's. It reports the whole record,
+// so only the fields it changed from the record it was handed are taken: the rest may be stale.
+const updateFieldsetData = (val: Record<string, any>) => {
+	if (dataModel.value) applyChanges(changedFields(val, dataModel.value))
+}
 
 const isListExpansionTable = (componentObj: ResolvedField): componentObj is ResolvedTable =>
 	componentObj.kind === 'table' && componentObj.config?.view === 'list-expansion'
@@ -148,10 +151,18 @@ const tableExpansionSchema = (table: ResolvedTable): ResolvedField[] =>
 
 const updateTableRows = (fieldname: string, rows: Record<string, unknown>[]) => applyChanges({ [fieldname]: rows })
 
-const updateTableRow = (fieldname: string, rowIndex: number, val: Record<string, unknown>) => {
+// An expanded row's edit. Its form reports the whole row, so only the fields it changed from the row it was
+// handed are laid over the row as last reported: a field the host has since filled in, such as a Price it
+// fills when the SKU changes, keeps that value.
+const updateTableRow = (
+	fieldname: string,
+	rowIndex: number,
+	val: Record<string, unknown>,
+	handedRow: Record<string, unknown>
+) => {
 	const current = dataModel.value ? latestRecord(dataModel.value) : undefined
 	const rows = Array.isArray(current?.[fieldname]) ? [...current[fieldname]] : []
-	rows[rowIndex] = { ...rows[rowIndex], ...val }
+	rows[rowIndex] = { ...rows[rowIndex], ...changedFields(val, handedRow) }
 	updateTableRows(fieldname, rows)
 }
 

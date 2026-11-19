@@ -32,3 +32,12 @@ export const noteReported = (handed: Record<string, any>, changes: Record<string
 	})
 	return { ...handed, ...kept }
 }
+
+/**
+ * The fields of `reported` that differ from `handed`: what a nested form changed, out of the whole record it
+ * reports. A fieldset's form and an expanded row's form each report their whole record, laid over the record
+ * they were handed; taking all of it as changes would put back that record's old value of a field the host has
+ * since filled in itself, such as a City it fills when Name changes.
+ */
+export const changedFields = (reported: Record<string, any>, handed: Record<string, any>): Record<string, any> =>
+	Object.fromEntries(Object.entries(reported).filter(([key, value]) => !Object.is(value, handed[key])))

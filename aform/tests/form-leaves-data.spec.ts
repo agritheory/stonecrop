@@ -326,4 +326,69 @@ describe('AForm given edits before it re-renders (#559)', { tags: ['component'] 
 
 		expect(record.value).toEqual({ lines: [{ sku: 'A-9' }, { sku: 'B-9' }] })
 	})
+
+	it('keeps a value the host fills in place when a fieldset field and another are filled at once', async () => {
+		const row = reactive<Record<string, unknown>>({ name: 'Ada', email: '', city: '' })
+		let filled = false
+		const takeInPlace = (next: Record<string, unknown>) => {
+			Object.assign(row, next)
+			if (!filled && row.name !== 'Ada') {
+				row.city = 'York'
+				filled = true
+			}
+		}
+		const schema = [
+			{ kind: 'fieldset', fieldname: 'details', label: 'Details', schema: [nameField] },
+			{ ...nameField, fieldname: 'email', label: 'Email' },
+		]
+		const Host = defineComponent({
+			components: { AForm },
+			setup: () => ({ row, schema, takeInPlace }),
+			template: `<AForm :data="row" :schema="schema" @update:data="takeInPlace" />`,
+		})
+		const wrapper = mount(Host, { global: { components: { AFieldset, ATextInput } } })
+		const [name, email] = wrapper.findAll('input').map(found => found.element)
+		typeNow(name, 'Bea')
+		typeNow(email, 'bea@example.com')
+		await flushPromises()
+
+		expect(row).toEqual({ name: 'Bea', email: 'bea@example.com', city: 'York' })
+	})
+
+	it("keeps a line's value the host fills in place when two fields of an expanded row are filled at once", async () => {
+		const order = reactive<Record<string, any>>({ lines: [{ sku: 'A-1', qty: '1', price: 0 }] })
+		let filled = false
+		const takeInPlace = (next: Record<string, any>) => {
+			Object.assign(order, next)
+			if (!filled && order.lines[0].sku !== 'A-1') {
+				order.lines[0].price = 9
+				filled = true
+			}
+		}
+		const schema = [
+			{
+				kind: 'table',
+				fieldname: 'lines',
+				component: 'ExpandingTable',
+				label: 'Lines',
+				config: { view: 'list-expansion' },
+				schema: [
+					{ fieldname: 'sku', label: 'SKU', component: 'ATextInput' },
+					{ fieldname: 'qty', label: 'Qty', component: 'ATextInput' },
+				],
+			},
+		]
+		const Host = defineComponent({
+			components: { AForm },
+			setup: () => ({ order, schema, takeInPlace }),
+			template: `<AForm :data="order" :schema="schema" @update:data="takeInPlace" />`,
+		})
+		const wrapper = mount(Host, { global: { components: { AForm, ATextInput, ExpandingTable } } })
+		const [sku, qty] = wrapper.findAll('.aform-table-expansion input').map(found => found.element)
+		typeNow(sku, 'B-2')
+		typeNow(qty, '3')
+		await flushPromises()
+
+		expect(order.lines).toEqual([{ sku: 'B-2', qty: '3', price: 9 }])
+	})
 })
