@@ -2,7 +2,9 @@
 
 ## Overview
 
-The HST Operation Log is a complete time-travel debugging and undo/redo system for Stonecrop applications. It automatically tracks all state mutations with full metadata, enabling undo/redo, cross-tab sync, and audit trails.
+The HST Operation Log is a complete time-travel debugging and undo/redo system for Stonecrop applications. It tracks each change made through the store, with full metadata, enabling undo/redo, cross-tab sync, and audit trails.
+
+> **Make changes through the store.** Only a change made through `useStonecrop` (or the store's `set()`) is logged. Writing straight into an object read from the store, such as a component setting `row.qty = 5` on a row it was handed, still changes the record, but the operation log never hears of it: Undo skips it and reverses the change before it. Outside production, Stonecrop logs a warning naming the path that was written.
 
 **New in 2025**: Now powered by VueUse composables (`useMagicKeys`, `useLocalStorage`) for improved reliability and reduced maintenance.
 

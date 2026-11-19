@@ -107,7 +107,8 @@ function applyOperation(operation: HSTOperation, store: HSTNode) {
 
 /**
  * Global HST Operation Log Store
- * Tracks all mutations with full metadata for undo/redo, sync, and audit
+ * Tracks each change made through the store's `set()` with full metadata for undo/redo, sync, and audit.
+ * A write made straight into an object read from the store is not logged; outside production it logs a warning.
  *
  * @public
  */

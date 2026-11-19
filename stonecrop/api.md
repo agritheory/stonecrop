@@ -2478,7 +2478,7 @@ export const plugin: Plugin
 
 ### useOperationLogStore
 
-Global HST Operation Log Store Tracks all mutations with full metadata for undo/redo, sync, and audit
+Global HST Operation Log Store Tracks each change made through the store's `set()` with full metadata for undo/redo, sync, and audit. A write made straight into an object read from the store is not logged; outside production it logs a warning.
 
 **Type:**
 

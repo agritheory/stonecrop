@@ -63,7 +63,6 @@ import { computed, watchEffect, watch, ref, useId } from 'vue'
 
 import ABadgeField from './form/ABadgeField.vue'
 import type { ResolvedField, ResolvedLink, ResolvedFieldset, ResolvedTable } from '../types'
-import { copyOnWrite, settle } from '../utils/copyOnWrite'
 import { wordErrors } from '../utils/fieldErrors'
 import { flattenFields, partsPatch, readParts } from '@stonecrop/schema'
 import type { ColumnSchema, InteractionMode } from '@stonecrop/schema'
@@ -141,22 +140,7 @@ const tableExpansionSchema = (table: ResolvedTable): ResolvedField[] =>
 		.filter((col): col is ColumnSchema & { component: string } => Boolean(col.component))
 		.map(({ fieldname, component, ...rest }) => Object.assign(rest, { kind: 'field' as const, fieldname, component }))
 
-const updateTableRows = (fieldname: string, rows: Record<string, unknown>[]) =>
-	applyChanges({ [fieldname]: settle(rows) })
-
-// The rows each table is handed, by fieldname, kept while the form holds the same list so the table is not
-// handed a new one on each render. A row is often the store's own object: a component that writes an edit
-// straight into it would change the store unheard, so its undo log would never see the edit. Handed through
-// `copyOnWrite`, the write leaves the row as it was and comes back as a new list, through `update:rows`.
-const noRows: Record<string, unknown>[] = []
-const tableRows = new Map<string, { source: Record<string, unknown>[]; rows: Record<string, unknown>[] }>()
-const rowsFor = (fieldname: string, source: Record<string, unknown>[]) => {
-	const held = tableRows.get(fieldname)
-	if (held?.source === source) return held.rows
-	const rows = copyOnWrite(source, next => updateTableRows(fieldname, next))
-	tableRows.set(fieldname, { source, rows })
-	return rows
-}
+const updateTableRows = (fieldname: string, rows: Record<string, unknown>[]) => applyChanges({ [fieldname]: rows })
 
 const updateTableRow = (fieldname: string, rowIndex: number, val: Record<string, unknown>) => {
 	const rows = Array.isArray(dataModel.value?.[fieldname]) ? [...dataModel.value[fieldname]] : []
@@ -191,7 +175,7 @@ const componentProps = (componentObj: ResolvedField) => {
 	// injectKind, Doctype.fromObject's normalizeFieldKind, and the registry), and hand-built
 	// ResolvedTable literals declare it.
 	if (componentObj.kind === 'table') {
-		propsToPass['rows'] = rowsFor(componentObj.fieldname, dataModel.value[componentObj.fieldname] || noRows)
+		propsToPass['rows'] = dataModel.value[componentObj.fieldname] || []
 		propsToPass['onUpdate:rows'] = (rows: Record<string, unknown>[]) => updateTableRows(componentObj.fieldname, rows)
 		// A table takes no `mode`: each column's own `edit` decides whether its cells can be edited,
 		// and `addable` whether it can take a new row. A record this form can't edit takes neither.

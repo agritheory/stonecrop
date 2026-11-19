@@ -33,13 +33,6 @@ const RowsTable = defineComponent({
 	template: `<button class="rows-table" type="button" @click="$emit('update:rows', [...rows, { sku: 'C-3' }])">add</button>`,
 })
 
-// An app's own line table that writes an edit straight into the row it was handed (#557).
-const InPlaceTable = defineComponent({
-	name: 'InPlaceTable',
-	props: [...fieldProps, 'rows', 'columns', 'config'],
-	template: `<button class="in-place-table" type="button" @click="rows[1].qty = 5">edit</button>`,
-})
-
 // Renders the expansion slot for every row, as ATable does for an expanded row.
 const ExpandingTable = defineComponent({
 	name: 'ExpandingTable',
@@ -95,23 +88,6 @@ const cases: Case[] = [
 		{ lines: [{ sku: 'A-1' }, { sku: 'C-3' }] },
 	],
 	[
-		'a row a component writes into in place',
-		[{ kind: 'table', fieldname: 'lines', component: 'InPlaceTable', label: 'Lines', columns: [] }],
-		{
-			lines: [
-				{ sku: 'A-1', qty: 1 },
-				{ sku: 'B-2', qty: 2 },
-			],
-		},
-		wrapper => wrapper.find('.in-place-table').trigger('click'),
-		{
-			lines: [
-				{ sku: 'A-1', qty: 1 },
-				{ sku: 'B-2', qty: 5 },
-			],
-		},
-	],
-	[
 		'a field in an expanded row',
 		[
 			{
@@ -134,7 +110,7 @@ describe('AForm leaves the data it was given', { tags: ['component'] }, () => {
 		const before = structuredClone(data)
 		const wrapper = mountBound({
 			props: { schema: schema as ResolvedField[], data },
-			global: { components: { AForm, AFieldset, ATextInput, PartsInput, RowsTable, InPlaceTable, ExpandingTable } },
+			global: { components: { AForm, AFieldset, ATextInput, PartsInput, RowsTable, ExpandingTable } },
 		})
 
 		await edit(wrapper)

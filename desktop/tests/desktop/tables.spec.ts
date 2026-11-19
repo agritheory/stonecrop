@@ -2,7 +2,7 @@ import { flushPromises, mount } from '@vue/test-utils'
 import type { VueWrapper } from '@vue/test-utils'
 import { List } from 'immutable'
 import { createPinia, setActivePinia } from 'pinia'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test'
+import { afterEach, beforeEach, describe, expect, it, vi, type MockInstance } from 'vite-plus/test'
 import { defineComponent, nextTick } from 'vue'
 
 import { install as installAForm } from '@stonecrop/aform'
@@ -139,6 +139,7 @@ describe('Desktop tables an app draws itself', { tags: ['component'] }, () => {
 	let registry: Registry
 	let stonecrop: Stonecrop
 	let pinia: ReturnType<typeof createPinia>
+	let warn: MockInstance<typeof console.warn>
 
 	beforeEach(() => {
 		pinia = createPinia()
@@ -147,9 +148,11 @@ describe('Desktop tables an app draws itself', { tags: ['component'] }, () => {
 		stonecrop = new Stonecrop(registry)
 		registry.addDoctype(buildOrderDoctype())
 		stonecrop.addRecord('order', 'o-1', { id: 'o-1', shipping_address: '1 Elm St', lines: [{ sku: 'A-1', qty: 1 }] })
+		warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
 	})
 
 	afterEach(() => {
+		warn.mockRestore()
 		Registry._root = undefined as any
 		Stonecrop._root = undefined as any
 	})
@@ -173,22 +176,25 @@ describe('Desktop tables an app draws itself', { tags: ['component'] }, () => {
 		return wrapper
 	}
 
-	it('undoes a line an app component writes straight into its row before the edit made ahead of it', async () => {
+	// Stonecrop lets a write straight into a record through and warns the developer: the operation log never
+	// hears of it, so Undo would skip it. `useStonecrop` is the way for a component to make a change.
+	it('lets a line an app component writes straight into its row through, and warns the developer', async () => {
 		const wrapper = await mountDesktop()
-		const address = wrapper.findAll('input')[1]
-		await address.setValue('2 Oak Ave')
-		await flushPromises()
 		await wrapper.find('.in-place-lines').trigger('click')
 		await flushPromises()
 
-		const record = () => stonecrop.getRecordById('order', 'o-1')!
-		expect(record().get('lines')).toEqual([{ sku: 'A-1', qty: 5 }])
-		const log = useOperationLogStore()
-		expect(log.operations.at(-1)).toMatchObject({ path: 'order.o-1.lines' })
+		expect(stonecrop.getRecordById('order', 'o-1')!.get('lines')).toEqual([{ sku: 'A-1', qty: 5 }])
+		const warnings = warn.mock.calls.map(call => String(call[0])).filter(text => text.startsWith('[Stonecrop]'))
+		expect(warnings).toHaveLength(1)
+		expect(warnings[0]).toContain('order.o-1.lines.0.qty')
+	})
 
-		log.undo(stonecrop.getStore())
+	it("doesn't warn for an edit made through the form", async () => {
+		const wrapper = await mountDesktop()
+		await wrapper.findAll('input')[1].setValue('2 Oak Ave')
+		await flushPromises()
 
-		expect(record().get('lines')).toEqual([{ sku: 'A-1', qty: 1 }])
-		expect(record().get('shipping_address')).toBe('2 Oak Ave')
+		expect(stonecrop.getRecordById('order', 'o-1')!.get('shipping_address')).toBe('2 Oak Ave')
+		expect(warn.mock.calls.filter(call => String(call[0]).startsWith('[Stonecrop]'))).toEqual([])
 	})
 })

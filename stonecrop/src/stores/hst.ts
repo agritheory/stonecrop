@@ -1,3 +1,5 @@
+import { isReactive, toRaw, watch, type DebuggerEvent } from 'vue'
+
 import { noRecord, recordInStore } from '../record-access'
 import { getGlobalTriggerEngine } from '../field-triggers'
 import { useOperationLogStore } from './operation-log'
@@ -15,6 +17,59 @@ function getOperationLogStore() {
 		// Operation log is optional
 		return null
 	}
+}
+
+// How many `set()` calls are writing into the store right now. A change the store's reactive state
+// reports while this is 0 was made by writing straight into an object read from the store.
+let writesThroughSet = 0
+
+// The bundler's environment, as Node and bundlers name it; this package does not depend on Node's types.
+declare const process: { env: Record<string, string | undefined> }
+
+// Written as `process.env.NODE_ENV` so the app's bundler replaces it; where nothing does and there is no
+// `process`, the warning stays off.
+const isDevelopment = () => {
+	try {
+		return process.env.NODE_ENV !== 'production'
+	} catch {
+		return false
+	}
+}
+
+// The dot path from `root` to `target`, or undefined if `target` is not inside `root`.
+function pathTo(root: unknown, target: object, seen = new Set<object>()): string[] | undefined {
+	if (root === target) return []
+	if (root === null || typeof root !== 'object' || seen.has(root)) return undefined
+	seen.add(root)
+	for (const [key, value] of Object.entries(root)) {
+		const rest = pathTo(toRaw(value), target, seen)
+		if (rest) return [key, ...rest]
+	}
+	return undefined
+}
+
+/**
+ * Warns the developer, outside production, when a value in `store` changes without going through
+ * {@link HSTNode.set}: a component or app code wrote straight into an object it read from the store.
+ * The write is let through, but the operation log never hears of it, so Undo skips it and reverses the
+ * change made before it.
+ */
+function warnOnWritesOutsideSet(store: object): void {
+	const raw = toRaw(store)
+	watch(store, () => {}, {
+		deep: true,
+		onTrigger(event: DebuggerEvent) {
+			if (writesThroughSet > 0) return
+			const owner = pathTo(raw, event.target)
+			const key = typeof event.key === 'symbol' ? undefined : String(event.key)
+			const path = [...(owner ?? []), ...(key === undefined ? [] : [key])].join('.') || '(store)'
+			console.warn(
+				`[Stonecrop] ${path} was changed by writing straight into an object read from the store, so the ` +
+					'operation log did not record it and Undo will skip it. Make the change through useStonecrop ' +
+					"(handleHSTChange) or the store's set() instead."
+			)
+		},
+	})
 }
 
 // Type definitions for global Registry
@@ -231,7 +286,12 @@ class HSTProxy implements HSTNode {
 		}
 
 		// Update the value
-		this.updateValue(path, value)
+		writesThroughSet++
+		try {
+			this.updateValue(path, value)
+		} finally {
+			writesThroughSet--
+		}
 
 		// Trigger field actions asynchronously (don't block the set operation)
 		void this.triggerFieldActions(fullPath, beforeValue, value)
@@ -609,6 +669,7 @@ class HSTProxy implements HSTNode {
  * @public
  */
 function createHST(target: any, doctype: string): HSTNode {
+	if (isDevelopment() && isReactive(target)) warnOnWritesOutsideSet(target)
 	return new HSTProxy(target, doctype, '', null)
 }
 
