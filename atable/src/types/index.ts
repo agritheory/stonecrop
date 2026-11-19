@@ -217,9 +217,10 @@ export interface BaseTableConfig {
 	rowActions?: RowActionsConfig
 
 	/**
-	 * Whether the host lets this table take a new row. When true and the table has no rows, the
-	 * empty-state row shows an "Add row" control that adds a row and emits `row:add`. Set it from
-	 * the host's workflow and permissions; the table never infers it.
+	 * Whether the host lets this table take a new row. When true, the table offers an "Add row"
+	 * control that adds a row at the end and emits `row:add`: in the empty-state row while the table
+	 * has no rows, and below the rows once it has some (on the last page, while no filters are set).
+	 * Set it from the host's workflow and permissions; the table never infers it.
 	 *
 	 * @defaultValue false
 	 */

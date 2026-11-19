@@ -247,4 +247,43 @@ describe("A read-only form's empty table", { tags: ['component'] }, () => {
 		expect(wrapper.find('.atable-empty-row').exists()).toBe(true)
 		expect(wrapper.find('.atable-empty-add').exists()).toBe(what.includes('control'))
 	})
+
+	it('an editable form keeps offering Add row once the table has rows', async () => {
+		const data = ref({ contacts: [] as Record<string, unknown>[] })
+		const wrapper = mount(
+			defineComponent({
+				components: { AForm },
+				setup: () => ({ data, schema: [addableTable] }),
+				template: `<AForm v-model:data="data" :schema="schema" />`,
+			}),
+			{
+				global: { plugins: [createPinia(), { install: installATable }] },
+			}
+		)
+		await flushPromises()
+
+		await wrapper.find('.atable-empty-add').trigger('click')
+		await flushPromises()
+		await wrapper.find('.atable-add-row button').trigger('click')
+		await flushPromises()
+
+		expect(data.value.contacts).toHaveLength(2)
+		expect(wrapper.find('.atable-add-row').exists()).toBe(true)
+	})
+
+	it.each([
+		['in mode="read"', `<AForm v-model:data="data" :schema="schema" mode="read" />`],
+		['with nothing listening', `<AForm :data="data" :schema="schema" />`],
+	])('%s offers no Add row once the table has rows', async (_what, template) => {
+		const data = ref({ contacts: [{}] as Record<string, unknown>[] })
+		const wrapper = mount(
+			defineComponent({ components: { AForm }, setup: () => ({ data, schema: [addableTable] }), template }),
+			{
+				global: { plugins: [createPinia(), { install: installATable }] },
+			}
+		)
+		await flushPromises()
+
+		expect(wrapper.find('.atable-add-row').exists()).toBe(false)
+	})
 })

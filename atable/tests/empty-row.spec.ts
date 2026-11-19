@@ -126,6 +126,60 @@ describe('ATable empty-state row', { tags: ['component'] }, () => {
 		expect(findAddButton(wrapper)).toBeUndefined()
 	})
 
+	it('keeps offering Add row below the rows once the table has rows, so a second row can be added', async () => {
+		const wrapper = mountTable([], { view: 'list', addable: true })
+
+		await findAddButton(wrapper)!.trigger('click')
+		await flushPromises()
+		expect(wrapper.findAll('tbody tr.atable-row')).toHaveLength(1)
+		expect(wrapper.find('.atable-add-row').exists()).toBe(true)
+
+		await findAddButton(wrapper)!.trigger('click')
+		await flushPromises()
+
+		expect(wrapper.findAll('tbody tr.atable-row')).toHaveLength(2)
+		const addEvents = wrapper.emitted('row:add')
+		expect(addEvents).toHaveLength(2)
+		expect(addEvents![1][0]).toMatchObject({ rowIndex: 1 })
+		// Spans the table like the empty row, and is not a data cell.
+		expect(wrapper.find('.atable-add-row td').attributes('colspan')).toBe('3')
+		expect(wrapper.find('.atable-add-row td').attributes('tabindex')).toBeUndefined()
+	})
+
+	it('offers no Add row below the rows when the host has not made the table addable', () => {
+		const wrapper = mountTable([{ id: 1, name: 'John' }], { view: 'list' })
+		expect(wrapper.find('.atable-add-row').exists()).toBe(false)
+		expect(findAddButton(wrapper)).toBeUndefined()
+	})
+
+	it('offers Add row below the rows only on the last page', async () => {
+		const rows = [1, 2, 3].map(id => ({ id, name: `Row ${id}` }))
+		const wrapper = mountTable(rows, { view: 'list', addable: true, pageSize: 2 })
+		expect(wrapper.find('.atable-add-row').exists()).toBe(false)
+
+		const pagination = (wrapper.vm as unknown as { pagination: { next: () => Promise<void> } }).pagination
+		await pagination.next()
+		await flushPromises()
+
+		expect(wrapper.find('.atable-add-row').exists()).toBe(true)
+	})
+
+	it('steps Add row aside while filters are set', async () => {
+		const wrapper = mountTable(
+			[
+				{ id: 1, name: 'John' },
+				{ id: 2, name: 'Jane' },
+			],
+			{ view: 'list', addable: true }
+		)
+		const store = (wrapper.vm as unknown as { store: { setFilter: (col: number, f: unknown) => void } }).store
+		store.setFilter(1, { value: 'John' })
+		await flushPromises()
+
+		expect(wrapper.findAll('tbody tr.atable-row')).toHaveLength(1)
+		expect(wrapper.find('.atable-add-row').exists()).toBe(false)
+	})
+
 	it('stays hidden while the first page loads and when it fails', async () => {
 		let resolveRead: (value: { data: TableRow[]; hasMore: boolean }) => void = () => {}
 		const getRecords = vi
