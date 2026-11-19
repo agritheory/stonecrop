@@ -220,7 +220,29 @@ describe('AForm given edits before it re-renders (#559)', { tags: ['component'] 
 		expect(record.value).toEqual({ name: 'Bea', age: '37' })
 	})
 
-	it('does not carry an edit its host declined into a later one', async () => {
+	it('keeps a value the host writes into its record in place between two fields filled at once', async () => {
+		const row = reactive<Record<string, unknown>>({ name: 'Ada', age: '36', city: '' })
+		let filled = false
+		const takeInPlace = (next: Record<string, unknown>) => {
+			Object.assign(row, next)
+			if (!filled) row.city = 'York'
+			filled = true
+		}
+		const Host = defineComponent({
+			components: { AForm },
+			setup: () => ({ row, schema: twoFields, takeInPlace }),
+			template: `<AForm :data="row" :schema="schema" @update:data="takeInPlace" />`,
+		})
+		const wrapper = mount(Host, { global: { components: { ATextInput } } })
+		const [name, age] = wrapper.findAll('input').map(found => found.element)
+		typeNow(name, 'Bea')
+		typeNow(age, '37')
+		await flushPromises()
+
+		expect(row).toEqual({ name: 'Bea', age: '37', city: 'York' })
+	})
+
+	it('does not carry an edit its host declined into one made after the form re-renders', async () => {
 		const record = ref<Record<string, unknown>>({ name: 'Ada', age: '36' })
 		const heard: Record<string, unknown>[] = []
 		const Host = defineComponent({

@@ -5,20 +5,30 @@ A form reports an edit as a new record, and its host hands that record back only
 made before then, as a script filling several fields at once makes them, would each be built on the record
 the form was last handed, so each would undo the one before it (#559).
 
-So the record last reported for each record a form was handed is kept until the next render, and an edit
-made before then builds on it. It is kept by the record handed, not by form: a fieldset's form is handed its
-form's own record, so edits made through either build on each other. It is dropped on the next tick, so an
-edit its host declined to take is not carried into a later one.
+So the changes reported for each record a form was handed are kept until the next render, and an edit made
+before then lays them, and its own, over that record. Only the changes are kept, not the record reported, so a
+value a host writes into the record it handed, such as a field it fills when another changes, is kept too. They
+are kept by the record handed, not by form: a fieldset's form is handed its form's own record, so edits made
+through either build on each other.
+
+They are dropped on the next tick, so an edit its host declined to take is not carried into an edit made after
+the form has re-rendered. An edit made before then, in the same go, still carries it: the form cannot tell a
+declined edit from one its host has yet to hand back.
 */
-const reported = new WeakMap<object, Record<string, any>>()
+const pending = new WeakMap<object, Record<string, any>>()
 
-/** The record an edit to `handed` builds on: the last one reported for it this tick, or `handed` itself. */
-export const latestRecord = (handed: Record<string, any>): Record<string, any> => reported.get(handed) ?? handed
+/** The record an edit to `handed` builds on: `handed` with the changes reported for it this tick laid over it. */
+export const latestRecord = (handed: Record<string, any>): Record<string, any> => {
+	const changes = pending.get(handed)
+	return changes ? { ...handed, ...changes } : handed
+}
 
-/** Notes `record` as the latest reported for `handed`, until the next tick. */
-export const noteReported = (handed: Record<string, any>, record: Record<string, any>) => {
-	reported.set(handed, record)
+/** Notes `changes` as reported for `handed`, until the next tick, and returns the record to report. */
+export const noteReported = (handed: Record<string, any>, changes: Record<string, any>): Record<string, any> => {
+	const kept = { ...pending.get(handed), ...changes }
+	pending.set(handed, kept)
 	void nextTick(() => {
-		if (reported.get(handed) === record) reported.delete(handed)
+		if (pending.get(handed) === kept) pending.delete(handed)
 	})
+	return { ...handed, ...kept }
 }

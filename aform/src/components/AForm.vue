@@ -100,15 +100,14 @@ const isFieldsetSection = (componentObj: ResolvedField): componentObj is Resolve
 	componentObj.kind === 'fieldset' && hasChildSchema(componentObj)
 
 // An edit, reported as a new record. `data` is the caller's, often the store's own object, so it is
-// never written into: an edit reaches it only through the caller's handling of `update:data`. It builds
-// on the record last reported, which the caller hands back only on the next render: several edits made
-// before then, as a script filling several fields at once makes them, each keep the ones before.
+// never written into: an edit reaches it only through the caller's handling of `update:data`. The caller
+// hands the new record back only on the next render, so the changes reported before then are laid over
+// `data` with each edit: several edits made at once, as a script filling several fields makes them, each
+// keep the ones before, and a value the caller wrote into `data` itself is kept too.
 const applyChanges = (changes: Record<string, any>) => {
 	const handed = dataModel.value
 	if (!handed) return
-	const record = { ...latestRecord(handed), ...changes }
-	noteReported(handed, record)
-	dataModel.value = record
+	dataModel.value = noteReported(handed, changes)
 }
 
 // Reactive nested data refs for two-way binding with the forms of linked records
