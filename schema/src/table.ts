@@ -23,7 +23,7 @@ export const TableViewConfig = z
 		/** Enable dependency graph connections for Gantt views */
 		dependencyGraph: z.boolean().optional(),
 
-		/** Offer an "Add row" control while the table is empty. A form that can't edit the record turns it off. */
+		/** Let the table take new rows through an "Add row" control, whether or not it has rows. A form that can't edit the record turns it off. */
 		addable: z.boolean().optional(),
 	})
 	.meta({

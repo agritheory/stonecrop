@@ -66,6 +66,9 @@
 						:filtered="emptyIsFiltered"
 						@add="addFirstRow" />
 				</slot>
+				<slot v-if="showAddRow" name="add" :data="store" :add="addFirstRow">
+					<ATableAddRow :colspan="store.columnCount" @add="addFirstRow" />
+				</slot>
 			</tbody>
 
 			<slot name="footer" :data="store" :page="pagination">
@@ -118,6 +121,7 @@ import { computed, inject, nextTick, onMounted, useTemplateRef, watch } from 'vu
 import ACell from './ACell.vue'
 import AGanttConnection from './AGanttConnection.vue'
 import ARow from './ARow.vue'
+import ATableAddRow from './ATableAddRow.vue'
 import ATableEmptyRow from './ATableEmptyRow.vue'
 import ATableHeader from './ATableHeader.vue'
 import ATableModal from './ATableModal.vue'
@@ -224,6 +228,18 @@ const showEmptyRow = computed(
 )
 // Rows are held but the filters hide them all — a different message from a truly empty list.
 const emptyIsFiltered = computed(() => store.rows.length > 0)
+// Once the table has rows, the empty row's Add row goes with it; a table that can take new rows
+// keeps offering one below its rows. It waits for the last page, where a row added at the end
+// lands, and steps aside while filters are set, since a blank row would likely be hidden by them.
+const showAddRow = computed(
+	() =>
+		Boolean(store.config.addable) &&
+		!paginationLoading.value &&
+		!firstPageFailed.value &&
+		visibleRows.value.length > 0 &&
+		!hasNext.value &&
+		Object.keys(store.filterState).length === 0
+)
 
 store.$onAction(({ name, store: storeInstance, args, after }) => {
 	if (name === 'setCellData' || name === 'setCellText') {
@@ -414,7 +430,8 @@ const addRowAt = (position: 'start' | 'end' | number) => {
 }
 
 /**
- * Add row from the empty-state row: the same path as the row action's add, so hosts see one `row:add`.
+ * Add row from the empty-state row or the add row below the rows: the same path as the row
+ * action's add, so hosts see one `row:add`.
  */
 const addFirstRow = () => {
 	addRowAt('end')
