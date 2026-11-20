@@ -11,9 +11,8 @@ import type { RouteAdapter } from '../../src/types'
 
 import { makeStonecropPlugin } from './desktop.helpers'
 
-// Two fields filled before Vue re-renders, as a script filling several fields at once does, keep only the last
-// (#559): the store keeps the old name, and the log records the name set and then set back. This pins that
-// behaviour, so it fails once it changes; turn it round then.
+// Two fields filled before Vue re-renders, as a script filling several fields at once does (#559): the store
+// keeps both, and the log records each field set once.
 function buildContactDoctype() {
 	const fields = List([
 		{ kind: 'field' as const, fieldname: 'id', label: 'ID', component: 'ATextInput', primaryKey: true },
@@ -55,7 +54,7 @@ describe('Desktop, two fields filled at once', { tags: ['component'] }, () => {
 		Stonecrop._root = undefined as any
 	})
 
-	it('stores and logs only the last edit, with the first set back', async () => {
+	it('stores and logs both edits', async () => {
 		const wrapper = mount(Desktop, {
 			props: { routeAdapter },
 			global: {
@@ -70,14 +69,13 @@ describe('Desktop, two fields filled at once', { tags: ['component'] }, () => {
 		await flushPromises()
 
 		const record = stonecrop.getRecordById('contact', 'c-1')
-		expect(record?.get('name')).toBe('Ada')
+		expect(record?.get('name')).toBe('Bea')
 		expect(record?.get('email')).toBe('bea@example.com')
 		const fieldEdits = useOperationLogStore()
 			.operations.filter(operation => operation.path.startsWith('contact.c-1.'))
 			.map(operation => [operation.path, operation.beforeValue, operation.afterValue])
 		expect(fieldEdits).toEqual([
 			['contact.c-1.name', 'Ada', 'Bea'],
-			['contact.c-1.name', 'Bea', 'Ada'],
 			['contact.c-1.email', 'ada@example.com', 'bea@example.com'],
 		])
 	})

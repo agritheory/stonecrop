@@ -1,0 +1,5 @@
+---
+'@stonecrop/aform': patch
+---
+
+Fields filled in one go, as a script run from the browser console or a test that types into the page fills them, now all keep their new text (#559). Each edit was built on the record the form was last handed, which its host hands back only on the next render, so every field filled before then went back to its old value and only the last kept its text. This happened to text boxes, fields inside a fieldset, two amounts that share a currency and fields in expanded table rows. Each edit now lays the changes the form reported before the next render over the record it was handed, so the edits before it are kept, as is a value the host wrote into that record itself, such as a field it fills when another changes. An edit its host declined is not carried into an edit made after the form has re-rendered; an edit made before then, in the same go, still carries it.
