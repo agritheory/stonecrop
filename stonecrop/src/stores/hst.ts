@@ -65,29 +65,34 @@ function isPlainContainer(value: unknown): value is Record<string, unknown> {
  * A deep `watch` would walk the whole store again after every change, so each edit would get slower the
  * more records the store holds. Instead, each key in the store is read once, by an effect that is never
  * re-run: it stays subscribed to what it read, so a later write to that key reaches `onTrigger` without
- * any walk. After a change, only the object that changed is looked at again, to start tracking keys and
- * objects it did not have before. Each key is tracked by exactly one effect, so a write warns once.
+ * any walk. After a change, only the keys `onTrigger` named are looked at, to start tracking keys and
+ * objects not seen before; the object's other keys are not read again, so adding a record doesn't cost
+ * more the more records its doctype holds. Each key is tracked by exactly one effect, so a write warns once.
  *
- * The effects live in their own detached scope: the store outlives the component that happened to build
- * Stonecrop, and the warning must not stop when that component unmounts.
+ * Each object gets its own effect, in its own detached scope, and the effect drops the object once it has
+ * read it. Detached, so the warning doesn't stop when the component that happened to build Stonecrop
+ * unmounts; one per object and holding nothing, so an effect lives only as long as the object it watches
+ * (its subscriptions are kept by that object's reactive deps) and a replaced row or array, once no longer
+ * referenced, is freed along with its effect.
  */
 function warnOnWritesOutsideSet(store: object): void {
 	const root = toRaw(store)
 	// For each object already tracked, the keys whose values have been read inside an effect.
 	const trackedKeys = new WeakMap<object, Set<string>>()
-	// Objects that changed since their effect last ran its scheduler, to look at for new keys.
-	const changed = new Set<object>()
-	const scope = effectScope(true)
+	// The keys changed in each object since the last flush, to look at for new keys and objects.
+	const changed = new Map<object, Set<string>>()
 	// Whether the effect running now has read anything new, so an effect that read nothing can be dropped.
 	let readSomething = false
 
 	const onTrigger = (event: DebuggerEvent) => {
-		changed.add(event.target)
+		const key = typeof event.key === 'symbol' || event.key === undefined ? undefined : String(event.key)
+		let keys = changed.get(event.target)
+		if (!keys) changed.set(event.target, (keys = new Set()))
+		if (key !== undefined) keys.add(key)
 		if (writesThroughSet > 0) return
 		const owner = pathTo(root, event.target)
 		// A write into an object no longer in the store changes nothing the store holds.
 		if (!owner) return
-		const key = typeof event.key === 'symbol' ? undefined : String(event.key)
 		const path = [...owner, ...(key === undefined ? [] : [key])].join('.') || '(store)'
 		console.warn(
 			`[Stonecrop] ${path} was changed by writing straight into an object read from the store, so the ` +
@@ -96,34 +101,55 @@ function warnOnWritesOutsideSet(store: object): void {
 		)
 	}
 
-	// Reads, through the reactive proxy, every key of `raw` (and of the objects under it) not read before.
-	// Run inside an effect, so the effect subscribes to exactly those keys.
-	const visit = (raw: Record<string, unknown>) => {
+	// Reads, through the reactive proxy, the given keys of `raw` (all of them if `raw` is new) not read
+	// before. Run inside an effect, so the effect subscribes to exactly those keys. Objects found under
+	// them that are not tracked yet are added to `found`, to get effects of their own.
+	const read = (raw: Record<string, unknown>, keys: Iterable<string> | undefined, found: Set<object>) => {
 		const proxy = reactive(raw)
-		let keys = trackedKeys.get(raw)
-		if (!keys) {
-			keys = new Set()
-			trackedKeys.set(raw, keys)
+		let tracked = trackedKeys.get(raw)
+		if (!tracked) {
+			tracked = new Set()
+			trackedKeys.set(raw, tracked)
 			readSomething = true
-			// Subscribes to keys being added or removed (an array's length).
-			Object.keys(proxy)
-		}
-		for (const key of Object.keys(raw)) {
-			let value: unknown
-			if (keys.has(key)) {
-				value = raw[key]
+			keys = undefined
+			if (Array.isArray(proxy)) {
+				// One subscription covers every index and the length: Vue reports a write to any of them
+				// to whoever iterated the array, naming the index. Subscribing to each index instead costs a
+				// dependency per row, kept for every past version of the rows the operation log holds.
+				proxy[Symbol.iterator]()
 			} else {
-				keys.add(key)
+				// Subscribes to keys being added or removed.
+				Object.keys(proxy)
+			}
+		}
+		const isArray = Array.isArray(raw)
+		for (const key of keys ?? Object.keys(raw)) {
+			// A removed key, or one `Object.keys` doesn't list (an array's length).
+			if (!Object.prototype.propertyIsEnumerable.call(raw, key)) continue
+			let value: unknown
+			if (isArray || tracked.has(key)) {
+				value = toRaw(raw[key])
+			} else {
+				tracked.add(key)
 				readSomething = true
 				value = toRaw(proxy[key])
 			}
-			if (isPlainContainer(value) && !trackedKeys.has(value)) visit(value)
+			if (isPlainContainer(value) && !trackedKeys.has(value)) found.add(value)
 		}
 	}
 
-	const track = (targets: object[]) => {
-		scope.run(() => {
-			const effect = new ReactiveEffect(() => targets.forEach(target => isPlainContainer(target) && visit(target)))
+	const track = (raw: object, keys?: Iterable<string>) => {
+		if (!isPlainContainer(raw)) return
+		const found = new Set<object>()
+		// Cleared once read, so the effect doesn't keep the object (or its keys) alive.
+		let target: Record<string, unknown> | undefined = raw
+		let targetKeys = keys
+		effectScope(true).run(() => {
+			const effect = new ReactiveEffect(() => {
+				if (target) read(target, targetKeys, found)
+				target = undefined
+				targetKeys = undefined
+			})
 			effect.onTrigger = onTrigger
 			// Never re-run, so the effect keeps its subscriptions; only look at what changed.
 			effect.scheduler = flush
@@ -132,16 +158,20 @@ function warnOnWritesOutsideSet(store: object): void {
 			// Nothing new was read: drop the effect rather than keep an empty one.
 			if (!readSomething) effect.stop()
 		})
+		// Outside the effect above, so each object gets an effect of its own.
+		for (const child of found) if (!trackedKeys.has(child)) track(child)
+		// The effect's closure still holds `found`: empty it, so a child replaced later can be freed.
+		found.clear()
 	}
 
 	function flush() {
 		if (changed.size === 0) return
 		const targets = [...changed]
 		changed.clear()
-		track(targets)
+		for (const [target, keys] of targets) track(target, keys)
 	}
 
-	track([root])
+	track(root)
 }
 
 // Type definitions for global Registry

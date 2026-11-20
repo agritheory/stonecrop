@@ -133,6 +133,35 @@ describe('A write straight into the store', { tags: ['unit'] }, () => {
 		expect(reads).toBe(readsAfterCreate)
 	})
 
+	it("does not read a doctype's other records again when a record is added to it", () => {
+		const data = order() as Record<string, any>
+		let reads = 0
+		const doctype: Record<string, unknown> = {}
+		for (let i = 0; i < 3; i++) {
+			Object.defineProperty(doctype, `c-${i}`, { enumerable: true, configurable: true, get: () => (reads++, {}) })
+		}
+		data.customer = doctype
+		const store = createHST(reactive(data), 'StonecropStore')
+		const readsAfterCreate = reads
+
+		for (let i = 3; i < 8; i++) store.set(`customer.c-${i}`, { name: `c-${i}` })
+
+		expect(reads).toBe(readsAfterCreate)
+		expect(warnings()).toEqual([])
+	})
+
+	it('warns once for a row replaced in place, and for a later write into that row', () => {
+		const store = createHST(reactive(order()), 'StonecropStore')
+		const lines = store.get('order.o-1.lines') as { sku: string; qty: number }[]
+
+		lines[0] = { sku: 'A-1', qty: 7 }
+		lines[0].qty = 8
+
+		expect(warnings()).toHaveLength(2)
+		expect(warnings()[0]).toContain('order.o-1.lines.0')
+		expect(warnings()[1]).toContain('order.o-1.lines.0.qty')
+	})
+
 	it('keeps warning after the scope that built the store is stopped', () => {
 		const scope = effectScope()
 		const store = scope.run(() => createHST(reactive(order()), 'StonecropStore'))!
