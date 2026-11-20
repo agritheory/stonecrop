@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/atable",
-	"version": "0.62.6",
+	"version": "0.62.7",
 	"description": "Advanced data table component for Stonecrop",
 	"keywords": [
 		"components",
