@@ -168,7 +168,9 @@ function warnOnWritesOutsideSet(store: object): void {
 		if (changed.size === 0) return
 		const targets = [...changed]
 		changed.clear()
-		for (const [target, keys] of targets) track(target, keys)
+		// An array's elements are all looked at: Vue reports a change made in one batch (unshift, splice, a push of
+		// several rows) once, naming only the first index written, so a row added at another index would go unseen.
+		for (const [target, keys] of targets) track(target, Array.isArray(target) ? undefined : keys)
 	}
 
 	track(root)

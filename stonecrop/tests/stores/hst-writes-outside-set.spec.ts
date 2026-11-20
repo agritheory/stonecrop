@@ -162,6 +162,21 @@ describe('A write straight into the store', { tags: ['unit'] }, () => {
 		expect(warnings()[1]).toContain('order.o-1.lines.0.qty')
 	})
 
+	it.each([
+		['pushed second of two', (lines: object[]) => lines.push({ sku: 'B-2', qty: 2 }, { sku: 'C-3', qty: 3 }), 2],
+		['unshifted', (lines: object[]) => lines.unshift({ sku: 'B-2', qty: 2 }), 0],
+		['spliced in', (lines: object[]) => lines.splice(0, 0, { sku: 'B-2', qty: 2 }), 0],
+	])('warns for a write into a row %s, as for the rows added before it', (_how, add, index) => {
+		const store = createHST(reactive(order()), 'StonecropStore')
+		const lines = store.get('order.o-1.lines') as { qty: number }[]
+		add(lines)
+		const before = warnings().length
+
+		lines[index].qty = 5
+
+		expect(warnings().slice(before)).toEqual([expect.stringContaining(`order.o-1.lines.${index}.qty`)])
+	})
+
 	it('keeps warning after the scope that built the store is stopped', () => {
 		const scope = effectScope()
 		const store = scope.run(() => createHST(reactive(order()), 'StonecropStore'))!
