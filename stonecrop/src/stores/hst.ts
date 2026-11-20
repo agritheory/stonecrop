@@ -1,3 +1,5 @@
+import { effectScope, isReactive, reactive, ReactiveEffect, toRaw, type DebuggerEvent } from 'vue'
+
 import { noRecord, recordInStore } from '../record-access'
 import { getGlobalTriggerEngine } from '../field-triggers'
 import { useOperationLogStore } from './operation-log'
@@ -15,6 +17,163 @@ function getOperationLogStore() {
 		// Operation log is optional
 		return null
 	}
+}
+
+// How many `set()` calls are writing into the store right now. A change the store's reactive state
+// reports while this is 0 was made by writing straight into an object read from the store.
+let writesThroughSet = 0
+
+// The bundler's environment, as Node and bundlers name it; this package does not depend on Node's types.
+declare const process: { env: Record<string, string | undefined> }
+
+// Written as `process.env.NODE_ENV` so the app's bundler replaces it; where nothing does and there is no
+// `process`, the warning stays off.
+const isDevelopment = () => {
+	try {
+		return process.env.NODE_ENV !== 'production'
+	} catch {
+		return false
+	}
+}
+
+// The dot path from `root` to `target`, or undefined if `target` is not inside `root`.
+function pathTo(root: unknown, target: object, seen = new Set<object>()): string[] | undefined {
+	if (root === target) return []
+	if (root === null || typeof root !== 'object' || seen.has(root)) return undefined
+	seen.add(root)
+	for (const [key, value] of Object.entries(root)) {
+		const rest = pathTo(toRaw(value), target, seen)
+		if (rest) return [key, ...rest]
+	}
+	return undefined
+}
+
+// Only plain objects and arrays are walked: those are what records and their rows are made of.
+function isPlainContainer(value: unknown): value is Record<string, unknown> {
+	if (value === null || typeof value !== 'object') return false
+	return (
+		Array.isArray(value) || Object.getPrototypeOf(value) === Object.prototype || Object.getPrototypeOf(value) === null
+	)
+}
+
+/**
+ * Warns the developer, outside production, when a value in `store` changes without going through
+ * {@link HSTNode.set}: a component or app code wrote straight into an object it read from the store.
+ * The write is let through, but the operation log never hears of it, so Undo skips it and reverses the
+ * change made before it.
+ *
+ * A deep `watch` would walk the whole store again after every change, so each edit would get slower the
+ * more records the store holds. Instead, each key in the store is read once, by an effect that is never
+ * re-run: it stays subscribed to what it read, so a later write to that key reaches `onTrigger` without
+ * any walk. After a change, only the keys `onTrigger` named are looked at, to start tracking keys and
+ * objects not seen before; the object's other keys are not read again, so adding a record doesn't cost
+ * more the more records its doctype holds. Each key is tracked by exactly one effect, so a write warns once.
+ *
+ * Each object gets its own effect, in its own detached scope, and the effect drops the object once it has
+ * read it. Detached, so the warning doesn't stop when the component that happened to build Stonecrop
+ * unmounts; one per object and holding nothing, so an effect lives only as long as the object it watches
+ * (its subscriptions are kept by that object's reactive deps) and a replaced row or array, once no longer
+ * referenced, is freed along with its effect.
+ */
+function warnOnWritesOutsideSet(store: object): void {
+	const root = toRaw(store)
+	// For each object already tracked, the keys whose values have been read inside an effect.
+	const trackedKeys = new WeakMap<object, Set<string>>()
+	// The keys changed in each object since the last flush, to look at for new keys and objects.
+	const changed = new Map<object, Set<string>>()
+	// Whether the effect running now has read anything new, so an effect that read nothing can be dropped.
+	let readSomething = false
+
+	const onTrigger = (event: DebuggerEvent) => {
+		const key = typeof event.key === 'symbol' || event.key === undefined ? undefined : String(event.key)
+		let keys = changed.get(event.target)
+		if (!keys) changed.set(event.target, (keys = new Set()))
+		if (key !== undefined) keys.add(key)
+		if (writesThroughSet > 0) return
+		const owner = pathTo(root, event.target)
+		// A write into an object no longer in the store changes nothing the store holds.
+		if (!owner) return
+		const path = [...owner, ...(key === undefined ? [] : [key])].join('.') || '(store)'
+		console.warn(
+			`[Stonecrop] ${path} was changed by writing straight into an object read from the store, so the ` +
+				'operation log did not record it and Undo will skip it. Make the change through useStonecrop ' +
+				"(handleHSTChange) or the store's set() instead."
+		)
+	}
+
+	// Reads, through the reactive proxy, the given keys of `raw` (all of them if `raw` is new) not read
+	// before. Run inside an effect, so the effect subscribes to exactly those keys. Objects found under
+	// them that are not tracked yet are added to `found`, to get effects of their own.
+	const read = (raw: Record<string, unknown>, keys: Iterable<string> | undefined, found: Set<object>) => {
+		const proxy = reactive(raw)
+		let tracked = trackedKeys.get(raw)
+		if (!tracked) {
+			tracked = new Set()
+			trackedKeys.set(raw, tracked)
+			readSomething = true
+			keys = undefined
+			if (Array.isArray(proxy)) {
+				// One subscription covers every index and the length: Vue reports a write to any of them
+				// to whoever iterated the array, naming the index. Subscribing to each index instead costs a
+				// dependency per row, kept for every past version of the rows the operation log holds.
+				proxy[Symbol.iterator]()
+			} else {
+				// Subscribes to keys being added or removed.
+				Object.keys(proxy)
+			}
+		}
+		const isArray = Array.isArray(raw)
+		for (const key of keys ?? Object.keys(raw)) {
+			// A removed key, or one `Object.keys` doesn't list (an array's length).
+			if (!Object.prototype.propertyIsEnumerable.call(raw, key)) continue
+			let value: unknown
+			if (isArray || tracked.has(key)) {
+				value = toRaw(raw[key])
+			} else {
+				tracked.add(key)
+				readSomething = true
+				value = toRaw(proxy[key])
+			}
+			if (isPlainContainer(value) && !trackedKeys.has(value)) found.add(value)
+		}
+	}
+
+	const track = (raw: object, keys?: Iterable<string>) => {
+		if (!isPlainContainer(raw)) return
+		const found = new Set<object>()
+		// Cleared once read, so the effect doesn't keep the object (or its keys) alive.
+		let target: Record<string, unknown> | undefined = raw
+		let targetKeys = keys
+		effectScope(true).run(() => {
+			const effect = new ReactiveEffect(() => {
+				if (target) read(target, targetKeys, found)
+				target = undefined
+				targetKeys = undefined
+			})
+			effect.onTrigger = onTrigger
+			// Never re-run, so the effect keeps its subscriptions; only look at what changed.
+			effect.scheduler = flush
+			readSomething = false
+			effect.run()
+			// Nothing new was read: drop the effect rather than keep an empty one.
+			if (!readSomething) effect.stop()
+		})
+		// Outside the effect above, so each object gets an effect of its own.
+		for (const child of found) if (!trackedKeys.has(child)) track(child)
+		// The effect's closure still holds `found`: empty it, so a child replaced later can be freed.
+		found.clear()
+	}
+
+	function flush() {
+		if (changed.size === 0) return
+		const targets = [...changed]
+		changed.clear()
+		// An array's elements are all looked at: Vue reports a change made in one batch (unshift, splice, a push of
+		// several rows) once, naming only the first index written, so a row added at another index would go unseen.
+		for (const [target, keys] of targets) track(target, Array.isArray(target) ? undefined : keys)
+	}
+
+	track(root)
 }
 
 // Type definitions for global Registry
@@ -231,7 +390,12 @@ class HSTProxy implements HSTNode {
 		}
 
 		// Update the value
-		this.updateValue(path, value)
+		writesThroughSet++
+		try {
+			this.updateValue(path, value)
+		} finally {
+			writesThroughSet--
+		}
 
 		// Trigger field actions asynchronously (don't block the set operation)
 		void this.triggerFieldActions(fullPath, beforeValue, value)
@@ -609,6 +773,7 @@ class HSTProxy implements HSTNode {
  * @public
  */
 function createHST(target: any, doctype: string): HSTNode {
+	if (isDevelopment() && isReactive(target)) warnOnWritesOutsideSet(target)
 	return new HSTProxy(target, doctype, '', null)
 }
 
