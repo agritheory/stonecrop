@@ -1,5 +1,13 @@
 # Change Log - @stonecrop/nuxt-grafserv
 
+## 0.62.8
+
+### Patch Changes
+
+- @stonecrop/casl-middleware@0.62.8
+  - @stonecrop/graphql-middleware@0.62.8
+  - @stonecrop/rockfoil@0.62.8
+
 ## 0.62.7
 
 ### Patch Changes

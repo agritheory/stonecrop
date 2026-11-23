@@ -1,5 +1,7 @@
 # Change Log - @stonecrop/code-editor
 
+## 0.62.8
+
 ## 0.62.7
 
 ## 0.62.6
