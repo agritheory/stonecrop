@@ -182,7 +182,10 @@ const emit = defineEmits<{
 }>()
 
 const tableRef = useTemplateRef<HTMLTableElement>('table')
-const resolvedColumns = columns.value?.length ? columns.value : schemaToColumns(schema ?? [])
+// Whether the host hands over the columns, or the table draws them from the schema. Settled here: a
+// resize writes the columns back to the model even when the host handed none over.
+const columnsFromHost = Boolean(columns.value?.length)
+const resolvedColumns = columnsFromHost ? columns.value! : schemaToColumns(schema ?? [])
 const injectedLinkResolver = inject<LinkResolverFn | null>('aformLinkResolver', null)
 const store: TableStore = createTableStore({
 	columns: resolvedColumns,
@@ -284,6 +287,52 @@ watch(
 	},
 	{ deep: true }
 )
+
+// The host can change the table's config while it is shown: a form that turns read-only takes away
+// `addable`. The store follows, so the table never keeps the config it mounted with.
+watch(
+	() => config,
+	newConfig => {
+		store.config = newConfig
+	}
+)
+
+// The host can change the schema while it is shown: a form that turns read-only takes away each
+// column's `edit`. Columns the host hands over through the `columns` model are the host's to change.
+watch(
+	() => schema,
+	(newSchema, oldSchema) => {
+		if (columnsFromHost) return
+		syncSchemaColumns(schemaToColumns(newSchema ?? []), schemaToColumns(oldSchema ?? []))
+	}
+)
+
+// Each cell holds its own column object, so a column that keeps its place is updated where it is,
+// not replaced: a replaced object would leave the cell drawing the old one. A width the user has
+// dragged is kept unless the schema's own width changed.
+const syncSchemaColumns = (next: TableColumn[], previous: TableColumn[]) => {
+	const current = store.columns
+	for (const column of next) {
+		const before = previous.find(prior => prior.name === column.name)
+		const shown = current.find(held => held.name === column.name)
+		if (before && shown && before.width === column.width) column.width = shown.width
+	}
+
+	const sameColumns =
+		current.length === next.length && next.every((column, index) => column.name === current[index].name)
+	if (!sameColumns) {
+		store.columns = next
+		return
+	}
+
+	next.forEach((column, index) => {
+		const held = current[index] as Record<string, unknown>
+		for (const key of Object.keys(held)) {
+			if (!(key in column)) delete held[key]
+		}
+		Object.assign(held, column)
+	})
+}
 
 onMounted(() => {
 	if (columns.value?.some(column => column.pinned)) {
