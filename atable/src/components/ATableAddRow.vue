@@ -1,5 +1,6 @@
 <template>
-	<!-- Not a data row: no ARow, no cells, so it takes no part in numbering, navigation, filters or paging. -->
+	<!-- Not a data row: no ARow, no cells, so it takes no part in numbering, filters or paging, and it
+	sits in its own tbody so row navigation never lands on it. Drawn as a row, not a button. -->
 	<tr class="atable-add-row">
 		<td :colspan="colspan" class="atable-add-cell">
 			<button type="button" class="atable-add" @click="emit('add')">Add row</button>
@@ -20,8 +21,7 @@ const emit = defineEmits<{
 
 <style scoped>
 .atable-add-cell {
-	padding: 0.5rem 0.5ch;
-	text-align: left;
+	padding: 0;
 	border-bottom: 1px solid var(--sc-row-border-color);
 }
 
@@ -29,25 +29,36 @@ const emit = defineEmits<{
 	appearance: none;
 	-webkit-appearance: none;
 	box-sizing: border-box;
-	padding: 0.25rem 0.75rem;
-	background: var(--sc-btn-color);
-	color: var(--sc-btn-label-color);
-	border: 1px solid var(--sc-btn-border);
-	border-radius: var(--sc-border-radius);
+	display: block;
+	width: 100%;
+	min-height: var(--sc-atable-row-height);
+	margin: 0;
+	padding: var(--sc-atable-row-padding) 0.5ch;
+	background: transparent;
+	color: var(--sc-gray-60);
+	border: none;
+	border-radius: 0;
 	cursor: pointer;
-	font-family: var(--sc-font-family);
+	font-family: var(--sc-atable-font-family);
 	font-size: var(--sc-table-font-size);
 	font-weight: 400;
-	line-height: 1.2;
-	transition: background-color 0.15s ease;
+	line-height: var(--sc-atable-row-height);
+	text-align: left;
+}
+
+.atable-add::before {
+	content: '+';
+	display: inline-block;
+	width: 2ch;
 }
 
 .atable-add:hover {
-	background: var(--sc-btn-hover);
+	background: var(--sc-row-hover-color);
+	color: var(--sc-cell-text-color);
 }
 
 .atable-add:focus-visible {
-	outline: 2px solid var(--sc-input-active-border-color);
-	outline-offset: 1px;
+	outline: var(--sc-atable-cell-border-width) solid var(--sc-focus-cell-outline);
+	outline-offset: calc(-1 * var(--sc-atable-cell-border-width));
 }
 </style>

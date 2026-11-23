@@ -144,6 +144,12 @@ describe('ATable empty-state row', { tags: ['component'] }, () => {
 		// Spans the table like the empty row, and is not a data cell.
 		expect(wrapper.find('.atable-add-row td').attributes('colspan')).toBe('3')
 		expect(wrapper.find('.atable-add-row td').attributes('tabindex')).toBeUndefined()
+		// In its own tbody, so Ctrl+Down (the tbody's last row) still lands on the last data row.
+		const addBody = wrapper.find('.atable-add-row').element.parentElement!
+		expect(addBody.tagName).toBe('TBODY')
+		expect(addBody.querySelector('tr.atable-row')).toBeNull()
+		const rowBody = wrapper.find('tr.atable-row').element.parentElement!
+		expect(rowBody.lastElementChild?.classList.contains('atable-row')).toBe(true)
 	})
 
 	it('offers no Add row below the rows when the host has not made the table addable', () => {

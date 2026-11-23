@@ -66,7 +66,10 @@
 						:filtered="emptyIsFiltered"
 						@add="addFirstRow" />
 				</slot>
-				<slot v-if="showAddRow" name="add" :data="store" :add="addFirstRow">
+			</tbody>
+			<!-- Its own tbody, so the row keys that jump to the first or last row (Ctrl+Up/Down) stay on the data rows. -->
+			<tbody v-if="showAddRow" class="atable-add-body">
+				<slot name="add" :data="store" :add="addFirstRow">
 					<ATableAddRow :colspan="store.columnCount" @add="addFirstRow" />
 				</slot>
 			</tbody>
