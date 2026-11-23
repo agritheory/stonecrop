@@ -391,4 +391,39 @@ describe('AForm given edits before it re-renders (#559)', { tags: ['component'] 
 
 		expect(order.lines).toEqual([{ sku: 'B-2', qty: '3', price: 9 }])
 	})
+
+	it("keeps a line's field cleared and set back to its old value at once in an expanded row", async () => {
+		const { wrapper, record } = mountInHost(
+			[
+				{
+					kind: 'table',
+					fieldname: 'lines',
+					component: 'ExpandingTable',
+					label: 'Lines',
+					config: { view: 'list-expansion' },
+					schema: [{ fieldname: 'sku', label: 'SKU', component: 'ATextInput' }],
+				},
+			],
+			{ lines: [{ sku: 'A-1' }] }
+		)
+		const [sku] = wrapper.findAll('.aform-table-expansion input').map(found => found.element)
+		typeNow(sku, '')
+		typeNow(sku, 'A-1')
+		await flushPromises()
+
+		expect(record.value).toEqual({ lines: [{ sku: 'A-1' }] })
+	})
+
+	it("keeps a fieldset's field cleared and set back to its old value at once", async () => {
+		const { wrapper, record } = mountInHost(
+			[{ kind: 'fieldset', fieldname: 'details', label: 'Details', schema: [nameField] }],
+			{ name: 'Ada' }
+		)
+		const [name] = wrapper.findAll('input').map(found => found.element)
+		typeNow(name, '')
+		typeNow(name, 'Ada')
+		await flushPromises()
+
+		expect(record.value).toEqual({ name: 'Ada' })
+	})
 })

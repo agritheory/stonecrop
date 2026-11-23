@@ -23,6 +23,13 @@ export const latestRecord = (handed: Record<string, any>): Record<string, any> =
 	return changes ? { ...handed, ...changes } : handed
 }
 
+/**
+ * The changes reported for `handed` this tick: what a form handed it has changed. A nested form's edit is taken
+ * from these, not from comparing the record it reports with `handed`, which cannot tell a field set back to its
+ * handed value, such as a SKU cleared and retyped in one go, from a field left alone.
+ */
+export const reportedChanges = (handed: Record<string, any>): Record<string, any> => pending.get(handed) ?? {}
+
 /** Notes `changes` as reported for `handed`, until the next tick, and returns the record to report. */
 export const noteReported = (handed: Record<string, any>, changes: Record<string, any>): Record<string, any> => {
 	const kept = { ...pending.get(handed), ...changes }
@@ -35,9 +42,10 @@ export const noteReported = (handed: Record<string, any>, changes: Record<string
 
 /**
  * The fields of `reported` that differ from `handed`: what a nested form changed, out of the whole record it
- * reports. A fieldset's form and an expanded row's form each report their whole record, laid over the record
- * they were handed; taking all of it as changes would put back that record's old value of a field the host has
- * since filled in itself, such as a City it fills when Name changes.
+ * reports. A fieldset's form reports its whole record, laid over the record it was handed; taking all of it as
+ * changes would put back that record's old value of a field the host has since filled in itself, such as a City
+ * it fills when Name changes. A field it sets back to its handed value is still kept: its form is handed this
+ * same record, so that edit is already among the changes reported for it.
  */
 export const changedFields = (reported: Record<string, any>, handed: Record<string, any>): Record<string, any> =>
 	Object.fromEntries(Object.entries(reported).filter(([key, value]) => !Object.is(value, handed[key])))

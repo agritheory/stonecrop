@@ -47,11 +47,7 @@
 						:data="row"
 						:schema="tableExpansionSchema(componentObj)"
 						:mode="resolvedMode(componentObj)"
-						v-on="
-							listenersWhenHeard((val: Record<string, unknown>) =>
-								updateTableRow(componentObj.fieldname, rowIndex, val, row)
-							)
-						" />
+						v-on="listenersWhenHeard(() => updateTableRow(componentObj.fieldname, rowIndex, row))" />
 				</template>
 			</component>
 		</template>
@@ -64,7 +60,7 @@ import { computed, watchEffect, watch, ref, useId } from 'vue'
 import ABadgeField from './form/ABadgeField.vue'
 import type { ResolvedField, ResolvedLink, ResolvedFieldset, ResolvedTable } from '../types'
 import { wordErrors } from '../utils/fieldErrors'
-import { changedFields, latestRecord, noteReported } from '../utils/reportedRecords'
+import { changedFields, latestRecord, noteReported, reportedChanges } from '../utils/reportedRecords'
 import { flattenFields, partsPatch, readParts } from '@stonecrop/schema'
 import type { ColumnSchema, InteractionMode } from '@stonecrop/schema'
 
@@ -151,18 +147,14 @@ const tableExpansionSchema = (table: ResolvedTable): ResolvedField[] =>
 
 const updateTableRows = (fieldname: string, rows: Record<string, unknown>[]) => applyChanges({ [fieldname]: rows })
 
-// An expanded row's edit. Its form reports the whole row, so only the fields it changed from the row it was
+// An expanded row's edit. Its form reports the whole row, so only the changes it reported for the row it was
 // handed are laid over the row as last reported: a field the host has since filled in, such as a Price it
-// fills when the SKU changes, keeps that value.
-const updateTableRow = (
-	fieldname: string,
-	rowIndex: number,
-	val: Record<string, unknown>,
-	handedRow: Record<string, unknown>
-) => {
+// fills when the SKU changes, keeps that value, and a field set back to its handed value, such as a SKU
+// cleared and retyped in one go, keeps the value it was set back to.
+const updateTableRow = (fieldname: string, rowIndex: number, handedRow: Record<string, unknown>) => {
 	const current = dataModel.value ? latestRecord(dataModel.value) : undefined
 	const rows = Array.isArray(current?.[fieldname]) ? [...current[fieldname]] : []
-	rows[rowIndex] = { ...rows[rowIndex], ...changedFields(val, handedRow) }
+	rows[rowIndex] = { ...rows[rowIndex], ...reportedChanges(handedRow) }
 	updateTableRows(fieldname, rows)
 }
 
