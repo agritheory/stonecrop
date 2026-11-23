@@ -181,6 +181,34 @@ export { InteractionMode }
 export const Login: typeof __VLS_export_22;
 
 // @public
+export const loginIdentities: {
+    readonly email: {
+        readonly label: "Email";
+        readonly inputType: "email";
+        readonly autocomplete: "email";
+        readonly name: "email";
+    };
+    readonly username: {
+        readonly label: "Username";
+        readonly inputType: "text";
+        readonly autocomplete: "username";
+        readonly name: "username";
+    };
+};
+
+// @public
+export type LoginIdentity = {
+    label: string;
+    inputType: string;
+    autocomplete: string;
+    name: string;
+    placeholder?: string;
+};
+
+// @public
+export type LoginPreset = keyof typeof loginIdentities;
+
+// @public
 export interface NumericOptions {
     arithmetic?: boolean;
     precision?: number;
@@ -258,6 +286,22 @@ export interface ResolvedTable {
 
 // @public
 export function resolveFieldBadge(value: unknown, options: FieldOptions | undefined, format: string | BadgeFormatFn | undefined, context?: BadgeFormatContext): BadgeDescriptor | undefined;
+
+// @public
+export function useLoginPreset(preset: LoginPreset): {
+    identity: {
+        readonly label: "Email";
+        readonly inputType: "email";
+        readonly autocomplete: "email";
+        readonly name: "email";
+    } | {
+        readonly label: "Username";
+        readonly inputType: "text";
+        readonly autocomplete: "username";
+        readonly name: "username";
+    };
+    headerSubtitle: string;
+};
 
 
 export * from "@stonecrop/atable/types";

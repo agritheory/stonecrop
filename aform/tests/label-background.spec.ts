@@ -17,6 +17,7 @@ import ASegmentedControl from '../src/components/form/ASegmentedControl.vue'
 import ATextboxInput from '../src/components/form/ATextboxInput.vue'
 import ATextInput from '../src/components/form/ATextInput.vue'
 import Login from '../src/components/utilities/Login.vue'
+import { loginIdentities } from '../src/login/loginIdentity'
 import type { ResolvedField } from '../src/types'
 
 /*
@@ -184,7 +185,10 @@ describe('floating label and error background', { tags: ['component'] }, () => {
 	})
 
 	it('paints the same way on the login form', () => {
-		const wrapper = mount(Login, { attachTo: document.body })
+		const wrapper = mount(Login, {
+			attachTo: document.body,
+			props: { identity: loginIdentities.email, authenticate: async () => {} },
+		})
 		const elements = painted(wrapper.element as HTMLElement)
 
 		expect(elements).toHaveLength(2)
@@ -199,7 +203,10 @@ describe('floating label and error background', { tags: ['component'] }, () => {
 		const style = document.createElement('style')
 		style.textContent = Array.from(login.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g), match => match[1]).join('\n')
 		document.head.appendChild(style)
-		const wrapper = mount(Login, { attachTo: document.body })
+		const wrapper = mount(Login, {
+			attachTo: document.body,
+			props: { identity: loginIdentities.email, authenticate: async () => {} },
+		})
 		const labels = Array.from((wrapper.element as HTMLElement).querySelectorAll('.aform_field-label'))
 
 		expect(labels).toHaveLength(2)
@@ -246,7 +253,10 @@ describe('floating label and error background', { tags: ['component'] }, () => {
 
 	it("drops the browser's own border on a field outside a form, so the label covers the field's edge", () => {
 		// The label covers one pixel below its centre line: the field's 1px outline, never a 2px inset border.
-		const wrapper = mount(Login, { attachTo: document.body })
+		const wrapper = mount(Login, {
+			attachTo: document.body,
+			props: { identity: loginIdentities.email, authenticate: async () => {} },
+		})
 		const fields = Array.from((wrapper.element as HTMLElement).querySelectorAll('.aform_input-field'))
 
 		expect(fields).toHaveLength(2)

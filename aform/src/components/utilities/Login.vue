@@ -4,21 +4,23 @@
 			<div class="account-container">
 				<div class="account-header">
 					<h1 id="account-title">{{ headerTitle }}</h1>
-					<p id="account-subtitle">{{ headerSubtitle }}</p>
+					<p v-if="headerSubtitle" id="account-subtitle">{{ headerSubtitle }}</p>
 				</div>
 
 				<form @submit="onSubmit">
 					<div class="login-form-container">
-						<div class="login-form-email aform_form-element">
-							<label id="login-email" for="email" class="aform_field-label">Email</label>
+						<div class="login-form-identity aform_form-element">
+							<label :id="`login-${identity.name}`" :for="identity.name" class="aform_field-label">{{
+								identity.label
+							}}</label>
 							<input
-								id="email"
-								v-model="email"
+								:id="identity.name"
+								v-model="identityValue"
 								class="aform_input-field"
-								name="email"
-								placeholder="name@example.com"
-								type="email"
-								autocomplete="email"
+								:name="identity.name"
+								:placeholder="identity.placeholder"
+								:type="identity.inputType"
+								:autocomplete="identity.autocomplete"
 								autocapitalize="none"
 								autocorrect="off"
 								:disabled="isLoading" />
@@ -36,16 +38,14 @@
 								:disabled="isLoading" />
 						</div>
 
-						<button type="submit" class="btn" :disabled="isLoading || !email || !password">
+						<button type="submit" class="btn" :disabled="isLoading || !identityValue || !password">
 							<span v-if="isLoading" class="material-symbols-outlined loading-icon">progress_activity</span>
 							<span id="login-form-button">Login</span>
 						</button>
+
+						<slot name="alternateSignIn" />
 					</div>
 				</form>
-
-				<button type="button" class="btn">
-					<span id="forgot-password-button">Forgot password?</span>
-				</button>
 			</div>
 		</div>
 	</div>
@@ -54,33 +54,44 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 
-const { headerTitle = 'Login', headerSubtitle = 'Enter your email and password to login' } = defineProps<{
+import type { LoginIdentity } from '../../login/loginIdentity'
+
+const {
+	headerTitle = 'Login',
+	headerSubtitle,
+	identity,
+	authenticate,
+} = defineProps<{
 	headerTitle?: string
 	headerSubtitle?: string
+	identity: LoginIdentity
+	authenticate: (identity: string, password: string) => Promise<void>
 }>()
 
-const emit = defineEmits(['loginFailed', 'loginSuccess'])
+const emit = defineEmits<{
+	loginFailed: []
+	loginSuccess: []
+}>()
 
-const email = ref('')
+defineSlots<{
+	alternateSignIn?: () => unknown
+}>()
+
+const identityValue = ref('')
 const password = ref('')
-
 const isLoading = ref(false)
-const loginFailed = ref(false)
 
-function onSubmit(event: Event) {
+async function onSubmit(event: Event) {
 	event.preventDefault()
 	isLoading.value = true
-
-	// TODO: handle submit logic, handle failure
-
-	if (loginFailed.value) {
-		isLoading.value = false
+	try {
+		await authenticate(identityValue.value, password.value)
+		emit('loginSuccess')
+	} catch {
 		emit('loginFailed')
-		return
+	} finally {
+		isLoading.value = false
 	}
-
-	isLoading.value = false
-	emit('loginSuccess')
 }
 </script>
 

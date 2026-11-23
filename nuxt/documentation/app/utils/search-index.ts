@@ -243,7 +243,11 @@ export const searchIndex: SearchEntry[] = [
 		description: "A loading-state placeholder shown while a form's data is being fetched or resolved",
 		url: '/components/form-loading',
 	},
-	{ title: 'Login', description: 'A standalone email/password login form', url: '/components/login' },
+	{
+		title: 'Login',
+		description: 'Password sign-in with authenticate callback; optional alternateSignIn slot for SSO or magic link',
+		url: '/components/login',
+	},
 	{
 		title: 'Collapse Button',
 		description: "The rotating toggle glyph used by AFieldset's collapsible fieldsets",

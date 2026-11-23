@@ -1,21 +1,21 @@
 ---
 title: Login
-description: A standalone email/password login form.
+description: Username or email password sign-in with an optional alternateSignIn slot.
 ---
 
 # Login
 
-`Login` is a self-contained email/password sign-in form — a standalone utility component, not a schema-driven [AForm](/reference/aform) field. It manages its own `email`/`password` input state internally and emits `loginSuccess` or `loginFailed` when the form is submitted; wiring those events to a real authentication call is left to the consuming application.
+`Login` is a self-contained identity/password sign-in form — a standalone utility component, not a schema-driven [AForm](/reference/aform) field. It manages credentials internally, awaits a required `authenticate` callback on submit, and emits `loginSuccess` or `loginFailed`. Use `loginIdentities` or `useLoginPreset` from the [aform API reference](/reference/aform) for email vs username field wiring; Orpin/FAB uses the `username` preset.
 
 ## Import
 
 ```ts
-import { Login } from '@stonecrop/aform'
+import { Login, loginIdentities, useLoginPreset } from '@stonecrop/aform'
 ```
 
 ## Basic
 
-This demo listens for `loginSuccess`/`loginFailed` and prints whichever one fired below — it intercepts the submit outcome purely for demonstration purposes and does not perform any real authentication. Per the component's current source, the internal failure path is never triggered, so submitting currently always emits `loginSuccess` regardless of what's entered. Type any email and password and click **Login** to see it fire.
+`useLoginPreset`, `authenticate`, and the success/failed emits. No slot.
 
 ::demo-panel
 :::client-only
@@ -25,36 +25,59 @@ This demo listens for `loginSuccess`/`loginFailed` and prints whichever one fire
 #code
 ```vue
 <script setup lang="ts">
-import { ref } from 'vue'
-import { Login } from '@stonecrop/aform'
+import { Login, useLoginPreset } from '@stonecrop/aform'
 
-const lastEvent = ref<Record<string, string> | null>(null)
+const { identity, headerSubtitle } = useLoginPreset('username')
 
-function onLoginSuccess() {
-	lastEvent.value = { event: 'loginSuccess', at: new Date().toLocaleTimeString() }
-}
-
-function onLoginFailed() {
-	lastEvent.value = { event: 'loginFailed', at: new Date().toLocaleTimeString() }
+async function authenticate(username: string, password: string) {
+	await loginMutation(username, password)
 }
 </script>
 
 <template>
-	<div class="stonecrop-demo">
-		<Login @login-success="onLoginSuccess" @login-failed="onLoginFailed" />
-		<pre v-if="lastEvent" class="stonecrop-demo__state">{{ lastEvent }}</pre>
-	</div>
+	<Login
+		:identity="identity"
+		:header-subtitle="headerSubtitle"
+		:authenticate="authenticate"
+		@login-success="onSignedIn"
+		@login-failed="onSignInFailed" />
 </template>
-
-<style scoped>
-.stonecrop-demo__state {
-	margin: 1.5rem 0 0;
-	font-size: 0.85em;
-	white-space: pre-wrap;
-}
-</style>
 ```
 ::
+
+## Alternate sign-in slot
+
+Optional `#alternateSignIn` content renders below the submit button—for magic link, SAML, OIDC, or other host-owned flows. `Login` does not implement those paths; the slot is only a layout hook.
+
+::demo-panel
+:::client-only
+:login-alternate-sign-in-demo
+:::
+
+#code
+```vue
+<Login
+	:identity="identity"
+	:header-subtitle="headerSubtitle"
+	:authenticate="authenticate">
+	<template #alternateSignIn>
+		<button type="button" class="btn" @click="sendMagicLink">Email me a magic link</button>
+		<button type="button" class="btn" @click="redirectToSso">Sign in with SSO</button>
+	</template>
+</Login>
+```
+::
+
+Use `type="button"` on controls inside the `<form>` so clicks do not submit the password form.
+
+## Presets
+
+```ts
+useLoginPreset('username') // Orpin / FAB
+useLoginPreset('email')
+```
+
+Or pass a custom `LoginIdentity` object if neither preset fits.
 
 ## API Reference
 
@@ -64,8 +87,20 @@ function onLoginFailed() {
 ---
 headers: ['Name', 'Type', 'Default', 'Description']
 rows:
+  - ['`identity`', '`LoginIdentity`', '—', 'Required. Label, input type, autocomplete, name, and optional placeholder for the identity field.']
+  - ['`authenticate`', '`(identity: string, password: string) => Promise<void>`', '—', 'Required. Reject the promise to emit `loginFailed`.']
   - ['`headerTitle`', '`string`', "`'Login'`", 'Heading text above the form.']
-  - ['`headerSubtitle`', '`string`', "`'Enter your email and password to login'`", 'Subheading text below the title.']
+  - ['`headerSubtitle`', '`string`', '—', 'Optional subheading; `useLoginPreset` supplies copy per preset.']
+---
+::
+
+### Slots
+
+::api-data-table
+---
+headers: ['Name', 'Description']
+rows:
+  - ['`alternateSignIn`', 'Rendered below the submit button. Host-owned secondary sign-in controls.']
 ---
 ::
 
@@ -75,15 +110,15 @@ rows:
 ---
 headers: ['Name', 'Payload', 'Description']
 rows:
-  - ['`loginSuccess`', 'none', "Emitted on submit whenever the (currently unimplemented) failure path isn't taken — in the current source this fires on every submit."]
-  - ['`loginFailed`', 'none', "Emitted on submit if the internal `loginFailed` flag is set — nothing in the current source ever sets it, so this never fires yet."]
+  - ['`loginSuccess`', 'none', 'Emitted after `authenticate` resolves.']
+  - ['`loginFailed`', 'none', 'Emitted after `authenticate` rejects.']
 ---
 ::
 
-Neither `email` nor `password` is exposed to the parent — they're local `ref`s inside `Login`, and both emits above carry no payload.
+Neither identity nor password is exposed to the parent as props or v-models; only `authenticate` receives them on submit.
 
 ## Accessibility
 
-The email and password `<input>` fields are associated with their `<label>`s via matching `id`/`for` pairs, so screen readers announce them correctly on focus. The submit button exposes an `isLoading` state that swaps in a spinning icon and disables the button while true, and is otherwise disabled until both fields are non-empty; the "Forgot password?" control renders as a plain `<button>` with no wired behavior yet.
+Identity and password inputs use matching `id`/`for` on labels. Submit is disabled until both fields are non-empty and while `authenticate` is in flight (spinner + disabled state).
 
 Source: [`aform/src/components/utilities/Login.vue`](https://github.com/agritheory/stonecrop/blob/development/aform/src/components/utilities/Login.vue)

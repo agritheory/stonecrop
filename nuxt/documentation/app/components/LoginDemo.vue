@@ -1,22 +1,32 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { Login } from '@stonecrop/aform'
+import { Login, useLoginPreset } from '@stonecrop/aform'
 
-const lastEvent = ref<Record<string, string> | null>(null)
+const { identity, headerSubtitle } = useLoginPreset('username')
 
-function onLoginSuccess() {
-	lastEvent.value = { event: 'loginSuccess', at: new Date().toLocaleTimeString() }
-}
+const lastEvent = ref<string | null>(null)
 
-function onLoginFailed() {
-	lastEvent.value = { event: 'loginFailed', at: new Date().toLocaleTimeString() }
+async function authenticate(username: string, password: string) {
+	await new Promise<void>(resolve => setTimeout(resolve, 300))
+	if (password !== 'password') {
+		throw new Error('invalid credentials')
+	}
+	void username
 }
 </script>
 
 <template>
 	<div class="stonecrop-demo">
-		<Login @login-success="onLoginSuccess" @login-failed="onLoginFailed" />
-		<pre v-if="lastEvent" class="stonecrop-demo__state">{{ lastEvent }}</pre>
+		<Login
+			:identity="identity"
+			:header-subtitle="headerSubtitle"
+			:authenticate="authenticate"
+			@login-success="lastEvent = 'loginSuccess'"
+			@login-failed="lastEvent = 'loginFailed'" />
+		<p v-if="lastEvent" class="stonecrop-demo__state">
+			Last emit: <strong>{{ lastEvent }}</strong>
+		</p>
+		<p class="stonecrop-demo__hint">Password <code>password</code> succeeds; anything else fails.</p>
 	</div>
 </template>
 
@@ -24,6 +34,10 @@ function onLoginFailed() {
 .stonecrop-demo__state {
 	margin: 1.5rem 0 0;
 	font-size: 0.85em;
-	white-space: pre-wrap;
+}
+.stonecrop-demo__hint {
+	margin: 0.75rem 0 0;
+	font-size: 0.85em;
+	opacity: 0.85;
 }
 </style>

@@ -29,7 +29,7 @@ Interactive documentation for individual Stonecrop components — live demos alo
 - [Currency](./currency) — `ACurrencyInput`, a currency amount input with base-currency conversion
 - [Quantity Input](./quantity-input) — `AQuantityInput`, a quantity input with unit-of-measure conversion
 - [Semver Input](./semver) — `ASemverInput`, a text field that only takes a semantic version
-- [Login](./login) — `Login`, a standalone email/password sign-in form
+- [Login](./login) — `Login`, username/password sign-in with optional `alternateSignIn` slot
 - [Collapse Button](./collapse-button) — `CollapseButton`, the internal toggle glyph used by Fieldset
 
 ## Tables
