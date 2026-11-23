@@ -47,11 +47,7 @@
 						:data="row"
 						:schema="tableExpansionSchema(componentObj)"
 						:mode="resolvedMode(componentObj)"
-						v-on="
-							listenersWhenHeard((val: Record<string, unknown>) =>
-								updateTableRow(componentObj.fieldname, rowIndex, val)
-							)
-						" />
+						v-on="listenersWhenHeard(() => updateTableRow(componentObj.fieldname, rowIndex, row))" />
 				</template>
 			</component>
 		</template>
@@ -64,6 +60,7 @@ import { computed, watchEffect, watch, ref, useId } from 'vue'
 import ABadgeField from './form/ABadgeField.vue'
 import type { ResolvedField, ResolvedLink, ResolvedFieldset, ResolvedTable } from '../types'
 import { wordErrors } from '../utils/fieldErrors'
+import { changedFields, latestRecord, noteReported, reportedChanges } from '../utils/reportedRecords'
 import { flattenFields, partsPatch, readParts } from '@stonecrop/schema'
 import type { ColumnSchema, InteractionMode } from '@stonecrop/schema'
 
@@ -99,9 +96,14 @@ const isFieldsetSection = (componentObj: ResolvedField): componentObj is Resolve
 	componentObj.kind === 'fieldset' && hasChildSchema(componentObj)
 
 // An edit, reported as a new record. `data` is the caller's, often the store's own object, so it is
-// never written into: an edit reaches it only through the caller's handling of `update:data`.
+// never written into: an edit reaches it only through the caller's handling of `update:data`. The caller
+// hands the new record back only on the next render, so the changes reported before then are laid over
+// `data` with each edit: several edits made at once, as a script filling several fields makes them, each
+// keep the ones before, and a value the caller wrote into `data` itself is kept too.
 const applyChanges = (changes: Record<string, any>) => {
-	if (dataModel.value) dataModel.value = { ...dataModel.value, ...changes }
+	const handed = dataModel.value
+	if (!handed) return
+	dataModel.value = noteReported(handed, changes)
 }
 
 // Reactive nested data refs for two-way binding with the forms of linked records
@@ -129,8 +131,11 @@ const updateNestedData = (fieldname: string, val: any) => {
 	applyChanges({ [fieldname]: val })
 }
 
-// A fieldset's edits. Its form holds this record, so its edits are this record's.
-const updateFieldsetData = (val: Record<string, any>) => applyChanges(val)
+// A fieldset's edits. Its form holds this record, so its edits are this record's. It reports the whole record,
+// so only the fields it changed from the record it was handed are taken: the rest may be stale.
+const updateFieldsetData = (val: Record<string, any>) => {
+	if (dataModel.value) applyChanges(changedFields(val, dataModel.value))
+}
 
 const isListExpansionTable = (componentObj: ResolvedField): componentObj is ResolvedTable =>
 	componentObj.kind === 'table' && componentObj.config?.view === 'list-expansion'
@@ -142,9 +147,14 @@ const tableExpansionSchema = (table: ResolvedTable): ResolvedField[] =>
 
 const updateTableRows = (fieldname: string, rows: Record<string, unknown>[]) => applyChanges({ [fieldname]: rows })
 
-const updateTableRow = (fieldname: string, rowIndex: number, val: Record<string, unknown>) => {
-	const rows = Array.isArray(dataModel.value?.[fieldname]) ? [...dataModel.value[fieldname]] : []
-	rows[rowIndex] = { ...rows[rowIndex], ...val }
+// An expanded row's edit. Its form reports the whole row, so only the changes it reported for the row it was
+// handed are laid over the row as last reported: a field the host has since filled in, such as a Price it
+// fills when the SKU changes, keeps that value, and a field set back to its handed value, such as a SKU
+// cleared and retyped in one go, keeps the value it was set back to.
+const updateTableRow = (fieldname: string, rowIndex: number, handedRow: Record<string, unknown>) => {
+	const current = dataModel.value ? latestRecord(dataModel.value) : undefined
+	const rows = Array.isArray(current?.[fieldname]) ? [...current[fieldname]] : []
+	rows[rowIndex] = { ...rows[rowIndex], ...reportedChanges(handedRow) }
 	updateTableRows(fieldname, rows)
 }
 
@@ -264,6 +274,8 @@ watchEffect(() => {
 					const parts = fieldParts(schema[index])
 					const fieldname = schema[index].fieldname
 					if (parts && dataModel.value) {
+						// Compared with the record the component's value was read from, so only the parts it
+						// changed are written: a part another field changed since stays as that field left it.
 						applyChanges(partsPatch(parts, dataModel.value, newValue))
 					} else if (fieldname) {
 						applyChanges({ [fieldname]: newValue })
