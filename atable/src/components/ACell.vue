@@ -80,19 +80,18 @@ const currentData = ref('')
 const cellModified = ref(false)
 const tupleCellActive = ref(false)
 
-const column = store.columns[colIndex]
+// Read from the store each time, not once when drawn: the host can replace a column while it is shown (a form
+// turning read-only takes away `edit`, or a column is added, hidden or reordered), and the cell follows.
+const column = computed(() => store.columns[colIndex])
 const row = store.rows[rowIndex]
-
-const textAlign = column.align || 'center'
-const cellWidth = column.width || '40ch'
 
 const displayValue = computed(() => store.getCellDisplayValue(colIndex, rowIndex))
 
 const resolvedText = ref<string | null>(null)
 
 const tupleCategory = computed((): 'quantity' | 'currency' | undefined => {
-	if (column.cellComponent) return undefined
-	const category = componentCategory(column.component)
+	if (column.value.cellComponent) return undefined
+	const category = componentCategory(column.value.component)
 	if (category === 'quantity' || category === 'currency') return category
 	return undefined
 })
@@ -101,8 +100,8 @@ const tupleCategory = computed((): 'quantity' | 'currency' | undefined => {
 // or Enter is pressed. Until then the cell holds the text as typed. `options.arithmetic: false` turns it off.
 const arithmeticCell = computed(
 	() =>
-		componentCategory(column.component) === 'number' &&
-		!(column.options && !Array.isArray(column.options) && column.options.arithmetic === false)
+		componentCategory(column.value.component) === 'number' &&
+		!(column.value.options && !Array.isArray(column.value.options) && column.value.options.arithmetic === false)
 )
 
 // Typing into a contenteditable cell can replace the rendered span with bare text nodes, and Vue patches only the
@@ -120,19 +119,19 @@ const arithmetic = useArithmeticInput({
 	},
 	// A column with a fixed scale says so with `options.precision`: at 2, `10/3` is saved as 3.33.
 	round: value =>
-		column.options && !Array.isArray(column.options) && typeof column.options.precision === 'number'
-			? roundToPrecision(value, column.options.precision)
+		column.value.options && !Array.isArray(column.value.options) && typeof column.value.options.precision === 'number'
+			? roundToPrecision(value, column.value.options.precision)
 			: value,
 	live: false,
 	enabled: () => false,
 })
 
-const tupleInputId = computed(() => `atable-${String(rowIndex)}-${String(colIndex)}-${column.name}`)
+const tupleInputId = computed(() => `atable-${String(rowIndex)}-${String(colIndex)}-${column.value.name}`)
 
 // A link cell shows the name of the link it holds now, so it follows the cell's data, and a name that arrives
 // for a link it no longer holds is dropped.
 onMounted(() => {
-	const linkDoctype = column.linkDoctype
+	const linkDoctype = column.value.linkDoctype
 	if (!linkDoctype) return
 
 	watch(
@@ -167,34 +166,36 @@ onMounted(() => {
 const renderedValue = computed(() => resolvedText.value ?? displayValue.value)
 
 const badgeFromFormat = computed(() => {
-	if (column.cellComponent) return undefined
+	if (column.value.cellComponent) return undefined
 	const value = renderedValue.value
 	return isBadgeDescriptor(value) ? value : undefined
 })
 
 const badgeFromOptions = computed(() => {
-	if (column.cellComponent || badgeFromFormat.value) return undefined
-	if (!hasBadgeOptions(column.options)) return undefined
+	if (column.value.cellComponent || badgeFromFormat.value) return undefined
+	if (!hasBadgeOptions(column.value.options)) return undefined
 	return {
 		value: store.getCellData(colIndex, rowIndex),
-		options: column.options,
+		options: column.value.options,
 		presentation: 'cell-fill' as const,
 	}
 })
 
 const usesBadgeDisplay = computed(
-	() => !!column.cellComponent || badgeFromFormat.value !== undefined || hasBadgeOptions(column.options)
+	() => !!column.value.cellComponent || badgeFromFormat.value !== undefined || hasBadgeOptions(column.value.options)
 )
 
 // A rich-text cell shows its document's plain text. Typing there would replace the document with a string, so the
 // cell is not editable: the document is edited in a form, through AEditor.
-const isRichText = componentCategory(column.component) === 'richtext'
+const isRichText = computed(() => componentCategory(column.value.component) === 'richtext')
 
-const isContentEditable = computed(() => column.edit && !usesBadgeDisplay.value && !tupleCategory.value && !isRichText)
+const isContentEditable = computed(
+	() => column.value.edit && !usesBadgeDisplay.value && !tupleCategory.value && !isRichText.value
+)
 
 const cellComponentBindings = computed(() => {
-	const props = { ...column.cellComponentProps }
-	if (column.cellComponent !== 'ABadge') {
+	const props = { ...column.value.cellComponentProps }
+	if (column.value.cellComponent !== 'ABadge') {
 		// The row's position and the table stay reachable, so a cell that acts on its row (a link that opens the
 		// row's record) can tell which row it is in.
 		return { store, rowIndex, colIndex, ...props, value: renderedValue.value }
@@ -204,7 +205,7 @@ const cellComponentBindings = computed(() => {
 	}
 	return {
 		presentation: 'cell-fill' as const,
-		options: column.options,
+		options: column.value.options,
 		...props,
 		value: store.getCellData(colIndex, rowIndex),
 	}
@@ -213,7 +214,7 @@ const cellComponentBindings = computed(() => {
 // A rich-text cell's default text is the document's plain text, with its entities decoded, so text typed as
 // `<img …>` reads back as a tag. It is always shown as text; only a column's own `format` can return HTML.
 const isHtmlValue = computed(() => {
-	if (isRichText && !column.format) return false
+	if (isRichText.value && !column.value.format) return false
 	return typeof renderedValue.value === 'string' ? isHtmlString(renderedValue.value) : false
 })
 
@@ -222,8 +223,8 @@ const rowIndent = computed(() => store.display[rowIndex]?.indent)
 
 const cellStyle = computed((): CSSProperties => {
 	return {
-		textAlign,
-		width: cellWidth,
+		textAlign: column.value.align || 'center',
+		width: column.value.width || '40ch',
 		fontWeight: !cellModified.value ? 'inherit' : 'bold',
 		paddingLeft: getIndent(colIndex, rowIndent.value),
 	}
@@ -234,13 +235,13 @@ const cellClasses = computed(() => {
 		'sticky-column': pinned,
 		'cell-modified': cellModified.value,
 		'atable-cell--badge-fill': usesBadgeDisplay.value,
-		'atable-cell--tuple': !!tupleCategory.value && !!column.edit,
+		'atable-cell--tuple': !!tupleCategory.value && !!column.value.edit,
 		'atable-cell--tuple-active': tupleCellActive.value,
 	}
 })
 
 const onCellClick = () => {
-	if (tupleCategory.value && column.edit) {
+	if (tupleCategory.value && column.value.edit) {
 		tupleCellActive.value = true
 		void nextTick(() => tupleEditor.value?.focusInput())
 		return
@@ -250,18 +251,18 @@ const onCellClick = () => {
 }
 
 const showModal = () => {
-	if (column.mask) {
+	if (column.value.mask) {
 		// TODO: add masking to cell values
 	}
 
 	const cell = cellRef.value
-	if (!column.modalComponent || !cell) return
+	if (!column.value.modalComponent || !cell) return
 
 	const { left, bottom, width, height } = useElementBounding(cellRef)
 	const component =
-		typeof column.modalComponent === 'function'
-			? column.modalComponent({ table: store.table, row, column })
-			: column.modalComponent
+		typeof column.value.modalComponent === 'function'
+			? column.value.modalComponent({ table: store.table, row, column: column.value })
+			: column.value.modalComponent
 
 	store.openCellShell(
 		colIndex,
@@ -269,7 +270,7 @@ const showModal = () => {
 		cell,
 		{ left: left.value, bottom: bottom.value, width: width.value, height: height.value },
 		component,
-		column.modalComponentExtraProps ?? {}
+		column.value.modalComponentExtraProps ?? {}
 	)
 }
 
@@ -299,7 +300,7 @@ if (addNavigation) {
 }
 
 const selectAllText = () => {
-	if (cellRef.value && column.edit && isContentEditable.value) {
+	if (cellRef.value && column.value.edit && isContentEditable.value) {
 		const selection = window.getSelection()
 		if (selection) {
 			try {
@@ -317,7 +318,7 @@ const selectAllText = () => {
 }
 
 const onFocus = () => {
-	if (tupleCategory.value && column.edit) {
+	if (tupleCategory.value && column.value.edit) {
 		tupleCellActive.value = true
 		void nextTick(() => tupleEditor.value?.focusInput())
 		return
@@ -404,7 +405,7 @@ const cellTextWith = (inserted: string): string | undefined => {
 
 const onFocusOut = (event: FocusEvent) => {
 	commitArithmetic()
-	if (!tupleCategory.value || !column.edit || !tupleCellActive.value) return
+	if (!tupleCategory.value || !column.value.edit || !tupleCellActive.value) return
 
 	const related = event.relatedTarget
 	const cell = cellRef.value
@@ -511,7 +512,7 @@ const updateCellData = (payload: Event) => {
 
 	currentData.value = target.textContent!
 
-	if (column.format) {
+	if (column.value.format) {
 		cellModified.value = target.textContent !== store.getFormattedValue(colIndex, rowIndex, originalData)
 		store.setCellText(colIndex, rowIndex, target.textContent)
 	} else {

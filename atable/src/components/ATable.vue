@@ -307,31 +307,15 @@ watch(
 	}
 )
 
-// Each cell holds its own column object, so a column that keeps its place is updated where it is,
-// not replaced: a replaced object would leave the cell drawing the old one. A width the user has
-// dragged is kept unless the schema's own width changed.
+// Cells read their column from the store, so the new columns simply replace the old. A width the
+// user has dragged is kept unless the schema's own width changed.
 const syncSchemaColumns = (next: TableColumn[], previous: TableColumn[]) => {
-	const current = store.columns
 	for (const column of next) {
 		const before = previous.find(prior => prior.name === column.name)
-		const shown = current.find(held => held.name === column.name)
+		const shown = store.columns.find(held => held.name === column.name)
 		if (before && shown && before.width === column.width) column.width = shown.width
 	}
-
-	const sameColumns =
-		current.length === next.length && next.every((column, index) => column.name === current[index].name)
-	if (!sameColumns) {
-		store.columns = next
-		return
-	}
-
-	next.forEach((column, index) => {
-		const held = current[index] as Record<string, unknown>
-		for (const key of Object.keys(held)) {
-			if (!(key in column)) delete held[key]
-		}
-		Object.assign(held, column)
-	})
+	store.columns = next
 }
 
 onMounted(() => {

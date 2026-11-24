@@ -79,6 +79,40 @@ describe('ATable editability follows its host', { tags: ['component'] }, () => {
 		await wrapper.setProps({ schema: schema(false) })
 		expect(wrapper.vm.store.columns[0].width).toBe('300px')
 		expect(wrapper.vm.store.columns.every(column => !column.edit)).toBe(true)
+		// The cell, not just the store: a drag replaces the column object, and the cell must still lock.
+		expect(wrapper.find('td.atable-cell[data-colindex="0"]').attributes('contenteditable')).toBe('false')
+	})
+
+	it('locks its cells after a column was added while shown', async () => {
+		const withNote = (edit: boolean): ColumnSchema[] => [
+			...schema(edit),
+			{ fieldname: 'note', component: 'ATextInput', label: 'Note', width: '20ch', edit },
+		]
+		const wrapper = mount(ATable, {
+			props: { rows: [{ item: 'Bolt', qty: 3, note: 'x' }], schema: schema(true), config: { view: 'list' } },
+		})
+		// Adding a column replaces the store's columns rather than updating them in place.
+		await wrapper.setProps({ schema: withNote(true) })
+		const cells = () => wrapper.findAll('td.atable-cell')
+		expect(cells()).toHaveLength(3)
+
+		await wrapper.setProps({ schema: withNote(false) })
+		expect(cells().map(cell => cell.attributes('contenteditable'))).toEqual(['false', 'false', 'false'])
+	})
+
+	it('locks its cells when the host hands over read-only columns', async () => {
+		const columns = (edit: boolean) => [
+			{ name: 'item', label: 'Item', edit },
+			{ name: 'qty', label: 'Qty', edit },
+		]
+		const wrapper = mount(ATable, {
+			props: { rows: [{ item: 'Bolt', qty: 3 }], columns: columns(true), config: { view: 'list' } },
+		})
+		const cell = () => wrapper.find('td.atable-cell[data-colindex="0"]')
+		expect(cell().attributes('contenteditable')).toBe('true')
+
+		await wrapper.setProps({ columns: columns(false) })
+		expect(cell().attributes('contenteditable')).toBe('false')
 	})
 
 	it('leaves columns handed over through the columns model alone', async () => {
