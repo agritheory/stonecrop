@@ -104,6 +104,8 @@ describe('login component', { tags: ['component'] }, () => {
 		await wrapper.vm.$nextTick()
 
 		expect(wrapper.find('.loading-icon').exists()).toBe(true)
+		expect(wrapper.find('.loading-icon').attributes('aria-hidden')).toBe('true')
+		expect(wrapper.find('button[type="submit"]').text()).toBe('Login')
 		expect(wrapper.find('button[type="submit"]').attributes('disabled')).toBeDefined()
 
 		resolveAuth()

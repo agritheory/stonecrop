@@ -30,6 +30,7 @@
 							<label id="login-password" for="password" class="aform_field-label">Password</label>
 							<input
 								id="password"
+								ref="passwordInput"
 								v-model="password"
 								class="aform_input-field"
 								name="password"
@@ -39,7 +40,7 @@
 						</div>
 
 						<button type="submit" class="btn" :disabled="isLoading || !identityValue || !password">
-							<span v-if="isLoading" class="material-symbols-outlined loading-icon">progress_activity</span>
+							<span v-if="isLoading" class="loading-icon" aria-hidden="true" />
 							<span id="login-form-button">Login</span>
 						</button>
 
@@ -52,7 +53,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { nextTick, ref, useTemplateRef } from 'vue'
 
 import type { LoginIdentity } from '../../login/loginIdentity'
 
@@ -80,6 +81,7 @@ defineSlots<{
 const identityValue = ref('')
 const password = ref('')
 const isLoading = ref(false)
+const passwordInput = useTemplateRef<HTMLInputElement>('passwordInput')
 
 async function onSubmit(event: Event) {
 	event.preventDefault()
@@ -88,6 +90,12 @@ async function onSubmit(event: Event) {
 		await authenticate(identityValue.value, password.value)
 		emit('loginSuccess')
 	} catch {
+		// The fields are disabled while signing in, which takes the cursor out of them: put it back in the password,
+		// selected, so it can be retyped at once. Before the emit, so a host can still move it elsewhere.
+		isLoading.value = false
+		await nextTick()
+		passwordInput.value?.focus()
+		passwordInput.value?.select()
 		emit('loginFailed')
 	} finally {
 		isLoading.value = false
@@ -168,14 +176,18 @@ async function onSubmit(event: Event) {
 .disabled {
 	opacity: 0.5;
 }
+/* Drawn in CSS: an icon font would show its ligature's name, "progress_activity", wherever the host hasn't loaded it. */
 .loading-icon {
-	animation: spin 1s linear infinite forwards;
+	animation: spin 1s linear infinite;
 	display: inline-block;
-	margin-right: 0.2rem;
-	line-height: 0;
-	font-size: 1rem;
-	position: relative;
-	top: 0.2rem;
+	box-sizing: border-box;
+	width: 0.75rem;
+	height: 0.75rem;
+	margin-right: 0.4rem;
+	vertical-align: -0.05rem;
+	border: 2px solid currentColor;
+	border-right-color: transparent;
+	border-radius: 50%;
 }
 
 /* ANIMATION */
