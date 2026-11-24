@@ -1,5 +1,266 @@
 # Change Log - @stonecrop/desktop
 
+## 0.62.8
+
+### Patch Changes
+
+- Updated dependencies [630f170]
+  - @stonecrop/aform@0.62.8
+  - @stonecrop/stonecrop@0.62.8
+  - @stonecrop/schema@0.62.8
+  - @stonecrop/themes@0.62.8
+
+## 0.62.7
+
+### Patch Changes
+
+- Updated dependencies [aed2d0d]
+  - @stonecrop/stonecrop@0.62.7
+  - @stonecrop/aform@0.62.7
+  - @stonecrop/schema@0.62.7
+  - @stonecrop/themes@0.62.7
+
+## 0.62.6
+
+### Patch Changes
+
+- Updated dependencies [7fc5400]
+  - @stonecrop/aform@0.62.6
+  - @stonecrop/stonecrop@0.62.6
+  - @stonecrop/schema@0.62.6
+  - @stonecrop/themes@0.62.6
+
+## 0.62.5
+
+### Patch Changes
+
+- Updated dependencies [f49ef15]
+  - @stonecrop/aform@0.62.5
+  - @stonecrop/stonecrop@0.62.5
+  - @stonecrop/schema@0.62.5
+  - @stonecrop/themes@0.62.5
+
+## 0.62.4
+
+### Patch Changes
+
+- 624a7d8: A column's `cellComponent` is now drawn inside the table cell and receives the cell's value as `value` and the column's `cellComponentProps`, as the schema says (#510). Before, ATable drew the component in place of the cell and passed it neither, so a custom status chip showed up empty and uncoloured. The component also gets the table's `store` and the cell's `rowIndex` and `colIndex`, so a cell that acts on its row can still find it. Desktop's list link no longer draws its own cell.
+- Updated dependencies [624a7d8]
+  - @stonecrop/schema@0.62.4
+  - @stonecrop/aform@0.62.4
+  - @stonecrop/stonecrop@0.62.4
+  - @stonecrop/themes@0.62.4
+
+## 0.62.3
+
+### Patch Changes
+
+- @stonecrop/aform@0.62.3
+  - @stonecrop/stonecrop@0.62.3
+  - @stonecrop/schema@0.62.3
+  - @stonecrop/themes@0.62.3
+
+## 0.62.2
+
+### Patch Changes
+
+- Updated dependencies [6ad5ee5]
+  - @stonecrop/aform@0.62.2
+  - @stonecrop/stonecrop@0.62.2
+  - @stonecrop/schema@0.62.2
+  - @stonecrop/themes@0.62.2
+
+## 0.62.1
+
+### Patch Changes
+
+- @stonecrop/aform@0.62.1
+  - @stonecrop/schema@0.62.1
+  - @stonecrop/stonecrop@0.62.1
+  - @stonecrop/themes@0.62.1
+
+## 0.62.0
+
+### Patch Changes
+
+- Updated dependencies [3635b61]
+  - @stonecrop/schema@0.62.0
+  - @stonecrop/aform@0.62.0
+  - @stonecrop/stonecrop@0.62.0
+  - @stonecrop/themes@0.62.0
+
+## 0.61.0
+
+### Patch Changes
+
+- Updated dependencies [3c3539d]
+  - @stonecrop/schema@0.61.0
+  - @stonecrop/aform@0.61.0
+  - @stonecrop/stonecrop@0.61.0
+  - @stonecrop/themes@0.61.0
+
+## 0.60.2
+
+### Patch Changes
+
+- Updated dependencies [a8c9d8c]
+  - @stonecrop/aform@0.60.2
+  - @stonecrop/stonecrop@0.60.2
+  - @stonecrop/schema@0.60.2
+  - @stonecrop/themes@0.60.2
+
+## 0.60.1
+
+### Patch Changes
+
+- Updated dependencies [35ea6ea]
+  - @stonecrop/aform@0.60.1
+  - @stonecrop/schema@0.60.1
+  - @stonecrop/stonecrop@0.60.1
+  - @stonecrop/themes@0.60.1
+
+## 0.60.0
+
+### Patch Changes
+
+- Updated dependencies [aea0baf]
+- Updated dependencies [aea0baf]
+- Updated dependencies [aea0baf]
+  - @stonecrop/aform@0.60.0
+  - @stonecrop/stonecrop@0.60.0
+  - @stonecrop/schema@0.60.0
+  - @stonecrop/themes@0.60.0
+
+## 0.59.0
+
+### Patch Changes
+
+- @stonecrop/aform@0.59.0
+  - @stonecrop/schema@0.59.0
+  - @stonecrop/stonecrop@0.59.0
+  - @stonecrop/themes@0.59.0
+
+## 0.58.4
+
+### Patch Changes
+
+- Updated dependencies [07be796]
+  - @stonecrop/aform@0.58.4
+  - @stonecrop/stonecrop@0.58.4
+  - @stonecrop/schema@0.58.4
+  - @stonecrop/themes@0.58.4
+
+## 0.58.3
+
+### Patch Changes
+
+- Updated dependencies [44b7eb5]
+  - @stonecrop/aform@0.58.3
+  - @stonecrop/stonecrop@0.58.3
+  - @stonecrop/schema@0.58.3
+  - @stonecrop/themes@0.58.3
+
+## 0.58.2
+
+### Patch Changes
+
+- @stonecrop/aform@0.58.2
+  - @stonecrop/stonecrop@0.58.2
+  - @stonecrop/schema@0.58.2
+  - @stonecrop/themes@0.58.2
+
+## 0.58.1
+
+### Patch Changes
+
+- Updated dependencies [b46e712]
+  - @stonecrop/aform@0.58.1
+  - @stonecrop/stonecrop@0.58.1
+  - @stonecrop/schema@0.58.1
+  - @stonecrop/themes@0.58.1
+
+## 0.58.0
+
+### Patch Changes
+
+- Updated dependencies [246be00]
+  - @stonecrop/schema@0.58.0
+  - @stonecrop/aform@0.58.0
+  - @stonecrop/stonecrop@0.58.0
+  - @stonecrop/themes@0.58.0
+
+## 0.57.0
+
+### Patch Changes
+
+- Updated dependencies [e816b7b]
+  - @stonecrop/schema@0.57.0
+  - @stonecrop/aform@0.57.0
+  - @stonecrop/stonecrop@0.57.0
+  - @stonecrop/themes@0.57.0
+
+## 0.56.4
+
+### Patch Changes
+
+- Updated dependencies [e02c837]
+  - @stonecrop/schema@0.56.4
+  - @stonecrop/aform@0.56.4
+  - @stonecrop/stonecrop@0.56.4
+  - @stonecrop/themes@0.56.4
+
+## 0.56.3
+
+### Patch Changes
+
+- @stonecrop/aform@0.56.3
+  - @stonecrop/schema@0.56.3
+  - @stonecrop/stonecrop@0.56.3
+  - @stonecrop/themes@0.56.3
+
+## 0.56.2
+
+### Patch Changes
+
+- @stonecrop/aform@0.56.2
+  - @stonecrop/schema@0.56.2
+  - @stonecrop/stonecrop@0.56.2
+  - @stonecrop/themes@0.56.2
+
+## 0.56.1
+
+### Patch Changes
+
+- @stonecrop/aform@0.56.1
+  - @stonecrop/schema@0.56.1
+  - @stonecrop/stonecrop@0.56.1
+  - @stonecrop/themes@0.56.1
+
+## 0.56.0
+
+### Minor Changes
+
+- e331ffe: BREAKING: a list shows every action its doctype declares, one button each, and the command palette offers a list page's actions; where a list and its records share a doctype, pass the list's own as `hostActions` on list views, as the starter template does for New.
+- e435204: BREAKING: Desktop no longer adds a New Record button to lists or Create New to the command palette; an app offers New itself, declared on a list doctype or passed as `hostActions`.
+
+### Patch Changes
+
+- Updated dependencies [e331ffe]
+  - @stonecrop/stonecrop@0.56.0
+  - @stonecrop/aform@0.56.0
+  - @stonecrop/schema@0.56.0
+  - @stonecrop/themes@0.56.0
+
+## 0.55.2
+
+### Patch Changes
+
+- Updated dependencies [8fbae19]
+  - @stonecrop/stonecrop@0.55.2
+  - @stonecrop/aform@0.55.2
+  - @stonecrop/schema@0.55.2
+  - @stonecrop/themes@0.55.2
+
 ## 0.55.1
 
 ### Patch Changes

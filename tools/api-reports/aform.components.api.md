@@ -196,8 +196,13 @@ props: {
   defaultSeconds?: number \| undefined
   defaultMeridiem?: string \| undefined
   useSeconds?: boolean \| undefined
+  label?: string \| undefined
+  mode?: string \| undefined
+  uuid?: string \| undefined
+  modelValue?: string \| null \| undefined
 }
 emits: {
+  update:modelValue: [value: string \| null \| undefined]
   get-time: [{ hours: number; minutes: number; seconds: number; meridiem: string; militaryTime: number; source: "init" \| "user"; }]
 }
 slots: {}
@@ -344,10 +349,10 @@ props: {
   embedded?: boolean \| undefined
   placeholder?: string \| undefined
   ariaLabel?: string \| undefined
-  modelValue?: AFormLinkModelValue \| undefined
+  modelValue?: AFormLinkModelValue \| null \| undefined
 }
 emits: {
-  update:modelValue: [value: AFormLinkModelValue]
+  update:modelValue: [value: AFormLinkModelValue \| null]
 }
 slots: {
   option: { option: { [x: string]: any; id: string \| number; displayText?: string \| undefined; }; }

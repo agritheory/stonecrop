@@ -1,5 +1,283 @@
 # Change Log - @stonecrop/aform
 
+## 0.62.8
+
+### Patch Changes
+
+- 630f170: Fields filled in one go, as a script run from the browser console or a test that types into the page fills them, now all keep their new text (#559). Each edit was built on the record the form was last handed, which its host hands back only on the next render, so every field filled before then went back to its old value and only the last kept its text. This happened to text boxes, fields inside a fieldset, two amounts that share a currency and fields in expanded table rows. Each edit now lays the changes the form reported before the next render over the record it was handed, so the edits before it are kept, as is a value the host wrote into that record itself, such as a field it fills when another changes. An edit its host declined is not carried into an edit made after the form has re-rendered; an edit made before then, in the same go, still carries it. One case isn't covered yet: an amount that a script changes and then sets back to its old value in the same go keeps the value it was changed to.
+- @stonecrop/atable@0.62.8
+  - @stonecrop/schema@0.62.8
+  - @stonecrop/themes@0.62.8
+  - @stonecrop/utilities@0.62.8
+
+## 0.62.7
+
+### Patch Changes
+
+- @stonecrop/atable@0.62.7
+  - @stonecrop/schema@0.62.7
+  - @stonecrop/themes@0.62.7
+  - @stonecrop/utilities@0.62.7
+
+## 0.62.6
+
+### Patch Changes
+
+- 7fc5400: A dropdown, or a price's currency picker, now shows the results for what's in its box (#554). A search that asks a server could answer after a newer one, and its results replaced the newer list: typing "Eur" quickly could end with the list showing the results for "E". Each search's answer is now kept only while it is still the latest, and picking an option or closing the list drops any answer still on its way.
+  
+  While the list shows "Loading results...", ↓ and Enter have nothing to pick, so typing "Eur" and pressing ↓ Enter before it answers no longer picks from the previous search's results.
+- @stonecrop/atable@0.62.6
+  - @stonecrop/schema@0.62.6
+  - @stonecrop/themes@0.62.6
+  - @stonecrop/utilities@0.62.6
+
+## 0.62.5
+
+### Patch Changes
+
+- f49ef15: A field drawn with `ADateTimeInput` or `ABadge` now shows the value its record holds (#548).
+  
+  `ADateTimeInput` binds a time of day with `v-model`: it reads `HH:MM`, `HH:MM:SS` or Postgres' `HH:MM:SS.ffffff`, writes `HH:MM:SS` (`HH:MM` with `useSeconds` off), and takes `label`, `mode` and `uuid`. It writes only when someone changes the time. Bound to a record with no time, it shows empty boxes and writes nothing until someone types, and it empties its boxes when the record's time is cleared or another record comes in. Emptying any box of the record's time empties the field, which then holds null. Used without `v-model`, as inside `ADateSelection`, it starts at its default time as before.
+  
+  Crossing noon or midnight with an arrow key is reported once every box has wrapped, so Up at 11:59 AM reports 12:00 PM, never 12:60. This applies with or without `v-model`: inside `ADateSelection` the `get-time` event no longer carries a minute or second of 60.
+  
+  A form field declaring `component: 'ABadge'` is drawn through a wrapper that shows the record's value as a badge under the field's label, painted as the field's `format` returns it, else from its options, as ADropdown paints it. `ABadge` itself is unchanged: its `label` is the badge's text and it defaults to `cell-fill`.
+- @stonecrop/atable@0.62.5
+  - @stonecrop/schema@0.62.5
+  - @stonecrop/themes@0.62.5
+  - @stonecrop/utilities@0.62.5
+
+## 0.62.4
+
+### Patch Changes
+
+- Updated dependencies [624a7d8]
+  - @stonecrop/atable@0.62.4
+  - @stonecrop/schema@0.62.4
+  - @stonecrop/themes@0.62.4
+  - @stonecrop/utilities@0.62.4
+
+## 0.62.3
+
+### Patch Changes
+
+- Updated dependencies [ce11081]
+  - @stonecrop/atable@0.62.3
+  - @stonecrop/schema@0.62.3
+  - @stonecrop/themes@0.62.3
+  - @stonecrop/utilities@0.62.3
+
+## 0.62.2
+
+### Patch Changes
+
+- 6ad5ee5: A fieldset's indent no longer reaches forms nested deeper inside it. Only the form a fieldset or a linked record holds directly is indented, with its thinner left border. A table's expanded row inside a fieldset now starts its fields where it would outside one, instead of 8px further right.
+- @stonecrop/atable@0.62.2
+  - @stonecrop/schema@0.62.2
+  - @stonecrop/themes@0.62.2
+  - @stonecrop/utilities@0.62.2
+
+## 0.62.1
+
+### Patch Changes
+
+- @stonecrop/atable@0.62.1
+  - @stonecrop/schema@0.62.1
+  - @stonecrop/themes@0.62.1
+  - @stonecrop/utilities@0.62.1
+
+## 0.62.0
+
+### Patch Changes
+
+- 3635b61: An empty table now shows a full-width "No data" row (or "No matching records" when filters hide every row) once its rows have loaded. When the host sets `config.addable`, the row also offers "Add row", which adds a row through `store.addRow()` and emits `row:add`. Hosts can replace the row through the `empty` slot.
+  
+  A doctype's table field can turn this on with `addable` in its `TableViewConfig`; AForm turns it off while the form can't edit the record.
+  
+  The empty row, the pagination footer and the list-expansion panel now span the same `store.columnCount`, so the footer no longer stops one column short with row actions on. A table with a pinned column that starts out empty now sizes the pinned column from its first data row once one arrives.
+- Updated dependencies [3635b61]
+  - @stonecrop/atable@0.62.0
+  - @stonecrop/schema@0.62.0
+  - @stonecrop/themes@0.62.0
+  - @stonecrop/utilities@0.62.0
+
+## 0.61.0
+
+### Patch Changes
+
+- Updated dependencies [3c3539d]
+  - @stonecrop/schema@0.61.0
+  - @stonecrop/utilities@0.61.0
+  - @stonecrop/atable@0.61.0
+  - @stonecrop/themes@0.61.0
+
+## 0.60.2
+
+### Patch Changes
+
+- a8c9d8c: A link field now shows only the results of its latest search: with an async `filterFunction`, an earlier search that answered after a later one replaced the later one's matches, so typing a name quickly could leave the matches for its first few letters on screen. An older search also no longer clears the loading state while the latest is still pending.
+- @stonecrop/atable@0.60.2
+  - @stonecrop/schema@0.60.2
+  - @stonecrop/themes@0.60.2
+  - @stonecrop/utilities@0.60.2
+
+## 0.60.1
+
+### Patch Changes
+
+- 35ea6ea: A field's static `validation.errorMessage` is no longer shown as an error on its own. Before, a field with one showed it on every record, valid or not, and marked its input `aria-invalid`, so a "Validation message" set in DocBuilder sat on every record and a screen reader announced the field as invalid.
+  
+  The message now words an error a trigger reports without one: `setError(field)`, with the message left out, shows that field's own Validation message. AForm applies the wording before it routes errors, so a field bound to another field's part (totals sharing one currency) shows that part's own message, and fieldset children and link fields are covered too; a field component only shows the errors it is handed. `flattenFields` is generic, so it walks resolved fields as well as authored ones. DocBuilder's trigger editor shows `setError(field, message?)`, and the Validation message input says when it is shown.
+- Updated dependencies [35ea6ea]
+  - @stonecrop/schema@0.60.1
+  - @stonecrop/atable@0.60.1
+  - @stonecrop/themes@0.60.1
+  - @stonecrop/utilities@0.60.1
+
+## 0.60.0
+
+### Minor Changes
+
+- aea0baf: AForm reports an edit as a new record and no longer writes into the data it was given, so undo restores an edit made in the form's own expanded rows.
+- aea0baf: A form that nothing listens to for `update:data` shows its fields read-only, since an edit made in it would reach no one.
+
+### Patch Changes
+
+- aea0baf: A table inside a form in `read` or `display` mode no longer lets its editable columns' cells be edited.
+- Updated dependencies [aea0baf]
+  - @stonecrop/atable@0.60.0
+  - @stonecrop/schema@0.60.0
+  - @stonecrop/themes@0.60.0
+  - @stonecrop/utilities@0.60.0
+
+## 0.59.0
+
+### Patch Changes
+
+- @stonecrop/atable@0.59.0
+  - @stonecrop/schema@0.59.0
+  - @stonecrop/themes@0.59.0
+  - @stonecrop/utilities@0.59.0
+
+## 0.58.4
+
+### Patch Changes
+
+- 07be796: A link field now shows its `errors` (or a static `validation.errorMessage`) the way text inputs do, and marks its input `aria-invalid` with `aria-describedby` pointing at the message. Embedded link fields still leave the error to their host.
+- @stonecrop/atable@0.58.4
+  - @stonecrop/schema@0.58.4
+  - @stonecrop/themes@0.58.4
+  - @stonecrop/utilities@0.58.4
+
+## 0.58.3
+
+### Patch Changes
+
+- 44b7eb5: A link field now shows its open-record arrow only when it has a value, a `doctype` and an app-provided `aformLinkNavigator`. A link with no doctype (e.g. a unit stored by its name) no longer shows an arrow that does nothing but log a warning.
+- @stonecrop/atable@0.58.3
+  - @stonecrop/schema@0.58.3
+  - @stonecrop/themes@0.58.3
+  - @stonecrop/utilities@0.58.3
+
+## 0.58.2
+
+### Patch Changes
+
+- Updated dependencies [4a1a274]
+  - @stonecrop/atable@0.58.2
+  - @stonecrop/schema@0.58.2
+  - @stonecrop/themes@0.58.2
+  - @stonecrop/utilities@0.58.2
+
+## 0.58.1
+
+### Patch Changes
+
+- b46e712: A link field can now be emptied: clearing its text and leaving the field sets its value to `null`.
+- @stonecrop/atable@0.58.1
+  - @stonecrop/schema@0.58.1
+  - @stonecrop/themes@0.58.1
+  - @stonecrop/utilities@0.58.1
+
+## 0.58.0
+
+### Minor Changes
+
+- 246be00: A field rendered by an app's own component, a table among them, may declare `parts` naming the other fields of its record it reads. AForm hands them to the component from the record it edits, so they work before the record is first saved. Stonecrop's own single-value inputs and ATable still declare none.
+
+### Patch Changes
+
+- Updated dependencies [246be00]
+  - @stonecrop/schema@0.58.0
+  - @stonecrop/atable@0.58.0
+  - @stonecrop/themes@0.58.0
+  - @stonecrop/utilities@0.58.0
+
+## 0.57.0
+
+### Patch Changes
+
+- Updated dependencies [e816b7b]
+  - @stonecrop/schema@0.57.0
+  - @stonecrop/atable@0.57.0
+  - @stonecrop/themes@0.57.0
+  - @stonecrop/utilities@0.57.0
+
+## 0.56.4
+
+### Patch Changes
+
+- Updated dependencies [e02c837]
+  - @stonecrop/schema@0.56.4
+  - @stonecrop/atable@0.56.4
+  - @stonecrop/themes@0.56.4
+  - @stonecrop/utilities@0.56.4
+
+## 0.56.3
+
+### Patch Changes
+
+- @stonecrop/atable@0.56.3
+  - @stonecrop/schema@0.56.3
+  - @stonecrop/themes@0.56.3
+  - @stonecrop/utilities@0.56.3
+
+## 0.56.2
+
+### Patch Changes
+
+- @stonecrop/atable@0.56.2
+  - @stonecrop/schema@0.56.2
+  - @stonecrop/themes@0.56.2
+  - @stonecrop/utilities@0.56.2
+
+## 0.56.1
+
+### Patch Changes
+
+- @stonecrop/atable@0.56.1
+  - @stonecrop/schema@0.56.1
+  - @stonecrop/themes@0.56.1
+  - @stonecrop/utilities@0.56.1
+
+## 0.56.0
+
+### Patch Changes
+
+- @stonecrop/atable@0.56.0
+  - @stonecrop/schema@0.56.0
+  - @stonecrop/themes@0.56.0
+  - @stonecrop/utilities@0.56.0
+
+## 0.55.2
+
+### Patch Changes
+
+- @stonecrop/atable@0.55.2
+  - @stonecrop/schema@0.55.2
+  - @stonecrop/themes@0.55.2
+  - @stonecrop/utilities@0.55.2
+
 ## 0.55.1
 
 ### Patch Changes

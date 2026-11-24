@@ -126,7 +126,7 @@ import { selectChoices } from '@stonecrop/schema'
 import { vOnClickOutside } from '@vueuse/components'
 import { computed, inject, reactive, ref, useId, watch } from 'vue'
 
-import { fieldErrorA11y } from '../../composables/fieldErrorA11y'
+import { fieldErrorA11y, fieldErrorText } from '../../composables/fieldErrorA11y'
 import type { AFormLinkModelValue, AFormLinkValue, ComponentProps } from '../../types'
 import type { BadgeFormatFn } from '../../utils/badge'
 import { badgeInputAccentStyle, resolveFieldBadge } from '../../utils/badge'
@@ -148,7 +148,6 @@ const {
 	mode,
 	uuid,
 	errors,
-	validation = { errorMessage: '' },
 	embedded = false,
 	trigger = 'combobox',
 	listAnchor = 'field',
@@ -195,7 +194,7 @@ const inputAccentStyle = computed(() => badgeInputAccentStyle(badgeDescriptor.va
 
 const displayAccentStyle = computed(() => badgeInputAccentStyle(badgeDescriptor.value ?? undefined))
 
-const errorText = computed(() => (errors?.length ? errors.join('; ') : (validation.errorMessage ?? '')))
+const errorText = computed(() => fieldErrorText(errors))
 const { errorId, describedBy, invalid } = fieldErrorA11y(uuid, errorText)
 
 const modelValue = defineModel<string>()
@@ -220,7 +219,21 @@ watch(
 
 const linkResults = ref<AFormLinkValue[]>([])
 
-const optionCount = () => (linkPicker.value ? linkResults.value.length : dropdown.results.length)
+// While a search is loading, the list on screen holds no results: ↓ and Enter have nothing to pick.
+const optionCount = () => {
+	if (dropdown.loading) return 0
+	return linkPicker.value ? linkResults.value.length : dropdown.results.length
+}
+
+// Each search is numbered; an answer is kept only while its search is still the latest. A slow answer
+// to an older search can land after a newer one, and must not replace the list for what's in the box.
+let latestSearch = 0
+const startSearch = () => ++latestSearch
+const isLatestSearch = (searchId: number) => searchId === latestSearch
+const cancelSearch = () => {
+	latestSearch++
+	dropdown.loading = false
+}
 
 const committedValue = ref(modelValue.value ?? '')
 
@@ -333,16 +346,19 @@ const openLinkDropdown = async (text: string) => {
 	if (!linkFilterFunction || mode === 'read') return
 	dropdown.activeItemIndex = null
 	dropdown.open = true
+	const searchId = startSearch()
 	if (isAsync) dropdown.loading = true
+	let results: AFormLinkValue[]
 	try {
 		const fn: FilterFn =
 			typeof linkFilterFunction === 'string' ? deserializeFunction<FilterFn>(linkFilterFunction) : linkFilterFunction
-		linkResults.value = (await fn(text)) ?? []
+		results = (await fn(text)) ?? []
 	} catch {
-		linkResults.value = []
-	} finally {
-		dropdown.loading = false
+		results = []
 	}
+	if (!isLatestSearch(searchId)) return
+	linkResults.value = results
+	dropdown.loading = false
 }
 
 const embeddedLinkFilterQuery = (): string => {
@@ -365,17 +381,20 @@ defineExpose({ openCurrencyList: openEmbeddedList })
 const filter = async () => {
 	dropdown.open = true
 	dropdown.activeItemIndex = null
+	const searchId = startSearch()
 	if (filterFunction) {
 		if (isAsync) dropdown.loading = true
+		let results: string[]
 		try {
-			const filteredResults = await filterFunction(search.value || '')
-			dropdown.results = filteredResults || []
+			results = (await filterFunction(search.value || '')) || []
 		} catch {
-			dropdown.results = []
-		} finally {
-			if (isAsync) dropdown.loading = false
+			results = []
 		}
+		if (!isLatestSearch(searchId)) return
+		dropdown.results = results
+		dropdown.loading = false
 	} else {
+		dropdown.loading = false
 		filterResults()
 	}
 }
@@ -388,6 +407,7 @@ const setChoiceResult = (result: string) => {
 }
 
 const selectLinkOption = (option: AFormLinkValue) => {
+	cancelSearch()
 	linkModel.value = option
 	search.value = linkText(option)
 	dropdown.open = false
@@ -402,6 +422,7 @@ const openChoiceDropdown = () => {
 }
 
 const closeDropdown = (result?: string) => {
+	cancelSearch()
 	dropdown.activeItemIndex = null
 	dropdown.open = false
 	if (linkPicker.value) {
@@ -512,6 +533,8 @@ const setCurrentResult = () => {
 		ensureDropdownOpen()
 		return
 	}
+	// Still loading: the list on screen has no results to pick from yet.
+	if (dropdown.loading) return
 	if (linkPicker.value) {
 		if (dropdown.activeItemIndex !== null && linkResults.value[dropdown.activeItemIndex]) {
 			selectLinkOption(linkResults.value[dropdown.activeItemIndex])

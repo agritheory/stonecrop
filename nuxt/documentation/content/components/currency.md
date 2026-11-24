@@ -167,8 +167,8 @@ rows:
   - ['`mode`', "`'edit' | 'read' | 'display'`", "`'edit'`", 'See [Modes](#modes) below.']
   - ['`uuid`', '`string`', 'none', "`id`/`for` pair linking the amount input to its label. Nothing generates one, so the pairing exists only when you pass it."]
   - ['`currencyLabel`', '`string`', "`'Currency'`", "Label for the embedded currency picker."]
-  - ['`validation`', '`{ errorMessage: string }`', "`{ errorMessage: '' }`", 'Static error message shown below the field.']
-  - ['`errors`', '`string[]`', '—', 'Dynamic validation errors (e.g. from a trigger). Takes precedence over `validation.errorMessage` whenever the list is non-empty.']
+  - ['`validation`', '`{ errorMessage: string }`', '—', 'Not read by this component. Inside `AForm`, `errorMessage` words an error a trigger reports on this field without a message (`setError(field)`); it is never shown on its own.']
+  - ['`errors`', '`string[]`', '—', 'Dynamic validation errors (e.g. from a trigger). Shown joined with `; `, and nothing is shown without them. Inside `AForm` they arrive already worded: an error reported without a message carries the `validation.errorMessage` of its field.']
 ---
 ::
 
@@ -184,7 +184,7 @@ rows:
   - ['`precision`', '`number`', '—', 'Decimal places to round the derived `baseAmount` to (JPY carries 0, most currencies 2, KWD 3). Only affects `baseAmount` — the entered `amount` is left as typed. Omitted or invalid values round only enough to shed floating-point noise.']
   - ['`filterFunction`', '`(search: string) => AFormLinkValue[] | Promise<AFormLinkValue[]>`', '—', "Search function backing the currency picker's autocomplete dropdown."]
   - ['`isAsync`', '`boolean`', '`false`', 'Whether `filterFunction` results should show a loading state.']
-  - ['`arithmetic`', '`boolean`', '`true`', 'Whether the amount box takes arithmetic: `12*3+4` is read as `40` once the box is left or Enter is pressed. Digits, `.`, `+ - * / %` and parentheses only; `e`, `^` and other letters are refused. With the mask on, numbers in the expression use the same separators as the amount (`1,000.50*2`). An unfinished expression (`12*`) leaves the last number in place. See [Numeric Input](/components/numeric-input#arithmetic). A worked-out amount is rounded to the currency's decimals (`10/3` in USD is `3.33`).']
+  - ['`arithmetic`', '`boolean`', '`true`', "Whether the amount box takes arithmetic: `12*3+4` is read as `40` once the box is left or Enter is pressed. Digits, `.`, `+ - * / %` and parentheses only; `e`, `^` and other letters are refused. With the mask on, numbers in the expression use the same separators as the amount (`1,000.50*2`). An unfinished expression (`12*`) leaves the last number in place. See [Numeric Input](/components/numeric-input#arithmetic). A worked-out amount is rounded to the currency's decimals (`10/3` in USD is `3.33`)."]
 ---
 ::
 

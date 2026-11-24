@@ -17,7 +17,7 @@ import { Desktop, useActionSet, ActionSetIconFiles, type ActionSetSlot, type Act
 
 ## Basic (via Desktop)
 
-FSM actions are derived automatically on record views. Host pages can supply custom actions with `:host-actions`:
+FSM actions are derived automatically on record views; a list derives none, so an app that wants New there passes it with `:host-actions` on list views only. Host pages can supply custom actions the same way:
 
 ::demo-panel
 :::client-only
@@ -89,7 +89,7 @@ The pane opens at half the workspace. Its left edge is a separator the user can 
 headers: ['Name', 'Type', 'Description']
 rows:
   - ['`actionSetSlots`', '`ActionSetSlot[]`', 'Host drawer slots shown as tiles alongside Search and Actions.']
-  - ['`hostActions`', '`ActionElements[]`', 'Actions listed in the Actions drawer in place of those derived from the doctype; `[]` lists none.']
+  - ['`hostActions`', '`ActionElements[]`', 'Actions listed in the Actions drawer in place of those derived from the doctype; `[]` lists none. A list shows every action its doctype declares, so where a list and its records share a doctype, pass the actions for the list here on list views and leave this unset on others.']
 ---
 ::
 

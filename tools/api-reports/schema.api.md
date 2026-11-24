@@ -130,7 +130,7 @@ export const COMPONENT_LINK_EXPANSION: Record<string, LinkExpansion>;
 export const COMPONENT_PARTS: Record<string, readonly string[]>;
 
 // @public
-export type ComponentCategory = 'text' | 'number' | 'boolean' | 'date' | 'datetime' | 'duration' | 'select' | 'code' | 'link' | 'attach' | 'quantity' | 'currency' | 'semver';
+export type ComponentCategory = 'text' | 'number' | 'boolean' | 'date' | 'datetime' | 'duration' | 'select' | 'code' | 'link' | 'attach' | 'quantity' | 'currency' | 'semver' | 'richtext';
 
 // @public
 export function componentCategory(component?: string): ComponentCategory | undefined;
@@ -140,6 +140,9 @@ export function componentLinkExpansion(component?: string): LinkExpansion | unde
 
 // @public
 export function componentParts(component?: string): readonly string[] | undefined;
+
+// @public
+export function componentTakesParts(component: string): boolean;
 
 // @public
 export interface ConvertedGraphQLDoctype extends Omit<DoctypeMeta, 'fields'> {
@@ -226,6 +229,13 @@ export const DoctypeMeta: z.ZodObject<{
             method: z.ZodLiteral<"custom">;
             handler: z.ZodString;
         }, z.core.$strip>], "method">>;
+        orderBy: z.ZodOptional<z.ZodObject<{
+            fieldname: z.ZodString;
+            direction: z.ZodOptional<z.ZodEnum<{
+                asc: "asc";
+                desc: "desc";
+            }>>;
+        }, z.core.$strict>>;
         blockWorkflows: z.ZodOptional<z.ZodBoolean>;
     }, z.core.$strip>>>;
     workflow: z.ZodOptional<z.ZodObject<{
@@ -331,7 +341,11 @@ export const FieldValidation: z.ZodObject<{
 export type FieldValidation = z.infer<typeof FieldValidation>;
 
 // @public
-export function flattenFields(fields: readonly DoctypeField[]): (ValueField | TableField)[];
+export function flattenFields<F extends {
+    kind: string;
+}>(fields: readonly F[]): Exclude<F, {
+    kind: 'fieldset';
+}>[];
 
 // @public
 export function formatDoctypeDrift(drift: DoctypeDrift): string[];
@@ -489,6 +503,13 @@ export const LinkDeclaration: z.ZodObject<{
         method: z.ZodLiteral<"custom">;
         handler: z.ZodString;
     }, z.core.$strip>], "method">>;
+    orderBy: z.ZodOptional<z.ZodObject<{
+        fieldname: z.ZodString;
+        direction: z.ZodOptional<z.ZodEnum<{
+            asc: "asc";
+            desc: "desc";
+        }>>;
+    }, z.core.$strict>>;
     blockWorkflows: z.ZodOptional<z.ZodBoolean>;
 }, z.core.$strip>;
 
@@ -587,6 +608,7 @@ export interface TableField {
     kind: 'table';
     label?: string;
     mode?: InteractionMode;
+    parts?: Record<string, string>;
 }
 
 // @public
@@ -614,12 +636,14 @@ export const TableFieldSchema: z.ZodObject<{
             leaf: "leaf";
         }>>;
         dependencyGraph: z.ZodOptional<z.ZodBoolean>;
+        addable: z.ZodOptional<z.ZodBoolean>;
     }, z.core.$strip>>;
     mode: z.ZodOptional<z.ZodEnum<{
         edit: "edit";
         read: "read";
         display: "display";
     }>>;
+    parts: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodString>>;
 }, z.core.$strip>;
 
 // @public
@@ -639,6 +663,7 @@ export const TableViewConfig: z.ZodObject<{
         leaf: "leaf";
     }>>;
     dependencyGraph: z.ZodOptional<z.ZodBoolean>;
+    addable: z.ZodOptional<z.ZodBoolean>;
 }, z.core.$strip>;
 
 // @public
@@ -768,6 +793,7 @@ export const ValueFieldSchema: z.ZodObject<{
             leaf: "leaf";
         }>>;
         dependencyGraph: z.ZodOptional<z.ZodBoolean>;
+        addable: z.ZodOptional<z.ZodBoolean>;
     }, z.core.$strip>>;
 }, z.core.$strip>;
 

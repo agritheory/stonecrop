@@ -7,29 +7,39 @@
 		<template v-else>
 			<div v-on-click-outside="onClickOutside" class="aform_form-link-wrapper">
 				<div class="input-group">
-					<input
-						v-model="searchText"
-						type="text"
-						role="combobox"
-						autocomplete="off"
-						aria-autocomplete="list"
-						:class="['aform_input-field', { 'aform_input-field--embedded': embedded }]"
-						:placeholder="placeholder"
-						:aria-label="ariaLabel"
-						:required="required"
-						:aria-expanded="dropdownOpen"
-						:aria-controls="dropdownOpen ? listboxId : undefined"
-						:aria-activedescendant="activeIndex === null ? undefined : `${listboxId}-opt-${activeIndex}`"
-						:disabled="disabled || mode === 'read'"
-						@input="onInput"
-						@focus="onFocus"
-						@keydown.down.prevent="selectNext"
-						@keydown.up.prevent="selectPrev"
-						@keydown.enter.prevent="selectCurrent"
-						@keydown.esc="closeDropdown"
-						@keydown.tab="closeDropdown" />
+					<!-- Anchors the error to the input rather than the whole field, so it ends short of the
+					     navigate button instead of being cut through by the button's divider. -->
+					<div class="aform_form-link-field">
+						<input
+							v-model="searchText"
+							type="text"
+							role="combobox"
+							autocomplete="off"
+							aria-autocomplete="list"
+							:class="['aform_input-field', { 'aform_input-field--embedded': embedded }]"
+							:placeholder="placeholder"
+							:aria-label="ariaLabel"
+							:required="required"
+							:aria-invalid="invalid"
+							:aria-describedby="describedBy"
+							:aria-expanded="dropdownOpen"
+							:aria-controls="dropdownOpen ? listboxId : undefined"
+							:aria-activedescendant="activeIndex === null ? undefined : `${listboxId}-opt-${activeIndex}`"
+							:disabled="disabled || mode === 'read'"
+							@input="onInput"
+							@focus="onFocus"
+							@blur="leaveField"
+							@keydown.down.prevent="selectNext"
+							@keydown.up.prevent="selectPrev"
+							@keydown.enter.prevent="selectCurrent"
+							@keydown.esc="closeDropdown"
+							@keydown.tab="leaveField" />
+						<p v-if="!embedded" v-show="errorText" :id="errorId" class="aform_error" role="alert">
+							{{ errorText }}
+						</p>
+					</div>
 					<button
-						v-if="hasValidId && !disabled && !embedded"
+						v-if="canNavigate && !disabled && !embedded"
 						type="button"
 						class="aform_form-btn"
 						@click="handleNavigate"
@@ -78,6 +88,7 @@
 import { vOnClickOutside } from '@vueuse/components'
 import { computed, inject, ref, useId, watch } from 'vue'
 
+import { fieldErrorA11y, fieldErrorText } from '../../composables/fieldErrorA11y'
 import type { AFormLinkModelValue, AFormLinkNavigator, AFormLinkValue, ComponentProps } from '../../types'
 import { deserializeFunction } from '../../utils/deserialize'
 import { asLinkValue, linkDisplayText, linkId } from '../../utils/linkValue'
@@ -88,6 +99,7 @@ const {
 	mode,
 	uuid,
 	required,
+	errors,
 	doctype = undefined,
 	formatter = undefined,
 	icon = 'arrow-right',
@@ -122,7 +134,12 @@ const {
 // mount so two pickers on one page can't cross-wire their ARIA relationships.
 const listboxId = `${uuid ?? `aform-link-${useId()}`}-listbox`
 
-const modelValue = defineModel<AFormLinkModelValue>({ default: () => ({ id: '', displayText: '' }) })
+// The errors this field is handed, already worded by AForm. Empty hides the slot.
+// Embedded mode renders no error slot (the host owns it, as with its label), so it gets no ARIA wiring either.
+const errorText = computed(() => (embedded ? '' : fieldErrorText(errors)))
+const { errorId, describedBy, invalid } = fieldErrorA11y(uuid, errorText)
+
+const modelValue = defineModel<AFormLinkModelValue | null>({ default: () => ({ id: '', displayText: '' }) })
 
 const hasValidId = computed(() => linkId(modelValue.value) !== undefined)
 
@@ -139,7 +156,7 @@ watch(
 	{ immediate: true }
 )
 
-const shownLink = computed<AFormLinkModelValue>(() => {
+const shownLink = computed<AFormLinkModelValue | null>(() => {
 	const value = modelValue.value
 	if (linkDisplayText(value)) return value
 	const id = linkId(value)
@@ -162,6 +179,11 @@ const dropdownResults = ref<AFormLinkValue[]>([])
 const activeIndex = ref<number | null>(null)
 
 const navigator = inject<AFormLinkNavigator | null>('aformLinkNavigator', null)
+
+// The open-record arrow needs a record to open: an id, a doctype to open it in, and an app that
+// provides a way to open records. A link with no doctype (e.g. a unit stored by its name) or one
+// mounted outside an app that injects a navigator has nothing to open, so it shows no arrow.
+const canNavigate = computed(() => hasValidId.value && !!doctype && !!navigator)
 
 type FilterFn = (search: string) => AFormLinkValue[] | Promise<AFormLinkValue[]>
 type ResolverFn = (doctype: string, id: string) => string | undefined | Promise<string | undefined>
@@ -193,7 +215,13 @@ watch(
 			searchText.value = displayedText.value
 			return
 		}
-		if (!id) return
+		// The link was unset (emptied here, or by the record). Under a real v-model, `leaveField` ran
+		// while the prop still held the old record, so `closeDropdown` put that record's text back;
+		// clear it now that the value has caught up.
+		if (!id) {
+			searchText.value = ''
+			return
+		}
 		try {
 			let match: AFormLinkValue | undefined
 			let displayText: string | undefined
@@ -232,14 +260,7 @@ watch(
 
 const handleNavigate = () => {
 	const id = linkId(modelValue.value)
-	if (navigator && doctype && id !== undefined) {
-		navigator.navigate(doctype, id)
-	} else if (navigator && !doctype) {
-		console.warn(
-			`[AFormLink] Navigation requested but \`doctype\` prop is missing. ` +
-				`Add \`options\` (or \`doctype\`) to the Link field definition to enable navigation.`
-		)
-	}
+	if (navigator && doctype && id !== undefined) navigator.navigate(doctype, id)
 }
 
 const isResultSelected = (option: AFormLinkValue) => {
@@ -247,20 +268,28 @@ const isResultSelected = (option: AFormLinkValue) => {
 	return id !== undefined && String(option.id) === String(id)
 }
 
+// Every keystroke starts a search, and an async filterFunction can answer out of order. Number each
+// search and let only the latest one write its results (or clear `loading`): otherwise the answer for
+// the first few letters, arriving last, would replace the matches for what was actually typed.
+let latestSearch = 0
+
 const openDropdown = async (text: string) => {
 	if (!filterFunction || mode === 'read') return
+	const search = ++latestSearch
 	activeIndex.value = null
 	dropdownOpen.value = true
 	if (isAsync) loading.value = true
+	let results: AFormLinkValue[]
 	try {
 		const fn: FilterFn =
 			typeof filterFunction === 'string' ? deserializeFunction<FilterFn>(filterFunction) : filterFunction
-		dropdownResults.value = (await fn(text)) ?? []
+		results = (await fn(text)) ?? []
 	} catch {
-		dropdownResults.value = []
-	} finally {
-		loading.value = false
+		results = []
 	}
+	if (search !== latestSearch) return
+	dropdownResults.value = results
+	loading.value = false
 }
 
 const closeDropdown = () => {
@@ -269,8 +298,21 @@ const closeDropdown = () => {
 	searchText.value = hasValidId.value ? displayedText.value : ''
 }
 
+// Leaving the field (Tab, blur, a click outside) with its text cleared unsets the link: a value is
+// otherwise written only by picking an option, so a picked record could never be removed. Esc keeps
+// its meaning of "cancel" and still reverts the text to the record. An emptied link holds null rather
+// than the '' a text field empties to: a link names a record or none, its FK column stores no record
+// as null, and '' would read as an id.
+const leaveField = () => {
+	if (hasValidId.value && searchText.value.trim() === '' && mode !== 'read' && !disabled) {
+		modelValue.value = null
+		knownLink.value = undefined
+	}
+	closeDropdown()
+}
+
 const onClickOutside = () => {
-	if (dropdownOpen.value) closeDropdown()
+	if (dropdownOpen.value) leaveField()
 }
 
 const onFocus = () => openDropdown(searchText.value)
@@ -288,13 +330,19 @@ const selectOption = (option: AFormLinkValue) => {
 	activeIndex.value = null
 }
 
+// The keys act only on the list on screen: while "Loading…" shows, or after Esc closes the list,
+// dropdownResults still holds the previous results, and ↓ Enter would pick one the user can't see.
+const listShown = () => dropdownOpen.value && !loading.value
+
 const selectNext = () => {
+	if (!listShown()) return
 	const len = dropdownResults.value.length
 	if (!len) return
 	activeIndex.value = activeIndex.value === null ? 0 : (activeIndex.value + 1) % len
 }
 
 const selectPrev = () => {
+	if (!listShown()) return
 	const len = dropdownResults.value.length
 	if (!len) return
 	if (activeIndex.value === null || activeIndex.value === 0) {
@@ -305,6 +353,7 @@ const selectPrev = () => {
 }
 
 const selectCurrent = () => {
+	if (!listShown()) return
 	if (activeIndex.value !== null && dropdownResults.value[activeIndex.value]) {
 		selectOption(dropdownResults.value[activeIndex.value])
 	}
@@ -321,9 +370,23 @@ const selectCurrent = () => {
 	align-items: stretch;
 }
 
+.aform_form-link-field {
+	position: relative;
+	display: flex;
+	flex: 1;
+	min-width: 0;
+}
+
 .aform_input-field {
 	flex: 1;
 	min-width: 0;
+}
+
+/* The shared rule offsets the error from the field's top, past the label's padding; here it is placed
+   against the input itself, whose top border is this box's top. Its right edge is the input's, so the
+   message ends before the navigate button. */
+.aform_form-link-field > p.aform_error {
+	top: 0;
 }
 
 /* No top padding: the shared rule reserves it for a floating label, which embedded mode never renders. */

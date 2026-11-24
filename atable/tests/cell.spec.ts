@@ -511,5 +511,20 @@ describe('table cell component', { tags: ['component'] }, () => {
 
 			expect(wrapper.find('td[data-colindex="0"]').text()).toContain('$12.5')
 		})
+
+		it('shows text typed as markup in a rich-text cell as text, never as an element', async () => {
+			// Editor.js stores typed `<img …>` escaped; the cell's text decodes it back to those characters.
+			const typed = '&lt;img src=x onerror="window.__xss = 1"&gt;'
+			const rows = [{ notes: { time: 1, version: '2.31.7', blocks: [{ type: 'paragraph', data: { text: typed } }] } }]
+			const testColumns: TableColumn[] = [{ name: 'notes', label: 'Notes', component: 'AEditor', edit: false }]
+			const wrapper = mount(ATable, {
+				props: { rows, columns: testColumns, config: { view: 'list' } },
+			})
+			await wrapper.vm.$nextTick()
+
+			const cell = wrapper.find('td[data-colindex="0"]')
+			expect(cell.find('img').exists()).toBe(false)
+			expect(cell.text()).toContain('<img src=x onerror="window.__xss = 1">')
+		})
 	})
 })

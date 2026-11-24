@@ -111,7 +111,10 @@ describe('link navigate button', { tags: ['component'] }, () => {
 	})
 
 	it("crops the drawing to the arrow's ink, stroke included, so capital height is the arrow's height", () => {
-		const wrapper = mount(AFormLink, { props: { label: 'Customer', modelValue: { id: 'C-1', displayText: 'Acme' } } })
+		const wrapper = mount(AFormLink, {
+			props: { label: 'Customer', modelValue: { id: 'C-1', displayText: 'Acme' }, doctype: 'customer' },
+			global: { provide: { aformLinkNavigator: { navigate: () => {} } } },
+		})
 		expect(wrapper.find('.aform_form-btn-icon').attributes('viewBox')).toBe('1.75 2.75 12.5 10.5')
 	})
 })

@@ -9,7 +9,7 @@ import { readDistContract } from '../../tools/test-support/dist-contract'
  * read `exports` only, so a broken `bin` entry passed every assertion here while publint caught it.
  *
  * It existed because rockfoil declared `"./styles": "./dist/assets/index.css"` for a stylesheet it
- * has never had, copy-pasted from atable/aform/beam. Three siblings support `/styles`, so a
+ * has never had, copy-pasted from atable/aform/beam. Sibling packages support `/styles`, so a
  * consumer following that convention hit ERR_MODULE_NOT_FOUND.
  */
 const packageRoot = resolve(__dirname, '..')

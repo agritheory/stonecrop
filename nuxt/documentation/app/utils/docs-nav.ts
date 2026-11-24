@@ -52,6 +52,7 @@ export const docsNavSections: DocsNavSection[] = [
 				title: 'Editors',
 				links: [
 					{ text: 'Code Editor', to: '/components/code-editor' },
+					{ text: 'Block Editor', to: '/components/block-editor' },
 					{ text: 'Node Editor', to: '/components/node-editor' },
 				],
 			},
@@ -95,10 +96,10 @@ export const docsNavSections: DocsNavSection[] = [
 				links: [
 					{ text: 'aform', to: '/reference/aform' },
 					{ text: 'atable', to: '/reference/atable' },
-					{ text: 'beam', to: '/reference/beam' },
 					{ text: 'desktop', to: '/reference/desktop' },
 					{ text: 'node-editor', to: '/reference/node-editor' },
 					{ text: 'code-editor', to: '/reference/code-editor' },
+					{ text: 'block-editor', to: '/reference/block-editor' },
 				],
 			},
 			{

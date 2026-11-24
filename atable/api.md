@@ -194,6 +194,7 @@ import { ATable } from '@stonecrop/atable'
 | header | `{ data: TableStore; }` |  |
 | body | `{ data: TableStore; }` |  |
 | content | `{ row: { [x: string]: any; indent?: number \| undefined; parent?: number \| undefined; gantt?: { color?: string \| undefined; startIndex?: number \| undefined; endIndex?: number \| undefined; colspan?: number \| undefined; } \| undefined; }; rowIndex: number; store: TableStore; }` |  |
+| empty | `{ data: TableStore; filtered: boolean; add: () => void; }` |  |
 | footer | `{ data: TableStore; page: TablePagination; }` |  |
 | modal | `{ data: TableStore; }` |  |
 
@@ -213,6 +214,34 @@ import { ATable } from '@stonecrop/atable'
 | insertRowAbove | `(rowIndex: number, rowData?: Partial<TableRow> \| undefined) => number` |
 | insertRowBelow | `(rowIndex: number, rowData?: Partial<TableRow> \| undefined) => number` |
 | moveRow | `(fromIndex: number, toIndex: number) => boolean` |
+
+### ATableEmptyRow
+
+Vue component exported from @stonecrop/atable.
+
+```typescript
+import { ATableEmptyRow } from '@stonecrop/atable'
+```
+
+**Props:**
+
+| Prop | Type | Required | Default | Description |
+|------|------|----------|---------|-------------|
+| colspan | `number` | yes |  | Columns the row spans: data columns, the index column (unless uncounted), and row actions when enabled. |
+| addable | `boolean \| undefined` | no |  | Whether the host lets this table take a new row. The component never infers it. |
+| filtered | `boolean \| undefined` | no |  | Whether rows exist but the active filters hide them all. |
+
+**Events:**
+
+| Event | Payload | Description |
+|-------|---------|-------------|
+| add | `[]` |  |
+
+**Slots:**
+
+| Slot | Props | Description |
+|------|-------|-------------|
+| default | `{ filtered: boolean; }` |  |
 
 ### ATableHeader
 
@@ -489,6 +518,7 @@ createTableStore: (initData: {
                 } | undefined;
             } | undefined;
         } | undefined;
+        addable?: boolean | undefined;
         pageSize?: number | undefined;
         zebra?: boolean | undefined;
     } | {
@@ -567,6 +597,7 @@ createTableStore: (initData: {
                 } | undefined;
             } | undefined;
         } | undefined;
+        addable?: boolean | undefined;
         pageSize?: number | undefined;
         zebra?: boolean | undefined;
     } | {
@@ -645,6 +676,7 @@ createTableStore: (initData: {
                 } | undefined;
             } | undefined;
         } | undefined;
+        addable?: boolean | undefined;
         pageSize?: number | undefined;
         zebra?: boolean | undefined;
     } | {
@@ -724,6 +756,7 @@ createTableStore: (initData: {
                 } | undefined;
             } | undefined;
         } | undefined;
+        addable?: boolean | undefined;
         pageSize?: number | undefined;
         zebra?: boolean | undefined;
     }, TableConfig | {
@@ -801,6 +834,7 @@ createTableStore: (initData: {
                 } | undefined;
             } | undefined;
         } | undefined;
+        addable?: boolean | undefined;
         pageSize?: number | undefined;
         zebra?: boolean | undefined;
     } | {
@@ -879,6 +913,7 @@ createTableStore: (initData: {
                 } | undefined;
             } | undefined;
         } | undefined;
+        addable?: boolean | undefined;
         pageSize?: number | undefined;
         zebra?: boolean | undefined;
     } | {
@@ -957,6 +992,7 @@ createTableStore: (initData: {
                 } | undefined;
             } | undefined;
         } | undefined;
+        addable?: boolean | undefined;
         pageSize?: number | undefined;
         zebra?: boolean | undefined;
     } | {
@@ -1036,6 +1072,7 @@ createTableStore: (initData: {
                 } | undefined;
             } | undefined;
         } | undefined;
+        addable?: boolean | undefined;
         pageSize?: number | undefined;
         zebra?: boolean | undefined;
     }>;
@@ -1178,6 +1215,7 @@ createTableStore: (initData: {
     }>;
     table: import("vue").ComputedRef<Record<string, any>>;
     updates: import("vue").Ref<Record<string, string>, Record<string, string>>;
+    columnCount: import("vue").ComputedRef<number>;
     filteredRows: import("vue").ComputedRef<(TableRow & {
         originalIndex: number;
     })[]>;
@@ -1384,6 +1422,7 @@ createTableStore: (initData: {
                 } | undefined;
             } | undefined;
         } | undefined;
+        addable?: boolean | undefined;
         pageSize?: number | undefined;
         zebra?: boolean | undefined;
     } | {
@@ -1462,6 +1501,7 @@ createTableStore: (initData: {
                 } | undefined;
             } | undefined;
         } | undefined;
+        addable?: boolean | undefined;
         pageSize?: number | undefined;
         zebra?: boolean | undefined;
     } | {
@@ -1540,6 +1580,7 @@ createTableStore: (initData: {
                 } | undefined;
             } | undefined;
         } | undefined;
+        addable?: boolean | undefined;
         pageSize?: number | undefined;
         zebra?: boolean | undefined;
     } | {
@@ -1619,6 +1660,7 @@ createTableStore: (initData: {
                 } | undefined;
             } | undefined;
         } | undefined;
+        addable?: boolean | undefined;
         pageSize?: number | undefined;
         zebra?: boolean | undefined;
     }, TableConfig | {
@@ -1696,6 +1738,7 @@ createTableStore: (initData: {
                 } | undefined;
             } | undefined;
         } | undefined;
+        addable?: boolean | undefined;
         pageSize?: number | undefined;
         zebra?: boolean | undefined;
     } | {
@@ -1774,6 +1817,7 @@ createTableStore: (initData: {
                 } | undefined;
             } | undefined;
         } | undefined;
+        addable?: boolean | undefined;
         pageSize?: number | undefined;
         zebra?: boolean | undefined;
     } | {
@@ -1852,6 +1896,7 @@ createTableStore: (initData: {
                 } | undefined;
             } | undefined;
         } | undefined;
+        addable?: boolean | undefined;
         pageSize?: number | undefined;
         zebra?: boolean | undefined;
     } | {
@@ -1931,6 +1976,7 @@ createTableStore: (initData: {
                 } | undefined;
             } | undefined;
         } | undefined;
+        addable?: boolean | undefined;
         pageSize?: number | undefined;
         zebra?: boolean | undefined;
     }>;
@@ -2073,6 +2119,7 @@ createTableStore: (initData: {
     }>;
     table: import("vue").ComputedRef<Record<string, any>>;
     updates: import("vue").Ref<Record<string, string>, Record<string, string>>;
+    columnCount: import("vue").ComputedRef<number>;
     filteredRows: import("vue").ComputedRef<(TableRow & {
         originalIndex: number;
     })[]>;
@@ -2148,7 +2195,7 @@ createTableStore: (initData: {
     unregisterGanttBar: (barId: string) => void;
     updateGanttBar: (event: GanttDragEvent) => void;
     updateRows: (newRows: TableRow[]) => void;
-}, "display" | "table" | "filteredRows" | "hasPinnedColumns" | "isGanttView" | "isTreeView" | "isDependencyGraphEnabled" | "numberedRowWidth" | "zeroColumn">, Pick<{
+}, "display" | "table" | "columnCount" | "filteredRows" | "hasPinnedColumns" | "isGanttView" | "isTreeView" | "isDependencyGraphEnabled" | "numberedRowWidth" | "zeroColumn">, Pick<{
     columns: import("vue").Ref<{
         name: string;
         format?: string | ((value: any, context: CellContext) => string | BadgeDescriptor) | undefined;
@@ -2279,6 +2326,7 @@ createTableStore: (initData: {
                 } | undefined;
             } | undefined;
         } | undefined;
+        addable?: boolean | undefined;
         pageSize?: number | undefined;
         zebra?: boolean | undefined;
     } | {
@@ -2357,6 +2405,7 @@ createTableStore: (initData: {
                 } | undefined;
             } | undefined;
         } | undefined;
+        addable?: boolean | undefined;
         pageSize?: number | undefined;
         zebra?: boolean | undefined;
     } | {
@@ -2435,6 +2484,7 @@ createTableStore: (initData: {
                 } | undefined;
             } | undefined;
         } | undefined;
+        addable?: boolean | undefined;
         pageSize?: number | undefined;
         zebra?: boolean | undefined;
     } | {
@@ -2514,6 +2564,7 @@ createTableStore: (initData: {
                 } | undefined;
             } | undefined;
         } | undefined;
+        addable?: boolean | undefined;
         pageSize?: number | undefined;
         zebra?: boolean | undefined;
     }, TableConfig | {
@@ -2591,6 +2642,7 @@ createTableStore: (initData: {
                 } | undefined;
             } | undefined;
         } | undefined;
+        addable?: boolean | undefined;
         pageSize?: number | undefined;
         zebra?: boolean | undefined;
     } | {
@@ -2669,6 +2721,7 @@ createTableStore: (initData: {
                 } | undefined;
             } | undefined;
         } | undefined;
+        addable?: boolean | undefined;
         pageSize?: number | undefined;
         zebra?: boolean | undefined;
     } | {
@@ -2747,6 +2800,7 @@ createTableStore: (initData: {
                 } | undefined;
             } | undefined;
         } | undefined;
+        addable?: boolean | undefined;
         pageSize?: number | undefined;
         zebra?: boolean | undefined;
     } | {
@@ -2826,6 +2880,7 @@ createTableStore: (initData: {
                 } | undefined;
             } | undefined;
         } | undefined;
+        addable?: boolean | undefined;
         pageSize?: number | undefined;
         zebra?: boolean | undefined;
     }>;
@@ -2968,6 +3023,7 @@ createTableStore: (initData: {
     }>;
     table: import("vue").ComputedRef<Record<string, any>>;
     updates: import("vue").Ref<Record<string, string>, Record<string, string>>;
+    columnCount: import("vue").ComputedRef<number>;
     filteredRows: import("vue").ComputedRef<(TableRow & {
         originalIndex: number;
     })[]>;
@@ -3160,6 +3216,7 @@ Base table configuration properties shared across all view types.
 
 ```typescript
 export interface BaseTableConfig {
+  addable?: boolean;
   clickable?: boolean;
   fullWidth?: boolean;
   pageSize?: number;
@@ -3172,6 +3229,7 @@ export interface BaseTableConfig {
 
 | Property | Type | Description |
 |----------|------|-------------|
+| addable? | `boolean` | Whether the host lets this table take a new row. When true and the table has no rows, the empty-state row shows an "Add row" control that adds a row and emits `row:add`. Set it from the host's workflow and permissions; the table never infers it. |
 | clickable? | `boolean` | When true, rows show a pointer cursor and a hover highlight, signalling they are clickable. Emits `row:click` on every row click. |
 | fullWidth? | `boolean` | Control whether the table should be allowed to use the full width of its container. |
 | pageSize? | `number` | When set, slice the held rows into in-memory windows of this size. Omit to show the whole held list as one window (server paging uses the backend cap). |
@@ -4035,6 +4093,14 @@ export const ARowActions: typeof __VLS_export
 
 ```typescript
 export const ATable: typeof __VLS_export
+```
+
+### ATableEmptyRow
+
+**Type:**
+
+```typescript
+export const ATableEmptyRow: typeof __VLS_export
 ```
 
 ### ATableHeader

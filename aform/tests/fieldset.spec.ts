@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vite-plus/test'
 import { flushPromises, mount } from '@vue/test-utils'
 
-import AForm from '../src/components/AForm.vue'
 import AFieldset from '../src/components/form/AFieldset.vue'
 import ATextInput from '../src/components/form/ATextInput.vue'
 import type { ResolvedField } from '../src/types'
+import { mountBound } from './mount-bound'
 
 describe('fieldset input component', { tags: ['component'] }, () => {
 	it('no change in collapse status when fieldset is uncollapsible', async () => {
@@ -99,7 +99,7 @@ describe('a fieldset inside a form', { tags: ['component'] }, () => {
 	const email: ResolvedField = { kind: 'field', fieldname: 'email', component: 'ATextInput', label: 'Email' }
 
 	const mountForm = (schema: ResolvedField[], data: Record<string, any>) =>
-		mount(AForm, { props: { schema, data }, global: { components: { AFieldset, ATextInput } } })
+		mountBound({ props: { schema, data }, global: { components: { AFieldset, ATextInput } } })
 
 	it("shows the record's own value in a field inside a fieldset", async () => {
 		const wrapper = mountForm([contact([email])], { email: 'ana@example.com' })
@@ -152,7 +152,7 @@ describe('a fieldset inside a form', { tags: ['component'] }, () => {
 	})
 
 	it('shows a validation error on a field inside a fieldset', async () => {
-		const wrapper = mount(AForm, {
+		const wrapper = mountBound({
 			props: { schema: [contact([email])], data: { email: 'ana' }, errors: { email: ['Enter a valid email'] } },
 			global: { components: { AFieldset, ATextInput } },
 		})

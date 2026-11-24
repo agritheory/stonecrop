@@ -5,6 +5,7 @@ import AGanttCell from './components/AGanttCell.vue'
 import ARow from './components/ARow.vue'
 import ARowActions from './components/ARowActions.vue'
 import ATable from './components/ATable.vue'
+import ATableEmptyRow from './components/ATableEmptyRow.vue'
 import ATableHeader from './components/ATableHeader.vue'
 import ATableLoading from './components/ATableLoading.vue'
 import ATableLoadingBar from './components/ATableLoadingBar.vue'
@@ -49,6 +50,7 @@ function install(app: App /* options */) {
 	app.component('ARow', ARow)
 	app.component('ARowActions', ARowActions)
 	app.component('ATable', ATable)
+	app.component('ATableEmptyRow', ATableEmptyRow)
 	app.component('ATableHeader', ATableHeader)
 	app.component('ATableLoading', ATableLoading)
 	app.component('ATableLoadingBar', ATableLoadingBar)
@@ -63,6 +65,7 @@ export {
 	ARow,
 	ARowActions,
 	ATable,
+	ATableEmptyRow,
 	ATableHeader,
 	ATableLoading,
 	ATableLoadingBar,

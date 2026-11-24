@@ -1,5 +1,505 @@
 # Change Log - @stonecrop/nuxt
 
+## 0.62.8
+
+### Patch Changes
+
+- Updated dependencies [630f170]
+  - @stonecrop/aform@0.62.8
+  - @stonecrop/desktop@0.62.8
+  - @stonecrop/stonecrop@0.62.8
+  - @stonecrop/atable@0.62.8
+  - @stonecrop/block-editor@0.62.8
+  - @stonecrop/casl-middleware@0.62.8
+  - @stonecrop/code-editor@0.62.8
+  - @stonecrop/graphql-client@0.62.8
+  - @stonecrop/graphql-middleware@0.62.8
+  - @stonecrop/node-editor@0.62.8
+  - @stonecrop/nuxt-grafserv@0.62.8
+  - @stonecrop/schema@0.62.8
+  - @stonecrop/themes@0.62.8
+
+## 0.62.7
+
+### Patch Changes
+
+- Updated dependencies [aed2d0d]
+  - @stonecrop/stonecrop@0.62.7
+  - @stonecrop/desktop@0.62.7
+  - @stonecrop/aform@0.62.7
+  - @stonecrop/atable@0.62.7
+  - @stonecrop/block-editor@0.62.7
+  - @stonecrop/casl-middleware@0.62.7
+  - @stonecrop/code-editor@0.62.7
+  - @stonecrop/graphql-client@0.62.7
+  - @stonecrop/graphql-middleware@0.62.7
+  - @stonecrop/node-editor@0.62.7
+  - @stonecrop/nuxt-grafserv@0.62.7
+  - @stonecrop/schema@0.62.7
+  - @stonecrop/themes@0.62.7
+
+## 0.62.6
+
+### Patch Changes
+
+- Updated dependencies [7fc5400]
+  - @stonecrop/aform@0.62.6
+  - @stonecrop/desktop@0.62.6
+  - @stonecrop/stonecrop@0.62.6
+  - @stonecrop/atable@0.62.6
+  - @stonecrop/block-editor@0.62.6
+  - @stonecrop/casl-middleware@0.62.6
+  - @stonecrop/code-editor@0.62.6
+  - @stonecrop/graphql-client@0.62.6
+  - @stonecrop/graphql-middleware@0.62.6
+  - @stonecrop/node-editor@0.62.6
+  - @stonecrop/nuxt-grafserv@0.62.6
+  - @stonecrop/schema@0.62.6
+  - @stonecrop/themes@0.62.6
+
+## 0.62.5
+
+### Patch Changes
+
+- Updated dependencies [f49ef15]
+  - @stonecrop/aform@0.62.5
+  - @stonecrop/desktop@0.62.5
+  - @stonecrop/stonecrop@0.62.5
+  - @stonecrop/atable@0.62.5
+  - @stonecrop/block-editor@0.62.5
+  - @stonecrop/casl-middleware@0.62.5
+  - @stonecrop/code-editor@0.62.5
+  - @stonecrop/graphql-client@0.62.5
+  - @stonecrop/graphql-middleware@0.62.5
+  - @stonecrop/node-editor@0.62.5
+  - @stonecrop/nuxt-grafserv@0.62.5
+  - @stonecrop/schema@0.62.5
+  - @stonecrop/themes@0.62.5
+
+## 0.62.4
+
+### Patch Changes
+
+- Updated dependencies [624a7d8]
+  - @stonecrop/atable@0.62.4
+  - @stonecrop/schema@0.62.4
+  - @stonecrop/desktop@0.62.4
+  - @stonecrop/aform@0.62.4
+  - @stonecrop/stonecrop@0.62.4
+  - @stonecrop/graphql-client@0.62.4
+  - @stonecrop/graphql-middleware@0.62.4
+  - @stonecrop/node-editor@0.62.4
+  - @stonecrop/nuxt-grafserv@0.62.4
+  - @stonecrop/block-editor@0.62.4
+  - @stonecrop/casl-middleware@0.62.4
+  - @stonecrop/code-editor@0.62.4
+  - @stonecrop/themes@0.62.4
+
+## 0.62.3
+
+### Patch Changes
+
+- Updated dependencies [ce11081]
+  - @stonecrop/atable@0.62.3
+  - @stonecrop/aform@0.62.3
+  - @stonecrop/stonecrop@0.62.3
+  - @stonecrop/desktop@0.62.3
+  - @stonecrop/block-editor@0.62.3
+  - @stonecrop/casl-middleware@0.62.3
+  - @stonecrop/code-editor@0.62.3
+  - @stonecrop/graphql-client@0.62.3
+  - @stonecrop/graphql-middleware@0.62.3
+  - @stonecrop/node-editor@0.62.3
+  - @stonecrop/nuxt-grafserv@0.62.3
+  - @stonecrop/schema@0.62.3
+  - @stonecrop/themes@0.62.3
+
+## 0.62.2
+
+### Patch Changes
+
+- Updated dependencies [6ad5ee5]
+  - @stonecrop/aform@0.62.2
+  - @stonecrop/desktop@0.62.2
+  - @stonecrop/stonecrop@0.62.2
+  - @stonecrop/atable@0.62.2
+  - @stonecrop/block-editor@0.62.2
+  - @stonecrop/casl-middleware@0.62.2
+  - @stonecrop/code-editor@0.62.2
+  - @stonecrop/graphql-client@0.62.2
+  - @stonecrop/graphql-middleware@0.62.2
+  - @stonecrop/node-editor@0.62.2
+  - @stonecrop/nuxt-grafserv@0.62.2
+  - @stonecrop/schema@0.62.2
+  - @stonecrop/themes@0.62.2
+
+## 0.62.1
+
+### Patch Changes
+
+- Updated dependencies [98f6dd1]
+  - @stonecrop/graphql-middleware@0.62.1
+  - @stonecrop/graphql-client@0.62.1
+  - @stonecrop/nuxt-grafserv@0.62.1
+  - @stonecrop/aform@0.62.1
+  - @stonecrop/atable@0.62.1
+  - @stonecrop/block-editor@0.62.1
+  - @stonecrop/casl-middleware@0.62.1
+  - @stonecrop/code-editor@0.62.1
+  - @stonecrop/desktop@0.62.1
+  - @stonecrop/node-editor@0.62.1
+  - @stonecrop/schema@0.62.1
+  - @stonecrop/stonecrop@0.62.1
+  - @stonecrop/themes@0.62.1
+
+## 0.62.0
+
+### Patch Changes
+
+- Updated dependencies [3635b61]
+  - @stonecrop/atable@0.62.0
+  - @stonecrop/schema@0.62.0
+  - @stonecrop/aform@0.62.0
+  - @stonecrop/stonecrop@0.62.0
+  - @stonecrop/desktop@0.62.0
+  - @stonecrop/graphql-client@0.62.0
+  - @stonecrop/graphql-middleware@0.62.0
+  - @stonecrop/node-editor@0.62.0
+  - @stonecrop/nuxt-grafserv@0.62.0
+  - @stonecrop/block-editor@0.62.0
+  - @stonecrop/casl-middleware@0.62.0
+  - @stonecrop/code-editor@0.62.0
+  - @stonecrop/themes@0.62.0
+
+## 0.61.0
+
+### Minor Changes
+
+- 3c3539d: Add `@stonecrop/block-editor`, an Editor.js block editor (`AEditor`) for rich-text fields, with the Paragraph, Header, List, Quote and Delimiter blocks. The field holds Editor.js `OutputData`; AForm binds it with `v-model`, and it renders as static HTML outside `edit` mode. `@stonecrop/schema` gives `AEditor` the new `richtext` category, `@stonecrop/utilities` adds `formatRichTextCell`, and ATable shows a rich-text column as its plain text, read-only. The Nuxt module installs the editor.
+
+### Patch Changes
+
+- Updated dependencies [3c3539d]
+  - @stonecrop/block-editor@0.61.0
+  - @stonecrop/schema@0.61.0
+  - @stonecrop/atable@0.61.0
+  - @stonecrop/aform@0.61.0
+  - @stonecrop/desktop@0.61.0
+  - @stonecrop/graphql-client@0.61.0
+  - @stonecrop/graphql-middleware@0.61.0
+  - @stonecrop/node-editor@0.61.0
+  - @stonecrop/stonecrop@0.61.0
+  - @stonecrop/nuxt-grafserv@0.61.0
+  - @stonecrop/casl-middleware@0.61.0
+  - @stonecrop/code-editor@0.61.0
+  - @stonecrop/themes@0.61.0
+
+## 0.60.2
+
+### Patch Changes
+
+- Updated dependencies [a8c9d8c]
+  - @stonecrop/aform@0.60.2
+  - @stonecrop/desktop@0.60.2
+  - @stonecrop/stonecrop@0.60.2
+  - @stonecrop/atable@0.60.2
+  - @stonecrop/casl-middleware@0.60.2
+  - @stonecrop/code-editor@0.60.2
+  - @stonecrop/graphql-client@0.60.2
+  - @stonecrop/graphql-middleware@0.60.2
+  - @stonecrop/node-editor@0.60.2
+  - @stonecrop/nuxt-grafserv@0.60.2
+  - @stonecrop/schema@0.60.2
+  - @stonecrop/themes@0.60.2
+
+## 0.60.1
+
+### Patch Changes
+
+- 35ea6ea: A field's static `validation.errorMessage` is no longer shown as an error on its own. Before, a field with one showed it on every record, valid or not, and marked its input `aria-invalid`, so a "Validation message" set in DocBuilder sat on every record and a screen reader announced the field as invalid.
+  
+  The message now words an error a trigger reports without one: `setError(field)`, with the message left out, shows that field's own Validation message. AForm applies the wording before it routes errors, so a field bound to another field's part (totals sharing one currency) shows that part's own message, and fieldset children and link fields are covered too; a field component only shows the errors it is handed. `flattenFields` is generic, so it walks resolved fields as well as authored ones. DocBuilder's trigger editor shows `setError(field, message?)`, and the Validation message input says when it is shown.
+- Updated dependencies [35ea6ea]
+  - @stonecrop/aform@0.60.1
+  - @stonecrop/schema@0.60.1
+  - @stonecrop/stonecrop@0.60.1
+  - @stonecrop/desktop@0.60.1
+  - @stonecrop/atable@0.60.1
+  - @stonecrop/graphql-client@0.60.1
+  - @stonecrop/graphql-middleware@0.60.1
+  - @stonecrop/node-editor@0.60.1
+  - @stonecrop/nuxt-grafserv@0.60.1
+  - @stonecrop/casl-middleware@0.60.1
+  - @stonecrop/code-editor@0.60.1
+  - @stonecrop/themes@0.60.1
+
+## 0.60.0
+
+### Patch Changes
+
+- Updated dependencies [aea0baf]
+- Updated dependencies [aea0baf]
+- Updated dependencies [aea0baf]
+- Updated dependencies [aea0baf]
+  - @stonecrop/aform@0.60.0
+  - @stonecrop/atable@0.60.0
+  - @stonecrop/desktop@0.60.0
+  - @stonecrop/stonecrop@0.60.0
+  - @stonecrop/casl-middleware@0.60.0
+  - @stonecrop/code-editor@0.60.0
+  - @stonecrop/graphql-client@0.60.0
+  - @stonecrop/graphql-middleware@0.60.0
+  - @stonecrop/node-editor@0.60.0
+  - @stonecrop/nuxt-grafserv@0.60.0
+  - @stonecrop/schema@0.60.0
+  - @stonecrop/themes@0.60.0
+
+## 0.59.0
+
+### Patch Changes
+
+- Updated dependencies [35dc2f5]
+- Updated dependencies [35dc2f5]
+- Updated dependencies [35dc2f5]
+- Updated dependencies [35dc2f5]
+  - @stonecrop/graphql-middleware@0.59.0
+  - @stonecrop/graphql-client@0.59.0
+  - @stonecrop/nuxt-grafserv@0.59.0
+  - @stonecrop/aform@0.59.0
+  - @stonecrop/atable@0.59.0
+  - @stonecrop/casl-middleware@0.59.0
+  - @stonecrop/code-editor@0.59.0
+  - @stonecrop/desktop@0.59.0
+  - @stonecrop/node-editor@0.59.0
+  - @stonecrop/schema@0.59.0
+  - @stonecrop/stonecrop@0.59.0
+  - @stonecrop/themes@0.59.0
+
+## 0.58.4
+
+### Patch Changes
+
+- Updated dependencies [07be796]
+  - @stonecrop/aform@0.58.4
+  - @stonecrop/desktop@0.58.4
+  - @stonecrop/stonecrop@0.58.4
+  - @stonecrop/atable@0.58.4
+  - @stonecrop/casl-middleware@0.58.4
+  - @stonecrop/code-editor@0.58.4
+  - @stonecrop/graphql-client@0.58.4
+  - @stonecrop/graphql-middleware@0.58.4
+  - @stonecrop/node-editor@0.58.4
+  - @stonecrop/nuxt-grafserv@0.58.4
+  - @stonecrop/schema@0.58.4
+  - @stonecrop/themes@0.58.4
+
+## 0.58.3
+
+### Patch Changes
+
+- Updated dependencies [44b7eb5]
+  - @stonecrop/aform@0.58.3
+  - @stonecrop/desktop@0.58.3
+  - @stonecrop/stonecrop@0.58.3
+  - @stonecrop/atable@0.58.3
+  - @stonecrop/casl-middleware@0.58.3
+  - @stonecrop/code-editor@0.58.3
+  - @stonecrop/graphql-client@0.58.3
+  - @stonecrop/graphql-middleware@0.58.3
+  - @stonecrop/node-editor@0.58.3
+  - @stonecrop/nuxt-grafserv@0.58.3
+  - @stonecrop/schema@0.58.3
+  - @stonecrop/themes@0.58.3
+
+## 0.58.2
+
+### Patch Changes
+
+- 4a1a274: `NodeEditor` and `StateEditor` now load the first time a page renders one, instead of with every page: the Nuxt module put Vue Flow and dagre, about 200 kB minified, in every app's entry chunk. Both stay registered by name, so a doctype naming either still renders it.
+- Updated dependencies [4a1a274]
+  - @stonecrop/atable@0.58.2
+  - @stonecrop/aform@0.58.2
+  - @stonecrop/stonecrop@0.58.2
+  - @stonecrop/desktop@0.58.2
+  - @stonecrop/casl-middleware@0.58.2
+  - @stonecrop/code-editor@0.58.2
+  - @stonecrop/graphql-client@0.58.2
+  - @stonecrop/graphql-middleware@0.58.2
+  - @stonecrop/node-editor@0.58.2
+  - @stonecrop/nuxt-grafserv@0.58.2
+  - @stonecrop/schema@0.58.2
+  - @stonecrop/themes@0.58.2
+
+## 0.58.1
+
+### Patch Changes
+
+- Updated dependencies [b46e712]
+  - @stonecrop/aform@0.58.1
+  - @stonecrop/desktop@0.58.1
+  - @stonecrop/stonecrop@0.58.1
+  - @stonecrop/atable@0.58.1
+  - @stonecrop/casl-middleware@0.58.1
+  - @stonecrop/code-editor@0.58.1
+  - @stonecrop/graphql-client@0.58.1
+  - @stonecrop/graphql-middleware@0.58.1
+  - @stonecrop/node-editor@0.58.1
+  - @stonecrop/nuxt-grafserv@0.58.1
+  - @stonecrop/schema@0.58.1
+  - @stonecrop/themes@0.58.1
+
+## 0.58.0
+
+### Patch Changes
+
+- Updated dependencies [246be00]
+  - @stonecrop/schema@0.58.0
+  - @stonecrop/aform@0.58.0
+  - @stonecrop/atable@0.58.0
+  - @stonecrop/desktop@0.58.0
+  - @stonecrop/graphql-client@0.58.0
+  - @stonecrop/graphql-middleware@0.58.0
+  - @stonecrop/node-editor@0.58.0
+  - @stonecrop/stonecrop@0.58.0
+  - @stonecrop/nuxt-grafserv@0.58.0
+  - @stonecrop/casl-middleware@0.58.0
+  - @stonecrop/code-editor@0.58.0
+  - @stonecrop/themes@0.58.0
+
+## 0.57.0
+
+### Patch Changes
+
+- Updated dependencies [e816b7b]
+- Updated dependencies [e816b7b]
+- Updated dependencies [e816b7b]
+- Updated dependencies [e816b7b]
+  - @stonecrop/schema@0.57.0
+  - @stonecrop/graphql-middleware@0.57.0
+  - @stonecrop/aform@0.57.0
+  - @stonecrop/atable@0.57.0
+  - @stonecrop/desktop@0.57.0
+  - @stonecrop/graphql-client@0.57.0
+  - @stonecrop/node-editor@0.57.0
+  - @stonecrop/stonecrop@0.57.0
+  - @stonecrop/nuxt-grafserv@0.57.0
+  - @stonecrop/casl-middleware@0.57.0
+  - @stonecrop/code-editor@0.57.0
+  - @stonecrop/themes@0.57.0
+
+## 0.56.4
+
+### Patch Changes
+
+- Updated dependencies [e02c837]
+  - @stonecrop/schema@0.56.4
+  - @stonecrop/aform@0.56.4
+  - @stonecrop/atable@0.56.4
+  - @stonecrop/desktop@0.56.4
+  - @stonecrop/graphql-client@0.56.4
+  - @stonecrop/graphql-middleware@0.56.4
+  - @stonecrop/node-editor@0.56.4
+  - @stonecrop/stonecrop@0.56.4
+  - @stonecrop/nuxt-grafserv@0.56.4
+  - @stonecrop/casl-middleware@0.56.4
+  - @stonecrop/code-editor@0.56.4
+  - @stonecrop/themes@0.56.4
+
+## 0.56.3
+
+### Patch Changes
+
+- ff8f5da: `@stonecrop/nuxt-grafserv` no longer depends on `@graphql-tools/stitch`, which it never imported, so an app installing it stops getting the `@graphql-tools/utils` that GHSA-7mx3-vvmw-hjmv and GHSA-c4qx-w738-7hr3 affect. The scaffolded `server/resolvers.ts` declares the type of an action's reply, which the newer Grafast's `loadOne` no longer infers.
+- Updated dependencies [ff8f5da]
+  - @stonecrop/nuxt-grafserv@0.56.3
+  - @stonecrop/aform@0.56.3
+  - @stonecrop/atable@0.56.3
+  - @stonecrop/casl-middleware@0.56.3
+  - @stonecrop/code-editor@0.56.3
+  - @stonecrop/desktop@0.56.3
+  - @stonecrop/graphql-client@0.56.3
+  - @stonecrop/graphql-middleware@0.56.3
+  - @stonecrop/node-editor@0.56.3
+  - @stonecrop/schema@0.56.3
+  - @stonecrop/stonecrop@0.56.3
+  - @stonecrop/themes@0.56.3
+
+## 0.56.2
+
+### Patch Changes
+
+- 9a372b4: Build the Nuxt modules in `prepublishOnly`, as every other package does, rather than on every `pack`, and drop nuxt's deprecated `prepublish` hook, which built it a second time on publish. The published files are unchanged.
+- Updated dependencies [9a372b4]
+  - @stonecrop/nuxt-grafserv@0.56.2
+  - @stonecrop/aform@0.56.2
+  - @stonecrop/atable@0.56.2
+  - @stonecrop/casl-middleware@0.56.2
+  - @stonecrop/code-editor@0.56.2
+  - @stonecrop/desktop@0.56.2
+  - @stonecrop/graphql-client@0.56.2
+  - @stonecrop/graphql-middleware@0.56.2
+  - @stonecrop/node-editor@0.56.2
+  - @stonecrop/schema@0.56.2
+  - @stonecrop/stonecrop@0.56.2
+  - @stonecrop/themes@0.56.2
+
+## 0.56.1
+
+### Patch Changes
+
+- a658572: Remove Beam from the monorepo and docs site; components now live in the consuming project.
+- @stonecrop/aform@0.56.1
+  - @stonecrop/atable@0.56.1
+  - @stonecrop/casl-middleware@0.56.1
+  - @stonecrop/code-editor@0.56.1
+  - @stonecrop/desktop@0.56.1
+  - @stonecrop/graphql-client@0.56.1
+  - @stonecrop/graphql-middleware@0.56.1
+  - @stonecrop/node-editor@0.56.1
+  - @stonecrop/nuxt-grafserv@0.56.1
+  - @stonecrop/schema@0.56.1
+  - @stonecrop/stonecrop@0.56.1
+  - @stonecrop/themes@0.56.1
+
+## 0.56.0
+
+### Patch Changes
+
+- e435204: BREAKING: Desktop no longer adds a New Record button to lists or Create New to the command palette; an app offers New itself, declared on a list doctype or passed as `hostActions`.
+- Updated dependencies [e331ffe]
+- Updated dependencies [e331ffe]
+- Updated dependencies [e435204]
+  - @stonecrop/stonecrop@0.56.0
+  - @stonecrop/desktop@0.56.0
+  - @stonecrop/aform@0.56.0
+  - @stonecrop/atable@0.56.0
+  - @stonecrop/casl-middleware@0.56.0
+  - @stonecrop/code-editor@0.56.0
+  - @stonecrop/graphql-client@0.56.0
+  - @stonecrop/graphql-middleware@0.56.0
+  - @stonecrop/node-editor@0.56.0
+  - @stonecrop/nuxt-grafserv@0.56.0
+  - @stonecrop/schema@0.56.0
+  - @stonecrop/themes@0.56.0
+
+## 0.55.2
+
+### Patch Changes
+
+- Updated dependencies [8fbae19]
+  - @stonecrop/stonecrop@0.55.2
+  - @stonecrop/desktop@0.55.2
+  - @stonecrop/aform@0.55.2
+  - @stonecrop/atable@0.55.2
+  - @stonecrop/casl-middleware@0.55.2
+  - @stonecrop/code-editor@0.55.2
+  - @stonecrop/graphql-client@0.55.2
+  - @stonecrop/graphql-middleware@0.55.2
+  - @stonecrop/node-editor@0.55.2
+  - @stonecrop/nuxt-grafserv@0.55.2
+  - @stonecrop/schema@0.55.2
+  - @stonecrop/themes@0.55.2
+
 ## 0.55.1
 
 ### Patch Changes

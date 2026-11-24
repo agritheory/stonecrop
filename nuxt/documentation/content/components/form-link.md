@@ -122,11 +122,13 @@ rows:
   - ['`ariaLabel`', '`string`', '—', 'Accessible name for the input. Effectively required when `embedded` is `true`, since the visible `label` is suppressed there.']
   - ['`required`', '`boolean`', '`false`', "Sets the native `required` attribute on the input (`edit` mode only)."]
   - ['`mode`', "`'edit' | 'read' | 'display'`", "`'edit'`", 'See [Modes](#modes) below.']
-  - ['`uuid`', '`string`', 'none', "Used to build the autocomplete listbox's id, wired to the input via `aria-controls`/`aria-activedescendant`. Nothing generates one, so pass it for those attributes to resolve."]
+  - ['`uuid`', '`string`', 'none', "Used to build the autocomplete listbox's id, wired to the input via `aria-controls`/`aria-activedescendant`, and the error message's id (`<uuid>-error`), wired to the input via `aria-describedby`. Nothing generates one, so pass it for those attributes to resolve."]
+  - ['`validation`', '`{ errorMessage: string }`', '—', 'Not read by this component. Inside `AForm`, `errorMessage` words an error a trigger reports on this field without a message (`setError(field)`); it is never shown on its own.']
+  - ['`errors`', '`string[]`', '—', 'Dynamic validation errors (e.g. from a trigger). Shown joined with `; `, and nothing is shown without them. Inside `AForm` they arrive already worded: an error reported without a message carries the `validation.errorMessage` of its field. Not shown in `embedded` mode, where the host component shows its own error.']
 ---
 ::
 
-`AFormLink` also participates in navigation: when `doctype` is set and an `aformLinkNavigator` has been provided (via `app.provide('aformLinkNavigator', { navigate(doctype, id) { ... } })`), the arrow button calls it with the linked record's doctype and id. Without a provided navigator, the arrow still renders whenever the field holds a valid id, but clicks are no-ops.
+`AFormLink` also participates in navigation: when `doctype` is set and an `aformLinkNavigator` has been provided (via `app.provide('aformLinkNavigator', { navigate(doctype, id) { ... } })`), the arrow button calls it with the linked record's doctype and id. The arrow is shown only when the field holds a valid id, has a `doctype`, and a navigator has been provided; a link with no `doctype` (e.g. a unit stored by its name), or one mounted without a navigator, has nothing to open and shows no arrow.
 
 ### AFormLinkValue
 
@@ -146,8 +148,8 @@ rows:
 ---
 headers: ['Mode', 'Rendering']
 rows:
-  - ['`edit`', 'Interactive input. Dropdown opens on focus or typing (if `filterFunction` is set). Navigate arrow shown when the value has a valid id.']
-  - ['`read`', 'Input disabled; dropdown never opens even on focus. Navigate arrow still shown when the value has a valid id.']
+  - ['`edit`', 'Interactive input. Dropdown opens on focus or typing (if `filterFunction` is set). Navigate arrow shown when the value has a valid id, `doctype` is set and a navigator is provided (see above).']
+  - ['`read`', 'Input disabled; dropdown never opens even on focus. Navigate arrow still shown, under the same rule as `edit`.']
   - ['`display`', 'Static text only — the formatted value, or `—` when the value has no id. No input, no navigate arrow.']
 ---
 ::
@@ -155,5 +157,7 @@ rows:
 ## Accessibility
 
 The input has `role="combobox"` with `aria-autocomplete="list"`, and toggles `aria-expanded`; the dropdown is a `role="listbox"` linked via `aria-controls`, with each option as `role="option"` and the highlighted option tracked with `aria-activedescendant`/`aria-selected`. Arrow Down/Up move the highlighted option, Enter selects it, and Escape (or a click outside) closes the dropdown and reverts the input's text to the current value. Unlike other Stonecrop field components, the visible `label` is rendered next to the input rather than wrapping it or being linked via `for`/`id` — pass `ariaLabel` for a dependable accessible name, which is effectively required in `embedded` mode since the visible label is suppressed there entirely.
+
+When the field is handed `errors`, the message is rendered with `role="alert"` and the input gets `aria-invalid="true"` and an `aria-describedby` pointing at it, as on the text input; the id comes from `uuid`, so pass one for the link to resolve.
 
 Source: [`aform/src/components/form/AFormLink.vue`](https://github.com/agritheory/stonecrop/blob/development/aform/src/components/form/AFormLink.vue)

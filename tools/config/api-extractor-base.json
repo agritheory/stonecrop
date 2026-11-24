@@ -168,7 +168,7 @@
 		 * SUPPORTED TOKENS: <projectFolder>, <packageName>, <unscopedPackageName>
 		 * DEFAULT VALUE: "<projectFolder>/temp/"
 		 */
-		"reportFolder": "<projectFolder>/../tools/api-reports"
+		"reportFolder": "<projectFolder>/../tools/api-reports",
 
 		/**
 		 * Specifies the folder where the temporary report file is written.  The file name portion is determined by
@@ -183,7 +183,10 @@
 		 * SUPPORTED TOKENS: <projectFolder>, <packageName>, <unscopedPackageName>
 		 * DEFAULT VALUE: "<projectFolder>/temp/"
 		 */
-		// "reportTempFolder": "<projectFolder>/temp/",
+		// Not the default `temp/`: scratch output stays out of the package root, which the build
+		// lists (see tools/vite/build-task.ts). The doc model below follows it, and so does every
+		// package's tsBuildInfoFile.
+		"reportTempFolder": "<projectFolder>/node_modules/.temp/"
 
 		/**
 		 * Whether "forgotten exports" should be included in the API report file. Forgotten exports are declarations
@@ -202,7 +205,7 @@
 		/**
 		 * (REQUIRED) Whether to generate a doc model file.
 		 */
-		"enabled": true
+		"enabled": true,
 
 		/**
 		 * The output path for the doc model file.  The file extension should be ".api.json".
@@ -213,7 +216,7 @@
 		 * SUPPORTED TOKENS: <projectFolder>, <packageName>, <unscopedPackageName>
 		 * DEFAULT VALUE: "<projectFolder>/temp/<unscopedPackageName>.api.json"
 		 */
-		// "apiJsonFilePath": "<projectFolder>/temp/<unscopedPackageName>.api.json",
+		"apiJsonFilePath": "<projectFolder>/node_modules/.temp/<unscopedPackageName>.api.json"
 
 		/**
 		 * Whether "forgotten exports" should be included in the doc model file. Forgotten exports are declarations

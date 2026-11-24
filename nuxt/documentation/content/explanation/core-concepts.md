@@ -60,7 +60,9 @@ Paths can go arbitrarily deep. The HST creates intermediate nodes as needed—if
 
 ### Connection to Operation Logging
 
-Every HST mutation flows through the Operation Log. This happens automatically—you don't instrument individual changes. The logging captures the path, old value, new value, and timestamp. This enables undo/redo, audit trails, and debugging without any additional code at the call sites.
+Every change made through the HST—through `useStonecrop` or the store's `set()`—flows through the Operation Log. You don't instrument individual changes: the logging captures the path, old value, new value, and timestamp, which enables undo/redo, audit trails, and debugging without any additional code at the call sites.
+
+A write made straight into an object read from the store, such as a component setting `row.qty = 5` on a row it was handed, bypasses the HST. It still changes the record, but the Operation Log never hears of it, so Undo skips it and reverses the change before it. Stonecrop lets such a write through and, outside production, logs a warning naming the path that was written.
 
 ## Registry
 
@@ -94,7 +96,7 @@ When a doctype is registered, its actions are automatically registered with the 
 
 ## Operation Log
 
-The Operation Log is Stonecrop's memory. Every mutation to the HST is recorded with full context: what changed, what it changed from, when it happened, and who did it.
+The Operation Log is Stonecrop's memory. Every change made through the HST is recorded with full context: what changed, what it changed from, when it happened, and who did it.
 
 ### Why Track Everything?
 
@@ -105,7 +107,7 @@ Business software has accountability requirements that typical web apps don't. W
 - Who changed it?
 - Can we reverse it?
 
-The Operation Log captures this automatically. You don't sprinkle audit logging throughout your code—it happens at the state layer, consistently.
+The Operation Log captures this for every change made through the HST. You don't sprinkle audit logging throughout your code—it happens at the state layer, consistently, as long as changes go through `useStonecrop` or the store's `set()` rather than being written straight into an object read from the store.
 
 ### Undo/Redo as a First-Class Feature
 

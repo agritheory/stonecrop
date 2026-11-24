@@ -1,12 +1,12 @@
 import { afterEach, beforeEach, describe, it, expect, vi } from 'vite-plus/test'
 import { mount, flushPromises } from '@vue/test-utils'
 
-import AForm from '../src/components/AForm.vue'
 import ADateTimeInput from '../src/components/form/ADateTimeInput.vue'
 import ADateTime from '../src/components/form/ADateTime.vue'
 import ADateSelection from '../src/components/form/ADateSelection.vue'
 import ADatePicker from '../src/components/form/ADatePicker.vue'
 import type { ResolvedField } from '../src/types'
+import { mountBound } from './mount-bound'
 
 const formFieldGlobals = {
 	global: {
@@ -545,7 +545,7 @@ describe('datetime form field component', { tags: ['component'] }, () => {
 
 		// Cleared through the form, as a record clears it: an empty date reaches the field as null.
 		const mountCleared = async () => {
-			const wrapper = mount(AForm, {
+			const wrapper = mountBound({
 				global: { components: { ...formFieldGlobals.global.components, ADateTime } },
 				props: {
 					schema: [{ kind: 'field', fieldname: 'due', component: 'ADateTime', label: 'Due' }] satisfies ResolvedField[],

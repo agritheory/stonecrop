@@ -518,7 +518,7 @@ export interface ActionFailure {
   cause?: unknown;
   doctype: string;
   message: string;
-  recordId: string;
+  recordId?: string;
 }
 ```
 
@@ -530,7 +530,7 @@ export interface ActionFailure {
 | cause? | `unknown` | The thrown value, present only when the failure was a throw rather than a refused dispatch. |
 | doctype | `string` | Slug of the doctype the action was raised on. |
 | message | `string` | Human-readable reason — the server's own message where there is one. |
-| recordId | `string` | Record the action was raised against; the `new` route segment for an unsaved record. |
+| recordId? | `string` | Record the action was raised against; the `new` route segment for an unsaved record; absent on a list. |
 
 ### ActionRegistry
 
@@ -1077,7 +1077,7 @@ export interface ValidationError {
 | Property | Type | Description |
 |----------|------|-------------|
 | field | `string` | The fieldname the error displays on (the `setError` target, not necessarily a fired field) |
-| message | `string` | The message to display |
+| message | `string` | The message to display; `''` when the trigger left it out (`setError(field)`), which the form words with the field's own `validation.errorMessage` |
 | trigger | `string` | The trigger that produced this error — the namespace a re-run clears before repopulating |
 
 ### ValidationIssue
@@ -1176,7 +1176,7 @@ Defined here rather than in `@stonecrop/desktop` because the shell that *emits* 
 export type ActionEventPayload = {
     name: string;
     doctype: string;
-    recordId: string;
+    recordId?: string;
     data: Record<string, any>;
 };
 ```
@@ -1623,6 +1623,16 @@ getActionMeta(actionName: string): {
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | actionName | `string` | The action name to get metadata for |
+
+#### getActions
+
+Returns every action this doctype's workflow declares, in declaration order, whatever its kind or state. A list shows these, since a list has no record whose state could narrow them. An XState workflow declares none.
+
+```typescript
+getActions(): Array<{
+        name: string;
+    }>
+```
 
 #### getAvailableCommands
 
@@ -2473,7 +2483,7 @@ export const plugin: Plugin
 
 ### useOperationLogStore
 
-Global HST Operation Log Store Tracks all mutations with full metadata for undo/redo, sync, and audit
+Global HST Operation Log Store Tracks each change made through the store's `set()` with full metadata for undo/redo, sync, and audit. A write made straight into an object read from the store is not logged; outside production it logs a warning.
 
 **Type:**
 
@@ -2757,7 +2767,7 @@ export const useValidationStore: import("pinia").StoreDefinition<"stonecrop-vali
     isValid: import("vue").ComputedRef<boolean>;
     errorsByField: import("vue").ComputedRef<Record<string, string[]>>;
     errorsFor: (field: string) => string[];
-    setError: (trigger: string, field: string, message: string) => void;
+    setError: (trigger: string, field: string, message?: string) => void;
     clearTrigger: (trigger: string) => void;
     clearAll: () => void;
     validateField: (triggers: Record<string, TriggerDefinition>, changedField: string, record: Record<string, unknown>) => Promise<void>;
@@ -2775,7 +2785,7 @@ export const useValidationStore: import("pinia").StoreDefinition<"stonecrop-vali
     isValid: import("vue").ComputedRef<boolean>;
     errorsByField: import("vue").ComputedRef<Record<string, string[]>>;
     errorsFor: (field: string) => string[];
-    setError: (trigger: string, field: string, message: string) => void;
+    setError: (trigger: string, field: string, message?: string) => void;
     clearTrigger: (trigger: string) => void;
     clearAll: () => void;
     validateField: (triggers: Record<string, TriggerDefinition>, changedField: string, record: Record<string, unknown>) => Promise<void>;
@@ -2793,7 +2803,7 @@ export const useValidationStore: import("pinia").StoreDefinition<"stonecrop-vali
     isValid: import("vue").ComputedRef<boolean>;
     errorsByField: import("vue").ComputedRef<Record<string, string[]>>;
     errorsFor: (field: string) => string[];
-    setError: (trigger: string, field: string, message: string) => void;
+    setError: (trigger: string, field: string, message?: string) => void;
     clearTrigger: (trigger: string) => void;
     clearAll: () => void;
     validateField: (triggers: Record<string, TriggerDefinition>, changedField: string, record: Record<string, unknown>) => Promise<void>;

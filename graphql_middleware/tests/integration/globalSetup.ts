@@ -1,10 +1,8 @@
 import { readFileSync } from 'node:fs'
-import type { AddressInfo } from 'node:net'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { PGlite } from '@electric-sql/pglite'
-import { createServer, LogLevel } from 'pglite-server'
-import type { Server } from 'node:net'
+import { PGLiteSocketServer } from '@electric-sql/pglite-socket'
 import type { TestProject } from 'vite-plus/test/node'
 
 declare module 'vitest' {
@@ -20,7 +18,20 @@ declare module 'vitest' {
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
-async function createTestDb(): Promise<{ url: string; server: Server; db: PGlite }> {
+/**
+ * Serve a freshly seeded PGlite over a socket. `@electric-sql/pglite-socket` passes PGlite's
+ * answers through unchanged; `pglite-server` sent its own "ready for query" after a failed message,
+ * so after a failed query with parameters every later answer on that connection arrived one query
+ * late (#544).
+ *
+ * The server turns away any connection past `maxConnections`, and the tests that connect next fail
+ * with "Connection terminated unexpectedly" or "read ECONNRESET" without naming the limit. A closed
+ * connection also keeps its slot for a moment. So every database gets the same roomy limit rather
+ * than a count of what each test file opens.
+ */
+const MAX_CONNECTIONS = 10
+
+async function createTestDb(): Promise<{ url: string; server: PGLiteSocketServer; db: PGlite }> {
 	const db = new PGlite()
 	await db.waitReady
 
@@ -30,18 +41,16 @@ async function createTestDb(): Promise<{ url: string; server: Server; db: PGlite
 	// developer's zone locally. A test that needs another zone sets it for its own transaction.
 	await db.exec(`SET TIME ZONE 'UTC'`)
 
-	const server = createServer(db, { logLevel: LogLevel.Error })
-	await new Promise<void>(resolve => server.listen(0, () => resolve()))
-	const port = (server.address() as AddressInfo).port
+	const server = new PGLiteSocketServer({ db, host: '127.0.0.1', port: 0, maxConnections: MAX_CONNECTIONS })
+	await server.start()
 
-	return { url: `postgresql://localhost:${port}/postgres`, server, db }
+	return { url: `postgresql://${server.getServerConn()}/postgres`, server, db }
 }
 
 export async function setup(project: TestProject) {
-	// Each integration test file calls makeSchema(), which triggers heavy PostGraphile
-	// catalog introspection. A single pglite-server can't survive multiple sequential
-	// introspection rounds without corruption. Give each file its own isolated instance.
-	// Spin up one instance at a time: five PGlite servers in parallel can OOM when `vp run -r test`
+	// Each integration test file calls makeSchema(), which runs PostGraphile's catalog
+	// introspection, so each file gets its own isolated instance.
+	// Spin up one instance at a time: several PGlite instances in parallel can OOM when `vp run -r test`
 	// executes this package alongside other Vitest jobs on a memory-tight machine.
 	const resolver = await createTestDb()
 	const camel = await createTestDb()
@@ -59,9 +68,9 @@ export async function setup(project: TestProject) {
 
 	return async () => {
 		for (const { server, db } of [resolver, camel, inflection, conformance, naturalId, generatedMutations]) {
-			server.unref()
-			server.close()
 			// oxlint-disable-next-line eslint/no-await-in-loop -- sequential teardown intentional; parallel close risks race conditions on shared DB state
+			await server.stop()
+			// oxlint-disable-next-line eslint/no-await-in-loop -- as above
 			await db.close()
 		}
 	}

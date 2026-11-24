@@ -10,14 +10,15 @@ import { docPackages } from '../../tools/scripts/doc-packages.mjs'
  * recursive selection: twice per build, the first time against the previous run's files.
  *
  * `dependsOn` is derived from the same list the aggregation reads, so a package added to one is
- * ordered by the other.
+ * ordered by the other. A package declaring `apiReport: false` writes no `api.md`, so it has no
+ * `reports` task to wait for.
  */
 export default defineConfig({
 	run: {
 		tasks: {
-			build: {
+			reports: {
 				command: 'node ../../tools/scripts/docs-aggregate.mjs',
-				dependsOn: docPackages.map(pkg => `@stonecrop/${pkg.name}#build`),
+				dependsOn: docPackages.filter(pkg => pkg.apiReport !== false).map(pkg => `@stonecrop/${pkg.name}#reports`),
 				cache: {
 					// The two scripts the command actually reads, rather than all of `tools/scripts`:
 					// widened back, every edit to an unrelated build or check script re-runs aggregation.

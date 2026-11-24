@@ -106,7 +106,7 @@ import { numberFromBox } from '../../utils/emptiedBox'
 import { asLinkValue, linkId } from '../../utils/linkValue'
 import { numberFromRecord } from '../../utils/recordNumber'
 import ADropdown from './ADropdown.vue'
-import { fieldErrorA11y } from '../../composables/fieldErrorA11y'
+import { fieldErrorA11y, fieldErrorText } from '../../composables/fieldErrorA11y'
 
 const {
 	label,
@@ -114,7 +114,6 @@ const {
 	mode,
 	uuid,
 	errors,
-	validation = { errorMessage: '' },
 	options = {},
 	currencyLabel = 'Currency',
 } = defineProps<
@@ -124,8 +123,8 @@ const {
 	}
 >()
 
-// Dynamic trigger errors take precedence over a static schema errorMessage; empty means the slot hides.
-const errorText = computed(() => (errors?.length ? errors.join('; ') : (validation.errorMessage ?? '')))
+// The errors this field is handed, already worded by AForm. Empty hides the slot.
+const errorText = computed(() => fieldErrorText(errors))
 const helperId = computed(() => (uuid ? `${uuid}-helper` : undefined))
 
 // No default: a field with no value shows empty, as null does, rather than a rate nobody entered.

@@ -109,6 +109,9 @@ export interface ResolvedTable {
 	hidden?: boolean
 	/** Preserved from the original ValueField or TableField */
 	validation?: FieldValidation
+	/** Preserved from the original ValueField or TableField: the fields an app's own table component
+	 *  reads, handed to it as its value. Its rows still arrive as `rows`. */
+	parts?: Record<string, string>
 	/** When set, ATable fetches list pages through this callback (server paging). */
 	getRecords?: (options?: GetRecordsOptions) => Promise<GetRecordsResult>
 	/** When this changes, ATable refetches from offset 0. */
@@ -205,7 +208,8 @@ export type ComponentProps = {
 	 */
 	validation?: {
 		/**
-		 * The error message to display when validation fails
+		 * Shown when a trigger reports an error on this field without a message: `setError(field)`.
+		 * Applied by AForm, which words the errors it is handed before routing them; never shown on its own.
 		 * @public
 		 */
 		errorMessage: string
@@ -216,7 +220,8 @@ export type ComponentProps = {
 	/**
 	 * Inline validation error messages to display on this field. Fed by the host
 	 * (e.g. mapped from the core validation store) — the renderer stays dumb and just
-	 * shows what it is given. Takes precedence over the static `validation.errorMessage`.
+	 * shows what it is given. Inside AForm, an error reported without a message arrives worded with the
+	 * field's `validation.errorMessage`.
 	 * @public
 	 */
 	errors?: string[]
@@ -243,7 +248,8 @@ export interface AFormLinkValue {
  * to that column coerces every update it receives back to a scalar. The component reads through
  * `linkId`/`linkDisplayText`/`asLinkValue`, so all three shapes render and resolve identically.
  *
- * Emitting is narrower — AFormLink always writes back an {@link AFormLinkValue}.
+ * Emitting is narrower — AFormLink writes back an {@link AFormLinkValue} when an option is picked,
+ * or `null` when the user empties the field.
  * @public
  */
 export type AFormLinkModelValue = AFormLinkValue | string | number

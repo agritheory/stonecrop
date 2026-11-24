@@ -1,7 +1,7 @@
 {
 	"extends": "../tsconfig.json",
 	"compilerOptions": {
-		"tsBuildInfoFile": "./temp/graphql_client.tsbuildinfo",
+		"tsBuildInfoFile": "./node_modules/.temp/graphql_client.tsbuildinfo",
 		"types": ["node"]
 	},
 	"include": ["src/**/*.ts", "src/**/*.vue"]

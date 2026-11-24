@@ -253,6 +253,16 @@ describe('useLazyLink', { tags: ['unit'] }, () => {
 		expect(state.loaded.value).toBe(true)
 		expect(state.data.value).toEqual([{ id: 't1', name: 'Lazy Task' }])
 	})
+
+	it('refuses an empty record ID', () => {
+		const doctype = createTestDoctype('Recipe', {
+			tasks: { target: 'recipe-task', cardinality: 'noneOrMany', fetch: { method: 'sync' } },
+		})
+		registry.addDoctype(doctype)
+		stonecrop.setup(doctype)
+
+		expect(() => useLazyLink(doctype, '', 'tasks')).toThrow('No record ID given for recipe')
+	})
 })
 
 describe('blockWorkflows', { tags: ['unit'] }, () => {

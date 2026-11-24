@@ -138,6 +138,7 @@ slots: {
   header: { data: TableStore; }
   body: { data: TableStore; }
   content: { row: { [x: string]: any; indent?: number \| undefined; parent?: number \| undefined; gantt?: { color?: string \| undefined; startIndex?: number \| undefined; endIndex?: number \| undefined; colspan?: number \| undefined; } \| undefined; }; rowIndex: number; store: TableStore; }
+  empty: { data: TableStore; filtered: boolean; add: () => void; }
   footer: { data: TableStore; page: TablePagination; }
   modal: { data: TableStore; }
 }
@@ -154,6 +155,23 @@ exposed: {
   insertRowAbove: (rowIndex: number, rowData?: Partial<TableRow> \| undefined) => number
   insertRowBelow: (rowIndex: number, rowData?: Partial<TableRow> \| undefined) => number
   moveRow: (fromIndex: number, toIndex: number) => boolean
+}
+```
+
+### ATableEmptyRow
+
+```ts
+// src/components/ATableEmptyRow.vue
+props: {
+  colspan: number
+  addable?: boolean \| undefined
+  filtered?: boolean \| undefined
+}
+emits: {
+  add: []
+}
+slots: {
+  default: { filtered: boolean; }
 }
 ```
 

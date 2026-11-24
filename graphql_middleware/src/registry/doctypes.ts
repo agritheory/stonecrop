@@ -182,6 +182,13 @@ export function clearRegistry(): void {
  * table does not have already fails loudly — Postgres rejects the SELECT — so it is left alone;
  * the check exists for the silent cases, not to restate the database's own errors.
  *
+ * A many-side link's `orderBy` is the exception, because the doctypes alone can decide it: it names
+ * a field of the target, which must have a column. A misspelt one fails every read and save of this
+ * doctype, and the read's error names the target rather than this link, so it is refused here, once.
+ * The read keeps its own check for doctypes loaded after the schema is built. A one-side link reads
+ * one row, so its `orderBy` would be ignored without a word, custom or not. A custom many-side link's
+ * order is its handler's to apply, so it is not checked.
+ *
  * Returns rather than throws so the caller decides; `assertReferencesResolve` in the plugin is that
  * caller. Kept out of the package's public exports: it reads a module-level registry, so it is only
  * meaningful after this module's own loaders have run.
@@ -230,15 +237,26 @@ export function validateReferences(): ValidationError[] {
 					})
 				}
 
+				const isMany = link.cardinality === 'noneOrMany' || link.cardinality === 'atLeastOne'
+
+				// One row has no order, however it is fetched, so a one-side link's `orderBy` would be
+				// ignored without a word.
+				if (!isMany && link.orderBy) {
+					errors.push({
+						path: [doctype.name, 'links', key, 'orderBy'],
+						message: `Link "${key}" is ${link.cardinality} and reads one row, so its \`orderBy\` is never read. Remove it.`,
+					})
+				}
+
 				// A custom fetch strategy hands the whole read to its handler, which is given the
-				// row and the declaration and finds the target however it likes. The runtime returns
-				// before consulting either binding below, so requiring one would refuse a link that
-				// works.
+				// row and the declaration and finds the target however it likes, in the order it
+				// likes. The runtime returns before consulting either binding below, or the order,
+				// so requiring one would refuse a link that works.
 				if (link.fetch?.method === 'custom') continue
 
 				// The two cardinalities bind through different halves of the declaration, so the
 				// check has to split the same way the reader does.
-				if (link.cardinality === 'noneOrMany' || link.cardinality === 'atLeastOne') {
+				if (isMany) {
 					// Many-side: the target rows are found by a column on the *target* table, so
 					// this doctype needs no field of its own — and the in-repo hosts disagree on
 					// whether one exists, which is why only `backlink` can be required here.
@@ -249,6 +267,24 @@ export function validateReferences(): ValidationError[] {
 								`Link "${key}" is ${link.cardinality} but names no \`backlink\`, so the runtime cannot ` +
 								`find the target rows and drops the link with no error. Name the field on "${link.target}" ` +
 								`that points back to this doctype.`,
+						})
+					}
+					const order = link.orderBy
+					const targetMeta = getMeta(link.target)
+					if (
+						order &&
+						targetMeta &&
+						!columnBackedFields(targetMeta.fields).some(f => f.fieldname === order.fieldname)
+					) {
+						const targetDeclares = flattenFields(targetMeta.fields).some(f => f.fieldname === order.fieldname)
+						errors.push({
+							path: [doctype.name, 'links', key, 'orderBy', 'fieldname'],
+							message: targetDeclares
+								? `Link "${key}" orders its rows by "${order.fieldname}", which has no database column on ` +
+									`"${link.target}" (it is computed, or a container rather than a value), so every read of ` +
+									`this doctype fails. Order by a field with a column.`
+								: `Link "${key}" orders its rows by "${order.fieldname}", which "${link.target}" does not ` +
+									`declare, so every read of this doctype fails. Name a field of "${link.target}".`,
 						})
 					}
 					continue

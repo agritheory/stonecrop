@@ -2,10 +2,10 @@ import { mount, flushPromises } from '@vue/test-utils'
 import { describe, it, expect, vi } from 'vite-plus/test'
 import { defineComponent, h } from 'vue'
 
-import AForm from '../src/components/AForm.vue'
 import ADropdown from '../src/components/form/ADropdown.vue'
 import AQuantityInput from '../src/components/form/AQuantityInput.vue'
 import type { ResolvedField } from '../src/types'
+import { mountBound } from './mount-bound'
 
 describe('dropdown input component', { tags: ['component'] }, () => {
 	const dropdownData = {
@@ -398,7 +398,7 @@ describe('a dropdown in a form', { tags: ['component'] }, () => {
 
 	// Types into the status box, then presses `key`; returns each status the form sent.
 	const typeStatus = async (typed: string, key: string) => {
-		const wrapper = mount(AForm, {
+		const wrapper = mountBound({
 			props: { schema: [status], data: { status: 'Open' } },
 			global: { components: { ADropdown } },
 		})
@@ -487,5 +487,89 @@ describe('dropdown list ids', { tags: ['component'] }, () => {
 		const ids = wrapper.findAll('[id]').map(element => element.attributes('id'))
 
 		expect(ids).toEqual([...new Set(ids)])
+	})
+})
+
+// A search that asks a server can answer late. The list shows the results for what's in the box, and ↓ Enter picks
+// from the list on screen, never from an older search's results.
+describe('a dropdown whose search answers out of order', { tags: ['component'] }, () => {
+	const deferred = <T>() => {
+		let resolve!: (value: T) => void
+		const promise = new Promise<T>(r => (resolve = r))
+		return { promise, resolve }
+	}
+
+	const currencies: Record<string, { id: string; displayText: string }[]> = {
+		E: [
+			{ id: 'EGP', displayText: 'Egyptian Pound' },
+			{ id: 'EUR', displayText: 'Euro' },
+		],
+		Eur: [{ id: 'EUR', displayText: 'Euro' }],
+	}
+
+	it('keeps the newer search when the older answers after it', async () => {
+		const answers: Record<string, ReturnType<typeof deferred<string[]>>> = {
+			E: deferred<string[]>(),
+			Eur: deferred<string[]>(),
+		}
+		const wrapper = mount(ADropdown, {
+			props: { isAsync: true, options: [], filterFunction: (search: string) => answers[search].promise },
+		})
+		const input = wrapper.find('input')
+		await input.setValue('E')
+		await input.setValue('Eur')
+
+		answers.Eur.resolve(['Euro'])
+		await flushPromises()
+		answers.E.resolve(['Egyptian Pound', 'Euro'])
+		await flushPromises()
+
+		expect(wrapper.findAll('li').map(li => li.text())).toEqual(['Euro'])
+	})
+
+	it('keeps the newer search in a link picker when the older answers after it', async () => {
+		const answers: Record<string, ReturnType<typeof deferred<typeof currencies.E>>> = {
+			E: deferred(),
+			Eur: deferred(),
+		}
+		const wrapper = mount(ADropdown, {
+			props: { link: true, isAsync: true, linkFilterFunction: (search: string) => answers[search].promise },
+		})
+		const input = wrapper.find('input')
+		await input.setValue('E')
+		await input.setValue('Eur')
+
+		answers.Eur.resolve(currencies.Eur)
+		await flushPromises()
+		answers.E.resolve(currencies.E)
+		await flushPromises()
+
+		expect(wrapper.findAll('li').map(li => li.text())).toEqual(['Euro'])
+	})
+
+	it('does not pick from the previous results while a search is loading', async () => {
+		const answers: Record<string, ReturnType<typeof deferred<typeof currencies.E>>> = {
+			E: deferred(),
+			Eur: deferred(),
+		}
+		const wrapper = mount(ADropdown, {
+			props: { link: true, isAsync: true, linkFilterFunction: (search: string) => answers[search].promise },
+		})
+		const input = wrapper.find('input')
+		await input.setValue('E')
+		answers.E.resolve(currencies.E)
+		await flushPromises()
+		expect(wrapper.findAll('li').map(li => li.text())).toEqual(['Egyptian Pound', 'Euro'])
+
+		await input.setValue('Eur')
+		await input.trigger('keydown', { key: 'ArrowDown' })
+		await input.trigger('keydown', { key: 'Enter' })
+		expect(wrapper.emitted('update:linkValue')).toBeUndefined()
+
+		answers.Eur.resolve(currencies.Eur)
+		await flushPromises()
+		await input.trigger('keydown', { key: 'ArrowDown' })
+		await input.trigger('keydown', { key: 'Enter' })
+		expect(wrapper.emitted('update:linkValue')?.[0]).toEqual([{ id: 'EUR', displayText: 'Euro' }])
 	})
 })

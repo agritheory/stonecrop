@@ -85,9 +85,9 @@ describe('ATextboxInput', { tags: ['component'] }, () => {
 			expect(w.find('.aform_error').text()).toBe('Too short; Required')
 		})
 
-		it('falls back to the static schema errorMessage when there are no trigger errors', () => {
+		it('does not show the static schema errorMessage when there are no trigger errors', () => {
 			const w = mount(ATextboxInput, { props: { validation: { errorMessage: 'Invalid' } } })
-			expect(w.find('.aform_error').text()).toBe('Invalid')
+			expect(w.find('.aform_error').text()).toBe('')
 		})
 	})
 })

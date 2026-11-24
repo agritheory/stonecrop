@@ -13,7 +13,10 @@ export interface ValidationError {
 	trigger: string
 	/** The fieldname the error displays on (the `setError` target, not necessarily a fired field) */
 	field: string
-	/** The message to display */
+	/**
+	 * The message to display; `''` when the trigger left it out (`setError(field)`), which the form words
+	 * with the field's own `validation.errorMessage`
+	 */
 	message: string
 }
 
@@ -52,8 +55,11 @@ export const useValidationStore = defineStore('stonecrop-validation', () => {
 		return errors.value.filter(e => e.field === field).map(e => e.message)
 	}
 
-	/** Record an error contributed by `trigger`, displayed on `field`. */
-	function setError(trigger: string, field: string, message: string) {
+	/**
+	 * Record an error contributed by `trigger`, displayed on `field`. With `message` left out it is recorded
+	 * as `''`, which the form words with the field's own `validation.errorMessage`.
+	 */
+	function setError(trigger: string, field: string, message = '') {
 		errors.value.push({ trigger, field, message })
 	}
 
@@ -77,7 +83,7 @@ export const useValidationStore = defineStore('stonecrop-validation', () => {
 		// Shallow-frozen copy: the validator reads siblings but can neither mutate the record nor
 		// reassign fields (advisory reads only) — and mutation can't leak back to the caller.
 		const frozen = Object.freeze({ ...record })
-		const boundSetError = (field: string, message: string) => setError(name, field, message)
+		const boundSetError = (field: string, message?: string) => setError(name, field, message)
 		try {
 			await executeClientHandler(def.clientHandler, { record: frozen, value, setError: boundSetError })
 		} catch (error) {

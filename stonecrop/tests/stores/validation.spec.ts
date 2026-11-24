@@ -48,6 +48,13 @@ describe('Validation Store', { tags: ['unit'] }, () => {
 			expect(store.isValid).toBe(true)
 		})
 
+		it("records an error with its message left out as '', for the form to word with the field's own", () => {
+			const store = useValidationStore()
+			store.setError('required', 'name')
+			expect(store.isValid).toBe(false)
+			expect(store.errorsByField).toEqual({ name: [''] })
+		})
+
 		it('exposes errorsByField for prop-feeding a renderer', () => {
 			const store = useValidationStore()
 			store.setError('dateOrder', 'end_date', 'End before start')
@@ -56,6 +63,13 @@ describe('Validation Store', { tags: ['unit'] }, () => {
 	})
 
 	describe('validateField', () => {
+		it('lets a trigger leave its message out: setError(field)', async () => {
+			const store = useValidationStore()
+			const required = { required: { on: ['name'], clientHandler: "if (!value) setError('name')" } }
+			await store.validateField(required, 'name', { name: '' })
+			expect(store.errorsByField).toEqual({ name: [''] })
+		})
+
 		it('runs a trigger whose `on` includes the changed field and flags the error field', async () => {
 			const store = useValidationStore()
 			await store.validateField(dateOrder, 'start_date', { start_date: '2020-01-02', end_date: '2020-01-01' })

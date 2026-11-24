@@ -5,14 +5,20 @@
 			<CollapseButton v-if="collapsible" :collapsed="collapsed" />
 		</legend>
 		<slot :collapsed="collapsed">
-			<AForm v-show="!collapsed" v-model:data="formData" :schema="schema" :mode="mode" :errors="errors" />
+			<AForm
+				v-show="!collapsed"
+				:data="formData"
+				:schema="schema"
+				:mode="mode"
+				:errors="errors"
+				v-on="heard ? { 'update:data': (record: Record<string, any>) => (formData = record) } : {}" />
 		</slot>
 	</fieldset>
 </template>
 
 <script setup lang="ts">
 import type { InteractionMode } from '@stonecrop/schema'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 
 import AForm from '../AForm.vue'
 import CollapseButton from '../base/CollapseButton.vue'
@@ -24,6 +30,7 @@ const {
 	collapsible,
 	mode = 'edit',
 	errors = undefined,
+	'onUpdate:data': updateListener,
 } = defineProps<{
 	schema: ResolvedField[]
 	label?: string
@@ -32,10 +39,14 @@ const {
 	mode?: InteractionMode
 	/** Inline validation errors keyed by fieldname, forwarded to the inner AForm. */
 	errors?: Record<string, string[]>
+	/** The caller's `update:data` listener. Without one the inner form's edits reach nobody, so it shows read-only. */
+	'onUpdate:data'?: (record: Record<string, any>) => void
 }>()
 
 /** The record the fieldset's fields belong to: a fieldset is layout, so they are its own keys. */
 const formData = defineModel<Record<string, any>>('data', { default: () => ({}) })
+
+const heard = computed(() => Boolean(updateListener))
 
 const collapsed = ref(false)
 

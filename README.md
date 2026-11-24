@@ -37,10 +37,10 @@ pnpm run test
 
 - [`@stonecrop/aform`](./aform/CHANGELOG.md) — Schema-driven form components with validation
 - [`@stonecrop/atable`](./atable/README.md) — Advanced data table with Excel-like navigation and editing
-- [`@stonecrop/beam`](./beam/README.md) — UI component library with consistent theming
 - [`@stonecrop/casl-middleware`](./casl_middleware/README.md) — CASL-based authorization middleware
 - [`@stonecrop/code-editor`](./code_editor/CHANGELOG.md) — Code editor component
 - [`@stonecrop/desktop`](./desktop/README.md) — Desktop-specific UI patterns and command palette
+- [`@stonecrop/block-editor`](./block_editor/README.md) — Block editor (Editor.js) for rich-text fields
 - [`@stonecrop/graphql-client`](./graphql_client/README.md) — Vue composables for GraphQL data fetching
 - [`@stonecrop/graphql-middleware`](./graphql_middleware/README.md) — GraphQL query/mutation middleware using doctype schemas
 - [`@stonecrop/node-editor`](./node_editor/README.md) — Visual FSM editor with Vue Flow integration

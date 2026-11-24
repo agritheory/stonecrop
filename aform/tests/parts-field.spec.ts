@@ -1,13 +1,13 @@
 import { describe, it, expect } from 'vite-plus/test'
-import { flushPromises, mount } from '@vue/test-utils'
-import { toRaw } from 'vue'
+import { flushPromises } from '@vue/test-utils'
+import { defineComponent, h, toRaw, type PropType } from 'vue'
 
-import AForm from '../src/components/AForm.vue'
 import ACurrencyInput from '../src/components/form/ACurrencyInput.vue'
 import ADropdown from '../src/components/form/ADropdown.vue'
 import AQuantityInput from '../src/components/form/AQuantityInput.vue'
 import ATextInput from '../src/components/form/ATextInput.vue'
 import type { AFormLinkValue, ResolvedField } from '../src/types'
+import { mountBound } from './mount-bound'
 
 const lastData = (wrapper: { emitted: (event: string) => unknown[][] | undefined }) =>
 	wrapper.emitted('update:data')?.at(-1)?.[0] as Record<string, unknown> | undefined
@@ -30,7 +30,7 @@ describe('a quantity field whose unit is a field of its own', { tags: ['componen
 		errors?: Record<string, string[]>,
 		options?: Record<string, unknown>
 	) =>
-		mount(AForm, {
+		mountBound({
 			props: { schema: schema(options), data, errors },
 			global: { components: { AQuantityInput, ATextInput } },
 		})
@@ -92,7 +92,7 @@ describe('an order’s totals sharing its one currency and rate', { tags: ['comp
 	const order = () => ({ netTotal: 100, grandTotal: 110, currencyCode: EUR, exchangeRate: 1.25 })
 
 	const mountForm = (data: Record<string, unknown>) =>
-		mount(AForm, {
+		mountBound({
 			props: { schema: [total('netTotal', 'Net Total'), total('grandTotal', 'Grand Total')], data },
 			global: { components: { ACurrencyInput } },
 		})
@@ -137,7 +137,7 @@ describe('parts holding the values a server sends', { tags: ['component'] }, () 
 	const USD: AFormLinkValue = { id: 'USD', displayText: 'US Dollar' }
 
 	it('shows no stock line for a quantity sent as text in the stock unit', () => {
-		const wrapper = mount(AForm, {
+		const wrapper = mountBound({
 			props: {
 				schema: [
 					{
@@ -170,7 +170,7 @@ describe('parts holding the values a server sends', { tags: ['component'] }, () 
 	]
 
 	it('shows no conversion line for an amount sent as text in the base currency', () => {
-		const wrapper = mount(AForm, {
+		const wrapper = mountBound({
 			props: { schema: total({}), data: { netTotal: '604.8', currencyCode: USD, exchangeRate: '1' } },
 			global: { components: { ACurrencyInput } },
 		})
@@ -179,7 +179,7 @@ describe('parts holding the values a server sends', { tags: ['component'] }, () 
 	})
 
 	it('shows no conversion line for the base currency held as its bare id', () => {
-		const wrapper = mount(AForm, {
+		const wrapper = mountBound({
 			props: { schema: total({}), data: { netTotal: 604.8, currencyCode: 'USD', exchangeRate: 1 } },
 			global: { components: { ACurrencyInput } },
 		})
@@ -196,7 +196,7 @@ describe('parts holding the values a server sends', { tags: ['component'] }, () 
 
 	// The field's lookup may carry no symbol, as FAB's does not.
 	it('marks a currency held as its bare code by the code’s symbol, as a table cell does', async () => {
-		const wrapper = mount(AForm, {
+		const wrapper = mountBound({
 			props: {
 				schema: total({ filterFunction: lookUpWithoutSymbols }),
 				data: { netTotal: 100, currencyCode: 'EUR', exchangeRate: 1.1 },
@@ -208,7 +208,7 @@ describe('parts holding the values a server sends', { tags: ['component'] }, () 
 	})
 
 	it('changes nothing in the record when the form opens', async () => {
-		const wrapper = mount(AForm, {
+		const wrapper = mountBound({
 			props: {
 				schema: total({ filterFunction: lookUpWithoutSymbols }),
 				data: { netTotal: 100, currencyCode: 'EUR', exchangeRate: 1.1 },
@@ -221,7 +221,7 @@ describe('parts holding the values a server sends', { tags: ['component'] }, () 
 
 	// Save's reply holds the bare code again, after a currency was picked.
 	it('keeps the mark when the record hands back a picked currency bare', async () => {
-		const wrapper = mount(AForm, {
+		const wrapper = mountBound({
 			props: {
 				schema: total({ filterFunction: lookUpWithoutSymbols }),
 				data: { netTotal: 100, currencyCode: { id: 'GBP', displayText: 'British Pound' }, exchangeRate: 1.3 },
@@ -238,7 +238,7 @@ describe('parts holding the values a server sends', { tags: ['component'] }, () 
 	it('keeps the stored rate of a currency held as its bare id once the form opens', async () => {
 		const lookups: string[] = []
 		const data = { netTotal: 100, currencyCode: 'EUR', exchangeRate: 1.25 }
-		const wrapper = mount(AForm, {
+		const wrapper = mountBound({
 			props: { schema: total({ exchangeRates: { EUR: 1.1 } }), data },
 			global: {
 				components: { ACurrencyInput },
@@ -248,5 +248,73 @@ describe('parts holding the values a server sends', { tags: ['component'] }, () 
 		await flushPromises()
 		expect(lookups).toContain('EUR')
 		expect((lastData(wrapper) ?? data).exchangeRate).toBe(1.25)
+	})
+})
+
+// A new record lives only in the form's data, so a component reads the rest of it through `parts`.
+describe('an app’s own component reading other fields of a new record', { tags: ['component'] }, () => {
+	const PlanChart = defineComponent({
+		props: { modelValue: { type: Object, default: undefined } },
+		setup: props => () => h('div', { class: 'plan-chart' }, `${props.modelValue?.start}–${props.modelValue?.end}`),
+	})
+
+	const OrderLines = defineComponent({
+		props: {
+			modelValue: { type: Object, default: undefined },
+			rows: { type: Array as PropType<Record<string, unknown>[]>, default: () => [] },
+		},
+		setup: props => () =>
+			h(
+				'ul',
+				props.rows.map(row => h('li', { class: 'due' }, String(row.deliveryDate ?? props.modelValue?.deliveryDate)))
+			),
+	})
+
+	const chart: ResolvedField = {
+		kind: 'field',
+		fieldname: 'chart',
+		component: 'PlanChart',
+		parts: { start: 'startDate', end: 'endDate' },
+	}
+
+	const lines: ResolvedField = {
+		kind: 'table',
+		fieldname: 'lines',
+		component: 'OrderLines',
+		schema: [{ fieldname: 'deliveryDate', label: 'Delivery Date' }],
+		config: { view: 'list' },
+		parts: { deliveryDate: 'deliveryDate' },
+	}
+
+	it('follows the range of a plan not yet saved', async () => {
+		const wrapper = mountBound({
+			props: { schema: [chart], data: { startDate: '2026-01-01', endDate: '2026-03-31' } },
+			global: { components: { PlanChart } },
+		})
+		expect(wrapper.find('.plan-chart').text()).toBe('2026-01-01–2026-03-31')
+
+		await wrapper.setProps({ data: { startDate: '2026-01-01', endDate: '2026-06-30' } })
+		expect(wrapper.find('.plan-chart').text()).toBe('2026-01-01–2026-06-30')
+	})
+
+	it('shows each line’s due date, falling back to the order’s, before the order is saved', () => {
+		const data = { deliveryDate: '2026-11-15', lines: [{ deliveryDate: '2026-11-01' }, {}] }
+		const wrapper = mountBound({
+			props: { schema: [lines], data },
+			global: { components: { OrderLines } },
+		})
+		expect(wrapper.findAll('.due').map(due => due.text())).toEqual(['2026-11-01', '2026-11-15'])
+	})
+
+	it('shows the errors of its own field beside those of the fields it reads', () => {
+		const wrapper = mountBound({
+			props: {
+				schema: [chart],
+				data: { startDate: null, endDate: null },
+				errors: { chart: ['Pick a range'], endDate: ['Ends before it starts'] },
+			},
+			global: { components: { PlanChart } },
+		})
+		expect(wrapper.findComponent(PlanChart).vm.$attrs.errors).toEqual(['Pick a range', 'Ends before it starts'])
 	})
 })

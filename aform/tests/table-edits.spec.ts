@@ -1,13 +1,13 @@
-import { mount } from '@vue/test-utils'
+import type { mount } from '@vue/test-utils'
 import { createPinia } from 'pinia'
 import { afterEach, describe, expect, it, vi } from 'vite-plus/test'
 import { nextTick } from 'vue'
 
 import { install as installATable } from '@stonecrop/atable'
 
-import AForm from '../src/components/AForm.vue'
 import AFieldset from '../src/components/form/AFieldset.vue'
 import type { ResolvedField } from '../src/types'
+import { mountBound } from './mount-bound'
 
 const contacts = {
 	kind: 'table',
@@ -35,7 +35,7 @@ describe('AForm tables', { tags: ['component'] }, () => {
 	// Through the real ATable: the form hears a table's edit as it hears any field's.
 	it('sends an edit typed into a table up as the record’s new rows', async () => {
 		vi.useFakeTimers()
-		const wrapper = mount(AForm, {
+		const wrapper = mountBound({
 			props: { schema: [contacts], data: { contacts: [{ person: 'Bo' }] } },
 			global: { plugins: [createPinia(), { install: installATable }] },
 		})
@@ -51,7 +51,7 @@ describe('AForm tables', { tags: ['component'] }, () => {
 	it('sends an edit typed into a table inside a fieldset up as the record’s new rows', async () => {
 		vi.useFakeTimers()
 		const people = { kind: 'fieldset', fieldname: 'people', label: 'People', schema: [contacts] } as ResolvedField
-		const wrapper = mount(AForm, {
+		const wrapper = mountBound({
 			props: { schema: [people], data: { contacts: [{ person: 'Bo' }] } },
 			global: { plugins: [createPinia(), { install: installATable }], components: { AFieldset } },
 		})

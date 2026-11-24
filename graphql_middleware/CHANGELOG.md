@@ -1,5 +1,185 @@
 # Change Log - @stonecrop/graphql-middleware
 
+## 0.62.8
+
+### Patch Changes
+
+- @stonecrop/schema@0.62.8
+
+## 0.62.7
+
+### Patch Changes
+
+- @stonecrop/schema@0.62.7
+
+## 0.62.6
+
+### Patch Changes
+
+- @stonecrop/schema@0.62.6
+
+## 0.62.5
+
+### Patch Changes
+
+- @stonecrop/schema@0.62.5
+
+## 0.62.4
+
+### Patch Changes
+
+- Updated dependencies [624a7d8]
+  - @stonecrop/schema@0.62.4
+
+## 0.62.3
+
+### Patch Changes
+
+- @stonecrop/schema@0.62.3
+
+## 0.62.2
+
+### Patch Changes
+
+- @stonecrop/schema@0.62.2
+
+## 0.62.1
+
+### Patch Changes
+
+- 98f6dd1: Finding a row by its id no longer reads the whole table. The middleware compared a key column as text (`"id"::text = $1`), which Postgres cannot answer from the column's index, so loading a record, its link display values, a one-to-many link, or a guarded state transition scanned every row. Ids are now compared by the column's own type, and an id that type cannot hold (`abc` for a `uuid`, an empty string) matches nothing instead of failing the query. An id still names a record only when it is spelled the way the server serves it: `01` for record `1`, or an upper-case uuid, is a miss on read, save and action alike.
+  
+  This needs PostgreSQL 16 or later, which added `pg_input_is_valid`. On 15 or older every record read and action fails with `function pg_input_is_valid(text, unknown) does not exist`.
+- @stonecrop/schema@0.62.1
+
+## 0.62.0
+
+### Patch Changes
+
+- Updated dependencies [3635b61]
+  - @stonecrop/schema@0.62.0
+
+## 0.61.0
+
+### Patch Changes
+
+- Updated dependencies [3c3539d]
+  - @stonecrop/schema@0.61.0
+
+## 0.60.2
+
+### Patch Changes
+
+- @stonecrop/schema@0.60.2
+
+## 0.60.1
+
+### Patch Changes
+
+- Updated dependencies [35ea6ea]
+  - @stonecrop/schema@0.60.1
+
+## 0.60.0
+
+### Patch Changes
+
+- @stonecrop/schema@0.60.0
+
+## 0.59.0
+
+### Minor Changes
+
+- 35dc2f5: A Save writes only the fields whose value changed, so a Save that changes nothing issues no `UPDATE` and fires no update trigger.
+- 35dc2f5: A Save writes JSON, list, range and composite values instead of dropping them while reporting success, and refuses a value of the wrong shape, naming the field.
+
+### Patch Changes
+
+- 35dc2f5: A date or time range, alone or in a list, keeps an infinite bound through a read and a Save, where it read as no bound and saved as one, and a NULL range reads as null rather than as a range with no bounds.
+- 35dc2f5: A negative interval reads exactly, a fraction of a second included, and saves, where Postgres refused the duration as Temporal writes it.
+- @stonecrop/schema@0.59.0
+
+## 0.58.4
+
+### Patch Changes
+
+- @stonecrop/schema@0.58.4
+
+## 0.58.3
+
+### Patch Changes
+
+- @stonecrop/schema@0.58.3
+
+## 0.58.2
+
+### Patch Changes
+
+- @stonecrop/schema@0.58.2
+
+## 0.58.1
+
+### Patch Changes
+
+- @stonecrop/schema@0.58.1
+
+## 0.58.0
+
+### Patch Changes
+
+- Updated dependencies [246be00]
+  - @stonecrop/schema@0.58.0
+
+## 0.57.0
+
+### Minor Changes
+
+- e816b7b: A many-side link can name the order of its rows with `orderBy`, a field of the target and an optional direction (`{ "fieldname": "rowOrder" }`), so rows that keep their own position, such as an order's lines, load in that order instead of by id. The target's identity breaks ties. Building the schema refuses an `orderBy` naming a field the target lacks or one with no database column, except on a custom link, whose handler applies its own order, and an `orderBy` on any one-side link, which reads one row.
+
+### Patch Changes
+
+- e816b7b: A list ordered by a field now breaks ties by the doctype's identity, when it has one, so its order is total: pages read while the rows stay unchanged neither overlap nor skip a row.
+- e816b7b: A list ordered by a computed field is refused by name, before the query reaches Postgres, where it failed on a missing column.
+- e816b7b: A list or link ordered by a field named as its column (`position`, `created_at`), or by an identity named as its column (`id`), now sorts by the column's own type. Such a field was sorted as text, so a position of 10 came before 9, and a list sorted by `amount` descending put 999.6 above 2060.8. An enum field now sorts in its declared order. Ordering by a `json` field now fails in Postgres, which has no order for that type; one named as its column used to sort as text.
+- Updated dependencies [e816b7b]
+  - @stonecrop/schema@0.57.0
+
+## 0.56.4
+
+### Patch Changes
+
+- Updated dependencies [e02c837]
+  - @stonecrop/schema@0.56.4
+
+## 0.56.3
+
+### Patch Changes
+
+- @stonecrop/schema@0.56.3
+
+## 0.56.2
+
+### Patch Changes
+
+- @stonecrop/schema@0.56.2
+
+## 0.56.1
+
+### Patch Changes
+
+- @stonecrop/schema@0.56.1
+
+## 0.56.0
+
+### Patch Changes
+
+- @stonecrop/schema@0.56.0
+
+## 0.55.2
+
+### Patch Changes
+
+- @stonecrop/schema@0.55.2
+
 ## 0.55.1
 
 ### Patch Changes

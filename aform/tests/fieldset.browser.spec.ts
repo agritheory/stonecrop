@@ -1,6 +1,9 @@
 import { afterEach, describe, expect, it } from 'vite-plus/test'
 import { mount, type VueWrapper } from '@vue/test-utils'
-import { defineComponent, h } from 'vue'
+import { createPinia } from 'pinia'
+import { defineComponent, h, nextTick } from 'vue'
+
+import { install as installATable } from '@stonecrop/atable'
 
 import AForm from '../src/components/AForm.vue'
 import AFieldset from '../src/components/form/AFieldset.vue'
@@ -24,6 +27,7 @@ describe('a fieldset in a form', { tags: ['component'] }, () => {
 					h(AForm, {
 						schema: [fieldset('outer', [email, fieldset('inner', [email])])],
 						data: { email: 'ana@example.com' },
+						'onUpdate:data': () => {},
 					}),
 				]),
 		})
@@ -37,5 +41,58 @@ describe('a fieldset in a form', { tags: ['component'] }, () => {
 			expect(box.left).toBeCloseTo(space.left, 0)
 			expect(box.right).toBeCloseTo(space.right, 0)
 		}
+	})
+})
+
+// Needs real layout: the indent is a margin the browser applies through a stylesheet selector.
+describe('a table in a fieldset', { tags: ['component'] }, () => {
+	const lines = {
+		kind: 'table',
+		fieldname: 'lines',
+		component: 'ATable',
+		label: 'Lines',
+		config: { view: 'list-expansion' },
+		schema: [{ fieldname: 'sku', label: 'SKU', component: 'ATextInput' }],
+	} as unknown as ResolvedField
+
+	// How far an expanded row's field starts from its table's left edge.
+	const expandedFieldOffset = async (schema: ResolvedField[]) => {
+		const Host = defineComponent({
+			setup: () => () =>
+				h('div', { style: 'width: 800px' }, [
+					h(AForm, { schema, data: { lines: [{ sku: 'A-1' }] }, 'onUpdate:data': () => {} }),
+				]),
+		})
+		wrapper = mount(Host, {
+			attachTo: document.body,
+			global: {
+				plugins: [createPinia(), { install: installATable }],
+				components: { AForm, AFieldset, ATextInput },
+			},
+		})
+		await wrapper.find('.expansion-index').trigger('click')
+		await nextTick()
+		const table = wrapper.find('.atable-expanded-content').element.closest('table') ?? wrapper.find('.atable').element
+		const input = wrapper.find('.atable-expanded-content input').element
+		const offset = input.getBoundingClientRect().left - table.getBoundingClientRect().left
+		wrapper.unmount()
+		wrapper = undefined
+		return offset
+	}
+
+	it("indents only the fieldset's own form, not an expanded row's form inside it", async () => {
+		const outside = await expandedFieldOffset([lines])
+		const inside = await expandedFieldOffset([fieldset('group', [lines])])
+		expect(inside).toBeCloseTo(outside, 0)
+	})
+
+	it("still indents the fieldset's own form", () => {
+		wrapper = mount(AForm, {
+			attachTo: document.body,
+			props: { schema: [fieldset('group', [email])], data: {}, 'onUpdate:data': () => {} },
+			global: { components: { AFieldset, ATextInput } },
+		})
+		const inner = wrapper.find('fieldset > .aform').element
+		expect(getComputedStyle(inner).marginLeft).toBe('8px')
 	})
 })

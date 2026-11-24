@@ -2,8 +2,8 @@ import { flushPromises, mount } from '@vue/test-utils'
 import type { VueWrapper } from '@vue/test-utils'
 import { List } from 'immutable'
 import { createPinia, setActivePinia } from 'pinia'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test'
-import { nextTick } from 'vue'
+import { afterEach, beforeEach, describe, expect, it, vi, type MockInstance } from 'vite-plus/test'
+import { defineComponent, nextTick } from 'vue'
 
 import { install as installAForm } from '@stonecrop/aform'
 import { Doctype, Registry, Stonecrop, useOperationLogStore } from '@stonecrop/stonecrop'
@@ -115,5 +115,86 @@ describe('Desktop tables', { tags: ['component'] }, () => {
 		log.undo(stonecrop.getStore())
 
 		expect(stonecrop.getRecordById('crew', 'c-1')?.get('contacts')).toEqual([{ person: 'Bo' }])
+	})
+})
+
+// An app's own line table that writes an edit straight into the row it was handed (#557).
+const InPlaceLines = defineComponent({
+	name: 'InPlaceLines',
+	props: ['rows', 'schema', 'columns', 'config', 'data', 'mode', 'errors', 'uuid', 'label', 'fieldname', 'kind'],
+	template: `<button class="in-place-lines" type="button" @click="rows[0].qty = 5">edit</button>`,
+})
+
+function buildOrderDoctype() {
+	const fields = List([
+		{ kind: 'field' as const, fieldname: 'id', label: 'ID', component: 'ATextInput', primaryKey: true },
+		{ kind: 'field' as const, fieldname: 'shipping_address', label: 'Shipping Address', component: 'ATextInput' },
+		{ kind: 'table' as const, fieldname: 'lines', label: 'Lines', component: 'InPlaceLines', columns: [] },
+	])
+	const workflow = { states: ['draft'], actions: { save: { label: 'Save', selfTransition: true } } }
+	return new Doctype('order', fields, workflow as any)
+}
+
+describe('Desktop tables an app draws itself', { tags: ['component'] }, () => {
+	let registry: Registry
+	let stonecrop: Stonecrop
+	let pinia: ReturnType<typeof createPinia>
+	let warn: MockInstance<typeof console.warn>
+
+	beforeEach(() => {
+		pinia = createPinia()
+		setActivePinia(pinia)
+		registry = new Registry()
+		stonecrop = new Stonecrop(registry)
+		registry.addDoctype(buildOrderDoctype())
+		stonecrop.addRecord('order', 'o-1', { id: 'o-1', shipping_address: '1 Elm St', lines: [{ sku: 'A-1', qty: 1 }] })
+		warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+	})
+
+	afterEach(() => {
+		warn.mockRestore()
+		Registry._root = undefined as any
+		Stonecrop._root = undefined as any
+	})
+
+	const mountDesktop = async () => {
+		const orderRoute: RouteAdapter = {
+			getCurrentDoctype: () => 'order',
+			getCurrentRecordId: () => 'o-1',
+			getCurrentView: () => 'record',
+			navigate: vi.fn(),
+		}
+		const wrapper = mount(Desktop, {
+			props: { routeAdapter: orderRoute },
+			global: {
+				plugins: [makeStonecropPlugin(registry, stonecrop), pinia, { install: installAForm }],
+				components: { InPlaceLines },
+				stubs: { ActionSet: true, SheetNav: true, CommandPalette: true },
+			},
+		})
+		await flushPromises()
+		return wrapper
+	}
+
+	// Stonecrop lets a write straight into a record through and warns the developer: the operation log never
+	// hears of it, so Undo would skip it. `useStonecrop` is the way for a component to make a change.
+	it('lets a line an app component writes straight into its row through, and warns the developer', async () => {
+		const wrapper = await mountDesktop()
+		await wrapper.find('.in-place-lines').trigger('click')
+		await flushPromises()
+
+		expect(stonecrop.getRecordById('order', 'o-1')!.get('lines')).toEqual([{ sku: 'A-1', qty: 5 }])
+		const warnings = warn.mock.calls.map(call => String(call[0])).filter(text => text.startsWith('[Stonecrop]'))
+		expect(warnings).toHaveLength(1)
+		expect(warnings[0]).toContain('order.o-1.lines.0.qty')
+	})
+
+	it("doesn't warn for an edit made through the form", async () => {
+		const wrapper = await mountDesktop()
+		await wrapper.findAll('input')[1].setValue('2 Oak Ave')
+		await flushPromises()
+
+		expect(stonecrop.getRecordById('order', 'o-1')!.get('shipping_address')).toBe('2 Oak Ave')
+		expect(warn.mock.calls.filter(call => String(call[0]).startsWith('[Stonecrop]'))).toEqual([])
 	})
 })

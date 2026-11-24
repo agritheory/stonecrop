@@ -50,6 +50,9 @@ export default defineConfig({
 				extends: true,
 				test: {
 					name: 'jsdom',
+					// `temporal-polyfill` hands out a runtime's own `Temporal` where there is one (Node 26), whose
+					// `Temporal.Now` reads the system clock, which a faked `Date` doesn't reach. The polyfill itself reads `Date`.
+					alias: [{ find: /^temporal-polyfill$/, replacement: 'temporal-polyfill/implementation' }],
 					environment: 'jsdom',
 					exclude: [...configDefaults.exclude, '**/*.browser.spec.ts'],
 				},

@@ -173,6 +173,47 @@ const LINK_FK_ALIAS = '__stonecropLinkFk_'
  */
 const STATE_COLUMN = 'status'
 
+/** Whether a link finds its rows by a column on the target, rather than by a key on this record. */
+const isManySide = (link: LinkDeclaration): boolean =>
+	link.cardinality === 'noneOrMany' || link.cardinality === 'atLeastOne'
+
+/**
+ * The key column of each expanding one-side link, under its `LINK_FK_ALIAS` alias. A many-side link
+ * finds its rows by a column on the target, and an inline link keeps its key as a scalar that
+ * `getColumnSelections` already selects under its own name.
+ */
+function linkKeySelections(meta: DoctypeMeta): Array<ColumnSelection & { fieldname: string }> {
+	const fieldByName = new Map(flattenFields(meta.fields).map(f => [f.fieldname, f]))
+	return Object.entries(meta.links ?? {}).flatMap(([linkName, link]) => {
+		const fieldname = link.fieldname ?? linkName
+		if (isManySide(link) || resolveLinkRenderMode(link, fieldByName.get(fieldname)?.component) === 'inline') return []
+		return [{ fieldname, column: camelToSnake(fieldname), alias: `${LINK_FK_ALIAS}${fieldname}` }]
+	})
+}
+
+/**
+ * Whether two values are the same JSON value: object keys in any order, list items in order, and no
+ * coercion (`"5"` is not `5`).
+ */
+const sameJsonValue = (left: unknown, right: unknown): boolean => {
+	if (Array.isArray(left) || Array.isArray(right)) {
+		return (
+			Array.isArray(left) &&
+			Array.isArray(right) &&
+			left.length === right.length &&
+			left.every((entry, index) => sameJsonValue(entry, right[index]))
+		)
+	}
+	if (left !== null && typeof left === 'object' && right !== null && typeof right === 'object') {
+		const leftKeys = Object.keys(left)
+		return (
+			leftKeys.length === Object.keys(right).length &&
+			leftKeys.every(key => Object.hasOwn(right, key) && sameJsonValue(Reflect.get(left, key), Reflect.get(right, key)))
+		)
+	}
+	return left === right
+}
+
 /**
  * Create a PostGraphile plugin that extends the GraphQL schema with Stonecrop functionality.
  *
@@ -252,27 +293,14 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 				// are indexed by name — flattened, because a link's field may sit inside a
 				// fieldset and `getColumnSelections` already descends to select it.
 				const fieldByName = new Map(flattenFields(meta.fields).map(f => [f.fieldname, f]))
-				const linkFkAliases: Array<{ fieldname: string; alias: string }> = []
-				for (const [linkName, link] of Object.entries(meta.links ?? {})) {
-					// Many-side links find their rows by a column on the *target*; only a one-side
-					// link reads a foreign key off this row.
-					if (link.cardinality === 'noneOrMany' || link.cardinality === 'atLeastOne') continue
-					const fieldname = link.fieldname ?? linkName
-					// An inline link keeps its FK as a scalar, so `getColumnSelections` already selected
-					// it under its own name and no alias is needed.
-					if (resolveLinkRenderMode(link, fieldByName.get(fieldname)?.component) === 'inline') continue
-					linkFkAliases.push({ fieldname, alias: `${LINK_FK_ALIAS}${fieldname}` })
-				}
-				const select = columns.select(meta.name, [
-					...getColumnSelections(meta),
-					...linkFkAliases.map(({ fieldname, alias }) => ({ column: camelToSnake(fieldname), alias })),
-				])
+				const linkFkAliases = linkKeySelections(meta)
+				const select = columns.select(meta.name, [...getColumnSelections(meta), ...linkFkAliases])
 
 				// TODO(perf): queries per doctype group could be parallelized with Promise.all across doctype groups;
 				// requires refactoring the grouped-by-doctype loop to collect promises before resolving results
 				// oxlint-disable-next-line eslint/no-await-in-loop -- sequential per-doctype SQL; see TODO above
 				const { rows } = await debugSql<Record<string, unknown>>(pgClient, {
-					text: `SELECT ${select.list} FROM ${select.table} WHERE "${pkColumn}"::text = ANY($1::text[])`,
+					text: `SELECT ${select.list} FROM ${select.table} WHERE ${columns.matchKey(meta.name, pkColumn, '$1', true)}`,
 					values: [ids],
 				})
 				select.decodeRows(rows)
@@ -333,7 +361,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 							// in this repo — hence latent until now.
 							const fieldname = link.fieldname ?? linkName
 							const fetch = link.fetch
-							const isMany = link.cardinality === 'noneOrMany' || link.cardinality === 'atLeastOne'
+							const isMany = isManySide(link)
 							const effectiveMethod = fetch?.method ?? (isMany ? 'sync' : 'lazy')
 							// Two questions, kept apart. `method === 'sync'` is a *type narrowing* — only
 							// `SyncFetch` carries a `limit` — and the server default used to hang off its
@@ -380,17 +408,11 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 							if (isMany) {
 								if (!link.backlink) continue
 								const backlinkCol = camelToSnake(link.backlink)
-								let sql = `SELECT ${targetSelect.list} FROM ${targetSelect.table} WHERE "${backlinkCol}"::text = $1`
+								let sql = `SELECT ${targetSelect.list} FROM ${targetSelect.table} WHERE ${columns.matchKey(targetMeta.name, backlinkCol, '$1')}`
 								const linkValues: unknown[] = [specId]
-								// Same reason the list path orders: a capped relation without a fixed order
-								// returns an arbitrary subset of the children, and a different one each time
-								// a child row is updated. `truncatedLinks` says the tail was cut; it cannot
-								// say the head kept changing. Skipped when the target declares no identity —
-								// there is no stable key to order by, and inventing one would be a guess.
-								const linkPkMeta = getPkMeta(targetMeta)
-								if (linkPkMeta) {
-									sql += ` ORDER BY "${camelToSnake(linkPkMeta.fieldname)}" ASC`
-								}
+								// In the order the link names, so rows that keep their own position read in
+								// it; `truncatedLinks` says the tail was cut, and the order says which tail.
+								sql += orderClause(targetMeta, link.orderBy, targetSelect.table)
 								if (effectiveLimit != null) {
 									// One row more than the cap, same probe the list path uses: its presence
 									// is the whole truncation answer and costs no second query.
@@ -545,42 +567,19 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 											const values: unknown[] = [...filterValues]
 
 											// ORDER BY (field name whitelisted — column names cannot be parameterised)
-											let orderByClause = ''
-											if (spec.orderBy != null) {
-												if (typeof spec.orderBy !== 'string')
-													throw new Error(`Invalid orderBy: expected string, got ${typeof spec.orderBy}`)
-												const orderByStr = spec.orderBy
-												const lastUnder = orderByStr.lastIndexOf('_')
-												if (lastUnder <= 0) {
-													throw new Error(`Invalid orderBy format: "${orderByStr}". Expected FIELD_ASC or FIELD_DESC`)
-												}
-												const dir = orderByStr.slice(lastUnder + 1).toUpperCase()
-												if (dir !== 'ASC' && dir !== 'DESC') {
-													throw new Error(`Invalid orderBy direction: "${dir}". Must be ASC or DESC`)
-												}
-												const fieldName = orderByStr.slice(0, lastUnder)
-												if (!knownFields.has(fieldName)) {
-													throw new Error(`Unknown orderBy field: "${fieldName}" for doctype ${meta.name}`)
-												}
-												orderByClause = ` ORDER BY "${camelToSnake(fieldName)}" ${dir}`
-											}
-
 											// A page is only meaningful against a fixed order, and LIMIT/OFFSET without one
 											// is two independent scans of heap order — an UPDATE between them moves that row
 											// to the tail, so the row it displaced is never returned and nothing in the
-											// payload says a record was skipped. The declared identity is the right default
-											// because it is unique: it gives a total order, which is what makes page 2 start
-											// exactly where page 1 stopped.
-											//
-											// Only when the doctype declares an identity. Without one there is no stable key
-											// to order by, and inventing one here would be a guess; such a doctype cannot be
-											// paged stably by any means.
-											if (orderByClause === '') {
-												const listPkMeta = getPkMeta(meta)
-												if (listPkMeta) {
-													orderByClause = ` ORDER BY "${camelToSnake(listPkMeta.fieldname)}" ASC`
-												}
+											// payload says a record was skipped. The identity makes the order total, which is
+											// what makes page 2 start exactly where page 1 stopped.
+											if (spec.orderBy != null && typeof spec.orderBy !== 'string') {
+												throw new Error(`Invalid orderBy: expected string, got ${typeof spec.orderBy}`)
 											}
+											const orderByClause = orderClause(
+												meta,
+												spec.orderBy == null ? undefined : readListOrderBy(spec.orderBy),
+												select.table
+											)
 
 											// LIMIT / OFFSET. A caller that names no limit gets the configured default rather
 											// than the whole table: omission is how an unbounded scan used to happen, and the
@@ -731,24 +730,47 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 									// believes was saved, which is the same data-loss signal `truncatedLinks`
 									// carries for a truncated read.
 									const droppedFields: string[] = []
-									const partitionPatch = (patch: Record<string, unknown>) => {
+									// The fields whose read value can be a linked record while the column holds
+									// its key: one declaring a `doctype`, and one a one-side `links` entry names.
+									const linkFields = new Set([
+										...flattenFields(meta.fields)
+											.filter(field => field.kind === 'field' && Boolean(field.doctype))
+											.map(field => field.fieldname),
+										...Object.entries(meta.links ?? {})
+											.filter(([, link]) => !isManySide(link))
+											.map(([linkName, link]) => link.fieldname ?? linkName),
+									])
+									// `stored` is the row as a read serves it, for an update; each field equal to
+									// it is left out, so a save sending the whole record back writes what changed.
+									const partitionPatch = (patch: Record<string, unknown>, stored?: unknown) => {
 										const cols: string[] = []
 										const values: unknown[] = []
 										for (const [key, value] of Object.entries(patch)) {
-											if (!writable.has(key) || !columns.writable(meta.name, camelToSnake(key))) {
+											const column = camelToSnake(key)
+											if (!writable.has(key) || !columns.writable(meta.name, column)) {
 												droppedFields.push(key)
 												continue
 											}
 											// An expanding link reads back as a nested record while its column
 											// holds a scalar foreign key, so a read-modify-write hands this loop
-											// an object bound for a uuid column. The name resolving is not
-											// enough; the shape has to match a column value too.
-											if (value !== null && typeof value === 'object') {
+											// an object bound for a key column.
+											if (linkFields.has(key) && value !== null && typeof value === 'object') {
 												droppedFields.push(key)
 												continue
 											}
-											cols.push(camelToSnake(key))
-											values.push(value)
+											if (
+												stored instanceof Object &&
+												Object.hasOwn(stored, key) &&
+												sameJsonValue(Reflect.get(stored, key), value)
+											) {
+												continue
+											}
+											const encoded = columns.encode(meta.name, column, value)
+											if ('refused' in encoded) {
+												throw new Error(`${actionDef.label ?? spec.action} failed: "${key}" ${encoded.refused}.`)
+											}
+											cols.push(column)
+											values.push(encoded.value)
 										}
 										return { cols, values }
 									}
@@ -786,7 +808,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 														// and acting on it too. Without it the guard is a check-then-act
 														// race: two concurrent approvals both read PENDING and both proceed.
 														const { rows } = await debugSql<Record<string, string | null>>(tx, {
-															text: `SELECT ${projection} FROM ${table} WHERE "${pkColumn()}"::text = $1 FOR UPDATE`,
+															text: `SELECT ${projection} FROM ${table} WHERE ${columns.matchKey(meta.name, pkColumn(), '$1')} FOR UPDATE`,
 															values: [String(recordId)],
 														})
 														// No row at all vs. a row whose `status` is NULL — see GuardedTransitionIO.
@@ -813,7 +835,7 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 													},
 													writeState: async (nextState: string) => {
 														await debugSql(tx, {
-															text: `UPDATE ${table} SET "${STATE_COLUMN}" = $1 WHERE "${pkColumn()}"::text = $2`,
+															text: `UPDATE ${table} SET "${STATE_COLUMN}" = $1 WHERE ${columns.matchKey(meta.name, pkColumn(), '$2')}`,
 															values: [nextState, String(recordId)],
 														})
 													},
@@ -828,10 +850,10 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 													// created record nowhere — which is that exact bug, already once
 													// shipped and patched downstream.
 													writeData: async (patch: Record<string, unknown>, exists: boolean) => {
-														const { cols, values } = partitionPatch(patch)
 														const returning = columns.select(meta.name, getColumnSelections(meta))
 
 														if (!exists) {
+															const { cols, values } = partitionPatch(patch)
 															// Creating is what the *absence* of an id means; `readState` has
 															// already refused an id that matched no row.
 															//
@@ -848,25 +870,38 @@ export const createStonecropPlugin = (options: StonecropPluginOptions = {}): Gra
 															return rows[0] ?? {}
 														}
 
-														// Nothing writable survived the patch. `SET` with no assignments
-														// is a syntax error, and reporting failure would be wrong — the
-														// record is fine, it just has no new data. Read it back so the
-														// client still gets the record, with `droppedFields` saying why
-														// nothing changed.
-														if (cols.length === 0) {
-															const { rows } = await debugSql<Record<string, unknown>>(tx, {
-																text: `SELECT ${returning.list} FROM ${table} WHERE "${pkColumn()}"::text = $1`,
-																values: [String(recordId)],
-															})
-															returning.decodeRows(rows)
-															return rows[0] ?? {}
+														// The row as a read serves it, locked by the guard's read, to tell what
+														// the patch changes. An expanding link's field is compared with its key,
+														// since the read serves it as the linked record, so an empty link is null
+														// on both sides. Put through JSON as the client's copy was, so a value
+														// JSON cannot hold (a Buffer, NaN) compares as it arrives.
+														const linkKeys = linkKeySelections(meta)
+														const storedSelect = columns.select(meta.name, [...getColumnSelections(meta), ...linkKeys])
+														const { rows: storedRows } = await debugSql<Record<string, unknown>>(tx, {
+															text: `SELECT ${storedSelect.list} FROM ${table} WHERE ${columns.matchKey(meta.name, pkColumn(), '$1')}`,
+															values: [String(recordId)],
+														})
+														storedSelect.decodeRows(storedRows)
+														const stored = storedRows[0] ?? {}
+														const compared: Record<string, unknown> = { ...stored }
+														for (const { fieldname, alias } of linkKeys) {
+															compared[fieldname] = stored[alias]
+															delete compared[alias]
+															delete stored[alias]
 														}
+														const { cols, values } = partitionPatch(patch, JSON.parse(JSON.stringify(compared)))
+
+														// Nothing changed, or nothing writable survived the patch. `SET` with
+														// no assignments is a syntax error, and reporting failure would be
+														// wrong: the record is fine and unchanged, so it is what the reply
+														// carries, with `droppedFields` saying what was left out.
+														if (cols.length === 0) return stored
 
 														const assignments = cols
 															.map((c, i) => `"${c}" = ${columns.bind(meta.name, c, `$${i + 1}`)}`)
 															.join(', ')
 														const { rows } = await debugSql<Record<string, unknown>>(tx, {
-															text: `UPDATE ${table} SET ${assignments} WHERE "${pkColumn()}"::text = $${cols.length + 1} RETURNING ${returning.list}`,
+															text: `UPDATE ${table} SET ${assignments} WHERE ${columns.matchKey(meta.name, pkColumn(), `$${cols.length + 1}`)} RETURNING ${returning.list}`,
 															values: [...values, String(recordId)],
 														})
 														returning.decodeRows(rows)
@@ -1060,6 +1095,58 @@ function getPkMeta(meta: DoctypeMeta): ValueField | undefined {
 }
 
 /**
+ * The ORDER BY clause for reading a doctype's rows: the field `order` names, then the declared identity
+ * to break ties, or the identity alone when nothing is named. Empty when the doctype declares no identity
+ * and nothing is named.
+ *
+ * One definition for the list query and for a many-side link, which both cap what they read. A capped read
+ * without a total order keeps an arbitrary set of rows, a different one whenever a row is updated and moves
+ * in the heap, and only the identity is unique. Without an identity there is no stable key, and inventing
+ * one would be a guess.
+ *
+ * Each term names its column through `table`, the statement's FROM. The select returns every column as text
+ * under its fieldname, and a field named as its column (`position`, `id`, `created_at`) shares that name;
+ * ORDER BY reads a bare name as the output column first, so it sorted that text and 10 came before 9.
+ * Qualified, the name can only mean the column, compared as its own type.
+ *
+ * The named field must have a column (`columnBackedFields`): a computed field has none, and naming one would
+ * reach Postgres as a missing column instead of being refused by name.
+ */
+function orderClause(meta: DoctypeMeta, order: LinkDeclaration['orderBy'], table: string): string {
+	const terms: string[] = []
+	if (order !== undefined) {
+		if (!columnBackedFields(meta.fields).some(field => field.fieldname === order.fieldname)) {
+			throw new Error(
+				`Unknown orderBy field: "${order.fieldname}" for doctype ${meta.name}; an order names a field with a database column`
+			)
+		}
+		terms.push(`${table}."${camelToSnake(order.fieldname)}" ${order.direction === 'desc' ? 'DESC' : 'ASC'}`)
+	}
+	const pkMeta = getPkMeta(meta)
+	if (pkMeta && pkMeta.fieldname !== order?.fieldname) {
+		terms.push(`${table}."${camelToSnake(pkMeta.fieldname)}" ASC`)
+	}
+	return terms.length > 0 ? ` ORDER BY ${terms.join(', ')}` : ''
+}
+
+/**
+ * The list query's `orderBy` argument, `FIELD_ASC` or `FIELD_DESC` with the direction in either case, read
+ * as the order a link declares. The field is everything before the last underscore, so it may hold
+ * underscores of its own.
+ */
+function readListOrderBy(orderBy: string): NonNullable<LinkDeclaration['orderBy']> {
+	const lastUnder = orderBy.lastIndexOf('_')
+	if (lastUnder <= 0) {
+		throw new Error(`Invalid orderBy format: "${orderBy}". Expected FIELD_ASC or FIELD_DESC`)
+	}
+	const direction = orderBy.slice(lastUnder + 1).toLowerCase()
+	if (direction !== 'asc' && direction !== 'desc') {
+		throw new Error(`Invalid orderBy direction: "${direction.toUpperCase()}". Must be ASC or DESC`)
+	}
+	return { fieldname: orderBy.slice(0, lastUnder), direction }
+}
+
+/**
  * Assert that every registered action handler names a doctype and an action that exist.
  *
  * An unregistered action is fine — a transition needs no effect. The reverse is not: a handler
@@ -1125,7 +1212,8 @@ function assertActionHandlersResolve(actionHandlers: Record<string, Record<strin
 }
 
 /**
- * Refuse a doctype set whose links or `inherits` name a doctype nobody registered.
+ * Refuse a doctype set whose links or `inherits` name a doctype nobody registered, or whose links
+ * bind or order by a field that cannot serve (see `validateReferences`).
  *
  * What it prevents is silent: the link read does `const targetMeta = getMeta(link.target)` followed
  * by `if (!targetMeta) continue`, so an unresolvable target drops the relation from the response
@@ -1147,7 +1235,7 @@ function assertReferencesResolve(): void {
 
 	throw new Error(
 		`StonecropPlugin: ${broken.length} doctype reference${broken.length === 1 ? '' : 's'} ` +
-			`cannot be resolved and would silently drop the relation:\n  ` +
+			`cannot be resolved; each says what it breaks:\n  ` +
 			broken.map(e => `${e.path.join('.')}: ${e.message}`).join('\n  ')
 	)
 }

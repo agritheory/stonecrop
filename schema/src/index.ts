@@ -13,6 +13,7 @@ export {
 	componentCategory,
 	componentLinkExpansion,
 	componentParts,
+	componentTakesParts,
 	resolveLinkRenderMode,
 	type ComponentCategory,
 	type LinkExpansion,

@@ -109,43 +109,6 @@ describe('Desktop props', { tags: ['component'] }, () => {
 			// The stub renders, so just check it doesn't show the "Loading" fallback
 			expect(wrapper.text()).not.toContain('Initializing Stonecrop')
 		})
-
-		it('calls adapter.navigate when createNewRecord is triggered via data-action', async () => {
-			const navigateFn = vi.fn()
-			const adapter: RouteAdapter = {
-				getCurrentDoctype: () => 'task',
-				getCurrentRecordId: () => '',
-				getCurrentView: () => 'records',
-				navigate: navigateFn,
-			}
-
-			const wrapper = mount(Desktop, {
-				props: { routeAdapter: adapter },
-				global: {
-					plugins: [makeStonecropPlugin(registry, stonecrop)],
-					stubs: {
-						AForm: true,
-						ActionSet: true,
-						SheetNav: true,
-						CommandPalette: true,
-					},
-				},
-			})
-
-			await nextTick()
-
-			// Simulate a data-action="create" click
-			const div = wrapper.find('.desktop')
-			const btn = document.createElement('button')
-			btn.setAttribute('data-action', 'create')
-			;(div.element as HTMLElement).appendChild(btn)
-			btn.click()
-
-			await nextTick()
-
-			// navigate should have been called with a 'record' target
-			expect(navigateFn).toHaveBeenCalledWith(expect.objectContaining({ view: 'record' }))
-		})
 	})
 
 	// A row's id is the key its link resolves to, so it has to be the key the record was stored

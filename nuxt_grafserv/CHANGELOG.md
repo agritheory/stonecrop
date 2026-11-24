@@ -1,5 +1,224 @@
 # Change Log - @stonecrop/nuxt-grafserv
 
+## 0.62.8
+
+### Patch Changes
+
+- @stonecrop/casl-middleware@0.62.8
+  - @stonecrop/graphql-middleware@0.62.8
+  - @stonecrop/rockfoil@0.62.8
+
+## 0.62.7
+
+### Patch Changes
+
+- @stonecrop/casl-middleware@0.62.7
+  - @stonecrop/graphql-middleware@0.62.7
+  - @stonecrop/rockfoil@0.62.7
+
+## 0.62.6
+
+### Patch Changes
+
+- @stonecrop/casl-middleware@0.62.6
+  - @stonecrop/graphql-middleware@0.62.6
+  - @stonecrop/rockfoil@0.62.6
+
+## 0.62.5
+
+### Patch Changes
+
+- @stonecrop/casl-middleware@0.62.5
+  - @stonecrop/graphql-middleware@0.62.5
+  - @stonecrop/rockfoil@0.62.5
+
+## 0.62.4
+
+### Patch Changes
+
+- @stonecrop/graphql-middleware@0.62.4
+  - @stonecrop/casl-middleware@0.62.4
+  - @stonecrop/rockfoil@0.62.4
+
+## 0.62.3
+
+### Patch Changes
+
+- @stonecrop/casl-middleware@0.62.3
+  - @stonecrop/graphql-middleware@0.62.3
+  - @stonecrop/rockfoil@0.62.3
+
+## 0.62.2
+
+### Patch Changes
+
+- @stonecrop/casl-middleware@0.62.2
+  - @stonecrop/graphql-middleware@0.62.2
+  - @stonecrop/rockfoil@0.62.2
+
+## 0.62.1
+
+### Patch Changes
+
+- Updated dependencies [98f6dd1]
+  - @stonecrop/graphql-middleware@0.62.1
+  - @stonecrop/casl-middleware@0.62.1
+  - @stonecrop/rockfoil@0.62.1
+
+## 0.62.0
+
+### Patch Changes
+
+- @stonecrop/graphql-middleware@0.62.0
+  - @stonecrop/casl-middleware@0.62.0
+  - @stonecrop/rockfoil@0.62.0
+
+## 0.61.0
+
+### Patch Changes
+
+- @stonecrop/graphql-middleware@0.61.0
+  - @stonecrop/casl-middleware@0.61.0
+  - @stonecrop/rockfoil@0.61.0
+
+## 0.60.2
+
+### Patch Changes
+
+- @stonecrop/casl-middleware@0.60.2
+  - @stonecrop/graphql-middleware@0.60.2
+  - @stonecrop/rockfoil@0.60.2
+
+## 0.60.1
+
+### Patch Changes
+
+- @stonecrop/graphql-middleware@0.60.1
+  - @stonecrop/casl-middleware@0.60.1
+  - @stonecrop/rockfoil@0.60.1
+
+## 0.60.0
+
+### Patch Changes
+
+- @stonecrop/casl-middleware@0.60.0
+  - @stonecrop/graphql-middleware@0.60.0
+  - @stonecrop/rockfoil@0.60.0
+
+## 0.59.0
+
+### Patch Changes
+
+- Updated dependencies [35dc2f5]
+- Updated dependencies [35dc2f5]
+- Updated dependencies [35dc2f5]
+- Updated dependencies [35dc2f5]
+  - @stonecrop/graphql-middleware@0.59.0
+  - @stonecrop/casl-middleware@0.59.0
+  - @stonecrop/rockfoil@0.59.0
+
+## 0.58.4
+
+### Patch Changes
+
+- @stonecrop/casl-middleware@0.58.4
+  - @stonecrop/graphql-middleware@0.58.4
+  - @stonecrop/rockfoil@0.58.4
+
+## 0.58.3
+
+### Patch Changes
+
+- @stonecrop/casl-middleware@0.58.3
+  - @stonecrop/graphql-middleware@0.58.3
+  - @stonecrop/rockfoil@0.58.3
+
+## 0.58.2
+
+### Patch Changes
+
+- @stonecrop/casl-middleware@0.58.2
+  - @stonecrop/graphql-middleware@0.58.2
+  - @stonecrop/rockfoil@0.58.2
+
+## 0.58.1
+
+### Patch Changes
+
+- @stonecrop/casl-middleware@0.58.1
+  - @stonecrop/graphql-middleware@0.58.1
+  - @stonecrop/rockfoil@0.58.1
+
+## 0.58.0
+
+### Patch Changes
+
+- @stonecrop/graphql-middleware@0.58.0
+  - @stonecrop/casl-middleware@0.58.0
+  - @stonecrop/rockfoil@0.58.0
+
+## 0.57.0
+
+### Patch Changes
+
+- Updated dependencies [e816b7b]
+- Updated dependencies [e816b7b]
+- Updated dependencies [e816b7b]
+- Updated dependencies [e816b7b]
+  - @stonecrop/graphql-middleware@0.57.0
+  - @stonecrop/casl-middleware@0.57.0
+  - @stonecrop/rockfoil@0.57.0
+
+## 0.56.4
+
+### Patch Changes
+
+- @stonecrop/graphql-middleware@0.56.4
+  - @stonecrop/casl-middleware@0.56.4
+  - @stonecrop/rockfoil@0.56.4
+
+## 0.56.3
+
+### Patch Changes
+
+- ff8f5da: `@stonecrop/nuxt-grafserv` no longer depends on `@graphql-tools/stitch`, which it never imported, so an app installing it stops getting the `@graphql-tools/utils` that GHSA-7mx3-vvmw-hjmv and GHSA-c4qx-w738-7hr3 affect. The scaffolded `server/resolvers.ts` declares the type of an action's reply, which the newer Grafast's `loadOne` no longer infers.
+- @stonecrop/casl-middleware@0.56.3
+  - @stonecrop/graphql-middleware@0.56.3
+  - @stonecrop/rockfoil@0.56.3
+
+## 0.56.2
+
+### Patch Changes
+
+- 9a372b4: Build the Nuxt modules in `prepublishOnly`, as every other package does, rather than on every `pack`, and drop nuxt's deprecated `prepublish` hook, which built it a second time on publish. The published files are unchanged.
+- @stonecrop/casl-middleware@0.56.2
+  - @stonecrop/graphql-middleware@0.56.2
+  - @stonecrop/rockfoil@0.56.2
+
+## 0.56.1
+
+### Patch Changes
+
+- @stonecrop/casl-middleware@0.56.1
+  - @stonecrop/graphql-middleware@0.56.1
+  - @stonecrop/rockfoil@0.56.1
+
+## 0.56.0
+
+### Patch Changes
+
+- @stonecrop/casl-middleware@0.56.0
+  - @stonecrop/graphql-middleware@0.56.0
+  - @stonecrop/rockfoil@0.56.0
+
+## 0.55.2
+
+### Patch Changes
+
+- @stonecrop/casl-middleware@0.55.2
+  - @stonecrop/graphql-middleware@0.55.2
+  - @stonecrop/rockfoil@0.55.2
+
 ## 0.55.1
 
 ### Patch Changes

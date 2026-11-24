@@ -1,6 +1,14 @@
 import { describe, it, expect } from 'vite-plus/test'
 
-import { componentParts, parseField, partsPatch, readParts, validateDoctype, validateField } from '../src'
+import {
+	componentParts,
+	componentTakesParts,
+	parseField,
+	partsPatch,
+	readParts,
+	validateDoctype,
+	validateField,
+} from '../src'
 
 const field = (fieldname: string, component = 'ATextInput') => ({ fieldname, component })
 
@@ -96,5 +104,63 @@ describe('reading and writing a field’s parts', { tags: ['unit'] }, () => {
 
 	it('leaves an empty part as the record holds it', () => {
 		expect(partsPatch(parts, { quantity: null, uom: null }, { qty: 3, uom: null })).toEqual({ quantity: 3 })
+	})
+})
+
+// An app's own component reads other fields of its record through `parts`, the one way that works for
+// a record not yet saved.
+describe('an app’s own component reading other fields of its record', { tags: ['unit'] }, () => {
+	const chart = (parts: Record<string, string>) => ({ fieldname: 'chart', component: 'PlanChart', parts })
+	const lines = (parts: Record<string, string>, component?: string) => ({
+		fieldname: 'lines',
+		...(component ? { component } : {}),
+		columns: [{ fieldname: 'deliveryDate' }],
+		parts,
+	})
+
+	it('names whatever parts it reads, without naming its own field', () => {
+		expect(parseField(chart({ start: 'startDate', end: 'endDate' }))).toMatchObject({
+			kind: 'field',
+			parts: { start: 'startDate', end: 'endDate' },
+		})
+	})
+
+	it('still refuses a field named by two parts', () => {
+		expect(fieldMessages(chart({ start: 'startDate', end: 'startDate' }))).toContain('more than one part')
+	})
+
+	it('lets a table rendered by an app’s own component declare parts', () => {
+		expect(parseField(lines({ deliveryDate: 'deliveryDate' }, 'OrderLines'))).toMatchObject({
+			kind: 'table',
+			parts: { deliveryDate: 'deliveryDate' },
+		})
+	})
+
+	it('refuses parts on a table ATable renders, named or by default', () => {
+		expect(fieldMessages(lines({ deliveryDate: 'deliveryDate' }, 'ATable'))).toContain('ATable')
+		expect(fieldMessages(lines({ deliveryDate: 'deliveryDate' }))).toContain('ATable')
+	})
+
+	it('refuses a part naming a field the doctype does not have', () => {
+		const fields = [lines({ deliveryDate: 'dueDate' }, 'OrderLines'), field('deliveryDate', 'ADatePicker')]
+		expect(doctypeMessages(fields)).toContain('"dueDate"')
+	})
+
+	it('finds the fields its parts name, a table among them', () => {
+		const fields = [
+			chart({ start: 'startDate', end: 'endDate', lines: 'lines' }),
+			field('startDate', 'ADatePicker'),
+			field('endDate', 'ADatePicker'),
+			lines({ deliveryDate: 'deliveryDate' }, 'OrderLines'),
+			field('deliveryDate', 'ADatePicker'),
+		]
+		expect(validateDoctype({ name: 'Plan', fields })).toEqual({ success: true, errors: [] })
+	})
+
+	it('tells which components take parts', () => {
+		expect(componentTakesParts('AQuantityInput')).toBe(true)
+		expect(componentTakesParts('PlanChart')).toBe(true)
+		expect(componentTakesParts('ATextInput')).toBe(false)
+		expect(componentTakesParts('ATable')).toBe(false)
 	})
 })

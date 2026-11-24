@@ -47,8 +47,8 @@ import { ACheckbox } from '@stonecrop/aform'
 | required | `boolean \| undefined` | no |  | Indicate whether input is required for text and/or select elements inside the component |
 | mode | `InteractionMode \| undefined` | no |  | The rendering mode for the component |
 | uuid | `string \| undefined` | no |  | Set a unique identifier for elements inside the component |
-| validation | `{ [key: string]: any; errorMessage: string; } \| undefined` | no | `{ errorMessage: "" }` | Validation options for elements inside the component |
-| errors | `string[] \| undefined` | no |  | Inline validation error messages to display on this field. Fed by the host (e.g. mapped from the core validation store) — the renderer stays dumb and just shows what it is given. Takes precedence over the static `validation.errorMessage`. |
+| validation | `{ [key: string]: any; errorMessage: string; } \| undefined` | no |  | Validation options for elements inside the component |
+| errors | `string[] \| undefined` | no |  | Inline validation error messages to display on this field. Fed by the host (e.g. mapped from the core validation store) — the renderer stays dumb and just shows what it is given. Inside AForm, an error reported without a message arrives worded with the field's `validation.errorMessage`. |
 | modelValue | `any[] \| Booleanish \| Set<any> \| undefined` | no |  |  |
 
 **Events:**
@@ -76,8 +76,8 @@ import { ACurrencyInput } from '@stonecrop/aform'
 | required | `boolean \| undefined` | no |  | Indicate whether input is required for text and/or select elements inside the component |
 | mode | `InteractionMode \| undefined` | no |  | The rendering mode for the component |
 | uuid | `string \| undefined` | no |  | Set a unique identifier for elements inside the component |
-| validation | `{ [key: string]: any; errorMessage: string; } \| undefined` | no | `{ errorMessage: "" }` | Validation options for elements inside the component |
-| errors | `string[] \| undefined` | no |  | Inline validation error messages to display on this field. Fed by the host (e.g. mapped from the core validation store) — the renderer stays dumb and just shows what it is given. Takes precedence over the static `validation.errorMessage`. |
+| validation | `{ [key: string]: any; errorMessage: string; } \| undefined` | no |  | Validation options for elements inside the component |
+| errors | `string[] \| undefined` | no |  | Inline validation error messages to display on this field. Fed by the host (e.g. mapped from the core validation store) — the renderer stays dumb and just shows what it is given. Inside AForm, an error reported without a message arrives worded with the field's `validation.errorMessage`. |
 | options | `CurrencyOptions \| undefined` | no | `{}` |  |
 | currencyLabel | `string \| undefined` | no | `"Currency"` |  |
 | modelValue | `CurrencyValue \| null \| undefined` | no |  |  |
@@ -107,8 +107,8 @@ import { ADate } from '@stonecrop/aform'
 | required | `boolean \| undefined` | no |  | Indicate whether input is required for text and/or select elements inside the component |
 | mode | `InteractionMode \| undefined` | no |  | The rendering mode for the component |
 | uuid | `string \| undefined` | no |  | Set a unique identifier for elements inside the component |
-| validation | `{ [key: string]: any; errorMessage: string; } \| undefined` | no | `{ errorMessage: "" }` | Validation options for elements inside the component |
-| errors | `string[] \| undefined` | no |  | Inline validation error messages to display on this field. Fed by the host (e.g. mapped from the core validation store) — the renderer stays dumb and just shows what it is given. Takes precedence over the static `validation.errorMessage`. |
+| validation | `{ [key: string]: any; errorMessage: string; } \| undefined` | no |  | Validation options for elements inside the component |
+| errors | `string[] \| undefined` | no |  | Inline validation error messages to display on this field. Fed by the host (e.g. mapped from the core validation store) — the renderer stays dumb and just shows what it is given. Inside AForm, an error reported without a message arrives worded with the field's `validation.errorMessage`. |
 | modelValue | `string \| null \| undefined` | no |  |  |
 
 **Events:**
@@ -136,8 +136,8 @@ import { ADatePicker } from '@stonecrop/aform'
 | required | `boolean \| undefined` | no |  | Indicate whether input is required for text and/or select elements inside the component |
 | mode | `InteractionMode \| undefined` | no |  | The rendering mode for the component |
 | uuid | `string \| undefined` | no |  | Set a unique identifier for elements inside the component |
-| validation | `{ [key: string]: any; errorMessage: string; } \| undefined` | no | `{ errorMessage: "" }` | Validation options for elements inside the component |
-| errors | `string[] \| undefined` | no |  | Inline validation error messages to display on this field. Fed by the host (e.g. mapped from the core validation store) — the renderer stays dumb and just shows what it is given. Takes precedence over the static `validation.errorMessage`. |
+| validation | `{ [key: string]: any; errorMessage: string; } \| undefined` | no |  | Validation options for elements inside the component |
+| errors | `string[] \| undefined` | no |  | Inline validation error messages to display on this field. Fed by the host (e.g. mapped from the core validation store) — the renderer stays dumb and just shows what it is given. Inside AForm, an error reported without a message arrives worded with the field's `validation.errorMessage`. |
 | modelValue | `string \| null \| undefined` | no |  |  |
 
 **Events:**
@@ -174,8 +174,8 @@ import { ADateRange } from '@stonecrop/aform'
 | required | `boolean \| undefined` | no |  | Indicate whether input is required for text and/or select elements inside the component |
 | mode | `InteractionMode \| undefined` | no |  | The rendering mode for the component |
 | uuid | `string \| undefined` | no |  | Set a unique identifier for elements inside the component |
-| validation | `{ [key: string]: any; errorMessage: string; } \| undefined` | no | `{ errorMessage: "" }` | Validation options for elements inside the component |
-| errors | `string[] \| undefined` | no |  | Inline validation error messages to display on this field. Fed by the host (e.g. mapped from the core validation store) — the renderer stays dumb and just shows what it is given. Takes precedence over the static `validation.errorMessage`. |
+| validation | `{ [key: string]: any; errorMessage: string; } \| undefined` | no |  | Validation options for elements inside the component |
+| errors | `string[] \| undefined` | no |  | Inline validation error messages to display on this field. Fed by the host (e.g. mapped from the core validation store) — the renderer stays dumb and just shows what it is given. Inside AForm, an error reported without a message arrives worded with the field's `validation.errorMessage`. |
 | modelValue | `DateRangeValue \| null \| undefined` | no | `{ start_date: null, end_date: null }` |  |
 
 **Events:**
@@ -235,8 +235,8 @@ import { ADateTime } from '@stonecrop/aform'
 | required | `boolean \| undefined` | no |  | Indicate whether input is required for text and/or select elements inside the component |
 | mode | `InteractionMode \| undefined` | no |  | The rendering mode for the component |
 | uuid | `string \| undefined` | no |  | Set a unique identifier for elements inside the component |
-| validation | `{ [key: string]: any; errorMessage: string; } \| undefined` | no | `{ errorMessage: "" }` | Validation options for elements inside the component |
-| errors | `string[] \| undefined` | no |  | Inline validation error messages to display on this field. Fed by the host (e.g. mapped from the core validation store) — the renderer stays dumb and just shows what it is given. Takes precedence over the static `validation.errorMessage`. |
+| validation | `{ [key: string]: any; errorMessage: string; } \| undefined` | no |  | Validation options for elements inside the component |
+| errors | `string[] \| undefined` | no |  | Inline validation error messages to display on this field. Fed by the host (e.g. mapped from the core validation store) — the renderer stays dumb and just shows what it is given. Inside AForm, an error reported without a message arrives worded with the field's `validation.errorMessage`. |
 | allowMilitaryTime | `boolean \| undefined` | no | `false` |  |
 | useSeconds | `boolean \| undefined` | no | `true` |  |
 | modelValue | `string \| Date \| null \| undefined` | no |  |  |
@@ -265,11 +265,16 @@ import { ADateTimeInput } from '@stonecrop/aform'
 | defaultSeconds | `number \| undefined` | no | `0` |  |
 | defaultMeridiem | `string \| undefined` | no | `"AM"` |  |
 | useSeconds | `boolean \| undefined` | no | `true` |  |
+| label | `string \| undefined` | no |  | The field's label, shown when the widget is a form field |
+| mode | `string \| undefined` | no | `"edit"` |  |
+| uuid | `string \| undefined` | no |  | Ties the label to the hours input |
+| modelValue | `string \| null \| undefined` | no |  |  |
 
 **Events:**
 
 | Event | Payload | Description |
 |-------|---------|-------------|
+| update:modelValue | `[value: string \| null \| undefined]` |  |
 | get-time | `[{ hours: number; minutes: number; seconds: number; meridiem: string; militaryTime: number; source: "init" \| "user"; }]` |  |
 
 ### ADropdown
@@ -291,8 +296,8 @@ import { ADropdown } from '@stonecrop/aform'
 | required | `boolean \| undefined` | no |  | Indicate whether input is required for text and/or select elements inside the component |
 | mode | `InteractionMode \| undefined` | no |  | The rendering mode for the component |
 | uuid | `string \| undefined` | no |  | Set a unique identifier for elements inside the component |
-| validation | `{ [key: string]: any; errorMessage: string; } \| undefined` | no | `{ errorMessage: "" }` | Validation options for elements inside the component |
-| errors | `string[] \| undefined` | no |  | Inline validation error messages to display on this field. Fed by the host (e.g. mapped from the core validation store) — the renderer stays dumb and just shows what it is given. Takes precedence over the static `validation.errorMessage`. |
+| validation | `{ [key: string]: any; errorMessage: string; } \| undefined` | no |  | Validation options for elements inside the component |
+| errors | `string[] \| undefined` | no |  | Inline validation error messages to display on this field. Fed by the host (e.g. mapped from the core validation store) — the renderer stays dumb and just shows what it is given. Inside AForm, an error reported without a message arrives worded with the field's `validation.errorMessage`. |
 | options | `string[] \| Record<string, unknown> \| undefined` | no | `[]` |  |
 | format | `string \| undefined` | no |  |  |
 | isAsync | `boolean \| undefined` | no | `false` |  |
@@ -410,7 +415,7 @@ import { AFileAttach } from '@stonecrop/aform'
 | mode | `InteractionMode \| undefined` | no |  | The rendering mode for the component |
 | uuid | `string \| undefined` | no |  | Set a unique identifier for elements inside the component |
 | validation | `{ [key: string]: any; errorMessage: string; } \| undefined` | no |  | Validation options for elements inside the component |
-| errors | `string[] \| undefined` | no |  | Inline validation error messages to display on this field. Fed by the host (e.g. mapped from the core validation store) — the renderer stays dumb and just shows what it is given. Takes precedence over the static `validation.errorMessage`. |
+| errors | `string[] \| undefined` | no |  | Inline validation error messages to display on this field. Fed by the host (e.g. mapped from the core validation store) — the renderer stays dumb and just shows what it is given. Inside AForm, an error reported without a message arrives worded with the field's `validation.errorMessage`. |
 
 ### AForm
 
@@ -455,7 +460,7 @@ import { AFormLink } from '@stonecrop/aform'
 | mode | `InteractionMode \| undefined` | no |  | The rendering mode for the component |
 | uuid | `string \| undefined` | no |  | Set a unique identifier for elements inside the component |
 | validation | `{ [key: string]: any; errorMessage: string; } \| undefined` | no |  | Validation options for elements inside the component |
-| errors | `string[] \| undefined` | no |  | Inline validation error messages to display on this field. Fed by the host (e.g. mapped from the core validation store) — the renderer stays dumb and just shows what it is given. Takes precedence over the static `validation.errorMessage`. |
+| errors | `string[] \| undefined` | no |  | Inline validation error messages to display on this field. Fed by the host (e.g. mapped from the core validation store) — the renderer stays dumb and just shows what it is given. Inside AForm, an error reported without a message arrives worded with the field's `validation.errorMessage`. |
 | doctype | `string \| undefined` | no | `undefined` |  |
 | formatter | `((value: AFormLinkValue) => string) \| undefined` | no | `undefined` |  |
 | icon | `"arrow-right" \| "chevron-right" \| undefined` | no | `"arrow-right"` |  |
@@ -465,13 +470,13 @@ import { AFormLink } from '@stonecrop/aform'
 | embedded | `boolean \| undefined` | no | `false` |  |
 | placeholder | `string \| undefined` | no | `undefined` |  |
 | ariaLabel | `string \| undefined` | no | `undefined` |  |
-| modelValue | `AFormLinkModelValue \| undefined` | no | `{ id: "", displayText: "" }` |  |
+| modelValue | `AFormLinkModelValue \| null \| undefined` | no | `{ id: "", displayText: "" }` |  |
 
 **Events:**
 
 | Event | Payload | Description |
 |-------|---------|-------------|
-| update:modelValue | `[value: AFormLinkModelValue]` |  |
+| update:modelValue | `[value: AFormLinkModelValue \| null]` |  |
 
 **Slots:**
 
@@ -512,8 +517,8 @@ import { ANumericInput } from '@stonecrop/aform'
 | required | `boolean \| undefined` | no |  | Indicate whether input is required for text and/or select elements inside the component |
 | mode | `InteractionMode \| undefined` | no |  | The rendering mode for the component |
 | uuid | `string \| undefined` | no |  | Set a unique identifier for elements inside the component |
-| validation | `{ [key: string]: any; errorMessage: string; } \| undefined` | no | `{ errorMessage: "" }` | Validation options for elements inside the component |
-| errors | `string[] \| undefined` | no |  | Inline validation error messages to display on this field. Fed by the host (e.g. mapped from the core validation store) — the renderer stays dumb and just shows what it is given. Takes precedence over the static `validation.errorMessage`. |
+| validation | `{ [key: string]: any; errorMessage: string; } \| undefined` | no |  | Validation options for elements inside the component |
+| errors | `string[] \| undefined` | no |  | Inline validation error messages to display on this field. Fed by the host (e.g. mapped from the core validation store) — the renderer stays dumb and just shows what it is given. Inside AForm, an error reported without a message arrives worded with the field's `validation.errorMessage`. |
 | options | `NumericOptions \| undefined` | no | `{}` |  |
 | modelValue | `number \| null \| undefined` | no |  |  |
 
@@ -542,8 +547,8 @@ import { AQuantityInput } from '@stonecrop/aform'
 | required | `boolean \| undefined` | no |  | Indicate whether input is required for text and/or select elements inside the component |
 | mode | `InteractionMode \| undefined` | no |  | The rendering mode for the component |
 | uuid | `string \| undefined` | no |  | Set a unique identifier for elements inside the component |
-| validation | `{ [key: string]: any; errorMessage: string; } \| undefined` | no | `{ errorMessage: "" }` | Validation options for elements inside the component |
-| errors | `string[] \| undefined` | no |  | Inline validation error messages to display on this field. Fed by the host (e.g. mapped from the core validation store) — the renderer stays dumb and just shows what it is given. Takes precedence over the static `validation.errorMessage`. |
+| validation | `{ [key: string]: any; errorMessage: string; } \| undefined` | no |  | Validation options for elements inside the component |
+| errors | `string[] \| undefined` | no |  | Inline validation error messages to display on this field. Fed by the host (e.g. mapped from the core validation store) — the renderer stays dumb and just shows what it is given. Inside AForm, an error reported without a message arrives worded with the field's `validation.errorMessage`. |
 | options | `QuantityOptions \| undefined` | no | `{}` |  |
 | uomLabel | `string \| undefined` | no | `"UOM"` |  |
 | modelValue | `QuantityValue \| null \| undefined` | no |  |  |
@@ -573,8 +578,8 @@ import { ASegmentedControl } from '@stonecrop/aform'
 | required | `boolean \| undefined` | no |  | Indicate whether input is required for text and/or select elements inside the component |
 | mode | `InteractionMode \| undefined` | no |  | The rendering mode for the component |
 | uuid | `string \| undefined` | no |  | Set a unique identifier for elements inside the component |
-| validation | `{ [key: string]: any; errorMessage: string; } \| undefined` | no | `{ errorMessage: "" }` | Validation options for elements inside the component |
-| errors | `string[] \| undefined` | no |  | Inline validation error messages to display on this field. Fed by the host (e.g. mapped from the core validation store) — the renderer stays dumb and just shows what it is given. Takes precedence over the static `validation.errorMessage`. |
+| validation | `{ [key: string]: any; errorMessage: string; } \| undefined` | no |  | Validation options for elements inside the component |
+| errors | `string[] \| undefined` | no |  | Inline validation error messages to display on this field. Fed by the host (e.g. mapped from the core validation store) — the renderer stays dumb and just shows what it is given. Inside AForm, an error reported without a message arrives worded with the field's `validation.errorMessage`. |
 | options | `string[] \| Record<string, unknown> \| undefined` | no | `undefined` |  |
 | size | `"xs" \| "sm" \| undefined` | no | `"sm"` |  |
 | equal | `boolean \| undefined` | no | `false` |  |
@@ -609,8 +614,8 @@ import { ASemverInput } from '@stonecrop/aform'
 | required | `boolean \| undefined` | no |  | Indicate whether input is required for text and/or select elements inside the component |
 | mode | `InteractionMode \| undefined` | no |  | The rendering mode for the component |
 | uuid | `string \| undefined` | no |  | Set a unique identifier for elements inside the component |
-| validation | `{ [key: string]: any; errorMessage: string; } \| undefined` | no | `{ errorMessage: "" }` | Validation options for elements inside the component |
-| errors | `string[] \| undefined` | no |  | Inline validation error messages to display on this field. Fed by the host (e.g. mapped from the core validation store) — the renderer stays dumb and just shows what it is given. Takes precedence over the static `validation.errorMessage`. |
+| validation | `{ [key: string]: any; errorMessage: string; } \| undefined` | no |  | Validation options for elements inside the component |
+| errors | `string[] \| undefined` | no |  | Inline validation error messages to display on this field. Fed by the host (e.g. mapped from the core validation store) — the renderer stays dumb and just shows what it is given. Inside AForm, an error reported without a message arrives worded with the field's `validation.errorMessage`. |
 | modelValue | `string \| null \| undefined` | no |  |  |
 
 **Events:**
@@ -666,8 +671,8 @@ import { ATextboxInput } from '@stonecrop/aform'
 | required | `boolean \| undefined` | no |  | Indicate whether input is required for text and/or select elements inside the component |
 | mode | `InteractionMode \| undefined` | no |  | The rendering mode for the component |
 | uuid | `string \| undefined` | no |  | Set a unique identifier for elements inside the component |
-| validation | `{ [key: string]: any; errorMessage: string; } \| undefined` | no | `{ errorMessage: "" }` | Validation options for elements inside the component |
-| errors | `string[] \| undefined` | no |  | Inline validation error messages to display on this field. Fed by the host (e.g. mapped from the core validation store) — the renderer stays dumb and just shows what it is given. Takes precedence over the static `validation.errorMessage`. |
+| validation | `{ [key: string]: any; errorMessage: string; } \| undefined` | no |  | Validation options for elements inside the component |
+| errors | `string[] \| undefined` | no |  | Inline validation error messages to display on this field. Fed by the host (e.g. mapped from the core validation store) — the renderer stays dumb and just shows what it is given. Inside AForm, an error reported without a message arrives worded with the field's `validation.errorMessage`. |
 | placeholder | `string \| undefined` | no | `""` | Placeholder shown when the field is empty |
 | rows | `number \| undefined` | no | `4` | Visible number of text lines (maps to the textarea `rows` attribute) |
 | maxlength | `number \| undefined` | no |  | Maximum number of characters the field will accept |
@@ -698,8 +703,8 @@ import { ATextInput } from '@stonecrop/aform'
 | required | `boolean \| undefined` | no |  | Indicate whether input is required for text and/or select elements inside the component |
 | mode | `InteractionMode \| undefined` | no |  | The rendering mode for the component |
 | uuid | `string \| undefined` | no |  | Set a unique identifier for elements inside the component |
-| validation | `{ [key: string]: any; errorMessage: string; } \| undefined` | no | `{ errorMessage: "" }` | Validation options for elements inside the component |
-| errors | `string[] \| undefined` | no |  | Inline validation error messages to display on this field. Fed by the host (e.g. mapped from the core validation store) — the renderer stays dumb and just shows what it is given. Takes precedence over the static `validation.errorMessage`. |
+| validation | `{ [key: string]: any; errorMessage: string; } \| undefined` | no |  | Validation options for elements inside the component |
+| errors | `string[] \| undefined` | no |  | Inline validation error messages to display on this field. Fed by the host (e.g. mapped from the core validation store) — the renderer stays dumb and just shows what it is given. Inside AForm, an error reported without a message arrives worded with the field's `validation.errorMessage`. |
 | modelValue | `string \| number \| undefined` | no |  |  |
 
 **Events:**
@@ -1185,6 +1190,7 @@ export interface ResolvedTable {
   kind: 'table';
   label?: string;
   mode?: import('@stonecrop/schema').InteractionMode;
+  parts?: Record<string, string>;
   readOnly?: boolean;
   required?: boolean;
   schema: ColumnSchema[];
@@ -1205,6 +1211,7 @@ export interface ResolvedTable {
 | kind | `'table'` | Discriminator |
 | label? | `string` | Human-readable label |
 | mode? | `import('@stonecrop/schema').InteractionMode` | Interaction mode for all cells |
+| parts? | `Record<string, string>` | Preserved from the original ValueField or TableField: the fields an app's own table component reads, handed to it as its value. Its rows still arrive as `rows`. |
 | readOnly? | `boolean` | Preserved from the original ValueField or TableField |
 | required? | `boolean` | Preserved from the original ValueField or TableField |
 | schema | `ColumnSchema[]` | Column definitions — passed to ATable's `:schema` prop |
@@ -1219,7 +1226,7 @@ What AFormLink accepts as its `v-model`.
 
 Wider than `AFormLinkValue` because a link is as often bound straight to its FK column as to a resolved reference: a record loaded from the DB carries the raw scalar, and a parent bound to that column coerces every update it receives back to a scalar. The component reads through `linkId`/`linkDisplayText`/`asLinkValue`, so all three shapes render and resolve identically.
 
-Emitting is narrower — AFormLink always writes back an `AFormLinkValue`.
+Emitting is narrower — AFormLink writes back an `AFormLinkValue` when an option is picked, or `null` when the user empties the field.
 
 **Definition:**
 

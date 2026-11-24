@@ -1,5 +1,91 @@
 # Change Log - @stonecrop/schema
 
+## 0.62.8
+
+## 0.62.7
+
+## 0.62.6
+
+## 0.62.5
+
+## 0.62.4
+
+### Patch Changes
+
+- 624a7d8: A column's `cellComponent` is now drawn inside the table cell and receives the cell's value as `value` and the column's `cellComponentProps`, as the schema says (#510). Before, ATable drew the component in place of the cell and passed it neither, so a custom status chip showed up empty and uncoloured. The component also gets the table's `store` and the cell's `rowIndex` and `colIndex`, so a cell that acts on its row can still find it. Desktop's list link no longer draws its own cell.
+
+## 0.62.3
+
+## 0.62.2
+
+## 0.62.1
+
+## 0.62.0
+
+### Minor Changes
+
+- 3635b61: An empty table now shows a full-width "No data" row (or "No matching records" when filters hide every row) once its rows have loaded. When the host sets `config.addable`, the row also offers "Add row", which adds a row through `store.addRow()` and emits `row:add`. Hosts can replace the row through the `empty` slot.
+  
+  A doctype's table field can turn this on with `addable` in its `TableViewConfig`; AForm turns it off while the form can't edit the record.
+  
+  The empty row, the pagination footer and the list-expansion panel now span the same `store.columnCount`, so the footer no longer stops one column short with row actions on. A table with a pinned column that starts out empty now sizes the pinned column from its first data row once one arrives.
+
+## 0.61.0
+
+### Minor Changes
+
+- 3c3539d: Add `@stonecrop/block-editor`, an Editor.js block editor (`AEditor`) for rich-text fields, with the Paragraph, Header, List, Quote and Delimiter blocks. The field holds Editor.js `OutputData`; AForm binds it with `v-model`, and it renders as static HTML outside `edit` mode. `@stonecrop/schema` gives `AEditor` the new `richtext` category, `@stonecrop/utilities` adds `formatRichTextCell`, and ATable shows a rich-text column as its plain text, read-only. The Nuxt module installs the editor.
+
+## 0.60.2
+
+## 0.60.1
+
+### Patch Changes
+
+- 35ea6ea: A field's static `validation.errorMessage` is no longer shown as an error on its own. Before, a field with one showed it on every record, valid or not, and marked its input `aria-invalid`, so a "Validation message" set in DocBuilder sat on every record and a screen reader announced the field as invalid.
+  
+  The message now words an error a trigger reports without one: `setError(field)`, with the message left out, shows that field's own Validation message. AForm applies the wording before it routes errors, so a field bound to another field's part (totals sharing one currency) shows that part's own message, and fieldset children and link fields are covered too; a field component only shows the errors it is handed. `flattenFields` is generic, so it walks resolved fields as well as authored ones. DocBuilder's trigger editor shows `setError(field, message?)`, and the Validation message input says when it is shown.
+
+## 0.60.0
+
+## 0.59.0
+
+## 0.58.4
+
+## 0.58.3
+
+## 0.58.2
+
+## 0.58.1
+
+## 0.58.0
+
+### Minor Changes
+
+- 246be00: A field rendered by an app's own component, a table among them, may declare `parts` naming the other fields of its record it reads. AForm hands them to the component from the record it edits, so they work before the record is first saved. Stonecrop's own single-value inputs and ATable still declare none.
+
+## 0.57.0
+
+### Minor Changes
+
+- e816b7b: A many-side link can name the order of its rows with `orderBy`, a field of the target and an optional direction (`{ "fieldname": "rowOrder" }`), so rows that keep their own position, such as an order's lines, load in that order instead of by id. The target's identity breaks ties. Building the schema refuses an `orderBy` naming a field the target lacks or one with no database column, except on a custom link, whose handler applies its own order, and an `orderBy` on any one-side link, which reads one row.
+
+## 0.56.4
+
+### Patch Changes
+
+- e02c837: A workflow action that declares both `stateless: true` and a `nextState` is now refused when the doctype loads, instead of the browser running it as a command that changes nothing while the server moves the record to the next state. `stateless` together with `selfTransition` stays allowed.
+
+## 0.56.3
+
+## 0.56.2
+
+## 0.56.1
+
+## 0.56.0
+
+## 0.55.2
+
 ## 0.55.1
 
 ## 0.55.0

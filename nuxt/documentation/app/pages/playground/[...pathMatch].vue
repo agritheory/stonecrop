@@ -6,8 +6,10 @@ import {
 	ActionSetIconEmail,
 	ActionSetIconFiles,
 	ActionSetIconReports,
+	type ActionElements,
 	type ActionSetSlot,
 } from '@stonecrop/desktop'
+import { DRAFT_RECORD_ID } from '@stonecrop/stonecrop'
 import ApprovalsPanel from '~/components/rail/ApprovalsPanel.vue'
 import AttachmentsPanel from '~/components/rail/AttachmentsPanel.vue'
 import ChatPanel from '~/components/rail/ChatPanel.vue'
@@ -24,6 +26,23 @@ const routeAdapter = usePlaygroundRouteAdapter()
 const { run } = useClientAction()
 
 const availableDoctypes = computed(() => Array.from(doctypeMap.keys()))
+
+// A list shows every action its doctype declares, and each doctype here is a record's too, so every list
+// gets the playground's actions instead: New on the only doctypes the docs server can create, none on the
+// rest. Unset on other views, never `[]`, which would hide a record's own actions.
+const creatableDoctypes = new Set(['order', 'user'])
+const hostActions = computed((): ActionElements[] | undefined => {
+	const doctype = routeAdapter.getCurrentDoctype()
+	if (routeAdapter.getCurrentView() !== 'records') return undefined
+	if (!creatableDoctypes.has(doctype)) return []
+	return [
+		{
+			type: 'button',
+			label: 'New Record',
+			action: () => void routeAdapter.navigate({ view: 'record', doctype, recordId: DRAFT_RECORD_ID }),
+		},
+	]
+})
 
 const onOrderRecord = computed(
 	() => routeAdapter.getCurrentDoctype() === 'order' && Boolean(routeAdapter.getCurrentRecordId())
@@ -52,6 +71,7 @@ const actionSetSlots = computed<ActionSetSlot[]>(() => [
 				:available-doctypes="availableDoctypes"
 				:route-adapter="routeAdapter"
 				:action-set-slots="actionSetSlots"
+				:host-actions="hostActions"
 				@action="run" />
 			<template #fallback>
 				<div class="playground-loading">

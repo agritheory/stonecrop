@@ -263,6 +263,20 @@ describe('table store', { tags: ['component'] }, () => {
 				)
 			})
 
+			it('shows an editor document as the plain text of its blocks', () => {
+				store.columns[0] = { name: 'id', component: 'AEditor' }
+				const doc = {
+					time: 1,
+					version: '2.31.7',
+					blocks: [
+						{ type: 'header', data: { text: 'Notes', level: 2 } },
+						{ type: 'paragraph', data: { text: 'Keep <b>dry</b>' } },
+					],
+				}
+				expect(store.getFormattedValue(0, 0, doc)).toBe('Notes Keep dry')
+				expect(store.getFormattedValue(0, 0, null)).toBe('')
+			})
+
 			it('passes value through for an unknown component', () => {
 				store.columns[0] = { name: 'id', component: 'ATextInput' }
 				expect(store.getFormattedValue(0, 0, 'hello')).toBe('hello')
@@ -1705,6 +1719,29 @@ describe('table store', { tags: ['component'] }, () => {
 
 		it('shows a semver cell as the version it holds', () => {
 			expect(semverStore.getFormattedValue(1, 0, '1.10.0')).toBe('1.10.0')
+		})
+	})
+
+	describe('rich-text column sorting', () => {
+		const note = (text: string) => ({ time: 1, version: '2.31.7', blocks: [{ type: 'paragraph', data: { text } }] })
+
+		it('sorts an AEditor column by the text each document shows', () => {
+			const richStore = createTableStore({
+				columns: [
+					{ name: 'item', label: 'Item' },
+					{ name: 'notes', label: 'Notes', component: 'AEditor' },
+				],
+				rows: [
+					{ item: 'A', notes: note('Cherry') },
+					{ item: 'B', notes: note('<b>apple</b>') },
+					{ item: 'C', notes: null },
+					{ item: 'D', notes: note('banana') },
+				],
+			})
+			richStore.sortByColumn(1)
+			expect(richStore.filteredRows.map(r => r.item)).toEqual(['C', 'B', 'D', 'A'])
+			richStore.sortByColumn(1)
+			expect(richStore.filteredRows.map(r => r.item)).toEqual(['A', 'D', 'B', 'C'])
 		})
 	})
 

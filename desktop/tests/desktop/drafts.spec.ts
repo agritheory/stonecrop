@@ -116,7 +116,7 @@ describe('Desktop draft records', { tags: ['component'] }, () => {
 
 	it('does not carry one draft into the next', async () => {
 		// Every draft routes to the same `/task/new`, so a buffer left behind would open the next
-		// New Record pre-filled with the abandoned one.
+		// new record pre-filled with the abandoned one.
 		const first = mountAt('new')
 		await flushPromises()
 		first.findComponent(AForm).vm.$emit('update:data', { title: 'Abandoned' })

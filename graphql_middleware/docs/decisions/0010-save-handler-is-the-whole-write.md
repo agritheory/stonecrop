@@ -42,7 +42,7 @@ Chosen option: "Option 3", decided by Rohan Bansal, answering for Tyler Matteson
 * Good, because a Save with server code can be a self-transition limited to its states, so the page offers it only where it can run.
 * Good, because each Save writes once.
 * Good, because app code can own a create, which a conversion needs.
-* Bad, because the handler does the whole write: the adapter's own handling of a patch (keeping to the doctype's columns, never writing `status`, reporting `droppedFields`) does not apply to it.
+* Bad, because the handler does the whole write: the adapter's own handling of a patch (keeping to the doctype's columns, never writing `status`, reporting `droppedFields`, and writing only what changed, encoded as its read serves it, per [ADR 0011](0011-save-writes-what-changed.md)) does not apply to it.
 * Bad, because an app with a handler on a self-transition Save changes behaviour. None was known when this was decided: FAB's self-transition Saves have no handlers, and neither do this repository's hosts.
 
 ## Pros and Cons of the Options
