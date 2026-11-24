@@ -3,7 +3,10 @@
 	sits in its own tbody so row navigation never lands on it. Drawn as a row, not a button. -->
 	<tr class="atable-add-row">
 		<td :colspan="colspan" class="atable-add-cell">
-			<button type="button" class="atable-add" @click="emit('add')">Add row</button>
+			<!-- The label sticks to the left edge, so a table scrolled sideways (pinned columns) still shows it. -->
+			<button type="button" class="atable-add" @click="emit('add')">
+				<span class="atable-add-label">Add row</span>
+			</button>
 		</td>
 	</tr>
 </template>
@@ -33,7 +36,7 @@ const emit = defineEmits<{
 	width: 100%;
 	min-height: var(--sc-atable-row-height);
 	margin: 0;
-	padding: var(--sc-atable-row-padding) 0.5ch;
+	padding: var(--sc-atable-row-padding) 0;
 	background: transparent;
 	color: var(--sc-gray-60);
 	border: none;
@@ -46,8 +49,17 @@ const emit = defineEmits<{
 	text-align: left;
 }
 
-.atable-add::before {
+.atable-add-label {
+	position: sticky;
+	left: 0;
+	display: inline-block;
+	padding-left: 0.5ch;
+}
+
+/* Empty alternative text: the "+" is drawn, not read, so screen readers announce "Add row". */
+.atable-add-label::before {
 	content: '+';
+	content: '+' / '';
 	display: inline-block;
 	width: 2ch;
 }

@@ -186,6 +186,63 @@ describe('ATable empty-state row', { tags: ['component'] }, () => {
 		expect(wrapper.find('.atable-add-row').exists()).toBe(false)
 	})
 
+	it('follows a row added on a full last page to its new page, keeping Add row below it', async () => {
+		const rows = [1, 2].map(id => ({ id, name: `Row ${id}` }))
+		const wrapper = mountTable(rows, { view: 'list', addable: true, pageSize: 2 })
+		expect(wrapper.find('.atable-add-row').exists()).toBe(true)
+
+		await wrapper.find('.atable-add-row button').trigger('click')
+		await flushPromises()
+
+		// The third row starts page two, and the table shows it there.
+		expect(wrapper.findAll('tbody tr.atable-row')).toHaveLength(1)
+		expect(wrapper.find('.atable-add-row').exists()).toBe(true)
+	})
+
+	it('steps Add row aside while the rows are sorted', async () => {
+		const wrapper = mountTable(
+			[
+				{ id: 1, name: 'John' },
+				{ id: 2, name: 'Jane' },
+			],
+			{ view: 'list', addable: true }
+		)
+		const store = (wrapper.vm as unknown as { store: { sortByColumn: (col: number) => void } }).store
+		store.sortByColumn(1)
+		await flushPromises()
+		expect(wrapper.find('.atable-add-row').exists()).toBe(false)
+	})
+
+	it('reads "Add row" to screen readers, with the drawn "+" given empty alternative text', () => {
+		const wrapper = mountTable([{ id: 1, name: 'John' }], { view: 'list', addable: true })
+		expect(wrapper.find('.atable-add-row button').text()).toBe('Add row')
+	})
+
+	it('keeps Add row below the rows hidden while the first page loads and when it fails', async () => {
+		let resolveRead: (value: { data: TableRow[]; hasMore: boolean }) => void = () => {}
+		const getRecords = vi
+			.fn()
+			.mockImplementationOnce(() => new Promise(resolve => (resolveRead = resolve)))
+			.mockRejectedValueOnce(new Error('boom'))
+		const wrapper = mountTable(
+			[{ id: 1, name: 'John' }],
+			{ view: 'list', addable: true },
+			{ getRecords, sourceKey: 'task' }
+		)
+
+		await flushPromises()
+		expect(wrapper.find('.atable-add-row').exists()).toBe(false)
+
+		resolveRead({ data: [{ id: 1, name: 'John' }], hasMore: false })
+		await flushPromises()
+		expect(wrapper.find('.atable-add-row').exists()).toBe(true)
+
+		await wrapper.setProps({ sourceKey: 'other' })
+		await flushPromises()
+		expect(wrapper.text()).toContain("Couldn't load records.")
+		expect(wrapper.find('.atable-add-row').exists()).toBe(false)
+	})
+
 	it('stays hidden while the first page loads and when it fails', async () => {
 		let resolveRead: (value: { data: TableRow[]; hasMore: boolean }) => void = () => {}
 		const getRecords = vi

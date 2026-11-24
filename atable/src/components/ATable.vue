@@ -233,7 +233,8 @@ const showEmptyRow = computed(
 const emptyIsFiltered = computed(() => store.rows.length > 0)
 // Once the table has rows, the empty row's Add row goes with it; a table that can take new rows
 // keeps offering one below its rows. It waits for the last page, where a row added at the end
-// lands, and steps aside while filters are set, since a blank row would likely be hidden by them.
+// lands, and steps aside while filters are set, since a blank row would likely be hidden by them,
+// and while the rows are sorted, since a blank row would sort away from it (to the top, ascending).
 const showAddRow = computed(
 	() =>
 		Boolean(store.config.addable) &&
@@ -241,7 +242,8 @@ const showAddRow = computed(
 		!firstPageFailed.value &&
 		visibleRows.value.length > 0 &&
 		!hasNext.value &&
-		Object.keys(store.filterState).length === 0
+		Object.keys(store.filterState).length === 0 &&
+		!(store.sortState.column !== null && store.sortState.direction)
 )
 
 store.$onAction(({ name, store: storeInstance, args, after }) => {
@@ -438,6 +440,16 @@ const addRowAt = (position: 'start' | 'end' | number) => {
  */
 const addFirstRow = () => {
 	addRowAt('end')
+	// On a full last page the new row starts a page of its own; follow it there, so it shows and
+	// Add row stays below it. Add row only shows on the last page, so one step is enough.
+	void showNewRowPage()
+}
+
+const showNewRowPage = async () => {
+	await nextTick()
+	if (hasLocalNext.value) {
+		await paginationNext()
+	}
 }
 
 const handleRowAction = (actionType: RowActionType, rowIndex: number, event?: MouseEvent) => {
