@@ -13,6 +13,10 @@ async function authenticate(username: string, password: string) {
 	}
 	void username
 }
+
+function onFailed(error: unknown) {
+	lastEvent.value = error instanceof Error ? error.message : 'Sign-in failed'
+}
 </script>
 
 <template>
@@ -21,8 +25,8 @@ async function authenticate(username: string, password: string) {
 			:identity="identity"
 			:header-subtitle="headerSubtitle"
 			:authenticate="authenticate"
-			@login-success="lastEvent = 'loginSuccess'"
-			@login-failed="lastEvent = 'loginFailed'" />
+			@login-success="lastEvent = 'Signed in'"
+			@login-failed="onFailed" />
 		<p v-if="lastEvent" class="stonecrop-demo__state">
 			Last emit: <strong>{{ lastEvent }}</strong>
 		</p>

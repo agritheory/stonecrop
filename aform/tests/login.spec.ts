@@ -1,3 +1,4 @@
+import { h } from 'vue'
 import { describe, it, expect, vi } from 'vite-plus/test'
 import { mount, flushPromises } from '@vue/test-utils'
 
@@ -11,7 +12,7 @@ function mountLogin(
 		authenticate: (identity: string, password: string) => Promise<void>
 		headerSubtitle: string
 	}> = {},
-	slots?: Record<string, string>
+	slots?: Record<string, string | ((props: { identity: string }) => unknown)>
 ) {
 	const authenticate = props.authenticate ?? vi.fn().mockResolvedValue(undefined)
 	return mount(Login, {
@@ -73,8 +74,9 @@ describe('login component', { tags: ['component'] }, () => {
 		expect(wrapper.emitted('loginFailed')).toBeFalsy()
 	})
 
-	it('emits loginFailed when authenticate rejects', async () => {
-		const authenticate = vi.fn().mockRejectedValue(new Error('invalid credentials'))
+	it('emits loginFailed with the rejection when authenticate rejects', async () => {
+		const error = new Error('invalid credentials')
+		const authenticate = vi.fn().mockRejectedValue(error)
 		const wrapper = mountLogin({ authenticate })
 
 		await wrapper.find(`#${loginIdentities.email.name}`).setValue('a@b.c')
@@ -82,7 +84,7 @@ describe('login component', { tags: ['component'] }, () => {
 		await wrapper.find('form').trigger('submit')
 		await flushPromises()
 
-		expect(wrapper.emitted('loginFailed')).toHaveLength(1)
+		expect(wrapper.emitted('loginFailed')).toEqual([[error]])
 		expect(wrapper.emitted('loginSuccess')).toBeFalsy()
 		const submitBtn = wrapper.find('button[type="submit"]')
 		expect(submitBtn.attributes('disabled')).toBeUndefined()
@@ -125,22 +127,39 @@ describe('login component', { tags: ['component'] }, () => {
 		expect(wrapper.find('#sso-btn').exists()).toBe(true)
 	})
 
-	it('alternateSignIn control does not submit the password form', async () => {
+	it('alternateSignIn sits outside the form, so a bare button does not sign in', async () => {
 		const authenticate = vi.fn().mockResolvedValue(undefined)
 		const wrapper = mountLogin(
 			{ authenticate },
 			{
-				alternateSignIn: '<button type="button" id="sso-btn" class="btn">Sign in with SSO</button>',
+				alternateSignIn: '<button id="magic-btn">Email me a link</button>',
+			}
+		)
+
+		const button = wrapper.find('#magic-btn')
+		expect(button.element.closest('form')).toBeNull()
+
+		await wrapper.find(`#${loginIdentities.email.name}`).setValue('a@b.c')
+		await wrapper.find('input[type="password"]').setValue('secret')
+		await button.trigger('click')
+		await flushPromises()
+
+		expect(authenticate).not.toHaveBeenCalled()
+		expect(wrapper.emitted('loginSuccess')).toBeFalsy()
+	})
+
+	it('hands the typed identity to alternateSignIn and not the password', async () => {
+		const wrapper = mountLogin(
+			{},
+			{
+				alternateSignIn: ({ identity }) => h('span', { id: 'typed-identity' }, identity),
 			}
 		)
 
 		await wrapper.find(`#${loginIdentities.email.name}`).setValue('a@b.c')
 		await wrapper.find('input[type="password"]').setValue('secret')
-		await wrapper.find('#sso-btn').trigger('click')
-		await flushPromises()
 
-		expect(authenticate).not.toHaveBeenCalled()
-		expect(wrapper.emitted('loginSuccess')).toBeFalsy()
+		expect(wrapper.find('#typed-identity').text()).toBe('a@b.c')
 	})
 
 	it('useLoginPreset returns identity and subtitle for username', () => {

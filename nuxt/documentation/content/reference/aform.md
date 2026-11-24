@@ -811,14 +811,14 @@ import { Login } from '@stonecrop/aform'
 
 | Event | Payload | Description |
 |-------|---------|-------------|
-| loginFailed | `[]` |  |
+| loginFailed | `[error: unknown]` |  |
 | loginSuccess | `[]` |  |
 
 **Slots:**
 
 | Slot | Props | Description |
 |------|-------|-------------|
-| alternateSignIn | `any` |  |
+| alternateSignIn | `{ identity: string; }` |  |
 
 ## Functions
 

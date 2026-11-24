@@ -43,10 +43,12 @@
 							<span v-if="isLoading" class="loading-icon" aria-hidden="true" />
 							<span id="login-form-button">Login</span>
 						</button>
-
-						<slot name="alternateSignIn" />
 					</div>
 				</form>
+
+				<div v-if="$slots.alternateSignIn" class="login-alternate">
+					<slot name="alternateSignIn" :identity="identityValue" />
+				</div>
 			</div>
 		</div>
 	</div>
@@ -70,12 +72,12 @@ const {
 }>()
 
 const emit = defineEmits<{
-	loginFailed: []
+	loginFailed: [error: unknown]
 	loginSuccess: []
 }>()
 
 defineSlots<{
-	alternateSignIn?: () => unknown
+	alternateSignIn?: (props: { identity: string }) => unknown
 }>()
 
 const identityValue = ref('')
@@ -89,14 +91,14 @@ async function onSubmit(event: Event) {
 	try {
 		await authenticate(identityValue.value, password.value)
 		emit('loginSuccess')
-	} catch {
+	} catch (error) {
 		// The fields are disabled while signing in, which takes the cursor out of them: put it back in the password,
 		// selected, so it can be retyped at once. Before the emit, so a host can still move it elsewhere.
 		isLoading.value = false
 		await nextTick()
 		passwordInput.value?.focus()
 		passwordInput.value?.select()
-		emit('loginFailed')
+		emit('loginFailed', error)
 	} finally {
 		isLoading.value = false
 	}
@@ -146,7 +148,8 @@ async function onSubmit(event: Event) {
 	margin: 1rem;
 }
 
-.login-form-container {
+.login-form-container,
+.login-alternate {
 	display: grid;
 	gap: 0.5rem;
 }

@@ -39,6 +39,10 @@ async function authenticate(username: string, password: string) {
 	}
 	void username
 }
+
+function onFailed(error: unknown) {
+	lastEvent.value = error instanceof Error ? error.message : 'Sign-in failed'
+}
 </script>
 
 <template>
@@ -47,8 +51,8 @@ async function authenticate(username: string, password: string) {
 			:identity="identity"
 			:header-subtitle="headerSubtitle"
 			:authenticate="authenticate"
-			@login-success="lastEvent = 'loginSuccess'"
-			@login-failed="lastEvent = 'loginFailed'" />
+			@login-success="lastEvent = 'Signed in'"
+			@login-failed="onFailed" />
 		<p v-if="lastEvent" class="stonecrop-demo__state">
 			Last emit: <strong>{{ lastEvent }}</strong>
 		</p>
@@ -72,7 +76,7 @@ async function authenticate(username: string, password: string) {
 
 ## Alternate sign-in slot
 
-Optional `#alternateSignIn` content renders below the submit button—for magic link, SAML, OIDC, or other host-owned flows. `Login` does not implement those paths; the slot is only a layout hook.
+Optional `#alternateSignIn` content renders below the form—for magic link, SAML, OIDC, or other host-owned flows. It sits outside the `<form>`, so a button there cannot submit the password form. The slot receives the typed identity and nothing else; the password stays inside `Login`.
 
 ::demo-panel
 :::client-only
@@ -95,6 +99,12 @@ async function authenticate(email: string, password: string) {
 	alternateMessage.value = null
 	await new Promise<void>(resolve => setTimeout(resolve, 200))
 }
+
+function requestMagicLink(typedIdentity: string) {
+	alternateMessage.value = typedIdentity
+		? `Magic link for ${typedIdentity} (host-owned).`
+		: 'Type an email first.'
+}
 </script>
 
 <template>
@@ -104,19 +114,13 @@ async function authenticate(email: string, password: string) {
 			:header-subtitle="headerSubtitle"
 			:authenticate="authenticate"
 			@login-success="alternateMessage = null">
-			<template #alternateSignIn>
-				<button type="button" class="btn" @click="alternateMessage = 'Magic link requested (host-owned).'">
-					Email me a magic link
-				</button>
-				<button type="button" class="btn" @click="alternateMessage = 'SSO redirect (host-owned).'">
-					Sign in with SSO
-				</button>
+			<template #alternateSignIn="{ identity: typedIdentity }">
+				<button class="btn" @click="requestMagicLink(typedIdentity)">Email me a magic link</button>
+				<button class="btn" @click="alternateMessage = 'SSO redirect (host-owned).'">Sign in with SSO</button>
 			</template>
 		</Login>
 		<p v-if="alternateMessage" class="stonecrop-demo__state">{{ alternateMessage }}</p>
-		<p class="stonecrop-demo__hint">
-			Slot controls use <code>type="button"</code> so they never submit the password form.
-		</p>
+		<p class="stonecrop-demo__hint">The slot receives the typed identity. It does not receive the password.</p>
 	</div>
 </template>
 
@@ -133,8 +137,6 @@ async function authenticate(email: string, password: string) {
 </style>
 ```
 ::
-
-Use `type="button"` on controls inside the `<form>` so clicks do not submit the password form.
 
 ## Presets
 
@@ -154,7 +156,7 @@ Or pass a custom `LoginIdentity` object if neither preset fits.
 headers: ['Name', 'Type', 'Default', 'Description']
 rows:
   - ['`identity`', '`LoginIdentity`', '—', 'Required. Label, input type, autocomplete, name, and optional placeholder for the identity field.']
-  - ['`authenticate`', '`(identity: string, password: string) => Promise<void>`', '—', 'Required. Reject the promise to emit `loginFailed`.']
+  - ['`authenticate`', '`(identity: string, password: string) => Promise<void>`', '—', 'Required. Reject the promise to emit `loginFailed` with that rejection.']
   - ['`headerTitle`', '`string`', "`'Login'`", 'Heading text above the form.']
   - ['`headerSubtitle`', '`string`', '—', 'Optional subheading; `useLoginPreset` supplies copy per preset.']
 ---
@@ -166,7 +168,7 @@ rows:
 ---
 headers: ['Name', 'Description']
 rows:
-  - ['`alternateSignIn`', 'Rendered below the submit button. Host-owned secondary sign-in controls.']
+  - ['`alternateSignIn`', 'Rendered after the form. Props: `identity` (the typed identity). The password is not passed.']
 ---
 ::
 
@@ -177,7 +179,7 @@ rows:
 headers: ['Name', 'Payload', 'Description']
 rows:
   - ['`loginSuccess`', 'none', 'Emitted after `authenticate` resolves.']
-  - ['`loginFailed`', 'none', 'Emitted after `authenticate` rejects.']
+  - ['`loginFailed`', '`unknown`', 'Emitted after `authenticate` rejects, carrying that rejection.']
 ---
 ::
 

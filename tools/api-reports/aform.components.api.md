@@ -601,11 +601,11 @@ props: {
   authenticate: (identity: string, password: string) => Promise<void>
 }
 emits: {
-  loginFailed: []
+  loginFailed: [error: unknown]
   loginSuccess: []
 }
 slots: {
-  alternateSignIn: any
+  alternateSignIn: { identity: string; }
 }
 ```
 
