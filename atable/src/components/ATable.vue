@@ -233,8 +233,8 @@ const showEmptyRow = computed(
 const emptyIsFiltered = computed(() => store.rows.length > 0)
 // Once the table has rows, the empty row's Add row goes with it; a table that can take new rows
 // keeps offering one below its rows. It waits for the last page, where a row added at the end
-// lands, and steps aside while filters are set, since a blank row would likely be hidden by them,
-// and while the rows are sorted, since a blank row would sort away from it (to the top, ascending).
+// lands, and steps aside while filters are set, since a blank row would likely be hidden by them.
+// A sort doesn't hide it: clicking it clears the sort (see addFirstRow).
 const showAddRow = computed(
 	() =>
 		Boolean(store.config.addable) &&
@@ -242,8 +242,7 @@ const showAddRow = computed(
 		!firstPageFailed.value &&
 		visibleRows.value.length > 0 &&
 		!hasNext.value &&
-		Object.keys(store.filterState).length === 0 &&
-		!(store.sortState.column !== null && store.sortState.direction)
+		Object.keys(store.filterState).length === 0
 )
 
 store.$onAction(({ name, store: storeInstance, args, after }) => {
@@ -439,16 +438,18 @@ const addRowAt = (position: 'start' | 'end' | number) => {
  * action's add, so hosts see one `row:add`.
  */
 const addFirstRow = () => {
+	// A blank row would sort away from Add row (to the top, ascending), and a header click only flips
+	// the direction, so nothing else would undo the sort. Clear it: the new row lands at the bottom.
+	if (store.sortState.column !== null) {
+		store.sortState.column = null
+		store.sortState.direction = null
+	}
 	addRowAt('end')
 	// On a full last page the new row starts a page of its own; follow it there, so it shows and
-	// Add row stays below it. Add row only shows on the last page, so one step is enough.
-	void showNewRowPage()
-}
-
-const showNewRowPage = async () => {
-	await nextTick()
+	// Add row stays below it. Add row only shows on the last page, so one step is enough. Step now,
+	// before the next render: waiting would drop Add row for a render and lose its keyboard focus.
 	if (hasLocalNext.value) {
-		await paginationNext()
+		void paginationNext()
 	}
 }
 
