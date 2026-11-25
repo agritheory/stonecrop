@@ -187,6 +187,22 @@ describe('ATable empty-state row', { tags: ['component'] }, () => {
 		expect(wrapper.find('.atable-add-row').exists()).toBe(false)
 	})
 
+	it("hands keyboard focus from the empty row's Add row to the Add row below the first row", async () => {
+		const wrapper = mount(ATable, {
+			props: { rows: [], columns, config: { view: 'list', addable: true } },
+			attachTo: document.body,
+		})
+		;(wrapper.find('.atable-empty-add').element as HTMLButtonElement).focus()
+
+		await wrapper.find('.atable-empty-add').trigger('click')
+		await flushPromises()
+
+		// The empty row and its button are gone; a second Enter should add the second row.
+		expect(wrapper.findAll('tbody tr.atable-row')).toHaveLength(1)
+		expect(document.activeElement).toBe(wrapper.find('.atable-add-row button').element)
+		wrapper.unmount()
+	})
+
 	it('follows a row added on a full last page to its new page, keeping Add row and its focus', async () => {
 		const rows = [1, 2].map(id => ({ id, name: `Row ${id}` }))
 		const wrapper = mount(ATable, {
