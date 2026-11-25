@@ -307,15 +307,32 @@ watch(
 	}
 )
 
-// Cells read their column from the store, so the new columns simply replace the old. A width the
-// user has dragged is kept unless the schema's own width changed.
+// Cells read their column from the store, so new columns could simply replace the old. Columns that
+// keep their place are updated where they are instead: AForm hands over a new schema on every render,
+// and replacing every column would redraw every cell each time. A width the user has dragged is kept
+// unless the schema's own width changed.
 const syncSchemaColumns = (next: TableColumn[], previous: TableColumn[]) => {
+	const current = store.columns
 	for (const column of next) {
 		const before = previous.find(prior => prior.name === column.name)
-		const shown = store.columns.find(held => held.name === column.name)
+		const shown = current.find(held => held.name === column.name)
 		if (before && shown && before.width === column.width) column.width = shown.width
 	}
-	store.columns = next
+
+	const sameColumns =
+		current.length === next.length && next.every((column, index) => column.name === current[index].name)
+	if (!sameColumns) {
+		store.columns = next
+		return
+	}
+
+	next.forEach((column, index) => {
+		const held = current[index] as Record<string, unknown>
+		for (const key of Object.keys(held)) {
+			if (!(key in column)) delete held[key]
+		}
+		Object.assign(held, column)
+	})
 }
 
 onMounted(() => {

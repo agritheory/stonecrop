@@ -124,4 +124,16 @@ describe('ATable editability follows its host', { tags: ['component'] }, () => {
 		await wrapper.setProps({ schema: schema(false) })
 		expect(wrapper.vm.store.columns).toEqual(columns)
 	})
+
+	it('keeps its column objects when handed the same schema again, so the cells are not redrawn', async () => {
+		const wrapper = mount(ATable, {
+			props: { rows: [{ item: 'Bolt', qty: 3 }], schema: schema(false), config: { view: 'list' } },
+		})
+		const held = [...wrapper.vm.store.columns]
+
+		// AForm builds its tables' schema anew on every render, even when nothing in it changed.
+		await wrapper.setProps({ schema: schema(false) })
+
+		expect(wrapper.vm.store.columns.every((column, index) => column === held[index])).toBe(true)
+	})
 })
