@@ -6,12 +6,11 @@ const { identity, headerSubtitle } = useLoginPreset('username')
 
 const lastEvent = ref<string | null>(null)
 
-async function authenticate(username: string, password: string) {
+async function authenticate(_username: string, password: string) {
 	await new Promise<void>(resolve => setTimeout(resolve, 300))
 	if (password !== 'password') {
 		throw new Error('invalid credentials')
 	}
-	void username
 }
 
 function onFailed(error: unknown) {

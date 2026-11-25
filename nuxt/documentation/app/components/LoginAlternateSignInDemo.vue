@@ -6,9 +6,7 @@ const { identity, headerSubtitle } = useLoginPreset('email')
 
 const alternateMessage = ref<string | null>(null)
 
-async function authenticate(email: string, password: string) {
-	void email
-	void password
+async function authenticate(_email: string, _password: string) {
 	alternateMessage.value = null
 	await new Promise<void>(resolve => setTimeout(resolve, 200))
 }
