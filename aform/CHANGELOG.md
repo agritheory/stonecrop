@@ -1,5 +1,18 @@
 # Change Log - @stonecrop/aform
 
+## 0.63.0
+
+### Minor Changes
+
+- d4ab494: BREAKING: Login requires `identity` and `authenticate`, adds `loginIdentities` and `useLoginPreset`, and replaces the inert forgot-password control with an `alternateSignIn` slot. A Login without `headerSubtitle` now shows no subtitle, and the email field no longer has a "name@example.com" placeholder. `loginFailed` carries the rejection from `authenticate`. The alternate-sign-in slot renders outside the form and receives the typed identity, not the password.
+
+### Patch Changes
+
+- @stonecrop/atable@0.63.0
+  - @stonecrop/schema@0.63.0
+  - @stonecrop/themes@0.63.0
+  - @stonecrop/utilities@0.63.0
+
 ## 0.62.8
 
 ### Patch Changes

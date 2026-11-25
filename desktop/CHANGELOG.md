@@ -1,5 +1,15 @@
 # Change Log - @stonecrop/desktop
 
+## 0.63.0
+
+### Patch Changes
+
+- Updated dependencies [d4ab494]
+  - @stonecrop/aform@0.63.0
+  - @stonecrop/stonecrop@0.63.0
+  - @stonecrop/schema@0.63.0
+  - @stonecrop/themes@0.63.0
+
 ## 0.62.8
 
 ### Patch Changes
