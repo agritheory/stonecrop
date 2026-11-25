@@ -139,6 +139,7 @@ slots: {
   body: { data: TableStore; }
   content: { row: { [x: string]: any; indent?: number \| undefined; parent?: number \| undefined; gantt?: { color?: string \| undefined; startIndex?: number \| undefined; endIndex?: number \| undefined; colspan?: number \| undefined; } \| undefined; }; rowIndex: number; store: TableStore; }
   empty: { data: TableStore; filtered: boolean; add: () => void; }
+  add: { data: TableStore; add: () => void; }
   footer: { data: TableStore; page: TablePagination; }
   modal: { data: TableStore; }
 }

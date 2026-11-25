@@ -200,6 +200,7 @@ import { ATable } from '@stonecrop/atable'
 | body | `{ data: TableStore; }` |  |
 | content | `{ row: { [x: string]: any; indent?: number \| undefined; parent?: number \| undefined; gantt?: { color?: string \| undefined; startIndex?: number \| undefined; endIndex?: number \| undefined; colspan?: number \| undefined; } \| undefined; }; rowIndex: number; store: TableStore; }` |  |
 | empty | `{ data: TableStore; filtered: boolean; add: () => void; }` |  |
+| add | `{ data: TableStore; add: () => void; }` |  |
 | footer | `{ data: TableStore; page: TablePagination; }` |  |
 | modal | `{ data: TableStore; }` |  |
 
@@ -3234,7 +3235,7 @@ export interface BaseTableConfig {
 
 | Property | Type | Description |
 |----------|------|-------------|
-| addable? | `boolean` | Whether the host lets this table take a new row. When true and the table has no rows, the empty-state row shows an "Add row" control that adds a row and emits `row:add`. Set it from the host's workflow and permissions; the table never infers it. |
+| addable? | `boolean` | Whether the host lets this table take a new row. When true, the table offers an "Add row" control that adds a row at the end and emits `row:add`: in the empty-state row while the table has no rows, and below the rows once it has some (on the last page, while no filters are set). Set it from the host's workflow and permissions; the table never infers it. |
 | clickable? | `boolean` | When true, rows show a pointer cursor and a hover highlight, signalling they are clickable. Emits `row:click` on every row click. |
 | fullWidth? | `boolean` | Control whether the table should be allowed to use the full width of its container. |
 | pageSize? | `number` | When set, slice the held rows into in-memory windows of this size. Omit to show the whole held list as one window (server paging uses the backend cap). |

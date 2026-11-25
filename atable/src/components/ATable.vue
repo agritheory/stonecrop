@@ -67,6 +67,12 @@
 						@add="addFirstRow" />
 				</slot>
 			</tbody>
+			<!-- Its own tbody, so the row keys that jump to the first or last row (Ctrl+Up/Down) stay on the data rows. -->
+			<tbody v-if="showAddRow" class="atable-add-body">
+				<slot name="add" :data="store" :add="addFirstRow">
+					<ATableAddRow :colspan="store.columnCount" @add="addFirstRow" />
+				</slot>
+			</tbody>
 
 			<slot name="footer" :data="store" :page="pagination">
 				<ATablePaginationFooter
@@ -118,6 +124,7 @@ import { computed, inject, nextTick, onMounted, useTemplateRef, watch } from 'vu
 import ACell from './ACell.vue'
 import AGanttConnection from './AGanttConnection.vue'
 import ARow from './ARow.vue'
+import ATableAddRow from './ATableAddRow.vue'
 import ATableEmptyRow from './ATableEmptyRow.vue'
 import ATableHeader from './ATableHeader.vue'
 import ATableModal from './ATableModal.vue'
@@ -224,6 +231,19 @@ const showEmptyRow = computed(
 )
 // Rows are held but the filters hide them all — a different message from a truly empty list.
 const emptyIsFiltered = computed(() => store.rows.length > 0)
+// Once the table has rows, the empty row's Add row goes with it; a table that can take new rows
+// keeps offering one below its rows. It waits for the last page, where a row added at the end
+// lands, and steps aside while filters are set, since a blank row would likely be hidden by them.
+// A sort doesn't hide it: clicking it clears the sort (see addFirstRow).
+const showAddRow = computed(
+	() =>
+		Boolean(store.config.addable) &&
+		!paginationLoading.value &&
+		!firstPageFailed.value &&
+		visibleRows.value.length > 0 &&
+		!hasNext.value &&
+		Object.keys(store.filterState).length === 0
+)
 
 store.$onAction(({ name, store: storeInstance, args, after }) => {
 	if (name === 'setCellData' || name === 'setCellText') {
@@ -414,10 +434,28 @@ const addRowAt = (position: 'start' | 'end' | number) => {
 }
 
 /**
- * Add row from the empty-state row: the same path as the row action's add, so hosts see one `row:add`.
+ * Add row from the empty-state row or the add row below the rows: the same path as the row
+ * action's add, so hosts see one `row:add`.
  */
 const addFirstRow = () => {
+	// The empty row goes once the first row is in, taking a focused Add row with it: hand focus on to the Add row below.
+	const focusInEmptyRow = !!document.activeElement?.closest('.atable-empty-row')
+	// A blank row would sort away from Add row (to the top, ascending), and a header click only flips
+	// the direction, so nothing else would undo the sort. Clear it: the new row lands at the bottom.
+	if (store.sortState.column !== null) {
+		store.sortState.column = null
+		store.sortState.direction = null
+	}
 	addRowAt('end')
+	// On a full last page the new row starts a page of its own; follow it there, so it shows and
+	// Add row stays below it. Add row only shows on the last page, so one step is enough. Step now,
+	// before the next render: waiting would drop Add row for a render and lose its keyboard focus.
+	if (hasLocalNext.value) {
+		void paginationNext()
+	}
+	if (focusInEmptyRow) {
+		void nextTick(() => tableRef.value?.querySelector<HTMLElement>('.atable-add-body button')?.focus())
+	}
 }
 
 const handleRowAction = (actionType: RowActionType, rowIndex: number, event?: MouseEvent) => {

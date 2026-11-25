@@ -25,6 +25,7 @@ import ACell from '../src/components/ACell.vue'
 import ARow from '../src/components/ARow.vue'
 import ATable from '../src/components/ATable.vue'
 import ATablePaginationFooter from '../src/components/ATablePaginationFooter.vue'
+import addRowSource from '../src/components/ATableAddRow.vue?raw'
 import type { TableColumn, TableConfig, TableRow } from '../src/types'
 
 const columns: TableColumn[] = [
@@ -124,6 +125,163 @@ describe('ATable empty-state row', { tags: ['component'] }, () => {
 
 		expect(wrapper.find('.atable-empty-row').text()).toBe('No matching records')
 		expect(findAddButton(wrapper)).toBeUndefined()
+	})
+
+	it('keeps offering Add row below the rows once the table has rows, so a second row can be added', async () => {
+		const wrapper = mountTable([], { view: 'list', addable: true })
+
+		await findAddButton(wrapper)!.trigger('click')
+		await flushPromises()
+		expect(wrapper.findAll('tbody tr.atable-row')).toHaveLength(1)
+		expect(wrapper.find('.atable-add-row').exists()).toBe(true)
+
+		await findAddButton(wrapper)!.trigger('click')
+		await flushPromises()
+
+		expect(wrapper.findAll('tbody tr.atable-row')).toHaveLength(2)
+		const addEvents = wrapper.emitted('row:add')
+		expect(addEvents).toHaveLength(2)
+		expect(addEvents![1][0]).toMatchObject({ rowIndex: 1 })
+		// Spans the table like the empty row, and is not a data cell.
+		expect(wrapper.find('.atable-add-row td').attributes('colspan')).toBe('3')
+		expect(wrapper.find('.atable-add-row td').attributes('tabindex')).toBeUndefined()
+		// In its own tbody, so Ctrl+Down (the tbody's last row) still lands on the last data row.
+		const addBody = wrapper.find('.atable-add-row').element.parentElement!
+		expect(addBody.tagName).toBe('TBODY')
+		expect(addBody.querySelector('tr.atable-row')).toBeNull()
+		const rowBody = wrapper.find('tr.atable-row').element.parentElement!
+		expect(rowBody.lastElementChild?.classList.contains('atable-row')).toBe(true)
+	})
+
+	it('offers no Add row below the rows when the host has not made the table addable', () => {
+		const wrapper = mountTable([{ id: 1, name: 'John' }], { view: 'list' })
+		expect(wrapper.find('.atable-add-row').exists()).toBe(false)
+		expect(findAddButton(wrapper)).toBeUndefined()
+	})
+
+	it('offers Add row below the rows only on the last page', async () => {
+		const rows = [1, 2, 3].map(id => ({ id, name: `Row ${id}` }))
+		const wrapper = mountTable(rows, { view: 'list', addable: true, pageSize: 2 })
+		expect(wrapper.find('.atable-add-row').exists()).toBe(false)
+
+		const pagination = (wrapper.vm as unknown as { pagination: { next: () => Promise<void> } }).pagination
+		await pagination.next()
+		await flushPromises()
+
+		expect(wrapper.find('.atable-add-row').exists()).toBe(true)
+	})
+
+	it('steps Add row aside while filters are set', async () => {
+		const wrapper = mountTable(
+			[
+				{ id: 1, name: 'John' },
+				{ id: 2, name: 'Jane' },
+			],
+			{ view: 'list', addable: true }
+		)
+		const store = (wrapper.vm as unknown as { store: { setFilter: (col: number, f: unknown) => void } }).store
+		store.setFilter(1, { value: 'John' })
+		await flushPromises()
+
+		expect(wrapper.findAll('tbody tr.atable-row')).toHaveLength(1)
+		expect(wrapper.find('.atable-add-row').exists()).toBe(false)
+	})
+
+	it("hands keyboard focus from the empty row's Add row to the Add row below the first row", async () => {
+		const wrapper = mount(ATable, {
+			props: { rows: [], columns, config: { view: 'list', addable: true } },
+			attachTo: document.body,
+		})
+		;(wrapper.find('.atable-empty-add').element as HTMLButtonElement).focus()
+
+		await wrapper.find('.atable-empty-add').trigger('click')
+		await flushPromises()
+
+		// The empty row and its button are gone; a second Enter should add the second row.
+		expect(wrapper.findAll('tbody tr.atable-row')).toHaveLength(1)
+		expect(document.activeElement).toBe(wrapper.find('.atable-add-row button').element)
+		wrapper.unmount()
+	})
+
+	it('follows a row added on a full last page to its new page, keeping Add row and its focus', async () => {
+		const rows = [1, 2].map(id => ({ id, name: `Row ${id}` }))
+		const wrapper = mount(ATable, {
+			props: { rows, columns, config: { view: 'list', addable: true, pageSize: 2 } },
+			attachTo: document.body,
+		})
+		const button = wrapper.find('.atable-add-row button').element as HTMLButtonElement
+		button.focus()
+
+		await wrapper.find('.atable-add-row button').trigger('click')
+		await flushPromises()
+
+		// The third row starts page two, and the table shows it there.
+		expect(wrapper.findAll('tbody tr.atable-row')).toHaveLength(1)
+		// Add row never left the page, so keyboard focus is still on it and a second Enter adds again.
+		expect(wrapper.find('.atable-add-row button').element).toBe(button)
+		expect(document.activeElement).toBe(button)
+		wrapper.unmount()
+	})
+
+	it('keeps Add row in a sorted table, and clears the sort so the new row lands next to it', async () => {
+		const wrapper = mountTable(
+			[
+				{ id: 1, name: 'John' },
+				{ id: 2, name: 'Jane' },
+			],
+			{ view: 'list', addable: true }
+		)
+		const store = (
+			wrapper.vm as unknown as {
+				store: { sortByColumn: (col: number) => void; sortState: { column: number | null } }
+			}
+		).store
+		store.sortByColumn(1)
+		await flushPromises()
+		expect(wrapper.find('.atable-add-row').exists()).toBe(true)
+
+		await wrapper.find('.atable-add-row button').trigger('click')
+		await flushPromises()
+
+		expect(store.sortState.column).toBeNull()
+		const shown = wrapper.findAll('tbody tr.atable-row')
+		expect(shown).toHaveLength(3)
+		// The blank row is last, right above Add row, not sorted to the top.
+		expect(shown[2].text()).not.toContain('John')
+		expect(shown[2].text()).not.toContain('Jane')
+	})
+
+	it('reads "Add row" to screen readers, with the drawn "+" given empty alternative text', () => {
+		const wrapper = mountTable([{ id: 1, name: 'John' }], { view: 'list', addable: true })
+		expect(wrapper.find('.atable-add-row button').text()).toBe('Add row')
+		// jsdom draws no pseudo-elements, so check the rule itself: the "+" must carry empty alternative text.
+		const plus = /\.atable-add-label::before\s*\{[^}]*content:\s*'\+'\s*\/\s*''/
+		expect(addRowSource).toMatch(plus)
+	})
+
+	it('keeps Add row below the rows hidden while the first page loads and when it fails', async () => {
+		let resolveRead: (value: { data: TableRow[]; hasMore: boolean }) => void = () => {}
+		const getRecords = vi
+			.fn()
+			.mockImplementationOnce(() => new Promise(resolve => (resolveRead = resolve)))
+			.mockRejectedValueOnce(new Error('boom'))
+		const wrapper = mountTable(
+			[{ id: 1, name: 'John' }],
+			{ view: 'list', addable: true },
+			{ getRecords, sourceKey: 'task' }
+		)
+
+		await flushPromises()
+		expect(wrapper.find('.atable-add-row').exists()).toBe(false)
+
+		resolveRead({ data: [{ id: 1, name: 'John' }], hasMore: false })
+		await flushPromises()
+		expect(wrapper.find('.atable-add-row').exists()).toBe(true)
+
+		await wrapper.setProps({ sourceKey: 'other' })
+		await flushPromises()
+		expect(wrapper.text()).toContain("Couldn't load records.")
+		expect(wrapper.find('.atable-add-row').exists()).toBe(false)
 	})
 
 	it('stays hidden while the first page loads and when it fails', async () => {
