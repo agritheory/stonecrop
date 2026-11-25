@@ -101,9 +101,7 @@ async function authenticate(email: string, password: string) {
 }
 
 function requestMagicLink(typedIdentity: string) {
-	alternateMessage.value = typedIdentity
-		? `Magic link for ${typedIdentity} (host-owned).`
-		: 'Type an email first.'
+	alternateMessage.value = typedIdentity ? `Magic link for ${typedIdentity} (host-owned).` : 'Type an email first.'
 }
 </script>
 
@@ -183,7 +181,7 @@ rows:
 ---
 ::
 
-Neither identity nor password is exposed to the parent as props or v-models; only `authenticate` receives them on submit.
+Neither identity nor password is exposed to the parent as props or v-models. The password reaches only `authenticate`, on submit; the typed identity also reaches the `alternateSignIn` slot.
 
 ## Accessibility
 
