@@ -162,6 +162,39 @@ describe('login component', { tags: ['component'] }, () => {
 		expect(wrapper.find('#typed-identity').text()).toBe('a@b.c')
 	})
 
+	it('hides the password by default and toggles visibility', async () => {
+		const wrapper = mountLogin()
+		const field = wrapper.find('#password')
+		const toggle = wrapper.find('#login-password-toggle')
+
+		expect(field.attributes('type')).toBe('password')
+		expect(toggle.attributes('aria-pressed')).toBe('false')
+		expect(toggle.attributes('aria-label')).toBe('Show password')
+
+		await toggle.trigger('click')
+
+		expect(field.attributes('type')).toBe('text')
+		expect(toggle.attributes('aria-pressed')).toBe('true')
+		expect(toggle.attributes('aria-label')).toBe('Hide password')
+
+		await toggle.trigger('click')
+
+		expect(field.attributes('type')).toBe('password')
+	})
+
+	it('password visibility toggle does not submit the form', async () => {
+		const authenticate = vi.fn().mockResolvedValue(undefined)
+		const wrapper = mountLogin({ authenticate })
+
+		await wrapper.find(`#${loginIdentities.email.name}`).setValue('a@b.c')
+		await wrapper.find('#password').setValue('secret')
+		await wrapper.find('#login-password-toggle').trigger('click')
+		await flushPromises()
+
+		expect(authenticate).not.toHaveBeenCalled()
+		expect(wrapper.emitted('loginSuccess')).toBeFalsy()
+	})
+
 	it('useLoginPreset returns identity and subtitle for username', () => {
 		expect(useLoginPreset('username')).toEqual({
 			identity: loginIdentities.username,
