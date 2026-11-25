@@ -1,5 +1,7 @@
 # Change Log - @stonecrop/themes
 
+## 0.63.2
+
 ## 0.63.1
 
 ## 0.63.0

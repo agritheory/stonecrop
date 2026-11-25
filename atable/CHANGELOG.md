@@ -1,5 +1,14 @@
 # Change Log - @stonecrop/atable
 
+## 0.63.2
+
+### Patch Changes
+
+- f7adf77: A table now follows a new `config` or `schema` handed to it while it is shown (#564). When a form turns read-only, its tables lock too: their cells stop being editable and Add row goes away. When the form turns editable again, the tables unlock. This holds after columns were added, hidden, reordered or resized, and for columns the host hands over itself, since each cell now reads its column from the table rather than keeping the one it was drawn with. Changes made in place to the schema objects already handed over are not followed; hand over a new schema instead, as AForm does.
+- @stonecrop/schema@0.63.2
+  - @stonecrop/themes@0.63.2
+  - @stonecrop/utilities@0.63.2
+
 ## 0.63.1
 
 ### Patch Changes

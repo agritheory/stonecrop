@@ -1,5 +1,11 @@
 # Change Log - @stonecrop/graphql-middleware
 
+## 0.63.2
+
+### Patch Changes
+
+- @stonecrop/schema@0.63.2
+
 ## 0.63.1
 
 ### Patch Changes
