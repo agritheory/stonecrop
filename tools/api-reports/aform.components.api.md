@@ -597,11 +597,15 @@ slots: {}
 props: {
   headerTitle?: string \| undefined
   headerSubtitle?: string \| undefined
+  identity: LoginIdentity
+  authenticate: (identity: string, password: string) => Promise<void>
 }
 emits: {
-  loginFailed: any[]
-  loginSuccess: any[]
+  loginFailed: [error: unknown]
+  loginSuccess: []
 }
-slots: {}
+slots: {
+  alternateSignIn: { identity: string; }
+}
 ```
 

@@ -4,21 +4,23 @@
 			<div class="account-container">
 				<div class="account-header">
 					<h1 id="account-title">{{ headerTitle }}</h1>
-					<p id="account-subtitle">{{ headerSubtitle }}</p>
+					<p v-if="headerSubtitle" id="account-subtitle">{{ headerSubtitle }}</p>
 				</div>
 
 				<form @submit="onSubmit">
 					<div class="login-form-container">
-						<div class="login-form-email aform_form-element">
-							<label id="login-email" for="email" class="aform_field-label">Email</label>
+						<div class="login-form-identity aform_form-element">
+							<label :id="`login-${identity.name}`" :for="identity.name" class="aform_field-label">{{
+								identity.label
+							}}</label>
 							<input
-								id="email"
-								v-model="email"
+								:id="identity.name"
+								v-model="identityValue"
 								class="aform_input-field"
-								name="email"
-								placeholder="name@example.com"
-								type="email"
-								autocomplete="email"
+								:name="identity.name"
+								:placeholder="identity.placeholder"
+								:type="identity.inputType"
+								:autocomplete="identity.autocomplete"
 								autocapitalize="none"
 								autocorrect="off"
 								:disabled="isLoading" />
@@ -28,6 +30,7 @@
 							<label id="login-password" for="password" class="aform_field-label">Password</label>
 							<input
 								id="password"
+								ref="passwordInput"
 								v-model="password"
 								class="aform_input-field"
 								name="password"
@@ -36,51 +39,69 @@
 								:disabled="isLoading" />
 						</div>
 
-						<button type="submit" class="btn" :disabled="isLoading || !email || !password">
-							<span v-if="isLoading" class="material-symbols-outlined loading-icon">progress_activity</span>
+						<button type="submit" class="btn" :disabled="isLoading || !identityValue || !password">
+							<span v-if="isLoading" class="loading-icon" aria-hidden="true" />
 							<span id="login-form-button">Login</span>
 						</button>
 					</div>
 				</form>
 
-				<button type="button" class="btn">
-					<span id="forgot-password-button">Forgot password?</span>
-				</button>
+				<div v-if="$slots.alternateSignIn" class="login-alternate">
+					<slot name="alternateSignIn" :identity="identityValue" />
+				</div>
 			</div>
 		</div>
 	</div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { nextTick, ref, useTemplateRef } from 'vue'
 
-const { headerTitle = 'Login', headerSubtitle = 'Enter your email and password to login' } = defineProps<{
+import type { LoginIdentity } from '../../login/loginIdentity'
+
+const {
+	headerTitle = 'Login',
+	headerSubtitle,
+	identity,
+	authenticate,
+} = defineProps<{
 	headerTitle?: string
 	headerSubtitle?: string
+	identity: LoginIdentity
+	authenticate: (identity: string, password: string) => Promise<void>
 }>()
 
-const emit = defineEmits(['loginFailed', 'loginSuccess'])
+const emit = defineEmits<{
+	loginFailed: [error: unknown]
+	loginSuccess: []
+}>()
 
-const email = ref('')
+defineSlots<{
+	alternateSignIn?: (props: { identity: string }) => unknown
+}>()
+
+const identityValue = ref('')
 const password = ref('')
-
 const isLoading = ref(false)
-const loginFailed = ref(false)
+const passwordInput = useTemplateRef<HTMLInputElement>('passwordInput')
 
-function onSubmit(event: Event) {
+async function onSubmit(event: Event) {
 	event.preventDefault()
 	isLoading.value = true
-
-	// TODO: handle submit logic, handle failure
-
-	if (loginFailed.value) {
+	try {
+		await authenticate(identityValue.value, password.value)
+		emit('loginSuccess')
+	} catch (error) {
+		// The fields are disabled while signing in, which takes the cursor out of them: put it back in the password,
+		// selected, so it can be retyped at once. Before the emit, so a host can still move it elsewhere.
 		isLoading.value = false
-		emit('loginFailed')
-		return
+		await nextTick()
+		passwordInput.value?.focus()
+		passwordInput.value?.select()
+		emit('loginFailed', error)
+	} finally {
+		isLoading.value = false
 	}
-
-	isLoading.value = false
-	emit('loginSuccess')
 }
 </script>
 
@@ -127,7 +148,8 @@ function onSubmit(event: Event) {
 	margin: 1rem;
 }
 
-.login-form-container {
+.login-form-container,
+.login-alternate {
 	display: grid;
 	gap: 0.5rem;
 }
@@ -157,14 +179,18 @@ function onSubmit(event: Event) {
 .disabled {
 	opacity: 0.5;
 }
+/* Drawn in CSS: an icon font would show its ligature's name, "progress_activity", wherever the host hasn't loaded it. */
 .loading-icon {
-	animation: spin 1s linear infinite forwards;
+	animation: spin 1s linear infinite;
 	display: inline-block;
-	margin-right: 0.2rem;
-	line-height: 0;
-	font-size: 1rem;
-	position: relative;
-	top: 0.2rem;
+	box-sizing: border-box;
+	width: 0.75rem;
+	height: 0.75rem;
+	margin-right: 0.4rem;
+	vertical-align: -0.05rem;
+	border: 2px solid currentColor;
+	border-right-color: transparent;
+	border-radius: 50%;
 }
 
 /* ANIMATION */

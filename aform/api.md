@@ -798,14 +798,22 @@ import { Login } from '@stonecrop/aform'
 | Prop | Type | Required | Default | Description |
 |------|------|----------|---------|-------------|
 | headerTitle | `string \| undefined` | no | `"Login"` |  |
-| headerSubtitle | `string \| undefined` | no | `"Enter your email and password to login"` |  |
+| headerSubtitle | `string \| undefined` | no |  |  |
+| identity | `LoginIdentity` | yes |  |  |
+| authenticate | `(identity: string, password: string) => Promise<void>` | yes |  |  |
 
 **Events:**
 
 | Event | Payload | Description |
 |-------|---------|-------------|
-| loginFailed | `any[]` |  |
-| loginSuccess | `any[]` |  |
+| loginFailed | `[error: unknown]` |  |
+| loginSuccess | `[]` |  |
+
+**Slots:**
+
+| Slot | Props | Description |
+|------|-------|-------------|
+| alternateSignIn | `{ identity: string; }` |  |
 
 ## Functions
 
@@ -899,6 +907,35 @@ export declare function resolveFieldBadge(value: unknown, options: FieldOptions 
 | options | `FieldOptions \| undefined` |  |
 | format | `string \| BadgeFormatFn \| undefined` |  |
 | context | `BadgeFormatContext` |  |
+
+### useLoginPreset
+
+Header copy and identity field wiring for common login modes.
+
+**Signature:**
+
+```typescript
+export declare function useLoginPreset(preset: LoginPreset): {
+    identity: {
+        readonly label: "Email";
+        readonly inputType: "email";
+        readonly autocomplete: "email";
+        readonly name: "email";
+    } | {
+        readonly label: "Username";
+        readonly inputType: "text";
+        readonly autocomplete: "username";
+        readonly name: "username";
+    };
+    headerSubtitle: string;
+};
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| preset | `LoginPreset` |  |
 
 ## Interfaces
 
@@ -1238,6 +1275,32 @@ export type ComponentProps = {
 };
 ```
 
+### LoginIdentity
+
+Configuration for the identity field on `Login`.
+
+**Definition:**
+
+```typescript
+export type LoginIdentity = {
+    label: string;
+    inputType: string;
+    autocomplete: string;
+    name: string;
+    placeholder?: string;
+};
+```
+
+### LoginPreset
+
+Keys of `loginIdentities`.
+
+**Definition:**
+
+```typescript
+export type LoginPreset = keyof typeof loginIdentities;
+```
+
 ### ResolvedField
 
 The discriminated union of all resolved field types — what AForm consumes, usually after `resolveSchema()` has transformed the authoring `DoctypeField[]`, but also valid hand-authored for view chrome with no backing doctype. Narrowed by `kind`: `'field'` | `'link'` | `'table'` | `'fieldset'`.
@@ -1486,6 +1549,29 @@ export const ExpandButton: typeof __VLS_export
 
 ```typescript
 export const Login: typeof __VLS_export
+```
+
+### loginIdentities
+
+Built-in identity field presets for email and username sign-in.
+
+**Type:**
+
+```typescript
+export const loginIdentities: {
+    readonly email: {
+        readonly label: "Email";
+        readonly inputType: "email";
+        readonly autocomplete: "email";
+        readonly name: "email";
+    };
+    readonly username: {
+        readonly label: "Username";
+        readonly inputType: "text";
+        readonly autocomplete: "username";
+        readonly name: "username";
+    };
+}
 ```
 
 ## Re-exported

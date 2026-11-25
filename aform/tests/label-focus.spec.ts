@@ -16,6 +16,7 @@ import ASegmentedControl from '../src/components/form/ASegmentedControl.vue'
 import ATextboxInput from '../src/components/form/ATextboxInput.vue'
 import ATextInput from '../src/components/form/ATextInput.vue'
 import Login from '../src/components/utilities/Login.vue'
+import { loginIdentities } from '../src/login/loginIdentity'
 import type { ResolvedField } from '../src/types'
 import { mountBound } from './mount-bound'
 
@@ -135,7 +136,10 @@ describe('label focus colour', { tags: ['component'] }, () => {
 	})
 
 	it('darkens the login labels on focus', () => {
-		const wrapper = mount(Login, { attachTo: document.body })
+		const wrapper = mount(Login, {
+			attachTo: document.body,
+			props: { identity: loginIdentities.email, authenticate: async () => {} },
+		})
 		for (const input of (wrapper.element as HTMLElement).querySelectorAll<HTMLInputElement>('.aform_input-field')) {
 			input.focus()
 			const label = input.parentElement!.querySelector('.aform_field-label')!

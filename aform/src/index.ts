@@ -34,6 +34,8 @@ import ATableTupleCurrencyPicker from './components/table/ATableTupleCurrencyPic
 import ATableTupleQuantityPicker from './components/table/ATableTupleQuantityPicker.vue'
 import ATupleCellEditor from './components/table/ATupleCellEditor.vue'
 import ATupleCellShell from './components/table/ATupleCellShell.vue'
+import { loginIdentities } from './login/loginIdentity'
+import { useLoginPreset } from './composables/useLoginPreset'
 
 export type * from './types'
 
@@ -104,4 +106,8 @@ export {
 	ATupleCellEditor,
 	ATupleCellShell,
 	install,
+	loginIdentities,
+	useLoginPreset,
 }
+
+export type { LoginIdentity, LoginPreset } from './login/loginIdentity'
