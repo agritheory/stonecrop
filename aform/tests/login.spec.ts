@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { h } from 'vue'
 import { describe, it, expect, vi } from 'vite-plus/test'
 import { mount, flushPromises } from '@vue/test-utils'
@@ -160,6 +162,46 @@ describe('login component', { tags: ['component'] }, () => {
 		await wrapper.find('input[type="password"]').setValue('secret')
 
 		expect(wrapper.find('#typed-identity').text()).toBe('a@b.c')
+	})
+
+	it('hides the password by default and toggles visibility', async () => {
+		const wrapper = mountLogin()
+		const field = wrapper.find('#password')
+		const toggle = wrapper.find('#login-password-toggle')
+
+		expect(field.attributes('type')).toBe('password')
+		expect(toggle.attributes('aria-pressed')).toBe('false')
+		expect(toggle.attributes('aria-label')).toBe('Show password')
+
+		await toggle.trigger('click')
+
+		expect(field.attributes('type')).toBe('text')
+		expect(toggle.attributes('aria-pressed')).toBe('true')
+		// A toggle's label stays put; the pressed state alone says the password is showing.
+		expect(toggle.attributes('aria-label')).toBe('Show password')
+
+		await toggle.trigger('click')
+
+		expect(field.attributes('type')).toBe('password')
+	})
+
+	// Edge's own reveal button can't be rendered in a test browser, so check the rule that hides it is in the component.
+	it("hides Edge's own reveal button so only Login's toggle shows", () => {
+		const source = readFileSync(join(__dirname, '..', 'src', 'components', 'utilities', 'Login.vue'), 'utf8')
+		expect(source).toMatch(/\.login-form-password__input::-ms-reveal\s*\{\s*display:\s*none;?\s*\}/)
+	})
+
+	it('password visibility toggle does not submit the form', async () => {
+		const authenticate = vi.fn().mockResolvedValue(undefined)
+		const wrapper = mountLogin({ authenticate })
+
+		await wrapper.find(`#${loginIdentities.email.name}`).setValue('a@b.c')
+		await wrapper.find('#password').setValue('secret')
+		await wrapper.find('#login-password-toggle').trigger('click')
+		await flushPromises()
+
+		expect(authenticate).not.toHaveBeenCalled()
+		expect(wrapper.emitted('loginSuccess')).toBeFalsy()
 	})
 
 	it('useLoginPreset returns identity and subtitle for username', () => {

@@ -142,7 +142,7 @@ describe('label focus colour', { tags: ['component'] }, () => {
 		})
 		for (const input of (wrapper.element as HTMLElement).querySelectorAll<HTMLInputElement>('.aform_input-field')) {
 			input.focus()
-			const label = input.parentElement!.querySelector('.aform_field-label')!
+			const label = input.closest('.aform_form-element')!.querySelector('.aform_field-label')!
 			expect({ label: label.textContent, active: isActive(label) }).toEqual({ label: label.textContent, active: true })
 		}
 	})

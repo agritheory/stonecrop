@@ -182,6 +182,6 @@ Neither identity nor password is exposed to the parent as props or v-models. The
 
 ## Accessibility
 
-Identity and password inputs use matching `id`/`for` on labels. Submit is disabled until both fields are non-empty and while `authenticate` is in flight (spinner + disabled state).
+Identity and password inputs use matching `id`/`for` on labels. The password field has a Show password toggle button, pressed while the password is showing (`aria-pressed`). Submit is disabled until both fields are non-empty and while `authenticate` is in flight (spinner + disabled state).
 
 Source: [`aform/src/components/utilities/Login.vue`](https://github.com/agritheory/stonecrop/blob/development/aform/src/components/utilities/Login.vue)
