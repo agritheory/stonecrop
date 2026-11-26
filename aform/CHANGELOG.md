@@ -1,5 +1,18 @@
 # Change Log - @stonecrop/aform
 
+## 0.64.0
+
+### Minor Changes
+
+- 2329cf2: Login adds a show/hide control on the password field with inline SVG icons and accessible labels.
+
+### Patch Changes
+
+- @stonecrop/atable@0.64.0
+  - @stonecrop/schema@0.64.0
+  - @stonecrop/themes@0.64.0
+  - @stonecrop/utilities@0.64.0
+
 ## 0.63.2
 
 ### Patch Changes
