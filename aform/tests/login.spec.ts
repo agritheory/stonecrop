@@ -175,7 +175,8 @@ describe('login component', { tags: ['component'] }, () => {
 
 		expect(field.attributes('type')).toBe('text')
 		expect(toggle.attributes('aria-pressed')).toBe('true')
-		expect(toggle.attributes('aria-label')).toBe('Hide password')
+		// A toggle's label stays put; the pressed state alone says the password is showing.
+		expect(toggle.attributes('aria-label')).toBe('Show password')
 
 		await toggle.trigger('click')
 

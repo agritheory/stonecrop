@@ -43,7 +43,7 @@
 									type="button"
 									class="login-form-password__toggle"
 									:aria-pressed="passwordVisible"
-									:aria-label="passwordVisible ? 'Hide password' : 'Show password'"
+									aria-label="Show password"
 									:disabled="isLoading"
 									@click="passwordVisible = !passwordVisible">
 									<svg
