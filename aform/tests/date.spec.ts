@@ -131,7 +131,7 @@ describe('date component', { tags: ['component'] }, () => {
 		expect(wrapper.find('input').element.value).toBe('')
 	})
 
-	it('holds null once the input is cleared by hand', async () => {
+	it('holds null once the input is cleared by hand and left', async () => {
 		const emitted: (string | null | undefined)[] = []
 		const renderErrors: unknown[] = []
 		const wrapper = mount(ADate, {
@@ -139,6 +139,8 @@ describe('date component', { tags: ['component'] }, () => {
 			props: { modelValue: '2026-01-10', 'onUpdate:modelValue': (v: string | null | undefined) => emitted.push(v) },
 		})
 		await wrapper.find('input').setValue('')
+		expect(emitted).toEqual([])
+		await wrapper.find('.aform_form-element').trigger('focusout')
 		expect(renderErrors).toEqual([])
 		expect(emitted).toEqual([null])
 	})
