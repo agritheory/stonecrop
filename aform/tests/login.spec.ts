@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { h } from 'vue'
 import { describe, it, expect, vi } from 'vite-plus/test'
 import { mount, flushPromises } from '@vue/test-utils'
@@ -181,6 +183,12 @@ describe('login component', { tags: ['component'] }, () => {
 		await toggle.trigger('click')
 
 		expect(field.attributes('type')).toBe('password')
+	})
+
+	// Edge's own reveal button can't be rendered in a test browser, so check the rule that hides it is in the component.
+	it("hides Edge's own reveal button so only Login's toggle shows", () => {
+		const source = readFileSync(join(__dirname, '..', 'src', 'components', 'utilities', 'Login.vue'), 'utf8')
+		expect(source).toMatch(/\.login-form-password__input::-ms-reveal\s*\{\s*display:\s*none;?\s*\}/)
 	})
 
 	it('password visibility toggle does not submit the form', async () => {

@@ -200,6 +200,11 @@ async function onSubmit(event: Event) {
 	padding-right: 2.5rem;
 }
 
+/* Edge adds its own reveal button to password fields; hide it so Login's toggle is the only one and can't disagree with it. */
+.login-form-password__input::-ms-reveal {
+	display: none;
+}
+
 .login-form-password__toggle {
 	position: absolute;
 	right: 0.25rem;
