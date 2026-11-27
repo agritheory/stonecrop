@@ -250,6 +250,8 @@ const executeAction = (actionType: RowActionType, event?: MouseEvent) => {
 }
 
 .atable-row-actions.dropdown-active {
+	/* Above the pinned cells (20) and the app's own bars, such as Desktop's bottom bar (100), so the open menu is
+	   drawn over both. */
 	z-index: 101;
 }
 
