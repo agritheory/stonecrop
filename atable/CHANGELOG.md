@@ -1,5 +1,14 @@
 # Change Log - @stonecrop/atable
 
+## 0.64.2
+
+### Patch Changes
+
+- e7fd193: A third click on a sorted column's header clears the sort, so the table's rows return to the order they came in (ascending → descending → unsorted).
+- @stonecrop/schema@0.64.2
+  - @stonecrop/themes@0.64.2
+  - @stonecrop/utilities@0.64.2
+
 ## 0.64.1
 
 ### Patch Changes

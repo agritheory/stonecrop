@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/schema",
-	"version": "0.64.1",
+	"version": "0.64.2",
 	"description": "Stonecrop schema definitions and validation tooling",
 	"keywords": [
 		"doctype",

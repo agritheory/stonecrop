@@ -1,6 +1,6 @@
 {
 	"name": "@stonecrop/themes",
-	"version": "0.64.1",
+	"version": "0.64.2",
 	"description": "Design tokens and the default theme for Stonecrop",
 	"keywords": [
 		"css",
