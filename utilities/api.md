@@ -209,6 +209,23 @@ export declare function formatRichTextCell(value: unknown): string;
 |-----------|------|-------------|
 | value | `unknown` |  |
 
+### formatTimeOfDay
+
+A time of day as the user's locale writes one: `9:30 AM` in `en-US`, `09:30` in `en-GB`. The seconds show only when the time has some.
+
+**Signature:**
+
+```typescript
+export declare function formatTimeOfDay(time: Temporal.PlainTime, locales?: Intl.LocalesArgument): string;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| time | `Temporal.PlainTime` | The time of day |
+| locales | `Intl.LocalesArgument` | The locale to write it in; the user's own by default |
+
 ### fromISODate
 
 Reads a `YYYY-MM-DD` day. Anything that is not a real day written exactly that way reads as no day.
@@ -226,6 +243,22 @@ export declare function fromISODate(day: string): Temporal.PlainDate | undefined
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | day | `string` | The day, as `YYYY-MM-DD` |
+
+### fromISOTime
+
+Reads a time of day: `HH:MM`, `HH:MM:SS`, or `HH:MM:SS` with a fraction of a second, as Postgres writes a `time` column (`09:30:00.000000`). Anything else, a date-time included, reads as no time.
+
+**Signature:**
+
+```typescript
+export declare function fromISOTime(time: string): Temporal.PlainTime | undefined;
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| time | `string` | The time of day |
 
 ### install
 

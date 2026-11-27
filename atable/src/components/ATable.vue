@@ -490,8 +490,8 @@ const addRowAt = (position: 'start' | 'end' | number) => {
 const addFirstRow = () => {
 	// The empty row goes once the first row is in, taking a focused Add row with it: hand focus on to the Add row below.
 	const focusInEmptyRow = !!document.activeElement?.closest('.atable-empty-row')
-	// A blank row would sort away from Add row (to the top, ascending), and a header click only flips
-	// the direction, so nothing else would undo the sort. Clear it: the new row lands at the bottom.
+	// A blank row would sort away from Add row (to the top, ascending). Clear the sort so the new row
+	// lands at the bottom, next to Add row.
 	if (store.sortState.column !== null) {
 		store.sortState.column = null
 		store.sortState.direction = null

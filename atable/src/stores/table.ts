@@ -748,16 +748,16 @@ export const createTableStore = (initData: {
 			const column = columns.value[colIndex]
 			if (column.sortable === false) return
 
-			let newDirection: 'asc' | 'desc'
-			if (sortState.value.column === colIndex) {
-				if (sortState.value.direction === 'asc') {
-					newDirection = 'desc'
-				} else {
-					newDirection = 'asc'
-				}
-			} else {
-				newDirection = 'asc'
+			// A header click cycles ascending → descending → unsorted, so the rows can return to the
+			// order they came in (e.g. the order an order's lines were entered in).
+			if (sortState.value.column === colIndex && sortState.value.direction === 'desc') {
+				sortState.value.column = null
+				sortState.value.direction = null
+				return
 			}
+
+			const newDirection: 'asc' | 'desc' =
+				sortState.value.column === colIndex && sortState.value.direction === 'asc' ? 'desc' : 'asc'
 
 			sortState.value.column = colIndex
 			sortState.value.direction = newDirection

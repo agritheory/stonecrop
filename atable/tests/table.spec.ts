@@ -966,8 +966,16 @@ describe('Sorting and Filtering', { tags: ['component'] }, () => {
 			store.sortByColumn(0)
 			expect(store.sortState.direction).toBe('desc')
 
-			// Third click: back to asc
+			// Third click: back to the table's own order
 			store.sortByColumn(0)
+			expect(store.sortState.column).toBeNull()
+			expect(store.sortState.direction).toBeNull()
+			await nextTick()
+			expect(store.filteredRows.map(row => row.id)).toEqual([3, 1])
+
+			// Fourth click: asc again
+			store.sortByColumn(0)
+			expect(store.sortState.column).toBe(0)
 			expect(store.sortState.direction).toBe('asc')
 		})
 
