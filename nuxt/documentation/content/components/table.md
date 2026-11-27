@@ -158,7 +158,7 @@ Live line items with the same field components are on playground orders — open
 
 ## Filtering & Sorting
 
-Setting `sortable`/`filterable` on a column adds a header sort toggle and a filter control. `filterType` picks the control: `'text'` for free-text matching, `'select'` for a dropdown (supply `filterOptions`, or omit them to auto-derive from the column's data), or `'dateRange'` for a date span.
+Clicking a column's header sorts by it: ascending, then descending, then back to the table's own order (`sortable: false` turns this off). Setting `filterable` adds a filter control. `filterType` picks the control: `'text'` for free-text matching, `'select'` for a dropdown (supply `filterOptions`, or omit them to auto-derive from the column's data), or `'dateRange'` for a date span.
 
 ::demo-panel
 :::client-only
