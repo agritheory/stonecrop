@@ -254,14 +254,6 @@ if (addNavigation || isListExpansion) {
 	padding: 1.5rem;
 }
 
-/* A dropdown opened in the panel shares a stacking context with the pinned cells (z-index 100)
-   of the rows below, which come later in the DOM and so paint over it. Lift the panel above
-   them while it holds focus (#576). */
-.atable-expanded-content:focus-within {
-	position: relative;
-	z-index: 101;
-}
-
 .atable-expanded-content > * {
 	display: block;
 	width: 100%;

@@ -596,10 +596,13 @@ defineExpose({
 	position: relative;
 }
 
+/* Pinned cells sit just above the table's own layers (Gantt bars and connections reach 15) and
+   below dropdown lists (100), so a list opened in a row or expanded panel, or above the table,
+   is drawn over the pinned cells of the rows it crosses (#576). */
 .sticky-index {
 	position: sticky;
 	left: 0px;
-	z-index: 100;
+	z-index: 20;
 	order: 0;
 }
 
@@ -609,7 +612,7 @@ td.sticky-column,
 th.sticky-index,
 td.sticky-index {
 	position: sticky;
-	z-index: 100;
+	z-index: 20;
 	order: 0;
 	background: inherit;
 }

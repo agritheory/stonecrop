@@ -250,7 +250,8 @@ const executeAction = (actionType: RowActionType, event?: MouseEvent) => {
 }
 
 .atable-row-actions.dropdown-active {
-	z-index: 101;
+	/* One above the pinned cells (20), so its open menu is drawn over the rows below. */
+	z-index: 21;
 }
 
 .row-actions-icons {
