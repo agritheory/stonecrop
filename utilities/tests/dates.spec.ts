@@ -1,7 +1,7 @@
 import { Temporal } from 'temporal-polyfill'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test'
 
-import { fromISODate } from '../src/dates'
+import { formatTimeOfDay, fromISODate, fromISOTime } from '../src/dates'
 
 describe('ISO dates', { tags: ['unit'] }, () => {
 	// Pinned zones, because the runner's own zone hides these: CI runs in UTC, where a UTC reading passes.
@@ -30,5 +30,30 @@ describe('ISO dates', { tags: ['unit'] }, () => {
 		'+002026-01-10',
 	])('reads %j as no day', value => {
 		expect(fromISODate(value)).toBeUndefined()
+	})
+})
+
+describe('times of day', { tags: ['unit'] }, () => {
+	it.each([
+		['09:30', '09:30:00'],
+		['09:30:15', '09:30:15'],
+		['09:30:00.000000', '09:30:00'],
+		['23:59:59.5', '23:59:59.5'],
+	])('reads %j as %s', (value, time) => {
+		expect(fromISOTime(value)?.toString()).toBe(time)
+	})
+
+	// Temporal's own reader accepts the date-times, taking a time out of a moment's text.
+	it.each(['', 'after lunch', '9:30', '24:00', '09:60', '2026-01-10T09:30:00Z', '2026-01-10T09:30', '0930'])(
+		'reads %j as no time',
+		value => {
+			expect(fromISOTime(value)).toBeUndefined()
+		}
+	)
+
+	it('writes a time as the locale does, with seconds only when it has some', () => {
+		expect(formatTimeOfDay(Temporal.PlainTime.from('09:30'), 'en-US')).toBe('9:30 AM')
+		expect(formatTimeOfDay(Temporal.PlainTime.from('21:30'), 'en-GB')).toBe('21:30')
+		expect(formatTimeOfDay(Temporal.PlainTime.from('14:05:09'), 'en-US')).toBe('2:05:09 PM')
 	})
 })

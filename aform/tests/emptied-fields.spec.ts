@@ -23,6 +23,7 @@ const SAMPLE_VALUES: Record<string, unknown> = {
 	ADateRange: { start_date: '2026-01-10', end_date: '2026-01-20' },
 	ADateSelection: undefined,
 	ADateTime: '2026-01-15T10:30:00.000Z',
+	ADateTimeInput: '09:30:00',
 	ADuration: 'PT1H',
 	AFileAttach: undefined,
 	AFormLink: { id: 'EUR', displayText: 'Euro' },
@@ -39,9 +40,19 @@ const typedFields = Object.entries(COMPONENT_CATEGORY)
 	.filter(([name, category]) => !TEXT_CATEGORIES.has(category) && !OTHER_PACKAGES.has(name))
 	.map(([name]) => name)
 
+// Mounted as AForm mounts a field: with the record's value and a listener for the field's edits. ADateTimeInput
+// shows a time the record holds only with that listener; without one, it is the widget inside a date picker.
+const fieldProps = (name: string, modelValue: unknown) => ({
+	modelValue,
+	'onUpdate:modelValue': () => {},
+	mode: 'edit',
+	label: name,
+	uuid: name,
+})
+
 const mountField = (name: string) => {
 	const component = (aform as Record<string, unknown>)[name] as Component
-	return mount(component, { props: { modelValue: SAMPLE_VALUES[name], mode: 'edit', label: name, uuid: name } })
+	return mount(component, { props: fieldProps(name, SAMPLE_VALUES[name]) })
 }
 
 /** The boxes a user can empty: enabled, editable, and holding text. */
@@ -86,9 +97,19 @@ describe('fields holding something other than text', { tags: ['component'] }, ()
 		expect(problems).toEqual([])
 	})
 
+	// The time boxes write their time as one is left, not as each key is typed, so the check above sees no write from
+	// them. Left, each emptied box empties the field.
+	it.each([0, 1, 2])('ADateTimeInput holds null once its emptied box %i is left', async box => {
+		const wrapper = mountField('ADateTimeInput')
+		const input = emptiableInputs(wrapper)[box]
+		await input.setValue('')
+		await input.trigger('blur')
+		expect(wrapper.emitted('update:modelValue')).toEqual([[null]])
+	})
+
 	const boxTexts = (name: string, modelValue: unknown) => {
 		const component = (aform as Record<string, unknown>)[name] as Component
-		const wrapper = mount(component, { props: { modelValue, mode: 'edit', label: name, uuid: name } })
+		const wrapper = mount(component, { props: fieldProps(name, modelValue) })
 		return emptiableInputs(wrapper).map(({ element }) => (element as HTMLInputElement).value)
 	}
 
@@ -110,7 +131,7 @@ describe('fields holding something other than text', { tags: ['component'] }, ()
 	/** What every box of a field shows, read-only ones included, with a ticked checkbox as "checked". */
 	const shownValues = (name: string, modelValue: unknown) => {
 		const component = (aform as Record<string, unknown>)[name] as Component
-		const wrapper = mount(component, { props: { modelValue, mode: 'edit', label: name, uuid: name } })
+		const wrapper = mount(component, { props: fieldProps(name, modelValue) })
 		return wrapper
 			.findAll('input')
 			.map(({ element }) => element as HTMLInputElement)
@@ -148,6 +169,7 @@ describe('fields holding something other than text', { tags: ['component'] }, ()
 			'ACurrencyInput',
 			'ADate',
 			'ADateSelection',
+			'ADateTimeInput',
 			'ADuration',
 			'AFormLink',
 			'ANumericInput',

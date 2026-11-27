@@ -68,7 +68,13 @@ export function formatQuantityCell(value: unknown): string;
 export function formatRichTextCell(value: unknown): string;
 
 // @public
+export function formatTimeOfDay(time: Temporal.PlainTime, locales?: Intl.LocalesArgument): string;
+
+// @public
 export function fromISODate(day: string): Temporal.PlainDate | undefined;
+
+// @public
+export function fromISOTime(time: string): Temporal.PlainTime | undefined;
 
 // @public
 export function install(_app: App): void;

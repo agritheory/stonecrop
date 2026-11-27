@@ -120,7 +120,7 @@ describe('WELL_KNOWN_SCALARS', { tags: ['unit'] }, () => {
 		expect(WELL_KNOWN_SCALARS.DateTime).toEqual({ component: 'ADateTime' })
 		expect(WELL_KNOWN_SCALARS.Datetime).toEqual({ component: 'ADateTime' })
 		expect(WELL_KNOWN_SCALARS.Date).toEqual({ component: 'ADate' })
-		expect(WELL_KNOWN_SCALARS.Time).toEqual({ component: 'ATextInput' })
+		expect(WELL_KNOWN_SCALARS.Time).toEqual({ component: 'ADateTimeInput' })
 		expect(WELL_KNOWN_SCALARS.JSON).toEqual({ component: 'ACodeEditor' })
 		expect(WELL_KNOWN_SCALARS.BigInt).toEqual({ component: 'ANumericInput' })
 		expect(WELL_KNOWN_SCALARS.Duration).toEqual({ component: 'ADuration' })
