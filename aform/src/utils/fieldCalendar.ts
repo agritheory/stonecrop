@@ -5,6 +5,13 @@ import { type ComponentPublicInstance, nextTick, ref, type ShallowRef, useId } f
 export const opensCalendar = (event: KeyboardEvent) =>
 	event.key === ' ' || event.key === 'F4' || (event.altKey && event.key === 'ArrowDown')
 
+/** Whether a `focusout` on a field's element takes focus out of the field, rather than into its own calendar. */
+export const focusLeavesField = (event: FocusEvent) => {
+	const field = event.currentTarget
+	const next = event.relatedTarget
+	return !(field instanceof Node && next instanceof Node && field.contains(next))
+}
+
 /**
  * The calendar a date field opens from its box, and the keys and focus that go with it.
  * @param box - the field's box, which focus returns to when the calendar closes
@@ -46,9 +53,7 @@ export function useFieldCalendar(
 	}
 
 	const closeWhenFocusLeaves = (event: FocusEvent) => {
-		const field = event.currentTarget
-		const next = event.relatedTarget
-		if (!(field instanceof Node && next instanceof Node && field.contains(next))) showPicker.value = false
+		if (focusLeavesField(event)) showPicker.value = false
 	}
 
 	return { showPicker, calendarId, closePicker, openFromKey, closeOnEscape, closeWhenFocusLeaves }

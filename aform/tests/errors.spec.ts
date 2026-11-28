@@ -549,16 +549,18 @@ describe('inline field errors', { tags: ['component'] }, () => {
 			})
 			const w = mount(twoForms, { global: { components: { ATextInput, ADate } } })
 
-			const inputs = w.findAll('.aform_form-element > input')
+			// A field may wrap its input (ADate groups it with its clear button), so each input is matched to its own field.
+			const inputs = w.findAll('.aform_form-element input')
 			expect(inputs).toHaveLength(6)
 			const ids = inputs.map(input => input.attributes('id'))
 			expect(ids.every(Boolean)).toBe(true)
 			expect(new Set(ids).size).toBe(ids.length)
+			const fieldOf = (input: (typeof inputs)[number]) => input.element.closest('.aform_form-element')
 			for (const input of inputs) {
-				expect(input.element.parentElement?.querySelector('label')?.htmlFor).toBe(input.attributes('id'))
+				expect(fieldOf(input)?.querySelector('label')?.htmlFor).toBe(input.attributes('id'))
 			}
 			const flagged = inputs[1]
-			const error = flagged.element.parentElement?.querySelector('.aform_error')
+			const error = fieldOf(flagged)?.querySelector('.aform_error')
 			expect(error?.textContent).toBe('End before start')
 			expect(flagged.attributes('aria-describedby')).toBe(error?.id)
 		})

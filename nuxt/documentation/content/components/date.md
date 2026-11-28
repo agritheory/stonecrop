@@ -15,7 +15,11 @@ import { ADate } from '@stonecrop/aform'
 
 ## Basic
 
-`v-model` binds to the selected date as an ISO `YYYY-MM-DD` string, and to `null` once the field is cleared. Click the field to toggle the inline calendar: picking a date there also updates `v-model`, focus stays in the input so a date can still be typed, and a date typed while the calendar is open moves it to that day.
+`v-model` binds to the selected date as an ISO `YYYY-MM-DD` string, and to `null` once the field is emptied: with its clear button, or by clearing every part of the date and leaving the field.
+
+A date the browser can't read, with a part missing or a day the month doesn't have such as 31 February, is never saved. Leaving the field puts the last date back and says so under it. A `required` field has no clear button, and gets its date back if it is left empty.
+
+Click the field to toggle the inline calendar: picking a date there also updates `v-model`, focus stays in the input so a date can still be typed, and a date typed while the calendar is open moves it to that day.
 
 ::demo-panel
 :::client-only
@@ -85,13 +89,13 @@ const data = ref({ delivery_date: '2026-08-05' })
 ---
 headers: ['Name', 'Type', 'Default', 'Description']
 rows:
-  - ['`v-model`', '`string | null`', 'none', 'The selected date, as an ISO `YYYY-MM-DD` string, or `null` once cleared.']
-  - ['`label`', '`string`', "`'Date'`", 'Label rendered next to the input.']
-  - ['`required`', '`boolean`', '`false`', 'Marks the input as required (`edit` mode only).']
+  - ['`v-model`', '`string | null`', 'none', 'The selected date, as an ISO `YYYY-MM-DD` string, or `null` once emptied.']
+  - ['`label`', '`string`', "`'Date'`", 'Label rendered next to the input, and named in the clear button and in the note about a date put back.']
+  - ['`required`', '`boolean`', '`false`', 'Marks the input as required (`edit` mode only), hides the clear button, and puts the date back if the field is left empty.']
   - ['`mode`', "`'edit' | 'read' | 'display'`", "`'edit'`", 'See [Modes](#modes) below.']
   - ['`uuid`', '`string`', 'none', "`id`/`for` pair linking the input to its label. Nothing generates one, so the pairing exists only when you pass it."]
   - ['`validation`', '`{ errorMessage: string }`', '—', 'Not read by this component. Inside `AForm`, `errorMessage` words an error a trigger reports on this field without a message (`setError(field)`); it is never shown on its own.']
-  - ['`errors`', '`string[]`', '—', 'Dynamic validation errors (e.g. from a trigger). Shown joined with `; `, and nothing is shown without them. Inside `AForm` they arrive already worded: an error reported without a message carries the `validation.errorMessage` of its field.']
+  - ['`errors`', '`string[]`', '—', 'Dynamic validation errors (e.g. from a trigger). Shown joined with `; `, followed by the note about a date put back while there is one, and nothing is shown without either. Inside `AForm` they arrive already worded: an error reported without a message carries the `validation.errorMessage` of its field.']
 ---
 ::
 
@@ -112,6 +116,8 @@ rows:
 The input and its label are linked via `id`/`for` (backed by `uuid`), so the label is announced by screen readers on focus. `required` sets the native `required` attribute, so unsupported submission is caught by the browser's built-in validation UI in addition to any schema-level validation. A click opens the inline calendar with focus staying in the input, so a date can still be typed.
 
 The keys that open the browser's own calendar in Chrome, <kbd>Space</kbd>, <kbd>F4</kbd> and <kbd>Alt</kbd>+<kbd>Down</kbd>, open the inline calendar instead, with focus on the field's day; the calendar's own keys are on the [Date Picker](/components/date-picker#accessibility) page. Picking a day or pressing <kbd>Escape</kbd> closes it and returns focus to the input, and it also closes on an outside click or when focus leaves the field.
+
+The clear button is named for the field, such as "Clear Delivery Date", and comes after the input in the Tab order. The note about a date put back is announced as it appears and is linked to the input as its description; it does not mark the input invalid, since the input holds a date it can read again.
 
 The input tells a screen reader that it opens a dialog (`aria-haspopup`), and the calendar is a dialog named by the field's label. A date input cannot take the `combobox` role, so unlike `ADateTime` and `ADateRange` the input does not announce whether the calendar is open, and plain <kbd>Down</kbd> steps the focused part of the date rather than opening the calendar.
 
