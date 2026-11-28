@@ -251,6 +251,39 @@ describe('table store', { tags: ['component'] }, () => {
 				expect(store.getFormattedValue(0, 0, null)).toBeNull()
 			})
 
+			// A `time` column, as Postgres writes it, shows as a time of day rather than its stored text (#568).
+			it('formats a time of day as the locale writes a time', () => {
+				store.columns[0] = { name: 'id', component: 'ADateTimeInput' }
+				const expected = new Date(2024, 5, 15, 9, 30).toLocaleTimeString(undefined, {
+					hour: 'numeric',
+					minute: '2-digit',
+				})
+				expect(store.getFormattedValue(0, 0, '09:30:00.000000')).toBe(expected)
+				expect(store.getFormattedValue(0, 0, '09:30')).toBe(expected)
+			})
+
+			it('shows the seconds of a time of day that has some', () => {
+				store.columns[0] = { name: 'id', component: 'ADateTimeInput' }
+				expect(store.getFormattedValue(0, 0, '14:05:09')).toBe(
+					new Date(2024, 5, 15, 14, 5, 9).toLocaleTimeString(undefined, {
+						hour: 'numeric',
+						minute: '2-digit',
+						second: '2-digit',
+					})
+				)
+			})
+
+			it('shows a time value that is not a time of day as an invalid time', () => {
+				store.columns[0] = { name: 'id', component: 'ADateTimeInput' }
+				expect(store.getFormattedValue(0, 0, 'after lunch')).toBe('Invalid Time')
+				expect(store.getFormattedValue(0, 0, '2024-06-15T09:30:00Z')).toBe('Invalid Time')
+			})
+
+			it('returns null for a time of day when value is null', () => {
+				store.columns[0] = { name: 'id', component: 'ADateTimeInput' }
+				expect(store.getFormattedValue(0, 0, null)).toBeNull()
+			})
+
 			it('formats a Quantity composite value as "<qty> <uom>"', () => {
 				store.columns[0] = { name: 'id', component: 'AQuantityInput' }
 				expect(store.getFormattedValue(0, 0, { qty: 2, uom: 'Box' })).toBe('2 Box')

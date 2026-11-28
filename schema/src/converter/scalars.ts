@@ -46,11 +46,11 @@ export const WELL_KNOWN_SCALARS: Record<string, FieldTemplate> = {
 	// Identifiers
 	UUID: { component: 'ATextInput' },
 
-	// Date / Time — no dedicated Time SFC exists; Time falls back to a plain text input.
+	// Date / Time. `Time` is a time of day, with no date: ADateTimeInput's hour, minute and second boxes.
 	DateTime: { component: 'ADateTime' },
 	Datetime: { component: 'ADateTime' },
 	Date: { component: 'ADate' },
-	Time: { component: 'ATextInput' },
+	Time: { component: 'ADateTimeInput' },
 	Interval: { component: 'ADuration' },
 	Duration: { component: 'ADuration' },
 

@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { componentCategory } from '@stonecrop/schema'
 import type { BadgeDescriptor } from '@stonecrop/schema'
-import { compareSemver, fromISODate } from '@stonecrop/utilities'
+import { compareSemver, formatTimeOfDay, fromISODate, fromISOTime } from '@stonecrop/utilities'
 import { Temporal } from 'temporal-polyfill'
 import { type CSSProperties, computed, ref } from 'vue'
 
@@ -556,6 +556,11 @@ export const createTableStore = (initData: {
 					return value != null ? (fromISODate(String(value))?.toLocaleString() ?? 'Invalid Date') : value
 				}
 				if (category === 'datetime') return value != null ? new Date(String(value)).toLocaleString() : value
+				if (category === 'time') {
+					if (value == null || value === '') return value
+					const time = fromISOTime(String(value))
+					return time ? formatTimeOfDay(time) : 'Invalid Time'
+				}
 				if (category === 'quantity') return formatQuantity(value)
 				if (category === 'currency') return formatCurrency(value)
 				if (category === 'richtext') return formatRichText(value)
